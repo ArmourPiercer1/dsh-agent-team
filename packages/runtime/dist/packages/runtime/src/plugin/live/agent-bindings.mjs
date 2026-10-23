@@ -353,7 +353,7 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
 import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
-import { A5_GOVERNED_FAMILIES, a5GovernedFamilyFor, publishPaMount, readPaCallFactsForCall, registerA5GovernedFamily, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
+import { A5_GOVERNED_FAMILIES, publishPaMount, readPaCallFactsForCall, registerA5GovernedFamily, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
 // A5-M2 B-SESSION (CENTER vertical): the governed todo arm this assembly BOUNDS at
 // mount time over the bind-time captured native definition (the arm itself carries
 // no authority: admission lives in the M1 A assembly, the durable answers in the
@@ -361,14 +361,15 @@ import { A5_GOVERNED_FAMILIES, a5GovernedFamilyFor, publishPaMount, readPaCallFa
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
-// A5M2 B-SCHEDULE (root 18:11): the REAL published Host error-class identity
-// — the SAME module the host's registerScheduleTools throws through at
-// @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
-import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
-import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
-import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
+// A5M2-B-TEAM-WIRE (this lane's additive import row under the family rows):
+// the B-TEAM member-operation family CLAIM, computed by the wiring bridge's
+// OWN capture predicate over THIS member's lane set. The bridge itself is
+// assembled by the plane (it owns the real `paAdmit` seat); this assembly
+// owns the PLACEMENT and the post-publish family registration at the shared
+// fill point. No adapter law is restated here.
+import { claimTeamOpsFamily } from './governed-families/team-wiring.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
 // A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
@@ -467,7 +468,7 @@ import { definitionIdentityOf, installScopedToolGuard } from '../../../tool-disp
 // the PR7 gateway the same way. These two lines ARE the production import
 // edges those contracts drafted (P-A/P-B/P-C stayed DORMANT at this layer on
 // purpose: the GLUE owner lands them, nobody else).
-import { A5_B_SCHEDULE_DELETE_MOUNT_NAME, A5_B_SCHEDULE_LIST_MOUNT_NAME, createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
+import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
@@ -2404,21 +2405,15 @@ export function createAgentBindings(deps) {
       // placement moment); the placed handle comes back through the factory's
       // closure for the ONE-table family registration below.
       let a5ImageInject = null
-      let a5ScheduleInject = null
       let a5ImagePlacedArm = null
-      // A5M2 PROVIDER-IDENTITY SUPPLY (site 4, the ONE reader of record): same
-      // outer-scope discipline as the inject above — it is WIRED ONCE in the
-      // mount assembly (where the plane injection is armed) and READ at two
-      // later moments that live in different blocks: the family registration
-      // after publish, and every consumption the arm/plane performs. It
-      // resolves the LIVE binding authority through the same dispatcher getter
-      // the durable facts read `facts.binding` from; it stores nothing and has
-      // no durable-row / receipt / plane channel (FP-D is structural).
-      let a5ImageProviderIdentity = null
       // A5M2-G6 B-SESSION-QUERY: same outer-scope discipline — the inject is
       // armed next to the plane assembly, the registration lands AFTER
       // publish at the shared fill point below (both must see one binding).
       let a5G6Inject = null
+      // A5M2-B-TEAM-WIRE (this lane's declaration, hoisted beside the G6 one
+      // for the same reason: the arm site and the post-publish fill point sit
+      // in different nested blocks of this setup body).
+      let a5TeamOpsInject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2541,10 +2536,24 @@ export function createAgentBindings(deps) {
           // the plane assembly below — a name with no row stays on the
           // pre-feed path (never a weaker verification, just the same one).
           realmId: a5PlaneRealmId,
-          bindingFeed: (name) =>
-            a5PlaneValue === null
+          bindingFeed: (name) => {
+            // ROOT 19:53 ③: a governed B-TEAM name's feed entry is the identity
+            // of the definition THIS owner placed for it — the same object the
+            // Guard binds out of the scoped layer at `bindOwnTools` (read
+            // lazily, after the placement pass, per the pb §6 laziness law the
+            // plane's own feed already obeys). Every other name keeps the
+            // plane's placement map byte-for-byte.
+            const placedTeamOps = a5TeamOpsPlacedByName.get(name)
+            if (placedTeamOps !== undefined) {
+              const placedIdentity = definitionIdentityOf(placedTeamOps)
+              return placedIdentity === null
+                ? undefined
+                : Object.freeze({ definitionIdentity: placedIdentity, realmId: a5PlaneRealmId })
+            }
+            return a5PlaneValue === null
               ? undefined
-              : a5PlaneValue.placementFeed(name),
+              : a5PlaneValue.placementFeed(name)
+          },
           // A5-M1 replaced "Generation 0 until PR2 feeds the overlay /
           // authority generations into the Binding": the awaited durable
           // overlay generation rides the install above, and a later advance is
@@ -2616,6 +2625,20 @@ export function createAgentBindings(deps) {
       // Coverage Gate (the `teamTools` capability + the Team runtime are
       // the authority owner). Empty on every legacy / alpha.1 setup.
       let selectedTeamToolNames = []
+      // A5M2-B-TEAM-WIRE (this lane's declarations, hoisted beside
+      // selectedTeamToolNames for the SAME reason: the claim is computed in
+      // the registration block below, while the arm, the placement and the
+      // post-publish fill point live further out in this setup body).
+      let a5TeamOpsCfg = undefined
+      let a5TeamOpsClaim = Object.freeze({ names: Object.freeze([]), census: Object.freeze([]) })
+      const a5TeamOpsNativeByName = new Map()
+      const a5TeamOpsAllowedNames = new Set()
+      // ROOT 19:53 ③: the definitions THIS owner actually placed under the
+      // governed names (the very objects registered into the scoped layer).
+      // The Guard's pb §6 binding feed reads its identities lazily per name —
+      // the SAME object the Guard binds, never the family-scoped registry's
+      // shadow (a scoped feed does not stand in for Guard continuity).
+      const a5TeamOpsPlacedByName = new Map()
       if (teamTools) {
         // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
         // registers only the catalog tools the template's teamTools entry
@@ -2625,8 +2648,49 @@ export function createAgentBindings(deps) {
         const catalog = Array.isArray(teamTools.tools) ? teamTools.tools : []
         const selected =
           capabilities.mode === 'selective' ? selectTeamTools(catalog, capabilities.teamTools) : [...catalog]
-        selectedTeamToolNames = selected.map((def) => def.name)
-        for (const def of selected) {
+        // ── A5M2-B-TEAM-WIRE (this lane's block at the site the adapter
+        // itself designates for B-TEAM registration) ───────────────────────
+        // The owner publishes the member-operation evidence on
+        // `config.teamToolPlane.teamMemberOps`. ABSENT (every existing config)
+        // = a5TeamOpsClaim.names is empty = the selection and the
+        // registration below are byte-for-byte what they were before this
+        // block: zero flip, no new behaviour. WHEN armed, exactly the names
+        // the wiring bridge can actually capture (the bridge's own
+        // registration-face + capture-identity predicate over THIS member's
+        // selected lane set) are claimed: the raw catalog registration yields
+        // for them here, and the GOVERNED row takes their placement after the
+        // plane mounts (below, before the Guard's own-tool bind). One name,
+        // one placement — the plane mounts into this SAME agent tool layer
+        // and the host's NamedEntries.insert refuses a second definition
+        // under one name in one layer (packages/core/scope/src/store.ts:43,
+        // measured), so a double registration is not an option at any point.
+        a5TeamOpsCfg = config?.teamToolPlane?.teamMemberOps
+        // ROOT 19:53 ② UNIFIED QUALIFICATION (atomic handover, no new
+        // exemption): the governed plane mounts only when the member is
+        // GOVERNED (`permissionPolicy !== undefined`, the GLUE-5 gate below)
+        // AND the host row carries `teamToolPlane`. Claiming on the global key
+        // ALONE could withdraw a raw registration for an ungoverned member that
+        // will never mount — the name would answer with NOTHING. The claim and
+        // the mount therefore obey ONE eligibility, read identically here and
+        // at the mount gate: claim ⇔ this member's plane will actually mount.
+        const a5TeamOpsEligible = permissionPolicy !== undefined
+          && a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null
+        if (a5TeamOpsEligible) {
+          for (const def of selected) a5TeamOpsNativeByName.set(def.name, def)
+          for (const def of selected) a5TeamOpsAllowedNames.add(def.name)
+          a5TeamOpsClaim = claimTeamOpsFamily({
+            catalog: selected,
+            allowedNames: [...a5TeamOpsAllowedNames],
+            definitionIdentityOf,
+          })
+          observations.push(`a5m2-b-team: family claim for ${sessionId} = ${a5TeamOpsClaim.names.length === 0 ? 'DECLARED-INACTIVE (census below)' : a5TeamOpsClaim.names.join(',')} (census=${a5TeamOpsClaim.census.map((row) => `${row.name}:${row.reason}`).join(',') || 'none'})`)
+        }
+        const a5TeamOpsClaimedNames = new Set(a5TeamOpsClaim.names)
+        const a5TeamOpsRawSelected = a5TeamOpsClaimedNames.size === 0
+          ? selected
+          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name))
+        selectedTeamToolNames = a5TeamOpsRawSelected.map((def) => def.name)
+        for (const def of a5TeamOpsRawSelected) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
@@ -2883,39 +2947,6 @@ export function createAgentBindings(deps) {
           a5WriteInject = Object.freeze({ arm: writeArm, description: nativeWriteDefinition.description })
           observations.push(`a5m2-write: arm BOUND for ${sessionId} (native=${writeNativeIdentity.slice(0, 32)} member=${writeMemberAgentId.slice(0, 16)} header=${writeSessionHeaderId.slice(0, 16)} root=${writeRootDir.slice(0, 32)})`)
         }
-        // ── A5M2 PROVIDER-IDENTITY SUPPLY (candidate 2026-10-23 SITE 4: wired
-        // ONCE for this mount, here and nowhere else) ───────────────────────
-        // The ONE provider authority is the LIVE binding authority the Guard /
-        // install path already produces — the very dispatcher surface the
-        // call-level facts read `facts.binding` from (pa-mount-registry.mjs
-        // `readCallAuthorityFacts`: `m.guard?.dispatcher?.surface` → the unique
-        // verified + ACTIVE entry → `entry.binding`, the same object this mount
-        // record publishes below). Supply and durable row therefore read the
-        // SAME getter: r18's three-way tie agrees from ONE source instead of
-        // three constants. The reader's inputs are that surface ONLY — no plane
-        // reference, no mount record, no Control row, no receipt — which is why
-        // a row can never become a provider authority through it (FP-D is
-        // structural, not convention). An entry that is absent, unverified, not
-        // ACTIVE, or carries a non-string / empty providerId answers NOTHING:
-        // each consumer fails closed on `undefined` through its own existing
-        // refusal path (mount-refused here, the arm's consumption code at the
-        // consumption point). This module owns NO provider constant for the
-        // image family; the todo/write placement constants carry no provider
-        // comparison and stay untouched (root: do not copy the write pattern —
-        // and never copy its constant).
-        const a5LiveBindingProviderId = (placementName) => {
-          const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(placementName)
-          const binding = entry?.binding
-          if (entry?.verified !== true || binding?.status !== 'ACTIVE'
-            || typeof binding?.providerId !== 'string' || binding.providerId.length === 0) return undefined
-          return binding.providerId
-        }
-        /** The image family's reader: the live authority behind THIS mount's
-         *  read_image placement, ASKED at every consumption moment (the arm is
-         *  constructed before bind, so the value is never captured). THIS is the
-         *  single wiring point (site 4) — the outer-scope binding above is
-         *  assigned exactly once, here, and never re-assigned. */
-        a5ImageProviderIdentity = () => a5LiveBindingProviderId(A5_IMAGE_TOOL_NAME)
         // A5-M2 B-IMAGE (CENTER vertical, root-authorized 实际接线): the governed
         // read_image row's PLACING assembly. The arm law differs from todo/write
         // in the one point the WeakMap algebra imposes (root central card on
@@ -3033,13 +3064,7 @@ export function createAgentBindings(deps) {
                 }
                 a5ImagePlacedArm = createGovernedReadImageArm({
                   definitionIdentity: identity,
-                  // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 1): the arm is built at
-                  // the PLACEMENT moment, which is BEFORE `bindOwnTools` — no
-                  // constant can be honest here, and the value at construction
-                  // would stay wrong forever. So the arm receives the mount's
-                  // ONE reader and re-asks the live binding authority at each
-                  // consumption moment (arm side stores nothing).
-                  provider: a5ImageProviderIdentity,
+                  providerId: 'a5p5-plane',
                   realmId: a5PlaneRealmId,
                   namespaceRoot: imageRootDir,
                   readBounded: imagePort,
@@ -3054,128 +3079,6 @@ export function createAgentBindings(deps) {
             })
             observations.push(`a5m2-image: arm FACTORY wired for ${sessionId} (root=${imageRootDir.slice(0, 32)}) — identity binds at the placement moment`)
           }
-        }
-        // ── A5M2 B-SCHEDULE (root 17:38 + 18:11): the controlled list/delete
-        // production CAPTURE. The capture law is the native face itself:
-        // `agentCtx.tools.get(name, runtimeAgent)` answers the definition the
-        // host registered for THIS member Agent object (registerScheduleTools
-        // (rootCtx, toolCtx, agent) @639ed01539) — owner同Agent; the native
-        // closure resolves `rootCtx.schedule` AFRESH at every dispatch
-        // (tools.ts :443/:460/:484/:515) — live ctx.schedule, the strongest
-        // liveness read available and the only honest one (this plugin has no
-        // legitimate raw-service reach); and ScheduleInputError is imported
-        // from '@deepseek-ai/dsh-schedule' — 同Host错误类, the same module
-        // identity the native bodies throw. schedule_create/schedule_update
-        // are NOT touched: the TRIGGER_GOVERNANCE gap is open and they are
-        // not enabled. A partially visible pair refuses the whole family —
-        // never a half mount.
-        if (planeCfg.scheduleEnabled === true) {
-          const refuseSchedule = (why) => {
-            const error = new Error(`agent-bindings: alpha.5 governed B-SCHEDULE mount refused for '${sessionId}': ${why}`)
-            error.code = 'alpha5-schedule-arm-mount-refused'
-            observations.push(`a5m2-schedule: mount-REFUSED for ${sessionId} (${String(why).slice(0, 140)})`)
-            return error
-          }
-          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
-            throw refuseSchedule('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
-          }
-          const scheduleNatives = {}
-          for (const scheduleName of [A5_B_SCHEDULE_LIST_MOUNT_NAME, A5_B_SCHEDULE_DELETE_MOUNT_NAME]) {
-            let nativeFace
-            try {
-              nativeFace = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(scheduleName, runtimeAgent) : undefined
-            } catch (error) {
-              throw refuseSchedule(`the member-scoped tool face could not be read for the native ${scheduleName} definition (${String(error?.message ?? error).slice(0, 140)})`)
-            }
-            if (nativeFace === null || typeof nativeFace !== 'object') {
-              throw refuseSchedule(`no native ${scheduleName} definition is visible to this member scope (the schedule pair is registered together by the host or not at all) — the mount IS the native definition face and has no other source`)
-            }
-            scheduleNatives[scheduleName] = nativeFace
-          }
-          // THE INERT PRODUCTION PORT (createScheduleInertPort's own law):
-          // the governed production body is the captured native execute; the
-          // port exists only to keep the adapter's shape/stability laws real
-          // over the assembly — ANY call reaching it is drift and answers
-          // loudly. The wiring seat (`admit`) is inert for the same reason:
-          // PRODUCTION admission is the plane's REAL PA edge inside the row
-          // (paAdmit.open → edge → the ONE consumedProof witness), never a
-          // factory double.
-          const scheduleProductionPort = createScheduleInertPort()
-          const scheduleAssembly = createScheduleWiring({
-            providerId: 'a5p5-plane',
-            declaredService: Object.freeze({ present: true }),
-            captured: Object.freeze({
-              schedule_list: Object.freeze({ native: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME], definitionIdentity: `capture-side:${sessionId}:schedule_list` }),
-              schedule_delete: Object.freeze({ native: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME], definitionIdentity: `capture-side:${sessionId}:schedule_delete` }),
-            }),
-            liveNative: (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined),
-            scheduleService: scheduleProductionPort,
-            liveScheduleService: () => scheduleProductionPort,
-            capturedAgent: runtimeAgent,
-            ScheduleInputError,
-            // The family keys come from the PLANE's placement feed at the
-            // registration write below (the settled todo/write/image law);
-            // this assembly's own registration face is not consulted.
-            placementFeed: () => undefined,
-            admit: async () => {
-              throw new Error('P_B_SCHEDULE_PRODUCTION_ADMIT_INERT — production B-SCHEDULE admission is the plane PA edge inside the governed row; a call reaching this seat is drift, not a route')
-            },
-            observe: (row) => observations.push(`a5m2-schedule-wire: ${String(row?.event ?? 'event')}`),
-          })
-          if (scheduleAssembly.ok !== true) {
-            throw refuseSchedule(`the family assembly refused (${String(scheduleAssembly.code)}: ${String(scheduleAssembly.message).slice(0, 160)})`)
-          }
-          a5ScheduleInject = Object.freeze({
-            list: Object.freeze({
-              createArm: (placedDef) => {
-                // Identity binds off the def the plane ACTUALLY places (the
-                // image timing law) — never a glue-time snapshot.
-                const identity = definitionIdentityOf(placedDef)
-                if (typeof identity !== 'string' || identity.length === 0) {
-                  throw new TypeError('the placed schedule_list definition carries no WeakMap identity — no arm without one (never a hand-spelled string)')
-                }
-                const built = createGovernedScheduleArm({
-                  name: A5_B_SCHEDULE_LIST_MOUNT_NAME,
-                  assembly: scheduleAssembly,
-                  nativeDefinition: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME],
-                  capturedAgent: runtimeAgent,
-                  ScheduleInputError,
-                  definitionIdentity: identity,
-                  providerId: 'a5p5-plane',
-                  observe: (row) => observations.push(`a5m2-schedule-arm: ${String(row?.event ?? 'event')}`),
-                })
-                if (built.ok !== true) throw new Error(`${String(built.code)}: ${String(built.message)}`)
-                return built.arm
-              },
-              description: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME].description,
-              parameters: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME].parameters,
-              output: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME].output,
-            }),
-            delete: Object.freeze({
-              createArm: (placedDef) => {
-                const identity = definitionIdentityOf(placedDef)
-                if (typeof identity !== 'string' || identity.length === 0) {
-                  throw new TypeError('the placed schedule_delete definition carries no WeakMap identity — no arm without one (never a hand-spelled string)')
-                }
-                const built = createGovernedScheduleArm({
-                  name: A5_B_SCHEDULE_DELETE_MOUNT_NAME,
-                  assembly: scheduleAssembly,
-                  nativeDefinition: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME],
-                  capturedAgent: runtimeAgent,
-                  ScheduleInputError,
-                  definitionIdentity: identity,
-                  providerId: 'a5p5-plane',
-                  observe: (row) => observations.push(`a5m2-schedule-arm: ${String(row?.event ?? 'event')}`),
-                })
-                if (built.ok !== true) throw new Error(`${String(built.code)}: ${String(built.message)}`)
-                return built.arm
-              },
-              description: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME].description,
-              parameters: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME].parameters,
-              output: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME].output,
-            }),
-          })
-          observations.push(`a5m2-schedule: arm FACTORY wired for ${sessionId} (list+delete enabled; create/update NOT enabled — TRIGGER_GOVERNANCE gap open)`)
         }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
@@ -3304,6 +3207,62 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-g6: inject armed for ${sessionId} (evidence keys=${Object.keys(g6Cfg).sort().join(',')})`)
         }
+        // ── A5M2-B-TEAM-WIRE (this lane's block): the B-TEAM member-operation
+        // injection, armed from the SAME owner evidence the claim above read
+        // (`config.teamToolPlane.teamMemberOps`). The plane owns the ADMISSION
+        // side — its real `paAdmit` seat occupies the adapter's REQUIRED admit
+        // seam (a factory plus `admit({ok:true})` is factory assembly, not
+        // wiring) — and this assembly owns the capture seams below and the
+        // PLACEMENT after the mount. The capture obeys the member-scoping law
+        // the todo/write/image captures obey: the native faces come from
+        // THIS member's selected lane set (the capability selector already
+        // applied the blueprint's teamTools allowlist), and the live re-read
+        // answers the CURRENT lane build, so the adapter's per-dispatch L7
+        // check is a live reading — never a bind-time constant compared with
+        // itself. ABSENT evidence = a5TeamOpsInject stays null = the plane
+        // call below is byte-identical to the pre-B-TEAM assembly.
+        a5TeamOpsInject = null
+        if (a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null && a5TeamOpsClaim.names.length > 0) {
+          const teamOpsBad = typeof a5TeamOpsCfg.providerId !== 'string' || a5TeamOpsCfg.providerId.length === 0
+            ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against)'
+            : undefined
+          if (teamOpsBad !== undefined) {
+            observations.push(`a5m2-b-team: arm-REFUSED for ${sessionId} (${teamOpsBad.slice(0, 60)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': ${teamOpsBad}`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          a5TeamOpsInject = Object.freeze({
+            providerId: a5TeamOpsCfg.providerId,
+            // ONE-CAPTURE seam: this member's own selected lane set.
+            readNative: (name) => a5TeamOpsNativeByName.get(name),
+            // FRESH per-dispatch read of the LIVE lane build, still scoped to
+            // what THIS member is allowed: a rebuilt set answers a different
+            // object and the adapter refuses DEFINITION_DRIFT with zero
+            // delegate entry.
+            liveNative: (name) => {
+              if (!a5TeamOpsAllowedNames.has(name)) return undefined
+              const live = Array.isArray(teamToolsRef.current?.tools) ? teamToolsRef.current.tools : []
+              return live.find((def) => def?.name === name)
+            },
+            // THE DELEGATE PORT'S SOURCE: the same live lane set — capture
+            // and port are two reads of ONE createTeamTools build (adapter
+            // L3); a rebuilt set behind a stale capture is a split mount.
+            teamSet: () => (Array.isArray(teamToolsRef.current?.tools) ? teamToolsRef.current.tools : []),
+            definitionIdentityOf,
+            // THE RUNTIME PLACEMENT FEED: the identity of whatever the scoped
+            // layer answers under this name, read FRESH at mount moment —
+            // never a build-time snapshot, never a hand-spelled key.
+            placementFeed: (name) => {
+              const placed = agentCtx.tools.get(name, runtimeAgent)
+              const identity = definitionIdentityOf(placed)
+              return identity === null || identity === undefined
+                ? undefined
+                : Object.freeze({ definitionIdentity: identity, realmId: a5PlaneRealmId })
+            },
+          })
+          observations.push(`a5m2-b-team: inject armed for ${sessionId} (claim=${a5TeamOpsClaim.names.join(',')})`)
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3377,13 +3336,14 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
-            ...(a5ScheduleInject === null ? {} : { schedule: a5ScheduleInject }),
+            // A5M2-B-TEAM-WIRE (this lane's row in the shared backends union).
+            ...(a5TeamOpsInject === null ? {} : { teamOps: a5TeamOpsInject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3406,6 +3366,45 @@ export function createAgentBindings(deps) {
         }
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
+        // ── A5M2-B-TEAM-WIRE (this lane's block): THE PLACEMENT of the
+        // governed member-operation rows, BEFORE the Guard's own-tool bind.
+        // The raw catalog registration of exactly these names yielded for
+        // them above, so each name keeps ONE placement in this layer; the
+        // Guard then binds the GOVERNED definition's placement identity
+        // (install.ts bindOwnTools re-reads the scoped layer and requires the
+        // seam's mint), and the plane's seat admits the call only through the
+        // real PA walk. A row the mount did not emit — or a claimed name the
+        // mount did not mount — is a mount defect: refuse fail-closed, never
+        // place a stand-in and never register a guess.
+        if (a5TeamOpsInject !== null) {
+          const teamPlaneFace = built.value.teamOps
+          if (teamPlaneFace === undefined || teamPlaneFace === null) {
+            observations.push(`a5m2-b-team: placement-REFUSED for ${sessionId} (the plane surfaced no member-operation face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': the plane accepted the injection but surfaced no wiring face — nothing is placed and nothing registers`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          const mountedNames = new Set(teamPlaneFace.placementNames)
+          for (const claimed of a5TeamOpsClaim.names) {
+            if (!mountedNames.has(claimed)) {
+              observations.push(`a5m2-b-team: placement-REFUSED for ${sessionId} (claimed '${claimed}' is not on the mounted face)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': the claim and the mounted face diverge on '${claimed}' — a raw tool would be left unregistered and a governed row unplaced`,
+              ), { code: 'alpha5-team-arm-mount-refused' })
+            }
+          }
+          for (const definition of teamPlaneFace.definitions) {
+            toolDisposers.push(agentCtx.tools.register(definition))
+            // ROOT 19:53 ③: record the PLACED object itself — the Guard's
+            // binding feed for this name resolves its identity from this ledger,
+            // so the Guard's continuity reads the very definition the layer
+            // answers under the name (one name, one placement, one identity).
+            a5TeamOpsPlacedByName.set(definition.name, definition)
+            a5PlaneOwnNames.push(definition.name)
+            a5PlaneOwnedNames.push(definition.name)
+            observations.push(`a5m2-b-team: governed row PLACED ${String(definition.name)} for ${sessionId} (raw catalog registration yielded for this name)`)
+          }
+        }
         // GLUE-7: the Guard's feed resolves through this live handle (the
         // def#N identity mints later, in the seam's install flow — a
         // build-time snapshot was measured live refusing a legitimate
@@ -3825,27 +3824,10 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (arm/feed identity mismatch)`)
             throw error
           }
-          // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 2): the provider identity this
-          // family registers under is the LIVE binding authority read AT THIS
-          // MOMENT — after bindOwnTools + publish, so the entry exists — and NOT
-          // a value carried off the arm (the arm was constructed before bind;
-          // reading it back from the arm was the second constant of the r18
-          // drift). An authority that answers nothing registers NOTHING: the
-          // mount is refused through the SAME existing mount-refused path with
-          // its own code, and there is no fallback constant to register under.
-          const imageProviderIdentity = a5ImageProviderIdentity()
-          if (typeof imageProviderIdentity !== 'string' || imageProviderIdentity.length === 0) {
-            const error = new Error(
-              `agent-bindings: alpha.5 governed image mount refused for '${sessionId}': the live binding authority behind the read_image placement answers no providerId at the registration moment — the family registration gets no guessed identity, and no row or arm value substitutes for it`,
-            )
-            error.code = 'alpha5-image-arm-mount-refused'
-            observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (no live provider authority)`)
-            throw error
-          }
           registerA5GovernedFamily(imageFed.definitionIdentity, {
             familyId: a5ImagePlacedArm.familyId,
             adapterRevision: a5ImagePlacedArm.adapterRevision,
-            providerIdentity: imageProviderIdentity,
+            providerIdentity: a5ImagePlacedArm.providerId,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
         }
@@ -3881,62 +3863,38 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-g6: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
           }
         }
-
-        // A5M2 B-SCHEDULE registration (root 308 ATOMICITY law): a conflict
-        // on the SECOND key must not leave the FIRST behind. PREFLIGHT first
-        // (both placement identities present, neither key already claimed),
-        // then the two writes; an UNEXPECTED mid-write throw unwinds exactly
-        // the keys this mount just wrote (the writer's own rollback — the
-        // table never keeps a half family). Same single-fill law as
-        // todo/write/image: the placement feed's RUNTIME identity is the key,
-        // never a capture-side string, never a guessed def#.
-        if (a5ScheduleInject !== null) {
-          const scheduleRegistrations = []
-          for (const mountName of [A5_B_SCHEDULE_LIST_MOUNT_NAME, A5_B_SCHEDULE_DELETE_MOUNT_NAME]) {
-            const fed = a5PlaneValue?.placementFeed?.(mountName)
-            if (typeof fed?.definitionIdentity !== 'string' || fed.definitionIdentity.length === 0) {
-              const error = new Error(
-                `agent-bindings: alpha.5 governed B-SCHEDULE mount refused for '${sessionId}': the placed row '${mountName}' answered no definition identity through the placement feed — the family registration has no trusted key`,
-              )
-              error.code = 'alpha5-schedule-arm-mount-refused'
-              observations.push(`a5m2-schedule: family-registration-REFUSED for ${sessionId} (no placement identity for ${mountName})`)
-              throw error
-            }
-            scheduleRegistrations.push({ mountName, definitionIdentity: fed.definitionIdentity })
+        // ── A5M2-B-TEAM-WIRE (this lane's block): THE PAIRED FAMILY
+        // REGISTRATION at the settled single fill point (post publish, like
+        // every sibling family). The keys are the placement feed's RUNTIME
+        // identities of the definitions this assembly PLACED above, read
+        // fresh through the adapter's own `familyRegistrations()` face — a
+        // silent feed THROWS (P_B_TEAM_PLACEMENT_KEY_ABSENT) and a moved
+        // identity THROWS (P_B_TEAM_PLACEMENT_KEY_MOVED); neither is ever
+        // guessed and neither is ever skipped silently. DECLARED-INACTIVE
+        // census rows have no definition, no placement and no registration:
+        // the native stays untouched behind them.
+        if (a5TeamOpsInject !== null) {
+          const teamOpsPlane = a5PlaneValue?.teamOps
+          if (teamOpsPlane === undefined || teamOpsPlane === null) {
+            observations.push(`a5m2-b-team: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation family registration refused for '${sessionId}': the plane surfaced no wiring face at the fill point`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
           }
-          for (const registration of scheduleRegistrations) {
-            const prior = a5GovernedFamilyFor(registration.definitionIdentity)
-            if (prior !== undefined) {
-              const error = new Error(
-                `agent-bindings: alpha.5 governed B-SCHEDULE mount refused for '${sessionId}': the placed row '${registration.mountName}' answers a definition identity the family table ALREADY claims (${String(prior.familyId)}) — a conflicting claim is refused BEFORE any write, so the table never holds a half family`,
-              )
-              error.code = 'alpha5-schedule-arm-mount-refused'
-              observations.push(`a5m2-schedule: family-registration-REFUSED for ${sessionId} (conflicting prior claim on ${registration.mountName})`)
-              throw error
-            }
-          }
-          const scheduleWrittenKeys = []
+          let teamOpsRegistrations
           try {
-            for (const registration of scheduleRegistrations) {
-              registerA5GovernedFamily(registration.definitionIdentity, {
-                familyId: 'B-SCHEDULE',
-                adapterRevision: A5_B_SCHEDULE_ADAPTER_REVISION,
-                providerIdentity: 'a5p5-plane',
-              })
-              scheduleWrittenKeys.push(registration.definitionIdentity)
-            }
+            teamOpsRegistrations = teamOpsPlane.familyRegistrations()
           } catch (error) {
-            // Rollback (the writer's unwind of its own uncommitted entries):
-            // a half-registered family is never left answering the gate.
-            for (const key of scheduleWrittenKeys) {
-              delete A5_GOVERNED_FAMILIES[key]
-            }
-            if (scheduleWrittenKeys.length > 0) {
-              observations.push(`a5m2-schedule: family-registration ROLLED BACK for ${sessionId} (${String(scheduleWrittenKeys.length)} key(s) unwound)`)
-            }
-            throw error
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-b-team: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
           }
-          observations.push(`a5m2-schedule: family REGISTERED for ${sessionId} (placement=${String(scheduleRegistrations[0].definitionIdentity).slice(0, 32)}+... family=B-SCHEDULE; create/update NOT registered)`)
+          for (const registration of teamOpsRegistrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-b-team: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} record=${String(registration.recordIndex)})`)
+          }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.

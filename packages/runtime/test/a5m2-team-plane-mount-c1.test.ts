@@ -97,9 +97,10 @@ const PLANE_ROW = (await import(new URL('../src/plugin/live/team-tool-plane.mjs'
 const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
   registerA5GovernedFamily: (key: string, entry: Record<string, unknown>) => void
   a5GovernedFamilyFor: (key: string) => Record<string, unknown> | undefined
+  readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<unknown>
 }
 const createTeamToolPlaneAssembly = PLANE_ROW.createTeamToolPlaneAssembly
-const { registerA5GovernedFamily, a5GovernedFamilyFor } = REGISTRY
+const { registerA5GovernedFamily, a5GovernedFamilyFor, readPaCallFactsForCall } = REGISTRY
 
 const POLICY_ASK = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
 const POLICY_ALLOW_ATTEMPT = Object.freeze({
@@ -385,6 +386,41 @@ describe('A5M2-B-TEAM-PLANE-MOUNT — the B-TEAM block in the REAL plane: inject
       expect(built.code).toBe('TOOL_BINDING_UNVERIFIED')
       expect(lane.entries).toHaveLength(0)
       expect(sink.some((row) => row.includes('unverified')) || sink.length === 0).toBe(true)
+    })
+  })
+
+  describe('(e3) the REAL call-facts entry (root 19:53 ①)', () => {
+    it('the plane hands the PRODUCTION entry the real placement name, and fail-closes when no carrier is published', async () => {
+      const lane = makeLane()
+      const sink: string[] = []
+      // The PRODUCTION entry (agent-bindings wires exactly this function at
+      // :3306), wrapped only to RECORD what the plane actually passed it.
+      const seen: Array<Record<string, unknown>> = []
+      const readCallFacts = async (input: Record<string, unknown>): Promise<unknown> => {
+        seen.push(input)
+        return await readPaCallFactsForCall(input)
+      }
+      const built = buildPlane({ readCallFacts, backends: { teamOps: lane.inject } }, sink, POLICY_ASK)
+      expect(built.ok === true ? 'ok' : `${String(built.code)} ${String(built.message)}`).toBe('ok')
+      const face = faceOf(built)
+      const { dispose } = placeAndRegister(built, lane, [])
+      const refusal = await refusalOf(defOf(face, LIST_TOOL).execute({ ...LIST_ARGS }, { callId: 'host-call-facts', token: { id: 'token-facts' }, signal: new AbortController().signal }))
+      expect(seen.length, 'the real entry was reached').toBeGreaterThan(0)
+      // ROOT 19:53 ①: before this fix the resolver answered NO placement name
+      // for a member-operation spelling, so the entry could not resolve the
+      // binding family at all. The plane now hands it the mounted spelling.
+      expect(seen[0]?.placementName).toBe(LIST_TOOL)
+      expect(typeof seen[0]?.callId).toBe('string')
+      // Nothing published a mount carrier for this world, so the REAL entry
+      // answers with its own refusal path and the edge fails closed on the
+      // kernel's identity code — never a `plane-row:` stand-in, zero lane entry.
+      expect(refusal.code).toBe('TOOL_BINDING_UNVERIFIED')
+      // The refusal text is the kernel's OWN entry path (the call-level facts
+      // entry could not answer), and its wording states the rule: no admission
+      // is opened on an identity that was never read, never a stand-in row.
+      expect(refusal.message).toContain('could not be answered by the call-level facts entry')
+      expect(lane.entries).toHaveLength(0)
+      dispose()
     })
   })
 

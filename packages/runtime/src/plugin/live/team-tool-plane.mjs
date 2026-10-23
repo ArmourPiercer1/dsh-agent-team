@@ -1497,6 +1497,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // A5-M2 G1 PURE-QUERY: the three fixed spellings resolve to themselves,
     // ONLY when this mount actually placed them (zero flip otherwise).
     if (g1Inject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)) return spelling
+    // A5M2-B-TEAM-WIRE (root 19:53 ①): a claimed member-operation name mounts
+    // at its OWN native spelling — but the row is placed by the registration
+    // owner, not by this plane's `names` map, so it resolves HERE through the
+    // face this mount actually wired. The name answers only while THIS mount
+    // wired that name (zero flip otherwise), and the trust read downstream is
+    // then the REAL call-level binding behind the placed row — never a
+    // `plane-row:` rev0 stand-in (that pre-set is overwritten by the entry's
+    // live tuple, and the edge refuses `TOOL_BINDING_UNVERIFIED` when the
+    // entry cannot answer; no fake binding path exists on this family).
+    if (teamOpsWiring !== null && teamOpsWiring.placementNames.includes(spelling)) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
