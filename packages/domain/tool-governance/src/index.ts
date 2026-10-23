@@ -8,13 +8,13 @@
  * and PR2 (plan §4/§5), PR3 (`controlled-fs`), PR5 (the tools lane) and A5-M1
  * (PR358) replaced that freeze with a NAMED CONSUMER SET, booked file-by-file
  * by `scripts/audit-a5-tool-governance-imports.mjs` and pinned by
- * `test/a5p0-layer-audit.test.ts` — a consumer that appears is a design change
+ * `packages/domain/test/a5p0-layer-audit.test.ts` — a consumer that appears is a design change
  * that must be booked there, and one that disappears is a broken wire. In this
  * checkout the ledger books 26 consumers, 25 of which import this lane directly
- * (from `runtime/control`, `runtime/tool-dispatch`, `runtime/tool-admission`,
- * `runtime/operation-permission`, `runtime/controlled-fs/src`,
- * `runtime/src/plugin/live` and `tools/a5p5-tools/src`); the 26th,
- * `runtime/src/plugin/live/agent-bindings.mjs`, is booked for its
+ * (from `packages/runtime/control`, `packages/runtime/tool-dispatch`, `packages/runtime/tool-admission`,
+ * `packages/runtime/operation-permission`, `packages/runtime/controlled-fs/src`,
+ * `packages/runtime/src/plugin/live` and `packages/tools/a5p5-tools/src`); the 26th,
+ * `packages/runtime/src/plugin/live/agent-bindings.mjs`, is booked for its
  * `tool-dispatch` edge, which Law 3 counts on purpose — "the assembly point
  * imports only the latter, and it is the caller that matters". Any number in
  * this comment is a snapshot: THE LEDGER IS THE AUTHORITY, not this prose.

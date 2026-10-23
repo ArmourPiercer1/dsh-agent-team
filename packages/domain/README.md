@@ -14,7 +14,9 @@ validation (a valid blueprint carries exactly one complete LeaderTemplate), poli
 compatibility / admission rules. The domain is closed and deterministic: no I/O, no DSH imports,
 no ambient state."*
 
-Eight lanes, each with its own barrel and its own `tsconfig.json`:
+Eight lanes, each with its own barrel and its own `tsconfig.json`. Paths in the table are
+inside `packages/domain/`; anything reaching another package is written from the
+repository root, and quoted import specifiers stay verbatim as the code writes them:
 
 | lane | what it holds |
 | --- | --- |
@@ -35,12 +37,12 @@ true, which is exactly why the lane names an authority instead of a number:
 | question | answer in this checkout | how it is measured |
 | --- | --- | --- |
 | who imports this **barrel** | 22 production files | grep for `domain/tool-governance/src/index.js`, excluding `dist/` and tests |
-| who imports **any lane file** | 25 production files, in `runtime/control`, `runtime/tool-dispatch`, `runtime/tool-admission`, `runtime/operation-permission`, `runtime/controlled-fs/src`, `runtime/src/plugin/live`, `tools/a5p5-tools/src` | grep for `domain/tool-governance/src/` |
+| who imports **any lane file** | 25 production files, in `packages/runtime/control`, `packages/runtime/tool-dispatch`, `packages/runtime/tool-admission`, `packages/runtime/operation-permission`, `packages/runtime/controlled-fs/src`, `packages/runtime/src/plugin/live`, `packages/tools/a5p5-tools/src` | grep for `domain/tool-governance/src/` |
 | who the **law books** as consumers | 26 files, each booked with the symbol it consumes | `scripts/audit-a5-tool-governance-imports.mjs`, pinned by `test/a5p0-layer-audit.test.ts` |
 
 The last is the authority, and it is deliberately broader than a grep: its Law 3 counts edges into
 `tool-dispatch` as well, because *"the assembly point imports only the latter, and it is the caller
-that matters"* -- which is why `runtime/src/plugin/live/agent-bindings.mjs` is booked while
+that matters"* -- which is why `packages/runtime/src/plugin/live/agent-bindings.mjs` is booked while
 importing no lane file directly. The law is now a **named set**, not emptiness: a consumer that
 appears is a design change that must be booked there, and one that disappears is a broken wire.
 
@@ -48,8 +50,8 @@ The barrel's own header said otherwise until 2026-10-23, when it was corrected -
 only, no behaviour touched -- after the coordinating session confirmed the lane had no writer in
 this tree; `packages/domain/README.md` and that header now agree, and both point at the ledger
 rather than at themselves. By contrast `vnext-field-mapping`'s dormancy is genuine: its only two
-importers, `runtime/test/a5p7-lane-hygiene.test.ts` and
-`testkit/test/p4t6-session-event-scan.test.ts`, are both tests.
+importers, `packages/runtime/test/a5p7-lane-hygiene.test.ts` and
+`packages/testkit/test/p4t6-session-event-scan.test.ts`, are both tests.
 
 ## NOT responsible for
 
