@@ -508,8 +508,8 @@ describe('a3 static resolver — provenance first-match indexing and determinism
 // ---------------------------------------------------------------------------
 
 describe('a3 static resolver — tool vocabulary pin (A2 handoff)', () => {
-  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same names, same order; root 20:05 + 22:13 + 22:4x production-confirmed)', () => {
+  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same names, same order; root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed)', () => {
     expect(PERMISSION_TOOL_VALUES).toEqual(PERMISSION_TOOL_NAMES)
-    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'schedule_list', 'schedule_delete', 'session_search', 'session_event_search', 'session_trace', 'session_event_trace', 'session_event_read', 'team_list_members', 'team_list_templates', 'team_inspect_config', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect', 'team_send_message', 'team_report_progress', 'team_archive_member', 'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control', 'interrupt_agent', 'list_agents', 'send_message'])
+    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'schedule_list', 'schedule_delete', 'session_search', 'session_event_search', 'session_trace', 'session_event_trace', 'session_event_read', 'team_list_members', 'team_list_templates', 'team_inspect_config', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect', 'team_send_message', 'team_report_progress', 'team_archive_member', 'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control', 'interrupt_agent', 'list_agents', 'send_message', 'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models'])
   })
 })

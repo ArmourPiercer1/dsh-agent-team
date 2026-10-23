@@ -45,9 +45,9 @@
  *
  * Alpha.5 M2 continuation (root 22:13/22:4x limited cards): the A1
  * vocabulary widens the same class with the five G6 session-query names,
- * the ten B-TEAM names, the three G1 PURE-QUERY names and the three
- * B-SUBAGENT controls names (each verified against the CURRENT
- * integration production: the plane's ONE PA tool-invoke lane, the G6
+ * the ten B-TEAM names, the three G1 PURE-QUERY names, the three
+ * B-SUBAGENT controls and the five B-SUBAGENT spawn ops (each verified
+ * against the production source: the plane's ONE PA tool-invoke lane, the G6
  * landing 874f3ae0d, the controls trio at the source-signed branch
  * 7c6869879; the old M0-B table is a historical record, not the current
  * fact). Same law for all: canonicalization still answers `unsupported`
@@ -86,6 +86,11 @@ export type PermissionTool =
   | 'interrupt_agent'
   | 'list_agents'
   | 'send_message'
+  | 'subagent'
+  | 'subagent_fork'
+  | 'subagent_codex'
+  | 'subagent_claude_code'
+  | 'list_subagent_models'
 
 /** Every {@link PermissionTool} value, for membership checks. */
 export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
@@ -119,6 +124,11 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'interrupt_agent',
   'list_agents',
   'send_message',
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**
@@ -189,8 +199,10 @@ export const SHELL_PERMISSION_TOOL_VALUES: readonly ToolLevelPermissionTool[] = 
  *   `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` is the authority mirror);
  * - Alpha.5 M2 continuation (root 22:13 + 22:4x limited cards) widens
  *   the class with the five G6 session-query names, the ten B-TEAM names,
- *   the three G1 PURE-QUERY names and the three B-SUBAGENT controls names
- *   (each name verified against the CURRENT integration production:
+ *   the three G1 PURE-QUERY names, the three B-SUBAGENT controls and the
+ *   five B-SUBAGENT spawn ops (records 39-43, tool-invoke-only envelope;
+ *   joint candidate 9b5c9f4b2, landing pending — naming pre-wires the
+ *   named channel only; each name verified against the production source:
  *   A5_B_TEAM_TOOL_NAMES / A5_G1_PURE_QUERY_MOUNT_NAMES in the plane's
  *   ONE PA admission lane, the G6 landing 874f3ae0d, the trio at the
  *   source-signed branch 7c6869879; the M0-B frozen table is a historical
@@ -226,6 +238,11 @@ export type InvocationOnlyPermissionTool =
   | 'interrupt_agent'
   | 'list_agents'
   | 'send_message'
+  | 'subagent'
+  | 'subagent_fork'
+  | 'subagent_codex'
+  | 'subagent_claude_code'
+  | 'list_subagent_models'
 
 /**
  * Every {@link InvocationOnlyPermissionTool} value. The single source of
@@ -257,6 +274,11 @@ export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPerm
   'interrupt_agent',
   'list_agents',
   'send_message',
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**

@@ -1085,23 +1085,29 @@ describe('invocation-only class: G6 session-query projection law (root 22:13)', 
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PRODUCTION-CONFIRMED SETS (root 22:4x card) — ten B-TEAM, three G1 pure-
-// query, three B-SUBAGENT controls ride the IDENTICAL invocation-only
-// projection law: list-driven membership, zero new kernel code. Team rows'
-// durable writes adjudicate INSIDE the delegated chain (the template lane
-// never projects them — the tool-invoke arm is the whole authority, so an
-// invocation rule is no I/O exemption); the G1 rows walk the plane's ONE
-// PA admission at their fixed native spellings; the trio's adjacency/
-// ancestor law lives in the service, not in a projected resource.
+// PRODUCTION-CONFIRMED SETS (root 22:4x + 22:32 cards) — ten B-TEAM, three
+// G1 pure-query, three B-SUBAGENT controls and FIVE spawn ops (joint
+// candidate 9b5c9f4b2, whose closed effect envelope is tool-invoke ONLY,
+// resource null — the projection law below is exactly what those rows
+// consume) ride the IDENTICAL invocation-only projection law: list-driven
+// membership, zero new kernel code. Team rows' durable writes adjudicate
+// INSIDE the delegated chain (the template lane never projects them — the
+// tool-invoke arm is the whole authority, so an invocation rule is no I/O
+// exemption); the G1 rows walk the plane's ONE PA admission at their fixed
+// native spellings; the trio's adjacency/ancestor law and the spawn side's
+// provider/model/maxDepth constraints live in the service, not in a
+// projected resource.
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('invocation-only class: production-confirmed sets projection law (root 22:4x)', () => {
+describe('invocation-only class: production-confirmed sets projection law (root 22:4x + 22:32)', () => {
   const CONFIRMED = [
     'team_list_members', 'team_list_templates', 'team_inspect_config',
     'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
     'team_send_message', 'team_report_progress', 'team_archive_member',
     'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
     'interrupt_agent', 'list_agents', 'send_message',
+    'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code',
+    'list_subagent_models',
   ] as const
 
   it('allow-lane any projects the single tool-invoke arm as ALLOW for EVERY confirmed name — no notes, no dual gate, no companion effect kind', () => {
@@ -1116,7 +1122,7 @@ describe('invocation-only class: production-confirmed sets projection law (root 
     }
   })
 
-  it('deny-lane any projects DENY for all sixteen at once — sixteen R-1a sources, one per ruleIndex (shared algebra, nothing dropped)', () => {
+  it('deny-lane any projects DENY for all twenty-one at once — twenty-one R-1a sources, one per ruleIndex (shared algebra, nothing dropped)', () => {
     const r = projOf({ default: 'ask', allow: [], ask: [], deny: CONFIRMED.map((name) => ({ tool: name, resource: { kind: 'any' } } as TemplatePermissionPolicy['deny'][number])) })
     expect(r.ok).toBe(true)
     if (!r.ok) return
