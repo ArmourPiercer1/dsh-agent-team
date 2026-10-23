@@ -1177,6 +1177,26 @@ export function parsePaManifestFamilyBlock(
  */
 export type PaFamilyTargetFieldKind =
   | 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations'
+  /* Root 18:42 LIMITED RULING - exactly two new members, pure VALUE admission
+   * for values M0 already freezes as legal; nothing else: no optional member
+   * (undefined stays impossible by law - a present-but-undefined key fails
+   * these checks, a missing key dies in the required loop; key omission is the
+   * mint's law), no any/object/fallback, lossless walk + full fingerprint
+   * untouched, null vs missing distinguishable end-to-end.
+   * 'nullableString': a REQUIRED key carrying null | string. EMPTY STRING IS
+   *   LEGAL (G6 requireCaller legitimately allows ''), and NOTHING converts:
+   *   missing (required-loop denial) ≠ null (accepted) ≠ '' (accepted) are
+   *   three distinct outcomes - null is never rewritten to '' or absent.
+   *   Schedule taskId's non-empty + trim-stable law is the adapter's BUSINESS
+   *   edge, deliberately NOT encoded here (the grammar only admits
+   *   null | string).
+   * 'stringArray': an array whose EVERY element is typeof string; [] is
+   *   grammar-legal. The G6 disclosure law (disclosures always carries
+   *   SESSION_HISTORY_RESOURCE_KIND - g6-session-query.mjs:799-800/:853) is
+   *   the family contract enforced MINT-side; this kind neither weakens nor
+   *   enforces it. Implemented with Array.isArray + element typeof ONLY: no
+   *   instanceof, no symbol-trusting path. */
+  | 'nullableString' | 'stringArray'
 
 export interface PaFamilyTargetRule {
   /** The exact required key set of this family's typed plan target. */
@@ -1439,20 +1459,34 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
   }),
 } as const)
 
-/* Discriminated-target table legality, checked at module load (root 17:40:
- * "group结构合法"). A miswritten variant table must fail loudly at import,
- * never quietly at a claim: the discriminant must be a required 'string'
- * leaf; every group is a plain leaf map over the EXISTING kinds; every bound
- * leaf satisfies its own kind; group leaves never redeclare a required leaf
- * (one leaf, one law). Zero cost for families without `variant` (all but
- * B-INSPECT). */
-for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) {
-  const variant = rule.variant
-  if (variant === undefined) continue
+/* The SIGNED closed kind list - the single source the module-load legality
+ * check reads (root 18:42: guard kind-table SYNCED with 'nullableString' +
+ * 'stringArray'; a rule using any kind outside this closed list still THROWS
+ * at import). */
+export const PA_FAMILY_TARGET_FIELD_KINDS: readonly PaFamilyTargetFieldKind[] = Object.freeze([
+  'string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations', 'nullableString', 'stringArray',
+] as const)
+
+/** One table entry's legality, checked AT MODULE LOAD for every real entry —
+ *  exported ONLY so the fixed-point contract spec can drive SYNTHETIC rules
+ *  through this exact law (no synthetic family is ever added to the real
+ *  table). Throws on: any required/adds leaf whose kind is outside the closed
+ *  list (root 18:37: the two NEW kinds are legal ONLY inside the closed
+ *  required/adds maps — own-key iteration (Object.entries) sees exactly the
+ *  surface the validator reads, no widening); a variant whose discriminant is
+ *  not a required 'string' leaf (a 'nullableString' can never be one); an
+ *  empty group map; a group redeclaring a required leaf; a bound value
+ *  violating its own kind. Same own-key law, zero cost for plain rules. */
+export function assertPaFamilyTargetRuleLegality(familyId: string, rule: PaFamilyTargetRule): void {
   const own = (record: object, key: string): boolean => Object.prototype.hasOwnProperty.call(record, key)
   const fail = (why: string): never => {
-    throw new Error(`PA_FAMILY_TARGET_RULES['${familyId}']: malformed variant grammar - ${why}`)
+    throw new Error(`PA_FAMILY_TARGET_RULES['${familyId}']: malformed target grammar - ${why}`)
   }
+  for (const [field, kind] of Object.entries(rule.required)) {
+    if (!PA_FAMILY_TARGET_FIELD_KINDS.includes(kind)) fail(`required leaf '${field}': unknown kind '${String(kind)}'`)
+  }
+  const variant = rule.variant
+  if (variant === undefined) return
   if (!own(rule.required, variant.leaf) || rule.required[variant.leaf] !== 'string') fail(`'${variant.leaf}' must be a required 'string' leaf`)
   const names = Object.keys(variant.by)
   if (names.length === 0) fail('no variant groups')
@@ -1461,8 +1495,7 @@ for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) {
     if (group === null || typeof group !== 'object' || Array.isArray(group)) fail(`group '${name}': not a leaf map`)
     for (const [field, kind] of Object.entries(group.adds)) {
       if (own(rule.required, field)) fail(`group '${name}' redeclares required leaf '${field}'`)
-      const kinds: readonly string[] = ['string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations']
-      if (!kinds.includes(kind)) fail(`group '${name}' leaf '${field}': unknown kind '${String(kind)}'`)
+      if (!PA_FAMILY_TARGET_FIELD_KINDS.includes(kind)) fail(`group '${name}' leaf '${field}': unknown kind '${String(kind)}'`)
     }
     for (const [field, bound] of Object.entries(group.binds)) {
       const kind = group.adds[field]
@@ -1470,6 +1503,11 @@ for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) {
     }
   }
 }
+
+/* Discriminated-target + closed-kind table legality, checked at module load
+ * (root 17:40 "group结构合法"; root 18:42 kind sync). A miswritten table fails
+ * loudly at import, never quietly at a claim. */
+for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) assertPaFamilyTargetRuleLegality(familyId, rule)
 
 function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): boolean {
   switch (kind) {
@@ -1487,6 +1525,9 @@ function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): b
       if (!Array.isArray(value) || value.length === 0) return false
       return value.every((item) => typeof item === 'object' && item !== null && !Array.isArray(item))
     }
+    /* Root 18:42 - the whole new admission surface, two cases, no more: */
+    case 'nullableString': return value === null || typeof value === 'string'
+    case 'stringArray': return Array.isArray(value) && value.every((item) => typeof item === 'string')
   }
 }
 
@@ -1499,6 +1540,18 @@ export function validatePaFamilyTarget(
 ): string | undefined {
   const rule = PA_FAMILY_TARGET_RULES[familyId]
   if (rule === undefined) return `familyId: no target structure is registered for '${familyId}'`
+  return validatePaFamilyTargetAgainstRule(familyId, rule, target)
+}
+
+/** The pure law of ONE table entry, split from the registry lookup only so the
+ *  fixed-point contract spec can drive SYNTHETIC rules through this exact code
+ *  (the real table stays closed: unknown families deny above). Production
+ *  validation always enters through validatePaFamilyTarget. */
+export function validatePaFamilyTargetAgainstRule(
+  familyId: string,
+  rule: PaFamilyTargetRule,
+  target: unknown,
+): string | undefined {
   if (typeof target !== 'object' || target === null || Array.isArray(target)) return 'target: not an object'
   const record = target as Record<string, unknown>
   for (const [field, kind] of Object.entries(rule.required)) {
