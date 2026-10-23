@@ -48,16 +48,21 @@
  *     liveSubagentService() and liveAgentsRegistry() feeds at EVERY dispatch
  *     edge; a replaced object or rebound method is PORT_DRIFT with zero
  *     service entry; split mounts refuse at assembly. THE VERIFIED HANDLES
- *     ARE THE INVOKED HANDLES: the edge returns the verified {port, registry,
- *     get, methods} and the dispatch uses exactly those — no second,
- *     unverified feed read exists between verification and invocation.
- *     THE get FUNCTION IS A CAPTURED HANDLE, NOT A PROPERTY RE-READ: the
- *     live registry OBJECT being unchanged does not pin its get — the
- *     assembly CAPTURES registry.get at bind time, the edge VERIFIES the
- *     live registry still answers that same function, and the projection
- *     and the adjacency pre-check INVOKE exactly the captured handle (one
- *     handle reference for all three uses; a post-await property swap can
- *     never reach the service of this row — root 581-1 FIX 2). The
+ *     ARE THE INVOKED HANDLES: the edge returns the verified {def, execute,
+ *     port, registry, get, methods} and the dispatch uses exactly those —
+ *     no second, unverified feed read exists between verification and
+ *     invocation. THE get FUNCTION IS A CAPTURED HANDLE, NOT A PROPERTY
+ *     RE-READ: the live registry OBJECT being unchanged does not pin its
+ *     get — the assembly CAPTURES registry.get at bind time, the edge
+ *     VERIFIES the live registry still answers that same function, and the
+ *     list projection INVOKES exactly the captured handle (one handle
+ *     reference for all three uses; a post-await property swap can never
+ *     reach the service of this row — root 581-1 FIX 2). The same law binds
+ *     the NATIVE EXECUTE: the ONLY seat that re-invokes the original
+ *     definition (the non-record-args refusal, L5) rides the edge-verified
+ *     {def, execute} pair — never a fresh property read of the mutable
+ *     capture (root 19:24 correction: no drift may reach an unverified
+ *     native). The
  *     parameters compare base is a BIND-TIME canonical snapshot, never the
  *     live shared reference (settled house law from the B-TEAM review).
  *  L3b MARKER GATE + RE-MARK (measured): the send_message capture MUST pass
@@ -181,7 +186,6 @@ export const A5_B_SUBAGENT_EFFECT_LABELS = Object.freeze({
 /** Typed refusal codes OWNED by this module (closed set). */
 export const A5_B_SUBAGENT_CODES = Object.freeze({
   INPUT_INVALID: 'P_B_SUBAGENT_INPUT_INVALID',
-  NOT_ADJACENT: 'P_B_SUBAGENT_NOT_ADJACENT',
   CAPTURE_ABSENT: 'P_B_SUBAGENT_CAPTURE_ABSENT',
   CAPTURE_INCOMPLETE: 'P_B_SUBAGENT_CAPTURE_INCOMPLETE',
   NON_FAMILY_CAPTURE: 'P_B_SUBAGENT_NON_FAMILY_CAPTURE',
@@ -208,7 +212,7 @@ const CODES = A5_B_SUBAGENT_CODES
  */
 export const A5_B_SUBAGENT_NAMED_GAPS = Object.freeze({
   SPAWN_SIDE_CLOSED_WORLD: 'SPAWN SIDE (census records 39–43: subagent / subagent_fork / subagent_codex / subagent_claude_code / list_subagent_models) IS NOT COVERED HERE and cannot be honestly adapted at this seam: the contract law P child创建前安装同一CENTER closed world，不能先spawn再补Guard is a PRE-SPAWN CENTER obligation (existing entry path agent-bindings createTeamAgent route), the external codex/claude envelopes are provider-mount dimensions ("不能把外部模型当已治理native工具"), and NOTHING in this trio spawns — its three bodies reach ONLY ALREADY-EXISTING children through ctx.subagents. The family C2 dimension 未安装治理child不得启动 is therefore NOT observable, NOT claimed, and NOT weakened by this subset landing.',
-  LINEAGE_AUTHORITY: 'ADJACENCY IS THE MEASURED send_message LAW; FULL AUTHORITY STAYS SERVICE-SIDE. The published face addresses a DIRECT continuable child or — for a RESIDENT continuable child — its DIRECT PARENT (child→parent is legal); siblings/uncles are NOT adjacent (list_agents lineage rows carry parent id + depth; adjacency = parent or direct child only). The row performs ONE NEGATIVE PRE-CHECK for send_message: a LIVE registry target whose recorded parentSession PROVES it is neither the caller\'s direct child nor the caller\'s direct parent is refused NOT_ADJACENT with zero service entry (lineage facts read from the VERIFIED registry get handle). Everything else stays the service\'s: residency of a send-to-parent, cold/durable targets, unknown ids, interrupt\'s live-ancestry authority, and every cross-owner deny — those answer the published SubagentError (code UNAUTHORIZED) which propagates verbatim. The published bodies ADD NO AUTHORITY of their own; the row forwards the SAME live exec.agent reference and owns no positive grant.',
+  LINEAGE_AUTHORITY: 'ADJACENCY IS THE MEASURED send_message LAW AND ALL AUTHORITY IS SERVICE-SIDE (root 19:24: the row performs NO business pre-adjudication). The published face addresses a DIRECT continuable child or — for a RESIDENT continuable child — its DIRECT PARENT (child→parent is legal; the plan carries BOTH directions as facts); siblings/uncles are NOT adjacent (list_agents lineage rows carry parent id + depth: adjacency = parent or direct child only). The row forwards the SAME live exec.agent reference and the raw claim and adjudicates NOTHING: a non-adjacent, non-resident or cross-tree target is refused by the SERVICE with the published SubagentError (code UNAUTHORIZED), which propagates verbatim; interrupt unknown/absent/one-shot targets are an ACCEPTED NO-OP, not a deny. C2\'s 跨owner拒 obligation lives with the service, not this row.',
   INTERRUPT_COMPLETION: 'INTERRUPT IS FIRE-AND-FORGET: {accepted:true} is REQUEST ACCEPTANCE — not a stopped turn, not drained descendants, not a destroyed child (census 44: 不得误称销毁; the published description says the call returns WITHOUT waiting, deeper children keep running). Awaiting child resource evidence (C3) is not observable at this seam and is never reported.',
   DELIVERY_CONTINUATION: 'SEND IS NOT AN IN-MEMORY WRITE — and the row sees only its ACK: the messageId is the service acceptance; durable delivery, the continuation/liveness semantics (the marked standard tool participates in the continuation-delivery check), and the resource-budget implication of a waking send ride INSIDE the service. The row never restates them.',
   PLAN_ONCE_MEMO: 'PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER (root ④): consumedPlans refuses replaying the SAME plan OBJECT with zero service entry; a caller that COPIES a plan\'s fields re-dispatches (the fingerprint law re-runs the whole law on the copy). Delivery idempotency is the SERVICE\'s (messageId semantics); the real one-shot consumedProof is the CENTER PA wiring edge. This row mints neither and never claims once-closure.',
@@ -433,9 +437,14 @@ export function createSubagentAdapterAssembly(input = {}) {
     // `registry.get = poison` swap must refuse HERE, verified against the
     // bind-time handle; the edge hands out ONLY that captured handle.
     if (currentRegistry.get !== bound.get) {
-      return refuse(CODES.PORT_DRIFT, `${row.name}: the live registry's get function was rebound underneath the frozen bind — the projection and the adjacency pre-check ride the VERIFIED get handle, never a fresh property read; a swapped impl is drift, full stop (L3/FIX 2)`)
+      return refuse(CODES.PORT_DRIFT, `${row.name}: the live registry's get function was rebound underneath the frozen bind — the projection rides the VERIFIED get handle, never a fresh property read; a swapped impl is drift, full stop (L3/FIX 2)`)
     }
-    return Object.freeze({ port: current, registry: currentRegistry, get: bound.get, methods: Object.freeze(methods) })
+    // The BIND-VERIFIED definition + execute ride the edge too (root 19:24
+    // correction): the only seat that may ever invoke the original native
+    // execute — the non-record-args refusal — uses THESE handles, never a
+    // fresh `capture.native.execute` property read (live.execute was just
+    // verified === bound.execute above).
+    return Object.freeze({ def: bound.def, execute: bound.execute, port: current, registry: currentRegistry, get: bound.get, methods: Object.freeze(methods) })
   }
 
   const buildActiveRow = (name, capture) => {
@@ -489,15 +498,19 @@ export function createSubagentAdapterAssembly(input = {}) {
           ? 'the caller\'s live ANCESTRY: a direct child or deeper descendant (the caller itself is refused by the service)'
           : 'the caller\'s own TREE: children = direct; descendants = rows carry parent id + depth (entries deeper than 1 accept only interrupt_agent)',
       adjudication: name === 'send_message'
-        ? 'the row refuses ONLY what the verified live registry PROVES non-adjacent (NOT_ADJACENT, zero service entry — a negative pre-check from recorded parentSession facts); residency, cold/durable targets, unknown ids and full cross-tree authority stay the SERVICE\'s (published SubagentError UNAUTHORIZED propagates verbatim — NAMED GAP LINEAGE_AUTHORITY); the row holds no positive grant'
-        : 'the SubagentService authorizes the exact live caller against the target\'s RECORDED LINEAGE (unknown/cross-owner deny is service-side — NAMED GAP LINEAGE_AUTHORITY); the row forwards the reference and adjudicates nothing',
+        ? 'the SERVICE adjudicates EVERY address (root 19:24 — the row performs NO lineage pre-check and adds NO authority semantics): it forwards the caller REFERENCE and the raw claim; a non-adjacent, non-resident or cross-tree target is answered by the service with the published SubagentError (code UNAUTHORIZED), which propagates verbatim — NAMED GAP LINEAGE_AUTHORITY'
+        : name === 'interrupt_agent'
+          ? 'the SubagentService authorizes the exact live caller against the target\'s RECORDED live ancestry: an UNKNOWN/ABSENT/ONE-SHOT target is an ACCEPTED NO-OP, not a deny (measured); only a LIVE target lacking the caller in its ancestry answers SubagentError UNAUTHORIZED; the row forwards the reference and adjudicates nothing'
+          : 'the SubagentService projects the caller\'s own tree from durable data; the row forwards the caller id and adjudicates nothing (NAMED GAP LINEAGE_AUTHORITY)',
     }),
     action: A5_B_SUBAGENT_RECORD_SPECS[name].operation,
     revision: 'no revision carrier at this seam — messageId is the service delivery ACK for send; interrupt answers request-acceptance only; list is read-only (NAMED GAPS DELIVERY_CONTINUATION / INTERRUPT_COMPLETION)',
     effect: A5_B_SUBAGENT_EFFECT_LABELS[name],
     depth: name === 'list_agents'
       ? `scope ${String(snapshot.scope ?? 'children')} — descendants rows carry parent/depth for the caller's own tree; entries deeper than 1 accept only interrupt_agent (published face law, restated here as fact not enforcement)`
-      : 'one addressed child instance per call',
+      : name === 'send_message'
+        ? 'one addressed ADJACENT instance per call — a direct child OR the caller\'s direct parent (not "child" only; the ADJACENT law, not enforcement)'
+        : 'one addressed instance in the caller\'s live ancestry per call (the service accepts absent targets as no-ops)',
     budget: '模型/provider/预算/最大深度/工作区/新child权限上限 are SPAWN/ENVELOPE dimensions (39–43) — invisible and NOT claimed at this seam',
   })
 
@@ -510,7 +523,8 @@ export function createSubagentAdapterAssembly(input = {}) {
       // FIX 1 (581-1): NO coercion — null/undefined are never folded into a
       // synthetic '{}'. classify is the row's internal seat and takes a
       // record only; HOST fidelity for non-record arguments lives in the
-      // placed execute, which passes them THROUGH to the captured native
+      // placed execute, which passes them THROUGH (root 19:24: via the
+      // EDGE-VERIFIED {def, execute} handles) to the captured native
       // definition (its compiled object-root validator answers the Host's
       // own ToolArgsError before any body, measured).
       return refuseWith(row.name, CODES.INPUT_INVALID, `${row.name}: classify takes a plain-argument record only — non-record arguments are the ORIGINAL definition's to refuse (the placed execute passes them to the captured native; nothing is ever coerced to {})`)
@@ -544,37 +558,13 @@ export function createSubagentAdapterAssembly(input = {}) {
     return deepFreeze({ ok: true, plan })
   }
 
-  /** FIX 3 (581-1) — the send_message NEGATIVE adjacency pre-check, the
-   *  measured ADJACENT relation (a direct child of the caller, or the
-   *  caller's DIRECT PARENT when the caller is a resident continuable
-   *  child; the published service face additionally owns the residency
-   *  condition and every positive grant). Lineage facts are the live
-   *  registry's recorded Agent shape (measured at Host: Agent.id is the
-   *  session id the bodies pass around; session.header.parentSession is
-   *  the recorded parent the service itself compares against): a refusal
-   *  is issued ONLY when both sides carry recorded parentage and NEITHER
-   *  direction matches (sibling/uncle/deeper/cross-tree). A target absent
-   *  from the live registry (cold child, unknown id), an unrecorded
-   *  lineage, or a caller without session facts flows to the SERVICE —
-   *  refusing those here would invent authority the row does not have. */
-  const adjacencyRefusal = (row, caller, claim, readAgent) => {
-    const target = readAgent(claim)
-    if (typeof claim !== 'string' || !isRecord(target) || typeof target.id !== 'string') return null
-    const targetParent = isRecord(target.session) && isRecord(target.session.header)
-      ? target.session.header.parentSession
-      : undefined
-    const callerParent = isRecord(caller.session) && isRecord(caller.session.header)
-      ? caller.session.header.parentSession
-      : undefined
-    if (typeof targetParent !== 'string' || typeof callerParent !== 'string' || typeof caller.id !== 'string') return null
-    const directChild = targetParent === caller.id
-    const directParent = callerParent === target.id
-    if (directChild || directParent) return null
-    return refuseWith(row.name, CODES.NOT_ADJACENT, `send_message: the live registry records "${target.id}" under parent "${targetParent}" and the caller "${caller.id}" under parent "${callerParent}" — neither a DIRECT child of the caller nor its DIRECT PARENT (the published face is ADJACENT-only; siblings/uncles are not adjacent); refused by the row with ZERO service entry — cold/absent targets, residency and full authority stay the SERVICE's (NAMED GAP LINEAGE_AUTHORITY)`)
-  }
-
   /** L3/L4/L6/L7/L8 dispatch. `exec` is LIVE (agent/signal ride by
-   *  reference — the service authorizes the REFERENCE, L4). */
+   *  reference — the service authorizes the REFERENCE, L4). NO lineage or
+   *  adjacency pre-adjudication happens here (root 19:24): the plan
+   *  carries the caller/address facts in BOTH directions, the row forwards
+   *  the exact live caller REFERENCE plus the raw claim, and the SERVICE
+   *  adjudicates every target (its SubagentError UNAUTHORIZED propagates
+   *  verbatim; interrupt absent targets are its accepted no-op). */
   const delegate = async (row, plan, ctx) => {
     const edge = edgeIntegrity(row)
     if (edge !== null && edge.ok === false) return refuseWith(row.name, edge.code, edge.detail)
@@ -594,16 +584,6 @@ export function createSubagentAdapterAssembly(input = {}) {
     if (!isRecord(exec) || !isRecord(exec.agent)) {
       observe({ event: 'b-subagent:missing-caller-throw', name: row.name })
       throw missingCallerThrow(row.name)
-    }
-    // FIX 3 (581-1): send_message ADJACENCY negative pre-check, reading the
-    // VERIFIED get handle (never a property re-read). It refuses ONLY what
-    // the live registry's recorded parentSession PROVES non-adjacent; an
-    // absent/cold/unrecorded target has no live lineage fact here and flows
-    // to the service, which owns cold-resume, residency and full authority.
-    const readAgent = (id) => edge.get.call(edge.registry, id)
-    if (row.name === 'send_message') {
-      const adjacency = adjacencyRefusal(row, exec.agent, fresh.plan.args.agent_id, readAgent)
-      if (adjacency !== null) return adjacency
     }
     consumedPlans.add(plan)
     state.dispatches += 1
@@ -637,6 +617,9 @@ export function createSubagentAdapterAssembly(input = {}) {
     }
     const parent = exec.agent
     const scope = fresh.plan.args.scope ?? 'children'
+    // The projection reads the EDGE-VERIFIED get handle (never a property
+    // re-read after the list await — FIX 2, 581-1).
+    const readAgent = (id) => edge.get.call(edge.registry, id)
     observe({ event: 'b-subagent:port-call', name: row.name, method: scope === 'descendants' ? 'listDescendants' : 'listChildren' })
     const entries = scope === 'descendants'
       ? await edge.methods.listDescendants.call(edge.port, parent.id, signal)
@@ -685,17 +668,25 @@ export function createSubagentAdapterAssembly(input = {}) {
     // consults the REGISTERED definition).
     const placed = { ...capture.native, execute: async (args, exec) => {
       if (!isRecord(args)) {
-        // FIX 1 (581-1, measured): non-record arguments (null/undefined/
-        // 'nope'/array) are the ORIGINAL definition's to refuse — pass them
-        // THROUGH uncoerced. The captured native's compiled validator has an
-        // object root (defineTool compiles one for EVERY tool; measured on
-        // the REAL registered faces: a non-record never validates), so its
-        // Host-own ToolArgsError answers BEFORE the body — zero service
-        // entry, no synthetic '{}' validation, byte-identical to the
-        // Host-registered tool. The governed pipeline is never entered for
-        // a call that could never execute.
-        observe({ event: 'b-subagent:args-passthrough', name })
-        return capture.native.execute(args, exec)
+        // FIX 1 (581-1, measured) + root 19:24 correction: non-record
+        // arguments (null/undefined/'nope'/array) are the ORIGINAL
+        // definition's to refuse, passed THROUGH uncoerced — but the refusal
+        // is invoked ONLY through the EDGE-VERIFIED handles: run the full
+        // edgeIntegrity first (definition bytes, execute binding, service,
+        // registry+get — any drift refuses here, with ZERO native entry;
+        // this is NO unadmitted fallback seat), then invoke the verified
+        // bound execute with the verified definition as receiver — never a
+        // fresh read of the mutable capture. The bound wrapper's compiled
+        // validator has an OBJECT root (defineTool compiles one for EVERY
+        // tool; measured on the REAL registered faces: a non-record never
+        // validates), so the Host-own ToolArgsError answers BEFORE the body
+        // is ever reached: invalid args provably never reach the native body
+        // or the service — no synthetic '{}' validation, byte-identical to
+        // the Host-registered tool. Record args never take this path.
+        observe({ event: 'b-subagent:args-verified-refusal', name })
+        const edge = edgeIntegrity(row)
+        if (edge !== null && edge.ok === false) throw refusalToThrow(refuse(edge.code, edge.detail))
+        return edge.execute.call(edge.def, args, exec)
       }
       const classified = row.classify(args)
       if (classified.ok !== true) throw refusalToThrow(classified)

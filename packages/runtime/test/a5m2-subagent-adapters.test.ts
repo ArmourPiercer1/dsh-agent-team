@@ -33,8 +33,12 @@
  *      law: non-record arguments (null/undefined/'nope'/array) go to the
  *      captured NATIVE uncoerced, whose object-root validator answers the
  *      Host's OWN ToolArgsError before any body (pinned byte-identical; no
- *      synthetic '{}' is ever validated) and the OPEN parameter root admits
- *      unknown keys (no added unknown-key denial);
+ *      synthetic '{}' is ever validated) — and per root 19:24 the native is
+ *      invoked ONLY through the edge-VERIFIED {def, execute} handles: full
+ *      drift verification runs FIRST, a re-bound/foreign native refuses
+ *      DEFINITION_DRIFT with ZERO native entry (no unadmitted fallback;
+ *      invalid args provably never reach the native body); and the OPEN
+ *      parameter root admits unknown keys (no added unknown-key denial);
  *  (e) the byte-identical missing-caller THROW mirror per body (L4: the
  *      trio's refusal class is a THROW, contrast B-SCHEDULE's internal_error
  *      VALUE), zero port entry;
@@ -58,15 +62,18 @@
  *      dispatch refuses PORT_DRIFT, a swap DURING the list await never
  *      reaches the projection (zero poisoned hits), and the get property
  *      READ COUNT is pinned (no re-read at the projection site);
- *  (k) the measured send_message ADJACENCY law: parent→child and
- *      child→DIRECT PARENT are admitted (a resident continuable child may
- *      send to its parent — the published relation is ADJACENT, not a
- *      universal parent→child quantifier), sibling/uncle targets are
- *      refused by the MODULE'S OWN NOT_ADJACENT refusal with zero port
- *      entry, cold/unknown/unrecorded targets flow to the service; lineage
- *      facts ride the registry's live Agent shape (id +
- *      session.header.parentSession, the measured Host shape — the
- *      registry is a DOUBLE, disclosed as a double);
+ *  (k) the measured send_message ADJACENCY law carried as PLAN FACTS ONLY
+ *      (root 19:24 — the row performs NO business pre-adjudication and owns
+ *      NO authority semantics): parent→child AND child→DIRECT PARENT are
+ *      admitted (a resident continuable child may send to its parent — the
+ *      relation is ADJACENT, not a universal parent→child quantifier);
+ *      sibling/uncle targets are SERVICE-ADJUDICATED — EVEN WITH lineage
+ *      facts sitting in the live registry, the row forwards the caller
+ *      REFERENCE and the raw claim, and the Host-behavior service answers
+ *      the REAL published SubagentError UNAUTHORIZED, verbatim;
+ *      cold/unknown targets flow likewise; the lineage-bearing registry
+ *      (id + session.header.parentSession, the measured Host shape) is a
+ *      DOUBLE, disclosed as a double;
  *  (i) the required admit seat (deny throws the refusing side's bytes),
  *  (j) familyRegistrations placement-key law, drain, gap ledger.
  *
@@ -540,6 +547,42 @@ describe('a5m2-subagent-adapters (d) real faces + thin mirror', () => {
     expect(row.classify(null)).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
     expect(row.classify(undefined)).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
   })
+  it('the non-record ARGS REFUSAL rides the EDGE-VERIFIED handles (root 19:24): a re-bound or foreign native refuses DEFINITION_DRIFT with ZERO native entry — no unadmitted fallback', async () => {
+    const fixture = makeFixture()
+    const assembly = mount(fixture) // binds the CLEAN captured face
+    const definition = assembly.definitions.find((d) => d.name === 'list_agents')
+    if (definition === undefined) throw new Error('no def')
+    const native = REAL_NATIVES.list_agents as Definition
+    const poisoned = async () => 'POISON-args-accepted'
+    // (a) SAME-OBJECT re-bind of the captured execute AFTER bind: the edge
+    // catches the rebinding and the poison is NEVER invoked.
+    const original = native.execute
+    Object.defineProperty(native, 'execute', { value: poisoned, writable: true, configurable: true, enumerable: true })
+    try {
+      const error = await definition.execute(null, EXEC)
+        .then(() => null, (e: unknown) => e as Error & { subagentRefusal?: { code?: string } })
+      if (error === null) throw new Error('a drifted native answered the invalid-args call')
+      expect(error.subagentRefusal?.code).toBe(CODES.DEFINITION_DRIFT)
+      expect(error.message ?? '').not.toContain('POISON')
+    } finally {
+      Object.defineProperty(native, 'execute', { value: original, writable: true, configurable: true, enumerable: true })
+    }
+    expect(fixture.calls).toEqual([]) // zero port entry throughout
+    // (b) FOREIGN OBJECT behind the live feed after bind (live !== bound.def).
+    const fixture2 = makeFixture()
+    let swapped = false
+    const assembly2 = mount(fixture2, {
+      liveNative: (name: string) => (swapped ? { ...(REAL_NATIVES[name] as Definition) } : (REAL_NATIVES[name] as Definition)),
+    })
+    const definition2 = assembly2.definitions.find((d) => d.name === 'list_agents')
+    if (definition2 === undefined) throw new Error('no def 2')
+    swapped = true
+    const error2 = await definition2.execute('nope', EXEC)
+      .then(() => null, (e: unknown) => e as Error & { subagentRefusal?: { code?: string } })
+    if (error2 === null) throw new Error('a foreign definition answered the invalid-args call')
+    expect(error2.subagentRefusal?.code).toBe(CODES.DEFINITION_DRIFT)
+    expect(fixture2.calls).toEqual([])
+  })
   it('OPEN parameter root (measured): unknown keys are NOT denied — they ride the plan to the service', () => {
     const fixture = makeFixture()
     const assembly = mount(fixture)
@@ -839,12 +882,14 @@ describe('a5m2-subagent-adapters (h) drift matrix (L3/L7)', () => {
     expect(await row.delegate(plan, { exec: EXEC })).toMatchObject({ ok: true, settled: 'service' }) // bytes restored → serves again
   })
 })
-describe('a5m2-subagent-adapters (k) send_message ADJACENCY law (measured published face; registry DOUBLE, disclosed as double)', () => {
-  // Lineage facts ride the live registry's Agent shape EXACTLY as the Host
-  // records it (measured source of truth: Agent.id IS the session id the
-  // bodies pass around; session.header.parentSession is the recorded parent
-  // the service itself compares against). The registry below is a DOUBLE —
-  // disclosed as a double (C1 real-surface measurement, no Host session).
+describe('a5m2-subagent-adapters (k) send_message ADJACENCY law as PLAN FACTS ONLY (root 19:24: no lane pre-adjudication; registry DOUBLE, disclosed as double)', () => {
+  // The registry below carries the live Agent lineage shape EXACTLY as the
+  // Host records it (measured: Agent.id IS the session id the bodies pass
+  // around; session.header.parentSession is the recorded parent) — but for
+  // root 19:24 the row reads NONE of it for send: the facts exist so the
+  // legs can prove the row forwards non-adjacent targets to the SERVICE
+  // anyway. The registry is a DOUBLE — disclosed as a double (C1
+  // real-surface measurement, no Host session).
   const PARENT = { id: 'agent-parent-live-1', status: 'inactive', session: { id: 'session-parent-1', header: {} } }
   const CHILD = { id: 'agent-child-1', status: 'inactive', session: { id: 'session-child-1', header: { parentSession: 'agent-parent-live-1' } } }
   const SIBLING = { id: 'agent-sibling-2', status: 'inactive', session: { id: 'session-sibling-2', header: { parentSession: 'agent-parent-live-1' } } }
@@ -874,20 +919,37 @@ describe('a5m2-subagent-adapters (k) send_message ADJACENCY law (measured publis
     await expect(definition.execute({ agent_id: 'agent-parent-live-1', message: 'up' }, EXEC_CHILD)).resolves.toEqual({ messageId: 'msg-ack-7' })
     expect(fixture.lastSend[0]).toBe(CHILD) // the CHILD reference is the sender
     expect(fixture.lastSend[1]).toBe('agent-parent-live-1')
+    // the bidirectional relation rides every send plan as a FACT:
+    const row = assembly.rowOf('send_message')
+    if (row === undefined) throw new Error('no row')
+    const plan = row.classify({ agent_id: 'agent-parent-live-1', message: 'up' }).plan
+    expect(plan?.target.address.relation).toContain('DIRECT PARENT')
+    expect(plan?.target.address.relation).toContain('siblings')
+    expect(plan?.target.address.adjudication).toContain('NO lineage pre-check')
   })
-  it('sibling and uncle targets are refused by the MODULE\'S OWN refusal (NOT_ADJACENT) with ZERO port entry', async () => {
+  it('sibling and uncle targets are SERVICE-ADJUDICATED (root 19:24): even with lineage facts in the live registry the row forwards the caller REFERENCE and raw claim; the REAL published SubagentError UNAUTHORIZED propagates VERBATIM — the row owns no adjacency code', async () => {
     const fixture = makeFixture()
     const assembly = mountK(fixture)
     const definition = assembly.definitions.find((d) => d.name === 'send_message')
     if (definition === undefined) throw new Error('no def')
     for (const [target, label] of [['agent-sibling-2', 'sibling'], ['agent-uncle-0', 'uncle']] as const) {
+      const deny = new SUBAGENT_ERROR(`agent "${target}" is not addressable by sender "agent-child-1" (recorded lineage does not admit the address)`, 'UNAUTHORIZED')
+      fixture.setServiceError(deny)
       const error = await definition.execute({ agent_id: target, message: 'x' }, EXEC_CHILD)
-        .then(() => null, (e: unknown) => e as Error & { subagentRefusal?: { code?: string } })
-      if (error === null) throw new Error(`the row dispatched to a ${label}`)
-      expect(error.subagentRefusal?.code, `${label} refused by the module's own refusal`).toBe(CODES.NOT_ADJACENT)
-      expect(error.message).toContain(target)
+        .then(() => null, (e: unknown) => e as Error & { subagentRefusal?: unknown; code?: string })
+      if (error === null) throw new Error(`the ${label} address vanished`)
+      expect(error.subagentRefusal, `${label}: NO lane refusal — the SERVICE owns the deny`).toBeUndefined()
+      expect(error).toBe(deny) // verbatim: the exact service instance, unmapped
+      expect(error).toBeInstanceOf(SUBAGENT_ERROR) // instanceof the REAL published class
+      expect(error.code).toBe('UNAUTHORIZED')
+      expect(fixture.lastSend[0], 'the caller REFERENCE reached the service').toBe(CHILD)
+      expect(fixture.lastSend[1], 'the raw claim reached the service').toBe(target)
+      fixture.setServiceError(undefined)
     }
-    expect(fixture.calls.filter((c) => c !== 'admit')).toEqual([]) // ZERO port entry
+    // The closed code set carries NO adjacency authority (the 581-1
+    // pre-check is deleted — target correction stays with the service):
+    expect(Object.prototype.hasOwnProperty.call(CODES, 'NOT_ADJACENT')).toBe(false)
+    expect(Object.values(CODES)).not.toContain('P_B_SUBAGENT_NOT_ADJACENT')
   })
   it('cold/unknown/unrecorded targets FLOW to the service (no positive grant is owned by the row; cold-resume is service-side)', async () => {
     const fixture = makeFixture()
@@ -944,13 +1006,14 @@ describe('a5m2-subagent-adapters (i/j) admit + registration + drain + gaps', () 
     ])
     expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.SPAWN_SIDE_CLOSED_WORLD).toContain('不能先spawn再补Guard')
     expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.INTERRUPT_COMPLETION).toContain('REQUEST ACCEPTANCE')
-    // FIX 3/4 wording: the gap carries the MEASURED adjacency law and the
-    // negative-only shape of the row's pre-check — never a positive grant.
+    // FIX 3/4 wording (root 19:24): the gap carries the MEASURED adjacency
+    // law as FACT with ALL authority service-side — the row pre-adjudicates
+    // nothing, and the code set carries no authority addition.
     expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('DIRECT PARENT')
-    expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('NOT_ADJACENT')
-    expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('zero service entry')
-    expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('no positive grant')
+    expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('NO business pre-adjudication')
+    expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('UNAUTHORIZED')
+    expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.LINEAGE_AUTHORITY).toContain('ACCEPTED NO-OP, not a deny')
     expect(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS.UPSTREAM_NON_RECOGNITION).toContain('tool-agent-team')
-    expect(ADAPTER.A5_B_SUBAGENT_CODES.NOT_ADJACENT).toBe('P_B_SUBAGENT_NOT_ADJACENT')
+    expect(Object.prototype.hasOwnProperty.call(ADAPTER.A5_B_SUBAGENT_CODES, 'NOT_ADJACENT')).toBe(false)
   })
 })

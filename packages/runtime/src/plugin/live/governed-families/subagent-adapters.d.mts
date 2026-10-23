@@ -31,8 +31,12 @@ export interface BSubagentOutputFace {
  *  replaced; the send_message placed definition additionally carries the
  *  re-applied standard adjacent-Agent messaging mark (L3b). The replaced
  *  execute PASSES NON-RECORD arguments (null/undefined/array/string) to the
- *  captured native uncoerced — its compiled object-root validator answers
- *  the Host's own ToolArgsError before any body (581-1 FIX 1); records enter
+ *  captured native uncoerced — but ONLY through the edge-VERIFIED
+ *  {def, execute} handles: full drift verification runs FIRST, so a
+ *  rebound/foreign native is refused with zero native entry (root 19:24:
+ *  no drift reaches an unverified native, no unadmitted fallback), and the
+ *  verified bound wrapper's compiled object-root validator answers the
+ *  Host's own ToolArgsError before any body (581-1 FIX 1). Record args enter
  *  the governed classify → admit → delegate pipeline. */
 export interface BSubagentDefinition {
   readonly [face: string]: unknown
@@ -79,16 +83,11 @@ export interface BSubagentServicePort {
 /** The ctx.agents-shaped live Agent registry the list projection reads.
  *  Its `get` function is a CAPTURED HANDLE (581-1 FIX 2): the assembly
  *  captures it at bind time, the dispatch edge re-verifies it, and the
- *  projection / adjacency pre-check invoke exactly that handle. Entries
- *  carry the live Agent facts the row reads: `status` (list projection)
- *  and the recorded lineage (`session.header.parentSession`, measured
- *  Agent shape — the send_message adjacency pre-check reads it). */
+ *  projection invokes exactly that handle (never a property re-read).
+ *  The row performs NO lineage reads on it (root 19:24): the only fact the
+ *  projection consumes is the live Agent `status`. */
 export interface BSubagentAgentsRegistry {
-  readonly get: (id: unknown) => {
-    readonly status?: unknown
-    readonly id?: unknown
-    readonly session?: { readonly header?: { readonly parentSession?: unknown } }
-  } | undefined
+  readonly get: (id: unknown) => { readonly status?: unknown } | undefined
 }
 
 /** The contract §B-SUBAGENT target facts every plan carries. The relation
