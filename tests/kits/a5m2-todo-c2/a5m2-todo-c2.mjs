@@ -1063,6 +1063,18 @@ function imageVisiblePair(msgs) {
   return null
 }
 
+/** How many read_image(IMG_REL) tool_use blocks a wire already carries. OVERLAY-20 uses it as the
+ * second half of the case-1 guard: the second call may only follow when exactly ONE such call exists
+ * and imageVisiblePair confirmed ITS success envelope. A body that already shows two calls therefore
+ * yields no third, whatever else it contains (root 22:05: case 1 and case 2 can never both issue). */
+function readImageUses(msgs) {
+  let n = 0
+  for (const m of msgs ?? []) {
+    if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
+    for (const b of m.content) if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) n += 1
+  }
+  return n
+}
 function toolResultText(content) {
   if (typeof content === 'string') return content
   if (Array.isArray(content)) return content.map((b) => (b !== null && typeof b === 'object' && typeof b.text === 'string' ? b.text : JSON.stringify(b ?? ''))).join('\n')
@@ -1095,9 +1107,25 @@ function makeDecide() {
     if (lastUser.includes(MK_DISC)) return { kind: 'text', content: DONE_DISC }
     if (lastUser.startsWith(NOTIF_PREFIX)) return { kind: 'text', content: 'A5M2C2_NOTIF_REMOTE_DRIVEN' }
     if (lastUser.includes(MK_WORK1)) {
+      // OVERLAY-20 (root 22:05, image C4 only). Real RC2 evidence (run-2026-10-23T21-53-39): C1/C2/C3 all
+      // PASS on the new positive control (one store object 99cfdcaa…, 12197 B, name-sha == byte-sha; the
+      // model-visible text carried BOTH frames 512x384 / downscaled from 1024x768), but the whole wire held
+      // exactly ONE read_image tool_use id (call-a5c2-1i8huzff) — this case-1 branch ended the turn with
+      // DONE_WORK1, so no second call ever existed, no second governed row could appear, and C4's wait for
+      // row2 timed out. The oracle, not the product, was the gap.
+      // Fix is confined to image case 1: emit the SECOND read_image ONLY when the kit's existing
+      // imageVisiblePair confirms this call SUCCEEDED — a tool_use(read_image, IMG_REL) whose paired
+      // tool_result is NOT is_error and carries the native image envelope with the ORIGINAL-frame clause,
+      // bound to that same tool_use_id. First result is an error, or no success pair exists: return
+      // DONE_WORK1 exactly as before, so C3's own first-failure / terminal-is_error stop stays in charge
+      // and a failed leg can never be continued past. The second call reuses the PROVEN case-0 request
+      // builder verbatim (toolCall('read_image', { file_path: IMG_REL })), so no new wire field is invented;
+      // toolCall mints a fresh callId, which is what row2/lane-2 needs.
+      // Unchanged by law here: case 2 still DONE_WORK1 (so case 1 and case 2 can never both issue, and no
+      // third call exists), LOOP_BREAK_CAP 2, every timeout, every negative control, and the product.
       switch (tools) {
         case 0: return FIXTURE === 'image' ? toolCall('read_image', { file_path: IMG_REL }) : FIXTURE === 'write' ? toolCall('write', { file_path: WF_REL, content: WF_TGT }) : toolCall('todo_write', { todos: LIST1 })
-        case 1: return FIXTURE === 'image' ? { kind: 'text', content: DONE_WORK1 } : FIXTURE === 'write' ? toolCall('write', { file_path: WF_REL, content: WF_DENY }) : toolCall('todo_write', { todos: LIST2 })
+        case 1: return FIXTURE === 'image' ? (imageVisiblePair(msgs) !== null && readImageUses(msgs) === 1 ? toolCall('read_image', { file_path: IMG_REL }) : { kind: 'text', content: DONE_WORK1 }) : FIXTURE === 'write' ? toolCall('write', { file_path: WF_REL, content: WF_DENY }) : toolCall('todo_write', { todos: LIST2 })
         case 2: return { kind: 'text', content: DONE_WORK1 }
         default: return { kind: 'text', content: `A5M2C2_W1_FALLTHROUGH tools=${tools}` }
       }
