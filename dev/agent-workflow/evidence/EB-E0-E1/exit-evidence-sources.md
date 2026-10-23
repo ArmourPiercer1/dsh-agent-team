@@ -147,3 +147,38 @@ Reported, not fixed, because they are not mine:
 Controls after these edits: 91/0, RC=0 (`controls-run-17.log`). The readability test is
 repeatable in principle but was run once by hand, by me, through one subagent — a single
 sample, in my session, is not a repeatability claim.
+
+## 8. Two claims above that were wrong, corrected here rather than edited away
+
+Written 22:2x at the same SHA family; the earlier text is left in place because an evidence
+file that silently changes is worth less than one that admits it changed.
+
+1. **§7 item 4 called `verified_ci` + `verified_tier: C1` a rule gap. It is not a gap and it
+   was not mine to "tighten".** `verification_status` says which layer is being claimed and
+   therefore what corroboration is owed; `verified_tier` says what tier the recorded artifacts
+   are. They are orthogonal, so the pairing is a legal record — a CI-layer claim citing
+   locally produced logs, bound to a commit. The rules refuse the actual abuses: a
+   `verification_commit` that resolves to nothing, a `verified_ci`/`verified_host` claim with
+   nothing bound (local passing as CI), and C1 evidence offered for `verified_host` (C1
+   passing upward). Refusing the *combination* would have added a law the layering does not
+   contain. `dev/engineering/README.md` now states this; no rule was changed, and the wrong
+   paragraph is quoted above rather than quietly replaced.
+2. **The owner-map rules I added last round were dead on arrival, and root found it, not
+   me.** `selectOwningDocs` took `entries.find(...)`, and `packages/**` sits above the
+   per-package rules, so `packages/runtime/**` and `packages/tools/**` could never match —
+   the M0 reading pointers printed as configured and fired for nothing. Selection is by
+   specificity now (fewer wildcards, then longer literal prefix, then declaration order), so
+   the answer no longer depends on how the YAML happens to be ordered: a runtime change
+   resolves to the M0 lifecycle contract and the effective backlog instead of the STATUS
+   snapshot. Pinned by two controls: NEG-77 (specific wins whether declared before or after
+   the broad rule) and NEG-78 (`enforce` belongs to the matching rule — a specific advisory
+   rule does not inherit a broad self-imposed refusal, and a broad enforced rule still binds
+   paths nothing more specific covers).
+3. The durable authorization gap named in §7 item 3 now has a carrier:
+   `dev/engineering/work-package-authorization.md` records the mandate verbatim, pins PR #361
+   at `b97ffdafdceeb73d58a06fe5fb6563820d063d28`, lists the narrow grants in order, and states
+   per id what its `normative_status` does and does not mean. It creates no obligation and
+   ratifies nothing.
+
+Controls after this round: **93/0, RC=0** (`controls-run-18.log`; run-1..17 untouched).
+`docs:sync --check` RC=0 with the two new/edited current-state documents in scope.
