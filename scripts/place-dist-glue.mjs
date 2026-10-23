@@ -158,6 +158,27 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
   },
+  // A5-M2 G2 WIRING (root ruling 15:28, G2 lane): the mirrored
+  // `team-tool-plane.mjs` now imports the two reviewed G2 family modules by
+  // RELATIVE specifier (the closed family identities + the consumption-edge
+  // law `consumeG2ApprovedPlan` + the WEB seam brand the fail-closed
+  // injection point checks), so on the strict `files: ["dist"]` install face
+  // they must sit INSIDE the mirror — the exact ERR_MODULE_NOT_FOUND class
+  // the todo/write/image entries above recorded. Both are closed on this
+  // surface: `g2-connector-adapters.mjs` imports node builtins + the domain
+  // tool-governance index (tsc's OWN emit inside the mirror);
+  // `g2-provider-seams.mjs` imports node builtins + its sibling adapters
+  // module (placed with it). Byte-identical like every entry; drift gate D
+  // compares src vs dist. The three G2 gates default OFF, so a world without
+  // a G2 key keeps the byte-identical mount shape — the import is inert.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

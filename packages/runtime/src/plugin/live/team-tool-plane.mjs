@@ -79,6 +79,18 @@ import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/
 import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
+// A5-M2 G2 WIRING (root ruling 15:28, G2 lane): the reviewed G2 family faces
+// this plane consumes through the CLOSED per-surface keys + typed injection
+// seams below. Imports are inert (side-effect-free modules; gates default
+// false, so a world that never sets a G2 key keeps the byte-identical mount
+// shape): g2-connector-adapters carries the frozen family identities and the
+// closed registration faces the rows speak; g2-provider-seams carries the ONE
+// consumption-edge law (`consumeG2ApprovedPlan`) the G2 row bodies run and
+// the seam brand the WEB fail-closed injection point checks. NO web global/env
+// route exists or is added here — the Team-only FIXED provider is the named
+// blocker and the lane lands fail-closed around it.
+import { A5_G2_FAMILY } from './governed-families/g2-connector-adapters.mjs'
+import { G2_SEAM_BRAND, consumeG2ApprovedPlan } from './governed-families/g2-provider-seams.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -92,6 +104,14 @@ export const A5_WRITE_MOUNT_NAME = 'write'
 // FIXED native spelling 'read_image' (a PLANE_RESERVED_NATIVE name, pinned to
 // the 639 host face) behind the closed `imageEnabled` key.
 export const A5_IMAGE_MOUNT_NAME = 'read_image'
+// A5-M2 G2 WIRING (root ruling 15:28): the CLOSED native spellings each G2
+// surface may mount under — the rowset a gate injects can only ever carry
+// names from its OWN family's closed set (a B-MCP row under the WEB gate, an
+// invented name anywhere, or a name claimed twice is a typed mount refusal,
+// the verifyPlaneNames one-name-one-placement law carried to these rows).
+export const A5_G2_WEB_MOUNT_NAMES = Object.freeze(['web_search', 'web_fetch'])
+export const A5_G2_MCP_MOUNT_NAMES = Object.freeze(['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource'])
+export const A5_G2_BROWSER_MOUNT_NAMES = Object.freeze(['stagehand_act', 'stagehand_extract', 'stagehand_navigate', 'stagehand_observe', 'stagehand_screenshot', 'stagehand_tabs'])
 
 /**
  * The host registration law (measured at the pinned host: core tools
@@ -971,6 +991,85 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (readName === A5_IMAGE_MOUNT_NAME || writeInject !== null && A5_WRITE_MOUNT_NAME === A5_IMAGE_MOUNT_NAME) {
       return imageInjectInvalid(`'${A5_IMAGE_MOUNT_NAME}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
     }
+  }
+
+  // Gate 0f (A5-M2 G2 WIRING, root ruling 15:28, G2 lane): THREE CLOSED
+  // CONSUMPTION KEYS — one per external-connection surface (WEB / MCP /
+  // BROWSER), each with its own typed injection seam. ABSENT = FALSE for all
+  // three (zero-flip law by absence: every shipped world keeps the pre-G2
+  // mount shape byte-for-byte); a non-boolean value is a config defect refused
+  // on the existing PLANE_CONFIG_INCOMPLETE surface — never silently coerced.
+  // Each enabled surface REQUIRES the rowset injection the ASSEMBLY OWNER
+  // built (pairing law BOTH directions — the glob-gate ④ discipline: config
+  // law, not wiring; no fallback row, no silent disable, no silent mount). The
+  // injection carries a PLACEMENT-MOMENT factory (`createRowset`, the image
+  // `createArm` law: the rows bind this mount's capture facts, and the honest
+  // no-mount answer is a THROW at the factory, never an empty mount), the
+  // CAPTURED native description bytes per mounted name, and — WEB only — the
+  // Team-only FIXED provider lanes.
+  // WEB FAIL-CLOSED INJECTION POINT (ruled boundary, NOT a TODO this plane can
+  // close): WEB global/env per-realm composition is FORBIDDEN — flipping the
+  // configured provider id, DSH_WEB_SEARCH_PROVIDER / DSH_WEB_FETCH_PROVIDER
+  // env, or a per-realm composition bypass mounts NOTHING here and is never
+  // offered here. The Team-only route is a tool-level fork calling the
+  // SEAM-PINNED provider object directly, so a WEB injection must carry
+  // `teamFixedWebProviderLanes`: per mounted web name, the frozen handle
+  // createG2WebProviderSeam returned (brand-checked: provider[G2_SEAM_BRAND]).
+  // A real Team-only FIXED provider is this lane's NAMED BLOCKER: where it
+  // cannot actually be supplied, every web mount attempt lands as this typed
+  // refusal — the plane invents no provider, no lane, no mount.
+  const g2Surfaces = [
+    { key: 'g2WebEnabled', injectKey: 'g2Web', family: A5_G2_FAMILY.web, code: 'G2_WEB_INJECT_INVALID', names: A5_G2_WEB_MOUNT_NAMES },
+    { key: 'g2McpEnabled', injectKey: 'g2Mcp', family: A5_G2_FAMILY.mcp, code: 'G2_MCP_INJECT_INVALID', names: A5_G2_MCP_MOUNT_NAMES },
+    { key: 'g2BrowserEnabled', injectKey: 'g2Browser', family: A5_G2_FAMILY.browser, code: 'G2_BROWSER_INJECT_INVALID', names: A5_G2_BROWSER_MOUNT_NAMES },
+  ]
+  const g2Injects = Object.create(null)
+  for (const surface of g2Surfaces) {
+    const gateRaw = input.plane?.[surface.key]
+    if (gateRaw !== undefined && typeof gateRaw !== 'boolean') {
+      return {
+        ok: false,
+        code: 'PLANE_CONFIG_INCOMPLETE',
+        message: `planeCfg.${surface.key} must be a boolean when present — got ${JSON.stringify(gateRaw) ?? String(gateRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+      }
+    }
+    const injectRaw = input.backends?.[surface.injectKey]
+    const injectInvalid = (why) => ({ ok: false, code: surface.code, message: `backends.${surface.injectKey}: ${why}` })
+    if (gateRaw === true && injectRaw === undefined) {
+      return injectInvalid(`${surface.key} is true but no governed G2 ${surface.family} rowset is injected - the mount would mask the native names with nothing behind it; there is no fallback row and no silent disable`)
+    }
+    if (gateRaw !== true && injectRaw !== undefined) {
+      return injectInvalid(`a G2 ${surface.family} injection while ${surface.key} is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key`)
+    }
+    if (injectRaw === undefined) continue
+    if (injectRaw === null || typeof injectRaw !== 'object' || Array.isArray(injectRaw)) {
+      return injectInvalid('the injection is not an object (the closed face is { createRowset, descriptions, teamFixedWebProviderLanes? })')
+    }
+    if (typeof injectRaw.createRowset !== 'function') {
+      return injectInvalid('createRowset is required — the placement-moment rowset factory ({ realmId, providerId }) -> row[] (the image createArm discipline): the rows bind THIS mount\'s bind-time capture facts, so the construction belongs to the placement moment, not to glue time; the honest no-mount answer is a THROW at this factory, never an empty mount')
+    }
+    const descriptions = injectRaw.descriptions
+    if (descriptions === null || typeof descriptions !== 'object' || Array.isArray(descriptions)) {
+      return injectInvalid('descriptions is required — the CAPTURED native description bytes keyed by mounted tool name (same-name, same-meaning by identity; the plane invents no model-facing wording)')
+    }
+    let webLanes = null
+    if (surface.family === A5_G2_FAMILY.web) {
+      webLanes = injectRaw.teamFixedWebProviderLanes
+      if (webLanes === null || typeof webLanes !== 'object' || Array.isArray(webLanes)) {
+        return injectInvalid('teamFixedWebProviderLanes is required — the Team-only FIXED web provider slot (named blocker). WEB global/env per-realm composition is FORBIDDEN: a web row mounts ONLY behind a seam-pinned fixed provider object (g2-provider-seams createG2WebProviderSeam, brand-verified), never behind the configured-id flip, never behind DSH_WEB_SEARCH_PROVIDER / DSH_WEB_FETCH_PROVIDER env, never behind a per-realm composition bypass. No real Team-scoped fixed provider exists in this world: the honest landing is this refusal, not a placeholder mount.')
+      }
+    } else if (injectRaw.teamFixedWebProviderLanes !== undefined) {
+      return injectInvalid('teamFixedWebProviderLanes is a B-WEB-only face — an MCP/BROWSER injection carrying it confuses the closed per-surface contracts')
+    }
+    g2Injects[surface.key] = Object.freeze({
+      createRowset: injectRaw.createRowset,
+      descriptions,
+      ...(webLanes === null ? {} : { teamFixedWebProviderLanes: webLanes }),
+      code: surface.code,
+      injectKey: surface.injectKey,
+      family: surface.family,
+      names: surface.names,
+    })
   }
 
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
@@ -3340,14 +3439,251 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (armBad !== undefined) return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${armBad}` }
   }
   const imageDefs = imageDef === null ? [] : [imageDef]
+
+  // ── A5-M2 G2 WIRING (root ruling 15:28, G2 lane; the center integrates) ──
+  // THE PLACEMENT MOMENT (central-card ②, carried to the G2 rows): the rowset
+  // is constructed HERE, over THIS mount's facts. A G2 row is not an arm — it
+  // is the reviewed thin row of governed-families/g2-connector-adapters
+  // (capture → classify → delegate over the bind-time captured native object),
+  // and its family block (familyId / adapterRevision / providerIdentity) is
+  // the claim the durable verifier answers against the mount-time registration
+  // written under the RUNTIME placement identity (the B-SESSION/B-WRITE/B-IMAGE
+  // law: the owning glue writes that registration through the plane's OWN
+  // placement feed after publish; an unregistered family claim gets NO answer
+  // and the walk fails closed). The row body walks THIS plane's ONE PA walk
+  // (open → the REAL final edge → consumedProof — no parallel permission path,
+  // no generic-tool-invoke pseudo-governance) and enters the reviewed
+  // consumption edge (`consumeG2ApprovedPlan`) where the approved plan meets
+  // the CURRENT args: full-value deep equality against the frozen snapshot, a
+  // fresh re-classify whose fingerprint must pair, and only then the row's OWN
+  // invoke with the ORIGINAL args object and the caller's exec — 保留原生.
+  // Four-tier honesty: these are ASSEMBLY-level legs. The BROWSER surface is
+  // additionally PINNED BLOCKED at the Team-assembly component (the owner
+  // fixes it on their card); the mount path and typed injection point exist
+  // here, and nothing on this branch implies browser-row readiness.
+  let g2CorrSeq = 0
+  const g2Rows = []
+  const g2Defs = []
+  const g2ClaimedNames = new Set()
+  const g2WebLaneRefusal = (inject, toolName) => {
+    const kind = toolName === 'web_search' ? 'search' : 'fetch'
+    const lane = inject.teamFixedWebProviderLanes[toolName]
+    if (lane === null || typeof lane !== 'object' || Array.isArray(lane)) {
+      return `teamFixedWebProviderLanes.${toolName} is required — named blocker: no real Team-only FIXED ${kind} provider is suppliable in this world and WEB global/env per-realm composition is FORBIDDEN, so no web row mounts (fail closed, nothing substitutes)`
+    }
+    const provider = lane.provider
+    if (provider === null || typeof provider !== 'object') return `teamFixedWebProviderLanes.${toolName}: lane.provider is missing`
+    if (provider[G2_SEAM_BRAND] !== true) {
+      return `teamFixedWebProviderLanes.${toolName}: lane.provider is not a createG2WebProviderSeam product (the seam brand is absent) — the fail-closed point accepts ONLY the reviewed pinned seam around a REAL provider object, never a hand-made stand-in`
+    }
+    if (typeof provider.id !== 'string' || provider.id.length === 0) return `teamFixedWebProviderLanes.${toolName}: lane.provider.id is not a non-empty string`
+    if (typeof provider.available !== 'function') return `teamFixedWebProviderLanes.${toolName}: lane.provider.available is not a function`
+    if (typeof provider[kind] !== 'function') return `teamFixedWebProviderLanes.${toolName}: lane.provider.${kind} is not a function`
+    if (lane.registrationLaw === null || typeof lane.registrationLaw !== 'object' || typeof lane.registrationLaw.configuredProviderIdMustEqual !== 'string') {
+      return `teamFixedWebProviderLanes.${toolName}: lane.registrationLaw.configuredProviderIdMustEqual is missing — the registration law (configured id must equal the seam id, web/src/index.ts resolveProvider @639ed01539) rides the lane or the row does not mount`
+    }
+    if (typeof lane.stats !== 'function') return `teamFixedWebProviderLanes.${toolName}: lane.stats is not a function (the per-lease dispatch/drift facts must stay readable)`
+    return undefined
+  }
+  const g2RowExecute = (row) => async (raw, exec) => {
+    // Identity law (fix-1, SHARED ledger): the REAL registry token; absent is
+    // a typed front refusal — zero classify, zero walk, zero row — and ONE
+    // token runs ONE governed flight across the todo/write/image/g2 rows.
+    const execToken = exec?.token
+    const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+    if (tokenKey === undefined) {
+      throw new Error('refused-g2 exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields')
+    }
+    const priorFlight = governedTokenLedger.get(tokenKey)
+    if (priorFlight !== undefined) {
+      throw new Error(`refused-g2 exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (todo/write/image/g2 share ONE token ledger: a registry token spans exactly one flight of one row); one token runs one governed flight and a settled token is never re-armed (the read row's single-flight law, verbatim)`)
+    }
+    g2CorrSeq += 1
+    const correlation = `plane-g2:${realmId}-${String(g2CorrSeq)}`
+    governedTokenLedger.set(tokenKey, { correlation, settled: false })
+    const signal = exec?.signal
+    try {
+      // OWNER-CURRENT BEFORE THE FREEZE (fix-4 law, verbatim): Part A asks the
+      // whole question, including the fresh-authority leg; a faulting leg is
+      // OBSERVED, never absorbed, and the row never re-stamps a generation.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-g2-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
+      let classified
+      try {
+        // The ACTIVE row classifies synchronously; the honest INACTIVE row
+        // answers an async typed refusal — awaiting both keeps ONE refusal
+        // path with no branch on mount state.
+        classified = await row.classify(raw)
+      } catch (error) {
+        throw new Error(`refused-g2 row-unavailable — the governed ${row.toolName} row could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
+      }
+      if (classified === null || typeof classified !== 'object' || classified.ok !== true) {
+        // The row's OWN typed refusal rides VERBATIM — the declared_mount
+        // absent fact, the native-face absent fact, the draining fact are the
+        // honest mount state, not plane wording; nothing is asked, nothing is
+        // authorized, nothing delegates.
+        throw new Error(`refused-g2 ${classified?.code ?? 'P_G2_CLASSIFY_REFUSED'} — ${classified?.detail ?? 'the governed row refused this call before admission'} (zero rows, zero grants, zero native entry)`)
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        throw new Error(`refused-g2 effects-unparsable — the row's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+      }
+      const walk = {
+        realmId,
+        callId: correlation,
+        parametersFingerprint: classified.parametersFingerprint,
+        requestedEffects: parsedEffects.value,
+        toolName: row.toolName,
+        // The family block (载荷法): the row's family facts at FULL VALUE
+        // plus the classify's target manifest. The bridge composes the durable
+        // manifest from this and answers the claim against the mount's own
+        // registration read back through the placement identity — an
+        // unregistered family claim refuses; the row payload never becomes a
+        // second approval anywhere on this path.
+        family: Object.freeze({
+          familyId: row.familyId,
+          adapterRevision: row.adapterRevision,
+          providerIdentity: row.providerId,
+          targetManifest: classified.targetManifest,
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      }
+      const opened = await paAdmit.open(walk)
+      if (opened.kind === 'deny') {
+        throw new Error(`refused-g2 ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (zero rows, zero native entry)`)
+      }
+      if (opened.cancelled === true) {
+        throw new Error(`${row.toolName} · cancelled — the call was cancelled at the PA edge before admission (zero rows, zero native entry)`)
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        throw new Error(`refused-g2 APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal row state never substitutes for the kernel answer`)
+      }
+      const edge = await paAdmit.edge({
+        ...walk,
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      })
+      if (edge.kind === 'deny') {
+        throw new Error(`refused-g2 ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (zero native entry)`)
+      }
+      if (edge.cancelled === true) {
+        throw new Error(`${row.toolName} · cancelled — the call was cancelled at the execution edge (the approval stays unspent and is never replayed; zero native entry)`)
+      }
+      // `consumed: true` is produced ONLY by the edge's own success witness
+      // (`consumedProof` from the kernel's one-shot consume) — the row DEMANDS
+      // it and never self-attests consumption from a missing denial.
+      const proof = edge.consumedProof
+      if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+        throw new Error('refused-g2 CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the row never self-attests consumption from a missing denial and the body does not run')
+      }
+      // The NAMED race (fix-3 law): an abort landing between the REAL consume
+      // and the body's first microtask leaves the consumption a settled fact
+      // that NEVER rolls back; the body that never started enters NOTHING.
+      if (signal?.aborted === true) {
+        throw new Error(`${row.toolName} · cancelled — the call was aborted after the execution edge consumed the grant and before the body began (the consumption is a settled fact and is never rolled back; zero native entry)`)
+      }
+      // THE CONSUMPTION EDGE (root ruling 15:28): the reviewed seam's
+      // consumeG2ApprovedPlan is the ONE entry to the row body — the CURRENT
+      // args must deep-equal the plan's frozen full-value snapshot and a fresh
+      // re-classify must pair its fingerprint before the row's own invoke runs
+      // with the ORIGINAL args object and the caller's exec (保留原生). Moved
+      // classify-time facts answer ARGS_REBOUND/ARGS_DEEPEQUAL with zero
+      // native entry: an approved plan does not outlive the facts frozen at
+      // the edge.
+      const ran = await consumeG2ApprovedPlan({ row, plan: classified, args: raw, exec })
+      if (ran === null || typeof ran !== 'object' || ran.ok !== true) {
+        throw new Error(`refused-g2 ${ran?.code ?? 'P_G2_EDGE_REFUSED'} — ${ran?.detail ?? 'the G2 consumption edge refused the body'} (zero native entry)`)
+      }
+      return ran.value
+    } finally {
+      // Every path settles the token (shared ledger, root ruling @ 9c817:
+      // used identities are NEVER evicted; the map dies with the mount).
+      governedTokenLedger.set(tokenKey, { correlation, settled: true })
+    }
+  }
+  for (const surface of g2Surfaces) {
+    const inject = g2Injects[surface.key]
+    if (inject === undefined) continue
+    const injectInvalid = (why) => ({ ok: false, code: inject.code, message: `backends.${inject.injectKey}: ${why}` })
+    let rowset
+    try {
+      rowset = inject.createRowset({ realmId, providerId: 'a5p5-plane' })
+    } catch (error) {
+      // The owner's honest no-mount refusal rides the assembly refusal
+      // VERBATIM — the named-blocker fact (no Team-only fixed web provider
+      // suppliable; a declared service not present; the BROWSER assembly
+      // component BLOCKED) is carried as written, never reworded, never
+      // half-mounted (the image createArm posture).
+      return { ok: false, code: inject.code, message: `backends.${inject.injectKey}.createRowset refused the mount at placement: ${String(error?.message ?? error)}` }
+    }
+    if (rowset !== null && typeof rowset?.then === 'function') {
+      return injectInvalid('createRowset must answer synchronously — the rowset is a frozen set of faces; an async factory would race the placement/identity pass')
+    }
+    if (!Array.isArray(rowset) || rowset.length === 0) {
+      return injectInvalid('createRowset answered no non-empty rowset array — the honest no-mount world THROWS at the factory (its typed refusal IS the mount refusal); an empty or malformed rowset is a contract breach, never a silent no-op')
+    }
+    for (const row of rowset) {
+      let closedDetail
+      if (row === null || typeof row !== 'object' || Array.isArray(row)) {
+        closedDetail = 'a rowset entry is not an object'
+      } else if (typeof row.toolName !== 'string' || !inject.names.includes(row.toolName)) {
+        closedDetail = `rowset entry '${String(row?.toolName)}' is not one of the closed ${inject.family} spellings [${inject.names.join(', ')}] — an invented or cross-family name is a typed refusal, never a mount`
+      } else if (g2ClaimedNames.has(row.toolName)) {
+        closedDetail = `rowset claims '${row.toolName}' twice - one name, one placement`
+      } else if (row.toolName === readName || row.toolName === A5_TODO_MOUNT_NAME || (writeInject !== null && row.toolName === A5_WRITE_MOUNT_NAME) || (imageInject !== null && row.toolName === A5_IMAGE_MOUNT_NAME)) {
+        closedDetail = `rowset name '${row.toolName}' collides with another governed row on this mount - one name, one placement (the verifyPlaneNames law, carried to the G2 rows)`
+      } else if (row.familyId !== inject.family) {
+        closedDetail = `row '${row.toolName}' answers familyId ${JSON.stringify(row.familyId)} under the ${inject.family} gate — the family identity is closed per surface`
+      } else if (!Number.isInteger(row.adapterRevision) || row.adapterRevision < 0) {
+        closedDetail = `row '${row.toolName}' carries no non-negative integer adapterRevision`
+      } else if (row.providerId !== 'a5p5-plane') {
+        closedDetail = `row '${row.toolName}' providerIdentity is not 'a5p5-plane' — a G2 row speaks AS this plane (the same constant the request-binding projection carries), never as an outside provider`
+      } else if (!['classify', 'invoke', 'drain'].every((m) => typeof row[m] === 'function')) {
+        closedDetail = `row '${row.toolName}' does not carry the full classify/invoke/drain face`
+      } else if (typeof row.mountCondition !== 'string' || row.mountCondition.length === 0) {
+        closedDetail = `row '${row.toolName}' carries no mountCondition — the mount condition (always / declared_mount) is part of the honest row face`
+      } else if (row.registrationSchema === null || typeof row.registrationSchema !== 'object') {
+        closedDetail = `row '${row.toolName}' carries no registration schema — the canonical registration face is required for placement`
+      } else if (typeof inject.descriptions[row.toolName] !== 'string' || inject.descriptions[row.toolName].length === 0) {
+        closedDetail = `the captured native description for '${row.toolName}' is missing (the row mounts the HOST description bytes verbatim — same-name, same-meaning)`
+      } else if (surface.family === A5_G2_FAMILY.web) {
+        closedDetail = g2WebLaneRefusal(inject, row.toolName)
+      }
+      if (closedDetail !== undefined) return injectInvalid(closedDetail)
+      g2ClaimedNames.add(row.toolName)
+      g2Rows.push(row)
+      g2Defs.push(Object.freeze({
+        name: row.toolName,
+        // The CAPTURED native description bytes + the closed registration
+        // face the row itself carries — same name, same meaning, never
+        // plane-invented wording or schema.
+        description: inject.descriptions[row.toolName],
+        parameters: row.registrationSchema,
+        execute: g2RowExecute(row),
+        presentCall: (args) => ({ card: 'generic', title: `${row.toolName} (governed)`, kind: 'other', rawInput: args }),
+      }))
+    }
+  }
+
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -3524,6 +3860,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // The arm is the placement-moment construction (central-card ②),
             // so the drain reaches the SAME arm the rows drove.
             if (imageArm !== null) imageArm.drain()
+            // A5-M2 G2 WIRING: every mounted G2 row drains with the SAME
+            // teardown law — the row's honest drain semantics (no NEW
+            // classify/invoke entry crosses this point; an already-entered
+            // native body is NOT rewound and NOT killable from the row:
+            // cancellation rides the caller exec signal the native owns, an
+            // attached browser belongs to its user). The drain lands BEFORE
+            // any ledger/plan state is cleared, like the arms above.
+            for (const g2Row of g2Rows) {
+              try {
+                g2Row.drain()
+              } catch {
+                /* idempotent drain best-effort */
+              }
+            }
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the
