@@ -2470,9 +2470,13 @@ describe('A5M2-FAMILY-RAW: losslessness is decided on the raw value at every lev
  * approval, never a restatement of the old one. The refusals prove the other half: an
  * unregistered binding cannot claim a family, a registered family shipping nothing is
  * refused, and an out-of-structure target is refused - all before any row exists.
- * The approve path is NOT claimed here (see the lane's own note: the first attempt at
- * it answered pa-authority-drift at the decision gate and stays open). */
-describe('A5M2-CHAIN: the row binds the plan it was approved under', () => {
+ * THE CALIBER, stated where it cannot be missed: these are the BYTE-BINDING proof and
+ * the NEGATIVE control. The positive control this family still owes - a new family's
+ * durable APPROVAL through the guard into a real consume - is NOT delivered here and is
+ * never to be simulated by accepting a refusal or by reading a counter as a pass. The
+ * first attempt at that allow answered pa-authority-drift at the decision gate and stays
+ * open as its own delta. */
+describe('A5M2-ROW (byte binding + negative control, NOT the full chain): the row binds the plan it was asked under', () => {
   const ctx = directAssembly()
   const fixture = directFixture(ctx, 'a5m2-chain-call')
   const definitionIdentity = String((fixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
