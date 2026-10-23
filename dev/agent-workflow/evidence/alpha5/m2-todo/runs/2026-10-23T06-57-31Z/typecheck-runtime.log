@@ -1,0 +1,17 @@
+$ tsc -p tsconfig.json
+test/a5m2-readimg-c1.test.ts(80,77): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(url: string | URL, options?: FileUrlToPathOptions | undefined): string', gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string | URL'.
+      Type 'URL' is missing the following properties from type 'URL': hash, host, hostname, origin, and 7 more.
+  Overload 2 of 2, '(path: string | URL): string', gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string | URL'.
+      Type 'URL' is missing the following properties from type 'URL': hash, host, hostname, origin, and 7 more.
+test/a5m2-readimg-c1.test.ts(82,48): error TS2349: This expression is not callable.
+  Type 'never' has no call signatures.
+test/a5m2-readimg-c1.test.ts(165,14): error TS4113: This member cannot have an 'override' modifier because it is not declared in the base class 'any'.
+test/a5m2-readimg-c1.test.ts(171,14): error TS4113: This member cannot have an 'override' modifier because it is not declared in the base class 'any'.
+test/a5m2-readimg-c1.test.ts(179,14): error TS4113: This member cannot have an 'override' modifier because it is not declared in the base class 'any'.
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/packages/runtime:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+TYPECHECK_RC=2

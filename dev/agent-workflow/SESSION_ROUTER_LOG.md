@@ -6854,3 +6854,17 @@ net 半臂不在本单。
 （frozen precedence 正确，工单措辞序反；NC-1/NC-2 各单因腿各自绿）；③api-catalog 锚点行头
 注释改实测 :3921（纯注释，dist 镜像随动重放）。真跑配方维持等 int-r3（#333 合并后 ff 叠
 master 跑 production-run-recipe 全链）。
+
+## 2026-10-23 CENTER integration batch (M2, branch `feat/a5-m1-center-kernel`, audited M1 tree `7a3540937`)
+
+Four commits pushed for root read-only review (exact pathspecs only, no `git add -A`, no force):
+- a852227c6 `feat(tools)`: governed WRITE slice + formal 20-leg C1 + barrel registration (CENTER single writer of the barrel). Targeted: vitest 24 passed (barrel-emit 4 + write C1 20), tools tsc exit 0.
+- 2a8654914 `chore(lint)`: ignore unpacked `pack/pack-*/**` diagnostic faces (root ruling; `.gitignore` parity). MEASURED before/after on this tree: universe 1399 files / 76 gitignored -> universe 1323 / 0 gitignored; `git ls-files | grep -c '^pack/'` = 0, so no tracked file is hidden. No rule and no lint baseline changed; the faces stay on disk.
+- 0bf5b1c42 `docs(phase)`: current-phase pointers (M0 frozen / M1 merged / M2 in progress) across graph.yaml + AGENTS.md + plan §4 + BL-01 + M0-PLANB. Legs `graph-parse`, `state-freshness` pass.
+- f9ec0e4ed `docs(matrix)`: web_search/web_fetch + pwsh rows to measured facts; M2 evidence committed so cited paths resolve.
+
+Rulings and corrections recorded in the open:
+- **CENTER correction**: `⑧` in the matrix DOES allow the compound `NOT_IMPLEMENTED/NOT_WIRED` (header line 11, "复合行可用斜杠合写"); my earlier instruction that it must be a single value was wrong. The web rows' committed single value stands for a different reason (no Team-side implementation exists at all = NOT_IMPLEMENTED); the write row keeps the compound.
+- **D-C2-1**: the governed write receipt never echoes previous content (`canonicalLocator` + `writtenFingerprint` only); a host-shaped `before`/`after` echo is a C2-full increment that must ride a paired read effect through the same governed read arm.
+- **p4t6 identity booking** (CENTER-side, in the open): the tree measured `expected 1233 to be 1228` with five new specs present. Booked `SCANNED_PATHS_A5M2` = the FOUR committed files (write slice src + spec, todo C1 spec, web C1 spec) taking the pin to 1232, MEASURED. The read_image spec present locally is NOT committed (its own file is typecheck-red) and is deliberately NOT booked, so the local run still reports `expected 1233 to be 1232` while CI, which sees only committed files, sees 1232. Disclosed, not masked.
+- **pwsh / win32 conditional leg**: this host has no `pwsh`, `binfmt_misc` is empty and there is no wine => ENV-NOT-AVAILABLE (row 32 ⑥). Root's independent finding is booked: Host639 Windows ACL enforcement is PARTIAL (read, network, process visibility and hardlink path aliasing still unconstrained), so swapping in a Windows runner is NOT an equivalence claim; a read-only Windows provider capability/entry-point locate is dispatched, no new workflow, no pwsh install, no contract relaxation.
