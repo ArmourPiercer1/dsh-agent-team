@@ -92,7 +92,7 @@ import {
   ControlError,
   createControlService,
 } from '../control/index.js'
-import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, parsePaControlManifest } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, parsePaControlManifest, parsePaManifestFamilyBlock } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlRequestRecord,
@@ -2328,4 +2328,68 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio'))).toBe(true)
     expect(Date.now() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
+})
+
+/* ── A5M2-FAMILY (CENTER): the strict family block the manifest now carries ──────
+ * The bridge review's blockers 1 and 3 are about PROJECTION and LOSSLESSNESS: a field
+ * that reaches the durable row but is stripped on read-back approves less than it
+ * seems, and a target manifest whose undefined/NaN members a stringify silently drops
+ * hashes a question nobody asked. These legs pin the exported strict block parse -
+ * the helper both the manifest projection and the centre's own fold go through - so a
+ * later relaxation shows up HERE rather than in a guard that no longer sees the field.
+ * The end-to-end legs over a durable row (read-back -> resolve -> guard -> consume, and
+ * the registry-driven refusals at the leg) ride with the family cards' deltas; they are
+ * NOT claimed by this block. */
+describe('A5M2-FAMILY: the family block is all-or-nothing and lossless', () => {
+  const good = {
+    familyId: 'B-SESSION',
+    adapterRevision: 1,
+    providerIdentity: 'prov@1',
+    targetManifest: { operation: 'append', sessionHeaderId: 's-1', counts: { pending: 1 } },
+  }
+  it('L1 a row that bears no family field parses as no family (pre-A5M2 bytes keep their meaning)', () => {
+    expect(parsePaManifestFamilyBlock({})).toBe(undefined)
+    expect(parsePaManifestFamilyBlock({ realmId: 'r', callId: 'c' })).toBe(undefined)
+  })
+  it('L2 a complete block is carried at FULL value - no digest, no summary, no re-ordering', () => {
+    const parsed = parsePaManifestFamilyBlock(good)
+    expect(parsed).toEqual(good)
+    expect(JSON.stringify(parsed)).toBe(JSON.stringify(good))
+  })
+  it('L3 ANY member present makes ALL FOUR mandatory - a partial block fails the manifest', () => {
+    for (const dropped of ['familyId', 'adapterRevision', 'providerIdentity', 'targetManifest'] as const) {
+      const partial = { ...good } as Record<string, unknown>
+      delete partial[dropped]
+      expect(parsePaManifestFamilyBlock(partial), `drop ${dropped}`).toBe('invalid')
+    }
+  })
+  it('L4 malformed members are refused, not coerced', () => {
+    expect(parsePaManifestFamilyBlock({ ...good, familyId: '' })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, providerIdentity: '' })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, adapterRevision: -1 })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, adapterRevision: 1.5 })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, adapterRevision: '1' })).toBe('invalid')
+  })
+  it('L5 a target manifest that JSON would silently shrink is refused BEFORE any hashing', () => {
+    const lostUndefined = { a: 1, b: undefined }
+    const lostNaN = { a: 1, b: Number.NaN }
+    const lostNested = { a: { b: Infinity } }
+    const lostArray = { a: [1, undefined] }
+    // the trip-wire, first: a plain stringify DOES lose these - which is exactly why the
+    // block is refused here instead of being hashed after the loss.
+    expect(Object.keys(JSON.parse(JSON.stringify(lostUndefined)))).not.toContain('b')
+    expect(JSON.stringify(lostNaN)).toBe('{"a":1,"b":null}')
+    expect(JSON.stringify(lostNested)).toBe('{"a":{"b":null}}')
+    expect(JSON.stringify(lostArray)).toBe('{"a":[1,null]}')
+    for (const bad of [lostUndefined, lostNaN, lostNested, lostArray]) {
+      expect(parsePaManifestFamilyBlock({ ...good, targetManifest: bad })).toBe('invalid')
+    }
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: null })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: [1, 2] })).toBe('invalid')
+    // The literal { __proto__: x } sets a PROTOTYPE, not a key, so it is not the hazard
+    // worth pinning; the hazard is the OWN "__proto__" property a JSON.parse can hand
+    // over - that is what must never reach a durable row.
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: JSON.parse('{"__proto__":{"x":1}}') })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: { a: 1, constructor: 2 } })).toBe('invalid')
+  })
 })
