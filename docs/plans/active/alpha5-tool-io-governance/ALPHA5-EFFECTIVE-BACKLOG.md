@@ -50,7 +50,7 @@
 | todo_write | 已测试 | todo PA hand-off C2 **r11** 真 Host 验收 @31f7 包 / pin bbde8（root 签收口径，更正：非 r14@8b94——r14 是 write 旧 kit 判据失败轮） | center/已关弧 | — |
 | write（既有文件） | 已测试 | 既有文件写 C2 r16 @19d54 包，root 14:38 限定既有文件范围接受 | center/已关弧 | 范围外新文件不在此档 |
 | write（新建文件） | 未开发 | 治理实现仍实质缺口（r16 明示限定既有文件） | 待派 | 无第五档 |
-| read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 根因已证并落 FIX 候选 `337170983`（决策侧贯通 mount lexical seam；原形状 drifted 分支零触发、缺席逐字节不变；残余 leader-rung 为独立权限门如实记录）；Host 复验仍待（新 Host 冻结） |
+| read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 根因闭于真实同形重放（root 16:56 纠偏）：真实 policy/effects/decider 输入先核身份，seam-on=authorized 且 drift 族全静、seam-off=逐字 r17 字节（RR-4/RR-5 `d8c6cd9e2`）；旧 RR-1 标 SYNTHETIC-HISTORICAL；源码修 `337170983` PASS 保留；Host 复验冻结待原产品准入 |
 | read | 接线未测 | 生产挂载真路径（M1 弧已老版本验收；本固定包组合未重验） | V-RSJ `68701321`（已停；其未提交 kit 实际已失/待重建=恢复损失，不得改称按设计重写） | Host 验收冻结待 infra 安全入口实测 |
 | search | 接线未测 | 生产 rg 后端真路径 | 同上 | 同上 |
 | jobs | 接线未测 | durable bridge 生产路径 | 同上 | 同上 |
