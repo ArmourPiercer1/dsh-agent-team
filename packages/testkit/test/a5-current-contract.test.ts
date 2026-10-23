@@ -427,7 +427,7 @@ describe('checkCurrentContract — production path (current_contract is the only
         .replace('\u0000PSC\u0000', collectedLine === null ? '' : collectedLine)
     }
 
-    it('P9: phase_status agreeing with the plan 当期三态指针 grades clean — fixture pair AND the real production docs', () => {
+    it('P9: phase_status agreeing with the plan 当期三态指针 grades clean — fixture graph AND fixture plan (both carriers are the fixture pair)', () => {
       const f = files()
       // fixture pair (contractGraph()/files() default to the consistent pair)
       expect(grade(contractGraph(), f).findings.filter((x) => x.startsWith('Q9:'))).toEqual([])
