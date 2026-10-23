@@ -2405,13 +2405,13 @@ export function createAgentBindings(deps) {
       // the install flow, after this assembly ran. So the closure reads
       // through the LIVE plane value, never a build-time snapshot.
       let a5PlaneValue = null
-      // A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 card): the mounted control
-      // trio's wiring face (null = this world mounts none — the zero-flip
-      // law). Declared in the SAME lexical scope as the post-placement mount
-      // block AND the post-publish family registration write (the todo/write/
-      // image 9e-4 lesson: a const inside either half would leave the other
-      // half unable to reach it).
-      let a5SubagentControlWiring = null
+      // A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 + 21:01 cards): the built
+      // control trio wiring's inject face (null = this world mounts none —
+      // the zero-flip law). Declared in the SAME lexical scope as the
+      // pre-plane-build wiring section that fills it, the backends bag that
+      // carries it into the plane's ONE placement, and the post-publish
+      // family registration write (the 9e-4 lesson).
+      let a5SubagentControlInject = null
       // A5-M2 B-SESSION: the mount-time bound governed todo arm (null = this world
       // mounts none, the zero-flip law). Declared in the SAME lexical scope as both
       // the plane assembly that injects it and the later publish that registers its
@@ -3465,6 +3465,150 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-b-team: inject armed for ${sessionId} (claim=${a5TeamOpsClaim.names.join(',')})`)
         }
+        // ── A5-M2 B-SUBAGENT-CONTROL-WIRING wiring section (control-lane owner, root 20:03 + 21:01 cards) ──
+        // The governed CONTROL trio (census 44/45/46: interrupt_agent /
+        // list_agents / send_message) is armed ONLY when the closed
+        // `subagentControlEnabled` key says on (absent = the section never
+        // runs, byte-for-byte zero flip). The wiring BUILDS the three
+        // definitions HERE over real runtime facts — member-scoped native
+        // capture (todo/write/schedule law; deny-lane names refused), the
+        // live subagents service through deps.subagents re-read per dispatch,
+        // agentCtx.agents per dispatch, the inline
+        // Symbol.for('dsh.subagent.adjacentAgentSendMessageTool') marker pair
+        // (byte-parity with the pinned host helper, no private import). The
+        // PLACEMENT is the plane's own (root 21:01: the defs ride allDefs /
+        // placedByName / ownNames / the Guard's assembly-owned bind and
+        // bindingFeed / the PA placement attribution — the existing
+        // machinery, no second ledger): the inject below hands them to the
+        // plane, which mounts and disposes them like every other row. The
+        // wiring's OWNED admit seat walks the LIVE plane funnel lazily
+        // (a5PlaneValue.paAdmit + closePlan — set by the time any call
+        // arrives); its placement feed reads back through the SAME plane
+        // placementFeed the Guard's bindingFeed consumes. liveNative is the
+        // PLACEMENT-SEAM reader (root 21:01 card 2): the member-scoped face
+        // first; when this mount's own governed def answers the name, the
+        // plane's placement record (the legitimate visibility seam) must
+        // corroborate THAT def's identity before the captured native is
+        // answered — corroboration lost returns the shadowing def instead and
+        // the adapter fails the leg DEFINITION_DRIFT, fail closed. The GLOBAL
+        // face is NEVER read: a global same-name is not the member-scope
+        // original source. A refusal here is a setup refusal.
+        if (planeCfg.subagentControlEnabled === true) {
+          const refuseSubagentControl = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-SUBAGENT control mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-subagent-control-mount-refused'
+            observations.push(`a5m2-b-subagent-control: mount-REFUSED for ${sessionId} (${String(why).slice(0, 140)})`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseSubagentControl('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          if (typeof agentCtx.tools?.get !== 'function') {
+            throw refuseSubagentControl('the scoped tool face cannot read — the member-scoped native capture is impossible')
+          }
+          for (const trioName of Object.keys(A5_B_SUBAGENT_RECORD_SPECS)) {
+            if (capabilities.mode === 'selective' && capabilities.builtinToolDeny.includes(trioName)) {
+              throw refuseSubagentControl(`'${trioName}' is DENIED by this member's capability policy — the governed trio mount is not an override channel for the deny lane`)
+            }
+          }
+          const subagentControlCaptured = {}
+          for (const trioName of Object.keys(A5_B_SUBAGENT_RECORD_SPECS)) {
+            let nativeFace
+            try {
+              nativeFace = agentCtx.tools.get(trioName, runtimeAgent)
+            } catch (error) {
+              throw refuseSubagentControl(`the member-scoped tool face could not be read for the native ${trioName} definition (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            if (nativeFace === null || typeof nativeFace !== 'object' || typeof nativeFace.execute !== 'function') {
+              throw refuseSubagentControl(`no executable native ${trioName} definition is visible to this member scope — the governed same-name mount has nothing to replace`)
+            }
+            let captureIdentity
+            try {
+              captureIdentity = definitionIdentityOf(nativeFace)
+            } catch {
+              captureIdentity = undefined
+            }
+            if (typeof captureIdentity !== 'string' || captureIdentity.length === 0) {
+              throw refuseSubagentControl(`the captured native ${trioName} answers no definition identity — the visible-through placement pair has nothing to key on`)
+            }
+            subagentControlCaptured[trioName] = Object.freeze({ native: nativeFace, definitionIdentity: captureIdentity })
+          }
+          if (deps.subagents === null || typeof deps.subagents !== 'object' || Array.isArray(deps.subagents)
+            || typeof deps.subagents.sendMessage !== 'function' || typeof deps.subagents.interrupt !== 'function'
+            || typeof deps.subagents.listChildren !== 'function' || typeof deps.subagents.listDescendants !== 'function') {
+            throw refuseSubagentControl('the production port needs the REAL ctx.subagents handle — the integrator accessor deps.subagents answered no SubagentRuntime-shaped service {sendMessage,interrupt,listChildren,listDescendants}; mount the service or keep the gate closed')
+          }
+          if (typeof agentCtx.agents?.get !== 'function') {
+            throw refuseSubagentControl('the plugin Context answers no agents registry face (agentCtx.agents.get) — the list projection has no live status source')
+          }
+          const ADJACENT_AGENT_SEND_MESSAGE_MARK = Symbol.for('dsh.subagent.adjacentAgentSendMessageTool')
+          const subagentControlAssembly = createBSubagentControlWiring({
+            providerId: 'a5p5-plane',
+            captured: Object.freeze(subagentControlCaptured),
+            liveNative: (name) => {
+              const live = agentCtx.tools.get(name, runtimeAgent)
+              const mine = (subagentControlAssembly?.definitions ?? []).find((d) => d.name === name)
+              if (live !== undefined && live !== null && mine !== undefined && live === mine) {
+                let mineIdentity
+                try {
+                  mineIdentity = definitionIdentityOf(mine)
+                } catch {
+                  mineIdentity = undefined
+                }
+                const fed = a5PlaneValue?.placementFeed?.(name)
+                if (fed !== undefined && fed !== null && typeof mineIdentity === 'string' && fed.definitionIdentity === mineIdentity) {
+                  return subagentControlCaptured[name]?.native
+                }
+              }
+              return live
+            },
+            subagentService: deps.subagents,
+            liveSubagentService: () => deps.subagents,
+            agentsRegistry: agentCtx.agents,
+            liveAgentsRegistry: () => agentCtx.agents,
+            isAdjacentAgentSendMessageTool: (definition) => typeof definition === 'object' && definition !== null && definition[ADJACENT_AGENT_SEND_MESSAGE_MARK] === true,
+            markAdjacentAgentSendMessageTool: (definition) => {
+              Object.defineProperty(definition, ADJACENT_AGENT_SEND_MESSAGE_MARK, { value: true })
+              return definition
+            },
+            placementFeed: (name) => {
+              const fed = a5PlaneValue?.placementFeed?.(name)
+              if (fed === undefined || fed === null) return undefined
+              return {
+                definitionIdentity: typeof fed.definitionIdentity === 'string' && fed.definitionIdentity.length > 0 ? fed.definitionIdentity : undefined,
+                realmId: typeof fed.realmId === 'string' && fed.realmId.length > 0 ? fed.realmId : undefined,
+              }
+            },
+            pa: Object.assign(
+              (walk) => {
+                if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
+                  return Promise.reject(new Error('the placed plane answers no paAdmit funnel — the control trio has no admission edge (this wiring ships no stub walk)'))
+                }
+                return a5PlaneValue.paAdmit(walk)
+              },
+              {
+                closePlan: (callId) => {
+                  a5PlaneValue?.paAdmit?.closePlan?.(callId)
+                },
+              },
+            ),
+            observe: (row) => observations.push(`a5m2-b-subagent-control: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')} ${String(row?.detail ?? '')}`),
+          })
+          if (subagentControlAssembly.ok !== true) {
+            throw refuseSubagentControl(`the wiring refused its inputs (${String(subagentControlAssembly.code)}: ${String(subagentControlAssembly.message ?? '').slice(0, 160)})`)
+          }
+          a5SubagentControlInject = Object.freeze({
+            definitions: subagentControlAssembly.definitions,
+            familyId: subagentControlAssembly.familyId,
+            providerId: subagentControlAssembly.providerId,
+            placementNames: subagentControlAssembly.placementNames,
+            familyRegistrations: subagentControlAssembly.familyRegistrations,
+            dispose: subagentControlAssembly.dispose,
+          })
+          observations.push(`a5m2-b-subagent-control: trio ARMED for ${sessionId} (placement rides the plane; records=${Object.keys(subagentControlCaptured).join(',')})`)
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3538,7 +3682,7 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -3547,6 +3691,11 @@ export function createAgentBindings(deps) {
             ...(a5ScheduleInject === null ? {} : { schedule: a5ScheduleInject }),
             // A5M2-B-TEAM-WIRE (this lane's row in the shared backends union).
             ...(a5TeamOpsInject === null ? {} : { teamOps: a5TeamOpsInject }),
+            // A5-M2 B-SUBAGENT-CONTROL-WIRING (this lane's row in the shared
+            // backends union, root 21:01): the trio defs ride the PLANE's one
+            // placement — ownNames, the Guard's assembly-owned bind and
+            // bindingFeed, and the PA placement attribution resolve them.
+            ...(a5SubagentControlInject === null ? {} : { subagentControl: a5SubagentControlInject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3624,150 +3773,8 @@ export function createAgentBindings(deps) {
           revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
           return placed.dispose()
         })
-        // ── A5-M2 B-SUBAGENT-CONTROL-WIRING block A (mount; control-lane owner, root 20:03 card) ──
-        // The governed CONTROL trio (census records 44/45/46: interrupt_agent /
-        // list_agents / send_message) mounts ONLY when the closed
-        // `subagentControlEnabled` key says on — ABSENT config means this
-        // block never runs (byte-for-byte zero flip, the jobsEnabled/
-        // todoEnabled/scheduleEnabled law). Every input is a REAL runtime fact
-        // read HERE: the three natives through the MEMBER-SCOPED face (same
-        // capture law as todo/write/schedule — the global face is NOT a
-        // fallback; a deny-lane name is refused, never re-added over the
-        // deny), the live subagents service through the additive
-        // deps.subagents accessor re-read AT EVERY DISPATCH (exactly where
-        // the host bodies resolve ctx.subagents), the live agents registry
-        // through agentCtx.agents (list status per row), the placement realm
-        // from this mount's plane row, and THE ONE production PA funnel the
-        // plane itself exposes — a5PlaneValue.paAdmit (Part A + the ONE
-        // consumeForExecution edge + closePlan, team-tool-plane :1214/:1449/
-        // :1713, exposed at the plane value). This block SUPPLIES that funnel
-        // to the wiring's OWNED admit seat (the 20:02 integration contract);
-        // it never re-implements admission and never substitutes a stub. The
-        // adjacency marker pair is the well-known
-        // Symbol.for('dsh.subagent.adjacentAgentSendMessageTool') law written
-        // INLINE — byte-parity with the host's internal marker helper at the
-        // pinned baseline (defineProperty {value:true} / === true read), no
-        // private host module imported (disclosed). Placement identity reads
-        // back through the scoped face + definitionIdentityOf (the minted
-        // def#N — never a second derivation); while THIS mount's own placed
-        // def sits in front of the name, liveNative falls through to the
-        // global native row, so the adapter's per-dispatch L7 identity check
-        // keeps measuring the real native underneath (disclosed supply rule).
-        // A refusal here is a setup refusal — never a degraded unverified
-        // mount.
-        if (planeCfg.subagentControlEnabled === true) {
-          const refuseSubagentControl = (why) => {
-            const error = new Error(
-              `agent-bindings: alpha.5 governed B-SUBAGENT control mount refused for '${sessionId}': ${why}`,
-            )
-            error.code = 'alpha5-subagent-control-mount-refused'
-            observations.push(`a5m2-b-subagent-control: mount-REFUSED for ${sessionId} (${String(why).slice(0, 140)})`)
-            return error
-          }
-          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
-            throw refuseSubagentControl('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
-          }
-          if (typeof agentCtx.tools?.get !== 'function' || typeof agentCtx.tools?.register !== 'function') {
-            throw refuseSubagentControl('the scoped tool face cannot both read and register — the same-name governed mount is impossible')
-          }
-          if (typeof a5PlaneValue?.paAdmit !== 'function' || typeof a5PlaneValue.paAdmit.closePlan !== 'function') {
-            throw refuseSubagentControl('the placed plane answers no paAdmit funnel with closePlan — the trio would have no real admission edge, and this block never substitutes a stub')
-          }
-          for (const trioName of Object.keys(A5_B_SUBAGENT_RECORD_SPECS)) {
-            if (capabilities.mode === 'selective' && capabilities.builtinToolDeny.includes(trioName)) {
-              throw refuseSubagentControl(`'${trioName}' is DENIED by this member's capability policy — the governed trio mount is not an override channel for the deny lane`)
-            }
-          }
-          const subagentControlCaptured = {}
-          for (const trioName of Object.keys(A5_B_SUBAGENT_RECORD_SPECS)) {
-            let nativeFace
-            try {
-              nativeFace = agentCtx.tools.get(trioName, runtimeAgent)
-            } catch (error) {
-              throw refuseSubagentControl(`the member-scoped tool face could not be read for the native ${trioName} definition (${String(error?.message ?? error).slice(0, 140)})`)
-            }
-            if (nativeFace === null || typeof nativeFace !== 'object' || typeof nativeFace.execute !== 'function') {
-              throw refuseSubagentControl(`no executable native ${trioName} definition is visible to this member scope — the governed same-name mount has nothing to replace`)
-            }
-            let captureIdentity
-            try {
-              captureIdentity = definitionIdentityOf(nativeFace)
-            } catch {
-              captureIdentity = undefined
-            }
-            if (typeof captureIdentity !== 'string' || captureIdentity.length === 0) {
-              throw refuseSubagentControl(`the captured native ${trioName} answers no definition identity — the visible-through placement pair has nothing to key on`)
-            }
-            subagentControlCaptured[trioName] = Object.freeze({ native: nativeFace, definitionIdentity: captureIdentity })
-          }
-          if (deps.subagents === null || typeof deps.subagents !== 'object' || Array.isArray(deps.subagents)
-            || typeof deps.subagents.sendMessage !== 'function' || typeof deps.subagents.interrupt !== 'function'
-            || typeof deps.subagents.listChildren !== 'function' || typeof deps.subagents.listDescendants !== 'function') {
-            throw refuseSubagentControl('the production port needs the REAL ctx.subagents handle — the integrator accessor deps.subagents answered no SubagentRuntime-shaped service {sendMessage,interrupt,listChildren,listDescendants}; mount the service or keep the gate closed')
-          }
-          if (typeof agentCtx.agents?.get !== 'function') {
-            throw refuseSubagentControl('the plugin Context answers no agents registry face (agentCtx.agents.get) — the list projection has no live status source')
-          }
-          const ADJACENT_AGENT_SEND_MESSAGE_MARK = Symbol.for('dsh.subagent.adjacentAgentSendMessageTool')
-          const subagentControlPlacedByName = new Map()
-          const subagentControlAssembly = createBSubagentControlWiring({
-            providerId: 'a5p5-plane',
-            captured: Object.freeze(subagentControlCaptured),
-            liveNative: (name) => {
-              const live = agentCtx.tools.get(name, runtimeAgent)
-              // L7 fall-through (disclosed): my own placed def in front of
-              // the name is the EXPECTED mount, not drift — the check then
-              // measures the global native row underneath it.
-              if (live !== undefined && live !== null && subagentControlPlacedByName.get(name) === live) {
-                return agentCtx.tools.get(name)
-              }
-              return live
-            },
-            subagentService: deps.subagents,
-            liveSubagentService: () => deps.subagents,
-            agentsRegistry: agentCtx.agents,
-            liveAgentsRegistry: () => agentCtx.agents,
-            isAdjacentAgentSendMessageTool: (definition) => typeof definition === 'object' && definition !== null && definition[ADJACENT_AGENT_SEND_MESSAGE_MARK] === true,
-            markAdjacentAgentSendMessageTool: (definition) => {
-              Object.defineProperty(definition, ADJACENT_AGENT_SEND_MESSAGE_MARK, { value: true })
-              return definition
-            },
-            placementFeed: (name) => {
-              let placedFace
-              try {
-                placedFace = agentCtx.tools.get(name, runtimeAgent)
-              } catch {
-                placedFace = undefined
-              }
-              let identity
-              try {
-                identity = placedFace === undefined || placedFace === null ? undefined : definitionIdentityOf(placedFace)
-              } catch {
-                identity = undefined
-              }
-              return {
-                definitionIdentity: typeof identity === 'string' && identity.length > 0 ? identity : undefined,
-                realmId: a5PlaneRealmId,
-              }
-            },
-            pa: Object.assign(
-              (walk) => a5PlaneValue.paAdmit(walk),
-              { closePlan: (callId) => a5PlaneValue.paAdmit.closePlan(callId) },
-            ),
-            observe: (row) => observations.push(`a5m2-b-subagent-control: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')} ${String(row?.detail ?? '')}`),
-          })
-          if (subagentControlAssembly.ok !== true) {
-            throw refuseSubagentControl(`the wiring refused its inputs (${String(subagentControlAssembly.code)}: ${String(subagentControlAssembly.message ?? '').slice(0, 160)})`)
-          }
-          for (const placedDefinition of subagentControlAssembly.definitions) subagentControlPlacedByName.set(placedDefinition.name, placedDefinition)
-          const placedControlTrio = subagentControlAssembly.mount(agentCtx)
-          if (placedControlTrio.ok !== true) {
-            throw refuseSubagentControl(`the trio placement was refused (${String(placedControlTrio.code)}: ${String(placedControlTrio.message ?? '').slice(0, 160)})`)
-          }
-          toolDisposers.push(() => placedControlTrio.dispose())
-          a5SubagentControlWiring = subagentControlAssembly
-          observations.push(`a5m2-b-subagent-control: trio MOUNTED for ${sessionId} (realm=${a5PlaneRealmId} records=${Object.keys(subagentControlCaptured).join(',')})`)
-        }
+        // (B-SUBAGENT-CONTROL-WIRING: the wiring section stands BEFORE the plane build and the
+        // trio defs ride the PLANE's placement — root 21:01 card; see the inject block there.)
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
         // already holds. It brings NO registry: the TeamPermit gate + lease
@@ -4195,19 +4202,21 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
         }
-        // ── A5-M2 B-SUBAGENT-CONTROL-WIRING block B (family registration; control-lane owner, root 20:03 card) ──
+        // ── A5-M2 B-SUBAGENT-CONTROL-WIRING block B (family registration; control-lane owner, root 20:03 + 21:01 cards) ──
         // The B-SUBAGENT family claims ride the ONE registration table the
-        // todo/write/image/schedule lanes write (pa-mount-registry). The keys
-        // are the PLACED definitions' identities, read back through the
-        // scoped placement feed at this post-publish moment (the todo law: a
-        // row that answers no placement identity is a broken mount — refuse,
-        // never guess, never silently skip; the adapter's familyRegistrations
-        // carries its own PLACEMENT_KEY_ABSENT/MOVED laws and the trusted
-        // family facts — this block supplies nothing but the transport).
-        if (a5SubagentControlWiring !== null) {
+        // todo/write/image/schedule/G6 lanes write (pa-mount-registry), over
+        // the PLANE's own wiring face (the G6 mount-writer law: read AFTER
+        // publish; presence of the face is the deployment decision). The
+        // keys are the PLACED definitions' identities, read back through
+        // THIS plane's placementFeed — the same map the Guard's bindingFeed
+        // consumes (a row that answers no placement identity is a broken
+        // mount — refuse, never guess, never silently skip; the wiring's
+        // familyRegistrations carries its own PLACEMENT_KEY_ABSENT/MOVED
+        // laws and the trusted family facts — this block is transport only).
+        if (a5PlaneValue?.subagentControl !== undefined) {
           let controlRegistrations
           try {
-            controlRegistrations = a5SubagentControlWiring.familyRegistrations()
+            controlRegistrations = a5PlaneValue.subagentControl.familyRegistrations()
           } catch (error) {
             const refusal = new Error(
               `agent-bindings: alpha.5 governed B-SUBAGENT control family registration refused for '${sessionId}': ${String(error?.message ?? error).slice(0, 220)}`,
