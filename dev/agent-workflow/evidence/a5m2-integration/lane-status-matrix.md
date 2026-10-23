@@ -54,6 +54,8 @@ R1 g6-plane-mount (a2) session_*投影拒针：expected built.ok=false，actual 
 
 - **Schedule 窗预备齐（kit head `aa1fd44dd94cc5467ea60fcce26e7defdaa0b581`，链 …72d→fe20→merge→4dc→aa1）**：最后两处 resultErr() ReferenceError 类调用点改定义好的 resultError（2 插 1 删）；裸调用扫描零真未定义+四轮线形本地重放毕。**窗口事实**：fixture install 全路径（lock `163ed899…`）；终装 lock `7faee42f…`（602 包=+1 file: +78 平台可选件，edge-diff 在册）；冻结 RC0 日志（0 下载，r18 pinned store）；15 peer 0.2.0-rc.2+cordis 4.0.4+yaml2.9.0+zod4.4.3+874 file:；unique 141,136,345B 关键值。**待根单窗授予 3185/3496**（未 boot）。
 
+- **Team ④ 已落候选（`67e90c525`+镜像 `df0445e58`，FF over 796da885a，链共六枚）**：resolveToolCaller(:261-310)+caller-root 绑定臂(:455-474) **机械抽取**为单一导出 `resolveTeamToolCallerRootGate`，common entry 原地改调（同码/同消息/同 details/同身份源 live.resolveCaller，零第二身份逻辑零新词表零 Core）；治理面经可选 seam（bridge 在参数法后/queryFacts-mint 前跑 callerGate，拒=原生 typed rejected VALUE 逐字、零 PA 入口零事实读零 port；无 seam=行为逐字同前）。两新腿（拒腿 resolver 计数 0/无 walk/单 callerGateRefusals 计数；过腿不变）。**剩一行在我方之外文件**：root.ts:3919-3930 的同一 options 对象须以 `callerGate:(exec,r)=>resolveTeamToolCallerRootGate(toolsOptions,exec,r)` 交 backends.teamOps——**main writer's block（root.ts 非 9c 文件）**，该行存在前治理路径发布零 gate=行为同前。**p6t6-actions 一红为 base 态既有**（stash 复现同断言，非本次抽取所致）。门：27/27+9/9、电池 148/148、tsc/eslint 0、两 build RC0、镜像逐字节、check:artifacts:head ok 1796。下一步按其序=⑤ 实半（版本入 claim+edge/consume 比对，零第二账）。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
