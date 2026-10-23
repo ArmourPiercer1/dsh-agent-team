@@ -27,21 +27,29 @@ Eight lanes, each with its own barrel and its own `tsconfig.json`:
 | `tool-governance/src` | grant, lease, placement, planes, effects, assurance, binding — **consumed by production code**, see the note below |
 | `vnext-field-mapping/src` | field-mapping, v4-authoring-map — **dormant** (2 importers, both tests) |
 
-**One "DORMANT" label in this package is stale, and this line did not write it.**
-`tool-governance/src/index.ts` opens with *"DORMANT BY CONTRACT: no shipped source anywhere in
-`packages` imports this barrel — the lane is wired by PR1+ as a reviewed change (the
-`a5p0-layer-audit` test fails the moment production touches it)"*. It is no longer true:
-**22 production files import that barrel today**, in `runtime/control`, `runtime/tool-dispatch`,
-`runtime/tool-admission`, `runtime/operation-permission`, `runtime/controlled-fs/src`,
-`runtime/src/plugin/live` (including the team tool plane and the effect backends) and
-`tools/a5p5-tools/src`. `vnext-field-mapping`'s claim (*"zero production consumers"*) does hold —
-its only two importers are `runtime/test/a5p7-lane-hygiene.test.ts` and
-`testkit/test/p4t6-session-event-scan.test.ts`.
+**The "DORMANT" label on `tool-governance` was stale, and the numbers around it need their
+measurement stated.** PR0 froze the lane with *"DORMANT BY CONTRACT: no shipped source anywhere in
+`packages` imports this barrel"*; that sentence outlived the code. Three different counts are all
+true, which is exactly why the lane names an authority instead of a number:
 
-Read the label as history, not as current wiring: the lane is live, which is exactly what
-`packages/tools/README.md` describes when it says the effect parse law is imported from the
-domain. The source header, not this README, is what should be corrected — it is product source
-and outside this line's write grant, so the discrepancy is reported rather than edited.
+| question | answer in this checkout | how it is measured |
+| --- | --- | --- |
+| who imports this **barrel** | 22 production files | grep for `domain/tool-governance/src/index.js`, excluding `dist/` and tests |
+| who imports **any lane file** | 25 production files, in `runtime/control`, `runtime/tool-dispatch`, `runtime/tool-admission`, `runtime/operation-permission`, `runtime/controlled-fs/src`, `runtime/src/plugin/live`, `tools/a5p5-tools/src` | grep for `domain/tool-governance/src/` |
+| who the **law books** as consumers | 26 files, each booked with the symbol it consumes | `scripts/audit-a5-tool-governance-imports.mjs`, pinned by `test/a5p0-layer-audit.test.ts` |
+
+The last is the authority, and it is deliberately broader than a grep: its Law 3 counts edges into
+`tool-dispatch` as well, because *"the assembly point imports only the latter, and it is the caller
+that matters"* -- which is why `runtime/src/plugin/live/agent-bindings.mjs` is booked while
+importing no lane file directly. The law is now a **named set**, not emptiness: a consumer that
+appears is a design change that must be booked there, and one that disappears is a broken wire.
+
+The barrel's own header said otherwise until 2026-10-23, when it was corrected -- comment lines
+only, no behaviour touched -- after the coordinating session confirmed the lane had no writer in
+this tree; `packages/domain/README.md` and that header now agree, and both point at the ledger
+rather than at themselves. By contrast `vnext-field-mapping`'s dormancy is genuine: its only two
+importers, `runtime/test/a5p7-lane-hygiene.test.ts` and
+`testkit/test/p4t6-session-event-scan.test.ts`, are both tests.
 
 ## NOT responsible for
 
