@@ -378,50 +378,39 @@ export function createScheduleWiring(input = {}) {
  * The 59a factory above stays byte-intact as the assembly asset; these
  * exports make the family PRODUCTION-REACHABLE through the plane's REAL PA
  * edges (paAdmit.open → paAdmit.edge → the ONE consumeForExecution witness
- * → the governed body → dispose). The body law is the root ruling verbatim:
- * the governed row's BODY is the CAPTURED NATIVE definition's own execute —
- * "capture必须实际register owner同Agent、live ctx.schedule、同Host错误类"
- * is answered BY the native closure itself:
- *  - owner同Agent: the native was registered for exactly the member Agent
- *    object (registerScheduleTools(rootCtx, toolCtx, agent) @639ed01539), the
- *    row passes the call's REAL exec through, and the arm re-asserts the
- *    host's own `exec.agent !== agent → internal_error` VALUE pre-entry;
- *  - live ctx.schedule: the native body resolves `rootCtx.schedule` AFRESH at
- *    every dispatch (tools.ts :443/:460/:484/:515) — the strongest possible
- *    liveness read, one the plugin could not fabricate; the inert port below
- *    is NOT a stand-in service, it is a refusal object: production traffic
- *    that ever reaches it is drift and it answers loudly;
- *  - 同Host错误类: the arm mirrors `instanceof` ONLY against the REAL
- *    published class imported from '@deepseek-ai/dsh-schedule' (the same
- *    module identity the native bodies throw — ScheduleId mints land here).
+ * → the governed body → dispose). THE 18:52 NARROW RULING (root): the body
+ * may NOT bypass the adapter — the arm's execute IS the adapter row's own
+ * `delegate(plan, { exec })`, i.e. the full signed SAME-PLAN execution
+ * boundary runs on every production dispatch: edgeIntegrity (drain, the
+ * CURRENT native face + execute identity, the CURRENT service object + every
+ * method identity), NOT_OWN_PLAN, the fresh re-classify and PLAN_STALE
+ * fingerprint, the ALREADY_DISPATCHED plan-object memo, the owner REFERENCE
+ * law (exec.agent vs the bound Agent OBJECT — the host's identity-refusal
+ * VALUE), the abort law, the frozen port call, and the L6 mirror
+ * (`instanceof` the INJECTED published ScheduleInputError class — the same
+ * module identity the native bodies throw). Native fidelity (root: 保真
+ * native) lives INSIDE that boundary: the production port is the NATIVE
+ * DISPATCH PORT — its list/delete methods forward to the BOUND native face
+ * with the owner's exec, so the host closure remains the final body (its
+ * per-call `rootCtx.schedule` read, ScheduleId mint and operationError
+ * mirror all run) BEHIND every adapter check. THE PORT IS THE RAW SERVICE
+ * (root 19:17): glue supplies the REAL published ScheduleService — the
+ * ctx.schedule handle through a CURRENT FEED the entry reads from the
+ * host's global service store — and liveScheduleService() re-reads that
+ * feed at every dispatch edge exactly where the host bodies resolve
+ * rootCtx.schedule. The signed PORT_DRIFT legs are therefore REAL service-
+ * drift checks: a service object or a service method replaced underneath
+ * the mount refuses BEFORE any port entry. The native TOOL face never
+ * masquerades as the service (its output is a rendered view set / tool
+ * VALUE, not the service's record stream — double-mapping a normal value
+ * or feeding a {code,message} VALUE through records.map is exactly the
+ * mis-layering this law closes); it keeps its real role as the capture
+ * IDENTITY behind liveNative (不绕批准, 不绕adapter).
  * The 11-leaf projection (mintTargetManifest above) is the ONE claim face —
  * production arms and the 59a seat share it byte-for-byte; taskId rides
  * null-or-exact as measured (the nullable kind stays root's single signed
  * column); create/update have NO arm, NO row, NO registration (the trigger
  * gap is open — they are not enabled). */
-
-/** The host's own identity/signal refusal VALUE (schedule tools lib
- *  internalError() @639ed01539) — the arm answers this pre-entry, never a
- *  typed code the host would not answer. */
-const HOST_INTERNAL_ERROR_VALUE = Object.freeze({ code: 'internal_error', message: 'The schedule operation failed.' })
-
-/** The PRODUCTION-LEGAL inert port: every published ScheduleService method
- *  exists (the factory's shape law) and every call REFUSES loudly. The
- *  governed production body is the native execute; nothing dispatches
- *  through a port in production, and anything that ever tries is drift. */
-export function createScheduleInertPort () {
-  const refuseMethod = async () => {
-    throw new Error('P_B_SCHEDULE_PRODUCTION_PORT_INERT — the governed production body is the captured native execute (live rootCtx.schedule is ITS per-call read); nothing dispatches through a port here — a call reaching this port is drift, not a route')
-  }
-  return Object.freeze({
-    create: refuseMethod,
-    list: refuseMethod,
-    catalog: refuseMethod,
-    history: refuseMethod,
-    delete: refuseMethod,
-    update: refuseMethod,
-  })
-}
 
 /** The 11-leaf measured projection as the ONE production claim face (the
  *  59a seat's own mintTargetManifest, byte-identical by construction). */
@@ -478,8 +467,10 @@ export function createGovernedScheduleArm (input = {}) {
   }
   const providerId = typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'a5p5-plane'
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
-  const capturedAgent = input.capturedAgent
-  const HostInputError = input.ScheduleInputError
+  // the native face, the owner Agent object and the error class are INPUT
+  // LAWS here (validated below); at dispatch they are retained by the
+  // assembly/port closures — the delegate re-reads the bound capture and the
+  // adapter's L6 mirror runs against the assembly-injected class identity.
   let drained = false
 
   const classify = (raw) => {
@@ -515,38 +506,23 @@ export function createGovernedScheduleArm (input = {}) {
     })
   }
 
+  // THE execution boundary IS the adapter's own delegate (root 18:52
+  // 不绕adapter): every dispatch re-runs edgeIntegrity (drain / CURRENT
+  // native face + execute / CURRENT service + method identities), the
+  // fresh re-classify + PLAN_STALE fingerprint, the ALREADY_DISPATCHED
+  // plan-object memo, the owner REFERENCE law, the abort law, the frozen
+  // port call and the L6 error mirror. The arm adds NOTHING in front of it
+  // — no pre-entry owner check, no native shortcut — so a drain landing
+  // between the PA await and this call refuses at the boundary BEFORE any
+  // native entry, and a plan re-presented after its flight answers
+  // ALREADY_DISPATCHED. Native fidelity rides inside: the production port
+  // forwards to the BOUND native face with the owner exec (the host closure
+  // is still the final body), and the L6 mirror runs against the REAL
+  // published class identity the adapter was assembled with.
   const execute = async (plan, exec) => {
-    if (!isRecord(exec)) {
-      return { ok: false, code: 'P_B_SCHEDULE_EXEC_UNBOUND', detail: 'the governed body needs the call REAL exec (agent + signal) — nothing dispatches blind' }
-    }
-    // Owner同Agent PRE-ENTRY (the host's own identity VALUE verbatim): the
-    // native would answer exactly this on a reference miss — the arm answers
-    // it with ZERO native entry, and a pass still runs the native's own law.
-    if (exec.agent !== capturedAgent) {
-      observe({ event: 'b-schedule-arm:owner-refusal-value', name })
-      return deepFreeze({ ok: true, settled: 'host-identity-value', value: HOST_INTERNAL_ERROR_VALUE })
-    }
-    try {
-      const value = await native.execute(plan.args, exec)
-      observe({ event: 'b-schedule-arm:native-settled', name })
-      return { ok: true, value }
-    } catch (error) {
-      // 同Host错误类: ONLY the injected REAL class identity mirrors to its
-      // own code (the ScheduleId mint throw rides exactly this path); any
-      // other throw refuses typed — and for the durable-mutating delete the
-      // side-effect class is declared, never silently dropped (f609c1b law).
-      if (error instanceof HostInputError) {
-        observe({ event: 'b-schedule-arm:input-error-mirror', name })
-        return deepFreeze({ ok: true, settled: 'host-error-mirror', value: Object.freeze({ code: String(error.code), message: String(error.message) }) })
-      }
-      observe({ event: 'b-schedule-arm:native-threw', name })
-      return {
-        ok: false,
-        code: 'P_B_SCHEDULE_NATIVE_UNEXPECTED',
-        detail: `the captured native body threw outside the host's own error law (${String(error?.message ?? error).slice(0, 160)})`,
-        ...(name === 'schedule_delete' ? { sideEffectPossible: true } : {}),
-      }
-    }
+    const ran = await row.delegate(plan, { exec })
+    observe({ event: 'b-schedule-arm:delegated', name, ok: ran?.ok === true, settled: typeof ran?.settled === 'string' ? ran.settled : undefined, code: typeof ran?.code === 'string' ? ran.code : undefined })
+    return ran
   }
 
   const arm = deepFreeze({
