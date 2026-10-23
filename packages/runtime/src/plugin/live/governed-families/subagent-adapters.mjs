@@ -26,10 +26,10 @@
  *
  * ── NATIVE-FACE LEDGER (comment-side ONLY: a string literal IS an edge to
  * the audit, so these path facts never live in values) ─────────────────────
- * send_message    HOST pkg dsh-tool-subagent-control, subagent/tool-subagent-control/src/index.ts: register @:28 of defineTool, wrapped by markAdjacentAgentSendMessageTool (dsh-subagent internal); body: sender = exec.agent — FALSY → THROW Error('send_message requires a calling agent (exec.agent was undefined)'); message = [{type:'text', text: args.message}]; messageId = await ctx.subagents.sendMessage(sender, brandString(args.agent_id), message, { signal: exec.signal }); return { messageId }. No catch — service errors propagate as tool errors.
- * interrupt_agent same file: register @:74; body: caller = exec.agent — FALSY → THROW Error('interrupt_agent requires a calling agent (exec.agent was undefined)') ("Ancestor authority requires an exact live calling agent"); ctx.subagents.interrupt(brandString(args.agent_id), { kind:'ancestor', agent: caller }); returns Promise.resolve({ accepted: true }) — FIRE-AND-FORGET: the call answers REQUEST-ACCEPTED, not a stopped turn, not a destroyed child (the ledger law: the service authorizes the exact live caller against the target's RECORDED LINEAGE; the tool adds no authority of its own).
+ * send_message    HOST pkg dsh-tool-subagent-control, subagent/tool-subagent-control/src/index.ts: register @:28 of defineTool, wrapped by markAdjacentAgentSendMessageTool (dsh-subagent internal); body: sender = exec.agent — FALSY → THROW Error('send_message requires a calling agent (exec.agent was undefined)'); message = [{type:'text', text: args.message}]; messageId = await ctx.subagents.sendMessage(sender, brandString(args.agent_id), message, { signal: exec.signal }); return { messageId }. No catch — service errors propagate as tool errors. ADJACENCY LAW (measured, published face + continuation.ts): agent_id addresses the sender's DIRECT continuable child OR — when the sender is a RESIDENT continuable child — its DIRECT PARENT (child→parent is LEGAL); siblings, uncles and deeper descendants are NOT adjacent. Service body: exact-live-sender registry check; a resident child's send-to-parent short-circuit; a non-resident sender addressing its own parent throws SubagentError UNAUTHORIZED; otherwise deliverToChild (a missing DIRECT child cold-resumes).
+ * interrupt_agent same file: register @:74; body: caller = exec.agent — FALSY → THROW Error('interrupt_agent requires a calling agent (exec.agent was undefined)') ("Ancestor authority requires an exact live calling agent"); ctx.subagents.interrupt(brandString(args.agent_id), { kind:'ancestor', agent: caller }); returns Promise.resolve({ accepted: true }) — FIRE-AND-FORGET: the call answers REQUEST-ACCEPTED, not a stopped turn, not a destroyed child (the ledger law: the service authorizes the exact live caller against the target's RECORDED LINEAGE; the tool adds no authority of its own). MEASURED SERVICE SEMANTICS (continuation-activation.ts, source of truth): the exact live caller is required and never self (else SubagentError UNAUTHORIZED); an ABSENT target — one-shot or unknown id — is an ACCEPTED NO-OP (nothing throws; {accepted:true} stands); ONLY a LIVE target whose recorded ancestry lacks the caller answers SubagentError UNAUTHORIZED.
  * list_agents     same pkg list-agents.ts: register @:86; body: parent = exec.agent — FALSY → THROW Error('list_agents requires a calling agent (exec.agent was undefined)'); scope = args.scope ?? 'children' (closed enum children|descendants, dispatcher schema-validated); children → await ctx.subagents.listChildren(parent.id, exec.signal); descendants → await ctx.subagents.listDescendants(parent.id, exec.signal); projection (project/statusOf): diagnostic rows pass through {kind,id,reason,parent?,depth?}; NON-continuable (one-shot) rows are OMITTED (send_message can never continue them); child rows {kind:'child', id, label, status: agents.get(id)?.status === 'running' ? 'running' : 'inactive', parent?, depth?} — the live Agent registry (ctx.agents) answers status per row WITHOUT exposing load state.
- * service face    HOST pkg dsh-subagent lib types: sendMessage(sender: Agent, targetId: SessionId, content: ContentBlock[], options:{signal?}): Promise<MessageId>; interrupt(targetSessionId: SessionId, authority: {kind:'ancestor', agent: Agent}): void; listChildren(parentSessionId, signal?): Promise<SubagentCatalogEntry[]>; listDescendants(rootSessionId, signal?): Promise<SubagentDescendantListEntry[]>. The host bodies resolve ctx.subagents and ctx.agents AFRESH at every call (closure over ctx, property read per call) — the row therefore re-reads BOTH live feeds per dispatch (sibling root ② law).
+ * service face    HOST pkg dsh-subagent lib types: sendMessage(sender: Agent, targetId: SessionId, content: ContentBlock[], options:{signal?}): Promise<MessageId>; interrupt(targetSessionId: SessionId, authority: {kind:'ancestor', agent: Agent}): void; listChildren(parentSessionId, signal?): Promise<SubagentCatalogEntry[]>; listDescendants(rootSessionId, signal?): Promise<SubagentDescendantListEntry[]>. The host bodies resolve ctx.subagents and ctx.agents AFRESH at every call (closure over ctx, property read per call) — the row therefore re-reads BOTH live feeds per dispatch (sibling root ② law). ERROR REALITY (measured): the service face HAS a published error class — SubagentError, exported by dsh-subagent's package index (src/index.ts:117) and carried+exported by the published runtime bundle packages/subagent/subagent/lib/index.js, which is also where its throw sites live; it extends HarnessError and carries a code string (the send/interrupt authority refusals above are its instances with code 'UNAUTHORIZED').
  * marker          HOST pkg dsh-subagent, subagent/src/internal.ts: adjacentAgentSendMessageTool = Symbol.for('dsh.subagent.adjacentAgentSendMessageTool') — PROCESS-STABLE IDENTITY carried by the STANDARD adjacent-Agent messaging tool ONLY; mark = Object.defineProperty(definition, symbol, { value: true }) — NON-ENUMERABLE. MEASURED CONSEQUENCE: an object spread of a marked definition DROPS the mark — a placed definition that re-spreads the capture would silently BREAK the continuation-delivery check (continuation.ts consults the predicate on the REGISTERED tool). This assembly therefore REQUIRES the injected predicate + marker pair and RE-MARKS the placed send_message definition (L3b); the spec pins the measured facts (mark non-enumerable, bare spread loses it, re-mark restores it).
  * non-recognition contract §B-SUBAGENT: exact host-provider identity must NEVER cross-certify with the upstream experimental Team same-name trio (packages/experimental/tool-agent-team registers same-named tools); for send_message the marker gate ENFORCES this at assembly (a same-name unmarked capture is refused); for interrupt_agent/list_agents no marker exists — non-recognition rides the placement-feed's realm identity (the registration key is minted for the PLACED definition of THIS provider's mount), never name equality.
  * registration   the lane binds these trio tools for its members through agent-bindings (CENTER-owned paths); this module registers nothing (L11).
@@ -49,8 +49,15 @@
  *     edge; a replaced object or rebound method is PORT_DRIFT with zero
  *     service entry; split mounts refuse at assembly. THE VERIFIED HANDLES
  *     ARE THE INVOKED HANDLES: the edge returns the verified {port, registry,
- *     methods} and the dispatch uses exactly those — no second, unverified
- *     feed read exists between verification and invocation; the
+ *     get, methods} and the dispatch uses exactly those — no second,
+ *     unverified feed read exists between verification and invocation.
+ *     THE get FUNCTION IS A CAPTURED HANDLE, NOT A PROPERTY RE-READ: the
+ *     live registry OBJECT being unchanged does not pin its get — the
+ *     assembly CAPTURES registry.get at bind time, the edge VERIFIES the
+ *     live registry still answers that same function, and the projection
+ *     and the adjacency pre-check INVOKE exactly the captured handle (one
+ *     handle reference for all three uses; a post-await property swap can
+ *     never reach the service of this row — root 581-1 FIX 2). The
  *     parameters compare base is a BIND-TIME canonical snapshot, never the
  *     live shared reference (settled house law from the B-TEAM review).
  *  L3b MARKER GATE + RE-MARK (measured): the send_message capture MUST pass
@@ -70,19 +77,35 @@
  *     id-paired stand-in. Contrast B-SCHEDULE (register-time bound Agent →
  *     internal_error VALUE): the trio's refusal class is a THROW, exactly
  *     as the published bodies throw.
- *  L5 THIN ARGUMENT MIRROR, REFUSAL CLASS: beyond the record check the row
- *     mirrors only what the dispatcher schema already enforces BEFORE the
- *     body runs (agent_id non-empty string; message non-empty string;
- *     scope ∈ {absent, children, descendants}) — as typed REFUSALS (a
- *     mount anomaly the lane dispatcher would have stopped), never as
- *     invented lane VALUES: the trio bodies answer NO typed argument
- *     VALUES of their own (no ScheduleInputError class, no TeamToolArgs
- *     class here), and inventing one would be duck-law. The SERVICE keeps
- *     every real adjudication (unknown target, lineage deny, cross-owner).
+ *  L5 THIN ARGUMENT MIRROR — TYPE-STRICT, NEVER STRICTER THAN HOST: beyond
+ *     the record check the row mirrors ONLY the TYPES the published
+ *     dispatcher schema enforces BEFORE the body runs — agent_id: string;
+ *     message: string; scope ∈ {absent, children, descendants} (published
+ *     enum). The published parameter face is TYPE-ONLY (string, required —
+ *     NO minLength, measured): EMPTY STRINGS ARE LEGAL and MUST flow to the
+ *     original service, which owns the business refusal. The row never
+ *     exceeds the published schema: no invented minLength, and no
+ *     unknown-key denial (the parameter root is an OPEN object — unknown
+ *     keys reach the body at Host, so they reach the row's plan too).
+ *     NON-RECORD arguments (null/undefined/'nope'/array) are NOT the row's
+ *     to validate: the placed execute PASSES THEM THROUGH to the captured
+ *     native definition, whose compiled validator (object root, measured)
+ *     answers the Host's OWN ToolArgsError before its body — null/undefined
+ *     are never coerced to {} and no synthetic '{}' is ever validated.
+ *     Typed REFUSALS are refusals, never invented lane VALUES: the trio
+ *     bodies answer NO typed argument VALUES of their own (no
+ *     ScheduleInputError class, no TeamToolArgs class here), and inventing
+ *     one would be duck-law. The SERVICE keeps every real adjudication
+ *     (unknown target, business refusal, lineage deny, cross-owner).
  *  L6 NO ERROR MAP: the bodies never catch; the row catches NOTHING —
  *     service throws propagate verbatim as tool errors (no value
- *     fabrication, root ③ spirit; no published error class exists for this
- *     service face — measured: none exported for these paths).
+ *     fabrication, root ③ spirit). ERROR REALITY (measured, replaces the
+ *     earlier "none exported" claim): a published class DOES exist for this
+ *     service face — SubagentError (dsh-subagent; exported from the package
+ *     index, carried and exported by the published runtime bundle whose own
+ *     throw sites instantiate it). The row maps nothing to it and nothing
+ *     from it: an UNAUTHORIZED denial is the SERVICE's instance propagating
+ *     through the row, instanceof-able against that published class.
  *  L7 PER-DISPATCH EDGE RE-VERIFY: liveNative(name) must answer the bound
  *     definition OBJECT with unchanged description bytes, compiled
  *     parameters, and execute function; the live service/registry feeds
@@ -158,6 +181,7 @@ export const A5_B_SUBAGENT_EFFECT_LABELS = Object.freeze({
 /** Typed refusal codes OWNED by this module (closed set). */
 export const A5_B_SUBAGENT_CODES = Object.freeze({
   INPUT_INVALID: 'P_B_SUBAGENT_INPUT_INVALID',
+  NOT_ADJACENT: 'P_B_SUBAGENT_NOT_ADJACENT',
   CAPTURE_ABSENT: 'P_B_SUBAGENT_CAPTURE_ABSENT',
   CAPTURE_INCOMPLETE: 'P_B_SUBAGENT_CAPTURE_INCOMPLETE',
   NON_FAMILY_CAPTURE: 'P_B_SUBAGENT_NON_FAMILY_CAPTURE',
@@ -184,7 +208,7 @@ const CODES = A5_B_SUBAGENT_CODES
  */
 export const A5_B_SUBAGENT_NAMED_GAPS = Object.freeze({
   SPAWN_SIDE_CLOSED_WORLD: 'SPAWN SIDE (census records 39–43: subagent / subagent_fork / subagent_codex / subagent_claude_code / list_subagent_models) IS NOT COVERED HERE and cannot be honestly adapted at this seam: the contract law P child创建前安装同一CENTER closed world，不能先spawn再补Guard is a PRE-SPAWN CENTER obligation (existing entry path agent-bindings createTeamAgent route), the external codex/claude envelopes are provider-mount dimensions ("不能把外部模型当已治理native工具"), and NOTHING in this trio spawns — its three bodies reach ONLY ALREADY-EXISTING children through ctx.subagents. The family C2 dimension 未安装治理child不得启动 is therefore NOT observable, NOT claimed, and NOT weakened by this subset landing.',
-  LINEAGE_AUTHORITY: 'PARENT-CHILD RELATION AND CROSS-OWNER DENY ARE SERVICE-SIDE FACTS (measured): the published bodies ADD NO AUTHORITY OF THEIR OWN — send passes the caller as the SENDER reference and interrupt hands {kind:\'ancestor\', agent: caller} for the SERVICE to authorize against the target\'s recorded lineage; list scopes by the caller\'s session id. The row forwards the SAME live exec.agent reference and adjudicates nothing: a cross-owner message/interrupt is refused by the SERVICE (the exact denial surface is not observable at this seam — C2\'s 跨owner拒 obligation lives with the service, not this row).',
+  LINEAGE_AUTHORITY: 'ADJACENCY IS THE MEASURED send_message LAW; FULL AUTHORITY STAYS SERVICE-SIDE. The published face addresses a DIRECT continuable child or — for a RESIDENT continuable child — its DIRECT PARENT (child→parent is legal); siblings/uncles are NOT adjacent (list_agents lineage rows carry parent id + depth; adjacency = parent or direct child only). The row performs ONE NEGATIVE PRE-CHECK for send_message: a LIVE registry target whose recorded parentSession PROVES it is neither the caller\'s direct child nor the caller\'s direct parent is refused NOT_ADJACENT with zero service entry (lineage facts read from the VERIFIED registry get handle). Everything else stays the service\'s: residency of a send-to-parent, cold/durable targets, unknown ids, interrupt\'s live-ancestry authority, and every cross-owner deny — those answer the published SubagentError (code UNAUTHORIZED) which propagates verbatim. The published bodies ADD NO AUTHORITY of their own; the row forwards the SAME live exec.agent reference and owns no positive grant.',
   INTERRUPT_COMPLETION: 'INTERRUPT IS FIRE-AND-FORGET: {accepted:true} is REQUEST ACCEPTANCE — not a stopped turn, not drained descendants, not a destroyed child (census 44: 不得误称销毁; the published description says the call returns WITHOUT waiting, deeper children keep running). Awaiting child resource evidence (C3) is not observable at this seam and is never reported.',
   DELIVERY_CONTINUATION: 'SEND IS NOT AN IN-MEMORY WRITE — and the row sees only its ACK: the messageId is the service acceptance; durable delivery, the continuation/liveness semantics (the marked standard tool participates in the continuation-delivery check), and the resource-budget implication of a waking send ride INSIDE the service. The row never restates them.',
   PLAN_ONCE_MEMO: 'PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER (root ④): consumedPlans refuses replaying the SAME plan OBJECT with zero service entry; a caller that COPIES a plan\'s fields re-dispatches (the fingerprint law re-runs the whole law on the copy). Delivery idempotency is the SERVICE\'s (messageId semantics); the real one-shot consumedProof is the CENTER PA wiring edge. This row mints neither and never claims once-closure.',
@@ -220,15 +244,18 @@ const missingCallerThrow = (name) => new Error(`${name} requires a calling agent
 
 /** The list projection mirror (list-agents.ts project/statusOf, verbatim
  *  semantics): diagnostic passes, NON-continuable rows are OMITTED, child
- *  rows carry the live registry status WITHOUT exposing load state. */
-function projectEntry(agents, entry, position) {
+ *  rows carry the live registry status WITHOUT exposing load state.
+ *  FIX 2 (581-1): the reader is the EDGE-VERIFIED get HANDLE invoked with the
+ *  verified registry as receiver — never a fresh `agents.get` property read
+ *  (a post-await property swap would otherwise poison the projection). */
+function projectEntry(readAgent, entry, position) {
   if (!isRecord(entry)) return undefined
   const at = position === undefined ? {} : { parent: position.parentId, depth: position.depth }
   if (entry.kind === 'diagnostic') {
     return { kind: 'diagnostic', id: entry.id, reason: entry.reason, ...at }
   }
   if (entry.mode !== 'continuable') return undefined
-  const child = agents.get(entry.id)
+  const child = readAgent(entry.id)
   return {
     kind: 'child',
     id: entry.id,
@@ -297,8 +324,11 @@ export function createSubagentAdapterAssembly(input = {}) {
     return refuseAssembly(CODES.PORT_DRIFT, 'liveSubagentService() does not answer the bound subagentService — the mount is already split between two service objects; refuse at assembly, never dispatch into a split mount')
   }
   const registry = input.agentsRegistry
-  if (!isRecord(registry) || typeof registry.get !== 'function') {
-    return refuseAssembly(CODES.PORT_ABSENT, 'agentsRegistry { get(id) } is REQUIRED — the ctx.agents-shaped live Agent registry the list projection reads per row (status WITHOUT exposing load state)')
+  // FIX 2 (581-1): the get FUNCTION is captured HERE (one property read) —
+  // the same handle reference the edge verifies and the dispatch invokes.
+  const boundGet = isRecord(registry) ? registry.get : undefined
+  if (!isRecord(registry) || typeof boundGet !== 'function') {
+    return refuseAssembly(CODES.PORT_ABSENT, 'agentsRegistry { get(id) } is REQUIRED — the ctx.agents-shaped live Agent registry the list projection reads per row (status WITHOUT exposing load state); its get function is captured at bind time and re-verified per dispatch')
   }
   if (input.liveAgentsRegistry() !== registry) {
     return refuseAssembly(CODES.PORT_DRIFT, 'liveAgentsRegistry() does not answer the bound agentsRegistry — split live registry; refuse at assembly')
@@ -381,11 +411,12 @@ export function createSubagentAdapterAssembly(input = {}) {
       return refuse(CODES.PORT_DRIFT, `${row.name}: the CURRENT ctx.subagents read is not the bound port object — the published bodies resolve it afresh per call; a replaced service underneath this mount is drift, full stop (L3)`)
     }
     // THE VERIFIED HANDLES ARE THE INVOKED HANDLES (settled house law from
-    // the B-TEAM first review, carried into this family from day one): the
-    // port object, the method functions and the live registry verified by
-    // THIS read are the exact handles the delegate edge later uses — there
-    // is no second, unverified feed read between verification and
-    // invocation.
+    // the B-TEAM first review, carried into this family from day one;
+    // 581-1 FIX 2 extends it to the get FUNCTION): the port object, the
+    // method functions, the live registry AND its bind-time-captured get
+    // function verified by THIS read are the exact handles the delegate
+    // edge later uses — there is no second, unverified feed read (property
+    // read INCLUDED) between verification and invocation.
     const methods = {}
     for (const method of row.portMethods) {
       const fn = current[method]
@@ -398,7 +429,13 @@ export function createSubagentAdapterAssembly(input = {}) {
     if (currentRegistry !== bound.registry) {
       return refuse(CODES.PORT_DRIFT, `${row.name}: the CURRENT ctx.agents read is not the bound live registry — the list projection reads it per row; a replaced registry is drift (L3)`)
     }
-    return Object.freeze({ port: current, registry: currentRegistry, methods: Object.freeze(methods) })
+    // FIX 2 (581-1): the OBJECT alone proves nothing — a same-object
+    // `registry.get = poison` swap must refuse HERE, verified against the
+    // bind-time handle; the edge hands out ONLY that captured handle.
+    if (currentRegistry.get !== bound.get) {
+      return refuse(CODES.PORT_DRIFT, `${row.name}: the live registry's get function was rebound underneath the frozen bind — the projection and the adjacency pre-check ride the VERIFIED get handle, never a fresh property read; a swapped impl is drift, full stop (L3/FIX 2)`)
+    }
+    return Object.freeze({ port: current, registry: currentRegistry, get: bound.get, methods: Object.freeze(methods) })
   }
 
   const buildActiveRow = (name, capture) => {
@@ -428,20 +465,32 @@ export function createSubagentAdapterAssembly(input = {}) {
       classify: (rawArgs) => classify(row, rawArgs),
       delegate: (plan, ctx) => delegate(row, plan, ctx),
     }
-    boundOf.set(row, Object.freeze({ def, descriptionBytes, parametersCanonical: canonicalJson(parameters), execute: def.execute, port: service, registry }))
+    boundOf.set(row, Object.freeze({ def, descriptionBytes, parametersCanonical: canonicalJson(parameters), execute: def.execute, port: service, registry, get: boundGet }))
     return row
   }
 
-  /** Contract §B-SUBAGENT target facts every plan carries: I+S(parent
-   *  member + child instance, exact operation) — the parent is the LIVE
-   *  exec.agent REFERENCE at dispatch (never a string), the child id is a
-   *  CLAIM the service adjudicates against recorded lineage. */
+  /** Contract §B-SUBAGENT target facts every plan carries: I+S(caller
+   *  member + addressed instance, exact operation). The caller is the LIVE
+   *  exec.agent REFERENCE at dispatch (never a string). The RELATION is NOT
+   *  a universal parent→child quantifier (581-1 FIX 3, measured): send
+   *  addresses an ADJACENT Agent — a direct continuable child OR, for a
+   *  resident continuable child, its DIRECT PARENT (child→parent is legal);
+   *  interrupt reaches the caller's live ancestry (direct child or deeper);
+   *  list scopes the caller's own tree. The claim is adjudicated as the
+   *  published face measures it, not re-invented here. */
   const mintTarget = (name, snapshot) => Object.freeze({
-    contract: 'M0-B-FAMILY-TARGET-CONTRACTS §B-SUBAGENT — 目标I+S(parent member+child instance,spawn/fork/message/interrupt/read/model-list) — THIS ROW: message/interrupt/read over an EXISTING child only (spawn side is NAMED GAP SPAWN_SIDE_CLOSED_WORLD)',
-    parent: 'the LIVE exec.agent reference at dispatch (identity by reference, per-call; the trio binds no Agent at register time — L4)',
-    child: Object.freeze({
+    contract: 'M0-B-FAMILY-TARGET-CONTRACTS §B-SUBAGENT — 目标I+S(parent member+child instance,spawn/fork/message/interrupt/read/model-list) — THIS ROW: message/interrupt/read over an EXISTING Agent only (spawn side is NAMED GAP SPAWN_SIDE_CLOSED_WORLD)',
+    caller: 'the LIVE exec.agent reference at dispatch (identity by reference, per-call; the trio binds no Agent at register time — L4)',
+    address: Object.freeze({
       claim: snapshot.agent_id ?? null,
-      adjudication: 'the SubagentService authorizes the exact live caller against the target\'s RECORDED LINEAGE (cross-owner/unknown deny is service-side — NAMED GAP LINEAGE_AUTHORITY); the row adjudicates nothing',
+      relation: name === 'send_message'
+        ? 'ADJACENT ONLY (measured published face): a DIRECT continuable child of the caller, or — when the caller is a RESIDENT continuable child — its DIRECT PARENT (child→parent is legal); siblings, uncles and deeper descendants are NOT adjacent'
+        : name === 'interrupt_agent'
+          ? 'the caller\'s live ANCESTRY: a direct child or deeper descendant (the caller itself is refused by the service)'
+          : 'the caller\'s own TREE: children = direct; descendants = rows carry parent id + depth (entries deeper than 1 accept only interrupt_agent)',
+      adjudication: name === 'send_message'
+        ? 'the row refuses ONLY what the verified live registry PROVES non-adjacent (NOT_ADJACENT, zero service entry — a negative pre-check from recorded parentSession facts); residency, cold/durable targets, unknown ids and full cross-tree authority stay the SERVICE\'s (published SubagentError UNAUTHORIZED propagates verbatim — NAMED GAP LINEAGE_AUTHORITY); the row holds no positive grant'
+        : 'the SubagentService authorizes the exact live caller against the target\'s RECORDED LINEAGE (unknown/cross-owner deny is service-side — NAMED GAP LINEAGE_AUTHORITY); the row forwards the reference and adjudicates nothing',
     }),
     action: A5_B_SUBAGENT_RECORD_SPECS[name].operation,
     revision: 'no revision carrier at this seam — messageId is the service delivery ACK for send; interrupt answers request-acceptance only; list is read-only (NAMED GAPS DELIVERY_CONTINUATION / INTERRUPT_COMPLETION)',
@@ -457,19 +506,29 @@ export function createSubagentAdapterAssembly(input = {}) {
     if (state.draining) {
       return refuseWith(row.name, CODES.DRAINING, `${row.name}: draining — new calls are refused (${DRAIN_SEMANTICS})`)
     }
-    if (rawArgs !== undefined && rawArgs !== null && !isRecord(rawArgs)) {
-      return refuseWith(row.name, CODES.INPUT_INVALID, `${row.name}: arguments must be a record (the real dispatcher always hands an object; anything else is a mount anomaly)`)
+    if (!isRecord(rawArgs)) {
+      // FIX 1 (581-1): NO coercion — null/undefined are never folded into a
+      // synthetic '{}'. classify is the row's internal seat and takes a
+      // record only; HOST fidelity for non-record arguments lives in the
+      // placed execute, which passes them THROUGH to the captured native
+      // definition (its compiled object-root validator answers the Host's
+      // own ToolArgsError before any body, measured).
+      return refuseWith(row.name, CODES.INPUT_INVALID, `${row.name}: classify takes a plain-argument record only — non-record arguments are the ORIGINAL definition's to refuse (the placed execute passes them to the captured native; nothing is ever coerced to {})`)
     }
-    const args = rawArgs === undefined || rawArgs === null ? {} : rawArgs
-    // L5 thin mirror (REFUSAL class — the dispatcher schema stops these
-    // before the body runs; the trio bodies answer NO typed argument VALUES):
+    const args = rawArgs
+    // L5 thin mirror, TYPE-STRICT (581-1 FIX 1): the published parameter
+    // face is type-only (string, required — NO minLength), so the row checks
+    // the TYPE and nothing more. EMPTY strings are legal at Host and MUST
+    // flow to the service, which owns the business refusal. Unknown keys are
+    // never denied (open object root) — they ride the snapshot like they
+    // reach the native body at Host.
     if (row.name === 'send_message') {
-      if (typeof args.agent_id !== 'string' || args.agent_id.length === 0) return refuseWith(row.name, CODES.INPUT_INVALID, 'send_message: agent_id must be a non-empty string (dispatcher-shape mirror; unknown-target adjudication stays the SERVICE\'s)')
-      if (typeof args.message !== 'string' || args.message.length === 0) return refuseWith(row.name, CODES.INPUT_INVALID, 'send_message: message must be a non-empty string (dispatcher-shape mirror)')
+      if (typeof args.agent_id !== 'string') return refuseWith(row.name, CODES.INPUT_INVALID, 'send_message: agent_id must be a string (type-only — the published schema has no minLength; empty strings are LEGAL and their business refusal is the SERVICE\'s)')
+      if (typeof args.message !== 'string') return refuseWith(row.name, CODES.INPUT_INVALID, 'send_message: message must be a string (type-only; empty strings are LEGAL and flow to the service)')
     } else if (row.name === 'interrupt_agent') {
-      if (typeof args.agent_id !== 'string' || args.agent_id.length === 0) return refuseWith(row.name, CODES.INPUT_INVALID, 'interrupt_agent: agent_id must be a non-empty string (dispatcher-shape mirror)')
+      if (typeof args.agent_id !== 'string') return refuseWith(row.name, CODES.INPUT_INVALID, 'interrupt_agent: agent_id must be a string (type-only; empty strings are LEGAL — an unknown/absent target is the service\'s ACCEPTED NO-OP, measured)')
     } else if (args.scope !== undefined && args.scope !== 'children' && args.scope !== 'descendants') {
-      return refuseWith(row.name, CODES.INPUT_INVALID, 'list_agents: scope is the closed enum children | descendants (absent = children) — dispatcher-shape mirror')
+      return refuseWith(row.name, CODES.INPUT_INVALID, 'list_agents: scope is the closed enum children | descendants (absent = children) — published enum mirror')
     }
     const snapshot = deepFreeze(jsonClone(args))
     const plan = deepFreeze({
@@ -483,6 +542,35 @@ export function createSubagentAdapterAssembly(input = {}) {
     })
     observe({ event: 'b-subagent:classified', name: row.name })
     return deepFreeze({ ok: true, plan })
+  }
+
+  /** FIX 3 (581-1) — the send_message NEGATIVE adjacency pre-check, the
+   *  measured ADJACENT relation (a direct child of the caller, or the
+   *  caller's DIRECT PARENT when the caller is a resident continuable
+   *  child; the published service face additionally owns the residency
+   *  condition and every positive grant). Lineage facts are the live
+   *  registry's recorded Agent shape (measured at Host: Agent.id is the
+   *  session id the bodies pass around; session.header.parentSession is
+   *  the recorded parent the service itself compares against): a refusal
+   *  is issued ONLY when both sides carry recorded parentage and NEITHER
+   *  direction matches (sibling/uncle/deeper/cross-tree). A target absent
+   *  from the live registry (cold child, unknown id), an unrecorded
+   *  lineage, or a caller without session facts flows to the SERVICE —
+   *  refusing those here would invent authority the row does not have. */
+  const adjacencyRefusal = (row, caller, claim, readAgent) => {
+    const target = readAgent(claim)
+    if (typeof claim !== 'string' || !isRecord(target) || typeof target.id !== 'string') return null
+    const targetParent = isRecord(target.session) && isRecord(target.session.header)
+      ? target.session.header.parentSession
+      : undefined
+    const callerParent = isRecord(caller.session) && isRecord(caller.session.header)
+      ? caller.session.header.parentSession
+      : undefined
+    if (typeof targetParent !== 'string' || typeof callerParent !== 'string' || typeof caller.id !== 'string') return null
+    const directChild = targetParent === caller.id
+    const directParent = callerParent === target.id
+    if (directChild || directParent) return null
+    return refuseWith(row.name, CODES.NOT_ADJACENT, `send_message: the live registry records "${target.id}" under parent "${targetParent}" and the caller "${caller.id}" under parent "${callerParent}" — neither a DIRECT child of the caller nor its DIRECT PARENT (the published face is ADJACENT-only; siblings/uncles are not adjacent); refused by the row with ZERO service entry — cold/absent targets, residency and full authority stay the SERVICE's (NAMED GAP LINEAGE_AUTHORITY)`)
   }
 
   /** L3/L4/L6/L7/L8 dispatch. `exec` is LIVE (agent/signal ride by
@@ -507,13 +595,26 @@ export function createSubagentAdapterAssembly(input = {}) {
       observe({ event: 'b-subagent:missing-caller-throw', name: row.name })
       throw missingCallerThrow(row.name)
     }
+    // FIX 3 (581-1): send_message ADJACENCY negative pre-check, reading the
+    // VERIFIED get handle (never a property re-read). It refuses ONLY what
+    // the live registry's recorded parentSession PROVES non-adjacent; an
+    // absent/cold/unrecorded target has no live lineage fact here and flows
+    // to the service, which owns cold-resume, residency and full authority.
+    const readAgent = (id) => edge.get.call(edge.registry, id)
+    if (row.name === 'send_message') {
+      const adjacency = adjacencyRefusal(row, exec.agent, fresh.plan.args.agent_id, readAgent)
+      if (adjacency !== null) return adjacency
+    }
     consumedPlans.add(plan)
     state.dispatches += 1
     const signal = exec.signal
     // L6: NO catch — the published bodies never catch; service throws
-    // propagate verbatim as tool errors. No error class exists to mirror.
+    // propagate verbatim as tool errors. ERROR REALITY (measured): the
+    // published class for this face IS SubagentError (dsh-subagent bundle
+    // index) — the row maps nothing to or from it; its UNAUTHORIZED
+    // instances propagate through untouched, instanceof-able there.
     // The invoked handles are the edge-VERIFIED handles (no second feed
-    // read between verification and invocation).
+    // read — property read included — between verification and invocation).
     if (row.name === 'send_message') {
       observe({ event: 'b-subagent:port-call', name: row.name, method: 'sendMessage' })
       const messageId = await edge.methods.sendMessage.call(
@@ -541,7 +642,7 @@ export function createSubagentAdapterAssembly(input = {}) {
       ? await edge.methods.listDescendants.call(edge.port, parent.id, signal)
       : await edge.methods.listChildren.call(edge.port, parent.id, signal)
     const projected = entries
-      .map((entry) => projectEntry(edge.registry, entry, scope === 'descendants' ? entry : undefined))
+      .map((entry) => projectEntry(readAgent, entry, scope === 'descendants' ? entry : undefined))
       .filter((entry) => entry !== undefined)
     observe({ event: 'b-subagent:dispatched', name: row.name })
     return Object.freeze({ ok: true, settled: 'service', value: Object.freeze(projected) })
@@ -583,6 +684,19 @@ export function createSubagentAdapterAssembly(input = {}) {
     // non-enumerable standard-tool mark; the continuation-delivery check
     // consults the REGISTERED definition).
     const placed = { ...capture.native, execute: async (args, exec) => {
+      if (!isRecord(args)) {
+        // FIX 1 (581-1, measured): non-record arguments (null/undefined/
+        // 'nope'/array) are the ORIGINAL definition's to refuse — pass them
+        // THROUGH uncoerced. The captured native's compiled validator has an
+        // object root (defineTool compiles one for EVERY tool; measured on
+        // the REAL registered faces: a non-record never validates), so its
+        // Host-own ToolArgsError answers BEFORE the body — zero service
+        // entry, no synthetic '{}' validation, byte-identical to the
+        // Host-registered tool. The governed pipeline is never entered for
+        // a call that could never execute.
+        observe({ event: 'b-subagent:args-passthrough', name })
+        return capture.native.execute(args, exec)
+      }
       const classified = row.classify(args)
       if (classified.ok !== true) throw refusalToThrow(classified)
       const admitted = await input.admit(Object.freeze({ name, recordIndex: row.recordIndex, familyId: A5_B_SUBAGENT_FAMILY_ID, classified, exec }))
