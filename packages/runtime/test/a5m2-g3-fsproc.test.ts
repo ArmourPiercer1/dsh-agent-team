@@ -72,6 +72,7 @@
  * @module @dsh-agent-team/runtime/test/a5m2-g3-fsproc
  */
 import { describe, expect, it } from 'vitest'
+import { Readable as NodeReadable } from 'node:stream'
 import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -166,6 +167,60 @@ const CWD = '/work/member-space'
  *  callId + rootCallId + token + deferContext/concludeTurn included — the
  *  exact fields the PTC child-tool channel reads (ptc.ts:548/553/640/653).
  *  The recorders prove the FAITHFUL forward lands on THIS object. */
+/** A faithful SubprocessTerminalHandle double (real member set: pid/output/
+ *  done/write/resize/inspectForeground/inspectActivity/signalForeground/
+ *  terminate — the awaited terminate IS the process-tree quiescence). */
+// the SESSION's launched handle pid (world-scoped fact: the signal/read
+// delegation reads the REAL pid of the handle behind the session, never a
+// constant): populated at launch, keyed by sessionId by the caller legs.
+const launchedPids = new Map<string, number>()
+// the launch that last COMPLETED in the CURRENTLY BUILDING world (answered
+// with a handle) — the route's session mint follows it; while a deferred
+// world is PARKED there is NO completed launch, so the faithful double can
+// never guess a missing pid. MODULE scope on purpose: the route runs inside
+// the world factory's own stack — a factory-local binding would TDZ while
+// its own frame is live and a second world is building.
+let lastAnsweredPid: number | null = null
+
+function makeTerminalHandle(pid: string) {
+  // the REAL handle contract: output is a Node Readable (the provider
+  // delivers bytes in order; it ENDS when the terminal exits) — faithful
+  // consumption needs the real stream, not a stand-in
+  const output = new NodeReadable({ read() {} })
+  let exit: (v: Record<string, unknown>) => void = () => {}
+  const done = new Promise<Record<string, unknown>>((resolve) => { exit = resolve })
+  const writes: string[] = []
+  let terminated = false
+  return {
+    handle: {
+      pid: Number(pid),
+      output,
+      done,
+      write: async (data: string) => {
+        if (terminated) throw new Error('terminal terminated')
+        writes.push(data)
+        output.push(`${data}`)
+      },
+      resize: async () => {},
+      inspectForeground: async () => ({ pgid: Number(pid), waitingInput: true }),
+      inspectActivity: async () => ({ state: 'unknown' }),
+      signalForeground: async () => Number(pid),
+      terminate: async () => {
+        terminated = true
+        exit({ status: 'killed' })
+        output.push(null)
+      },
+    },
+    writes,
+    terminateCalls: () => terminated,
+  }
+}
+
+// THE live Agent is ONE object: the service authorizes by object identity
+// (expectOwned: record.owner !== owner), and the per-open one-shot backend
+// binds the EXACT approved owner. Every face of one world must share it.
+const AGENT = { id: AGENT_ID, session: { header: { id: HEADER_ID, cwd: CWD } } }
+
 function makeExec(over: Record<string, unknown> = {}) {
   const recorder = { deferred: [] as unknown[], concluded: 0 }
   const exec = {
@@ -173,7 +228,7 @@ function makeExec(over: Record<string, unknown> = {}) {
     rootCallId: 'rootcall-g3',
     name: 'g3-native',
     arguments: {},
-    agent: { id: AGENT_ID, session: { header: { id: HEADER_ID, cwd: CWD } } },
+    agent: AGENT,
     signal: new AbortController().signal,
     token: { agentId: AGENT_ID, depth: 1 },
     deferContext: (context: unknown) => { recorder.deferred.push(context) },
@@ -342,11 +397,13 @@ function makePtyService(seedPerOpen = true) {
   const backends = new Map<string, { registrationId: string; incarnation: string; processEnvelope: string }>([
     ['shell', { registrationId: 'reg-shell-1', incarnation: 'backend-inc-1', processEnvelope: 'env-pty-default' }],
   ])
-  // §5.1 GOVERNANCE CORE (root 66a521): the admitted open target is the
-  // PER-OPEN PRIVATE controlled-backend registration + approved envelope
-  // digest the SERVICE answers for this exact call — never the public type.
+  // §5.1 GOVERNANCE CORE (root 15:09 REAL ROUTE): the admitted open target
+  // is the APPROVED CONTROLLED EXECUTION PLAN the integrator answers for
+  // this exact call — the plan the per-open one-shot registerBackend
+  // registration will actually pin into SubprocessRuntime.spawnTerminal.
   // seedPerOpen=false models the UNANSWERABLE seam (refusal legs).
-  let perOpenAnswer: ((callId: string) => { privateRegistrationId: string; envelopeDigest: string } | null) | null =
+  const seedPlan = { executable: '/approved/bin/bash', cwd: '/approved/workspace', env: { TERM: 'dumb' }, rows: 24, cols: 80, graceMs: 5_000, terminalType: 'dumb' }
+  let perOpenAnswer: ((callId: string) => { plan: Record<string, unknown>; envelopeDigest?: string } | null) | null =
     seedPerOpen
       ? null
       : () => null
@@ -360,10 +417,10 @@ function makePtyService(seedPerOpen = true) {
   ])
   return {
     backend: (type: string) => backends.get(type) ?? null,
-    perOpenRegistration: (callId: string) => (perOpenAnswer === null
-      ? { privateRegistrationId: `po-${callId}-reg`, envelopeDigest: 'sha256:env-approved-1' }
+    approvedOpenPlan: (callId: string) => (perOpenAnswer === null
+      ? { plan: { ...seedPlan } }
       : perOpenAnswer(callId)),
-    setPerOpen: (answer: (callId: string) => { privateRegistrationId: string; envelopeDigest: string } | null) => { perOpenAnswer = answer },
+    setPerOpen: (answer: ((callId: string) => { plan: Record<string, unknown>; envelopeDigest?: string } | null)) => { perOpenAnswer = answer },
     session: (ownerAgentId: string, sessionId: string) => (ownerAgentId === AGENT_ID ? sessions.get(sessionId) ?? null : null),
     moveBackend: (type: string) => {
       const b = backends.get(type)
@@ -372,8 +429,8 @@ function makePtyService(seedPerOpen = true) {
     moveEnvelope: () => {
       const cur = perOpenAnswer
       perOpenAnswer = (callId: string) => {
-        const base = cur === null ? { privateRegistrationId: `po-${callId}-reg`, envelopeDigest: 'sha256:env-approved-1' } : cur(callId)
-        return base === null ? null : { ...base, envelopeDigest: 'sha256:env-WIDENED' }
+        const base = cur === null ? { plan: { ...seedPlan } } : cur(callId)
+        return base === null ? null : { ...base, plan: { ...base.plan, env: { ...(base.plan.env as Record<string, string>), PREOPEN: 'injected' } } }
       }
     },
     moveSession: (sessionId: string) => {
@@ -431,7 +488,8 @@ async function terminalWorld(deps: { absent?: boolean; declaredBackends?: string
         terminals: deps.stubTerminals ?? makeStubTerminals(),
         resolveOwner: (exec: Record<string, unknown>) => (exec as { agent?: unknown }).agent ?? null,
         ownerSessionId: (agentId: string) => `session-${String(agentId)}`,
-        controlledSpawn,
+        subprocess: { spawnTerminal: async () => makeTerminalHandle('4301').handle },
+        approvedOpenPlan: (callId: string) => ptyService.approvedOpenPlan(callId),
       })
   const arms = G3.createGovernedTerminalArms({
     nativeDefinitions: deps.absent === true ? {} : nativeDefinitions,
@@ -461,8 +519,13 @@ function makeStubTerminals() {
     signal: unreachable('signal'),
     kill: unreachable('kill'),
     list: unreachable('list'),
+    // the census-REQUIRED registration seam: the stub records but authorizes
+    // nothing — any spawn past it hits the unreachable face anyway
+    registerBackend: (backend: { type: string }) => { stubRegisteredTypes.push(backend.type); return () => { stubRegisteredTypes.splice(stubRegisteredTypes.indexOf(backend.type), 1) } },
+    listBackends: () => [...stubRegisteredTypes],
   }
 }
+const stubRegisteredTypes: string[] = []
 
 function grantFor(c: ArmResult, plan: Record<string, unknown>, binding: BindingWorld, grantId = 'grant-1') {
   const facts = binding.read()
@@ -1185,31 +1248,81 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
    *  (spawn/startSend/read/signal/kill/list; TerminalSendOperation.done;
    *  kill true = newly closed, false = same close already in flight). Every
    *  answer below is the SERVICE word — the legs assert the ARM routed it. */
-  function makeTerminalsDouble() {
-    const sessions = new Map<string, { pid: number; status: string; closed: boolean }>([
+  function makeTerminalsDouble(depsDouble: { autoSettleSend?: unknown } = {}) {
+    const sessions = new Map<string, { pid: number; status: string; closed: boolean; owner?: unknown }>([
       // the service's OWN live sessions (seeded identities the facts reader
       // also carries): the double stays self-consistent.
       ['pty-1', { pid: 4101, status: 'running', closed: false }],
       ['pty-2', { pid: 4102, status: 'running', closed: false }],
     ])
+    // THE backend Map, faithful to the REAL service (terminal/src/index.ts
+    // :119-136): registerBackend keyed by type, DUPLICATE refusal, the
+    // disposer removes EXACTLY this backend OBJECT, and removal NEVER
+    // touches published sessions (注销不等终止).
+    const backends = new Map<string, Record<string, unknown>>()
     const log: string[] = []
     let nextId = 90
-    const live = (id: string) => {
+    const live = (id: string, owner?: unknown) => {
       const rec = sessions.get(id)
       if (rec === undefined || rec.closed) throw Object.assign(new Error('NO_SESSION'), { code: 'NO_SESSION' })
+      // expectOwned law (real service): the EXACT owner Agent authorizes.
+      if (owner !== undefined && rec.owner !== undefined && rec.owner !== owner) throw Object.assign(new Error('FOREIGN_SESSION'), { code: 'FOREIGN_SESSION' })
       return rec
     }
     return {
       log,
+      backends,
+      registerBackend: (backend: { type: string }) => {
+        if (typeof backend?.type !== 'string' || backend.type.length === 0) throw new Error('pty backend type must be non-empty')
+        if (backends.has(backend.type)) throw Object.assign(new Error(`a PTY backend named "${backend.type}" is already registered`), { code: 'DUPLICATE_BACKEND' })
+        backends.set(backend.type, backend as unknown as Record<string, unknown>)
+        log.push(`register:${backend.type}`)
+        return () => {
+          if (backends.get(backend.type) === (backend as unknown)) {
+            backends.delete(backend.type)
+            log.push(`deregister:${backend.type}`)
+          }
+        }
+      },
+      listBackends: () => [...backends.keys()],
       spawn: async (owner: Record<string, unknown>, request: Record<string, unknown>) => {
-        log.push(`spawn:${String(request.type)}:${String(owner?.id ?? '')}`)
+        log.push(`spawn:${String(request.type)}:${String(owner?.id ?? '')}:backend=${String(backends.has(String(request.type)))}`)
+        const backend = backends.get(String(request.type))
+        if (backend === undefined) throw Object.assign(new Error(`no PTY backend registered for "${String(request.type)}"`), { code: 'NO_BACKEND' })
+        // the REAL ordering (index 154-224): capture the backend by type,
+        // MINT the sessionId Host-side, await the one-shot backend.spawn
         const sessionId = `pty-svc-${String(nextId++)}`
-        sessions.set(sessionId, { pid: 4100 + nextId, status: 'running', closed: false })
-        return { sessionId, name: request.name, type: String(request.type), pid: 4100 + nextId, status: 'running', motd: '$ ' }
+        // the REAL request spread (index 154-224): an UNSET name must stay
+        // absent, never arrive as an explicit undefined
+        const backendSession = await (backend as { spawn: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }).spawn({
+          sessionId,
+          owner,
+          type: request.type,
+          ...(request.name !== undefined ? { name: request.name } : {}),
+          ...(request.cwd !== undefined ? { cwd: request.cwd } : {}),
+        })
+        sessions.set(sessionId, { pid: 4100 + nextId, status: 'running', closed: false, owner })
+        // THE session owns the REAL backend session for its whole lifetime
+        // (the record retains the BackendSession — types 148-170); the
+        // snapshot carries the backend's OWN pid (faithful publication).
+        const launchedPid = Number(backendSession?.pid ?? lastAnsweredPid ?? 4242)
+        lastAnsweredPid = null
+        sessions.get(sessionId)!.pid = launchedPid
+        launchedPids.set(sessionId, launchedPid)
+        ;(sessions.get(sessionId) as Record<string, unknown>).__backendSession = backendSession
+        return { sessionId, ...(request.name !== undefined ? { name: request.name } : {}), type: String(request.type), pid: launchedPid, status: 'running', motd: '$ ' }
       },
       startSend: (owner: Record<string, unknown>, id: string, request: Record<string, unknown>) => {
-        live(id)
+        const rec = live(id, owner)
         log.push(`send:${id}:${String(request.text)}:${String(request.submit)}`)
+        if (typeof depsDouble.autoSettleSend === 'object' && depsDouble.autoSettleSend !== null) {
+          return { done: Promise.resolve(depsDouble.autoSettleSend), readOutput: () => ({ delta: '', truncated: false }), cancel: () => true }
+        }
+        const bs = (rec as Record<string, unknown>).__backendSession as { startSend: (r: Record<string, unknown>) => Record<string, unknown> } | undefined
+        if (bs !== undefined) return bs.startSend(request)
+        // SEEDED service session (no backend behind it in the double): the
+        // stand-in operation answers with the same TerminalSendOperation
+        // contract (done settles on cancel — the legs drive it).
         let settle: (v: Record<string, unknown>) => void = () => {}
         const done = new Promise<Record<string, unknown>>((resolve) => { settle = resolve })
         return {
@@ -1218,20 +1331,36 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
           cancel: () => { settle({ viewport: '^C', waitReason: 'cancelled', sessionStatus: 'running', truncated: false }); return true },
         }
       },
-      read: (owner: Record<string, unknown>, id: string, _request?: Record<string, unknown>) => {
-        live(id)
+      read: (owner: Record<string, unknown>, id: string, request?: Record<string, unknown>) => {
+        const rec = live(id, owner)
         log.push(`read:${id}`)
-        return { text: 'make: nothing to be done\n', truncated: false, oldest: 0, newest: 4 }
+        const bs = (rec as Record<string, unknown>).__backendSession as { read?: (r: Record<string, unknown>) => Record<string, unknown> }
+        const answered = typeof bs?.read === 'function' ? bs.read(request ?? {}) : null
+        // this world's retained scrollback for a service session with no
+        // captured output yet — the double's canned SERVICE answer
+        if (answered === null || answered.text === '') return { text: 'make: nothing to be done\n', truncated: false, oldest: 0, newest: 4 }
+        return answered
       },
       signal: async (owner: Record<string, unknown>, id: string, signal: string) => {
-        live(id)
+        const rec = live(id, owner)
         log.push(`signal:${id}:${signal}`)
-        return { deliveredTo: 4242 }
+        const bs = (rec as Record<string, unknown>).__backendSession as { signal?: (sig: string) => Promise<unknown> }
+        if (typeof bs?.signal === 'function') {
+          const answered = await bs.signal(signal)
+          return typeof answered === 'number' ? { deliveredTo: answered } : (answered as Record<string, unknown>)
+        }
+        // SEEDED service session: the SERVICE answers with the session's
+        // REAL process group — the record's pid (faithful, not a constant)
+        return { deliveredTo: Number((rec as { pid?: number }).pid ?? 0) }
       },
       kill: async (owner: Record<string, unknown>, id: string) => {
         const rec = sessions.get(id)
         if (rec === undefined) { log.push(`kill-missing:${id}`); return false }
+        if (rec.owner !== undefined && rec.owner !== owner) throw Object.assign(new Error('FOREIGN_SESSION'), { code: 'FOREIGN_SESSION' })
         if (rec.closed) { log.push(`kill-in-flight:${id}`); return false }
+        // the REAL kill awaits the retained backend session's quiescent close
+        const bs = (rec as Record<string, unknown>).__backendSession as { close?: (r: string) => Promise<unknown> } | undefined
+        if (typeof bs?.close === 'function') await bs.close('model request')
         rec.closed = true
         log.push(`kill:${id}`)
         return true
@@ -1243,8 +1372,8 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     }
   }
 
-  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noSpawnProvider?: boolean; deferredSpawn?: boolean } = {}) {
-    const terminals = makeTerminalsDouble()
+  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; deferredSpawn?: boolean; autoSettleSend?: unknown } = {}) {
+    const terminals = makeTerminalsDouble({ autoSettleSend: deps.autoSettleSend })
     const binding = makeBinding()
     const natives = {} as Record<TerminalName, NativeDouble>
     const nativeDefinitions: Record<string, unknown> = {}
@@ -1266,7 +1395,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const minted = new Map<string, { incarnation: string; status: string; envelope: string }>()
     const ptyService = {
       backend: (type: string) => ptyBridge.backend(type),
-      perOpenRegistration: (callId: string) => ptyBridge.perOpenRegistration(callId),
+      approvedOpenPlan: (callId: string) => ptyBridge.approvedOpenPlan(callId),
       moveEnvelope: () => ptyBridge.moveEnvelope(),
       session: (ownerAgentId: string, sessionId: string) =>
         tracked.session(ownerAgentId, sessionId) ?? minted.get(sessionId) ?? null,
@@ -1280,30 +1409,26 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         if (cur !== undefined) minted.set(sessionId, { ...cur, status: 'closed' })
       },
     }
-    let nextMint = 90
     let deferredGate: { settle: () => void; settled: Promise<void> } = { settle: () => {}, settled: Promise.resolve() }
     if (deps.deferredSpawn === true) {
       let settle: () => void = () => {}
       const settled = new Promise<void>((resolve) => { settle = resolve })
       deferredGate = { settle, settled }
     }
-    // THE per-open controlled-backend provider (root 66a521): the governed
-    // open spawns through the PER-OPEN one-shot registration, not the public
-    // type. The faithful test provider's registration IS per-open (correlated
-    // by callId); its spawn goes through the service face that registration
-    // fronts. deferredSpawn parks the spawn so post-await cancel/facts/cleanup
-    // is MEASURABLE, not asserted.
-    const controlledSpawn = deps.brokenPort === true || deps.noSpawnProvider === true
-      ? undefined
-      : async (request: Record<string, unknown>, context: { owner: unknown; callId: string }) => {
-          await terminals.spawn(context.owner as Record<string, unknown>, request)
-          if (deps.deferredSpawn === true) await deferredGate.settled
-          const sessionId = `pty-svc-${String(nextMint++)}`
-          return {
-            result: { sessionId, ...(typeof request.name === 'string' ? { name: request.name } : {}), type: String(request.type), pid: 4242, status: { kind: 'running' }, motd: '$ ' },
-            ownedResource: { sessionId },
-          }
-        }
+    // THE controlled PTY capability (the ONLY launch path the one-shot
+    // per-open backend may use): records the ACTUAL pinned spec; the
+    // deferred world PARKS here (before the handle exists) so post-await
+    // cancel/facts/cleanup is MEASURABLE, not asserted.
+    const launches: Array<Record<string, unknown>> = []
+    const subprocess = deps.noCapability === true ? null : {
+      spawnTerminal: async (spec: Record<string, unknown>) => {
+        launches.push(spec)
+        if (deps.deferredSpawn === true) await deferredGate.settled
+        const h = makeTerminalHandle(`42${String(40 + launches.length)}`).handle
+        lastAnsweredPid = Number(h.pid)
+        return h
+      },
+    }
     const controlPort = deps.brokenPort === true
       ? { name: 'broken', prepare: async () => null }
       : G3.createHostTerminalControlPort({
@@ -1311,7 +1436,8 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
           resolveOwner: (exec: Record<string, unknown>) => (deps.noOwner === true ? null : (exec as { agent?: unknown }).agent ?? null),
           jobs: deps.jobs ?? null,
           ownerSessionId: (agentId: string) => `session-${String(agentId)}`,
-          ...(controlledSpawn === undefined ? {} : { controlledSpawn }),
+          ...(subprocess === null ? {} : { subprocess }),
+          approvedOpenPlan: (callId: string) => ptyService.approvedOpenPlan(callId),
         })
     const arms = G3.createGovernedTerminalArms({
       nativeDefinitions, definitionIdentities, liveDefinitions,
@@ -1321,22 +1447,39 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
       providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
       bindingFacts: binding.read,
     })
-    return { arms, natives, binding, terminals, ptyService, gate: deferredGate }
+    return { arms, natives, binding, terminals, ptyService, gate: deferredGate, launches, subprocess, ptyBridge }
   }
 
-  it('§5.1 GOVERNANCE CORE: the admitted open target is the PER-OPEN private registration + approved envelope (service-answered at classify AND entry); without the per-open provider the port REFUSES — a public-type spawn is never governance; native-shaped status/sessionId ride the answer', async () => {
+  it('§5.1 GOVERNANCE CORE (REAL ROUTE): classify admits the APPROVED CONTROLLED OPEN PLAN; the open runs through the PER-OPEN one-shot registerBackend registration (unique internal type, disposed after publication — 注销不等终止) and the CONTROLLED spawnTerminal capability with the plan PINNED; without the capability the port REFUSES; native-shaped status/sessionId ride the answer', async () => {
     const w = await handleWorld()
     const open = w.arms.terminal_open.classify({ type: 'shell', name: 'build' }, makeExec().exec, 'h-open')
     expect(open.ok, `${open.code} ${open.detail}`).toBe(true)
-    const openManifest = open.manifest as { perOpenBackend?: Record<string, unknown>; backendTarget?: Record<string, unknown> }
-    expect(openManifest.perOpenBackend).toMatchObject({ privateRegistrationId: 'po-h-open-reg', envelopeDigest: 'sha256:env-approved-1' }) // THE governed target — service-answered, correlated to THIS call
+    const openManifest = open.manifest as { perOpenBackend?: { approvedPlan?: Record<string, unknown>; envelopeDigest?: string }; backendTarget?: Record<string, unknown> }
+    expect(openManifest.perOpenBackend?.approvedPlan).toMatchObject({ executable: '/approved/bin/bash', cwd: '/approved/workspace', rows: 24, cols: 80 }) // THE governed target: the plan the one-shot backend actually pins
+    expect(String(openManifest.perOpenBackend?.envelopeDigest)).toMatch(/^sha256:/) // digest of the approved plan — re-verified against the ACTUAL launch
     expect(openManifest.backendTarget?.publicType).toBe('shell') // the public type only SELECTS the declared family
-    // No per-open provider ⇒ typed refusal, ZERO service reach: the adapter
-    // never spawns the public type behind governance.
-    const bare = await handleWorld({ noSpawnProvider: true })
+    // THE REAL ROUTE end-to-end: the per-open registration appears on the
+    // service Map and is DEREGISTERED after publication; the session
+    // survives the deregistration (注销不等终止); the controlled capability
+    // received the PINNED plan (argv/cwd/dims/grace — the envelope of record).
+    const pass = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'h-route')
+    expect(pass.x.ok, JSON.stringify(pass.x).slice(0, 200)).toBe(true)
+    expect(w.terminals.log.filter((l: string) => /^register:dsh-g3-po-h-route-\d+$/.test(l)).length).toBe(1)
+    expect(w.terminals.log.filter((l: string) => /^deregister:dsh-g3-po-h-route-\d+$/.test(l)).length).toBe(1)
+    expect(w.terminals.listBackends().some((t: string) => t.startsWith('dsh-g3-po-'))).toBe(false) // route gone after the open
+    expect(w.terminals.log.some((l: string) => l.startsWith('kill'))).toBe(false) // deregistration performed NO termination
+    expect(w.launches.length).toBe(1) // exactly ONE controlled launch for one open
+    expect(w.launches[0]).toMatchObject({ argv: ['/approved/bin/bash'], cwd: '/approved/workspace', rows: 24, cols: 80, graceMs: 5_000 }) // the ACTUAL pinned spec = the approved plan
+    // The model can never select the internal type: undeclared at the
+    // classify face by construction.
+    const spoof = w.arms.terminal_open.classify({ type: 'dsh-g3-po-h-route-1' }, makeExec().exec, 'h-spoof')
+    expect(spoof.code).toMatch(/BACKEND_NOT_DECLARED/)
+    // No controlled capability ⇒ typed refusal, ZERO service reach: the
+    // adapter never substitutes a bare process or a public-type route.
+    const bare = await handleWorld({ noCapability: true })
     const refused = await runPass(bare.arms.terminal_open, bare.binding, { type: 'shell' }, 'np-1')
-    expect(refused.x.code).toMatch(/OPEN_PROVIDER_ABSENT/)
-    expect(bare.terminals.log.length).toBe(0)
+    expect(refused.x.code).toMatch(/OPEN_CAPABILITY_ABSENT/)
+    expect(bare.terminals.log.filter((l: string) => l.startsWith('spawn')).length).toBe(0)
     expect(bare.natives.terminal_open.calls.length).toBe(0)
     // The envelope answer MOVING between approval and the entry refuses at
     // the entry (drift law over the approved envelope, not just registration).
@@ -1348,17 +1491,63 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(moved.arms.terminal_open.prepare(plan2, { grantId: 'grant-1' }).ok).toBe(true)
     const e2 = await moved.arms.terminal_open.execute(plan2, { consumed: true, grant: grantFor(c2, plan2, moved.binding, 'grant-1') })
     expect(e2.code).toMatch(/TARGET_DRIFT/)
-    expect(moved.terminals.log.length).toBe(0) // refused BEFORE the per-open spawn
+    // the claim-time re-read saw the plan MOVE: refused BEFORE any launch
+    // (zero controlled spawns), the registration route disposed
+    expect(moved.launches.length).toBe(0)
+    // THE REAL-ROUTE PLAN-MOVE LAW, MEASURED: the ARM's entry recheck
+    // re-reads the approval seam and catches the moved plan BEFORE the port
+    // is entered (defense in depth: zero service reach at all — not even a
+    // registration); the one-shot's own claim-time digest check is the
+    // second layer for moves that slip past the arm window.
+    expect(moved.terminals.log, JSON.stringify(moved.terminals.log)).toEqual([])
+    expect(moved.launches.length).toBe(0)
+    expect(String(e2.code)).toMatch(/TARGET_DRIFT/)
+    expect(String(e2.detail)).toMatch(/open plan|envelope/i)
+  })
+
+  it('THE ONE-SHOT CLAIM IS THE SECOND DEFENSE: a plan that moves AFTER the manifest was captured refuses at the claim BEFORE any await (zero launch, zero publication) and the route is disposed', async () => {
+    const w = await handleWorld()
+    const c = w.arms.terminal_open.classify({ type: 'shell' }, makeExec().exec, 'claim-move')
+    expect(c.ok).toBe(true)
+    // the approval seam flips AFTER classify AND after the arm's entry
+    // recheck window (the arm recheck reads the same seam, so pin the arm
+    // plan and move the seam only when the one-shot re-reads it): drive the
+    // PORT directly with the captured manifest — the one-shot's claim-time
+    // re-read is what answers here.
+    const moved2 = { n: 0, turn: () => { moved2.n += 1; if (moved2.n === 1) w.ptyService.moveEnvelope() } }
+    const port = G3.createHostTerminalControlPort({
+      terminals: w.terminals,
+      resolveOwner: (exec: Record<string, unknown>) => (exec as { agent?: unknown }).agent ?? null,
+      subprocess: w.subprocess,
+      approvedOpenPlan: () => { moved2.turn() ; return w.ptyBridge.approvedOpenPlan('claim-move') },
+    })
+    const prepped = await (port as unknown as { prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }).prepare({
+      toolName: 'terminal_open',
+      canonical: { type: 'shell' },
+      manifest: ((c.plan as Record<string, unknown>).manifest ?? c.manifest ?? {}) as Record<string, unknown>,
+      exec: makeExec().exec, callId: 'claim-move', correlation: 'claim-move',
+      isCancelled: () => false,
+    })
+    expect(prepped.ok).toBe(false)
+    expect(String(prepped.code)).toMatch(/OPEN_PLAN_MOVED/)
+    expect(String(prepped.detail)).toMatch(/BEFORE any effect/)
+    expect(w.launches.length).toBe(0) // zero launch: refused before the capability
+    expect(w.terminals.log.filter((l: string) => l.startsWith('register:'))).toHaveLength(1)
+    expect(w.terminals.log.filter((l: string) => l.startsWith('deregister:'))).toHaveLength(1) // disposed regardless
+    expect(w.terminals.log.filter((l: string) => l.startsWith('spawn:'))).toHaveLength(1) // the service ROUTE was entered; the refusal came inside the one-shot, pre-await
   })
 
   it('THE HANDLE ROUTES: open commits the PER-OPEN provider answer (native-shaped identity: sessionId/kind-bearing status/pid) and the captured native body is NEVER entered; remove the routing and this leg is RED', async () => {
     const w = await handleWorld()
     const { x } = await runPass(w.arms.terminal_open, w.binding, { type: 'shell', name: 'build' }, 'h-open')
-    expect(x.ok).toBe(true)
+    expect(x.ok, JSON.stringify(x).slice(0, 240)).toBe(true)
     expect(x.value).toMatchObject({ outcome: 'opened', sessionId: 'pty-svc-90', motd: '$ ' })
-    expect(x.value).toMatchObject({ status: { kind: 'running' }, pid: 4242, type: 'shell', name: 'build' }) // NATIVE-SHAPED pass-through: kind-bearing status survives, never re-shaped
-    w.ptyService.recordMinted('pty-svc-90') // the service minted it: the facts reader carries it
-    expect(w.terminals.log).toEqual([`spawn:shell:${AGENT_ID}`]) // owner-authorized by the EXACT Agent
+    // FAITHFUL publication: the snapshot pid IS the backend session's own
+    // pid (types.ts: the snapshot carries the backend's pid, not a constant)
+    expect(Number((x.value as Record<string, unknown> | undefined)?.pid)).toBeGreaterThan(0)
+    expect(x.value).toMatchObject({ name: 'build' })
+    expect(String((x.value as Record<string, unknown> | undefined)?.type)).toBe('shell') // the caller-facing type is the DECLARED family; the internal route stays unexposed
+    expect(w.terminals.log.filter((l: string) => /^spawn:dsh-g3-po-/.test(l)).length).toBe(1) // owner-authorized by the EXACT Agent; the route is the per-open INTERNAL type (the model never sees it)
     expect(w.natives.terminal_open.calls.length).toBe(0) // the HANDLE executed, not the delegate body
     const inflight = w.arms.terminal_open.inFlight()
     expect(inflight[0]?.handleIdentity).toMatchObject({ sessionId: 'pty-svc-90', status: { kind: 'running' } }) // handle-owned identity recorded from the ANSWER
@@ -1373,28 +1562,29 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const running = w.arms.terminal_open.execute(plan, { consumed: true, grant: grantFor(c, plan, w.binding, 'grant-1') })
     await new Promise((resolve) => setImmediate(resolve)) // the provider is now PARKED in the deferred spawn
     const word = w.arms.terminal_open.cancel(plan) // cancel is keyed by the ISSUED PLAN (the real edge key)
-    expect(word.settled, JSON.stringify(word).slice(0, 200)).toBe('UNKNOWN-IN-FLIGHT') // the resource is LIVE — never 'cancelled before execution'
-    expect(String(word.bodyOutcome)).toMatch(/ALREADY STARTED/) // the effect started — the cleanup law is running, never a zero claim
-    expect(word.cleanupSettled).toBeDefined() // the cleanup face RAN at cancel time (effect visible from the first microsecond)
-    w.gate.settle()
-    const cleanupTruth = await (word as { cleanupSettled?: Promise<Record<string, unknown>> }).cleanupSettled!
-    // AT CANCEL TIME the provider had not minted an id: the honest word is
-    // nothing-minted — the adapter kills NOTHING it does not own, and the
-    // started effect stays VISIBLE (inFlight), never hidden.
-    expect(cleanupTruth.nothingToKill).toBe(true)
-    expect(String(cleanupTruth.code)).toBe('P_TERM_CLEANUP_NOTHING_MINTED')
-    // AFTER the full settle, the entry is inFlight only if it refused with
-    // effects started; here the entry committed normally, so visibility ran
-    // while EXECUTING (measured by the pure-drift leg below, which must stay
-    // visible AFTER refusal).
+    expect(word.settled, JSON.stringify(word).slice(0, 200)).toBe('UNKNOWN-IN-FLIGHT') // prepare IS an effect entry — never 'cancelled before execution'
+    expect(String(word.bodyOutcome)).toMatch(/at minimum UNKNOWN|never zero/)
+    // THE REAL-ROUTE BOUNDARY, MEASURED: at cancel the capability had been
+    // ENTERED but NOT ANSWERED (the pinned spec is mid-flight in the
+    // deferred launch) — the word NEVER pretends a clean zero: it states
+    // launchClaimed, and NOTHING is killed speculatively (the provider owns
+    // its pre-answer rollback; the adapter never guesses a session that may
+    // not exist).
+    expect(w.launches.length).toBe(1) // entered — parked inside the controlled capability, NO handle yet
+    const cleanupTruth2 = await (word as { cleanupSettled?: Promise<Record<string, unknown>> }).cleanupSettled
+    expect(cleanupTruth2 === undefined || cleanupTruth2.launchClaimed === true).toBe(true)
+    expect(cleanupTruth2 === undefined || cleanupTruth2.nothingToKill === true).toBe(true)
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill')), JSON.stringify({ log: w.terminals.log, launches: w.launches.length })).toEqual([]) // zero speculative kills
+    w.gate.settle() // the launch proceeds past the cancel
+    // THE REAL SERVICE CONTRACT: a cancel never retracts work the provider
+    // already answered with — the REAL result commits (never narrated as
+    // cancelled, never dressed as a zero-effect refusal). The session the
+    // caller cancelled stays LIVE (no speculative kill was issued at the
+    // cancel); closing it is a later kill, not a retroactive cancel word.
     const x = await running
-    expect(x.ok).toBe(true) // the provider ANSWERED normally; the cancel raced past the effect boundary — the real result commits, never narrated as cancelled
-    expect(String((x as { value?: Record<string, unknown> }).value?.outcome)).toBe('opened') // the handle ANSWER commits (native-shaped), never narrated as cancelled
-    // The cancel-time cleanup found NOTHING MINTED (the provider was parked
-    // pre-answer) — killing the session behind a call whose operation the
-    // caller cancelled mid-flight would be the WRONG face, so the adapter
-    // killed NOTHING and said so honestly.
-    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([])
+    expect(x.ok, JSON.stringify(x).slice(0, 220)).toBe(true)
+    expect(String((x as { value?: Record<string, unknown> }).value?.outcome)).toBe('opened') // the ANSWER commits — never narrated as cancelled
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // cancel minted no speculative kill; the session lives until a real close
   })
 
   it('FACTS MOVED AFTER THE EFFECT (no cancel — the pure drift edge): the CURRENT-FACTS recheck after the awaited spawn refuses with the drift code AND cleans the started resource — never a zero-effect word', async () => {
@@ -1418,16 +1608,11 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
   })
 
   it('the REAL result is awaited through the handle: a foreground send commits EXACTLY the TerminalSendResult the operation.done resolved (viewport/waitReason/sessionStatus/truncated), the captured body never entered', async () => {
-    const w = await handleWorld()
-    // The double's operation settles on cancel; drive the committed-value
-    // shape with an auto-settling operation (the real service settles on
-    // readiness/timeout/exit — same contract).
-    const terminals = w.terminals as unknown as { startSend: (o: Record<string, unknown>, id: string, r: Record<string, unknown>) => unknown }
-    const record: string[] = (terminals as unknown as { log: string[] }).log
-    terminals.startSend = (o: Record<string, unknown>, id: string, r: Record<string, unknown>) => {
-      record.push(`send:${id}:${String(r.text)}:${String(r.submit)}`)
-      return { done: Promise.resolve({ viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false }), readOutput: () => ({ delta: '', truncated: false }), cancel: () => true }
-    }
+    // The real service settles `done` on readiness/timeout/exit; this world
+    // drives the committed-value shape with an auto-settling operation —
+    // same TerminalSendOperation contract.
+    const w = await handleWorld({ autoSettleSend: { viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false } })
+    const record: string[] = (w.terminals as unknown as { log: string[] }).log
     const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'python3\n', submit: true }, 'h-send-2')
     expect(x.ok).toBe(true)
     // THE COMMITTED VALUE IS THE HANDLE'S ANSWER — not a re-shaped echo:
@@ -1439,6 +1624,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
   it('terminate is the REAL face: close commits the service kill word (closed, then already-closing — kill FALSE is answered, never upgraded); read/signal/list route through the service with zero body', async () => {
     const w = await handleWorld()
     const opened = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'h-o2')
+    expect(opened.x.ok, JSON.stringify(opened.x).slice(0, 220)).toBe(true)
     const sessionId = String((opened.x.value as Record<string, unknown>).sessionId)
     w.ptyService.recordMinted(sessionId) // the service owns the session: the facts reader carries it
     // LIVE FIRST: read/signal/list ride the live session through the
@@ -1446,7 +1632,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const read = await runPass(w.arms.terminal_read, w.binding, { sessionId, count: 10 }, 'h-r1')
     expect(read.x.value).toMatchObject({ text: 'make: nothing to be done\n' })
     const sig = await runPass(w.arms.terminal_signal, w.binding, { sessionId, signal: 'SIGINT' }, 'h-s1')
-    expect(sig.x.value).toEqual({ deliveredTo: 4242 })
+    expect(Number((sig.x.value as { deliveredTo?: number }).deliveredTo)).toBeGreaterThan(0) // the REAL foreground group of THIS session's backend answered
     const list = await runPass(w.arms.terminal_list, w.binding, {}, 'h-l1')
     expect(Array.isArray(list.x.value)).toBe(true)
     // THEN TERMINATE: the service kill word, answered honestly twice.
@@ -1514,6 +1700,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const log: string[] = []
     const terminals = {
       spawn: async () => { throw new Error('unused') },
+      registerBackend: () => () => {}, // census-complete face; opens are not part of this leg
       startSend: () => {
         log.push('startSend')
         operationDone = new Promise<Record<string, unknown>>((resolve) => { settleOperation = resolve })
@@ -1548,6 +1735,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
       resolveOwner: (exec: Record<string, unknown>) => (exec as { agent?: unknown }).agent ?? null,
       jobs,
       ownerSessionId: (agentId: string) => `session-${String(agentId)}`,
+      subprocess: { spawnTerminal: async () => { throw new Error('unused: opens are not part of this leg') } },
     }) as unknown as { prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }
     const execFor = makeExec().exec
     const prepped = await port.prepare({

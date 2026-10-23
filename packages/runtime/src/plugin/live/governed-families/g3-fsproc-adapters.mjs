@@ -604,19 +604,34 @@ function deepJsonEqual(a, b) {
  * JobOutputSource pulls the operation's output into the registry ring;
  * JobRegistry.kill(id, caller, reason) is owner-checked).
  *
- * §5.1 GOVERNANCE SHAPE (root 66a521): the governed open target is the
- * PER-OPEN PRIVATE CONTROLLED BACKEND + its APPROVED ENVELOPE, never the
- * public `type`. A public spawn CANNOT carry that registration, so:
- *  - `deps.controlledSpawn(request, context)` (the integrator's per-open
- *    provider / CENTER seam) is REQUIRED: it spawns through the per-open
- *    one-shot registration and returns the NATIVE-shaped spawn result
- *    ({sessionId,name?,type,pid?,status:{kind,...},motd}) plus the
- *    `ownedResource` it created (the resource the adapter must clean up if
- *    governance refuses after the effect started).
- *  - Without it the adapter REFUSES the open typed (P_TERM_OPEN_PROVIDER_
- *    ABSENT) — it does NOT fall back to a public-type spawn. send/read/
+ * §5.1 GOVERNANCE SHAPE (root 15:09 route, pinned on the REAL 639 surface):
+ * the governed open target is the PER-OPEN CONTROLLED EXECUTION PLAN run by
+ * a ONE-SHOT PRIVATE BACKEND registered on the live service — never the
+ * public `type` (the type is only a route, never an authorization):
+ *  - `deps.terminals.registerBackend(backend)` (terminal/src/index.ts
+ *    :125-136) is part of the REQUIRED face: the adapter mints a unique
+ *    internal type per open (`dsh-g3-po-<callId>-<n>`, NEVER model-selectable
+ *    — undeclared at the classify face by construction) whose one-shot
+ *    spawn closure captured the EXACT owner, canonical request, callId and
+ *    the approved plan; every verification runs BEFORE the first await; the
+ *    disposer deregisters in an OUTER finally regardless of outcome, and
+ *    deregistration NEVER terminates (sessions survive the Map removal —
+ *    close is the service's awaited-quiescence path only).
+ *  - `deps.subprocess` (SubprocessRuntime-shaped) is REQUIRED for opens:
+ *    the real launch pins the approved plan into the controlled PTY
+ *    capability `spawnTerminal(SubprocessTerminalSpawnSpec)` — terminal
+ *    allocation, foreground groups, and awaited WHOLE-SESSION QUIESCENCE
+ *    (SubprocessTerminalHandle.terminate) for close. A bare process spawn
+ *    is never used; a string claim is never the envelope — the digest is
+ *    re-verified against the ACTUAL pinned launch spec.
+ *  - `deps.approvedOpenPlan(callId)` (the integrator/CENTER approval seam,
+ *    same reader the arm consults at classify/recheck) answers the plan of
+ *    record for the claim-time re-read; absent = the classified manifest's
+ *    approved plan is the approval of record. Without a plan the open
+ *    refuses typed — no public-type fallback spawn, ever. send/read/
  *    signal/kill/list ride the service's EXISTING per-session authorization
- *    (the session identity IS the per-open handle once published).
+ *    (expectOwned: exact-owner object identity; the session identity IS the
+ *    per-open handle once published).
  *
  * CANCEL/CLEANUP HONESTY (root 66a521): an effect entered (`spawn` returned,
  * `startSend` started) is an EFFECT ENTRY — after any await the adapter
@@ -634,15 +649,193 @@ function deepJsonEqual(a, b) {
  *   NEVER omits owner — unowned jobs are forbidden here).
  * @param deps.jobs - optional live ctx.jobs JobRegistry (start/kill) for
  *   run_in_background sends; absent = background sends REFUSE typed.
- * @param deps.controlledSpawn - ({type,name?,cwd?}, context) =>
- *   { result: native TerminalSpawnResult-shaped, ownedResource?: {sessionId} }
- *   | { ok:false, code, detail }: THE per-open controlled backend entry.
+ * @param deps.subprocess - controlled PTY capability answering
+ *   spawnTerminal(SubprocessTerminalSpawnSpec) (required for opens; the ONLY
+ *   launch path — the approved plan pinned, quiescence awaited on close).
+ * @param deps.approvedOpenPlan - optional live reader (callId) =>
+ *   { plan, envelopeDigest? } re-read at the one-shot claim; the classified
+ *   manifest's plan is the fallback approval of record.
  */
+/**
+ * THE ONE-SHOT PRIVATE CONTROLLED BACKEND (§5.1, root 15:09 route — pinned
+ * on the REAL 639 surface, no fictional seams):
+ *   TerminalSessionService.registerBackend(backend) (terminal/src/index.ts
+ *   :125-136) keyed by backend.type, disposer removes exactly this object;
+ *   service.spawn(owner, {type,...}, signal) (:154-224) captures the backend
+ *   by type, MINTS the sessionId itself, and awaits backend.spawn(spec).
+ * This provider is minted PER OPEN: a unique internal type the model can
+ * never select (undeclared at the classify face by construction) and a
+ * one-shot spawn closure capturing the EXACT owner, the canonical request,
+ * the callId and the APPROVED controlled execution plan. Before ANY await
+ * it verifies: single claim, exact Host-minted sessionId, exact owner
+ * object, canonical request match, and that the plan still answers the
+ * approved digest — any refusal happens with NOTHING started. The real
+ * launch pins the approved plan into the controlled PTY capability
+ * (SubprocessRuntime.spawnTerminal, subprocess/src/index.ts:162 — terminal
+ * allocation, foreground groups, and WHOLE-SESSION QUIESCENCE behind the
+ * awaited terminate()); a bare process spawn is never used. The returned
+ * session's close() settles ONLY on the handle's awaited quiescence
+ * (SubprocessTerminalHandle.terminate, types.ts: idempotent, every observed
+ * session member, nothing in flight after settlement).
+ * @returns {{ backend, state, launch, dispose }} — `launch` is the ACTUAL
+ * pinned launch spec once (and only once) the effect started; `state` is
+ * 'idle' | 'claimed' | 'done' | 'refused' for the claim-once audit.
+ */
+function createOneShotControlledBackend({ internalType, owner, canonical, callId, approvedPlan, approvedDigest, subprocess, onLaunched }) {
+  if (subprocess === null || typeof subprocess.spawnTerminal !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createOneShotControlledBackend: a controlled PTY launch capability with spawnTerminal(SubprocessTerminalSpawnSpec) is required — the §5.1 backend spawns ONLY through the restricted process plan, never a bare process')
+  }
+  const state = { current: 'idle', launch: null, refusal: null }
+  const backend = {
+    type: internalType,
+    spawn: async (spec) => {
+      // EVERY verification below runs BEFORE any await: the claim is
+      // single-use; the Host-minted id, the owner object and the canonical
+      // request must match what was approved; the plan must still answer
+      // the approved digest. A refusal here started NOTHING.
+      if (state.current !== 'idle') throw new Error(`P_TERM_PLAN_CLAIM_CONSUMED: the per-open one-shot backend for call ${callId} already ${state.current} — a second spawn through a per-open registration is refused before any effect`)
+      state.current = 'claimed'
+      if (String(spec.sessionId ?? '') !== String(canonical.expectSessionId ?? spec.sessionId ?? '') || typeof spec.sessionId !== 'string' || spec.sessionId.length === 0) {
+        state.current = 'refused'
+        throw new Error(`P_TERM_OPEN_ID_MISMATCH: the per-open backend answers only the exact Host-minted spawn for call ${callId}`)
+      }
+      if (spec.owner !== owner) {
+        state.current = 'refused'
+        throw new Error(`P_TERM_OPEN_OWNER_MISMATCH: the per-open backend is bound to the EXACT approved owner Agent (service law: authorizations compare object identity) — another owner object is refused before any effect`)
+      }
+      if (spec.type !== internalType || (spec.name ?? undefined) !== (canonical.name ?? undefined) || (spec.cwd ?? undefined) !== (canonical.cwd ?? undefined)) {
+        state.current = 'refused'
+        throw new Error(`P_TERM_OPEN_REQUEST_DRIFT: the spawn request differs from the canonical request approved for call ${callId} — the one-shot backend executes exactly the approved request, nothing else`)
+      }
+      spec.signal?.throwIfAborted()
+      const now = approvedPlan()
+      if (now === 'UNANSWERABLE') {
+        state.current = 'refused'
+        throw new Error(`P_TERM_OPEN_PLAN_ABSENT: the approval seam cannot answer the controlled open plan for call ${callId} at the claim — the governed entry refuses BEFORE any await; it never spawns behind a plan it cannot verify`)
+      }
+      const plan = now?.plan ?? null
+      const argvSource = plan !== null && Array.isArray(plan.argv) && plan.argv.length > 0 && plan.argv.every((a) => typeof a === 'string' && a.length > 0) ? plan.argv : null
+      if (plan === null || (argvSource === null && typeof plan.executable !== 'string')
+        || typeof plan.cwd !== 'string' || plan.cwd.length === 0
+        || !Number.isInteger(plan.rows) || plan.rows <= 0 || !Number.isInteger(plan.cols) || plan.cols <= 0
+        || !Number.isInteger(plan.graceMs) || plan.graceMs < 0
+        || approvedOpenPlanDigest(plan) !== approvedDigest) {
+        state.current = 'refused'
+        throw new Error(`P_TERM_OPEN_PLAN_MOVED: the approved controlled open plan for call ${callId} moved or is incomplete at the claim — the one-shot backend executes the APPROVED plan or nothing (zero effect, before any await)`)
+      }
+      const argv = argvSource ?? [plan.executable, ...(plan.argv0 !== undefined ? [plan.argv0] : [])]
+      // THE ACTUAL ENVELOPE: the exact pinned spec handed to the controlled
+      // capability — recorded as it RUNS, and digested for re-verification
+      // against the approved plan. This is the envelope of record.
+      const launchSpec = Object.freeze({
+        argv: Object.freeze([...argv]),
+        cwd: canonical.cwd ?? plan.cwd,
+        ...(plan.env === null || plan.env === undefined ? {} : { env: { ...plan.env } }),
+        rows: plan.rows,
+        cols: plan.cols,
+        terminalType: plan.terminalType ?? 'dumb',
+        graceMs: plan.graceMs,
+        ...(spec.signal === undefined ? {} : { signal: spec.signal }),
+      })
+      state.launch = launchSpec
+      const handle = await subprocess.spawnTerminal(launchSpec)
+      // THE EFFECT BOUNDARY, OBSERVABLE: the launch is recorded once the
+      // controlled capability has ANSWERED with a live handle — cancel at
+      // an un-answered launch cleans NOTHING speculatively (the provider
+      // owns its pre-answer rollback); cancel after the answer follows the
+      // cleanup law on the started resource.
+      if (typeof onLaunched === 'function') onLaunched(launchSpec)
+      // REAL PROCESS-TREE QUIESCENCE: close() settles only on the awaited
+      // provider terminate (idempotent; every observed session member;
+      // after settlement no write/inspection/signal remains in flight).
+      let closing = null
+      let settled = false
+      handle.done.then(() => { settled = true }, () => { settled = true })
+      const ring = []
+      let ringChars = 0
+      let outputTail = ''
+      const keepOutput = (chunk) => {
+        const text = String(chunk)
+        outputTail += text
+        if (outputTail.length > 1_048_576) outputTail = outputTail.slice(-524_288)
+        ring.push(text)
+        ringChars += text.length
+        while (ringChars > 65_536 && ring.length > 1) ringChars -= ring.shift().length
+      }
+      void (async () => {
+        // the OUTPUT PUMP: keeps the ring/current tail fed for the whole
+        // session life; a provider transport failure is not the session's
+        // outcome (done carries that), so the pump swallows and exits.
+        try {
+          for await (const chunk of handle.output) keepOutput(chunk)
+        } catch { /* provider transport failure: done carries the outcome */ }
+      })()
+      if (typeof handle.output?.once === 'function') handle.output.once('error', () => {})
+      const ops = []
+      return {
+        motd: '',
+        pid: handle.pid,
+        startSend: (request) => {
+          const text = String(request?.text ?? '')
+          const submit = request?.submit !== false
+          const line = submit && !text.endsWith('\n') ? `${text}\n` : text
+          let mark = outputTail.length
+          const preLen = outputTail.length
+          const writePromise = settled || closing !== null
+            ? Promise.reject(new Error(`P_TERM_OPEN_SESSION_SETTLED: session ${spec.sessionId} is no longer live`))
+            : handle.write(line)
+          if (writePromise !== undefined) void writePromise.catch(() => {})
+          const op = {
+            // THE RAW word: done resolves EXACTLY what the provider's
+            // handle.done resolves (the SubprocessOutcome the host contract
+            // promises) — the shim never re-wraps the native settle.
+            done: writePromise
+              .then(() => { void preLen; mark = outputTail.length; return handle.done },
+                (error) => ({ failed: true, detail: String(error?.message ?? error) })),
+            readOutput: () => outputTail.slice(mark),
+            cancel: () => {
+              const r = request?.cancel
+              if (r !== undefined && r !== null && typeof r.abort === 'function') { r.abort(); return true }
+              return false
+            },
+          }
+          ops.push(op)
+          return op
+        },
+        read: (request) => {
+          const text = ring.join('')
+          const count = Number.isInteger(request?.count) && request.count > 0 ? request.count : 200
+          const lines = text.split('\n')
+          const offset = Number.isInteger(request?.offset) && request.offset >= 0 ? request.offset : 0
+          return { text: lines.slice(0, Math.max(0, lines.length - offset)).slice(-count).join('\n'), truncated: offset > 0 || lines.length > count }
+        },
+        signal: async (signal) => {
+          const answered = await handle.signalForeground(signal)
+          // the answer is PASSED through faithfully: a provider that answers
+          // with the group pid rides as {deliveredTo}; a richer snapshot
+          // rides as-is — the adapter never reshapes the service word
+          return typeof answered === 'number' ? { deliveredTo: answered } : answered
+        },
+        status: () => (settled ? { kind: 'exited' } : { kind: 'running', pid: handle.pid }),
+        close: async (reason) => {
+          if (closing === null) closing = handle.terminate().then(() => ({ closed: true, reason: String(reason ?? '') })).catch((error) => ({ closed: false, detail: String(error?.message ?? error) }))
+          return closing
+        },
+      }
+    },
+  }
+  // state is BACKEND-LOCAL on purpose: the claim-once law runs inside
+  // spawn itself (a second spawn through a per-open registration meets
+  // P_TERM_PLAN_CLAIM_CONSUMED before any effect) — no external reader
+  void state
+  return { backend, state }
+}
+
 export function createHostTerminalControlPort(deps) {
   const terminals = deps?.terminals
-  const terminalMethods = ['spawn', 'startSend', 'read', 'signal', 'kill', 'list']
+  const terminalMethods = ['spawn', 'startSend', 'read', 'signal', 'kill', 'list', 'registerBackend']
   if (terminals === null || typeof terminals !== 'object' || terminalMethods.some((m) => typeof terminals[m] !== 'function')) {
-    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.terminals must be the live @deepseek-ai/dsh-terminal service face (spawn/startSend/read/signal/kill/list) — the adapter names the entry, it does not simulate it')
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.terminals must be the live @deepseek-ai/dsh-terminal service face (spawn/startSend/read/signal/kill/list/registerBackend — registerBackend is REQUIRED for opens: §5.1 governs through the per-open one-shot registration, and the public-type-only path is not the governed entry) — the adapter names the entry, it does not simulate it')
   }
   if (typeof deps.resolveOwner !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.resolveOwner(exec) => live Agent is required — the service authorizes by the EXACT Agent; an id string never substitutes')
@@ -654,10 +847,23 @@ export function createHostTerminalControlPort(deps) {
   if (jobs !== null && typeof deps.ownerSessionId !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.ownerSessionId(ownerAgentId) is required when jobs are supplied — JobSpec.owner is never omitted (an unowned job is open to any caller)')
   }
-  const controlledSpawn = deps.controlledSpawn ?? null
-  if (controlledSpawn !== null && typeof controlledSpawn !== 'function') {
-    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.controlledSpawn must be a function (the per-open controlled-backend provider) or absent')
+  // THE controlled PTY launch capability (SubprocessRuntime-shaped, the
+  // integrator supplies the restricted execution world): the one-shot
+  // per-open backend spawns ONLY through spawnTerminal(SubprocessTerminal
+  // SpawnSpec) — terminal allocation, foreground groups and awaited
+  // whole-session quiescence. A bare process spawn is never used.
+  const subprocess = deps.subprocess ?? null
+  if (subprocess !== null && typeof subprocess.spawnTerminal !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.subprocess must answer spawnTerminal(SubprocessTerminalSpawnSpec) (the controlled PTY capability) or be absent')
   }
+  // live re-read seam for the approved plan at claim time (same provider
+  // the arm's classify/recheck consults; absent = the classified manifest
+  // plan is the approval of record)
+  const serviceApprovedPlan = typeof deps.approvedOpenPlan === 'function' ? deps.approvedOpenPlan : null
+  let openSequence = 0
+  /** the ACTUAL pinned launch specs, keyed by callId (envelope of record:
+   *  what was handed to the controlled capability, not what was claimed) */
+  const launchedByCall = new Map()
   const ownerOrRefusal = (exec) => {
     const owner = deps.resolveOwner(exec)
     if (owner === null || owner === undefined) {
@@ -723,88 +929,143 @@ export function createHostTerminalControlPort(deps) {
         return r !== null && r !== undefined && r.ok === false ? r : null
       }
       if (spec.toolName === 'terminal_open') {
-        // §5.1: THE governed target is the per-open private controlled
-        // backend + approved envelope. No provider ⇒ typed refusal — never a
-        // public-type spawn behind governance.
-        if (controlledSpawn === null) {
-          return { ok: false, code: 'P_TERM_OPEN_PROVIDER_ABSENT', detail: 'terminal_open governs the PER-OPEN PRIVATE controlled backend registration + approved envelope (§5.1 core): the integrator must supply deps.controlledSpawn over that registration — spawning through the PUBLIC type is not the governed entry, and the adapter refuses rather than dressed-up success' }
+        // §5.1 REAL ROUTE (root 15:09): the open runs through a PER-OPEN
+        // ONE-SHOT PRIVATE BACKEND registered on the live service
+        // (registerBackend → disposer @terminal index 125-136) under a
+        // unique internal type the model can never select, whose spawn
+        // closure captured the exact owner, the canonical request, the
+        // callId and the APPROVED controlled execution plan. Registration
+        // removal (the disposer) NEVER terminates the session — close is
+        // the service's awaited quiescence path; the spawn effect itself
+        // goes ONLY through the controlled SubprocessRuntime.spawnTerminal
+        // capability with the plan pinned.
+        const approved = spec.manifest?.perOpenBackend ?? null
+        if (approved === null || typeof approved !== 'object' || approved.approvedPlan === undefined) {
+          return { ok: false, code: 'P_TERM_TARGET_UNRESOLVED', detail: 'terminal_open carries no approved controlled open plan on its classified manifest: the governed entry refuses rather than spawning the public type' }
         }
-        // The per-open backend IS starting now: register an intent marker
-        // FIRST, so a provider that is entered but never answers is still a
-        // VISIBLE started effect to cancel — cleanup law covers even an
-        // unanswered provider (best-effort kill of the intended id; honest
-        // nothing-to-kill if the service never minted one).
-        record({
-          sessionId: `unanswered-open:${String(spec.callId)}`,
-          __kind: 'open-intent',
-          callId: spec.callId,
-          // intent identity: what the governed registration WAS (service-
-          // answered); the started resource is VISIBLE in the live
-          // inventory from the first microsecond, before any provider
-          // answer exists
-          ...(spec.manifest?.perOpenBackend === undefined
-            ? {}
-            : { governedRegistration: spec.manifest.perOpenBackend }),
-        })
-        {
-          const preCancel = cancelledBeforeEffect()
-          if (preCancel !== null) return preCancel
+        if (subprocess === null) {
+          return { ok: false, code: 'P_TERM_OPEN_CAPABILITY_ABSENT', detail: 'the per-open controlled backend spawns ONLY through the restricted process plan on the controlled PTY capability (SubprocessRuntime.spawnTerminal: terminal allocation, foreground groups, awaited whole-session quiescence) — deps.subprocess is absent on this mount, and a bare process spawn is never substituted' }
         }
-        const spawned = await controlledSpawn({
-          type: String(canonical.type ?? ''),
-          ...(typeof canonical.name === 'string' && canonical.name.length > 0 ? { name: canonical.name } : {}),
-          ...(typeof canonical.cwd === 'string' && canonical.cwd.length > 0 ? { cwd: canonical.cwd } : {}),
-        }, { owner, callId: spec.callId, correlation: spec.correlation })
-        if (spawned === null || spawned.ok === false) {
-          return { ok: false, code: spawned?.code ?? 'P_TERM_TARGET_UNRESOLVED', detail: spawned?.detail ?? 'the per-open controlled-backend provider refused the spawn' }
-        }
-        // THE effect started: re-check cancel/drain AFTER the await. A move
-        // refuses here and CLEANUP the started resource — never zero effects.
-        // BOTH rechecks answer after the await. A CANCEL moves the
-        // operation's own decision first and routes the cleanup of the
-        // started resource — the CURRENT-FACTS recheck is consulted when the
-        // facts in fact moved (root rulings: cancel law AND drift law, each
-        // on its own trigger).
-        record({ ...(spawned?.ownedResource ?? spawned?.result ?? {}), __kind: 'open-session' })
-        if (cancelled()) {
-          return refusalAfterEffects(spawned.ownedResource ?? spawned.result, 'P_TERM_CANCELLED_AFTER_EFFECT', 'cancel/drain moved after the per-open backend spawn started: the started resource was cleaned through the service (cleanup truth attached); this call NEVER claims zero effects')
-        }
-        const openDrift = factsMoved()
-        if (openDrift !== null) {
-          // If cancel/drain ALSO moved, the cancel law owns this refusal:
-          // clean the started resource, then hand the entry a CANCELLED edge
-          // so the caller gets the honest after-cancel word — never a drift
-          // code dressed over a cancelled decision.
-          if (cancelled()) {
-            const cleanup = await cleanupOwned(spawned.ownedResource ?? spawned.result, 'cancel moved after the per-open backend spawn started')
-            const edge = new Error('cancelled after a started effect')
-            edge.a5Edge = 'CANCELLED-AFTER-EFFECT'
-            edge.a5Cleanup = cleanup
-            throw edge
-          }
-          return refusalAfterEffects(spawned.ownedResource ?? spawned.result, openDrift.code ?? 'P_TERM_TARGET_DRIFT', `current target facts moved after the per-open backend spawn started (${openDrift.detail ?? 'recheck refused'}): the started resource was cleaned through the service — effects started, this call refuses with the cleanup truth, never a zero-effect word`)
-        }
-        // NATIVE result fields ride VERBATIM (sessionId/kind-bearing status/
-        // pid/type/motd) — native-shaped pass-through, not a re-shape.
-        const result = spawned.result ?? {}
-        return {
-          ok: true,
-          handle: {
-            identity: {
-              sessionId: String(result.sessionId ?? ''),
-              pid: result.pid ?? null,
-              status: nativeSessionStatus(result.status),
-            },
-            invoke: async () => ({
-              outcome: 'opened',
-              sessionId: result.sessionId,
-              ...(result.name !== undefined ? { name: result.name } : {}),
-              type: result.type,
-              pid: result.pid,
-              status: nativeSessionStatus(result.status),
-              motd: typeof result.motd === 'string' ? result.motd : '',
-            }),
+        openSequence += 1
+        const internalType = `dsh-g3-po-${String(spec.callId)}-${openSequence}`
+        const approvedDigest = String(approved.envelopeDigest ?? '')
+        const { backend } = createOneShotControlledBackend({
+          internalType,
+          owner,
+          canonical: {
+            ...(typeof canonical.name === 'string' && canonical.name.length > 0 ? { name: canonical.name } : {}),
+            ...(typeof canonical.cwd === 'string' && canonical.cwd.length > 0 ? { cwd: canonical.cwd } : {}),
           },
+          callId: String(spec.callId),
+          approvedPlan: () => (serviceApprovedPlan === null
+            ? { plan: approved.approvedPlan, envelopeDigest: approvedDigest }
+            : (serviceApprovedPlan(spec.callId) ?? 'UNANSWERABLE')),
+          approvedDigest,
+          subprocess,
+          onLaunched: (launchSpec) => { launchedByCall.set(String(spec.callId), launchSpec) },
+        })
+        let disposer = null
+        try {
+          // register FIRST (type-route only — authorization lives in the
+          // one-shot closure's pre-await verification and the service's
+          // exact-owner law); the OUTER finally below deregisters
+          // regardless of outcome — 注销不等终止, disposal never waits on
+          // (or performs) termination.
+          disposer = terminals.registerBackend(backend)
+          {
+            const preCancel = cancelledBeforeEffect()
+            if (preCancel !== null) return preCancel
+          }
+          const spawned = await terminals.spawn(owner, {
+            type: internalType,
+            ...(typeof canonical.name === 'string' && canonical.name.length > 0 ? { name: canonical.name } : {}),
+            ...(typeof canonical.cwd === 'string' && canonical.cwd.length > 0 ? { cwd: canonical.cwd } : {}),
+          })
+          if (spawned === null || typeof spawned !== 'object' || typeof spawned.sessionId !== 'string') {
+            return { ok: false, code: 'P_TERM_TARGET_UNRESOLVED', detail: 'the terminals service did not answer a published session for the per-open spawn' }
+          }
+          // THE effect started: re-check cancel/drain AFTER the await. A move
+          // refuses here and CLEANUP the started resource — never zero effects.
+          record({ sessionId: spawned.sessionId, __kind: 'open-session' })
+          if (cancelled()) {
+            return refusalAfterEffects({ sessionId: spawned.sessionId }, 'P_TERM_CANCELLED_AFTER_EFFECT', 'cancel/drain moved after the per-open backend spawn started: the started resource was cleaned through the service (cleanup truth attached); this call NEVER claims zero effects')
+          }
+          const openDrift = factsMoved()
+          if (openDrift !== null) {
+            if (cancelled()) {
+              const cleanup = await cleanupOwned({ sessionId: spawned.sessionId }, 'cancel moved after the per-open backend spawn started')
+              const edge = new Error('cancelled after a started effect')
+              edge.a5Edge = 'CANCELLED-AFTER-EFFECT'
+              edge.a5Cleanup = cleanup
+              throw edge
+            }
+            return refusalAfterEffects({ sessionId: spawned.sessionId }, openDrift.code ?? 'P_TERM_TARGET_DRIFT', `current target facts moved after the per-open backend spawn started (${openDrift.detail ?? 'recheck refused'}): the started resource was cleaned through the service — effects started, this call refuses with the cleanup truth, never a zero-effect word`)
+          }
+          // envelope-of-record check (root 15:09: the envelope is the ACTUAL
+          // executed plan): the digest of the spec that reached the
+          // controlled capability must equal the approved digest.
+          // signal and the per-open env overlay (the caller's session world)
+          // are OUTSIDE the approved envelope by law: the comparison pins
+          // the ENVELOPE facts (argv, env, dims, grace), never the routing
+          // extras the capability spec carries in addition.
+          const launched = launchedByCall.get(String(spec.callId)) ?? null
+          if (launched !== null && approvedDigest.length > 0 && approvedOpenPlanDigest({
+            argv: launched.argv,
+            cwd: launched.cwd,
+            env: launched.env ?? null,
+            rows: launched.rows,
+            cols: launched.cols,
+            terminalType: launched.terminalType,
+            graceMs: launched.graceMs,
+          }) !== approvedDigest) {
+            return refusalAfterEffects({ sessionId: spawned.sessionId }, 'P_TERM_OPEN_ENVELOPE_DRIFT', `the ACTUAL pinned launch spec deviates from the approved envelope (${approvedDigest} -> ${approvedOpenPlanDigest(launched)}): the session was cleaned through the service — effects started, never a zero-effect word`)
+          }
+          // NATIVE result fields ride VERBATIM (sessionId/kind-bearing status/
+          // pid/type/motd) — native-shaped pass-through, not a re-shape.
+          // the published session's `type` is the INTERNAL per-open route —
+          // it is a service fact (the caller asked by name/type and the
+          // service answered through its own registration), not a model
+          // claim: it rides verbatim. The model never learns or selects it.
+          const result = { ...spawned, type: String(canonical.type ?? spawned.type) }
+          return {
+            ok: true,
+            handle: {
+              identity: {
+                sessionId: String(result.sessionId ?? ''),
+                pid: result.pid ?? null,
+                status: nativeSessionStatus(result.status),
+              },
+              invoke: async () => ({
+                outcome: 'opened',
+                sessionId: result.sessionId,
+                ...(result.name !== undefined ? { name: result.name } : {}),
+                type: result.type,
+                pid: result.pid,
+                status: nativeSessionStatus(result.status),
+                motd: typeof result.motd === 'string' ? result.motd : '',
+              }),
+            },
+          }
+        } catch (error) {
+          // The one-shot backend's PRE-AWAIT refusals (claim consumed, id/
+          // owner/request drift, plan moved) and the pre-launch window
+          // started NOTHING: they surface as typed zero-effect refusals.
+          // Anything that DID start a session went through the paths above
+          // with their cleanup truth — this catch never dresses a started
+          // effect as zero.
+          const message = String(error?.message ?? error)
+          const oneShotRefusal = /^P_TERM_(PLAN_CLAIM_CONSUMED|OPEN_ID_MISMATCH|OPEN_OWNER_MISMATCH|OPEN_REQUEST_DRIFT|OPEN_PLAN_MOVED|OPEN_PLAN_ABSENT):/
+          if (oneShotRefusal.test(message)) {
+            return { ok: false, code: message.slice(0, message.indexOf(':')), detail: `${message} — refused BEFORE any effect (every verification runs before the first await); zero spawn, zero resource` }
+          }
+          if (error?.a5Edge !== undefined) throw error
+          return { ok: false, code: 'P_TERM_TARGET_UNRESOLVED', detail: `the per-open spawn failed before publication: ${message}` }
+        } finally {
+          // 注销不等终止: the disposer removes ONLY the type-route Map entry
+          // (service law) — it never terminates the session and never waits
+          // on termination. The outer finally deregisters regardless of
+          // outcome.
+          if (disposer !== null) { try { disposer() } catch { /* route already replaced — the disposer is idempotent by object identity */ } }
         }
       }
       if (spec.toolName === 'terminal_close') {
@@ -1019,12 +1280,18 @@ export function createHostTerminalControlPort(deps) {
           return Promise.resolve(word).then((answer) => ({ routed: answer === 'requested', face: 'jobs.kill(owner-checked)', word: answer }))
         }
         const sid = String(resource?.sessionId ?? '')
+        // THE REAL-ROUTE UNANSWERED BOUNDARY, MEASURED: with no answered
+        // session there may STILL be a controlled launch in flight (the
+        // provider owns its pre-answer rollback) — the adapter kills
+        // NOTHING speculatively and never claims a clean zero: the word
+        // carries `launchClaimed` (the pinned spec reached the capability).
+        const launchClaimed = launchedByCall.size > 0
         if (sid.length === 0 || sid.startsWith('unanswered-open:')) {
           // The provider was entered but NEVER answered: no resource the
           // adapter can own exists. The effect-visibility duty is already
           // discharged (the entry is recorded, inFlight/drain report it);
           // the cleanup word is HONEST: nothing was minted, nothing killed.
-          return Promise.resolve({ routed: false, nothingToKill: true, code: 'P_TERM_CLEANUP_NOTHING_MINTED', detail: 'the per-open provider was entered but answered no ownedResource — there is no minted session/job to clean; the started-effect remains VISIBLE in inFlight/drain, never hidden' })
+          return Promise.resolve({ routed: false, nothingToKill: true, ...(launchClaimed ? { launchClaimed: true } : {}), code: 'P_TERM_CLEANUP_NOTHING_MINTED', detail: 'the per-open provider was entered but answered no ownedResource — there is no minted session/job to clean; the started-effect remains VISIBLE in inFlight/drain, never hidden' })
         }
         const { owner: cleanupOwner, refusal: ownerRefusal } = ownerOrRefusal({ agent: context?.exec?.agent ?? null })
         if (ownerRefusal !== undefined) {
@@ -1728,6 +1995,33 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
 const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
 
 /**
+ * THE APPROVED-ENVELOPE DIGEST: a canonical hash of the controlled OPEN
+ * PLAN as approved. It is a convenience correlation only — the port
+ * RE-VERIFIES it against the ACTUAL pinned launch spec handed to the
+ * controlled spawn seam (the plan that RAN, not the plan that was said).
+ */
+function approvedOpenPlanDigest(plan) {
+  // argv NORMALIZES: an executable (+optional argv0) plan and the launch
+  // spec it becomes are the SAME envelope — the digest compares the
+  // canonical ARGV form, plus cwd/env/dims/grace/terminal type.
+  const argvCanonical = Array.isArray(plan.argv) && plan.argv.length > 0
+    ? [...plan.argv]
+    : (typeof plan.executable === 'string' && plan.executable.length > 0
+      ? [plan.executable, ...(plan.argv0 !== undefined ? [plan.argv0] : [])]
+      : null)
+  const canonicalPlan = JSON.stringify({
+    argv: argvCanonical,
+    cwd: plan.cwd ?? null,
+    env: plan.env === null || plan.env === undefined ? null : Object.fromEntries(Object.keys(plan.env).sort().map((k) => [k, plan.env[k]])),
+    rows: plan.rows ?? null,
+    cols: plan.cols ?? null,
+    terminalType: plan.terminalType ?? null,
+    graceMs: plan.graceMs ?? null,
+  })
+  return 'sha256:' + createHash('sha256').update(canonicalPlan).digest('hex')
+}
+
+/**
  * terminal_open — M0-B §5.1: the target carries the public backend's CURRENT
  * service registration identity/incarnation + the process/IO envelope, read
  * from the injected `ptyService.backend(type)`; the model's `type` string
@@ -1748,20 +2042,34 @@ function validateTerminalOpen(args, h) {
   if (bf === null || typeof bf.registrationId !== 'string' || typeof bf.incarnation !== 'string') {
     return refuse('P_TERM_TARGET_UNRESOLVED', `the terminals service does not currently register public backend ${JSON.stringify(args.type)} (registrationId/incarnation unreadable): an unresolved target is refused, never guessed from the model's type string`)
   }
-  // §5.1 GOVERNANCE CORE (root ruling 66a521): what the admission covers is
-  // the PER-OPEN PRIVATE CONTROLLED BACKEND — the one-shot registration the
-  // integrator mints for THIS exact call (correlated by callId) — plus its
-  // APPROVED PROCESS/IO ENVELOPE. The public `type` only SELECTS the
-  // declared backend family; it is never the governed target, and the
-  // private registration identity + envelope digest MUST be resolvable from
-  // service facts at classify and again at the entry. A mount whose seam
-  // cannot answer them is not the §5.1 backend: TARGET_UNRESOLVED, not a
-  // public-type spawn dressed as governance.
-  const po = serviceFacts?.perOpenRegistration?.(callId) ?? null
-  if (po === null || typeof po.privateRegistrationId !== 'string' || po.privateRegistrationId.length === 0
-    || typeof po.envelopeDigest !== 'string' || po.envelopeDigest.length === 0) {
-    return refuse('P_TERM_TARGET_UNRESOLVED', `no per-open private controlled-backend registration (+approved envelope digest) is answerable for call ${JSON.stringify(callId)}: §5.1 governs the per-open backend and its approved envelope — the public type alone never spawns under governance`)
+  // §5.1 GOVERNANCE CORE (root 15:09 route, pinned on the REAL 639 surface):
+  // what the admission covers is the PER-OPEN CONTROLLED EXECUTION PLAN —
+  // the restricted process plan (executable source or exact argv, cwd, env,
+  // terminal dims, grace) that the one-shot private backend — minted per
+  // open via TerminalSessionService.registerBackend — will ACTUALLY execute
+  // through the controlled SubprocessRuntime.spawnTerminal seam. The plan
+  // MUST be answerable for THIS exact call (correlated by callId); the
+  // digest rides as a convenience and is RE-VERIFIED against the ACTUAL
+  // pinned launch spec at the entry — a claim is never the envelope. The
+  // public `type` only SELECTS the declared backend family; it is never the
+  // governed target, and a mount whose seam cannot answer the plan is not
+  // the §5.1 backend: TARGET_UNRESOLVED, not a public-type spawn dressed
+  // as governance.
+  const po = serviceFacts?.approvedOpenPlan?.(callId) ?? null
+  const poPlan = po?.plan ?? null
+  const poExecutableOk = poPlan !== null && (
+    (typeof poPlan.executable === 'string' && poPlan.executable.length > 0)
+    || (Array.isArray(poPlan.argv) && poPlan.argv.length > 0 && poPlan.argv.every((a) => typeof a === 'string' && a.length > 0))
+  )
+  if (po === null || !poExecutableOk
+    || typeof poPlan.cwd !== 'string' || poPlan.cwd.length === 0
+    || !Number.isInteger(poPlan.rows) || poPlan.rows <= 0 || !Number.isInteger(poPlan.cols) || poPlan.cols <= 0
+    || !Number.isInteger(poPlan.graceMs) || poPlan.graceMs < 0) {
+    return refuse('P_TERM_TARGET_UNRESOLVED', `no approved controlled OPEN PLAN (executable-or-argv, cwd, rows, cols, graceMs — the plan the per-open backend will actually pin into SubprocessRuntime.spawnTerminal) is answerable for call ${JSON.stringify(callId)}: §5.1 governs the per-open controlled execution plan behind the one-shot registerBackend registration — the public type alone never spawns under governance`)
   }
+  const poEnvelopeDigest = typeof po.envelopeDigest === 'string' && po.envelopeDigest.length > 0
+    ? po.envelopeDigest
+    : approvedOpenPlanDigest(poPlan)
   const canonical = { type: args.type, ...(args.name !== undefined ? { name: args.name } : {}), ...(args.cwd !== undefined ? { cwd: args.cwd } : {}) }
   return {
     ok: true,
@@ -1774,11 +2082,12 @@ function validateTerminalOpen(args, h) {
         serviceIncarnation: bf.incarnation,
         processEnvelope: bf.processEnvelope ?? null,
       }),
-      // THE governed target: per-open private registration + approved
-      // envelope digest (service answers; correlated to this exact call).
+      // THE governed target: the approved controlled execution plan + its
+      // envelope digest (integrator seam; correlated to this exact call).
+      // The digest is RE-VERIFIED against the ACTUAL pinned launch spec.
       perOpenBackend: Object.freeze({
-        privateRegistrationId: po.privateRegistrationId,
-        envelopeDigest: po.envelopeDigest,
+        approvedPlan: Object.freeze(JSON.parse(JSON.stringify(poPlan))),
+        envelopeDigest: poEnvelopeDigest,
       }),
       // §5.1 correlation: CENTER mints the per-open PRIVATE one-shot backend
       // registration for this exact call; the arm records the correlation
@@ -1793,9 +2102,12 @@ function validateTerminalOpen(args, h) {
       if (now === null || now.registrationId !== bf.registrationId || now.incarnation !== bf.incarnation) {
         return { ok: false, code: 'P_TERM_TARGET_DRIFT', detail: `the backend registration/incarnation moved between approval and the entry (${bf.registrationId}@${bf.incarnation} -> ${now === null ? 'unresolvable' : `${now.registrationId}@${now.incarnation}`})` }
       }
-      const nowPo = serviceFacts?.perOpenRegistration?.(callId) ?? null
-      if (nowPo === null || nowPo.privateRegistrationId !== po.privateRegistrationId || nowPo.envelopeDigest !== po.envelopeDigest) {
-        return { ok: false, code: 'P_TERM_TARGET_DRIFT', detail: `the per-open private backend registration / approved envelope moved between approval and the entry (${po.privateRegistrationId} -> ${nowPo === null ? 'unresolvable' : nowPo.privateRegistrationId})` }
+      const nowPo = serviceFacts?.approvedOpenPlan?.(callId) ?? null
+      const nowDigest = nowPo === null || nowPo?.plan === undefined || nowPo?.plan === null
+        ? null
+        : (typeof nowPo.envelopeDigest === 'string' && nowPo.envelopeDigest.length > 0 ? nowPo.envelopeDigest : approvedOpenPlanDigest(nowPo.plan))
+      if (nowDigest === null || nowDigest !== poEnvelopeDigest) {
+        return { ok: false, code: 'P_TERM_TARGET_DRIFT', detail: `the approved controlled open plan / envelope digest moved between approval and the entry (${poEnvelopeDigest} -> ${nowDigest ?? 'unresolvable'})` }
       }
       return { ok: true }
     },
@@ -2227,8 +2539,8 @@ export function createGovernedTerminalArms(deps) {
   // a call. A seam that cannot answer it is not the §5.1 backend feed:
   // assembly REFUSES (the row would otherwise die at every classify with a
   // fake look of life); the refusal names the missing capability.
-  if (typeof ptyService.perOpenRegistration !== 'function') {
-    throw new TypeError('g3-fsproc-adapters/terminal: ptyService.perOpenRegistration(callId) => {privateRegistrationId, envelopeDigest} is REQUIRED — §5.1 governs the per-open private controlled backend + approved envelope, never the public type; the integrator wires this reader to the registration the per-open provider mints (MISSING public host capability at 639ed01539: no per-open registration read on ctx.terminals)')
+  if (typeof ptyService.approvedOpenPlan !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/terminal: ptyService.approvedOpenPlan(callId) => {plan:{executable|argv, cwd, rows, cols, graceMs, env?}, envelopeDigest?} is REQUIRED — §5.1 governs the per-open CONTROLLED EXECUTION PLAN behind the one-shot registerBackend registration (root 15:09 route, pinned on terminal/src/index.ts:125-136 spawn capture + SubprocessRuntime.spawnTerminal), never the public type; the integrator wires this reader to the approval the per-open provider holds')
   }
   if (deps.controlPort !== undefined && deps.controlPort !== null
     && (typeof deps.controlPort !== 'object' || typeof deps.controlPort.prepare !== 'function')) {
@@ -2276,7 +2588,7 @@ export function createGovernedTerminalArms(deps) {
       bindingFacts: deps.bindingFacts,
       serviceFacts: Object.freeze({
         backend: (type) => ptyService.backend(type),
-        perOpenRegistration: (callId) => ptyService.perOpenRegistration(callId),
+        approvedOpenPlan: (callId) => ptyService.approvedOpenPlan(callId),
         session: (ownerAgentId, sessionId) => ptyService.session(ownerAgentId, sessionId),
       }),
       controlPort: deps.controlPort ?? null,
