@@ -38,7 +38,7 @@
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g2-team-mount
  */
-import { A5_G2_WEB_ROUTE_GAP, createG2TeamBrowserPort, createG2TeamMcpPort, A5_G2_ASSEMBLY_CODES } from './g2-team-assembly.mjs'
+import { A5_G2_WEB_ROUTE_GAP, createG2TeamBrowserPort, createG2TeamMcpPort, A5_G2_ASSEMBLY_CODES, loadG2TeamAssemblyEntries } from './g2-team-assembly.mjs'
 import { createG2McpResourceAdapters, createG2BrowserAdapters } from './g2-connector-adapters.mjs'
 
 const refuse = (code, message) => Object.freeze({ ok: false, code, message })
@@ -266,4 +266,55 @@ export async function createG2TeamMount(input = {}) {
       return failures.length === 0 ? { ok: true, failures: [] } : { ok: false, failures }
     },
   })
+}
+
+/**
+ * THE SUPPLY PRODUCER (root 20:04: 本族实际推进, 供给不全丢 CENTER):
+ * builds the face the bindings' `deps.g2TeamAssembly()` accessor must
+ * answer, from approved config ALONE. The pinned PUBLIC entry files load
+ * through the SIGNED owner loader (loadG2TeamAssemblyEntries — real dynamic
+ * imports, openNativeBrowser-direct stays REJECTED there; no second loader,
+ * no re-implementation). The three faces this lane cannot mint stay
+ * REQUIRED pass-throughs with typed refusals — the scope mcpResources face,
+ * the transport factory (its real producer is the host mcp connection
+ * layer), and the browser mapping/approval (the B-BROWSER rule map is its
+ * own lane): the producer NAMES each gap it cannot fill instead of faking
+ * one. The host row assembly hands the result to deps.g2TeamAssembly() —
+ * that last wiring hop lives in the host deps construction (outside this
+ * family region; obligation recorded, not silently CENTER-dumped).
+ */
+export async function createG2TeamAssemblySupply(input = {}) {
+  const { entryPaths, mcpResources, makeTransport, consumeBrowserApproval, callResource } = input
+  if (entryPaths === null || typeof entryPaths !== 'object') {
+    return refuse(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'entryPaths {launchEntry, workerEntry, sdkClientEntry} are REQUIRED — the loader pins the PUBLIC entry files; paths are approved config, never guessed here')
+  }
+  let entries
+  try {
+    entries = await loadG2TeamAssemblyEntries(entryPaths)
+  } catch (error) {
+    return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE), `the SIGNED entry loader refused: ${String(error?.message ?? error).slice(0, 300)}`)
+  }
+  if (mcpResources === null || typeof mcpResources !== 'object' || typeof mcpResources.register !== 'function') {
+    return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'the scope mcpResources face is REQUIRED — its real producer is the host mcp-resources scope layer (mcp-resources/src/index.ts @639ed01539); this producer names the gap, it never mints a stand-in face')
+  }
+  if (typeof makeTransport !== 'function') {
+    return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'makeTransport is REQUIRED — the transport factory\'s real producer is the host mcp connection layer over the APPROVED config (stdio/http); minting one here would copy host transport internals into this lane')
+  }
+  const supply = { mcpResources, makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
+  // browser supply is ALL-OR-NOTHING (the loader always carries the two
+  // public entry functions; arming them WITHOUT the Team PA approval face +
+  // the stagehand method mapping would arm a row whose door nobody opened):
+  // a half browser supply is refused, an absent one is a legitimate
+  // MCP-only world exactly like the plane's own pairing law.
+  const hasApproval = typeof consumeBrowserApproval === 'function'
+  const hasMapping = typeof callResource === 'function'
+  if (hasApproval !== hasMapping) {
+    return refuse(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, 'browser supply is PARTIAL: consumeBrowserApproval (the Team PA face) and callResource (the stagehand method mapping) arrive together or not at all — the B-BROWSER target rule and its approval pairing are their own lane\'s landing; naming the gap, refusing the half-supply')
+  }
+  if (hasApproval && hasMapping) {
+    supply.browserEntries = { launchChromium: entries.launchChromium, openBrowserWorker: entries.openBrowserWorker }
+    supply.consumeBrowserApproval = consumeBrowserApproval
+    supply.callResource = callResource
+  }
+  return Object.freeze({ ok: true, supply })
 }
