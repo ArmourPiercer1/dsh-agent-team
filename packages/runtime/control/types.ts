@@ -1177,6 +1177,28 @@ export function parsePaManifestFamilyBlock(
  */
 export type PaFamilyTargetFieldKind =
   | 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations'
+  /* Root 18:42 LIMITED RULING - exactly two new members, pure VALUE admission
+   * for values M0 already freezes as legal; nothing else: no optional member
+   * (undefined stays impossible by law - a present-but-undefined key fails
+   * these checks, a missing key dies in the required loop; key omission is the
+   * mint's law), no any/object/fallback, lossless walk + full fingerprint
+   * untouched, null vs missing distinguishable end-to-end.
+   * 'nullableString': a REQUIRED key carrying null | string. EMPTY STRING IS
+   *   LEGAL (G6 requireCaller legitimately allows ''), and NOTHING converts:
+   *   missing (required-loop denial) ≠ null (accepted) ≠ '' (accepted) are
+   *   three distinct outcomes - null is never rewritten to '' or absent.
+   *   Schedule taskId's non-empty + trim-stable law is the adapter's BUSINESS
+   *   edge, deliberately NOT encoded here (the grammar only admits
+   *   null | string).
+   * 'stringArray': an array whose EVERY element is typeof string; [] is
+   *   grammar-legal. The G6 disclosure law (disclosures always carries
+   *   SESSION_HISTORY_RESOURCE_KIND - g6-session-query.mjs:799-800/:853) is
+   *   the family contract enforced MINT-side; this kind neither weakens nor
+   *   enforces it. Implemented with Array.isArray + element typeof ONLY,
+   *   walked by the TRUSTED intrinsic Array.prototype.every (root 5d83: an
+   *   own/subclass `every` override cannot be dispatched through): no
+   *   instanceof, no symbol-trusting path, lossless walk untouched. */
+  | 'nullableString' | 'stringArray'
 
 export interface PaFamilyTargetRule {
   /** The exact required key set of this family's typed plan target. */
@@ -1189,6 +1211,27 @@ export interface PaFamilyTargetRule {
    * execution edge, which checks the effectful result against the approved target.
    */
   readonly currentFields: readonly string[]
+  /**
+   * DISCRIMINATED TARGET (root 17:40 ruling, INSPECT only - the ONE entry that
+   * uses it): claims share `required` and differ by exactly ONE closed variant
+   * group, selected by the value of `leaf` (itself a required 'string' leaf,
+   * minted by the lane from classify-time truth - never model text). The law is
+   * the SAME closed law: `required` ∪ the selected group's leaves is the EXACT
+   * key set (anything else denies); every group leaf is typed by the EXISTING
+   * kinds; `binds` pins a leaf to ONE exact literal (full-value binding - a
+   * paired leaf can never be an arbitrary string). The variant value is looked
+   * up by OWN KEY only - 'toString'/'constructor'/'__proto__'/unknown select
+   * nothing and deny; no fallback, no coercion. No nesting, no optionality, no
+   * new kind: the group map and the bindings are static table data checked by
+   * the existing scalar law (module-load guard below).
+   */
+  readonly variant?: Readonly<{
+    readonly leaf: string
+    readonly by: Readonly<Record<string, Readonly<{
+      readonly adds: Readonly<Record<string, PaFamilyTargetFieldKind>>
+      readonly binds: Readonly<Record<string, string | number | boolean>>
+    }>>>
+  }>
 }
 
 export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>> = Object.freeze({
@@ -1255,37 +1298,218 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
-  // A5-M2 B-INSPECT (root 957 LIMITED ruling: the trusted/topology SCALAR leaf
-  // flatten is PASS and stays field-for-field; the lane module is
-  // src/plugin/live/governed-families/g1-surface-adapters.mjs, records 53
-  // cordis_inspect_list and 54 cordis_inspect_query; the edge re-verify owns
-  // the topology facts post-approval, unchanged). The VARIANT facts (rec 53
-  // listLaw; rec 54 the query triple, plus the client roundtrip law) are NOT
-  // signable here yet: the root REFUSED the `inspectTarget: 'obligations'`
-  // pairing (957 ruling) because this table's generic obligations check
-  // accepts any non-empty object array - [{}], wrong element types, extra
-  // elements - so the grammar could not verify the triple, and mint/WeakMap
-  // discipline is not the M0 §1 typed target grammar. The mint keeps those
-  // facts INSIDE the target (they ride the approved question and its
-  // fingerprint - moving them out is frozen); with this rule they fail closed
-  // at the grammar gate ('not part of the typed plan'), so NO real B-INSPECT
-  // claim lands until a variant-grammar contract delta is signed. The exact
-  // minimal delta + the proof that no existing closed leaf expresses the
-  // three measured variants / cross-leaf pairing:
-  // dev/agent-workflow/evidence/a5m2-family-rules/a5m2-inspect-variant-grammar-candidate.md
+  // A5-M2 B-INSPECT (root 957 SIGNED the trusted/topology scalar flatten; root
+  // 17:40 SIGNED the minimal strict DISCRIMINATED TARGET for THIS family only
+  // - a technical encoding ruling, not a security-semantics change). The
+  // claim shape is minted by src/plugin/live/governed-families/
+  // g1-surface-adapters.mjs records 53 cordis_inspect_list and 54
+  // cordis_inspect_query at revision 7 (the encoding digest moved - revision-6
+  // approvals are EXPLICITLY stale; retired encodings are never translated).
+  // required ∪ the selected variant group is the EXACT closed key set:
+  //   'list' (rec 53): listLaw - BOUND to the list-law literal (never an
+  //     arbitrary string);
+  //   'query-host' (rec 54): the triple queryPlatform/queryProvider/queryMethod,
+  //     queryPlatform BOUND 'host' - the exact variant↔platform pairing;
+  //   'query-client' (rec 54): the triple, queryPlatform BOUND 'client', plus
+  //     clientRoundtrip BOUND to the roundtrip-law literal - the law is
+  //     required iff client (the closed set excludes it from every other
+  //     variant) and can never be an arbitrary string.
+  // The discriminant inspectVariant is minted from spec.recordIndex + the
+  // authorized triple's platform (trusted record/tool truth - the closed
+  // parameter grammar keeps model text out of the target), and the
+  // variant↔platform pairing is grammar-bound via `binds` (module-load guard
+  // below keeps every group's structure legal). All facts stay at FULL VALUE
+  // inside the target - the approved question and its fingerprint keep every
+  // one (nothing moved out, no effects/provider-scope extension, no new
+  // ledger, no schema generalization: existing kinds + closed sets only).
+  // currentFields stays the signed trusted trio (current-facts law unmoved);
+  // the topology facts stay the edge re-verify's own (unchanged source,
+  // verdicts, words) - now over THIS same flat encoding (rule/mint/edge one
+  // encoding). The variant-value lookup is OWN-KEY only: 'toString',
+  // 'constructor', '__proto__' and any unknown select nothing and deny.
   'B-INSPECT': Object.freeze({
     required: Object.freeze({
       topologyRevision: 'nonNegativeInt',
       topologyDigest: 'string',
+      inspectVariant: 'string',
       trustedMemberAgentId: 'string',
       trustedSessionHeaderId: 'string',
       trustedRealmId: 'string',
       trustedOwner: 'string',
       trustedProfileId: 'string',
     }),
+    variant: Object.freeze({
+      leaf: 'inspectVariant',
+      by: Object.freeze({
+        'list': Object.freeze({
+          adds: Object.freeze({ listLaw: 'string' }),
+          binds: Object.freeze({ listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear' }),
+        }),
+        'query-host': Object.freeze({
+          adds: Object.freeze({ queryPlatform: 'string', queryProvider: 'string', queryMethod: 'string' }),
+          binds: Object.freeze({ queryPlatform: 'host' }),
+        }),
+        'query-client': Object.freeze({
+          adds: Object.freeze({ queryPlatform: 'string', queryProvider: 'string', queryMethod: 'string', clientRoundtrip: 'string' }),
+          binds: Object.freeze({
+            queryPlatform: 'client',
+            clientRoundtrip: 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel',
+          }),
+        }),
+      }),
+    }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
+  /* A5-M2 B-SCHEDULE (root 19:06: rule mapping lands on the ALREADY-APPROVED
+   * 18:42 structure; the two kinds are signed). The MINT this entry pairs
+   * with (read-only fixed-commit measurement, never copied): the wire lane
+   * feat/a5m2-wire-schedule @3e88b2822 — adapter
+   * schedule-adapters.mjs A5_B_SCHEDULE_ADAPTER_REVISION = 2, and the claim
+   * target is that lane's OWN lossless flat projection
+   * (schedule-wiring.mjs mintTargetManifest, :150-203): the 11 measured
+   * leaves below, every one a non-empty string EXCEPT taskId, which rides
+   * exactly as measured - null (schedule_list; id-law-refused delete
+   * answers) or the validated id string (admitted schedule_delete) -
+   * 'nullableString' types precisely that union; the non-empty +
+   * trim-stable id law stays that lane's BUSINESS edge (:511-517), never
+   * encoded here (root 18:42 (2)). ONE shared closed key set for both
+   * signable rows - no variant needed (measured). ENABLEMENT IS NOT THIS
+   * TABLE: the ruled subset is schedule_delete(31)/schedule_list(32) only;
+   * schedule_create(30)/schedule_update(33) stay disabled by that lane's
+   * A5_B_SCHEDULE_WIRING_SUBSET + registration - a grammar entry is a type
+   * gate, not a mount, and nothing here enables Host or claims C2. */
+  'B-SCHEDULE': Object.freeze({
+    required: Object.freeze({
+      contract: 'string',
+      ownerKind: 'string',
+      ownerSessionId: 'string',
+      action: 'string',
+      taskId: 'nullableString',
+      revision: 'string',
+      timerNamespace: 'string',
+      timerEffect: 'string',
+      destinationSessionId: 'string',
+      destinationPath: 'string',
+      destinationWake: 'string',
+    }),
+    currentFields: Object.freeze(['ownerSessionId', 'destinationSessionId']),
+  }),
+  /* A5-M2 B-SESSION-QUERY (root 19:06: approved 18:42 structure, real
+   * rev-4 mint measured read-only on the wire lane feat/a5m2-wire-g6
+   * @fe63dec9e - A5_G6_ADAPTER_REVISION = 4, targetManifest :1346-1355).
+   * Base leaves exactly as approved: toolName is the variant LEAF (a strict
+   * 'string', minted from the row's own identity - never model text);
+   * operation/portFamily/portMethod are 'string';
+   * effectiveTargetSessionId is 'string' (measured: the mint ternary's
+   * ': null' arm is UNREACHABLE - validateCapturedArgs enforces the
+   * captured compiled schema's string type for session_id (:1312-1316,
+   * "nothing is coerced") and requireCaller enforces a non-empty
+   * caller.id string, so the fallback is always a string);
+   * callerWorkspaceCwd is 'nullableString' (string INCLUDING '' or null -
+   * the 18:42 (1) law, missing stays a distinct denial); disclosures is
+   * 'stringArray'. PER-ROW-GROUP DIFFERENCE rides the already-signed
+   * closed variants (root 18:42 (4)): BOTH search rows (session_search,
+   * session_event_search) REQUIRE maxSearchResults (strict
+   * nonNegativeInt - null never accepted); the three always-mount rows
+   * (session_trace, session_event_trace, session_event_read) EXPLICITLY
+   * FORBID the key through the own-key extra-key law (presence of ANY
+   * value, null included, denies 'not part of the typed plan'). PAIRING
+   * DISCLOSURE: that lane's :1353 still sets maxSearchResults: undefined
+   * on non-search rows - a key-with-undefined fails closed here exactly
+   * as at the lossless walk; the routed 1-line mint fix (key OMISSION)
+   * belongs to that lane - this table never translates it. The disclosure
+   * LAW (rev-4 mints disclosures === [SESSION_HISTORY_RESOURCE_KIND] on
+   * every row, :1354, never droppable) is MINT-side; 'stringArray' types
+   * it without weakening or enforcing it (18:42 (3)). currentFields is
+   * the approved pure-data subset. No Host enablement, no C2 claim. */
+  'B-SESSION-QUERY': Object.freeze({
+    required: Object.freeze({
+      toolName: 'string',
+      operation: 'string',
+      portFamily: 'string',
+      portMethod: 'string',
+      effectiveTargetSessionId: 'string',
+      callerWorkspaceCwd: 'nullableString',
+      disclosures: 'stringArray',
+    }),
+    variant: Object.freeze({
+      leaf: 'toolName',
+      by: Object.freeze({
+        'session_search': Object.freeze({
+          adds: Object.freeze({ maxSearchResults: 'nonNegativeInt' }),
+          binds: Object.freeze({}),
+        }),
+        'session_event_search': Object.freeze({
+          adds: Object.freeze({ maxSearchResults: 'nonNegativeInt' }),
+          binds: Object.freeze({}),
+        }),
+        'session_trace': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+        'session_event_trace': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+        'session_event_read': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['toolName', 'operation', 'portFamily', 'portMethod']),
+  }),
 } as const)
+
+/* The SIGNED closed kind list - the single source the module-load legality
+ * check reads (root 18:42: guard kind-table SYNCED with 'nullableString' +
+ * 'stringArray'; a rule using any kind outside this closed list still THROWS
+ * at import). */
+export const PA_FAMILY_TARGET_FIELD_KINDS: readonly PaFamilyTargetFieldKind[] = Object.freeze([
+  'string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations', 'nullableString', 'stringArray',
+] as const)
+
+/** One table entry's legality, checked AT MODULE LOAD for every real entry —
+ *  exported ONLY so the fixed-point contract spec can drive SYNTHETIC rules
+ *  through this exact law (no synthetic family is ever added to the real
+ *  table). Throws on: any required/adds leaf whose kind is outside the closed
+ *  list (root 18:37: the two NEW kinds are legal ONLY inside the closed
+ *  required/adds maps — own-key iteration (Object.entries) sees exactly the
+ *  surface the validator reads, no widening); a variant whose discriminant is
+ *  not a required 'string' leaf (a 'nullableString' can never be one); an
+ *  empty group map; a group redeclaring a required leaf; a bound value
+ *  violating its own kind. Same own-key law, zero cost for plain rules. */
+export function assertPaFamilyTargetRuleLegality(familyId: string, rule: PaFamilyTargetRule): void {
+  const own = (record: object, key: string): boolean => Object.prototype.hasOwnProperty.call(record, key)
+  const fail = (why: string): never => {
+    throw new Error(`PA_FAMILY_TARGET_RULES['${familyId}']: malformed target grammar - ${why}`)
+  }
+  for (const [field, kind] of Object.entries(rule.required)) {
+    if (!PA_FAMILY_TARGET_FIELD_KINDS.includes(kind)) fail(`required leaf '${field}': unknown kind '${String(kind)}'`)
+  }
+  const variant = rule.variant
+  if (variant === undefined) return
+  if (!own(rule.required, variant.leaf) || rule.required[variant.leaf] !== 'string') fail(`'${variant.leaf}' must be a required 'string' leaf`)
+  const names = Object.keys(variant.by)
+  if (names.length === 0) fail('no variant groups')
+  for (const name of names) {
+    const group = variant.by[name] as { adds: Record<string, PaFamilyTargetFieldKind>; binds: Record<string, string | number | boolean> }
+    if (group === null || typeof group !== 'object' || Array.isArray(group)) fail(`group '${name}': not a leaf map`)
+    for (const [field, kind] of Object.entries(group.adds)) {
+      if (own(rule.required, field)) fail(`group '${name}' redeclares required leaf '${field}'`)
+      if (!PA_FAMILY_TARGET_FIELD_KINDS.includes(kind)) fail(`group '${name}' leaf '${field}': unknown kind '${String(kind)}'`)
+    }
+    for (const [field, bound] of Object.entries(group.binds)) {
+      const kind = group.adds[field]
+      if (kind === undefined || !isPaFamilyTargetField(kind, bound)) fail(`group '${name}' bound value for '${field}' violates its own kind`)
+    }
+  }
+}
+
+/* Discriminated-target + closed-kind table legality, checked at module load
+ * (root 17:40 "group结构合法"; root 18:42 kind sync). A miswritten table fails
+ * loudly at import, never quietly at a claim. */
+for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) assertPaFamilyTargetRuleLegality(familyId, rule)
 
 function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): boolean {
   switch (kind) {
@@ -1303,6 +1527,14 @@ function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): b
       if (!Array.isArray(value) || value.length === 0) return false
       return value.every((item) => typeof item === 'object' && item !== null && !Array.isArray(item))
     }
+    /* Root 18:42 - the whole new admission surface, two cases, no more.
+     * Root 5d83 residual closure: the stringArray walk runs the TRUSTED
+     * intrinsic (Array.prototype.every.call over canonical indices) - a real
+     * array's OWN or subclass `every` override ([1] + every:()=>true) can no
+     * longer be dispatched through. Only Array.isArray + the intrinsic index
+     * walk + element typeof; the lossless walk is untouched. */
+    case 'nullableString': return value === null || typeof value === 'string'
+    case 'stringArray': return Array.isArray(value) && Array.prototype.every.call(value, (item: unknown) => typeof item === 'string')
   }
 }
 
@@ -1315,14 +1547,57 @@ export function validatePaFamilyTarget(
 ): string | undefined {
   const rule = PA_FAMILY_TARGET_RULES[familyId]
   if (rule === undefined) return `familyId: no target structure is registered for '${familyId}'`
+  return validatePaFamilyTargetAgainstRule(familyId, rule, target)
+}
+
+/** The pure law of ONE table entry, split from the registry lookup only so the
+ *  fixed-point contract spec can drive SYNTHETIC rules through this exact code
+ *  (the real table stays closed: unknown families deny above). Production
+ *  validation always enters through validatePaFamilyTarget. */
+export function validatePaFamilyTargetAgainstRule(
+  familyId: string,
+  rule: PaFamilyTargetRule,
+  target: unknown,
+): string | undefined {
   if (typeof target !== 'object' || target === null || Array.isArray(target)) return 'target: not an object'
   const record = target as Record<string, unknown>
   for (const [field, kind] of Object.entries(rule.required)) {
     if (!(field in record)) return `${field}: required by the ${familyId} typed plan, absent`
     if (!isPaFamilyTargetField(kind, record[field])) return `${field}: not a ${kind}`
   }
+  /* Discriminated target (root 17:40): the discriminant leaf (a required
+   * 'string' the loop above just checked) selects its group by OWN-KEY exact
+   * lookup - 'toString'/'constructor'/'__proto__'/unknown select nothing and
+   * deny, no fallback, no coercion. The group's leaves run through the SAME
+   * required check, and every `binds` entry pins its leaf to ONE exact
+   * literal (full-value binding - a paired leaf is never an arbitrary
+   * string). */
+  let group: Readonly<Record<string, PaFamilyTargetFieldKind>> | undefined
+  if (rule.variant !== undefined) {
+    const by = rule.variant.by
+    const value = record[rule.variant.leaf]
+    const selected = typeof value === 'string' && Object.prototype.hasOwnProperty.call(by, value) ? by[value] : undefined
+    if (selected === undefined) return `${rule.variant.leaf}: '${String(value)}' selects no ${familyId} variant group`
+    group = selected.adds
+    for (const [field, kind] of Object.entries(selected.adds)) {
+      if (!(field in record)) return `${field}: required by the ${familyId} typed plan, absent`
+      if (!isPaFamilyTargetField(kind, record[field])) return `${field}: not a ${kind}`
+    }
+    for (const [field, bound] of Object.entries(selected.binds)) {
+      if (record[field] !== bound) return `${field}: not the '${String(value)}' variant constant of the ${familyId} typed plan`
+    }
+  }
+  /* The closed-key law stays EXACT: required ∪ the selected group and nothing
+   * else. For variant families the membership test is OWN-KEY on both maps, so
+   * a prototype-named claim key ('toString', 'constructor', …) denies like any
+   * other extra key; the original law of the other families is byte-identical,
+   * untouched. */
   for (const field of Object.keys(record)) {
-    if (!(field in rule.required)) return `${field}: not part of the ${familyId} typed plan`
+    const allowed = rule.variant !== undefined
+      ? (Object.prototype.hasOwnProperty.call(rule.required, field)
+        || (group !== undefined && Object.prototype.hasOwnProperty.call(group, field)))
+      : (field in rule.required)
+    if (!allowed) return `${field}: not part of the ${familyId} typed plan`
   }
   return undefined
 }
