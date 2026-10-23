@@ -7,11 +7,12 @@
  * long-lived tuple).
  *
  * Facts law (root ruling B; contract = control/types.ts PaCallFacts):
- *  - binding is the dispatcher's CURRENT entry (`dispatcher.surface
- *    .entryOf(toolName)`): verified + ACTIVE, real ToolBinding (revision,
- *    definitionIdentity, realm) — a synthetic `plane-row` binding is NEVER
- *    an authority; the manifest's snapshot is CONTRASTED against it, never
- *    believed;
+ *  - binding is the dispatcher's CURRENT entry, found by the binding's OWN
+ *    identity (`matchUniqueBindingEntry` below): verified + ACTIVE, real
+ *    ToolBinding (revision, definitionIdentity, realm) — a synthetic
+ *    `plane-row` binding is NEVER an authority; the manifest's snapshot is
+ *    CONTRASTED against it, never believed, and NO name lookup is believed
+ *    either (a seeded name only points at a family, the family decides);
  *  - policy/blueprint/ceiling facts come from the ONE authority the
  *    permission plane already reads (currentBinding tuple, durable overlay
  *    generation via overlay.latest, the envelope readers) — references
@@ -86,64 +87,83 @@ async function readCeiling(readers, teamSessionId, instanceId) {
 }
 
 /**
- * The call-level facts reader (contract: control/types.ts `PaCallFacts`).
- * `mount.readers` is wired by agentSetup from the REAL seams:
- * { permissionPlane (live ref), overlaySnapshot (async durable latest),
- *   teamHardEnvelope, permissionEnvelope, providerVersion }.
+ * THE ONE binding-identity matcher (9e AUTH audit (e) law; A5-M1 D).
+ *
+ * A dispatcher entry IS the call's binding only when its bindingId FAMILY is
+ * carried by exactly ONE verified + ACTIVE entry on the surface: a revise
+ * keeps the family, a re-bind under another family is refused, so the family
+ * is a name-unique, durable-ish key that survives a backend/namespace rename
+ * (`bash` ≠ dispatcher `team_bash`) which a name lookup never does.
+ *
+ * `seedNames` only POINT AT the family (the manifest's backend toolName, the
+ * plane's own placement spelling); no seed is ever believed — an entry found
+ * under a seed still has to be the unique carrier of `family`. Zero or
+ * ambiguous candidates ⇒ `undefined`: never a guess, never "first wins".
  */
-export async function readPaCallFacts({ rootSessionId, requestId, manifest, decider, stage, mount }) {
-  void stage
-  void decider // the REAL decider rides PaEffectsVerifierInput, never the facts
-  if (!rootSessionId || !requestId || manifest === undefined) return undefined
-  // 9e fix-2 (AUTH signature exchange): the PARSED manifest is FLAT — top-
-  // level `callId`, `member{teamSessionId,instanceId}`, `binding.toolName`.
-  // There is NO `request.*` wrapper and NO beneficiary self-report field;
-  // guessing either was the review finding (it silently answered undefined).
-  if (!rootSessionId || !requestId || manifest === undefined) return undefined
-  const m = mount ?? resolvePaMount(rootSessionId, manifest?.member?.instanceId ?? '')
-  if (m === undefined) return undefined
-  // 9e fix-2 (AUTH audit (e)): `entryOf` is keyed by the DISPATCHER name
-  // space while `manifest.binding.toolName` carries the BACKEND name
-  // (`bash` ≠ dispatcher `team_bash`) — using the manifest name misses the
-  // entry for every renamed row, and the native `read` coincidence would
-  // hide exactly that. The binding authority is resolved by the binding's
-  // OWN identity: the manifest snapshot carries `bindingId`, and a binding
-  // id family is name-unique on the surface (revise keeps the family,
-  // re-bind under another family is refused). So: the unique dispatcher
-  // entry whose bindingId equals the snapshot's — a durable, namespaced
-  // key; zero or ambiguous candidates ⇒ undefined (never a guess). Drift
-  // (revision/definition/provider changes) stays fully strict: the
-  // verifier performs the 11-field full-tuple + assurance comparison.
-  const dispatcher = m.guard?.dispatcher
-  const snapshotBindingId = manifest?.binding?.bindingId
-  if (typeof snapshotBindingId !== 'string' || snapshotBindingId.length === 0) return undefined
-  const surface = dispatcher?.surface
-  const candidateNames = [...new Set([
-    String(manifest?.binding?.toolName ?? ''),
-    ...(typeof surface?.names === 'function' ? surface.names() : []),
-  ])].filter((n) => n.length > 0)
-  const candidates = candidateNames
-    .map((n) => surface?.entryOf?.(n))
+function matchUniqueBindingEntry(surface, { family, seedNames = [] }) {
+  if (surface === null || typeof surface !== 'object') return undefined
+  if (typeof surface.entryOf !== 'function') return undefined
+  if (typeof family !== 'string' || family.length === 0) return undefined
+  const names = [...new Set([
+    ...seedNames,
+    ...(typeof surface.names === 'function' ? surface.names() ?? [] : []),
+  ])].filter((n) => typeof n === 'string' && n.length > 0)
+  const candidates = names
+    .map((n) => surface.entryOf(n))
     .filter((e) => e !== undefined && e?.verified === true && e?.binding?.status === 'ACTIVE'
-      && e?.binding?.bindingId === snapshotBindingId)
+      && e?.binding?.bindingId === family)
   if (candidates.length !== 1) return undefined
-  const entry = candidates[0]
+  return candidates[0]
+}
+
+/** Resolve the binding FAMILY one call answers to, from the ONE trust input
+ *  this entry takes: the CALLER's own placement spelling (the plane's own row
+ *  name), read through the live surface. The seed is never the authority —
+ *  `matchUniqueBindingEntry` still has to find the family's unique carrier.
+ *  A5-M1 root ruling on 091f56d37: an identity SUPPLIED BY A CALLER (e.g. the
+ *  bindingId a durable row carries) is NOT an input here at all — a correct
+ *  manifest may never become the precondition for reading the real binding,
+ *  and a foreign one must never steer the read. Callers that need to verify a
+ *  row COMPARE the row's binding afterwards (`readPaCallFacts` does exactly
+ *  that, against the tuple this read answered). Unresolvable ⇒ undefined. */
+function bindingFamilyOf(surface, { placementName }) {
+  if (typeof placementName !== 'string' || placementName.length === 0) return undefined
+  const seed = surface?.entryOf?.(placementName)
+  const family = seed?.binding?.bindingId
+  return typeof family === 'string' && family.length > 0 ? family : undefined
+}
+
+/**
+ * THE SHARED CALL-LEVEL READ: current facts + the unique binding identity,
+ * over ONE resolved mount. No durable Control row is involved: `callId` is a
+ * CALL identity (the plane's own live plan key), not a row id. Both entries
+ * below (the durable Control adapter and the public call-level entry) are
+ * thin identity-derivation wrappers around this — there is exactly one
+ * implementation of the facts law in this module.
+ *
+ * Returns `{ facts, planSnapshot, authorityGeneration }` where `facts` are
+ * the ten named members that precede `planSnapshot` in the contract, in
+ * contract order, or `undefined` for ANY missing / unhealthy / contradicting
+ * source. `planSnapshot` is `undefined` only when the call carries no
+ * approval question (the all-allow case: `requireApprovalPlan: false`) — a
+ * stated absence, never a synthesized snapshot; with `requireApprovalPlan`
+ * the row path fails closed exactly as before.
+ */
+async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamily, bindingSeeds, callEffects, requireApprovalPlan }) {
+  // binding: the CURRENT dispatcher entry under the call's binding family.
+  const surface = m.guard?.dispatcher?.surface
+  const entry = matchUniqueBindingEntry(surface, { family: bindingFamily, seedNames: bindingSeeds })
+  if (entry === undefined) return undefined
   const entryBinding = entry.binding
   if (typeof entryBinding.revision !== 'number' || entryBinding.revision < 1) return undefined
   if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) return undefined
-  // one governed lane: the binding's realm must BE the manifest's realm.
-  if (m.plane?.realmId === undefined || m.plane.realmId !== manifest?.realmId) return undefined
+  // one governed lane: the plane the mount answers for must BE the call's realm.
+  if (m.plane?.realmId === undefined || m.plane.realmId !== realmId) return undefined
   // beneficiary: the mount's DURABLE attribution ONLY (the manifest carries
   // no such field to compare — comparing a non-existent self-report was
   // the bug; the pure core trusts the verifier's own rung comparison).
   const beneficiary = m.beneficiaryAuthority
   if (beneficiary !== 'leader' && beneficiary !== 'member') return undefined
-  // durable member attribution of the mount vs the manifest's member.
-  const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
-  const manifestMember = manifest?.member
-  if (manifestMember === undefined) return undefined
-  if (String(manifestMember.teamSessionId ?? '') !== member.teamSessionId) return undefined
-  if (String(manifestMember.instanceId ?? '') !== member.instanceId) return undefined
   // tuple + blueprint facts: the permission lane's OWN currentBinding
   // source, read fresh; unhealthy lane ⇒ undefined (never a stale answer).
   const plane = typeof m.readers?.permissionPlane === 'function' ? m.readers.permissionPlane() : m.readers?.permissionPlane
@@ -191,13 +211,31 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   }
   if (policyDocument === null || typeof policyDocument !== 'object') return undefined
   if (!Array.isArray(denySources)) return undefined // EMPTY means empty; a broken reader is undefined
-  // effects + plan snapshot: the mount's LIVE PA plan for this call.
-  const livePlan = m.plane?.livePaPlan?.get?.(String(manifest?.callId ?? ''))
-  if (livePlan === undefined) return undefined
-  const effects = livePlan.requestedEffects
+  // effects + plan snapshot: the mount's LIVE PA plan for this call. The
+  // plan is keyed by the CALL identity; a call that walked no approval
+  // question has NO plan row — and that is a stated absence, not a missing
+  // source (the all-allow path answers through `planSnapshot: undefined`).
+  const livePlan = m.plane?.livePaPlan?.get?.(String(callId ?? ''))
+  if (livePlan === undefined && requireApprovalPlan === true) return undefined
+  let effects = livePlan !== undefined ? livePlan.requestedEffects : callEffects
+  if (livePlan !== undefined && callEffects !== undefined) {
+    // ONE call, ONE effect set: the identity this call walked and the
+    // identity the live plan recorded must be the same set, or the mount is
+    // answering a different call than the one asking.
+    if (livePlan.requestedEffects?.fingerprint !== callEffects.fingerprint) return undefined
+    effects = livePlan.requestedEffects
+  }
   if (effects === null || typeof effects !== 'object' || !Array.isArray(effects.effects)) return undefined
-  if (typeof livePlan.effectSetFingerprint !== 'string' || livePlan.effectSetFingerprint.length === 0) return undefined
-  if (!Array.isArray(livePlan.perEffectRequired) || livePlan.perEffectRequired.length !== effects.effects.length) return undefined
+  let planSnapshot
+  if (livePlan !== undefined) {
+    if (typeof livePlan.effectSetFingerprint !== 'string' || livePlan.effectSetFingerprint.length === 0) return undefined
+    if (!Array.isArray(livePlan.perEffectRequired) || livePlan.perEffectRequired.length !== effects.effects.length) return undefined
+    planSnapshot = {
+      approvalCaseId: String(livePlan.approvalCaseId ?? ''),
+      effectSetFingerprint: livePlan.effectSetFingerprint,
+      perEffectRequired: livePlan.perEffectRequired,
+    }
+  }
   // 9e-2 (AUTH fact list): `assembly.authorityGeneration()` DOES NOT exist
   // on the ProductionAdmissionAssembly face (kernel holds the generator in
   // a private closure — nothing reads back). The current generation is read
@@ -218,33 +256,148 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   // + assurance comparison itself. A pre-computed flag here would invite
   // trusting the flag over the real comparison.
   return {
-    policySource: {
-      staticLayerRefs: Object.freeze([
-        `blueprint:${String(tuple.blueprintId)}@${String(tuple.revision)}#${String(tuple.contentHash)}`,
-        `template:${String(tuple.templateId)}`,
-      ]),
-      overlayGeneration,
+    facts: {
+      policySource: {
+        staticLayerRefs: Object.freeze([
+          `blueprint:${String(tuple.blueprintId)}@${String(tuple.revision)}#${String(tuple.contentHash)}`,
+          `template:${String(tuple.templateId)}`,
+        ]),
+        overlayGeneration,
+      },
+      realmId: m.plane.realmId,
+      ceiling,
+      policyDocument,
+      denySources,
+      effects,
+      member,
+      beneficiaryAuthority: beneficiary,
+      binding: entryBinding,
+      blueprint: {
+        revision: tuple.revision,
+        contentHash: tuple.contentHash,
+        templateId: tuple.templateId,
+        cwd: tuple.cwd,
+        providerVersion,
+      },
     },
-    realmId: m.plane.realmId,
-    ceiling,
-    policyDocument,
-    denySources,
-    effects,
-    member,
-    beneficiaryAuthority: beneficiary,
-    binding: entryBinding,
-    blueprint: {
-      revision: tuple.revision,
-      contentHash: tuple.contentHash,
-      templateId: tuple.templateId,
-      cwd: tuple.cwd,
-      providerVersion,
-    },
-    planSnapshot: {
-      approvalCaseId: String(livePlan.approvalCaseId ?? ''),
-      effectSetFingerprint: livePlan.effectSetFingerprint,
-      perEffectRequired: livePlan.perEffectRequired,
-    },
+    planSnapshot,
     authorityGeneration,
   }
+}
+
+/**
+ * THE PUBLIC CALL-LEVEL ENTRY (A5-M1 B): the CURRENT facts of ONE live call,
+ * keyed by the REAL call identity — realmId, callId, the effect set this call
+ * walked, the caller's OWN dispatcher placement (which resolves to the binding
+ * family behind the call), the member/beneficiary attribution and the mount.
+ * The placement spelling is the ONLY identity input: a caller-supplied
+ * `bindingId` (the identity a row carries) is not read, never a precondition
+ * and never a steer — the row's binding is COMPARED afterwards.
+ *
+ * NO durable Control row is required: no `requestId`, no manifest, no row.
+ * That is the whole point — the plane's execution edge must be able to await
+ * the SAME read on the all-allow path, where no row was ever minted (and on
+ * the ask path, where it verifies the standing approval). The durable
+ * Control verifier keeps its own entry (`readPaCallFacts`), which layers the
+ * row's manifest validation on top of the same shared read.
+ *
+ * Answer shape (never a partial `PaCallFacts`):
+ *  - `{ kind: 'call-facts', facts }` — the complete 12-field contract (the
+ *    call walked an approval question, so `planSnapshot` has a real source);
+ *  - `{ kind: 'no-approval-question', facts }` — the same named facts
+ *    MINUS `planSnapshot`, stated as what it is: this call has no approval
+ *    case, so that source does not exist. It is never synthesized to make a
+ *    12th field appear;
+ *  - `undefined` — ANY missing / unhealthy / contradicting source, exactly
+ *    the facts law (the caller fails closed; there is no defaulted shape).
+ */
+export async function readPaCallFactsForCall(input = {}) {
+  const { mount, rootSessionId, instanceId, realmId, callId, requestedEffects, placementName } = input
+  if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) return undefined
+  if (typeof instanceId !== 'string' || instanceId.length === 0) return undefined
+  if (typeof realmId !== 'string' || realmId.length === 0) return undefined
+  if (typeof callId !== 'string' || callId.length === 0) return undefined
+  if (requestedEffects === null || typeof requestedEffects !== 'object' || !Array.isArray(requestedEffects.effects)) return undefined
+  if (typeof requestedEffects.fingerprint !== 'string' || requestedEffects.fingerprint.length === 0) return undefined
+  const m = mount ?? resolvePaMount(rootSessionId, instanceId)
+  if (m === undefined) return undefined
+  const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
+  if (member.instanceId !== String(instanceId)) return undefined
+  const surface = m.guard?.dispatcher?.surface
+  const bindingFamily = bindingFamilyOf(surface, { placementName })
+  if (bindingFamily === undefined) return undefined
+  const read = await readCallAuthorityFacts({
+    m,
+    member,
+    realmId: String(realmId),
+    callId: String(callId),
+    bindingFamily,
+    bindingSeeds: [placementName],
+    callEffects: requestedEffects,
+    requireApprovalPlan: false,
+  })
+  if (read === undefined) return undefined
+  if (read.planSnapshot === undefined) {
+    return { kind: 'no-approval-question', facts: { ...read.facts, authorityGeneration: read.authorityGeneration } }
+  }
+  return { kind: 'call-facts', facts: { ...read.facts, planSnapshot: read.planSnapshot, authorityGeneration: read.authorityGeneration } }
+}
+
+/**
+ * The DURABLE call-level facts reader — the ONE entry the injected Control
+ * verifier awaits per gate (contract: control/types.ts `PaCallFacts`).
+ * `mount.readers` is wired by agentSetup from the REAL seams:
+ * { permissionPlane (live ref), overlaySnapshot (async durable latest),
+ *   teamHardEnvelope, permissionEnvelope, providerVersion }.
+ *
+ * This entry adds the ROW's identity on top of the shared read and NOTHING
+ * else: the row must exist (requestId + parsed manifest), the manifest's
+ * member/realm snapshots must still hold against the durable reads, and the
+ * row implies an approval question (no live plan ⇒ undefined). The shared
+ * read itself lives in `readCallAuthorityFacts` — the public entry above
+ * uses the same implementation, so the two can never drift.
+ *
+ * The row's bindingId is used here as a LOOKUP KEY only, and that is the one
+ * shape in which a row identity may be used at all: the read still has to find
+ * a unique verified+ACTIVE carrier of that family plus every other live
+ * source, so a row that names a family nothing carries — or a family whose
+ * live tuple differs from what the row recorded — answers `undefined` /
+ * answers a tuple the verifier then rejects (`pa-control-bridge.ts` compares
+ * the binding field by field). A row can therefore only ever FAIL here, never
+ * authorize: the authority stays the live surface, exactly as the public
+ * entry has it.
+ */
+export async function readPaCallFacts({ rootSessionId, requestId, manifest, decider, stage, mount }) {
+  void stage
+  void decider // the REAL decider rides PaEffectsVerifierInput, never the facts
+  if (!rootSessionId || !requestId || manifest === undefined) return undefined
+  // 9e fix-2 (AUTH signature exchange): the PARSED manifest is FLAT — top-
+  // level `callId`, `member{teamSessionId,instanceId}`, `binding.toolName`.
+  // There is NO `request.*` wrapper and NO beneficiary self-report field;
+  // guessing either was the review finding (it silently answered undefined).
+  const m = mount ?? resolvePaMount(rootSessionId, manifest?.member?.instanceId ?? '')
+  if (m === undefined) return undefined
+  const snapshotBindingId = manifest?.binding?.bindingId
+  if (typeof snapshotBindingId !== 'string' || snapshotBindingId.length === 0) return undefined
+  // beneficiary / member: the mount's DURABLE attribution, with the
+  // manifest's snapshot CONTRASTED against it (never believed).
+  const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
+  const manifestMember = manifest?.member
+  if (manifestMember === undefined) return undefined
+  if (String(manifestMember.teamSessionId ?? '') !== member.teamSessionId) return undefined
+  if (String(manifestMember.instanceId ?? '') !== member.instanceId) return undefined
+  const read = await readCallAuthorityFacts({
+    m,
+    member,
+    realmId: String(manifest?.realmId ?? ''),
+    callId: String(manifest?.callId ?? ''),
+    bindingFamily: snapshotBindingId,
+    // The manifest's toolName is the BACKEND name (`bash` ≠ dispatcher
+    // `team_bash`): it only seeds the family scan, it never selects an entry.
+    bindingSeeds: [String(manifest?.binding?.toolName ?? '')],
+    callEffects: undefined,
+    requireApprovalPlan: true,
+  })
+  if (read === undefined || read.planSnapshot === undefined) return undefined
+  return { ...read.facts, planSnapshot: read.planSnapshot, authorityGeneration: read.authorityGeneration }
 }
