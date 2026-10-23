@@ -72,4 +72,16 @@
 | B-SESSION-QUERY 装配 | **接线未测**（根 18:42 档位纠偏：production 已接、Host 未验；规则门候 9d968 kinds） | **生产装配（源码级）已入面 35b3c64d0（992df168f 三 pick，plane 4 hunk 按 REGION-MAP 块解：3 keep-both+allDefs 并集 g1Defs∪g6Defs；glue 镜像重放+漂移先测；电池 195/195；census B20 先红 1289-to-1288 后绿总 1289）**；薄桥 a33386817→7eb06f602 之上（open/edge/consumed-witness/invoke/closePlan，placementFeed 键注册，ceiling 必选注入）；规则键实测不可表达（null 容许/undefined 成员/string[]，lossless 门生产在链）；差量两案候裁（加 kinds 或 8e6e7788 manifest 重形）；未通前生产走查双落闭串钉死于 spec | `00270f41`@wire-g6（本轮闭） | 候 root 裁路线 |
 | B-TEAM 成员操作（记录 74-82+86）/B-SUBAGENT 子集（44/45/46）/B-ORCHESTRATION（47/48 测量门） | 未开发 | bc81187e 17:51 卡执行中：先收已有实现（83/84/85/87/88=B-CONTROL 已落不重做），真 Host/M0 直读，新独占文件，provider-minted/pre-spawn 维度=path:line 具名缺口；workflow 若 abstract start() 复核成立则交付 un-landable-without-[公开 run-control 接口] 证据不假完整 | `bc81187e`@new-family | 不等中心 |
 
+### 21:4xZ 中心行更新（root 21:46 正常维护；四档不变；源签 SHA 与合流 SHA 分列；C1=fixture 级 / PA 服务 double / 真实 Host 三分离；明细=`dev/agent-workflow/evidence/a5m2-integration/lane-status-matrix.md`）
+
+| 工具/面 | 档位 | 范围与固定版本（含 integration 是否含） | owner/树 | 备注 |
+|---|---|---|---|---|
+| B-SESSION-QUERY | 接线未测 | 源签 `94ad60591`；**必要 prod 增量已合 int** `874f3ae0d`（=rootpack 源，sha256 `eda06b4a…1cd09d`，包内 blob 实测 b7549786/135f64f8/真实 supply 块/lazy 双访问器；receipt=PACK-RECEIPT-874f3ae0d.txt） | `00270f41`@wire-g6 | C1 fixture；真实 Host=无（窗口候裁）；bf4 旧包不混 |
+| B-SCHEDULE | 接线未测 | prod 全在 int（lint 修 `39b9443df` 已 pick→int `8522031e6`）；kit `9e227c689`+PIN canonical rootpack | `d675792d`@wire-schedule | **PA=C2 kit 内服务 double（lane 自披露）**；真实 PA proof 未测；Host=无 |
+| B-IMAGE | 接线未测 | OVERLAY-18 kit `4be79cd5…`@`b9bcc262f`（10-peer 精确）；镜像线 `70a30f670`/b999 | `5a473417`+307c | 最新合法正控=**超限诚实拒绝（RC2，root 21:41 定性非产品 bug）**；旧超限证据保留 |
+| TERMINAL(G3) | 接线未测 | 链 `de8e6c81b`→`145f6154a`（live 快照+drift 实证，纯测试面） | `8e62e20c`@terminal-open | backend()→null/open 结构性 fail-closed；**两用户裁决未答**：backend 读法 (i)/(ii)、open enablement |
+| BROWSER(G2) | 接线未测 | 链→`9f15e88b8`（审批=kernel 真 consumedProof 形状，r26） | `e78dee2a`@wire-g2 | 最终 PA producer 配对=B-BROWSER 邻界；B-BROWSER 闭表已根派 |
+| B-SUBAGENT 三方 | 接线未测 | 表 `fbebc3c52`(+4e96decc6)；spawn `c206fd737` rev2；controls `9de5a097d` rev3 | `9d968d43`/`bc81187e`/`2aeefdeb` | 桥 fail-closed 双方钉死；真 validator 配对腿=表进组合树后各自重锚 |
+| B-TEAM | 接线未测 | 读源 `1eb278c37`（int 不含）；中心代合 merge=`4ea06e4c4`（lane 分支上） | `9c642a96`@wire-team | 六叶+rev2 配对批=owner 在 handback 树自著，(g) 翻转同提交 |
+
 适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。
