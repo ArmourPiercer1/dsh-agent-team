@@ -58,6 +58,10 @@ owners:
   # Without this rule the write-boundary helper fell through to the catch-all
   # scripts/** entry, whose owner is docs/STATUS.md — a document this line must not
   # edit. A rule that points at a document you cannot touch is not an owner.
+  - glob: scripts/contracts-field-agreement.mjs
+    docs:
+      - tests/doc-consistency/README.md
+    enforce: true
   - glob: scripts/generated-write.mjs
     docs:
       - tests/doc-consistency/README.md

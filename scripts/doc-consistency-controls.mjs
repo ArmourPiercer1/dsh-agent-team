@@ -23,6 +23,7 @@ import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
 import { checkGeneratedTarget } from './generated-write.mjs';
+import { checkContractsFieldAgreement, PAIRS } from './contracts-field-agreement.mjs';
 import { GENERATED_FILES } from './generated-write.mjs';
 import { renderContractIndex, validateRegistry, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 
@@ -730,6 +731,61 @@ control('NEG-67 a refs value that is not a list is refused, whatever the parser 
     { ok: codes.includes('REGISTRY_REF_TYPE'), why: 'refs=5 -> [' + codes.join(',') + ']' },
     { ok: scalarCodes.includes('REGISTRY_REF_SCALAR') && !scalarCodes.includes('REGISTRY_REF_TYPE'), why: 'refs as a bare string keeps its own code -> [' + scalarCodes.join(',') + ']' },
   ];
+});
+
+// A throwaway contracts package, because the checker reads --root and nothing else.
+function contractsFixture(slug, shape) {
+  const dir = mkdtempSync(join(RUN_ROOT, `${slug}-`));
+  OWNED.add(dir);
+  writeFile(dir, 'packages/contracts/src/dto/thing.ts', shape);
+  return dir;
+}
+
+control('POS-15 a declaration and its runtime field set that agree produce no finding', (d) => {
+  const dir = contractsFixture('cfa-pos', `export const THING_FIELDS: readonly string[] = [\n  'a',\n  'b',\n]\n\nexport interface ThingDto {\n  readonly a: string\n  readonly b?: string\n}\n`);
+  PAIRS.push({ interface: 'ThingDto', fields: 'THING_FIELDS' });
+  try {
+    const res = checkContractsFieldAgreement(dir, { only: ['ThingDto'] });
+    return [
+      { ok: !res.refused, why: 'the fixture package was readable' },
+      { ok: res.findings.length === 0, why: res.findings.length ? res.findings.map((f) => f.code).join(',') : `20-field-name comparison clean: ${res.coverage.compared.join(' / ')}` },
+    ];
+  } finally {
+    PAIRS.pop();
+  }
+});
+
+control('NEG-69 a field the runtime set forgot is refused', (d) => {
+  const dir = contractsFixture('cfa-missing-runtime', `export const THING_FIELDS: readonly string[] = ['a']\n\nexport interface ThingDto {\n  readonly a: string\n  readonly b: string\n}\n`);
+  PAIRS.push({ interface: 'ThingDto', fields: 'THING_FIELDS' });
+  try {
+    const res = checkContractsFieldAgreement(dir, { only: ['ThingDto'] });
+    const hit = res.findings.find((f) => f.code === 'CONTRACT_FIELD_NOT_IN_RUNTIME');
+    return [
+      { ok: !!hit, why: 'findings: [' + res.findings.map((f) => f.code).join(',') + ']' },
+      { ok: hit.detail.includes('b'), why: 'the finding names the field: ' + hit.detail },
+    ];
+  } finally {
+    PAIRS.pop();
+  }
+});
+
+control('NEG-70 a construct the reader cannot parse is NOT_CHECKED, never a pass', (d) => {
+  // Index signatures, methods and inline objects are outside the subset. Reporting them
+  // as unchecked is the whole point: the alternative is a comparison that silently
+  // covers less than it claims.
+  const dir = contractsFixture('cfa-unreadable', `export const THING_FIELDS: readonly string[] = ['a']\n\nexport interface ThingDto {\n  readonly a: string\n  [key: string]: unknown\n}\n`);
+  PAIRS.push({ interface: 'ThingDto', fields: 'THING_FIELDS' });
+  try {
+    const res = checkContractsFieldAgreement(dir, { only: ['ThingDto'] });
+    const unchecked = (res.coverage.not_checked || []).join(' | ');
+    return [
+      { ok: res.findings.length === 0, why: 'no equality claim is made about a shape it could not read' },
+      { ok: unchecked.includes('ThingDto'), why: 'the shape is listed as not checked: ' + (unchecked || 'empty') },
+    ];
+  } finally {
+    PAIRS.pop();
+  }
 });
 
 control('NEG-68 a stale index is a refusal in every entry point, and only --write fixes it', (d) => {
