@@ -135,23 +135,27 @@ export function createSubagentSpawnWiring(input = {}) {
     // The CLOSED effect envelope vocabulary (todo.mjs :233 verbatim shape).
     const requestedEffects = deepFreeze({ effects: [{ kind: 'tool-invoke', toolName: String(name), resource: null }] })
     const definitionIdentity = capturedIdentities.get(name)
-    // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3): the family's
-    // PA_FAMILY_TARGET_RULES['B-SUBAGENT'] entry (control/types.ts) pairs
-    // field-for-field with the adapter's typed plan target; the durable
-    // schema wants the FLAT lossless string view the closed kinds carry —
-    // the nested `child` pair travels as childClaim/childAdjudication, and
-    // the target's constant `child.claim: null` (the child identity is
-    // minted by the SERVICE, never claimed at this seam) encodes as the
-    // sentinel below. Nothing is dropped or re-spelled: every adapter
-    // target fact names exactly one manifest field, losslessly.
+    // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; encoding fixed by
+    // root 21:01): the family's PA_FAMILY_TARGET_RULES['B-SUBAGENT'] entry
+    // (control/types.ts) pairs field-for-field with the adapter's typed plan
+    // target; the nested `child` pair travels as childClaim/childAdjudication
+    // and childClaim rides the SIGNED 'nullableString' leaf (same law as
+    // B-SESSION-QUERY's callerWorkspaceCwd): null STAYS JSON null — the five
+    // rows mint `child.claim: null` and carry no claim at this seam. For the
+    // four spawn/fork rows the child identity is minted by the SERVICE at
+    // start/acceptance; list_subagent_models addresses NO child at all —
+    // that per-row truth rides its own childAdjudication, and this leaf only
+    // ever says "the claim this row carries" (missing ≠ null ≠ '' stay the
+    // three distinct outcomes of the signed leaf). A string claim (none is
+    // minted today) travels VERBATIM: no sentinel, no rewriting, lossless
+    // over string|null. Nothing is dropped or re-spelled: every adapter
+    // target fact names exactly one manifest field.
     const target = plan.target
     const targetManifest = deepFreeze({
       operation: String(plan.operation),
       contract: String(target.contract),
       parent: String(target.parent),
-      childClaim: target.child.claim === null
-        ? 'service-mints-child-identity (claim not carried at this seam)'
-        : String(target.child.claim),
+      childClaim: target.child.claim, // 'nullableString': null stays null; a string would ride verbatim (root 21:01 — never a sentinel stand-in)
       childAdjudication: String(target.child.adjudication),
       action: String(target.action),
       revision: String(target.revision),

@@ -36,6 +36,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot } from '../../../tests/paths.mjs'
+import { validatePaFamilyTarget } from '../control/types.js'
 
 type Definition = {
   [face: string]: unknown
@@ -254,17 +255,17 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     expect(req.family?.adapterRevision).toBe(1)
     expect(req.family?.providerIdentity).toBe('a5p5-plane')
     expect(req.family?.definitionIdentity).toBe('cap:subagent')
-    // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; the entry in
-    // PA_FAMILY_TARGET_RULES['B-SUBAGENT'] pairs exactly these keys, closed
-    // string kinds): the adapter plan.target flat lossless view — every
-    // target fact names one manifest field, child.claim:null encodes as the
-    // sentinel, nothing is re-spelled or dropped.
+    // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; encoding per root
+    // 21:01): the entry in PA_FAMILY_TARGET_RULES['B-SUBAGENT'] pairs exactly
+    // these keys — childClaim rides the SIGNED 'nullableString' leaf, so the
+    // target's null claim STAYS JSON null (no sentinel stand-in); every
+    // other target fact names one manifest field, nothing re-spelled.
     const t = classified.plan.target
     expect(req.family?.targetManifest).toStrictEqual({
       operation: classified.plan.operation,
       contract: t.contract,
       parent: t.parent,
-      childClaim: 'service-mints-child-identity (claim not carried at this seam)',
+      childClaim: null,
       childAdjudication: t.child.adjudication,
       action: t.action,
       revision: t.revision,
@@ -347,6 +348,34 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
 })
 
 describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only', () => {
+  it('table/mint pair EXACTLY through the REAL validator: the mint null stays null; ANY string (incl. the retired sentinel text) is a legal distinct value; wrong type/missing deny; list_models never claims a service-mint', async () => {
+    SERVICE_STARTS.length = 0
+    PA_CALLS.length = 0
+    paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
+    const wiring = wire()
+    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    if (def === undefined) throw new Error('no def')
+    await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-pair-1', signal: CONTROLLER.signal })
+    const manifest = PA_CALLS[PA_CALLS.length - 1]?.family?.targetManifest as Record<string, unknown>
+    expect(manifest.childClaim).toBeNull() // the mint carries the null ITSELF (root 21:01)
+    expect(validatePaFamilyTarget('B-SUBAGENT', manifest)).toBeUndefined() // REAL mint passes the REAL table
+    // the retired sentinel is now just one legal string among all — a claim
+    // that HAPPENS to spell it validates identically; no rewriting exists to
+    // confuse the two (that is what lossless over string|null means):
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...manifest, childClaim: 'service-mints-child-identity (claim not carried at this seam)' })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...manifest, childClaim: '' })).toBeUndefined() // '' is the THIRD distinct outcome
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...manifest, childClaim: 42 }))).toContain('childClaim')
+    const { childClaim: _drop, ...noClaim } = manifest
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', noClaim))).toContain('childClaim') // missing ≠ null
+    // list_models honesty: it addresses NO child — its per-row truth rides
+    // childAdjudication, and no manifest fact ever spells "service-mints":
+    const lmPlan = wiring.rowOf('list_subagent_models')?.classify({})
+    if (lmPlan?.ok !== true || lmPlan.plan === undefined) throw new Error('list row did not classify')
+    expect(lmPlan.plan.target.child.claim).toBeNull()
+    expect(lmPlan.plan.target.child.adjudication).toContain('no child addressed')
+    expect(JSON.stringify(lmPlan.plan.target)).not.toContain('service-mints')
+    expect(PA_CALLS).toHaveLength(1) // exactly ONE real walk rode this execute
+  })
   it('registrations key on the fed def#N identities, never the captured ones; an absent feed throws', () => {
     const wiring = wire()
     const regs = wiring.familyRegistrations()

@@ -1281,23 +1281,26 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
   }),
   // A5-M2 B-SUBAGENT (spawn side, records 39-43; the ONE entry of this
-  // family's owner = the spawn writer — the B-SESSION/B-IMAGE/B-WRITE
-  // entries above stay their owners', untouched). Written field-for-field
-  // against the IMPLEMENTED spawn typed plan: the production wiring
-  // (governed-families/subagent-spawn-wiring.mjs) projects the adapter's
-  // plan.target into this flat lossless string view — closed kinds only,
-  // no new kind, no `any`, no replacement of any sibling entry. `childClaim`
-  // encodes the target's constant `child.claim: null` (the child identity
-  // is minted by the SERVICE at start/acceptance, never claimed at this
-  // seam) as the non-empty sentinel below; `childAdjudication` carries the
-  // PRE_SPAWN_CLOSED_WORLD disclosure whole. The named gaps stay gaps:
+  // family's owner = the spawn writer — the sibling entries stay their
+  // owners', untouched). Written field-for-field against the IMPLEMENTED
+  // spawn typed plan: the production wiring (governed-families/
+  // subagent-spawn-wiring.mjs) projects the adapter's plan.target into this
+  // flat view, pairing EXACTLY (root 21:01): childClaim rides the SIGNED
+  // 'nullableString' leaf (same law as B-SESSION-QUERY's callerWorkspaceCwd
+  // — missing ≠ null ≠ '' stay three distinct outcomes, nothing converts),
+  // so the target's `child.claim` travels losslessly over null | string:
+  // null STAYS JSON null (the five rows carry no claim at this seam) and a
+  // string would travel VERBATIM (no sentinel could be confused with it).
+  // list_subagent_models addresses NO child — that per-row truth rides
+  // childAdjudication, never this leaf. Closed kinds only: no new kind, no
+  // `any`, no replacement of any sibling entry. The named gaps stay gaps:
   // nothing here enforces them — the MEANING is the plan's own (doc above).
   'B-SUBAGENT': Object.freeze({
     required: Object.freeze({
       operation: 'string',
       contract: 'string',
       parent: 'string',
-      childClaim: 'string',
+      childClaim: 'nullableString',
       childAdjudication: 'string',
       action: 'string',
       revision: 'string',
