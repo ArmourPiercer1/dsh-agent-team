@@ -817,9 +817,9 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify({}, 'call-l1')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    // RE-ANCHORED @ 957a5f526: rec53 law rides inspectTarget[0].listLaw (single-item
-    // obligations array keeps the correlated triple together; one closed rule per family)
-    expect((classified.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]?.listLaw).toContain('constrains')
+    // RE-ANCHORED @ 39c029963 (root-957 revert): the obligations-carrier flattening was
+    // REFUSED; rec53 law rides the BASE top-level encoding again.
+    expect(classified.targetManifest.listLaw).toContain('constrains')
     const result = await row.delegate(classified.plan, { exec: {} })
     expect(result.settled).toBe('NATIVE-RESOLVED-AUTHORIZED-CONSTRAINED')
     const value = result.value as { providers: Array<{ id: string; methods: Array<{ name: string }> }>; authorizedTopology: Record<string, unknown>; excludedUnauthorizedProviders: number }
@@ -848,7 +848,8 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     expect((classified.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]).toMatchObject({ platform: 'host', provider: expect.any(String), method: expect.any(String) })
     const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
     expect(client.ok).toBe(true)
-    if (client.ok) expect((client.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]?.clientRoundtrip).toContain('NOT a transport cancel')
+    // RE-ANCHORED @ 39c029963: base nested clientRoundtrip encoding restored
+    if (client.ok) expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
   })
 
   // ── U2/U3 + card 5: per-action envelope, REAL parses, REAL shapes ────────
