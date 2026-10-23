@@ -3016,8 +3016,17 @@ export function createAgentBindings(deps) {
           }
           let g2Supply
           try {
-            g2Supply = typeof deps.g2TeamAssembly === 'function' ? deps.g2TeamAssembly() : undefined
+            // The host producer answers ASYNC (it loads the pinned PUBLIC
+            // entry files through the SIGNED loader); a plain object answer
+            // (test worlds) still rides unchanged; an {ok:false} producer
+            // refusal names its own code; {ok:true, supply} unwraps.
+            const answered = typeof deps.g2TeamAssembly === 'function' ? await deps.g2TeamAssembly() : undefined
+            if (answered !== null && typeof answered === 'object' && answered.ok === false) {
+              throw refuseG2(`the host g2TeamAssembly supply producer refused (${String(answered.code)}): ${String(answered.message ?? '').slice(0, 280)}`)
+            }
+            g2Supply = answered !== null && typeof answered === 'object' && answered.ok === true && answered.supply !== undefined ? answered.supply : answered
           } catch (error) {
+            if (error !== null && typeof error === 'object' && error.code === 'alpha5-g2-mount-refused') throw error
             throw refuseG2(`the deps.g2TeamAssembly supply accessor threw (${String(error?.message ?? error).slice(0, 140)})`)
           }
           if (g2Supply === null || typeof g2Supply !== 'object') {
