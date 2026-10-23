@@ -466,8 +466,13 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       return defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-grammar')).then(() => {
         const manifest = manifestOf(walkAt(w, 0))
-        // The measured registered key set (this lane touched NOTHING here).
-        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
+        // The measured registered key set (this lane touched NOTHING here;
+        // ROOT 23:09 landing re-anchor by the center: this leg is the
+        // merge-time FLIPPED PIN leg that exists ONLY in the integration
+        // copy, and B-SUBAGENT landed with the joint table merge
+        // cc6a0f643d1b0b4cae4ef4604c2c8fde1bb66b0f — enumerated exactly,
+        // unknown-family refusal and the 10-leaf acceptance unchanged).
+        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
         expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
         expect(isLosslessJsonValue(manifest)).toBe(true)
         // THE RETIRED fail-closed answer (kept for the record): at the lane base
