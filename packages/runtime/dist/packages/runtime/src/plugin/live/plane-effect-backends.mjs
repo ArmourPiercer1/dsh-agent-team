@@ -773,6 +773,62 @@ export function shellCancelled({ timedOut, aborted, reason }) {
   return !timedOut && aborted === true && (kind === 'user' || kind === 'parent')
 }
 
+/**
+ * B4 DRAIN-ON-EXIT (A5-M1 间歇红): the shell row's completion event is the
+ * launcher's PROCESS DEATH (`h.exited`, resolve-only on the child 'exit' event —
+ * sandbox-provider/provider.ts defaultSpawnStream), and Node's own child-process
+ * contract is that 'exit' may fire while stdio chunks are still in flight:
+ * 'close'/'end', not 'exit', is the stream-end event. The row's post-exit path is
+ * microtask-only once the payload is confirmed dead (the provider's terminate
+ * loop breaks on its first iteration when `/proc/<pid>` is gone and
+ * settleTermination never yields to I/O), so reading `stdout` straight after the
+ * settle race captured only whatever had ALREADY been delivered — on a starved
+ * event loop the death notification can overtake the still-queued pipe read and
+ * the row answers `exit=0` over an EMPTY body (the intermittent CI shape at
+ * a5-m1-auth-bridge :1915-1917; renderShellResult prints that capture as
+ * `bash · exit=0` + `(empty stdout)`).
+ * THE WAIT IS FINITE BY CONSTRUCTION for this row: the stream arm of the
+ * launcher closes its OWN fd 0/1/2 before waitpid (landlock-prelauncher.py
+ * mode_confined_exec_stream), so the payload is the ONLY pipe writer and its
+ * death IS the pipe's EOF — once terminate confirmed the payload gone, 'end' is
+ * the next reads' inevitable fact and a normal run pays ONE macrotask.
+ * The bound below exists for the single shape that outruns that law: a payload
+ * that leaves a DESCENDANT still holding fd 1/2 (`cmd &`). That hole is measured
+ * house history, not speculation — the glob row's DRAIN-INCOMPLETE leg
+ * (glob-backend.mjs, root ruling ①) recorded that provider stdio streams are NOT
+ * guaranteed to close at lease settle, which is exactly why this is a bounded
+ * stream-end await and NEVER a fixed sleep: it waits for the real 'end'/'close'
+ * event and only bounds the pathological non-closing case. Resolves TRUE when
+ * both streams settled, FALSE on bound expiry (the row then keeps the captured
+ * bytes and reports the DRAIN-INCOMPLETE audit line — bytes stay honest, the
+ * settlement law above is untouched: exit code / timed-out / cancelled were
+ * already decided by `raceShellSettle` and no drain answer rewrites them).
+ * `sleep` is injectable exactly like `raceShellSettle`'s; the bound timer is
+ * unref'd so a pending drain never keeps the process alive.
+ */
+export const SHELL_STREAM_DRAIN_MS = 2_000
+
+export function drainShellStdio({ stdout, stderr, boundMs, sleep = sleepTimer }) {
+  const settledNow = (s) => s === null || s === undefined || s.readableEnded === true || s.destroyed === true
+  // THE ZERO-COST PATH (pinned by the D5 leg): a drain of already-settled
+  // streams returns through this single resolved promise — no listeners, no
+  // bound armed, no extra tick spent. Normal runs (payload wrote early, pipes
+  // closed early) always take it, so the fix costs the healthy cadence nothing.
+  if (settledNow(stdout) && settledNow(stderr)) return Promise.resolve(true)
+  const streamSettled = (s) => new Promise((resolve) => {
+    if (s === null || s === undefined) { resolve(); return }
+    // Completed streams pay nothing: no new event is waited for.
+    if (s.readableEnded === true || s.destroyed === true) { resolve(); return }
+    s.once('end', resolve)
+    s.once('close', resolve) // a teardown also means: no further data can arrive
+    s.once('error', resolve) // the spawn arm's guard makes errors non-fatal here
+  })
+  return Promise.race([
+    Promise.all([streamSettled(stdout), streamSettled(stderr)]).then(() => true),
+    new Promise((resolve) => { const t = sleep(() => resolve(false), boundMs); t?.unref?.() }),
+  ])
+}
+
 export function createConfinedShellBackend({ realmId, templateId, instanceId, cwdRoot, confined, observe = () => {} }) {
   const scratchRoot = confined.scratchRoot ?? cwdRoot ?? confined.workingDir
   const provider = createConfinedProcessProvider({
@@ -781,6 +837,15 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
     scratchRoot,
     ...(confined.runnerCommand === undefined ? {} : { runnerCommand: confined.runnerCommand }),
     assembly: confined.assembly ?? {},
+    // TEST-SEAM PASS-THROUGH (B4 drain legs): the provider's `deps` face is its
+    // EXISTING test surface — the a5p4-provider / a5lsp2-streaming / a5-cancel
+    // families already drive fakes through it against this very provider. The
+    // row forwards it verbatim when the factory input carries one and NOTHING
+    // when absent, so the production construction is byte-identical to before.
+    // The mount wiring is the same trusted input that already names the launcher
+    // binary (`launcherPath`), so a deps fake widens no trust surface beyond
+    // what an assembly already holds.
+    ...(confined.deps === undefined ? {} : { deps: confined.deps }),
   })
   let probed = null
   let executed = 0
@@ -903,10 +968,28 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
       } else {
         await h.terminate() // normal end: the lease settles through the SAME frozen arm (terminated state)
       }
+      // B4 DRAIN-ON-EXIT: the terminate above CONFIRMED the payload dead, so both
+      // pipes are now EOF-bound (the payload was their only writer); this await
+      // lets the last `data` chunks land — into `stdout`/`stderr` AND into
+      // `io.sink`, whose late-chunk ordering this same race broke — before a
+      // single captured byte is read. Every arm takes it: a timed-out or aborted
+      // answer keeps its already-settled shape (the settle race above decided the
+      // form and the drain never re-decides it) while its partial bytes stop
+      // being a delivery lottery. See `drainShellStdio` for the law + the bound.
+      const drained = await drainShellStdio({ stdout: h.stdout, stderr: h.stderr, boundMs: SHELL_STREAM_DRAIN_MS })
       trace = ['probe', 'prepare', 'execute', 'terminate']
       const cancelled = shellCancelled({ timedOut, aborted, reason: aborted ? signal?.reason : undefined })
       lastRuns.push({ callId: call.callId, pid: h.pid, exit: exit.code ?? null, timedOut, cancelled, stdoutBytes: stdout.length, stderrBytes: stderr.length })
       observe(`confined-shell ran realm=${realmId} call=${call.callId} pid=${String(h.pid)} exit=${String(exit.code ?? 'not-observed')} timedOut=${String(timedOut)} cancelled=${String(cancelled)}`)
+      // THE BOUND EXPIRY IS REPORTED, NEVER PASSED OFF (root ruling, B4 pins): an
+      // expired drain means a writer this row never owned still holds a pipe, so
+      // the capture MAY BE SHORTER THAN WHAT THE PAYLOAD WROTE — the outcome says
+      // exactly that on its data face (`truncated: true`, the contract's existing
+      // "this is not the whole answer" bit; the presentation renders it as the
+      // truncation marker) and the audit line repeats it. The bytes stay as
+      // captured (honest partial), the settle race's answer stays as settled, and
+      // nothing in this row may claim a complete capture it did not observe.
+      if (drained !== true) observe(`confined-shell DRAIN-INCOMPLETE realm=${realmId} call=${call.callId} pid=${String(h.pid)}`)
       return {
         ok: true,
         outcome: {
@@ -924,7 +1007,9 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
           stderr,
           timedOut,
           cancelled,
-          truncated: false,
+          // B4: a completed drain keeps the historical `false`; an expired bound
+          // flips the existing "not the whole answer" bit — see above.
+          truncated: drained !== true,
         },
         settlement: timedOut || aborted
           ? { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' }
