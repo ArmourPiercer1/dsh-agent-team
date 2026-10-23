@@ -587,27 +587,35 @@ export function buildTeamOpsWiring (input = {}) {
     // own message, its `details`), with zero PA entry, zero fact read and zero
     // port entry; success falls through untouched. A world that publishes no
     // gate behaves exactly as it did before this seam existed.
+    // ④ CLOSED PER ROOT's NARROW REVIEW (67e90): the wrapped refusal this lane
+    // used to return was still an EXCEPTION by the time it reached the caller
+    // (the adapter's `refusalToThrow`), and reading it back meant catching a
+    // thrown error to find a value - which is hiding, and it would also accept
+    // any object claiming to be a native VALUE. Now the trusted gate's native
+    // failure takes an EXPLICIT DIRECT-RETURN CHANNEL: nothing is minted, no
+    // fact is read, no PA question opens, and the seat answers "this layer
+    // forwards nothing" ({ok:true}) so the ADAPTER'S OWN delegate - the real
+    // native tool - settles the call with its OWN typed rejected VALUE at its
+    // :496 gate, before `spec.run` and therefore with zero downstream effect.
+    // The caller thus receives the native's bytes because they ARE the
+    // native's bytes: this layer invents none and carries none, so a forged
+    // `nativeValue` has no path into the answer. Ordinary PA / admission
+    // refusals keep their existing exception semantics untouched.
     if (typeof callerGate === 'function') {
       const target = isRecord(plan.target) ? plan.target : undefined
       const rootLeaf = isRecord(target) ? target.root : undefined
       const rootClaim = isRecord(rootLeaf) && typeof rootLeaf.claim === 'string' ? rootLeaf.claim : ''
       const gate = await callerGate(ctx.exec, rootClaim)
       if (gate?.ok !== true) {
-        const result = isRecord(gate) && isRecord(gate.result) ? gate.result : undefined
         stats.callerGateRefusals += 1
         observe({
-          event: 'b-team-wire:caller-gate-refused',
+          event: 'b-team-wire:caller-gate-forwards-to-native',
           name,
-          code: result?.code,
           paEntry: false,
           factsRead: false,
+          minted: false,
         })
-        return Object.freeze({
-          ok: false,
-          code: result?.code ?? WIRE.INPUT_INVALID,
-          detail: String(result?.message ?? 'the shared caller/root gate refused the call'),
-          nativeValue: result,
-        })
+        return Object.freeze({ ok: true })
       }
     }
     const callBox = { facts: undefined, claim: undefined, fault: undefined }
