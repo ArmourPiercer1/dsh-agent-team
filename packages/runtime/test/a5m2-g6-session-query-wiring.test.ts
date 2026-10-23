@@ -119,7 +119,7 @@ const WIRE = (await import(new URL('../src/plugin/live/governed-families/g6-sess
   A5_G6_QUERY_WIRING_REVISION: number
   A5_G6_QUERY_WIRING_CODES: Record<string, string>
   buildG6SessionQueryWiring: (input?: Record<string, unknown>) => Assembly
-  buildG6QuerySupplyFromService: (service?: unknown) =>
+  buildG6QuerySupplyFromService: (service?: unknown, observeCurrent?: () => unknown) =>
     | { ok: true, providerId: string, queryPorts: Record<string, unknown>, declaredMount: Record<string, unknown> }
     | { ok: false, code: string, detail: string }
 }
@@ -1048,6 +1048,73 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       expect(refusal.code).toBe(SC.PORT_METHOD_MOVED)
       expect(swaps.length, 'the swapped generation is never invoked either — refusal precedes forwarding').toBe(0)
       expect(w.calls.length, 'zero port entries past the drift').toBe(callsBefore)
+    })
+  })
+
+  describe('(j) WHOLE-RECEIVER CURRENT IDENTITY (root 19:29): the live ctx.get answer rides the row\'s OWN receiver guard — a replaced service instance REFUSES; the approved handles never switch', () => {
+    const engineOver = (qp: Record<string, unknown>) => {
+      const p = qp as unknown as {
+        searchQueryPort: { searchSessions: (a: unknown, b: unknown) => Promise<unknown>, searchEvents: (a: unknown, b: unknown) => Promise<unknown> }
+        traceQueryPort: { traceSession: (a: unknown, b: unknown) => Promise<unknown>, traceEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        eventReadQueryPort: { readEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        authorizationQueryPort: { filterSessions: (a: unknown, b: unknown) => Promise<unknown> }
+        titlesQueryPort: { readTitleSnapshots: (a: unknown, b: unknown) => Promise<unknown> }
+      }
+      return {
+        name: 'sessionQuery',
+        searchSessions: p.searchQueryPort.searchSessions,
+        searchEvents: p.searchQueryPort.searchEvents,
+        traceSession: p.traceQueryPort.traceSession,
+        traceEvent: p.traceQueryPort.traceEvent,
+        readEvent: p.eventReadQueryPort.readEvent,
+        filterSessions: p.authorizationQueryPort.filterSessions,
+        readTitleSnapshots: p.titlesQueryPort.readTitleSnapshots,
+      }
+    }
+
+    it('j1: the accessor answers a NEW instance carrying the VERY SAME method objects — PORT_RECEIVER_MOVED refuses with zero forwarding (no method-level drift exists; only the live identity check can see this)', async () => {
+      const w = makeWorld({ tag: 'j1' })
+      const approved = engineOver(w.qp)
+      let currentSvc: unknown = approved
+      const supply = WIRE.buildG6QuerySupplyFromService(approved, () => currentSvc)
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-j1-steady' }))).toContain('s-a')
+      const callsBefore = w.calls.length
+      // THE WHOLE RECEIVER IS REPLACED under the token — the new instance
+      // carries the SAME function objects, so the method getters alone
+      // would stay steady forever; the facet-level guard read consults the
+      // accessor NOW and answers a foreign object ≠ the placement-pinned
+      // receiver → the row's OWN refusal, zero forwarding, and the new
+      // instance's handles are NEVER switched in.
+      currentSvc = { ...approved }
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { callId: 'exec-j1-replaced' }))
+      expect(refusal.code).toBe(SC.PORT_RECEIVER_MOVED)
+      expect(w.calls.length, 'zero forwarding past the receiver replacement').toBe(callsBefore)
+    })
+
+    it('j2: an unobservable current identity (the accessor throws right now) fails closed the same way, and a restored identity serves again — the check rides every guard read, never latched', async () => {
+      const w = makeWorld({ tag: 'j2' })
+      const approved = engineOver(w.qp)
+      const holder: { svc: unknown, boom: boolean } = { svc: approved, boom: false }
+      const supply = WIRE.buildG6QuerySupplyFromService(approved, () => {
+        if (holder.boom) throw new Error('ctx store unavailable right now')
+        return holder.svc
+      })
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-j2-steady' }))).toContain('s-a')
+      holder.boom = true
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { callId: 'exec-j2-unobservable' }))
+      expect(refusal.code).toBe(SC.PORT_RECEIVER_MOVED)
+      holder.boom = false
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-j2-restored' }))).toContain('s-a')
     })
   })
 })

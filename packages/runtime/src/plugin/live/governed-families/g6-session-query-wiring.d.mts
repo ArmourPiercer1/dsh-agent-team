@@ -188,4 +188,5 @@ export declare function buildG6SessionQueryWiring (
 
 export declare function buildG6QuerySupplyFromService (
   service: unknown,
+  observeCurrent?: () => unknown,
 ): G6QuerySupplyResult

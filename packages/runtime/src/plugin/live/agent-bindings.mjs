@@ -3117,6 +3117,15 @@ export function createAgentBindings(deps) {
           }
           const g6Supply = buildG6QuerySupplyFromService(
             typeof sessionQueryBackend === 'function' ? sessionQueryBackend() : undefined,
+            // Root 19:29 — the SAME Host public lazy accessor rides the
+            // supply: every adapter guard read re-observes the CURRENT
+            // `ctx.get('sessionQuery')` identity, so a whole-service
+            // replacement refuses through the row's own PORT_RECEIVER_MOVED
+            // law (the approved receiver/method handles keep executing
+            // while the identity matches and NEVER switch to the new
+            // instance's). The real accessor — no stale constant
+            // masquerading as current.
+            typeof sessionQueryBackend === 'function' ? sessionQueryBackend : undefined,
           )
           if (g6Supply.ok !== true) {
             // An absent/incomplete service is a DEPLOYMENT census fact for

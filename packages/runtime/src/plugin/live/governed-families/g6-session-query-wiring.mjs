@@ -528,10 +528,19 @@ export function buildG6SessionQueryWiring (input = {}) {
  * lands as the declared-mount-absent census (the two search names keep
  * their natives). Externally injected facet objects are NOT supply: the
  * glue REFUSES a config that carries them.
- * @param {unknown} service - the live `ctx.get('sessionQuery')` answer.
+ * @param {unknown} service - the live `ctx.get('sessionQuery')` answer
+ *  observed AT THE MOUNT MOMENT: the APPROVED receiver identity.
+ * @param {(() => unknown)=} observeCurrent - the SAME Host public lazy
+ *  accessor (`() => ctx.get('sessionQuery')`, root 19:29): consulted on
+ *  EVERY adapter guard read so a WHOLE-SERVICE replacement (a new
+ *  instance under the token — possibly even carrying the very same
+ *  method objects) becomes visible to the row's existing receiver guard.
+ *  Production supply MUST pass it (the glue does); when absent the
+ *  identity stays pinned to the approved instance (pure/test use only —
+ *  a stale constant never masquerades as `current`).
  * @returns {{ ok: true, providerId: string, queryPorts: Record<string, unknown>, declaredMount: Record<string, unknown> } | { ok: false, code: string, detail: string }}
  */
-export function buildG6QuerySupplyFromService (service) {
+export function buildG6QuerySupplyFromService (service, observeCurrent) {
   if (service === null || typeof service !== 'object') {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_ABSENT, 'the DSH public sessionQuery service is not registered in this process — the B-SESSION-QUERY family is not deployed here (honest DECLARED-INACTIVE census, zero flip; never a fake stand-in, never a config substitute)')
   }
@@ -582,6 +591,49 @@ export function buildG6QuerySupplyFromService (service) {
     return Object.freeze(facet)
   }
   const searchPresent = typeof service.searchSessions === 'function' && typeof service.searchEvents === 'function'
+  const facetObjects = {
+    ...(searchPresent
+      ? { searchQueryPort: liveFacet(['searchSessions', 'searchEvents']) }
+      : {}),
+    traceQueryPort: liveFacet(['traceSession', 'traceEvent']),
+    eventReadQueryPort: liveFacet(['readEvent']),
+    authorizationQueryPort: liveFacet(['filterSessions']),
+    titlesQueryPort: liveFacet(['readTitleSnapshots']),
+  }
+  // THE CURRENT SERVICE IDENTITY RIDES THE ROW'S EXISTENT RECEIVER GUARD
+  // (root 19:29 — the one true receiver-wide change left open): the row
+  // checks `queryPorts[facet] !== ref.object` at entry (:1391-1399) and in
+  // guardFacts after every await / before final serve (:1425-1436),
+  // refusing PORT_RECEIVER_MOVED. A mount-time snapshot alone made a
+  // WHOLE-SERVICE replacement invisible — the getters would keep observing
+  // the OLD instance (and its possibly identical method objects) forever.
+  // So each queryPorts facet property is itself a GETTER consulting the
+  // Host lazy accessor NOW: while `ctx.get('sessionQuery')` still answers
+  // the APPROVED service the guard read answers the approved facet object
+  // (steady state never trips anything, and execution keeps riding the
+  // approved real receiver/method handles — they never switch); the
+  // moment the accessor answers a DIFFERENT instance, the very next guard
+  // read answers a foreign object and the row's OWN PORT_RECEIVER_MOVED
+  // law refuses, zero forwarding. An observer that throws (the identity
+  // unobservable right now) fails closed the same way. No new guard, no
+  // service framework: the live identity rides the guard the row runs.
+  const observe = typeof observeCurrent === 'function' ? observeCurrent : () => service
+  const receiverMoved = Object.freeze({ a5m2G6: 'receiver-identity-moved-sentinel' })
+  const queryPorts = {}
+  for (const [facetName, facetObject] of Object.entries(facetObjects)) {
+    Object.defineProperty(queryPorts, facetName, {
+      enumerable: true,
+      get () {
+        let current
+        try {
+          current = observe()
+        } catch {
+          return receiverMoved
+        }
+        return current === service ? facetObject : receiverMoved
+      },
+    })
+  }
   return deepFreeze({
     ok: true,
     // Provider identity = the service's OWN registration name (the Service
@@ -589,15 +641,7 @@ export function buildG6QuerySupplyFromService (service) {
     // is the fallback) — a trusted in-process identity, never a configured
     // string.
     providerId: typeof service.name === 'string' && service.name !== '' ? String(service.name) : 'sessionQuery',
-    queryPorts: Object.freeze({
-      ...(searchPresent
-        ? { searchQueryPort: liveFacet(['searchSessions', 'searchEvents']) }
-        : {}),
-      traceQueryPort: liveFacet(['traceSession', 'traceEvent']),
-      eventReadQueryPort: liveFacet(['readEvent']),
-      authorizationQueryPort: liveFacet(['filterSessions']),
-      titlesQueryPort: liveFacet(['readTitleSnapshots']),
-    }),
+    queryPorts: Object.freeze(queryPorts),
     // Declared-mount = the OBSERVED evidence of THIS process's registration
     // (the trusted publisher): search facets callable → present; not
     // implemented → honestly absent with the observation as the evidence
