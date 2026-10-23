@@ -2368,6 +2368,9 @@ async function buildG2TeamSupply(
   const mountMod = (await import(g2MountModuleUrl)) as unknown as {
     createG2TeamAssemblySupply: (input: Record<string, unknown>) => Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string }>
   }
+  const webSupplyMod = (await import(new URL('./live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as {
+    createG2FixedWebFace: (provider: object, opts?: Record<string, unknown>) => unknown
+  }
   const entryPaths = g2Mount.entryPaths as { launchEntry?: string; workerEntry?: string; sdkClientEntry?: string } | undefined
   const transportEntry = g2Mount.transportEntry
   const serverConfigs = g2Mount.serverConfigs as Array<Record<string, unknown>> | undefined
@@ -2511,7 +2514,12 @@ async function buildG2TeamSupply(
         maxRedirects: resolved.maxRedirects,
         userAgent: resolved.userAgent,
       }
-      out.webFixedTransport = new webMod.HttpFetchProvider(limits)
+      // root 01:2x: the gateway receives a FIXED capture+bind face over
+      // the constructed provider (AbortSignal passes verbatim; NO dynamic
+      // re-fetch; search stays null — HttpFetchProvider does not search
+      // and fetch never impersonates it).
+      const fixedProvider = new webMod.HttpFetchProvider(limits)
+      out.webFixedTransport = webSupplyMod.createG2FixedWebFace(fixedProvider as object)
     } catch (error) {
       return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` }
     }

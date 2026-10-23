@@ -1326,3 +1326,41 @@ describe('A5M2-G2-WIRE round-32: g2-web-supply — fixed fork + disposer block (
     expect(disposed.length).toBeGreaterThan(before) // the fetch registration was UNWOUND — nothing half-mounts
   })
 })
+
+/* ROOT 01:2x helper honesty + the fixed capture+bind face. */
+describe('A5M2-G2-WIRE round-34: register rollback, disposer truth, capture+bind face', () => {
+  const WEB = async () => (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as {
+    createG2TeamWebProviders: (i: Record<string, unknown>) => { fetchProvider: { id: string; available: () => boolean; fetch: (r: unknown, s?: unknown) => Promise<unknown> }; searchProvider: { id: string } | null }
+    registerG2TeamWebProviders: (i: Record<string, unknown>) => { ids: readonly string[]; dispose: () => boolean }
+    createG2FixedWebFace: (p: Record<string, unknown>, o?: Record<string, unknown>) => { fetch: (r: unknown, s?: unknown) => Promise<unknown>; search: null | ((r: unknown, s?: unknown) => Promise<unknown>) }
+  }
+  it('a THROWING search registration rolls the fetch registration back; a failing disposer throws instead of claiming true', async () => {
+    const m = await WEB()
+    const { fetchProvider } = m.createG2TeamWebProviders({ providerId: 'w-fx', transport: { fetch: async () => ({}) } })
+    const disposed: string[] = []
+    const throwing = {
+      registerFetchProvider: (p: { id: string }) => { return () => disposed.push(p.id) },
+      registerSearchProvider: () => { throw new Error('WEB_PROVIDER_AMBIGUOUS') },
+    }
+    expect(() => m.registerG2TeamWebProviders({ web: throwing, fetchProvider, searchProvider: { id: 's' } })).toThrow(/ROLLED BACK.*WEB_PROVIDER_AMBIGUOUS/)
+    expect(disposed).toEqual(['w-fx'])
+    const badDisposer = { registerFetchProvider: () => () => { throw new Error('host disposer blew up') } }
+    const mount2 = m.registerG2TeamWebProviders({ web: badDisposer, fetchProvider })
+    expect(() => mount2.dispose()).toThrow(/disposer failed/)
+  })
+  it('the fixed face binds the CAPTURED provider (replacing a later property does not move it), passes AbortSignal through verbatim, and search is captured ONLY from a real function', async () => {
+    const m = await WEB()
+    const seen: unknown[] = []
+    const provider = { id: 'w-fx', available: () => true, fetch: (r: unknown, s?: unknown) => { seen.push([r, s]); return Promise.resolve({ ok: true }) } }
+    const face = m.createG2FixedWebFace(provider)
+    const sig = { aborted: false }
+    await face.fetch({ url: 'https://x.invalid' }, sig)
+    expect((seen[0] as unknown[])[1]).toBe(sig) // second argument rides VERBATIM
+    expect(face.search).toBeNull() // HttpFetchProvider does not search; fetch never impersonates
+    const searcher = { search: (r: unknown, s?: unknown) => { seen.push(['s', r, s]); return Promise.resolve([]) } }
+    const face2 = m.createG2FixedWebFace(provider, { searchProvider: searcher })
+    expect(typeof face2.search).toBe('function')
+    await face2.search!({ q: 'x' }, sig)
+    expect((seen[seen.length - 1] as unknown[])[2]).toBe(sig)
+  })
+})

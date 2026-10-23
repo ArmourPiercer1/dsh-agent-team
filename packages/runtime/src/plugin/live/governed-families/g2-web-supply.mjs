@@ -82,13 +82,20 @@ export function registerG2TeamWebProviders ({ web, fetchProvider, searchProvider
     refuse(A5_G2_WEB_CODES.SERVICE_ABSENT, 'the caller-owned web service must expose the PUBLIC registerFetchProvider(provider): () => void surface (web/src/index.ts:114 @639ed01539) — absent, nothing registers, no global fallback is touched')
   }
   const disposers = []
-  disposers.push(web.registerFetchProvider(fetchProvider))
-  if (searchProvider !== null && searchProvider !== undefined) {
-    if (typeof web.registerSearchProvider !== 'function') {
-      for (const dispose of disposers) { try { dispose() } catch { /* best-effort unwind */ } }
-      refuse(A5_G2_WEB_CODES.SERVICE_ABSENT, 'a search provider was supplied but the service answers no PUBLIC registerSearchProvider — unwound what registered, nothing stays half-mounted')
+  const unwind = () => { for (const dispose of disposers.splice(0).reverse()) dispose() }
+  try {
+    disposers.push(web.registerFetchProvider(fetchProvider))
+    if (searchProvider !== null && searchProvider !== undefined) {
+      if (typeof web.registerSearchProvider !== 'function') {
+        throw new TypeError('the service answers no PUBLIC registerSearchProvider — a search provider may not be half-declared')
+      }
+      disposers.push(web.registerSearchProvider(searchProvider))
     }
-    disposers.push(web.registerSearchProvider(searchProvider))
+  } catch (error) {
+    // root 01:2x: a search-side rejection (missing API OR a THROWING
+    // register) rolls the fetch registration back — never half-mounted.
+    try { unwind() } catch { /* the unwind failure is reported with the cause below, never silently */ }
+    throw Object.assign(new Error(`${A5_G2_WEB_CODES.SERVICE_ABSENT}: registration refused and ROLLED BACK: ${String(error?.message ?? error)}`), { code: A5_G2_WEB_CODES.SERVICE_ABSENT })
   }
   let done = false
   return Object.freeze({
@@ -96,8 +103,38 @@ export function registerG2TeamWebProviders ({ web, fetchProvider, searchProvider
     dispose: () => {
       if (done) return false
       done = true
-      for (const dispose of disposers.splice(0).reverse()) { try { dispose() } catch { /* host disposer */ } }
+      const failures = []
+      for (const dispose of disposers.splice(0).reverse()) {
+        try { dispose() } catch (error) { failures.push(String(error?.message ?? error)) }
+      }
+      // dispose failures are NEVER swallowed behind a `true`.
+      if (failures.length > 0) throw new Error(`${A5_G2_WEB_CODES.SERVICE_ABSENT}: disposer failed: ${failures.join(' | ')}`)
       return true
     },
+  })
+}
+
+/**
+ * THE fixed capture+bind gateway face (root 01:2x): the provider instance
+ * is captured ONCE at construction; fetch is BOUND to that capture and
+ * passes the SECOND ARGUMENT (AbortSignal) through VERBATIM — no dynamic
+ * re-fetch of any provider, no per-call selection point. search is
+ * captured ONLY when the captured provider carries a REAL search
+ * function — fetch NEVER impersonates search; absent search is an
+ * explicit null the gateway must refuse typed.
+ */
+export function createG2FixedWebFace (provider, { searchProvider } = {}) {
+  if (provider === null || typeof provider !== 'object' || typeof provider.fetch !== 'function') {
+    refuse(A5_G2_WEB_CODES.TRANSPORT_ABSENT, 'the captured provider must answer fetch(request, signal) — the formal public HttpFetchProvider')
+  }
+  const boundFetch = provider.fetch.bind(provider)
+  const realSearch = searchProvider !== null && searchProvider !== undefined && typeof searchProvider.search === 'function'
+    ? searchProvider.search.bind(searchProvider)
+    : null
+  return Object.freeze({
+    id: typeof provider.id === 'string' ? provider.id : undefined,
+    available: typeof provider.available === 'function' ? () => provider.available() === true : () => true,
+    fetch: (request, signal) => boundFetch(request, signal),
+    search: realSearch === null ? null : (request, signal) => realSearch(request, signal),
   })
 }
