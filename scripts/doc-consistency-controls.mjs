@@ -134,6 +134,28 @@ owners:
     docs:
       - docs/glossary.md
 `,
+  'dev/engineering/registry.schema.json': JSON.stringify({
+    schema_version: 1,
+    properties: { entries: { items: {
+      required: ['id', 'kind', 'title', 'decision_status', 'implementation_status', 'verification_status', 'release_status', 'owners'],
+      additionalProperties: false,
+      properties: {
+        id: { type: 'string', pattern: '^EB[0-9]-[A-Z0-9-]+$' },
+        kind: { enum: ['work-package', 'implementation-pr', 'gate', 'migration'] },
+        title: { type: 'string' },
+        decision_status: { enum: ['proposed', 'accepted', 'rejected', 'superseded', 'pending_coordination'] },
+        implementation_status: { enum: ['not_started', 'in_progress', 'implemented_in_branch', 'merged'] },
+        verification_status: { enum: ['not_verified', 'verified_local', 'verified_ci', 'verified_host'] },
+        release_status: { enum: ['not_released', 'candidate', 'released'] },
+        owners: { type: 'array' },
+        refs: { type: 'array' },
+        verification_artifacts: { type: 'array' },
+        verified_tier: { enum: ['C1', 'C2', 'C3'] },
+        verification_commit: { type: 'string', pattern: '^[0-9a-f]{7,40}$' },
+        merged_commit: { type: 'string', pattern: '^[0-9a-f]{7,40}$' },
+      },
+    } } },
+  }, null, 2) + '\n',
   'dev/agent-workflow/evidence/CTL/artifact.txt': 'fixture evidence artifact\n',
   'README.md': '# fixture\n\nSee the [glossary](docs/glossary.md).\n',
 };
@@ -571,6 +593,30 @@ control('NEG-43 verified_ci without a commit: probe blocks', (d) => {
 control('NEG-44 release claim without host verification: --write refuses', (d) => {
   writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('release_status: not_released', 'release_status: released'));
   return [expectBlocking('sync --write', run(SYNC, ['--write', '--root', d]), 'RELEASE_CLAIM_UNCORROBORATED')];
+});
+
+control('POS-11 schema and validator agree in a clean fixture', (d) => {
+  // The point of the cross-check is that it stays quiet when the two descriptions
+  // match; without this positive case the rule could simply be always-failing.
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 0, 'findings=0')];
+});
+
+control('NEG-48 schema drifting from the enforced enum is refused', (d) => {
+  // Exactly the drift that happened for real: the documented verified_tier values
+  // were the verification_status vocabulary, while the validator accepts C1|C2|C3.
+  const p = 'dev/engineering/registry.schema.json';
+  const j = JSON.parse(read(d, p));
+  j.properties.entries.items.properties.verified_tier.enum = ['verified_local', 'verified_ci', 'verified_host'];
+  writeFile(d, p, JSON.stringify(j, null, 2) + '\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_ENUM_MISMATCH')];
+});
+
+control('NEG-49 a documented field the validator does not accept is refused', (d) => {
+  const p = 'dev/engineering/registry.schema.json';
+  const j = JSON.parse(read(d, p));
+  j.properties.entries.items.properties.owner_document = { type: 'string' };
+  writeFile(d, p, JSON.stringify(j, null, 2) + '\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_FIELD_EXTRA')];
 });
 
 control('NEG-46 a second top-level entries: is refused and names the key', (d) => {

@@ -30,6 +30,11 @@ const REQUIRED = ['id', 'kind', 'title', 'decision_status', 'implementation_stat
 // rule nothing enforced it, so a typo'd field silently carried no meaning.
 const KNOWN_FIELDS = [...REQUIRED, 'refs', 'verification_artifacts', 'verified_tier', 'verification_commit', 'merged_commit'];
 const ID_RE = /^EB[0-9]-[A-Z0-9-]+$/;
+// Evidence tier of a claim: which environment it was earned in. Named once so the
+// validator and the schema cross-check below read the same list.
+const TIERS = ['C1', 'C2', 'C3'];
+const SCHEMA_PATH = 'dev/engineering/registry.schema.json';
+const COMMIT_RE = '^[0-9a-f]{7,40}$';
 
 function git(root, args) {
   try {
@@ -202,7 +207,7 @@ export function validateRegistry(doc, root) {
     // cite nothing, which is the exact hole where "verified_host" could be typed into
     // a YAML file next to a C1 log and read as real-environment evidence.
     const tier = e.verified_tier;
-    if (tier !== undefined && !['C1', 'C2', 'C3'].includes(tier)) {
+    if (tier !== undefined && !TIERS.includes(tier)) {
       findings.push({ code: 'CLAIM_TIER_UNKNOWN', detail: `${id}: verified_tier=${tier} (expected C1|C2|C3)` });
     }
     if (claimsVerified && e.verification_status !== 'verified_local') {
@@ -278,6 +283,48 @@ function readLegacyAuthority(root) {
   };
 }
 
+/** Compare the descriptive schema against the rules this file enforces. Only the
+ *  keywords that schema actually uses are interpreted — required, enum, pattern,
+ *  additionalProperties — so this is a comparison, not a half-written validator, and
+ *  the validator stays the authority. Without it the two drift silently: the schema
+ *  has in turn promised a closed field set nobody enforced, listed `refs` as required,
+ *  and given `verified_tier` the verification_status values instead of C1|C2|C3. */
+export function checkSchemaAgreement(root) {
+  const file = join(root, SCHEMA_PATH);
+  if (!existsSync(file)) {
+    return [{ code: 'SCHEMA_MISSING', detail: SCHEMA_PATH + ' is gone, so the documented shape can no longer be compared with the enforced one' }];
+  }
+  let doc;
+  try { doc = JSON.parse(readFileSync(file, 'utf8')); }
+  catch (e) { return [{ code: 'SCHEMA_UNPARSEABLE', detail: SCHEMA_PATH + ': ' + ((e && e.message) || String(e)) }]; }
+  const item = (((doc.properties || {}).entries || {}).items || {});
+  const props = item.properties || {};
+  const out = [];
+  const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  const req = item.required || [];
+  if (!same([...req].sort(), [...REQUIRED].sort())) {
+    out.push({ code: 'SCHEMA_REQUIRED_MISMATCH', detail: 'schema required=[' + req.join(',') + '] enforced=[' + REQUIRED.join(',') + ']' });
+  }
+  for (const k of KNOWN_FIELDS) if (!props[k]) out.push({ code: 'SCHEMA_FIELD_MISSING', detail: k + ' is enforced but absent from ' + SCHEMA_PATH });
+  for (const k of Object.keys(props)) if (!KNOWN_FIELDS.includes(k)) out.push({ code: 'SCHEMA_FIELD_EXTRA', detail: k + ' is documented but the validator does not accept it' });
+  const wantEnum = Object.assign({ kind: KINDS, verified_tier: TIERS }, ENUMS);
+  for (const k of Object.keys(wantEnum)) {
+    const got = props[k] && props[k].enum;
+    if (got && !same([...got].sort(), [...wantEnum[k]].sort())) {
+      out.push({ code: 'SCHEMA_ENUM_MISMATCH', detail: k + ': schema=[' + got.join(',') + '] enforced=[' + wantEnum[k].join(',') + ']' });
+    }
+  }
+  const wantPattern = { id: ID_RE.source, verification_commit: COMMIT_RE, merged_commit: COMMIT_RE };
+  for (const k of Object.keys(wantPattern)) {
+    const got = props[k] && props[k].pattern;
+    if (got && got !== wantPattern[k]) out.push({ code: 'SCHEMA_PATTERN_MISMATCH', detail: k + ': schema=/' + got + '/ enforced=/' + wantPattern[k] + '/' });
+  }
+  if (item.additionalProperties !== false) {
+    out.push({ code: 'SCHEMA_CONSTRAINT_MISMATCH', detail: SCHEMA_PATH + ' does not say additionalProperties:false, yet the entry field set is closed (REGISTRY_UNKNOWN_FIELD)' });
+  }
+  return out;
+}
+
 export function build(root) {
   const registryFile = join(root, 'dev/engineering/registry.yaml');
   if (!existsSync(registryFile)) return { refused: 'REGISTRY_MISSING' };
@@ -285,6 +332,7 @@ export function build(root) {
   const { doc, errors } = parseRegistryStrict(readFileSync(registryFile, 'utf8'));
   const findings = errors.map((e) => ({ code: 'REGISTRY_PARSE', detail: e }));
   findings.push(...validateRegistry(doc, root));
+  findings.push(...checkSchemaAgreement(root));
 
   const dirty = (git(root, ['status', '--porcelain']) || '').split('\n').filter(Boolean);
   // The persisted view carries ONLY facts that are stable between commits. Live

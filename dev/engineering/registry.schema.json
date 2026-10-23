@@ -106,10 +106,11 @@
           },
           "verified_tier": {
             "enum": [
-              "verified_local",
-              "verified_ci",
-              "verified_host"
-            ]
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "description": "the tier this claim was earned in; C1 local, C2 hosted CI, C3 real environment. Not the same vocabulary as verification_status."
           },
           "verification_commit": {
             "type": "string",

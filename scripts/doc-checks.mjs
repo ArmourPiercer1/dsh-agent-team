@@ -182,7 +182,7 @@ export function checkDeprecatedTerms(root, relFiles) {
 export const BLOCKING_PREFIXES = [
   'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED',
   'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STATE_BRIDGE', 'REGISTRY',
-  'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_',
+  'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_', 'SCHEMA_',
 ];
 export function isBlockingFinding(f) {
   return BLOCKING_PREFIXES.some((p) => String(f.code).startsWith(p));

@@ -48,6 +48,7 @@ gets its own throwaway fixture Git repository under the gitignored
 | probe honesty (P2) | registry + derived view present | `STATE_BRIDGE_UNAVAILABLE` / `STALE_GENERATED_VIEW`: missing inputs are never reported as green |
 | registry grammar (P2) | list-shaped `refs`/`owners`/artifacts, unique keys, closed field set | `registry-duplicate-key` (repeated key in a mapping, repeated top-level scalar, or a second `entries:`), `REGISTRY_REF_SCALAR`, `REGISTRY_OWNER_TYPE`, `REGISTRY_REF_UNRESOLVED`, `REGISTRY_UNKNOWN_FIELD` |
 | evidence location (P2) | `.log`/`.txt`/`.md` under `dev/agent-workflow/evidence/` | `ARTIFACT_LOCATION_UNCONTROLLED`, `ARTIFACT_TYPE_UNSUPPORTED` |
+| schema/validator agreement (EB1-C) | `registry.schema.json` matches the enforced field set, enums, patterns and `additionalProperties:false` | `SCHEMA_MISSING`, `SCHEMA_REQUIRED_MISMATCH`, `SCHEMA_FIELD_MISSING`/`_EXTRA`, `SCHEMA_ENUM_MISMATCH`, `SCHEMA_PATTERN_MISMATCH`, `SCHEMA_CONSTRAINT_MISMATCH` |
 | delivery-claim binding (EB1-C) | local work stays `verified_local` | `CLAIM_UNBOUND` (no/wrong commit), `CLAIM_TIER_MISMATCH` (C1 asserted as host), `MERGED_CLAIM_UNCORROBORATED`, `RELEASE_CLAIM_UNCORROBORATED` |
 | ratification needs a decision (EB1-D) | `proposed-not-ratified` ids | `ID_RATIFIED_WITHOUT_DECISION`; `ID_RATIFIED_BY_UNKNOWN_NOTE` |
 
@@ -76,8 +77,13 @@ gets its own throwaway fixture Git repository under the gitignored
    required when it never checks it, and had no entry for the claim fields the validator
    reads. A second top-level `entries:` also restarted the list silently, because that key's
    branch continued before the duplicate check could see it. The field set is now closed
-   (`REGISTRY_UNKNOWN_FIELD`), a duplicate names the exact key, and the schema is kept
-   aligned with the validator that outranks it.
+   (`REGISTRY_UNKNOWN_FIELD`), a duplicate names the exact key, and `checkSchemaAgreement()`
+   now compares the two on every run — the keywords the schema uses (required, enum,
+   pattern, additionalProperties) are read straight from the validator's own constants, so
+   drift is a finding (`SCHEMA_ENUM_MISMATCH` and siblings) rather than a review catch.
+   The first thing it caught was in the alignment commit itself: the documented
+   `verified_tier` values were the `verification_status` vocabulary, while the validator
+   accepts `C1|C2|C3`.
 6. **An assertion weak enough to survive a WARN.** `rc == 1` plus "output contains
    CLAIM_UNBOUND" is satisfied when that code appears only as a non-blocking WARN and the
    exit code came from something else. `expectBlocking` reads the printed classification
