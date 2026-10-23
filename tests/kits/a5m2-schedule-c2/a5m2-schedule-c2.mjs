@@ -38,11 +38,42 @@
  * Pins (measure and fill at packaging; the script REFUSES any placeholder):
  *   HOST   @ 639ed015397290b3745d163aafe02ffee4aa3f84 (0.2.0-rc.2, pristine
  *          tests/deepseek-harness-test-use, porcelain-empty re-check at boot)
- *   PKG    dsh-agent-team-runtime-0.1.1-alpha.3.tgz built from lane tip
- *          a66f50886b8b18bf697056d8192e8efe60d28ad7 — sha256:
+ *   PKG    THE ROOT-LEVEL PACKAGE `dsh-agent-team-0.1.1-alpha.2.tgz`
+ *          (root 21:29: the real Host plugin entry is the formal complete
+ *          root package — exports './host' -> packages/runtime/dist/…/
+ *          plugin/host.js etc., all five exports cross-checked EXPORT_OK
+ *          against the packed entries; the runtime SUBPACKAGE and the
+ *          runtime-tgz wording are NOT the mount artifact).
+ *          Source ruling: a66f50886 PRODUCT == int@cf2555fb3 PRODUCT
+ *          (measured git diff --shortstat EMPTY on non-test paths — a66
+ *          differs in specs/tests only), so the CENTER-CANONICAL pin built
+ *          from cf2555fb3-or-later is sufficient; no lane-specific product
+ *          package drives this kit. Recorded, NOT driving: runtime tgz
+ *          @a66f50886 sha 9715af0d… (manifest 9e8625d0, superseded wording
+ *          corrected here) and the lane root-tgz packing measurement
+ *          dsh-agent-team-0.1.1-alpha.2.tgz 3,851,629B sha
+ *          9244bf2173256170dc4191dffd042dffb4bcbbc6dde36df6dbd9f61e9efdd124
+ *          (RC_PACK=0). The bf4-era (bf4e89e10) package is INSUFFICIENT:
+ *          measured delta 30 files +675/-224 = this lane's raw-service
+ *          production law (schedule-wiring 120d, agent-bindings 37d,
+ *          host.ts +29, d.mts 28d) + AUTH vocabulary (admission-kernel +38
+ *          et al.) landed only in cf2555fb3.
  */
-const PIN_PKG_SHA256 = 'PENDING-PACKAGING' // packaging step measures + commits this ONE line
-const PIN_PKG_TGZ_BYTES_MAX = 3_400_000 // upper bound (base runtime tgz measured 3,202,703)
+const PIN_PKG = 'dsh-agent-team-0.1.1-alpha.2.tgz' // ROOT-level package
+const PIN_PKG_SHA256 = 'PENDING-CENTER-CANONICAL' // center's canonical root-package pin (cf2555fb3-era); kit refuses on placeholder
+const PIN_PKG_TGZ_BYTES_MAX = 4_000_000 // measured lane packing 3,851,629B (a66f50886, RC 0); guard against bulk additions
+
+// WORLD BUDGET (root 21:29: two test worlds combined <=500MB, THIS lane
+// <=250MB, image keeps its existing 500MB; the 448MB precedent install is
+// a full dependency-tree archive — FORBIDDEN here: no whole-tree/big-deps
+// copies; extracted install measures ~14.6MB (dist 13,162,240 + shim
+// 1,306,021 + root-binding 179,446)).
+const WORLD_BUDGET = Object.freeze({
+  installBytesMax: 25_000_000, // root tgz extract (measured ~14.6MB) + chmod a-w
+  stateBytesMax: 100_000_000, // world session logs/storage for C1..C5
+  evidenceBytesMax: 100_000_000, // captured transcripts/manifests (34e9 evidence dir precedent: 37,992,031B)
+  worldTotalMax: 250_000_000, // hard cap; boot + teardown MEASURE with du -sb and REFUSE past it
+})
 
 // Ports: 3180 family ONLY. 3080/3180/3181 NEVER (stable/dev). 3182/3497 =
 // image (currently pinned bf4 line — root 21:2x correction, not 556d);
@@ -65,8 +96,10 @@ function refuse(reason) {
 if (process.env.A5M2_SCHED_C2_WINDOW !== 'GRANTED') {
   const shape = {
     draft: true,
+    pinPkg: PIN_PKG,
     pinPkgSha256: PIN_PKG_SHA256,
     pinPkgBytesMax: PIN_PKG_TGZ_BYTES_MAX,
+    worldBudget: WORLD_BUDGET,
     hostPort: HOST_PORT,
     mockPort: MOCK_PORT,
     worldPrefix: WORLD_PREFIX,
@@ -80,7 +113,7 @@ if (process.env.A5M2_SCHED_C2_WINDOW !== 'GRANTED') {
 
 // ── GRANTED PATH (not executed by this draft; mirrors the todo-C2 kit's
 //    verified sections in order, with ONLY the criteria bodies swapped) ──
-if (PIN_PKG_SHA256 === 'PENDING-PACKAGING') refuse('PIN_PKG_SHA256 was never measured — packaging step first')
+if (PIN_PKG_SHA256 === 'PENDING-CENTER-CANONICAL') refuse('PIN_PKG_SHA256 awaits the center canonical root-package pin')
 // 1. world create: tests/homes/<WORLD_PREFIX>-<UTCstamp>Z via ../lib/world-safety.mjs
 //    parseWorldArg rules; extract the pinned tgz into install-<shortsha>/, chmod a-w.
 // 2. idle-port re-check (ss -ltn): HOST_PORT and MOCK_PORT must be free.
