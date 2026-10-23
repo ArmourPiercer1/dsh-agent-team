@@ -1205,7 +1205,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
               : typeof teamOpsInjectRaw.placementFeed !== 'function'
                 ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
-                : undefined
+                : typeof teamOpsInjectRaw.durableFacts?.isTeamRoot !== 'function'
+                  || typeof teamOpsInjectRaw.durableFacts?.memberExists !== 'function'
+                  ? 'durableFacts { isTeamRoot, memberExists } is required — a durable QUERY target (list_members / list_templates / inspect_config) is verified against the published Team roster before any PA question is minted (root 20:15); the seat never admits an unverified durable claim, so a world without the roster read cannot arm this family'
+                  : undefined
     if (teamBad !== undefined) return teamOpsInjectInvalid(teamBad)
     for (const teamName of A5_B_TEAM_TOOL_NAMES) {
       if (teamName === readName || teamName === A5_TODO_MOUNT_NAME || teamName === A5_WRITE_MOUNT_NAME || teamName === A5_IMAGE_MOUNT_NAME
@@ -1220,6 +1223,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamSet: teamOpsInjectRaw.teamSet,
       definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
       placementFeed: teamOpsInjectRaw.placementFeed,
+      durableFacts: teamOpsInjectRaw.durableFacts,
     })
   }
 
@@ -3937,6 +3941,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // familyRegistrations and THROWS on a silent or moved key — never a
         // guessed def#, never a silent skip).
         placementFeed: teamOpsInject.placementFeed,
+        durableFacts: teamOpsInject.durableFacts,
         // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
         // Nothing else poses as the admission seat.
         pa: paAdmit,

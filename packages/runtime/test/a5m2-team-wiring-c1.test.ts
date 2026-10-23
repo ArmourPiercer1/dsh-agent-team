@@ -79,6 +79,7 @@ type WiringModule = {
   A5_B_TEAM_WIRING_REVISION: number
   A5_B_TEAM_WIRING_CODES: Record<string, string>
   buildTeamOpsWiring: (input?: Record<string, unknown>) => Assembly | Built
+  createTeamRosterFacts: (input: Record<string, unknown>) => { isTeamRoot: (root: string) => boolean, memberExists: (root: string, instanceId: string) => boolean }
 }
 
 const WIRING = (await import(new URL('../src/plugin/live/governed-families/team-wiring.mjs', import.meta.url).href)) as WiringModule
@@ -97,6 +98,10 @@ const PROVIDER = 'a5m2-b-team-wire'
 const GOOD_ARGS = Object.freeze({ rootSessionId: 's-root-wire', requestToken: 'tok-wire-1' })
 
 let session = 0
+const DEFAULT_ROSTER: Array<Record<string, unknown>> = [
+  { instanceId: 'mi-9', childSessionId: 's-child-mi9', templateId: 'tpl-worker' },
+  { instanceId: 'mi-11', childSessionId: 's-child-mi11', templateId: 'tpl-sec' },
+]
 type World = ReturnType<typeof makeWorld>
 function makeWorld (over: Record<string, unknown> = {}) {
   session += 1
@@ -145,7 +150,7 @@ function makeWorld (over: Record<string, unknown> = {}) {
   )
   // ONLY bridge keys reach the bridge: it refuses an unknown input key, so
   // the world's own knobs (mounted / seat) never ride into it.
-  const { mounted: _mounted, seat: _seatBehaviour, ...bridgeOver } = over
+  const { mounted: _mounted, seat: _seatBehaviour, roster, ...bridgeOver } = over
   const base: Record<string, unknown> = {
     realmId: REALM,
     providerId: PROVIDER,
@@ -160,6 +165,14 @@ function makeWorld (over: Record<string, unknown> = {}) {
       return typeof callId === 'string' && callId.length > 0 ? callId : null
     },
     observe: (event: Record<string, unknown>) => { events.push(event) },
+    // ROOT 20:15: the seat verifies a durable QUERY target against the
+    // published roster. The rows are content-bearing (their own instanceId /
+    // childSessionId / templateId), which is what the reader answers from —
+    // never a count, never a caller-supplied yes.
+    durableFacts: WIRING.createTeamRosterFacts({
+      teamRoot: 's-root-wire',
+      listMemberInstances: () => (roster as readonly Record<string, unknown>[] | undefined) ?? DEFAULT_ROSTER,
+    }),
     ...bridgeOver,
   }
   return { base, natives, laneSet: () => laneSet, setLaneSet: (next: readonly Definition[]) => { laneSet = Object.freeze(next as Definition[]) }, delegateEntries, walks, closedPlans, events, seat, mkNative }
@@ -512,6 +525,38 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       const movedWiring = unwrap(WIRING.buildTeamOpsWiring(moved.base))
       expect(() => movedWiring.familyRegistrations()).not.toThrow()
       expect(() => movedWiring.familyRegistrations()).toThrow(/PLACEMENT_KEY_MOVED/)
+    })
+  })
+
+  describe('(j) the durable QUERY claim is verified, not trusted (root 20:15)', () => {
+    it('a query target whose root the published roster does not answer is refused before any PA entry', async () => {
+      const w = makeWorld({ durableFacts: WIRING.createTeamRosterFacts({ teamRoot: 'some-OTHER-team', listMemberInstances: () => [] }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const refusal = await refusalOf(defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-facts-root')))
+      expect(refusal.code).toBe('P_B_TEAM_WIRE_CLAIM_UNVERIFIED')
+      expect(w.walks, 'a claim the roster cannot answer never opens a PA question').toHaveLength(0)
+      expect(w.delegateEntries).toHaveLength(0)
+    })
+    it('inspect_config verifies the ADDRESSED instance against the row content; an unknown instance is refused with zero PA entry', async () => {
+      const w = makeWorld({ mounted: ['team_inspect_config'] })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const def = defOf(wiring, 'team_inspect_config')
+      const bad = await refusalOf(def.execute({ ...GOOD_ARGS, targetInstanceId: 'mi-DOES-NOT-EXIST' }, execFor('call-facts-member')))
+      expect(bad.code).toBe('P_B_TEAM_WIRE_CLAIM_UNVERIFIED')
+      expect(w.walks).toHaveLength(0)
+      const good = await def.execute({ ...GOOD_ARGS, targetInstanceId: 'mi-9' }, execFor('call-facts-member-ok'))
+      expect(String(good)).not.toContain('CLAIM_UNVERIFIED')
+      expect(w.walks.length).toBeGreaterThan(0)
+    })
+    it('a world publishing no roster read refuses the query rows at the seat, never admits them blind', async () => {
+      const w = makeWorld({ durableFacts: undefined })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const refusal = await refusalOf(defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-facts-none')))
+      expect(refusal.code).toBe('P_B_TEAM_WIRE_FACTS_ABSENT')
+      expect(w.walks).toHaveLength(0)
+      // The write rows keep their existing behaviour (no label forced onto
+      // them, no new gate): team_delegate still walks its own path.
+      expect(wiring.definitions.some((d) => d.name === 'team_delegate')).toBe(true)
     })
   })
 

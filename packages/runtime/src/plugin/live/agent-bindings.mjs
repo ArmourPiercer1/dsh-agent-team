@@ -369,7 +369,7 @@ import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed
 // assembled by the plane (it owns the real `paAdmit` seat); this assembly
 // owns the PLACEMENT and the post-publish family registration at the shared
 // fill point. No adapter law is restated here.
-import { claimTeamOpsFamily } from './governed-families/team-wiring.mjs'
+import { claimTeamOpsFamily, createTeamRosterFacts } from './governed-families/team-wiring.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
 // A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
@@ -3234,6 +3234,15 @@ export function createAgentBindings(deps) {
           }
           a5TeamOpsInject = Object.freeze({
             providerId: a5TeamOpsCfg.providerId,
+            // ROOT 20:15 ①: the DURABLE roster the seat verifies a query
+            // target against — the published `memberInstances.list` read over
+            // THIS Team's root, the same seam four production sites already
+            // use (:1088 / :2053 / :3563 / :4791). Content-derived (the row's
+            // own instanceId), re-read per call, never a count for identity.
+            durableFacts: createTeamRosterFacts({
+              teamRoot: String(teamRoot),
+              listMemberInstances: () => domain.repositories.memberInstances.list(String(teamRoot)),
+            }),
             // ONE-CAPTURE seam: this member's own selected lane set.
             readNative: (name) => a5TeamOpsNativeByName.get(name),
             // FRESH per-dispatch read of the LIVE lane build, still scoped to
