@@ -64,3 +64,25 @@ A granted window allocates ONE world: ~45.64 MB unique install +
 state ≤ 100 MB + evidence ≤ 100 MB, hard total ≤ 250 MB, on top of the
 already-accounted 141.1 MB of dry predecessors (deletion authority a356
 only; nothing deleted by this lane).
+
+## Sanctioned st_blocks pass (root 23:4x, one read-only stat, (dev,ino)-deduped)
+Caliber: `find <world> -type f -printf "%D %i %b %n"` piped to awk; unique
+inodes counted ONCE; nlink==1 => lane-EXCLUSIVE blocks (×512); nlink>1 =>
+store-SHARED blocks (fixed Host co-owned, NOT charged per world); repeated
+(dev,ino) paths inside one world = internalDupPaths (3,832/installed world,
+first occurrence bucketed by its nlink). The store tree was NOT scanned.
+Per-world (blocks):
+- 7 pre-install worlds: exclusive 589,824-622,592 B each; shared 0.
+- 3 installed worlds: exclusive 46,481,408 / 46,481,408 / 46,489,600 B
+  (584-586 files); store-shared 464,314,368 B each (22,618 files; the same
+  shared bytes re-appear in each listing but are physically allocated once
+  in the shared store, ownership transfer only if store prunes).
+Lane-exclusive TOTAL (blocks) = 140,424,960 B (≈140.4 MB) — matches the
+nlink==1 logical-size 141,136,345 B within 0.7% tail rounding, CONFIRMING
+the earlier figure's substance under proper block accounting.
+WINDOW FIT: next window install exclusive ≈ 46.5 MB blocks + state ≤100 MB
++ evidence ≤100 MB = ≤246.5 MB < 250 MB total budget ⇒ headroom confirmed
+(margin ~3.5 MB worst-case; typical run far below). Disk free at pass:
+10,312,256 KB (~10.3 GB).
+Note: one earlier spot-check confused find's %h (path prefix) with link
+count; corrected field is %n; the shared/exclusive split above uses %n.
