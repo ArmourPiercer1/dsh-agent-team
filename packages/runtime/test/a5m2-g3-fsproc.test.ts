@@ -182,11 +182,112 @@ const launchedPids = new Map<string, number>()
 // its own frame is live and a second world is building.
 let lastAnsweredPid: number | null = null
 
+// FAITHFUL TEST DOUBLE of the REAL pinned-639 session capability. The fixed
+// Host's @deepseek-ai/dsh-terminal-bash EXPORTS LocalPtySession (index.ts:237):
+// initialize() gates startup readiness through the send contract; startSend's
+// done resolves at READINESS/TIMEOUT/CANCEL/SESSION-EXIT with the REAL
+// TerminalSendResult (waitReason is exactly one of 'stdin_read'|'inferred_idle'|
+// 'timeout'|'session_exit'); readOutput answers the REAL TerminalSendRead
+// ({delta,truncated}); cancel() requests SIGINT and returns false after
+// settle; read() answers the REAL TerminalReadResult page
+// (text/totalLines/lineBegin/lineEnd/truncated); signal() answers
+// {delivered:true,targetPgid}; close() awaits handle.terminate(). Production
+// integrators inject the REAL class (factory = (h) => new LocalPtySession(h,
+// resolveConfig(config))); this double MIRRORS the pinned contract — it is not
+// a relabeled handle (the relabel WAS the round-7 defect this replaces).
+function makeFaithfulSessionFactory() {
+  const PROMPT = 'bash-5.2$ '
+  const made: Array<Record<string, unknown>> = []
+  const factory = (handle: {
+    pid: number
+    output: { on: (ev: string, cb: (c: unknown) => void) => void; once: (ev: string, cb: () => void) => void }
+    done: Promise<unknown>
+    write: (d: string) => Promise<void>
+    signalForeground: (s: string) => Promise<number>
+    terminate: () => Promise<void>
+  }, _launchSpec: Record<string, unknown>) => {
+    let statusValue: Record<string, unknown> = { kind: 'running' }
+    let motdValue = ''
+    let closing: Promise<void> | null = null
+    const lines: string[] = []
+    let partial = ''
+    let tail = ''
+    handle.output.on('data', (chunk) => {
+      const text = String(chunk)
+      tail = (tail + text).slice(-8192)
+      partial += text
+      for (;;) { const nl = partial.indexOf('\n'); if (nl < 0) break; lines.push(partial.slice(0, nl)); partial = partial.slice(nl + 1) }
+    })
+    handle.done.then(() => { statusValue = { kind: 'exited', exitCode: 0, signal: null } }, () => { statusValue = { kind: 'exited', exitCode: null, signal: 'SIGKILL' } })
+    const session: Record<string, unknown> = {
+      pid: handle.pid,
+      get motd() { return motdValue },
+      status: () => statusValue,
+      startSend(request: { text?: string; submit?: boolean }) {
+        const text = String(request?.text ?? '')
+        const submit = request?.submit !== false
+        const line = submit && !text.endsWith('\n') ? `${text}\n` : text
+        const mark = tail.length
+        let settled = false
+        let settle: (r: Record<string, unknown>) => void = () => {}
+        const done = new Promise<Record<string, unknown>>((resolve) => { settle = resolve })
+        const finish = (waitReason: string) => {
+          if (settled) return
+          settled = true
+          settle({ viewport: tail.slice(-4096), waitReason, sessionStatus: statusValue, truncated: false })
+        }
+        const writePromise = handle.write(line).catch(() => undefined)
+        void writePromise
+        if (submit && text.trim() === 'exit') {
+          void handle.done.then(() => { finish('session_exit') })
+        } else {
+          setTimeout(() => { void writePromise.then(() => { finish(tail.slice(mark).includes(PROMPT) ? 'stdin_read' : 'inferred_idle') }) }, 2)
+        }
+        let readPos = mark
+        return {
+          done,
+          readOutput: () => { const delta = tail.slice(readPos); readPos = tail.length; return { delta, truncated: false } },
+          cancel: () => { if (settled) return false; void handle.signalForeground('SIGINT'); finish('inferred_idle'); return true },
+        }
+      },
+      read: (request: { offset?: number; count?: number }) => {
+        const offset = request?.offset ?? 0
+        const count = request?.count ?? lines.length
+        const total = lines.length
+        const lineBegin = Math.min(offset, total)
+        const lineEnd = Math.min(offset + Math.max(count, 0), total)
+        const page = lines.slice(total - lineEnd, total - lineBegin)
+        return { text: page.join('\n'), totalLines: total, lineBegin, lineEnd, truncated: false }
+      },
+      signal: async (sig: string) => { const targetPgid = await handle.signalForeground(sig); return { delivered: true as const, targetPgid } },
+      close: async () => {
+        if (closing !== null) return closing
+        closing = (async () => { await handle.terminate(); if (String(statusValue?.kind ?? '') === 'running') statusValue = { kind: 'exited', exitCode: null, signal: 'SIGTERM' } })()
+        return closing
+      },
+      initialize: async (signal?: AbortSignal) => {
+        const op = (session as { startSend: (r: Record<string, unknown>) => { done: Promise<Record<string, unknown>> } }).startSend({ text: '', submit: false, ...(signal !== undefined ? { signal } : {}) })
+        const result = await op.done
+        if (result.waitReason === 'session_exit') throw new Error('PTY shell exited during startup')
+        if (result.waitReason === 'timeout') throw new Error('PTY shell did not reach readiness before startup timeout')
+        motdValue = String(result.viewport ?? '')
+      },
+    }
+    made.push(session)
+    return session
+  }
+  return { factory, made }
+}
+
 function makeTerminalHandle(pid: string) {
   // the REAL handle contract: output is a Node Readable (the provider
   // delivers bytes in order; it ENDS when the terminal exits) — faithful
   // consumption needs the real stream, not a stand-in
   const output = new NodeReadable({ read() {} })
+  // faithful: an interactive shell (`--noprofile --norc -i`) PRINTS a prompt
+  // at startup — the REAL session's initialize() readiness consumes exactly
+  // this output through the send contract; the double emits it too
+  queueMicrotask(() => { if (!terminated) output.push('bash-5.2$ ') })
   let exit: (v: Record<string, unknown>) => void = () => {}
   const done = new Promise<Record<string, unknown>>((resolve) => { exit = resolve })
   const writes: string[] = []
@@ -393,7 +494,7 @@ async function makeNative(name: string, parameters: Record<string, unknown>, beh
 
 /** The terminals-service CURRENT-facts double (§5.1 seam): the arm's target
  *  identity comes ONLY from here — mutable so drift legs are measurable. */
-function makePtyService(seedPerOpen = true) {
+function makePtyService(seedPerOpen = true, planSeed: Record<string, unknown> = {}) {
   const backends = new Map<string, { registrationId: string; incarnation: string; processEnvelope: string }>([
     ['shell', { registrationId: 'reg-shell-1', incarnation: 'backend-inc-1', processEnvelope: 'env-pty-default' }],
   ])
@@ -402,7 +503,7 @@ function makePtyService(seedPerOpen = true) {
   // this exact call — the plan the per-open one-shot registerBackend
   // registration will actually pin into SubprocessRuntime.spawnTerminal.
   // seedPerOpen=false models the UNANSWERABLE seam (refusal legs).
-  const seedPlan = { executable: '/approved/bin/bash', cwd: '/approved/workspace', env: { TERM: 'dumb' }, rows: 24, cols: 80, graceMs: 5_000, terminalType: 'dumb' }
+  const seedPlan = { executable: '/approved/bin/bash', cwd: '/approved/workspace', env: { TERM: 'dumb' }, rows: 24, cols: 80, graceMs: 5_000, terminalType: 'dumb', ...planSeed }
   let perOpenAnswer: ((callId: string) => { plan: Record<string, unknown>; envelopeDigest?: string } | null) | null =
     seedPerOpen
       ? null
@@ -1310,7 +1411,17 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         sessions.get(sessionId)!.pid = launchedPid
         launchedPids.set(sessionId, launchedPid)
         ;(sessions.get(sessionId) as Record<string, unknown>).__backendSession = backendSession
-        return { sessionId, ...(request.name !== undefined ? { name: request.name } : {}), type: String(request.type), pid: launchedPid, status: 'running', motd: '$ ' }
+        // THE REAL service reply: snapshot(record, session.motd) — pid and
+        // status are READ FROM THE REAL SESSION (service index.ts:186-197);
+        // the double passes its facts through, no constants
+        return {
+          sessionId,
+          ...(request.name !== undefined ? { name: request.name } : {}),
+          type: String(request.type),
+          pid: launchedPid,
+          status: typeof (backendSession as { status?: () => unknown })?.status === 'function' ? (backendSession as { status: () => unknown }).status() : { kind: 'running' },
+          motd: String((backendSession as { motd?: string })?.motd ?? ''),
+        }
       },
       startSend: (owner: Record<string, unknown>, id: string, request: Record<string, unknown>) => {
         const rec = live(id, owner)
@@ -1328,7 +1439,11 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         return {
           done,
           readOutput: () => ({ delta: '', truncated: false }),
-          cancel: () => { settle({ viewport: '^C', waitReason: 'cancelled', sessionStatus: 'running', truncated: false }); return true },
+          // THE REAL law (session.ts): cancel REQUESTS SIGINT and done
+          // settles with a REAL TerminalSendResult — 'cancelled' is NOT a
+          // TerminalWaitReason ('stdin_read'|'inferred_idle'|'timeout'|
+          // 'session_exit' only); SIGINT evidence settles 'inferred_idle'
+          cancel: () => { settle({ viewport: '^C', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false }); return true },
         }
       },
       read: (owner: Record<string, unknown>, id: string, request?: Record<string, unknown>) => {
@@ -1338,20 +1453,19 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         const answered = typeof bs?.read === 'function' ? bs.read(request ?? {}) : null
         // this world's retained scrollback for a service session with no
         // captured output yet — the double's canned SERVICE answer
-        if (answered === null || answered.text === '') return { text: 'make: nothing to be done\n', truncated: false, oldest: 0, newest: 4 }
+        if (answered === null || answered.text === '') return { text: 'make: nothing to be done\n', totalLines: 1, lineBegin: 0, lineEnd: 1, truncated: false }
         return answered
       },
       signal: async (owner: Record<string, unknown>, id: string, signal: string) => {
         const rec = live(id, owner)
         log.push(`signal:${id}:${signal}`)
-        const bs = (rec as Record<string, unknown>).__backendSession as { signal?: (sig: string) => Promise<unknown> }
-        if (typeof bs?.signal === 'function') {
-          const answered = await bs.signal(signal)
-          return typeof answered === 'number' ? { deliveredTo: answered } : (answered as Record<string, unknown>)
-        }
+        const bs = (rec as Record<string, unknown>).__backendSession as { signal?: (sig: string) => Promise<Record<string, unknown>> }
+        // THE REAL service signal is a PURE PASS-THROUGH of the session's
+        // TerminalSignalResult {delivered:true,targetPgid} (service index.ts)
+        if (typeof bs?.signal === 'function') return await bs.signal(signal)
         // SEEDED service session: the SERVICE answers with the session's
         // REAL process group — the record's pid (faithful, not a constant)
-        return { deliveredTo: Number((rec as { pid?: number }).pid ?? 0) }
+        return { delivered: true, targetPgid: Number((rec as { pid?: number }).pid ?? 0) }
       },
       kill: async (owner: Record<string, unknown>, id: string) => {
         const rec = sessions.get(id)
@@ -1372,7 +1486,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     }
   }
 
-  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; deferredSpawn?: boolean; autoSettleSend?: unknown } = {}) {
+  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; noSessionCapability?: boolean; startupFails?: boolean; openPlan?: Record<string, unknown>; deferredSpawn?: boolean; autoSettleSend?: unknown } = {}) {
     const terminals = makeTerminalsDouble({ autoSettleSend: deps.autoSettleSend })
     const binding = makeBinding()
     const natives = {} as Record<TerminalName, NativeDouble>
@@ -1390,7 +1504,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     // the port is even consulted — the leg below therefore measures the
     // UNANSWERED-HANDLE edge on the rows that reach prepare (send/read/
     // close) and the classify-time governed-target refusal for open.
-    const ptyBridge = makePtyService(deps.brokenPort !== true)
+    const ptyBridge = makePtyService(deps.brokenPort !== true, deps.openPlan ?? {})
     const tracked = makePtyService() // static seed facts (pty-1..pty-10)
     const minted = new Map<string, { incarnation: string; status: string; envelope: string }>()
     const ptyService = {
@@ -1429,6 +1543,25 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         return h
       },
     }
+    // THE REAL session capability for this world: the faithful pinned-
+    // contract factory (production injects the REAL LocalPtySession from
+    // @deepseek-ai/dsh-terminal-bash itself); the startup-failure world
+    // injects a factory whose initialize REJECTS the same way the real
+    // class rejects when the shell never reaches readiness.
+    const faithful = makeFaithfulSessionFactory()
+    const startupHandles: Array<{ handle: Record<string, unknown>; terminateCalls: number }> = []
+    const sessionFactory = deps.noSessionCapability === true
+      ? undefined
+      : deps.startupFails === true
+        ? async (handle: Record<string, unknown>) => {
+            const rec: { handle: Record<string, unknown>; terminateCalls: number } = { handle, terminateCalls: 0 }
+            startupHandles.push(rec)
+            const orig = (handle as { terminate: () => Promise<void> }).terminate
+            ;(handle as { terminate: () => Promise<void> }).terminate = async () => { rec.terminateCalls += 1; await orig() }
+            const inner = await Promise.resolve(faithful.factory(handle as never, {}))
+            return { ...inner, initialize: async () => { throw new Error('PTY shell did not reach readiness before startup timeout') } }
+          }
+        : faithful.factory
     const controlPort = deps.brokenPort === true
       ? { name: 'broken', prepare: async () => null }
       : G3.createHostTerminalControlPort({
@@ -1437,6 +1570,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
           jobs: deps.jobs ?? null,
           ownerSessionId: (agentId: string) => `session-${String(agentId)}`,
           ...(subprocess === null ? {} : { subprocess }),
+          ...(sessionFactory !== undefined ? { sessionFactory } : {}),
           approvedOpenPlan: (callId: string) => ptyService.approvedOpenPlan(callId),
         })
     const arms = G3.createGovernedTerminalArms({
@@ -1447,7 +1581,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
       providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
       bindingFacts: binding.read,
     })
-    return { arms, natives, binding, terminals, ptyService, gate: deferredGate, launches, subprocess, ptyBridge }
+    return { arms, natives, binding, terminals, ptyService, gate: deferredGate, launches, subprocess, ptyBridge, sessionFactory, startupHandles }
   }
 
   it('§5.1 GOVERNANCE CORE (REAL ROUTE): classify admits the APPROVED CONTROLLED OPEN PLAN; the open runs through the PER-OPEN one-shot registerBackend registration (unique internal type, disposed after publication — 注销不等终止) and the CONTROLLED spawnTerminal capability with the plan PINNED; without the capability the port REFUSES; native-shaped status/sessionId ride the answer', async () => {
@@ -1519,6 +1653,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
       terminals: w.terminals,
       resolveOwner: (exec: Record<string, unknown>) => (exec as { agent?: unknown }).agent ?? null,
       subprocess: w.subprocess,
+      sessionFactory: w.sessionFactory,
       approvedOpenPlan: () => { moved2.turn() ; return w.ptyBridge.approvedOpenPlan('claim-move') },
     })
     const prepped = await (port as unknown as { prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }).prepare({
@@ -1541,7 +1676,9 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const w = await handleWorld()
     const { x } = await runPass(w.arms.terminal_open, w.binding, { type: 'shell', name: 'build' }, 'h-open')
     expect(x.ok, JSON.stringify(x).slice(0, 240)).toBe(true)
-    expect(x.value).toMatchObject({ outcome: 'opened', sessionId: 'pty-svc-90', motd: '$ ' })
+    // motd is the REAL initialize() viewport: what the shell actually
+    // printed at readiness (the faithful prompt), not a canned constant
+    expect(x.value).toMatchObject({ outcome: 'opened', sessionId: 'pty-svc-90', motd: 'bash-5.2$ ' })
     // FAITHFUL publication: the snapshot pid IS the backend session's own
     // pid (types.ts: the snapshot carries the backend's pid, not a constant)
     expect(Number((x.value as Record<string, unknown> | undefined)?.pid)).toBeGreaterThan(0)
@@ -1611,12 +1748,12 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     // The real service settles `done` on readiness/timeout/exit; this world
     // drives the committed-value shape with an auto-settling operation —
     // same TerminalSendOperation contract.
-    const w = await handleWorld({ autoSettleSend: { viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false } })
+    const w = await handleWorld({ autoSettleSend: { viewport: '>>> ', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false } })
     const record: string[] = (w.terminals as unknown as { log: string[] }).log
     const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'python3\n', submit: true }, 'h-send-2')
     expect(x.ok).toBe(true)
     // THE COMMITTED VALUE IS THE HANDLE'S ANSWER — not a re-shaped echo:
-    expect(x.value).toEqual({ viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false })
+    expect(x.value).toEqual({ viewport: '>>> ', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false })
     expect(w.natives.terminal_send.calls.length).toBe(0)
     expect(record).toEqual(['send:pty-1:python3\n:true'])
   })
@@ -1632,7 +1769,11 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const read = await runPass(w.arms.terminal_read, w.binding, { sessionId, count: 10 }, 'h-r1')
     expect(read.x.value).toMatchObject({ text: 'make: nothing to be done\n' })
     const sig = await runPass(w.arms.terminal_signal, w.binding, { sessionId, signal: 'SIGINT' }, 'h-s1')
-    expect(Number((sig.x.value as { deliveredTo?: number }).deliveredTo)).toBeGreaterThan(0) // the REAL foreground group of THIS session's backend answered
+    // THE REAL TerminalSignalResult: {delivered:true,targetPgid} (types.ts
+    // TerminalSignalResult; session.ts signal: {delivered:true,targetPgid}
+    // from signalForeground) — the fabricated {deliveredTo} shape is GONE
+    expect(sig.x.value).toMatchObject({ delivered: true })
+    expect(Number((sig.x.value as { targetPgid?: number }).targetPgid)).toBeGreaterThan(0) // the REAL foreground group of THIS session's backend answered
     const list = await runPass(w.arms.terminal_list, w.binding, {}, 'h-l1')
     expect(Array.isArray(list.x.value)).toBe(true)
     // THEN TERMINATE: the service kill word, answered honestly twice.
@@ -1707,7 +1848,8 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         return {
           done: operationDone,
           readOutput: () => ({ delta: 'out', truncated: false }),
-          cancel: () => { log.push('operation.cancel'); settleOperation({ viewport: '^C', waitReason: 'cancelled', sessionStatus: 'running', truncated: false }); return true },
+          // REAL law: cancel -> SIGINT -> 'inferred_idle' settle word
+          cancel: () => { log.push('operation.cancel'); settleOperation({ viewport: '^C', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false }); return true },
         }
       },
       read: () => ({ text: '', truncated: false, oldest: 0, newest: 0 }),
@@ -1750,7 +1892,14 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const termWord = await handle.terminate()
     expect(killed).toEqual([['job-pty-send-9', `session-${AGENT_ID}`]]) // OWNER-CHECKED kill(id, caller)
     expect(termWord).toMatchObject({ kill: 'requested' })
-    expect((termWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ status: 'killed' }) // the AWAITED real JobOutcome (cancelled → killed)
+    // THE AWAITED real JobOutcome under the REAL waitReason law: a bg
+    // cancel's operation settles with a REAL TerminalSendResult — there is
+    // NO 'cancelled' TerminalWaitReason, so the outcome's truth rides in
+    // detail/waitReason (SIGINT evidence = 'inferred_idle'). The port's
+    // former 'cancelled'->'killed' branch is DEAD CODE under the real
+    // contract; the final outcome-mapping word for bg/jobs is the g3a
+    // cf8e0202 block (boundary delta reported, not rewritten here).
+    expect((termWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ status: 'completed', detail: 'waitReason: inferred_idle', result: '^C' })
     // FOREGROUND SEND TERMINATION: operation.cancel; the PTY is NEVER killed;
     // the awaited TerminalSendResult is the word.
     const fgPrepped = await port.prepare({
@@ -1763,7 +1912,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const fgHandle = fgPrepped.handle as { terminate: () => Promise<Record<string, unknown>> }
     const fgWord = await fgHandle.terminate()
     expect(fgWord).toMatchObject({ cancelled: true })
-    expect((fgWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ waitReason: 'cancelled' })
+    expect((fgWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ waitReason: 'inferred_idle', sessionStatus: { kind: 'running' } })
     expect(log.filter((l) => l.startsWith('service.kill')).length).toBe(0) // cancelling an async send NEVER kills the persistent PTY
   })
 
@@ -1804,6 +1953,62 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(viaDelegate.x.ok).toBe(true)
     expect(wDelegate.natives.terminal_list.calls.length).toBe(1) // the captured body executed
     expect(viaDelegate.x.value).not.toEqual(viaHandle.x.value) // the answers DIFFER by construction
+  })
+
+  // ─── round-8 PTY law closure (root 16:2x/16:38, g3b service layer) ───
+  it('NORMALIZE BEFORE DIGEST: the approved digest covers the CANONICAL launch envelope (executable->argv, request cwd override, terminalType default) and the spawn receives EXACTLY the digested form — no post-digest mutation, no spawn-then-refuse', async () => {
+    // the plan carries NO terminalType and the REQUEST carries a cwd: the
+    // round-7 defect digested {cwd:plan.cwd, terminalType:null} then
+    // SPAWNED {cwd:request.cwd, terminalType:'dumb'} — a mutation AFTER
+    // approval. The law now: canonicalize first, digest the canonical,
+    // spawn the canonical.
+    const w = await handleWorld({ openPlan: { terminalType: undefined } })
+    const pass = await runPass(w.arms.terminal_open, w.binding, { type: 'shell', cwd: '/req/approved' }, 'norm-1')
+    expect(pass.x.ok).toBe(true)
+    expect((pass.x.value as Record<string, unknown>).outcome).toBe('opened')
+    expect(w.launches.length).toBe(1)
+    // the spec the controlled capability ACTUALLY received is the
+    // canonical approved envelope: argv resolved from executable, the
+    // REQUEST cwd already applied, 'dumb' already applied
+    expect(w.launches[0]).toMatchObject({
+      argv: ['/approved/bin/bash'],
+      cwd: '/req/approved',
+      env: { TERM: 'dumb' },
+      rows: 24, cols: 80, graceMs: 5000,
+      terminalType: 'dumb',
+    })
+    // and the post-spawn envelope recheck matched the approved digest
+    // (no ENVELOPE_DRIFT): digest-spawn equality holds on the SAME
+    // canonical shape — proven by the pass above plus zero cleanup words
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill')).length).toBe(0)
+  })
+
+  it('REAL SESSION CAPABILITY REQUIRED: a mount without deps.sessionFactory refuses the open BEFORE any effect — NO registration spawn, NO handle — and names the seam (pinned 639 terminal-bash LocalPtySession); no adapter shim is substituted', async () => {
+    const w = await handleWorld({ noSessionCapability: true })
+    const refused = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'nosec-1')
+    expect(refused.x.code).toBe('P_TERM_OPEN_SESSION_CAPABILITY_ABSENT')
+    expect(String((refused.x as Record<string, unknown>).detail)).toMatch(/LocalPtySession/)
+    expect(w.launches.length).toBe(0) // zero spawn: refused before the first await
+    expect(w.terminals.log.filter((l: string) => l.startsWith('spawn')).length).toBe(0)
+    expect(w.natives.terminal_open.calls.length).toBe(0) // the captured body never ran
+  })
+
+  it('STARTUP READINESS IS THE REAL LAW AND ITS FAILURE IS STARTED-AND-CLEANED: initialize() rejecting cleans the UNPUBLISHED handle to AWAITED quiescence before publication — typed refusal, zero published session, and NOT a zero-effect word', async () => {
+    const w = await handleWorld({ startupFails: true })
+    const refused = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'startup-1')
+    expect(refused.x.code).toBe('P_TERM_OPEN_STARTUP_FAILED')
+    // the effect STARTED (the controlled spawn ran) and was CLEANED: the
+    // handle reached awaited terminate BEFORE any publication — an
+    // honest started-and-cleaned, never zero-effect, never a session
+    expect(w.launches.length).toBe(1)
+    expect(w.startupHandles.length).toBe(1)
+    expect(w.startupHandles[0]?.terminateCalls).toBe(1)
+    // ZERO PUBLICATION, MEASURED: the route reached the service spawn, but
+    // the service's publication (sessions.set AFTER backend.spawn resolved)
+    // never ran — the integrator's session-facts feed knows NO session
+    expect(w.terminals.log.some((l: string) => l.startsWith('spawn:dsh-g3-po-startup-1'))).toBe(true) // the PER-OPEN route type reached the service
+    expect(w.ptyService.session(AGENT_ID, 'pty-svc-90')).toBeNull()
+    expect(String((refused.x as Record<string, unknown>).detail)).toMatch(/started-and-cleaned/)
   })
 })
 
