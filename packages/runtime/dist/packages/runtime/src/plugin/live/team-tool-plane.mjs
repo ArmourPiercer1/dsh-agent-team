@@ -2289,7 +2289,25 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // other argument crosses the approval line.
       const ran = await arm.execute(classified.plan, { consumed: true, grant: proof.grant, signal })
       if (ran.ok !== true) {
-        throw new Error(`refused-write ${ran.code ?? 'P_WRITE_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the closure'}`)
+        // Error protocol (root ruling @10:25, the 2291 follow-up): the row's
+        // refusal surface to the caller — and the ONLY string the model ever
+        // reads — is the plain Error MESSAGE, so the arm's structured risk
+        // facts from `mapClosureRefusal` (cfClass / cfReason /
+        // sideEffectPossible: the closed C-FS classes riding `cfsDenial`
+        // details) ride this message VERBATIM. Dropping them meant the most
+        // consequential refusal class — a possible side effect past the
+        // truncation edge — arrived stripped of exactly its classification.
+        // Same Error, same protocol: no new code, no new gate, nothing for
+        // the row to decide — only facts it already received, delivered.
+        const risk = []
+        if (typeof ran.cfClass === 'string') risk.push(`cf-class=${ran.cfClass}`)
+        if (typeof ran.cfReason === 'string') risk.push(`cf-reason=${ran.cfReason}`)
+        if (ran.sideEffectPossible === true) risk.push('side-effect-possible=true')
+        const error = new Error(`refused-write ${ran.code ?? 'P_WRITE_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the closure'}${risk.length > 0 ? ` · ${risk.join(' · ')}` : ''}`)
+        if (typeof ran.cfClass === 'string') error.cfClass = ran.cfClass
+        if (typeof ran.cfReason === 'string') error.cfReason = ran.cfReason
+        if (ran.sideEffectPossible === true) error.sideEffectPossible = true
+        throw error
       }
       return ran.value
       } finally {

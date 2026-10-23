@@ -731,7 +731,16 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     const running = swapDef.execute({ file_path: 'notes.txt', content: 'swapped\n' }, execFor('call-swap', []))
     const row = await waitRowForCall(`plane-write:${swapPlane.realmId}-1`)
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
-    await expect(running).rejects.toThrow(/instance root stands at[\s\S]*ANCHOR law|ANCHOR law.*instance root/i)
+    const failure = await running.then(() => null, (error) => error)
+    if (failure === null) throw new Error('the swapped-root write must refuse')
+    expect(String(failure.message)).toMatch(/instance root stands at[\s\S]*ANCHOR law|ANCHOR law.*instance root/i)
+    // structured risk rides the row's error IN-BAND (root ruling @10:25): the
+    // closed C-FS class + reason from `cfsDenial` reach the caller through
+    // the plain Error message (the only model-facing surface) — verified
+    // end-to-end here, not only at the arm.
+    expect(String(failure.message)).toContain('cf-class=denied · cf-reason=outside-anchor')
+    expect(failure.cfClass).toBe('denied')
+    expect(failure.cfReason).toBe('outside-anchor')
     // ZERO FS at BOTH stands: the approved root (A) keeps its bytes and the
     // swapped root (B) still holds the SENTINEL — the write never followed
     // the re-pointed root to B's existing file (a pass here can only mean
