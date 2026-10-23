@@ -1,0 +1,3 @@
+packages/runtime/web-gateway/src/index.ts(294,61): error TS2304: Cannot find name 'sig'.
+packages/runtime/web-gateway/src/index.ts(313,147): error TS2304: Cannot find name 'sig'.
+EXIT=2

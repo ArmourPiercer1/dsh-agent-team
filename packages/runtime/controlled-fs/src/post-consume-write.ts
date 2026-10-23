@@ -17,7 +17,9 @@
  * single-flights (P3): the claim is taken SYNCHRONOUSLY before the first
  * await; in-flight AND settled repeat claims are refused with zero FS.
  *
- * Write law (P2): `O_WRONLY | O_CREAT | O_NOFOLLOW` — NO `O_TRUNC`. The
+ * Write law (P2): the open is `O_WRONLY | O_NOFOLLOW` — NO `O_TRUNC`,
+ * NO `O_CREAT` (name follows the code: the root review caught this early
+ * wording drift; the code shape below is the truth). The
  * approved-root agreement (a comparison baseline this file NEWLY owns: the
  * instance root's CURRENT realpath must equal the plan's approved root real
  * identity — a root/ancestor swap makes the instance stand elsewhere, which
@@ -67,6 +69,15 @@
  * parent-identity checks below are retained as defense-in-depth for the
  * EXISTING-target path (they refuse swapped parents before any open), not
  * as a creation license.
+ *
+ * MAINTAINED SCOPE (root review, do not overclaim): (a) the new-file path
+ * stays HELD pending the root ruling on the limitation report above; (b)
+ * this module is NOT yet created by any production path — the real
+ * final-edge assembly (paAdmitEdge → closure construction) is unwired in
+ * this commit and its proof belongs to the integration owner; (c) the
+ * helper-verified windows (root realpath, fd identity) ride a RESTRICTED
+ * deployment under the governed root — this is NOT physical safety for an
+ * arbitrary mutable directory tree (no openat2 today, law 4).
  *
  * @module packages/runtime/controlled-fs/src/post-consume-write
  */
@@ -386,8 +397,21 @@ export function createPostConsumeWriteClosure(
             { sideEffectPossible: true },
           ))
         }
+        // The write LOOPS until the full UTF-8 length has landed: a short
+        // write (bytesWritten < requested) is NOT completion. Once
+        // truncation has run, any failure or stall in this loop means
+        // PARTIAL BYTES MAY HAVE LANDED — undetermined, sideEffectPossible
+        // true, never a success report and never a "zero side effect".
         try {
-          await handle.write(frozenPlan.content)
+          const payload = Buffer.from(frozenPlan.content, 'utf8')
+          let offset = 0
+          while (offset < payload.length) {
+            const { bytesWritten } = await handle.write(payload, offset, payload.length - offset)
+            if (typeof bytesWritten !== 'number' || bytesWritten <= 0) {
+              throw Object.assign(new Error('the write made no progress'), { code: 'EIO' })
+            }
+            offset += bytesWritten
+          }
         } catch (err) {
           return settle(cfsUndetermined(
             'write-side-effect-unconfirmed',

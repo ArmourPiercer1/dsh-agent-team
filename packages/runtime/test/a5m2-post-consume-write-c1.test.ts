@@ -29,6 +29,7 @@ import {
   existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync,
   symlinkSync, writeFileSync, readFileSync, realpathSync,
 } from 'node:fs'
+import { open as fsOpenProbe } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 
@@ -48,6 +49,17 @@ function mkWorld(name: string): { root: string; outside: string } {
 
 function isEmptyDir(dir: string): boolean {
   return readdirSync(dir).length === 0
+}
+
+// Node 24 exposes no FileHandle class by name — the prototype is taken from
+// a REAL handle instance (the same object the closure uses; all handles
+// share it), so the interception below is the real seam.
+type HandleWriteFn = (buffer: Uint8Array, offset?: number, length?: number, position?: number | null) => Promise<{ bytesWritten: number; buffer: Uint8Array }>
+async function handlePrototype(dir: string): Promise<{ write: HandleWriteFn }> {
+  const probe = await fsOpenProbe(path.join(dir, '.probe'), 'w')
+  const proto = Object.getPrototypeOf(probe) as { write: HandleWriteFn }
+  await probe.close()
+  return proto
 }
 
 // ── TOCTOU timing: what this Node (v24) ACTUALLY admits (measured, not
@@ -292,6 +304,103 @@ describe('a5m2 post-consume write closure — state C + the P-laws on the existi
     // branch (C failure) has no forceable injection seam at this level;
     // it rides the existing lane law
     // `cfsUndetermined('write-side-effect-unconfirmed', { sideEffectPossible: true })` verbatim.
+  })
+
+  it('T-C2 multi-byte content: success means the BYTE COUNT equals the UTF-8 length (loop completion, not one-call luck)', async () => {
+    const w = mkWorld('c2')
+    writeFileSync(path.join(w.root, 't.txt'), 'OLD\n')
+    const content = 'héllo — 世界 🌍 multi-byte ✓\n'
+    const closure = createPostConsumeWriteClosure(
+      mkPlan(w.root, 't.txt', content),
+      { parametersFingerprint: 'fp-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(true)
+    if (!r.ok) throw new Error('unreachable')
+    const landed = readFileSync(path.join(w.root, 't.txt'))
+    expect(landed.length).toBe(Buffer.byteLength(content, 'utf8'))
+    expect(landed.toString('utf8')).toBe(content)
+    expect(r.value.writtenFingerprint).toBe(sha(content))
+  })
+
+  it('T-C3 TRUE short write (FileHandle.prototype.write really intercepted): partial bytes land, second round fails — NEVER a success, reports sideEffectPossible true', async () => {
+    const w = mkWorld('c3')
+    writeFileSync(path.join(w.root, 't.txt'), 'PRE-EXISTING-LONG-ORIGINAL\n')
+    const content = 'AAAABBBBCCCCDDDD' // 16 utf-8 bytes; round one writes 8
+    const proto = await handlePrototype(w.root)
+    const real = proto.write
+    let calls = 0
+    try {
+      proto.write = async function (
+        this: unknown,
+        buffer: Uint8Array,
+        offset?: number,
+        length?: number,
+        position?: number | null,
+      ) {
+        calls += 1
+        if (calls === 1) {
+          // REAL short write: half the requested bytes land on disk via
+          // the genuine syscall; the returned bytesWritten is real.
+          const half = Math.max(1, Math.floor((length ?? buffer.length) / 2))
+          return await real.call(this as never, buffer, offset ?? 0, half, position)
+        }
+        throw Object.assign(new Error('injected post-short-write failure'), { code: 'EIO' })
+      }
+      const closure = createPostConsumeWriteClosure(
+        mkPlan(w.root, 't.txt', content),
+        { parametersFingerprint: 'fp-plan-1' },
+        { instanceRootDir: w.root },
+      )
+      const r = await closure.write()
+      // ① not success while the plan bytes have not all landed
+      expect(r.ok).toBe(false)
+      if (r.ok) throw new Error('unreachable')
+      // ② truncation + partial bytes DID land: undetermined, honest flag
+      expect(r.error.code).toBe('EXECUTION_TERMINATION_UNCONFIRMED')
+      expect(r.error.details?.['cfReason']).toBe('write-side-effect-unconfirmed')
+      expect(r.error.details?.['sideEffectUnknown']).toBe(true)
+      const landed = readFileSync(path.join(w.root, 't.txt'))
+      expect(landed.length).toBe(8) // exactly the half that really landed
+      expect(landed.toString('utf8')).toBe('AAAABBBB')
+      expect(calls).toBe(2)
+    } finally {
+      proto.write = real
+    }
+  })
+
+  it('T-C4 the loop completes across repeated REAL short writes: full UTF-8 bytes land, success is honest', async () => {
+    const w = mkWorld('c4')
+    writeFileSync(path.join(w.root, 't.txt'), 'X\n')
+    const content = '0123456789abcdefghij' // 20 bytes, each call lands at most 6
+    const proto = await handlePrototype(w.root)
+    const real = proto.write
+    try {
+      proto.write = async function (
+        this: unknown,
+        buffer: Uint8Array,
+        offset?: number,
+        length?: number,
+        position?: number | null,
+      ) {
+        const capped = Math.min(length ?? buffer.length, 6)
+        return await real.call(this as never, buffer, offset ?? 0, capped, position)
+      }
+      const closure = createPostConsumeWriteClosure(
+        mkPlan(w.root, 't.txt', content),
+        { parametersFingerprint: 'fp-plan-1' },
+        { instanceRootDir: w.root },
+      )
+      const r = await closure.write()
+      expect(r.ok).toBe(true)
+      if (!r.ok) throw new Error('unreachable')
+      const landed = readFileSync(path.join(w.root, 't.txt'))
+      expect(landed.length).toBe(Buffer.byteLength(content, 'utf8'))
+      expect(landed.toString('utf8')).toBe(content)
+    } finally {
+      proto.write = real
+    }
   })
 
   it('T-P1 no post-approval substitution: the write takes ZERO parameters, extra arguments cannot change the frozen bytes', async () => {

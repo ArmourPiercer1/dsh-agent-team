@@ -1,0 +1,88 @@
+ M dev/agent-workflow/evidence/alpha5/a5ie-r2b/a5ie-r2b-kit.mjs
+ M dev/agent-workflow/evidence/alpha5/m2-todo/README.md
+ M dev/agent-workflow/evidence/alpha5/m2-todo/p-takeover-proposal.md
+ M dev/agent-workflow/evidence/alpha5/m2-web/README.md
+ M dev/agent-workflow/evidence/alpha5/m2-web/m2w-c1-runner.mjs
+ M dev/agent-workflow/evidence/alpha5/m2-write/README.md
+ M docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
+ M docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+ M packages/runtime/control/types.ts
+ M packages/runtime/dist/packages/runtime/src/plugin/host.d.ts.map
+ M packages/runtime/dist/packages/runtime/src/plugin/host.js
+ M packages/runtime/dist/packages/runtime/src/plugin/host.js.map
+ M packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+ M packages/runtime/dist/packages/tools/a5p5-tools/src/index.d.ts
+ M packages/runtime/dist/packages/tools/a5p5-tools/src/index.d.ts.map
+ M packages/runtime/dist/packages/tools/a5p5-tools/src/index.js
+ M packages/runtime/dist/packages/tools/a5p5-tools/src/index.js.map
+ M packages/runtime/operation-permission/pa-control-bridge.ts
+ M packages/runtime/src/plugin/host.ts
+ M packages/runtime/src/plugin/live/agent-bindings.mjs
+ M packages/runtime/test/a5-m1-auth-bridge.test.ts
+ M packages/runtime/test/a5-m2-todo-write-c1.test.ts
+ M packages/runtime/tsconfig.build.json
+ M packages/testkit/test/a5-current-contract.test.ts
+ M packages/testkit/test/p4t6-session-event-scan.test.ts
+ M packages/tools/a5p5-tools/src/write-slice.ts
+ M packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts
+ M scripts/audit-a5-tool-governance-imports.mjs
+ M scripts/ci-pr-gate.mjs
+ M scripts/place-dist-glue.mjs
+?? dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261023T065454Z-3-1.json
+?? dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261023T070322Z-5-1.json
+?? dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261023T070322Z-5-2.json
+?? dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261023T070322Z-5.json
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/a5ie-r2b-kit.before-86364b07.mjs
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/a5ie-r2b-kit.before-9719e5d9.mjs
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-06-10Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-10-24Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-20-49Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-26-38Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-31-02Z/
+?? dev/agent-workflow/evidence/alpha5/fs-proc-read/
+?? dev/agent-workflow/evidence/alpha5/m2-ci-phase-status/
+?? dev/agent-workflow/evidence/alpha5/m2-readimg/
+?? dev/agent-workflow/evidence/alpha5/m2-todo/pre-fix/
+?? dev/agent-workflow/evidence/alpha5/m2-todo/runs/2026-10-23T07-14-09Z/
+?? dev/agent-workflow/evidence/alpha5/m2-todo/runs/2026-10-23T07-36-04Z/
+?? dev/agent-workflow/evidence/alpha5/m2-todo/runs/2026-10-23T07-47-45Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/c123-after-fix-2026-10-23.txt
+?? dev/agent-workflow/evidence/alpha5/m2-web/c123-before-counterexamples-2026-10-23.txt
+?? dev/agent-workflow/evidence/alpha5/m2-web/group3-after-fix-2026-10-23.txt
+?? dev/agent-workflow/evidence/alpha5/m2-web/group3-before-counterexample-2026-10-23.txt
+?? dev/agent-workflow/evidence/alpha5/m2-web/group3-c123-counterexample-after.mjs
+?? dev/agent-workflow/evidence/alpha5/m2-web/group3-c123-counterexample-before.mjs
+?? dev/agent-workflow/evidence/alpha5/m2-web/group3-counterexample-after.mjs
+?? dev/agent-workflow/evidence/alpha5/m2-web/group3-counterexample-before.mjs
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T07-23-00Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T07-23-08Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T07-26-08Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T07-52-29Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T07-52-42Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T07-53-57Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T08-21-13Z/
+?? dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T08-24-21Z/
+?? dev/agent-workflow/evidence/alpha5/m2-win-acl/
+?? dev/agent-workflow/evidence/alpha5/m2-write/parked/
+?? dev/agent-workflow/evidence/alpha5/m2-write/repro/
+?? dev/agent-workflow/evidence/alpha5/m2-write/runs/2026-10-23T07-36Z-fix1/
+?? dev/agent-workflow/evidence/alpha5/m2-write/runs/2026-10-23T08-30Z-pcw/
+?? dev/agent-workflow/evidence/alpha5/m2-write/runs/2026-10-23T08-43Z-pcw-shortwrite/
+?? pack/
+?? packages/runtime/controlled-fs/src/bounded-bytes-read.ts
+?? packages/runtime/controlled-fs/src/post-consume-write.ts
+?? packages/runtime/dist/packages/runtime/src/plugin/live/web-gateway-assembly.mjs
+?? packages/runtime/dist/packages/runtime/web-gateway/
+?? packages/runtime/dist/packages/tools/a5p5-tools/src/write-slice.d.ts
+?? packages/runtime/dist/packages/tools/a5p5-tools/src/write-slice.d.ts.map
+?? packages/runtime/dist/packages/tools/a5p5-tools/src/write-slice.js
+?? packages/runtime/dist/packages/tools/a5p5-tools/src/write-slice.js.map
+?? packages/runtime/src/plugin/live/governed-families/
+?? packages/runtime/src/plugin/live/web-gateway-assembly.mjs
+?? packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts
+?? packages/runtime/test/a5m2-post-consume-write-c1.test.ts
+?? packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts
+?? packages/runtime/test/a5m2-readimg-c1.test.ts
+?? packages/runtime/test/a5m2w-web-gateway.test.ts
+?? packages/runtime/web-gateway/
+?? packages/tools/a5p5-tools/test/a5m2-write-slice-defect-repro.test.ts
