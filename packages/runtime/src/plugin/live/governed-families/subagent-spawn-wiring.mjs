@@ -54,7 +54,6 @@
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/subagent-spawn-wiring
  */
 import {
-  A5_B_SUBAGENT_SPAWN_ADAPTER_REVISION,
   A5_B_SUBAGENT_SPAWN_CANONICAL_JSON,
   A5_B_SUBAGENT_SPAWN_FAMILY_ID,
   A5_B_SUBAGENT_SPAWN_TOOL_NAMES,
@@ -212,7 +211,7 @@ export function createSubagentSpawnWiring(input = {}) {
     })
     const family = deepFreeze({
       familyId: typeof familyId === 'string' && familyId.length > 0 ? familyId : A5_B_SUBAGENT_SPAWN_FAMILY_ID,
-      adapterRevision: A5_B_SUBAGENT_SPAWN_ADAPTER_REVISION,
+      adapterRevision: A5_B_SPAWN_WIRING_REVISION, // THE MOUNT'S ACTUAL GENERATION (root 22:02): PA block, registration and face carry ONE number — the generation the real mint is stamped with (rev 2 = the joint 12-key manifest). The frozen adapter module's own constant stays 1 and its laws are untouched; a rev-1 approval presents a rev-1 family block and meets the rev-2 registration at the bridge family gate — refused there, never silently translated.
       providerIdentity: typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'b-subagent-spawn',
       definitionIdentity,
       targetManifest,
@@ -279,7 +278,7 @@ export function createSubagentSpawnWiring(input = {}) {
     ok: true,
     wiring: {
       familyId: A5_B_SUBAGENT_SPAWN_FAMILY_ID,
-      adapterRevision: A5_B_SUBAGENT_SPAWN_ADAPTER_REVISION,
+      adapterRevision: A5_B_SPAWN_WIRING_REVISION, // THE MOUNT'S ACTUAL GENERATION (root 22:02): PA block, registration and face carry ONE number — the generation the real mint is stamped with (rev 2 = the joint 12-key manifest). The frozen adapter module's own constant stays 1 and its laws are untouched; a rev-1 approval presents a rev-1 family block and meets the rev-2 registration at the bridge family gate — refused there, never silently translated.
       wiringRevision: A5_B_SPAWN_WIRING_REVISION,
       providerId: assembly.providerId,
       realmId: input.realmId,
@@ -289,7 +288,7 @@ export function createSubagentSpawnWiring(input = {}) {
       rowOf: assembly.rowOf,
       drain: assembly.drain,
       inFlight: assembly.inFlight,
-      familyRegistrations: assembly.familyRegistrations,
+      familyRegistrations: () => assembly.familyRegistrations().map((reg) => Object.freeze({ ...reg, entry: Object.freeze({ ...reg.entry, adapterRevision: A5_B_SPAWN_WIRING_REVISION }) })), // same generation law as the PA block (root 22:02): the adapter's frozen family facts ride untouched, the GENERATION stamp is the mount's own — registration and walk answer with equal bytes or the gate refuses
       wiringCodes: A5_B_SPAWN_WIRING_CODES,
       namedGaps: assembly.namedGaps,
     },

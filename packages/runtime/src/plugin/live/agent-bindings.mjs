@@ -4193,7 +4193,10 @@ export function createAgentBindings(deps) {
         // never a guessed key, never a silent skip); this loop only feeds
         // the registry's ONE table. A second different claim on one
         // identity throws through registerA5GovernedFamily itself (config
-        // defect, never a re-mount to paper over).
+        // defect, never a re-mount to paper over). The entry's adapterRevision
+        // carries the mount's ACTUAL mint generation (the wiring's registration
+        // path, root 22:02) — the same number every PA block of this mount
+        // presents, so the bridge family gate answers on equal bytes.
         if (a5SpawnWiring !== null) {
           for (const spawnReg of a5SpawnWiring.familyRegistrations()) {
             registerA5GovernedFamily(spawnReg.definitionIdentity, spawnReg.entry)

@@ -36,7 +36,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot } from '../../../tests/paths.mjs'
-import { validatePaFamilyTarget, validatePaFamilyTargetAgainstRule } from '../control/types.js'
+import { PA_FAMILY_TARGET_RULES, validatePaFamilyTarget } from '../control/types.js'
 import { A5_B_SUBAGENT_SPAWN_CANONICAL_JSON, A5_B_SUBAGENT_SPAWN_NAMED_GAPS } from '../src/plugin/live/governed-families/subagent-spawn-adapters.mjs'
 
 type Definition = {
@@ -218,7 +218,7 @@ describe('a5m2-subagent-spawn-wiring (b) real faces travel untouched', () => {
   it('wiring adds NO definition shape: every REAL face by reference, only execute replaced', () => {
     const wiring = wire()
     expect(wiring.familyId).toBe('B-SUBAGENT')
-    expect(wiring.adapterRevision).toBe(1)
+    expect(wiring.adapterRevision).toBe(2) // the mount's registered generation (root 22:02)
     expect(wiring.wiringRevision).toBe(WIRING.A5_B_SPAWN_WIRING_REVISION)
     expect(wiring.definitions).toHaveLength(5)
     for (const definition of wiring.definitions) {
@@ -258,7 +258,7 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     expect(req.parametersFingerprint).toBe(classified.plan.parametersFingerprint) // the plan's OWN digest — the execute-call's internal classify re-mints an equal one; the digest IS the plan's identity (载荷法)
     expect(req.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(req.family?.familyId).toBe('B-SUBAGENT')
-    expect(req.family?.adapterRevision).toBe(1)
+    expect(req.family?.adapterRevision).toBe(2) // the mount's ACTUAL generation (root 22:02): registration/PA-block/face answer with ONE number
     expect(req.family?.providerIdentity).toBe('a5p5-plane')
     // THE IDENTITY THE CALL IS EXECUTING UNDER (production-leg law, house
     // G6-mount precedent (c)): the P-add names the plane feed's FRESH
@@ -377,121 +377,122 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     expect(PA_CALLS).toHaveLength(0)
     expect(SERVICE_STARTS).toHaveLength(0)
   })
-  it('the JOINT encoding (root 21:20) through the SAME validator law: the five operation-discriminated spawn variants pass; full VALUES (prompt whole, unknown keys, null and empty string) round-trip; action binds each row’s OWN operation; the CURRENT table rejects the joint shape BY NAME and the old shape denies under the joint law — no silent translation in either direction', async () => {
+  it('the JOINT encoding through the REAL eight-op table (root 21:20/22:02): five REAL minted manifests ACCEPT; crossed action and the pre-joint manifest deny with the grammar\u2019s measured bytes; revision 1\u21922 refusal-then-accept; CURRENTFIELDS restated; eight-op cross-check output', async () => {
     SERVICE_STARTS.length = 0
     PA_CALLS.length = 0
     paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire()
-    // THE JOINT B-SUBAGENT LAW as adjudicated (root 21:20): ONE
-    // operation-discriminated entry; COMMON required strings (operation,
-    // contract, action, revision, effect, depth, argsCanonical,
-    // namedGapsCanonical — the last two FULL canonical JSON, never digests);
-    // the five SPAWN groups add parent/childAdjudication/model (string) +
-    // childClaim on the SIGNED 'nullableString' leaf (the 21:01 encoding
-    // stands untouched: missing ≠ null ≠ ''); `action` is BOUND to the
-    // row’s original operation. Driven through
-    // validatePaFamilyTargetAgainstRule — the exported pure law of ONE
-    // entry, the exact code the real table enters through. THE TABLE ITSELF
-    // IS THE 9d968 LANE’S TO LAND; this spec never edits it.
-    const SPAWN_ADDS = { parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' } as const
+    // THE VALIDATOR OF RECORD is the REAL table: the joint entry landed by
+    // merge from feat/a5m2-family-rules (fbebc3c52, 9d968-authored \u2014 the
+    // spawn lane edited no table line). Handoff pairing law: the MINTED
+    // object enters validatePaFamilyTarget; transcriptions discharge nothing.
     const OPS = ['subagent-spawn', 'subagent-fork-spawn', 'subagent-spawn-external-codex', 'subagent-spawn-external-claude-code', 'subagent-model-routes-read'] as const
-    const jointRule = {
-      required: { operation: 'string', contract: 'string', action: 'string', revision: 'string', effect: 'string', depth: 'string', argsCanonical: 'string', namedGapsCanonical: 'string' },
-      currentFields: ['operation', 'contract'],
-      variant: {
-        leaf: 'operation',
-        by: Object.fromEntries(OPS.map((op) => [op, { adds: SPAWN_ADDS, binds: { action: op } }])),
-      },
-    } as unknown as Parameters<typeof validatePaFamilyTargetAgainstRule>[1]
-    // ONE joint real mint: every spawn row walks the REAL admitted seat;
-    // each captured manifest is that row’s variant of the joint entry.
+    const CTRL_OPS = ['subagent-interrupt', 'subagent-list', 'subagent-send-message'] as const
     const tricky = { description: 'd1', prompt: 'full text\n with lines', opt_empty: '', keep_null: null, zeta_key: 'z', alpha_key: 7 }
-    const byOp = new Map<string, Record<string, unknown>>()
     const ROWS = [['subagent', 'subagent-spawn'], ['subagent_fork', 'subagent-fork-spawn'], ['subagent_codex', 'subagent-spawn-external-codex'], ['subagent_claude_code', 'subagent-spawn-external-claude-code'], ['list_subagent_models', 'subagent-model-routes-read']] as const
+    const byOp = new Map<string, Record<string, unknown>>()
     for (const [name, op] of ROWS) {
       const def = wiring.definitions.find((d) => d.name === name)
       if (def === undefined) throw new Error(`no def ${name}`)
       await def.execute(name === 'list_subagent_models' ? {} : { ...tricky }, { agent: AGENT_REF, callId: `call-joint-${name}`, signal: CONTROLLER.signal })
       const manifest = PA_CALLS[PA_CALLS.length - 1]?.family?.targetManifest as Record<string, unknown>
       expect(manifest.operation, name).toBe(op)
-      expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, manifest), name).toBeUndefined()
+      // PAIRING LEG 1 (handoff, root 21:20): the REAL minted manifest
+      // ACCEPTS at the REAL table \u2014 the flip from the pre-landing pin.
+      expect(validatePaFamilyTarget('B-SUBAGENT', manifest), name).toBeUndefined()
       byOp.set(op, manifest)
     }
     expect(PA_CALLS).toHaveLength(5)
-    // REVISION/REGISTRATION RIDE THE SAME ROUND (joint law): the family
-    // block of every mint and every registration entry names the ONE
-    // adapter-revision constant of this module generation — no second
-    // source to drift; the anti-translation weight is the SHAPE (the
-    // fingerprint moves with every added field), and the revision names the
-    // round that shape was minted in.
+    const m0 = byOp.get('subagent-spawn') as Record<string, unknown>
+    // REVISION CONSISTENCY (root 22:02): registration, every PA block and
+    // the wiring face carry the mount\u2019s ACTUAL generation \u2014 the value
+    // the real paths carry, not a bumped-but-unused constant.
     const regs = wiring.familyRegistrations()
     expect(regs).toHaveLength(5)
-    for (const call of PA_CALLS) expect(call.family?.adapterRevision).toBe(regs[0]?.entry.adapterRevision)
-    const m0 = byOp.get('subagent-spawn') as Record<string, unknown>
-    // EXACTLY TWELVE keys on a REAL minted manifest (handoff leaf: shared 7
-    // + spawn adds 5, extras deny — the closed-key law is EXACT):
+    for (const call of PA_CALLS) expect(call.family?.adapterRevision).toBe(2)
+    for (const reg of regs) expect(reg.entry.adapterRevision).toBe(2)
+    expect(wiring.adapterRevision).toBe(2)
+    expect(wiring.wiringRevision).toBe(2)
+    // (a) an OLD rev-1 approval presents a rev-1 family block; the bridge
+    // family gate compares it against this rev-2 registration field-for-
+    // field and refuses; (b) the NEW mint answers its own registration with
+    // equal bytes and validates (above); (c) nothing translated: the
+    // pre-joint manifest below dies at the table\u2019s required-loop byte.
+    // A rev-1 block stamped for this mount is therefore refused at the
+    // gate-law on the pair THIS spec owns end to end (the field-for-field
+    // equality the bridge family gate applies): the rev-2 pair answers, a
+    // rev-1 block against this rev-2 registration does not.
+    const gateReg = regs[0]?.entry
+    const gateBlock = PA_CALLS[0]?.family
+    if (gateReg === undefined || gateBlock === undefined) throw new Error('no pair')
+    expect(gateBlock.adapterRevision === gateReg.adapterRevision).toBe(true)
+    expect({ ...gateBlock, adapterRevision: 1 }.adapterRevision === gateReg.adapterRevision).toBe(false)
+    // EXACTLY TWELVE keys on the REAL minted manifest (shared 7 + spawn
+    // adds 5; extras deny \u2014 the closed-key law is EXACT):
     expect(Object.keys(m0).sort()).toStrictEqual(['action', 'argsCanonical', 'childAdjudication', 'childClaim', 'contract', 'depth', 'effect', 'model', 'namedGapsCanonical', 'operation', 'parent', 'revision'])
-    // action is BOUND to the row’s own original operation, and the refusal
-    // rides the grammar’s OWN measured bytes (handoff error-class leaf):
+    // action BOUND to the row\u2019s own operation; a crossed binding denies
+    // with the REAL table\u2019s measured bytes (error-class pairing leg):
     expect(m0.action).toBe(m0.operation)
-    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, action: 'subagent-fork-spawn' }))).toBe("action: not the 'subagent-spawn' variant constant of the B-SUBAGENT typed plan")
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...m0, action: 'subagent-fork-spawn' }))).toBe("action: not the 'subagent-spawn' variant constant of the B-SUBAGENT typed plan")
     // FULL VALUES, not digests: argsCanonical parses back to the WHOLE call
-    // (prompt whole, unknown-but-legal keys whole, null and '' the distinct
-    // values they are); re-canonicalizing the parse reproduces the string
-    // byte-for-byte (canonical key order); no digest text stands in.
+    // (prompt whole, unknown-but-legal keys whole, null and \'\' distinct);
+    // re-canonicalizing reproduces the string byte-for-byte; the named-gaps
+    // record rides WHOLE.
     const carried = JSON.parse(String(m0.argsCanonical)) as Record<string, unknown>
     expect(carried).toStrictEqual(tricky)
     expect(A5_B_SUBAGENT_SPAWN_CANONICAL_JSON(carried)).toBe(String(m0.argsCanonical))
-    expect(String(m0.argsCanonical)).not.toContain('sha256:') // the VALUES ride, not their identities
+    expect(String(m0.argsCanonical)).not.toContain('sha256:')
     expect(JSON.parse(String(m0.namedGapsCanonical))).toStrictEqual(A5_B_SUBAGENT_SPAWN_NAMED_GAPS)
-    // the list row’s args canonical is the WHOLE call (an empty object is
-    // an empty call, not an omission) and it carries the same full gaps.
     expect(byOp.get('subagent-model-routes-read')?.argsCanonical).toBe('{}')
-    // the string family and the missing-key law, same code, named refusals:
-    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, argsCanonical: 42 }))).toContain('argsCanonical')
+    // string family and missing key, REAL table, named:
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...m0, argsCanonical: 42 }))).toBe('argsCanonical: not a string')
     const { namedGapsCanonical: _dropGaps, ...noGaps } = m0
-    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, noGaps))).toContain('namedGapsCanonical')
-    // the SIGNED leaf survives the joint shape untouched (root 21:01): null
-    // passes, any string passes VERBATIM (the retired sentinel is just one
-    // legal string among all), '' is the third distinct outcome, 42 and a
-    // missing key deny, named — missing ≠ null ≠ ''.
-    expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: null })).toBeUndefined()
-    expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: 'service-mints-child-identity (claim not carried at this seam)' })).toBeUndefined()
-    expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: '' })).toBeUndefined()
-    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: 42 }))).toContain('childClaim')
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', noGaps))).toBe('namedGapsCanonical: required by the B-SUBAGENT typed plan, absent')
+    // the SIGNED leaf survives untouched (root 21:01): null passes, any
+    // string passes VERBATIM (the retired sentinel is one legal string among
+    // all), \'\' is the third distinct outcome, 42 and a missing key deny:
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...m0, childClaim: null })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...m0, childClaim: 'service-mints-child-identity (claim not carried at this seam)' })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...m0, childClaim: '' })).toBeUndefined()
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...m0, childClaim: 42 }))).toContain('childClaim')
     const { childClaim: _dropClaim, ...noClaim } = m0
-    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, noClaim))).toContain('childClaim')
-    // NO SILENT TRANSLATION, BOTH DIRECTIONS, through the REAL current table:
-    // the joint shape is refused BY NAME until the 9d968 table lands (the
-    // closed-key law is EXACT; a walk carrying facts the table has not
-    // ratified does not pass — it fails closed, coordinated, not guessed)...
-    expect(String(validatePaFamilyTarget('B-SUBAGENT', m0))).toContain('not part of the B-SUBAGENT typed plan')
-    // ...and the OLD 10-field shape, which the CURRENT table still accepts,
-    // denies under the joint law — an approval minted on the old bytes can
-    // never answer a call carrying the new ones (and every added field
-    // moves the operationFingerprint, so the durable rows cannot translate
-    // either).
-    const { argsCanonical: _dropArgs, ...oldShape } = noGaps
-    expect(validatePaFamilyTarget('B-SUBAGENT', oldShape)).toBeUndefined() // old shape = what the CURRENT table accepts TODAY
-    // the handoff’s EXACT no-silent-translation byte:
-    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, oldShape))).toBe('argsCanonical: required by the B-SUBAGENT typed plan, absent')
-    // CURRENTFIELDS ['operation','action'] (the table’s paired edge law):
-    // the edge’s CURRENT trusted facts restate exactly these two — both are
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', noClaim))).toContain('childClaim')
+    // NO SILENT TRANSLATION (the handoff\u2019s EXACT byte, REAL table): the
+    // PRE-JOINT 10-key manifest \u2014 what the superseded rev-1 mint carried
+    // \u2014 dies at the required loop. Approved old rows cannot validate
+    // against the joint entry, and the operationFingerprint moved with every
+    // added leaf, so the durable rows cannot translate either.
+    const { argsCanonical: _dropArgs, namedGapsCanonical: _dropGaps2, ...preJoint } = m0
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', preJoint))).toBe('argsCanonical: required by the B-SUBAGENT typed plan, absent')
+    // CURRENTFIELDS [\'operation\',\'action\'] (the table\u2019s paired edge law):
+    // the edge\u2019s CURRENT trusted facts restate exactly these two \u2014
     // dispatch-time constants of the row (record-spec identity, never model
-    // text): a fresh classify restates them identically, and the manifest
-    // binds them equal. Nothing else on the manifest is restatable from the
-    // edge (args/gaps are the call’s payload; the claims ride the leaf law).
+    // text); a fresh classify restates them identically and the manifest
+    // binds them equal.
     const rowS = wiring.rowOf('subagent')
     if (rowS === undefined) throw new Error('no row')
     const restated = rowS.classify({ ...tricky })
     if (restated.ok !== true || restated.plan === undefined) throw new Error('restate classify failed')
     expect(restated.plan.operation).toBe(m0.operation)
     expect(restated.plan.target.action).toBe(m0.action)
-    // the mint GENERATION is visible (handoff Revision leaf): the wiring
-    // revision advanced WITH the manifest shape (rev 2 = the two canonical
-    // VALUE leaves); the family-block adapterRevision rides its own module.
-    expect(wiring.wiringRevision).toBe(2)
-    // list_models honesty (carried over, unchanged): it addresses NO child —
+    // EIGHT-OP CROSS-CHECK OUTPUT (root 22:02 report): the table\u2019s OWN
+    // discriminant map; the five SPAWN ops are answered by the REAL minted
+    // manifests above; the three CONTROLS ops by TRANSOCRIBED card-shape
+    // fixtures \u2014 cross-check output ONLY (the controls lane discharges
+    // its own real-mint pairing legs; transcription discharges nothing).
+    const jointEntry = PA_FAMILY_TARGET_RULES['B-SUBAGENT'] as unknown as { variant: { by: Record<string, unknown> } }
+    expect(Object.keys(jointEntry.variant.by).sort()).toStrictEqual([...OPS, ...CTRL_OPS].sort())
+    const ctrlShape = (op: string): Record<string, unknown> => ({ operation: op, contract: 'card-shape', revision: 'card-shape', effect: 'card-shape', depth: 'card-shape', argsCanonical: '{}', namedGapsCanonical: '{}', action: op, caller: 'agent-member-1', addressClaim: null, addressRelation: 'leader-to-member', addressAdjudication: 'card-shape', budget: 'card-shape', effectDelta: 'card-shape', recordIndex: 44 })
+    for (const op of CTRL_OPS) expect(validatePaFamilyTarget('B-SUBAGENT', ctrlShape(op)), op).toBeUndefined()
+    // THE REPORTED OUTPUT (root 22:02): one line, eight ops, the REAL
+    // validator's answer each — the five SPAWN answers ride the REAL minted
+    // manifests, the three CONTROLS answers the labeled card-shape (their
+    // lane's real-mint legs discharge their own pairing).
+    const probe: Record<string, string> = {}
+    for (const op of OPS) probe[op] = String(validatePaFamilyTarget('B-SUBAGENT', byOp.get(op)))
+    for (const op of CTRL_OPS) probe[op] = String(validatePaFamilyTarget('B-SUBAGENT', ctrlShape(op)))
+    globalThis.console?.info(`[eight-op-probe] ${JSON.stringify(probe)}`)
+    // list_models honesty (carried over, unchanged): it addresses NO child \u2014
     // its per-row truth rides childAdjudication, no manifest fact spells
     // "service-mints":
     const lmPlan = wiring.rowOf('list_subagent_models')?.classify({})
@@ -506,7 +507,7 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     expect(regs.map((r) => r.name)).toEqual([...NAMES])
     for (const reg of regs) {
       expect(reg.definitionIdentity).toBe(PLANE_FEED(reg.name).definitionIdentity)
-      expect(reg.entry).toEqual({ familyId: 'B-SUBAGENT', adapterRevision: 1, providerIdentity: 'a5p5-plane' })
+      expect(reg.entry).toEqual({ familyId: 'B-SUBAGENT', adapterRevision: 2, providerIdentity: 'a5p5-plane' })
     }
     const openMount = () => wire({ placementFeed: () => undefined })
     expect(() => openMount().familyRegistrations()).toThrow(/P_B_SPAWN_PLACEMENT_KEY_ABSENT|PLACEMENT_KEY_ABSENT/)

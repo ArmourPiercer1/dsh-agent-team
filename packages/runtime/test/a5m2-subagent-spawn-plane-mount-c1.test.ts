@@ -334,7 +334,7 @@ describe('a5m2-spawn-plane-mount (c) REAL placement + registration', () => {
         const placedDef = registered.find((d) => d.name === reg.name)
         expect(reg.definitionIdentity).toBe(TD.definitionIdentityOf(placedDef))
         expect(reg.definitionIdentity).not.toBe(`cap:${reg.name}`) // never capture-side
-        expect(reg.entry).toStrictEqual({ familyId: 'B-SUBAGENT', adapterRevision: 1, providerIdentity: 'a5pm-wire' })
+        expect(reg.entry).toStrictEqual({ familyId: 'B-SUBAGENT', adapterRevision: 2, providerIdentity: 'a5pm-wire' })
       }
       for (const reg of regs) registerA5GovernedFamily(reg.definitionIdentity, reg.entry)
       // the registry round-trips BY VALUE (its entries are its own frozen
@@ -393,7 +393,7 @@ describe('a5m2-spawn-plane-mount (e) REAL admitted consume on the kernel mint la
       }
       expect(seen).toHaveLength(1)
       expect(seen[0]?.family?.familyId).toBe('B-SUBAGENT')
-      expect(seen[0]?.family?.adapterRevision).toBe(1)
+      expect(seen[0]?.family?.adapterRevision).toBe(2)
       // SINGLE-FLIGHT (a5p5 law, house template): the grant the call consumed
       // answers ONCE — a replay under the same public callId enters nothing.
       const second = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-pm-e1', signal: CONTROLLER.signal })
