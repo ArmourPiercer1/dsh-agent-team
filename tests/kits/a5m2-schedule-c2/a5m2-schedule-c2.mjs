@@ -86,6 +86,44 @@ const WORLD_PREFIX = 'a5m2-sched-c2'
 const BP_ID = 'team.a5m2-sched-c2'
 const SEED_TITLES = ['A5M2SEED-ALPHA', 'A5M2SEED-BETA', 'A5M2SEED-GAMMA']
 const ABSENT_ID = 'sch_a5m2_absent_zz'
+// Root 01:1x FINAL v3 STRUCTURE (image b811 a5m2-todo-c2 BP_ANCHOR_YAML/
+// savedBlueprintYaml canonical shape — structure only borrowed): schema 3 +
+// the REQUIRED v3 permissionMutationEnvelope/teamHardEnvelope rule blocks,
+// metadata present. The anchor carries NO capabilities; the saved doc keeps
+// ONLY schedule-lane rules (schedule_list/schedule_delete ask — named in
+// the widened template permission vocabulary, schema.js:426; skills/mcp as
+// kind:deny WITHOUT items; NO copied read/bash/send permissions, NO
+// available:true anywhere). Both sources are validated by the product's
+// real blueprint parser (parseBlueprint), not YAML-legality alone.
+const ANCHOR_V3_YAML = [
+  '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}.boot-anchor`, 'revision: "1"',
+  'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 schedule C2 boot team."',
+  'members:', '  - templateId: sched-worker', '    persona: "You are a worker of the A5M2 schedule C2 boot team."',
+  'memberEnvelopes: []', 'requirements: []',
+  'permissionMutationEnvelope:', '  rules: []',
+  'teamHardEnvelope:', '  rules: []',
+  'policyStates: []', 'metadata: {}', '---', '',
+].join('\n')
+const SAVED_BP_V3_YAML = [
+  '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
+  'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 schedule C2 team."',
+  'members:', '  - templateId: sched-worker',
+  '    persona: "You are the schedule worker. Follow the marker instructions literally and only."',
+  '    capabilities:', '      teamTools:', '        kind: deny', '      builtinToolDeny: []',
+  '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
+  '      permissions:', '        default: deny', '        allow: []', '        ask:',
+  '          - tool: schedule_list', '            resource:', '              kind: any',
+  '          - tool: schedule_delete', '            resource:', '              kind: any',
+  '        deny: []',
+  'teamEnvelope:', '  allow:',
+  '    - assign-task', '    - create-member', '    - send-message',
+  '    - report-progress', '    - request-control', '    - resolve-control',
+  '  deny: []',
+  'memberEnvelopes: []', 'requirements: []',
+  'permissionMutationEnvelope:', '  rules: []',
+  'teamHardEnvelope:', '  rules: []',
+  'policyStates: []', 'metadata: {}', '---', '',
+].join('\n')
 // Root 23:5x: read-only reuse of the approved frozen surface (skips the
 // install stage; verified before use; the reused tree is never written).
 const REUSE_INSTALL = process.env.A5M2_SCHED_C2_REUSE_INSTALL ?? null
@@ -202,11 +240,6 @@ function writePatch(patchPath, hostEntryHref) {
   // entries; authority stays a real later verification). glueUrl/seamUrl
   // stay ABSENT (the real location-derived defaults). teamToolPlane is the
   // consumed optional row face (agent-bindings); my lane's schedule gate.
-  const anchorYaml = [
-    '---', 'schemaVersion: 1', `blueprintId: ${BP_ID}.boot-anchor`, 'revision: "1"',
-    'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 schedule C2 boot anchor."',
-    'members:', '  - templateId: sched-worker', '    persona: "Boot anchor member; idle unless delegated."', '',
-  ]
   writeFileSync(patchPath, [
     `- insert:`,
     '    - id: dsh-agent-team',
@@ -215,7 +248,8 @@ function writePatch(patchPath, hostEntryHref) {
     "        bootPhase: 'create'",
     `        rootSessionId: ${JSON.stringify(`session-a5m2c2-boot-${RUN_STAMP}`)}`,
     '        blueprintSource: |-',
-    ...anchorYaml.map((l) => `          ${l}`),
+    // canonical v3 source WITH its frontmatter fences, indented into the block scalar
+    ...ANCHOR_V3_YAML.replace(/\n$/, '').split('\n').map((l) => `          ${l}`),
     `        blueprintDir: ${JSON.stringify(join(HOME, 'blueprints'))}`,
     '        seedMembers: []',
     '        generation: 1',
@@ -434,18 +468,9 @@ async function main() {
   if (!existsSync(HOST_ENTRY)) throw new Error(`exports-resolved host entry absent: ${HOST_ENTRY}`)
   log(`plugin entry resolved via exports['./host']: ${HOST_ENTRY}`)
 
-  // blueprint (saved-source catalog = the real team.create path)
-  writeFileSync(join(HOME, 'blueprints', 'a5m2-sched-c2.yaml'), [
-    '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
-    'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 schedule C2 team."',
-    'members:', '  - templateId: sched-worker',
-    '    persona: "You are the schedule worker. Follow the marker instructions literally and only."',
-    '    capabilities:', '      permissions:', '        default: deny', '        ask:',
-    '          - tool: schedule_list', '            resource: { kind: any }',
-    '          - tool: schedule_delete', '            resource: { kind: any }',
-    '        allow: []', '        deny: []',
-    'memberEnvelopes: []', 'requirements: []', 'permissionMutationEnvelope:', '  rules: []', 'policyStates: []', '',
-  ].join('\n'))
+  // blueprint (saved-source catalog = the real team.create path) — the
+  // canonical v3 doc (root 01:1x final structure; real-parser validated)
+  writeFileSync(join(HOME, 'blueprints', 'a5m2-sched-c2.yaml'), SAVED_BP_V3_YAML)
 
   if (DRY) {
     // no-boot dry path: REAL pre-flight to the boot boundary; STOP before
@@ -578,13 +603,18 @@ async function main() {
     return hits.length > 0 ? hits[0] : false
   }
 
-  // Member discovery: durable domain TABLES store canonical JSON strings
-  // (pr-d :720-741) — every row value is safeParse'd before field reads.
+  // Member discovery (root 01:0x card): ONLY kind==='team-member' bindings
+  // whose rootSessionId === currentRoot (binding-service.js:167-171 exact
+  // record {instanceId, kind:'team-member', rootSessionId, sessionId}) joined
+  // to the templateId==='sched-worker' template record by instanceId — the
+  // unique sched-worker of the CURRENT team root. No any-session heuristic:
+  // the bootstrap anchor root's leader/member facts can never surface here.
   function domainFacts() {
     const f = join(HOME, 'storages', 'team_domain.json')
     if (!existsSync(f)) return null
     const doc = safeParse(readFileSync(f, 'utf8'))
-    const found = []
+    const memberBindings = new Map() // instanceId -> sessionId (root-scoped)
+    const templates = new Map() // instanceId -> templateId
     const seen = new Set()
     const walk = (n) => {
       if (typeof n === 'string') {
@@ -593,13 +623,21 @@ async function main() {
       }
       if (n === null || typeof n !== 'object') return
       if (Array.isArray(n)) { n.forEach(walk); return }
-      for (const [k, v] of Object.entries(n)) {
-        if ((k === 'sessionId' || k === 'memberSessionId') && typeof v === 'string' && v !== currentRoot) found.push(v)
-        else walk(v)
+      if (n.kind === 'team-member' && n.rootSessionId === currentRoot && typeof n.sessionId === 'string' && typeof n.instanceId === 'string') {
+        memberBindings.set(n.instanceId, n.sessionId)
       }
+      if (typeof n.templateId === 'string' && typeof n.instanceId === 'string') {
+        // join safety comes from the root-scoped binding map alone: the
+        // anchor's instance ids can never appear in memberBindings.
+        templates.set(n.instanceId, n.templateId)
+      }
+      for (const v of Object.values(n)) walk(v)
     }
     walk(doc)
-    return found[0] ?? null
+    const hits = [...new Set([...memberBindings.entries()]
+      .filter(([instanceId]) => templates.get(instanceId) === 'sched-worker')
+      .map(([, sessionId]) => sessionId))]
+    return hits.length === 1 ? hits[0] : null // unique-or-nothing: never guess, never anchor
   }
   async function driveGoverned(memberSession, marker, toolName, decision, tag) {
     const before = new Set(await pendingRequestIds())
