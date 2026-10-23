@@ -593,9 +593,20 @@ describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArra
     // signed expression never mentions instanceof):
     class Row extends Array {}
     expect(check({ ...SEARCH_OK, disclosures: Row.from(['a', 'b']) })).toBeUndefined()
-    // measured signed-expression behavior, recorded honestly: every() SKIPS
-    // HOLES, so a sparse dense-start array passes; irrelevant for G6 (its
-    // disclosures mint as dense literals, g6-session-query.mjs:853):
+    // ROOT 5d83 RESIDUAL, fixed point: a REAL array whose `every` is
+    // OVERRIDDEN (own key, or via a subclass prototype) can no longer fake
+    // admission - the walk is the trusted Array.prototype.every intrinsic,
+    // never a dispatch through the value's own `every`:
+    const riggedOwn: unknown[] = [1]
+    Object.defineProperty(riggedOwn, 'every', { value: () => true, enumerable: false })
+    expect(check({ ...SEARCH_OK, disclosures: riggedOwn })).toBe('disclosures: not a stringArray')
+    const subclassRigged = Object.setPrototypeOf([1], Object.defineProperty(Object.create(Array.prototype), 'every', { value: () => true }))
+    expect(check({ ...SEARCH_OK, disclosures: subclassRigged })).toBe('disclosures: not a stringArray')
+    // measured behavior, recorded honestly and UNCHANGED by the closure (root
+    // 5d83: sparse is NOT reopened - upstream lossless refuses holes, the
+    // intrinsic every skips them exactly as value.every did): every() SKIPS
+    // HOLES, so a sparse dense-start array passes the KIND check; irrelevant
+    // for G6 (its disclosures mint as dense literals, g6-session-query.mjs:853):
     const sparse = ['a']
     sparse.length = 3
     expect(check({ ...SEARCH_OK, disclosures: sparse })).toBeUndefined()
