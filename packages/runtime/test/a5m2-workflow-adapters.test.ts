@@ -433,7 +433,6 @@ describe('a5m2-workflow-adapters (f) delegation fidelity', () => {
     const wfNative = harness.ctx.tools.get('workflow') as unknown as Definition
     const ralphNative = harness.ctx.tools.get('ralph') as unknown as Definition
     const wfDelegates: Record<string, Definition['execute']> = { workflow: wfNative.execute }
-    const ralphDelegates: Record<string, Definition['execute']> = { ralph: ralphNative.execute }
     const wfAssembly = mount({
       captured: { workflow: { native: wfNative, definitionIdentity: 'cap:wf-abort' } },
       liveNative: () => wfNative,
@@ -449,34 +448,67 @@ describe('a5m2-workflow-adapters (f) delegation fidelity', () => {
     expect(harness.cancels).toEqual(['parent step aborted']) // the bridge (measured :441-443)
     harness.completeNext({ stopReason: 'cancelled', error: 'parent step aborted', agentsStarted: 0, value: null })
     await expect(inflight).rejects.toThrow(/^workflow run was cancelled \(parent step aborted\)$/) // stopReasonError bytes, verbatim
-    // MEASURED ASYMMETRY (pinned as-is): a PRE-aborted signal fires no
-    // listener for the workflow body — no cancel happens before start.
+    // BODY-LEVEL ASYMMETRY pinned AT THE NATIVE FACE DIRECTLY (bypassing
+    // the row — the row itself fail-closes pre-aborted dispatches, see the
+    // next leg): a PRE-aborted signal fires no listener for the workflow
+    // body, while the ralph body cancels immediately.
     const preAborted = new AbortController()
     preAborted.abort('already')
     const before = harness.cancels.length
-    const stale = wf.execute({ script: 'return 1', meta: { name: 'w', description: 'd' } }, { agent: AGENT_REF, signal: preAborted.signal })
+    const staleNative = wfNative.execute({ script: 'return 1', meta: { name: 'w', description: 'd' } }, { agent: AGENT_REF, signal: preAborted.signal })
     await flush()
-    expect(harness.cancels).toHaveLength(before) // workflow: no pre-abort check (measured)
+    expect(harness.cancels).toHaveLength(before) // workflow body: no pre-abort check (measured)
     harness.completeNext({ stopReason: 'completed', agentsStarted: 0, value: null })
-    await stale
-    // the ralph body DOES check explicitly: cancel fires immediately.
-    const ralphAssembly = mount({
-      captured: { ralph: { native: ralphNative, definitionIdentity: 'cap:ralph-abort' } },
-      liveNative: () => ralphNative,
-      workflowDelegates: ralphDelegates,
-      liveWorkflowDelegates: () => ralphDelegates,
-    })
-    const ralph = ralphAssembly.definitions.find((d) => d.name === 'ralph')
-    if (ralph === undefined) throw new Error('no def')
+    expect(await staleNative).toMatchObject({ kind: 'foreground' })
+    // the ralph body DOES check explicitly (`if (exec.signal.aborted)
+    // run.cancel(...)` before awaiting run.result — measured): the cancel
+    // fires while the native execute call is still running synchronously.
     const beforeRalph = harness.cancels.length
-    const immediate = ralph.execute({ objective: 'loop it' }, { agent: AGENT_REF, signal: preAborted.signal })
-    await flush()
-    // the explicit pre-abort check cancels inside the body BEFORE awaiting
-    // run.result (measured: `if (exec.signal.aborted) run.cancel(...)`)
+    const immediateNative = ralphNative.execute({ objective: 'loop it' }, { agent: AGENT_REF, signal: preAborted.signal })
     expect(harness.cancels.length).toBe(beforeRalph + 1)
     expect(harness.cancels[harness.cancels.length - 1]).toBe('parent step aborted')
     harness.completeNext({ stopReason: 'cancelled', error: 'parent step aborted', agentsStarted: 0, value: null })
-    await expect(immediate).rejects.toThrow(/^Ralph workflow was cancelled \(parent step aborted\)$/)
+    await expect(immediateNative).rejects.toThrow(/^Ralph workflow was cancelled \(parent step aborted\)$/)
+  })
+  it('an admit-PENDING abort FAIL-CLOSES at the seam BEFORE the native body (root 20:05 P1; zero delegate entry, no job started or touched)', async () => {
+    const harness = await makeHarness()
+    HOST_WF_MINT.apply(harness.ctx, WF_CONFIG)
+    HOST_RALPH_MINT.apply(harness.ctx, RALPH_CONFIG)
+    const wfNative = harness.ctx.tools.get('workflow') as unknown as Definition
+    const ralphNative = harness.ctx.tools.get('ralph') as unknown as Definition
+    const delegates: Record<string, Definition['execute']> = { workflow: wfNative.execute, ralph: ralphNative.execute }
+    const assembly = mount({
+      captured: {
+        workflow: { native: wfNative, definitionIdentity: 'cap:wf-failclosed' },
+        ralph: { native: ralphNative, definitionIdentity: 'cap:ralph-failclosed' },
+      },
+      liveNative: (name: string) => (name === 'workflow' ? wfNative : ralphNative),
+      workflowDelegates: delegates,
+      liveWorkflowDelegates: () => delegates,
+      admit: async () => {
+        await flush() // the admit AWAIT stays pending across a macrotask — the race window
+        return { ok: true }
+      },
+    })
+    const wf = assembly.definitions.find((d) => d.name === 'workflow')
+    const ralph = assembly.definitions.find((d) => d.name === 'ralph')
+    if (wf === undefined || ralph === undefined) throw new Error('no defs')
+    const mid = new AbortController()
+    // THE exact measured Host gap: the runtime checks the signal only
+    // before execute(), and the workflow BACKGROUND branch would race
+    // synchronously into jobs.start — so the abort must fail closed at the
+    // seam, not open a background run.
+    const opening = wf.execute({ script: 'return 1', meta: { name: 'w', description: 'd' }, run_in_background: true }, { agent: AGENT_REF, signal: mid.signal })
+    mid.abort('cancelled-while-admitting') // lands WHILE the admit await is pending
+    const err = await opening.then(() => undefined, (e: unknown) => e as Error & { orchestrationRefusal?: { code?: string } })
+    expect(err?.orchestrationRefusal?.code).toBe(CODES.CANCELLED_BEFORE_DISPATCH)
+    expect(harness.starts).toHaveLength(0) // jobs.start NEVER reached — nothing started, nothing to kill
+    // a straight pre-aborted dispatch refuses the same way, for both records
+    const stale = ralph.execute({ objective: 'loop it' }, { agent: AGENT_REF, signal: mid.signal })
+    const staleErr = await stale.then(() => undefined, (e: unknown) => e as Error & { orchestrationRefusal?: { code?: string } })
+    expect(staleErr?.orchestrationRefusal?.code).toBe(CODES.CANCELLED_BEFORE_DISPATCH)
+    expect(harness.starts).toHaveLength(0)
+    expect(harness.pendingCount()).toBe(0) // no run was ever opened for either refusal
   })
   it('engine sync throws + the body\'s own lane throws propagate VERBATIM (no catch, no invented values)', async () => {
     const harness = await makeHarness()
