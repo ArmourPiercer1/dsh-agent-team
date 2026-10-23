@@ -345,6 +345,7 @@ export function build(root) {
   const findings = errors.map((e) => ({ code: 'REGISTRY_PARSE', detail: e }));
   findings.push(...validateRegistry(doc, root));
   findings.push(...checkSchemaAgreement(root));
+  findings.push(...checkContractIndex(root));
 
   const dirty = (git(root, ['status', '--porcelain']) || '').split('\n').filter(Boolean);
   // The persisted view carries ONLY facts that are stable between commits. Live
@@ -356,6 +357,13 @@ export function build(root) {
     schema_version: 1,
     source_registry: 'dev/engineering/registry.yaml',
     source_registry_sha: git(root, ['hash-object', 'dev/engineering/registry.yaml']),
+    // The view is also read against the id catalog — every `refs` entry resolves
+    // through ids.yaml — so it names that input as well. Before this, an edit to
+    // ids.yaml left the view reporting itself "fresh" while the meaning of every ref in
+    // it had moved: freshness was being claimed about one of two inputs. A catalog edit
+    // now has to be followed by a regeneration, which is what the field is for.
+    source_catalog: 'docs/contracts/engineering-baseline/ids.yaml',
+    source_catalog_sha: git(root, ['hash-object', 'docs/contracts/engineering-baseline/ids.yaml']),
     axes_legend: ENUMS,
     legacy_authority: readLegacyAuthority(root),
     entries: doc.entries.map((e) => {
@@ -395,6 +403,87 @@ export function build(root) {
  *  controls all compare against this, so they cannot disagree about "fresh". */
 export function renderView(built) {
   return `${JSON.stringify({ ...built.view, migration: { migration_of_legacy_consumers: built.topLevel.migration_of_legacy_consumers, legacy_execution_authority: built.topLevel.legacy_execution_authority } }, null, 2)}\n`;
+}
+
+/**
+ * The second derived artifact: a readable index over the id catalog. Reported here, and
+ * written only through scripts/generated-write.mjs like every other derivative.
+ *
+ * Why: ids.yaml is machine-readable and nobody reads it, so the ids that plans and notes
+ * are supposed to cite had no browsable listing — the contract index in that directory
+ * carried zero rows for 19 catalog entries. A hand-kept copy would be the same drift in
+ * a new place, so this is generated, and the check below is what keeps it honest.
+ *
+ * The write surface is deliberately NOT widened by this file alone: adding the path to
+ * GENERATED_FILES / the docs:sync allow-list is the approval step, and until then the
+ * check reports CATALOG_NOT_GENERATED (non-blocking) instead of writing anything.
+ */
+export const CATALOG_INDEX_PATH = 'docs/contracts/engineering-baseline/INDEX.md';
+export const CATALOG_SOURCE_PATH = 'docs/contracts/engineering-baseline/ids.yaml';
+
+export function parseContractCatalog(root) {
+  const file = join(root, CATALOG_SOURCE_PATH);
+  if (!existsSync(file)) return null;
+  const entries = [];
+  let cur = null;
+  readFileSync(file, 'utf8').split(/\r?\n/).forEach((line) => {
+    if (!line.trim() || line.trimStart().startsWith('#')) return;
+    const id = line.match(/^\s*- id:\s*(.+)$/);
+    if (id) { cur = { id: unquote(id[1]) }; entries.push(cur); return; }
+    if (!cur) return;
+    const f = line.match(/^\s+([a-z_]+):\s*(.*)$/);
+    if (!f) return;
+    const value = f[2].trim();
+    cur[f[1]] = value.startsWith('[') ? value.slice(1, -1).split(',').map(unquote).filter(Boolean) : unquote(value);
+  });
+  return entries;
+}
+
+export function renderContractIndex(root) {
+  const entries = parseContractCatalog(root) || [];
+  const byKind = {};
+  for (const e of entries) (byKind[e.kind || 'unclassified'] = byKind[e.kind || 'unclassified'] || []).push(e);
+  const out = [
+    '<!-- GENERATED FILE - do not edit. Rendered from docs/contracts/engineering-baseline/ids.yaml',
+    '     by scripts/gen-current-state.mjs; refresh with `node scripts/docs-sync.mjs --write`.',
+    '     docs:sync --check and docs:probe refuse when this file no longer matches the catalog. -->',
+    '',
+    `# Engineering Baseline id index (${entries.length} ids)`,
+    '',
+    'Browsable listing over the machine-readable catalog. `ids.yaml` stays the source of',
+    'truth; this file exists so the ids can be read and cited without opening YAML.',
+    'Listing an id here grants it nothing: every entry stays',
+    '`proposed-not-ratified` until an approval is recorded in',
+    '`dev/engineering/registry.yaml` and the Contract Owner has reviewed it.',
+    '',
+  ];
+  for (const kind of Object.keys(byKind).sort()) {
+    out.push(`## ${kind} (${byKind[kind].length})`, '');
+    for (const e of byKind[kind].slice().sort((a, b) => (a.id < b.id ? -1 : 1))) {
+      out.push(`### ${e.id}`, '');
+      out.push(`- normative_status: ${e.normative_status || 'MISSING'}`);
+      out.push(`- owners: ${(e.owners || []).join(', ') || 'MISSING'}`);
+      out.push(`- source_anchor: ${e.source_anchor || 'MISSING'}`);
+      out.push(`- statement: ${e.statement || 'MISSING'}`, '');
+    }
+  }
+  return `${out.join('\n').replace(/\n+$/, '')}\n`;
+}
+
+/** Is the generated index still what the catalog says? */
+export function checkContractIndex(root) {
+  const entries = parseContractCatalog(root);
+  if (!entries) return [{ code: 'CATALOG_SOURCE_MISSING', detail: `${CATALOG_SOURCE_PATH} is absent, so ${CATALOG_INDEX_PATH} cannot be derived` }];
+  if (!entries.length) return [{ code: 'CATALOG_SOURCE_EMPTY', detail: `${CATALOG_SOURCE_PATH} declares no ids` }];
+  if (!existsSync(join(root, CATALOG_INDEX_PATH))) {
+    // Not generated yet. That is a recorded gap, not drift, and it stays non-blocking
+    // only while the file is absent: once it exists, any mismatch below is a refusal.
+    return [{ code: 'CATALOG_NOT_GENERATED', detail: `${CATALOG_INDEX_PATH} has not been generated; the generator is ready and waits on adding that path to the write allow-list` }];
+  }
+  if (readFileSync(join(root, CATALOG_INDEX_PATH), 'utf8') !== renderContractIndex(root)) {
+    return [{ code: 'STALE_GENERATED_CATALOG', detail: `${CATALOG_INDEX_PATH} no longer matches ${CATALOG_SOURCE_PATH}; regenerate with \`docs:sync --write\`, never hand-edit` }];
+  }
+  return [];
 }
 
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

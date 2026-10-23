@@ -52,6 +52,10 @@ refuses a `verified_host` asserted from C1 evidence; `MERGED_CLAIM_UNCORROBORATE
 and nothing here is or becomes an authorization ledger. The writable surface is one
 generated file under `dev/engineering/`, reached only through `scripts/generated-write.mjs`,
 which refuses symlinked targets and symlinked ancestors instead of trusting a string
-allow-list.
+allow-list. The view names the two inputs it was rendered from — `source_registry` /
+`source_registry_sha` and `source_catalog` / `source_catalog_sha` — because a registry and
+an id catalog both feed it; naming only the registry let an `ids.yaml` edit leave the view
+claiming to be fresh while the meaning of every `refs` entry inside it had moved.
+A regeneration is therefore required after a catalog edit, and `--check` says so.
 
-`doc-ownership.yaml` maps changed source paths to the current-state documents that should be read with them. Matching a rule turns `docs:probe`'s advisory into a named document list; matching nothing is reported as unowned coverage instead of being guessed at. No rule here is blocking today — blocking belongs to the CI-wiring decision (EB3-B), and an owner document that does not exist is a hard finding (`DOC_OWNER_DOC_MISSING`).
+`doc-ownership.yaml` maps changed source paths to the current-state documents that should be read with them. Matching a rule turns `docs:probe`'s advisory into a named document list; matching nothing is reported as unowned coverage instead of being guessed at. A rule marked `enforce: true` is self-imposed by this line: it refuses (`DOC_OWNER_UPDATE_MISSING`) a source change while **none** of that rule's declared owner documents changed in the same change set — satisfied by at least one of them, with no claim that the right one changed, that all did, or that the new text matches the diff; semantic equivalence stays a Contract Owner judgement. Rules outside this line's own tooling stay advisory, and nothing here is wired into CI (EB3-B). An owner document that does not exist is a hard finding (`DOC_OWNER_DOC_MISSING`).

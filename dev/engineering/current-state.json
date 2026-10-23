@@ -3,6 +3,8 @@
   "schema_version": 1,
   "source_registry": "dev/engineering/registry.yaml",
   "source_registry_sha": "a18070f43135d258461c6f66d82eeb10c62833c5",
+  "source_catalog": "docs/contracts/engineering-baseline/ids.yaml",
+  "source_catalog_sha": "3b90277606b26cf080f88e409d75ea52a2e72adb",
   "axes_legend": {
     "decision_status": [
       "proposed",

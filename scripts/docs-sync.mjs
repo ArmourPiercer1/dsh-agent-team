@@ -137,8 +137,14 @@ if (invokedDirectly) {
   }
 
   const result = check(root);
-  for (const f of result.findings) console.log(`FAIL ${f.code}: ${f.detail}`);
-  console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} plans=${result.plans_scanned}(${result.plans_declaring} declaring) findings=${result.findings.length}`);
+  // One finding set, one definition of a refusal, shared with docs:probe and the --write
+  // gate. --check used to exit 1 on any finding whatsoever, so a fact worth recording
+  // that is not a refusal (a derivative not generated yet) failed the check while the
+  // probe called the same input non-blocking. Two tools disagreeing about one input is
+  // worse than either verdict alone, so the classification is now the same everywhere.
+  const blocking = result.findings.filter(isBlockingFinding);
+  for (const f of result.findings) console.log(`${isBlockingFinding(f) ? 'FAIL' : 'WARN'} ${f.code}: ${f.detail}`);
+  console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} plans=${result.plans_scanned}(${result.plans_declaring} declaring) findings=${result.findings.length} blocking=${blocking.length}`);
   console.log('LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof');
-  process.exit(result.findings.length ? 1 : 0);
+  process.exit(blocking.length ? 1 : 0);
 }

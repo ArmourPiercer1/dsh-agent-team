@@ -12,8 +12,12 @@
 #   * matching nothing yields `DOC_IMPACT_UNOWNED` — a coverage measurement, not a
 #     failure;
 #   * an entry may carry `enforce: true`. That makes *this* rule self-imposed:
-#     changing a matching source file without touching its declared owner document
-#     is a blocking `DOC_IMPACT_STALE`, not a footnote. It is set only on the
+#     changing a matching source file while **none** of its declared owner documents
+#     changed in the same change set is a blocking `DOC_OWNER_UPDATE_MISSING`.
+#     Precisely what that does and does not prove: the rule is satisfied when at least
+#     one declared owner document also changed. It does not check that the right one
+#     changed, that all of them did, or that the new text has anything to do with the
+#     diff — semantic equivalence stays with the Contract Owner. It is set only on the
 #     tooling this line owns. Everything else stays advisory, because turning it on
 #     for someone else's package would be putting this line's preference on their
 #     changes.

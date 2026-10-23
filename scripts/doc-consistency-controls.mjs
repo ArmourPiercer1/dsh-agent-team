@@ -23,6 +23,7 @@ import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
 import { GENERATED_FILES } from './generated-write.mjs';
+import { renderContractIndex, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -196,6 +197,9 @@ function makeFixture(slug) {
   gitIn(dir, ['commit', '-q', '-m', 'base fixture']);
   const gen = run(SYNC, ['--write', '--root', dir]);
   if (gen.code !== 0) throw new Error(`fixture generation failed: ${gen.out}`);
+  // The second derivative is produced by the same renderer the check compares against,
+  // so a clean fixture holds an in-date catalog index rather than a hand-typed copy.
+  writeFile(dir, CATALOG_INDEX_PATH, renderContractIndex(dir));
   gitIn(dir, ['add', '-A']);
   gitIn(dir, ['commit', '-q', '-m', 'derived view']);
   return dir;
@@ -406,9 +410,17 @@ control('NEG-21 plan without a citation block is not a finding', (d) => {
   return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 0, 'plans=1(0 declaring) findings=0')];
 });
 
-control('NEG-22 probe survives a contract-index change without crashing', (d) => {
+control('NEG-22 probe survives a catalog edit and reports the staleness it implies', (d) => {
+  // This control exists because the probe once crashed here (a value read outside its
+  // own block). It still guards that: expectBlocking rejects any crash text. What
+  // changed is the expected verdict -- rewording a catalog entry now makes the derived
+  // view stale, so exit 0 would be the bug, not the success.
   writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml').replace('text: a fixture invariant', 'text: a reworded invariant'));
-  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 0, 'rules=')];
+  const res = run(PROBE, ['--worktree-only', '--root', d]);
+  return [
+    expectBlocking('probe', res, 'STALE_GENERATED_VIEW'),
+    { ok: res.out.includes('rules='), why: 'reached rule selection (the crash this control guards happened before it)' },
+  ];
 });
 
 control('NEG-23 probe enforces ratification on a changed contract index', (d) => {
@@ -661,6 +673,14 @@ control('NEG-53 enforcement stays per rule, not blanket', (d) => {
     expectRun('probe', res, 0, 'DOC_IMPACT_OWNED'),
     { ok: !failCodes.includes('DOC_OWNER_UPDATE_MISSING'), why: 'blocking set: [' + (failCodes.join(',') || 'empty') + ']' },
   ];
+});
+
+control('NEG-54 an id-catalog edit makes the view stale, not silently fresh', (d) => {
+  // The view resolves every refs entry through ids.yaml but used to record only the
+  // registry hash, so a catalog edit kept the view "fresh" while the meaning of its
+  // refs had moved. This is the case that field exists for.
+  writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml') + '- id: INV-EB-0099\n  kind: invariant\n  statement: added after the view was rendered\n  normative_status: proposed-not-ratified\n  owners: [EB-CTL]\n  source_anchor: docs/glossary.md\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'STALE_GENERATED_VIEW')];
 });
 
 control('NEG-46 a second top-level entries: is refused and names the key', (d) => {
