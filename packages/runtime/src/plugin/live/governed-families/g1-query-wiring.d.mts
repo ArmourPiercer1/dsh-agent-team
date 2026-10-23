@@ -39,13 +39,30 @@ export interface G1QueryAdapterRow {
   readonly delegate: (plan: unknown, ctx?: { exec?: unknown }) => Promise<{ ok?: boolean; code?: string; detail?: string; settled?: string; value?: unknown }>
 }
 
-/** One mounted definition face the plane places verbatim (the CAPTURED
- *  native description bytes + the captured parameters face + the wired
- *  classify -> admit -> delegate body). */
+/** The mandatory canonical output face of a registration-ready definition
+ *  (the REAL registration minimum entry, core/tools register() @ 639 —
+ *  `output: {schema, render, presentationMeta?}`; schema SEMANTICS stay owned
+ *  by the host's own validator, never restated here). */
+export interface G1QueryOutputFace {
+  readonly schema: unknown
+  readonly render: (...args: never[]) => unknown
+  readonly presentationMeta?: (...args: never[]) => unknown
+}
+
+/** One mounted definition face the plane places verbatim: the COMPLETE
+ *  captured native definition — every presentation face (`output`,
+ *  `parameters`, present/finalize hooks, `timeoutMs`, any future face)
+ *  riding VERBATIM by reference — with ONLY `execute` replaced by the wired
+ *  classify -> admit -> delegate body (root 8b4 law). The open index stands
+ *  for "every captured face travels"; the named members are the real
+ *  registration minimum-entry law the assembly gate mirrors. */
 export interface G1QueryDefinition {
+  readonly [face: string]: unknown
   readonly name: string
   readonly description: string
+  readonly output: G1QueryOutputFace
   readonly parameters?: Record<string, unknown>
+  readonly timeoutMs?: number
   readonly execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
 }
 
@@ -55,15 +72,21 @@ export type G1QueryPlacementFeed = (
   name: string,
 ) => { definitionIdentity?: string; realmId?: string } | undefined
 
-/** The captured native face + the identity the integrator minted for the
- *  CAPTURE (provider@commit@entry#params-hash) — NOT the family key: the
- *  family key is always the placement feed's runtime identity. */
+/** The captured native face — a COMPLETE registration-ready definition (the
+ *  real minimum-entry shape law is mirrored at assembly; the placed def
+ *  spreads it and replaces ONLY execute) — plus the identity the integrator
+ *  minted for the CAPTURE (provider@commit@entry#params-hash) — NOT the
+ *  family key: the family key is always the placement feed's runtime
+ *  identity (placed vs captured stay visibly separate, never conflated). */
 export interface G1QueryNativeCapture {
   readonly native: {
+    readonly [face: string]: unknown
     readonly name: string
     readonly description: string
+    readonly output: G1QueryOutputFace
     readonly parameters?: unknown
-    execute: (args: unknown, exec: unknown) => Promise<unknown>
+    readonly timeoutMs?: number
+    readonly execute: (args: unknown, exec: unknown) => Promise<unknown>
   }
   readonly definitionIdentity: string
 }

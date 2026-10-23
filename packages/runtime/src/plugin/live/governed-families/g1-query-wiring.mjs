@@ -45,6 +45,20 @@
  *    not mounted (e.g. the inspect pair with no `trustedTopology`) keeps the
  *    module's own fail-closed call-time refusal (`P_G1_TRUSTED_TOPOLOGY_ABSENT`
  *    verbatim) — the candidate adds no gate of its own.
+ *  - THE PLACED DEFINITION IS THE CAPTURED DEFINITION, COMPLETE (root 8b4
+ *    law): every presentation face of the captured native definition rides
+ *    into the placed definition verbatim and by reference — `output:
+ *    {schema, render, presentationMeta?}`, compiled `parameters`,
+ *    `presentCall`/`presentResult`, project/finalize hooks, `timeoutMs`,
+ *    `isConcurrencySafe`, any future face — and ONLY `execute` is replaced.
+ *    This file fabricates NO definition shape: the assembly gate mirrors only
+ *    the REAL registration minimum-entry SHAPE law (core/tools register() @
+ *    639 — mandatory `output` face, function render/presentationMeta, positive
+ *    timeoutMs) so a half-capture can never be emitted for the real host
+ *    entry to reject; schema SEMANTICS stay owned by the host's own validator,
+ *    and the spec verifies the emitted definitions through the REAL
+ *    registration entry (真实 register 最低入口核), including that the real
+ *    entry REFUSES a hand-fabricated minimal shape.
  *  - THE FAMILY KEY IS NEVER HAND-SPELLED: registration entries are built at
  *    the mount moment (AFTER publish — the agent-bindings law) from the
  *    integrator's `placementFeed(name)` — the provider-side feed whose
@@ -65,7 +79,9 @@
  * This module is NOT C2 and claims nothing beyond the wiring shape: the
  * adapter spec (a5m2-g1-surface-adapters.test.ts) owns the row laws; this
  * spec (a5m2-g1-query-wiring.test.ts) owns the assembly facts — subset
- * derivation, description bytes, feed-keyed registration, non-query silence,
+ * derivation, captured-complete definition travel (only execute replaced),
+ * acceptance through the REAL registration entry, feed-keyed registration
+ * with placed-vs-captured identity kept visibly separate, non-query silence,
  * declared/INACTIVE verbatimity, and the import closure.
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g1-query-wiring
@@ -143,6 +159,8 @@ const refusalToThrow = (refusal) => {
  * @param input {{
  *   providerId?: string,                                  // registration providerIdentity
  *   captured?: Record<string, { native: object, definitionIdentity: string }>,
+ *       // native = the COMPLETE captured ToolDefinition (every presentation
+ *       // face verbatim); the placed def spreads it and replaces ONLY execute
  *   placementFeed: (name: string) => { definitionIdentity?: string, realmId?: string } | undefined,
  *   trusted: object,                                      // the adapter's trusted TARGETS CONFIG face
  *   bindingFacts: () => object,                           // the adapter's live binding-facts source
@@ -207,11 +225,24 @@ export function createG1QueryWiring(input = {}) {
   }
   // A PRESENT-but-malformed capture is a config defect too — half a capture
   // is not "no capture": it names a face the mount cannot honestly bind.
+  // The SHAPE law here is the REAL registration minimum entry (core/tools
+  // register() @ 639): a captured face that could never pass the real host
+  // registration entry — no `output: {schema, render}` face, a non-function
+  // render/presentationMeta, a non-positive timeoutMs — is half a definition,
+  // refused at assembly, never demoted to a declared row and never emitted
+  // for the real entry to reject later. Schema SEMANTICS are not duplicated
+  // here: the host's own validator owns them (the spec verifies the emitted
+  // definitions through the real registration entry verbatim).
   for (const [key, capture] of Object.entries(capturedIn)) {
+    const native = isRecord(capture) ? capture.native : undefined
+    const output = isRecord(native) ? native.output : undefined
     if (!isRecord(capture)
-      || !isRecord(capture.native) || capture.native.name !== key || typeof capture.native.description !== 'string' || typeof capture.native.execute !== 'function'
+      || !isRecord(native) || native.name !== key || typeof native.description !== 'string' || typeof native.execute !== 'function'
+      || !isRecord(output) || output.schema === undefined || typeof output.render !== 'function'
+      || (output.presentationMeta !== undefined && typeof output.presentationMeta !== 'function')
+      || (native.timeoutMs !== undefined && (!Number.isFinite(native.timeoutMs) || native.timeoutMs <= 0))
       || typeof capture.definitionIdentity !== 'string' || capture.definitionIdentity.length === 0) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `captured.${key} must be {native: {name:'${key}', description, execute}, definitionIdentity: non-empty string} — the captured face mounts WITH its own definition identity (the adapter's mount law); a half-capture is refused, never demoted to a declared row`)
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `captured.${key} must be a COMPLETE captured definition — {native: {name:'${key}', description, output:{schema, render, presentationMeta?}, execute, ...every presentation face verbatim}, definitionIdentity: non-empty string} (the real registration minimum-entry shape law; the captured face mounts WITH its own definition identity per the adapter's mount law; a half-capture is refused, never demoted to a declared row)`)
     }
   }
 
@@ -266,12 +297,18 @@ export function createG1QueryWiring(input = {}) {
       observe({ event: 'g1-wire:delegated', name, settled: settled.settled })
       return settled.value
     }
-    const definition = deepFreeze({
-      name,
-      description: row.description, // the CAPTURED native description bytes (row-carried, verbatim)
-      ...(isRecord(row.parameters) ? { parameters: row.parameters } : {}),
-      execute,
-    })
+    // THE CAPTURED DEFINITION TRAVELS COMPLETE (root 8b4 law): EVERY face of
+    // the captured native definition rides into the placed definition VERBATIM
+    // and by REFERENCE — `output: {schema, render, presentationMeta?}`, the
+    // compiled `parameters`, `presentCall`/`presentResult`, project/finalize
+    // hooks, `timeoutMs`, `isConcurrencySafe`, and any future face. ONLY
+    // `execute` is replaced (the classify -> admit -> delegate body below).
+    // The top level is a NEW frozen object (the spread); nested faces are NOT
+    // re-frozen here — they belong to the capture and the host registry keeps
+    // the same references (a spec leg verifies acceptance through the REAL
+    // registration entry, 真实 register 最低入口核, never a shape fabricated
+    // in this file).
+    const definition = Object.freeze({ ...capture.native, execute })
     rows.set(name, Object.freeze({ status: 'ACTIVE', row, definition, captureDefinitionIdentity: capture.definitionIdentity }))
     definitions.push(definition)
     observe({ event: 'g1-wire:mounted', name, recordIndex: entry.recordIndex })
@@ -319,9 +356,11 @@ export function createG1QueryWiring(input = {}) {
     subset,
     /** The ACTIVE rows' placement-moment names (the def list, subset order). */
     placementNames: definitions.map((definition) => definition.name),
-    /** ToolDefinition faces for the ACTIVE subset rows — the plane places
-     *  these verbatim (description + parameters are the CAPTURED native
-     *  bytes; the execute runs classify -> admit (plane seat) -> delegate). */
+    /** ToolDefinition faces for the ACTIVE subset rows — the COMPLETE captured
+     *  native definitions (every presentation face verbatim, by reference)
+     *  with ONLY execute replaced (the body runs classify -> admit (plane
+     *  seat) -> delegate). The plane places these verbatim; the real host
+     *  registration entry accepts them (spec-verified, 真实 register 最低入口核). */
     definitions,
     /** Per-record wiring report: ACTIVE (mounted capture) or
      *  DECLARED-INACTIVE (the module's own native-less row, verbatim). */
