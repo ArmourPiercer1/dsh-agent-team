@@ -163,6 +163,28 @@ export const PLACEMENTS = [
   // and bindings statically import the wiring - placing ONE alone leaves a
   // dangling import on the strict files:[dist] install face, so BOTH join
   // in this single round; bytes ride unchanged.
+  // A5M2 B-SUBAGENT JOINT BATCH (root 22:33/34 landing, center): the spawn
+  // and controls production blocks added STATIC relative imports that no
+  // placement covered — the strict files:[dist] face would die at
+  // ERR_MODULE_NOT_FOUND (same documented class). Four modules join; the
+  // closure is self-contained (they import each other + the domain face
+  // already in dist); bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+  },
   {
     src: 'packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',

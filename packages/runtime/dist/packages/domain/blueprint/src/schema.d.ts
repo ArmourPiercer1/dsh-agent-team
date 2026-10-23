@@ -357,6 +357,28 @@ export declare const PERMISSION_TOOL_NAMES: readonly string[];
  * no file matcher, no fingerprint, no canonical operation — their
  * authority rides the admission projection's `tool-invoke` arm only, and
  * a rule for one never gates the other.
+ *
+ * Alpha.5 M2 continuation (root 22:13 limited card): the class widens by
+ * the five G6 SESSION-QUERY names — `session_search` / `session_event_search`
+ * / `session_trace` / `session_event_trace` / `session_event_read` — named
+ * by the host CLOSED FIVE-NAME SET (`tool-session-query/src/index.ts`
+ * @639ed01539 :66/:76/:86/:96/:109, defineTool verbatim). Their parameter
+ * faces are structured session/sequence queries (session id, event `seq`,
+ * `before`/`after` counts, search text) — NEVER a workspace path, NEVER a
+ * shell command — so the SAME invocation-only law holds: `any` in all
+ * three lanes, `exact`/`subtree` refused every lane of every role, no file
+ * matcher, no fingerprint, no envelope carrier (the seven-name
+ * operationClass set stays frozen). Naming them here opens the named
+ * allow/ask/deny channel ONLY: the rows are PA-WIRED in the current
+ * integration production (center landing 874f3ae0d: adapter
+ * g6-session-query.mjs + wiring + the REAL bindings supply-close block +
+ * host lazy accessors; capture → PA open/edge/consume source-signed) —
+ * Host ACCEPTANCE is still pending, and the old M0-B frozen table
+ * (`host-unmounted-optin-package`, PROPOSED) is a historical record, NOT
+ * the current implementation fact. An invocation permission grants NO
+ * I/O exemption — these tools read only through their own authorized-
+ * session seam, and every resource-scoped effect still resolves to
+ * no-authority ⇒ Ask.
  */
 export declare const PERMISSION_INVOCATION_ONLY_TOOL_NAMES: readonly string[];
 /**
