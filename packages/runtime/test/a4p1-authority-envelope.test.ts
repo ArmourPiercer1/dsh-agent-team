@@ -92,7 +92,11 @@ import type {
   PermissionMutationEnvelope,
 } from '../governance/permission-mutation.js'
 import type { PermissionOverlayEffect } from '../../storage/schema/permission-overlay.js'
-import { PERMISSION_TOOL_NAMES } from '../../domain/blueprint/src/index.js'
+// The envelope carrier's FROZEN seven-name operationClass set (Alpha.5 M2
+// root 20:05 isolation): read from the blueprint LEAF schema module, same
+// lane law as the admission kernel (the barrel would drag the YAML parser
+// into this graph).
+import { BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES } from '../../domain/blueprint/src/schema.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** Read as TEXT on purpose: this leg asserts the SHAPE of the closed table (an
@@ -750,7 +754,12 @@ describe('A4-PR1 lane B — the two lookups, and the meet that must never fuse t
     expect([...AUTHORITY_MATCHER_KINDS]).toEqual(proposalKinds)
     // The operation-class vocabulary is MIRRORED (domain stays the leaf) and
     // pinned here, so a drift in either is red rather than silent.
-    expect([...AUTHORITY_OPERATION_CLASSES].slice().sort()).toEqual([...PERMISSION_TOOL_NAMES].slice().sort())
+    // Alpha.5 M2 (root 20:05): the mirror moved from the TEMPLATE vocabulary
+    // to the envelope carrier's FROZEN seven-name set — the template lane
+    // gained the invocation-only pair, this carrier deliberately did NOT (no
+    // `any` matcher exists in this grammar, so an invocation-only class can
+    // never carry an envelope rule). Widening one never widens the other.
+    expect([...AUTHORITY_OPERATION_CLASSES].slice().sort()).toEqual([...BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES].slice().sort())
     // The precedence object the hygiene test pins by IDENTITY is this object.
     expect(PERMISSION_EFFECT_PRECEDENCE).toBe(AUTHORITY_EFFECT_PRECEDENCE)
   })

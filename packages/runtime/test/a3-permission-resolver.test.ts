@@ -508,8 +508,8 @@ describe('a3 static resolver — provenance first-match indexing and determinism
 // ---------------------------------------------------------------------------
 
 describe('a3 static resolver — tool vocabulary pin (A2 handoff)', () => {
-  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same seven names, same order)', () => {
+  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same names, same order; Alpha.5 M2 root 20:05: nine with the invocation-only pair)', () => {
     expect(PERMISSION_TOOL_VALUES).toEqual(PERMISSION_TOOL_NAMES)
-    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh'])
+    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'schedule_list', 'schedule_delete'])
   })
 })
