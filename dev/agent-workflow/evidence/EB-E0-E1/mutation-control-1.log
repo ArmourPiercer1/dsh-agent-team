@@ -1,0 +1,6 @@
+doc-consistency controls   fixture=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/eb-e0-e1/.worktrees/eb1-controls-scratch
+PASS  POS-0 write authority allow-list
+      only the generated view is writable
+FAIL  NEG-5 duplicate stable id in the contract index
+      sync: exit 0 != 1; output lacks "ID_DUPLICATE"
+controls=2 failed=1  scope: static document checks only (no C1/C2/C3, no runtime behaviour)

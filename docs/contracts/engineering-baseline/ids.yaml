@@ -1,0 +1,145 @@
+# Stable requirement / invariant / acceptance ids for the Engineering Baseline.
+#
+# NORMATIVE STATUS: every entry below is `proposed-not-ratified`. Drafting text
+# inside the repository does NOT make it law (architecture.md 5.x / D8 of the
+# PR #361 design). Ratification happens only through an explicit approval
+# recorded in dev/engineering/registry.yaml (decision_status) plus the owning
+# Contract Owner's review. Existing contracts under docs/contracts/ keep their
+# own frozen status and are not re-stated here.
+#
+# Machine-read by scripts/verify-agent-notes.mjs and scripts/docs-probe.mjs.
+# One fact, one owner, one id. Do not copy normative prose from Alpha.5
+# contracts here; reference it.
+
+- id: INV-EB-0001
+  kind: invariant
+  statement: A governed Team tool call executes only through the single ACTIVE binding observed on the Host for that scope; name equality never proves execution-body identity.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+
+- id: INV-EB-0002
+  kind: invariant
+  statement: Effects classification and both envelopes are complete and evaluated before admission; a partial classification is a refusal, not a permissive default.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+
+- id: INV-EB-0003
+  kind: invariant
+  statement: An Ask path produces zero unauthorized side effects before the decision; zero-effect is proven by external observation, not by a guard return value.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+
+- id: INV-EB-0004
+  kind: invariant
+  statement: Control consumption and PA consumption are each consumed exactly once and are distinct facts; neither implies the other.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+
+- id: INV-EB-0005
+  kind: invariant
+  statement: Cancel or restart never replays an already-consumed grant or an already-settled work unit.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+
+- id: INV-EB-0006
+  kind: invariant
+  statement: A governed tool never silently falls back to the native implementation; absence of takeover is a typed refusal.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
+
+- id: INV-EB-0007
+  kind: invariant
+  statement: Non-Team sessions keep native DSH tool semantics; Team governance neither restricts nor expands them by accident.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md
+
+- id: INV-EB-0008
+  kind: invariant
+  statement: Settlement reflects the real outcome; an indeterminate termination is reported as indeterminate and never as success.
+  normative_status: proposed-not-ratified
+  owners: [Contract/Security Owner]
+  source_anchor: docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+
+- id: INV-EB-0009
+  kind: invariant
+  statement: decision_status, implementation_status, verification_status and release_status are recorded separately and none is derived from another; a verification claim without a resolvable RUN is NOT_VERIFIED.
+  normative_status: proposed-not-ratified
+  owners: [Doc/Contract Owner]
+  source_anchor: docs/contracts/engineering-baseline/README.md
+
+- id: INV-EB-0010
+  kind: invariant
+  statement: Automatic cleanup may touch only paths whose creation and ownership the cleaning process can prove; user homes, active worktrees and A-class evidence are never reachable by path or name heuristics.
+  normative_status: proposed-not-ratified
+  owners: [Evidence Owner]
+  source_anchor: docs/TEST_METHODS.md
+
+- id: REQ-EB-0001
+  kind: requirement
+  statement: A fast document probe exists that resolves real Git change scope (committed, staged, unstaged) against a verified base, maps it to owning documents, and fails on stale derivatives or unsupported delivery claims while passing Ideas and Proposals that declare no runtime evidence.
+  normative_status: proposed-not-ratified
+  owners: [Doc/Tooling Owner]
+  source_anchor: docs/plans/memo/post-alpha4-debt-register.md
+
+- id: REQ-EB-0002
+  kind: requirement
+  statement: A complete document sync exists in read-only check mode for CI and explicit write mode for maintainers; write mode never modifies normative contracts, approval status, or test results.
+  normative_status: proposed-not-ratified
+  owners: [Doc/Contract Owner]
+  source_anchor: docs/plans/memo/post-alpha4-debt-register.md
+
+- id: REQ-EB-0003
+  kind: requirement
+  statement: Current engineering state is a derived read-only view assembled from the registry, Git and CI evidence; the generated view is never a second writable authority, and the legacy graph.yaml current_contract stays the execution authority until an approved migration.
+  normative_status: proposed-not-ratified
+  owners: [Tooling Owner]
+  source_anchor: dev/agent-workflow/graph.yaml
+
+- id: REQ-EB-0004
+  kind: requirement
+  statement: The expected tool baseline is derived from trusted upstream Host, reviewed Team declarations and trusted profile/config sources; it is mutable by source change and never a hand-maintained frozen name list, and a newly discovered tool becomes UNKNOWN rather than authorized.
+  normative_status: proposed-not-ratified
+  owners: [Tool Inventory Owner]
+  source_anchor: tests/paths.mjs
+
+- id: AC-EB-0001
+  kind: acceptance
+  statement: Given a source or generated derivative that is newer than its document, the probe names the owning document and fails; given a document-only Idea change, the probe passes without demanding runtime evidence.
+  normative_status: proposed-not-ratified
+  owners: [Doc/Tooling Owner]
+  source_anchor: tests/doc-consistency/README.md
+
+- id: AC-EB-0002
+  kind: acceptance
+  statement: A note that claims delivery without a resolvable evidence artifact fails as NOT_VERIFIED; a proposal describing future behaviour passes.
+  normative_status: proposed-not-ratified
+  owners: [Doc/Contract Owner]
+  source_anchor: .agents/notes/README.md
+
+- id: AC-EB-0003
+  kind: acceptance
+  statement: Writing verification_status verified without a resolvable RUN artifact is refused by the state generator, and the four status axes are displayed independently in the derived view.
+  normative_status: proposed-not-ratified
+  owners: [Tooling Owner]
+  source_anchor: dev/engineering/README.md
+
+- id: AC-EB-0004
+  kind: acceptance
+  statement: A duplicated stable id, a deprecated synonym used in a current-state document, or a dangling reference fails the check; an unratified proposed entry does not fail merely because it is unimplemented.
+  normative_status: proposed-not-ratified
+  owners: [Doc/Contract Owner]
+  source_anchor: docs/glossary.md
+
+- id: IDEA-EB-0001
+  kind: idea
+  statement: Derive a change-impact graph that selects the minimal document and test set per PR from source symbols, owning contracts and dynamic tool-source deltas.
+  normative_status: idea-no-execution-authority
+  owners: [CI/Test/Doc Owner]
+  source_anchor: docs/ideas/IDEA-EB-0001-change-impact-graph.md

@@ -43,7 +43,10 @@
     "test": "vitest run",
     "test:node": "node scripts/run-tests.mjs",
     "smoke:composition": "node scripts/composition-smoke.mjs",
-    "check:install-manifest": "node scripts/check-install-manifest.mjs"
+    "check:install-manifest": "node scripts/check-install-manifest.mjs",
+    "docs:probe": "node scripts/docs-probe.mjs",
+    "docs:sync": "node scripts/docs-sync.mjs",
+    "docs:controls": "node scripts/doc-consistency-controls.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh": "0.2.0-rc.2",

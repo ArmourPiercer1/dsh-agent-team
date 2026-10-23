@@ -1,0 +1,8 @@
+docs:probe base=origin/master head=929fc4af2 changed=28 rules=agent-notes,md-links,derived-view,terminology,claims-need-evidence,id-uniqueness,contract-anchors,doc-ownership-impact
+ADVISORY SOURCE_CHANGED_DOC_IMPACT: 6 source path(s) changed; owning-document selection is advisory in v0 and becomes blocking with CI wiring (EB-ADR-0001)
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=1

@@ -1,0 +1,270 @@
+#!/usr/bin/env node
+// Shared document-consistency checks (Engineering Baseline EB1-E / EB1-F, v0).
+//
+// Library only: importing this module has no side effects, and every function
+// takes an explicit root so a negative-control scenario can point it at a
+// scratch fixture. Used by scripts/docs-probe.mjs, scripts/docs-sync.mjs and
+// scripts/doc-consistency-controls.mjs.
+//
+// Design commitments that the controls prove:
+//   * a rule that cannot fail is not delivered — see the scenario table in
+//     scripts/doc-consistency-controls.mjs;
+//   * Ideas and Proposals never require runtime evidence (no false red);
+//   * a claim about current behaviour requires an artifact that exists;
+//   * an unresolvable base is REFUSED, never treated as "nothing to check".
+
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { join, relative, dirname, resolve, sep } from 'node:path';
+import { execFileSync } from 'node:child_process';
+
+/** Memoized "is this a real commit here" probe, so a doc full of SHAs costs one
+ *  git call per distinct object. Unknown/absent objects return false. */
+export function makeCommitExists(root) {
+  const memo = new Map();
+  return (sha) => {
+    if (!memo.has(sha)) {
+      let ok = false;
+      try {
+        ok = execFileSync('git', ['-C', root, 'cat-file', '-t', sha], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() === 'commit';
+      } catch {
+        ok = false;
+      }
+      memo.set(sha, ok);
+    }
+    return memo.get(sha);
+  };
+}
+
+/** Documents whose statements describe current behaviour. Historical logs and
+ *  finished plans are deliberately excluded: they are preserved text. */
+export const CURRENT_STATE_DIRS = ['docs/contracts', '.agents/notes', 'dev/engineering'];
+export const CURRENT_STATE_FILES = [
+  'AGENTS.md',
+  'README.md',
+  'docs/STATUS.md',
+  'docs/glossary.md',
+  'docs/terminology.md',
+  'docs/BRANCHING.md',
+];
+/** Exempt from evidence requirements: they may describe the future by design. */
+export const PROPOSAL_PREFIXES = ['docs/ideas/', '.agents/notes/proposed/'];
+
+/** Append-only logs, archived plans and captured evidence are PRESERVED TEXT.
+ *  Rewriting or retro-flagging them is not a document check's job; the plan is
+ *  explicit that historical records stay as written. */
+export const HISTORICAL_PREFIXES = [
+  'dev/agent-workflow/SESSION_ROUTER_LOG.md',
+  'dev/agent-workflow/evidence/',
+  'docs/plans/finished/',
+  'docs/plans/paused/',
+  'docs/plans/issue-fix/',
+  'docs/plans/third-party/',
+  'docs/repairs/',
+  'docs/issues/',
+  'references/',
+  // Frozen decision records: they name rejected legacy vocabulary on purpose
+  // ("any DTO carrying `memberId` fails with LEGACY_MEMBER_ID_REJECTED"). Scanning
+  // them for the very terms they quarantine is a false positive by construction.
+  'docs/contracts/freeze-confirmation.md',
+  'docs/contracts/g3-report.md',
+];
+
+export function isHistorical(rel) {
+  return HISTORICAL_PREFIXES.some((p) => rel === p || rel.startsWith(p));
+}
+
+export function isCurrentStateDoc(rel) {
+  if (isHistorical(rel)) return false;
+  if (PROPOSAL_PREFIXES.some((p) => rel.startsWith(p))) return false;
+  if (CURRENT_STATE_FILES.includes(rel)) return true;
+  return CURRENT_STATE_DIRS.some((d) => rel.startsWith(`${d}/`));
+}
+
+export function isProposalDoc(rel) {
+  return PROPOSAL_PREFIXES.some((p) => rel.startsWith(p));
+}
+
+function listMarkdown(root, dirs, files = []) {
+  for (const relDir of dirs) {
+    const abs = join(root, relDir);
+    if (!existsSync(abs)) continue;
+    const st = statSync(abs);
+    if (st.isFile()) {
+      if (relDir.endsWith('.md')) files.push(relDir);
+      continue;
+    }
+    for (const name of readdirSync(abs)) {
+      const child = join(abs, name);
+      const rel = relative(root, child).split(sep).join('/');
+      if (statSync(child).isDirectory()) listMarkdown(root, [rel], files);
+      else if (name.endsWith('.md')) files.push(rel);
+    }
+  }
+  return [...new Set(files)].sort();
+}
+
+/** Markdown relative link targets that do not resolve. Code fences and inline
+ *  code spans are removed first: a `foo(bar)` inside code is not a link, and
+ *  matching there produced nonsense findings on the first run of this tool.
+ *  Historical documents are skipped (preserved text). Anchors are ignored. */
+export function checkLinks(root, relFiles) {
+  const findings = [];
+  for (const rel of relFiles) {
+    if (isHistorical(rel)) continue;
+    const abs = join(root, rel);
+    if (!existsSync(abs)) continue;
+    const stripped = readFileSync(abs, 'utf8')
+      .replace(/^```[\s\S]*?^```/gm, '')
+      .replace(/`[^`\n]*`/g, '');
+    const re = /\[([^\]\n]{0,120})\]\((?!https?:\/\/|mailto:)([^)\s]{1,300})(?:\s+"[^"]*")?\)/g;
+    let m;
+    while ((m = re.exec(stripped))) {
+      const target = m[2].split('#')[0].trim();
+      if (!target || /\s/.test(target)) continue;
+      if (!existsSync(resolve(dirname(abs), target))) {
+        findings.push({ code: 'LINK_DANGLING', detail: `${rel}: [${m[1]}](${m[2]})` });
+      }
+    }
+  }
+  return findings;
+}
+
+/** Read the "do not write" column of docs/terminology.md as a derived rule set.
+ *  The column is bare comma-separated tokens by contract (see that file); a cell
+ *  containing a parenthesis is a data error and is reported, not guessed at. */
+export function loadDeprecatedTerms(root) {
+  const file = join(root, 'docs/terminology.md');
+  if (!existsSync(file)) return [];
+  const terms = [];
+  const rows = readFileSync(file, 'utf8').split(/\r?\n/).filter((l) => l.startsWith('|'));
+  for (const row of rows.slice(2)) {
+    const cells = row.split('|').map((c) => c.trim());
+    const bad = cells[4];
+    if (!bad || bad === 'do not write' || /^-+$/.test(bad)) continue;
+    for (const piece of bad.split(',')) {
+      const token = piece.replace(/`/g, '').trim();
+      if (!token) continue;
+      if (/[（()）]/.test(token)) continue; // qualifier in a prohibition cell: data error, ignore rather than guess
+      if (token.length > 1) terms.push(token);
+    }
+  }
+  return [...new Set(terms)];
+}
+
+/** Deprecated synonym used in a current-state document. Historical text and the
+ *  rule-source file itself are skipped — a document that enumerates prohibited
+ *  strings must not be flagged by its own list. */
+export function checkDeprecatedTerms(root, relFiles) {
+  const terms = loadDeprecatedTerms(root);
+  const findings = [];
+  for (const rel of relFiles) {
+    if (!isCurrentStateDoc(rel)) continue;
+    if (rel === 'docs/terminology.md') continue;
+    const abs = join(root, rel);
+    if (!existsSync(abs)) continue;
+    const lines = readFileSync(abs, 'utf8').split(/\r?\n/);
+    lines.forEach((line, idx) => {
+      if (line.trimStart().startsWith('>')) return;
+      for (const term of terms) {
+        if (line.includes(term)) {
+          findings.push({ code: 'TERMINOLOGY_DEPRECATED', detail: `${rel}:${idx + 1}: "${term}" — see docs/terminology.md` });
+        }
+      }
+    });
+  }
+  return findings;
+}
+
+const CLAIM_RE = /(已实现|已交付|已支持|已验证|已测试|已发布|已通过|is delivered|is supported|has been implemented|is verified|is released|passes today|works today)/i;
+// What counts as evidence for a current-behaviour claim, in descending strength:
+// an evidence artifact, a runnable check, a source citation (existence checked;
+// ".md" alone is NOT evidence — a doc citing a doc is the drift this rule exists
+// to catch), or a commit that exists in this repository.
+const PATH_RE = /((?:dev\/agent-workflow\/evidence|scripts|tests|packages|src)\/[\w./@-]+\.(?:mjs|ts|tsx|js|json|yaml|yml))(?::\d+)?/g;
+const SHA_RE = /\b[0-9a-f]{7,40}\b/g;
+const SUPPRESS_RE = /no-evidence-needed:/;
+
+/**
+ * A current-state document asserting present behaviour must cite something that
+ * exists. Proposals and Ideas are exempt by construction (AC-EB-0001 positive
+ * case). This is a review trigger over prose, not a proof: the marker
+ * `no-evidence-needed: <reason>` suppresses it and is itself greppable.
+ */
+export function checkClaimsHaveEvidence(root, relFiles, { commitExists = null } = {}) {
+  const findings = [];
+  for (const rel of relFiles) {
+    if (!isCurrentStateDoc(rel) || isProposalDoc(rel)) continue;
+    const abs = join(root, rel);
+    if (!existsSync(abs)) continue;
+    const lines = readFileSync(abs, 'utf8').split(/\r?\n/);
+    lines.forEach((line, idx) => {
+      if (!CLAIM_RE.test(line)) return;
+      // Table cells in these repositories are overwhelmingly definitional or
+      // permission-granting ("what may enter master"), so a lexical match there is
+      // a policy statement, not a delivery claim. Claims inside tables are NOT
+      // covered — declared in docs:probe's limit output rather than hidden.
+      if (/^\s*\|/.test(line)) return;
+      const window = lines.slice(Math.max(0, idx - 3), idx + 8).join('\n');
+      if (SUPPRESS_RE.test(window)) return;
+      if (/verified_by:/.test(window)) return;
+      const cited = (window.match(PATH_RE) || []).filter((p) => existsSync(join(root, p.split(':')[0])));
+      if (cited.length) return;
+      if (commitExists) {
+        const shas = (window.match(SHA_RE) || []).filter((s) => /^[0-9a-f]{7,40}$/.test(s));
+        if (shas.some((s) => commitExists(s))) return;
+      }
+      findings.push({ code: 'CLAIM_WITHOUT_EVIDENCE', detail: `${rel}:${idx + 1}: asserts current behaviour with no resolvable artifact, check, source citation or commit (NOT_VERIFIED)` });
+    });
+  }
+  return findings;
+}
+
+/** Duplicate stable ids in the contract index, and duplicate glossary concepts. */
+export function checkIdUniqueness(root) {
+  const findings = [];
+  const idsFile = join(root, 'docs/contracts/engineering-baseline/ids.yaml');
+  if (existsSync(idsFile)) {
+    const seen = new Map();
+    readFileSync(idsFile, 'utf8').split(/\r?\n/).forEach((line, idx) => {
+      const m = line.match(/^\s*-?\s*id:\s*(\S+)/);
+      if (!m) return;
+      if (seen.has(m[1])) findings.push({ code: 'ID_DUPLICATE', detail: `${relative(root, idsFile)}:${idx + 1}: ${m[1]} also at line ${seen.get(m[1])}` });
+      else seen.set(m[1], idx + 1);
+    });
+  }
+  const glossary = join(root, 'docs/glossary.md');
+  if (existsSync(glossary)) {
+    const seen = new Map();
+    readFileSync(glossary, 'utf8').split(/\r?\n/).forEach((line, idx) => {
+      const m = line.match(/^\|\s*(C-EB-\d{4})\s*\|/);
+      if (!m) return;
+      if (seen.has(m[1])) findings.push({ code: 'ID_DUPLICATE', detail: `docs/glossary.md:${idx + 1}: ${m[1]} also at line ${seen.get(m[1])}` });
+      else seen.set(m[1], idx + 1);
+    });
+  }
+  return findings;
+}
+
+/** Every `source_anchor:` in the id index must exist (a dead anchor is how a
+ *  contract quietly stops being checkable). */
+export function checkContractAnchors(root) {
+  const file = join(root, 'docs/contracts/engineering-baseline/ids.yaml');
+  if (!existsSync(file)) return [{ code: 'CONTRACT_INDEX_MISSING', detail: 'docs/contracts/engineering-baseline/ids.yaml' }];
+  const findings = [];
+  readFileSync(file, 'utf8').split(/\r?\n/).forEach((line, idx) => {
+    const m = line.match(/^\s*source_anchor:\s*(\S+)/);
+    if (!m) return;
+    if (!existsSync(join(root, m[1]))) findings.push({ code: 'CONTRACT_ANCHOR_MISSING', detail: `ids.yaml:${idx + 1}: ${m[1]}` });
+  });
+  return findings;
+}
+
+/** Scope for `docs:sync --check`. Deliberately excludes the evidence tree and
+ *  the append-only round log: they are historical (isHistorical) and scanning
+ *  21k captured files is not a document check. `docs/plans/active/` IS included:
+ *  it describes current work, so pre-existing findings there are real findings
+ *  (reported as baseline debt, not silenced). */
+export function allDocsForFullCheck(root) {
+  const found = listMarkdown(root, ['docs', '.agents', 'dev/engineering', 'AGENTS.md', 'README.md']);
+  return found.filter((rel) => !isHistorical(rel));
+}
