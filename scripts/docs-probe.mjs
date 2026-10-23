@@ -168,6 +168,21 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
     const ownership = selectOwningDocs(root, buckets.source, docTargets);
     findings.push(...ownership.findings);
     const staleOwners = ownership.owned.filter((o) => !o.touched);
+    // A rule marked enforce:true is a promise this line made to itself: the tool and
+    // the document describing it move together. Advisory would have been the honest
+    // setting for somebody else's code; for our own tooling, a footnote nobody reads
+    // is how a tool and its documentation drift apart — which is the exact failure
+    // this whole branch exists to catch in other people's repos.
+    const staleStrict = staleOwners.filter((o) => o.enforce);
+    const strictSeen = new Set();
+    for (const o of staleStrict) {
+      if (strictSeen.has(o.source)) continue;
+      strictSeen.add(o.source);
+      findings.push({
+        code: 'DOC_OWNER_UPDATE_MISSING',
+        detail: `${o.source} changed but its declared owner document did not: ${o.docs.join(', ')} (rule enforce:true)`,
+      });
+    }
     if (ownership.owned.length) {
       advisories.push({
         code: 'DOC_IMPACT_OWNED',
@@ -184,7 +199,7 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
     }
     advisories.push({
       code: 'SOURCE_CHANGED_DOC_IMPACT',
-      detail: 'owning-document selection is advisory in v0 and becomes blocking only with CI wiring (EB-ADR-0001)',
+      detail: 'owning-document selection is advisory except where dev/engineering/doc-ownership.yaml marks a rule enforce:true; those are self-imposed refusals (DOC_OWNER_UPDATE_MISSING), and CI wiring (EB-ADR-0001) remains a separate coordination decision',
     });
   }
 

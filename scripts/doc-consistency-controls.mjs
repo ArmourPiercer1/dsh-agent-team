@@ -130,6 +130,10 @@ owners:
   - glob: scripts/doc-checks.mjs
     docs:
       - docs/glossary.md
+  - glob: scripts/tool.mjs
+    docs:
+      - docs/terminology.md
+    enforce: true
   - glob: packages/*/src/**
     docs:
       - docs/glossary.md
@@ -633,6 +637,30 @@ control('NEG-49 a documented field the validator does not accept is refused', (d
   j.properties.entries.items.properties.owner_document = { type: 'string' };
   writeFile(d, p, JSON.stringify(j, null, 2) + '\n');
   return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_FIELD_EXTRA')];
+});
+
+control('POS-12 an enforced rule is satisfied when the owner doc moves too', (d) => {
+  writeFile(d, 'scripts/tool.mjs', 'export const changed = 1;\n');
+  writeFile(d, 'docs/terminology.md', '# CTL terminology\n\nchanged on purpose\n');
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 0, 'DOC_IMPACT_OWNED')];
+});
+
+control('NEG-52 an enforced rule refuses when the owner doc is left behind', (d) => {
+  writeFile(d, 'scripts/tool.mjs', 'export const changed = 1;\n');
+  return [expectBlocking('probe', run(PROBE, ['--worktree-only', '--root', d]), 'DOC_OWNER_UPDATE_MISSING')];
+});
+
+control('NEG-53 enforcement stays per rule, not blanket', (d) => {
+  // The wildcard rule owns this path but is not marked enforce, so the same situation
+  // has to stay advisory. Without this the flag would be indistinguishable from
+  // "everything owned is blocking", which is the gate this map avoids being.
+  writeFile(d, 'packages/client/src/untouched.ts', 'export const a = 1;\n');
+  const res = run(PROBE, ['--worktree-only', '--root', d]);
+  const failCodes = (res.out.match(/^FAIL ([A-Z_]+)/gm) || []).map((l) => l.slice(5));
+  return [
+    expectRun('probe', res, 0, 'DOC_IMPACT_OWNED'),
+    { ok: !failCodes.includes('DOC_OWNER_UPDATE_MISSING'), why: 'blocking set: [' + (failCodes.join(',') || 'empty') + ']' },
+  ];
 });
 
 control('NEG-46 a second top-level entries: is refused and names the key', (d) => {

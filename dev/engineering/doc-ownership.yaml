@@ -11,8 +11,15 @@
 #   * matching an entry turns the advisory into a named document list;
 #   * matching nothing yields `DOC_IMPACT_UNOWNED` — a coverage measurement, not a
 #     failure;
-#   * nothing here is blocking in v0. Blocking belongs to CI wiring (EB3-B), which
-#     is a coordination decision and has not been taken.
+#   * an entry may carry `enforce: true`. That makes *this* rule self-imposed:
+#     changing a matching source file without touching its declared owner document
+#     is a blocking `DOC_IMPACT_STALE`, not a footnote. It is set only on the
+#     tooling this line owns. Everything else stays advisory, because turning it on
+#     for someone else's package would be putting this line's preference on their
+#     changes.
+#   * nothing here is wired into CI. Self-imposed enforcement is a discipline inside
+#     this line, not a gate on others; CI wiring remains EB3-B, a coordination
+#     decision that has not been taken.
 #
 # Entries must name documents that exist. That is checked (`CONTRACT_ANCHOR_MISSING`
 # style refusal happens in docs:sync via the anchor rule for contract files; here a
@@ -20,23 +27,37 @@
 
 schema_version: 1
 owners:
+  # The five rules below name the tooling this line writes. They are self-imposed:
+  # change the tool, change the document that describes it.
   - glob: scripts/docs-*.mjs
     docs:
       - tests/doc-consistency/README.md
       - docs/contracts/engineering-baseline/README.md
+    enforce: true
   - glob: scripts/doc-checks.mjs
     docs:
       - tests/doc-consistency/README.md
       - docs/terminology.md
+    enforce: true
   - glob: scripts/gen-current-state.mjs
     docs:
       - dev/engineering/README.md
+    enforce: true
   - glob: scripts/verify-agent-notes.mjs
     docs:
       - .agents/notes/README.md
+    enforce: true
   - glob: scripts/doc-consistency-controls.mjs
     docs:
       - tests/doc-consistency/README.md
+    enforce: true
+  # Without this rule the write-boundary helper fell through to the catch-all
+  # scripts/** entry, whose owner is docs/STATUS.md — a document this line must not
+  # edit. A rule that points at a document you cannot touch is not an owner.
+  - glob: scripts/generated-write.mjs
+    docs:
+      - tests/doc-consistency/README.md
+    enforce: true
   - glob: packages/legacy/**
     docs:
       - packages/legacy/README.md

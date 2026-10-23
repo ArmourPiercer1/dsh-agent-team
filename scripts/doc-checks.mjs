@@ -397,9 +397,14 @@ export function selectOwningDocs(root, sourcePaths, changedDocs) {
   let cur = null;
   readFileSync(file, 'utf8').split(/\r?\n/).forEach((line) => {
     const g = line.match(/^\s*-?\s*glob:\s*(\S+)/);
-    if (g) { cur = { glob: g[1], docs: [] }; entries.push(cur); return; }
+    if (g) { cur = { glob: g[1], docs: [], enforce: false }; entries.push(cur); return; }
     const doc = line.match(/^\s+-\s+(\S+)/);
-    if (doc && cur) cur.docs.push(doc[1]);
+    if (doc && cur && !/^(glob|enforce):/.test(doc[1])) { cur.docs.push(doc[1]); return; }
+    // enforce:true marks a rule this line imposes on itself: a matching source change
+    // that leaves the owner document untouched is a refusal, not a footnote. It is
+    // declared per rule so the map stays advisory for code this line does not own.
+    const enf = line.match(/^\s+enforce:\s*(\S+)/);
+    if (enf && cur) cur.enforce = enf[1] === 'true';
   });
   // Escape first, expand second. The first version expanded '**' to '.*' and only
   // then escaped dots, producing a pattern that matched no path at all, which left
@@ -418,7 +423,8 @@ export function selectOwningDocs(root, sourcePaths, changedDocs) {
     for (const doc of hit.docs) {
       if (!existsSync(join(root, doc))) findings.push({ code: 'DOC_OWNER_DOC_MISSING', detail: `doc-ownership.yaml: ${hit.glob} -> ${doc} (owner document does not exist)` });
     }
-    owned.push({ source: p, docs: hit.docs, touched: hit.docs.some((x) => changedDocs.includes(x)) });
+    if (!hit.docs.length) findings.push({ code: 'DOC_OWNER_NO_DOCS', detail: `doc-ownership.yaml: ${hit.glob} declares no owner document` });
+    owned.push({ source: p, docs: hit.docs, enforce: hit.enforce === true, touched: hit.docs.some((x) => changedDocs.includes(x)) });
   }
   return { findings, owned, unowned };
 }

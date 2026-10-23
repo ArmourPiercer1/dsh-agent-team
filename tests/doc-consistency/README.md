@@ -48,6 +48,7 @@ gets its own throwaway fixture Git repository under the gitignored
 | probe honesty (P2) | registry + derived view present | `STATE_BRIDGE_UNAVAILABLE` / `STALE_GENERATED_VIEW`: missing inputs are never reported as green |
 | registry grammar (P2) | list-shaped `refs`/`owners`/artifacts, unique keys, closed field set | `registry-duplicate-key` (repeated key in a mapping, repeated top-level scalar, or a second `entries:`), `REGISTRY_REF_SCALAR`, `REGISTRY_OWNER_TYPE`, `REGISTRY_REF_UNRESOLVED`, `REGISTRY_UNKNOWN_FIELD` |
 | evidence location (P2) | `.log`/`.txt`/`.md` under `dev/agent-workflow/evidence/` | `ARTIFACT_LOCATION_UNCONTROLLED`, `ARTIFACT_TYPE_UNSUPPORTED` |
+| self-imposed doc freshness (EB1-E) | a rule in `dev/engineering/doc-ownership.yaml` marked `enforce: true` is satisfied because the owner document changed in the same branch | `DOC_OWNER_UPDATE_MISSING` (blocking, but only for the rules this line marks enforce), `DOC_OWNER_NO_DOCS`; every other rule stays advisory |
 | schema/validator agreement (EB1-C) | `registry.schema.json` matches the enforced field set, enums, patterns and `additionalProperties:false` | `SCHEMA_MISSING`, `SCHEMA_REQUIRED_MISMATCH`, `SCHEMA_FIELD_MISSING`/`_EXTRA`, `SCHEMA_ENUM_MISMATCH`, `SCHEMA_PATTERN_MISMATCH`, `SCHEMA_KEYWORD_MISSING` (a dropped `enum`/`pattern` is not agreement), `SCHEMA_CONSTRAINT_MISMATCH` |
 | delivery-claim binding (EB1-C) | local work stays `verified_local` | `CLAIM_UNBOUND` (no/wrong commit), `CLAIM_TIER_MISMATCH` (C1 asserted as host), `MERGED_CLAIM_UNCORROBORATED`, `RELEASE_CLAIM_UNCORROBORATED` |
 | ratification needs a decision (EB1-D) | `proposed-not-ratified` ids | `ID_RATIFIED_WITHOUT_DECISION`; `ID_RATIFIED_BY_UNKNOWN_NOTE` |
@@ -98,6 +99,22 @@ A scenario passes only when the expected finding code **and** the expected exit
 code are both observed; an unexpected crash is reported as a FAILED control, never
 as a pass (learned the hard way on 2026-10-23, when a `ReferenceError` exit 1 was
 almost logged as a successful negative control).
+
+## Which refusals this line imposes on itself
+
+`dev/engineering/doc-ownership.yaml` may mark a rule `enforce: true`. For those rules
+only, changing the source without changing its declared owner document is a blocking
+`DOC_OWNER_UPDATE_MISSING`. Five rules carry the flag, and every one of them names a
+document this line owns (`tests/doc-consistency/README.md`, `dev/engineering/README.md`,
+`.agents/notes/README.md`, `docs/terminology.md`) — including `scripts/generated-write.mjs`,
+which previously fell through to the catch-all `scripts/**` rule whose owner is
+`docs/STATUS.md`, a document this line is not allowed to edit. A rule pointing at a file
+you may not touch is not an owner; that gap was visible only once the flag existed.
+
+The flag is deliberately absent from `packages/**` and the catch-all rule. Making other
+people's changes carry this line's documentation preference would be a gate on them, and
+this branch has no authority to place one. `docs:probe` reports the rest as
+`DOC_IMPACT_OWNED` / `DOC_IMPACT_UNOWNED` coverage, unchanged.
 
 ## Deliberately NOT covered here (declared, not hidden)
 
