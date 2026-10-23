@@ -935,6 +935,50 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
     expect((await stateNow()).requests.length).toBe(before + 1)
   })
 
+  it('token identity outlives every size threshold: after 258 spent identities a spent token is STILL refused (no eviction resurrection, zero extra append/consume/row)', async () => {
+    // Root ruling @ 9c817: the ledger NEVER evicts a used identity to bound
+    // its size — eviction resurrects an old exec.token as fresh and defeats
+    // the single-flight law. The mount keeps the MINIMAL used-identity record
+    // (correlation + settled) for every token it has ever spent until it is
+    // disposed; nothing large rides the ledger.
+    const world = await mountWorld('evict')
+    const events: Array<{ type: string; data: unknown }> = []
+    const before = (await stateNow()).requests.length
+    const consumedBefore = (await stateNow()).consumptions.length
+    // (a) ONE REAL spent flight: ask → allow → one append, one consume.
+    const spentExec = execFor('call-evict-spent', events)
+    const running = world.todoDef.execute({ todos: VALID_TODOS.map((t) => ({ ...t })) }, spentExec)
+    const row = await waitRowForCall(`plane-todo:${world.plane.realmId}-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    expect(events.length).toBe(1)
+    // (b) 257 MORE used identities CROSS the old 256 eviction threshold (the
+    // spent flight above makes 258 settled totals). Each is a CHEAP typed
+    // classify refusal (unknown ITEM key — refused before any Control
+    // interaction), yet the finally law still SETTLES its token: the mount
+    // has demonstrably spent more identities than any eviction bound.
+    for (let i = 0; i < 257; i++) {
+      await expect(world.todoDef.execute(
+        { todos: [{ content: `filler-${String(i)}`, status: 'pending', extra: i }] },
+        execFor(`call-evict-${String(i)}`, events),
+      )).rejects.toThrow(/P_TODO_CLASSIFY_UNKNOWN_PARAMETER/)
+    }
+    expect(events.length).toBe(1) // the fillers appended NOTHING
+    // (c) THE RESURRECTION PROBE: replay the token spent in (a). Under the
+    // removed eviction path its ledger entry would have been pruned and the
+    // replay check would walk past it into a fresh governed flight. It must
+    // still answer the settled-token refusal with ZERO extra append, ZERO
+    // extra consumption, ZERO extra durable row, ZERO native calls.
+    await expect(world.todoDef.execute({ todos: [{ content: 'resurrected', status: 'pending' }] }, spentExec))
+      .rejects.toThrow(/exec-token-replay/)
+    expect(events.length).toBe(1)
+    expect(world.nativeCalls.length).toBe(1)
+    const state = await stateNow()
+    expect(state.requests.length).toBe(before + 1)
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId)).length).toBe(1)
+    expect(state.consumptions.length).toBe(consumedBefore + 1) // NOTHING else consumed
+  })
+
   it('fix-4 ordering: the owner-current leg runs BEFORE the classify freeze (no post-freeze revise pairs a stale plan)', async () => {
     const world = await mountWorld('order')
     const events: Array<{ type: string; data: unknown }> = []

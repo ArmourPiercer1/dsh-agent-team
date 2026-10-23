@@ -2063,14 +2063,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
           signal.removeEventListener('abort', abortListener)
         }
         // fix-1: every path (success, typed refusal, throw) settles the token's
-        // flight — a settled token is never re-armed; the ledger stays bounded
-        // (the oldest settled entry prunes first, Map insertion order).
+        // flight — a settled token is never re-armed. The entry is the MINIMAL
+        // used-identity record (correlation + settled flag): the plan, the
+        // body result and every temporary reference live in the call's own
+        // scope and die with it; NOTHING large rides the ledger. Used token
+        // identities are NEVER evicted to bound the map's size (root ruling
+        // @ 9c817: eviction would resurrect an old exec.token as fresh,
+        // defeating the whole single-flight law — the ledger's whole point is
+        // "this token has been spent"); the map is released when the mount is
+        // disposed, which is the only legal end of the memory obligation.
         todoTokenLedger.set(tokenKey, { correlation, settled: true })
-        if (todoTokenLedger.size > 256) {
-          for (const [settledToken, settledEntry] of todoTokenLedger) {
-            if (settledEntry.settled) { todoTokenLedger.delete(settledToken); break }
-          }
-        }
       }
     },
     output: TODO_ROW_PRESENTATION_FACE,
