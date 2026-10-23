@@ -76,12 +76,17 @@ import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/
 import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
-import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
+import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
+
+/** A5-M2 B-SESSION: the FIXED native spelling the governed todo row mounts at
+ *  (closed key + injected arm; never a config spelling — see the todo entry in
+ *  PLANE_SUPPORTED_NATIVE_TAKEOVERS and the todo gate in the assembly). */
+export const A5_TODO_MOUNT_NAME = 'todo_write'
 
 /**
  * The host registration law (measured at the pinned host: core tools
@@ -476,6 +481,15 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // layered above); recording the claim here keeps the natexe ledger the
   // complete truth of what this install may mount.
   jobs: Object.freeze(['job_output', 'job_list', 'job_kill']),
+  // A5-M2 B-SESSION (CENTER vertical): the governed todo_write row mounts at the
+  // FIXED native spelling 'todo_write' behind the closed `todoEnabled` key plus an
+  // injected arm (never the configurable `names` map - no config-driven spelling,
+  // same law as the jobs trio). The same-name, same-meaning implementation this
+  // ledger records: the row classifies through the injected governed arm, walks
+  // THIS plane's own PA admission, and runs the captured native definition's own
+  // `execute` through the arm's bind-time snapshot - 保留原生 (M0-B §B-SESSION);
+  // the plane re-implements no host law and holds no authority of its own.
+  todo: Object.freeze(['todo_write']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -782,6 +796,56 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const jobsEnabled = jobsEnabledRaw === true
 
+  // Gate 0c (A5-M2 B-SESSION, CENTER vertical): `planeCfg.todoEnabled` is the
+  // SAME-shaped CLOSED CONSUMPTION KEY. ABSENT = FALSE (zero-flip law by
+  // absence: every shipped world keeps the pre-M2 mount shape byte-for-byte);
+  // a non-boolean value is a config defect and fails closed on the SAME
+  // existing PLANE_CONFIG_INCOMPLETE refusal. The mount needs the trusted arm
+  // the ASSEMBLY OWNER built (bind-time captured native definition, REAL
+  // member/session-header identity, the injected binding-generation reader -
+  // see governed-families/todo.mjs): `backends.todo` is the injection seam and
+  // the pairing is enforced BOTH directions, so neither half can mount alone
+  // (the glob gate's ④ law: config law, not wiring; no silent fallback).
+  // The injected `description` is the CAPTURED NATIVE definition's own
+  // description bytes - same-name, same-meaning by identity, never a
+  // plane-invented wording (the host varies it with the parallel policy).
+  const todoEnabledRaw = input.plane?.todoEnabled
+  if (todoEnabledRaw !== undefined && typeof todoEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: `planeCfg.todoEnabled must be a boolean when present — got ${JSON.stringify(todoEnabledRaw) ?? String(todoEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const todoEnabled = todoEnabledRaw === true
+  const todoInjectRaw = input.backends?.todo
+  const todoInjectInvalid = (why) => ({ ok: false, code: 'TODO_ARM_INJECT_INVALID', message: `backends.todo: ${why}` })
+  if (todoEnabled && todoInjectRaw === undefined) {
+    return todoInjectInvalid('todoEnabled is true but no governed todo arm is injected - the mount would mask the native name with nothing behind it; there is no fallback row and no silent disable')
+  }
+  if (!todoEnabled && todoInjectRaw !== undefined) {
+    return todoInjectInvalid('an arm is injected while todoEnabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let todoInject = null
+  if (todoInjectRaw !== undefined) {
+    const arm = todoInjectRaw.arm
+    const bad = arm === null || typeof arm !== 'object'
+      ? 'the arm is missing (the governed-families/todo arm object is the injected face)'
+      : (typeof arm.familyId !== 'string' || arm.familyId.length === 0)
+        ? 'arm.familyId is not a non-empty string'
+        : (!Number.isInteger(arm.adapterRevision) || arm.adapterRevision < 0)
+          ? 'arm.adapterRevision is not a non-negative integer'
+          : (typeof arm.providerId !== 'string' || arm.providerId.length === 0)
+            ? 'arm.providerId is not a non-empty string'
+            : !['classify', 'prepare', 'execute', 'cancel', 'drain'].every((m) => typeof arm[m] === 'function')
+              ? 'the arm does not carry the full classify/prepare/execute/cancel/drain face'
+              : (typeof todoInjectRaw.description !== 'string' || todoInjectRaw.description.length === 0)
+                ? 'the captured native description is missing (the row mounts the HOST description bytes verbatim - same-name, same-meaning)'
+                : undefined
+    if (bad !== undefined) return todoInjectInvalid(bad)
+    todoInject = Object.freeze({ arm, description: todoInjectRaw.description })
+  }
+
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
   // generation read for this mount, asked FRESH at every point that needs an
   // authority generation — the mount kick, EACH admission's construction, and
@@ -967,6 +1031,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
     const spelling = String(name ?? '')
     if (spelling.length === 0) return undefined
     if (spelling === readName) return readName
+    // A5-M2 B-SESSION: the governed todo row mounts at the FIXED native
+    // spelling (closed key, not the `names` map) - the same readName treatment,
+    // and ONLY when this mount actually placed it: an unmounted world answers
+    // undefined here exactly as before (zero flip).
+    if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -983,9 +1052,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // `planSnapshot` + `effects` source for the call-level facts adapter —
   // the SAME canonical identity the approval walked, never a re-parse.
   const livePaPlan = new Map()
-  const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown', signal }) => {
+  // A5-M2: `family` (optional) is the governed-family review block THIS call
+  // carries, sourced ONLY from the arm's classify output the row drove (never
+  // model input, never a plane invention). It rides to the durable Control leg
+  // as `PaControlLegInput.family` — the bridge composes the manifest from it and
+  // checks it against the mount's own registration; an unbound call omits the
+  // key entirely and its manifest stays byte-for-byte unchanged.
+  const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown', signal, family }) => {
     try {
-      return await paAdmitBody({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal })
+      return await paAdmitBody({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal, ...(family === undefined ? {} : { family }) })
     } finally {
       // the plan fact ends with the call (the settled row's re-verification
       // is answered by its TERMINAL Control state, not by facts carried on)
@@ -998,7 +1073,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // plan and the DURABLE Control leg whose guard consumption mints the grant);
   // `paAdmitEdge` is the execution edge that used to follow it inline, line
   // for line. `paAdmitBody` runs the two in sequence, exactly as before.
-  const paAdmitPartA = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+  const paAdmitPartA = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal, family }) => {
     // 9e-3: THIS call's durable mint (row id + the exact manifest bytes the
     // row carries, handed back by the AUTH leg). Per-call by construction:
     // concurrent calls never see each other's mint.
@@ -1190,7 +1265,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // a bare decision boolean (or an approval without a landed grant) is a
       // contract violation, refused. Landing/verify ownership sits with the
       // AUTH bridge (operation-permission/pa-control-bridge.ts), not here.
-      const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly, ...(signal === undefined ? {} : { signal }) })
+      const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly, ...(signal === undefined ? {} : { signal }), ...(family === undefined ? {} : { family }) })
       // fix-4: a cancellation that lands DURING the approval wait means the
       // invocation is gone — zero PA consumption, zero body. Whatever the
       // Control row already did stays truthfully as-is (never unwound,
@@ -1417,7 +1492,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (edge.ok !== true) {
       return { kind: 'deny', code: String(edge.error?.code ?? 'GRANT_CONSUMPTION_REFUSED'), detail: String(edge.error?.message ?? '') }
     }
-    return { kind: 'allow' }
+    // A5-M2: the ONE-SHOT consume witness travels to the row additively (the
+    // kernel's consumed-proof struct: the spent grant + lease) so a governed
+    // family row can demand it. The witness is emitted ONLY on this success
+    // branch — the one place `assembly.consumeForExecution` answered ok — and
+    // never reconstructed here from a non-deny outcome: a row that proceeds
+    // without the proof is refusing, not self-attesting. Existing rows ignore
+    // the field byte-identically.
+    return edge.value === undefined || edge.value === null
+      ? { kind: 'allow' }
+      : { kind: 'allow', consumedProof: edge.value }
   }
 
   const paAdmitBody = async (input) => {
@@ -1720,6 +1804,184 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }),
   ] : []
 
+  // A5-M2 B-SESSION GOVERNED TODO ROW (CENTER vertical). The presentation face
+  // mirrors the pinned host todo_write output schema + render (tool-todo
+  // index.ts:155-191 @639ed01539) — same-name, same-meaning; refusals ride the
+  // THROW transport (the read row's S2 law), so `render` only ever sees the
+  // native body's own { todos, counts } return.
+  const TODO_ROW_PRESENTATION_FACE = Object.freeze({
+    schema: Object.freeze({
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        todos: Object.freeze({
+          type: 'array',
+          required: true,
+          items: Object.freeze({
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              content: Object.freeze({ type: 'string', required: true }),
+              status: Object.freeze({ type: 'string', required: true, enum: ['pending', 'in_progress', 'completed'] }),
+            },
+          }),
+        }),
+        counts: Object.freeze({
+          type: 'object',
+          additionalProperties: false,
+          required: true,
+          properties: {
+            pending: Object.freeze({ type: 'integer', required: true }),
+            inProgress: Object.freeze({ type: 'integer', required: true }),
+            completed: Object.freeze({ type: 'integer', required: true }),
+          },
+        }),
+      },
+    }),
+    render: (_args, value) => [{
+      type: 'text',
+      text: `Updated todo list: ${String(value.counts.pending)} pending, ${String(value.counts.inProgress)} in progress, ${String(value.counts.completed)} completed.`,
+    }],
+  })
+  const todoDefs = todoInject === null ? [] : [Object.freeze({
+    name: A5_TODO_MOUNT_NAME,
+    // The CAPTURED native description bytes (Gate 0c-todo) — the host varies
+    // this text with the parallel policy; mounting the captured value keeps the
+    // model-facing meaning identical to the world this row took over.
+    description: todoInject.description,
+    parameters: Object.freeze({
+      type: 'object',
+      properties: {
+        todos: {
+          type: 'array',
+          description: 'The COMPLETE task list, replacing any previous list.',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              content: { type: 'string', description: 'What the task is — a short imperative line.' },
+              status: { type: 'string', enum: ['pending', 'in_progress', 'completed'], description: 'pending (not started) | in_progress (now) | completed (done).' },
+            },
+            required: ['content', 'status'],
+          },
+        },
+      },
+      required: ['todos'],
+    }),
+    // THE vertical: classify (pure, snapshot) → this plane's ONE PA walk
+    // (Part A: binding facts, admitCall, the durable Control leg whose guard
+    // consumption mints the grant; the family block rides the leg input) →
+    // arm.prepare(grant) (internal state only) → the execution edge (the
+    // kernel's one-shot consume, its witness carried back) → arm.execute,
+    // which enters the CAPTURED native body through bind-time snapshots only.
+    // There is no native fallback anywhere below: the refusal paths all end in
+    // a typed throw, and a cancelled call stops with zero append by the same
+    // law the PA walk already states.
+    execute: async (raw, exec) => {
+      const arm = todoInject.arm
+      let classified
+      try {
+        // The correlation is the a5p5 LEDGER's allocated string the dispatcher
+        // carries (exec.tokenKey — the same identity the read/shell rows use);
+        // whatever is present goes to the ARM, which answers its own typed
+        // refusal for a missing one. The row invents nothing.
+        classified = arm.classify(raw, exec, typeof exec?.tokenKey === 'string' ? exec.tokenKey : '')
+      } catch (error) {
+        throw new Error(`refused-todo arm-unavailable — the governed todo arm could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
+      }
+      if (classified.ok !== true || classified.plan === undefined) {
+        throw new Error(`refused-todo ${classified.code ?? 'P_TODO_CLASSIFY_INVALID_ARGUMENTS'} — ${classified.detail ?? 'the governed classify refused this call before admission'}`)
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        throw new Error(`refused-todo effects-unparsable — the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+      }
+      const walk = {
+        realmId,
+        callId: typeof exec?.tokenKey === 'string' ? exec.tokenKey : '',
+        parametersFingerprint: classified.parametersFingerprint,
+        requestedEffects: parsedEffects.value,
+        toolName: A5_TODO_MOUNT_NAME,
+        // The family block: the arm's review payload's four P-adds at FULL
+        // VALUE (载荷法). The bridge composes the durable manifest from this and
+        // checks it against the mount's own registration — and the arm's
+        // payload NEVER becomes a second approval anywhere on this path.
+        family: Object.freeze({
+          familyId: classified.reviewPayload.familyId,
+          adapterRevision: classified.reviewPayload.adapterRevision,
+          providerIdentity: classified.reviewPayload.providerIdentity,
+          targetManifest: classified.reviewPayload.targetManifest,
+        }),
+        ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+      }
+      const opened = await paAdmit.open(walk)
+      if (opened.kind === 'deny') {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`refused-todo ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+      }
+      if (opened.cancelled === true) {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`todo_write · cancelled — the call was cancelled at the PA edge before admission (${String(settled.appendOutcome ?? 'zero append')})`)
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        arm.cancel(classified.plan)
+        throw new Error(`refused-todo APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal arm state never substitutes for the kernel answer`)
+      }
+      let prepared
+      try {
+        prepared = arm.prepare(classified.plan, opened.grant)
+      } catch (error) {
+        // An approved walk that dies before the edge still owns its plan fact:
+        // it closes HERE (the split-path law paAdmit.closePlan carries for
+        // every early hand-off exit — an exception is one of them).
+        paAdmit.closePlan(walk.callId)
+        arm.cancel(classified.plan)
+        throw new Error(`refused-todo arm-unavailable — the arm threw while preparing the grant (${String(error?.message ?? error).slice(0, 160)}); the plan fact was closed and nothing ran`)
+      }
+      if (prepared.ok !== true) {
+        // The plan fact of a walk that never proceeds ends HERE (the split-path
+        // law paAdmit.closePlan carries for every early hand-off exit).
+        paAdmit.closePlan(walk.callId)
+        throw new Error(`refused-todo ${prepared.code ?? 'P_TODO_NOT_ADMITTED'} — ${prepared.detail ?? 'the arm refused the kernel grant'}`)
+      }
+      const edge = await paAdmit.edge({
+        ...walk,
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      })
+      if (edge.kind === 'deny') {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`refused-todo ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+      }
+      if (edge.cancelled === true) {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`todo_write · cancelled — the call was cancelled at the execution edge (${String(settled.appendOutcome ?? 'zero append')}; the approval stays unspent and is never replayed)`)
+      }
+      // `consumed: true` is produced ONLY from the REAL final edge's success
+      // branch: the witness `edge.consumedProof` is emitted solely where THIS
+      // call's `assembly.consumeForExecution` answered ok (the one-shot kernel
+      // ledger), and the row DEMANDS it — an allow shape without its witness
+      // refuses (the arm never receives a self-attested "consumed", never a
+      // grant backfilled from the pre-edge copy). The arm then pairs against
+      // the SPENT grant the witness carries, never a re-minted copy.
+      const proof = edge.consumedProof
+      if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`refused-todo CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the row never self-attests consumption from a missing denial and the body does not run (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+      }
+      const ran = await arm.execute(classified.plan, { consumed: true, grant: proof.grant })
+      if (ran.ok !== true) {
+        throw new Error(`refused-todo ${ran.code ?? 'P_TODO_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the body'}`)
+      }
+      return ran.value
+    },
+    output: TODO_ROW_PRESENTATION_FACE,
+    presentCall: (args) => ({ card: 'generic', title: 'Update todo list', kind: 'other', rawInput: args?.todos }),
+  })]
+
   const baseDefs = readExecutor === null ? defs : Object.freeze([
     ...defs,
     Object.freeze({
@@ -1780,8 +2042,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
-  // to `allDefs = baseDefs`.
-  const allDefs = jobsDefs.length === 0 ? baseDefs : Object.freeze([...baseDefs, ...jobsDefs])
+  // to `allDefs = baseDefs`. The todo row joins the same machinery under the
+  // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0
+    ? baseDefs
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -1863,6 +2128,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       backends: Object.freeze({
         search: hostedSearch, glob: hostedGlob, shell: hostedShell,
         ...(readExecutor === null ? {} : { read: readExecutor }),
+        ...(todoInject === null ? {} : { todo: todoInject.arm }),
       }),
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
@@ -1899,6 +2165,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // flight, the unspent grant and the plan fact die with the
             // placement (teardown law, independent of the terminal observer).
             readExecutor?.paHandoffCloseAll?.()
+            // A5-M2 B-SESSION: DRAINING is the arm's teardown half — after it,
+            // no NEW call reaches any body (an entered body is not rewound,
+            // and there is no native to fall back to; the row mask is disposed
+            // with the mount regardless).
+            if (todoInject !== null) todoInject.arm.drain()
             livePaPlan.clear()
             for (const d of disposers) {
               try {
