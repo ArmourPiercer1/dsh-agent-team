@@ -1,0 +1,15 @@
+node:path:1257
+      validateString(path, `paths[${i}]`);
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+    at resolve (node:path:1257:7)
+    at findTestRepoRoot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/paths.mjs:100:13)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs:71:19
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+
+Node.js v24.21.0
