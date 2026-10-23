@@ -14,7 +14,7 @@
 // Exit codes: 0 ok | 1 findings | 2 REFUSED
 
 import { existsSync, readFileSync } from 'node:fs';
-import { writeGenerated } from './generated-write.mjs';
+import { checkGeneratedTarget, writeGenerated } from './generated-write.mjs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run as runNotes } from './verify-agent-notes.mjs';
@@ -27,6 +27,7 @@ import {
   checkIdUniqueness,
   checkContractAnchors,
   checkPlanCitationBlocks,
+  isBlockingFinding,
   checkRatification,
   allDocsForFullCheck,
 } from './doc-checks.mjs';
@@ -96,7 +97,9 @@ if (invokedDirectly) {
     // The derived view is a record OF the registry. Writing it while the registry
     // fails its own integrity rules would launder the defect into a generated file
     // that reads like a verified statement.
-    const blocking = built.findings.filter((f) => /^(REGISTRY|FAKE_VERIFICATION|ARTIFACT_|REF_|STATE_BRIDGE)/.test(f.code));
+    // Same classification as docs:sync --check and docs:probe: a claim that cites
+    // nothing must not be writable by one entry point and only warned about by another.
+    const blocking = built.findings.filter(isBlockingFinding);
     if (blocking.length) {
       for (const f of blocking) console.log(`FAIL ${f.code}: ${f.detail}`);
       console.log('REFUSED write: findings above');
@@ -107,10 +110,20 @@ if (invokedDirectly) {
       console.log(`REFUSED WRITE_TARGET_NORMATIVE: ${target}`);
       process.exit(2);
     }
+    // Boundary BEFORE content. Comparing first let a symlinked target answer
+    // "already fresh" and exit 0 without the location ever being checked — found by
+    // NEG-27 rather than by reading, which is the point of the control.
+    const place = checkGeneratedTarget(root, target);
+    if (!place.ok) {
+      console.log(`REFUSED WRITE_BOUNDARY: ${place.why}`);
+      process.exit(2);
+    }
     const next = renderView(built);
     const before = existsSync(join(root, target)) ? readFileSync(join(root, target), 'utf8') : '';
     if (before === next) {
-      console.log(`docs:sync --write: ${target} already fresh`);
+      // Wording matters: this is a statement about content equality and about the
+      // fact that no bytes were written. It is not a claim that a write was verified.
+      console.log(`docs:sync --write: no-op, ${target} already matches the rendered view; nothing was written`);
       process.exit(0);
     }
     const written = writeGenerated(root, target, next);

@@ -84,6 +84,9 @@ export function parseRegistryStrict(text) {
       value = field[2].trim();
     } else if (field && entryIndent === null) {
       if (field[1] === 'entries') continue; // top-level key introducing the list
+      // A repeated top-level key used to overwrite silently, so a registry carrying two
+      // legacy_execution_authority lines kept whichever came last.
+      if (Object.prototype.hasOwnProperty.call(doc, field[1])) errors.push(`registry-duplicate-key:L${i + 1}:${field[1]}`);
       doc[field[1]] = unquote(field[2]);
       continue;
     } else {

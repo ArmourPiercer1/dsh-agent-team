@@ -56,7 +56,11 @@ function assertNoSymlink(root, rel) {
  * Returns { ok:true, path } or { ok:false, why }. A policy refusal never throws, so
  * the caller can print the verdict and exit 2 the way the CLI contract expects.
  */
-export function writeGenerated(root, rel, content) {
+/** Validate the location without writing. Splitting this out matters: a caller that
+ *  compares content first ("already fresh") used to return success without ever
+ *  consulting the boundary, so a symlinked target looked fine as long as the bytes
+ *  happened to match. */
+export function checkGeneratedTarget(root, rel) {
   try {
     if (!GENERATED_AREAS.some((a) => rel === a || rel.startsWith(`${a}/`))) throw new Refused(`NOT_GENERATED_AREA: ${rel}`);
     if (!GENERATED_FILES.includes(rel)) throw new Refused(`NOT_GENERATED_FILE: ${rel}`);
@@ -69,6 +73,19 @@ export function writeGenerated(root, rel, content) {
     if (!within || within === '..' || within.startsWith(`..${sep}`)) throw new Refused(`ESCAPE_ROOT: ${rel} resolves outside ${realRoot}`);
 
     assertNoSymlink(realRoot, rel);
+    const parent = dirname(abs);
+    if (existsSync(parent) && realpathSync(parent) !== parent) throw new Refused(`PARENT_NOT_REAL: realpath(${parent}) resolved elsewhere`);
+    return { ok: true, realRoot, abs, within };
+  } catch (e) {
+    return { ok: false, why: e instanceof Refused ? e.message : `IO_ERROR: ${(e && e.message) || String(e)}` };
+  }
+}
+
+export function writeGenerated(root, rel, content) {
+  try {
+    const checked = checkGeneratedTarget(root, rel);
+    if (!checked.ok) throw new Refused(checked.why);
+    const { abs, within } = checked;
 
     const parent = dirname(abs);
     if (!existsSync(parent)) mkdirSync(parent, { recursive: true });

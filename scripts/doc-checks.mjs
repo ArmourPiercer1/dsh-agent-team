@@ -175,12 +175,31 @@ export function checkDeprecatedTerms(root, relFiles) {
   return findings;
 }
 
+/** A delivery or integrity claim that cites nothing is a refusal everywhere.
+ *  docs:probe and the docs:sync --write gate import this list so the three entry
+ *  points cannot disagree about what a refusal is: the earlier split let a claim be
+ *  written by one tool and only warned about by another. */
+export const BLOCKING_PREFIXES = [
+  'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED',
+  'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STATE_BRIDGE', 'REGISTRY',
+  'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_',
+];
+export function isBlockingFinding(f) {
+  return BLOCKING_PREFIXES.some((p) => String(f.code).startsWith(p));
+}
+
 const CLAIM_RE = /(已实现|已交付|已支持|已验证|已测试|已发布|已通过|is delivered|is supported|has been implemented|is verified|is released|passes today|works today)/i;
 // What counts as evidence for a current-behaviour claim, in descending strength:
 // an evidence artifact, a runnable check, a source citation (existence checked;
 // ".md" alone is NOT evidence — a doc citing a doc is the drift this rule exists
 // to catch), or a commit that exists in this repository.
-const PATH_RE = /((?:dev\/agent-workflow\/evidence|scripts|tests|packages|src)\/[\w./@-]+\.(?:mjs|ts|tsx|js|json|yaml|yml))(?::\d+)?/g;
+const CODE_RE = /((?:scripts|tests|packages|src)\/[\w./@-]+\.(?:mjs|ts|tsx|js|json|ya?ml))(?::\d+)?/g;
+// Inside the controlled evidence directory a record is a record whatever its
+// extension; a captured run log is the commonest one. Excluding .log/.txt/.md here
+// made an honest sentence such as "see evidence/<x>/controls-run-1.log" read as an
+// uncited claim. Outside that directory .md still does not count: a document
+// citing another document is the drift this rule exists to catch.
+const EVIDENCE_RE = /(dev\/agent-workflow\/evidence\/[\w./@-]+\.(?:log|txt|md|json|jsonl|csv|ya?ml|mjs|ts|tsx|js))(?::\d+)?/g;
 const SHA_RE = /\b[0-9a-f]{7,40}\b/g;
 const SUPPRESS_RE = /no-evidence-needed:/;
 
@@ -207,7 +226,7 @@ export function checkClaimsHaveEvidence(root, relFiles, { commitExists = null } 
       const window = lines.slice(Math.max(0, idx - 3), idx + 8).join('\n');
       if (SUPPRESS_RE.test(window)) return;
       if (/verified_by:/.test(window)) return;
-      const cited = (window.match(PATH_RE) || []).filter((p) => existsSync(join(root, p.split(':')[0])));
+      const cited = [...(window.match(CODE_RE) || []), ...(window.match(EVIDENCE_RE) || [])].filter((p) => existsSync(join(root, p.split(':')[0])));
       if (cited.length) return;
       if (commitExists) {
         const shas = (window.match(SHA_RE) || []).filter((s) => /^[0-9a-f]{7,40}$/.test(s));
@@ -382,7 +401,14 @@ export function selectOwningDocs(root, sourcePaths, changedDocs) {
     const doc = line.match(/^\s+-\s+(\S+)/);
     if (doc && cur) cur.docs.push(doc[1]);
   });
-  const toRe = (glob) => new RegExp('^' + glob.split('**').join('\u0000').split('*').join('[^/]*').split('\u0000').join('.*').replace(/\./g, '\\.') + '$');
+  // Escape first, expand second. The first version expanded '**' to '.*' and only
+  // then escaped dots, producing a pattern that matched no path at all, which left
+  // every wildcard rule dead while the exact-path control still passed.
+  const toRe = (glob) => {
+    const esc = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    const body = esc.split('**').join('\u0000').split('*').join('[^/]*').split('\u0000').join('.*');
+    return new RegExp('^' + body + '$');
+  };
   const findings = [];
   const owned = [];
   const unowned = [];

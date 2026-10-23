@@ -37,6 +37,15 @@ owners:
   - glob: scripts/doc-consistency-controls.mjs
     docs:
       - tests/doc-consistency/README.md
+  - glob: packages/legacy/**
+    docs:
+      - packages/legacy/README.md
+  - glob: packages/**
+    docs:
+      - docs/STATUS.md
+  - glob: scripts/**
+    docs:
+      - docs/STATUS.md
   - glob: docs/contracts/engineering-baseline/**
     docs:
       - docs/contracts/engineering-baseline/README.md

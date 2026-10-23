@@ -30,16 +30,14 @@ import {
   checkContractAnchors,
   checkPlanCitationBlocks,
   selectOwningDocs,
+  BLOCKING_PREFIXES,
+  isBlockingFinding,
   checkRatification,
 } from './doc-checks.mjs';
 import { run as runNotes } from './verify-agent-notes.mjs';
 import { build as buildStateView, renderView } from './gen-current-state.mjs';
 
-const BLOCKING = [
-  'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED', 'CLAIM_WITHOUT_EVIDENCE',
-  'ID_DUPLICATE', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STATE_BRIDGE', 'REGISTRY', 'FAKE_VERIFICATION',
-  'ARTIFACT_', 'REF_',
-];
+const BLOCKING = BLOCKING_PREFIXES; // single source of truth, shared with docs:sync --write
 const LIMITS = [
   'T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour',
   'no C1/C2/C3 substitution and no security negative control here',
@@ -83,7 +81,10 @@ function classify(paths) {
     else if (p.startsWith('docs/contracts/')) out.contracts.push(p);
     else if (p === 'dev/engineering/current-state.json' || p.startsWith('dev/engineering/')) out.generated.push(p);
     else if (p.endsWith('.md')) out.docs.push(p);
-    else if (/^packages\/.*\/src\//.test(p) || p.startsWith('scripts/')) out.source.push(p);
+    // Source is source wherever it lives: package code outside src/ (shims, per-package
+    // tests, manifests with logic) went to `other` before, so a change there produced no
+    // owner-document advisory at all.
+    else if (/^(packages|src)\/[\w./@-]+\.(?:ts|tsx|js|mjs|cjs|json)$/.test(p) || p.startsWith('scripts/')) out.source.push(p);
     else if (/(^|\/)(package\.json|tsconfig[^/]*\.json|cordis\.patch\.yml)$/.test(p) || p.startsWith('.github/')) out.config.push(p);
     else out.other.push(p);
   }
@@ -177,7 +178,7 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
     if (ownership.unowned.length) {
       advisories.push({
         code: 'DOC_IMPACT_UNOWNED',
-        detail: `${ownership.unowned.length} source path(s) match no owner rule; coverage of dev/engineering/doc-ownership.yaml is ${ownership.owned.length}/${buckets.source.length}`,
+        detail: `${ownership.unowned.length} source path(s) match no owner rule; coverage of dev/engineering/doc-ownership.yaml is ${ownership.owned.length}/${buckets.source.length}; e.g. ${ownership.unowned.slice(0, 4).join(', ')}`,
         candidates: ownership.unowned.slice(0, 12),
       });
     }

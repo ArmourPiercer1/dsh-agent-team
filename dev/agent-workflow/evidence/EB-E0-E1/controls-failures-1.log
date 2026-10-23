@@ -1,0 +1,337 @@
+# raw control output from the runs that failed today, kept verbatim
+# (no control was deleted or weakened to get the suite green)
+
+==================================================
+doc-consistency controls   run_root=.worktrees/eb1-controls-20-RnWydz (owned by pid 20)
+FAIL  POS-1 clean fixture passes the complete check
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-2 probe covers untracked and committed changes
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-3 Idea and Proposed text needs no runtime evidence
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-4 --write regenerates the view only
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-1 note status does not match its directory
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-2 duplicate note id
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-3 implemented note whose evidence artifact is gone
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-4 proposal carrying a delivery claim
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-5 duplicate stable id in the contract index
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-6 contract anchor pointing at a removed file
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-7 registry claims verification with no artifact
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-8 registry names an artifact that does not exist
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-9 derived view left stale after a registry edit
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-10 deprecated synonym in a current-state document
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-11 dangling relative link in a changed document
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-12 current-behaviour claim with no citable artifact
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-13 probe refuses an unresolvable base instead of going green
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-14 probe refuses a missing base rather than assuming no changes
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-15 docs:sync requires an explicit mode
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-16 probe catches an uncommitted broken note
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-6 plan declaring a valid citation block passes
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-17 plan citation pointing at a path that is not there
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-18 plan phase_id contradicting the graph mirror
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-19 id ratified without naming a decision
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-20 ratification citing a note that does not exist
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-21 plan without a citation block is not a finding
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-22 probe survives a contract-index change without crashing
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-23 probe enforces ratification on a changed contract index
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-7 changed source resolves to its declared owner document
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-24 owner map naming a document that does not exist
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-25 source with no owner rule is reported as unowned coverage
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-26 generated path replaced by a symlink to a normative file
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-27 generated area reached through a symlinked parent directory
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-28 probe is not green when the derived view is missing
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-29 probe is not green when the registry is missing
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-30 duplicate key in one registry entry is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-31 refs written as a bare scalar is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-32 owners written as a scalar is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-33 an id-shaped ref that resolves nowhere is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-34 a verification artifact outside the controlled evidence tree
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-35 verified_ci with no commit cited is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-36 C1 evidence asserted as verified_host is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-37 implementation_status merged with no corroborating commit
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-38 release_status released without host verification at C3
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-39 a wrong (non-existent) verification commit is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-9 wildcard owner rule matches a path across directories
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-40 a glob must not match across a path separator
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-10 a current-state document citing an existing run log is clean
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-41 citing an evidence log that was never produced
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-42 verified_ci without a commit: --write refuses, not warns
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-43 verified_ci without a commit: probe blocks
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-44 release claim without host verification: --write refuses
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-45 duplicate top-level registry key is refused, not overwritten
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+controls=56 failed=54  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+
+==================================================
+doc-consistency controls   run_root=.worktrees/eb1-controls-12-Bv3j6w (owned by pid 12)
+FAIL  POS-1 clean fixture passes the complete check
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-2 probe covers untracked and committed changes
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-3 Idea and Proposed text needs no runtime evidence
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-4 --write regenerates the view only
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-1 note status does not match its directory
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-2 duplicate note id
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-3 implemented note whose evidence artifact is gone
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-4 proposal carrying a delivery claim
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-5 duplicate stable id in the contract index
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-6 contract anchor pointing at a removed file
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-7 registry claims verification with no artifact
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-8 registry names an artifact that does not exist
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-9 derived view left stale after a registry edit
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-10 deprecated synonym in a current-state document
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-11 dangling relative link in a changed document
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-12 current-behaviour claim with no citable artifact
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-13 probe refuses an unresolvable base instead of going green
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-14 probe refuses a missing base rather than assuming no changes
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-15 docs:sync requires an explicit mode
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-16 probe catches an uncommitted broken note
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-6 plan declaring a valid citation block passes
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-17 plan citation pointing at a path that is not there
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-18 plan phase_id contradicting the graph mirror
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-19 id ratified without naming a decision
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-20 ratification citing a note that does not exist
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-21 plan without a citation block is not a finding
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-22 probe survives a contract-index change without crashing
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-23 probe enforces ratification on a changed contract index
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-7 changed source resolves to its declared owner document
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-24 owner map naming a document that does not exist
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-25 source with no owner rule is reported as unowned coverage
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-26 generated path replaced by a symlink to a normative file
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-27 generated area reached through a symlinked parent directory
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-28 probe is not green when the derived view is missing
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-29 probe is not green when the registry is missing
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-30 duplicate key in one registry entry is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-31 refs written as a bare scalar is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-32 owners written as a scalar is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-33 an id-shaped ref that resolves nowhere is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-34 a verification artifact outside the controlled evidence tree
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-35 verified_ci with no commit cited is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-36 C1 evidence asserted as verified_host is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-37 implementation_status merged with no corroborating commit
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-38 release_status released without host verification at C3
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-39 a wrong (non-existent) verification commit is refused
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-9 wildcard owner rule matches a path across directories
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-40 a glob must not match across a path separator
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  POS-10 a current-state document citing an existing run log is clean
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-41 citing an evidence log that was never produced
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-42 verified_ci without a commit: --write refuses, not warns
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-43 verified_ci without a commit: probe blocks
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-44 release claim without host verification: --write refuses
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+--
+FAIL  NEG-45 duplicate top-level registry key is refused, not overwritten
+      control crashed: fixture generation failed: fatal: git cat-file: could not get object info
+controls=56 failed=54  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+
+# preservation gap, stated rather than hidden: the two earlier runs (failed=3 and
+# failed=1) were written to the same scratch path and overwritten by the later runs,
+# so only these two 54-failure captures survive. Their findings are reflected in the
+# fixes; their raw text does not exist any more.

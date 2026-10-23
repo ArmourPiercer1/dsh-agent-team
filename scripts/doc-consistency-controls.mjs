@@ -18,7 +18,7 @@
 // ReferenceError exit 1 nearly got logged as a successful negative control).
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
@@ -128,6 +128,9 @@ It holds.
   'dev/engineering/doc-ownership.yaml': `schema_version: 1
 owners:
   - glob: scripts/doc-checks.mjs
+    docs:
+      - docs/glossary.md
+  - glob: packages/*/src/**
     docs:
       - docs/glossary.md
 `,
@@ -396,21 +399,40 @@ control('POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted', (d
 });
 
 control('NEG-26 generated path replaced by a symlink to a normative file', (d) => {
-  const before = 'AGENTS.md';
-  writeFile(d, before, '# FAKE normative file inside the fixture only\n');
+  // The link must resolve INSIDE this fixture, to the fake normative file written
+  // just above. From <fixture>/dev/engineering the fixture root is two levels up;
+  // the earlier '../../../AGENTS.md' pointed one level outside the fixture, which
+  // meant this control was asserting a byte check on a file the link never touched.
+  const target = join(d, 'AGENTS.md');
+  writeFile(d, 'AGENTS.md', '# FAKE normative file inside the fixture only\n');
   rmSync(join(d, 'dev/engineering/current-state.json'));
-  symlinkSync('../../../AGENTS.md', join(d, 'dev/engineering/current-state.json'));
+  symlinkSync('../../AGENTS.md', join(d, 'dev/engineering/current-state.json'));
+  const before = readFileSync(target, 'utf8');
   const res = run(SYNC, ['--write', '--root', d]);
-  return [expectRun('sync --write', res, 2, 'SYMLINK_TARGET'),
-          { ok: read(d, before).includes('FAKE normative file'), why: 'target file content survived the refused write' }];
+  const resolved = realpathSync(join(d, 'dev/engineering/current-state.json'));
+  return [
+    expectRun('sync --write', res, 2, 'SYMLINK_TARGET'),
+    { ok: resolved === target, why: `link resolves to ${relative(d, resolved)} of the fixture` },
+    { ok: readFileSync(target, 'utf8') === before, why: 'fixture AGENTS.md bytes unchanged by the refused write' },
+  ];
 });
 
 control('NEG-27 generated area reached through a symlinked parent directory', (d) => {
+  // dev/engineering already exists in a fresh fixture, so linking over it raises
+  // EEXIST and the parent-link case is never reached. The real directory is moved
+  // aside first, so the link is planted in a slot that genuinely did not exist.
   mkdirSync(join(d, 'outside'), { recursive: true });
   writeFile(d, 'outside/AGENTS.md', '# FAKE normative file inside the fixture only\n');
-  rmSync(join(d, 'dev/engineering/current-state.json'));
-  symlinkSync('../../outside', join(d, 'dev/engineering'));
-  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 2, 'SYMLINK_ANCESTOR')];
+  renameSync(join(d, 'dev/engineering'), join(d, 'outside/engineering'));
+  symlinkSync('../outside/engineering', join(d, 'dev/engineering'));
+  const view = join(d, 'outside/engineering/current-state.json');
+  const viewBefore = existsSync(view) ? readFileSync(view, 'utf8') : null;
+  const res = run(SYNC, ['--write', '--root', d]);
+  return [
+    expectRun('sync --write', res, 2, 'SYMLINK_ANCESTOR'),
+    // A refusal must stay a refusal: nothing may be written through the link either.
+    { ok: (existsSync(view) ? readFileSync(view, 'utf8') : null) === viewBefore, why: 'no bytes written through the linked parent while the write was refused' },
+  ];
 });
 
 control('NEG-28 probe is not green when the derived view is missing', (d) => {
@@ -478,6 +500,61 @@ control('NEG-39 a wrong (non-existent) verification commit is refused', (d) => {
     .replace('    refs: [EB-ADR-0001]', '    refs: [EB-ADR-0001]\n    verification_commit: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'));
   return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'is not a commit in this repository')];
 });
+/* ---- glob semantics: an exact-path control cannot stand in for wildcards ---- */
+control('POS-9 wildcard owner rule matches a path across directories', (d) => {
+  writeFile(d, 'packages/client/src/behaviour.ts', 'export const a = 1;\n');
+  const res = run(PROBE, ['--worktree-only', '--root', d]);
+  const unowned = (res.out.split('\n').find((l) => l.startsWith('ADVISORY DOC_IMPACT_UNOWNED')) || '');
+  return [
+    expectRun('probe', { code: res.code, out: res.out }, 0, 'DOC_IMPACT_OWNED'),
+    { ok: !res.out.includes('DOC_IMPACT_UNOWNED') && !unowned.includes('packages/client/src/behaviour.ts'), why: res.out.includes('DOC_IMPACT_UNOWNED') ? 'wildcard missed it: ' + unowned : 'matched by the wildcard, nothing left unowned' },
+  ];
+});
+
+control('NEG-40 a glob must not match across a path separator', (d) => {
+  // packages/*/src/** names a source tree; a file one segment off must stay unowned
+  // instead of being swept in by a wildcard that crosses separators.
+  writeFile(d, 'packages/client/tools/behaviour.ts', 'export const a = 1;\n');
+  const res = run(PROBE, ['--worktree-only', '--root', d]);
+  const line = (res.out.split('\n').find((l) => l.startsWith('ADVISORY DOC_IMPACT_UNOWNED')) || '');
+  return [{ ok: res.code === 0 && line.includes('packages/client/tools/behaviour.ts'), why: `unowned line: ${line || '(absent)'}` }];
+});
+
+/* ---- evidence records in prose: a log is evidence, a missing one is not ---- */
+control('POS-10 a current-state document citing an existing run log is clean', (d) => {
+  writeFile(d, 'dev/agent-workflow/evidence/CTL/controls-run-9.log', 'controls=1 failed=0\n');
+  writeFile(d, 'dev/engineering/README.md', '# CTL engineering notes\n\nThe gate is verified; see dev/agent-workflow/evidence/CTL/controls-run-9.log.\n');
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 0, 'findings=0')];
+});
+
+control('NEG-41 citing an evidence log that was never produced', (d) => {
+  writeFile(d, 'dev/engineering/README.md', '# CTL engineering notes\n\nThe gate is verified; see dev/agent-workflow/evidence/CTL/controls-run-9.log.\n');
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'CLAIM_WITHOUT_EVIDENCE')];
+});
+
+/* ---- a wrong claim must be refused at every entry point, not just checked ---- */
+const badClaim = (d) => writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('verification_status: not_verified', 'verification_status: verified_ci'));
+
+control('NEG-42 verified_ci without a commit: --write refuses, not warns', (d) => {
+  badClaim(d);
+  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 1, 'CLAIM_UNBOUND')];
+});
+
+control('NEG-43 verified_ci without a commit: probe blocks', (d) => {
+  badClaim(d);
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'CLAIM_UNBOUND')];
+});
+
+control('NEG-44 release claim without host verification: --write refuses', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('release_status: not_released', 'release_status: released'));
+  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 1, 'RELEASE_CLAIM_UNCORROBORATED')];
+});
+
+control('NEG-45 duplicate top-level registry key is refused, not overwritten', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', `schema_version: 1\nschema_version: 2\nentries:\n` + read(d, 'dev/engineering/registry.yaml').split('\n').slice(1).join('\n'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'registry-duplicate-key')];
+});
+
 // ------------------------------ run ------------------------------
 // RUN_ROOT already exists: mkdtempSync created it at import time and owns it.
 
