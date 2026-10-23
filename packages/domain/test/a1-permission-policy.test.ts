@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (A2C-1: the shell class bash/pwsh; Alpha.5 M2 root 20:05: + the invocation-only pair schedule_list/schedule_delete)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (A2C-1: the shell class bash/pwsh; Alpha.5 M2 root 20:05: + the invocation-only pair; root 22:13: + the five G6 session-query names)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -951,6 +951,11 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'pwsh',
       'schedule_list',
       'schedule_delete',
+      'session_search',
+      'session_event_search',
+      'session_trace',
+      'session_event_trace',
+      'session_event_read',
     ])
   })
 
@@ -1153,6 +1158,183 @@ describe('invocation-only schedule vocabulary (Alpha.5 M2, root 20:05)', () => {
   })
 
   it('the original seven names parse exactly as before (bash deny-any still legal)', () => {
+    const policy = policyOf(PERMISSION_SOURCE_BASH_ANY)
+    expect(policy.deny).toEqual([{ tool: 'bash', resource: { kind: 'any' } }])
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Alpha.5 M2 CONTINUATION (root 22:13 limited card) — the five G6
+// SESSION-QUERY names join the SAME invocation-only class the schedule
+// pair opened: named allow/ask/deny with the whole-tool `any` resource in
+// every lane of both roles (under `default: deny` — a named rule is the
+// ONLY legal exception to default-deny, no implicit default-allow),
+// `exact`/`subtree` rejected every lane/role, and the envelope carrier
+// still refuses them (the seven-name operationClass set stays frozen).
+// Name source: host tool-session-query @639ed01539 :66-:109 (verbatim
+// defineTool names); the package is host-UNMOUNTED opt-in at baseline —
+// this vocabulary opens the named channel ONLY, and an invocation rule is
+// never an I/O exemption.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const G6_SESSION_NAMES = ['session_search', 'session_event_search', 'session_trace', 'session_event_trace', 'session_event_read'] as const
+
+describe('invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13)', () => {
+  function indentByG6(lines: string[], by: number): string[] {
+    const pad = ' '.repeat(by)
+    return lines.map((line) => (line.length === 0 ? line : `${pad}${line}`))
+  }
+
+  /** `default: deny` on purpose: a named lane rule is the ONLY exception. */
+  function sessionSource(role: 'leader' | 'member', lanes: string[]): string {
+    const caps = ['    permissions:', '      default: deny', ...lanes]
+    const memberCaps = indentByG6(caps, 2)
+    if (role === 'leader') {
+      return [
+        '---',
+        `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+        'blueprintId: team.g6',
+        'revision: "1"',
+        'leader:',
+        '  templateId: leader',
+        '  persona: "Lead."',
+        '  capabilities:',
+        '    teamTools:',
+        '      kind: allow',
+        '      items: []',
+        '    builtinToolDeny: []',
+        '    skills:',
+        '      kind: allow',
+        '      items: []',
+        '    mcp:',
+        '      kind: allow',
+        '      items: []',
+        ...caps,
+        'members: []',
+        'requirements: []',
+        'memberEnvelopes: []',
+        'policyStates: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
+        'metadata: {}',
+        '---',
+        '',
+      ].join('\n')
+    }
+    return [
+      '---',
+      `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+      'blueprintId: team.g6',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      'members:',
+      '  - templateId: worker',
+      '    persona: "Worker."',
+      '    capabilities:',
+      '      teamTools:',
+      '        kind: allow',
+      '        items: []',
+      '      builtinToolDeny: []',
+      '      skills:',
+      '        kind: allow',
+      '        items: []',
+      '      mcp:',
+      '        kind: allow',
+      '        items: []',
+      ...memberCaps,
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+  }
+
+  function laneBlockG6(lane: string, tool: string, resource: string): string[] {
+    const filled = [
+      `      ${lane}:`,
+      `        - tool: ${tool}`,
+      '          resource:',
+      resource,
+    ]
+    const others = (['allow', 'ask', 'deny'] as const).filter((l) => l !== lane).map((l) => `      ${l}: []`)
+    return [...filled, ...others]
+  }
+
+  it('all five G6 names are vocabulary members; none touches the frozen envelope set', () => {
+    for (const name of G6_SESSION_NAMES) {
+      expect(PERMISSION_TOOL_NAMES).toContain(name)
+    }
+  })
+
+  it('the five names × three lanes × both roles parse with the whole-tool any resource under default:deny (named rule = the only legal exception)', () => {
+    for (const tool of G6_SESSION_NAMES) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const role of ['leader', 'member'] as const) {
+          const blueprint = parseBlueprint(sessionSource(role, laneBlockG6(lane, tool, '            kind: any'))) // throws ⇒ red
+          const caps = role === 'leader' ? blueprint.leader.capabilities : (blueprint.members[0]?.capabilities ?? undefined)
+          expect(caps?.permissions?.default).toBe('deny') // 缺省 preserved — no implicit allow
+          const rules = caps?.permissions?.[lane] as readonly PermissionRule[]
+          expect(rules.length).toBe(1)
+          expect(rules[0]?.tool).toBe(tool)
+          expect(rules[0]?.resource).toEqual({ kind: 'any' })
+        }
+      }
+    }
+  })
+
+  it('exact and subtree are refused for every G6 name in every lane of every role (no resource space exists to project — no cross-tool borrowing)', () => {
+    for (const tool of G6_SESSION_NAMES) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const role of ['leader', 'member'] as const) {
+          for (const kind of ['exact', 'subtree']) {
+            const source = sessionSource(role, laneBlockG6(lane, tool, `            kind: ${kind}\n            path: /data/notes`))
+            expectCode(() => parseBlueprint(source), 'MALFORMED_DTO')
+          }
+        }
+      }
+    }
+  })
+
+  it('the envelope carrier still refuses a G6 name as operationClass (the seven-name set stays frozen; no any-matcher exists there)', () => {
+    const source = [
+      '---',
+      `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+      'blueprintId: team.g6',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      'members: []',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules:',
+      '    - operationClass: session_search',
+      '      matcher:',
+      '        kind: exact',
+      '        path: "/data/notes.md"',
+      '      maximumEffect: ask',
+      'teamHardEnvelope:',
+      '  rules: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+    expectCode(() => parseBlueprint(source), 'MALFORMED_DTO')
+  })
+
+  it('the original seven names + schedule pair stay byte-identical neighbors of the class (bash deny-any still the shell law)', () => {
     const policy = policyOf(PERMISSION_SOURCE_BASH_ANY)
     expect(policy.deny).toEqual([{ tool: 'bash', resource: { kind: 'any' } }])
   })

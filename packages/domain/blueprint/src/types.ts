@@ -72,6 +72,15 @@ import type { V4ToolBindingAuthoring } from './blueprint-v4.js'
  * (`BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES`). The two
  * schedule tools are DISTINCT (`schedule_list authority !=
  * schedule_delete authority`).
+ *
+ * Alpha.5 M2 continuation (root 22:13 limited card) widens the same class
+ * with the five G6 SESSION-QUERY names — `session_search` /
+ * `session_event_search` / `session_trace` / `session_event_trace` /
+ * `session_event_read` (host `tool-session-query` @639ed01539, a
+ * host-UNMOUNTED opt-in package at baseline: naming them opens the named
+ * allow/ask/deny channel only, no PA wiring is claimed here, and an
+ * invocation permission grants NO I/O exemption). Same law, same
+ * membership list; each name is a DISTINCT authority.
  */
 export type PermissionTool =
   | 'read'
@@ -83,6 +92,11 @@ export type PermissionTool =
   | 'pwsh'
   | 'schedule_list'
   | 'schedule_delete'
+  | 'session_search'
+  | 'session_event_search'
+  | 'session_trace'
+  | 'session_event_trace'
+  | 'session_event_read'
 
 /**
  * The resource a permission rule addresses (alpha.2 plan §6.2):
