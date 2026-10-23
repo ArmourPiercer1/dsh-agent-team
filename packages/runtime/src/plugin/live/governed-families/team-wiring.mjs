@@ -321,13 +321,13 @@ const defaultCorrelationOf = (exec) => (isRecord(exec) && nonEmptyString(exec.ca
  */
 export function buildTeamOpsWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(WIRE.INPUT_INVALID, 'the wiring bridge takes one input record')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'queryFacts'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
       return wiringRefuse(WIRE.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, liveNative, teamSet, placementFeed, definitionIdentityOf, correlationOf, pa, observe}`)
     }
   }
-  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {} } = input
+  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, queryFacts } = input
   if (!nonEmptyString(realmId)) return wiringRefuse(WIRE.INPUT_INVALID, 'realmId is REQUIRED (non-empty string) — the walk has no realm without it')
   if (!nonEmptyString(providerId)) return wiringRefuse(WIRE.INPUT_INVALID, 'providerId is REQUIRED (non-empty string) — the durable family gate compares the provider identity the owner published, and this bridge invents none')
   if (typeof readNative !== 'function') return wiringRefuse(WIRE.INPUT_INVALID, 'readNative (name) => definition | undefined is REQUIRED — the MEMBER-SCOPED capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)')
@@ -439,6 +439,36 @@ export function buildTeamOpsWiring (input = {}) {
   const admittedPlans = new WeakSet()
   const stats = { admits: 0, admittedOnce: 0, admissionRefusals: 0, mintRefusals: 0, toolLawValues: 0, walks: 0, edges: 0, witnessed: 0 }
 
+  // ROOT 21:24 — the QUERY target's durable facts, read through the OWNER's
+  // published authority queries (the lane's own root resolution, the durable
+  // `memberInstances` roster, the bound blueprint). This block RESOLVES and
+  // RE-CHECKS; it refuses nothing and rewrites no return value: the lane's
+  // native rejected VALUE, the adapter's classification and the caller's
+  // ordering stay exactly as they are, and the seven write rows never reach
+  // this code (their supply was never forced). The re-check after the
+  // approval landed is the SAME source read again, so a roster or blueprint
+  // that moved between the walk and the grant is recorded as drift rather
+  // than silently vouched for. No cache, no second ledger of record: this is
+  // the same store the lane itself reads.
+  const QUERY_TARGET_NAMES = new Set(['team_list_members', 'team_list_templates', 'team_inspect_config'])
+  const queryFactsLedger = []
+  const readFacts = (name, plan) => {
+    if (!QUERY_TARGET_NAMES.has(String(name)) || typeof queryFacts?.resolve !== 'function') return undefined
+    // The addressed member, taken from the ADAPTER'S OWN target (the same
+    // claim the lane classified) — never re-parsed out of the caller's object.
+    const target = isRecord(plan) ? plan.target : undefined
+    const member = isRecord(target) ? target.member : undefined
+    const addressed = isRecord(member) && typeof member.claim === 'string' ? member.claim : undefined
+    try {
+      return queryFacts.resolve(String(name), addressed)
+    } catch (error) {
+      // A read that cannot answer is RECORDED as unresolved, never a refusal:
+      // the lane's own answer to this call is untouched.
+      return Object.freeze({ unresolved: true, fault: String(error?.message ?? error).slice(0, 160) })
+    }
+  }
+  const stableJson = (facts) => { try { return JSON.stringify(facts ?? null) } catch { return '<unserializable>' } }
+
   const wireAdmit = async (ctx) => {
     const classified = isRecord(ctx) ? ctx.classified : undefined
     const plan = isRecord(classified) ? classified.plan : undefined
@@ -539,6 +569,20 @@ export function buildTeamOpsWiring (input = {}) {
         return wiringRefuse(WIRE.CONSUME_PROOF_MISSING, `${String(name)}: the execution edge answered allow without its one-shot consume witness — the seat never substitutes a self-attested consumption; the governed chain was not entered`)
       }
       stats.witnessed += 1
+      if (QUERY_TARGET_NAMES.has(String(name))) {
+        const admitFacts = readFacts(name, plan)
+        const afterFacts = readFacts(name, plan)
+        const drifted = stableJson(admitFacts) !== stableJson(afterFacts)
+        queryFactsLedger.push(Object.freeze({
+          name: String(name),
+          admitFacts: Object.freeze(admitFacts ?? { unresolved: true }),
+          // 审批后同源复查: the SAME published query read again after the grant
+          // landed, so a roster/blueprint that moved is recorded, not vouched.
+          postApprovalFacts: Object.freeze(afterFacts ?? { unresolved: true }),
+          drifted,
+        }))
+        observe({ event: 'b-team-wire:query-facts', name: String(name), drifted })
+      }
       admittedPlans.add(plan)
       stats.admits += 1
       stats.admittedOnce += 1
@@ -600,6 +644,10 @@ export function buildTeamOpsWiring (input = {}) {
     familyRegistrations: adapterResult.familyRegistrations,
     /** This edge's claim ledger. */
     claimStats: () => deepFreeze({ ...stats }),
+    /** The admit ⇄ post-approval same-source readings for the three read rows. */
+    queryFactsLedger: () => deepFreeze([...queryFactsLedger]),
+    /** The three read rows whose durable target is resolved (74/75/76). */
+    queryTargetNames: Object.freeze([...QUERY_TARGET_NAMES]),
     /** THE SEAT ITSELF — the exact function the adapter was handed above,
      *  published so the mount owner's spec drives the REAL seat (never a
      *  stub of it) leg by leg. Production dispatch reaches it only through

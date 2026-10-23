@@ -515,6 +515,39 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
     })
   })
 
+  describe('(i2) the QUERY target is resolved from the published reads, and re-read after the grant', () => {
+    it('the ledger carries the admit reading and the same-source post-approval reading, and no write row appears', async () => {
+      // A roster that GAINS a row between the two reads of one call: the
+      // resolver is the same published query each time, so the difference can
+      // only come from the seat actually reading the store twice.
+      let reads = 0
+      const rosterAt = (): Array<{ instanceId: string }> => (reads += 1, reads % 2 === 1
+        ? [{ instanceId: 'mi-9' }, { instanceId: 'mi-1' }]
+        : [{ instanceId: 'mi-9' }, { instanceId: 'mi-1' }, { instanceId: 'mi-12' }])
+      const w = makeWorld({ queryFacts: { resolve: (name: string) => (name === 'team_list_members'
+        ? { rosterMemberIds: rosterAt().map((row: { instanceId: string }) => row.instanceId).sort() }
+        : { unresolved: true }) } })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      await wiring.definitions.find((d) => d.name === 'team_list_members')!.execute({ ...GOOD_ARGS }, execFor('call-facts-1'))
+      await wiring.definitions.find((d) => d.name === 'team_delegate')!.execute({ ...GOOD_ARGS, label: 'l', prompt: 'p', delegationTemplateId: 'tpl-worker' }, execFor('call-facts-2'))
+      const ledger: Array<{ name: string; admitFacts: unknown; postApprovalFacts: unknown; drifted: boolean }> = (wiring as unknown as { queryFactsLedger: () => Array<{ name: string, admitFacts: unknown, postApprovalFacts: unknown, drifted: boolean }> }).queryFactsLedger()
+      expect(ledger.map((row) => row.name), 'only the read rows resolve a durable target').toEqual(['team_list_members'])
+      expect(reads, 'the seat reads the published query TWICE per admitted call (admit + post-approval)').toBe(2)
+      expect(ledger[0]?.drifted, 'a roster that moved between the walk and the grant is RECORDED, not vouched for').toBe(true)
+      expect(ledger[0]?.admitFacts).toEqual({ rosterMemberIds: ['mi-1', 'mi-9'] })
+      expect(ledger[0]?.postApprovalFacts).toEqual({ rosterMemberIds: ['mi-1', 'mi-12', 'mi-9'] })
+    })
+    it('a resolution that faults is recorded as unresolved and changes nothing about the lane answer', async () => {
+      const w = makeWorld({ queryFacts: { resolve: () => { throw new Error('roster store unavailable') } } })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const value = await wiring.definitions.find((d) => d.name === 'team_list_members')!.execute({ ...GOOD_ARGS }, execFor('call-facts-fault'))
+      expect((value as { status?: string }).status).toBe('executed')
+      const row = (wiring as unknown as { queryFactsLedger: () => Array<{ admitFacts: unknown }> }).queryFactsLedger()[0]
+      expect(String((row?.admitFacts as { fault?: string } | undefined)?.fault)).toContain('roster store unavailable')
+      expect(w.delegateEntries).toHaveLength(1)
+    })
+  })
+
   describe('(i) drain is a new-call prohibition only', () => {
     it('after drain a new call refuses with the adapter\'s own DRAINING bytes and zero port entry', async () => {
       const w = makeWorld()

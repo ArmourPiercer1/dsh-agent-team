@@ -2639,6 +2639,12 @@ export function createAgentBindings(deps) {
       // the SAME object the Guard binds, never the family-scoped registry's
       // shadow (a scoped feed does not stand in for Guard continuity).
       const a5TeamOpsPlacedByName = new Map()
+      // Digest of the roster id SET (sha-256 over the canonical joined form) —
+      // supplementary to the ids themselves, never a stand-in for them.
+      const a5TeamOpsDigest = (ids) => {
+        const bytes = new TextEncoder().encode(ids.join('\n'))
+        return createHash('sha256').update(bytes).digest('hex')
+      }
       if (teamTools) {
         // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
         // registers only the catalog tools the template's teamTools entry
@@ -3234,6 +3240,52 @@ export function createAgentBindings(deps) {
           }
           a5TeamOpsInject = Object.freeze({
             providerId: a5TeamOpsCfg.providerId,
+            // ROOT 21:24/21:33: the QUERY rows' durable target is resolved
+            // through the lane's OWN published authority queries — nothing is
+            // invented, cached or mirrored into a second store:
+            //   team_list_members   -> the durable `memberInstances` roster
+            //                           (the same repository read at :1088 /
+            //                           :2053 / :3563 / :4791), reported as the
+            //                           rows' own instanceIds plus a digest of
+            //                           that id set (the ids ARE the identity;
+            //                           the digest is supplementary, never a
+            //                           count posing as one)
+            //   team_list_templates -> the BOUND BLUEPRINT's member templateIds
+            //                           through `getBoundBlueprint` (the host's
+            //                           `resolveBoundBlueprint` seam, blueprint
+            //                           source fallback inside)
+            //   team_inspect_config -> the ADDRESSED row's own instanceId /
+            //                           templateId / childSessionId, or
+            //                           `absent: true` when the roster carries
+            //                           no such instance (recorded, never a
+            //                           refusal: the lane's own addressing
+            //                           answer stands untouched)
+            queryFacts: Object.freeze({
+              resolve: (name, addressedInstanceId) => {
+                const root = String(teamRoot)
+                if (name === 'team_list_templates') {
+                  const blueprint = getBoundBlueprint(root)
+                  const members = Array.isArray(blueprint?.members) ? blueprint.members : []
+                  const templateIds = [...new Set(members.map((entry) => String(entry?.templateId ?? '')).filter((id) => id.length > 0))]
+                  return Object.freeze({ templateIds: Object.freeze(templateIds) })
+                }
+                const rows = domain.repositories.memberInstances.list(root)
+                if (name === 'team_inspect_config') {
+                  const row = rows.find((candidate) => String(candidate?.instanceId ?? '') === String(addressedInstanceId ?? ''))
+                  if (row === undefined) return Object.freeze({ absent: true, addressedInstanceId: String(addressedInstanceId ?? '') })
+                  return Object.freeze({
+                    memberInstanceId: String(row.instanceId),
+                    ...(String(row.templateId ?? '').length > 0 ? { memberTemplateId: String(row.templateId) } : { memberTemplateId: null }),
+                    ...(String(row.childSessionId ?? '').length > 0 ? { memberChildSessionId: String(row.childSessionId) } : { memberChildSessionId: null }),
+                  })
+                }
+                const rosterMemberIds = [...new Set(rows.map((row) => String(row?.instanceId ?? '')).filter((id) => id.length > 0))].sort()
+                return Object.freeze({
+                  rosterMemberIds: Object.freeze(rosterMemberIds),
+                  rosterFingerprint: a5TeamOpsDigest(rosterMemberIds),
+                })
+              },
+            }),
             // ONE-CAPTURE seam: this member's own selected lane set.
             readNative: (name) => a5TeamOpsNativeByName.get(name),
             // FRESH per-dispatch read of the LIVE lane build, still scoped to
