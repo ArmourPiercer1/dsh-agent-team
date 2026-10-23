@@ -30,22 +30,37 @@
  *       and caps are manifest material — here: `payloadFingerprint` + the
  *       receipt's `outcomeFingerprint`.
  *
+ * APPROVAL LAW (ROOT 07:38 GROUP 3): this gateway is ENVELOPE + DESTINATION
+ * validation + delegation ONLY. Grant validity (expired/revoked), single-use
+ * consumption, payload↔manifest binding, definition/binding verification and
+ * concurrent-replay refusal are approval FACTS produced by the injected
+ * {@link WebGrantAuthority} (the M1 manifest + trusted call-definition-
+ * provider + ONE consume, wired by the integration owner) and passed through
+ * VERBATIM — the lane runs no private validate, no second approval algebra.
+ * The lane keeps exactly ONE deterministic consistency check: the request's
+ * payloadFingerprint MUST equal the canonical fingerprint of the closed
+ * operation it carries (a swapped payload refuses BEFORE consume, so a
+ * refusal never burns a single-use grant).
+ *
  * SEAM-CODE MAP (the closed 8-code {@link GovernanceErrorCode} set has no
  * "provider unavailable" member — the least-wrong mapping is documented,
  * the seam's own code travels VERBATIM in `error.details.seamCode`):
  *   WEB_BLOCKED_URL, WEB_INVALID_URL, url-unparseable, url-scheme-unsupported,
  *   loopback/private literal veto, destination-outside-grant, domain denied
- *     → DOMAIN_DENIED (destination refused; zero bytes left the lane)
+ *     → DOMAIN_DENIED (destination refused)
  *   WEB_PROVIDER_CONFIGURED_MISSING, WEB_PROVIDER_CONFIGURED_UNAVAILABLE,
  *   WEB_PROVIDER_AMBIGUOUS, WEB_PROVIDER_UNAVAILABLE,
  *   WEB_PROVIDER_CREDENTIAL_MISSING, unmapped seam errors
  *     → IO_POLICY_UNSUPPORTED (this configuration cannot run the capability)
  *   binding/shape integrity            → TOOL_BINDING_UNVERIFIED
- *   not-armed                          → IO_POLICY_UNSUPPORTED
- * `sideEffectUnknown`: false ONLY on refusals that provably precede transport
- * (envelope/belt/veto/grant checks + provider policy throws, whose pre-connect
- * position is fixture-measured — p09 W9 `WEB_BLOCKED_URL`, accessLog +0);
- * any other seam failure says true, never a silent false.
+ *   not-armed / closed                 → IO_POLICY_UNSUPPORTED
+ * `sideEffectUnknown` (ROOT 07:38 GROUP 5 honesty): false ONLY where this
+ * lane PROVABLY acted before any delegation (envelope/fingerprint/belt/
+ * consume/N/D refusals — zero bytes delegated by construction, and a belt
+ * refusal happens BEFORE consume); ANY refusal thrown by the seam itself
+ * says TRUE — `WEB_BLOCKED_URL`/`WEB_INVALID_URL` can surface on a LATER
+ * redirect hop after the first hop produced effects, and no seam code
+ * distinguishes hop 1 from hop N. Never a silent false.
  *
  * OPEN ITEMS (disclosed, not silently solved):
  *  - the frozen GatewayCallRequest carries no retrieval payload (§"opaque ref"
@@ -67,8 +82,10 @@ import type {
   GatewayCallRequest,
   GatewayReceipt,
   GovernanceResult,
+  OperationGrant,
   ProviderGateway,
   ResourceRef,
+  ToolBinding,
 } from '../../../domain/tool-governance/src/index.js'
 import { deriveDestination, originOf } from './destination-envelope.js'
 import {
@@ -80,15 +97,23 @@ import type {
   WebDestinationEnvelope,
   WebGatewayCallRequest,
   WebGatewaySeamPorts,
-  WebOperationPayload,
+  WebGrantAuthority,
 } from './types.js'
 
 /** Constructor dependencies (all host-injected; none optional by default). */
 export interface CreateWebGatewayOptions {
   readonly ports: WebGatewaySeamPorts
   readonly searchOrigin: SearchOriginResolver
+  /** GROUP 3: the center-edge approval authority (ONE consume per call). */
+  readonly authority: WebGrantAuthority
   readonly readDomainVeto?: DomainVetoReader
   readonly onObserve?: (observation: Readonly<Record<string, string | boolean>>) => void
+}
+
+/** Per-call runtime options (the frozen envelope carries NO runtime signal —
+ *  cancellation is a transport concern, not manifest material). */
+export interface WebCallOptions {
+  readonly signal?: AbortSignal
 }
 
 /** One lane observation: the result plus the fact row (never payload). */
@@ -99,17 +124,13 @@ interface CallOutcome {
 
 export interface WebGateway extends ProviderGateway {
   /** The lane-typed entry carrying the operation payload (see DISCLOSURE). */
-  readonly callWeb: (request: WebGatewayCallRequest) => Promise<GovernanceResult<GatewayReceipt>>
+  readonly callWeb: (request: WebGatewayCallRequest, options?: WebCallOptions) => Promise<GovernanceResult<GatewayReceipt>>
 }
 
 const REQUEST_KEYS = ['grant', 'binding', 'target', 'payloadFingerprint'] as const
 const TARGET_KEYS = ['destination', 'domainAuthorityId', 'webOperation'] as const
 const FETCH_PAYLOAD_KEYS = ['kind', 'url'] as const
 const SEARCH_PAYLOAD_KEYS = ['kind', 'query', 'maxResults'] as const
-const OPERATION_TOOL: Readonly<Record<WebOperationPayload['kind'], string>> = Object.freeze({
-  'web.fetch': 'web_fetch',
-  'web.search': 'web_search',
-})
 
 /** Seam `WebError` codes that mean "the destination itself was refused". */
 const DESTINATION_SEAM_CODES: ReadonlySet<string> = new Set(['WEB_BLOCKED_URL', 'WEB_INVALID_URL'])
@@ -128,15 +149,15 @@ function extraKeys(obj: Record<string, unknown>, allowed: readonly string[]): st
  * is only constructed when that decision armed the row.
  */
 export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
-  const { ports, searchOrigin, readDomainVeto, onObserve } = options
+  const { ports, searchOrigin, authority, readDomainVeto, onObserve } = options
 
-  const callWeb = async (request: WebGatewayCallRequest): Promise<GovernanceResult<GatewayReceipt>> => {
-    const outcome = await runCall(request)
+  const callWeb = async (request: WebGatewayCallRequest, callOptions?: WebCallOptions): Promise<GovernanceResult<GatewayReceipt>> => {
+    const outcome = await runCall(request, callOptions?.signal)
     onObserve?.(Object.freeze({ ...outcome.obs }))
     return outcome.result
   }
 
-  async function runCall(request: WebGatewayCallRequest): Promise<CallOutcome> {
+  async function runCall(request: WebGatewayCallRequest, signal?: AbortSignal): Promise<CallOutcome> {
     // — envelope integrity (never re-admitting; that is admission's law) —
     if (!isRecord(request)) {
       return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'a gateway call request is a record'), { operation: 'malformed-request' })
@@ -150,13 +171,10 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
       return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'the S leg requires a non-empty payloadFingerprint (manifest material)'), { operation: 'malformed-request' })
     }
     if (!isRecord(grant) || typeof grant['grantId'] !== 'string' || grant['grantId'].length === 0 || typeof grant['realmId'] !== 'string' || !isRecord(grant['effects'])) {
-      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'the gateway consumes a well-formed admitted grant envelope (grantId/realmId/effects) as an opaque one-shot token; validity is admission law'), { operation: 'malformed-request' })
+      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'the gateway consumes a well-SHAPED grant envelope (grantId/realmId/effects present); validity, expiry and consumption belong to the authority, decided at consume below'), { operation: 'malformed-request' })
     }
     if (!isRecord(binding) || typeof binding['bindingId'] !== 'string' || typeof binding['toolName'] !== 'string') {
-      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'the binding envelope needs bindingId + toolName'), { operation: 'malformed-request' })
-    }
-    if (grant['bindingId'] !== binding['bindingId']) {
-      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'grant.bindingId does not match the presented binding'), { operation: 'malformed-request', bindingId: String(binding['bindingId']) })
+      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'the binding envelope needs bindingId + toolName (shape only; definition verification belongs to the authority)'), { operation: 'malformed-request' })
     }
 
     // — operation payload (closed lane extension of the frozen target) —
@@ -180,10 +198,17 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     if (payloadExtras.length > 0) {
       return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', `the ${kind} payload is closed; undeclared keys: ${payloadExtras.join(', ')}`), { operation: kind })
     }
-    // — I leg: the binding must BE the exact definition this operation runs —
-    if (binding['toolName'] !== OPERATION_TOOL[kind]) {
-      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', `binding toolName ${JSON.stringify(binding['toolName'])} is not the definition of operation ${kind}`), { operation: kind })
+    // — payload↔fingerprint self-consistency (GROUP 3, the ONE deterministic
+    //   lane-side integrity check): the fingerprint MUST be the canonical
+    //   fingerprint of the closed operation it presents. A swapped payload
+    //   refuses HERE, before consume — so a refusal never burns a single-use
+    //   grant. This is arithmetic, not approval. —
+    if (payloadFingerprint !== canonicalJsonFingerprint(rawOperation)) {
+      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'payload-fingerprint-mismatch: the presented payloadFingerprint is not the canonical fingerprint of the carried operation (swapped payload; refused before consume)'), { operation: kind, refusal: 'payload-fingerprint-mismatch' })
     }
+    // (definition/binding verification — "is this binding the exact
+    //  definition of this operation" — is an approval FACT: it belongs to
+    //  the authority's consume below, not to this lane. ROOT 07:38 GROUP 3.)
 
     // — destination: derived, never supplied (a caller-claimed destination is
     //   only a cross-check: a target.destination that disagrees is refused) —
@@ -200,7 +225,7 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
       }
       envelope = derived
       delegate = async () => {
-        const res = await ports.fetch({ url })
+        const res = await ports.fetch({ url }, signal)
         return fingerprintForFetch(envelope, res)
       }
     } else {
@@ -224,7 +249,7 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
       envelope = derived
       const maxResults = rawOperation['maxResults']
       delegate = async () => {
-        const res = await ports.search({ query, ...(typeof maxResults === 'number' ? { maxResults } : {}) })
+        const res = await ports.search({ query, ...(typeof maxResults === 'number' ? { maxResults } : {}) }, signal)
         return fingerprintForSearch(envelope, res)
       }
     }
@@ -245,9 +270,25 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
         return done(webGatewayRefusal('DOMAIN_DENIED', `destination-claim-mismatch: a claimed target.destination must equal the derived destination (destinations are derived, never supplied)`), { operation: operationLabel, refusal: 'destination-claim-mismatch' })
       }
     }
-    // — N arm: the grant must carry connect@this exact destination —
-    const grantEffects = grant['effects'] as { effects?: readonly unknown[] }
-    const effectList = Array.isArray(grantEffects.effects) ? grantEffects.effects : []
+    // — GROUP 3: ONE consume at the center edge. Everything the old lane
+    //   checked by its own numeric fields (expiry, single-use, forged
+    //   binding pairs, payload↔manifest binding, replay) is decided HERE by
+    //   the injected authority; a refusal passes through VERBATIM. Belt and
+    //   fingerprint checks intentionally precede consume: a lane-side
+    //   refusal must never burn the single-use grant. —
+    const consumed = await authority.consume({
+      grant: grant as unknown as OperationGrant,
+      binding: binding as unknown as ToolBinding,
+      payloadFingerprint,
+      operationKind: kind,
+      canonicalLocator: envelope.canonicalLocator,
+    })
+    if (!consumed.ok) {
+      return done({ ok: false, error: consumed.error }, { operation: operationLabel, refusal: 'authority-refused' })
+    }
+    // — N arm: the CONSUMED manifest must carry connect@this exact
+    //   destination (frozen parser's law via `resourceEquals`) —
+    const effectList = Array.isArray(consumed.value.effects.effects) ? consumed.value.effects.effects : []
     const hasN = effectList.some((e) =>
       isRecord(e) && e['kind'] === 'connect' && isRecord(e['resource'])
       && resourceEquals(e['resource'] as unknown as ResourceRef, destinationResource),
@@ -306,9 +347,11 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     const code = seamCodeOf(err)
     const message = err instanceof Error ? err.message : String(err)
     if (code !== undefined && DESTINATION_SEAM_CODES.has(code)) {
-      // pre-connect refusal by the provider's own policy/DNS law (fixture-
-      // measured: p09 W9 `WEB_BLOCKED_URL`, server accessLog +0) — honest false
-      return webGatewayRefusal('DOMAIN_DENIED', `provider refused the destination (${code})`, { details: Object.freeze({ seamCode: code }), sideEffectUnknown: false })
+      // GROUP 5 honesty: the SAME code can surface on a LATER redirect hop
+      // (root 07:38 clarification: production refuses cross-origin redirects,
+      // but a same-origin chain can still be blocked after hop 1 already
+      // produced effects), and no seam code distinguishes the hop. TRUE.
+      return webGatewayRefusal('DOMAIN_DENIED', `provider refused the destination (${code})`, { details: Object.freeze({ seamCode: code }), sideEffectUnknown: true })
     }
     return webGatewayRefusal('IO_POLICY_UNSUPPORTED', `the web capability cannot run in this configuration (${code ?? 'unmapped seam error'}): ${message}`, {
       ...(code === undefined ? {} : { details: Object.freeze({ seamCode: code }) }),
@@ -334,9 +377,12 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
 export type {
   DomainVetoReader,
   SearchOriginResolver,
+  WebAuthorityInput,
+  WebConsumedGrant,
   WebDestinationEnvelope,
   WebGatewayCallRequest,
   WebGatewaySeamPorts,
+  WebGrantAuthority,
   WebOperationPayload,
 } from './types.js'
 export { parseWebEnabledRaw, webGatewayRefusal } from './types.js'

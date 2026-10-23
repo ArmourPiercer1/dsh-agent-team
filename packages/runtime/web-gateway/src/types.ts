@@ -107,11 +107,52 @@ export interface WebGatewayCallRequest extends Omit<GatewayCallRequest, 'target'
 }
 
 /** Resolves the search provider's origin FROM REAL CONFIG (never a fixed
- *  URL): the assembly injects a reader over the installed provider's own
- *  configuration (sync or async). Missing provider/credential ⇒ throw the
- *  seam's typed `WebError` code; the gateway maps it (no invented fallback
- *  destination). */
+ *  URL). ROOT 07:38 GROUP 4: the resolver is a TRUSTED-INJECTED reader —
+ *  CENTER's edge binds it to the provider's OWN live config sources (the
+ *  `web-search-deepseek` settings namespace + launchEnvironment; see
+ *  `boundSearchOriginSource` in the assembly row). The gateway itself reads
+ *  no env, no Team-side mirror, no providerId name; provider SELECTION stays
+ *  the seam's own call-time law (`WebRuntime.search/fetch` resolveProvider —
+ *  host web/src/index.ts:137-164), never re-implemented here. */
 export type SearchOriginResolver = () => string | Promise<string>
+
+// ---------------------------------------------------------------------------
+// The approval authority (ROOT 07:38 GROUP 3): the gateway is envelope +
+// destination validation + delegation ONLY. Every approval FACT — grant
+// validity (expired/revoked), single-use consumption, payload↔manifest
+// binding, definition/binding verification, concurrent-replay refusal — is
+// produced by the injected authority (the M1 manifest + trusted
+// call-definition-provider + ONE consume, wired by the integration owner)
+// and travels here as an already-decided Result. A refusal from the
+// authority is passed through VERBATIM (code, message, sideEffectUnknown,
+// details): the lane never re-admits, re-judges, or mints its own approval.
+// ---------------------------------------------------------------------------
+
+/** What the authority returns for a SUCCESSFUL consume: the admitted
+ *  manifest facts the gateway validates the derived destination against.
+ *  `effects` is the M1 EffectSet shape (`{ effects: [...] }`). */
+export interface WebConsumedGrant {
+  readonly grantId: string
+  readonly effects: { readonly effects: readonly unknown[] }
+}
+
+/** The exact material the authority needs to decide (nothing more; NO
+ *  approval logic lives in this lane). */
+export interface WebAuthorityInput {
+  readonly grant: OperationGrant
+  readonly binding: ToolBinding
+  readonly payloadFingerprint: string
+  readonly operationKind: WebOperationPayload['kind']
+  readonly canonicalLocator: string
+}
+
+/** The injected center-edge authority port (ONE consume per call). */
+export interface WebGrantAuthority {
+  consume(input: WebAuthorityInput): Promise<
+    { readonly ok: true; readonly value: WebConsumedGrant }
+    | { readonly ok: false; readonly error: GovernanceError }
+  >
+}
 
 /** The Domain Authority's answer at the effect-commit point (D arm). Absent
  *  reader ⇒ `not-applicable`, honestly reported in the receipt. */

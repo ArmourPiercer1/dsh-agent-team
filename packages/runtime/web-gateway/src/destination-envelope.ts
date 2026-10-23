@@ -137,8 +137,11 @@ function ipv6Veto(host: string, groups: readonly number[]): WebAddressVeto | nul
   const head = groups[0] ?? 0
   if (groups.every((g) => g === 0)) return veto('unspecified (::)')
   if (groups.slice(0, 7).every((g) => g === 0) && groups[7] === 1) return veto('loopback (::1)')
-  if (head === 0xffff) {
-    // IPv4-mapped: apply the IPv4 belt to the embedded address.
+  // IPv4-mapped ::ffff:a.b.c.d expands (via the `::` zero-fill) to five zero
+  // groups + 0xffff at groups[5] + the embedded v4 in groups[6..7] — the head
+  // group is NOT 0xffff (root 07:38 index fix; scope kept honest: this only
+  // decides which belt table the LITERAL hits, no SSRF claim).
+  if (groups.slice(0, 5).every((g) => g === 0) && groups[5] === 0xffff) {
     const v4: [number, number, number, number] = [((groups[6] ?? 0) >> 8) & 0xff, (groups[6] ?? 0) & 0xff, ((groups[7] ?? 0) >> 8) & 0xff, (groups[7] ?? 0) & 0xff]
     return ipv4Veto(`::ffff:${v4.join('.')}`, v4)
   }

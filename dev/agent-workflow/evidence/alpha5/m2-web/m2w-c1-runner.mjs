@@ -365,6 +365,15 @@ try {
   {
     const glueUrl = new URL('../../../../../packages/runtime/dist/packages/runtime/src/plugin/live/web-gateway-assembly.mjs', import.meta.url).href
     const glue = await import(glueUrl)
+    const gov = await import(new URL('../../../../../packages/runtime/dist/packages/domain/tool-governance/src/index.js', import.meta.url).href)
+    // DISCLOSED recorder STAND-IN (GROUP 3 wire test): passes every consume and
+    // hands the presented manifest back, COUNTING consumes — the real center
+    // edge (M1 manifest + trusted definition provider + ONE consume) is the
+    // integration owner's wiring; these legs pin the WIRE over the REAL chain.
+    const recorder = () => {
+      const consumes = []
+      return { consumes, consume: async (i) => { consumes.push(i); return { ok: true, value: { grantId: i.grant.grantId, effects: i.grant.effects } } } }
+    }
     phases.G = {
       import_edge: 'packages/runtime/dist/packages/runtime/src/plugin/live/web-gateway-assembly.mjs (byte-placed) → ../../../web-gateway/src/index.js (tsc-emitted mirror)',
       env_block: [
@@ -386,7 +395,7 @@ try {
     })
     const reqFor = (toolName, operation, locator) => ({
       grant: grantFor(toolName, locator), binding: bindingFor(toolName),
-      target: { webOperation: operation }, payloadFingerprint: 'sha256:m2w-g-fp',
+      target: { webOperation: operation }, payloadFingerprint: gov.canonicalJsonFingerprint(operation),
     })
 
     // REAL chain: production providers, production selection config (mirror of
@@ -413,20 +422,23 @@ try {
       const r2 = glue.createLiveWebGatewayAssembly({ webEnabledRaw: 1, ctxWeb: g.ctx.web, resolveSearchOrigin: searchOrigin })
       const r3 = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: null })
       const r4 = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g.ctx.web })
+      const r5 = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g.ctx.web, resolveSearchOrigin: searchOrigin })
+      const r6 = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g.ctx.web, grantAuthority: { consume: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: 'shape stand-in (never called in this leg)' } }) } })
       expect('G2.closed-key-and-deps-typed-refusals', r1.code === 'web-config-not-boolean' && r2.code === 'web-config-not-boolean'
-        && r3.code === 'web-seam-absent' && r4.code === 'search-origin-resolver-missing',
-        `strings=${String(r1.code)}/${String(r2.code)} seam=${String(r3.code)} resolver=${String(r4.code)} (构造即校验 deps，缺依赖 typed 拒)`)
+        && r3.code === 'web-seam-absent' && r4.code === 'web-grant-authority-absent' && r5.code === 'web-grant-authority-absent' && r6.code === 'search-origin-resolver-missing',
+        `strings=${String(r1.code)}/${String(r2.code)} seam=${String(r3.code)} authority=${String(r4.code)}/${String(r5.code)} resolver=${String(r6.code)} (构造即校验 deps，缺依赖 typed 拒；GROUP 3: 无中心授权面绝不默认放行)`)
     }
     // G3 armed production row; belt-negative through the row: observable ZERO
     // counts at THREE layers (fetch hook / TCP hook / server accessLog).
     {
-      const row = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g.ctx.web, resolveSearchOrigin: searchOrigin })
+      const auth3 = recorder()
+      const row = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g.ctx.web, grantAuthority: auth3, resolveSearchOrigin: searchOrigin })
       const t0 = tripCount(); const k0 = tcpCount(); const a0 = accessLog.length
       const res = await row.callWeb(reqFor('web_fetch', { kind: 'web.fetch', url: `http://127.0.0.1:${PORT}/page` }, `http://127.0.0.1:${PORT}`))
       expect('G3.armed-row-belt-negative-zero-calls', row.active === true && res.ok === false
         && res.error?.code === 'DOMAIN_DENIED' && /belt/.test(String(res.error?.message))
-        && tripCount() === t0 && tcpCount() === k0 && accessLog.length === a0,
-        `refusal=${String(res.error?.code)} msg=${JSON.stringify(String(res.error?.message).slice(0, 110))}; 零调用: fetch钩子 +${String(tripCount() - t0)} TCP +${String(tcpCount() - k0)} accessLog +${String(accessLog.length - a0)} — 可观察计数为证`)
+        && tripCount() === t0 && tcpCount() === k0 && accessLog.length === a0 && auth3.consumes.length === 0,
+        `refusal=${String(res.error?.code)} msg=${JSON.stringify(String(res.error?.message).slice(0, 110))}; 零调用: fetch钩子 +${String(tripCount() - t0)} TCP +${String(tcpCount() - k0)} accessLog +${String(accessLog.length - a0)} consume +${String(auth3.consumes.length)} — 可观察计数为证（belt 先于 consume：拒不算烧授权）`)
       // G4 REAL-provider negative through the row: credentials URL to a
       // NON-literal host → production policy (policy.ts:35-36) refuses BEFORE
       // DNS; the row maps typed, seam code verbatim. Zero counts observable.
@@ -434,8 +446,10 @@ try {
       const res4 = await row.callWeb(reqFor('web_fetch', { kind: 'web.fetch', url: 'https://user:pass@m2w-badcred.test/p' }, 'https://m2w-badcred.test'))
       expect('G4.real-provider-policy-negative-through-row', res4.ok === false && res4.error?.code === 'DOMAIN_DENIED'
         && typeof res4.error?.details?.seamCode === 'string'
-        && tripCount() === t1 && tcpCount() === k1 && accessLog.length === a1,
-        `refusal=${String(res4.error?.code)} seamCode=${String(res4.error?.details?.seamCode)} msg=${JSON.stringify(String(res4.error?.message).slice(0, 120))}; 零调用: fetch钩子 +${String(tripCount() - t1)} TCP +${String(tcpCount() - k1)} accessLog +${String(accessLog.length - a1)} (校验前置=复用生产 policy.ts:35-36，非本 lane 复制)`)
+        && tripCount() === t1 && tcpCount() === k1 && accessLog.length === a1
+        && auth3.consumes.length === 1 && auth3.consumes[0]?.canonicalLocator === 'https://m2w-badcred.test'
+        && res4.error?.sideEffectUnknown === true,
+        `refusal=${String(res4.error?.code)} seamCode=${String(res4.error?.details?.seamCode)} sideEffectUnknown=${String(res4.error?.sideEffectUnknown)} msg=${JSON.stringify(String(res4.error?.message).slice(0, 120))}; 零调用: fetch钩子 +${String(tripCount() - t1)} TCP +${String(tcpCount() - k1)} accessLog +${String(accessLog.length - a1)}; consume=1(派生目的地 https://m2w-badcred.test 已交中心边) (校验前置=复用生产 policy.ts:35-36，非本 lane 复制; sideEffectUnknown=true=GROUP 5 诚实: 同码可在后跳拒)`)
       // G5 unknown top-level keys on the production row: envelope/target/payload.
       const sneakyEnv = { ...reqFor('web_fetch', { kind: 'web.fetch', url: 'https://m2w-x.test/p' }, 'https://m2w-x.test'), sneakyTopKey: 1 }
       const sneakyTarget = reqFor('web_fetch', { kind: 'web.fetch', url: 'https://m2w-x.test/p' }, 'https://m2w-x.test')
@@ -487,15 +501,33 @@ try {
         })
       }, { inject: ['web'] })
       await g2.ctx.plugin(g8stub, {})
-      const row = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g2.ctx.web, resolveSearchOrigin: searchOrigin })
+      const auth8 = recorder()
+      const row = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g2.ctx.web, grantAuthority: auth8, resolveSearchOrigin: searchOrigin })
       const t8 = tripCount(); const k8 = tcpCount(); const a8 = accessLog.length
       const res8 = await row.callWeb(reqFor('web_fetch', { kind: 'web.fetch', url: 'https://m2w-fixture.test/page' }, 'https://m2w-fixture.test'))
       const v8 = res8.ok ? res8.value : null
       expect('G8.allow-positive-assembled-row-stubbed-endpoint', row.active === true && res8.ok === true
         && /^sha256:[0-9a-f]{64}$/.test(String(v8?.outcomeFingerprint)) && v8?.domainVeto === 'not-applicable'
         && observations.stub_records.fetch.some((r) => r.saw_url === 'https://m2w-fixture.test/page' && r.via === 'G8-stub')
+        && auth8.consumes.length === 1 && auth8.consumes[0]?.canonicalLocator === 'https://m2w-fixture.test'
         && tripCount() === t8 && tcpCount() === k8 && accessLog.length === a8,
-        `ok receipt: fingerprint=${String(v8?.outcomeFingerprint).slice(0, 22)}… domainVeto=${String(v8?.domainVeto)}; 桩命中精确 URL=true; 真实出口零计数: fetch钩子 +${String(tripCount() - t8)} TCP +${String(tcpCount() - k8)} accessLog +${String(accessLog.length - a8)} — 端点桩=披露, 真实外网 allow=ENV_BLOCK`)
+        `ok receipt: fingerprint=${String(v8?.outcomeFingerprint).slice(0, 22)}… domainVeto=${String(v8?.domainVeto)}; consume=1(中心边单消费, locator=https://m2w-fixture.test); 桩命中精确 URL=true; 真实出口零计数: fetch钩子 +${String(tripCount() - t8)} TCP +${String(tcpCount() - k8)} accessLog +${String(accessLog.length - a8)} — 端点桩=披露, 真实外网 allow=ENV_BLOCK`)
+    }
+    // G9 (GROUP 5): close() on the PRODUCTION row genuinely de-arms — a
+    // stale handle (the shape agent-bindings' Map could hold after a plain
+    // clear) cannot transact.
+    {
+      const auth9 = recorder()
+      const row = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: g.ctx.web, grantAuthority: auth9, resolveSearchOrigin: searchOrigin })
+      expect(row.active === true, 'G9 precondition: row armed', '')
+      row.close()
+      const t9 = tripCount(); const k9 = tcpCount(); const a9 = accessLog.length
+      const resC = await row.callWeb(reqFor('web_fetch', { kind: 'web.fetch', url: 'https://m2w-x.test/p' }, 'https://m2w-x.test'))
+      expect('G9.row-close-dearms-stale-handles-cannot-transact', resC.ok === false
+        && /web-row-closed/.test(String(resC.error?.message)) && resC.error?.sideEffectUnknown === false
+        && row.closed() === true && auth9.consumes.length === 0
+        && tripCount() === t9 && tcpCount() === k9 && accessLog.length === a9,
+        `refusal=${String(resC.error?.code)} msg=${JSON.stringify(String(resC.error?.message).slice(0, 110))}; closed=${String(row.closed())} consume +${String(auth9.consumes.length)} fetch钩子 +${String(tripCount() - t9)} TCP +${String(tcpCount() - k9)} accessLog +${String(accessLog.length - a9)}`)
     }
   }
 } catch (err) {
