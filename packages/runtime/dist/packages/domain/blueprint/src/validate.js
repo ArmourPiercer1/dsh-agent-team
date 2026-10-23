@@ -45,7 +45,7 @@
 import { assertRemoteSafeJsonValue, deepFreeze, LEGACY_FORBIDDEN_FIELDS, parseBlueprintId, parseBlueprintRevision, parseTemplateId, teamContractError, toRemoteSafeDetail, } from '../../../contracts/src/index.js';
 import { assertNoUnknownFields, assertPlainRecord, } from '../../../contracts/src/dto/common.js';
 import { assertRequirementType, isRequiredPersonaKind, REQUIRED_PERSONA_KIND_VALUES, } from '../../compatibility/src/requirement.js';
-import { BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_FILE_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS, BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS, BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS, BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TEMPLATE_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS_V3, BLUEPRINT_V2_REQUIREMENT_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_FINGERPRINT_MAX_LENGTH, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
+import { BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_FILE_MATCHER_FIELDS, BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS, BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS, BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES, BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS, BLUEPRINT_CAPABILITIES_FIELDS, BLUEPRINT_ENVELOPE_FIELDS, BLUEPRINT_MEMBER_ENVELOPE_ENTRY_FIELDS, BLUEPRINT_POLICY_REFERENCEABLE_FIELDS, BLUEPRINT_POLICY_STATE_FIELDS, BLUEPRINT_QUOTA_FIELDS, BLUEPRINT_QUOTA_SPEC_FIELDS, BLUEPRINT_REQUIREMENT_FIELDS, BLUEPRINT_TEMPLATE_FIELDS, BLUEPRINT_TEMPLATE_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS, BLUEPRINT_TOP_LEVEL_FIELDS_V2, BLUEPRINT_TOP_LEVEL_FIELDS_V3, BLUEPRINT_V2_REQUIREMENT_FIELDS, CAPABILITY_ITEM_MAX_LENGTH, CAPABILITY_POLICY_DECISIONS, CONTEXT_POLICY_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, ENVELOPE_OPERATION_MAX_LENGTH, ENVELOPE_OPERATION_PATTERN, METADATA_KEY_MAX_LENGTH, METADATA_KEY_PATTERN, METADATA_VALUE_MAX_LENGTH, MODEL_PREFERENCE_MAX_LENGTH, PERSONA_MAX_LENGTH, PERMISSION_FINGERPRINT_MAX_LENGTH, PERMISSION_INVOCATION_ONLY_TOOL_NAMES, PERMISSION_PATH_MAX_LENGTH, PERMISSION_POLICY_DEFAULTS, PERMISSION_POLICY_FIELDS, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_FIELDS, PERMISSION_TOOL_NAMES, POLICY_STATE_ID_MAX_LENGTH, POLICY_STATE_ID_PATTERN, REQUIREMENT_DOMAIN_MAX_LENGTH, REQUIREMENT_DOMAIN_PATTERN, REQUIREMENT_NAME_MAX_LENGTH, REQUIREMENT_NAME_PATTERN, SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, } from './schema.js';
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 // The v4 dispatch imports. This is a RUNTIME cycle (blueprint-v4.js imports
 // this module for its frozen-v3 core delegation): ESM resolves it at call
@@ -483,8 +483,14 @@ function validateAuthorityEnvelope(raw, path, carrier) {
         const rule = assertPlainRecord(item, `${rulePath} (envelope rule)`);
         assertNoUnknownFields(rule, BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS, rulePath);
         const operationClass = requireField(rule, 'operationClass', rulePath);
-        if (typeof operationClass !== 'string' || !PERMISSION_TOOL_NAMES.includes(operationClass)) {
-            throw teamContractError('MALFORMED_DTO', `field ${rulePath}.operationClass must be one of ${PERMISSION_TOOL_NAMES.join(' | ')} (the closed permission vocabulary), got ${JSON.stringify(operationClass)}`, { path: `${rulePath}.operationClass` });
+        // Alpha.5 M2 (root 20:05): the carrier keeps the FROZEN seven-name
+        // closed set — this grammar has no `any` matcher, so the invocation-
+        // only schedule names (resource `any` ONLY) can never carry a legal
+        // envelope rule and are refused HERE, exactly like a typo'd class.
+        // Widening the template permission vocabulary never widens this
+        // carrier (the set above is a separate closed constant).
+        if (typeof operationClass !== 'string' || !BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES.includes(operationClass)) {
+            throw teamContractError('MALFORMED_DTO', `field ${rulePath}.operationClass must be one of ${BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES.join(' | ')} (the closed permission vocabulary), got ${JSON.stringify(operationClass)}`, { path: `${rulePath}.operationClass` });
         }
         const isShellTool = operationClass === 'bash' || operationClass === 'pwsh';
         const maximumEffect = requireField(rule, 'maximumEffect', rulePath);
@@ -787,6 +793,22 @@ function validatePermissionRule(raw, path, lane, role) {
     // carries the matching exec token (the pre-execute dual gate).
     if (isShellTool && resource.kind === 'any' && lane === 'allow' && role !== 'leader') {
         throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for ${tool} — the allow lane must not carry a ${tool} rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: ${tool}, resource: { kind: 'any' } })`, { path: `${path}.resource.kind`, lane });
+    }
+    // INVOCATION-ONLY class (Alpha.5 M2, root 20:05 limited card): the two
+    // schedule tools carry NO matchable resource space (native interface:
+    // `schedule_list` has an empty parameter face, `schedule_delete` takes
+    // only an opaque record id — never a workspace path, never a command),
+    // so `exact` and `subtree` are rejected in EVERY lane of EVERY role;
+    // the whole-tool `any` rule is their only legal shape and it is legal
+    // in ALL THREE lanes (the rule IS the invocation authority — no
+    // shell-class dual gate applies, and no implicit default: an absent
+    // rule still resolves to `policy.default`). Membership is the schema's
+    // closed set (never a copied literal); `schedule_create` /
+    // `schedule_update` are not permission tools at all and the tool
+    // membership check above already refuses them. A rule for one of the
+    // two never gates the other.
+    if (PERMISSION_INVOCATION_ONLY_TOOL_NAMES.includes(tool) && resource.kind !== 'any') {
+        throw teamContractError('MALFORMED_DTO', `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept a '${resource.kind}' resource in any lane — the invocation-only class carries no matchable resource space (an exact/subtree root is a file target and a fingerprint belongs to the shell class), so the whole-tool 'any' rule is its only legal shape, in the allow, ask and deny lanes alike`, { path: `${path}.resource.kind`, lane });
     }
     return { tool: tool, resource };
 }
