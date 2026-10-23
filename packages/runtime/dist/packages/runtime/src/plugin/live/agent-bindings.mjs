@@ -367,6 +367,23 @@ import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-famil
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
 import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
+// A5M2 G3 B-TERMINAL (root 19:08, wiring lane; the ScheduleInputError law
+// verbatim — 同Host错误类 is a MODULE identity, never a look-alike class):
+// the REAL pinned-639 cleanup-error class from the published `terminal` face
+// (terminal/src/types.ts:18, an AggregateError carrying spawnError +
+// cleanupError — the live TerminalSessionService.spawn catch tests
+// `instanceof` this exact class, index.ts:197), and the REAL session
+// capability + its published config law from the `terminal-bash` face
+// (LocalPtySession @ terminal-bash src/session.ts:237; resolveConfig/
+// validateConfig @ config.ts:78/:119 — the same functions
+// BashTerminalBackend.spawn runs before constructing the session,
+// index.ts:196/:236). The export map PUBLISHES ./src/* — this is the public
+// face, not a private-path import. CAPACITY DISCLOSURE: these published
+// packages are not installed in THIS test tree (the @deepseek-ai/dsh-schedule
+// precedent — center materializes installs at merge; no install runs here).
+import { TerminalBackendCleanupError } from '@deepseek-ai/dsh-terminal'
+import { LocalPtySession } from '@deepseek-ai/dsh-terminal-bash/src/session.ts'
+import { resolveConfig, validateConfig } from '@deepseek-ai/dsh-terminal-bash/src/config.ts'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
@@ -2410,6 +2427,10 @@ export function createAgentBindings(deps) {
       // armed next to the plane assembly, the registration lands AFTER
       // publish at the shared fill point below (both must see one binding).
       let a5G6Inject = null
+      // A5M2 G3 B-TERMINAL (root 19:08): the terminal family's owner-published
+      // deployment evidence, captured into a plane inject below (null = the
+      // family is not deployed on this mount: zero flip).
+      let a5G3TerminalInject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -3256,6 +3277,150 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-g6: inject armed for ${sessionId} (evidence keys=${Object.keys(g6Cfg).sort().join(',')})`)
         }
+        // A5M2 G3 B-TERMINAL (root 19:08, wiring lane; the G6 block's division
+        // of labor verbatim): the Team-plane owner PUBLISHES the deployment
+        // evidence under `planeCfg.terminal` — providerId, the DECLARED public
+        // backend set (§5.1 declared_mount), the §5.1 service-facts seam
+        // `ptyService {backend, session, approvedOpenPlan}` (the per-open
+        // CONTROLLED EXECUTION PLAN reader is the deployment's controlled
+        // backend provider — the adapter's own law decides its semantics and
+        // refuses a seam that cannot answer), and the base session Config for
+        // the REAL LocalPtySession seam. ABSENT = zero flip; the plane's
+        // CLOSED-key check refuses a defective inject (typed mount refusal).
+        // What THIS side owns is the CAPTURE:
+        //  · the SIX natives through the SAME member-scoped, memoized seam the
+        //    G6/todo/write/image captures obey (agentCtx.tools.get(name,
+        //    runtimeAgent); the global face is NOT a fallback); `undefined` is
+        //    legal and lands the bridge's honest DECLARED-INACTIVE census;
+        //  · the REAL member identity (runtimeAgent.id / runtimeAgent.session
+        //    .header.id — the todo capture law; an unreadable pair REFUSES,
+        //    the arm carries no fallback);
+        //  · the LIVE service faces through the additive LAZY deps accessors
+        //    (deps.terminals / deps.subprocess — the host.ts deps.jobs/web
+        //    pattern), read at mount moment; the adapter's hard-visit law
+        //    refuses the mount when a face is absent (never a lazy pose);
+        //  · the REAL published classes (imported above by module identity):
+        //    TerminalBackendCleanupError IS the class object the live
+        //    terminal-bash backend throws (index.ts:178 @639ed01539), and the
+        //    session factory composes the APPROVED launch plan over the
+        //    owner's base Config and runs the published resolveConfig +
+        //    validateConfig law BEFORE constructing the pinned-639
+        //    LocalPtySession — the validator's own defaults/constraints,
+        //    never hand-mirrored (root 19:25).
+        const g3Cfg = planeCfg.terminal
+        if (g3Cfg !== undefined && g3Cfg !== null) {
+          const refuseG3 = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-TERMINAL mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-g3-terminal-mount-refused'
+            observations.push(`a5m2-g3: inject-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseG3('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const g3MemberAgentId = typeof runtimeAgent.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const g3SessionHeaderId = typeof runtimeAgent.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (g3MemberAgentId === undefined || g3SessionHeaderId === undefined) {
+            throw refuseG3('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the arms carry no fallback for either')
+          }
+          const g3Captured = new Map()
+          const g3ReadNative = (name) => {
+            if (g3Captured.has(name)) return g3Captured.get(name)
+            let captured
+            try {
+              captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+            } catch (error) {
+              throw refuseG3(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            g3Captured.set(name, captured === null ? undefined : captured)
+            return g3Captured.get(name)
+          }
+          const g3Terminals = typeof deps.terminals === 'function' ? deps.terminals() : undefined
+          const g3Subprocess = typeof deps.subprocess === 'function' ? deps.subprocess() : undefined
+          const g3JobsService = typeof deps.jobs === 'function' ? deps.jobs() : undefined
+          a5G3TerminalInject = Object.freeze({
+            providerId: g3Cfg.providerId,
+            memberAgentId: g3MemberAgentId,
+            sessionHeaderId: g3SessionHeaderId,
+            readNative: g3ReadNative,
+            declaredBackends: g3Cfg.declaredBackends,
+            ptyService: g3Cfg.ptyService,
+            bindingFacts: (toolName) => {
+              // The CURRENT dispatcher entry behind this mount's placement of
+              // THAT tool (bindingIds are per-tool facts — install.ts:1151),
+              // read LIVE through the Guard dispatcher's own surface. The
+              // todo reader law verbatim: an unverified/inactive/malformed
+              // tuple answers NOTHING — the read throws, classify/edge refuse
+              // with it, fail closed, never a stale tuple.
+              const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(String(toolName))
+              const binding = entry?.binding
+              if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+                || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+                || !Number.isInteger(binding.revision)
+                || !Number.isInteger(binding.policyGeneration)
+                || !Number.isInteger(binding.authorityGeneration)) {
+                throw new Error(`the live dispatcher binding behind ${String(toolName)} is unreadable (no verified/ACTIVE tuple on the Guard dispatcher surface)`)
+              }
+              return {
+                bindingId: binding.bindingId,
+                bindingRevision: binding.revision,
+                policyGeneration: binding.policyGeneration,
+                authorityGeneration: binding.authorityGeneration,
+              }
+            },
+            controlPortDeps: Object.freeze({
+              // THE REAL §5.1 handle route — the adapter hard-visits every
+              // member (terminals face incl. registerBackend, subprocess
+              // .spawnTerminal, the session factory, the cleanup-error class).
+              terminals: g3Terminals,
+              // THE REAL handle identity law: the service authorizes by the
+              // EXACT Agent the dispatch carries — an id string never
+              // substitutes, nothing is guessed.
+              resolveOwner: (exec) => (exec !== null && typeof exec === 'object'
+                && exec.agent !== null && typeof exec.agent === 'object')
+                ? exec.agent
+                : null,
+              subprocess: g3Subprocess,
+              // THE REAL SESSION CAPABILITY, REUSED: the approved plan's argv
+              // /dims compose over the owner's base Config; the PUBLISHED
+              // resolveConfig/validateConfig law runs before construction
+              // (BashTerminalBackend.spawn's own sequence, index.ts:196/:236
+              // @639ed01539) — a plan that cannot reach a VALID complete
+              // ResolvedConfig throws BEFORE any session exists.
+              sessionFactory: async (handle, plan) => {
+                const argv = Array.isArray(plan?.argv) && plan.argv.length > 0 ? plan.argv : null
+                if (argv === null) throw new Error('P_TERM_OPEN_SESSION_CAPABILITY_ABSENT: the approved launch plan answered no argv — the REAL session seam constructs only from the plan that WILL run, never from a config guess')
+                const config = {
+                  ...(g3Cfg.sessionConfig ?? {}),
+                  shellPath: String(argv[0]),
+                  shellArgs: argv.slice(1).map(String),
+                  ...(Number.isInteger(plan?.rows) ? { rows: plan.rows } : {}),
+                  ...(Number.isInteger(plan?.cols) ? { cols: plan.cols } : {}),
+                }
+                const resolved = resolveConfig(config)
+                validateConfig(resolved)
+                return new LocalPtySession(handle, resolved)
+              },
+              // THE REAL CLASS — module identity, not a look-alike (the
+              // service's spawn catch tests `instanceof` THIS class).
+              TerminalBackendCleanupError,
+              // The bg-send lane: the JobRegistry face only travels WITH its
+              // branded owner reader (the adapter's own law); absent = the
+              // bg operations refuse typed, never run unowned.
+              ...(g3JobsService !== undefined && g3JobsService !== null && typeof g3JobsService.start === 'function' && typeof g3JobsService.kill === 'function'
+                ? { jobs: g3JobsService, ownerSessionId: () => sessionId }
+                : {}),
+              ...(g3Cfg.ptyService?.approvedOpenPlan === undefined
+                ? {}
+                : { approvedOpenPlan: (callId) => g3Cfg.ptyService.approvedOpenPlan(callId) }),
+            }),
+          })
+          observations.push(`a5m2-g3: inject armed for ${sessionId} (evidence keys=${Object.keys(g3Cfg).sort().join(',')} terminals=${g3Terminals === undefined || g3Terminals === null ? 'ABSENT' : 'present'} subprocess=${g3Subprocess === undefined || g3Subprocess === null ? 'ABSENT' : 'present'})`)
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3329,13 +3494,14 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null ? {} : { backends: {
+...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5G3TerminalInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
             ...(a5ScheduleInject === null ? {} : { schedule: a5ScheduleInject }),
+            ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3872,6 +4038,38 @@ export function createAgentBindings(deps) {
             throw error
           }
           observations.push(`a5m2-schedule: family REGISTERED for ${sessionId} (placement=${String(scheduleRegistrations[0].definitionIdentity).slice(0, 32)}+... family=B-SCHEDULE; create/update NOT registered)`)
+        }
+
+        // A5M2 G3 B-TERMINAL registration (root 19:08, the G6 law verbatim):
+        // the keys are the placement feed's RUNTIME definitionIdentity of the
+        // PLACED definitions (read lazily through the wiring face), and a
+        // silent or moved feed THROWS (P_TERM_WIRE_PLACEMENT_KEY_* carried,
+        // never a guessed key, never a silent skip). Rows the bridge never
+        // emitted (DECLARED-INACTIVE census) have no definition, no placement
+        // and no registration — the native stays untouched behind them.
+        if (a5G3TerminalInject !== null) {
+          const g3Plane = a5PlaneValue?.terminal
+          if (g3Plane === undefined || g3Plane === null) {
+            const detail = 'the plane accepted the terminal injection but surfaced no wiring face — the mount is broken and registers nothing'
+            observations.push(`a5m2-g3: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TERMINAL mount refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-terminal-mount-refused' })
+          }
+          let g3Registrations
+          try {
+            g3Registrations = g3Plane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g3: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TERMINAL family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-terminal-mount-refused' })
+          }
+          for (const registration of g3Registrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-g3: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
