@@ -681,7 +681,7 @@ function deepJsonEqual(a, b) {
  * pinned launch spec once (and only once) the effect started; `state` is
  * 'idle' | 'claimed' | 'done' | 'refused' for the claim-once audit.
  */
-function createOneShotControlledBackend({ internalType, owner, canonical, callId, approvedPlan, approvedDigest, subprocess, sessionFactory, onLaunched }) {
+function createOneShotControlledBackend({ internalType, owner, canonical, callId, approvedPlan, approvedDigest, subprocess, sessionFactory, cleanupErrorClass, onLaunched }) {
   if (subprocess === null || typeof subprocess.spawnTerminal !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createOneShotControlledBackend: a controlled PTY launch capability with spawnTerminal(SubprocessTerminalSpawnSpec) is required — the §5.1 backend spawns ONLY through the restricted process plan, never a bare process')
   }
@@ -783,7 +783,10 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
         try {
           await handle.terminate()
         } catch (cleanupError) {
-          throw new Error(`P_TERM_OPEN_STARTUP_CLEANUP_FAILED: constructing the REAL session for call ${callId} failed (${original}) AND the provider terminate of the unpublished handle FAILED (${String(cleanupError?.message ?? cleanupError)}) — the controlled spawn started and its cleanup did NOT reach quiescence: resources may remain and need operator attention; zero session was ever published`)
+          // THE REAL CLASS CARRIES BOTH ERRORS (root 414): the service's
+          // instanceof TerminalBackendCleanupError law keeps the cleanup
+          // fact through release() and answers the outer caller.
+          throw new cleanupErrorClass(error, cleanupError)
         }
         throw new Error(`P_TERM_OPEN_STARTUP_FAILED: the REAL session capability refused to construct for call ${callId} before publication (${original}) — the unpublished handle was TERMINATED AND AWAITED to quiescence; zero published effect, zero session`)
       }
@@ -794,7 +797,10 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
         try {
           await session.close('PTY startup failed')
         } catch (cleanupError) {
-          throw new Error(`P_TERM_OPEN_STARTUP_CLEANUP_FAILED: startup readiness failed for call ${callId} (${original}) AND the session close FAILED (${String(cleanupError?.message ?? cleanupError)}) — the controlled spawn started and its cleanup did NOT reach quiescence: resources may remain and need operator attention; zero session was ever published`)
+          // THE REAL CLASS CARRIES BOTH ERRORS (root 414): the service's
+          // instanceof TerminalBackendCleanupError law keeps the cleanup
+          // fact through release() and answers the outer caller.
+          throw new cleanupErrorClass(error, cleanupError)
         }
         throw new Error(`P_TERM_OPEN_STARTUP_FAILED: startup readiness failed for call ${callId} (${original}) — the CONSTRUCTED session was closed through its own close() and AWAITED to quiescence before this refusal; zero published effect, zero session`)
       }
@@ -833,6 +839,19 @@ export function createHostTerminalControlPort(deps) {
   const sessionFactory = deps.sessionFactory ?? null
   if (sessionFactory !== null && typeof sessionFactory !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.sessionFactory must be the REAL session factory (pinned 639 terminal-bash LocalPtySession wrapper) or absent')
+  }
+  // THE REAL CLEANUP-ERROR CLASS (root 414 review): startup+cleanup failures
+  // must ride the PUBLIC pinned-639 TerminalBackendCleanupError
+  // (terminal/src/types.ts:17-27, an AggregateError carrying spawnError +
+  // cleanupError). The REAL TerminalSessionService.spawn catch (index.ts:
+  // 197-199) tests `error instanceof TerminalBackendCleanupError` to keep
+  // the cleanup fact through spawnReservation.release(cleanupFailure)
+  // (index.ts:221) — a plain Error LOSES that fact (release(undefined)).
+  // No duck class, no parallel error system: the integrator injects the
+  // SAME class object the service itself imports, so instanceof is exact.
+  const cleanupErrorClass = deps.TerminalBackendCleanupError ?? null
+  if (cleanupErrorClass !== null && typeof cleanupErrorClass !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.TerminalBackendCleanupError must be the REAL pinned-639 class (terminal/src/types.ts:17-27) or absent — never a duck-typed substitute')
   }
   if (subprocess !== null && typeof subprocess.spawnTerminal !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.subprocess must answer spawnTerminal(SubprocessTerminalSpawnSpec) (the controlled PTY capability) or be absent')
@@ -927,14 +946,15 @@ export function createHostTerminalControlPort(deps) {
         if (subprocess === null) {
           return { ok: false, code: 'P_TERM_OPEN_CAPABILITY_ABSENT', detail: 'the per-open controlled backend spawns ONLY through the restricted process plan on the controlled PTY capability (SubprocessRuntime.spawnTerminal: terminal allocation, foreground groups, awaited whole-session quiescence) — deps.subprocess is absent on this mount, and a bare process spawn is never substituted' }
         }
-        if (sessionFactory === null) {
-          return { ok: false, code: 'P_TERM_OPEN_SESSION_CAPABILITY_ABSENT', detail: 'the per-open controlled handle must be carried by the REAL fixed-Host session capability (pinned 639 terminal-bash src/session.ts:237 LocalPtySession, constructed with a VALIDATED complete ResolvedConfig — the export map reaches ./src/* but production supply of that path is unverified by this lane; initialize() gates startup readiness and its startSend/readOutput/cancel/read/signal/status/close ARE the send, readiness and scrollback law) — deps.sessionFactory is absent on this mount and no adapter-side shim is substituted (a shim would fabricate the law: done-at-exit instead of done-at-readiness, invented wait reasons, invented page math); refused BEFORE any effect, zero spawn, zero resource' }
+        if (sessionFactory === null || cleanupErrorClass === null) {
+          return { ok: false, code: 'P_TERM_OPEN_SESSION_CAPABILITY_ABSENT', detail: 'the per-open controlled handle must be carried by the REAL fixed-Host session capability (pinned 639 terminal-bash src/session.ts:237 LocalPtySession, constructed with a VALIDATED complete ResolvedConfig — the export map reaches ./src/* but production supply of that path is unverified by this lane; initialize() gates startup readiness and its startSend/readOutput/cancel/read/signal/status/close ARE the send, readiness and scrollback law) — deps.sessionFactory and/or deps.TerminalBackendCleanupError is absent on this mount (the REAL service relies on the instanceof law — a plain Error would drop the cleanup fact at spawnReservation.release) and no adapter-side shim or duck class is substituted (a shim would fabricate the law: done-at-exit instead of done-at-readiness, invented wait reasons, invented page math); refused BEFORE any effect, zero spawn, zero resource' }
         }
         openSequence += 1
         const internalType = `dsh-g3-po-${String(spec.callId)}-${openSequence}`
         const approvedDigest = String(approved.envelopeDigest ?? '')
         const { backend } = createOneShotControlledBackend({
           sessionFactory,
+          cleanupErrorClass,
           internalType,
           owner,
           canonical: {
@@ -1036,8 +1056,15 @@ export function createHostTerminalControlPort(deps) {
           // UNPUBLISHED handle to awaited quiescence BEFORE publication, so
           // nothing was ever ownable — but the honesty law names the
           // started-and-cleaned truth, never a zero-effect word.
-          if (message.startsWith('P_TERM_OPEN_STARTUP_CLEANUP_FAILED:')) {
-            return { ok: false, code: 'P_TERM_OPEN_STARTUP_CLEANUP_FAILED', detail: `${message} — started-and-CLEANUP-FAILED is reported as such: the port claims NO quiescence, NO zero-effect word, and no retry-suppression` }
+          // THE REAL SERVICE SHAPE: a cleanup failure arrives as the PUBLIC
+          // pinned-639 TerminalBackendCleanupError (AggregateError: fixed
+          // message, errors [spawnError, cleanupError]) that crossed the
+          // service's own instanceof law and its release(cleanupFailure) —
+          // the outer reply names BOTH errors from the aggregate itself.
+          if (cleanupErrorClass !== null && error instanceof cleanupErrorClass) {
+            const spawnMsg = String(error.spawnError?.message ?? error.errors?.[0]?.message ?? error)
+            const cleanupMsg = String(error.cleanupError?.message ?? error.errors?.[1]?.message ?? 'unknown')
+            return { ok: false, code: 'P_TERM_OPEN_STARTUP_CLEANUP_FAILED', detail: `the REAL TerminalBackendCleanupError crossed the fixed-639 service (terminal/src/types.ts:17-27; service index.ts:197-199/221 kept the cleanup fact through release): startup failure (${spawnMsg}) AND cleanup failure (${cleanupMsg}) — started-and-CLEANUP-FAILED: cleanup did NOT reach quiescence, resources may remain and need operator attention; the port claims NO quiescence, NO zero-effect word, and no retry-suppression` }
           }
           if (message.startsWith('P_TERM_OPEN_STARTUP_FAILED:')) {
             return { ok: false, code: 'P_TERM_OPEN_STARTUP_FAILED', detail: `${message} — the controlled spawn STARTED and was cleaned to awaited quiescence BEFORE publication (started-and-cleaned, not zero-effect); no session was ever published or ownable` }

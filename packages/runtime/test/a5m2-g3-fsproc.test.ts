@@ -182,6 +182,19 @@ const launchedPids = new Map<string, number>()
 // its own frame is live and a second world is building.
 let lastAnsweredPid: number | null = null
 
+// THE REAL PUBLIC CLEANUP-ERROR CLASS OF THE FIXED HOST (root 414 review):
+// imported FROM the pinned 639 checkout (tests/deepseek-harness-test-use,
+// the only allowed runtime source; the kernel worktree carries it — this
+// worktree links it locally, gitignored) — it is the SAME class object the
+// REAL TerminalSessionService.spawn tests with `instanceof` (index.ts:197-
+// 199) to keep the cleanup fact through spawnReservation.release
+// (index.ts:221). The proof uses the REAL class: no duck, no parallel
+// error system. AggregateError shape (terminal/src/types.ts:17-27):
+// fixed message, fields spawnError + cleanupError, errors = [both].
+type RealCleanupErrorCtor = new (spawnError: unknown, cleanupError: unknown) => Error & { spawnError: unknown; cleanupError: unknown }
+const HOST_639 = new URL('../../../tests/deepseek-harness-test-use/packages/', import.meta.url).href
+const RealCleanupError = ((await import(new URL('terminal/terminal/src/types.ts', HOST_639).href)) as unknown as { TerminalBackendCleanupError: RealCleanupErrorCtor }).TerminalBackendCleanupError
+
 // FAITHFUL TEST DOUBLE of the REAL pinned-639 session capability. The fixed
 // Host's @deepseek-ai/dsh-terminal-bash session class lives at
 // src/session.ts:237 (LocalPtySession; the export map reaches ./src/*, the
@@ -1356,7 +1369,14 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
    *  (spawn/startSend/read/signal/kill/list; TerminalSendOperation.done;
    *  kill true = newly closed, false = same close already in flight). Every
    *  answer below is the SERVICE word — the legs assert the ARM routed it. */
-  function makeTerminalsDouble(depsDouble: { autoSettleSend?: unknown } = {}) {
+  function makeTerminalsDouble(depsDouble: { autoSettleSend?: unknown; cleanupErrorClass?: RealCleanupErrorCtor } = {}) {
+    const cleanupErrorClass = depsDouble.cleanupErrorClass ?? RealCleanupError
+    // FAITHFUL reservation observatories (index.ts:182-222): every spawn
+    // answers spawnReservation.release(cleanupFailure) EXACTLY once — the
+    // legs read these to PROVE the real service kept (or correctly dropped)
+    // the cleanup fact; the raw error that crossed the catch is captured too.
+    const releases: Array<{ error: unknown } | undefined> = []
+    const spawnFailures: unknown[] = []
     const sessions = new Map<string, { pid: number; status: string; closed: boolean; owner?: unknown }>([
       // the service's OWN live sessions (seeded identities the facts reader
       // also carries): the double stays self-consistent.
@@ -1380,6 +1400,8 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     return {
       log,
       backends,
+      releases,
+      spawnFailures,
       registerBackend: (backend: { type: string }) => {
         if (typeof backend?.type !== 'string' || backend.type.length === 0) throw new Error('pty backend type must be non-empty')
         if (backends.has(backend.type)) throw Object.assign(new Error(`a PTY backend named "${backend.type}" is already registered`), { code: 'DUPLICATE_BACKEND' })
@@ -1400,34 +1422,47 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         // the REAL ordering (index 154-224): capture the backend by type,
         // MINT the sessionId Host-side, await the one-shot backend.spawn
         const sessionId = `pty-svc-${String(nextId++)}`
-        // the REAL request spread (index 154-224): an UNSET name must stay
-        // absent, never arrive as an explicit undefined
-        const backendSession = await (backend as { spawn: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }).spawn({
-          sessionId,
-          owner,
-          type: request.type,
-          ...(request.name !== undefined ? { name: request.name } : {}),
-          ...(request.cwd !== undefined ? { cwd: request.cwd } : {}),
-        })
-        sessions.set(sessionId, { pid: 4100 + nextId, status: 'running', closed: false, owner })
-        // THE session owns the REAL backend session for its whole lifetime
-        // (the record retains the BackendSession — types 148-170); the
-        // snapshot carries the backend's OWN pid (faithful publication).
-        const launchedPid = Number(backendSession?.pid ?? lastAnsweredPid ?? 4242)
-        lastAnsweredPid = null
-        sessions.get(sessionId)!.pid = launchedPid
-        launchedPids.set(sessionId, launchedPid)
-        ;(sessions.get(sessionId) as Record<string, unknown>).__backendSession = backendSession
-        // THE REAL service reply: snapshot(record, session.motd) — pid and
-        // status are READ FROM THE REAL SESSION (service index.ts:186-197);
-        // the double passes its facts through, no constants
-        return {
-          sessionId,
-          ...(request.name !== undefined ? { name: request.name } : {}),
-          type: String(request.type),
-          pid: launchedPid,
-          status: typeof (backendSession as { status?: () => unknown })?.status === 'function' ? (backendSession as { status: () => unknown }).status() : { kind: 'running' },
-          motd: String((backendSession as { motd?: string })?.motd ?? ''),
+        let cleanupFailure: { error: unknown } | undefined
+        try {
+          // the REAL request spread (index 154-224): an UNSET name must stay
+          // absent, never arrive as an explicit undefined
+          const backendSession = await (backend as { spawn: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }).spawn({
+            sessionId,
+            owner,
+            type: request.type,
+            ...(request.name !== undefined ? { name: request.name } : {}),
+            ...(request.cwd !== undefined ? { cwd: request.cwd } : {}),
+          })
+          sessions.set(sessionId, { pid: 4100 + nextId, status: 'running', closed: false, owner })
+          // THE session owns the REAL backend session for its whole lifetime
+          // (the record retains the BackendSession — types 148-170); the
+          // snapshot carries the backend's OWN pid (faithful publication).
+          const launchedPid = Number(backendSession?.pid ?? lastAnsweredPid ?? 4242)
+          lastAnsweredPid = null
+          sessions.get(sessionId)!.pid = launchedPid
+          launchedPids.set(sessionId, launchedPid)
+          ;(sessions.get(sessionId) as Record<string, unknown>).__backendSession = backendSession
+          // THE REAL service reply: snapshot(record, session.motd) — pid and
+          // status are READ FROM THE REAL SESSION (service index.ts:186-197);
+          // the double passes its facts through, no constants
+          return {
+            sessionId,
+            ...(request.name !== undefined ? { name: request.name } : {}),
+            type: String(request.type),
+            pid: launchedPid,
+            status: typeof (backendSession as { status?: () => unknown })?.status === 'function' ? (backendSession as { status: () => unknown }).status() : { kind: 'running' },
+            motd: String((backendSession as { motd?: string })?.motd ?? ''),
+          }
+        } catch (error) {
+          // THE REAL catch (index.ts:197-199): the cleanup fact survives ONLY
+          // as `instanceof TerminalBackendCleanupError` — a plain Error
+          // leaves cleanupFailure undefined and release(undefined) DROPS
+          // the fact of the resource that may still be alive.
+          if (error instanceof cleanupErrorClass) cleanupFailure = { error: (error as { cleanupError?: unknown }).cleanupError }
+          spawnFailures.push(error)
+          throw error
+        } finally {
+          releases.push(cleanupFailure) // spawnReservation.release(cleanupFailure) — index.ts:221
         }
       },
       startSend: (owner: Record<string, unknown>, id: string, request: Record<string, unknown>) => {
@@ -1495,7 +1530,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     }
   }
 
-  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; noSessionCapability?: boolean; startupFails?: boolean; factoryFails?: boolean; cleanupFails?: boolean; openPlan?: Record<string, unknown>; deferredSpawn?: boolean; autoSettleSend?: unknown; terminateRefusals?: number } = {}) {
+  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; noSessionCapability?: boolean; startupFails?: boolean; factoryFails?: boolean; cleanupFails?: boolean; noCleanupClass?: boolean; openPlan?: Record<string, unknown>; deferredSpawn?: boolean; autoSettleSend?: unknown; terminateRefusals?: number } = {}) {
     const terminals = makeTerminalsDouble({ autoSettleSend: deps.autoSettleSend })
     const binding = makeBinding()
     const natives = {} as Record<TerminalName, NativeDouble>
@@ -1616,6 +1651,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
           ownerSessionId: (agentId: string) => `session-${String(agentId)}`,
           ...(subprocess === null ? {} : { subprocess }),
           ...(sessionFactory !== undefined ? { sessionFactory } : {}),
+          ...(deps.noCleanupClass === true ? {} : { TerminalBackendCleanupError: RealCleanupError }),
           approvedOpenPlan: (callId: string) => ptyService.approvedOpenPlan(callId),
         })
     const arms = G3.createGovernedTerminalArms({
@@ -1699,6 +1735,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
       resolveOwner: (exec: Record<string, unknown>) => (exec as { agent?: unknown }).agent ?? null,
       subprocess: w.subprocess,
       sessionFactory: w.sessionFactory,
+      TerminalBackendCleanupError: RealCleanupError,
       approvedOpenPlan: () => { moved2.turn() ; return w.ptyBridge.approvedOpenPlan('claim-move') },
     })
     const prepped = await (port as unknown as { prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }).prepare({
@@ -2257,6 +2294,28 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(detail).toMatch(/resources may remain/)
     expect(detail).toMatch(/started-and-CLEANUP-FAILED/) // the word IS the cleanup failure, no zero-effect dressing
     expect(wC.ptyService.session(AGENT_ID, 'pty-svc-90')).toBeNull() // never published
+    // REAL HOST SHAPE, PROVEN (root 414): the error that CROSSED the real
+    // service catch IS the public pinned-639 TerminalBackendCleanupError —
+    // same class object, AggregateError law, carrying BOTH errors — so the
+    // service's instanceof law kept the cleanup fact through the release.
+    const raw = wC.terminals.spawnFailures[0]
+    expect(raw instanceof RealCleanupError).toBe(true)
+    expect(raw instanceof AggregateError).toBe(true)
+    expect((raw as Error).name).toBe('TerminalBackendCleanupError')
+    const agg = raw as InstanceType<RealCleanupErrorCtor>
+    expect(String((agg.spawnError as Error).message)).toMatch(/readiness/)
+    expect(String((agg.cleanupError as Error).message)).toMatch(/EPERM/)
+    expect(wC.terminals.releases[0]).toEqual({ error: agg.cleanupError }) // release KEPT the fact — NOT undefined
+    // the cleanup-SUCCESS paths answer release(undefined) faithfully:
+    const wS = await handleWorld({ startupFails: true })
+    await runPass(wS.arms.terminal_open, wS.binding, { type: 'shell' }, 'startup-2')
+    expect(wS.terminals.releases[0]).toBeUndefined() // real law: cleanup reached quiescence, plain rethrow
+    // census: a mount WITHOUT the real class refuses opens with zero effect
+    const wN = await handleWorld({ noCleanupClass: true })
+    const refusedN = await runPass(wN.arms.terminal_open, wN.binding, { type: 'shell' }, 'nocleanupclass-1')
+    expect(refusedN.x.code).toBe('P_TERM_OPEN_SESSION_CAPABILITY_ABSENT')
+    expect(String((refusedN.x as Record<string, unknown>).detail)).toMatch(/TerminalBackendCleanupError/)
+    expect(wN.launches.length).toBe(0)
   })
 })
 
