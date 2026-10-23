@@ -97,7 +97,9 @@ const PR1_CONSUMERS = Object.freeze([
   'runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
   // A5-M2 G1 round-2 (root real-interface card 13:2x, booked by the CENTER
   // integrator): the G1 surface module consumes the SAME canonical effect
-  // grammar face (parseRequestedEffectSet) to VALIDATE its emitted per-record
+  // grammar faces (parseRequestedEffectSet for the emitted per-record effect sets
+  // AND parseResourceRef for present's path legality — the lane's OWN resource
+  // grammar, never an invented path rule) to VALIDATE its
   // effect sets at the row — the ptc-escalation-row / g2-connector pattern;
   // effects are never hand-validated against a private grammar. Shipped
   // UNWIRED; zero lane edits; census rides SCANNED_PATHS_A5M2J (no new file).

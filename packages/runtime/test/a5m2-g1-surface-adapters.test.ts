@@ -1,21 +1,40 @@
 /**
- * A5M2-G1-SURFACE (root round-2 REAL-INTERFACE round, rev.3) — the 14 G1
- * records (B-CONTROL×5, B-HUMAN×2, B-PRESENT, B-PLUGIN, B-INSPECT×2,
- * B-SKILL, B-DEPENDENCY, B-DOMAIN) proven against doubles that EXERCISE the
- * REAL manager/host contract + fixture trusted ports.
+ * A5M2-G1-SURFACE (root FINAL RULING round, rev.4) — the 14 G1 records
+ * (B-CONTROL×5, B-HUMAN×2, B-PRESENT, B-PLUGIN, B-INSPECT×2, B-SKILL,
+ * B-DEPENDENCY, B-DOMAIN) proven against doubles that EXERCISE the REAL
+ * manager/host contract + fixture trusted ports, with the FINAL RULING
+ * narrow units:
+ *  U1 the Host approval gate (ctx.get('approval') escalation) is a HARD
+ *     PRECONDITION of the install entry — absent/denied refuses with ZERO
+ *     manager entry; a PRE-ABORTED signal refuses before the call is even
+ *     admitted (no gate call, no startup); settle is observed by LISTENER
+ *     (the awaited waitForInstall answers null after settle — the observed
+ *     changeResult can only have come from the listener, never a fabricated
+ *     return);
+ *  U2 plugin install spec + registry are REAL parse work (npm-name grammar
+ *     incl. @scope/pkg[@version], relative local paths, https-only URL with
+ *     canonical-href envelope compare);
+ *  U3 the dependency row reports REAL pre-flight reads and keeps payload
+ *     verification a NAMED BLOCKER — no staging theater, no PAYLOAD-VERIFIED;
+ *  U4 team tool-face OPTIONAL fields (toolName/summary, note, limit) mirror
+ *     the real faces;
+ *  U5 present path legality reuses the lane resource grammar (absolute /
+ *     '..' locators refuse THROUGH THE GRAMMAR, not an invented rule).
  *
  * DISCLOSURE (honest labels): EVERY leg here runs on a native double, an
- * async MANAGER CONTRACT DOUBLE (installBundle/waitForInstall/
- * cancelInstall with the host-closed PluginInstallCancellation statuses),
- * and fixture trusted ports. This spec proves the ADAPTER LAWS — real
- * contract effects (REAL closed-grammar domain parser), trusted targets,
- * same-source re-verification AT THE CONSUMPTION EDGE, the invocation-owned
- * requestId + awaited async cancel/wait lifecycle, the authorized-topology
- * constrained list, the REAL dependency fs reads + post-resolution digest
- * check (real temp world), the present same-exec append witness (turn-bound),
- * and delegate-once plan-binding. IT IS NOT C2 and no leg claims C2: C2
- * needs the real hosts, the real PA edge and real business observers
- * (integrator-side).
+ * async MANAGER CONTRACT DOUBLE (installBundle/waitForInstall/cancelInstall
+ * with the host-closed PluginInstallCancellation statuses), an APPROVAL GATE
+ * DOUBLE answering the escalation request shape, and fixture trusted ports.
+ * This spec proves the ADAPTER LAWS — real contract effects (REAL
+ * closed-grammar domain parser), trusted targets, same-source
+ * re-verification AT THE CONSUMPTION EDGE, the Host gate as precondition,
+ * the invocation-owned requestId + awaited async cancel/wait lifecycle with
+ * listener-observed settle, the authorized-topology constrained list, the
+ * REAL dependency pre-flight reads with the NAMED payload-verification
+ * blocker, the present same-exec append witness (turn-bound), and
+ * delegate-once plan-binding. IT IS NOT C2 and no leg claims C2: C2 needs
+ * the real hosts, the real PA edge, the real approval channel and real
+ * business observers (integrator-side).
  *
  * Scope: NO Host process, NO network. The dependency legs create a REAL
  * temp world under the test directory and clean it up. Windows dimensions
@@ -24,7 +43,7 @@
  * @module @dsh-agent-team/runtime/test/a5m2-g1-surface-adapters
  */
 import { describe, it, expect, afterAll } from 'vitest'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -44,10 +63,11 @@ type Success = {
   parametersFingerprint: string
 }
 type ClassifyResult = Success | Refusal
-type WaitOutcome = { outcome: string; changeResult?: Record<string, unknown>; waitForInstallAfterSettle?: unknown; afterSettleNote?: string; completionImplied?: boolean; error?: string }
+type WaitOutcome = { outcome: string; changeResult?: Record<string, unknown> | null; waitForInstallAnswer?: unknown; afterNote?: string; completionImplied?: boolean; error?: string }
 type LifecycleHandle = {
   requestId: string
   boundTo: Record<string, unknown>
+  gateReceipt?: Record<string, unknown>
   law: string
   cancel: () => Promise<Record<string, unknown>>
   wait: () => Promise<WaitOutcome>
@@ -62,6 +82,7 @@ type DelegateResult = {
   code?: string
   completionImplied?: boolean
   edgeFacts?: Record<string, unknown>
+  blocker?: string
   commitLaw?: string
   commitWitness?: (witness: unknown) => Record<string, unknown>
   lifecycle?: LifecycleHandle
@@ -88,6 +109,7 @@ type G1RecordSpec = {
   capture: string
   nativeFaceRef: string
   requiredTopLevel: string[]
+  parametersTopLevel: string[]
   effectDeltaNotes: readonly string[]
 }
 type G1Module = {
@@ -153,7 +175,7 @@ const PORTS: Record<string, unknown> = {
 /** MANAGER CONTRACT DOUBLE — the real async face at 639ed01539:
  * installBundle(spec, {requestId, enabled?, approvedBuilds?, registry?})
  * returns a pending Promise<ChangeResult> and keys installs by the CALLER's
- * id; waitForInstall answers the live promise or null; cancelInstall AWASTS
+ * id; waitForInstall answers the live promise or null; cancelInstall AWAITTS
  * the live result and answers the CLOSED {status} law. */
 function makeManagerDouble() {
   type Control = { phase: 'installing' | 'applying'; promise: Promise<Record<string, unknown>>; resolve: (v: Record<string, unknown>) => void }
@@ -191,6 +213,20 @@ function makeManagerDouble() {
     apply(requestId: string): void { const c = installs.get(requestId); if (c !== undefined) c.phase = 'applying' },
     settle(requestId: string, result: Record<string, unknown>): void { installs.get(requestId)?.resolve(result) },
   }
+}
+
+/** APPROVAL GATE DOUBLE — answers the Host escalation request shape (the
+ * same channel tools.ts:39-43 drives through ctx.get('approval')). */
+function makeApprovalGate(decision: 'approved' | 'denied' | 'error' = 'approved') {
+  const requests: Array<Record<string, unknown>> = []
+  const gate = {
+    async requireApproval(request: Record<string, unknown>): Promise<{ decision: string }> {
+      requests.push(request)
+      if (decision === 'error') throw new Error('approval channel unavailable')
+      return { decision }
+    },
+  }
+  return { gate, requests }
 }
 
 /** Nested-required CANONICAL face (registration-face spelling) carried by
@@ -304,7 +340,12 @@ const kindsOf = (effects: Array<Record<string, unknown>>): string[] => effects.m
 
 function mountRecord(
   name: string,
-  over: { ports?: Record<string, unknown>; execute?: (args: unknown, exec: unknown) => Promise<unknown>; installFace?: unknown } = {},
+  over: {
+    ports?: Record<string, unknown>
+    execute?: (args: unknown, exec: unknown) => Promise<unknown>
+    installFace?: unknown
+    approvalGate?: unknown
+  } = {},
 ): { row: G1Row; native: Record<string, unknown>; calls: NativeCall[] } {
   const double = makeNativeDouble(name, byName(name), over.execute)
   const row = G1.mountG1SurfaceAdapter(name, {
@@ -315,6 +356,7 @@ function mountRecord(
     bindingFacts: BINDINGS,
     ports: { ...PORTS, ...(over.ports ?? {}) },
     ...(over.installFace === undefined ? {} : { installFace: over.installFace }),
+    ...(over.approvalGate === undefined ? {} : { hostApprovalGate: over.approvalGate }),
   })
   return { row, native: double.native, calls: double.calls }
 }
@@ -330,7 +372,7 @@ function bareMount(name: string, ports: Record<string, unknown> = {}): G1Row {
   })
 }
 
-describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles — NOT C2 (94+ component legs, not records)', () => {
+describe('a5m2-g1-surface-adapters rev.4: REAL interface on contract doubles — NOT C2 (96+ component legs, not records)', () => {
   it('the record set equals the frozen dispatch index (family-filtered, recordIndex-exact); spec VALUES carry no lane paths (string literals are audit edges)', () => {
     const indexPath = fileURLToPath(new URL(
       '../../../docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json',
@@ -466,6 +508,27 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     })
   }
 
+  // ── U1 (shared root): a PRE-ABORTED signal refuses BEFORE the row admits ─
+  it('pre-aborted signal: the row refuses P_G1_PRE_ABORTED before admission — no gate call, no manager entry, no native entry (mirrors tools.ts:44 throwIfAborted BEFORE the entry)', async () => {
+    const md = makeManagerDouble()
+    const gate = makeApprovalGate('approved')
+    const mounted = mountRecord('plugin_manager', { installFace: md.face, approvalGate: gate.gate })
+    const plan = (mounted.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-pre') as Success).plan
+    const controller = new AbortController()
+    controller.abort()
+    const refused = await mounted.row.delegate(plan, { exec: { signal: controller.signal } })
+    expect((refused as unknown as Refusal).code).toBe('P_G1_PRE_ABORTED')
+    expect(gate.requests.length).toBe(0)
+    expect(md.installCalls.length).toBe(0)
+    expect(mounted.calls.length).toBe(0)
+    // even a plain (non-install) record refuses before admission:
+    const skill = mountRecord('skill')
+    const skillPlan = (skill.row.classify({ name: 'gpt' }, 'call-pre-sk') as Success).plan
+    const skillRefused = await skill.row.delegate(skillPlan, { exec: { signal: controller.signal } })
+    expect((skillRefused as unknown as Refusal).code).toBe('P_G1_PRE_ABORTED')
+    expect(skill.calls.length).toBe(0)
+  })
+
   // ── card 2: SAME-SOURCE re-verification at the CONSUMPTION EDGE ─────────
   it('consumption-edge re-verify: post-classify mutation of the catalog / topology / domain registry / profile facts / install facts refuses the plan typed, zero native entry', async () => {
     // skill catalog moves after classify:
@@ -556,8 +619,8 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     if (client.ok) expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
   })
 
-  // ── card 5 + 1: plugin per-action envelope + REAL async lifecycle ──────
-  it('plugin: per-action effect sets on the manager code paths; install carries connect(N)+FS writes+build/activation obligations; the exemption lane is never derivable and out-of-envelope targets refuse', () => {
+  // ── U2 + card 5: per-action envelope with REAL spec/registry parses ─────
+  it('plugin: per-action effect sets on the manager code paths; REAL npm-name/relative-path spec parse and REAL URL registry envelope; the exemption lane is never derivable and out-of-envelope targets refuse', () => {
     const { row } = mountRecord('plugin_manager')
     const classify = (args: Record<string, unknown>): ClassifyResult => row.classify(args, `call-${String(args.action)}`)
     const install = classify({ action: 'install_bundle', target: 'some-bundle@1.0.0', approvedBuilds: ['native-addon'] })
@@ -572,10 +635,20 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     expect(installJson).toContain(PLUGIN_FACTS.profileConfigLocator)
     expect(installJson).not.toContain(PLUGIN_FACTS.exemptionsLocator)
     expect(install.targetManifest.versionExemptionDerived).toBe(false)
+    // REAL spec parse facts ride the plan (the manager's real name shapes):
+    expect(install.targetManifest.specFacts).toEqual({ kind: 'npm-name', name: 'some-bundle', version: '1.0.0' })
+    const scoped = classify({ action: 'install_bundle', target: '@acme/pkg-tool@1.2.3' })
+    expect(scoped.ok).toBe(true)
+    if (scoped.ok) expect(scoped.targetManifest.specFacts).toEqual({ kind: 'npm-name', name: '@acme/pkg-tool', version: '1.2.3' })
+    // the manager's documented LOCAL PATH lane (relative to the invocation dir):
+    const localPath = classify({ action: 'install_bundle', target: './local-pkg' })
+    expect(localPath.ok).toBe(true)
+    if (localPath.ok) expect(localPath.targetManifest.specFacts).toEqual({ kind: 'relative-path', path: './local-pkg' })
     const installOps = JSON.stringify(install.serviceObligations)
     expect(installOps).toContain('host-approvedBuilds-channel')
     expect(installOps).toContain('PERSISTENT permission')
     expect(installOps).toContain('configure-activation')
+    expect(installOps).toContain('host-approval-escalation-channel')
 
     const exempt = classify({ action: 'set_version_exemption', target: 'pkg@1.0.0', runtimeVersion: '0.2.0-rc.2', enabled: true, acceptRisk: true })
     expect(exempt.ok).toBe(true)
@@ -590,28 +663,116 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
       expect(listed.ok).toBe(true)
       if (listed.ok) expect(kindsOf(listed.effects)).toEqual(['tool-invoke'])
     }
+    // REAL optional face fields on the list actions (tools.ts:22-31/:66-69):
+    const paged = classify({ action: 'list_plugins', offset: 0, limit: 25 })
+    expect(paged.ok && paged.targetManifest.offsetClaim).toBe(0)
+    expect(paged.ok && paged.targetManifest.limitClaim).toBe(25)
+    expect((classify({ action: 'list_plugins', limit: 101 }) as Refusal).code).toBe('P_G1_CLASSIFY_INVALID_ARGUMENTS')
+    expect((classify({ action: 'list_bundles', offset: -1 }) as Refusal).code).toBe('P_G1_CLASSIFY_INVALID_ARGUMENTS')
     const toggle = classify({ action: 'set_plugin', target: 'entry-1', enabled: false })
     expect(toggle.ok && kindsOf(toggle.effects)).toEqual(['tool-invoke', 'write'])
     const remove = classify({ action: 'remove_bundle', target: 'gone-bundle' })
     expect(remove.ok && kindsOf(remove.effects)).toEqual(['tool-invoke', 'write', 'write'])
     expect((classify({ action: 'launch_evil' }) as Refusal).code).toBe('P_G1_CLASSIFY_UNKNOWN_ACTION')
-    expect((classify({ action: 'install_bundle', registry: 'https://evil.example' }) as Refusal).code).toBe('P_G1_PLUGIN_REGISTRY_NOT_TRUSTED')
-    // out-of-envelope targets (card 5):
+    // REAL registry parse: outside envelope, unparseable, non-https all refuse:
+    expect((classify({ action: 'install_bundle', target: 'b@1.0.0', registry: 'https://evil.example' }) as Refusal).code).toBe('P_G1_PLUGIN_REGISTRY_NOT_TRUSTED')
+    expect((classify({ action: 'install_bundle', target: 'b@1.0.0', registry: 'registry-primary.example' }) as Refusal).code).toBe('P_G1_PLUGIN_REGISTRY_NOT_TRUSTED')
+    expect((classify({ action: 'install_bundle', target: 'b@1.0.0', registry: 'http://registry-primary.example' }) as Refusal).code).toBe('P_G1_PLUGIN_REGISTRY_NOT_TRUSTED')
+    // the SAME registry written canonically (trailing slash) is accepted and
+    // the effect locator carries the CANONICAL href:
+    const slash = classify({ action: 'install_bundle', target: 'b@1.0.0', registry: 'https://registry-primary.example/' })
+    expect(slash.ok).toBe(true)
+    if (slash.ok) {
+      expect(slash.targetManifest.registryPlan).toMatchObject({ claimedRegistry: 'https://registry-primary.example' })
+      expect(JSON.stringify(slash.effects)).toContain('"https://registry-primary.example"')
+    }
+    // out-of-envelope targets (real parse law):
     expect((classify({ action: 'install_bundle', target: '/abs/path/bundle.tgz' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
-    expect((classify({ action: 'install_bundle', target: './local-pkg' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'install_bundle', target: 'C:\\pkgs\\bundle' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'install_bundle', target: '../escape' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'install_bundle', target: 'Bad Name' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'install_bundle', target: '@acme' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'install_bundle', target: '@acme/Bad-Name' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
     expect((classify({ action: 'set_plugin', target: 'sub/dir/entry', enabled: true }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
     expect((classify({ action: 'remove_bundle', target: '..\\escape' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
     const noFacts = bareMount('plugin_manager', {})
     expect((noFacts.classify({ action: 'list_plugins' }, 'c') as Refusal).code).toBe('P_G1_PLUGIN_TARGETS_ABSENT')
   })
 
-  it('plugin install on the REAL async manager contract: invocation-owned requestId minted BEFORE the call and passed in options; cancel AWAITED to the closed status; too-late/not-running preserved; abort never claims copying stopped', async () => {
+  it('plugin face declares the REAL parameter list (tools.ts:22-31): offset/limit ride, there is NO bundle parameter', () => {
+    const face = byName('plugin_manager').parametersTopLevel
+    expect(face).toEqual(['action', 'target', 'enabled', 'runtimeVersion', 'acceptRisk', 'approvedBuilds', 'registry', 'offset', 'limit'])
+    expect(face).not.toContain('bundle')
+    const { row } = mountRecord('plugin_manager')
+    expect((row.classify({ action: 'install_bundle', bundle: 'x' }, 'c') as Refusal).code).toBe('P_G1_CLASSIFY_UNKNOWN_PARAMETER')
+  })
+
+  // ── U1 + card 1: HOST GATE FIRST, then the async manager contract ───────
+  it('plugin install: the Host approval gate is a HARD PRECONDITION — absent or denied refuses with ZERO manager entry; the request carries the escalation shape; the receipt rides the lifecycle handle', async () => {
+    const md = makeManagerDouble()
+    // gate NOT mounted ⇒ entering the manager would bypass the Host business
+    // gate (Team PA never stands in): refused before any manager entry.
+    const noGate = mountRecord('plugin_manager', { installFace: md.face })
+    const noGatePlan = (noGate.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-g0') as Success).plan
+    const refused = await noGate.row.delegate(noGatePlan, { exec: {} })
+    expect((refused as unknown as Refusal).code).toBe('P_G1_HOST_APPROVAL_GATE_ABSENT')
+    expect(md.installCalls.length).toBe(0)
+    expect(noGate.calls.length).toBe(0)
+    // the manager face check still precedes (config defect first):
+    const noFace = mountRecord('plugin_manager')
+    const noFacePlan = (noFace.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i5') as Success).plan
+    expect(((await noFace.row.delegate(noFacePlan, { exec: {} })) as unknown as Refusal).code).toBe('P_G1_INSTALL_FACE_ABSENT')
+
+    // gate answers DENIED ⇒ zero manager entry:
+    const denied = makeApprovalGate('denied')
+    const mdD = makeManagerDouble()
+    const dMount = mountRecord('plugin_manager', { installFace: mdD.face, approvalGate: denied.gate })
+    const dPlan = (dMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-g1') as Success).plan
+    const dRefused = await dMount.row.delegate(dPlan, { exec: {} })
+    expect((dRefused as unknown as Refusal).code).toBe('P_G1_HOST_APPROVAL_NOT_GRANTED')
+    expect(mdD.installCalls.length).toBe(0)
+    expect(denied.requests.length).toBe(1)
+
+    // gate errors ⇒ FAILED, still zero manager entry:
+    const broken = makeApprovalGate('error')
+    const mdB = makeManagerDouble()
+    const bMount = mountRecord('plugin_manager', { installFace: mdB.face, approvalGate: broken.gate })
+    const bPlan = (bMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-g2') as Success).plan
+    expect(((await bMount.row.delegate(bPlan, { exec: {} })) as unknown as Refusal).code).toBe('P_G1_HOST_APPROVAL_NOT_GRANTED')
+    expect(mdB.installCalls.length).toBe(0)
+
+    // gate APPROVED ⇒ the escalation request shape (subject/requestedMode/
+    // toolName/callId) rode the SAME channel the Host tool body drives.
+    const gate = makeApprovalGate('approved')
+    const mdA = makeManagerDouble()
+    const aMount = mountRecord('plugin_manager', { installFace: mdA.face, approvalGate: gate.gate })
+    const aPlan = (aMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-g3') as Success).plan
+    const result = await aMount.row.delegate(aPlan, { exec: {} })
+    expect(result.settled).toBe('INSTALL-PENDING')
+    expect(gate.requests.length).toBe(1)
+    expect(gate.requests[0]).toMatchObject({
+      requestedMode: 'danger-full-access',
+      subject: 'plugin management operation',
+      toolName: 'plugin_manager',
+      callId: 'call-g3',
+    })
+    expect(String(gate.requests[0]?.justification)).toContain('plugin_manager')
+    const lc = result.lifecycle as LifecycleHandle
+    expect(lc.gateReceipt).toMatchObject({ decision: 'approved', subject: 'plugin management operation', callId: 'call-g3' })
+    mdA.settle(lc.requestId, { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0' })
+  })
+
+  it('plugin install on the REAL async manager contract: invocation-owned requestId minted BEFORE the call and passed in options; settle OBSERVED BY LISTENER (waitForInstall answers null — the changeResult can only be the listener\'s); cancel AWAITED to the closed status; abort never claims copying stopped', async () => {
     const CHANGE_APPLIED = { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0', bundle: 'b' }
     const CHANGE_CANCELLED = { changed: false, application: 'cancelled', stage: 'install', target: 'b@1.0.0' }
 
-    // settled path: id minted before the call, present in options, awaited wait.
+    // settled path: id minted before the call, present in options; the settle
+    // is recorded by the LISTENER — after settle the host DELETES the record,
+    // so waitForInstall answers null and the reported changeResult can only
+    // have come from the listener (the row never fabricates a return).
     const md = makeManagerDouble()
-    const mounted = mountRecord('plugin_manager', { installFace: md.face })
+    const gate = makeApprovalGate('approved')
+    const mounted = mountRecord('plugin_manager', { installFace: md.face, approvalGate: gate.gate })
     const plan = (mounted.row.classify({ action: 'install_bundle', target: 'b@1.0.0', approvedBuilds: ['native-addon'] }, 'call-i1') as Success).plan
     const result = await mounted.row.delegate(plan, { exec: {} })
     expect(result.settled).toBe('INSTALL-PENDING')
@@ -627,13 +788,15 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     expect(md.cancelSeen).toEqual([])
     expect(lc.law).toContain('never imply completion')
     expect(lc.law).toContain('never claims the copying auto-stopped')
+    expect(lc.law).toContain('observed by the listener')
     md.settle(lc.requestId, CHANGE_APPLIED)
     const waited = await lc.wait()
-    expect(waited.outcome).toBe('CHANGE-RESULT')
+    expect(waited.outcome).toBe('SETTLED-OBSERVED')
     expect(waited.changeResult).toEqual(CHANGE_APPLIED)
-    // host law: settled installs are deleted; the wait answers null.
-    expect(waited.waitForInstallAfterSettle).toBeNull()
-    expect(waited.afterSettleNote).toContain('neither success nor cancellation')
+    // host law: settled installs are deleted; the wait probe answers null —
+    // the observed changeResult above PROVES the listener recorded it.
+    expect(waited.waitForInstallAnswer).toBeNull()
+    expect(waited.afterNote).toContain('neither success nor cancellation')
     expect(md.waitSeen).toEqual([lc.requestId])
     // cancelled AFTER settlement is the closed not-running status:
     await expect(lc.cancel()).resolves.toMatchObject({ status: 'not-running', completionImplied: false })
@@ -645,7 +808,8 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     // cancelled while installing: cancel is AWAITED (the host awaits process
     // exit and file restoration before answering 'cancelled').
     const md2 = makeManagerDouble()
-    const m2 = mountRecord('plugin_manager', { installFace: md2.face })
+    const g2 = makeApprovalGate('approved')
+    const m2 = mountRecord('plugin_manager', { installFace: md2.face, approvalGate: g2.gate })
     const p2 = (m2.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i2') as Success).plan
     const r2 = await m2.row.delegate(p2, { exec: {} })
     const lc2 = r2.lifecycle as LifecycleHandle
@@ -658,7 +822,8 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
 
     // applying ⇒ too-late VERBATIM (never implies completion):
     const md3 = makeManagerDouble()
-    const m3 = mountRecord('plugin_manager', { installFace: md3.face })
+    const g3 = makeApprovalGate('approved')
+    const m3 = mountRecord('plugin_manager', { installFace: md3.face, approvalGate: g3.gate })
     const p3 = (m3.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i3') as Success).plan
     const lc3 = (await m3.row.delegate(p3, { exec: {} })).lifecycle as LifecycleHandle
     md3.apply(lc3.requestId)
@@ -667,7 +832,8 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
 
     // signal → cancelInstall mapping: one awaited cancel with our id.
     const md4 = makeManagerDouble()
-    const m4 = mountRecord('plugin_manager', { installFace: md4.face })
+    const g4 = makeApprovalGate('approved')
+    const m4 = mountRecord('plugin_manager', { installFace: md4.face, approvalGate: g4.gate })
     const p4 = (m4.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i4') as Success).plan
     const controller = new AbortController()
     const r4 = await m4.row.delegate(p4, { exec: { signal: controller.signal } })
@@ -677,13 +843,8 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     expect(md4.cancelSeen).toEqual([lc4.requestId])
     md4.settle(lc4.requestId, CHANGE_CANCELLED)
     await expect(lc4.cancel()).resolves.toMatchObject({ status: 'cancelled', completionImplied: false })
-
-    // manager face missing ⇒ refused BEFORE any manager entry (zero fetch):
-    const noFace = mountRecord('plugin_manager')
-    const noFacePlan = (noFace.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i5') as Success).plan
-    const refused = await noFace.row.delegate(noFacePlan, { exec: {} })
-    expect((refused as unknown as Refusal).code).toBe('P_G1_INSTALL_FACE_ABSENT')
-    expect(noFace.calls.length).toBe(0)
+    // a mid-flight abort never claims the copying auto-stopped:
+    expect(lc4.law).toContain('never claims the copying auto-stopped')
   })
 
   // ── card 6: present witness = the REAL same-exec append (turn-bound) ────
@@ -697,6 +858,7 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     expect(JSON.stringify(classified.effects)).toContain('"meta"')
     expect(classified.serviceObligations.some((o) => o.operation === 'expose' && o.right === 'write')).toBe(true)
     expect(classified.targetManifest.readOnly).toBe(false)
+    expect(String(classified.targetManifest.legalityLaw)).toContain('parseResourceRef')
     const early = row.commitWitness?.(classified.plan, { callId: 'call-p1', turn: 7, sessionHeaderId: TRUSTED.sessionHeaderId }) as Refusal
     expect(early.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH') // nothing delegated yet
     const exec = { callId: 'call-p1' }
@@ -731,8 +893,40 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
       .toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH')
   })
 
-  // ── card 4: dependency REAL fs flow at the edge ──────────────────────────
-  it('dependency: the delegate performs the REAL reads (source enumeration, source manifest, old manifest), creates a REAL mkdtemp staging dir, and post-resolution compares ACTUAL digests — no placeholders', async () => {
+  // ── U5: present path legality is the LANE GRAMMAR (no invented rule) ────
+  it('present legality: workspace locators ride the resource grammar (relative nested paths ok; absolute and .. locators refuse THROUGH parseResourceRef, not an invented rule)', () => {
+    const { row } = mountRecord('present')
+    const nested = row.classify({ files: [{ path: 'sub/dir/file.md' }] }, 'c-nest')
+    expect(nested.ok).toBe(true)
+    if (nested.ok) expect(JSON.stringify(nested.effects)).toContain('"sub/dir/file.md"')
+    const absolute = row.classify({ files: [{ path: '/etc/passwd' }] }, 'c-abs')
+    expect((absolute as Refusal).code).toBe('P_G1_CLASSIFY_INVALID_ARGUMENTS')
+    expect((absolute as Refusal).detail).toContain('resource grammar')
+    const escape = row.classify({ files: [{ path: '../outside' }] }, 'c-esc')
+    expect((escape as Refusal).code).toBe('P_G1_CLASSIFY_INVALID_ARGUMENTS')
+    expect((escape as Refusal).detail).toContain('resource grammar')
+  })
+
+  // ── U4: team tool-face OPTIONAL fields mirror the real faces ─────────────
+  it('team faces keep their REAL optional fields: toolName+summary / note / limit classify as declared face params (unknown params still refuse)', () => {
+    const req = mountRecord('team_request_control')
+    const withOptionals = req.row.classify({ ...goodArgs('team_request_control'), toolName: 'bash', summary: 'needs wider access' }, 'c-t1')
+    expect(withOptionals.ok, JSON.stringify(withOptionals)).toBe(true)
+    expect(byName('team_request_control').parametersTopLevel).toContain('toolName')
+    expect(byName('team_request_control').parametersTopLevel).toContain('summary')
+    const res = mountRecord('team_resolve_control')
+    expect(res.row.classify({ ...goodArgs('team_resolve_control'), note: 'checked with the owner' }, 'c-t2').ok).toBe(true)
+    expect(byName('team_resolve_control').parametersTopLevel).toContain('note')
+    const list = mountRecord('team_list_pending_control')
+    expect(list.row.classify({ ...goodArgs('team_list_pending_control'), limit: 10 }, 'c-t3').ok).toBe(true)
+    expect(byName('team_list_pending_control').parametersTopLevel).toContain('limit')
+    // optionals are OPTIONAL: the required-only forms still classify (leg above),
+    // and anything outside the face still refuses:
+    expect((list.row.classify({ ...goodArgs('team_list_pending_control'), offset: 5 }, 'c-t4') as Refusal).code).toBe('P_G1_CLASSIFY_UNKNOWN_PARAMETER')
+  })
+
+  // ── U3: dependency — REAL pre-flight reads + NAMED blocker ──────────────
+  it('dependency: the delegate performs the REAL pre-flight reads (source enumeration, source manifest, old manifest); the payload body lives only inside the controlled install path, so payload verification is reported as the NAMED BLOCKER — the row stages nothing, hashes nothing of its own, and never claims PAYLOAD-VERIFIED', async () => {
     // source without a readable manifest ⇒ refused BEFORE the native entry:
     const badSource = mountRecord('load_workspace_dependencies', {
       ports: { dependencyFacts: { current: () => ({ sourceLocator: join(WORLD_ROOT, 'nowhere'), rootLocator: DEP_ROOT }) } },
@@ -742,46 +936,25 @@ describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles —
     expect((refused as unknown as Refusal).code).toBe('P_G1_DEPENDENCY_SOURCE_INVALID')
     expect(badSource.calls.length).toBe(0)
 
-    // verified install: the double performs the real copy inside the governed
-    // call (mirroring installPrimaryRuntime), observing the REAL staging dir.
-    let stagingVisibleDuringCall: string[] = []
-    const installer = mountRecord('load_workspace_dependencies', {
-      execute: async () => {
-        stagingVisibleDuringCall = readdirSync(join(WORLD_ROOT, 'runtimes'))
-        mkdirSync(DEP_ROOT, { recursive: true })
-        cpSync(DEP_SOURCE, DEP_ROOT, { recursive: true })
-        return { installed: true }
-      },
-    })
+    // happy path: REAL pre-flight facts ride the result; verification stays a
+    // NAMED BLOCKER because the staged payload body is produced only inside
+    // installPrimaryRuntime (the controlled install path) — the row cannot
+    // observe it, so it reports the blocker instead of claiming verification.
+    const installer = mountRecord('load_workspace_dependencies')
     const installPlan = (installer.row.classify({}, 'call-d1') as Success).plan
-    const verified = await installer.row.delegate(installPlan, { exec: {} })
-    expect(verified.settled).toBe('PAYLOAD-VERIFIED')
-    expect(verified.completionImplied).toBe(true)
-    const edge = verified.edgeFacts as Record<string, unknown>
+    expect(JSON.stringify(byName('load_workspace_dependencies').effectDeltaNotes)).toContain('NAMED BLOCKER')
+    const result = await installer.row.delegate(installPlan, { exec: {} })
+    expect(result.settled).toBe('PAYLOAD-VERIFICATION-BLOCKED')
+    expect(result.completionImplied).toBe(false)
+    expect(result.blocker).toContain('controlledFS')
+    expect(result.settled).not.toBe('PAYLOAD-VERIFIED')
+    expect(result.settled).not.toBe('PAYLOAD-HASH-MISMATCH')
+    const edge = result.edgeFacts as Record<string, unknown>
     expect(edge.sourceEntries).toContain('runtime.json')
     expect(edge.sourceEntries).toContain('bin-cli.js')
     expect(String(edge.sourceManifestDigest)).toMatch(/^sha256:[0-9a-f]{64}$/)
-    expect(edge.oldManifestDigest).toBeNull()
-    expect(edge.installedManifestDigest).toBe(edge.sourceManifestDigest)
-    expect(String(edge.stagingDirectory).startsWith(join(WORLD_ROOT, 'runtimes') + '/.primary-runtime-')).toBe(true)
-    expect(stagingVisibleDuringCall.some((entry) => entry.startsWith('.primary-runtime-'))).toBe(true)
-    expect(existsSync(String(edge.stagingDirectory))).toBe(false) // the row cleaned up its own dir
-
-    // tampered install ⇒ HASH-MISMATCH, never completion-implied:
-    const tamperer = mountRecord('load_workspace_dependencies', {
-      execute: async () => {
-        cpSync(DEP_SOURCE, DEP_ROOT, { recursive: true })
-        writeFileSync(join(DEP_ROOT, 'runtime.json'), '{"version":"TAMPERED"}\n', 'utf8')
-        return { installed: true }
-      },
-    })
-    const tamperPlan = (tamperer.row.classify({}, 'call-d2') as Success).plan
-    const mismatch = await tamperer.row.delegate(tamperPlan, { exec: {} })
-    expect(mismatch.settled).toBe('PAYLOAD-HASH-MISMATCH')
-    expect(mismatch.completionImplied).toBe(false)
-    const tamperEdge = mismatch.edgeFacts as Record<string, unknown>
-    expect(tamperEdge.oldManifestDigest).toBe(edge.sourceManifestDigest) // the old manifest was REALLY read
-    expect(tamperEdge.installedManifestDigest).not.toBe(tamperEdge.sourceManifestDigest)
+    expect(edge.oldManifestDigest).toBeNull() // the root truly has no manifest yet
+    expect(result.value).toEqual({ nativeRan: 'load_workspace_dependencies', family: 'B-DEPENDENCY' })
   })
 
   // ── law-lifecycles kept from rev.2: catalog gate + domain claim ─────────

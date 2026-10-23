@@ -1,82 +1,83 @@
 /**
  * governed-families/g1-surface-adapters.mjs — A5-M2 module group G1 (root
- * round-2 REAL-INTERFACE round, rev.3): the captured-native-delegate adapter
- * rows for the 14 records of families B-CONTROL / B-HUMAN / B-PRESENT /
- * B-PLUGIN / B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
+ * FINAL RULING round, rev.4): the captured-native-delegate adapter rows for
+ * the 14 records of families B-CONTROL / B-HUMAN / B-PRESENT / B-PLUGIN /
+ * B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
  * (frozen dispatch index M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json, records
  * 24, 25, 49–54, 83–85, 87, 88, 91; family law M0-B-FAMILY-TARGET-CONTRACTS.md
- * §3). Metadata modeling is replaced by the REAL manager/host contract:
- * doubles that EXERCISE it, real async lifecycle, real fs at the edge, and
- * same-source re-verification at the consumption edge.
+ * §3). NARROW REAL-TOOL UNITS on the real manager/host contract; KEEP the
+ * closed work (manager async contract, CURRENT-facts edge re-verify, inspect
+ * list topology filter, present witness matching); UNWIRED by ruling.
  *
  * ── NATIVE-FACE LEDGER (comment-side ONLY: a string literal IS an edge to
  * the audit, so these path facts never live in values) ─────────────────────
  * skill                        HOST pkg dsh-tool-skill, tool-skill/src/index.ts: register @:161 of defineTool @:81; body ctx.skills.list/get(lookup) + isModelInvocable gates :138/:145
- * load_workspace_dependencies  HOST pkg dsh-tool-workspace-dependencies, tool-workspace-dependencies/src/index.ts: register @:249; body memoized installPrimaryRuntime(source, root) @:204-229 — THE flow this row mirrors with REAL fs ops at the edge: readdir(source) enumeration, read(source/runtime.json) compatibleManifest, read(root/runtime.json) old manifest, mkdir(parents)+mkdtemp(`${parent}/.primary-runtime-`), cp into the real staging dir, rename previous-slot swap, rename-commit, validatePayloadEntries (actual digest equality)
+ * load_workspace_dependencies  HOST pkg dsh-tool-workspace-dependencies, tool-workspace-dependencies/src/index.ts: register @:249; body memoized installPrimaryRuntime(source, root) @:204-229 — readdir(source) enumeration + compatibleManifest(source/runtime.json) are the flow's own first reads and the row mirrors them as REAL pre-flight reads; the COPY + rename-commit + payload validation run INSIDE that controlled path: the row does NOT stage or hash anything itself and keeps payload verification a NAMED BLOCKER (not wired to the real controlledFS install/payload-verify) rather than claim it
  * ask_user_question            HOST pkg dsh-tool-ask-user, tool-ask-user/src/index.ts: register @:38; body ctx.userQuestions.ask({questions, agent, signal})
  * exit_plan_mode               HOST pkg dsh-plan-mode, plan-mode/src/index.ts: const EXIT_PLAN_MODE @:67, register @:278; body PlanModeController.loggedActive + ctx.get('userQuestions').ask(plan-review)
- * present                      HOST pkg dsh-tool-present, tool-present/src/index.ts: register @:38; body ctx.fs.lstat/resolve/stat + sessionProjections.stateOf(turnBoundary); durable commit = the tools/result listener's session.append('deliverables/presented', {turn, files}) — the SAME-EXEC append carrying the exec callId and the native result's OWN turn is the commit witness; an arbitrary integer is not
- * plugin_manager               HOST pkg dsh-boot-plugin-manager, plugin-manager/src/tools.ts: register @:19 (closed 8-action enum); body approveEscalation @:38 then ctx.pluginManager.{listPlugins|listBundles|setPluginEnabled|setBundleEnabled|installBundle|removeBundle|listVersionExemptions|setVersionExemption} @:47-94. MANAGER ASYNC CONTRACT (src/index.ts, src/types.ts @ 639ed01539): installBundle(spec, InstallBundleOptions) @:462 — options.requestId (:463-466; types.ts:144) is the CALLER-supplied id the row mints BEFORE the call; settled installs are deleted @:566; waitForInstall(requestId): Promise<ChangeResult|null> @:570-576 — "Completed results are not retained; null establishes neither success nor cancellation"; cancelInstall(requestId): Promise<PluginInstallCancellation> @:585-593 — AWAITED to {status:'cancelled'} only after process exit and file restoration, {status:'too-late'} while applying, {status:'not-running'} otherwise (types.ts:208-210 closed 3-status). GAP reported, never faked: the MODEL tool path (tools.ts:80-85) supplies NO requestId and exposes no cancel/wait — governed installs therefore enter the MANAGER face directly.
+ * present                      HOST pkg dsh-tool-present, tool-present/src/index.ts: register @:38; body ctx.fs.lstat/resolve/stat + sessionProjections.stateOf(turnBoundary); PATH LEGALITY is the lane's EXISTING resource grammar (domain/tool-governance/src/resource.ts parseResourceRef :166; workspace locator must be relative :116; relative '..' refused on every fs kind :107-110) — the row reuses that parse and never invents its own path rule; durable commit = the tools/result listener's session.append('deliverables/presented') — the SAME-EXEC append carrying the exec callId and the native result's OWN turn is the commit witness; an arbitrary integer is not
+ * plugin_manager               HOST pkg dsh-boot-plugin-manager, plugin-manager/src/tools.ts: register @:19; THE HOST GATE CHAIN every action runs BEFORE any manager touch: sandboxPolicy.resolve then await approveEscalation({requestedMode:'danger-full-access', effectiveMode, subject:'plugin management operation', justification:'plugin_manager <args>. Profile changes persist across sessions; installed Host code runs outside the workspace sandbox.'}, {approver: ctx.get('approval'), agent, callId, toolName:'plugin_manager', signal}) @:39-43, then exec.signal.throwIfAborted() @:44. The escalation helper is a package-internal import from the sandbox pkg (tools.ts:7) — NOT a public seam this row can call without the tool ctx: the row therefore REQUIRES a mounted hostApprovalGate answering the SAME ctx.get('approval') channel and treats it as a hard precondition (absence refuses the install — bypass is impossible by construction). Team PA NEVER replaces this gate; both must be satisfiable. Tool face params (tools.ts:22-31): action,target,enabled,runtimeVersion,acceptRisk,approvedBuilds,registry,offset,limit — offset/limit REAL on the list actions, validated @:66-69 (offset a non-negative integer, limit 1..100); install spec may be an npm name (incl. @scope/pkg) or a LOCAL PATH RELATIVE to the invocation dir (index.ts:458 doc); MANAGER ASYNC CONTRACT (src/index.ts, src/types.ts @ 639ed01539): installBundle(spec, InstallBundleOptions) @:462 with CALLER-supplied options.requestId (:463-466; types.ts:144), settled installs deleted @:566, waitForInstall @:570-576 ("null establishes neither success nor cancellation"), cancelInstall @:585-593 AWAITED to PluginInstallCancellation {status:'cancelled'|'too-late'|'not-running'} (types.ts:208-210). Settle is OBSERVED BY A LISTENER on the install promise — the row never reads a return it fabricated. GAP reported (tools.ts:80-85): the model tool path supplies no requestId — governed installs mount the manager face directly, gate FIRST.
  * cordis_inspect_list          HOST pkg dsh-tool-cordis, tool-cordis/src/index.ts: register @:22; body ctx.cordisInspect.list() — the REAL list enumerates ALL providers ({platform, id, purpose, methods[]} host-then-client, cordis-host-runner/src/inspect-registry.ts:101-105); this row CONSTRAINS that answer to the CURRENT authorized topology
  * cordis_inspect_query         same file register @:41; body ctx.cordisInspect.query(platform, provider, method, input, agent, signal) over cordis-host-runner/src/inspect-registry.ts
- * team_request_control         TEAM own layer: createTeamTools → requestControlSpec → controlService.requestControl
- * team_resolve_control         same → controlService.escalateApprovalLeg / controlService.resolveControl
- * team_list_pending_control    same → controlService.listControlState + listOpenApprovalCases (Leader-only before any read)
+ * team_request_control         LANE face packages/tools/src/tools.ts requestControlSpec :958 — properties rootSessionId, requestToken, kind, targetInstanceId, actionName, toolName(OPTIONAL), summary(OPTIONAL); required EXACTLY the first five (:985)
+ * team_resolve_control         same file resolveControlSpec :1015 — note OPTIONAL ('Optional decision note'), required rootSessionId, requestToken, requestId, decision (:1046)
+ * team_list_pending_control    same file listPendingControlSpec :1118 — limit OPTIONAL (integer 1..100, default 50; :155-157), required rootSessionId, requestToken (:1130)
  * team_grant_permission        same → permissionSpec('grant'): Leader check, canonicalizeExecIntent/canonicalizeFile, mutatePermission
  * team_revoke_permission       same → permissionSpec('revoke'): reveal-as-expansion gated in the SAME mutation authority (no second ledger)
  * surface:domain_family        NOT a model tool by record design: the mounted Domain port {name, description, decide(request)} consulted AT the effect-commit boundary; the domain-ref effect kind it decides for is domain/tool-governance effects.ts:43,72-113; the kernel has NO public domain-authority registry — that gap is reported, never faked
  * ───────────────────────────────────────────────────────────────────────────
  *
- * ROOT LAWS (round-2 card; module stays UNWIRED — wiring is CENTER's; the
- * spec proving it is NOT C2: every leg runs on doubles and fixture ports):
+ * ROOT LAWS (round-2 card + FINAL RULING units; module UNWIRED; the spec is
+ * NOT C2 — every leg runs on doubles and fixture ports):
  *  L1 REAL EFFECTS per family §3 — never a uniform tool-invoke shell.
- *  L2 TRUSTED TARGETS: session/realm facts and the TRUSTED PROFILE ID enter
- *     ONLY as the mount-time CONFIG face; the model cannot supply them.
- *  L3 SAME-SOURCE RE-VERIFY AT THE CONSUMPTION EDGE: catalog/topology/
- *     domain-port registry/profile facts/install facts consulted at classify
- *     are re-read from their trusted sources at the delegate edge; a move
- *     since classify refuses the plan typed, with zero native entry.
+ *  L2 TRUSTED TARGETS enter ONLY as the mount-time CONFIG face.
+ *  L3 SAME-SOURCE RE-VERIFY AT THE CONSUMPTION EDGE (catalog/topology/
+ *     domain-port registry/profile facts/install facts) — a move since
+ *     classify refuses the plan typed, zero native entry.
  *  L4 domainAuthorityId is ONLY the mounted-port registry's CURRENT fact.
- *  L5 plugin install on the REAL async manager contract (see ledger): the
- *     row MINTS the invocation-owned requestId BEFORE installBundle and
- *     passes it in options; cancel is AWAITED to the closed
- *     PluginInstallCancellation status; too-late/not-running are preserved
- *     and never imply completion; an aborted install never claims the
- *     copying auto-stopped; the row never reads a requestId off its return.
- *  L6 present: the resolving promise is NOT the commit; the commit witness
- *     is the SAME-EXEC session append (deliverables/presented) carrying the
- *     exec's callId AND the native result's OWN turn — an arbitrary integer
- *     is no witness.
- *  L7 the delegate runs ONLY the plan its own classify produced, at most
- *     once, with the plan's own frozen arguments (no replay, no swap).
- *  L8 the inspect pair's target is the CURRENT authorized registry
- *     topology; the list row CONSTRAINS the real all-providers answer to it
- *     — unauthorized providers never appear.
- *  L9 dependency install performs REAL fs operations at the edge: source
- *     enumeration, real source-manifest read, real old-manifest read, a
- *     REAL mkdtemp staging directory, and a REAL post-resolution digest
- *     check. No placeholder strings stand in for these.
- *  L10 plugin targets are envelope-checked against the trusted profile
- *     facts; out-of-envelope targets refuse; the approvedBuilds business
- *     gate (approveEscalation + user answer) is recorded, NEVER re-decided
- *     here; the exemption lane is never derivable from install.
- *  L11 capture law: absent capture ⇒ typed refusal, zero native entry, no
- *     re-resolution.
+ *  L5 plugin install = HOST GATE CHAIN FIRST (mounted hostApprovalGate
+ *     answering the ctx.get('approval') escalation — absence refuses), THEN
+ *     the invocation-owned requestId minted before installBundle(spec,
+ *     {requestId}), settle OBSERVED BY LISTENER, cancel AWAITED to the
+ *     closed PluginInstallCancellation status, a PRE-ABORTED signal refuses
+ *     before the row admits the call at all (zero startup), and an aborted
+ *     install never claims the copying auto-stopped.
+ *  L6 present: the SAME-EXEC session append carrying the exec callId AND the
+ *     native result's OWN turn is the commit witness.
+ *  L7 the delegate runs ONLY the plan its own classify produced, once, with
+ *     the plan's frozen arguments.
+ *  L8 the inspect pair's target is the CURRENT authorized topology; the list
+ *     row CONSTRAINS the real all-providers answer to it.
+ *  L9 dependency performs the flow's REAL pre-flight reads (source
+ *     enumeration, real manifest reads) at the edge; the payload body is
+ *     produced ONLY inside the controlled install path, so payload
+ *     verification is a NAMED BLOCKER (not wired to controlledFS real
+ *     install/payload verify) — the row never stages/hashes anything of its
+ *     own and never claims PAYLOAD-VERIFIED.
+ *  L10 plugin network spec + FS scope are REAL parse work: the install spec
+ *     parses through the npm-name grammar (@scope/pkg[/@version]) or a
+ *     relative local path (absolute/drive paths refuse); registry claims
+ *     parse through URL with https-only and compare CANONICAL href against
+ *     the trusted allow-list envelope.
+ *  L11 capture law: absent capture ⇒ typed refusal, zero native entry.
  *
- * Honest boundaries: NO C2 here (native doubles + fixture ports); the real
- * PA edge, the real append listener, the real manager and the real product
- * fs are integrator-side — this thin row exposes exactly those seams (the
- * exec signal, the append witness, the manager face, the install facts).
- * Windows dimensions: NOT RUN on this Linux harness, never claimed.
+ * Honest boundaries: NO C2 here; the real PA edge, the real append listener,
+ * the real approval channel, the real manager and the real product fs are
+ * integrator-side — this thin row exposes exactly those seams (exec signal,
+ * the approval gate port, the append witness, the manager face, the install
+ * facts). Windows dimensions: NOT RUN on this Linux harness, never claimed.
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g1-surface-adapters
  */
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { URL } from 'node:url'
+
+import { parseResourceRef } from '../../../../../domain/tool-governance/src/index.js'
 
 export const A5_G1_FAMILY_GROUP = 'G1'
-export const A5_G1_ADAPTER_REVISION = 3
+export const A5_G1_ADAPTER_REVISION = 4
 
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
@@ -87,6 +88,7 @@ const CODES = {
   DEFINITION_DRIFT: 'P_G1_DEFINITION_DRIFT',
   NOT_OWN_PLAN: 'P_G1_NOT_OWN_PLAN',
   ALREADY_DELEGATED: 'P_G1_ALREADY_DELEGATED',
+  PRE_ABORTED: 'P_G1_PRE_ABORTED',
   TRUSTED_CATALOG_ABSENT: 'P_G1_TRUSTED_CATALOG_ABSENT',
   SKILL_NAME_NOT_TRUSTED: 'P_G1_SKILL_NAME_NOT_TRUSTED',
   TOPOLOGY_ABSENT: 'P_G1_TRUSTED_TOPOLOGY_ABSENT',
@@ -98,6 +100,8 @@ const CODES = {
   PLUGIN_TARGETS_ABSENT: 'P_G1_PLUGIN_TARGETS_ABSENT',
   PLUGIN_REGISTRY_NOT_TRUSTED: 'P_G1_PLUGIN_REGISTRY_NOT_TRUSTED',
   PLUGIN_TARGET_NOT_ENVELOPED: 'P_G1_PLUGIN_TARGET_NOT_ENVELOPED',
+  HOST_APPROVAL_GATE_ABSENT: 'P_G1_HOST_APPROVAL_GATE_ABSENT',
+  HOST_APPROVAL_NOT_GRANTED: 'P_G1_HOST_APPROVAL_NOT_GRANTED',
   INSTALL_FACE_ABSENT: 'P_G1_INSTALL_FACE_ABSENT',
   DEPENDENCY_FACTS_ABSENT: 'P_G1_DEPENDENCY_FACTS_ABSENT',
   DEPENDENCY_SOURCE_INVALID: 'P_G1_DEPENDENCY_SOURCE_INVALID',
@@ -114,8 +118,9 @@ function pluginActionsList() {
 export const A5_G1_PLUGIN_ACTIONS = pluginActionsList()
 
 const NO_PARAMS = Object.freeze({ type: 'object', properties: Object.freeze({}) })
-/* Declared face parameters per record (the closed root: an undeclared key —
- * a trusted TARGETS face or anything else — is not this record's face). */
+/* Declared face parameters per record — mirroring the REAL faces (plugin:
+ * tools.ts:22-31 incl. offset/limit and NO 'bundle'; team optionality per
+ * the ledger). An undeclared key is not this record's face. */
 function params(...names) {
   return Object.freeze({ type: 'object', properties: Object.freeze(Object.fromEntries(names.map((n) => [n, Object.freeze({})]))) })
 }
@@ -144,8 +149,8 @@ const SPEC_TABLE = {
     recordIndex: 25, family: 'B-DEPENDENCY', scope: 'host-sdk-app-env-only', ownerRole: 'PLUGIN', capture: 'tool',
     requiredTopLevel: [], parameters: NO_PARAMS, nativeFaceRef: 'ledger:load_workspace_dependencies',
     effectDeltaNotes: Object.freeze([
-      'F: the REAL flow, item-by-item over the trusted install facts: enumerate the source dir, read the source runtime.json (compatibleManifest), read the installed old manifest, write the parent (mkdir/mkdtemp staging), write the root (rename-commit), write the .previous slot',
-      'the delegate performs REAL fs operations (readdir, real manifest reads, a REAL mkdtemp staging directory) and a REAL post-resolution digest check against the source manifest — never a placeholder; the install path never touches PATH',
+      'F: the flow envelope over the trusted install facts: enumerate the source dir, read the source runtime.json (the compatibleManifest gate — a REAL pre-flight read the delegate performs), read the installed old manifest, write the parent (the controlled path stages there), write the root (rename-commit), write the .previous slot',
+      'PAYLOAD VERIFICATION IS A NAMED BLOCKER: the staged body exists only inside the controlled install path; the row does NOT stage or hash anything of its own and keeps verification as not-wired-to-controlledFS-real-install/payload-verify — it never claims PAYLOAD-VERIFIED',
     ]),
   },
   ask_user_question: {
@@ -167,18 +172,21 @@ const SPEC_TABLE = {
     recordIndex: 51, family: 'B-PRESENT', scope: 'host-preset-on', ownerRole: 'SERVICE', capture: 'tool',
     requiredTopLevel: ['files'], parameters: params('files'), nativeFaceRef: 'ledger:present', commitLaw: 'session-append',
     effectDeltaNotes: Object.freeze([
-      'F: NOT read-only — reading/metadata is observed over each EXACT deliverable, and the row carries the expose WRITE obligation (artifact identity/version + visible audience)',
+      'F: NOT read-only — reading/metadata is observed over each EXACT deliverable (path legality = the lane resource grammar parseResourceRef — no invented rule), and the row carries the expose WRITE obligation (artifact identity/version + visible audience)',
       'commit law: the native promise resolving is NOT the commit; the SAME-EXEC session append (deliverables/presented) carrying the exec callId AND the native result\'s own turn witnesses it; an arbitrary integer is no witness',
     ]),
   },
   plugin_manager: {
     recordIndex: 52, family: 'B-PLUGIN', scope: 'host-preset-conditional', ownerRole: 'PLUGIN', capture: 'tool',
-    requiredTopLevel: ['action'], parameters: params('action', 'target', 'enabled', 'bundle', 'approvedBuilds', 'registry', 'runtimeVersion', 'acceptRisk'), nativeFaceRef: 'ledger:plugin_manager',
+    requiredTopLevel: ['action'],
+    parameters: params('action', 'target', 'enabled', 'runtimeVersion', 'acceptRisk', 'approvedBuilds', 'registry', 'offset', 'limit'),
+    nativeFaceRef: 'ledger:plugin_manager',
     effectDeltaNotes: Object.freeze([
       'PER-ACTION: each of the 8 actions carries its own closed effects+targets, mapped to the manager code paths under the SAME envelope (profile config path, install root, npm cache, exemptions file, registry allow-list); out-of-envelope targets refuse',
-      'install: S (query) + F (N registry destinations = the requested-or-allowed ones plus the configured fallbacks, connect) + writes (npm cache, install root, profile package.json incl. the approvedBuilds persistent permission) + the script-process envelope + activation',
-      'install lifecycle: the invocation-owned requestId is minted BEFORE installBundle(spec, {requestId}); cancelInstall is AWAITED to {status: cancelled|too-late|not-running}; waitForInstall answers ChangeResult|null — "null establishes neither success nor cancellation"',
-      'the version-exemption lane is a SEPARATE action+target — never derivable from install; the dangerous-action escalation is the Host business gate, recorded not re-decided (the init sandbox is NOT widened here)',
+      'HOST GATE FIRST: the ctx.get(\'approval\') escalation (requestedMode danger-full-access, subject \'plugin management operation\') is a HARD PRECONDITION of the install entry — a mounted hostApprovalGate answers it (the helper itself is package-internal, the gap is reported); absence refuses; Team PA never replaces it; the approvedBuilds user-approval chain stays the Host business gate',
+      'install: S (query) + F (N registry destinations = the request-or-allowed ones plus the configured fallbacks, connect, REAL URL parse + canonical-href envelope compare) + writes (npm cache, install root, profile package.json) + the script-process envelope + activation; settle observed by LISTENER',
+      'install lifecycle: invocation-owned requestId minted BEFORE installBundle(spec, {requestId}); cancelInstall AWAITED to {status: cancelled|too-late|not-running}; PRE-ABORTED signal refuses before the row admits the call (zero startup)',
+      'the version-exemption lane is a SEPARATE action+target — never derivable from install',
     ]),
   },
   cordis_inspect_list: {
@@ -191,7 +199,8 @@ const SPEC_TABLE = {
   },
   cordis_inspect_query: {
     recordIndex: 54, family: 'B-INSPECT', scope: 'host-preset-cordis-only', ownerRole: 'SERVICE', capture: 'tool',
-    requiredTopLevel: ['platform', 'provider', 'method'], parameters: params('platform', 'provider', 'method', 'input'), nativeFaceRef: 'ledger:cordis_inspect_query',
+    requiredTopLevel: ['platform', 'provider', 'method'], parameters: params('platform', 'provider', 'method', 'input'),
+    nativeFaceRef: 'ledger:cordis_inspect_query',
     obligations: Object.freeze([Object.freeze({ target: 'authorized-inspect-topology', operation: 'read-one-method', right: 'read' })]),
     effectDeltaNotes: Object.freeze([
       'S: CURRENT authorized topology gates classify AND the consumption edge; claims outside the authorized triples refuse',
@@ -201,41 +210,48 @@ const SPEC_TABLE = {
   team_request_control: {
     recordIndex: 83, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
     requiredTopLevel: ['rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName'],
-    parameters: params('rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName'), nativeFaceRef: 'ledger:team_request_control',
+    parameters: params('rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName', 'toolName', 'summary'),
+    nativeFaceRef: 'ledger:team_request_control',
     obligations: Object.freeze([Object.freeze({ target: 'team-control-ledger', operation: 'request-control', right: 'write' })]),
-    effectDeltaNotes: Object.freeze(['I + S(write) on the team-control ledger (the single authority; no second one exists)']),
+    effectDeltaNotes: Object.freeze(['I + S(write) on the team-control ledger (the single authority; no second one exists); toolName/summary OPTIONAL exactly as the lane face declares']),
   },
   team_resolve_control: {
     recordIndex: 84, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
     requiredTopLevel: ['rootSessionId', 'requestToken', 'requestId', 'decision'],
-    parameters: params('rootSessionId', 'requestToken', 'requestId', 'decision'), nativeFaceRef: 'ledger:team_resolve_control',
+    parameters: params('rootSessionId', 'requestToken', 'requestId', 'decision', 'note'),
+    nativeFaceRef: 'ledger:team_resolve_control',
     obligations: Object.freeze([Object.freeze({ target: 'team-control-ledger', operation: 'resolve-control-or-escalate-leg', right: 'write' })]),
-    effectDeltaNotes: Object.freeze(['I + S(write) resolve (approval cases additionally ride the Host escalation leg)']),
+    effectDeltaNotes: Object.freeze(['I + S(write) resolve (approval cases additionally ride the Host escalation leg); note OPTIONAL as the lane face declares']),
   },
   team_list_pending_control: {
     recordIndex: 85, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
-    requiredTopLevel: ['rootSessionId', 'requestToken'], parameters: params('rootSessionId', 'requestToken'), nativeFaceRef: 'ledger:team_list_pending_control',
+    requiredTopLevel: ['rootSessionId', 'requestToken'],
+    parameters: params('rootSessionId', 'requestToken', 'limit'),
+    nativeFaceRef: 'ledger:team_list_pending_control',
     obligations: Object.freeze([Object.freeze({ target: 'team-control-ledger', operation: 'read-pending', right: 'read' })]),
-    effectDeltaNotes: Object.freeze(['I + S(read) on the same ledger (closed 5/5)']),
+    effectDeltaNotes: Object.freeze(['I + S(read) on the same ledger (closed 5/5); limit OPTIONAL integer 1..100 default 50 as the lane face declares']),
   },
   team_grant_permission: {
     recordIndex: 87, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
     requiredTopLevel: ['rootSessionId', 'requestToken', 'targetInstanceId', 'rules'],
-    parameters: params('rootSessionId', 'requestToken', 'targetInstanceId', 'rules'), nativeFaceRef: 'ledger:team_grant_permission',
+    parameters: params('rootSessionId', 'requestToken', 'targetInstanceId', 'rules'),
+    nativeFaceRef: 'ledger:team_grant_permission',
     obligations: Object.freeze([Object.freeze({ target: 'root-permission-authority', operation: 'grant', right: 'write' })]),
     effectDeltaNotes: Object.freeze(['I + S(write) on the root permission authority; rules canonicalize server-side (never pre-classify)']),
   },
   team_revoke_permission: {
     recordIndex: 88, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
     requiredTopLevel: ['rootSessionId', 'requestToken', 'targetInstanceId', 'rules'],
-    parameters: params('rootSessionId', 'requestToken', 'targetInstanceId', 'rules'), nativeFaceRef: 'ledger:team_revoke_permission',
+    parameters: params('rootSessionId', 'requestToken', 'targetInstanceId', 'rules'),
+    nativeFaceRef: 'ledger:team_revoke_permission',
     obligations: Object.freeze([Object.freeze({ target: 'root-permission-authority', operation: 'revoke', right: 'write' })]),
     effectDeltaNotes: Object.freeze(['I + S(write); revoked allows can reappear as narrower asks (reveal-as-expansion law)']),
   },
   'surface:domain_family': {
     recordIndex: 91, family: 'B-DOMAIN', scope: 'surface', ownerRole: 'CONNECTOR', capture: 'surface',
     requiredTopLevel: ['toolName', 'domainAuthorityId', 'targetDigest'],
-    parameters: params('toolName', 'domainAuthorityId', 'targetDigest'), nativeFaceRef: 'ledger:surface:domain_family',
+    parameters: params('toolName', 'domainAuthorityId', 'targetDigest'),
+    nativeFaceRef: 'ledger:surface:domain_family',
     obligations: Object.freeze([Object.freeze({ target: 'effect-boundary-ledger', operation: 'record-boundary-decision', right: 'write' })]),
     effectDeltaNotes: Object.freeze([
       'the domain-ref effect carries ONLY the TRUSTED domainAuthorityId from the mounted-port registry CURRENT facts (re-verified at the edge); model-supplied ids are claims and mismatch refuses',
@@ -285,7 +301,6 @@ const deepFreeze = (value) => {
 }
 const dirRes = (realmId, canonicalLocator, rights) => ({ realmId, kind: 'directory', canonicalLocator, rights })
 const pathRes = (realmId, canonicalLocator, rights) => ({ realmId, kind: 'absolute-path', canonicalLocator, rights })
-const netRes = (realmId, canonicalLocator) => ({ realmId, kind: 'network-destination', canonicalLocator, rights: ['connect'] })
 const TOOL_NAME_OBLIGATION = Object.freeze({ target: 'host-tool-dispatch', operation: 'invoke-captured-body', right: 'read' })
 
 function classifyRefuse(code, detail) {
@@ -311,9 +326,51 @@ function closedRootCheck(spec, rawArgs, providerId) {
   return null
 }
 
-/* Trusted CURRENT-fact readers (fixture ports in the spec; the product
- * mounts the real catalog/topology/profile/install sources at the same
- * seams). Each returns either { refusal } or the fact record. */
+/* L10 — REAL spec parse (the manager accepts an npm name incl. @scope/pkg,
+ * or a local path RELATIVE to the invocation directory; never an absolute
+ * or drive path). Returns null when the claim is outside the envelope. */
+function parseInstallSpec(spec) {
+  if (typeof spec !== 'string' || spec.length === 0) return null
+  if (spec.startsWith('/') || spec.startsWith('\\') || /^[a-zA-Z]:[\\/]/.test(spec)) return null
+  if (spec.split('/').includes('..') || spec.split('\\').includes('..')) return null
+  const scopedPath = spec.startsWith('@')
+  const nameEnd = scopedPath ? spec.indexOf('/', 1) : -1
+  const splitPlain = (() => {
+    if (scopedPath) {
+      if (nameEnd === -1) return { name: spec, version: null }
+      const rest = spec.slice(nameEnd + 1)
+      const at = rest.lastIndexOf('@')
+      if (at === -1) return { name: spec, version: null }
+      return { name: spec.slice(0, nameEnd + 1 + at), version: rest.slice(at + 1) }
+    }
+    const at = spec.lastIndexOf('@')
+    return at > 0 ? { name: spec.slice(0, at), version: spec.slice(at + 1) } : { name: spec, version: null }
+  })()
+  if (splitPlain.version !== null && (splitPlain.version === '' || /\s/.test(splitPlain.version))) return null
+  const npmName = scopedPath
+    ? /^@[a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(splitPlain.name)
+    : /^[a-z0-9-~][a-z0-9-._~]*$/.test(splitPlain.name)
+  if (npmName && !spec.includes('\\')) return { kind: 'npm-name', name: splitPlain.name, version: splitPlain.version }
+  if (spec.includes('/')) {
+    if (spec.startsWith('@')) return null
+    if (spec.split('/').some((segment) => segment === '')) return null
+    return { kind: 'relative-path', path: spec }
+  }
+  return null
+}
+
+/* L10 — REAL registry parse: URL grammar, https-only, canonical href. */
+function parseRegistry(href) {
+  if (typeof href !== 'string' || href.length === 0) return null
+  try {
+    const url = new URL(href)
+    if (url.protocol !== 'https:') return null
+    return { canonical: url.href.replace(/\/$/, '') }
+  } catch {
+    return null
+  }
+}
+
 function currentPluginFacts(ports, spec, providerId) {
   const facts = typeof ports?.pluginFacts?.current === 'function' ? ports.pluginFacts.current() : undefined
   const ok = isRecord(facts)
@@ -351,13 +408,15 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         if (!isRecord(file) || typeof file.path !== 'string' || file.path.length === 0) {
           return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: every presented file needs a non-empty path`) }
         }
-        if (file.path.startsWith('/') || file.path.includes('..')) {
-          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: path '${file.path}' is not a workspace-relative deliverable`) }
+        const parsed = parseResourceRef({ realmId, kind: 'workspace', canonicalLocator: file.path, rights: ['read', 'meta'] })
+        if (parsed.ok !== true) {
+          const first = parsed.problems[0]
+          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: path '${file.path}' is not a legal workspace deliverable per the lane resource grammar (${first === undefined ? 'resource grammar refused' : first.detail})`) }
         }
         deliverables.push({ path: file.path, ...(typeof file.description === 'string' ? { description: file.description } : {}) })
         effects.push(
-          { kind: 'read', resource: { realmId, kind: 'workspace', canonicalLocator: file.path, rights: ['read', 'meta'] } },
-          { kind: 'meta', resource: { realmId, kind: 'workspace', canonicalLocator: file.path, rights: ['read', 'meta'] } },
+          { kind: 'read', resource: parsed.value },
+          { kind: 'meta', resource: parsed.value },
         )
       }
       built.target = {
@@ -365,6 +424,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         audience: { kind: 'current-session', sessionHeaderId: trusted.sessionHeaderId },
         artifactVersion: 'turn-scoped-at-result',
         readOnly: false,
+        legalityLaw: 'path legality is the lane resource grammar (parseResourceRef): workspace locators relative to the immutable workspace root, relative .. refused — no invented rule',
       }
       built.obligations = [{
         target: 'current-session-audience',
@@ -389,8 +449,8 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       )
       built.target = {
         installFacts: { sourceLocator: facts.sourceLocator, rootLocator: facts.rootLocator, parentLocator: parent },
-        flowLaw: 'readdir(source); read(source/runtime.json); read(root/runtime.json) old manifest; mkdir(parents); mkdtemp(parent, ".primary-runtime-"); cp staged; rename previous-slot swap; rename-commit; validate payload by ACTUAL digest equality; no PATH change',
-        hashCheck: { required: 'post-resolution-actual-digest', against: 'source-runtime-json', performedBy: 'the-row-at-the-edge (real fs reads — never a placeholder)' },
+        flowLaw: 'the CONTROLLED path (installPrimaryRuntime) enumerates + compatibleManifest-checks the source, stages under the parent, swaps the previous slot and rename-commits the root; the row mirrors the REAL pre-flight reads at the edge and performs no staging or hashing of its own',
+        payloadVerification: 'BLOCKED — not wired to the controlledFS real install/payload verify; the row never claims PAYLOAD-VERIFIED for a body it cannot observe',
       }
       break
     }
@@ -401,10 +461,24 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       if (typeof action !== 'string' || !A5_G1_PLUGIN_ACTIONS.includes(action)) {
         return { refusal: classifyRefuse(CODES.CLASSIFY_UNKNOWN_ACTION, `${spec.recordIndex}·B-PLUGIN·${providerId}: action '${String(action)}' is outside the closed 8-action enum`) }
       }
-      const claimedRegistry = typeof rawArgs.registry === 'string' && rawArgs.registry.length > 0 ? rawArgs.registry : null
-      const allowedRegistries = [...facts.allowedRegistries, ...facts.fallbackRegistries]
-      if (claimedRegistry !== null && !allowedRegistries.includes(claimedRegistry)) {
-        return { refusal: classifyRefuse(CODES.PLUGIN_REGISTRY_NOT_TRUSTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: '${claimedRegistry}' is outside the trusted profile's configured registry allow-list`) }
+      let claimedRegistry = null
+      if (typeof rawArgs.registry === 'string' && rawArgs.registry.length > 0) {
+        const parsed = parseRegistry(rawArgs.registry)
+        const envelope = [...facts.allowedRegistries, ...facts.fallbackRegistries]
+          .map((entry) => parseRegistry(entry)?.canonical ?? null)
+          .filter((entry) => entry !== null)
+        if (parsed === null || !envelope.includes(parsed.canonical)) {
+          return { refusal: classifyRefuse(CODES.PLUGIN_REGISTRY_NOT_TRUSTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: '${String(rawArgs.registry)}' is unparseable or outside the trusted profile's configured registry allow-list (REAL URL parse, https-only, canonical-href compare)`) }
+        }
+        claimedRegistry = parsed.canonical
+      }
+      if (['list_plugins', 'list_bundles'].includes(action)) {
+        const offset = rawArgs.offset
+        const limit = rawArgs.limit
+        if ((offset !== undefined && (!Number.isInteger(offset) || offset < 0))
+          || (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 100))) {
+          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PLUGIN·${providerId}: offset must be a non-negative integer and limit an integer from 1 to 100 (the tool face's own constraint)`) }
+        }
       }
       const targetClaim = typeof rawArgs.target === 'string' && rawArgs.target.length > 0 ? rawArgs.target : null
       if (['set_plugin', 'set_bundle', 'remove_bundle'].includes(action)) {
@@ -413,14 +487,15 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         }
       }
       if (action === 'install_bundle') {
-        if (targetClaim === null || /^[a-zA-Z]:[\\/]/.test(targetClaim) || targetClaim.startsWith('/') || targetClaim.startsWith('.')) {
-          return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: install target must be one package spec; absolute or local paths ride outside the manager envelope`) }
+        const parsedSpec = parseInstallSpec(targetClaim)
+        if (parsedSpec === null) {
+          return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: install target must parse as an npm name (incl. @scope/pkg[@version]) or a path RELATIVE to the invocation directory; absolute and drive paths ride outside the manager envelope`) }
         }
         const destinations = claimedRegistry !== null
-          ? [claimedRegistry, ...facts.fallbackRegistries]
-          : [...facts.allowedRegistries, ...facts.fallbackRegistries]
+          ? [claimedRegistry, ...facts.fallbackRegistries.map((entry) => parseRegistry(entry)?.canonical ?? entry)]
+          : [...facts.allowedRegistries, ...facts.fallbackRegistries].map((entry) => parseRegistry(entry)?.canonical ?? entry)
         for (const registry of destinations) {
-          effects.push({ kind: 'connect', resource: netRes(realmId, registry) })
+          effects.push({ kind: 'connect', resource: { realmId, kind: 'network-destination', canonicalLocator: registry, rights: ['connect'] } })
         }
         effects.push(
           { kind: 'write', resource: pathRes(realmId, facts.cacheRootLocator, ['write', 'meta']) },
@@ -429,12 +504,14 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         )
         built.obligations = [
           TOOL_NAME_OBLIGATION,
+          { target: 'host-approval-escalation-channel', operation: 'danger-full-access-approval', right: 'read', note: 'the ORIGINAL Host gate (approveEscalation over ctx.get(\'approval\'), subject \'plugin management operation\') is a HARD PRECONDITION of the install entry: the row mounts a hostApprovalGate answering that channel and refuses when it is absent or the answer is not an approval; Team PA never stands in for it' },
           { target: 'profile-package-manager-channel', operation: 'pnpm-run-under-profile-env', right: 'write', note: 'the pnpm run executes as a child process under the profile package-manager env (the script-process envelope); the resolved build-scripts set is only known AFTER the run — targets beyond this envelope stale the plan, never ride silently' },
-          { target: 'host-approvedBuilds-channel', operation: 'build-script-runner-permission', right: 'write', note: 'approvedBuilds is a PERSISTENT permission write into the profile pnpm settings — approveEscalation + the user answer are the business gate; this row records it and never re-decides it (the init sandbox is NOT widened here)' },
+          { target: 'host-approvedBuilds-channel', operation: 'build-script-runner-permission', right: 'write', note: 'approvedBuilds is a PERSISTENT permission write into the profile pnpm settings gated by the user\'s explicit conversation approval of the pendingBuilds names — recorded, never re-decided here' },
           { target: 'trusted-profile', operation: 'configure-activation', right: 'write', note: 'install writes the profile config and may activate or restart the live profile (scopeImpact: every session of the profile)' },
         ]
         built.target = {
           action,
+          specFacts: parsedSpec,
           installFacts: {
             profileConfigLocator: facts.profileConfigLocator,
             installRootLocator: facts.installRootLocator,
@@ -482,7 +559,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         break
       }
       built.obligations = [{ target: 'trusted-profile', operation: action, right: 'read', note: 'read-only enumeration of the trusted profile state' }]
-      built.target = { action }
+      built.target = { action, offsetClaim: rawArgs.offset ?? 0, limitClaim: rawArgs.limit ?? 25 }
       break
     }
     case 'B-SKILL': {
@@ -573,6 +650,8 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
   const bindBody = captured ? (spec.capture === 'surface' ? native.decide : native.execute) : undefined
   const installFace = deps.installFace
   const bindInstall = installFace !== undefined && installFace !== null ? installFace.installBundle : undefined
+  const approvalGate = deps.hostApprovalGate
+  const bindGate = approvalGate !== undefined && approvalGate !== null ? approvalGate.requireApproval : undefined
   const realmId = trusted.realmId
   const plans = new WeakMap()
 
@@ -636,9 +715,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     }
   }
 
-  /* L3 — same-source re-verification at the consumption edge: every CURRENT
-   * fact consulted at classify is re-read from its trusted source NOW; any
-   * move since classify (or a vanished source) refuses the plan, typed. */
   const reVerifyAtEdge = (plan) => {
     const stored = plan.targetManifest
     const stale = (detail) => classifyRefuse(CODES.TRUSTED_FACTS_STALE, `${spec.recordIndex}·${spec.family}·${providerId}: trusted facts moved after classify — the plan is stale, not re-approvable: ${detail}`)
@@ -686,10 +762,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
           && (canonical(stored.registryPlan.allowedRegistries) !== canonical(facts.allowedRegistries)
             || canonical(stored.registryPlan.fallbackRegistries) !== canonical(facts.fallbackRegistries))) {
           return stale('the registry allow-list moved after classify')
-        }
-        if (stored.action === 'install_bundle' && stored.registryPlan?.claimedRegistry != null
-          && ![...facts.allowedRegistries, ...facts.fallbackRegistries].includes(stored.registryPlan.claimedRegistry)) {
-          return stale('the claimed registry is no longer inside the trusted allow-list')
         }
         return null
       }
@@ -748,6 +820,11 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     if (entry.state !== 'CLASSIFIED') {
       return classifyRefuse(CODES.ALREADY_DELEGATED, `${spec.recordIndex}·${spec.family}·${providerId}: this classified plan already ran (state ${entry.state}); no replay through the back side`)
     }
+    const exec = ctx.exec ?? {}
+    if (typeof exec.signal?.aborted === 'boolean' && exec.signal.aborted) {
+      entry.state = 'REFUSED-PRE-ABORTED'
+      return classifyRefuse(CODES.PRE_ABORTED, `${spec.recordIndex}·${spec.family}·${providerId}: the caller's signal was ALREADY aborted before this call was admitted — nothing started (no gate call, no native entry, no manager entry)`)
+    }
     const bodyKey = spec.capture === 'surface' ? 'decide' : 'execute'
     if (typeof bindBody !== 'function' || native[bodyKey] !== bindBody) {
       entry.state = 'FAILED-UNKNOWN'
@@ -756,7 +833,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     const stale = reVerifyAtEdge(plan)
     if (stale !== null) return stale
     const args = plan.classifiedArgs
-    const exec = ctx.exec ?? {}
     entry.facts = {
       planCallId: plan.callId,
       execCallId: isRecord(exec) && typeof exec.callId === 'string' ? exec.callId : null,
@@ -768,7 +844,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     }
     entry.state = 'DELEGATED'
 
-    /* L5 — plugin install on the REAL async manager contract. */
+    /* L5 — plugin install: HOST GATE FIRST, then the manager async contract. */
     if (spec.recordIndex === 52 && args.action === 'install_bundle') {
       if (!isRecord(installFace) || typeof installFace.installBundle !== 'function'
         || typeof installFace.cancelInstall !== 'function' || typeof installFace.waitForInstall !== 'function') {
@@ -778,6 +854,32 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       if (installFace.installBundle !== bindInstall) {
         entry.state = 'FAILED-UNKNOWN'
         return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted manager face moved after bind; the stale plan is not re-run`)
+      }
+      if (!isRecord(approvalGate) || typeof approvalGate.requireApproval !== 'function' || approvalGate.requireApproval !== bindGate) {
+        entry.state = 'REFUSED-NO-APPROVAL-GATE'
+        return classifyRefuse(CODES.HOST_APPROVAL_GATE_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the ORIGINAL Host gate chain (approveEscalation over the approval channel, tools.ts:39-43 — the helper is package-internal, the gap is reported) MUST gate any manager entry; the hostApprovalGate port is not mounted, so entering the manager would BYPASS the Host business gate — Team PA never stands in for it; zero manager entry happened`)
+      }
+      const gateRequest = {
+        requestedMode: 'danger-full-access',
+        subject: 'plugin management operation',
+        justification: `plugin_manager ${canonical(args)}. Profile changes persist across sessions; installed Host code runs outside the workspace sandbox.`,
+        action: 'install_bundle',
+        target: args.target,
+        toolName: 'plugin_manager',
+        callId: plan.callId,
+        ...(isRecord(exec.agent) ? { agent: exec.agent } : {}),
+        ...(exec.signal !== undefined ? { signal: exec.signal } : {}),
+      }
+      let approval
+      try {
+        approval = await approvalGate.requireApproval(gateRequest)
+      } catch (error) {
+        entry.state = 'FAILED-UNKNOWN'
+        return classifyRefuse(CODES.HOST_APPROVAL_NOT_GRANTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: the Host approval gate errored (${String(error)}); an ungated manager entry is refused — zero manager entry happened`)
+      }
+      if (!isRecord(approval) || approval.decision !== 'approved') {
+        entry.state = 'REFUSED-NO-HOST-APPROVAL'
+        return classifyRefuse(CODES.HOST_APPROVAL_NOT_GRANTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: the Host approval gate answered '${isRecord(approval) ? String(approval.decision) : 'malformed'}'; without the Host approval the install never starts — zero manager entry happened`)
       }
       const requestId = `g1-install-${randomUUID()}`
       const options = {
@@ -789,7 +891,24 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       entry.state = 'INSTALL_PENDING'
       entry.facts.requestId = requestId
       entry.facts.boundTo = { owner: trusted.owner, correlation: plan.correlation, callId: plan.callId }
+      entry.facts.gateReceipt = { decision: 'approved', subject: gateRequest.subject, requestedMode: gateRequest.requestedMode, callId: plan.callId }
       const pending = installFace.installBundle(args.target, options)
+      /* Settle is OBSERVED BY THE LISTENER below — the row never reads a
+       * return value it fabricated; wait() only reports what this listener
+       * recorded plus what the host's waitForInstall answered. */
+      const settlement = { state: 'pending', changeResult: null, error: null }
+      const settleNotice = Promise.resolve(pending).then(
+        (value) => {
+          settlement.state = 'settled'
+          settlement.changeResult = value
+          if (entry.state === 'INSTALL_PENDING') entry.state = 'INSTALL_SETTLED'
+        },
+        (error) => {
+          settlement.state = 'failed'
+          settlement.error = String(error)
+          if (entry.state === 'INSTALL_PENDING') entry.state = 'FAILED-UNKNOWN'
+        },
+      )
       let cancelPromise = null
       const remember = (mapped) => {
         entry.facts.cancelAnswer = mapped
@@ -812,26 +931,22 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         }, { once: true })
       }
       const wait = async () => {
-        let changeResult
-        try {
-          changeResult = await pending
-          entry.state = 'INSTALL_SETTLED'
-        } catch (error) {
-          entry.state = 'FAILED-UNKNOWN'
-          return { outcome: 'FAILED-UNKNOWN', error: String(error), completionImplied: false }
-        }
+        await settleNotice
         let after = null
         try {
           after = await installFace.waitForInstall(requestId)
         } catch {
           after = null
         }
-        return {
-          outcome: 'CHANGE-RESULT',
-          changeResult,
-          waitForInstallAfterSettle: after,
-          ...(after === null ? { afterSettleNote: 'Completed results are not retained; null establishes neither success nor cancellation' } : {}),
+        if (settlement.state === 'settled') {
+          return {
+            outcome: 'SETTLED-OBSERVED',
+            changeResult: settlement.changeResult,
+            waitForInstallAnswer: after,
+            ...(after === null ? { afterNote: 'Completed results are not retained; null establishes neither success nor cancellation' } : {}),
+          }
         }
+        return { outcome: 'FAILED-UNKNOWN', error: settlement.error, completionImplied: false }
       }
       return {
         ok: true,
@@ -839,18 +954,22 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         lifecycle: {
           requestId,
           boundTo: entry.facts.boundTo,
+          gateReceipt: entry.facts.gateReceipt,
           cancel,
           wait,
           cancellation: () => entry.facts.cancelAnswer ?? null,
           get abortMappedToCancelInstall() { return entry.facts.abortMappedToCancelInstall === true },
-          law: 'PluginInstallCancellation {status: cancelled|too-late|not-running} verbatim; cancelled confirms only after process exit and file restoration; too-late/not-running never imply completion; an aborted install never claims the copying auto-stopped; a null wait establishes neither success nor cancellation',
+          law: 'PluginInstallCancellation {status: cancelled|too-late|not-running} verbatim; cancelled confirms only after process exit and file restoration; too-late/not-running never imply completion; an aborted install never claims the copying auto-stopped; a null wait establishes neither success nor cancellation; settle is observed by the listener, never fabricated',
         },
       }
     }
 
-    /* L9 — dependency: the REAL reads BEFORE entering the body (the
+    /* L9 — dependency: the flow's REAL pre-flight reads at the edge (the
      * compatibleManifest gate is the flow's own first read; entering the
-     * body past a source that cannot even be read would fake the envelope). */
+     * body past a source that cannot even be read would fake the envelope).
+     * The staged PAYLOAD BODY exists only inside the controlled install
+     * path: the row does NOT stage or hash anything and reports payload
+     * verification as the NAMED BLOCKER. */
     let depPre = null
     if (spec.recordIndex === 25) {
       const facts = plan.targetManifest.installFacts
@@ -862,7 +981,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
           return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the source payload has no readable runtime.json — the compatibleManifest gate cannot run; the native flow was NOT entered`)
         }
         const oldManifestDigest = digestFile(join(facts.rootLocator, 'runtime.json'))
-        mkdirSync(facts.parentLocator, { recursive: true })
         depPre = { sourceEntries, sourceManifestDigest, oldManifestDigest }
       } catch (error) {
         entry.state = 'REFUSED-SOURCE-INVALID'
@@ -871,16 +989,10 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     }
 
     let value
-    let stagingDirectory = null
     try {
-      if (depPre !== null) {
-        stagingDirectory = mkdtempSync(join(plan.targetManifest.installFacts.parentLocator, '.primary-runtime-'))
-        entry.facts.stagingDirectory = stagingDirectory
-      }
       value = await bindBody.call(native, args, exec)
     } catch (error) {
       entry.state = 'FAILED-UNKNOWN'
-      if (stagingDirectory !== null) rmSync(stagingDirectory, { recursive: true, force: true })
       throw error
     }
     entry.state = 'NATIVE_RESOLVED'
@@ -902,36 +1014,17 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     }
 
     if (spec.recordIndex === 25) {
-      const facts = plan.targetManifest.installFacts
-      try {
-        const installedManifestDigest = digestFile(join(facts.rootLocator, 'runtime.json'))
-        const verified = installedManifestDigest !== null && installedManifestDigest === depPre.sourceManifestDigest
-        entry.state = verified ? 'PAYLOAD-VERIFIED' : 'PAYLOAD-HASH-MISMATCH'
-        return {
-          ok: true,
-          settled: verified ? 'PAYLOAD-VERIFIED' : 'PAYLOAD-HASH-MISMATCH',
-          completionImplied: verified,
-          value,
-          edgeFacts: {
-            sourceEntries: depPre.sourceEntries,
-            sourceManifestDigest: depPre.sourceManifestDigest,
-            oldManifestDigest: depPre.oldManifestDigest,
-            installedManifestDigest,
-            stagingDirectory,
-            stagingNote: 'a REAL mkdtemp directory under the parent existed for the duration of the governed call; the post-resolution check read the REAL installed manifest — no placeholder stood in for any of these',
-          },
-        }
-      } catch (error) {
-        entry.state = 'FAILED-UNKNOWN'
-        return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the real post-resolution read failed (${String(error)}); nothing is claimed`)
-      } finally {
-        if (stagingDirectory !== null) {
-          try {
-            rmSync(stagingDirectory, { recursive: true, force: true })
-          } catch {
-            /* best-effort cleanup; the row never claims cleanup it did not do */
-          }
-        }
+      return {
+        ok: true,
+        settled: 'PAYLOAD-VERIFICATION-BLOCKED',
+        completionImplied: false,
+        value,
+        edgeFacts: {
+          sourceEntries: depPre.sourceEntries,
+          sourceManifestDigest: depPre.sourceManifestDigest,
+          oldManifestDigest: depPre.oldManifestDigest,
+        },
+        blocker: 'not wired to the controlledFS real install/payload verify: the staged payload body exists only inside installPrimaryRuntime, so the row reports the REAL pre-flight reads and never claims PAYLOAD-VERIFIED',
       }
     }
 
