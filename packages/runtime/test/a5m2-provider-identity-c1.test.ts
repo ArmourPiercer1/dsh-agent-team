@@ -15,7 +15,7 @@
  * WHAT IS REAL HERE (nothing below is a hand-spelled provider value):
  *  - the authority is a REAL `installScopedToolGuard` install: `bindOwnTools`
  *    builds the ToolBinding through the production law
- *    (`tool-dispatch/install.ts` :1148 `providerId: origin === 'team-mcp' ? 'mcp'
+ *    (`tool-dispatch/install.ts` :1155, measured on this base: `providerId: origin === 'team-mcp' ? 'mcp'
  *    : 'dsh-agent-team'`) and binds it VERIFIED+ACTIVE on the real dispatcher
  *    surface; this spec never writes a providerId into a binding;
  *  - the reader is the mount assembly's own site-4 law, over that live surface
@@ -115,7 +115,7 @@ const TPL = 'a5m2-pid-tpl'
 const GOV_ROOT = '/a5m2-pid-governed-root'
 const TARGET = join(GOV_ROOT, 'good.png')
 /** The value the PRODUCTION install law writes for a team-owned tool
- *  (`install.ts` :1148). It appears here ONLY as the right-hand side of an
+ *  (`install.ts` :1155, measured). It appears here ONLY as the right-hand side of an
  *  assertion against what the REAL guard produced — this spec never feeds a
  *  provider identity into a binding, an arm, a family entry or a receipt. */
 const INSTALL_PROVIDER = 'dsh-agent-team'
