@@ -631,32 +631,44 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
   })
 
   describe('(j) the shared caller/root gate answers BEFORE any durable fact', () => {
-    it('a first gate refusal stops the call: zero PA entry, zero fact read, and NO delegate entry even though the identity would resolve afterwards', async () => {
+    it('the first gate refusal RETURNS the typed rejected VALUE; the later identity recovery never reaches the delegate', async () => {
       let factsRead = 0
       let gateCalls = 0
+      const native = Object.freeze({
+        status: 'rejected',
+        code: 'TEAM_TOOL_CALLER_ROOT_MISMATCH',
+        message: "team-tools: caller session belongs to Team root 's-other', but the tool request targets root 's-root-wire'",
+        details: { callerRootSessionId: 's-other', requestedRootSessionId: 's-root-wire' },
+      })
       const w = makeWorld({
-        // The gate refuses ONCE (the real first-refusal case), then would
-        // succeed - so a design that re-entered the native would silently run
-        // the call. The leg fails loudly if the lane is ever entered.
+        // Refuse ONCE, then would succeed: a design that re-entered the native
+        // would silently run the call, so any delegate entry fails this leg.
         callerGate: async () => {
           gateCalls += 1
           return gateCalls === 1
-            ? { ok: false, result: { status: 'rejected', code: 'TEAM_TOOL_CALLER_ROOT_MISMATCH', message: 'caller root mismatch', details: {} } }
+            ? { ok: false, result: native }
             : { ok: true, caller: { kind: 'leader' }, rootSessionId: 's-root-wire' }
         },
         queryFacts: { resolve: () => { factsRead += 1; return { rosterMemberIds: [], rosterFingerprint: 'x' } } },
       })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
-      const outcome: { kind: 'returned'; value: unknown } | { kind: 'refused'; code: string } = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-refused'))
-        .then((value): { kind: 'returned'; value: unknown } => ({ kind: 'returned', value }))
+      const value = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-settled'))
+      expect(value, 'execute returns the trusted gate VALUE itself, by reference - no catch, no wrapped refusal').toBe(native)
+      expect(factsRead, 'no durable read runs behind a caller/root refusal').toBe(0)
+      expect(w.walks, 'no PA question opens').toHaveLength(0)
+      expect(w.delegateEntries, 'the lane is never entered, before or after the gate answer').toHaveLength(0)
+      expect(gateCalls, 'no retry through the native').toBe(1)
+      expect(wiring.claimStats().callerGateRefusals).toBe(1)
+    })
+    it('a gate answer that is NOT a well-formed rejected VALUE stays an ordinary seat refusal', async () => {
+      const w = makeWorld({ callerGate: async () => ({ ok: false, result: { note: 'caller looked wrong' } }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const outcome: { kind: 'returned'; value: unknown } | { kind: 'refused'; code: string } = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-malformed'))
+        .then((returned): { kind: 'returned'; value: unknown } => ({ kind: 'returned', value: returned }))
         .catch((error: unknown) => ({ kind: 'refused', code: String((error as { code?: string }).code) }))
       expect(outcome.kind).toBe('refused')
       if (outcome.kind === 'refused') expect(outcome.code).toBe('P_B_TEAM_WIRE_ADMISSION_CANCELLED')
-      expect(factsRead, 'no durable read runs behind a caller/root refusal').toBe(0)
-      expect(w.walks, 'no PA question opens').toHaveLength(0)
-      expect(w.delegateEntries, 'the native is NEVER re-entered: a later identity recovery must not reach spec.run').toHaveLength(0)
-      expect(gateCalls, 'the seat does not retry by re-running the native').toBe(1)
-      expect(wiring.claimStats().callerGateRefusals).toBe(1)
+      expect(w.delegateEntries).toHaveLength(0)
     })
 
     it('a passing gate changes nothing about the admitted leg', async () => {

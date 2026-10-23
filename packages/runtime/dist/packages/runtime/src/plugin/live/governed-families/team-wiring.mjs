@@ -618,8 +618,28 @@ export function buildTeamOpsWiring (input = {}) {
         // carried as a "native value" (no forged-value path, no fake ok:true,
         // no swallowing of unrelated admission refusals).
         stats.callerGateRefusals += 1
-        observe({ event: 'b-team-wire:caller-gate-refused', name, paEntry: false, factsRead: false, minted: false, delegateEntry: false })
-        return wiringRefuse(WIRE.ADMISSION_CANCELLED, `${String(name)}: the shared caller/root gate (the same rule the native common entry runs) refused this call — zero PA entry, zero durable fact read, zero port entry; the governed chain is never entered on an unbound caller`)
+        const value = isRecord(gate) ? gate.result : undefined
+        const trusted = isRecord(value) && value.status === 'rejected'
+          && typeof value.code === 'string' && value.code.length > 0
+          && typeof value.message === 'string'
+        observe({
+          event: 'b-team-wire:caller-gate-refused',
+          name,
+          code: trusted ? value.code : undefined,
+          paEntry: false,
+          factsRead: false,
+          minted: false,
+          delegateEntry: false,
+          settledReturn: trusted,
+        })
+        // The private settled-value channel (adapter execute): the trusted
+        // internal gate's OWN typed rejected VALUE goes back to the caller by
+        // reference, with zero PA entry, zero durable read and zero port
+        // entry. A gate answer that is not a well-formed rejected VALUE is
+        // never smuggled through that channel - it stays an ordinary seat
+        // refusal, and no caller-supplied data ever forms it.
+        if (trusted) return Object.freeze({ ok: true, settled: true, value })
+        return wiringRefuse(WIRE.ADMISSION_CANCELLED, `${String(name)}: the shared caller/root gate refused this call with an answer that is not a well-formed rejected VALUE — zero PA entry, zero durable fact read, zero port entry`)
       }
     }
     const callBox = { facts: undefined, claim: undefined, fault: undefined }
