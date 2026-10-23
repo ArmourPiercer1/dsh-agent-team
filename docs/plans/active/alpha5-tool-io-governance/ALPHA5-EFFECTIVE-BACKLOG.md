@@ -42,3 +42,30 @@
 | BR-01 | 三当前态文档 + graph current_contract + AGENTS 入口 + 历史 banner | 本分支首批 commit（已含） |
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
+
+## M2 四档状态/owner 表（2026-10-23 15:4xZ，root 15:4x 裁决落表；四档唯一定义：未开发=治理实现仍实质缺口｜未接线=实际适配可交付未生产装配｜接线未测=真实生产路径已接但对应 Host 验收未完｜已测试=明确功能范围/固定版本真实验收。无第五档；阻塞只作备注，不升档不降档。）
+
+| 工具/面 | 档位（按档定义） | 范围与固定版本 | owner/树 | 备注 |
+|---|---|---|---|---|
+| todo_write | 已测试 | todo PA hand-off C2 **r11** 真 Host 验收 @31f7 包 / pin bbde8（root 签收口径，更正：非 r14@8b94——r14 是 write 旧 kit 判据失败轮） | center/已关弧 | — |
+| write（既有文件） | 已测试 | 既有文件写 C2 r16 @19d54 包，root 14:38 限定既有文件范围接受 | center/已关弧 | 范围外新文件不在此档 |
+| write（新建文件） | 未开发 | 治理实现仍实质缺口（r16 明示限定既有文件） | 待派 | 无第五档 |
+| read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 根因闭于真实同形重放（root 16:56 纠偏）：真实 policy/effects/decider 输入先核身份，seam-on=authorized 且 drift 族全静、seam-off=逐字 r17 字节（RR-4/RR-5 `d8c6cd9e2`）；旧 RR-1 标 SYNTHETIC-HISTORICAL；源码修 `337170983` PASS 保留；Host 复验冻结待原产品准入 |
+| read | 接线未测 | 生产挂载真路径（M1 弧已老版本验收；本固定包组合未重验） | V-RSJ `68701321`（已停；其未提交 kit 实际已失/待重建=恢复损失，不得改称按设计重写） | Host 验收冻结待 infra 安全入口实测 |
+| search | 接线未测 | 生产 rg 后端真路径 | 同上 | 同上 |
+| jobs | 接线未测 | durable bridge 生产路径 | 同上 | 同上 |
+| G1 纯查询子集（inspect×2 + team_list_pending_control） | 未接线 | g1-surface-adapters 组件（59 腿）+ wiring 候选 g1-query-wiring（15 腿，center 实测并入）可交付未生产装配 | 接线 `44ece7a3`@feat/a5m2-wire-g1 | 子集由冻结表推导（capture=tool ∧ 全 read 义务） |
+| G1 dependency/plugin/present 资源臂 | 未开发 | 治理实现仍实质缺口（无成熟适配可交付；禁冒升） | 待派 | 不强塞、不冒完成 |
+| G2 WEB seams 面 | 未接线 | provider-seams 可交付（registerSearchProvider/registerFetchProvider WEB pins） | 接线 `e78dee2a`@feat/a5m2-wire-g2 | WEB global/env 禁 |
+| G2 WEB 真实 Team-scoped 固定 provider | 未开发 | 实际 provider 仍缺（真 Team scoped register+close 绑定实现缺位，禁 server 名匹配） | 原 G2 组件 owner 生命周期修复卡内 | 具名阻塞 |
+| G2 MCP seams | 未接线 | 真 SDK 签名面可交付 | 同上 | request=执行租约 |
+| G2 BROWSER 装配 | 未接线 | 根 17:1x：G2 已源+正式 17/17 闭（rev3 6875e62e4+rev4 c80ec68e0 入面，M2 真实三触达+有界性腿）；Browser 公开 worker 原阻断 16:26 已关；真 transport/close 句柄按代际所有权已入面；剩余=接线义务（注册+plane 装配+Team scoped provider），不冒 C2 | 组件 5dbe 已闭源；接线 `e78dee2a` | 未 Host；C2 待接线窗口 |
+| G3 终端/进程族 | 未开发（部分实现；源子线循环已闭） | g3a c270e0e85 Source PASS；g3b 终版 **15b76a8aa8f7005e1b395505e9547c750626825e**（远端 feat/a5m2-g3-pty-spawn ls-remote 同值）根 17:52 **Source PASS**：真实 TerminalBackendCleanupError 穿 Host reservation 保 pending ownership、不假 quiescence；**组合=a+c270 按明确区块，禁整文件覆盖**；生产供给仍具名缺口（同 Host TerminalSessionService 模块实例的 CleanupError、真 LocalPtySession/完整 ResolvedConfig、restricted subprocess 生产接缝）；组合定向后推进独立接线非 C2 | g3a `cf8e0202` 闭；g3b `6fdf` 源线收 | 不升 Host/C2 |
+| create_goal/get_goal/update_goal | 未接线 | g5 三型别行适配已交付（GoalService 七签名逐一对表、真编译产物 fixed point、20 腿+红除实测，center 实测并入）未生产装配；具名实缺口随行不冒闭：AUTHORITY（authority.ts:80-118 UNOBSERVED）/WRAPUP（exec.deferContext）/AGENT_AUTH | 适配 `8722db94`（已停笔交付） | census 27/28/29 无需改表 |
+| session_search/trace/event_read/event_search/event_trace | 未开发（部分实现） | root 16:14 集中裁决降档：PREAUTH∩ceiling 交集、service-safe 存在性、捕获 schema 类型强校验、输出/呈现保真+parentSession 过滤+trace 原形状、分页真 receiver、include_root_sessions:false 实现+INACTIVE 真实构造证据——六项 BLOCK 修+根 1eea 三残差一次修（65c539b44 rev-3：hasTarget 双卡含 event_search、祖先/后代/标题车道自身 ceiling 交集、跨 await guardFacts+stage 锚定、分页构造门；作者 49/49+红除 RA′/RB/RC/RD，center 实测并入 int `9c83a3354` 49/49）；根 17:2x 仅余 trace/search 最终输出集合+title 统一当前 ceiling 重核或整体撤销拒绝（49P 不当闭；原 8e6e 直收一次修，勿重复派）；全套一次性 12 failed 归属未取证已如实披露不动基线；整组成熟度仍不得冒称 | 复审=根；作者已停笔 | 残差具名导出：TARGET_PREAUTH/PARENT_FILTER/TITLES_PRESENTATION/SESSION_HISTORY_RESOURCE_KIND |
+
+| B-SCHEDULE（schedule_create/delete/list/update 记录 30-33） | 未接线（list/delete 受控接线进行中） | 根 17:38 f541 窄审 **PASS**：owner 真对象/current service/真 instanceof error 三项已闭；**list/delete 可进入受控接线**（tier 记未接线并实际派新独占 wire owner `feat/a5m2-wire-schedule`@4a85ec0b3：PA_FAMILY_TARGET_RULES['B-SCHEDULE'] 封闭叶取实测 list/delete plan target、registerA5GovernedFamily+placementFeed **仅挂 list/delete 行**、真 PA 消费、三捕获律绑死=同 native 注册 Agent 对象+live ctx.schedule 重读+真公开 ScheduleInputError；list 绑 owner session active tasks，delete 绑 owner session+exact taskID）。**create/update 触发缺口未闭不可启用亦必交不删**；TRIGGER_GOVERNANCE（runtime.ts:101 resolveAgent→:123 followup 无公开 pre-delivery 治理 seam）/PLAN_ONCE_MEMO 逐字携带；delete/update=revocation path 注释**≠policy 自动撤销** | adapter `bc81187e`@new-family f541（release，配对修待召）；wire `a5m2-wire-schedule`（新派） | image 包冻结无交叉写；不冒 Host/C2 |
+
+| B-CONTROL/B-INSPECT 目标规则 | 未接线（候选入面，非成熟） | 根 957 审卡：CONTROL trusted/INSPECT trusted-topology **标量部分 PASS**；inspectTarget 用 obligations 宽 object 绕 M0 grammar→**拒签**；原 owner 须给封闭 leaf 完整三变体+配对，不能表达则报最小契约差量（不擅开宽型）；957a5f526 已入面(int 29cf05628)**仍为候选**，不作真实 Host 放行、不称全 B-CONTROL 成熟；CONTROL 真实 request/case/subject/revision/action 原缺口保留；B-MCP 未准冻结 | `9d968d43`（根直送卡，勿重复派） | 标量部分勿重开；obligations 修法候 owner |
+
+适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。

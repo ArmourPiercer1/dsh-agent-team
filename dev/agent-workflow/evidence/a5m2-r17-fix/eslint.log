@@ -1,0 +1,24 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime/src/plugin/live/agent-bindings.mjs
+  3610:15  error  'a5PlaneFsSeam' is not defined  no-undef
+  3610:60  error  'a5PlaneFsSeam' is not defined  no-undef
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime/test/a5m2-r17-drift-repro-c1.test.ts
+   63:10  error    'parsePaControlManifest' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   73:38  error    'A5_IMAGE_ADAPTER_REVISION' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   73:65  error    'A5_IMAGE_FAMILY_ID' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   73:85  error    'A5_IMAGE_OPERATION' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  513:10  error    'allowPolicyFor' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  572:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  588:7   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  657:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+✖ 10 problems (7 errors, 3 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

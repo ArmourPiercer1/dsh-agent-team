@@ -693,6 +693,49 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
     }),
+    // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten; the lane
+    // module that produces this claim is
+    // src/plugin/live/governed-families/g1-surface-adapters.mjs, records
+    // 83/84/85/87/88 - every B-CONTROL target is the trusted TARGETS config
+    // envelope, minted as FLAT LEAVES one-for-one at classify). These fields are
+    // CONFIG facts the mount provides and the model can never supply
+    // (closedRootCheck law); no resource-derived truth rides here, so
+    // currentFields is what THIS call's binding/member/realm facts can restate.
+    'B-CONTROL': Object.freeze({
+        required: Object.freeze({
+            trustedMemberAgentId: 'string',
+            trustedSessionHeaderId: 'string',
+            trustedRealmId: 'string',
+            trustedOwner: 'string',
+            trustedProfileId: 'string',
+        }),
+        currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
+    }),
+    // A5-M2 B-INSPECT (root ruling, pure-equivalence leaf flatten; the same lane
+    // module produces this claim: records 53 cordis_inspect_list and 54
+    // cordis_inspect_query). topologyRevision/topologyDigest are the CURRENT
+    // authorized-topology facts (the edge re-verify owns them post-approval,
+    // unchanged); `inspectTarget` is the SINGLE-ITEM array that keeps each
+    // record's VARIANT facts together - rec 53: [{ listLaw }], rec 54:
+    // [{ platform, provider, method(, clientRoundtrip) }] - so the correlated
+    // query triple stays correlated (the edge reads it as one triple) and the
+    // closed-key law is satisfiable by ONE rule although the records' nested
+    // shapes differed. The 'obligations' kind is used STRUCTURALLY (non-empty
+    // array of plain objects): notation for the approved question, never a
+    // second permission layer (rule doc above).
+    'B-INSPECT': Object.freeze({
+        required: Object.freeze({
+            topologyRevision: 'nonNegativeInt',
+            topologyDigest: 'string',
+            inspectTarget: 'obligations',
+            trustedMemberAgentId: 'string',
+            trustedSessionHeaderId: 'string',
+            trustedRealmId: 'string',
+            trustedOwner: 'string',
+            trustedProfileId: 'string',
+        }),
+        currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
+    }),
 });
 function isPaFamilyTargetField(kind, value) {
     switch (kind) {

@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: r17-shape policy (deny read subtree excluded, allow read subtree team, default ask) over the real image hand-off with production-shape fs seams; RR-1 threads the mount seam to the decision side (fix), RR-2 keeps the seam-absent r17 bytes (absence law) > RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam
+RR1-FIXED kind=refused code=APPROVAL_DENIED drift=1
+
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts (2 tests | 1 failed) 96ms
+     × RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam 55ms
+     ✓ RR-2 absence law: a mount whose decision side receives NO seam keeps the exact r17 drifted bytes (unchanged fail-closed) 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: r17-shape policy (deny read subtree excluded, allow read subtree team, default ask) over the real image hand-off with production-shape fs seams; RR-1 threads the mount seam to the decision side (fix), RR-2 keeps the seam-absent r17 bytes (absence law) > RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam
+AssertionError: fixed transport: the hand-off is authorized: expected 'refused' to be 'authorized' // Object.is equality
+
+Expected: "authorized"
+Received: "refused"
+
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts:577:73
+    575|     // rules are DETERMINED on the expansion plane - no drifted() bran…
+    576|     // APPROVAL_DENIED; the hand-off is authorized like r11/r16 answer…
+    577|     expect(handoff.kind, 'fixed transport: the hand-off is authorized'…
+       |                                                                         ^
+    578|     expect(driftRows.length, 'fixed transport: zero drift-family refus…
+    579|   }, 60_000)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  16:36:08
+   Duration  2.16s (transform 1.49s, setup 0ms, import 1.91s, tests 96ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

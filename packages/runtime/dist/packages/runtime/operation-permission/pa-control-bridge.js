@@ -626,7 +626,9 @@ export function createPaEffectsVerifier(deps) {
         const documents = facts.ceiling;
         let expansion;
         try {
-            expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument);
+            expansion = facts.subtreeContains === undefined
+                ? evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+                : evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument, facts.subtreeContains);
         }
         catch (error) {
             return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`);
@@ -648,6 +650,7 @@ export function createPaEffectsVerifier(deps) {
             authorityGeneration: facts.authorityGeneration,
             teamSessionId: facts.member.teamSessionId,
             instanceId: facts.member.instanceId,
+            ...(facts.subtreeContains === undefined ? {} : { subtreeContains: facts.subtreeContains }),
         });
         if (!planned.ok) {
             return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`);
@@ -704,6 +707,7 @@ export function createPaEffectsVerifier(deps) {
             },
             currentAuthorityGeneration: facts.authorityGeneration,
             documents,
+            ...(facts.subtreeContains === undefined ? {} : { subtreeContains: facts.subtreeContains }),
         });
         if (!presented.ok) {
             return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`);

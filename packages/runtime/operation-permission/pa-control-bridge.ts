@@ -124,6 +124,19 @@ import type {
   PaEffectsVerifierVerdict,
 } from '../control/types.js'
 import { authorityRank, mayReview } from '../governance/authority-ceiling.js'
+import type { SubtreeContains } from '../governance/permission-mutation.js'
+
+/** A5-M2 r17 FIX (center): the SAME lexical containment seam the mount's
+ *  Part A edge and the plane's final edge already hand the pure core
+ *  (`team-tool-plane.mjs` `input.fs.subtreeContains`), threaded to the
+ *  decision-side verifier through the RUNTIME facts read only. It is NOT a
+ *  member of the durable `PaCallFacts` contract (control/types.ts untouched
+ *  by this fix): the mount registry attaches it to the facts OBJECT it
+ *  returns, the root wiring types the port with it, and the pure core's
+ *  optional parameter consumes it exactly as the production edges do.
+ *  Absent (a mount with no fs seam) keeps today's behaviour byte-for-byte:
+ *  a subtree rule reads `undetermined` on the expansion plane. */
+type PaCallFactsWithSeam = PaCallFacts & { readonly subtreeContains?: SubtreeContains }
 import { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, verifyEffectSetApproval } from '../tool-admission/approval-case.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import type { EffectSetApprovalPlan, PresentedApproval } from '../tool-admission/approval-case.js'
@@ -795,7 +808,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
     // construction flag (test seam, default CLOSED): a production wiring
     // that omits `allowFactsInjection` can never be fed facts through the
     // input, so its injected adapter is the single, unavoidable source.
-    let facts: PaCallFacts | undefined = deps.allowFactsInjection === true ? input.facts : undefined
+    let facts: PaCallFactsWithSeam | undefined = deps.allowFactsInjection === true ? input.facts : undefined
     if (facts === undefined) {
       try {
         facts = await deps.readCallFacts({
@@ -885,7 +898,9 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
     const documents = facts.ceiling
     let expansion
     try {
-      expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+      expansion = facts.subtreeContains === undefined
+        ? evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+        : evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument, facts.subtreeContains)
     } catch (error: unknown) {
       return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`)
     }
@@ -906,6 +921,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
       authorityGeneration: facts.authorityGeneration,
       teamSessionId: facts.member.teamSessionId,
       instanceId: facts.member.instanceId,
+      ...(facts.subtreeContains === undefined ? {} : { subtreeContains: facts.subtreeContains }),
     })
     if (!planned.ok) {
       return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`)
@@ -963,6 +979,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
       },
       currentAuthorityGeneration: facts.authorityGeneration,
       documents,
+      ...(facts.subtreeContains === undefined ? {} : { subtreeContains: facts.subtreeContains }),
     })
     if (!presented.ok) {
       return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`)

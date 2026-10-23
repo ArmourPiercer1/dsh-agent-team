@@ -2137,6 +2137,13 @@ export function createAgentBindings(deps) {
    *   legacy seams).
    */
   function agentSetup(sessionId, instanceIdHint, templateIdHint, bindPath, teamRootSid) {
+  // A5-M2 r17 FIX (center): the mount's ONE lexical seam, hoisted to the
+  // mount-build scope so BOTH consumers see the same object: the plane
+  // assembly call (fs) and the publishPaMount mount record (fsSeam) that the
+  // decision-side facts read answers containment from. Computed inside the
+  // plane-build block below (its inputs live there); undefined until then,
+  // which is exactly the no-seam absence the consumers must keep handling.
+  let a5PlaneFsSeam
     // fix/alpha2-explicit-agent-setup-compat: the DSH 0.1.5+ AgentSetup
     // contract is `setup(agentCtx, agent)` — the factory passes the very
     // Agent being composed as the SECOND parameter and no longer exposes
@@ -3041,7 +3048,7 @@ export function createAgentBindings(deps) {
         // THROWS and the consumers' own laws decide (lane-decide matches the
         // deny — tighten, never widen; the kernel answers with its typed
         // refusal). It never guesses a containment.
-        const a5PlaneFsSeam = (() => {
+        a5PlaneFsSeam = (() => {
           const seamRoot = planeCfg?.fsInstance?.rootDir
           if (typeof seamRoot !== 'string' || seamRoot.length === 0) return undefined
           const seamRealmPrefix = `${a5PlaneRealmId}|`
@@ -3600,6 +3607,14 @@ export function createAgentBindings(deps) {
           instanceId: String(instanceId),
           guard: a5p1Guard,
           plane: a5PlaneValue,
+          // A5-M2 r17 FIX (center): the mount's ONE lexical seam object — the
+          // SAME frozen {canonicalizeResource, subtreeContains} handed to the
+          // plane assembly above as `fs` — rides the mount record so the
+          // decision-side facts read answers containment with the mount's
+          // real authority, exactly like Part A and the plane's final edge.
+          // Absent (no fsInstance root) = absent here: the pure core's
+          // optional parameter keeps today's fail-closed reading byte-for-byte.
+          ...(a5PlaneFsSeam === undefined ? {} : { fsSeam: a5PlaneFsSeam }),
           beneficiaryAuthority: String(sessionId) === String(teamRoot) ? 'leader' : 'member',
           readers: {
             permissionPlane: () => permissionPlaneRef?.current,

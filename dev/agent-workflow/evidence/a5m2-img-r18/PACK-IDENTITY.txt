@@ -1,0 +1,12 @@
+PACK IDENTITY PROOF 2026-10-23 (center; root 17:21/17:22 ruling - accurate fixed identity, no dist-delta narrative)
+SOURCE/MIRROR-consistent committed SHA: d5454cb238787d87979d0810031373ecbf1081be (int tip; dist mirrors COMMITTED via place-dist-glue 17 placements: dist agent-bindings fsSeam x2, pa-mount-registry x1 - MEASURED grep)
+pnpm pack at this SHA (clean checkout of .worktrees/a5m2-pinbuild @ d5454cb23, porcelain clean before pack): /srv/workspace/dsh-plugins/dsh-agent-team/dev-verify-pack/dsh-agent-team-0.1.1-alpha.2.tgz sha256 516ef0f50d6ccae23c188a793733346e7e563d3d70195e27a6cb7e2a7fc47444, 3647444 B, 1813 FILE records
+EQUIVALENCE MEASURED: pack at d5454cb23 is BYTE-IDENTICAL to the earlier artifact (same sha256) because that artifact's two dist-mirror bytes equal the now-committed dist; identity now STANDS ON the committed source/mirror-consistent tree - the 126b-era record is NOT rewritten (kept as history per root)
+seam INSIDE tgz verified at true paths: package/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs fsSeam x2; pa-mount-registry.mjs x1
+FULL OFFICIAL CHAIN AT THIS SHA (true RCs, logs in this dir):
+  pnpm --filter './packages/client' run build (tsc -p tsconfig.build.json)  RC=0   [first-cause fixed: composition entry packages/client/dist/packages/client/src/plugin/client.js is tsc output]
+  pnpm run build:composition  RC=0  (build-composition-d5454cb23.log; tail: DSH-ARTIFACT-VERDICT check-artifacts-committed OK 1788 files - working tree equals the git INDEX)
+  node scripts/place-dist-glue.mjs  RC=0  (glue-d5454cb23.log)
+  pnpm pack  RC=0  (pack-d5454cb23.log)
+  git status porcelain (non-??) after chain = 0  => the committed tree IS the build surface; NOT a failed-build pack of stale bytes
+PIN = SHA d5454cb238787d87979d0810031373ecbf1081be + tgz sha256 516ef0f50d6ccae23c188a793733346e7e563d3d70195e27a6cb7e2a7fc47444 (3,647,444 B, 1813 records).
