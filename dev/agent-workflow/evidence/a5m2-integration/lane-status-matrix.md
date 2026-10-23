@@ -52,6 +52,8 @@ R1 g6-plane-mount (a2) session_*投影拒针：expected built.ok=false，actual 
 - **四红清零（根 23:09 账，int `1c10f75dd`+ 三枚 re-anchor commits）**：R3=cherry-pick -x fe20f1f1a（十族列名）；R4/R1=中心集成复制面重锚（两条 leg 均**只存在于 int 复制**——9c/00270 各自测量 lane 基地非该现实；R1 加真 unknown 词 session_not_a_real_op 负控保拒法被证）；R2=字节取自 provider-id lane tip `477f16fae`（该 lane 临时 sole-writer 按卡**显式枚举两新位** agent-bindings :3254 spawn/:3783 controls，非只数改 7）。四 spec 合并跑 **56/56 RC=0**。00270 lane 侧卡正确阻塞预检（pre-AUTH 基地、8 UU、取字节路 AUTH 自测 21 红）+三选项归根——**未造假绿，记为合规范式**；其 lane 选项候根裁（R1 已由中心在 int 关闭，lane 副本是否同步候裁）。
 - **G6 六卡集中候窗**：kit tip **`e72aa2920a00ca04802458a77572c0a5bd36440f`**、sha256 **`efc768a1b408149f951c1557039b5eb1b5f0c23c0390ea34c2ed258cf2c64727`**；一 commit/一预检 RC0（12/12，3186/3187）/无 boot；capability 模板⇒真 permissionPolicy+sessionQuery 严格位、pairing 只读 durable facts、真内容+相关面判决、C6/C10 天花板先于 NOT_FOUND、统一 await cleanup exit-3、双预算账 pre-boot+per-phase；307c helper 语义并入零 p6t6 字节。候根源审+窗口裁。
 
+- **Schedule 窗预备齐（kit head `aa1fd44dd94cc5467ea60fcce26e7defdaa0b581`，链 …72d→fe20→merge→4dc→aa1）**：最后两处 resultErr() ReferenceError 类调用点改定义好的 resultError（2 插 1 删）；裸调用扫描零真未定义+四轮线形本地重放毕。**窗口事实**：fixture install 全路径（lock `163ed899…`）；终装 lock `7faee42f…`（602 包=+1 file: +78 平台可选件，edge-diff 在册）；冻结 RC0 日志（0 下载，r18 pinned store）；15 peer 0.2.0-rc.2+cordis 4.0.4+yaml2.9.0+zod4.4.3+874 file:；unique 141,136,345B 关键值。**待根单窗授予 3185/3496**（未 boot）。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
