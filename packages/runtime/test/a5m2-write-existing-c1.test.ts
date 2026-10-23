@@ -507,6 +507,38 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     expect(world.writeDef.description).toBe('TEST native write description — the captured bytes the row must carry.')
   })
 
+  it('r12 registration fixed point: the REAL pinned-host tools.register entry accepts the write row output { schema, render } — the r12 first error was output.render living at the definition TOP level; the schema validator alone is NOT the register gate', async () => {
+    const world = await mountWorld('register')
+    const hostTools = (await import(pathToFileURL(join(REPO, 'tests/deepseek-harness-test-use/packages/core/tools/lib', 'index.js')).href)) as {
+      ToolRuntime: { prototype: { register(input: unknown): () => void } }
+    }
+    let effectCalls = 0
+    const fakeThis = {
+      ctx: {},
+      // The gate runs BEFORE any state mutation; the layer effect is the first
+      // this-touching line (index.ts:1085) — counting it proves the real
+      // register accepted the definition end-to-end (output shape, REAL
+      // assertSupportedJsonSchema(output.schema), timeout law, reserved-name
+      // law), not merely a re-run of the schema validator.
+      layers: { effect: () => { effectCalls += 1; return () => {} } },
+    }
+    const def = world.writeDef as unknown as Record<string, unknown>
+    const output = (def as { output?: { schema?: unknown; render?: unknown } }).output
+    // r12 law stated on the face itself: render lives INSIDE output, never at
+    // the definition top level.
+    expect(typeof output?.render).toBe('function')
+    expect(Object.hasOwn(def, 'render')).toBe(false)
+    const dispose = hostTools.ToolRuntime.prototype.register.call(fakeThis, def)
+    expect(effectCalls).toBe(1)
+    expect(typeof dispose).toBe('function')
+    // The r12 defect shape verbatim: render hoisted back to the top level
+    // leaves output WITHOUT render — the host register refuses, no layer
+    // effect is reached.
+    const broken = { ...def, output: { schema: output?.schema }, render: output?.render }
+    expect(() => hostTools.ToolRuntime.prototype.register.call(fakeThis, broken)).toThrow(/must declare output \{ schema, render/)
+    expect(effectCalls).toBe(1)
+  })
+
   it('FORMAL POSITIVE: real allow -> one consume witness -> the reviewed closure lands the bytes; the durable manifest carries the B-WRITE plan field-for-field; the session log stays empty', async () => {
     const world = await mountWorld('pos')
     const events: Array<{ type: string; data: unknown }> = []

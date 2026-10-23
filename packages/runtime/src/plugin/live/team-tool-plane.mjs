@@ -2423,12 +2423,22 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // parent exactly like the host's compiled output form.
         required: Object.freeze(['canonicalLocator', 'writtenFingerprint', 'existingFileOnly']),
       }),
+      // r12 ROOT MIN FIX (13:10): `render` lives INSIDE `output` — the real
+      // tools.register contract (index.ts:1063 throws unless output.render is
+      // a function; `output { schema, render, presentationMeta? }`), the SAME
+      // shape the read/todo/image rows already use. The body is UNCHANGED:
+      // same result/risk fields, same execution logic, pure text projection of
+      // one validated canonical value (the image row's structure reused).
+      render: (_args, value) => [{
+        type: 'text',
+        text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (existing-file governed write, ${String(value?.writtenFingerprint ?? '')}).`,
+      }],
     }),
+    // presentCall stays at the definition's TOP level — its real Host contract
+    // position (ToolDefinition.presentCall, the pending-state presenter), not
+    // inside output; the write result/risk fields and execute logic are
+    // untouched.
     presentCall: (args) => ({ card: 'generic', title: 'Write file (governed)', kind: 'other', rawInput: args?.file_path }),
-    render: (_args, value) => [{
-      type: 'text',
-      text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (existing-file governed write, ${String(value?.writtenFingerprint ?? '')}).`,
-    }],
   })]
 
   const baseDefs = readExecutor === null ? defs : Object.freeze([
