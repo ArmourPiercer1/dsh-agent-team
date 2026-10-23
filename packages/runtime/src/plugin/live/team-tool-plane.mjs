@@ -96,7 +96,7 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // carries). The adapter's factory is reached ONLY through the bridge; the
 // plane edits none of it.
 import { A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION, A5_B_TEAM_TOOL_NAMES } from './governed-families/team-adapters.mjs'
-import { buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
+import { A5_B_TEAM_WIRING_REVISION, buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -4309,6 +4309,14 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       ...(teamOpsWiring === null ? {} : { teamOps: Object.freeze({
         familyId: A5_B_TEAM_FAMILY_ID,
         adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
+        // ⑤ (root 22:58) the revision THIS family's claims were composed under,
+        // published next to the adapter's own revision on the mount face. The
+        // adapter stays at its signed 1 (its business is untouched); the wiring
+        // moved to 2 with the six durable query leaves, and a plan composed
+        // under 1 no longer satisfies the closed table, so an OLD approved plan
+        // refuses at the durable leg. No ledger: this is the same registration
+        // state the mount already publishes.
+        wiringRevision: A5_B_TEAM_WIRING_REVISION,
         providerIdentity: teamOpsWiring.providerId,
         placementNames: teamOpsWiring.placementNames,
         definitions: teamOpsWiring.definitions,

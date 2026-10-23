@@ -582,6 +582,28 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect((ledger[0]?.admitFacts as { rosterMemberIds: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-9'])
       expect((ledger[0]?.postApprovalFacts as { rosterMemberIds: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-12', 'mi-9'])
     })
+    it('⑤ an OLD approved claim (the pre-batch ten-leaf shape) refuses at the durable leg, through the EXISTING checker', () => {
+      const w = makeWorld()
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      return defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-rev-old')).then(() => {
+        const current = manifestOf(walkAt(w, 0))
+        // What a plan approved BEFORE the six adds carried: the ten measured
+        // leaves and nothing else. The closed table now requires the three
+        // read groups' durable leaves, so that plan fails the SAME structure
+        // check the durable leg runs - refused, not silently re-vouched.
+        const preBatch: Record<string, unknown> = { ...current }
+        delete preBatch.rosterMemberIds
+        delete preBatch.rosterFingerprint
+        expect(Object.keys(preBatch)).toHaveLength(10)
+        expect(validatePaFamilyTarget('B-TEAM', preBatch)).toContain('rosterMemberIds')
+        expect(validatePaFamilyTarget('B-TEAM', current)).toBeUndefined()
+        // The claim's own version face: the adapter stays at its signed 1, the
+        // wiring that composed THIS plan is 2.
+        expect(WIRING.A5_B_TEAM_WIRING_REVISION).toBe(2)
+        expect(ADAPTER.A5_B_TEAM_ADAPTER_REVISION).toBe(1)
+      })
+    })
+
     it('an interleaved write call cannot strand or borrow another call\'s target facts (root 22:35 ②)', async () => {
       const w = makeWorld()
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
