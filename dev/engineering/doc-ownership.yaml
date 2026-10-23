@@ -76,6 +76,19 @@ owners:
   - glob: packages/testkit/**
     docs:
       - packages/testkit/README.md
+  - glob: packages/domain/**
+    docs:
+      - packages/domain/README.md
+  - glob: packages/storage/**
+    docs:
+      - packages/storage/README.md
+  - glob: packages/remote/**
+    docs:
+      - packages/remote/README.md
+      - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+  - glob: packages/client/**
+    docs:
+      - packages/client/README.md
   - glob: packages/legacy/**
     docs:
       - packages/legacy/README.md
