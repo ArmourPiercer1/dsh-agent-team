@@ -1,42 +1,56 @@
 /**
- * a5m2-g3-fsproc.test.ts — A5-M2 G3 (FS-PROC) C1/C2-shape legs for the
- * g3-fsproc-adapters module + the census-mandated GAP-CLOSURE fixed points.
+ * a5m2-g3-fsproc.test.ts — A5-M2 G3 (FS-PROC) fixed points for the
+ * g3-fsproc-adapters module + the census-mandated GAP-CLOSURE legs. The
+ * assemblies under test are UNWIRED (not mounted); these legs pin module
+ * law, not product acceptance. Windows legs: NOT_RUN_WINDOWS_UNAUTHORIZED.
  *
  * Families (dispatch index M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json, records
  * 12-17 B-TERMINAL, 18-20 B-JOB, 21 B-LSP, 64 B-PTC):
  *
  *  - B-TERMINAL (terminal_open/close/list/read/send/signal): declared_mount
- *    arms over CAPTURED native definitions (native doubles here mirror the
- *    pinned tool-terminal bodies: they pair on exec.agent and read the call
- *    signal — the real bodies are the CENTER's mount job; this spec proves
- *    the ARM laws: closed parameter surface, declared-backend selection
- *    (§5.1), declared-absent typed refusal with zero reach, identity
- *    pairing, single consume, commit-edge cancel, drain with no fallback,
- *    definition drift).
- *  - B-LSP (lsp): closed FOUR-operation navigation set, one-based UTF-16
- *    coordinate law, the REAL sessionCwd path (exec.agent.session.header.cwd)
- *    reaching the captured body through the snapshot; no generic fallback.
- *  - B-PTC (run_code): the outer arm (run_code row itself is a NAMED GAP —
- *    the plane only reserves the name at team-tool-plane.mjs:468 today);
- *    escalation args are manifest DATA under the ONE pinned mode vocabulary
- *    (PTC_ESCALATION_MODES, ptc-escalation-row.mjs — the MOUNTED adjudication
- *    bridge stays the only escalation answerer; this arm exposes no approval
- *    face at all) and nested-tools-second-governance is a manifest fact.
+ *    arms over CAPTURED native definitions + the injected ptyService CURRENT
+ *    facts reader. Pinned here: per-open targets carry the SERVICE
+ *    registration identity/incarnation + process envelope (the model's type
+ *    string only SELECTS a declared public backend, §5.1); per-send targets
+ *    carry the PTY INCARNATION (a sessionId alone never authorizes); the
+ *    FAITHFUL exec forward (rootCallId/token/deferContext/concludeTurn
+ *    arrive intact — the child-tool channel law); the authoritative entry
+ *    re-verify (facts moved AFTER execute() was called still refuse with
+ *    zero body — no closure self-attestation, no ledger); target drift at
+ *    the entry; drain as a NEW-CALL PROHIBITION with background-job facts
+ *    surfaced UNCLEARED (drain settles nothing).
+ *  - B-LSP (lsp): the closed four-operation set; one-based UTF-16 law; the
+ *    §5.2 target (workspace identity + DOCUMENT revision + SERVER binary
+ *    identity/generation + realm); F(read project-scope) as a grammar-valid
+ *    `read` effect (proved against the real parseRequestedEffectSet);
+ *    document/server drift at the entry.
+ *  - B-PTC (run_code): the outer arm (the run_code ROW itself remains a
+ *    NAMED GAP — the plane only reserves the name at
+ *    team-tool-plane.mjs:468 today). Pinned: exec fidelity end-to-end;
+ *    interpreter identity + EFFECTIVE envelope + REAL child-channel facts
+ *    (the boolean stand-in was ruled not evidence); escalation args as
+ *    manifest DATA under the ONE pinned vocabulary (the MOUNTED adjudication
+ *    bridge, ptc-escalation-row.mjs, stays the only escalation answerer —
+ *    this arm carries no approval face).
  *  - B-JOB (job_output/job_list/job_kill): NO new face — the trio is already
  *    mounted (team-tool-plane.mjs:1902-1958 + createGovernedJobsBridge), the
  *    live-bridge delegate and the shut fallback are pinned by
  *    a5p7-jobs-assembly-actuator.test.ts, and the wait/cancel abort legs by
  *    its ROOT④b family. THE uncovered leg pinned here: the management path
- *    (read/kill) across the gateway's DRAINING state — cancel stays reachable
- *    for the owner while new admits are refused, the foreign member still
- *    meets owner-mismatch with ZERO host touch, and the kill-requested
- *    ledger distinction keeps answering after the drain.
+ *    (read/kill) across the gateway's DRAINING state — cancel stays
+ *    reachable for the owner while new admits are refused, the foreign
+ *    member still meets owner-mismatch with ZERO host touch, and the
+ *    kill-requested ledger distinction keeps answering after the drain.
  *
- * + the r9 CANONICAL-SCHEMA fixed point: every registration face exported by
- *   the module passes the REAL pinned host validator (assertSupported-
- *   JsonSchema @ tests/deepseek-harness-test-use core/tools lib @639ed01539)
- *   with no property-level `required: true` marker anywhere, exact parent
- *   arrays, and the SAME validator still rejecting a missing member.
+ * + the r9 CANONICAL-SCHEMA fixed point, twice over: every derived face
+ *   (captured authored spec → g3CanonicalRegistrationFace) EQUALS the host's
+ *   own `parameterSchemaSpecToJsonSchema` lift plus the closed-surface key,
+ *   passes the REAL pinned host validator (assertSupportedJsonSchema @
+ *   tests/deepseek-harness-test-use core/tools lib @639ed01539) with no
+ *   property-level `required: true` marker anywhere, keeps exact parent
+ *   arrays, and the SAME validator still rejects missing members and off-
+ *   enum/off-surface values — the captured-config mirror stays dynamic (a
+ *   capture WITHOUT the host background flag has no such surface).
  *
  * Native faces recorded at the pin (report facts, proven by these legs):
  *   terminals: TerminalSessionService spawn:154/startSend:243/read:263/
@@ -49,43 +63,56 @@
  *   jobs: JobRegistry start/list/get/read/readAt/kill/wait @packages/jobs/
  *     jobs/src/index.ts (NO owner()/done() at the pin).
  *   ptc: RUN_CODE_NAME:30, createRunCodeTool:333, escalation pair-law
- *     approveEscalation @packages/core/tools/src/ptc.ts.
+ *     approveEscalation @packages/core/tools/src/ptc.ts; the child-tool
+ *     channel reads exec.rootCallId:548 / exec.token:553 /
+ *     exec.deferContext:640 / exec.concludeTurn:653.
  *
- * Scope: NO Host process, NO network. Windows legs: NOT_RUN_WINDOWS_
- * UNAUTHORIZED. Worlds are pure in-memory doubles.
+ * Scope: NO Host process, NO network. Worlds are pure in-memory doubles.
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g3-fsproc
  */
 import { describe, expect, it } from 'vitest'
+import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { existsSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot } from '../../../tests/paths.mjs'
 
+interface DrainFacts {
+  draining: boolean
+  controls: string
+  inFlightCount: number
+  unsettledBackgroundJobIds: readonly string[]
+}
 interface ArmResult {
   ok: boolean
   code?: string
   detail?: string
   settled?: string
+  bodyOutcome?: string
   plan?: Record<string, unknown>
-  effects?: ReadonlyArray<{ kind: string; toolName: string; resource: null }>
+  effects?: ReadonlyArray<Record<string, unknown>>
   parametersFingerprint?: string
   manifest?: Record<string, unknown>
   reviewPayload?: Record<string, unknown>
+  value?: unknown
   [k: string]: unknown
 }
 interface Arm {
   familyId: string
   toolName: string
   declaredAbsent: boolean
+  parametersFace: Record<string, unknown> | null
   classify: (args: unknown, exec: unknown, callId: string) => ArmResult
   prepare: (plan: unknown, grant?: unknown) => ArmResult
   execute: (plan: unknown, consumed: unknown) => Promise<ArmResult>
   cancel: (plan: unknown) => ArmResult
-  drain: () => void
+  inFlight: () => Array<{ correlation: string; toolName: string; state: string; backgroundJobId: string | null; settlementEvidence: string | null }>
+  drain: () => DrainFacts
 }
 type BindingFacts = { bindingId: string; bindingRevision: number; policyGeneration: number; authorityGeneration: number }
+type BindingWorld = { read: () => BindingFacts; bump: (patch: Partial<BindingFacts>) => void }
 
 const G3 = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc-adapters.mjs', import.meta.url).href)) as {
   A5_G3_ADAPTER_REVISION: number
@@ -95,14 +122,7 @@ const G3 = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc
   A5_G3_TERMINAL_TYPED_CODES: Record<string, string>
   A5_G3_LSP_TYPED_CODES: Record<string, string>
   A5_G3_PTC_TYPED_CODES: Record<string, string>
-  A5_G3_TERMINAL_OPEN_PARAMETERS: Record<string, unknown>
-  A5_G3_TERMINAL_SEND_PARAMETERS: Record<string, unknown>
-  A5_G3_TERMINAL_READ_PARAMETERS: Record<string, unknown>
-  A5_G3_TERMINAL_SIGNAL_PARAMETERS: Record<string, unknown>
-  A5_G3_TERMINAL_CLOSE_PARAMETERS: Record<string, unknown>
-  A5_G3_TERMINAL_LIST_PARAMETERS: Record<string, unknown>
-  A5_G3_LSP_PARAMETERS: Record<string, unknown>
-  A5_G3_PTC_PARAMETERS: Record<string, unknown>
+  g3CanonicalRegistrationFace: (spec: Record<string, unknown>) => Record<string, unknown>
   createGovernedTerminalArms: (deps: Record<string, unknown>) => Record<TerminalName, Arm>
   createGovernedLspArm: (deps: Record<string, unknown>) => Arm
   createGovernedRunCodeArm: (deps: Record<string, unknown>) => Arm
@@ -112,6 +132,12 @@ const G3 = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc
 // row — read-only import, proves the single-source pairing).
 const PTC_ROW = (await import(new URL('../src/plugin/live/ptc-escalation-row.mjs', import.meta.url).href)) as {
   PTC_ESCALATION_MODES: readonly string[]
+}
+
+// The closed effect grammar (domain, read-only): the per-family effect sets
+// must PARSE through the same parser the admission kernel uses.
+const EFFECTS = (await import(new URL('../../domain/tool-governance/src/index.js', import.meta.url).href)) as {
+  parseRequestedEffectSet: (raw: unknown) => { ok: boolean; code?: string; value?: { effects: Array<Record<string, unknown>>; fingerprint: string } }
 }
 
 const GW = (await import(new URL('../src/plugin/live/jobs-gateway-assembly.mjs', import.meta.url).href)) as {
@@ -135,13 +161,25 @@ const AGENT_ID = 'agent-member-1'
 const HEADER_ID = 'ses-header-g3'
 const CWD = '/work/member-space'
 
-function makeExec(over: Record<string, unknown> = {}): Record<string, unknown> {
-  return {
+/** A FULL ToolRunContext-shape double (host tools/src/index.ts:326-430):
+ *  callId + rootCallId + token + deferContext/concludeTurn included — the
+ *  exact fields the PTC child-tool channel reads (ptc.ts:548/553/640/653).
+ *  The recorders prove the FAITHFUL forward lands on THIS object. */
+function makeExec(over: Record<string, unknown> = {}) {
+  const recorder = { deferred: [] as unknown[], concluded: 0 }
+  const exec = {
+    callId: 'hostcall-1',
+    rootCallId: 'rootcall-g3',
+    name: 'g3-native',
+    arguments: {},
     agent: { id: AGENT_ID, session: { header: { id: HEADER_ID, cwd: CWD } } },
     signal: new AbortController().signal,
-    callId: 'hostcall-1',
+    token: { agentId: AGENT_ID, depth: 1 },
+    deferContext: (context: unknown) => { recorder.deferred.push(context) },
+    concludeTurn: () => { recorder.concluded += 1 },
     ...over,
   }
+  return { exec, recorder }
 }
 
 function makeBinding() {
@@ -152,71 +190,163 @@ function makeBinding() {
   }
 }
 
+/** AUTHORED parameter specs mirroring the pinned host defineTool INPUT DSL
+ *  (property-level `required: true` markers) — the shape the CAPTURED native
+ *  definition carries and from which the arm DERIVES its face. */
+const CAPTURED = {
+  terminal_open: {
+    type: { type: 'string', required: true, description: 'Declared backend type' },
+    name: { type: 'string', description: 'Session display name' },
+    cwd: { type: 'string', description: 'Working directory' },
+  },
+  terminal_send: {
+    sessionId: { type: 'string', required: true, description: 'PTY session id' },
+    text: { type: 'string', required: true, description: 'Input text' },
+    submit: { type: 'boolean', description: 'Submit the input' },
+    run_in_background: { type: 'boolean', description: 'Detach into a background job (host jobs arm mounted)' },
+  },
+  // THE SAME TOOL captured on a host WITHOUT the jobs arm: the derived face
+  // must mirror the ACTUAL config — no background surface appears.
+  terminal_send_nobg: {
+    sessionId: { type: 'string', required: true, description: 'PTY session id' },
+    text: { type: 'string', required: true, description: 'Input text' },
+    submit: { type: 'boolean', description: 'Submit the input' },
+  },
+  terminal_read: {
+    sessionId: { type: 'string', required: true, description: 'PTY session id' },
+    offset: { type: 'number', description: 'Read offset' },
+    count: { type: 'number', description: 'Read length' },
+  },
+  terminal_signal: {
+    sessionId: { type: 'string', required: true, description: 'PTY session id' },
+    signal: { type: 'string', required: true, enum: ['SIGINT', 'SIGTERM', 'SIGKILL', 'SIGTSTP', 'SIGHUP'], description: 'Signal' },
+  },
+  terminal_close: {
+    sessionId: { type: 'string', required: true, description: 'PTY session id' },
+  },
+  terminal_list: {},
+  lsp: {
+    operation: { type: 'string', required: true, enum: ['goToDefinition', 'findReferences', 'goToImplementation', 'hover'], description: 'Navigation operation' },
+    file_path: { type: 'string', required: true, description: 'Document path' },
+    line: { type: 'number', required: true, description: 'One-based line' },
+    character: { type: 'number', required: true, description: 'One-based UTF-16 character' },
+  },
+  run_code: {
+    code: { type: 'string', required: true, description: 'Program source' },
+    description: { type: 'string', required: true, description: 'What the program does' },
+    timeoutMs: { type: 'number', description: 'Run timeout' },
+    sandbox_permissions: { type: 'string', enum: ['read-only', 'workspace-write', 'danger-full-access'], description: 'Requested wider sandbox' },
+    justification: { type: 'string', description: 'Why the wider sandbox is needed' },
+  },
+} as const
+
+type NativeDouble = {
+  def: { name: string; parameters: Record<string, unknown>; execute: (args: Record<string, unknown>, exec: Record<string, unknown>) => Promise<unknown> }
+  calls: Array<{ args: Record<string, unknown>; exec: Record<string, unknown> }>
+}
+
 /** A native-definition DOUBLE: the caller's object IS what the arm must
  *  enter (never a re-lookup by name); every entry is counted with the exec
- *  it received so identity/snapshot claims are MEASURED. */
-type TerminalName = 'terminal_open' | 'terminal_send' | 'terminal_read' | 'terminal_signal' | 'terminal_close' | 'terminal_list'
-const TERMINAL_NAMES: readonly TerminalName[] = ['terminal_open', 'terminal_send', 'terminal_read', 'terminal_signal', 'terminal_close', 'terminal_list']
-
-function makeNative(name: string, behavior?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown) {
-  const calls: Array<{ args: Record<string, unknown>; exec: Record<string, unknown>; agent: unknown }> = []
-  const def: { name: string; execute: (args: Record<string, unknown>, exec: Record<string, unknown>) => Promise<unknown> } = {
+ *  it received so fidelity/snapshot claims are MEASURED. The AUTHORED
+ *  parameter spec rides along exactly like a captured definition's. */
+function makeNative(name: string, parameters: Record<string, unknown>, behavior?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown): NativeDouble {
+  const calls: NativeDouble['calls'] = []
+  const def = {
     name,
-    execute: async (args, exec) => {
-      const agent = exec?.agent as { session?: { header?: { cwd?: string } } } | undefined
-      calls.push({ args, exec, agent: exec?.agent })
-      return behavior === undefined ? { echoed: args, cwd: agent?.session?.header?.cwd, hostCallId: exec?.callId } : behavior(args, exec)
+    parameters: JSON.parse(JSON.stringify(parameters)) as Record<string, unknown>,
+    execute: async (args: Record<string, unknown>, exec: Record<string, unknown>) => {
+      calls.push({ args, exec })
+      return behavior === undefined
+        ? { echoed: args, cwd: (exec?.agent as { session?: { header?: { cwd?: string } } })?.session?.header?.cwd, hostCallId: exec?.callId }
+        : behavior(args, exec)
     },
   }
   return { def, calls }
 }
 
-function terminalWorld(deps: { absent?: boolean; declaredBackends?: string[] } = {}) {
+/** The terminals-service CURRENT-facts double (§5.1 seam): the arm's target
+ *  identity comes ONLY from here — mutable so drift legs are measurable. */
+function makePtyService() {
+  const backends = new Map<string, { registrationId: string; incarnation: string; processEnvelope: string }>([
+    ['shell', { registrationId: 'reg-shell-1', incarnation: 'backend-inc-1', processEnvelope: 'env-pty-default' }],
+  ])
+  const sessions = new Map<string, { incarnation: string; status: string; envelope: string }>([
+    ['pty-1', { incarnation: 'pty-inc-9', status: 'running', envelope: 'env-pty-default' }],
+    ['pty-2', { incarnation: 'pty-inc-10', status: 'running', envelope: 'env-pty-default' }],
+    ['pty-3', { incarnation: 'pty-inc-11', status: 'running', envelope: 'env-pty-default' }],
+    ['pty-7', { incarnation: 'pty-inc-12', status: 'running', envelope: 'env-pty-default' }],
+    ['pty-9', { incarnation: 'pty-inc-13', status: 'running', envelope: 'env-pty-default' }],
+    ['pty-10', { incarnation: 'pty-inc-14', status: 'running', envelope: 'env-pty-default' }],
+  ])
+  return {
+    backend: (type: string) => backends.get(type) ?? null,
+    session: (ownerAgentId: string, sessionId: string) => (ownerAgentId === AGENT_ID ? sessions.get(sessionId) ?? null : null),
+    moveBackend: (type: string) => {
+      const b = backends.get(type)
+      if (b !== undefined) backends.set(type, { ...b, incarnation: `${b.incarnation}-moved` })
+    },
+    moveSession: (sessionId: string) => {
+      const s = sessions.get(sessionId)
+      if (s !== undefined) sessions.set(sessionId, { ...s, incarnation: `${s.incarnation}-moved` })
+    },
+    dropSession: (sessionId: string) => { sessions.delete(sessionId) },
+  }
+}
+
+type TerminalName = 'terminal_open' | 'terminal_send' | 'terminal_read' | 'terminal_signal' | 'terminal_close' | 'terminal_list'
+const TERMINAL_NAMES: readonly TerminalName[] = ['terminal_open', 'terminal_send', 'terminal_read', 'terminal_signal', 'terminal_close', 'terminal_list']
+
+function terminalWorld(deps: { absent?: boolean; declaredBackends?: string[]; sendSpec?: Record<string, unknown>; sendBehavior?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown; readBehavior?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown } = {}) {
   const binding = makeBinding()
-  const natives: Record<TerminalName, ReturnType<typeof makeNative>> = {} as Record<TerminalName, ReturnType<typeof makeNative>>
+  const ptyService = makePtyService()
+  const natives = {} as Record<TerminalName, NativeDouble>
   const nativeDefinitions: Record<string, unknown> = {}
   const definitionIdentities: Record<string, string> = {}
+  const liveDefinitions: Record<string, () => { definitionIdentity: string } | null> = {}
   for (const name of TERMINAL_NAMES) {
-    natives[name] = makeNative(name)
+    const spec = name === 'terminal_send' ? (deps.sendSpec ?? CAPTURED.terminal_send) : CAPTURED[name]
+    const behavior = name === 'terminal_send' ? deps.sendBehavior : name === 'terminal_read' ? deps.readBehavior : undefined
+    natives[name] = makeNative(name, spec as Record<string, unknown>, behavior)
     if (deps.absent !== true) {
       nativeDefinitions[name] = natives[name].def
       definitionIdentities[name] = `${name}@v1`
+      liveDefinitions[name] = () => ({ definitionIdentity: `${name}@v1` })
     }
   }
   const arms = G3.createGovernedTerminalArms({
     nativeDefinitions: deps.absent === true ? {} : nativeDefinitions,
     definitionIdentities: deps.absent === true ? {} : definitionIdentities,
+    liveDefinitions: deps.absent === true ? {} : liveDefinitions,
     declaredBackends: deps.declaredBackends ?? ['shell'],
+    ptyService,
     providerId: 'g3-test-provider',
     memberAgentId: AGENT_ID,
     sessionHeaderId: HEADER_ID,
+    realmId: 'realm-g3-test',
     bindingFacts: binding.read,
   })
-  return { arms, natives, binding }
+  return { arms, natives, binding, ptyService, liveDefinitions }
+}
+
+function grantFor(c: ArmResult, plan: Record<string, unknown>, binding: BindingWorld, grantId = 'grant-1') {
+  const facts = binding.read()
+  return { grantId, callId: plan.callId, parametersFingerprint: c.parametersFingerprint, bindingId: facts.bindingId, bindingRevision: facts.bindingRevision }
 }
 
 /** classify → prepare → execute over the consumed edge, with a grant that
  *  answers the plan (the pair the REAL A edge produces; the kernel itself is
  *  pinned by the M1 specs). */
-async function runPass(arm: Arm, binding: { read: () => BindingFacts }, args: unknown, callId = 'call-1', exec = makeExec()) {
+async function runPass(arm: Arm, binding: BindingWorld, args: unknown, callId = 'call-1', exec = makeExec().exec) {
   const c = arm.classify(args, exec, callId)
   if (c.ok !== true) throw new Error(`classify refused: ${c.code} ${c.detail}`)
   const plan = c.plan as Record<string, unknown>
   expect(arm.prepare(plan, { grantId: 'grant-1' }).ok).toBe(true)
-  const facts = binding.read()
-  const grant = {
-    grantId: 'grant-1',
-    callId: plan.callId,
-    parametersFingerprint: plan.parametersFingerprint,
-    bindingId: facts.bindingId,
-    bindingRevision: facts.bindingRevision,
-  }
-  const x = await arm.execute(plan, { consumed: true, grant })
+  const x = await arm.execute(plan, { consumed: true, grant: grantFor(c, plan, binding) })
   return { c, plan, x }
 }
 
-describe('g3 B-TERMINAL — six declared_mount arms over captured native definitions', () => {
-  it('all six classify to the exact tool-invoke effect + family reviewPayload, ZERO native entries', () => {
+describe('g3 B-TERMINAL — six declared_mount arms over captured native definitions + the §5.1 service-facts seam', () => {
+  it('all six classify: tool-invoke effect, family reviewPayload, TARGETS carry SERVICE facts (never model claims), ZERO native entries', () => {
     const w = terminalWorld()
     const argsByTool: Record<string, unknown> = {
       terminal_open: { type: 'shell', name: 'build' },
@@ -227,207 +357,487 @@ describe('g3 B-TERMINAL — six declared_mount arms over captured native definit
       terminal_list: {},
     }
     for (const name of TERMINAL_NAMES) {
-      const args = argsByTool[name]
-      const r = w.arms[name].classify(args, makeExec(), `call-${name}`)
+      const r = w.arms[name].classify(argsByTool[name], makeExec().exec, `call-${name}`)
       expect(r.ok, `${name}: ${r.code} ${r.detail}`).toBe(true)
       expect(r.effects).toEqual([{ kind: 'tool-invoke', toolName: name, resource: null }])
       expect(r.reviewPayload?.familyId).toBe('B-TERMINAL')
       expect(r.reviewPayload?.adapterRevision).toBe(G3.A5_G3_ADAPTER_REVISION)
-      expect((r.reviewPayload?.definitionIdentity as string)).toBe(`${name}@v1`)
-      expect(typeof r.parametersFingerprint).toBe('string')
+      expect(r.reviewPayload?.definitionIdentity).toBe(`${name}@v1`)
       expect(String(r.parametersFingerprint).startsWith('sha256:')).toBe(true)
       expect(w.natives[name].calls.length).toBe(0)
     }
-    expect(w.arms.terminal_open.classify({ type: 'shell' }, makeExec(), 'x').manifest?.operation).toBe('pty-spawn')
-    expect(w.arms.terminal_send.classify({ sessionId: 'p', text: '' }, makeExec(), 'x').manifest?.operation).toBe('stdin-write')
-    expect(w.arms.terminal_list.classify({}, makeExec(), 'x').manifest?.ownerScoped).toBe(true)
+    // §5.1: the OPEN target is the CURRENT service registration, not the
+    // model's type string; the per-open private backend stays a correlation
+    // duty (CENTER-minted), never a model face.
+    const open = w.arms.terminal_open.classify({ type: 'shell' }, makeExec().exec, 'x')
+    expect(open.manifest?.backendTarget).toEqual({ publicType: 'shell', serviceRegistrationId: 'reg-shell-1', serviceIncarnation: 'backend-inc-1', processEnvelope: 'env-pty-default' })
+    expect(open.manifest?.perOpenCorrelationCallId).toBe('x')
+    expect(open.manifest?.operation).toBe('pty-spawn')
+    // send/read/signal/close carry the PTY INCARNATION from the service —
+    // the sessionId string alone is never the authority.
+    expect(w.arms.terminal_send.classify({ sessionId: 'pty-1', text: '' }, makeExec().exec, 'x').manifest?.ptyTarget).toEqual({ sessionId: 'pty-1', serviceIncarnation: 'pty-inc-9', serviceStatus: 'running', serviceEnvelope: 'env-pty-default' })
+    expect(w.arms.terminal_signal.classify({ sessionId: 'pty-2', signal: 'SIGTERM' }, makeExec().exec, 'x').manifest?.ptyTarget).toMatchObject({ serviceIncarnation: 'pty-inc-10' })
+    expect(w.arms.terminal_list.classify({}, makeExec().exec, 'x').manifest?.ownerScoped).toBe(true)
   })
 
-  it('DECLARED_MOUNT law: an undeclared/internal backend type and an absent declared service refuse TYPED with zero reach', () => {
+  it('unresolved targets refuse TYPED with zero reach: unknown sessionId, undeclared backend, service-lost session, absent declared service', () => {
     const w = terminalWorld()
-    const internal = w.arms.terminal_open.classify({ type: 'g3-internal-one-shot-9f2' }, makeExec(), 'c1')
-    expect(internal.ok).toBe(false)
+    const unknownSession = w.arms.terminal_send.classify({ sessionId: 'pty-not-mine', text: 'x' }, makeExec().exec, 'c0')
+    expect(unknownSession.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.TARGET_UNRESOLVED)
+    expect(unknownSession.detail).toMatch(/sessionId alone never authorizes/)
+
+    const internal = w.arms.terminal_open.classify({ type: 'g3-internal-one-shot-9f2' }, makeExec().exec, 'c1')
     expect(internal.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.BACKEND_NOT_DECLARED)
-    expect(w.natives.terminal_open.calls.length).toBe(0)
+
+    // The service LOSES the session record between classify and the next
+    // classify: the CURRENT facts decide again — unresolved is refused,
+    // never guessed from the model's string.
+    const w2 = terminalWorld()
+    w2.ptyService.dropSession('pty-1')
+    expect(w2.arms.terminal_read.classify({ sessionId: 'pty-1' }, makeExec().exec, 'svc-lost').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.TARGET_UNRESOLVED)
 
     const shut = terminalWorld({ absent: true })
     for (const arm of Object.values(shut.arms)) {
       expect(arm.declaredAbsent).toBe(true)
-      const r = arm.classify({ type: 'shell', sessionId: 'pty-1', text: 'x', signal: 'SIGINT' }, makeExec(), 'c2')
+      expect(arm.parametersFace).toBeNull()
+      const r = arm.classify({ type: 'shell', sessionId: 'pty-1', text: 'x', signal: 'SIGINT' }, makeExec().exec, 'c3')
       expect(r.ok).toBe(false)
       expect(r.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.DECLARED_ABSENT)
     }
   })
 
-  it('identity pairing rides the REAL Host face: a foreign agent or a headerless exec never classifies', () => {
+  it('identity pairing rides the REAL Host face; the closed surface MIRRORS THE CAPTURED config (no background parameter when the capture has none)', () => {
     const w = terminalWorld()
-    const foreign = w.arms.terminal_list.classify({}, makeExec({ agent: { id: 'agent-other', session: { header: { id: HEADER_ID } } } }), 'c')
+    const foreign = w.arms.terminal_list.classify({}, makeExec({ agent: { id: 'agent-other', session: { header: { id: HEADER_ID } } } }).exec, 'c')
     expect(foreign.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.FOREIGN_SESSION)
-    const foreignHeader = w.arms.terminal_list.classify({}, makeExec({ agent: { id: AGENT_ID, session: { header: { id: 'other-header' } } } }), 'c')
+    const foreignHeader = w.arms.terminal_list.classify({}, makeExec({ agent: { id: AGENT_ID, session: { header: { id: 'other-header' } } } }).exec, 'c')
     expect(foreignHeader.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.FOREIGN_SESSION)
-    const bare = w.arms.terminal_list.classify({}, {}, 'c')
-    expect(bare.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.NO_OWNING_SESSION)
-    const unknown = w.arms.terminal_read.classify({ sessionId: 'p', limit: 3 }, makeExec(), 'c')
-    expect(unknown.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.UNKNOWN_PARAMETER)
+    expect(w.arms.terminal_list.classify({}, {}, 'c').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.NO_OWNING_SESSION)
+    expect(w.arms.terminal_read.classify({ sessionId: 'p', limit: 3 }, makeExec().exec, 'c').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.UNKNOWN_PARAMETER)
+    // THE CAPTURED-CONFIG MIRROR: a host WITHOUT the jobs arm has NO
+    // run_in_background surface — the governed face never outgrows the
+    // mounted native face.
+    const nb = terminalWorld({ sendSpec: CAPTURED.terminal_send_nobg })
+    expect(nb.arms.terminal_send.parametersFace?.properties).not.toHaveProperty('run_in_background')
+    expect(nb.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'x', run_in_background: true }, makeExec().exec, 'c').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.UNKNOWN_PARAMETER)
+    expect(w.arms.terminal_send.parametersFace?.properties).toHaveProperty('run_in_background')
   })
 
-  it('terminal_send full pass: the captured body is entered EXACTLY ONCE with the snapshot (captured Agent reference, caller omission preserved for the host submit default)', async () => {
+  it('EXEC FIDELITY + full pass: the captured body is entered EXACTLY ONCE with a faithful exec (rootCallId/token/deferContext/concludeTurn arrive intact); replay refuses', async () => {
     const w = terminalWorld()
-    const exec = makeExec()
-    const { c, x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-2', text: 'python3\n' }, 'call-send', exec)
+    const { exec, recorder } = makeExec()
+    const { c, plan, x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-2', text: 'python3\n' }, 'call-send', exec)
     expect(x.ok).toBe(true)
     const calls = w.natives.terminal_send.calls
     expect(calls.length).toBe(1)
-    expect(calls[0]?.agent).toBe(exec.agent) // the CAPTURED reference, not a rebuilt id
+    const fwd = calls[0]?.exec as Record<string, unknown>
+    // EVERY own field arrives (no field loss — the child-tool channel law):
+    expect(Object.keys(fwd).sort()).toEqual(Object.keys(exec).sort())
+    expect(fwd.agent).toBe(exec.agent) // the CAPTURED reference, not a rebuilt id
+    expect(fwd.signal).toBe(exec.signal)
+    expect(fwd.callId).toBe('hostcall-1')
+    expect(fwd.rootCallId).toBe('rootcall-g3') // ptc.ts:548
+    expect(fwd.token).toBe(exec.token) // ptc.ts:553 (sub-dispatch parent)
+    expect(fwd.name).toBe('g3-native')
+    // BOUND functions still LAND ON THE LIVE EXECUTION (deferContext /
+    // concludeTurn are how the host closes a run):
+    ;(fwd.deferContext as (v: unknown) => void)({ synthetic: true })
+    ;(fwd.concludeTurn as () => void)()
+    expect(recorder.deferred).toEqual([{ synthetic: true }])
+    expect(recorder.concluded).toBe(1)
     expect(calls[0]?.args).toEqual({ sessionId: 'pty-2', text: 'python3\n' }) // submit omission NOT filled
     expect(c.manifest?.effectiveSubmit).toBe(true) // the host default is manifest DATA
     expect(String(c.manifest?.inputDigest)).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(c.manifest?.inputBytes).toBe(8)
     // REPLAY: the spent edge refuses, the body stays at one entry.
-    const again = await w.arms.terminal_send.execute(c.plan, {
-      consumed: true,
-      grant: { grantId: 'grant-1', callId: 'call-send', parametersFingerprint: c.parametersFingerprint, ...w.binding.read() },
-    })
+    const again = await w.arms.terminal_send.execute(plan, { consumed: true, grant: grantFor(c, plan, w.binding) })
     expect(again.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.ALREADY_CONSUMED)
     expect(w.natives.terminal_send.calls.length).toBe(1)
   })
 
+  it('THE ENTRY RE-VERIFY (authoritative, live sources): facts that move AFTER execute() was called — the same-tick window — still refuse with ZERO body', async () => {
+    // (a) CURRENT binding facts move inside the pre-entry window: the old
+    //     pre-check-then-only-cancel/drain shape WOULD have entered here.
+    const w = terminalWorld()
+    const c = w.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'ls\n' }, makeExec().exec, 'win-1')
+    expect(w.arms.terminal_send.prepare(c.plan, { grantId: 'g' }).ok).toBe(true)
+    const running = w.arms.terminal_send.execute(c.plan, { consumed: true, grant: grantFor(c, c.plan as Record<string, unknown>, w.binding, 'g') })
+    w.binding.bump({ policyGeneration: 2 }) // AFTER execute() was called — the window
+    const late = await running
+    expect(late.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.GRANT_MISMATCH)
+    expect(late.detail).toMatch(/CURRENT binding facts moved/)
+    expect(w.natives.terminal_send.calls.length).toBe(0)
+
+    // (b) bindingId moves (same revision, new binding): the entry re-query
+    //     of bindingFacts() catches it — a definition identity alone is not
+    //     self-attestation of the BINDING.
+    const w2 = terminalWorld()
+    const c2 = w2.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'ls\n' }, makeExec().exec, 'win-2')
+    expect(w2.arms.terminal_send.prepare(c2.plan, { grantId: 'g' }).ok).toBe(true)
+    const running2 = w2.arms.terminal_send.execute(c2.plan, { consumed: true, grant: grantFor(c2, c2.plan as Record<string, unknown>, w2.binding, 'g') })
+    w2.binding.bump({ bindingId: 'bind-rotated' })
+    expect((await running2).code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.GRANT_MISMATCH)
+    expect(w2.natives.terminal_send.calls.length).toBe(0)
+
+    // (c) the LIVE DISPATCHER placement read moves (definition replacement):
+    //     the entry consults the integrator's CURRENT read, not the closure.
+    const w3 = terminalWorld()
+    const c3 = w3.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'ls\n' }, makeExec().exec, 'win-3')
+    expect(w3.arms.terminal_send.prepare(c3.plan, { grantId: 'g' }).ok).toBe(true)
+    const running3 = w3.arms.terminal_send.execute(c3.plan, { consumed: true, grant: grantFor(c3, c3.plan as Record<string, unknown>, w3.binding, 'g') })
+    w3.liveDefinitions.terminal_send = () => ({ definitionIdentity: 'terminal_send@v2-replacement' })
+    expect((await running3).code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.DEFINITION_DRIFT)
+    expect(w3.natives.terminal_send.calls.length).toBe(0)
+
+    // (d) the FUNCTION value moves (same placement identity, new body):
+    const w4 = terminalWorld()
+    const c4 = w4.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'ls\n' }, makeExec().exec, 'win-4')
+    expect(w4.arms.terminal_send.prepare(c4.plan, { grantId: 'g' }).ok).toBe(true)
+    const running4 = w4.arms.terminal_send.execute(c4.plan, { consumed: true, grant: grantFor(c4, c4.plan as Record<string, unknown>, w4.binding, 'g') })
+    w4.natives.terminal_send.def.execute = async () => ({ moved: true })
+    expect((await running4).code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.DEFINITION_DRIFT)
+    expect(w4.natives.terminal_send.calls.length).toBe(0)
+
+    // (e) SERVICE TARGET drift at the entry: the PTY incarnation moved —
+    //     the approved stdin write would hit a different process.
+    const w5 = terminalWorld()
+    const c5 = w5.arms.terminal_send.classify({ sessionId: 'pty-3', text: 'ls\n' }, makeExec().exec, 'win-5')
+    expect(w5.arms.terminal_send.prepare(c5.plan, { grantId: 'g' }).ok).toBe(true)
+    const running5 = w5.arms.terminal_send.execute(c5.plan, { consumed: true, grant: grantFor(c5, c5.plan as Record<string, unknown>, w5.binding, 'g') })
+    w5.ptyService.moveSession('pty-3')
+    const drift = await running5
+    expect(drift.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.TARGET_DRIFT)
+    expect(w5.natives.terminal_send.calls.length).toBe(0)
+
+    // (f) backend registration drift for the OPEN (per-open correlation
+    //     against the CURRENT backend registration):
+    const w6 = terminalWorld()
+    const c6 = w6.arms.terminal_open.classify({ type: 'shell' }, makeExec().exec, 'win-6')
+    expect(w6.arms.terminal_open.prepare(c6.plan, { grantId: 'g' }).ok).toBe(true)
+    const running6 = w6.arms.terminal_open.execute(c6.plan, { consumed: true, grant: grantFor(c6, c6.plan as Record<string, unknown>, w6.binding, 'g') })
+    w6.ptyService.moveBackend('shell')
+    expect((await running6).code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.TARGET_DRIFT)
+    expect(w6.natives.terminal_open.calls.length).toBe(0)
+
+    // (g) close is the ONE operation that stays lawful when the service
+    //     already lost the record (the already-closing shape belongs to the
+    //     body/service, not to a drift refusal).
+    const w7 = terminalWorld()
+    const c7 = w7.arms.terminal_close.classify({ sessionId: 'pty-9' }, makeExec().exec, 'win-7')
+    expect(w7.arms.terminal_close.prepare(c7.plan, { grantId: 'g' }).ok).toBe(true)
+    const running7 = w7.arms.terminal_close.execute(c7.plan, { consumed: true, grant: grantFor(c7, c7.plan as Record<string, unknown>, w7.binding, 'g') })
+    w7.ptyService.dropSession('pty-9')
+    expect((await running7).ok).toBe(true)
+  })
+
   it('cancel before the edge stops the body (zero entries); commit-edge cancel stops the same-tick body; COMMITTED cannot be retracted', async () => {
     const w = terminalWorld()
-    const c1 = w.arms.terminal_close.classify({ sessionId: 'pty-9' }, makeExec(), 'cancel-1')
+    const c1 = w.arms.terminal_close.classify({ sessionId: 'pty-9' }, makeExec().exec, 'cancel-1')
     expect(w.arms.terminal_close.prepare(c1.plan, { grantId: 'g' }).ok).toBe(true)
     const cancelled = w.arms.terminal_close.cancel(c1.plan)
     expect(cancelled.settled).toBe('CANCELLED-AFTER-ADMISSION')
     expect(String(cancelled.bodyOutcome)).toMatch(/zero/)
-    const exec = await w.arms.terminal_close.execute(c1.plan, { consumed: true, grant: { grantId: 'g', callId: 'cancel-1', parametersFingerprint: c1.parametersFingerprint, ...w.binding.read() } })
-    expect(exec.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.CANCELLED)
+    const exec1 = await w.arms.terminal_close.execute(c1.plan, { consumed: true, grant: grantFor(c1, c1.plan as Record<string, unknown>, w.binding, 'g') })
+    expect(exec1.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.CANCELLED)
     expect(w.natives.terminal_close.calls.length).toBe(0)
 
-    // Same-tick edge cancel: execute is entered, the commit-edge re-check
-    // sees the CANCELLED state before the body — report and count agree.
-    const c2 = w.arms.terminal_close.classify({ sessionId: 'pty-10' }, makeExec(), 'cancel-2')
+    // Same-tick edge cancel: execute is entered, the entry re-check sees
+    // the CANCELLED state before any body — report and count agree.
+    const c2 = w.arms.terminal_close.classify({ sessionId: 'pty-10' }, makeExec().exec, 'cancel-2')
     expect(w.arms.terminal_close.prepare(c2.plan, { grantId: 'g2' }).ok).toBe(true)
-    const running = w.arms.terminal_close.execute(c2.plan, { consumed: true, grant: { grantId: 'g2', callId: 'cancel-2', parametersFingerprint: c2.parametersFingerprint, ...w.binding.read() } })
+    const running = w.arms.terminal_close.execute(c2.plan, { consumed: true, grant: grantFor(c2, c2.plan as Record<string, unknown>, w.binding, 'g2') })
     const edge = w.arms.terminal_close.cancel(c2.plan)
     expect(edge.settled).toBe('CANCELLED-BEFORE-EXECUTION')
-    const done = await running
-    expect(done.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.CANCELLED)
+    expect((await running).code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.CANCELLED)
     expect(w.natives.terminal_close.calls.length).toBe(0)
   })
 
-  it('drain stops every NEW call with no fallback; definition drift at the edge refuses before the body', async () => {
-    const w = terminalWorld()
-    const c = w.arms.terminal_signal.classify({ sessionId: 'pty-3', signal: 'SIGTERM' }, makeExec(), 'drain-1')
-    w.arms.terminal_signal.drain()
-    const after = w.arms.terminal_signal.classify({ sessionId: 'pty-3', signal: 'SIGTERM' }, makeExec(), 'drain-2')
+  it('DRAIN HONESTY: drain() is a new-call prohibition, NOT a settlement — a background job (jobs.start) stays LIVE and UNCLEARED across it; the COMMITTED word says so; inFlight() carries the facts', async () => {
+    const w = terminalWorld({
+      sendBehavior: async () => ({ kind: 'background', jobId: 'bg-job-77', note: 'host jobs.start owner=agent-member-1' }),
+    })
+    const { c, x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'sleep 30\n', run_in_background: true }, 'bg-1')
+    expect(x.ok).toBe(true)
+    expect(c.manifest?.background).toBe(true)
+    expect(c.manifest?.backgroundJobTarget).toMatch(/jobs\.start/)
+    expect(c.manifest?.effectDelta).toContain('bg-pty-send-jobs')
+    // The background job is LIVE: the arm has NO settlement evidence.
+    const live = w.arms.terminal_send.inFlight()
+    expect(live.length).toBe(1)
+    expect(live[0]).toMatchObject({ toolName: 'terminal_send', state: 'COMMITTED', backgroundJobId: 'bg-job-77' })
+    expect(String(live[0]?.settlementEvidence)).toMatch(/none observed by this arm/)
+    // DRAIN: states what it controls; the job fact SURVIVES the word.
+    const facts = w.arms.terminal_send.drain()
+    expect(facts.draining).toBe(true)
+    expect(facts.controls).toMatch(/no resource is settled/)
+    expect(facts.unsettledBackgroundJobIds).toEqual(['bg-job-77'])
+    expect(facts.inFlightCount).toBe(0) // the call itself settled; the JOB did not
+    const after = w.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'x' }, makeExec().exec, 'bg-2')
     expect(after.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.DRAINING)
-    // c was classified BEFORE the drain; the commit-edge drain arm stops it.
-    expect(w.arms.terminal_signal.prepare(c.plan, { grantId: 'g' }).code ?? 'ok').toBe(G3.A5_G3_TERMINAL_TYPED_CODES.DRAINING)
+    // Cancel on a COMMITTED plan never retracts and never claims the job died.
+    const cancelWord = w.arms.terminal_send.cancel(c.plan)
+    expect(cancelWord.settled).toBe('ALREADY-COMMITTED')
+    expect(String(cancelWord.bodyOutcome)).toContain('bg-job-77')
+    expect(String(cancelWord.bodyOutcome)).toMatch(/LIVE and UNCLEARED/)
 
-    const w2 = terminalWorld()
-    const c2 = w2.arms.terminal_open.classify({ type: 'shell' }, makeExec(), 'drift-1')
-    expect(w2.arms.terminal_open.prepare(c2.plan, { grantId: 'g' }).ok).toBe(true)
-    // The placed definition's execute MOVES after classify (definition
-    // replacement): the edge refuses, the moved body is never entered.
-    w2.natives.terminal_open.def.execute = async () => ({ moved: true })
-    const drift = await w2.arms.terminal_open.execute(c2.plan, { consumed: true, grant: { grantId: 'g', callId: 'drift-1', parametersFingerprint: c2.parametersFingerprint, ...w2.binding.read() } })
-    expect(drift.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.DEFINITION_DRIFT)
-    expect(w2.natives.terminal_open.calls.length).toBe(0)
+    // An EXECUTING body is NOT rewound by drain: the in-flight fact answers
+    // UNKNOWN, and the body still commits (no false zero-claim). The pending
+    // body is installed at world creation — the bind-time capture law means
+    // a SWAPPED execute is definition replacement, not a test fixture.
+    let release: (v: unknown) => void = () => {}
+    const w2 = terminalWorld({
+      readBehavior: () => new Promise<unknown>((resolve) => { release = resolve }),
+    })
+    const c2 = w2.arms.terminal_read.classify({ sessionId: 'pty-7' }, makeExec().exec, 'bg-3')
+    expect(w2.arms.terminal_read.prepare(c2.plan, { grantId: 'g' }).ok).toBe(true)
+    const running2 = w2.arms.terminal_read.execute(c2.plan, { consumed: true, grant: grantFor(c2, c2.plan as Record<string, unknown>, w2.binding, 'g') })
+    await new Promise<void>((r) => { setTimeout(r, 0) }) // let the entry microtask chain reach the body
+    const mid = w2.arms.terminal_read.drain()
+    expect(mid.inFlightCount).toBe(1)
+    const unknown = w2.arms.terminal_read.cancel(c2.plan)
+    expect(unknown.settled).toBe('UNKNOWN-IN-FLIGHT')
+    release({ done: true })
+    expect((await running2).ok).toBe(true)
   })
 
   it('terminal_read keeps the omission law (offset/count null in the manifest, defaults belong to the body) and terminal_signal stays the closed five', async () => {
     const w = terminalWorld()
-    const r = w.arms.terminal_read.classify({ sessionId: 'pty-7' }, makeExec(), 'read-1')
+    const r = w.arms.terminal_read.classify({ sessionId: 'pty-7' }, makeExec().exec, 'read-1')
     expect(r.manifest?.offset).toBeNull()
     expect(r.manifest?.count).toBeNull()
-    expect(w.arms.terminal_read.classify({ sessionId: 'p', count: 0 }, makeExec(), 'x').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.INVALID_ARGUMENTS)
-    expect(w.arms.terminal_signal.classify({ sessionId: 'p', signal: 'SIGSTOP' }, makeExec(), 'x').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(w.arms.terminal_read.classify({ sessionId: 'p', count: 0 }, makeExec().exec, 'x').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(w.arms.terminal_signal.classify({ sessionId: 'p', signal: 'SIGSTOP' }, makeExec().exec, 'x').code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.INVALID_ARGUMENTS)
     const pass = await runPass(w.arms.terminal_read, w.binding, { sessionId: 'pty-7' }, 'read-2')
     expect(pass.x.ok).toBe(true)
     expect(w.natives.terminal_read.calls[0]?.args).toEqual({ sessionId: 'pty-7' })
   })
 })
 
-describe('g3 B-LSP — the closed four-operation arm over the captured native lsp definition', () => {
-  function lspWorld() {
-    const native = makeNative('lsp')
+describe('g3 B-LSP — the closed four-operation arm over the captured native lsp definition (§5.2 target facts + real read effect)', () => {
+  function lspWorld(deps: { absentServer?: boolean; unresolvableDoc?: boolean } = {}) {
+    const native = makeNative('lsp', CAPTURED.lsp)
     const binding = makeBinding()
+    const doc = { kind: 'workspace', canonicalLocator: 'src/a.ts', revision: 'rev-1' }
     const arm = G3.createGovernedLspArm({
       nativeDefinition: native.def,
       definitionIdentity: 'lsp@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'lsp@v1' }),
       providerId: 'g3-test-provider',
       memberAgentId: AGENT_ID,
       sessionHeaderId: HEADER_ID,
+      realmId: 'realm-g3-test',
       bindingFacts: binding.read,
+      lspFacts: {
+        server: () => (deps.absentServer === true ? null : { binaryIdentity: 'tsserver@5.6.0-sha-abc', generation: 'polgen-4' }),
+        document: (filePath: string) => (deps.unresolvableDoc === true ? null : { ...doc, canonicalLocator: filePath }),
+      },
     })
-    return { arm, native, binding }
+    return { arm, native, binding, doc }
   }
 
-  it('exactly the four navigation operations classify; ANY fifth spelling (executeCommand/diagnostics) refuses with zero body', () => {
+  it('exactly the four navigation operations classify; effects carry the REAL grammar-valid read effect (§5.2 F read project-scope); ANY fifth spelling refuses with zero body', () => {
     const w = lspWorld()
     for (const op of G3.A5_G3_LSP_OPERATIONS) {
-      const r = w.arm.classify({ operation: op, file_path: 'src/a.ts', line: 10, character: 5 }, makeExec(), `lsp-${op}`)
+      const r = w.arm.classify({ operation: op, file_path: 'src/a.ts', line: 10, character: 5 }, makeExec().exec, `lsp-${op}`)
       expect(r.ok, `${op}: ${r.code}`).toBe(true)
-      expect(r.effects).toEqual([{ kind: 'tool-invoke', toolName: 'lsp', resource: null }])
+      // tool-invoke alone was ruled INSUFFICIENT: the §5.2 target facts and
+      // the read effect must ride.
+      expect(r.effects).toEqual([
+        { kind: 'tool-invoke', toolName: 'lsp', resource: null },
+        { kind: 'read', resource: { realmId: 'realm-g3-test', kind: 'workspace', canonicalLocator: 'src/a.ts', rights: ['read'] } },
+      ])
+      // The effect set PARSES through the closed domain grammar (the same
+      // parser the admission kernel uses) — not a private shape.
+      const parsed = EFFECTS.parseRequestedEffectSet(r.effects)
+      expect(parsed.ok).toBe(true)
+      expect(typeof parsed.value?.fingerprint).toBe('string')
+      // §5.2 target: workspace + DOCUMENT revision + SERVER identity +
+      // realm + policy generation — all present, all from facts.
+      expect(r.manifest?.workspaceIdentity).toEqual({ sessionHeaderCwd: CWD })
+      expect(r.manifest?.documentTarget).toEqual({ kind: 'workspace', canonicalLocator: 'src/a.ts', revision: 'rev-1' })
+      expect(r.manifest?.serverTarget).toEqual({ binaryIdentity: 'tsserver@5.6.0-sha-abc', generation: 'polgen-4' })
+      expect(r.manifest?.realmId).toBe('realm-g3-test')
+      expect(r.manifest?.policyGeneration).toBe(1)
       expect(r.manifest?.navigationOperation).toBe(op)
       expect(r.manifest?.oneBasedLine).toBe(10) // model-facing spelling preserved
       expect(w.native.calls.length).toBe(0)
     }
     for (const op of ['executeCommand', 'diagnostics', 'rename']) {
-      const r = w.arm.classify({ operation: op, file_path: 'a.ts', line: 1, character: 1 }, makeExec(), 'x')
+      const r = w.arm.classify({ operation: op, file_path: 'a.ts', line: 1, character: 1 }, makeExec().exec, 'x')
       expect(r.ok).toBe(false)
       expect(r.code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
     }
   })
 
-  it('ONE-BASED UTF-16 coordinate law: zero/fractional coordinates refuse typed (the zero-based conversion stays the native body parseLspArgs law)', () => {
+  it('unresolved §5.2 facts refuse TYPED: no server identity for the scope, unresolvable document; ONE-BASED UTF-16 law holds (zero/fractional refuse)', () => {
+    const noServer = lspWorld({ absentServer: true })
+    expect(noServer.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 1, character: 1 }, makeExec().exec, 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.TARGET_UNRESOLVED)
+    const noDoc = lspWorld({ unresolvableDoc: true })
+    const r = noDoc.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 1, character: 1 }, makeExec().exec, 'x')
+    expect(r.code).toBe(G3.A5_G3_LSP_TYPED_CODES.TARGET_UNRESOLVED)
+    expect(noServer.native.calls.length).toBe(0)
+    expect(noDoc.native.calls.length).toBe(0)
+
     const w = lspWorld()
-    expect(w.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 0, character: 1 }, makeExec(), 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
-    expect(w.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 1, character: 2.5 }, makeExec(), 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
-    expect(w.arm.classify({ operation: 'hover', file_path: '  ', line: 1, character: 1 }, makeExec(), 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(w.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 0, character: 1 }, makeExec().exec, 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(w.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 1, character: 2.5 }, makeExec().exec, 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(w.arm.classify({ operation: 'hover', file_path: '  ', line: 1, character: 1 }, makeExec().exec, 'x').code).toBe(G3.A5_G3_LSP_TYPED_CODES.INVALID_ARGUMENTS)
     expect(w.native.calls.length).toBe(0)
   })
 
-  it('full pass: the captured body receives the snapshot whose agent path IS the host sessionCwd face (exec.agent.session.header.cwd); drain stops later calls', async () => {
+  it('full pass: the captured body receives the faithful snapshot whose agent path IS the host sessionCwd face (exec.agent.session.header.cwd); drain stops later calls', async () => {
     const w = lspWorld()
-    const { x } = await runPass(w.arm, w.binding, { operation: 'goToDefinition', file_path: 'src/b.ts', line: 4, character: 12 }, 'lsp-pass')
+    const { exec } = makeExec()
+    const { x } = await runPass(w.arm, w.binding, { operation: 'goToDefinition', file_path: 'src/b.ts', line: 4, character: 12 }, 'lsp-pass', exec)
     expect(x.ok).toBe(true)
     expect(w.native.calls.length).toBe(1)
-    expect(((w.native.calls[0]?.exec?.agent ?? {}) as { session?: { header?: { cwd?: string } } }).session?.header?.cwd).toBe(CWD) // session-cwd.ts:15 path
+    expect((w.native.calls[0]?.exec as Record<string, unknown>).token).toBe(exec.token)
+    expect(((w.native.calls[0]?.exec as Record<string, unknown>).agent as { session?: { header?: { cwd?: string } } }).session?.header?.cwd).toBe(CWD) // session-cwd.ts:15 path
     expect((x.value as Record<string, unknown>).cwd).toBe(CWD)
-    w.arm.drain()
-    expect(w.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 1, character: 1 }, makeExec(), 'after').code).toBe(G3.A5_G3_LSP_TYPED_CODES.DRAINING)
+    const facts = w.arm.drain()
+    expect(facts.draining).toBe(true)
+    expect(w.arm.classify({ operation: 'hover', file_path: 'a.ts', line: 1, character: 1 }, makeExec().exec, 'after').code).toBe(G3.A5_G3_LSP_TYPED_CODES.DRAINING)
+  })
+
+  it('entry re-verify: a DOCUMENT revision move (the file changed after approval) and a SERVER generation move refuse TARGET_DRIFT with zero body — the navigation never answers a different file than the one approved', async () => {
+    let revision = 'rev-1'
+    let generation = 'polgen-4'
+    const native = makeNative('lsp', CAPTURED.lsp)
+    const binding = makeBinding()
+    const arm = G3.createGovernedLspArm({
+      nativeDefinition: native.def,
+      definitionIdentity: 'lsp@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'lsp@v1' }),
+      providerId: 'g3-test-provider',
+      memberAgentId: AGENT_ID,
+      sessionHeaderId: HEADER_ID,
+      realmId: 'realm-g3-test',
+      bindingFacts: binding.read,
+      lspFacts: {
+        server: () => ({ binaryIdentity: 'tsserver@5.6.0-sha-abc', generation }),
+        document: (filePath: string) => ({ kind: 'workspace', canonicalLocator: filePath, revision }),
+      },
+    })
+    const c = arm.classify({ operation: 'findReferences', file_path: 'src/a.ts', line: 3, character: 2 }, makeExec().exec, 'lsp-drift')
+    expect(arm.prepare(c.plan, { grantId: 'g' }).ok).toBe(true)
+    const running = arm.execute(c.plan, { consumed: true, grant: grantFor(c, c.plan as Record<string, unknown>, binding, 'g') })
+    revision = 'rev-2-edited' // same-tick window: the user saved the file
+    const drift = await running
+    expect(drift.code).toBe(G3.A5_G3_LSP_TYPED_CODES.TARGET_DRIFT)
+    expect(drift.detail).toMatch(/document revision moved/)
+    expect(native.calls.length).toBe(0)
+
+    const c2 = arm.classify({ operation: 'findReferences', file_path: 'src/a.ts', line: 3, character: 2 }, makeExec().exec, 'lsp-drift-2')
+    expect(arm.prepare(c2.plan, { grantId: 'g' }).ok).toBe(true)
+    const running2 = arm.execute(c2.plan, { consumed: true, grant: grantFor(c2, c2.plan as Record<string, unknown>, binding, 'g') })
+    generation = 'polgen-5' // a policy generation change disposes the realm
+    expect((await running2).code).toBe(G3.A5_G3_LSP_TYPED_CODES.TARGET_DRIFT)
+    expect(native.calls.length).toBe(0)
   })
 })
 
 describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalation answers live ONLY in the mounted bridge)', () => {
-  function ptcWorld() {
-    const native = makeNative('run_code')
+  function ptcWorld(deps: { noFacts?: boolean; moveChannel?: boolean } = {}) {
+    const native = makeNative('run_code', CAPTURED.run_code)
     const binding = makeBinding()
     const arm = G3.createGovernedRunCodeArm({
       nativeDefinition: native.def,
       definitionIdentity: 'run_code@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'run_code@v1' }),
       providerId: 'g3-test-provider',
       memberAgentId: AGENT_ID,
       sessionHeaderId: HEADER_ID,
+      realmId: 'realm-g3-test',
       bindingFacts: binding.read,
+      ptcFacts: () => (deps.noFacts === true
+        ? null
+        : {
+            interpreter: { runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' },
+            effectiveEnvelope: { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
+            timeout: { defaultMs: 30000, maxMs: 120000 },
+            childChannel: {
+              capabilityList: ['read', 'write', 'bash', 'todo__write'],
+              channelDigest: deps.moveChannel === true ? 'sha256:chan-2' : 'sha256:chan-1',
+              maxParallelSubCalls: 8,
+              runDispatchBudget: 64,
+            },
+          }),
     })
     return { arm, native, binding }
   }
 
-  it('a plain program run classifies with digests (never copies) and executes once through the snapshot; nestedToolsSecondGovernance is a manifest fact', async () => {
+  it('a plain program run: EXEC FIDELITY end-to-end (the child-tool channel fields arrive intact and bound), interpreter/envelope/REAL channel facts on the target, digests (never copies), executes once', async () => {
     const w = ptcWorld()
-    const { c, x } = await runPass(w.arm, w.binding, { code: 'const r = await tools.read({ file_path: "a" }); return r', description: 'read a file' }, 'ptc-1')
+    const { exec, recorder } = makeExec()
+    const code = 'const r = await tools.read({ file_path: "a" }); return r'
+    const { c, x } = await runPass(w.arm, w.binding, { code, description: 'read a file' }, 'ptc-1', exec)
     expect(x.ok).toBe(true)
     expect(w.native.calls.length).toBe(1)
+    const fwd = w.native.calls[0]?.exec as Record<string, unknown>
+    // The PTC bridge reads EXACTLY these (ptc.ts): a dropped field silently
+    // kills the child-tool channel — the arm forwards a faithful exec.
+    expect(fwd.rootCallId).toBe(exec.rootCallId)
+    expect(fwd.token).toBe(exec.token)
+    expect(fwd.callId).toBe(exec.callId)
+    expect(fwd.agent).toBe(exec.agent)
+    expect(fwd.signal).toBe(exec.signal)
+    expect(Object.keys(fwd).sort()).toEqual(Object.keys(exec).sort())
+    ;(fwd.deferContext as (v: unknown) => void)({ nested: true })
+    ;(fwd.concludeTurn as () => void)()
+    expect(recorder.deferred).toEqual([{ nested: true }])
+    expect(recorder.concluded).toBe(1)
+    // Target: interpreter/provider identity + EFFECTIVE envelope + the REAL
+    // child channel (the boolean stand-in is gone — facts, not flags).
+    expect(c.manifest?.interpreterTarget).toEqual({ runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' })
+    expect(c.manifest?.effectiveEnvelope).toEqual({ mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' })
+    expect(c.manifest?.timeoutPolicy).toEqual({ defaultMs: 30000, maxMs: 120000 })
+    expect(c.manifest?.childChannel).toMatchObject({ capabilityCount: 4, channelDigest: 'sha256:chan-1', maxParallelSubCalls: 8, runDispatchBudget: 64 })
+    expect((c.manifest?.childChannel as Record<string, unknown>).capabilityList).toEqual(['bash', 'read', 'todo__write', 'write'])
+    expect(c.manifest?.nestedToolsSecondGovernance).toBeUndefined() // ruled NOT evidence
+    expect(String(c.manifest?.codeDigest)).toBe(`sha256:${createHash('sha256').update(code, 'utf8').digest('hex')}`)
     expect(c.manifest?.requestedSandboxMode).toBeNull()
-    expect(c.manifest?.nestedToolsSecondGovernance).toBe(true)
-    expect(String(c.manifest?.codeDigest)).toBe(`sha256:${(await import('node:crypto')).createHash('sha256').update('const r = await tools.read({ file_path: "a" }); return r', 'utf8').digest('hex')}`)
     expect((x.value as Record<string, unknown>).hostCallId).toBe('hostcall-1') // the bridge reads exec.callId
+  })
+
+  it('an unattributed run refuses: no interpreter/channel facts → TARGET_UNRESOLVED; channel/interpreter drift at the entry → TARGET_DRIFT with zero body', async () => {
+    const dark = ptcWorld({ noFacts: true })
+    const r = dark.arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'p0')
+    expect(r.code).toBe(G3.A5_G3_PTC_TYPED_CODES.TARGET_UNRESOLVED)
+    expect(dark.native.calls.length).toBe(0)
+
+    // The approved reach is not the live reach: the channel digest moves in
+    // the pre-entry window — the run refuses at the entry.
+    let move = false
+    const native = makeNative('run_code', CAPTURED.run_code)
+    const binding = makeBinding()
+    const arm = G3.createGovernedRunCodeArm({
+      nativeDefinition: native.def,
+      definitionIdentity: 'run_code@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'run_code@v1' }),
+      providerId: 'g3-test-provider',
+      memberAgentId: AGENT_ID,
+      sessionHeaderId: HEADER_ID,
+      realmId: 'realm-g3-test',
+      bindingFacts: binding.read,
+      ptcFacts: () => ({
+        interpreter: { runtimeIdentity: move ? 'node@23.0.0@/usr/bin/node2' : 'node@22.14.0@/usr/bin/node', language: 'javascript' },
+        effectiveEnvelope: { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
+        timeout: { defaultMs: 30000, maxMs: 120000 },
+        childChannel: { capabilityList: ['read'], channelDigest: move ? 'sha256:chan-moved' : 'sha256:chan-1', maxParallelSubCalls: 8, runDispatchBudget: 64 },
+      }),
+    })
+    const c = arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'p1')
+    expect(arm.prepare(c.plan, { grantId: 'g' }).ok).toBe(true)
+    const running = arm.execute(c.plan, { consumed: true, grant: grantFor(c, c.plan as Record<string, unknown>, binding, 'g') })
+    move = true
+    const drift = await running
+    expect(drift.code).toBe(G3.A5_G3_PTC_TYPED_CODES.TARGET_DRIFT)
+    expect(native.calls.length).toBe(0)
   })
 
   it('the escalation pair-law is typed at classify: half-pairs and unknown modes refuse, valid pairs ride as manifest DATA under the ONE pinned mode vocabulary — the arm itself never answers an escalation', () => {
     const w = ptcWorld()
-    const good = w.arm.classify({ code: 'x', description: 'd', sandbox_permissions: 'workspace-write', justification: 'need to write' }, makeExec(), 'esc-1')
+    const good = w.arm.classify({ code: 'x', description: 'd', sandbox_permissions: 'workspace-write', justification: 'need to write' }, makeExec().exec, 'esc-1')
     expect(good.ok).toBe(true)
     expect(good.manifest?.requestedSandboxMode).toBe('workspace-write')
     expect(String(good.manifest?.justificationDigest)).toMatch(/^sha256:/) // digest, not the shown text
@@ -436,17 +846,18 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
       { code: 'x', description: 'd', justification: 'reason' }, // justification without mode
       { code: 'x', description: 'd', sandbox_permissions: 'danger-everything', justification: 'x' }, // invented mode
     ]) {
-      const r = w.arm.classify(bad, makeExec(), 'esc-x')
+      const r = w.arm.classify(bad, makeExec().exec, 'esc-x')
       expect(r.ok).toBe(false)
       expect(r.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ESCALATION_ARGS_INVALID)
     }
     expect(w.native.calls.length).toBe(0)
-    // The single-source law: the arm's mode enum IS the mounted row's.
-    expect(((G3.A5_G3_PTC_PARAMETERS.properties ?? {}) as Record<string, { enum?: readonly string[] }>).sandbox_permissions?.enum).toBe(PTC_ROW.PTC_ESCALATION_MODES)
+    // The single-source law: the captured face's escalation enum IS the
+    // mounted row's vocabulary (assembly audit pairs them at mount).
+    expect((CAPTURED.run_code.sandbox_permissions.enum as readonly string[]).join(',')).toBe(PTC_ROW.PTC_ESCALATION_MODES.join(','))
     // The arm carries NO approval face: escalate/allow/adjudicate exist
     // nowhere on it — escalation answers happen only in ptc-escalation-row.
     const faces = Object.keys(w.arm).sort().join(',')
-    expect(faces).toBe('adapterRevision,cancel,classify,declaredAbsent,definitionIdentity,drain,execute,familyId,prepare,providerId,toolName')
+    expect(faces).toBe('adapterRevision,cancel,classify,declaredAbsent,definitionIdentity,drain,execute,familyId,inFlight,parametersFace,prepare,providerId,toolName')
   })
 })
 
@@ -537,26 +948,28 @@ describe('g3 B-JOB gap closure — the management path across the gateway DRAINI
   })
 })
 
-describe('g3 r9 — every exported registration face IS a canonical host registration face (REAL pinned validator)', () => {
-  const faces: Array<[string, Record<string, unknown>]> = [
-    ['terminal_open', G3.A5_G3_TERMINAL_OPEN_PARAMETERS],
-    ['terminal_send', G3.A5_G3_TERMINAL_SEND_PARAMETERS],
-    ['terminal_read', G3.A5_G3_TERMINAL_READ_PARAMETERS],
-    ['terminal_signal', G3.A5_G3_TERMINAL_SIGNAL_PARAMETERS],
-    ['terminal_close', G3.A5_G3_TERMINAL_CLOSE_PARAMETERS],
-    ['terminal_list', G3.A5_G3_TERMINAL_LIST_PARAMETERS],
-    ['lsp', G3.A5_G3_LSP_PARAMETERS],
-    ['run_code', G3.A5_G3_PTC_PARAMETERS],
+describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRegistrationFace) IS the canonical host registration face (REAL pinned validator + REAL host lift)', () => {
+  const specs: Array<[string, Record<string, unknown>]> = [
+    ['terminal_open', CAPTURED.terminal_open as unknown as Record<string, unknown>],
+    ['terminal_send', CAPTURED.terminal_send as unknown as Record<string, unknown>],
+    ['terminal_read', CAPTURED.terminal_read as unknown as Record<string, unknown>],
+    ['terminal_signal', CAPTURED.terminal_signal as unknown as Record<string, unknown>],
+    ['terminal_close', CAPTURED.terminal_close as unknown as Record<string, unknown>],
+    ['terminal_list', CAPTURED.terminal_list as unknown as Record<string, unknown>],
+    ['lsp', CAPTURED.lsp as unknown as Record<string, unknown>],
+    ['run_code', CAPTURED.run_code as unknown as Record<string, unknown>],
   ]
+  const derived = specs.map(([name, spec]) => [name, G3.g3CanonicalRegistrationFace(spec)] as const)
 
-  async function hostValidator() {
+  async function hostTools() {
     const repo = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
     if (repo === null) throw new Error('no repo root carrying tests/deepseek-harness-test-use — failing closed')
-    const hostTools = join(repo, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
-    if (!existsSync(hostTools)) throw new Error(`pristine host lib absent (${hostTools}); failing closed`)
-    return (await import(pathToFileURL(hostTools).href)) as unknown as {
+    const lib = join(repo, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+    if (!existsSync(lib)) throw new Error(`pristine host lib absent (${lib}); failing closed`)
+    return (await import(pathToFileURL(lib).href)) as unknown as {
       assertSupportedJsonSchema: (schema: unknown) => void
       validateJsonSchemaValue: (schema: unknown, value: unknown, path: string) => string[]
+      parameterSchemaSpecToJsonSchema: (spec: Record<string, unknown>) => Record<string, unknown>
     }
   }
 
@@ -569,32 +982,64 @@ describe('g3 r9 — every exported registration face IS a canonical host registr
       for (const child of Object.values(props as Record<string, unknown>)) if (marker(child)) return true
     }
     if (rec.items !== undefined && marker(rec.items)) return true
+    for (const branch of ['oneOf', 'anyOf', 'allOf'] as const) {
+      const list = rec[branch]
+      if (Array.isArray(list)) for (const child of list) if (marker(child)) return true
+    }
     return false
   }
 
-  it('the REAL Host639 validator accepts every face; NO property-level required marker survives anywhere; parent arrays are exact', async () => {
-    const host = await hostValidator()
-    for (const [name, schema] of faces) {
-      expect(() => host.assertSupportedJsonSchema(schema), name).not.toThrow()
-      expect(marker(schema), `${name}: property-level required marker`).toBe(false)
+  it('the DERIVED face EQUALS the host\'s own parameterSchemaSpecToJsonSchema lift (+ the closed-surface key); the REAL Host639 validator accepts every face; NO property-level required marker survives; parent arrays are exact', async () => {
+    const host = await hostTools()
+    for (const [name, spec] of specs) {
+      const face = G3.g3CanonicalRegistrationFace(spec)
+      // The derivation IS the host lift (the marker-stripping law, pinned to
+      // the host's own function) — plus the governed row's closed surface.
+      const hostLift = host.parameterSchemaSpecToJsonSchema(spec)
+      const { additionalProperties: _closed, ...faceMinusClosed } = face
+      expect(faceMinusClosed, `${name}: derivation equals the host lift`).toEqual(hostLift)
+      expect(face.additionalProperties, `${name}: closed governed surface`).toBe(false)
+      expect(() => host.assertSupportedJsonSchema(face), name).not.toThrow()
+      expect(marker(face), `${name}: property-level required marker`).toBe(false)
     }
-    expect(G3.A5_G3_TERMINAL_OPEN_PARAMETERS.required).toEqual(['type'])
-    expect(G3.A5_G3_TERMINAL_SEND_PARAMETERS.required).toEqual(['sessionId', 'text'])
-    expect(G3.A5_G3_TERMINAL_READ_PARAMETERS.required).toEqual(['sessionId'])
-    expect(G3.A5_G3_TERMINAL_SIGNAL_PARAMETERS.required).toEqual(['sessionId', 'signal'])
-    expect(G3.A5_G3_TERMINAL_CLOSE_PARAMETERS.required).toEqual(['sessionId'])
-    expect(G3.A5_G3_LSP_PARAMETERS.required).toEqual(['operation', 'file_path', 'line', 'character'])
-    expect(G3.A5_G3_PTC_PARAMETERS.required).toEqual(['code', 'description'])
+    const faceOf = (toolName: string): { required?: string[] } => {
+      const hit = derived.find(([name]) => name === toolName)
+      return (hit === undefined ? undefined : hit[1]) as { required?: string[] }
+    }
+    expect(faceOf('terminal_open').required).toEqual(['type'])
+    expect(faceOf('terminal_send').required).toEqual(['sessionId', 'text'])
+    expect(faceOf('terminal_read').required).toEqual(['sessionId'])
+    expect(faceOf('terminal_signal').required).toEqual(['sessionId', 'signal'])
+    expect(faceOf('terminal_close').required).toEqual(['sessionId'])
+    expect(faceOf('terminal_list').required).toBeUndefined()
+    expect(faceOf('lsp').required).toEqual(['operation', 'file_path', 'line', 'character'])
+    expect(faceOf('run_code').required).toEqual(['code', 'description'])
   })
 
-  it('the SAME validator still REJECTS missing required members and walks complete values clean (constraints intact, nothing loosened)', async () => {
-    const host = await hostValidator()
-    const [openSchema, sendSchema, lspSchema, ptcSchema] = [
-      G3.A5_G3_TERMINAL_OPEN_PARAMETERS,
-      G3.A5_G3_TERMINAL_SEND_PARAMETERS,
-      G3.A5_G3_LSP_PARAMETERS,
-      G3.A5_G3_PTC_PARAMETERS,
-    ]
+  it('the SAME validator still REJECTS missing required members and off-surface values, and accepts complete values — the arm\'s faces (parametersFace) ARE these derived faces', async () => {
+    const host = await hostTools()
+    const w = terminalWorld()
+    const lspArm = G3.createGovernedLspArm({
+      nativeDefinition: makeNative('lsp', CAPTURED.lsp).def,
+      definitionIdentity: 'lsp@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'lsp@v1' }),
+      providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
+      bindingFacts: makeBinding().read,
+      lspFacts: { server: () => ({ binaryIdentity: 'x', generation: 'g' }), document: (p: string) => ({ kind: 'workspace', canonicalLocator: p, revision: 'r' }) },
+    })
+    const ptcArm = G3.createGovernedRunCodeArm({
+      nativeDefinition: makeNative('run_code', CAPTURED.run_code).def,
+      definitionIdentity: 'run_code@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'run_code@v1' }),
+      providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
+      bindingFacts: makeBinding().read,
+      ptcFacts: () => ({ interpreter: { runtimeIdentity: 'i', language: 'javascript' }, effectiveEnvelope: { mode: 'read-only', enforcement: 'e' }, timeout: null, childChannel: { capabilityList: [], channelDigest: 'd' } }),
+    })
+    const openSchema = w.arms.terminal_open.parametersFace as Record<string, unknown>
+    const sendSchema = w.arms.terminal_send.parametersFace as Record<string, unknown>
+    const lspSchema = lspArm.parametersFace as Record<string, unknown>
+    const ptcSchema = ptcArm.parametersFace as Record<string, unknown>
+    expect(openSchema).toEqual(G3.g3CanonicalRegistrationFace(CAPTURED.terminal_open as unknown as Record<string, unknown>))
     expect(host.validateJsonSchemaValue(openSchema, { name: 'main' }, '').join(';')).toMatch(/type/)
     expect(host.validateJsonSchemaValue(sendSchema, { sessionId: 'pty-1' }, '').join(';')).toMatch(/text/)
     expect(host.validateJsonSchemaValue(lspSchema, { operation: 'hover', file_path: 'a.ts', line: 1 }, '').join(';')).toMatch(/character/)
@@ -606,7 +1051,7 @@ describe('g3 r9 — every exported registration face IS a canonical host registr
     // positives walk clean:
     expect(host.validateJsonSchemaValue(openSchema, { type: 'shell' }, '')).toEqual([])
     expect(host.validateJsonSchemaValue(sendSchema, { sessionId: 'pty-1', text: 'ls\n', run_in_background: true }, '')).toEqual([])
-    expect(host.validateJsonSchemaValue(G3.A5_G3_TERMINAL_LIST_PARAMETERS, {}, '')).toEqual([])
+    expect(host.validateJsonSchemaValue(w.arms.terminal_list.parametersFace as Record<string, unknown>, {}, '')).toEqual([])
     expect(host.validateJsonSchemaValue(ptcSchema, { code: 'x', description: 'd', sandbox_permissions: 'workspace-write', justification: 'r' }, '')).toEqual([])
   })
 })
