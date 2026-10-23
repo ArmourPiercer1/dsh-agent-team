@@ -27,7 +27,12 @@ const { publishPaMount, revokePaMount, readPaCallFacts, readPaCallFactsForCall }
   readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<CallLevelAnswer | undefined>
 }
 
-const TUPLE = { blueprintId: 'bp-1', revision: 9, contentHash: 'sha256:bp', templateId: 'tmpl-1', cwd: '/work', providerVersion: 'pv-1' }
+// THE REAL PRODUCER SHAPE, not a convenience mock: `permission-plane.ts:684`
+// emits `revision: String(blueprint.revision)` and its `BindingTuple` declares
+// `readonly revision: string` (`:508`). A numeric revision here once made the
+// suite green while every PRODUCTION call failed the tuple conjunct — the mock
+// was asserting a contract the lane never produces.
+const TUPLE = { blueprintId: 'bp-1', revision: '9', contentHash: 'sha256:bp', templateId: 'tmpl-1', cwd: '/work', providerVersion: 'pv-1' }
 
 function healthyMount() {
   const binding = {
@@ -146,7 +151,8 @@ describe('A5M1-B — PA mount registry (named PaCallFacts contract)', () => {
     expect(f?.member).toEqual({ teamSessionId: 'root-b', instanceId: 'member-1' })
     expect(f?.beneficiaryAuthority).toBe('member')
     expect(f?.binding).toMatchObject({ revision: 3, definitionIdentity: 'sha256:real-definition', providerId: 'dsh-agent-team', status: 'ACTIVE' })
-    expect(f?.blueprint).toEqual({ revision: 9, contentHash: 'sha256:bp', templateId: 'tmpl-1', cwd: '/work', providerVersion: 'pv-1' })
+    // the string identity is carried through unchanged (never coerced to a number)
+    expect(f?.blueprint).toEqual({ revision: '9', contentHash: 'sha256:bp', templateId: 'tmpl-1', cwd: '/work', providerVersion: 'pv-1' })
     expect(f?.planSnapshot).toEqual({ approvalCaseId: 'case-1', effectSetFingerprint: 'sha256:effects', perEffectRequired: ['member', 'member'] })
     expect(f?.authorityGeneration).toBe(4) // the assembly's OWN counter answer
     expect(Object.keys(f as Record<string, unknown>)).toEqual([
@@ -197,6 +203,34 @@ describe('A5M1-B2 — the public call-level entry (A5-M1 B/D)', () => {
     placementName: 'team_bash',
     mount,
     ...over,
+  })
+
+  it('B6b: the blueprint revision is the lane STRING identity — a numeric one is refused and named', async () => {
+    // THE MISMATCH THIS LEG PINS: `permission-plane.ts:684` produces
+    // `revision: String(blueprint.revision)` and its `BindingTuple` declares
+    // `readonly revision: string`. Read the OTHER way round (`!== 'number'`), every
+    // production call answered `undefined` while the suite stayed green on a numeric
+    // mock. The lane double below is built from TUPLE — the real producer shape.
+    const lane = (tupleOver: Record<string, unknown>, healthy = true) => {
+      const m = healthyMount()
+      ;(m.readers as Record<string, unknown>).permissionPlane = () => ({
+        currentCallFacts: () => ({ tuple: { ...TUPLE, ...tupleOver }, blueprintId: 'bp-1', providerVersion: 'pv-1', healthy }),
+      })
+      return m
+    }
+    const codeOf = async (mount: unknown) => {
+      let code: string | undefined
+      expect(await call(mount, { diagnose: (c: { code: string }) => { code ??= c.code } })).toBeUndefined()
+      return code
+    }
+    expect(await codeOf(lane({ revision: 9 }))).toBe('bad-tuple-revision-not-a-string')
+    // an EMPTY string is a different fact and is refused too — never a blank revision
+    expect(await codeOf(lane({ revision: '' }))).toBe('bad-tuple-revision-empty')
+    // and the lane's own stated abstention is named BEFORE the tuple is even read
+    // (this is why a call whose lane is unhealthy can never be blamed on the tuple)
+    expect(await codeOf(lane({}, false))).toBe('unhealthy-call-facts')
+    // the real shape still answers
+    expect((await call(healthyMount()))?.kind).toBe('call-facts')
   })
 
   it('B7: a live call answers with NO requestId and NO manifest (the row path is not implied)', async () => {

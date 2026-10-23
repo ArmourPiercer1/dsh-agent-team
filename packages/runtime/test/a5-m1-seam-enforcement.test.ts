@@ -433,7 +433,8 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       member: { teamSessionId: 'a5m1-test-team-root', instanceId: 'c-instance' },
       beneficiaryAuthority: 'member',
       binding: liveBinding(world.scope.value, { revision: world.scope.revision }),
-      blueprint: { revision: 1, contentHash: 'sha256:bp', templateId: 'c-tpl', cwd: '/work', providerVersion: 'pv-1' },
+      // string identity, per the permission lane's own binding tuple
+      blueprint: { revision: '1', contentHash: 'sha256:bp', templateId: 'c-tpl', cwd: '/work', providerVersion: 'pv-1' },
       authorityGeneration: world.gen.value,
     }
     if (kind === 'call-facts') {

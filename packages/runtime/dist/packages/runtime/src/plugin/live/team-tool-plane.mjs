@@ -632,6 +632,83 @@ function createShutBackend(backendId) {
 }
 
 /**
+ * A5-M1-D (diagnostic delta, presentation ONLY): the short safe face of an
+ * identity field for a refusal detail — presence, a 12-character prefix with
+ * path separators folded, and the length. Never the whole value: a live
+ * `bindingId` spans an opaque scope key and a `definitionIdentity` is a digest,
+ * and this text is printed into observation streams.
+ */
+const paIdentityFace = (value) => {
+  if (value === undefined) return 'absent'
+  if (value === null) return 'null'
+  if (typeof value !== 'string') return `non-string(${typeof value})`
+  if (value.length === 0) return 'empty-string'
+  return `${value.slice(0, 12).replace(/\//g, '\u2215')}\u2026(${String(value.length)} chars)`
+}
+
+/**
+ * A5-M1-D: WHICH identity requirement the call-level entry actually failed. The
+ * refusal it feeds keeps its exact `kind`/`code` and its exact zero side effects
+ * — this only replaces a flat "could not be answered" with the arm that is TRUE.
+ * `identity-gap=<code>` is the arm AT THIS EDGE (a shape law on the answer);
+ * `entry-cause=<code>` is the code the READ itself reported at the source that
+ * failed — a code list owned by `pa-mount-registry.mjs`, forwarded verbatim and
+ * never re-derived here (this edge cannot see the mount, so it does not try).
+ * `entry-cause=none` states the other fact: the read reported no failure of its
+ * own, so the gap is in the ANSWER it returned, not in the read.
+ * Nothing is invented: an absent answer is named as absent (`undefined`), and
+ * WHY a source said nothing belongs to that source's own lane — the code says
+ * which source, never a cause that was not observed.
+ */
+const paBindingIdentityGap = ({ admittedFacts, admittedFactsFault, admittedFactsCause, entryFacts, entryBinding }) => {
+  // One face for the read's own report, used by every arm: the code the source
+  // named, or the honest statement that it named nothing (which itself tells the
+  // reader where to look — the answer, not the read).
+  const entryCause = `entry-cause=${admittedFactsCause?.code
+    ?? (admittedFacts === undefined ? 'read-reported-nothing' : 'read-reported-no-failure')}`
+  const arm = (code, note) => ({
+    gap: `identity-gap=${code}${note === undefined ? '' : ` (${note})`} ${entryCause}`,
+    summary: '',
+  })
+  if (admittedFacts === undefined) {
+    return admittedFactsFault === undefined
+      ? arm('no-answer-object', 'the call-level facts entry returned NO answer object at all (undefined)')
+      : arm('answer-threw', `the read THREW: ${admittedFactsFault}`)
+  }
+  if (admittedFacts.kind !== 'call-facts' && admittedFacts.kind !== 'no-approval-question') {
+    return arm('answered-other-kind', `kind=${paIdentityFace(admittedFacts.kind)}; only call-facts / no-approval-question carry facts for a call`)
+  }
+  if (entryFacts === null || entryFacts === undefined) {
+    return arm('facts-not-an-object', `the entry answered kind=${paIdentityFace(admittedFacts.kind)} with facts=${entryFacts === null ? 'null' : 'undefined'}`)
+  }
+  if (!('binding' in entryFacts)) return arm('binding-key-absent', 'the answered facts carry no binding key at all')
+  if (entryBinding === undefined) return arm('binding-undefined', 'the binding key is present and its value is undefined')
+  if (entryBinding === null) return arm('binding-null')
+  if (typeof entryBinding !== 'object') return arm('binding-not-object', typeof entryBinding)
+  const parts = []
+  if (typeof entryBinding.bindingId !== 'string') parts.push(`binding-id-not-a-string(${entryBinding.bindingId === undefined ? 'absent' : typeof entryBinding.bindingId})`)
+  else if (entryBinding.bindingId.length === 0) parts.push('binding-id-empty')
+  if (typeof entryBinding.definitionIdentity !== 'string') parts.push(`definition-identity-not-a-string(${entryBinding.definitionIdentity === undefined ? 'absent' : typeof entryBinding.definitionIdentity})`)
+  else if (entryBinding.definitionIdentity.length === 0) parts.push('definition-identity-empty')
+  if (typeof entryBinding.revision !== 'number' || !Number.isInteger(entryBinding.revision) || entryBinding.revision < 1) {
+    parts.push(`revision-not-in-range(${JSON.stringify(entryBinding.revision) ?? String(entryBinding.revision)})`)
+  }
+  if (entryBinding.status !== 'ACTIVE') parts.push(`status-not-active(${JSON.stringify(entryBinding.status) ?? String(entryBinding.status)})`)
+  const summary = [
+    `bindingId=${paIdentityFace(entryBinding.bindingId)}`,
+    `definitionIdentity=${paIdentityFace(entryBinding.definitionIdentity)}`,
+    `revision=${JSON.stringify(entryBinding.revision) ?? String(entryBinding.revision)}`,
+    `status=${JSON.stringify(entryBinding.status) ?? String(entryBinding.status)}`,
+    ...(typeof entryBinding.verified === 'boolean' ? [`verified=${String(entryBinding.verified)}`] : []),
+    `authorityGeneration=${JSON.stringify(entryBinding.authorityGeneration) ?? String(entryBinding.authorityGeneration)}`,
+  ].join(' ')
+  return {
+    gap: `identity-gap=${parts.join('+')} ${entryCause}`,
+    summary,
+  }
+}
+
+/**
  * Create the per-agent governed tool plane. `input`:
  *  { permissionPolicy, realmId, templateId, role, instanceId,
  *    fs?: { canonicalizeResource?, subtreeContains? },
@@ -1011,6 +1088,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
     let paConstructionBinding
     if (typeof paReadCallFacts === 'function') {
       let admittedFacts
+      let admittedFactsFault
+      let admittedFactsCause
       try {
         admittedFacts = await paReadCallFacts({
           rootSessionId: paMember.teamSessionId,
@@ -1019,9 +1098,21 @@ export function createTeamToolPlaneAssembly(input = {}) {
           callId,
           requestedEffects,
           ...(placementName === undefined ? {} : { placementName }),
+          // A5-M1-D: the read's CAUSE SINK. It is output-only by construction —
+          // the source calls it on the arm it is already taking, and this edge
+          // feeds it to nothing but the refusal text below: the admission inputs
+          // are unchanged, the answer is unchanged, and the verdict is computed
+          // from the answer exactly as before. `??=` keeps the FIRST (and only)
+          // report so a sink cannot accumulate a story the read never told.
+          diagnose: (cause) => { admittedFactsCause ??= cause },
         })
-      } catch {
+      } catch (error) {
+        // The answer stays EXACTLY what it was (undefined ⇒ the refusal below,
+        // same path, same verdict); only the FACT that the read itself faulted is
+        // remembered, so the detail can say that instead of leaving "could not be
+        // answered" ambiguous between a silent no-answer and a throw.
         admittedFacts = undefined
+        admittedFactsFault = String(error?.message ?? error).slice(0, 180)
       }
       const entryFacts = admittedFacts?.kind === 'call-facts' || admittedFacts?.kind === 'no-approval-question'
         ? admittedFacts.facts
@@ -1034,10 +1125,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
         || typeof entryBinding.revision !== 'number' || !Number.isInteger(entryBinding.revision) || entryBinding.revision < 1
         || entryBinding.status !== 'ACTIVE'
       ) {
+        const { gap, summary } = paBindingIdentityGap({
+          admittedFacts, admittedFactsFault, admittedFactsCause, entryFacts, entryBinding,
+        })
+        // Same facts, same words, one line earlier in the row's own stream: a
+        // refusal that only exists in a wire the client may truncate is a refusal
+        // nobody can attribute after the fact.
+        observe(`a5m1-binding-refused: placement=${String(placementName ?? toolName ?? '?')} ${gap}`)
         return {
           kind: 'deny',
           code: 'TOOL_BINDING_UNVERIFIED',
-          detail: `the live dispatcher binding behind this call (${String(placementName ?? toolName ?? '?')}) could not be answered by the call-level facts entry — no admission, no grant, and no Control row is opened on an identity that was never read (never a synthesized \`plane-row:\` stand-in)`,
+          detail: `the live dispatcher binding behind this call (${String(placementName ?? toolName ?? '?')}) could not be answered by the call-level facts entry: ${gap}${summary === '' ? '' : ` [entry carried ${summary}]`} — no admission, no grant, and no Control row is opened on an identity that was never read (never a synthesized \`plane-row:\` stand-in)`,
         }
       }
       paConstructionBinding = entryBinding
@@ -1170,6 +1268,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // authority and the read a formality).
       const rowBindingId = paDurableMint?.manifest?.binding?.bindingId
       let answer
+      let answerCause
       try {
         answer = await paReadCallFacts({
           rootSessionId: paMember.teamSessionId,
@@ -1178,13 +1277,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
           callId,
           requestedEffects,
           ...(placementName === undefined ? {} : { placementName }),
+          // Same output-only sink as the construction read: the STALE path below
+          // says which source refused to answer NOW, which is the whole question
+          // when a grant was minted and the world moved under it.
+          diagnose: (cause) => { answerCause ??= cause },
         })
       } catch {
         answer = undefined
       }
       const facts = answer?.kind === 'call-facts' || answer?.kind === 'no-approval-question' ? answer.facts : undefined
       if (facts === undefined) {
-        return stale('no complete call-level facts could be read for this call — the entry answers undefined for ANY missing or contradicting source, and coverage is never assumed')
+        return stale(`no complete call-level facts could be read for this call (entry-cause=${answerCause?.code ?? (answer === undefined ? 'read-reported-nothing' : 'read-reported-no-failure')}) — the entry answers undefined for ANY missing or contradicting source, and coverage is never assumed`)
       }
       // (3a) the row's own manifest, COMPARED (post-read) against the live
       // family the entry answered: an approval written under another binding

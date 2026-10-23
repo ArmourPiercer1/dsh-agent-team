@@ -326,7 +326,8 @@ describe('a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → gov
         revision: 1,
         status: 'ACTIVE',
       },
-      blueprint: { revision: 1, contentHash: 'sha256:bp', templateId: 'a5m1-tpl', cwd: ROOT_DIR, providerVersion: 'pv-1' },
+      // string identity, per the permission lane's own binding tuple
+      blueprint: { revision: '1', contentHash: 'sha256:bp', templateId: 'a5m1-tpl', cwd: ROOT_DIR, providerVersion: 'pv-1' },
       authorityGeneration: 0,
     }
     const read = plane.definitions.find((d) => d.name === 'read')

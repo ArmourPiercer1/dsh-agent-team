@@ -726,6 +726,43 @@ export function guardNativeTrustExcludedMcpName(name) {
 }
 
 /**
+ * A5-M1-D (diagnostic delta, presentation ONLY): the pass-through face of a
+ * Guard/dispatcher observation for the row's `observations` stream.
+ *
+ * The producing side already tells more than the old formatter printed: it kept
+ * `event`, `tool` and `denied` and DROPPED the rest — so a binding republished
+ * by a generation refresh (`scoped-dispatcher.ts:334` ships `revision` and
+ * `verified` with every `dispatcher-binding-revised`) left the row log saying
+ * only that something was revised. This is a PASS-THROUGH, nothing more:
+ *  · ONLY fields the event payload ALREADY carries are printed (an absent field
+ *    simply does not appear — no default, no placeholder, no invented value);
+ *  · ONLY fields on the allowlist below, in this fixed order, so a line stays
+ *    diffable and a new payload field cannot silently widen what is logged;
+ *  · each value is the payload's own value, truncated. The allowlist is bounded
+ *    to identity/state/counter fields the Guard itself produces — no policy
+ *    document, no rule, no path, nothing that could carry content a caller owns.
+ * No producing side was touched, and no verdict or return path reads this.
+ */
+const GUARD_OBSERVATION_FIELDS = Object.freeze([
+  'tool', 'denied', 'revision', 'verified', 'unloaded',
+  'seam', 'armed', 'required', 'state', 'from', 'to', 'code', 'reason', 'detail',
+  'callId', 'inFlight', 'outstanding', 'drifted', 'added', 'removed', 'surface',
+  'masked', 'seams', 'scope', 'published', 'residue', 'mask', 'maskLiftable',
+  'hostDisposeReturned', 'note',
+])
+/** One `key=value` per field the payload actually carries (truncated at 160). */
+function guardObservationFace(row) {
+  let face = ''
+  for (const key of GUARD_OBSERVATION_FIELDS) {
+    const value = row?.[key]
+    if (value === undefined) continue
+    const text = typeof value === 'string' ? value : (JSON.stringify(value) ?? String(value))
+    face += ` ${key}=${text.length > 160 ? `${text.slice(0, 160)}\u2026` : text}`
+  }
+  return face
+}
+
+/**
  * Create the bindings closure over one row instance's deps.
  * @param {object} deps - see the module header.
  * @returns {object} the bindings (see the module header).
@@ -2447,7 +2484,7 @@ export function createAgentBindings(deps) {
             },
           },
           onObserve: (row) => {
-            observations.push(`a5p1-guard: ${String(row.event)} agent=${sessionId}${row.tool === undefined ? '' : ` tool=${String(row.tool)}`}${row.denied === undefined ? '' : ` denied=${JSON.stringify(row.denied)}`}`)
+            observations.push(`a5p1-guard: ${String(row.event)} agent=${sessionId}${guardObservationFace(row)}`)
           },
         })
         if (outcome.ok === true) {

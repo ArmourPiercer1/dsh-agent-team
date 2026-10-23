@@ -259,7 +259,7 @@ const fakeReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (input) 
         ? binding.value
         : { ...binding.value, revision: truth.bindingRevisionBump },
       blueprint: {
-        revision: Number(blueprint.revision),
+        revision: String(blueprint.revision), // the lane's STRING identity (PaCallFactsBlueprint); Number() mocked a contract nothing produces
         contentHash: String(blueprint.contentHash),
         templateId: String(durable.templateId),
         cwd: ROOT_DIR,
