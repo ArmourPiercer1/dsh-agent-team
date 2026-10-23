@@ -1378,7 +1378,7 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         }
         if (gate.kind === 'allow' && gate.cancelled === true) return { kind: 'cancelled' }
         observe(`governed-read pa-handoff refused code=${String(gate.code ?? 'unknown')}`)
-        return { kind: 'refused', code: String(gate.code ?? 'PA_HANDOFF_REFUSED'), detail: String(gate.detail ?? 'the pre-dispatch PA walk refused this read') }
+        return { kind: 'refused', ownsHandoff: true, code: String(gate.code ?? 'PA_HANDOFF_REFUSED'), detail: String(gate.detail ?? 'the pre-dispatch PA walk refused this read') }
       }
       if (gate.kind === 'deny') {
         observe(`governed-read pa-refused code=${String(gate.code)}`)

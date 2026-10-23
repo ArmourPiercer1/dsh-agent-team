@@ -385,11 +385,14 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     blueprint: { revision: '1', contentHash: 'sha256:bp', templateId: 'a5m1-tpl', cwd: ROOT_DIR, providerVersion: 'pv-1' },
     authorityGeneration: 0,
   })
-  const handoffMount = () => {
+  const handoffMount = (factsAnswer?: { kind: string; facts?: Record<string, unknown> }) => {
     const asked: Array<Record<string, unknown>> = []
     const built = mount(POLICY_ALLOW, {
       readCallFacts: async (input: Record<string, unknown>) => {
         asked.push(input)
+        // M5 drives the ONE open-leg refusal that already wrote its pending
+        // placeholder, by having the entry answer a kind Part A cannot use.
+        if (factsAnswer !== undefined) return factsAnswer as unknown as { kind: 'no-approval-question'; facts: Record<string, unknown> }
         // the world is answered PER CALL, exactly as the entry does: the realm
         // of the asked call rides the answer.
         // The entry answers the CALL: its realm AND the effect set it was asked
@@ -490,5 +493,28 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     // — the fix that made the placeholder carry its own correlation — is NOT
     // exercised here; it needs a mount with a real Control leg. Not counted as
     // covered.
+  })
+
+  it('M5 the refusal that ALREADY wrote its pending placeholder says it owns it — and the close clears the placeholder', async () => {
+    // The point root took off 3dc887: of every open-leg refusal, THIS is the
+    // one that had already written the pending placeholder, yet it said nothing
+    // about owning it. The adapter therefore closed nothing (no `ownsHandoff`),
+    // the exec was never registered, and the terminal leg does not clear a
+    // placeholder either — it stayed for the life of the mount, and every later
+    // open on that token answered IN_FLIGHT for a leg that no longer existed.
+    const { plane, handoff } = handoffMount({ kind: 'answered-a-kind-part-a-cannot-use' })
+    const file = join(ROOT_DIR, 'target.txt')
+    const token = Symbol('a5m2-handoff-m5')
+    const execLike = { name: 'read', token, arguments: { file_path: file } }
+    const refused = await handoff.open(execLike)
+    expect(refused.kind, 'an entry answering neither facts shape refuses the read in place').toBe('refused')
+    expect((refused as unknown as { ownsHandoff?: boolean }).ownsHandoff, 'and it STATES that it owns the pending state to clean').toBe(true)
+    // The cleanup taken on that statement removes the PLACEHOLDER, not only the
+    // plan fact: afterwards the token is TERMINAL, not IN_FLIGHT — IN_FLIGHT
+    // here would mean a placeholder nobody can reach is still sitting there.
+    handoff.close(execLike)
+    const again = await handoff.open(execLike)
+    expect((again as unknown as { code?: string }).code, 'the pending placeholder is gone, the token is terminal').toBe('PA_HANDOFF_TERMINAL')
+    expect(plane.livePaPlan.size, 'and nothing else survives it').toBe(0)
   })
 })
