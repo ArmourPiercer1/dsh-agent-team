@@ -516,26 +516,31 @@ export function buildTeamOpsWiring (input = {}) {
   // The read the MINT consumes, captured as the mint consumes it so the
   // post-approval re-check compares against the facts the claim actually
   // carried (not against a later reading of the same store).
-  let mintFacts = null
+  // ② (root 22:35) The facts a CALL minted with are kept in a box created for
+  // THAT CALL, never on the assembly: two calls in flight (or a write call
+  // between an await and the post-approval read) cannot overwrite each other,
+  // and nothing reads a shared variable after an await.
+  let mintFactsBox = null
   const readQueryFacts = (group, memberClaim) => {
     const tool = String(group).replace(/-/g, '_')
     if (!QUERY_TARGET_NAMES.has(tool) || typeof queryFacts?.resolve !== 'function') return undefined
     try {
       const facts = queryFacts.resolve(tool, typeof memberClaim === 'string' ? memberClaim : undefined)
-      mintFacts = facts
+      if (mintFactsBox !== null) {
+        mintFactsBox.facts = facts
+        mintFactsBox.claim = typeof memberClaim === 'string' ? memberClaim : undefined
+      }
       return facts
     } catch (error) {
-      mintFacts = Object.freeze({ unresolved: true, fault: String(error?.message ?? error).slice(0, 160) })
-      // The read's own failure stays VISIBLE next to the composition refusal
-      // that follows from it, instead of leaving only a generic code behind.
-      queryFactsLedger.push(Object.freeze({
-        name: tool,
-        admitFacts: mintFacts,
-        postApprovalFacts: mintFacts,
-        drifted: false,
-        refusedAtComposition: true,
-      }))
-      observe({ event: 'b-team-wire:query-facts-unresolved', name: tool })
+      const fault = String(error?.message ?? error).slice(0, 160)
+      if (mintFactsBox !== null) {
+        mintFactsBox.fault = fault
+        mintFactsBox.claim = typeof memberClaim === 'string' ? memberClaim : undefined
+      }
+      // The read's own failure stays OBSERVABLE next to the composition
+      // refusal that follows from it; an unknown target is never minted as an
+      // empty one (root 22:45 boundary).
+      observe({ event: 'b-team-wire:query-facts-unresolved', name: tool, fault })
       // An unreadable durable target mints no leaf (the mint's own composition
       // law); the fault is still RECORDED below, so the failure is visible
       // rather than inferred from a generic refusal.
@@ -574,8 +579,10 @@ export function buildTeamOpsWiring (input = {}) {
       observe({ event: 'b-team-wire:tool-law-value', name, code: plan.toolError.code, paEntry: false })
       return Object.freeze({ ok: true })
     }
-    mintFacts = null
+    const callBox = { facts: undefined, claim: undefined, fault: undefined }
+    mintFactsBox = callBox
     const targetManifest = mintTargetManifest(plan, readQueryFacts)
+    mintFactsBox = null
     if (targetManifest.ok === false) {
       stats.mintRefusals += 1
       observe({ event: 'b-team-wire:claim-mint-REFUSED', name, code: targetManifest.code })
@@ -651,8 +658,13 @@ export function buildTeamOpsWiring (input = {}) {
       }
       stats.witnessed += 1
       if (QUERY_TARGET_NAMES.has(String(name))) {
-        const admitFacts = mintFacts
-        const afterFacts = readAgain(String(name).replace(/_/g, '-'), undefined)
+        // ③ (root 22:35) the re-check goes out with the SAME addressed claim
+        // the mint used; `undefined` here used to lose the addressed instance
+        // and manufacture a drift that never happened.
+        const admitFacts = callBox.fault !== undefined
+          ? Object.freeze({ unresolved: true, fault: callBox.fault })
+          : callBox.facts
+        const afterFacts = readAgain(String(name).replace(/_/g, '-'), callBox.claim)
         const drifted = stableJson(admitFacts) !== stableJson(afterFacts)
         queryFactsLedger.push(Object.freeze({
           name: String(name),

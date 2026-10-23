@@ -582,6 +582,18 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect((ledger[0]?.admitFacts as { rosterMemberIds: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-9'])
       expect((ledger[0]?.postApprovalFacts as { rosterMemberIds: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-12', 'mi-9'])
     })
+    it('an interleaved write call cannot strand or borrow another call\'s target facts (root 22:35 ②)', async () => {
+      const w = makeWorld()
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const inFlight = defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-mix-a'))
+      const mixed = await defOf(wiring, 'team_delegate').execute({ ...GOOD_ARGS, label: 'l', prompt: 'p', delegationTemplateId: 'tpl-worker', requestToken: 'tok-mix-b' }, execFor('call-mix-b'))
+      expect(String(mixed)).toBeDefined()
+      await inFlight
+      const ledger = (wiring as unknown as { queryFactsLedger: () => Array<{ name: string, admitFacts: unknown }> }).queryFactsLedger()
+      expect(ledger).toHaveLength(1)
+      expect((ledger[0]?.admitFacts as { rosterMemberIds?: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-9'])
+    })
+
     it('a resolution that faults is REFUSED AT COMPOSITION and its own fault stays visible', async () => {
       const w = makeWorld({ queryFacts: { resolve: () => { throw new Error('roster store unavailable') } } })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
@@ -589,8 +601,8 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
         .then((value) => String((value as { code?: string }).code ?? 'no-refusal'))
         .catch((error: unknown) => String((error as { code?: string }).code ?? (error as Error).message))
       expect(outcome).toContain('P_B_TEAM_WIRE_TARGET_MINT')
-      const row = (wiring as unknown as { queryFactsLedger: () => Array<{ admitFacts: unknown }> }).queryFactsLedger()[0]
-      expect(String((row?.admitFacts as { fault?: string } | undefined)?.fault)).toContain('roster store unavailable')
+      expect(w.events.some((event) => event.event === 'b-team-wire:query-facts-unresolved'
+        && String(event.fault).includes('roster store unavailable')), 'the read failure is observable, and unknown is never minted as empty').toBe(true)
       expect(w.walks).toHaveLength(0)
       expect(w.delegateEntries, 'nothing executes behind a query claim that cannot read its own target').toHaveLength(0)
     })

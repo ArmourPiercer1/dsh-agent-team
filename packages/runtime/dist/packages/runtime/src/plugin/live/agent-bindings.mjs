@@ -3542,9 +3542,18 @@ export function createAgentBindings(deps) {
               resolve: (name, addressedInstanceId) => {
                 const root = String(teamRoot)
                 if (name === 'team_list_templates') {
+                  // THE SAME SET the native list_templates effect answers with:
+                  // the bound blueprint's LEADER template plus every member
+                  // template (root 22:35 ①) - a member-only set is a different
+                  // set than the one the caller's own tool returns.
                   const blueprint = getBoundBlueprint(root)
+                  const leader = blueprint?.leader
+                  const leaderId = typeof leader === 'string' ? leader : String(leader?.templateId ?? '')
                   const members = Array.isArray(blueprint?.members) ? blueprint.members : []
-                  const templateIds = [...new Set(members.map((entry) => String(entry?.templateId ?? '')).filter((id) => id.length > 0))]
+                  const templateIds = [...new Set([
+                    ...(leaderId.length > 0 ? [leaderId] : []),
+                    ...members.map((entry) => String(entry?.templateId ?? '')),
+                  ])].filter((id) => id.length > 0)
                   return Object.freeze({ templateIds: Object.freeze(templateIds) })
                 }
                 const rows = domain.repositories.memberInstances.list(root)
