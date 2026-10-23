@@ -363,9 +363,11 @@ export function checkSchemaAgreement(root) {
   expectMinItems(entriesNode, 'entries', 1, "validateRegistry's 'no entries' rule");
   expectMinItems(props.owners, 'entry.owners', 1, 'the required-field rule, which treats an empty list as absent');
   // The opposite direction matters as much: `refs` is the one list the required-field
-  // rule names as allowed to be empty, so a schema claiming minItems there would forbid
-  // something the validator permits -- drift in the strict direction is still drift.
-  if (props.refs && typeof props.refs === 'object' && props.refs.minItems !== undefined) {
+  // rule names as allowed to be empty, so a schema claiming a positive floor there would
+  // forbid something the validator permits -- drift in the strict direction is still
+  // drift. Only a positive floor counts: `minItems: 0` says exactly what the validator
+  // already allows, and refusing it would be inventing a violation to look thorough.
+  if (props.refs && typeof props.refs === 'object' && Number(props.refs.minItems) > 0) {
     out.push({ code: 'SCHEMA_MINITEMS_UNEXPECTED', detail: `entry.refs: schema says minItems=${props.refs.minItems}, but the required-field rule explicitly allows an empty refs list` });
   }
   // Every artifact path goes through `typeof p !== 'string'`, so the element type is

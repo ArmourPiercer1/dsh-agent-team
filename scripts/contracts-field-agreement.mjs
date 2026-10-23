@@ -82,7 +82,7 @@ export const PAIRS = [
   { interface: 'ModelStateProvenanceDto', fields: 'MODEL_STATE_PROVENANCE_FIELDS' },
 ];
 
-const PROPERTY_RE = /^(readonly\s+)?([A-Za-z_$][\w$]*)\s*(\?)?\s*:\s*\S.*$/;
+const PROPERTY_RE = /^(readonly\s+)?([A-Za-z_$][\w$]*)\s*(\?)?\s*:\s*(.+)$/;
 
 /** Strip comments a property parser must not mistake for content. */
 function stripComments(lines) {
@@ -113,6 +113,7 @@ export function parseInterfaces(text) {
   const found = {};
   let cur = null;
   let depth = 0;
+  let insideNested = false;
   for (let i = 0; i < lines.length; i += 1) {
     const start = lines[i].match(/^export\s+interface\s+([A-Za-z0-9_]+)[^{]*\{/);
     if (start && !cur) {
@@ -123,26 +124,50 @@ export function parseInterfaces(text) {
     if (!cur) continue;
     const line = lines[i].trim();
     if (line === '' || line.startsWith('*') || line.startsWith('/*') || line.startsWith('//')) continue;
-    if (line === '}' || /^\}/.test(line)) {
+
+    // The body closes when brace depth returns to zero, not when a line happens to start
+    // with `}`. It used to be the latter, and it silently truncated: a property written as
+    // a multi-line object ended the interface at its own closing brace, so the nested
+    // member was adopted as a top-level field and every field after it vanished without a
+    // word. A set with holes is worse than a refusal -- it then agrees with a runtime array
+    // that omits the same names, and the comparison reports clean.
+    const opens = (line.match(/\{/g) || []).length;
+    const closes = (line.match(/\}/g) || []).length;
+    depth += opens - closes;
+    if (depth <= 0) {
       found[cur.name] = cur;
       cur = null;
       continue;
     }
-    depth += (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+
+    // A nested object, one line or several, is outside the subset this reader claims:
+    // refuse it at its start and ignore the interior already refused with it.
+    if (opens > 0) {
+      cur.notChecked.push(`L${i + 1}: nested object type is outside the parsed subset: ${line.slice(0, 72)}`);
+      insideNested = depth > 1;
+      continue;
+    }
+    if (insideNested) {
+      if (depth <= 1) insideNested = false;
+      continue;
+    }
+
     const clean = line.replace(/;$/, '');
+    if (/^\[.*\]\s*:/.test(clean) || /^readonly\s+\[/.test(clean)) {
+      cur.notChecked.push(`L${i + 1}: index signature: ${line.slice(0, 72)}`);
+      continue;
+    }
     const m = clean.match(PROPERTY_RE);
     if (!m) {
-      cur.notChecked.push(`L${i + 1}: ${line.slice(0, 72)}`);
+      cur.notChecked.push(`L${i + 1}: not a single-property declaration: ${line.slice(0, 72)}`);
       continue;
     }
-    // A nested object literal or an index signature on the same line would have matched
-    // PROPERTY_RE too. Those are not single-property lines, so they are refused, not read.
-    if (m[4] && m[4].includes('{')) {
+    // Group 4 is the type text, captured so this guard is reachable. With three groups the
+    // previous check read `m[4]`, always undefined: the inline-object refusal the header
+    // advertised had never run once, and EffectiveConfigDto was caught only because its
+    // inline object also happened to contain an index signature.
+    if (m[4].includes('{') || m[4].includes('}')) {
       cur.notChecked.push(`L${i + 1}: inline object type on a property line: ${line.slice(0, 72)}`);
-      continue;
-    }
-    if (/\[.*\]\s*:/.test(clean) || /^readonly\s+\[/.test(clean)) {
-      cur.notChecked.push(`L${i + 1}: index signature: ${line.slice(0, 72)}`);
       continue;
     }
     cur.fields.add(m[2]);
@@ -237,7 +262,7 @@ export function checkContractsFieldAgreement(root, opts = {}) {
   const notChecked = [];
   const unpaired = { interfaces: [], arrays: [] };
   const pairedInterfaces = new Set(pairs.map((p) => p.interface));
-  const pairedArrays = new Set(pairs.flatMap((p) => [p.fields, p.optional].filter(Boolean)));
+  const pairedArrays = new Set(pairs.flatMap((p) => [p.fields, p.optional, p.fieldsV1].filter(Boolean)));
 
   for (const pair of pairs) {
     const iface = interfaces[pair.interface];

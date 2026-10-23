@@ -23,7 +23,7 @@ import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
 import { checkGeneratedTarget } from './generated-write.mjs';
-import { checkContractsFieldAgreement, PAIRS } from './contracts-field-agreement.mjs';
+import { checkContractsFieldAgreement, parseInterfaces, PAIRS } from './contracts-field-agreement.mjs';
 import { GENERATED_FILES } from './generated-write.mjs';
 import { renderContractIndex, validateRegistry, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 
@@ -748,7 +748,10 @@ control('POS-15 a declaration and its runtime field set that agree produce no fi
     const res = checkContractsFieldAgreement(dir, { only: ['ThingDto'] });
     return [
       { ok: !res.refused, why: 'the fixture package was readable' },
-      { ok: res.findings.length === 0, why: res.findings.length ? res.findings.map((f) => f.code).join(',') : `20-field-name comparison clean: ${res.coverage.compared.join(' / ')}` },
+      { ok: res.findings.length === 0, why: res.findings.length ? res.findings.map((f) => f.code).join(',') : 'comparison clean: ' + res.coverage.compared.join(' / ') },
+      // A run that compared nothing would also report no findings. Pin the work it claims.
+      { ok: res.coverage.pairs_compared === 1, why: 'exactly one pair compared, not zero: pairs_compared=' + res.coverage.pairs_compared },
+      { ok: (res.coverage.not_checked || []).length === 0, why: 'nothing was skipped on the way: not_checked=' + JSON.stringify(res.coverage.not_checked) },
     ];
   } finally {
     PAIRS.pop();
@@ -782,6 +785,63 @@ control('NEG-70 a construct the reader cannot parse is NOT_CHECKED, never a pass
     return [
       { ok: res.findings.length === 0, why: 'no equality claim is made about a shape it could not read' },
       { ok: unchecked.includes('ThingDto'), why: 'the shape is listed as not checked: ' + (unchecked || 'empty') },
+    ];
+  } finally {
+    PAIRS.pop();
+  }
+});
+
+control('NEG-71 a nested object property is refused, one line or several', (d) => {
+  // Both layouts have to land in NOT_CHECKED. The single-line form used to be counted as
+  // an ordinary field because the guard read a capture group that did not exist; the
+  // multi-line form used to close the interface at its own `}`, adopting the nested member
+  // as a top-level field and dropping every field that followed it. Each was measured
+  // against the shipped code before this control existed, and both were wrong.
+  const inline = parseInterfaces('export interface ADto {\n  readonly a: string\n  readonly meta: { inner: string }\n  readonly b: string\n}\n').ADto;
+  const multi = parseInterfaces('export interface BDto {\n  readonly a: string\n  readonly meta: {\n    readonly inner: string\n  }\n  readonly b: string\n}\n').BDto;
+  const dir = contractsFixture('cfa-nested', `export const THING_FIELDS: readonly string[] = ['a', 'b']\n\nexport interface ThingDto {\n  readonly a: string\n  readonly meta: { inner: string }\n  readonly b: string\n}\n`);
+  PAIRS.push({ interface: 'ThingDto', fields: 'THING_FIELDS' });
+  try {
+    const res = checkContractsFieldAgreement(dir, { only: ['ThingDto'] });
+    const unchecked = (res.coverage.not_checked || []).join(' | ');
+    return [
+      { ok: inline.fields.has('meta') === false && inline.notChecked.length === 1, why: 'inline: fields=[' + [...inline.fields] + '] refused=' + inline.notChecked.length },
+      { ok: multi.fields.has('inner') === false && multi.notChecked.length === 1, why: 'multi-line: fields=[' + [...multi.fields] + '] refused=' + multi.notChecked.length },
+      { ok: multi.fields.has('a') && multi.fields.has('b'), why: 'the fields around the nested object survive: [' + [...multi.fields] + ']' },
+      { ok: res.findings.length === 0 && unchecked.includes('ThingDto'), why: 'no comparison is claimed for a shape that was refused (findings=[' + res.findings.map((f) => f.code) + '])' },
+    ];
+  } finally {
+    PAIRS.pop();
+  }
+});
+
+control('NEG-72 refs minItems 0 is agreement, only a positive floor is drift', (d) => {
+  const p = 'dev/engineering/registry.schema.json';
+  mutateSchema(d, (j) => { j.properties.entries.items.properties.refs.minItems = 0; });
+  const zero = run(SYNC, ['--check', '--root', d]);
+  const zeroOut = (zero.out.match(/SCHEMA_[A-Z_]+/g) || []).join(',');
+  mutateSchema(d, (j) => { j.properties.entries.items.properties.refs.minItems = 1; });
+  const one = expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_MINITEMS_UNEXPECTED');
+  return [
+    { ok: zero.code === 0 && !zeroOut.includes('SCHEMA_MINITEMS_UNEXPECTED'), why: 'minItems: 0 leaves an empty refs list legal, so it is not a tightening: ' + (zeroOut || 'no schema findings') },
+    one,
+  ];
+});
+
+control('NEG-73 an array compared as a v1 subset is not also reported unpaired', (d) => {
+  const dir = contractsFixture('cfa-v1dedupe', [
+    'export const BASE_FIELDS: readonly string[] = [', "  'a',", ']', '',
+    'export const WIDE_FIELDS: readonly string[] = [', "  ...BASE_FIELDS,", "  'b',", ']', '',
+    'export interface WideDto {', '  readonly a: string', '  readonly b: string', '}', '',
+  ].join('\n'));
+  PAIRS.push({ interface: 'WideDto', fields: 'WIDE_FIELDS', fieldsV1: 'BASE_FIELDS' });
+  try {
+    const res = checkContractsFieldAgreement(dir, { only: ['WideDto'] });
+    const unpairedArrays = res.coverage.unpaired.arrays.join(',');
+    return [
+      { ok: res.findings.length === 0, why: 'v1 subset and equality both hold: [' + res.findings.map((f) => f.code) + ']' },
+      { ok: res.coverage.subset_checks === 1, why: 'the v1 subset check ran: subset_checks=' + res.coverage.subset_checks },
+      { ok: !unpairedArrays.includes('BASE_FIELDS'), why: 'BASE_FIELDS took part in the comparison, so it must not be listed unpaired: [' + unpairedArrays + ']' },
     ];
   } finally {
     PAIRS.pop();
