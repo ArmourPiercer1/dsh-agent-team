@@ -2434,6 +2434,13 @@ export function createAgentBindings(deps) {
       // for the same reason: the arm site and the post-publish fill point sit
       // in different nested blocks of this setup body).
       let a5TeamOpsInject = null
+      // ⑤ THE REAL REGISTRATION SOURCE. The mount registers the B-TEAM family
+      // through the existing registry below, keyed by each placed definition's
+      // identity; this holder keeps those keys so the wiring can read the
+      // registration BACK through the registry's own public query
+      // (`a5GovernedFamilyFor`) at call time. No new getter, no second store:
+      // the durable registration IS the answer, and it is read fresh per call.
+      const a5TeamOpsFamilyKeys = []
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -3518,6 +3525,20 @@ export function createAgentBindings(deps) {
           }
           a5TeamOpsInject = Object.freeze({
             providerId: a5TeamOpsCfg.providerId,
+            // ⑤ THE PRODUCER: the version this mount's registration ACTUALLY
+            // carries, read through the registry's existing public query. The
+            // wiring compares every claim it mints against this, and again at
+            // the edge, so an approval that carries a version the published
+            // registration no longer carries cannot reach the lane.
+            registrationOf: () => {
+              for (const key of a5TeamOpsFamilyKeys) {
+                const entry = a5GovernedFamilyFor(key)
+                if (entry !== undefined && entry !== null) {
+                  return { adapterRevision: entry.adapterRevision, providerIdentity: entry.providerIdentity }
+                }
+              }
+              return undefined
+            },
             // ROOT 21:24/21:33: the QUERY rows' durable target is resolved
             // through the lane's OWN published authority queries — nothing is
             // invented, cached or mirrored into a second store:
@@ -4307,6 +4328,7 @@ export function createAgentBindings(deps) {
           }
           for (const registration of teamOpsRegistrations) {
             registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            a5TeamOpsFamilyKeys.push(registration.definitionIdentity)
             observations.push(`a5m2-b-team: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} record=${String(registration.recordIndex)})`)
           }
         }
