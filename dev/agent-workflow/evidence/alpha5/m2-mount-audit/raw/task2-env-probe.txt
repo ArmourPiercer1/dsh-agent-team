@@ -1,0 +1,23 @@
+# Task-2 environment probe — raw stdout/stderr (UTC 2026-10-23T06:53:27Z, dsh-plugin-dev)
+Linux dsh-plugin-dev 6.8.0-142-generic #142-Ubuntu SMP PREEMPT_DYNAMIC Wed Sep  2 14:24:27 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+--- command -v pwsh powershell pwsh-preview ---
+exit=1
+exit=1
+exit=1
+--- type -a ---
+bash: line 14: type: pwsh: not found
+bash: line 14: type: powershell: not found
+bash: line 14: type: pwsh-preview: not found
+--- uname -s ---
+Linux
+--- binfmt_misc listing ---
+total 0
+dr-xr-xr-x 2 nobody nogroup 0 Oct 23 06:53 .
+dr-xr-xr-x 1 nobody nogroup 0 Oct 23 06:53 ..
+(directory exists, zero entries; no windows/WSAInterop/PE binfmt file present)
+--- wine ---
+exit=1
+--- PATH/bin scan for pwsh|powershell|wine ---
+grep_exit=1
+--- pwsh --version ---
+not run: pwsh binary absent on this host

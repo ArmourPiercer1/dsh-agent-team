@@ -1,0 +1,8 @@
+PLANE_RESERVED_NATIVE len = 68 unique = 68
+takeover map = {"bash":["bash"],"read":["read"],"grep":[],"glob":[],"jobs":["job_output","job_list","job_kill"]}
+standard = 32 ptc = 32 cordis = 34 union = 34 intersection = 32
+cordis-only = ["cordis_inspect_list","cordis_inspect_query"]
+takeover rows = 5 ["bash","read","job_output","job_list","job_kill"]
+reserved-no-takeover = 29 ["pwsh","read_image","write","edit","glob","grep","skill","create_goal","get_goal","update_goal","exit_plan_mode","send_message","interrupt_agent","list_agents","subagent","list_subagent_models","subagent_fork","subagent_codex","subagent_claude_code","workflow","ralph","ask_user_question","todo_write","web_search","web_fetch","present","plugin_manager","cordis_inspect_list","cordis_inspect_query"]
+not in plane names = 0 []
+reserved-not-declared = 34 ["str_replace_editor","lsp","load_workspace_dependencies","terminal_open","terminal_close","terminal_list","terminal_read","terminal_send","terminal_signal","session_event_read","session_event_search","session_event_trace","session_search","session_trace","list_mcp_resources","list_mcp_resource_templates","read_mcp_resource","spawn_teammate","wait_agent","team_task_create","team_task_get","team_task_list","team_task_update","run_code","schedule_create","schedule_delete","schedule_list","schedule_update","stagehand_act","stagehand_extract","stagehand_navigate","stagehand_observe","stagehand_screenshot","stagehand_tabs"]
