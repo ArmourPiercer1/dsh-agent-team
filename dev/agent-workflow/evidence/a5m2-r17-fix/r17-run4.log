@@ -1,0 +1,22 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam
+RR1-FIXED kind=refused code=APPROVAL_DENIED drift=[{"stage":"pa-verifier","gate":"resolve","outcome":"drift","detail":"the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))","requestId":"ctrl-1kzvjuw1vwsjpp1t16l9q0o3"}]
+RR1 RESIDUAL (separate gate, recorded): the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-3 SYNTHETIC positive control (NOT the r17 shape - a deny rule the seam decides NON-covering): the fixed transport authorizes end to end
+RR3 kind=authorized code= drift=0
+
+ ✓ test/a5m2-r17-drift-repro-c1.test.ts (3 tests) 137ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:37:14
+   Duration  2.22s (transform 1.51s, setup 0ms, import 1.95s, tests 137ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

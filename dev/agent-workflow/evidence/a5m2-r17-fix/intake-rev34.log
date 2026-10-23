@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+ ❯ test/a5m2-g2-team-assembly.test.ts (0 test)
+ ✓ test/a5m2-g6-session-query-c1.test.ts (41 tests) 388ms
+ ✓ test/a5m2-g3-fsproc.test.ts (38 tests) 144ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g2-team-assembly.test.ts [ test/a5m2-g2-team-assembly.test.ts ]
+Error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mUnexpected token
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m test/a5m2-g2-team-assembly.test.ts:391:3 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m391 │[0m [38;5;249m<[0m[38;5;249m<[0m<<[38;5;249m<[0m[38;5;249m<[0m[38;5;249m<[0m[38;5;249m [0m[38;5;249mH[0m[38;5;249mE[0m[38;5;249mA[0m[38;5;249mD[0m
+ [38;5;240m    │[0m   ─┬  
+ [38;5;240m    │[0m    ╰── 
+[38;5;246m─────╯[0m
+
+  Plugin: vite:oxc
+  File: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime/test/a5m2-g2-team-assembly.test.ts
+ ❯ transformWithOxc ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:4103:19
+ ❯ TransformPluginContext.transform ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:4174:26
+ ❯ EnvironmentPluginContainer.transform ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:30932:51
+ ❯ loadAndTransform ../../node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:20671:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  79 passed (79)
+   Start at  17:05:12
+   Duration  1.16s (transform 1.12s, setup 0ms, import 1.39s, tests 532ms, environment 1ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

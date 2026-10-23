@@ -528,5 +528,14 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
     requireApprovalPlan: true,
   })
   if (read === undefined || read.planSnapshot === undefined) return undefined
-  return { ...read.facts, planSnapshot: read.planSnapshot, authorityGeneration: read.authorityGeneration }
+  // A5-M2 r17 FIX (center): the mount's lexical containment seam rides the
+  // RUNTIME facts object ONLY (never the durable contract): the decision-side
+  // verifier hands it to the pure core exactly as the production Part A and
+  // final edges do, so a subtree rule reads the SAME answer on both sides.
+  return {
+    ...read.facts,
+    planSnapshot: read.planSnapshot,
+    authorityGeneration: read.authorityGeneration,
+    ...(typeof m.fsSeam?.subtreeContains === 'function' ? { subtreeContains: m.fsSeam.subtreeContains } : {}),
+  }
 }
