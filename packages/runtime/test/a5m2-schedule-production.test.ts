@@ -566,17 +566,29 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
   // at root's unsigned grammar (target structure + rule vocabulary) — and
   // that boundary is pinned with ZERO durable residue, never papered over.
 
-  it('SP-R1 the full flight runs to the grammar boundary and leaves ZERO durable residue: refusal exact, no service entry, no Control row, no leaked plan fact, token SETTLED (replay refused)', async () => {
+  it('SP-R1 PAIRED refresh (combination consequence @5d4fb7322): the requires-approval flight now MINTS the pending request instead of dying pre-mint; the leader deny answers it exactly, body zero, delegated zero, the ONLY durable delta is the minted request plus its deny decision (recorded field-for-field), no leaked plan fact, token SETTLED (replay refused)', async () => {
     const world = await mountWorld('r1')
-    const stateBefore = JSON.stringify(await service.listControlState(P6T4_ROOT))
+    const stateBefore = await service.listControlState(P6T4_ROOT)
     const exec = execFor(world.agent)
-    await expect(world.listDef.execute({}, exec)).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
+    const flight = world.listDef.execute({}, exec)
+    const requestId = await denyFirstPending('r1')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
     expect(world.serviceCalls.list).toHaveLength(0)
     expect(delegatedRows(world)).toHaveLength(0)
-    expect(JSON.stringify(await service.listControlState(P6T4_ROOT)), 'the grammar refusal happens BEFORE any pending approval is minted — the call never becomes approvable').toBe(stateBefore)
+    // The COMBINATION's own diff, recorded: pre-combination this leg saw
+    // ZERO durable state (the unregistered-family deny preceded minting);
+    // post-combination the approved-shape flight leaves EXACTLY the minted
+    // request and its deny decision — no other durable movement.
+    const stateAfter = await service.listControlState(P6T4_ROOT)
+    expect(stateAfter.requests).toHaveLength(stateBefore.requests.length + 1)
+    expect(stateAfter.decisions).toHaveLength(stateBefore.decisions.length + 1)
+    expect(stateAfter.consumptions).toHaveLength(stateBefore.consumptions.length)
+    expect(stateAfter.abandonments).toHaveLength(stateBefore.abandonments.length)
+    expect(stateAfter.corruptLegs).toHaveLength(stateBefore.corruptLegs.length)
     expect(world.plane.livePaPlan.size).toBe(0)
     await expect(world.listDef.execute({}, exec)).rejects.toThrow(/exec-token-replay/)
-  })
+  }, 20_000)
 
   it('SP-R2 PAIRED (5a16c4aa): the ask-lane list claim now PASSES the signed B-SCHEDULE rule and MINTS the durable request (requestId defined — pre-combination it died unregistered before minting); the minted leg input carries the four-P-add block and the 11-leaf targetManifest with taskId null; the leader deny answer refuses the flight with the body never running', async () => {
     const world = await mountWorld('r2')
@@ -631,7 +643,13 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(world.serviceCalls.list).toHaveLength(0)
     await expect(world.listDef.execute({}, shared)).rejects.toThrow(/exec-token-replay/)
     const legsBefore = world.legInputs.length
-    await expect(world.listDef.execute({}, execFor(world.agent))).rejects.toThrow(/APPROVAL_DENIED/)
+    // PAIRED refresh (combination consequence @5d4fb7322): the fresh call
+    // MINTS its pending request now — the leader deny answers it; the
+    // cancelled flight left no lease in front of it.
+    const freshFlight = world.listDef.execute({}, execFor(world.agent))
+    const requestId = await denyFirstPending('r4')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(freshFlight).rejects.toThrow(/APPROVAL_DENIED/)
     expect(world.legInputs.length, 'the fresh call reached the Control leg — the cancelled flight left no lease in front of it').toBeGreaterThan(legsBefore)
     expect(world.plane.livePaPlan.size).toBe(0)
   })
