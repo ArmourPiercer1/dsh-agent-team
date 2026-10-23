@@ -36,6 +36,18 @@ no path by which this generator writes `graph.yaml`, and switching the old
 consumers is a separate, coordinated migration (E1 exit condition), not a
 consequence of these files existing.
 
+**Boundary of what this entry surface can resolve** -- written because a reader followed a pointer
+out of here and found nothing behind it. The four 20260829 frozen documents (Architecture / UI /
+Development Plan / Task Decomposition) are not merely missing from a worktree: they are absent
+from this repository's history. `git log --all --diff-filter=A --name-only` over `docs/plans/`
+lists only alpha.1-era files under `docs/plans/paused/`. So citations of the form `TaskDoc §11`,
+`Development Plan §17.2` or "the Architecture document" -- which appear in package code headers,
+and in the package READMEs that quote those headers faithfully -- are **historical references with
+no resolvable target in this checkout**. Read them as provenance, not as something to open. Do not
+close the gap by reconstructing them: a document written from memory while wearing an old
+citation would be worse than the dangling pointer it replaced. Where a rule actually binds
+behaviour, the live text is the `docs/plans/active/alpha5-tool-io-governance/` set named above.
+
 Regenerate: `pnpm docs:sync --write` (or the generator directly).
 The command that verifies freshness: `pnpm docs:sync --check` (run it before review; it is the
 gate this line's own controls exercise). **Nothing wires it into CI on this branch** -- that
@@ -109,14 +121,17 @@ a gap. Corrected per the responsibility layering, and the rule was not touched:
 - `verification_status` names **which layer is being claimed** — local work, a CI run, a real
   environment — and therefore which corroboration the rules demand of it.
 - `verified_tier` names **the verification responsibility and coverage** of the evidence
-  recorded in `verification_artifacts`, following the established acceptance levels
-  established acceptance levels as written in PR #355 at head
+  recorded in `verification_artifacts`, following the established acceptance levels written in
+  PR #355 at head
   `8f84a7845944964ef17e167aebfde8e2d9617570`, file
   `docs/plans/active/alpha5-convergence/PLAN-B-20261022.md` lines 157–159. **That file is not in
   this tree** -- the PR is open and unmerged, so the path resolves nowhere locally and no link
   check catches it. Read it as fetched:
   `git fetch origin refs/pull/355/head && git show 8f84a7845944964ef17e167aebfde8e2d9617570:docs/plans/active/alpha5-convergence/PLAN-B-20261022.md`.
-  The three levels below are what that text says:
+  Its state was verified on **2026-10-23 23:03: open, draft, unmerged, head
+  `8f84a7845944964ef17e167aebfde8e2d9617570`** -- a note about where this citation lives and how
+  fresh it is, not a downgrade of the user's Plan-B execution authorization, and not a reason to
+  stop using the definitions. The three levels below are what that text says:
   - **C1** — Adapter-local verification: one surface's interface, arguments, effects, native
     parity and the exact security negatives around it. A CI run may well execute C1.
   - **C2** — real-Host integration verification: the surface wired into the running assembly,
