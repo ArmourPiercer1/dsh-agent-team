@@ -3426,6 +3426,62 @@ export function createAgentBindings(deps) {
               }
             },
           } : {}),
+          // A5-M2 — PA owns the governed-read Ask before the native one, and
+          // the ONLY supplier of these ports is the ONE plane mount this agent
+          // already placed above (`a5PlaneValue`, set at the placement site and
+          // null when no plane was placed). Nothing is invented here:
+          //   open  — the plane's Part A for THIS exec, handed over BY
+          //           REFERENCE. The exec object that traversed the waterfall
+          //           is what travels, because the host's per-execution token
+          //           carried on it is the ONLY identity the read row redeems
+          //           against (a rebuilt or lookalike exec can never redeem the
+          //           hand-off — that is the real owner match, not a name
+          //           comparison).
+          //   close — what this exec still holds gets voided (idempotent; the
+          //           plane drops the plan fact it returns the correlation for).
+          //   onTerminal — the `'tools/result'` funnel, the ONE piece the glue
+          //           must supply because the plane owns no ctx: it registers
+          //           on the SAME agentCtx the plane was placed into, so the
+          //           terminal leg is handed the same exec object the pipeline
+          //           passed. The adapter's composite disposer (pushed into
+          //           `toolDisposers` right below) tears the terminal leg down
+          //           BEFORE the listener and the guard.
+          // ABSENT means absent: no plane placed, or a plane whose mount has no
+          // governed read row (`paReadHandoff` is undefined at the mount). Only
+          // then is the key omitted and today's pipeline is kept byte for byte,
+          // Alpha.4 Ask lane included. A face that EXISTS but is incomplete is
+          // NOT laundered into absence and NOT wrapped into looking whole — the
+          // `open`/`close` keys are passed through exactly as the plane holds
+          // them, so a missing one reaches the adapter and refuses the INSTALL
+          // with `pa-read-handoff-malformed`. Silently degrading a broken mount
+          // to the legacy lane would hide the very fault the reviewed
+          // fail-closed install exists to catch.
+          // ABSENT is decided by FIELD PRESENCE, not by whether a value looks
+          // usable, and no new abstraction is introduced to decide it:
+          //   no plane placed at all, OR a plane that never declared the
+          //     capability field (`'paReadHandoff' in plane` is false — an old
+          //     plane)  ->  the key is OMITTED and today's pipeline is kept
+          //     byte for byte, Alpha.4 Ask lane included.
+          //   the field IS declared — whatever it holds, including an explicit
+          //     `null` or an object missing `open`/`close`  ->  it is handed to
+          //     the adapter AS IT IS. `open`/`close` pass by reference, so a
+          //     missing one stays missing and the INSTALL is refused with
+          //     `pa-read-handoff-malformed`. Declaring the capability and
+          //     delivering it broken is a fault to surface, not an absence to
+          //     fall back from; wrapping it into wholeness, or reading a `null`
+          //     as "no hand-off", would hide exactly what the reviewed
+          //     fail-closed install exists to catch.
+          ...(a5PlaneValue === undefined
+            || a5PlaneValue === null
+            || (typeof a5PlaneValue === 'object' && !('paReadHandoff' in a5PlaneValue))
+            ? {}
+            : {
+                paReadHandoff: {
+                  open: a5PlaneValue.paReadHandoff?.open,
+                  close: a5PlaneValue.paReadHandoff?.close,
+                  onTerminal: (observer) => agentCtx.on('tools/result', observer),
+                },
+              }),
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },
