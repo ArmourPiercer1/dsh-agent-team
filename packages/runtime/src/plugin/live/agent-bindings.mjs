@@ -4048,6 +4048,30 @@ export function createAgentBindings(deps) {
                   onTerminal: (observer) => agentCtx.on('tools/result', observer),
                 },
               }),
+          // A5-M2 WRITE PORT (root 13:38 MIN fix; the SAME audited forwarding
+          // law as the read block above, one field at a time): the ONLY
+          // supplier is the ONE plane mount this agent placed, and the port is
+          // forwarded BY REFERENCE exactly as the plane holds it. ABSENT is
+          // decided by FIELD PRESENCE — no plane placed, or a plane that never
+          // declared the capability (`'paWriteHandoff' in plane` is false) —
+          // and only then is the key omitted and today's pipeline kept byte
+          // for byte, Alpha.4 Ask lane included. A declared-but-broken face is
+          // NOT laundered into absence: `open`/`close` pass through as held,
+          // and a missing one refuses the INSTALL (`pa-read-handoff-malformed`).
+          // `onTerminal` rides the SAME 'tools/result' funnel and the SAME
+          // composite disposer; the adapter subscribes every supplied port and
+          // the terminal leg closes idempotently per port.
+          ...(a5PlaneValue === undefined
+            || a5PlaneValue === null
+            || (typeof a5PlaneValue === 'object' && !('paWriteHandoff' in a5PlaneValue))
+            ? {}
+            : {
+                paWriteHandoff: {
+                  open: a5PlaneValue.paWriteHandoff?.open,
+                  close: a5PlaneValue.paWriteHandoff?.close,
+                  onTerminal: (observer) => agentCtx.on('tools/result', observer),
+                },
+              }),
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },
