@@ -550,6 +550,14 @@ const SCANNED_PATHS_A5M2B18: readonly string[] = [
 
 
 
+const SCANNED_PATHS_A5M2B21: readonly string[] = [
+  // A5M2-BATCH21 (2026-10-23, center booking): B-SCHEDULE production round
+  // (3e88b2822) adds ONE scannable path - the production spec; the edited
+  // shared mounts, the wiring module growth and the d.mts ride ALREADY-COUNTED
+  // paths (B19). Zero new denylist vocabulary.
+  'packages/runtime/test/a5m2-schedule-production.test.ts',
+]
+
 const SCANNED_PATHS_A5M2B20: readonly string[] = [
   // A5M2-BATCH20 (2026-10-23, center booking): the G6 PRODUCTION assembly round
   // (992df168f trio on feat/a5m2-wire-g6) adds ONE scannable file - the plane
@@ -3197,6 +3205,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B18.length +
         SCANNED_PATHS_A5M2B19.length +
         SCANNED_PATHS_A5M2B20.length +
+        SCANNED_PATHS_A5M2B21.length +
         SCANNED_PATHS_A5M2G1W.length,
     )
     expect(scanResult.files.length).toBe(
@@ -3283,6 +3292,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B18.length +
         SCANNED_PATHS_A5M2B19.length +
         SCANNED_PATHS_A5M2B20.length +
+        SCANNED_PATHS_A5M2B21.length +
         SCANNED_PATHS_A5M2G1W.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -3389,6 +3399,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5M2B18,
       ...SCANNED_PATHS_A5M2B19,
       ...SCANNED_PATHS_A5M2B20,
+      ...SCANNED_PATHS_A5M2B21,
       ...SCANNED_PATHS_A5M2G1W,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)

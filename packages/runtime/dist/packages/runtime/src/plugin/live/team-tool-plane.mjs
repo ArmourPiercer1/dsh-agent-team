@@ -97,12 +97,23 @@ export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'tea
 /** A5-M2 B-SESSION: the FIXED native spelling the governed todo row mounts at
  *  (closed key + injected arm; never a config spelling — see the todo entry in
  *  PLANE_SUPPORTED_NATIVE_TAKEOVERS and the todo gate in the assembly). */
+/** B-SCHEDULE lane helper (the closed record test used by the schedule
+ *  inject validation): a plain object and nothing else. */
+const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
+
 export const A5_TODO_MOUNT_NAME = 'todo_write'
 export const A5_WRITE_MOUNT_NAME = 'write'
 // A5-M2 B-IMAGE (CENTER vertical): the governed image-read row mounts at the
 // FIXED native spelling 'read_image' (a PLANE_RESERVED_NATIVE name, pinned to
 // the 639 host face) behind the closed `imageEnabled` key.
 export const A5_IMAGE_MOUNT_NAME = 'read_image'
+// A5M2 B-SCHEDULE controlled rows (root 17:38 on the f541 narrow-PASSed
+// adapter + 18:11 production continuation): the FIXED native spellings of the
+// TWO enabled operations. schedule_create / schedule_update have NO row, NO
+// arm and NO registration here — the TRIGGER_GOVERNANCE gap is open and they
+// are not enabled.
+export const A5_B_SCHEDULE_LIST_MOUNT_NAME = 'schedule_list'
+export const A5_B_SCHEDULE_DELETE_MOUNT_NAME = 'schedule_delete'
 
 /** A5-M2 G1 PURE-QUERY (root 15:2x ruling): the FIXED native spellings of the
  *  three READ-SIDE records of the frozen dispatch index that this round wires
@@ -1157,6 +1168,65 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamCeiling: sessionQueryInjectRaw.teamCeiling,
       declaredMount: sessionQueryInjectRaw.declaredMount,
       ...(sessionQueryInjectRaw.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInjectRaw.maxSearchResults }),
+    })
+  }
+
+  // A5M2 B-SCHEDULE (root 17:38 + 18:11): the SAME-shaped CLOSED boolean gate
+  // and the SAME pairing law as the image row, over a CLOSED inject key set —
+  // exactly {list, delete}. A create/update key inside the schedule inject is
+  // a root-ruling breach and a config defect: refused, never ignored. The arm
+  // FACTORY law is the image timing verbatim: the plane calls createArm at
+  // the placement moment with the def it actually placed and the factory
+  // binds definitionIdentityOf(that def).
+  const scheduleEnabledRaw = input.plane?.scheduleEnabled
+  if (scheduleEnabledRaw !== undefined && typeof scheduleEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CFG_INVALID',
+      message: `planeCfg.scheduleEnabled must be a boolean when present - got ${JSON.stringify(scheduleEnabledRaw) ?? String(scheduleEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const scheduleEnabled = scheduleEnabledRaw === true
+  const scheduleInjectRaw = input.backends?.schedule
+  const scheduleInjectInvalid = (why) => ({ ok: false, code: 'SCHEDULE_ARM_INJECT_INVALID', message: `backends.schedule: ${why}` })
+  if (scheduleEnabled && scheduleInjectRaw === undefined) {
+    return scheduleInjectInvalid('scheduleEnabled is true but no governed schedule arms are injected - the mount would mask the reserved native names with nothing behind them; there is no fallback row and no silent disable')
+  }
+  if (!scheduleEnabled && scheduleInjectRaw !== undefined) {
+    return scheduleInjectInvalid('arms are injected while scheduleEnabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let scheduleInject = null
+  if (scheduleInjectRaw !== undefined) {
+    if (!isRecord(scheduleInjectRaw)) {
+      return scheduleInjectInvalid('the inject must be a record with exactly the closed keys {list, delete}')
+    }
+    const injectKeys = Object.keys(scheduleInjectRaw).slice().sort()
+    if (injectKeys.length !== 2 || injectKeys[0] !== 'delete' || injectKeys[1] !== 'list') {
+      return scheduleInjectInvalid(`the inject carries the closed key set {list, delete} and NOTHING else - answered [${Object.keys(scheduleInjectRaw).join(', ')}]; a schedule_create/schedule_update arm does not exist (the TRIGGER_GOVERNANCE gap keeps those operations not-enabled)`)
+    }
+    const entryBad = (label, entry) => entry === undefined || !isRecord(entry)
+      ? `${label}: the entry must be a record (createArm/description/parameters/output)`
+      : typeof entry.createArm !== 'function'
+        ? `${label}.createArm must be a function (def) -> the governed B-SCHEDULE arm - the arm binds its definitionIdentity off the definition THIS plane actually places (the image timing verbatim)`
+        : (typeof entry.description !== 'string' || entry.description.length === 0)
+          ? `${label}.description must be the CAPTURED native description bytes - same name, same meaning, never a plane-invented wording`
+          : (entry.parameters === undefined || entry.parameters === null || typeof entry.parameters !== 'object')
+            ? `${label}.parameters must be the CAPTURED native parameters schema - the identity tie can only hold when the mount IS the native definition face`
+            : (!isRecord(entry.output) || typeof entry.output.render !== 'function')
+              ? `${label}.output must be the CAPTURED native output face ({schema, render}) - the model-facing rendering is the native's own, never a plane invention`
+              : undefined
+    for (const label of ['list', 'delete']) {
+      const why = entryBad(label, scheduleInjectRaw[label])
+      if (why !== undefined) return scheduleInjectInvalid(why)
+    }
+    for (const taken of [readName, writeInject !== null ? A5_WRITE_MOUNT_NAME : undefined]) {
+      if (taken === A5_B_SCHEDULE_LIST_MOUNT_NAME || taken === A5_B_SCHEDULE_DELETE_MOUNT_NAME) {
+        return scheduleInjectInvalid(`'${taken}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
+      }
+    }
+    scheduleInject = Object.freeze({
+      list: Object.freeze({ createArm: scheduleInjectRaw.list.createArm, description: scheduleInjectRaw.list.description, parameters: scheduleInjectRaw.list.parameters, output: Object.freeze({ schema: scheduleInjectRaw.list.output.schema, render: scheduleInjectRaw.list.output.render }) }),
+      delete: Object.freeze({ createArm: scheduleInjectRaw.delete.createArm, description: scheduleInjectRaw.delete.description, parameters: scheduleInjectRaw.delete.parameters, output: Object.freeze({ schema: scheduleInjectRaw.delete.output.schema, render: scheduleInjectRaw.delete.output.render }) }),
     })
   }
 
@@ -3534,6 +3604,201 @@ export function createTeamToolPlaneAssembly(input = {}) {
         : undefined
     if (armBad !== undefined) return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${armBad}` }
   }
+
+  // ── A5M2 B-SCHEDULE governed rows (root 18:11 production continuation) ──
+  // THE TODO/WRITE SINGLE-FLIGHT PATTERN, body swapped to the root ruling
+  // "consumedProof → native → dispose": the row's BODY is the arm's captured
+  // NATIVE execute (the native closure IS the live rootCtx.schedule read at
+  // :443/:460/:484/:515, the owner-reference identity law and the host's own
+  // error class — no stand-in service, no replacement body). The PA legs are
+  // the REAL plane edges: paAdmit.open (the durable Control leg composes the
+  // B-SCHEDULE family manifest from the walk's four P-adds and checks it
+  // against the mount's own registration), paAdmit.edge (the ONE
+  // assembly.consumeForExecution) and the row's DEMAND for the one-shot
+  // consumedProof witness. Every early exit (deny/cancelled/throw before the
+  // edge) leaves the plan fact to the open leg's own finally and settles the
+  // token in the row's finally — the waiting-cancel lease cleanup law, no
+  // leak on any path. NO hand-off port: the schedule rows ask their effect-
+  // set question INSIDE the row (the todo pattern); the guard adapter needs
+  // no new port and no other lane moves.
+  let scheduleCorrSeq = 0
+  let scheduleArms = null // { list, delete } — bound at the placement moment
+  const scheduleRowExecute = (rowKey) => async (raw, exec) => {
+    const mountName = rowKey === 'list' ? A5_B_SCHEDULE_LIST_MOUNT_NAME : A5_B_SCHEDULE_DELETE_MOUNT_NAME
+    const arm = scheduleArms === null ? null : scheduleArms[rowKey]
+    if (arm === null || arm === undefined) {
+      throw new Error(`refused-${mountName} arm-unavailable — no governed ${mountName} arm is placed on this mount (or it was torn down); there is no native fallback and no degraded lane`)
+    }
+    const execToken = exec?.token
+    const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+    if (tokenKey === undefined) {
+      throw new Error(`refused-${mountName} exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight on the REAL exec.token (the shared todo/write/image ledger law)`)
+    }
+    const priorFlight = governedTokenLedger.get(tokenKey)
+    if (priorFlight !== undefined) {
+      throw new Error(`refused-${mountName} exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (todo/write/image/schedule share ONE token ledger; one registry token runs exactly one governed flight and a settled token is never re-armed)`)
+    }
+    scheduleCorrSeq += 1
+    const correlation = `plane-schedule:${realmId}-${String(scheduleCorrSeq)}`
+    governedTokenLedger.set(tokenKey, { correlation, settled: false })
+    const signal = exec?.signal
+    try {
+      // OWNER-CURRENT BEFORE THE FREEZE (the fix-4 leg verbatim, the same
+      // authority leg as todo/write/image and paAdmitPartA): a faulting leg
+      // is OBSERVED, never absorbed.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-schedule-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
+      let classified
+      try {
+        classified = arm.classify(raw)
+      } catch (error) {
+        throw new Error(`refused-${mountName} arm-unavailable — the governed schedule arm could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
+      }
+      if (classified.ok !== true || classified.targetManifest === undefined || classified.reviewPayload === undefined) {
+        // Pure-lexical refusals land HERE with zero admission and zero
+        // native entry — the arm is stateless pre-edge (the image law).
+        throw new Error(`refused-${mountName} ${classified.code ?? 'P_B_SCHEDULE_CLASSIFY_INVALID'} — ${classified.detail ?? 'the governed classify refused this call before admission'}`)
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        throw new Error(`refused-${mountName} effects-unparsable — the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+      }
+      const walk = {
+        realmId,
+        callId: correlation,
+        // The INDEPENDENT COMPLETE digest over the ORIGINAL parameters (the
+        // seam-#1 law the image row carries): the same walk object across
+        // open→edge IS the pairing consistency.
+        parametersFingerprint: canonicalJsonFingerprint({
+          realmId,
+          toolName: mountName,
+          parameters: raw,
+          effects: classified.effects,
+          targetManifest: classified.targetManifest,
+        }),
+        requestedEffects: parsedEffects.value,
+        toolName: mountName,
+        // The family block: the arm's review payload's four P-adds at FULL
+        // VALUE (载荷法). The bridge composes the durable manifest from this
+        // and checks it against the mount's own registration.
+        family: Object.freeze({
+          familyId: classified.reviewPayload.familyId,
+          adapterRevision: classified.reviewPayload.adapterRevision,
+          providerIdentity: classified.reviewPayload.providerIdentity,
+          targetManifest: classified.reviewPayload.targetManifest,
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      }
+      const opened = await paAdmit.open(walk)
+      if (opened.kind === 'deny') {
+        throw new Error(`refused-${mountName} ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (zero native entries)`)
+      }
+      if (opened.cancelled === true) {
+        throw new Error(`${mountName} · cancelled — the call was cancelled at the PA edge before admission (zero native entries; the plan fact dies with the open leg's own finally)`)
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        throw new Error(`refused-${mountName} APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal arm state never substitutes for the kernel answer`)
+      }
+      const edge = await paAdmit.edge({
+        ...walk,
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      })
+      if (edge.kind === 'deny') {
+        throw new Error(`refused-${mountName} ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (zero native entries)`)
+      }
+      if (edge.cancelled === true) {
+        throw new Error(`${mountName} · cancelled — the call was cancelled at the execution edge (the approval stays unspent and is never replayed)`)
+      }
+      // `consumedProof` is produced ONLY from the REAL final edge's success
+      // branch (the one-shot assembly.consumeForExecution witness at the
+      // plane's :1634-1657 edge) — the row DEMANDS it; the native body never
+      // runs on a self-attested consumption.
+      const proof = edge.consumedProof
+      if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+        throw new Error(`refused-${mountName} CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the row never self-attests consumption from a missing denial and the native body does not run`)
+      }
+      // THE NAMED race (fix-3 law): between the REAL consume and the body's
+      // first microtask an abort can still land. The consumed grant is ledger
+      // truth and NEVER rolls back; the body that never started entered the
+      // native ZERO times.
+      if (signal?.aborted === true) {
+        throw new Error(`${mountName} · cancelled — the call was aborted after the execution edge consumed the grant and before the body began (the consumption is a settled fact and is never rolled back; zero native entries)`)
+      }
+      const ran = await arm.execute(classified.plan, exec)
+      if (ran.ok !== true) {
+        const risk = []
+        if (ran.sideEffectPossible === true) risk.push('side-effect-possible=true')
+        const error = new Error(`refused-${mountName} ${ran.code ?? 'P_B_SCHEDULE_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the body'}${risk.length > 0 ? ` · ${risk.join(' · ')}` : ''}`)
+        if (ran.sideEffectPossible === true) error.sideEffectPossible = true
+        throw error
+      }
+      observe(`a5m2-schedule-row: ${mountName} native-settled call=${correlation} grant=${String(proof.grant.grantId).slice(0, 12)}`)
+      return ran.value
+    } finally {
+      // Every path settles the token (shared ledger; used identities are
+      // NEVER evicted; the map dies with the mount — the todo law verbatim).
+      governedTokenLedger.set(tokenKey, { correlation, settled: true })
+    }
+  }
+  const scheduleDefs = scheduleInject === null ? [] : [
+    Object.freeze({
+      name: A5_B_SCHEDULE_LIST_MOUNT_NAME,
+      description: scheduleInject.list.description,
+      parameters: scheduleInject.list.parameters,
+      output: scheduleInject.list.output,
+      execute: scheduleRowExecute('list'),
+      presentCall: (args) => ({ card: 'generic', title: 'List reminders (governed)', kind: 'read', rawInput: args }),
+    }),
+    Object.freeze({
+      name: A5_B_SCHEDULE_DELETE_MOUNT_NAME,
+      description: scheduleInject.delete.description,
+      parameters: scheduleInject.delete.parameters,
+      output: scheduleInject.delete.output,
+      execute: scheduleRowExecute('delete'),
+      presentCall: (args) => ({ card: 'generic', title: 'Delete reminder (governed)', kind: 'other', rawInput: args?.id }),
+    }),
+  ]
+  if (scheduleInject !== null) {
+    // THE PLACEMENT MOMENT (the image timing verbatim): the arms are
+    // constructed HERE over the defs THIS plane actually placed; a factory
+    // that throws, or an arm that answers less than the governed B-SCHEDULE
+    // surface, refuses the ASSEMBLY — never a half-wired row.
+    const scheduleArmBad = (expectedName, arm, placedDef) => arm === undefined || arm === null
+      ? 'the factory answered no arm'
+      : (typeof arm.classify !== 'function' || typeof arm.execute !== 'function' || typeof arm.drain !== 'function'
+              || arm.familyId !== 'B-SCHEDULE' || typeof arm.adapterRevision !== 'number'
+              || typeof arm.definitionIdentity !== 'string' || arm.definitionIdentity.length === 0
+              || arm.definitionIdentity !== String(definitionIdentityOf(placedDef))
+              || typeof arm.providerId !== 'string' || arm.providerId.length === 0
+              || arm.name !== expectedName)
+        ? `the answered arm is not the governed B-SCHEDULE surface for '${expectedName}' (classify/execute/drain + family facts + the definitionIdentity of the def THIS plane placed)`
+        : undefined
+    const built = { }
+    for (const [rowKey, def] of [['list', scheduleDefs[0]], ['delete', scheduleDefs[1]]]) {
+      let arm
+      try {
+        arm = scheduleInject[rowKey].createArm(def)
+      } catch (error) {
+        return { ok: false, code: 'SCHEDULE_ARM_INJECT_INVALID', message: `backends.schedule.${rowKey}.createArm refused the placed definition: ${String(error?.message ?? error).slice(0, 200)}` }
+      }
+      const why = scheduleArmBad(rowKey === 'list' ? A5_B_SCHEDULE_LIST_MOUNT_NAME : A5_B_SCHEDULE_DELETE_MOUNT_NAME, arm, def)
+      if (why !== undefined) return { ok: false, code: 'SCHEDULE_ARM_INJECT_INVALID', message: `backends.schedule.${rowKey}: ${why}` }
+      built[rowKey] = arm
+    }
+    scheduleArms = Object.freeze(built)
+  }
   const imageDefs = imageDef === null ? [] : [imageDef]
   // ── A5-M2 G1 PURE-QUERY rows (Gate 0f) ─────────────────────────────────
   // Each row is a DEFINITION THIS plane places at the record's FIXED native
@@ -3817,9 +4082,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && scheduleDefs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...scheduleDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -4059,6 +4324,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // token-ledger release below.
             if (g6Wiring !== null) g6Wiring.drain()
             g6TokenLedger.clear()
+            // B-SCHEDULE: the same teardown law — new calls refuse at both
+            // legs (arm classify and the assembly row); committed durable
+            // state is untouched (new-call prohibition ONLY).
+            if (scheduleArms !== null) {
+              scheduleArms.list.drain()
+              scheduleArms.delete.drain()
+            }
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the
