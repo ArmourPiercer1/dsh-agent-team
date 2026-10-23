@@ -29,4 +29,8 @@ export { runToolCall } from './pipeline.js';
 // which order) stays with the assembler — GLUE-4 owns the scoped-mount
 // ruling; this lane only produces the definitions and never registers.
 export { createGovernedToolDefinitions, REFUSAL_PREFIX } from './register.js';
+// M2-WRITE-01 — the governed WRITE slice (B-FS lane): pure lexical anchoring +
+// argument view + the admission-gated executor port. Like the rest of this
+// barrel it only PRODUCES; registration/mount stays with the assembler.
+export { WRITE_SLICE_REFUSAL_CLASSES, parseWriteSliceArgs, lexicalWriteAnchor, createGovernedWriteExecutor, } from './write-slice.js';
 //# sourceMappingURL=index.js.map

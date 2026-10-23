@@ -575,11 +575,163 @@ export const PA_CONTROL_MANIFEST_RUNGS = ['member', 'leader', 'human-user', 'hum
 /** Strict field-by-field parse of a manifest candidate (the marker is the
  *  entry; a present marker that fails the shape is NOT a manifest — the
  *  request is malformed, no row). Returns undefined on ANY defect. */
+/** Losslessness of a value destined for the durable manifest: JSON-representable
+ *  all the way down. undefined-valued keys, NaN and Infinity are refused HERE rather
+ *  than being dropped or nullified by a later stringify - a hash computed over bytes
+ *  that silently lost a field would approve a question nobody asked. */
+/** Losslessness of a value destined for the durable manifest: JSON-representable at
+ *  EVERY level - objects, arrays, and objects nested inside arrays. The point of the
+ *  walk is that it runs on the RAW value, before any stringify or lossless-rewrite step
+ *  could drop a member: a digest computed over bytes that silently lost a field would
+ *  approve a question nobody asked. Mirrors the shape the contracts boundary
+ *  (`isRemoteSafeJsonValue`) accepts, so the two ends cannot drift apart. */
+export function isLosslessJsonValue(value) {
+    if (value === null)
+        return true;
+    switch (typeof value) {
+        case 'boolean':
+        case 'string':
+            return true;
+        case 'number':
+            return Number.isFinite(value);
+        case 'object': {
+            if (Array.isArray(value)) {
+                // By INDEX, not Array.every: every skips holes, and JSON.stringify renders a
+                // hole as null - the exact silent rewrite this walk exists to refuse.
+                for (let index = 0; index < value.length; index += 1) {
+                    if (!(index in value))
+                        return false;
+                    if (!isLosslessJsonValue(value[index]))
+                        return false;
+                }
+                return true;
+            }
+            if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)
+                return false;
+            return Object.entries(value).every(([key, item]) => key.length > 0
+                && key !== '__proto__' && key !== 'prototype' && key !== 'constructor'
+                && isLosslessJsonValue(item));
+        }
+        default:
+            // undefined, function, symbol, bigint: all of them are things JSON would drop,
+            // throw on, or quietly rewrite - never a member of an approved question.
+            return false;
+    }
+}
+/** The family block's strict parse. Returns `undefined` when the row bears NO family
+ *  field at all (a legacy row - original bytes, original meaning), the parsed block
+ *  when all four parse, and `'invalid'` when the block is partially present or a
+ *  member is malformed: the caller fails the whole manifest in that case. */
+export function parsePaManifestFamilyBlock(v) {
+    const present = v.familyId !== undefined || v.adapterRevision !== undefined
+        || v.providerIdentity !== undefined || v.targetManifest !== undefined;
+    if (!present)
+        return undefined;
+    if (typeof v.familyId !== 'string' || v.familyId.length === 0 || v.familyId.length > 128)
+        return 'invalid';
+    if (typeof v.adapterRevision !== 'number' || !Number.isInteger(v.adapterRevision) || v.adapterRevision < 0)
+        return 'invalid';
+    if (typeof v.providerIdentity !== 'string' || v.providerIdentity.length === 0 || v.providerIdentity.length > 512)
+        return 'invalid';
+    // A target manifest is an OBJECT of facts; and it must be lossless at every level.
+    // No stringify comparison here on purpose: comparing two lossy renderings of the same
+    // input proves nothing - the walk above is what decides.
+    if (typeof v.targetManifest !== 'object' || v.targetManifest === null || Array.isArray(v.targetManifest))
+        return 'invalid';
+    if (!isLosslessJsonValue(v.targetManifest))
+        return 'invalid';
+    return {
+        familyId: v.familyId,
+        adapterRevision: v.adapterRevision,
+        providerIdentity: v.providerIdentity,
+        targetManifest: v.targetManifest,
+    };
+}
+export const PA_FAMILY_TARGET_RULES = Object.freeze({
+    'B-SESSION': Object.freeze({
+        required: Object.freeze({
+            operation: 'string',
+            agentId: 'string',
+            sessionHeaderId: 'string',
+            todosDigest: 'string',
+            counts: 'countsTriple',
+            allowParallelPolicy: 'boolean',
+            paramFingerprint: 'string',
+        }),
+        currentFields: Object.freeze(['operation', 'agentId', 'sessionHeaderId']),
+    }),
+    'B-IMAGE': Object.freeze({
+        required: Object.freeze({
+            familyId: 'string',
+            adapterRevision: 'nonNegativeInt',
+            operation: 'string',
+            realmId: 'string',
+            canonicalTarget: 'string',
+            declaredMediaType: 'string',
+            byteCap: 'nonNegativeInt',
+            byteCapSource: 'string',
+            businessObligations: 'obligations',
+        }),
+        currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget', 'declaredMediaType']),
+    }),
+});
+function isPaFamilyTargetField(kind, value) {
+    switch (kind) {
+        case 'string': return typeof value === 'string' && value.length > 0;
+        case 'boolean': return typeof value === 'boolean';
+        case 'nonNegativeInt': return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+        case 'countsTriple': {
+            if (typeof value !== 'object' || value === null || Array.isArray(value))
+                return false;
+            const keys = Object.keys(value);
+            if (keys.length !== 3)
+                return false;
+            return ['pending', 'inProgress', 'completed'].every((k) => isPaFamilyTargetField('nonNegativeInt', value[k]));
+        }
+        case 'obligations': {
+            if (!Array.isArray(value) || value.length === 0)
+                return false;
+            return value.every((item) => typeof item === 'object' && item !== null && !Array.isArray(item));
+        }
+    }
+}
+/** The pure-data structure check the leg runs BEFORE the durable row: unknown family,
+ *  missing field, wrong field type, extra key - each returns the offending field so the
+ *  refusal names what the family's own typed plan asked for. Zero effect, zero I/O. */
+export function validatePaFamilyTarget(familyId, target) {
+    const rule = PA_FAMILY_TARGET_RULES[familyId];
+    if (rule === undefined)
+        return `familyId: no target structure is registered for '${familyId}'`;
+    if (typeof target !== 'object' || target === null || Array.isArray(target))
+        return 'target: not an object';
+    const record = target;
+    for (const [field, kind] of Object.entries(rule.required)) {
+        if (!(field in record))
+            return `${field}: required by the ${familyId} typed plan, absent`;
+        if (!isPaFamilyTargetField(kind, record[field]))
+            return `${field}: not a ${kind}`;
+    }
+    for (const field of Object.keys(record)) {
+        if (!(field in rule.required))
+            return `${field}: not part of the ${familyId} typed plan`;
+    }
+    return undefined;
+}
+/** The guard's current-target comparison: the approved target's pure-data fields
+ *  restated by THIS call's trusted facts must still hold. Facts never come from the
+ *  approved manifest (that would be the row quoting itself); fields outside the
+ *  family's currentFields are not compared here by design - they are the execution
+ *  edge's business, after approval. */
 export function parsePaControlManifest(value) {
     if (typeof value !== 'object' || value === null)
         return undefined;
     const v = value;
     if (v.schema !== PA_CONTROL_MANIFEST_SCHEMA)
+        return undefined;
+    // A5-M2: the family block is parsed up front so a partially-present block fails the
+    // whole manifest BEFORE any other field is trusted (never a silently smaller row).
+    const familyBlock = parsePaManifestFamilyBlock(v);
+    if (familyBlock === 'invalid')
         return undefined;
     const str = (x, max) => typeof x === 'string' && x.length > 0 && x.length <= max ? x : undefined;
     const rung = (x) => typeof x === 'string' && PA_CONTROL_MANIFEST_RUNGS.includes(x) ? x : undefined;
@@ -701,6 +853,7 @@ export function parsePaControlManifest(value) {
             assurance: b.assurance,
         },
         member: { teamSessionId, instanceId },
+        ...(familyBlock === undefined ? {} : familyBlock),
     };
 }
 const PA_MANIFEST_NOT_EFFECT_SET = Object.freeze({ state: 'not-effect-set' });

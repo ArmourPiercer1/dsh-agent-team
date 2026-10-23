@@ -14,15 +14,33 @@
  * arms this row. An unarmed row is returned honestly (`active: false` +
  * code) and the entry mounts NOTHING — restrict-first.
  *
+ * APPROVAL (ROOT 07:38 GROUP 3 + ROOT 08:4x C2): the armed row REQUIRES BOTH
+ * `grantAuthority` (center-edge consume port) AND `factsSource` (center-edge
+ * ledger capture: correlation ids → trusted call facts — full effects set,
+ * generations, member/call identity). The presented grant/binding documents
+ * never travel into the judgement path. This row owns NO approval logic; a
+ * missing port is a typed decline, never a permissive default.
+ *
+ * LIFECYCLE (ROOT 07:38 GROUP 5 + ROOT 08:4x C3): ONE closed state covers
+ * EVERY exported reference — the row exports NO raw gateway object (the
+ * pre-fix counterexample c123-before C3 showed an exported raw handle
+ * transacting after close); the GATEWAY ITSELF consults the lifecycle on
+ * entry and after every await (web-gateway/index.ts LIFECYCLE LAW). Cancellation
+ * travels per call as `callWeb(request, { signal })`; `close()` additionally
+ * ABORTS the row signal, which the gateway merges into every seam call, so
+ * in-flight transport is DRAINED (the provider sees abort; the call settles
+ * cancelled — never a silent continue). Cancellation is checked BEFORE the
+ * consume boundary ⇒ zero consume (cancel-first, measured in-spec). The
+ * closed flag is one-way; a dropped Map entry in the entry's close() is NOT
+ * a stop: the row itself must be dead.
+ *
  * PROVIDER TRUTH: this row ships no destination constant and selects no
- * provider. The search arm's origin comes from `resolveSearchOrigin`, the
- * entry-injected reader over the REAL installed provider's config (host
- * `web-search-deepseek/src/provider.ts:34/:217` @639ed01539); missing
- * provider/credential surfaces as the seam's typed code through the gateway's
- * mapped refusal. Retrieval delegates to `ctxWeb` (the Host WebRuntime,
- * `ctx.web.fetch/search` @ web/src/index.ts:157/:140): the production
- * provider's DNS/IP law, per-hop redirect revalidation and connection pin
- * stay in the chain untouched (B-WEB contract; no weaker copy anywhere).
+ * provider. Retrieval delegates to `ctxWeb` (the Host WebRuntime,
+ * `ctx.web.fetch/search` @ web/src/index.ts:140/:157); provider SELECTION is
+ * the seam's own call-time law (resolveProvider, web/src/index.ts:137-164)
+ * and is never mirrored here. The search arm's origin comes from a TRUSTED
+ * reader built by `boundSearchOriginSource` (root 07:38 group 4): every
+ * source is injected by the entry — this file reads no env itself.
  *
  * PLANE HONESTY: this is a CONNECTOR row, not a plane row — it takes no
  * takeover-table entry, and `PLANE_RESERVED_NATIVE`'s anti-impersonation pin
@@ -39,49 +57,41 @@
 import { createWebGateway, parseWebEnabledRaw } from '../../../web-gateway/src/index.js'
 
 /**
- * The search-origin resolver factory mirroring the provider's OWN source law
- * (host `web-search-deepseek/src/index.ts:123-126` @639ed01539, verbatim
- * order): `config.baseURL ?? $DEEPSEEK_SEARCH_BASE_URL ?? DEEPSEEK_DEFAULT_BASE_URL`.
- * The default constant is read from the INSTALLED provider package via a
- * deferred dynamic import (first call) — no static import edge is added to
- * the glue (the t12a junction face stays byte-unchanged). When the package
- * cannot resolve in this process, the resolver throws the seam's typed code
- * `WEB_PROVIDER_UNAVAILABLE` and the gateway maps it — a fixed-URL fake
- * remains structurally impossible: this file contains no destination literal.
+ * GROUP 4 (root 07:38): build the search-origin resolver as a binder over
+ * the provider's OWN source law (host web-search-deepseek/src/index.ts:
+ * 123-126 @639ed01539, verbatim order) using ONLY readers the entry injects
+ * from the real plane:
+ *   readConfig()      → the live Volatile config slot `baseURL` (the same
+ *                       `z.string().volatile()` slot the provider consumes,
+ *                       settings namespace `WEB_SEARCH_DEEPSEEK_SETTINGS_
+ *                       NAMESPACE`, host index.ts:72/:89)
+ *   readLaunchEnv(k)  → the launchEnvironment read the provider itself uses
+ *                       (SEARCH_BASE_URL_ENV, host index.ts:83)
+ *   packageDefault()  → the INSTALLED package constant
+ *                       DEEPSEEK_DEFAULT_BASE_URL (exported, provider.ts:34)
+ * Evaluation happens per call (live config applies immediately, matching
+ * the provider's Volatile behavior). No reader may be a Team-side mirror:
+ * absent required readers make the resolver throw the seam's typed
+ * `WEB_PROVIDER_UNAVAILABLE` code — a fixed-URL fake stays structurally
+ * impossible (this file contains no destination literal).
  *
- * DISCLOSED LIMIT vs the provider itself: the provider reads config through
- * the host Volatile/launchEnvironment plane (operator settings updates apply
- * live); this mirror reads the config string handed in + process.env at call
- * time. A host config-read seam would replace the mirror in one line.
- *
- * @param opts.configBaseURL the mount-time `webGateway.searchBaseURL` if the
- *        operator configured one (mirrors the provider's config.baseURL slot).
- * @returns a resolver for {@link createLiveWebGatewayAssembly.resolveSearchOrigin}.
+ * @param src.readConfig (async ok) () => string | undefined
+ * @param src.readLaunchEnv (async ok) (key: string) => string | undefined
+ * @param src.packageDefault (async ok) () => string
  */
-export function deepSeekSearchOriginSource({ configBaseURL } = {}) {
-  if (typeof configBaseURL === 'string' && configBaseURL.length > 0) {
-    return () => configBaseURL
-  }
-  let cachedDefault = null
+export function boundSearchOriginSource({ readConfig, readLaunchEnv, packageDefault } = {}) {
   return async () => {
-    // mirror: host index.ts:83 SEARCH_BASE_URL_ENV (property access via
-    // globalThis keeps this row out of the node-globals eslint override list —
-    // behavior identical on the only runtime that reaches it).
-    const env = globalThis['process']?.['env'] ?? {}
-    const fromEnv = env['DEEPSEEK_SEARCH_BASE_URL']
+    if (typeof readConfig !== 'function' || typeof readLaunchEnv !== 'function' || typeof packageDefault !== 'function') {
+      throw Object.assign(new Error('boundSearchOriginSource requires all three real-plane readers (readConfig/readLaunchEnv/packageDefault) injected by the entry'), { code: 'WEB_PROVIDER_UNAVAILABLE' })
+    }
+    const fromConfig = await readConfig()
+    if (typeof fromConfig === 'string' && fromConfig.length > 0) return fromConfig
+    const fromEnv = await readLaunchEnv('DEEPSEEK_SEARCH_BASE_URL')
     if (typeof fromEnv === 'string' && fromEnv.length > 0) return fromEnv
-    if (cachedDefault !== null) return cachedDefault
-    let mod
-    try {
-      mod = await import('@deepseek-ai/dsh-web-search-deepseek')
-    } catch {
-      throw Object.assign(new Error('the installed search-provider package is not resolvable in this process'), { code: 'WEB_PROVIDER_UNAVAILABLE' })
-    }
-    const constant = mod?.DEEPSEEK_DEFAULT_BASE_URL
+    const constant = await packageDefault()
     if (typeof constant !== 'string' || constant.length === 0) {
-      throw Object.assign(new Error('installed search-provider exposes no DEEPSEEK_DEFAULT_BASE_URL'), { code: 'WEB_PROVIDER_UNAVAILABLE' })
+      throw Object.assign(new Error('the installed search-provider exposes no DEEPSEEK_DEFAULT_BASE_URL'), { code: 'WEB_PROVIDER_UNAVAILABLE' })
     }
-    cachedDefault = constant
     return constant
   }
 }
@@ -93,14 +103,18 @@ export function deepSeekSearchOriginSource({ configBaseURL } = {}) {
  *        anything else ⇒ typed refusal `web-config-not-boolean`.
  * @param deps.ctxWeb the Host web seam object (`ctx.web`) — structurally
  *        `{ fetch, search }`; anything else declines the row.
- * @param deps.resolveSearchOrigin host-side reader returning the INSTALLED
- *        search provider's endpoint/origin from its real config; may throw
- *        the seam's typed `WebError` code (mapped refusal per call).
+ * @param deps.grantAuthority the center-edge approval port (GROUP 3;
+ *        ONE consume per call). Missing ⇒ typed decline.
+ * @param deps.factsSource the center-edge ledger capture port (C2:
+ *        correlation ids → trusted facts). Missing ⇒ typed decline.
+ * @param deps.resolveSearchOrigin trusted reader (see
+ *        {@link boundSearchOriginSource}); may throw the seam's typed
+ *        `WebError` code (mapped refusal per call).
  * @param deps.readDomainVeto optional D-arm reader (Domain Authority answer
  *        at the effect-commit point); absent ⇒ receipts say `not-applicable`.
  * @param deps.onObserve observation sink (lane ledger mirror).
  */
-export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, resolveSearchOrigin, readDomainVeto, onObserve } = {}) {
+export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, grantAuthority, factsSource, resolveSearchOrigin, readDomainVeto, onObserve } = {}) {
   const enabled = parseWebEnabledRaw(webEnabledRaw)
   if (!enabled.ok) {
     return inactive(enabled.refusal.code, enabled.refusal.detail)
@@ -111,10 +125,24 @@ export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, resolveSea
   if (ctxWeb === null || typeof ctxWeb !== 'object' || typeof ctxWeb.fetch !== 'function' || typeof ctxWeb.search !== 'function') {
     return inactive('web-seam-absent', 'the armed row requires the Host web seam (ctx.web with fetch + search); nothing is mounted without it')
   }
+  if (grantAuthority === null || typeof grantAuthority !== 'object' || typeof grantAuthority.consume !== 'function') {
+    return inactive('web-grant-authority-absent', 'the armed row requires the center-edge grant authority (M1 manifest + trusted definition provider + ONE consume); this row owns no approval and never defaults one open')
+  }
+  if (factsSource === null || typeof factsSource !== 'object' || typeof factsSource.capture !== 'function') {
+    return inactive('web-facts-source-absent', 'the armed row requires the center-edge facts capture port (C2: trusted call facts judged INSTEAD of the presented grant documents); this row cannot mint facts and never fabricates stand-ins')
+  }
   if (typeof resolveSearchOrigin !== 'function') {
-    return inactive('search-origin-resolver-missing', 'the armed row requires the config-reading search-origin resolver; a fixed-URL fake is structurally impossible here')
+    return inactive('search-origin-resolver-missing', 'the armed row requires the config-bound search-origin resolver; a fixed-URL fake is structurally impossible here')
   }
   const ledger = []
+  let closed = false
+  // node-globals discipline (live/ eslint env carries no node globals — the
+  // lane precedent is agent-bindings.mjs reaching process off globalThis):
+  // reach the ctor off globalThis.
+  const rowAbort = new globalThis['AbortController']()
+  // C3: THE one closed/abort state — consulted by the gateway itself (entry
+  // + after every await), merged into every seam call, aborted by close().
+  const lifecycle = { isClosed: () => closed, signal: rowAbort.signal }
   const emit = (o) => {
     ledger.push(o)
     if (typeof onObserve === 'function') onObserve(o)
@@ -122,18 +150,36 @@ export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, resolveSea
   const gateway = createWebGateway({
     ports: { fetch: (req, signal) => ctxWeb.fetch(req, signal), search: (req, signal) => ctxWeb.search(req, signal) },
     searchOrigin: resolveSearchOrigin,
+    authority: grantAuthority,
+    factsSource,
+    lifecycle,
     ...(readDomainVeto === undefined ? {} : { readDomainVeto }),
     onObserve: emit,
   })
+  const closedRefusal = async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: 'web-row-closed: this row was closed by the owning entry; stale handles cannot transact (zero delegation after close)', sideEffectUnknown: false } })
   return {
     active: true,
-    gateway,
+    // C3: NO raw `gateway` reference is exported — the two faces below and
+    // the gateway's own lifecycle checks are the only ways in.
     /** Lane-typed entry (operation payload rides the closed target
-     *  extension — web-gateway/types.ts DISCLOSURE). */
-    callWeb: (request) => gateway.callWeb(request),
+     *  extension — web-gateway/types.ts DISCLOSURE; `{ signal }` threads
+     *  cancellation to the seam — GROUP 5; merged with the row abort). */
+    callWeb: (request, options) => closed ? closedRefusal() : gateway.callWeb(request, options),
     /** The frozen ProviderGateway face: a payload-less envelope is a typed
-     *  refusal, never a guess. */
-    call: (request) => gateway.call(request),
+     *  refusal, never a guess. No signal channel exists on this face. */
+    call: (request) => closed ? closedRefusal() : gateway.call(request),
+    /** C3: genuine de-arm. One-way; idempotent; ALSO aborts the row signal,
+     *  draining in-flight seam transport (merged into every live call —
+     *  those settle cancelled, never silently continue). */
+    close: () => {
+      if (!closed) {
+        closed = true
+        rowAbort.abort(new Error('web-row-closed: closed by the owning entry (in-flight transport drained)'))
+        emit({ event: 'row-closed' })
+      }
+      return closed
+    },
+    closed: () => closed,
     observations: () => ledger.slice(),
   }
 }
@@ -143,9 +189,10 @@ function inactive(code, detail) {
     active: false,
     code,
     detail,
-    gateway: null,
-    callWeb: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: `web row not mounted (${code}): ${detail}` } }),
-    call: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: `web row not mounted (${code}): ${detail}` } }),
+    callWeb: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: `web row not mounted (${code}): ${detail}`, sideEffectUnknown: false } }),
+    call: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: `web row not mounted (${code}): ${detail}`, sideEffectUnknown: false } }),
+    close: () => true,
+    closed: () => true,
     observations: () => [],
   }
 }

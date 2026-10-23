@@ -354,7 +354,45 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
 import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
 import { publishPaMount, readPaCallFactsForCall, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
+// A5-M2 B-SESSION (CENTER vertical): the governed todo arm this assembly BOUNDS at
+// mount time over the bind-time captured native definition (the arm itself carries
+// no authority: admission lives in the M1 A assembly, the durable answers in the
+// AUTH bridge — both already wired below).
+import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
+
+// A5-M2 (CENTER): the plane's OWN governed-family registration, keyed by the trusted
+// definition identity of the binding a call actually runs under. It is the single source
+// for two things that must never disagree: which bindings may claim a family at all (the
+// leg's requirement, below) and what the CURRENT registration fact says (the facts fill,
+// below). MOUNT-TIME law (the B-SESSION vertical, first real family): the table starts
+// EMPTY — an unmounted world keeps its exact bytes, it never writes and neither reader
+// answers — and an entry is written by the setup itself, keyed by the RUNTIME definition
+// identity the seam's install pass minted for the placed row (the same identity the
+// Guard's binding feed answers; read through `a5PlaneValue.placementFeed` AFTER
+// publish). One identity, one family: a second DIFFERENT claim on the same identity is
+// a config defect and fails the setup, never a replacement.
+const A5_GOVERNED_FAMILIES = Object.create(null)
+
+/** Write ONE mount-time family registration into the single table both halves read
+ *  (the leg's `governedFamilies`, and the `readCallFacts` governedFamily fill). */
+function registerA5GovernedFamily(definitionIdentity, entry) {
+  if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) {
+    throw new TypeError('A5 governed-family registration: the runtime definition identity must be a non-empty string (keying on anything else is a second identity system)')
+  }
+  if (entry === null || typeof entry !== 'object'
+    || typeof entry.familyId !== 'string' || entry.familyId.length === 0
+    || !Number.isInteger(entry.adapterRevision) || entry.adapterRevision < 0
+    || typeof entry.providerIdentity !== 'string' || entry.providerIdentity.length === 0) {
+    throw new TypeError('A5 governed-family registration: {familyId, adapterRevision, providerIdentity} is the frozen registration shape (the leg compares exactly these three fields)')
+  }
+  const existing = A5_GOVERNED_FAMILIES[definitionIdentity]
+  if (existing !== undefined) {
+    if (existing.familyId === entry.familyId && existing.adapterRevision === entry.adapterRevision && existing.providerIdentity === entry.providerIdentity) return
+    throw new Error(`A5 governed-family registration: definition identity '${definitionIdentity}' is already governed as family '${existing.familyId}'; a second different claim ('${entry.familyId}') on one identity is a config defect, never a re-mount to paper over`)
+  }
+  A5_GOVERNED_FAMILIES[definitionIdentity] = Object.freeze({ ...entry })
+}
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
@@ -432,7 +470,7 @@ import { leaderExecEnvelopeOps } from '../../../admission/envelope.js'
 // stays as the assembly-time diagnostic it always was; what makes the
 // closed-world claim hold AFTER setup is this Guard, armed per agent here and
 // kept until the Dispatcher reaches TOMBSTONED/RELEASED.
-import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
+import { definitionIdentityOf, installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // GLUE-5 (alpha5-glue5-entry): the two live assembly rows. Import law
 // (pc-CONTRACT §3 checklist 1): the production lanes they use enter only
 // through the committed dist mirror — team-tool-plane.mjs resolves the a5p5
@@ -2349,6 +2387,12 @@ export function createAgentBindings(deps) {
       // the install flow, after this assembly ran. So the closure reads
       // through the LIVE plane value, never a build-time snapshot.
       let a5PlaneValue = null
+      // A5-M2 B-SESSION: the mount-time bound governed todo arm (null = this world
+      // mounts none, the zero-flip law). Declared in the SAME lexical scope as both
+      // the plane assembly that injects it and the later publish that registers its
+      // family — a const inside either block would leave the other half unable to
+      // reach it (the 9e-4 lesson).
+      let a5TodoInject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2602,6 +2646,101 @@ export function createAgentBindings(deps) {
             observe: (row) => observations.push(String(row)),
           })
           : null
+        // A5-M2 B-SESSION (CENTER vertical): the mount-time governed todo arm.
+        // THE TRUSTED INPUTS, all read HERE from this closure's real runtime facts
+        // (never a name lookup, never a model path — the same candidate reads the
+        // Guard's trusted set performs above):
+        //  · the NATIVE `todo_write` definition OBJECT from the GLOBAL tool face
+        //    (`tools.get(name)` with no scope resolves through the registry's
+        //    global layer — the documented face for what the Host itself mounted);
+        //  · the member's REAL Agent.id and the durable `session.header.id` —
+        //    the arm's two INDEPENDENT pairing facts, no otherwise;
+        //  · the M1/Guard binding-facts reader over the Guard dispatcher's live
+        //    surface (the same live surface the call-level facts read resolves —
+        //    a bind-time snapshot of it would go stale across remounts);
+        //  · the deployment's explicit parallel-policy choice (the host todo
+        //    Config has NO default and neither does this mount: the closed key
+        //    must carry a real boolean; it is what the manifest REPORTS — the
+        //    native body enforces its own captured copy inside the append).
+        // A refused input FAILS THE SETUP (the plane-mount refusal posture): a
+        // half-bound family is exactly the config defect this discipline exists
+        // for; nothing degrades to "unmount it quietly" and nothing degrades to
+        // native.
+        if (planeCfg.todoEnabled === true) {
+          const refuseTodo = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed todo mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-todo-arm-mount-refused'
+            observations.push(`a5m2-todo: arm-REFUSED for ${sessionId}`)
+            return error
+          }
+          let nativeTodoDefinition
+          try {
+            nativeTodoDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_TODO_TOOL_NAME) : undefined
+          } catch (error) {
+            throw refuseTodo(`the global tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
+          }
+          if (nativeTodoDefinition === null || typeof nativeTodoDefinition?.execute !== 'function') {
+            throw refuseTodo('no native todo_write definition with an execute function stands on the global tool face — the arm captures the bind-time OBJECT and there is nothing to capture')
+          }
+          const todoNativeIdentity = definitionIdentityOf(nativeTodoDefinition)
+          if (typeof todoNativeIdentity !== 'string' || todoNativeIdentity.length === 0) {
+            throw refuseTodo('the captured native definition answers no definitionIdentityOf identity')
+          }
+          const todoMemberAgentId = typeof runtimeAgent?.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const todoSessionHeaderId = typeof runtimeAgent?.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (todoMemberAgentId === undefined || todoSessionHeaderId === undefined) {
+            throw refuseTodo('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the arm carries no fallback for either')
+          }
+          if (typeof planeCfg.todoAllowParallelInProgress !== 'boolean') {
+            throw refuseTodo('todoEnabled is true without an explicit todoAllowParallelInProgress boolean (the host todo Config carries NO default; neither does this mount invent one)')
+          }
+          let todoArm
+          try {
+            todoArm = createGovernedTodoArm({
+              nativeDefinition: nativeTodoDefinition,
+              definitionIdentity: todoNativeIdentity,
+              providerId: 'a5p5-plane',
+              memberAgentId: todoMemberAgentId,
+              sessionHeaderId: todoSessionHeaderId,
+              bindingFacts: () => {
+                // The CURRENT dispatcher entry behind this mount's todo placement,
+                // read LIVE through the Guard dispatcher's own surface (the same
+                // surface the call-level facts resolve through). An entry that is
+                // unverified / inactive / malformed answers NOTHING: the read
+                // throws, classify/edge refuse with it, and the row surfaces the
+                // typed refusal — fail closed, never a stale tuple.
+                const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(A5_TODO_TOOL_NAME)
+                const binding = entry?.binding
+                if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+                  || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+                  || !Number.isInteger(binding.revision)
+                  || !Number.isInteger(binding.policyGeneration)
+                  || !Number.isInteger(binding.authorityGeneration)) {
+                  throw new Error('the live dispatcher binding behind todo_write is unreadable (no verified/ACTIVE tuple on the Guard dispatcher surface)')
+                }
+                return {
+                  bindingId: binding.bindingId,
+                  bindingRevision: binding.revision,
+                  policyGeneration: binding.policyGeneration,
+                  authorityGeneration: binding.authorityGeneration,
+                }
+              },
+              allowParallelInProgress: planeCfg.todoAllowParallelInProgress,
+              observe: (row) => observations.push(`a5m2-todo: ${String(row?.event ?? 'event')} ${String(row?.correlation ?? '')} ${String(row?.detail ?? '')}`),
+            })
+          } catch (error) {
+            throw refuseTodo(`the arm rejected its bind-time inputs (${String(error?.message ?? error).slice(0, 200)})`)
+          }
+          if (typeof nativeTodoDefinition.description !== 'string' || nativeTodoDefinition.description.length === 0) {
+            throw refuseTodo('the captured native definition carries no description — the same-name, same-meaning mount has no other source for it')
+          }
+          a5TodoInject = Object.freeze({ arm: todoArm, description: nativeTodoDefinition.description })
+          observations.push(`a5m2-todo: arm BOUND for ${sessionId} (native=${todoNativeIdentity.slice(0, 32)} member=${todoMemberAgentId.slice(0, 16)} header=${todoSessionHeaderId.slice(0, 16)})`)
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -2623,6 +2762,7 @@ export function createAgentBindings(deps) {
             rootSessionId: String(teamRoot),
             caller: { kind: 'instance', instanceId },
             beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            governedFamilies: A5_GOVERNED_FAMILIES,
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
           })
           return await a5Leg(legInput)
@@ -2688,9 +2828,27 @@ export function createAgentBindings(deps) {
           // M1-D: the binding behind a call is resolved by its bindingId
           // FAMILY inside the entry, and zero/ambiguous answers stale the
           // call instead of falling back to revision 1.
-          readCallFacts: (input) => readPaCallFactsForCall(input),
+          // A5-M2: the current trusted registration is restated onto the call's own facts
+          // from that one table. An unanswered registration is NOT read as "no statement
+          // was made" - the guard treats it as a vanished registration and denies, which is
+          // exactly the fail-closed the family lane was measured needing.
+          readCallFacts: async (input) => {
+            const facts = await readPaCallFactsForCall(input)
+            if (facts === undefined || facts === null) return facts
+            const definitionIdentity = facts.binding === undefined || facts.binding === null
+              ? undefined
+              : facts.binding.definitionIdentity
+            const registered = definitionIdentity === undefined
+              ? undefined
+              : A5_GOVERNED_FAMILIES[String(definitionIdentity)]
+            if (registered === undefined) return facts
+            return { ...facts, governedFamily: registered }
+          },
           plane: planeCfg,
-          ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
+          ...(a5JobsBridge === null && a5TodoInject === null ? {} : { backends: {
+            ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
+            ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
+          } }),
           onObserve: (row) => observations.push(String(row)),
         })
         if (built.ok !== true) {
@@ -3055,6 +3213,34 @@ export function createAgentBindings(deps) {
           }
         }
         const published = a5p1Guard.publish()
+        // A5-M2 B-SESSION family registration write (mount-time, keyed by the
+        // RUNTIME definition identity): with publish succeeded, the seam's install
+        // pass has MINTED the placed row's identity — it is read back through the
+        // plane's OWN placement feed (the same feed the Guard's binding feed
+        // consumes, never a second derivation) and written into the ONE table that
+        // answers both halves of a family claim (the leg's registration check and
+        // the readCallFacts governedFamily fill, wired to this table at fea48203).
+        // A bound arm whose row answers no placement identity is a broken mount:
+        // refuse it — the family claim gets no answer from a guessed key, and an
+        // unobserved silent skip would leave exactly the "unanswered registration"
+        // drift the family gate measures.
+        if (a5TodoInject !== null) {
+          const todoFed = a5PlaneValue?.placementFeed?.(A5_TODO_TOOL_NAME)
+          if (typeof todoFed?.definitionIdentity !== 'string' || todoFed.definitionIdentity.length === 0) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed todo mount refused for '${sessionId}': the placed row answered no definition identity through the placement feed — the family registration has no trusted key`,
+            )
+            error.code = 'alpha5-todo-arm-mount-refused'
+            observations.push(`a5m2-todo: family-registration-REFUSED for ${sessionId} (no placement identity)`)
+            throw error
+          }
+          registerA5GovernedFamily(todoFed.definitionIdentity, {
+            familyId: a5TodoInject.arm.familyId,
+            adapterRevision: a5TodoInject.arm.adapterRevision,
+            providerIdentity: a5TodoInject.arm.providerId,
+          })
+          observations.push(`a5m2-todo: family REGISTERED for ${sessionId} (placement=${String(todoFed.definitionIdentity).slice(0, 32)} family=${a5TodoInject.arm.familyId})`)
+        }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
         // Published only AFTER bindOwnTools + publish succeeded; revoked at

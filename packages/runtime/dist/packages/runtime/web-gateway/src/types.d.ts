@@ -79,11 +79,91 @@ export interface WebGatewayCallRequest extends Omit<GatewayCallRequest, 'target'
     readonly target: WebGatewayTarget;
 }
 /** Resolves the search provider's origin FROM REAL CONFIG (never a fixed
- *  URL): the assembly injects a reader over the installed provider's own
- *  configuration (sync or async). Missing provider/credential ⇒ throw the
- *  seam's typed `WebError` code; the gateway maps it (no invented fallback
- *  destination). */
+ *  URL). ROOT 07:38 GROUP 4: the resolver is a TRUSTED-INJECTED reader —
+ *  CENTER's edge binds it to the provider's OWN live config sources (the
+ *  `web-search-deepseek` settings namespace + launchEnvironment; see
+ *  `boundSearchOriginSource` in the assembly row). The gateway itself reads
+ *  no env, no Team-side mirror, no providerId name; provider SELECTION stays
+ *  the seam's own call-time law (`WebRuntime.search/fetch` resolveProvider —
+ *  host web/src/index.ts:137-164), never re-implemented here. */
 export type SearchOriginResolver = () => string | Promise<string>;
+/** The complete trusted fact set for ONE call (C2): full effects set, live
+ *  generations, member/call identity. Produced ONLY by the center edge. */
+export interface WebTrustedCallFacts {
+    readonly member: {
+        readonly teamSessionId: string;
+        readonly instanceId: string;
+    };
+    readonly callId: string;
+    /** CURRENT binding generation (not the presented document's claim). */
+    readonly bindingRevision: number;
+    readonly authorityGeneration: number;
+    readonly policyGeneration: number;
+    /** The ledger's FULL effects set for this call (every effect, every kind). */
+    readonly effects: {
+        readonly effects: readonly unknown[];
+    };
+}
+/** Center-edge capture port: correlation ids in, trusted facts out. The
+ *  gateway hands it ONLY ids (realmId/grantId/bindingId); grant/binding
+ *  DOCUMENTS never travel into the authority's judgement path. */
+export interface WebFactsSource {
+    capture(correlation: {
+        readonly realmId: string;
+        readonly grantId: string;
+        readonly bindingId: string;
+    }): Promise<{
+        readonly ok: true;
+        readonly value: WebTrustedCallFacts;
+    } | {
+        readonly ok: false;
+        readonly error: GovernanceError;
+    }>;
+}
+/** What the authority returns for a SUCCESSFUL consume: the admitted
+ *  manifest facts the gateway validates the derived destination against.
+ *  `effects` is the M1 EffectSet shape (`{ effects: [...] }`). */
+export interface WebConsumedGrant {
+    readonly grantId: string;
+    readonly effects: {
+        readonly effects: readonly unknown[];
+    };
+}
+/** The exact material the authority needs to decide (C2 shape): trusted
+ *  facts + correlation only; cancellation state at decision time travels
+ *  to the real consume boundary (C3 cancel-first). */
+export interface WebAuthorityInput {
+    readonly facts: WebTrustedCallFacts;
+    readonly correlation: {
+        readonly grantId: string;
+        readonly bindingId: string;
+        readonly payloadFingerprint: string;
+    };
+    readonly operationKind: WebOperationPayload['kind'];
+    readonly canonicalLocator: string;
+    /** LIVE, re-readable cancel source (root bf6a39be): the authority must
+     *  evaluate it AT ITS DECISION POINT. The lane never snapshots a boolean
+     *  here — a construction-time `false` would impersonate "not cancelled",
+     *  the very check/execute split C3 closed. */
+    readonly isCancelled: () => boolean;
+}
+/** The injected center-edge authority port (ONE consume per call). */
+export interface WebGrantAuthority {
+    consume(input: WebAuthorityInput): Promise<{
+        readonly ok: true;
+        readonly value: WebConsumedGrant;
+    } | {
+        readonly ok: false;
+        readonly error: GovernanceError;
+    }>;
+}
+/** Row lifecycle (C3): ONE closed state must cover EVERY exported reference;
+ *  the gateway re-checks it after each await and before delegating, and the
+ *  abort signal it exposes drains in-flight transport when close() fires. */
+export interface WebRowLifecycle {
+    isClosed(): boolean;
+    readonly signal: AbortSignal | undefined;
+}
 /** The Domain Authority's answer at the effect-commit point (D arm). Absent
  *  reader ⇒ `not-applicable`, honestly reported in the receipt. */
 export type DomainVetoReader = (target: WebGatewayTarget) => DomainVeto | Promise<DomainVeto>;

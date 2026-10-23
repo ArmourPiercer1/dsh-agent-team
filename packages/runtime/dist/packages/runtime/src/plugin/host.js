@@ -1583,6 +1583,8 @@ export async function apply(ctx, config) {
             // array: worlds without the jobs service stay byte-identical and the
             // bridge answers a typed refusal per call, never a setup failure.
             jobs: () => ctx.get('jobs'),
+            // M2 B-WEB (a5m2w): the same lazy global-store read as jobs, resolved at call time.
+            web: () => ctx.get('web'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

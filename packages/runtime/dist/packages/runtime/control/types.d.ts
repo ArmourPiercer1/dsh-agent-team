@@ -855,6 +855,20 @@ export interface PaControlManifest {
     readonly deniedEffects: readonly PaControlManifestDeniedEffect[];
     readonly authorityGeneration: number;
     readonly realmId: string;
+    /**
+     * A5-M2 (CENTER): the governed FAMILY block - the M0 P-adds the strict manifest
+     * carries once a call belongs to a governed family. OPTIONAL IN THE TYPE BY DESIGN:
+     * a pre-A5M2 row bears none and must keep parsing from its original bytes (the
+     * read-back trichotomy would otherwise reclassify intact legacy rows as damage).
+     * When ANY member is present ALL FOUR must parse, or the whole manifest fails to
+     * parse - a family-bearing row missing part of its block is damage, never a
+     * silently smaller row. Whether a row MUST carry the block is decided UPSTREAM by
+     * the plane-owned family registration (never by which fields happen to be present).
+     */
+    readonly familyId?: string;
+    readonly adapterRevision?: number;
+    readonly providerIdentity?: string;
+    readonly targetManifest?: Readonly<Record<string, unknown>>;
     readonly callId: string;
     /** The EXECUTION-side scope (canonical parameter fingerprint) — distinct
      *  from and never equal-by-design to the payload digest that keys the
@@ -898,6 +912,60 @@ export interface PaControlManifest {
 /** Strict field-by-field parse of a manifest candidate (the marker is the
  *  entry; a present marker that fails the shape is NOT a manifest — the
  *  request is malformed, no row). Returns undefined on ANY defect. */
+/** Losslessness of a value destined for the durable manifest: JSON-representable
+ *  all the way down. undefined-valued keys, NaN and Infinity are refused HERE rather
+ *  than being dropped or nullified by a later stringify - a hash computed over bytes
+ *  that silently lost a field would approve a question nobody asked. */
+/** Losslessness of a value destined for the durable manifest: JSON-representable at
+ *  EVERY level - objects, arrays, and objects nested inside arrays. The point of the
+ *  walk is that it runs on the RAW value, before any stringify or lossless-rewrite step
+ *  could drop a member: a digest computed over bytes that silently lost a field would
+ *  approve a question nobody asked. Mirrors the shape the contracts boundary
+ *  (`isRemoteSafeJsonValue`) accepts, so the two ends cannot drift apart. */
+export declare function isLosslessJsonValue(value: unknown): boolean;
+/** The family block's strict parse. Returns `undefined` when the row bears NO family
+ *  field at all (a legacy row - original bytes, original meaning), the parsed block
+ *  when all four parse, and `'invalid'` when the block is partially present or a
+ *  member is malformed: the caller fails the whole manifest in that case. */
+export declare function parsePaManifestFamilyBlock(v: Record<string, unknown>): {
+    readonly familyId: string;
+    readonly adapterRevision: number;
+    readonly providerIdentity: string;
+    readonly targetManifest: Readonly<Record<string, unknown>>;
+} | 'invalid' | undefined;
+/**
+ * A5-M2 (root ruling): a family's target "schema" is NOT a deep-frozen constant and not
+ * a named schema that already exists somewhere - it is the STRUCTURE and REQUIRED FIELDS
+ * of the family's own typed plan, as implemented. These tables are that structure,
+ * written field-for-field against the two implemented typed plans (todo `replace-list`,
+ * image `read-exact-file`), and they carry no security semantics of their own: they say
+ * what a well-formed target of this family looks like and nothing else. Adding a field
+ * to a family's plan means adding it here in the same change - and the closed key set
+ * makes a silent extra field fail instead of ride along unvalidated.
+ */
+export type PaFamilyTargetFieldKind = 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations';
+export interface PaFamilyTargetRule {
+    /** The exact required key set of this family's typed plan target. */
+    readonly required: Readonly<Record<string, PaFamilyTargetFieldKind>>;
+    /**
+     * The subset a CURRENT-call fact can legitimately restate from pure data alone - the
+     * immutable parameter plan and the real member/session/binding/provider config
+     * version. Resource-derived truth (what the file's bytes or an attachment's
+     * normalised id actually are) is NEVER here: it belongs to the post-approval
+     * execution edge, which checks the effectful result against the approved target.
+     */
+    readonly currentFields: readonly string[];
+}
+export declare const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>>;
+/** The pure-data structure check the leg runs BEFORE the durable row: unknown family,
+ *  missing field, wrong field type, extra key - each returns the offending field so the
+ *  refusal names what the family's own typed plan asked for. Zero effect, zero I/O. */
+export declare function validatePaFamilyTarget(familyId: string, target: unknown): string | undefined;
+/** The guard's current-target comparison: the approved target's pure-data fields
+ *  restated by THIS call's trusted facts must still hold. Facts never come from the
+ *  approved manifest (that would be the row quoting itself); fields outside the
+ *  family's currentFields are not compared here by design - they are the execution
+ *  edge's business, after approval. */
 export declare function parsePaControlManifest(value: unknown): PaControlManifest | undefined;
 /** The strict read-back class of one durable request row against the PA
  *  operation-manifest effect-set (PR358 f5). `not-effect-set` keeps today's
@@ -993,6 +1061,19 @@ export interface PaCallFactsPlanSnapshot {
  */
 export interface PaCallFacts {
     readonly policySource: PaCallFactsPolicySource;
+    /**
+     * A5-M2 (CENTER): the CURRENT governed-family registration for this binding, as the
+     * plane reads it from its own trusted registration - never from the payload and never
+     * from the row. Absent means this binding belongs to no governed family (every
+     * pre-A5M2 family keeps its exact bytes and its exact behaviour). The guard compares
+     * it against the family block the row carries, so a family whose adapter or provider
+     * moved after approval is DRIFT, not a smaller approval.
+     */
+    readonly governedFamily?: {
+        readonly familyId: string;
+        readonly adapterRevision: number;
+        readonly providerIdentity: string;
+    };
     /** The realm the facts (and the effect set) belong to. */
     readonly realmId: string;
     /** The CURRENT authority-envelope documents (realm-scoped ceiling entries
