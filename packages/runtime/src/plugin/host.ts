@@ -2479,6 +2479,43 @@ async function buildG2TeamSupply(
   // The two faces the host genuinely cannot mint TODAY (gap doc, fork
   // options enumerated): passed ABSENT so the producer's own typed refusal
   // names them at supply time, config-armed world or not.
+  // ROOT 01:0x CORRECTED ROUTE (not a new WebRuntime, not a composition,
+  // no register-equals-scope claim): the ORIGINAL authorized tool-level
+  // Team-only fork — when this Team's row config declares
+  // g2Mount.webFixedProvider, we build the SAME fixed provider through
+  // the PUBLIC root of @deepseek-ai/dsh-web-fetch-http (lib/index.js is
+  // shipped and resolvable; Config + HttpFetchProvider are exported) and
+  // hand the INSTANCE to the tool gateway directly. The valid config has
+  // ONE source: the host's own exported schemastery `Config` schema —
+  // parse(rowDeclared) fills exactly the defaulted fields the host's own
+  // apply() resolves, then the SAME mapping (index.ts:86-92 verbatim);
+  // this producer never invents a default, never touches a global
+  // provider id or env, and noTeam never reads this path (row-scoped
+  // config + per-instance plugin, cited law). Transport resolution stays
+  // the constructor's public default (publicHttpNetwork.resolve).
+  const webFixedCfg = (g2Mount as { webFixedProvider?: { enabled?: boolean; config?: Record<string, unknown> } } | undefined | null)?.webFixedProvider
+  if (webFixedCfg?.enabled === true) {
+    const webFetchSpecifier = '@deepseek-ai/dsh-web-fetch-http'
+    try {
+      const webMod = (await import(webFetchSpecifier)) as {
+        Config: { parse: (v: unknown) => Record<string, unknown> }
+        HttpFetchProvider: new (limits: Record<string, unknown>) => unknown
+      }
+      const resolved = webMod.Config.parse(webFixedCfg.config ?? {})
+      // the host's OWN assertions (apply :82-85) run INSIDE its schema;
+      // mapping verbatim (index.ts:86-92):
+      const limits: Record<string, unknown> = {
+        maxResponseBytes: resolved.maxResponseBytes,
+        maxBodyChars: resolved.maxBodyChars,
+        timeoutMs: resolved.timeoutMs,
+        maxRedirects: resolved.maxRedirects,
+        userAgent: resolved.userAgent,
+      }
+      out.webFixedTransport = new webMod.HttpFetchProvider(limits)
+    } catch (error) {
+      return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` }
+    }
+  }
   return await mountMod.createG2TeamAssemblySupply(out)
 }
 
