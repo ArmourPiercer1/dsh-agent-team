@@ -19,6 +19,23 @@
  * writer feeds `familyRegistrations()` entries at the mount moment exactly
  * like the settled g1-query-wiring integration contract.
  *
+ * REVISION 2 (root ①–④ round-1 ruling on the d87 commit): (①) every plan
+ * carries the contract §B-SCHEDULE TARGET (owner session + taskId + revision
+ * + action; timer namespace + arm/reschedule/disarm; destination session +
+ * wake) and the trigger dimension is reported as a MEASURED missing public
+ * interface (TRIGGER_GOVERNANCE gap), never stuffed into create/update
+ * claims; (②) the owner law is the host's own REFERENCE identity —
+ * `exec.agent !== capturedAgent → internal_error` (tools.ts:438/:457/:481/
+ * :509) — the trusted live ctx.schedule is RE-READ per dispatch exactly where
+ * the host bodies resolve `rootCtx.schedule` afresh, and the update CAS
+ * re-verifies after its `list` await; the old bind-time constant
+ * self-compare proved nothing and is gone; (③) the L6 mirror maps ONLY
+ * through `instanceof` the published ScheduleInputError class (index.ts:36),
+ * injected by the owning assembly — the duck-code path that could leak
+ * internal message bytes is deleted; (④) the plan-once WeakSet is an
+ * INTERNAL MEMO, not the one-shot ledger: the real consumedProof is the
+ * center PA wiring edge — the row mints none and never claims once-closure.
+ *
  * ── NATIVE-FACE / SERVICE LEDGER (comment-side ONLY: a string literal IS an
  * edge to the audit, so these path facts never live in values) ─────────────
  * All facts @639ed015397290b3745d163aafe02ffee4aa3f84 (pristine
@@ -30,8 +47,8 @@
  *            +SELECTOR_PARAMETERS(:341: after_seconds/at/every_seconds/daily/
  *            weekly/cron; at is oneOf string | {date,time,time_zone}; daily/
  *            weekly/cron objects carry required members); body order:
- *            `exec.agent !== agent → internal_error` :436, validateCreateArgs
- *            (:222) :437, `exec.signal.aborted → internal_error` :440,
+ *            `exec.agent !== agent → internal_error` :438, validateCreateArgs
+ *            (:222) :439, `exec.signal.aborted → internal_error` :441,
  *            `scheduleView(await rootCtx.schedule.create(agent.session.id,
  *            args, exec.signal), Date.now())` :443, catch → operationError.
  *          schedule_list :452 — parameters {}; body: agent check :457,
@@ -44,9 +61,10 @@
  *            id}, exec.signal)` :484.
  *          schedule_update :493 — parameters id(required)+title/prompt
  *            +update-side selectors (no after_seconds — "To change a relative
- *            delay, create a new reminder."); body order: agent check,
- *            validateUpdateArgs(:269), signal check, then the two-step CAS:
- *            `list({sessionId}).find(record.id === id)` :515-517; on miss the
+ *            delay, create a new reminder."); body order: agent check :509,
+ *            validateUpdateArgs(:269) :510, signal check :512, then the
+ *            two-step CAS: `list({sessionId}).find(record.id === id)`
+ *            :515-517; on miss the
  *            ended/not-found split reads the HOST-WIDE catalog (non-tool
  *            surface): `catalog().some(entry.sessionId === sessionId &&
  *            entry.id === id)` :521-524 → {id, updated:false,
@@ -89,10 +107,20 @@
  *        (the closed v1 union), tool values ScheduleCreateValue :332 /
  *        ScheduleListValue :335 / ScheduleDeleteValue :343 /
  *        ScheduleUpdateValue :432.
- * RUNTIME src/runtime.ts: the wake path (resolveAgent → recurring-occurrence
- *        resolution → createUserMessage(source 'schedule') → agent.followup →
- *        ctx.sessions.flush) :101-130 — the durable timer arm/delivery/wake
- *        dimension is SERVICE+RUNTIME law, NOT this seam (NAMED GAP below).
+ * RUNTIME src/runtime.ts: the wake path — resolveAgent(task.sessionId) :101 →
+ *        recurring-occurrence resolution → createUserMessage(source
+ *        'schedule') → agent.followup :123 → ctx.sessions.flush :124.
+ *        MEASURED (root ① investigation): this delivery path has NO public
+ *        pre-delivery governance entry — no hook/listener/canDeliver/veto
+ *        anywhere in runtime.ts (grep measured empty), and ScheduleRuntime
+ *        is plugin-private (index.ts:113/:156 construct it; NOT exported
+ *        from the published index surface). The durable timer arm/delivery/
+ *        wake dimension is SERVICE+RUNTIME law, NOT this seam (NAMED GAPS:
+ *        TIMER_ARM + TRIGGER_GOVERNANCE). Revocation-blocking IS published
+ *        durable law: the scan only picks status === 'active' tasks
+ *        (runtime.ts:90/:155), so delete/update (the revocation paths this
+ *        family owns) block later wakes through the durable record state —
+ *        auditable through catalog/history — no re-ask per trigger.
  *
  * ROOT LAWS (module UNWIRED; legs run against recorded DOUBLES — NOT C2, no
  * real-Host dimension is claimed from this file):
@@ -122,19 +150,38 @@
  *     SAME argument shapes (ScheduleCreateRequest IS the model args; the CAS
  *     `expected` rides the record read through the port THIS call performed;
  *     the live exec.signal rides by reference). The port object and its
- *     method FUNCTION OBJECTS are frozen at bind; any drift refuses with
- *     zero port entry.
- *  L4 TARGET = THE LIVE CALLER SESSION, NEVER A GUESS (C1: 跨会话目标不能从
- *     caller字符串猜): schedule_* params carry NO session field (measured),
- *     so the row mints the service-call sessionId ONLY from the live
- *     `exec.agent.session.id` at the dispatch edge (the real Session object
- *     by reference), and re-pairs the live agent against the mount-time
- *     CONFIG face by TWO independent real facts — `exec.agent.id` ↔
- *     trusted.memberAgentId AND `exec.agent.session.header.id` ↔
- *     trusted.sessionHeaderId — before any port entry. A pairing miss
- *     answers the host's OWN model-visible internal_error VALUE with zero
- *     port entry (tools.ts:436/:457/:481 — `exec.agent !== agent →
- *     internal_error` is the host's identity-refusal shape).
+ *     method FUNCTION OBJECTS are frozen at bind AND the live service is
+ *     re-read at every dispatch edge (L7); the update CAS re-verifies the
+ *     whole edge AFTER its `await list` and BEFORE `port.update` (root ②: an
+ *     await is where this lane's world can move — a drifted/rebound service
+ *     surfacing during the await refuses with ZERO update entry).
+ *  L3b PLAN CARRIES THE CONTRACT TARGET (root ①, contract §B-SCHEDULE:114
+ *     target I+S(owner session+taskId+revision,action)+S(timer namespace,
+ *     arm/reschedule/disarm)+S(destination session,wake)): every plan's
+ *     frozen `target` states the owner session (read from the BOUND owner,
+ *     never a caller string — C1), the taskId (the validated id for delete/
+ *     update; `service-mints-id-on-commit` for create), the revision law
+ *     (the CAS `expected` record for update; durable-record state for
+ *     delete), the action, the timer effect DELTA the write performs
+ *     (arm / re-align / disarm-on-record-state / none) explicitly labelled
+ *     SERVICE-side (TIMER_ARM gap — the row never claims it armed anything),
+ *     and the destination (the OWNER session itself — every published
+ *     ScheduleService face is session-scoped and the wake resolves exactly
+ *     `task.sessionId`, runtime.ts:101 — this family opens NO cross-session
+ *     path) with the wake labelled service-owned and NOT licensed by this
+ *     invocation (TRIGGER_GOVERNANCE gap).
+ *  L4 TARGET = THE BOUND LIVE OWNER, BY REFERENCE — NEVER AN ID STRING,
+ *     NEVER A GUESS (C1: 跨会话目标不能从caller字符串猜; root ② ruling): the
+ *     row is bound at mount to the REAL captured owner Agent object
+ *     (`capturedAgent` — the same live owner the host's own
+ *     registerScheduleTools binds, tools.ts:405/:411). At every dispatch edge
+ *     the row applies the HOST'S OWN identity law by REFERENCE:
+ *     `exec.agent !== capturedAgent → internal_error` (tools.ts:438/:457/
+ *     :481/:509) — a different object carrying the SAME id/header strings is
+ *     refused exactly as the host refuses it (id-string pairing was ②-
+ *     rejected: two agents can share bytes). The service-call sessionId is
+ *     then read from the BOUND owner at call time (the host bodies read
+ *     `agent.session.id` at :443/:460/:484/:515), never from a caller string.
  *  L5 TOOL-BODY LAW MIRROR, HOST ORDER (each rule line-cited above): the
  *     pure argument half runs at classify and becomes a frozen TOOL-ERROR
  *     PLAN (the model-visible VALUE the host returns — these tools answer
@@ -146,29 +193,41 @@
  *     zones, not_future, occurrence math and the CAS conflict stay SERVICE
  *     facts — service throws map through the mirrored operationError law
  *     (L6) and are never re-labelled, swallowed twice, or pre-answered.
- *  L6 ERROR-VALUE MIRROR: the captured bodies NEVER re-raise (operationError
- *     :202): a thrown value answering the closed ScheduleToolError shape
- *     (a code from the closed union + string message) maps to exactly
- *     {code,message}; anything else maps to the stable internal_error value.
- *     NAMING DISCIPLINE: `instanceof ScheduleInputError` is the host-side
- *     truth; at this lane seam the class is not importable, so the row uses
- *     the CLOSED-CODE duck mirror and REPORTS the residual — a foreign error
- *     that happens to carry a closed code maps as its own value; the row
- *     never claims instanceof fidelity.
+ *  L6 ERROR-VALUE MIRROR (root ③): the captured bodies NEVER re-raise
+ *     (operationError tools.ts:202 `error instanceof ScheduleInputError ?
+ *     {code,message} : internalError()`). The lane cannot import host code,
+ *     so the owning assembly injects the PUBLISHED class via
+ *     `input.ScheduleInputError` (published export src/index.ts:36 — the
+ *     SAME class identity the host throws); the mirror runs the host's own
+ *     law `error instanceof ScheduleInputError ? {code: error.code, message:
+ *     error.message} : internalError()`. The prior duck-by-code path is
+ *     DELETED: a foreign error merely wearing a closed code no longer leaks
+ *     its internal `message` bytes into a model-visible value — it maps to
+ *     the stable internal_error exactly as the host maps a non-input error.
  *  L7 PER-DISPATCH IDENTITY RE-VERIFY: before any port entry the row
  *     re-answers the REQUIRED placement feed `liveNative(name)` and compares
  *     the definition OBJECT identity, its description bytes, its compiled
  *     parameters, AND its execute function value against the bind-time
- *     capture, plus the frozen port object and per-method function objects.
- *     Any drift refuses typed with zero port entry — a closure-attested
- *     identity is self-attestation, so a capture without `liveNative` is an
- *     assembly refusal, never a mounted row.
- *  L8 PLAN ONCE, RUN THE PLAN: classify freezes {args snapshot, operation,
+ *     capture; it ALSO re-reads the LIVE schedule service via the REQUIRED
+ *     `liveScheduleService()` feed (root ②: the host bodies resolve
+ *     `rootCtx.schedule` AFRESH at every call — tools.ts:443/:460/:484/:515 —
+ *     so a bind-time constant compared against itself proves nothing and the
+ *     self-compare is deleted). The live read must be the bound port object
+ *     with the frozen method FUNCTIONS; any drift refuses typed with zero
+ *     port entry — a closure-attested identity is self-attestation, so a
+ *     capture without `liveNative` is an assembly refusal, never a mounted
+ *     row.
+ *  L8 PLAN MEMO, RUN THE FRESH PLAN (root ④ boundary stated honestly):
+ *     classify freezes {args snapshot, operation, target,
  *     parametersFingerprint, toolError?}; delegate re-derives classify on the
- *     snapshot, requires an equal fingerprint AND an unused plan, runs the
- *     FRESH plan, and marks the plan consumed — a foreign plan, a mutated
- *     plan, or a replay of a consumed plan refuses with zero port entry (a
- *     durable schedule write never replays through a consumed plan).
+ *     snapshot, requires an equal fingerprint, refuses a foreign plan, a
+ *     mutated/stale plan, and a REPLAY OF THE SAME CONSUMED PLAN OBJECT with
+ *     zero port entry. BOUNDARY: that last refusal is an INTERNAL MEMO over
+ *     one object, NOT the one-shot ledger — plan-once with real consumedProof
+ *     is a CENTER PA wiring obligation (the plane's consume-for-execution
+ *     edge); this row mints no consumedProof, and a caller that COPIES a
+ *     plan's fields re-dispatches (re-running the full law each time). The
+ *     row never claims once-closure (NAMED GAP PLAN_ONCE_MEMO).
  *  L9 DRAIN = NEW-CALL PROHIBITION, NEVER A FAKE ROLLBACK: ScheduleService
  *     writes are durable on commit and the published JSDoc law says
  *     cancellation does not roll back an in-flight write; drain forbids NEW
@@ -181,14 +240,19 @@
  *
  * NAMED GAPS (carried verbatim on every plan, never faked closed): the timer
  * arm/reschedule/disarm, the durable restart recovery, and the delivery wake
- * are SERVICE+RUNTIME dimensions (runtime.ts:101-130) invisible at this
- * port seam; per the family contract a future wake is NOT a standing license
- * — each trigger is a new invocation re-checking current policy, owned by
- * the delivery path, not by this adapter; the `sessionPersistence` load-order
- * requirement (published service doc) is an assembly obligation, not a row
- * fact. The census effect deltas (durable storage write, timer arm,
- * cross-session wake on delivery) are recorded on the frozen dispatch index,
- * not asserted from this lane.
+ * are SERVICE+RUNTIME dimensions (runtime.ts:90-155) invisible at this port
+ * seam; per the family contract a future wake is NOT a standing license
+ * (本次批准的是持久schedule定义及其界限) — each trigger is a new invocation
+ * that must re-check current policy/owner, and the INVESTIGATION (root ①)
+ * MEASURED that the published face offers NO pre-delivery governance entry
+ * for that re-check (NAMED GAP TRIGGER_GOVERNANCE names the exact missing
+ * interface; this row therefore NEVER claims the re-check, and the
+ * obligation is NOT stuffed into create/update claims either — the row's
+ * claims stop at the durable record write); the `sessionPersistence`
+ * load-order requirement (published service doc) is an assembly obligation,
+ * not a row fact. The census effect deltas (durable storage write, timer
+ * arm, cross-session wake on delivery) are recorded on the frozen dispatch
+ * index, not asserted from this lane.
  *
  * Windows dimensions: NOT RUN on this Linux harness, never claimed.
  *
@@ -198,7 +262,7 @@ import { createHash } from 'node:crypto'
 
 /** Census family (M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX records 30–33). */
 export const A5_B_SCHEDULE_FAMILY_ID = 'B-SCHEDULE'
-export const A5_B_SCHEDULE_ADAPTER_REVISION = 1
+export const A5_B_SCHEDULE_ADAPTER_REVISION = 2
 /** Frozen mount condition of all four records (declared_mount). */
 export const A5_B_SCHEDULE_MOUNT_CONDITION = 'declared_mount'
 
@@ -232,9 +296,10 @@ export const A5_B_SCHEDULE_SERVICE_METHODS = Object.freeze({
   update: Object.freeze({ arity: 2, signature: 'update(request, signal?): Promise<ScheduleUpdateResult>' }),
 })
 
-/** The closed ScheduleToolError code union (src/types.ts :321 union, values
- *  enumerated from the tools.ts ERROR_SCHEMAS face — the operationError
- *  mirror (L6) admits ONLY these codes. */
+/** The published ScheduleToolError code union (src/types.ts :321 union,
+ *  values enumerated from the tools.ts ERROR_SCHEMAS face). DOCUMENTATION-
+ *  SIDE since root ③: the L6 mirror admits ONLY `instanceof` the injected
+ *  published class (tools.ts:202), never a duck-check against this list. */
 export const A5_B_SCHEDULE_TOOL_ERROR_CODES = Object.freeze([
   'invalid_prompt',
   'invalid_selector',
@@ -273,9 +338,9 @@ const CODES = A5_B_SCHEDULE_CODES
  * port — carried verbatim on every plan instead of being faked closed.
  */
 export const A5_B_SCHEDULE_NAMED_GAPS = Object.freeze({
-  TIMER_ARM: 'TIMER ARM / RESCHEDULE / DISARM UNOBSERVED at this seam: the durable timer obligation, restart non-double-fire and the delivery wake run in the service runtime (runtime.ts:101-130 @639ed01539) behind the committed record; the port call only durably writes the record — the row never claims it armed, re-armed, or disarmed a timer, and a delete result never asserts no wake is already queued (the captured DELETE_DESCRIPTION itself: deletion does not retract an already-queued reminder).',
-  PER_TRIGGER: 'PER-TRIGGER AUTHORITY is NOT a standing license: per the family contract each future wake is a new invocation re-checking current policy/target owner through the delivery path; nothing granted through this row authorizes that later invocation, and the row never reports the dimension as checked.',
-  INPUT_ERROR_CLASS: 'error instanceof ScheduleInputError stays HOST-side: this lane cannot import the class, so L6 maps thrown values through the CLOSED-CODE duck mirror (A5_B_SCHEDULE_TOOL_ERROR_CODES); a foreign error wearing a closed code maps as its own value — the row never claims instanceof fidelity.',
+  TIMER_ARM: 'TIMER ARM / RESCHEDULE / DISARM UNOBSERVED at this seam: the durable timer obligation, restart non-double-fire and the delivery wake run in the service runtime (runtime.ts:90-155 @639ed01539) behind the committed record; the port call only durably writes the record — the row never claims it armed, re-armed, or disarmed a timer, and a delete result never asserts no wake is already queued (the captured DELETE_DESCRIPTION itself: deletion does not retract an already-queued reminder).',
+  TRIGGER_GOVERNANCE: 'THE TRIGGER IS NOT THIS INVOCATION\'S LICENSE, AND THE RE-CHECK HAS NO PUBLISHED ENTRY (measured @639ed01539): per contract §B-SCHEDULE each future wake is a NEW invocation that must re-check current policy/target owner (每次触发新invocation重查当前policy/目标owner), and revocation blocks firing through durable state rather than a per-trigger re-ask (the scan only takes status === \'active\' records, runtime.ts:90/:155 — delete/update ARE the revocation path, auditable via catalog/history). MEASURED: the published surface exports NO trigger-time governance entry — ScheduleRuntime is plugin-private (index.ts:113/:156 construct it, not exported) and the delivery path resolveAgent(runtime.ts:101) → agent.followup(:123) → sessions.flush(:124) carries no hook/listener/veto anywhere in runtime.ts. EXACT MISSING PUBLIC INTERFACE: a pre-delivery governance entry between resolveAgent and followup where the governor re-checks current policy/owner per trigger. What DOES hold at the driven turn: every tool call the wake\'s turn performs re-runs the normal per-call admission (实际后续工具仍逐次治理). Nothing granted through this row authorizes any later invocation; the row never reports the dimension as checked and create/update never claim trigger authority.',
+  PLAN_ONCE_MEMO: 'PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER (root ④): consumedPlans refuses replaying the SAME plan OBJECT with zero port entry; a caller that COPIES a plan\'s fields re-dispatches (the fingerprint law re-runs the whole argument law on the copy). The real one-shot consumedProof is a CENTER PA wiring obligation (the plane\'s consume-for-execution edge); this row mints no consumedProof and never claims once-closure.',
   PERSISTENCE_ORDER: 'sessionPersistence load order (the published service doc: a delivery commits only when the session/flush listener participated) is an ASSEMBLY obligation of the owning mount, not a row fact; the row never observes it.',
 })
 
@@ -321,16 +386,17 @@ export function scheduleView(record, now) {
 /** The stable internal_error value (tools.ts:197). */
 const internalErrorValue = () => deepFreeze({ code: 'internal_error', message: 'The schedule operation failed.' })
 
-/** L6 operationError mirror (tools.ts:202): closed-shape value or the stable
- *  internal_error — never a re-raise. */
-function toToolErrorValue(error) {
-  if (isRecord(error)
-    && typeof error.code === 'string'
-    && A5_B_SCHEDULE_TOOL_ERROR_CODES.includes(error.code)
-    && typeof error.message === 'string') {
-    return deepFreeze({ code: error.code, message: error.message })
-  }
-  return internalErrorValue()
+/** L6 operationError mirror (tools.ts:202), root ③: the host's OWN law
+ *  `error instanceof ScheduleInputError ? {code,message} : internalError()`,
+ *  run against the PUBLISHED class identity the owning assembly injects
+ *  (export src/index.ts:36 — the same class the host bodies import and
+ *  throw). The former duck-by-code path is DELETED: a foreign error wearing
+ *  a closed code no longer leaks its internal message bytes; it maps to the
+ *  stable internal_error exactly as the host maps a non-input error. */
+function toToolErrorValue(error, ScheduleInputErrorClass) {
+  return error instanceof ScheduleInputErrorClass
+    ? deepFreeze({ code: error.code, message: error.message })
+    : internalErrorValue()
 }
 
 /* ── L5: the captured tool bodies' OWN argument law, mirrored verbatim ── */
@@ -493,8 +559,15 @@ const refusalToThrow = (refusal) => {
  *       // native = the COMPLETE captured ToolDefinition (every presentation
  *       // face verbatim); the placed def spreads it and replaces ONLY execute
  *   liveNative: (name: string) => unknown,  // REQUIRED placement feed re-read
- *   scheduleService: object,                // the ctx.schedule-shaped port
- *   trusted: { memberAgentId: string, sessionHeaderId: string }, // CONFIG
+ *   scheduleService: object,                // the BOUND ctx.schedule-shaped port
+ *   liveScheduleService: () => unknown,     // REQUIRED per-dispatch live re-read of
+ *       // the CURRENT ctx.schedule (root ② — the host bodies resolve
+ *       // rootCtx.schedule afresh; a replaced object is PORT_DRIFT)
+ *   capturedAgent: object,                  // REQUIRED: the REAL live owner Agent
+ *       // object the host registerScheduleTools binds (tools.ts:405/:411);
+ *       // dispatch REFERENCE-compares exec.agent against it (root ②)
+ *   ScheduleInputError: class,               // REQUIRED: the PUBLISHED class
+ *       // (index.ts:36) the L6 mirror runs `instanceof` against (root ③)
  *   placementFeed: (name: string) => { definitionIdentity?: string, realmId?: string } | undefined,
  *   admit: (ctx: object) => Promise<{ ok: boolean, code?: string, detail?: string }>,
  *   observe?: (row: unknown) => void,
@@ -504,10 +577,10 @@ const refusalToThrow = (refusal) => {
  */
 export function createScheduleAdapterAssembly(input = {}) {
   if (!isRecord(input)) return refuseAssembly(CODES.INPUT_INVALID, 'the factory takes one input record')
-  const knownInput = new Set(['providerId', 'declaredService', 'captured', 'liveNative', 'scheduleService', 'trusted', 'placementFeed', 'admit', 'observe'])
+  const knownInput = new Set(['providerId', 'declaredService', 'captured', 'liveNative', 'scheduleService', 'liveScheduleService', 'capturedAgent', 'ScheduleInputError', 'placementFeed', 'admit', 'observe'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
-      return refuseAssembly(CODES.INPUT_INVALID, `unknown input '${key}' — the factory takes exactly {providerId, declaredService, captured, liveNative, scheduleService, trusted, placementFeed, admit, observe}`)
+      return refuseAssembly(CODES.INPUT_INVALID, `unknown input '${key}' — the factory takes exactly {providerId, declaredService, captured, liveNative, scheduleService, liveScheduleService, capturedAgent, ScheduleInputError, placementFeed, admit, observe}`)
     }
   }
   const providerId = typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'b-schedule'
@@ -517,14 +590,23 @@ export function createScheduleAdapterAssembly(input = {}) {
   if (typeof input.admit !== 'function') {
     return refuseAssembly(CODES.ADMISSION_ABSENT, 'admit is REQUIRED — this module ships NO unadmitted path to the schedule service (the plane\'s PA walk occupies this seam at integration; L10)')
   }
-  if (!isRecord(input.trusted)
-    || typeof input.trusted.memberAgentId !== 'string' || input.trusted.memberAgentId.length === 0
-    || typeof input.trusted.sessionHeaderId !== 'string' || input.trusted.sessionHeaderId.length === 0) {
-    return refuseAssembly(CODES.INPUT_INVALID, 'trusted {memberAgentId, sessionHeaderId} is mount-time CONFIG and REQUIRED — the two independent pairing facts for the LIVE caller (L4); the service-call sessionId is still the live exec.agent.session.id, never this config')
+  if (!isRecord(input.capturedAgent)
+    || !isRecord(input.capturedAgent.session)
+    || typeof input.capturedAgent.session.id !== 'string' || input.capturedAgent.session.id.length === 0) {
+    return refuseAssembly(CODES.INPUT_INVALID, 'capturedAgent is REQUIRED — the REAL live owner Agent object the host binds (tools.ts:405/:411): dispatch REFERENCE-checks exec.agent against it exactly like the host (exec.agent !== agent → internal_error, tools.ts:438/:457/:481/:509) and the service-call sessionId is read from it (root ②: a config id-string never re-pairs an Agent object)')
+  }
+  if (typeof input.liveScheduleService !== 'function') {
+    return refuseAssembly(CODES.INPUT_INVALID, 'liveScheduleService () => ctx.schedule is REQUIRED — the host bodies resolve rootCtx.schedule AFRESH at every call (tools.ts:443/:460/:484/:515), so the row re-reads the CURRENT service at every dispatch edge; a bind-time constant compared against itself proves nothing (root ②)')
+  }
+  if (typeof input.ScheduleInputError !== 'function') {
+    return refuseAssembly(CODES.INPUT_INVALID, 'ScheduleInputError is REQUIRED — the PUBLISHED error class (export src/index.ts:36, the same class identity the host bodies throw); the L6 mirror runs the host\'s own `error instanceof ScheduleInputError` law (tools.ts:202), never a duck-code that leaks internal message bytes (root ③)')
   }
   const service = input.scheduleService
   if (!isRecord(service)) {
     return refuseAssembly(CODES.PORT_ABSENT, 'scheduleService is REQUIRED — the ctx.schedule-shaped REAL-SERVICE port (production: the live ctx.schedule); this adapter holds no schedule implementation')
+  }
+  if (input.liveScheduleService() !== service) {
+    return refuseAssembly(CODES.PORT_DRIFT, 'liveScheduleService() does not answer the bound scheduleService — the mount is already split between two service objects; refuse at assembly, never dispatch into a split mount')
   }
   const frozenPortMethods = {}
   for (const method of Object.keys(A5_B_SCHEDULE_SERVICE_METHODS)) {
@@ -533,10 +615,8 @@ export function createScheduleAdapterAssembly(input = {}) {
     }
     frozenPortMethods[method] = service[method]
   }
-  const trusted = Object.freeze({
-    memberAgentId: input.trusted.memberAgentId,
-    sessionHeaderId: input.trusted.sessionHeaderId,
-  })
+  const capturedAgent = input.capturedAgent
+  const ScheduleInputErrorClass = input.ScheduleInputError
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
 
   const declaredProof = isRecord(input.declaredService) && input.declaredService.present === true
@@ -605,27 +685,28 @@ export function createScheduleAdapterAssembly(input = {}) {
     if (live.execute !== bound.execute) {
       return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the captured definition's execute function is no longer the bound function value`)
     }
-    if (service !== bound.port) {
-      return refuse(CODES.PORT_DRIFT, `${row.name}: the port object underneath the frozen bind was replaced`)
+    // ROOT ②: read the CURRENT schedule service exactly where the host body
+    // would resolve `rootCtx.schedule` — the old `service !== bound.port`
+    // constant self-compare could never observe anything and is deleted.
+    const current = input.liveScheduleService()
+    if (current !== bound.port) {
+      return refuse(CODES.PORT_DRIFT, `${row.name}: the CURRENT ctx.schedule read is not the bound port object — the host bodies resolve rootCtx.schedule afresh per call (tools.ts:443/:460/:484/:515); a service replaced underneath this mount is drift, full stop`)
     }
     for (const method of row.portMethods) {
-      if (service[method] !== frozenPortMethods[method]) {
+      if (current[method] !== frozenPortMethods[method]) {
         return refuse(CODES.PORT_DRIFT, `${row.name}: the port method '${method}' was rebound underneath the frozen bind — a rebound service method is drift, full stop`)
       }
     }
     return null
   }
 
-  /** L4: the live caller pairing. A miss answers the HOST's own
-   *  identity-refusal value (tools.ts:436/:457/:481 shape), zero port entry. */
-  const callerPairing = (exec) => {
-    const agent = isRecord(exec) ? exec.agent : undefined
-    if (!isRecord(agent) || agent.id !== trusted.memberAgentId) return null
-    const session = agent.session
-    if (!isRecord(session) || !isRecord(session.header) || session.header.id !== trusted.sessionHeaderId) return null
-    if (typeof session.id !== 'string' || session.id.length === 0) return null
-    return session.id
-  }
+  /** L4 (root ②): the host's OWN identity law — REFERENCE equality of the
+   *  live caller against the BOUND owner Agent object (tools.ts:438/:457/
+   *  :481/:509 `exec.agent !== agent`). A miss answers the HOST's own
+   *  identity-refusal VALUE (internal_error), zero port entry. Id bytes are
+   *  NEVER the pairing fact: a look-alike Agent object is refused exactly
+   *  like the host refuses it. */
+  const ownerMatches = (exec) => isRecord(exec) && exec.agent === capturedAgent
 
   const buildActiveRow = (name, capture) => {
     const spec = A5_B_SCHEDULE_RECORD_SPECS[name]
@@ -655,6 +736,39 @@ export function createScheduleAdapterAssembly(input = {}) {
     return row
   }
 
+  /** L3b (root ①): the contract §B-SCHEDULE target facts every plan carries.
+   *  All values are READS of bound/published facts — the row claims nothing
+   *  beyond the durable record write (TIMER_ARM / TRIGGER_GOVERNANCE carry
+   *  exactly what it never claims). */
+  const TARGET_TIMER_EFFECT = Object.freeze({
+    schedule_create: 'arm — SERVICE-side: the committed record creates the timer obligation; the row never observes the arm',
+    schedule_update: 're-align — SERVICE-side: the committed record re-computes the obligation (contract: 改规则即重对齐)',
+    schedule_delete: 'disarm-on-durable-record-state — SERVICE-side: the scan only takes status === \'active\' (runtime.ts:90/:155); an already-queued wake is NOT retracted (captured DELETE_DESCRIPTION)',
+    schedule_list: 'none — read-only',
+  })
+  const TARGET_REVISION_LAW = Object.freeze({
+    schedule_create: 'service-mints-id-on-commit (storage tasks key = ScheduleId; no pre-commit revision exists)',
+    schedule_update: 'cas-expected-record (the COMPLETE observed record read through THIS dispatch\'s list await — storage has no numeric revision; the expected record IS the revision carrier)',
+    schedule_delete: 'id-scoped-durable-delete (the published delete request is {sessionId,id})',
+    schedule_list: 'read-only',
+  })
+  const mintTarget = (name, law, snapshot) => Object.freeze({
+    contract: 'M0-B-FAMILY-TARGET-CONTRACTS §B-SCHEDULE — target I+S(owner session+taskId+revision,action)+S(timer namespace,arm/reschedule/disarm)+S(destination session,wake)',
+    owner: Object.freeze({ kind: 'bound-live-agent-reference', sessionId: capturedAgent.session.id }),
+    action: A5_B_SCHEDULE_RECORD_SPECS[name].operation,
+    taskId: law === undefined && (name === 'schedule_delete' || name === 'schedule_update') ? snapshot.id : null,
+    revision: TARGET_REVISION_LAW[name],
+    timer: Object.freeze({
+      namespace: 'schedule-runtime-plugin-private (ScheduleRuntime, index.ts:113/:156 — NOT a public namespace handle)',
+      effect: TARGET_TIMER_EFFECT[name],
+    }),
+    destination: Object.freeze({
+      sessionId: capturedAgent.session.id,
+      path: 'every published ScheduleService face is session-scoped to the bound owner and the wake resolves exactly task.sessionId (runtime.ts:101) — this family opens NO cross-session path from a caller string (C1)',
+      wake: 'service-side agent.followup + sessions.flush (runtime.ts:123-124); NOT licensed by this invocation — see the TRIGGER_GOVERNANCE gap',
+    }),
+  })
+
   /** L8 classify: PURE over the arguments; the frozen plan is the ONLY thing
    *  delegate will ever run. No fs, no port, no clock here. */
   const classify = (row, rawArgs) => {
@@ -677,6 +791,7 @@ export function createScheduleAdapterAssembly(input = {}) {
       rowName: row.name,
       recordIndex: row.recordIndex,
       operation: A5_B_SCHEDULE_RECORD_SPECS[row.name].operation,
+      target: mintTarget(row.name, law, snapshot),
       args: snapshot,
       ...(law === undefined ? {} : { toolError: deepFreeze({ ...law }) }),
       parametersFingerprint: `sha256:${sha256(canonicalJson({ name: row.name, args: snapshot }))}`,
@@ -700,20 +815,21 @@ export function createScheduleAdapterAssembly(input = {}) {
       return refuseWith(row.name, CODES.PLAN_STALE, `${row.name}: the plan's fingerprint does not match a fresh classification of its own snapshot — a mutated/stale plan never dispatches (L8)`)
     }
     if (consumedPlans.has(plan)) {
-      return refuseWith(row.name, CODES.ALREADY_DISPATCHED, `${row.name}: this plan was already dispatched — a durable schedule write never replays through a consumed plan (L8)`)
+      return refuseWith(row.name, CODES.ALREADY_DISPATCHED, `${row.name}: this plan OBJECT was already dispatched — INTERNAL MEMO refusal only (NAMED GAP PLAN_ONCE_MEMO): the one-shot consumedProof is the center PA edge; the row claims no once-closure (L8/④)`)
     }
     const exec = isRecord(ctx) ? ctx.exec : undefined
     const order = CHECK_ORDER[row.name]
-    const sessionId = callerPairing(exec)
     const answerToolError = (value) => {
       consumedPlans.add(plan)
       observe({ event: 'b-schedule:tool-law-value', name: row.name, code: value.code })
       return deepFreeze({ ok: true, settled: 'tool-law-value', value })
     }
     if (order.toolError === 'first' && fresh.plan.toolError !== undefined) return answerToolError(fresh.plan.toolError)
-    if (sessionId === null) {
-      // L4: the host's own identity-refusal VALUE (exec.agent !== agent →
-      // internal_error), zero port entry, zero substitution.
+    if (!ownerMatches(exec)) {
+      // L4 (root ②): the host's own identity-refusal VALUE — exec.agent is
+      // not the BOUND owner OBJECT (tools.ts:438/:457/:481/:509), zero port
+      // entry, zero substitution. Id-string look-alikes fail here exactly
+      // like the host fails them.
       return answerToolError(internalErrorValue())
     }
     if (fresh.plan.toolError !== undefined && order.toolError === 'after-agent') return answerToolError(fresh.plan.toolError)
@@ -722,6 +838,10 @@ export function createScheduleAdapterAssembly(input = {}) {
     }
     consumedPlans.add(plan)
     state.dispatches += 1
+    // The service-call sessionId is read from the BOUND owner at call time
+    // (the host bodies read agent.session.id at :443/:460/:484/:515) — never
+    // from a caller string (C1), never from mount-time config bytes.
+    const sessionId = capturedAgent.session.id
     const callPort = async (method, buildArgs) => {
       observe({ event: 'b-schedule:port-call', name: row.name, method })
       return frozenPortMethods[method].apply(service, buildArgs())
@@ -749,6 +869,18 @@ export function createScheduleAdapterAssembly(input = {}) {
           const ended = entries.some((entry) => entry.sessionId === sessionId && entry.id === id)
           value = deepFreeze({ id, updated: false, code: ended ? 'schedule_ended' : 'schedule_not_found' })
         } else {
+          // ROOT ②: the await above is where this lane's world can move —
+          // re-verify the FULL edge (definition, live service, method
+          // identities, bound owner) AFTER list and BEFORE port.update. A
+          // drift surfacing during the await refuses with ZERO update entry;
+          // an owner swap mid-await answers the host identity-refusal VALUE.
+          const recheck = edgeIntegrity(row)
+          if (recheck !== null) {
+            return refuseWith(row.name, recheck.code, `${row.name}: post-await re-verify (root ②) — ${recheck.detail}`)
+          }
+          if (!ownerMatches(exec)) {
+            return answerToolError(internalErrorValue())
+          }
           const change = timingChangeFrom(fresh.plan.args)
           // SHALLOW freeze only: the request envelope is ours, but `expected`
           // is a PORT-OWNED record — freezing service data through a governed
@@ -770,10 +902,13 @@ export function createScheduleAdapterAssembly(input = {}) {
       // objects — the row never freezes the service's own data.
       return Object.freeze({ ok: true, settled: 'service', value })
     } catch (error) {
-      // L6: the captured bodies never re-raise — closed-shape value or the
-      // stable internal_error; the event stays OBSERVED, never swallowed.
+      // L6 (root ③): the captured bodies never re-raise — the host's own
+      // law `error instanceof ScheduleInputError ? {code,message} :
+      // internal_error` (tools.ts:202) against the INJECTED published class
+      // identity; no duck path, no internal message leak; the event stays
+      // OBSERVED, never swallowed.
       observe({ event: 'b-schedule:service-error', name: row.name })
-      return deepFreeze({ ok: true, settled: 'service-error-value', value: toToolErrorValue(error) })
+      return deepFreeze({ ok: true, settled: 'service-error-value', value: toToolErrorValue(error, ScheduleInputErrorClass) })
     }
   }
 

@@ -67,11 +67,26 @@ export interface BScheduleNativeCapture {
   readonly definitionIdentity: string
 }
 
-/** The frozen plan classify mints and delegate alone may run (L8). */
+/** The contract §B-SCHEDULE target facts every plan carries (root ①, L3b):
+ *  owner session+taskId+revision+action, timer namespace+effect DELTA
+ *  (labelled SERVICE-side), destination session+wake (labelled service-
+ *  owned, NOT licensed by the minting invocation). */
+export interface BSchedulePlanTarget {
+  readonly contract: string
+  readonly owner: { readonly kind: string; readonly sessionId: string }
+  readonly action: string
+  readonly taskId: string | null
+  readonly revision: string
+  readonly timer: { readonly namespace: string; readonly effect: string }
+  readonly destination: { readonly sessionId: string; readonly path: string; readonly wake: string }
+}
+
+/** The frozen plan classify mints and delegate alone may run (L8 memo law). */
 export interface BSchedulePlan {
   readonly rowName: string
   readonly recordIndex: number
   readonly operation: string
+  readonly target: BSchedulePlanTarget
   readonly args: Readonly<Record<string, unknown>>
   readonly toolError?: { readonly code: string; readonly message: string }
   readonly parametersFingerprint: string
@@ -122,6 +137,13 @@ export interface BScheduleAdmitContext {
 export type BScheduleAdmitAnswer = { ok: boolean; code?: string; detail?: string }
 export type BScheduleAdmit = (ctx: BScheduleAdmitContext) => Promise<BScheduleAdmitAnswer>
 
+/** The published ScheduleInputError class identity (export src/index.ts:36):
+ *  the L6 mirror runs the host's own `instanceof` law against it (root ③). */
+export interface BScheduleErrorConstructor {
+  new (code: string, message: string): Error
+  readonly prototype: Error
+}
+
 export interface BScheduleAssemblyInput {
   readonly providerId?: string
   /** The TRUSTED declared schedule-service proof (mountCondition
@@ -130,11 +152,26 @@ export interface BScheduleAssemblyInput {
   readonly captured?: Readonly<Record<string, BScheduleNativeCapture>>
   /** REQUIRED whenever a capture is presented (L7). */
   readonly liveNative?: (name: string) => unknown
-  /** The ctx.schedule-shaped REAL-SERVICE port (production: the live
+  /** The BOUND ctx.schedule-shaped REAL-SERVICE port (production: the live
    *  ctx.schedule); this module holds no schedule implementation. */
   readonly scheduleService: Record<string, unknown>
-  /** Mount-time CONFIG: the two independent live-caller pairing facts (L4). */
-  readonly trusted: { readonly memberAgentId: string; readonly sessionHeaderId: string }
+  /** REQUIRED (root ②): per-dispatch live re-read of the CURRENT
+   *  ctx.schedule — the host bodies resolve rootCtx.schedule afresh at
+   *  every call (tools.ts:443/:460/:484/:515); a replaced object is
+   *  PORT_DRIFT, and a bind-time constant compared against itself proves
+   *  nothing. */
+  readonly liveScheduleService: () => unknown
+  /** REQUIRED (root ②): the REAL live owner Agent object the host's own
+   *  registerScheduleTools binds (tools.ts:405/:411). Dispatch runs the
+   *  host's OWN identity law by REFERENCE — `exec.agent !== capturedAgent →
+   *  internal_error` (tools.ts:438/:457/:481/:509) — never an id-string
+   *  pairing. */
+  readonly capturedAgent: Record<string, unknown>
+  /** REQUIRED (root ③): the PUBLISHED ScheduleInputError class (export
+   *  src/index.ts:36, the same class identity the host bodies throw); the
+   *  L6 mirror runs the host's own `error instanceof ScheduleInputError`
+   *  law (tools.ts:202), never a duck-code that could leak internal bytes. */
+  readonly ScheduleInputError: BScheduleErrorConstructor
   readonly placementFeed: BSchedulePlacementFeed
   readonly admit: BScheduleAdmit
   readonly observe?: (row: unknown) => void
