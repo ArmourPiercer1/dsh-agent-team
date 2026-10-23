@@ -1,0 +1,1 @@
+NEGATIVE-CONTROL receipt (not a bundle validation): a throwaway copy of the kit was pointed at the PROVISIONAL pin d5454cb23… to prove OVERLAY-7 is live. Expected and observed: VALIDATE-ONLY FAILED (holdout marker + 3 hash mismatches), exit 1, nothing created. The ACTIVE pin is 2188f15ce…; see ../README-READY.md.

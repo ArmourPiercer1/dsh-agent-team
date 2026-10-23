@@ -1,0 +1,28 @@
+STATUS: PROVISIONAL — THE KIT REFUSES TO MOUNT THIS DIRECTORY (file name is the law: PIN_HOLDOUT_FILE)
+keyed to d5454cb238787d87979d0810031373ecbf1081be · recorded 2026-10-23T17:3xZ · NOT a final identity · NOT a READY receipt
+Superseded by the real head-0 (center is running the standard `pnpm build` and will book a precise commit + a fresh pack). The r18 pin identity is PENDING until center hands over that SHA + that tgz.
+
+WHY IT IS WITHHELD — center's measurement, corroborated read-only by this lane:
+  center: `pnpm check:artifacts:head` at d5454cb23 = RC 1, drift = 6 (the control/types + pa-control-bridge TS dist mirrors are not synced).
+  this lane, no build, git blobs only:
+    src  packages/runtime/control/types.ts                              trustedSessionHeaderId x4, 'B-CONTROL' present
+    dist packages/runtime/dist/packages/runtime/control/types.js       trustedSessionHeaderId x0, 'B-CONTROL' x0
+    dist packages/runtime/dist/packages/runtime/control/types.d.ts     trustedSessionHeaderId x0, 'B-CONTROL' x0
+  i.e. the committed dist mirror of control/types.ts is STALE, and `packages/runtime/dist/**` IS on the mounted face (the package ships it), so mounting this pin would mount a pure-core `control` layer that predates the B-CONTROL/B-INSPECT leaf-flatten it is supposed to carry. That is the same defect class the pin audit found at 126b12cc, in a different file.
+
+COVERAGE DISCLOSURE (my own gate was not sufficient — stated so nobody re-trusts it):
+  artifact0-readonly-d5454cb23.txt reported "16/16 placements, dist-vs-src drift 0". Its scope is exactly
+  `scripts/place-dist-glue.mjs PLACEMENTS`, and that list contains ONLY the .mjs/.py glue legs
+  (agent-bindings, team-tool-plane, jobs/web-gateway-assembly, ptc-escalation-row, glob/search-backend,
+  plane-effect-backends, cancel-leg, pa-mount-registry, todo/write/image/image-attachment,
+  upstream-resolver, seam.mjs, landlock-prelauncher). TypeScript source -> dist mirrors
+  (packages/runtime/**/*.ts -> packages/runtime/dist/**) are NOT placements; they are covered by
+  `check:artifacts:head`, which needs a BUILD. So "drift 0" there meant "glue legs in sync", never
+  "the whole dist is the committed src". The package-vs-committed-TREE comparison in the same file
+  (drift = 1 = package.json) is unaffected by that limit: it proves the tgz equals the tree, and the
+  tree itself is what carries the stale mirror.
+
+DISPOSITION: keep the bytes and MANIFEST-d5454cb23.txt as history (unfalsified — they were measured
+correctly, the SHA they describe is simply not mount-safe); do not build here; re-key the kit constants
+(REPO/packages-pins/<SOURCE_PIN_SHA>, EXPECT_TGZ_SHA, EXPECT_TREE_SHA, EXPECT_SURFACE_SHA, INSTALL_DIR)
+only when head-0 + the new pack arrive, then delete this file.

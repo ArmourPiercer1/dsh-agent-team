@@ -1,0 +1,34 @@
+# TS dist-mirror drift — read-only corroboration, and what closed it
+
+## What the earlier candidates carried (measured here, no build, git blobs only)
+
+`check:artifacts:head` at `d5454cb238787d87979d0810031373ecbf1081be` (center, `check-head-d5454cb23.log`): **RC=1, verdict=stale, drift=6** —
+
+```
+packages/runtime/dist/packages/runtime/control/types.js
+packages/runtime/dist/packages/runtime/control/types.js.map
+packages/runtime/dist/packages/runtime/control/types.d.ts.map
+packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.js
+packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.js.map
+packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.d.ts.map
+```
+
+This lane corroborated it independently and read-only (no build possible here):
+
+| file | `trustedSessionHeaderId` in `control/types.ts` (src) | same symbol in the committed dist `control/types.js` at `d5454cb23` | same in the FINAL pin's package dist |
+| --- | --- | --- | --- |
+| `control/types` | 4 | **0** | **4** (`B-CONTROL` ×3 too) |
+
+So the composition/glue chain in that lane never recompiles TypeScript: porcelain-clean working trees and `git diff --stat` = 0 proved only that the tree matched *itself*, not that the commit carried its own build.
+
+## Why this lane's own gate could not see it (recorded so it is never re-trusted for this)
+
+`scripts/place-dist-glue.mjs`'s `PLACEMENTS` list contains **16 `.mjs`/`.py` glue legs only**. TS→dist mirrors are *not* placements, therefore a "glue drift = 0 over 16/16 placements" verdict has **zero coverage** of the six files above. The only gate with that coverage is `pnpm check:artifacts:head`, which requires a build — out of scope for an authoring lane under a no-build order. The pin manifests now say this out loud (`MANIFEST-2188f15ce.txt` §A/§B, `artifact0-readonly-2188f15ce.txt`).
+
+## What closes it at `2188f15ce953977c681dedeb079a36ca27ddbbd7`
+
+* center's per-step true RCs at a clean checkout (porcelain 0 before AND after, no `||` fallback): checkout 0 → `pnpm --filter './packages/client' run build` 0 → `pnpm run build:composition` 0 → `place-dist-glue.mjs` 0 → **`pnpm check:artifacts:head` 0** → porcelain 0 → `pnpm pack` 0; log line `DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1788 drift=0`.
+* `git diff --name-status d5454cb23… 2188f15ce…` = exactly those **6 mirror files** + evidence/backlog documents — **zero source change**.
+* this lane's own re-measurement of the delivered package: `compared=1813 missingBlobs=0 drift=1` (the one being `package.json` pack normalization), glue 16/16 with dist-vs-src drift 0, and the `control/types.js` dist face now carrying its src's symbols (4 / 3 where the stale one had 0 / 0).
+
+Erroneous earlier receipts (`PACK-IDENTITY.txt`) are **kept unchanged** next to `PACK-IDENTITY-CORRECTION.txt`; the corresponding pin dirs in this branch carry `STATUS-HISTORICAL.txt` / `STATUS-PROVISIONAL.txt` and the kit refuses to mount a dir carrying the latter.

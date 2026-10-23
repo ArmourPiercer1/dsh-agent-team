@@ -1,12 +1,45 @@
 #!/usr/bin/env node
 /**
+ * ─── r18 HEAD (this branch, kit sha lineage aa242e37… ← 361331a9… ← 5b039e9b…) ───
+ * A5M2 r18 = ONE bounded REAL-HOST IMAGE re-verification of the r17 lexical-seam fix,
+ * `--fixture image`. The window is the FULL r17 positive+negative control window, NOT
+ * reduced (center 17:1x: the earlier "one positive + one negative" wording is VOID):
+ *   C1  governed read_image row binding: durable row on lane `plane-image`, def#22 /
+ *       B-IMAGE rev2 / a5p5-plane canonicalTarget + declaredMediaType + byteCap 20971520,
+ *       requiredAuthority leader + perEffectRequired [leader, leader], the OLD front door
+ *       EMPIRICALLY opening ZERO parameter-permission rows, and the member model surface
+ *       carrying read_image with the captured native description bytes.
+ *   C2  PENDING with ZERO store objects: while row1 is pending, the attachment store gains
+ *       nothing and the synthetic 2048x1536 PNG is byte-untouched.
+ *   C3  PUBLIC ALLOW -> exactly ONE control-allow-consumed for that live requestId, exactly
+ *       ONE new store object whose name-sha equals its byte-sha, REAL normalization
+ *       (2048x1536 -> 1024x768 via storeCapOverride maxImageDimension 1024) and the
+ *       model-visible two-block envelope carrying the ORIGINAL dimensions text + image part
+ *       with byte-identity to the stored object; PNG byte-untouched.
+ *   C4  PUBLIC DENY of the SAME image (second read_image, fresh callId -> row2 / lane-2,
+ *       confirmed read-only by the 307c lane): zero consumptions, ZERO store objects,
+ *       structural callId-paired refusal to the member (no marker word).
+ *   C5  PUBLIC ABANDON of a third row through the EXISTING p6t6 abandonControlRequest
+ *       route: exactly one abandon fact, zero consumptions, store unchanged.
+ *   H1  test-use porcelain EMPTY + HEAD baseline before and after; :3080 zero-touch.
+ *   H2  port inventory: both ports released, no survivor pids.
+ * ROOT LAWS ENFORCED IN CODE (not just in prose): first SUBSTANTIVE failure stops the run
+ * immediately (no chained 90s+120s+180s waits after a fact already proved false), never a
+ * second round automatically, NO todo emission whatsoever in image mode, requestIds are
+ * always read live from the ledger (no prior-round id can be reused), the world is
+ * `a5m2-img-r18-*` under tests/homes only, the forbidden ports are asserted, and the world +
+ * install surface are RETAINED (this kit contains no rm / prune / df; teardown is
+ * process-only). Pin identity lives in packages-pins/<SOURCE_PIN_SHA>/MANIFEST-*.txt; if
+ * that dir carries STATUS-PROVISIONAL.txt the run refuses to start.
+ * ─── r17-and-earlier HEAD (the todo/write C2 window this kit grew from) ───
+ *
  * A5M2 todo C2 — REAL-HOGATE (single bounded run, root ruling 2026-10-23).
  *
  * Verifies the governed todo_write plane row on a REAL DSH 0.2.0-rc.2 host
  * (@639ed01539 pristine test-use runtime) with the plugin mounted EXCLUSIVELY
  * from the frozen install surface extracted from the pinned tgz
  * (root 10:30 GO: packages-pins/495aeb23…/dsh-agent-team-0.1.1-alpha.2.tgz —
- * ROOT-level package, extracted into the WORLD at install-495/ and chmod a-w) plus the pinned tools/harness
+ * ROOT-level package, extracted into the WORLD at the INSTALL_DIR surface and chmod a-w) plus the pinned tools/harness
  * plugin.mjs. NOTHING mounts from .worktrees/ (the worktree supplies ONLY the
  * tests/paths.mjs constants and the harness scripts — kit public interfaces).
  *
@@ -35,14 +68,18 @@
  *
  * FIRST FAILURE STOPS: the first failed criterion (or setup fatal) exits with
  * the full state (run.log, host log copy, ledger dump, session-log dump).
- * World + install-495 are NEVER deleted (evidence retention is mandatory).
+ * World + install surface are NEVER deleted (evidence retention is mandatory; worldRetained:true).
  *
  * EXIT: 0 = all criteria pass; 2 = a criterion failed; 1 = fatal (env/boot).
  *
  * USAGE:
- *   node tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs --world <tests/homes/a5m2-todo-c2-STAMP> \
- *     [--worktree <path>] [--testuse <path>] [--host-port N] [--mock-port N] \
- *     [--evidence-dir <path>]
+ *   node tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs \
+ *     --world tests/homes/a5m2-img-r18-<UTC-stamp> --fixture image \
+ *     [--worktree <interface tree, default ../a5-m2-int>] \
+ *     [--testuse <Host639 tree, default <worktree>/tests/deepseek-harness-test-use>] \
+ *     [--host-port N] [--mock-port N] [--evidence-dir <path>] [--run-stamp S]
+ *   Ports are BIND-PROBED when not given explicitly; an explicit port is still checked
+ *   against FORBIDDEN_PORTS and bind-probed before use.
  */
 
 import { execFileSync } from 'node:child_process'
@@ -52,6 +89,7 @@ import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 import { createHash } from 'node:crypto'
+import { createServer } from 'node:net'
 
 // ── harness imports: the M1 kit PUBLIC interfaces, taken from the worktree
 // checkout (per root clause 2: the worktree supplies ONLY provenance + these
@@ -69,7 +107,11 @@ function argValue(name, dflt) {
 // ENTRY-SAFETY LAW: harness dependency loading is DEFERRED to main() (direct
 // entry only). An import of this module never loads worktree CLI-dependency
 // modules (root 1805 BLOCK item 3: no pre-positioned CLI/dependency effects).
-const WORKTREE = resolve(argValue('worktree', join(REPO, '.worktrees', 'a5-m2-int')))
+// OVERLAY-4 (interface tree default). The worktree supplies ONLY tests/paths.mjs (the Host
+// baseline pin) + the harness scripts; the executed PLUGIN never comes from there. Since this
+// kit now lives in a SIBLING worktree, the default resolves to the sibling that carries the
+// Host639 baseline pair instead of a path under this tree (--worktree still overrides).
+const WORKTREE = resolve(argValue('worktree', join(REPO, '..', 'a5-m2-int')))
 let CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA, startMockModel, DshInstance, logTail, portInUse, waitForPortFree, captureGitState
 async function loadHarness() {
   ;({ CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA } = await import(pathToFileURL(join(WORKTREE, 'tests', 'paths.mjs')).href))
@@ -79,17 +121,37 @@ async function loadHarness() {
   ;({ captureGitState } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'tree-clean.mjs')).href))
 }
 
-// ── pins (root 14:57 ruling — ROOT-level product package @ source-HEAD 249eb65ec (SYMMETRIC paImageHandoff third port, root 14:44); supersedes 19d54bd72 as the MOUNT SURFACE; 19d54/8b94/31f7 pins KEPT) ──
-const SOURCE_PIN_SHA = '249eb65ec1789ab8bfcf02268d14d3d7060b8c2a'
-const PIN_SHA = '34c6680d33c52ba50a16a1171b6f1c38e02ddae4' // helper plugin.mjs provenance (bytes identical at 495/3def/a23d/31f7; re-verified)
-const PIN_DIR = join(WORKTREE, 'packages-pins', SOURCE_PIN_SHA)
+// ── OVERLAY-1 (r18 pins; root 17:03 mission + center 17:1x/17:2x): ROOT-level product
+// package pin for the ONE bounded image RE-VERIFICATION of the r17 lexical-seam fix.
+// LABELS ONLY — no gate, no criterion, no leg moved. Two deliberate path changes, both
+// named: (i) the pin's authoritative home is THIS branch's `packages-pins/<SHA>/` (the
+// interface worktree supplies only tests/paths.mjs + the harness scripts), and (ii) the
+// p6t6 helper row now resolves INSIDE the same pin dir; its bytes are unchanged and the
+// existing double gate (file sha + `git show <SHA>:packages/tools/harness/plugin.mjs`
+// blob sha) is kept verbatim, so a substituted helper still cannot ride the run.
+// IDENTITY (root 17:30 FINAL): source-HEAD 2188f15ce953977c681dedeb079a36ca27ddbbd7 — the int tip
+// whose six TS dist mirrors are committed by a real build (center: `check:artifacts:head`
+// verdict=ok compared=1788 drift=0, "HEAD carries its own build"). Re-measured in THIS lane, no
+// build: PACKAGE == COMMITTED TREE for 1812/1813 files (the one drift is package.json pack
+// normalization: pnpm pack drops "packageManager", every other parsed-JSON key equal); glue audit
+// 16/16 with committed-dist-vs-src drift 0; fsSeam present on the mounted dist face (2 + 1); the
+// control/types.js dist that was STALE at d5454cb23 now carries its src's fields (x4 / x3 vs 0 / 0).
+// Path-set is BYTE-IDENTICAL to the r17 pin (entries digest 5263586e… unchanged), so the path-set
+// and digest gates keep their r17 expected values. The 126b12cc / d5454cb23 dirs stay in this
+// branch as the unfalsified audit trail, and PIN_HOLDOUT_FILE below is what stopped this lane
+// from mounting either one.
+const SOURCE_PIN_SHA = '2188f15ce953977c681dedeb079a36ca27ddbbd7'
+const PIN_SHA = SOURCE_PIN_SHA // helper bytes == the 34c6680d helper pin (471475b9…), asserted twice below
+const PIN_DIR = join(REPO, 'packages-pins', SOURCE_PIN_SHA)
 const PIN_TGZ = join(PIN_DIR, 'dsh-agent-team-0.1.1-alpha.2.tgz')
-const PIN_PLUGIN = join(REPO, 'packages-pins', PIN_SHA, 'plugin.mjs') // helper bytes (== 495 blob, verified)
-const EXPECT_TGZ_SHA = 'ca0f4b253fd3e9075e86d772f33ccb21c42c165ff7de3dee5949faf5c780d4b7'
+const PIN_PLUGIN = join(PIN_DIR, 'plugin.mjs') // helper bytes (blob at SOURCE_PIN_SHA, verified)
+const PIN_HOLDOUT_FILE = join(PIN_DIR, 'STATUS-PROVISIONAL.txt') // presence = identity not final -> REFUSE
+const EXPECT_TGZ_SHA = '5a9aa54c372f55e68855198e4b1a9930a399ed52ad670a732a4edd4964613360'
 const EXPECT_PLUGIN_SHA = '471475b96e70f05a178f6006cf7b256765533313092b7c4689553c7c8d0ee784'
-const EXPECT_TREE_SHA = 'f8d5622a272450ee84f8eab0ba5fef0e2bb6e35f34cc121167e726fbc7840d76' // MANIFEST@249eb tree-sha256: LC_ALL=C sorted per-file hash+path lines (same recipe the kit prints side by side; non-gating INFO)
-const EXPECT_ENTRIES = 1813
-const INSTALL_DIR = 'install-249eb65ec' // root 14:57: mount surface = the 249eb pin (PATHSET-EQUAL-1813 vs 19d54; content delta EXACTLY SIX files)
+const EXPECT_TREE_SHA = 'cc8d02643237129975d02f9ab17fe30b15749831a8d4fdb04fb4f0a6ced6ebcb' // sha256 OF manifest-tgz-dist-hashes.txt (the recipe that reproduces r17's f8d5622a…; non-gating INFO)
+const EXPECT_SURFACE_SHA = '66cd31e8b9ff80bcc1f15b8c8bf70a0836bb0e235f1b03cac2807576f27e91c8' // sha256 OF manifest-installsurface-hashes.txt (473 lines)
+const EXPECT_ENTRIES = 1813 // path-set BYTE-IDENTICAL to the r17 pin (entries digest 5263586e… unchanged)
+const INSTALL_DIR = 'install-2188f15ce' // fresh surface for THIS run; r17's install-249eb65ec is never touched
 
 function sha256File(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex')
@@ -104,7 +166,19 @@ function sha256File(path) {
 // never runs main() and never derives a world from the importer's argv — it
 // resolves against an inert placeholder only.
 import { parseWorldArg, isDirectEntry, WorldSafetyError } from '../lib/world-safety.mjs'
-const HOMES_ROOT = join(REPO, 'tests', 'homes')
+// OVERLAY-11 (homes root, entry-safety-law compatible). The guard refuses ANY world whose real
+// path contains a `.worktrees` segment — correctly, and it is what caught this during the guard
+// self-check: this kit is AUTHORED inside .worktrees/a5m2-imgverify, so a homes root derived from
+// its own file location could never host a world. DSH_HOME lives in the SUPERPROJECT's
+// tests/homes (workspace-internal, gitignored), exactly where the r11-r17 worlds are. --homes-root
+// overrides, and an override under .worktrees is still refused by the guard itself, not by a
+// string test here.
+const SUPERPROJECT_ROOT = (() => {
+  const seg = REPO.split('/')
+  const i = seg.lastIndexOf('.worktrees')
+  return i > 0 ? seg.slice(0, i).join('/') || '/' : REPO
+})()
+const HOMES_ROOT = resolve(argValue('homes-root', join(SUPERPROJECT_ROOT, 'tests', 'homes')))
 const ENTRY_DIRECT = isDirectEntry(import.meta.url, process.argv[1])
 const WORLD_REL = ENTRY_DIRECT ? argValue('world', null) : null
 let HOME
@@ -113,11 +187,24 @@ if (ENTRY_DIRECT) {
     HOME = parseWorldArg({ repoRoot: REPO, homesRoot: HOMES_ROOT, worldArg: WORLD_REL }).home
   } catch (e) {
     console.error(`FATAL: ${e instanceof WorldSafetyError ? e.message : `--world invalid: ${String(e?.message ?? e)}`}`)
-    console.error('a5m2-todo-c2: NOTHING created, mounted or removed (entry-safety law). Usage: --world <tests/homes/a5m2-todo-c2-STAMP>')
+    console.error('a5m2-todo-c2: NOTHING created, mounted or removed (entry-safety law). Usage: --world <tests/homes/a5m2-img-r18-<UTC-stamp>> --fixture image [--validate-only]')
     process.exit(1)
   }
 } else {
   HOME = join(HOMES_ROOT, '__module-import-no-world__') // inert: main() is entry-gated at the file end
+}
+// OVERLAY-3 (r18 naming + port LAW; root 17:0x/17:2x). Two closures, both additive:
+//  (a) THIS run's world is named `a5m2-img-r18-<UTC-stamp>` and nothing else, so a
+//      leftover world from another round can never be mounted by mistake;
+//  (b) the forbidden ports become an ASSERTION instead of a comment (in the r11-r17
+//      lanes :3080/:3182/:3497 and the RSJ-frozen :3186/:3500 were law but nothing in
+//      the kit checked them). Enforced on the candidates AND on any explicit
+//      --host-port/--mock-port the operator passes.
+const WORLD_PREFIX = 'a5m2-img-r18-'
+const FORBIDDEN_PORTS = [3080, 3180, 3181, 3182, 3186, 3497, 3500]
+if (ENTRY_DIRECT && !HOME.split('/').pop().startsWith(WORLD_PREFIX)) {
+  console.error(`FATAL: --world basename must start with "${WORLD_PREFIX}" (this round's exclusive world prefix). NOTHING created, mounted or removed (entry-safety law).`)
+  process.exit(1)
 }
 const FIXTURE = argValue('fixture', 'todo')
 if (FIXTURE !== 'todo' && FIXTURE !== 'write' && FIXTURE !== 'image') {
@@ -132,13 +219,24 @@ const REFUSAL_MARK = FIXTURE === 'write' ? 'refused-write' : FIXTURE === 'todo' 
 const INSTALL_PKG = join(HOME, INSTALL_DIR, 'package')
 const INSTALL = join(INSTALL_PKG, 'packages', 'runtime', 'dist')
 const LOCK_FILE = `${HOME}.lock`
-const EVIDENCE_DIR = resolve(argValue('evidence-dir', join(REPO, 'dev', 'agent-workflow', 'evidence', 'a5m2-todo-c2')))
+const EVIDENCE_DIR = resolve(argValue('evidence-dir', join(REPO, 'dev', 'agent-workflow', 'evidence', 'a5m2-img-r18')))
 
 function utcStamp() {
   return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 }
-const RUN_STAMP = `a5m2c2-${utcStamp()}`
-const RUN_DIR = join(EVIDENCE_DIR, `run-${RUN_STAMP.slice('a5m2c2-'.length)}`)
+// OVERLAY-5 (run naming): the r18 tag drives the run directory, session ids, realm and
+// markers, so nothing from r11-r17 can collide with this round (r17's world/session ids stay
+// untouched evidence).
+const RUN_TAG = 'a5m2-img-r18'
+const RUN_STAMP = argValue('run-stamp', `${RUN_TAG}-${utcStamp()}`)
+if (!RUN_STAMP.startsWith(`${RUN_TAG}-`)) {
+  // direct entry only: an import must NEVER exit the importing process
+  if (ENTRY_DIRECT) {
+    console.error(`FATAL: --run-stamp must start with "${RUN_TAG}-" (run + evidence identity stays attributable to this round).`)
+    process.exit(1)
+  }
+}
+const RUN_DIR = join(EVIDENCE_DIR, `run-${RUN_STAMP.slice(RUN_TAG.length + 1)}`)
 
 // The DESIGNATED host runtime (root ruling 10:03 item 2): the test-use
 // checkout INSIDE the worktree tree (the runtime host, distinct from the
@@ -149,7 +247,7 @@ const HOST_TREE = TESTUSE
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 let HOST_BASELINE_SHA = null // set by loadHarness() in main(); generation lives ONLY in tests/paths.mjs
 
-// THE MOUNT SURFACE — ROOT-level package at install-495/package (root 10:30 GO)
+// THE MOUNT SURFACE — ROOT-level package at the INSTALL_DIR surface (layout unchanged since root 10:30 GO)
 // + the pinned helper at mount-helper/packages/tools/harness/plugin.mjs, laid
 // out so its RELATIVE leg ../../runtime/dist/packages/runtime/mutation/index.js
 // resolves (packages/runtime -> symlink into the extracted package). Nearest
@@ -164,9 +262,16 @@ const GLUE_URL = pathToFileURL(GLUE_PATH).href
 const SEAM_URL = pathToFileURL(SEAM_PATH).href
 const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
 
-// Ports: 3180 family ONLY (3182-3186 host, 3497-3498 mock). NEVER 3080/3180/3181.
-const HOST_PORT_CANDIDATES = [3182, 3183, 3184, 3185, 3186]
-const MOCK_PORT_CANDIDATES = [3497, 3498]
+// Ports (OVERLAY-2, r18 selection): 3180 family ONLY. The stable dev instance and
+// every port this program or another lane has frozen are ABSOLUTELY forbidden —
+// :3080 (stable dev), :3180/:3181 (family defaults), :3182 + :3497 (the r11-r17 C2
+// pair), :3186 + :3500 (RSJ-frozen). The remaining candidates are 3183-3185 (host)
+// and 3498 (mock). Selection is by ACTIVE BIND-PROBE, not by connect-guessing: the
+// kit binds 127.0.0.1:<port> itself (EADDRINUSE = taken), HELDS that socket while it
+// decides, and releases it only in the instant before the process that will own the
+// port starts (Host / mock). Every probe attempt is recorded in <run>/port-probe.json.
+const HOST_PORT_CANDIDATES = [3183, 3184, 3185]
+const MOCK_PORT_CANDIDATES = [3498]
 
 const ROOT = `session-a5m2c2-boot-${RUN_STAMP}`
 const ROOT_P = `session-a5m2c2-p-${RUN_STAMP}`
@@ -293,11 +398,13 @@ function log(line) {
 }
 
 const CRITERIA = [
-  { id: 'C1', name: 'REAL todo_write registration (captured native description bytes) + governed durable row with plane-todo callId grammar' },
-  { id: 'C2', name: 'Ask PENDING with ZERO append (member session log has zero todo/write entries while pending)' },
-  { id: 'C3', name: 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE todo/write append, field-for-field equal' },
-  { id: 'C4', name: 'REAL DENY with ZERO append (log total stays 1, zero consumption, refusal surfaced to member)' },
-  { id: 'C5', name: 'cancel via the existing p6t6 abandon fixture (one abandon fact, zero consumption, zero append)' },
+  // OVERLAY-10: criterion NAMES follow the fixture, so the run summary of an image round never
+  // reads like a todo round (the legs themselves are unchanged; write keeps the r16 wording).
+  { id: 'C1', name: FIXTURE === 'image' ? 'GOVERNED read_image row binding: durable row on lane plane-image (B-IMAGE rev2 manifest, canonicalTarget + declaredMediaType + byteCap), requiredAuthority leader x2, ZERO old parameter-permission rows for read_image (the hand-off EMPIRICALLY opens the old front door at zero) + the member surface carries read_image with the CAPTURED NATIVE description bytes' : FIXTURE === 'write' ? 'REAL write registration (captured native description bytes) + governed durable row bound to the live callId' : 'REAL todo_write registration (captured native description bytes) + governed durable row with plane-todo callId grammar' },
+  { id: 'C2', name: FIXTURE === 'image' ? 'PENDING with ZERO side effects: no consumption, ZERO new attachment-store objects, source PNG byte-untouched' : FIXTURE === 'write' ? 'Ask PENDING with ZERO effect (fixture file bytes unchanged, zero consumption)' : 'Ask PENDING with ZERO append (member session log has zero todo/write entries while pending)' },
+  { id: 'C3', name: FIXTURE === 'image' ? 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE new store object (name-sha == byte-sha) + REAL normalization 1024x768 with the ORIGINAL 2048x1536 dimensions in the model-visible text and the stored bytes as the image part' : FIXTURE === 'write' ? 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + the fixture file bytes equal the submitted content' : 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE todo/write append, field-for-field equal' },
+  { id: 'C4', name: FIXTURE === 'image' ? 'PUBLIC DENY of the SAME image (fresh callId -> row2 on lane plane-image): ZERO consumptions, ZERO new store objects, structural callId-paired refusal surfaced to the member' : FIXTURE === 'write' ? 'REAL DENY with ZERO effect (bytes unchanged, zero consumption, refusal surfaced to member)' : 'REAL DENY with ZERO append (log total stays 1, zero consumption, refusal surfaced to member)' },
+  { id: 'C5', name: FIXTURE === 'image' ? 'PUBLIC ABANDON via the existing p6t6 abandonControlRequest route: one abandon fact, ZERO consumptions, store unchanged, callId-paired refusal to the member' : FIXTURE === 'write' ? 'cancel via the existing p6t6 abandon fixture (one abandon fact, zero consumption, zero effect)' : 'cancel via the existing p6t6 abandon fixture (one abandon fact, zero consumption, zero append)' },
   { id: 'H1', name: 'test-use porcelain EMPTY + HEAD baseline before and after; :3080 zero-touch BY CONSTRUCTION' },
   { id: 'H2', name: 'every allocated port released + no surviving host/mock process (ps proof)' },
 ]
@@ -327,6 +434,7 @@ async function dieFatal(msg, isCriterionFailure = false) {
     }
     try { if (mockRef !== null) writeFileSync(join(RUN_DIR, 'mock.log'), mockRef.requestLogText ? mockRef.requestLogText() : JSON.stringify(mockRef.requests, null, 2)) } catch { /* ok */ }
     try { writeFileSync(join(RUN_DIR, 'api-transcript.json'), JSON.stringify(TRANSCRIPT, null, 2)) } catch { /* ok */ }
+    try { writeFileSync(join(RUN_DIR, 'port-probe.json'), JSON.stringify({ forbidden: FORBIDDEN_PORTS, attempts: PORT_PROBE }, null, 2)) } catch { /* ok */ }
     dumpSessionLogs('on-stop')
     dumpPaEdgeEvidence()
     writeFileSync(join(RUN_DIR, 'ledger-dump.json'), JSON.stringify(LEDGER_CACHE, null, 2))
@@ -358,12 +466,59 @@ let mockRef = null
 function noteTranscript(entry) { TRANSCRIPT.push({ at: new Date().toISOString(), ...entry }) }
 
 // ── port selection + stable-instance discipline ────────────────────────────
+// OVERLAY-6 (root 17:0x: "bind-probe the two ports, then hold"): selection is an ACTIVE
+// bind test on 127.0.0.1 (EADDRINUSE = taken), not a connect guess; the winning probe socket
+// is HELD while the rest of the setup runs and released only in the instant before the
+// process that will own the port starts (mock, then Host). Every attempt — including the
+// rejected ones and the explicit --host-port/--mock-port values — is recorded in
+// <run>/port-probe.json, and FORBIDDEN_PORTS is asserted before any probe.
+const PORT_PROBE = []
+const PORT_HELD = new Map()
+async function bindProbeHold(port, label) {
+  const srv = createServer()
+  const rec = { at: new Date().toISOString(), label, port, connectProbe: null, bindProbe: null, held: false }
+  PORT_PROBE.push(rec)
+  rec.connectProbe = (await portInUse(port, 1500)) ? 'listener-seen' : 'no-listener'
+  await new Promise((res, rej) => {
+    srv.once('error', (e) => { rec.bindProbe = `EADDR/${e.code ?? 'ERR'}`; rej(e) })
+    srv.listen(port, '127.0.0.1', () => { rec.bindProbe = 'bound'; res() })
+  }).then(() => {
+    PORT_HELD.set(port, srv)
+    rec.held = true
+    return true
+  }).catch(() => false)
+  if (rec.bindProbe !== 'bound') { try { srv.close() } catch {} }
+  return rec.bindProbe === 'bound'
+}
+async function releaseHold(port, why) {
+  const srv = PORT_HELD.get(port)
+  if (!srv) return
+  PORT_HELD.delete(port)
+  await new Promise((res) => { srv.close(() => res()) })
+  log(`port ${port} hold released (${why})`)
+}
+function assertPortAllowed(port, label) {
+  if (FORBIDDEN_PORTS.includes(port)) {
+    PORT_PROBE.push({ at: new Date().toISOString(), label, port, bindProbe: 'REFUSED-forbidden-port' })
+    throw new Error(`${label}: port ${port} is FORBIDDEN (${FORBIDDEN_PORTS.join('/')}) — the stable dev instance and every frozen lane port are off-limits`)
+  }
+}
 async function pickPort(candidates, label) {
   for (const p of candidates) {
-    if (!(await portInUse(p, 1500))) { log(`${label}: port ${p} free`); return p }
-    log(`${label}: port ${p} busy, next`)
+    try { assertPortAllowed(p, label) } catch (e) { log(`${label}: ${e.message}`); continue }
+    if (await bindProbeHold(p, label)) { log(`${label}: port ${p} bind-probed free and HELD until start`); return p }
+    log(`${label}: port ${p} not bindable, next`)
   }
-  await dieFatal(`${label}: no free port in [${candidates.join(', ')}]`)
+  await dieFatal(`${label}: no bind-probed free port in [${candidates.join(', ')}]`)
+}
+async function explicitPort(n, label) {
+  assertPortAllowed(n, label)
+  if (!(await bindProbeHold(n, label))) await dieFatal(`${label}: --${label}-port ${n} is not bindable on 127.0.0.1`)
+  log(`${label}: explicit port ${n} bind-probed free and HELD until start`)
+  return n
+}
+async function writePortProbe() {
+  try { writeFileSync(join(RUN_DIR, 'port-probe.json'), JSON.stringify({ forbidden: FORBIDDEN_PORTS, attempts: PORT_PROBE }, null, 2)) } catch {}
 }
 
 async function fetchJson(url, init, timeoutMs) {
@@ -483,6 +638,47 @@ function readLedger() {
 }
 const TODO_CORR_RE = () => new RegExp(`plane-todo:${REALM_ESC}-\\d+`)
 let REALM_ESC = 'a-realm'
+
+// OVERLAY-9 (root law "image mode NEVER emits todo", turned into a GATE). r17 showed the
+// failure mode is not "the oracle calls todo_write" (it never does) but RESIDUE: an
+// orphan todo row from another fixture reached the governed plane and only surfaced as an
+// unexplained extra PA row mid-run. So in image mode the kit now asserts, inside the leg it
+// belongs to (a failure therefore stops the run AT that leg), that the todo footprint is
+// ZERO on all three independent surfaces: the durable ledger (no `plane-todo` lane fact),
+// the member session storage (no `todo/write` entry), and the model wire (no todo_write tool
+// call in any request the mock served).
+function todoFootprint(childSidOrNull) {
+  const led = readLedger()
+  const laneFacts = [...led.recorded, ...led.decisions, ...led.consumptions, ...led.abandonments]
+    .filter((f) => /:plane-todo:/.test(String(f?.payload?.correlation ?? '')))
+    .map((f) => ({ fact: f?.payload?.requestId ? 'row' : 'row', rid: f?.payload?.requestId ?? null, corr: f?.payload?.correlation ?? null }))
+  let sessionRows = 0
+  let sessionFiles = []
+  if (typeof childSidOrNull === 'string' && childSidOrNull !== '') {
+    try { const ml = readMemberTodoLog(childSidOrNull); sessionRows = ml.rows.length; sessionFiles = ml.files } catch { /* reader is best-effort; the count stays 0 */ }
+  }
+  let wireCalls = 0
+  const wireHits = []
+  for (const r of (mockRef?.requests ?? [])) {
+    for (const m of (r?.body?.messages ?? [])) {
+      for (const b of (Array.isArray(m?.content) ? m.content : [])) {
+        if (b?.type === 'tool_use' && b?.name === 'todo_write') { wireCalls++; wireHits.push({ role: m?.role ?? null, id: b?.id ?? null }) }
+      }
+      for (const tc of (Array.isArray(m?.tool_calls) ? m.tool_calls : [])) {
+        if (tc?.function?.name === 'todo_write' || tc?.name === 'todo_write') { wireCalls++; wireHits.push({ role: m?.role ?? null, id: tc?.id ?? null }) }
+      }
+    }
+  }
+  return { laneFacts, sessionRows, sessionFiles, wireCalls, wireHits, ledgerError: led.error }
+}
+function assertNoTodoInImageMode(critId, childSidOrNull, phase) {
+  if (FIXTURE !== 'image') return
+  const f = todoFootprint(childSidOrNull)
+  writeFileSync(join(RUN_DIR, `zero-todo-law-${phase}.json`), JSON.stringify(f, null, 2))
+  check(critId, `ZERO todo footprint at the ${phase} boundary (root law: image mode never emits todo) — no plane-todo lane fact in the durable ledger, no todo/write entry in the member session storage, no todo_write tool call on the model wire`,
+    f.laneFacts.length === 0 && f.sessionRows === 0 && f.wireCalls === 0,
+    `laneFacts=${jstr(f.laneFacts, 400)} sessionTodoWriteRows=${f.sessionRows} sessionFiles=${f.sessionFiles.length} wireTodoCalls=${f.wireCalls} wireHits=${jstr(f.wireHits, 200)} ledgerError=${f.ledgerError}`)
+}
 
 /** The FULL durable control history over the REMOTE wire (exemplar-verbatim
  *  read plane: pages team.getLedgerPage; FAIL LOUD on an error page — an
@@ -1081,7 +1277,7 @@ function yamlEmitItem(item, indent) {
 function writeTeamPatchFile(patchPath, bootPhase) {
   mkdirSync(dirname(patchPath), { recursive: true })
   const lines = [
-    `# A5M2 todo C2 gate patch layer (world ${RUN_STAMP}): production row from the FROZEN ${INSTALL_DIR} ROOT-level surface (pin 249eb65ec tgz ca0f4b25) + p6t6 observability row from the PINNED plugin.mjs — public profile-patch seam only (CORE PATCH BUDGET = 0).`,
+    `# A5M2 r18 image C2 gate patch layer (world ${RUN_STAMP}): production row from the FROZEN ${INSTALL_DIR} ROOT-level surface (pin ${SOURCE_PIN_SHA} tgz ${EXPECT_TGZ_SHA}) + p6t6 observability row from the PINNED plugin.mjs (${EXPECT_PLUGIN_SHA}) — public profile-patch seam only (CORE PATCH BUDGET = 0).`,
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig({ bootPhase }) }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
@@ -1174,7 +1370,17 @@ function survivingPids(port) {
 
 // ── preflight ──────────────────────────────────────────────────────────────
 async function preflight() {
-  // Pins (root 10:30 GO: ROOT-level package @ source-HEAD 495aeb23)
+  // OVERLAY-7 (pin holdout LAW, root 17:2x + center 17:3x): a pin directory may refuse to be
+  // mounted by carrying STATUS-PROVISIONAL.txt. That marker exists right now: the identity is
+  // PAUSED (center's `check:artifacts:head` at d5454cb23… = RC 1 / verdict=stale / drift=6 on
+  // the control/types + pa-control-bridge TS mirrors, corroborated read-only by this lane; the
+  // 516ef0f5 tgz therefore mounts a stale TS-compiled face). The kit cannot be talked past it —
+  // the run must wait for the root-issued SHA + fresh pack and the removal of that file.
+  if (existsSync(PIN_HOLDOUT_FILE)) {
+    await dieFatal(`PIN IDENTITY ON HOLD: ${PIN_HOLDOUT_FILE} exists (source-HEAD ${SOURCE_PIN_SHA}).`
+      + ' Nothing was created or mounted. Wait for the root-issued pin SHA + freshly packed tgz, regenerate the pin dir from those bytes, and remove the marker.')
+  }
+  // Pins (r18: ROOT-level package @ SOURCE_PIN_SHA, see packages-pins/<SHA>/MANIFEST-*.txt)
   const tgzHash = sha256File(PIN_TGZ)
   const pluginHash = sha256File(PIN_PLUGIN)
   // PIN-DIR GATE LAW (root 10:37Z supplement + root 11:24 GO):
@@ -1265,7 +1471,7 @@ async function preflight() {
     }
   }
   // Skills: root package ships its own .agents/skills — the plugin's parent
-  // locator (7-up from the host.js entry dir) lands INSIDE install-495/package.
+  // locator (7-up from the host.js entry dir) lands INSIDE the extracted install surface.
   for (const rootPkg of [INSTALL_PKG, join(HOME, 'mount-helper-root', 'package')]) {
     for (const s of ['team-blueprint-authoring', 'team-leader-operations']) {
       if (!existsSync(join(rootPkg, '.agents', 'skills', s, 'SKILL.md'))) await dieFatal(`bundled skills missing under ${rootPkg}: ${s}`)
@@ -1396,8 +1602,42 @@ async function main() {
   if (FIXTURE !== 'todo' && FIXTURE !== 'write' && FIXTURE !== 'image') await dieFatal(`--fixture invalid: ${FIXTURE}`)
   mkdirSync(RUN_DIR, { recursive: true })
   RUN_LOG = join(RUN_DIR, 'run.log')
-  log(`RUN IDENTITY (root 14:57 ruling — IMAGE C2 window): ROOT package pin 249eb65ec1789ab8bfcf02268d14d3d7060b8c2a tgz ca0f4b253fd3e9075e86d772f33ccb21c42c165ff7de3dee5949faf5c780d4b7 (3251993B; SYMMETRIC paImageHandoff third port @root 14:44: adapter third-port lines + plane image hand-off face/redemption + glue presence forwarding + booked 11-leg spec + census round-13 + same-commit dist mirrors; build-at-head ok compared=1788 drift=0; source==dist plane 03b2eb95/glue 1bda93d3 cmp clean; PATHSET-EQUAL-1813 vs 19d54, content delta EXACTLY SIX files; G1/G2/G3 owner files NOT on this commit, cannot ride git-archive BY CONSTRUCTION); install-surface gate 473 lines digest cc3d4b1b…; tree INFO f8d5622a… (MANIFEST@249eb LC_ALL=C per-file recipe); layout REUSED: dual root (${INSTALL_DIR} + mount-helper-root, helper == pin 471475b9); IMAGE fixture invariants (root 14:57): synthetic 2048x1536 PNG under examples/*/.sessions/ (gitignored L15; Host .gitignore UNTOUCHED), store override maxImageDimension=1024 via profile-patch override of id=attachment-local (base row carries no config) -> REAL normalization 1024x768 + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image (the hand-off EMPIRICALLY opens the old front door at zero), PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE — never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible text ORIGINAL dimensions + image part with byte-identity to the stored object, deny/public-abandon ZERO commits; abandon via p6t6 abandonControlRequest authority (NOT nativeAbort); PA independent evidence ABSENT => audited control-flow INFERENCE wording stays; grep never called; 19d54/8b94 pins + r11-r16 evidence KEPT byte-for-byte; ONE run, first-error-stop`)
+  log(`RUN IDENTITY (r18 image C2 re-verification of the r17 lexical-seam fix): MOUNT SURFACE = ROOT package pin ${SOURCE_PIN_SHA} tgz ${EXPECT_TGZ_SHA} (${EXPECT_ENTRIES} file records, install-surface gate 473 lines, tree INFO ${EXPECT_SURFACE_SHA} of the install-surface manifest / ${EXPECT_TREE_SHA} of the full per-file manifest); pin law: PACKAGE == COMMITTED TREE at that SHA except package.json pack normalization (measured 1812/1813), glue 16/16 dist-vs-src drift 0, fsSeam present on the dist face (2+1), the six TS mirrors committed by a real build (center check:artifacts:head verdict=ok compared=1788 drift=0) — see ${'packages-pins/' + SOURCE_PIN_SHA}/MANIFEST-2188f15ce.txt; DELTA vs the r17 mount surface = the r17 lexical-seam fix (agent-bindings / pa-mount-registry / pa-control-bridge dist) + the compiled B-CONTROL/B-INSPECT leaf-flatten table (control/types dist) + pack normalization, path-set otherwise byte-identical, and C1 is the discriminator for the second one; SCOPE: image verifies the already-reviewed r17 image scope ONLY — the 957 INSPECT/CONTROL rules and the B-MCP gap are UNWIRED candidates on this surface, not enabled; helper row = ${INSTALL_DIR}-adjacent mount-helper-root plugin.mjs == ${EXPECT_PLUGIN_SHA} (file + blob at ${SOURCE_PIN_SHA}); IMAGE fixture invariants: synthetic 2048x1536 PNG under examples/*/.sessions/ (gitignored, Host .gitignore UNTOUCHED), store override maxImageDimension=1024 via profile-patch override of id=attachment-local -> REAL normalization 1024x768 + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image, PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE, never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible ORIGINAL dimensions text + image part byte-identical to the stored object, deny/public-abandon ZERO commits, abandon through the p6t6 abandonControlRequest authority (NOT nativeAbort); ROOT LAWS: ONE round, first SUBSTANTIVE failure stops (no chained append/model-visible waits after a dead fact), NO todo emission in image mode (asserted on ledger + session storage + model wire at every leg boundary), requestIds always live from the ledger, forbidden ports [${FORBIDDEN_PORTS.join(', ')}], bind-probed and held until start (port-probe.json), world prefix ${WORLD_PREFIX} under tests/homes only, world + install surface RETAINED (this kit contains no rm/prune/df); r1-r17 pins and evidence KEPT byte-for-byte`)
   REALM_ESC = REALM.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  // OVERLAY-12 (read-only validation mode, purely additive). `--validate-only` re-verifies the
+  // bundle the way preflight does — pin hashes against the kit constants, the helper blob at the
+  // pinned SHA, the Host identity, the port plan — and then STOPS. It never creates or extracts
+  // anything, never mounts, never binds a port, never boots: so the executor (and this authoring
+  // lane) can prove the bundle is coherent before a world exists.
+  if (args.includes('--validate-only')) {
+    const bad = []
+    const say = (k, v) => log(`VALIDATE ${k} = ${v}`)
+    const note = (k, v, ok) => { say(k, v); if (ok !== true) bad.push(k) }
+    say('world (guard-validated path; NOT created, NOT touched)', `${HOME} exists=${existsSync(HOME)}`)
+    note('homes-root', HOMES_ROOT, !HOMES_ROOT.split('/').includes('.worktrees'))
+    note('pin-holdout-marker (must be ABSENT)', `${PIN_HOLDOUT_FILE} exists=${existsSync(PIN_HOLDOUT_FILE)}`, !existsSync(PIN_HOLDOUT_FILE))
+    note('pin tgz sha', `${sha256File(PIN_TGZ)} vs ${EXPECT_TGZ_SHA}`, sha256File(PIN_TGZ) === EXPECT_TGZ_SHA)
+    note('pin entries', `${readFileSync(join(PIN_DIR, 'manifest-tgz-entries-C.txt'), 'utf8').trim().split('\n').length} file records vs ${EXPECT_ENTRIES}`, readFileSync(join(PIN_DIR, 'manifest-tgz-entries-C.txt'), 'utf8').trim().split('\n').length === EXPECT_ENTRIES)
+    note('pin dist-manifest sha', `${sha256File(join(PIN_DIR, 'manifest-tgz-dist-hashes.txt'))} vs ${EXPECT_TREE_SHA}`, sha256File(join(PIN_DIR, 'manifest-tgz-dist-hashes.txt')) === EXPECT_TREE_SHA)
+    note('pin install-surface sha', `${sha256File(join(PIN_DIR, 'manifest-installsurface-hashes.txt'))} vs ${EXPECT_SURFACE_SHA}`, sha256File(join(PIN_DIR, 'manifest-installsurface-hashes.txt')) === EXPECT_SURFACE_SHA)
+    note('pin helper file sha', `${sha256File(PIN_PLUGIN)} vs ${EXPECT_PLUGIN_SHA}`, sha256File(PIN_PLUGIN) === EXPECT_PLUGIN_SHA)
+    let blobSha = 'git-show-failed'
+    try { blobSha = createHash('sha256').update(execFileSync('git', ['-C', REPO, 'show', `${SOURCE_PIN_SHA}:packages/tools/harness/plugin.mjs`], { maxBuffer: 32e6 })).digest('hex') } catch { /* reported below */ }
+    note('helper BLOB at pinned SHA', blobSha, blobSha === EXPECT_PLUGIN_SHA)
+    note('interface tree (paths.mjs baseline)', `${WORKTREE} baseline=${HOST_BASELINE_SHA}`, typeof HOST_BASELINE_SHA === 'string' && /^[0-9a-f]{40}$/.test(HOST_BASELINE_SHA))
+    let hostHead = 'git-failed', hostDirty = -1
+    try { hostHead = execFileSync('git', ['-C', TESTUSE, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); hostDirty = execFileSync('git', ['-C', TESTUSE, 'status', '--porcelain'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean).length } catch { /* reported below */ }
+    note('Host639 HEAD == baseline', `${TESTUSE} HEAD=${hostHead} porcelain=${hostDirty}`, hostHead === HOST_BASELINE_SHA && hostDirty === 0)
+    note('Host639 runtime entry present', `${HOST_BIN} exists=${existsSync(HOST_BIN)}`, existsSync(HOST_BIN))
+    let listeners = []
+    try { listeners = execFileSync('ss', ['-ltn'], { encoding: 'utf8' }).split('\n').filter((l) => /:(3080|3180|3181|3182|3183|3184|3185|3186|3497|3498|3500)\b/.test(l)).map((l) => l.trim().split(/\s+/)[3]) } catch { /* ss unavailable */ }
+    note('port plan (READ-ONLY ss -ltn; this kit binds NOTHING here)', `listeners-in-family=[${listeners.join(' ') || 'none'}] host-candidates=[${HOST_PORT_CANDIDATES.join(',')}] mock-candidates=[${MOCK_PORT_CANDIDATES.join(',')}] forbidden=[${FORBIDDEN_PORTS.join(',')}]`, true)
+    say('mount-helper-root (executor-created, verified by preflight)', `${join(HOME, 'mount-helper-root')} exists=${existsSync(join(HOME, 'mount-helper-root'))}`)
+    log(`VALIDATE-ONLY ${bad.length === 0 ? 'OK — bundle coherent, NOTHING created or mounted' : `FAILED: ${bad.join('; ')}`}`)
+    writeFileSync(join(RUN_DIR, 'validate-only.json'), JSON.stringify({ at: new Date().toISOString(), bad, home: HOME, homesRoot: HOMES_ROOT, pin: SOURCE_PIN_SHA, hostHead, hostDirty }, null, 2))
+    process.exit(bad.length === 0 ? 0 : 1)
+  }
   await preflight()
 
   // ss -ltn proof before launch
@@ -1407,8 +1647,9 @@ async function main() {
     log('ss -ltn snapshot written (pre-launch)')
   } catch (e) { log(`ss snapshot failed: ${e.message}`) }
 
-  const HOST_PORT = Number(argValue('host-port', 0)) || await pickPort(HOST_PORT_CANDIDATES, 'host')
-  const MOCK_PORT = Number(argValue('mock-port', 0)) || await pickPort(MOCK_PORT_CANDIDATES, 'mock')
+  const HOST_PORT = Number(argValue('host-port', 0)) ? await explicitPort(Number(argValue('host-port', 0)), 'host') : await pickPort(HOST_PORT_CANDIDATES, 'host')
+  const MOCK_PORT = Number(argValue('mock-port', 0)) ? await explicitPort(Number(argValue('mock-port', 0)), 'mock') : await pickPort(MOCK_PORT_CANDIDATES, 'mock')
+  await writePortProbe()
   process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${MOCK_PORT}`
   process.env.DEEPSEEK_API_KEY = `a5m2c2-mock-${NONCE}`
   log(`RUN_STAMP=${RUN_STAMP} hostPort=${HOST_PORT} mockPort=${MOCK_PORT} realm=${REALM}`)
@@ -1422,6 +1663,7 @@ async function main() {
   await assertWorld()
   writeFileSync(join(BLUEPRINT_DIR, 'a5m2c2-anchor.yaml'), BP_ANCHOR_YAML)
 
+  await releaseHold(MOCK_PORT, 'mock server binds it now')
   const mock = await startMockModel({ port: MOCK_PORT, decide: makeDecide(), log: (line) => log(`mock: ${line}`) })
   if (mock.port !== MOCK_PORT) await dieFatal(`mock landed on ${mock.port}`)
   mockRef = mock
@@ -1519,7 +1761,7 @@ async function main() {
     const row1 = await waitForTodoRow(host, (p) => FIXTURE === 'image' ? p.toolName === 'read_image' : FIXTURE === 'write' ? p.toolName === 'write' : (TODO_CORR_RE().test(String(p.correlation ?? '')) && p.toolName === 'todo_write'), 180_000, `C1 governed ${ROW_TOOL} row`)
     if (row1 === null) {
       check('C1', `a durable governed Control row was created for the member ${ROW_TOOL} call`, false, `recorded rows: ${jstr(readLedger().recorded.map((f) => ({ rid: f.payload.requestId, corr: f.payload.correlation, tool: f.payload.toolName })), 1500)}`)
-      finishCriterion('C1') // throws FirstFailureStop
+      finishCriterion('C1') // throws FirstFailureStop (no childSid exists yet on this path; the boundary law runs from the row-bound leg on)
     }
     const W1 = row1.payload.targetInstanceId
     const childSid = childSessionOf(W1)
@@ -1530,6 +1772,7 @@ async function main() {
     const memberReq = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r.body.messages ?? []).includes(MK_WORK1) && Array.isArray(r.body?.tools) && r.body.tools.some((t) => (t.function?.name ?? t.name) === ROW_TOOL), 180_000, `member model request with ${ROW_TOOL}`)
     if (memberReq === null) {
       check('C1', 'the member model-facing surface carries todo_write', false, 'no member model request with todo_write observed')
+      assertNoTodoInImageMode('C1', childSid, 'row-bound')
       finishCriterion('C1')
     }
     const memberTodo = (memberReq.body.tools ?? []).map((t) => t.function ?? t).find((t) => t.name === ROW_TOOL)
@@ -1595,6 +1838,7 @@ async function main() {
           ? writeRowBound
           : (TODO_CORR_RE().test(String(row1.payload.correlation ?? '')) && row1.payload.toolName === 'todo_write' && String(row1.payload.correlation ?? '').includes(`plane-todo:${REALM}-`)),
       `oldGateRows=${oldGateRows} row=${jstr(row1, 1900)}`)
+    assertNoTodoInImageMode('C1', childSid, 'row-bound')
     finishCriterion('C1')
 
     // C2: zero todo/write while pending (first ensure the member's session
@@ -1626,6 +1870,7 @@ async function main() {
         memberLog.rows.length === 0 && memberLog.files.length > 0,
         `todo/write rows=${memberLog.rows.length}; session files=${memberLog.files.length} (${memberLog.files.join(', ').slice(0, 300)})`)
     }
+    assertNoTodoInImageMode('C2', childSid, 'pending')
     finishCriterion('C2')
 
     // C3: public ALLOW over remote v4 -> unique consumption -> exactly one append
@@ -1677,7 +1922,26 @@ async function main() {
     check('C3', 'exactly ONE control-allow-consumed durable fact for that requestId',
       consumed !== null && ledA['control-allow-consumed'].filter((f) => f.payload.requestId === row1.payload.requestId).length === 1,
       `consumptions=${jstr(ledA['control-allow-consumed'].filter((f) => f.payload.requestId === row1.payload.requestId), 400)}`)
-    // wait for the effect to surface (todo: session append; write: file bytes)
+    // OVERLAY-8a (root 15:27 law GENERALIZED to "stop at the first SUBSTANTIVE failure"): the
+    // consumption fact above is the gate for everything below. If it is already false, the
+    // append wait and the model-visible wait cannot succeed, so they are NOT run — r17 burned
+    // ~6m31s in exactly those chained waits after a fact that was already dead.
+    assertNoTodoInImageMode('C3', childSid, 'allow-consumed')
+    const consumptionOk = consumed !== null && ledA['control-allow-consumed'].filter((f) => f.payload.requestId === row1.payload.requestId).length === 1
+    if (!consumptionOk) {
+      writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
+        at: new Date().toISOString(), requestId: row1.payload.requestId,
+        consumptionFacts: ledA['control-allow-consumed'].filter((f) => f.payload.requestId === row1.payload.requestId),
+        decisions: ledA['control-decision-recorded'].filter((f) => f.payload.requestId === row1.payload.requestId),
+        note: 'OVERLAY-8a: ONE-consumption fact false -> append wait and model-visible wait deliberately NOT run',
+      }, null, 2))
+      log('C3 FIRST-SUBSTANTIVE-FAILURE STOP: ONE-consumption fact is false; append/model-visible waits skipped')
+      finishCriterion('C3')
+    }
+    // wait for the effect to surface (per fixture: todo = session append; write = file bytes;
+    // image = ATTACHMENT-STORE object. OVERLAY-8b: for IMAGE the kit never polls session
+    // todo/write rows — that row cannot exist in image mode, and doing so was a guaranteed
+    // 120 s stall on every image run.)
     const appendDeadline = Date.now() + 120_000
     if (FIXTURE === 'write') {
       for (;;) {
@@ -1685,6 +1949,24 @@ async function main() {
         if (Date.now() >= appendDeadline) break
         await new Promise((r) => setTimeout(r, 1000))
       }
+    } else if (FIXTURE === 'image') {
+      for (;;) {
+        if (storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel)).length >= 1) break
+        if (Date.now() >= appendDeadline) break
+        await new Promise((r) => setTimeout(r, 1000))
+      }
+      const gained = storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel))
+      if (gained.length === 0) {
+        writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
+          at: new Date().toISOString(), requestId: row1.payload.requestId,
+          note: 'OVERLAY-8b: allow was consumed but the attachment store gained NO object within the bounded wait -> the model-visible envelope is unreachable; 180 s wait skipped',
+          storeCensus: storeCensus(), baseline: storeBaseline,
+        }, null, 2))
+        check('C3', 'the consumed allow produced EXACTLY ONE new attachment-store object (the normalized raster the model will be shown)', false, `gained=0 baseline=${storeBaseline.length} now=${storeCensus().length}`)
+        log('C3 FIRST-SUBSTANTIVE-FAILURE STOP: no store object; model-visible wait skipped')
+        finishCriterion('C3')
+      }
+      log(`C3: attachment store moved (+${storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel)).length}) before the model-visible wait`)
     } else {
       for (;;) {
         memberLog = readMemberTodoLog(childSid)
@@ -1799,6 +2081,7 @@ async function main() {
       && ledB['control-allow-consumed'].filter((f) => f.payload.requestId === row2.payload.requestId).length === 0
       && denyFact !== null,
       `fixture=${FIXTURE === 'image' ? `store=${storeCensus().length}(baseline ${storeBaseline.length}+allow-leg 1; only-leg=${storeCensus().every((o) => o.rel === allowStoreRel)}` : FIXTURE === 'write' ? JSON.stringify(wfState()) : 'n/a'} rows=${memberLog.rows.length} row2consumptions=${ledB['control-allow-consumed'].filter((f) => f.payload.requestId === row2.payload.requestId).length} denyFact=${denyFact !== null}`)
+    assertNoTodoInImageMode('C4', childSid, 'public-deny')
     finishCriterion('C4')
     if ((await waitForMock(mock, (r) => r.reply?.content === DONE_WORK1, 120_000, 'WORK1 turn done')) === null) log('WARN: WORK1 turn did not reach DONE (criterion checks above already captured)')
 
@@ -1850,6 +2133,7 @@ async function main() {
       (FIXTURE === 'write' || FIXTURE === 'image')
         ? (cancelSeen === null ? 'no callId-paired is_error tool_result bound to row3 requestId observed' : `callId=${cancelSeen.callId} text=${jstr(cancelSeen.text, 400)}`)
         : (refusal3 !== null ? 'observed' : 'no second refused-todo observed'))
+    assertNoTodoInImageMode('C5', childSid, 'public-abandon')
     finishCriterion('C5')
 
     // ── H1 / H2 ────────────────────────────────────────────────────────────

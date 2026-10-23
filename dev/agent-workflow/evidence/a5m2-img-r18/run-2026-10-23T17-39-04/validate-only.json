@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-23T17:39:04.913Z",
+  "bad": [
+    "pin-holdout-marker (must be ABSENT)",
+    "pin tgz sha",
+    "pin dist-manifest sha",
+    "pin install-surface sha"
+  ],
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-img-r18-HOLDOUT-PROBE",
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes",
+  "pin": "d5454cb238787d87979d0810031373ecbf1081be",
+  "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostDirty": 0
+}

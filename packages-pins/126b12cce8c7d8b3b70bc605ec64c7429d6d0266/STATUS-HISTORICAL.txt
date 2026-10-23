@@ -1,0 +1,23 @@
+STATUS: HISTORICAL AUDIT RECORD — DO NOT MOUNT
+superseded 2026-10-23T17:2xZ by packages-pins/d5454cb238787d87979d0810031373ecbf1081be/ (the run pin).
+
+Why this directory exists. It is the audit record of this lane's first pin attempt, keyed to the
+126b12cce8c7d8b3b70bc605ec64c7429d6d0266 identity. The BYTES are the same package
+(dsh-agent-team-0.1.1-alpha.2.tgz, sha256 516ef0f50d6ccae23c188a793733346e7e563d3d70195e27a6cb7e2a7fc47444,
+3647444 B, 1813 file records — cmp clean against the run pack delivered from dev-verify-pack/), but at
+126b12cc the two dist mirrors of the r17 lexical-seam fix (live/agent-bindings.mjs,
+live/pa-mount-registry.mjs) were NOT committed: grep -c fsSeam = src 2 + 1, dist 0 + 0, and no ref in
+the repository carried a dist mirror containing the fix. Those bytes were therefore "126b12cc plus an
+uncommitted built dist delta", so calling them "the pinned 126b bytes" would have been false — and a
+git-archive-style pin at any head of that era would have mounted a SEAM-LESS dist, i.e. re-verified the
+pre-fix product.
+
+Root ruled the accurate identity at 17:21; center committed exactly those mirrors at
+d5454cb238787d87979d0810031373ecbf1081be (16/16 glue placements, dist-vs-src drift 0) and re-ran the
+pack. The sha equality between this artifact and that pack is now a MEASURED EQUIVALENCE PROOF
+(pack(d5454cb23) == pack(126b12cc + exactly those committed mirror bytes)), not a 126b12cc identity claim.
+
+Nothing here was rewritten. MANIFEST-126b12cc.txt and the three manifests stand exactly as generated and
+measured at 17:2xZ; only this STATUS file was added. The kit mounts
+packages-pins/<SOURCE_PIN_SHA>/ and SOURCE_PIN_SHA is d5454cb23…, so this directory is unreachable from
+the run; it is kept for provenance because the old record must stay visible and unfalsified.

@@ -1,0 +1,14 @@
+# artifact0 (read-only form) for the r18 pin — NO build, NO tree write, GIT BLOBS ONLY.
+# Equivalent of the D-leg (glue placement) of scripts/check-artifacts-committed.mjs, plus the
+# package-vs-tree comparison. The live check-artifacts-at-head.mjs needs a BUILD (forbidden in
+# this lane, and it would change nothing about these bytes); the run pack's own chain log
+# already ends with "DSH-ARTIFACT-VERDICT script=check-artifacts-committed … OK 1788 files".
+subject      = d5454cb238787d87979d0810031373ecbf1081be  +  dsh-agent-team-0.1.1-alpha.2.tgz (516ef0f5…, 3647444 B)
+glue-placements-compared = 16   (scripts/place-dist-glue.mjs PLACEMENTS @ this SHA, pairs read from the committed script)
+HEAD-dist-vs-src-drift   = 0    (committed dist == committed src for every placement)
+PACKAGE-dist-vs-committed-src-drift = 0
+PACKAGE-vs-COMMITTED-TREE drift      = 1 of 1813  -> package.json  (pnpm pack strips "packageManager"; parsed-JSON diff of all other keys = empty)
+helper-blob  packages/tools/harness/plugin.mjs @this SHA = 471475b96e70f05a178f6006cf7b256765533313092b7c4689553c7c8d0ee784 (== the file in this dir)
+verdict      = ok — the package is the committed tree; the r17 seam fix is present on the MOUNTED (dist) face
+READ_RC      = 0
+measured-by  = the a5m2-imgverify pin-authoring lane (.worktrees/a5m2-imgverify/.pinbuild-verify/{glue-drift.mjs,verify-tree.mjs,gen-pin.mjs}), read-only
