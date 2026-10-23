@@ -1590,6 +1590,13 @@ export async function apply(ctx, config) {
             // never in a hard inject: worlds without the service answer the assembly's
             // observed store-absent lane, the gate-on mount refuses at the plane.
             attachments: () => ctx.get('attachments'),
+            // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
+            // `llm` service — the SAME token native read-image.ts:119-130 answers
+            // `resolveModelInfo` through for its image-capability route gate. Resolved
+            // AT CALL TIME (additive optional, never a hard inject); an absent service
+            // leaves the current route unresolvable, which the governed arm refuses at
+            // the same pre-resource position native does.
+            llm: () => ctx.get('llm'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

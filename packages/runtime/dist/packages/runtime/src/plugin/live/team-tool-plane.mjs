@@ -1058,6 +1058,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
       return g
     },
     beneficiaryAuthority: role === 'leader' ? 'leader' : 'member',
+    // THE RESOURCE-CANONICALIZATION FORWARD (root ruling after r7): the plane
+    // has always accepted `input.fs.canonicalizeResource` (its own mount law)
+    // but this assembly only ever passed `subtreeContains` down, so the kernel
+    // fell back to its absolute-only default and a WORKSPACE-RELATIVE deny
+    // (`read subtree runtime`) refused the whole mount as uncanonicalizable —
+    // the mount never gave the kernel the plane's lexical resolver. Now the
+    // injected seam is forwarded when present; ABSENT stays byte-identical
+    // (the kernel keeps its own fallback, no root is invented here).
+    ...(input.fs?.canonicalizeResource === undefined ? {} : { canonicalizeResource: input.fs.canonicalizeResource }),
     ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
     onObserve: (row) => observe(`a5p2prod: ${String(row?.event ?? row)}`),
   })

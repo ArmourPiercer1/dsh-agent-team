@@ -309,7 +309,10 @@ interface StoreDouble {
   saveImage: ImageAttachmentStorePort['saveImage']
   readImage: ImageAttachmentStorePort['readImage']
 }
-function makeStoreDouble(limits: { maxImageBytes?: number; maxMessageImageBytes?: number } = {}): StoreDouble {
+function makeStoreDouble(
+  limits: { maxImageBytes?: number; maxMessageImageBytes?: number } = {},
+  normalize: { width: number; height: number; originalWidth: number; originalHeight: number } | undefined = undefined,
+): StoreDouble {
   const maxImageBytes = limits.maxImageBytes ?? (1 << 20)
   const maxMessageImageBytes = limits.maxMessageImageBytes ?? (1 << 20)
   const saves: StoreDouble['saves'] = []
@@ -326,6 +329,20 @@ function makeStoreDouble(limits: { maxImageBytes?: number; maxMessageImageBytes?
     saves,
     saveImage: async ({ data, mediaType, name }) => {
       saves.push({ mediaType, name, byteLength: data.byteLength })
+      if (normalize !== undefined) {
+        // NORMALIZED store (233ba item ②): the store downscales to a DIFFERENT
+        // object whose identity is NOT the source digest (normalizedEqualsSource
+        // must read false) and whose receipt answers the REDUCED width/height
+        // PLUS originalDimensions (the pre-scale raster, pin639 shape).
+        const normalized = new Uint8Array([0x4e, 0x4f, 0x52, 0x4d]) // 'NORM'
+        const id = sha(normalized)
+        objects.set(id, normalized)
+        return {
+          attachmentId: id, mediaType, bytes: normalized.byteLength,
+          width: normalize.width, height: normalize.height, name,
+          originalDimensions: { width: normalize.originalWidth, height: normalize.originalHeight },
+        }
+      }
       const id = sha(data)
       objects.set(id, data)
       // MEASURED pin639 form: the pass-through object's attachmentId IS the
@@ -372,12 +389,20 @@ async function mountWorld(
     policyFor?: (fsRoot: string) => TemplatePermissionPolicy
     limits?: { maxImageBytes?: number; maxMessageImageBytes?: number }
     fsRootOverride?: string
+    // 233ba item ①: the image-capability probe the placing assembly injects.
+    // Default ADMITS (the other dimensions stay under test unchanged); refusal
+    // legs inject the two NATIVE refusal shapes.
+    imageCapability?: (signal: AbortSignal | undefined) => Promise<{ readonly ok: true } | { readonly ok: false; readonly refusal?: { code?: string; detail?: string } }>
+    // 233ba item ②: make the store double NORMALIZE (downscale) — its receipt
+    // then answers reduced width/height + originalDimensions, exactly the
+    // pin639 store's reduced-raster shape.
+    storeNormalize?: { width: number; height: number; originalWidth: number; originalHeight: number }
   } = {},
 ): Promise<Mounted> {
   const { def: nativeDef } = makeNativeImage()
   const fsRoot = opts.fsRootOverride ?? worldDir(`root-${label}`)
   if (opts.fsRootOverride === undefined) writeFileSync(join(fsRoot, 'good.png'), PNG_1X1)
-  const store = makeStoreDouble(opts.limits)
+  const store = makeStoreDouble(opts.limits, opts.storeNormalize)
   const adapter = createImageAttachmentAdapter({ store })
   const port = createGovernedImageReadPort({ namespaceRoot: fsRoot })
   const realmId = `a5m2-image-asm-${label}`
@@ -406,6 +431,7 @@ async function mountWorld(
             namespaceRoot: fsRoot,
             readBounded: port as unknown as ImageReadBoundedPort,
             attachments: adapter,
+            imageCapability: opts.imageCapability ?? (async () => ({ ok: true })),
             observe: () => {},
           })
           return placedArm
@@ -741,6 +767,7 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
             namespaceRoot: WORLD_ROOT,
             readBounded: async () => ({ ok: false, code: 'unreachable', detail: 'never reached — the assembly refuses first' }) as ImageReadBoundedOutcome,
             attachments: adapter,
+            imageCapability: async () => ({ ok: true }),
           })
         },
         description: nativeDef.description,
@@ -868,5 +895,74 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     expect(a5GovernedFamilyFor(world.familyKey)).toBe(familyTable[world.familyKey])
     expect(familyTable[world.familyKey]).toEqual({ familyId: A5_IMAGE_FAMILY_ID, adapterRevision: A5_IMAGE_ADAPTER_REVISION, providerIdentity: ARM_PROVIDER })
     expect(Object.isFrozen(familyTable[world.familyKey])).toBe(true)
+  })
+
+  // ── 233ba narrow-review fixed points (root ruling 2026-10-23) ──────────
+  it('leg 10 (item ① route gate, unknown route): the refusal is native\'s FIRST sentence and the count proves it ran PRE-RESOURCE — zero port calls, zero saves', async () => {
+    const world = await mountWorld('gate-route', {
+      policyFor: (root) => allowPolicyFor(join(root, 'good.png')),
+      imageCapability: async () => ({ ok: false, refusal: { code: 'P_IMAGE_ROUTE_UNRESOLVED', detail: 'the current model route could not be resolved (the requestHeader config and the agent options answer no provider/model, or the public llm service carries no resolveModelInfo face)' } }),
+    })
+    const events: Array<{ type: string; data: unknown }> = []
+    await expect(world.imageDef.execute({ file_path: 'good.png' }, execFor('call-gate-route', events)))
+      .rejects.toThrow(/cannot read "good\.png" as an image: the current model route could not be resolved/)
+    expect(world.arm.stats()).toMatchObject({ portCalls: 0, commits: 0, consumed: 0, consumptionRefused: 1 })
+    expect(world.adapter.stats().storeCalls).toBe(0)
+    expect(world.store.saves.length).toBe(0)
+    expect(events.length).toBe(0)
+  })
+
+  it('leg 11 (item ① route gate, non-image model): native\'s SECOND refusal sentence rides verbatim; a pure-lexical classify refusal never even reaches the probe', async () => {
+    const world = await mountWorld('gate-model', {
+      policyFor: (root) => allowPolicyFor(join(root, 'good.png')),
+      imageCapability: async () => ({ ok: false, refusal: { code: 'P_IMAGE_MODEL_NOT_IMAGE_CAPABLE', detail: 'model "text-only-1" does not declare image input; switch to an image-capable model to read images' } }),
+    })
+    const events: Array<{ type: string; data: unknown }> = []
+    await expect(world.imageDef.execute({ file_path: 'good.png' }, execFor('call-gate-model', events)))
+      .rejects.toThrow(/model "text-only-1" does not declare image input; switch to an image-capable model to read images/)
+    expect(world.arm.stats()).toMatchObject({ portCalls: 0, commits: 0, consumed: 0 })
+    expect(world.adapter.stats().storeCalls).toBe(0)
+    expect(events.length).toBe(0)
+    // the gate sits AFTER the pure argument checks (native :240-255 run first):
+    // a closed-set violation dies at classify without ever touching the route.
+    let probeCalls = 0
+    const counted = await mountWorld('gate-model-args', {
+      policyFor: (root) => allowPolicyFor(join(root, 'good.png')),
+      imageCapability: async () => { probeCalls += 1; return { ok: true } },
+    })
+    await expect(counted.imageDef.execute({ file_path: 'good.png', bogus: 1 } as Record<string, unknown>, execFor('call-gate-args', events)))
+      .rejects.toThrow(/P_IMAGE_CLASSIFY_UNKNOWN_PARAMETER/)
+    expect(probeCalls).toBe(0)
+    expect(counted.arm.stats()).toMatchObject({ portCalls: 0, commits: 0 })
+  })
+
+  it('leg 12 (item ② normalization): the store\'s reduced-raster receipt rides through — normalized dims, source digest, originalDimensions, WITHOUT a second source read', async () => {
+    const world = await mountWorld('norm', {
+      policyFor: (root) => allowPolicyFor(join(root, 'good.png')),
+      storeNormalize: { width: 32, height: 20, originalWidth: 4096, originalHeight: 2560 },
+    })
+    const events: Array<{ type: string; data: unknown }> = []
+    const value = (await world.imageDef.execute({ file_path: 'good.png' }, execFor('call-norm', events))) as unknown as {
+      image: {
+        attachmentId: string
+        sourceSha256: string
+        normalizedEqualsSource: boolean
+        width?: number
+        height?: number
+        originalDimensions?: { width: number; height: number }
+      }
+    }
+    // the store DID reduce: identity != source digest, the flag states it,
+    // and the ORIGINAL raster the receipt named rides through verbatim —
+    // recovered from the receipt, never by re-opening the source file.
+    expect(value.image.normalizedEqualsSource).toBe(false)
+    expect(value.image.sourceSha256).toBe(sha(PNG_1X1).slice('sha256:'.length))
+    expect(value.image.attachmentId).not.toBe(sha(PNG_1X1))
+    expect(value.image.width).toBe(32)
+    expect(value.image.height).toBe(20)
+    expect(value.image.originalDimensions).toEqual({ width: 4096, height: 2560 })
+    expect(world.arm.stats()).toMatchObject({ portCalls: 1, commits: 1 })
+    expect(world.adapter.stats()).toMatchObject({ storeCalls: 1 })
+    expect(events.length).toBe(0)
   })
 })

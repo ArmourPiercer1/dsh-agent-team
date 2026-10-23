@@ -29,6 +29,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 // the guard's OWN assurance producer: the fixture's live tuple must carry the
 // same shape the guard stamps (`tool-dispatch/install.ts:1150-1163`).
 import { untestedAssurance } from '../tool-dispatch/index.js'
+// R-C1-13 (r7 seam): the plane surface's OWN pure-lexical resolver, the same
+// primitive the production a5PlaneFsSeam joins relative rule paths with.
+import { lexicalAnchor } from '../src/plugin/live/plane-effect-backends.mjs'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -516,5 +519,88 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     const again = await handoff.open(execLike)
     expect((again as unknown as { code?: string }).code, 'the pending placeholder is gone, the token is terminal').toBe('PA_HANDOFF_TERMINAL')
     expect(plane.livePaPlan.size, 'and nothing else survives it').toBe(0)
+  })
+
+  // ── A5-M2 r7 (root ruling 2026-10-23): the RESOURCE-CANONICALIZATION seam.
+  // The blueprint grammar allows WORKSPACE-RELATIVE rule paths (public schema
+  // 204-207, the provider canonicalizes); with this mount passing no seam the
+  // kernel's absolute-only fallback answered null for every relative lexeme
+  // and a DENY rule refused the WHOLE mount (r7: `deny[0] read@runtime …
+  // cannot be canonicalized`). The seam law pinned here is the production
+  // factory's own (agent-bindings a5PlaneFsSeam: realm-prefix strip + this
+  // plane surface's lexicalAnchor + plain containment) exercised through the
+  // REAL plane + kernel projection — nothing stubbed. ──────────────────────
+  it('R-C1-13 workspace-relative rules (r7 seam): a relative DENY mounts where the fallback refused; the relative subtree COVERS the real read; an escaping rule keeps the existing semantics; the production mount carries the seam', async () => {
+    const realmPrefix = `${REALM}|`
+    const locate = (raw: unknown): string | null => {
+      const text = String(raw ?? '')
+      const anchored = lexicalAnchor(ROOT_DIR, text.startsWith(realmPrefix) ? text.slice(realmPrefix.length) : text)
+      return anchored.ok === true ? anchored.path : null
+    }
+    const seam = Object.freeze({
+      canonicalizeResource: (declaredPath: string) => locate(declaredPath),
+      subtreeContains: (rulePath: string, locator: string) => {
+        const rule = locate(rulePath)
+        const effect = locate(locator)
+        if (rule === null || effect === null) throw new Error('containment undeterminable against the governed root — never guessed')
+        return effect === rule || effect.startsWith(rule + '/')
+      },
+    })
+    const relPolicy = Object.freeze({
+      default: 'ask',
+      // RELATIVE workspace lexemes: allow covers the workspace subtree, the
+      // deny names a subtree that simply does not hold the target (r7's
+      // `path: runtime` shape — legal, projectable, HARMLESS to this read).
+      allow: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: '.' }) }]),
+      ask: Object.freeze([]),
+      deny: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: 'private' }) }]),
+    })
+    // (a) the r7 symptom cured at the MOUNT level: the relative deny
+    // canonicalizes, the mount SURVIVES (pre-fix: TOOL_BINDING_UNVERIFIED).
+    // A policy carrying a DENY projects denySources — its EXECUTION world
+    // needs the durable Control attribution this exemplar world does not
+    // mount (the image-row C1 spec owns that full world); the r7 fact lives
+    // entirely at the projection edge, so the witness is the mount itself.
+    const r7mount = mount(relPolicy, { fs: seam })
+    expect(r7mount.ok, JSON.stringify(r7mount)).toBe(true)
+    // (b) the relative subtree really COVERS the effect through the seam —
+    // the read executes for real in the deny-free relative world (lane +
+    // kernel both resolve the lexeme; this exemplar's all-allow shape).
+    const { read } = buildPlane(Object.freeze({
+      default: 'ask',
+      allow: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: '.' }) }]),
+      ask: Object.freeze([]) as readonly unknown[],
+      deny: Object.freeze([]) as readonly unknown[],
+    }), { fs: seam })
+    const yes = await read.execute({ file_path: join(ROOT_DIR, 'target.txt') })
+    expect(joined(yes)).toContain('alpha5-m1-read-line-1')
+    // (c) ESCAPE keeps the EXISTING lane semantics verbatim: a DENY whose
+    // lexeme escapes the governed root still refuses the mount — the seam
+    // canonicalizes it to NO exactly as the absolute-only fallback did.
+    const escaping = mount(Object.freeze({
+      default: 'ask',
+      allow: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'any' }) }]),
+      ask: Object.freeze([]),
+      deny: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: '../escape' }) }]),
+    }), { fs: seam })
+    expect(escaping.ok === false ? escaping.code : 'MOUNTED?!').toBe('TOOL_BINDING_UNVERIFIED')
+    if (escaping.ok === false) expect(escaping.message).toMatch(/cannot be canonicalized/)
+    // (d) ABSOLUTE rules: zero movement — the same seam carries R-C1-8's
+    // absolute subtree unchanged.
+    const abs = mount(Object.freeze({
+      default: 'ask',
+      allow: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: ROOT_DIR }) }]),
+      ask: Object.freeze([]) as readonly unknown[],
+      deny: Object.freeze([]) as readonly unknown[],
+    }), { fs: seam })
+    expect(abs.ok, JSON.stringify(abs)).toBe(true)
+    // (e) assembly witness (the a5-pindir pin-source form): the PRODUCTION
+    // mount really injects this seam and the image route gate — the strings
+    // name the wiring; the mount refuses to build either from an absent root
+    // or an absent store (conditional absence pinned by the seams' own shape).
+    const glue = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/agent-bindings.mjs'), 'utf8')
+    expect(glue).toContain('fs: a5PlaneFsSeam')
+    expect(glue).toContain('canonicalizeResource: (declaredPath) => seamLocate(declaredPath)')
+    expect(glue).toContain('imageCapability: a5ImageCapability')
   })
 })

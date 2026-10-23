@@ -32,15 +32,19 @@
  *    "Stored attachment metadata does not match its reference.").
  *  - SOURCE vs NORMALIZED commit hashes are SEPARATE facts (fix card 5):
  *    `sourceSha256` is the digest of the bytes as read; the store commits
- *    its OWN normalized form whose identity is the answered attachmentId.
- *    `normalizedEqualsSource` states whether they coincide (pass-through:
- *    for a fresh pass-through object the store's attachmentId IS the source
- *    digest — pinned by the lane; under real normalization they differ,
- *    which the lane records as an environment limit). No leg may treat the
- *    content-addressed id as the source identity: the reference leg
- *    compares the re-read bytes against the ORIGINAL COMMITMENT recorded on
- *    the entitlement (source digest for pass-through, normalized identity
- *    always), never against a freshly recomputed content hash.
+ *    its OWN form whose identity is the answered attachmentId. A real pin639
+ *    store NORMALIZES the raster (EXIF orientation + downscale to the media
+ *    caps), so the two coincide ONLY when normalization never reduced the
+ *    image — a PASS-THROUGH is the exception, not the default. When the store
+ *    DID reduce the raster it answers `originalDimensions` (the input size
+ *    before the scale, attachment/src/types.ts :25-33); this adapter carries
+ *    that fact through verbatim so the arm/render keep the ORIGINAL coordinate
+ *    frame without re-reading the source (root narrow review on 233ba, ②).
+ *    `normalizedEqualsSource` is the flag that says whether the digests
+ *    coincide; NO leg may treat the content-addressed id as the source
+ *    identity: the reference leg compares the re-read bytes against the
+ *    ORIGINAL COMMITMENT recorded on the entitlement (source digest for a
+ *    pass-through, normalized identity always), never a fresh content hash.
  *
  * @module runtime/plugin/live/governed-families/image-attachment
  */
@@ -60,6 +64,19 @@ const sha256Hex = (bytes) => createHash('sha256').update(bytes).digest('hex')
  *  `sha256:<hex>` (for a pass-through save the hex IS the source digest).
  *  Compare in bare-hex form; never assume a prefix on either side. */
 const bareHex = (id) => String(id ?? '').replace(/^sha256:/, '')
+
+/** The store receipt's ORIGINAL-raster dimensions, verified shape or absent —
+ *  never a guess (pin639 types: the field exists ONLY when normalization
+ *  reduced the image; a well-formed positive pair rides through frozen,
+ *  anything else counts as not carried). */
+function originalDimensionsOf(ref) {
+  const d = ref?.originalDimensions
+  if (d === null || typeof d !== 'object') return undefined
+  const width = d.width
+  const height = d.height
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0) return undefined
+  return Object.freeze({ width, height })
+}
 
 const namespaceKey = (ns) => [
   String(ns?.realmId ?? ''),
@@ -141,6 +158,7 @@ export function createImageAttachmentAdapter({ store, observe = () => {} }) {
     }
     counters.commits += 1
     observe({ event: 'attachment-commit', correlation, detail: `${attachmentId}:${sourceSha256.slice(0, 12)}:recommit=${String(recommit)}` })
+    const originalDimensions = originalDimensionsOf(ref)
     return Object.freeze({
       attachmentId,
       // SEPARATE facts, never collapsed (fix card 5): the digest of the
@@ -151,6 +169,16 @@ export function createImageAttachmentAdapter({ store, observe = () => {} }) {
       bytes: ref.bytes ?? bytes.byteLength,
       width: ref.width,
       height: ref.height,
+      // THE ORIGINAL RASTER (root narrow review on 233ba, item ②): when the
+      // store NORMALIZED (downscaled) the image its receipt carries
+      // `originalDimensions` — the input size BEFORE the scale (pin639
+      // attachment/src/types.ts: present ONLY when normalization reduced the
+      // image; `width`/`height` above are the NORMALIZED stored dims). The
+      // fact rides through VERBATIM so the result keeps the original
+      // coordinate frame: recovering it by RE-READING the source file would
+      // re-open the exact read this row already closed. Absent = the store
+      // did not reduce the raster — the field is never invented here.
+      ...(originalDimensions === undefined ? {} : { originalDimensions }),
       ...(ref.name === undefined ? {} : { name: ref.name }),
       namespace: Object.freeze({ realmId: namespace.realmId, teamSessionId: namespace.teamSessionId, instanceId: namespace.instanceId }),
     })

@@ -59,3 +59,16 @@ export interface GovernedReadExecutor {
 export function createGovernedReadExecutor(
   input: Record<string, unknown>,
 ): GovernedReadExecutor
+
+/**
+ * The PURE-LEXICAL layer of the anchored resolution (PR358 fix-5): the same
+ * front refusals and the same lexical join/normalize the full resolver
+ * performs, with ZERO filesystem calls. A5-M2 r7: typed consumers (the
+ * production resource-canonicalization seam and the R-C1-13 fixed point)
+ * anchor WORKSPACE-RELATIVE rule paths with it — declaration only, the
+ * semantics live in the `.mjs`.
+ */
+export function lexicalAnchor(
+  rootDir: string,
+  rawPath: string,
+): { ok: true; path: string } | { ok: false; code: string; detail: string }

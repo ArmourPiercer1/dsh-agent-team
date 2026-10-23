@@ -552,6 +552,10 @@ async function armWorld(storeConfig: Record<string, unknown> = {}, portOpts: Par
     namespaceRoot: govRoot,
     readBounded: port.port,
     attachments: adapter,
+    // these legs exercise the port/attachment/commit dimensions; the
+    // image-capability route gate (233ba item ①) is injected as an admitting
+    // probe here and refused in its OWN dedicated leg, never silently absent.
+    imageCapability: async () => ({ ok: true }),
   })
   const storeRoot = typeof storeSvc?.root === 'string' ? storeSvc.root : ''
   if (storeRoot.length === 0) throw new Error('m2-readimg-arm: store root missing — failing closed')
@@ -1066,7 +1070,7 @@ describe('a5m2-readimg arm rev2 — Control-harness consumption over the durable
       const govRoot = join(dir, 'gov')
       mkdirSync(govRoot, { recursive: true })
       writeFileSync(join(govRoot, 'photo.png'), PNG_1X1)
-      const arm = createGovernedReadImageArm({ definitionIdentity: ARM_DEFINITION, providerId: ARM_PROVIDER, realmId: realm.realm, namespaceRoot: govRoot, readBounded: port.port, attachments: adapter })
+      const arm = createGovernedReadImageArm({ definitionIdentity: ARM_DEFINITION, providerId: ARM_PROVIDER, realmId: realm.realm, namespaceRoot: govRoot, readBounded: port.port, attachments: adapter, imageCapability: async () => ({ ok: true }) })
       const c = chainCase(arm, realm, 'img-dying-1', 'photo.png', join(govRoot, 'photo.png'))
       const receipt = await approve(c) as Extract<PaControlLegResult, { decision: 'approve' }>
       const ran = await arm.execute({ file_path: 'photo.png' }, receipt as unknown as ImageConsumptionReceipt, c.callFacts)
@@ -1157,8 +1161,14 @@ describe('a5m2-readimg arm rev2 — Control-harness consumption over the durable
 
   it('assembly fails closed: no port, no arm; no store, no arm (缺 store 只算条件不可用 — never a fallback face, never a half-wired mount)', () => {
     const port = makePort({}).port
-    expect(() => createGovernedReadImageArm({ definitionIdentity: 'd', providerId: 'p', realmId: 'r', namespaceRoot: '/tmp', readBounded: undefined as unknown as ImageReadBoundedPort, attachments: createImageAttachmentAdapter({ store: { saveImage: async () => ({}), readImage: async () => new Uint8Array(), imageLimits: { maxImageBytes: 1, maxMessageImageBytes: 1 } } }) })).toThrow(TypeError)
-    expect(() => createGovernedReadImageArm({ definitionIdentity: 'd', providerId: 'p', realmId: 'r', namespaceRoot: '/tmp', readBounded: port, attachments: undefined as never })).toThrow(TypeError)
+    const storeAdapter = () => createImageAttachmentAdapter({ store: { saveImage: async () => ({}), readImage: async () => new Uint8Array(), imageLimits: { maxImageBytes: 1, maxMessageImageBytes: 1 } } })
+    const admittingProbe = async () => ({ ok: true } as const)
+    expect(() => createGovernedReadImageArm({ definitionIdentity: 'd', providerId: 'p', realmId: 'r', namespaceRoot: '/tmp', readBounded: undefined as unknown as ImageReadBoundedPort, attachments: storeAdapter(), imageCapability: admittingProbe })).toThrow(TypeError)
+    expect(() => createGovernedReadImageArm({ definitionIdentity: 'd', providerId: 'p', realmId: 'r', namespaceRoot: '/tmp', readBounded: port, attachments: undefined as never, imageCapability: admittingProbe })).toThrow(TypeError)
+    // 233ba item ①: an assembly that injects NO image-capability gate silently
+    // REOPENS native's lost route check — a config defect, refused at assembly.
+    // (The cast keeps the OMITTED member at runtime — that is the defect leg.)
+    expect(() => createGovernedReadImageArm({ definitionIdentity: 'd', providerId: 'p', realmId: 'r', namespaceRoot: '/tmp', readBounded: port, attachments: storeAdapter() } as unknown as Parameters<typeof createGovernedReadImageArm>[0])).toThrow(TypeError)
   })
 
   it('row-7 contrast — pre-fix repro vs post-fix typed refusal: the UNTOUCHED native face reads an out-of-root absolute image SUCCESSFULLY (the measured primary gap, alive at pin639), while the governed arm refuses the SAME absolute target with zero port calls', async () => {

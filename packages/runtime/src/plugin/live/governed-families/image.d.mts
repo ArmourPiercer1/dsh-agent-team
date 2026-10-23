@@ -136,10 +136,28 @@ export interface ImageArmOutcome {
       readonly bytes: number
       readonly width?: number
       readonly height?: number
+      /** Present ONLY when the store NORMALIZED (reduced) the raster: the
+       *  input size before the scale (pin639 attachment types). Carried
+       *  verbatim from the store receipt for original-frame coordinate math. */
+      readonly originalDimensions?: { readonly width: number; readonly height: number }
       readonly name?: string
     }
   }
 }
+
+/** Result of the image-capability route gate (root narrow review on 233ba,
+ *  item ①): the placing assembly builds it over the PUBLIC llm service + the
+ *  exec route and calls it at the top of execute, BEFORE any resource is
+ *  resolved/read/saved — mirroring native read-image.ts assertImageCapableRoute.
+ *  `ok:true` admits the read; `ok:false` carries one of the two native
+ *  refusals (route unresolvable / model not image-capable). */
+export interface ImageCapabilityRefusal {
+  readonly code?: string
+  readonly detail?: string
+}
+export type ImageCapabilityProbe = (
+  signal: AbortSignal | undefined,
+) => Promise<{ readonly ok: true } | { readonly ok: false; readonly refusal?: ImageCapabilityRefusal }>
 
 export interface GovernedReadImageArmDeps {
   definitionIdentity: string
@@ -148,6 +166,7 @@ export interface GovernedReadImageArmDeps {
   namespaceRoot: string
   readBounded: ImageReadBoundedPort
   attachments: ImageAttachmentAdapterHandle
+  imageCapability: ImageCapabilityProbe
   observe?: (row: Record<string, unknown>) => void
 }
 

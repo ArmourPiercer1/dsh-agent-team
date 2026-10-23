@@ -463,7 +463,7 @@ import { definitionIdentityOf, installScopedToolGuard } from '../../../tool-disp
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
-import { createGovernedJobsBridge } from './plane-effect-backends.mjs'
+import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
 // statically - the seam arrives through the additive deps.web accessor (host.ts).
@@ -2935,6 +2935,34 @@ export function createAgentBindings(deps) {
             } catch (error) {
               throw refuseImage(`the arm's triple could not be assembled (${String(error?.message ?? error).slice(0, 200)})`)
             }
+            // THE IMAGE-CAPABILITY ROUTE PROBE (root narrow review on 233ba,
+            // item ①): native 639 runs its route gate FIRST (read-image.ts
+            // assertImageCapableRoute :119-130) and the governed row keeps it
+            // at the same position — the CURRENT call's route resolves and
+            // DECLARES image input before anything is read or saved. Every
+            // face is public and read at CALL time: this Agent object IS the
+            // exec agent of every row call (the todo/write identity law), the
+            // session requestHeader config carries the latest routed route
+            // with the agent options as native's own documented fallback, and
+            // the declaration question goes to the PUBLIC llm service (host.ts
+            // deps.llm — the same 'llm' token native answers through). No
+            // native re-entry, no second authorization, no upstream reach; a
+            // throwing resolveModelInfo (unknown provider) is the unresolved
+            // route, exactly as native's registration() throw is.
+            const a5ImageCapability = async (signal) => {
+              const routed = runtimeAgent?.session?.requestHeader?.()?.config
+              const provider = routed?.provider ?? runtimeAgent?.options?.provider
+              const model = routed?.model ?? runtimeAgent?.options?.model
+              const llmService = typeof deps.llm === 'function' ? deps.llm() : undefined
+              if (provider === undefined || model === undefined || llmService === null || llmService === undefined || typeof llmService.resolveModelInfo !== 'function') {
+                return { ok: false, refusal: { code: 'P_IMAGE_ROUTE_UNRESOLVED', detail: 'the current model route could not be resolved (the requestHeader config and the agent options answer no provider/model, or the public llm service carries no resolveModelInfo face)' } }
+              }
+              const active = await llmService.resolveModelInfo(provider, model, signal)
+              if (!Array.isArray(active?.inputModalities) || !active.inputModalities.includes('image')) {
+                return { ok: false, refusal: { code: 'P_IMAGE_MODEL_NOT_IMAGE_CAPABLE', detail: `model "${model}" does not declare image input; switch to an image-capable model to read images` } }
+              }
+              return { ok: true }
+            }
             a5ImageInject = Object.freeze({
               createArm: (placedDef) => {
                 // Identity binds off the def the plane ACTUALLY places — never
@@ -2950,6 +2978,7 @@ export function createAgentBindings(deps) {
                   namespaceRoot: imageRootDir,
                   readBounded: imagePort,
                   attachments: imageAdapter,
+                  imageCapability: a5ImageCapability,
                   observe: (row) => observations.push(`a5m2-image: ${String(row?.event ?? 'event')} ${String(row?.correlation ?? '')} ${String(row?.detail ?? '')}`),
                 })
                 return a5ImagePlacedArm
@@ -2986,6 +3015,56 @@ export function createAgentBindings(deps) {
           })
           return await a5Leg(legInput)
         }
+        // THE RESOURCE-CANONICALIZATION SEAM (root ruling after r7, 2026-10-23:
+        // the blueprint grammar allows WORKSPACE-RELATIVE rule paths — public
+        // schema 204-207, the PROVIDER canonicalizes — and the plane has always
+        // accepted this `fs` seam, yet this mount never passed it, so the
+        // kernel's absolute-only fallback answered null for every relative
+        // lexeme and a DENY rule (`read subtree runtime`) refused the whole
+        // mount through its own unlocatability). The seam joins PURELY LEXICALLY
+        // against the REAL member workspace root — the SAME governed fs instance
+        // every effect row anchors on — through `lexicalAnchor`, this plane
+        // surface's own PR358 fix-5 law: ZERO fs calls, no realpath, no
+        // pre-approval read, no new permission layer. allow and deny resolve
+        // through the ONE function (same scope by construction); an absolute
+        // lexeme keeps its placement; a lexeme escaping the root canonicalizes
+        // to NO, and the kernel's EXISTING semantics decide (allow skipped —
+        // never an invented allow; deny refuses the mount — a broken authority,
+        // not an absent one). No governed root = NO seam and NO invented root:
+        // the kernel fallback stands, those worlds stay byte-identical.
+        // The kernel hands subtreeContains `realmId|canonical` on BOTH sides
+        // (projection matchers vs coversEffect resources); the lane-decide fast
+        // path hands it the RAW policy path and the effect's canonicalLocator.
+        // One closure serves both: strip only THIS plane's exact realm prefix,
+        // lexically normalize each side, then plain containment. A side that
+        // escapes the root makes the containment UNDETERMINABLE — the closure
+        // THROWS and the consumers' own laws decide (lane-decide matches the
+        // deny — tighten, never widen; the kernel answers with its typed
+        // refusal). It never guesses a containment.
+        const a5PlaneFsSeam = (() => {
+          const seamRoot = planeCfg?.fsInstance?.rootDir
+          if (typeof seamRoot !== 'string' || seamRoot.length === 0) return undefined
+          const seamRealmPrefix = `${a5PlaneRealmId}|`
+          const seamSep = seamRoot.startsWith('/') ? '/' : '\\'
+          const seamLocate = (raw) => {
+            const text = String(raw ?? '')
+            const bare = text.startsWith(seamRealmPrefix) ? text.slice(seamRealmPrefix.length) : text
+            const anchored = lexicalAnchor(seamRoot, bare)
+            return anchored.ok === true ? anchored.path : null
+          }
+          return Object.freeze({
+            canonicalizeResource: (declaredPath) => seamLocate(declaredPath),
+            subtreeContains: (rulePath, locator) => {
+              const rule = seamLocate(rulePath)
+              const effect = seamLocate(locator)
+              if (rule === null || effect === null) {
+                throw new Error(`the governed-root containment could not locate ${JSON.stringify(String(rulePath ?? ''))} vs ${JSON.stringify(String(locator ?? ''))} against the workspace root — never guessed`)
+              }
+              const base = rule.endsWith(seamSep) ? rule.slice(0, -1) : rule
+              return effect === base || effect.startsWith(base + seamSep)
+            },
+          })
+        })()
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3058,6 +3137,7 @@ export function createAgentBindings(deps) {
           // source, and second sources are what this move removes.
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
+          ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
           ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),

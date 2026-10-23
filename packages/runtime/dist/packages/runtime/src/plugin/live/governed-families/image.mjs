@@ -117,6 +117,13 @@ export const A5_IMAGE_TYPED_CODES = Object.freeze({
   STORE_UNAVAILABLE: 'P_IMAGE_STORE_UNAVAILABLE',
   EFFECTS_INVALID: 'P_IMAGE_INTERNAL_EFFECTS_INVALID',
   CONSUMPTION_CONTEXT_UNKNOWN: 'P_IMAGE_CONSUMPTION_CONTEXT_UNKNOWN',
+  // THE IMAGE-CAPABILITY ROUTE GATE (root narrow review on 233ba, item ①):
+  // native 639 refuses HERE, before its path resolves, before bytes are
+  // read, before the store sees anything (read-image.ts assertImageCapableRoute
+  // :119-130). Two refusals kept distinct, exactly as native keeps them: an
+  // unresolvable current route, and a route that does not declare image input.
+  ROUTE_UNRESOLVED: 'P_IMAGE_ROUTE_UNRESOLVED',
+  MODEL_NOT_IMAGE_CAPABLE: 'P_IMAGE_MODEL_NOT_IMAGE_CAPABLE',
 })
 
 const CODES = A5_IMAGE_TYPED_CODES
@@ -196,6 +203,7 @@ export function createGovernedReadImageArm({
   namespaceRoot,
   readBounded,
   attachments,
+  imageCapability,
   observe = () => {},
 }) {
   if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) {
@@ -212,6 +220,9 @@ export function createGovernedReadImageArm({
   }
   if (attachments === null || typeof attachments?.commitImage !== 'function' || attachments.imageLimits === undefined) {
     throw new TypeError('governed-families/image: attachments adapter {commitImage, imageLimits} is required (缺 store 只算条件不可用: the mount does not assemble this arm without a store, and this arm owns no fallback face)')
+  }
+  if (typeof imageCapability !== 'function') {
+    throw new TypeError('governed-families/image: imageCapability is required — native 639 refuses a non-image-capable route BEFORE resolving, reading or saving ANYTHING (tool-fs read-image.ts assertImageCapableRoute :119-130); the governed row keeps that gate at the same position, and it arrives as an async (signal) -> {ok, refusal?} probe built by the placing assembly over the PUBLIC llm service (ctx.get(\'llm\') + the exec route). An assembly that injects no gate silently REOPENS native\'s lost check — that is a config defect, never a default.')
   }
   const limits = attachments.imageLimits
   const byteCap = Math.min(limits.maxImageBytes, limits.maxMessageImageBytes)
@@ -368,8 +379,32 @@ export function createGovernedReadImageArm({
    */
   async function execute(args, receipt, callFacts, signal) {
     if (draining) return refuseExecution(CODES.DRAINING, 'DRAINING: no backend is reachable (no native fallback exists by construction)')
+    // THE IMAGE-CAPABILITY ROUTE GATE (root narrow review on 233ba, item ①).
+    // NATIVE ORDERING KEPT (read-image.ts :240-273): the pure argument/media
+    // refusals run FIRST (classify — the same checks native :240-249 runs
+    // before its gate), and the route gate is the LAST verdict before the
+    // resource edge (native :256 calls assertImageCapableRoute immediately
+    // BEFORE resolve :258 / read / save :273). The refusal sentence keeps the
+    // ORIGINAL form: `cannot read "<file_path>" as an image: <native reason>`
+    // (assertImageCapableRoute :119-130). The probe rides the PUBLIC llm
+    // service and the CURRENT exec route — injected by the placing assembly;
+    // never native re-entry, never a second authorization face. A refusal
+    // here answers with ZERO port calls, ZERO attachment writes and ZERO
+    // consumption: the count proves the pre-resource position.
     const plan = classify(args)
     if (plan.ok !== true) return { ...plan, classifyRefused: true }
+    const requestedPath = String(args.file_path)
+    let capability
+    try {
+      capability = await imageCapability(signal)
+    } catch (error) {
+      return refuseExecution(CODES.ROUTE_UNRESOLVED, `cannot read "${requestedPath}" as an image: the current model route could not be resolved (the capability probe threw ${String(error?.message ?? error).slice(0, 160)}) — nothing resolved, read, or saved`)
+    }
+    if (capability?.ok !== true) {
+      const refusal = capability?.refusal
+      const code = refusal?.code === CODES.MODEL_NOT_IMAGE_CAPABLE ? CODES.MODEL_NOT_IMAGE_CAPABLE : CODES.ROUTE_UNRESOLVED
+      return refuseExecution(code, `cannot read "${requestedPath}" as an image: ${String(refusal?.detail ?? 'the current model route could not be resolved')}`)
+    }
     // THE CONSUMPTION EXECUTION CONTEXT (root ruling on f3864b24, item 1):
     // two LEGAL worlds, told apart by the plane's trusted callFacts — never
     // guessed by the arm:
@@ -544,8 +579,16 @@ export function createGovernedReadImageArm({
           path: plan.targetManifest.canonicalTarget,
           image: Object.freeze({
             // The store's normalized-object identity (attachmentId) and the
-            // SOURCE digest are SEPARATE facts (fix card 5); the flag
-            // states whether normalization changed the bytes (pass-through).
+            // SOURCE digest are SEPARATE facts (fix card 5). The flag states
+            // whether the store stored the source VERBATIM; a REAL 639 store
+            // may normalize (downscale) the raster — then its receipt ALSO
+            // carries `originalDimensions`, the input size BEFORE the scale
+            // (attachment/src/types.ts :25-33: present only when
+            // normalization reduced the image), and it rides through verbatim
+            // (root narrow review on 233ba, item ②): coordinate math against
+            // the ORIGINAL raster needs exactly this fact, and recovering it
+            // by RE-READING the source file would re-open the very read the
+            // arm already closed.
             attachmentId: committed.attachmentId,
             sourceSha256: committed.sourceSha256,
             normalizedEqualsSource: committed.normalizedEqualsSource,
@@ -553,6 +596,7 @@ export function createGovernedReadImageArm({
             bytes: committed.bytes,
             ...(committed.width === undefined ? {} : { width: committed.width }),
             ...(committed.height === undefined ? {} : { height: committed.height }),
+            ...(committed.originalDimensions === undefined ? {} : { originalDimensions: committed.originalDimensions }),
             ...(committed.name === undefined ? {} : { name: committed.name }),
           }),
         }),
