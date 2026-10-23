@@ -66,6 +66,12 @@ owners:
     docs:
       - tests/doc-consistency/README.md
     enforce: true
+  - glob: packages/contracts/**
+    docs:
+      - packages/contracts/README.md
+  - glob: packages/testkit/**
+    docs:
+      - packages/testkit/README.md
   - glob: packages/legacy/**
     docs:
       - packages/legacy/README.md
@@ -78,10 +84,12 @@ owners:
   # gate the product tree, so a missing reading here is an advisory, not a refusal.
   - glob: packages/runtime/**
     docs:
+      - packages/runtime/README.md
       - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
       - docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
   - glob: packages/tools/**
     docs:
+      - packages/tools/README.md
       - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
       - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
   - glob: scripts/**
