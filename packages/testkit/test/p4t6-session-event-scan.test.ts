@@ -3002,7 +3002,6 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2E.length +
         SCANNED_PATHS_A5M2F.length +
         SCANNED_PATHS_A5M2G.length,
-        SCANNED_PATHS_A5M2B.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3076,7 +3075,6 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2E.length +
         SCANNED_PATHS_A5M2F.length +
         SCANNED_PATHS_A5M2G.length,
-        SCANNED_PATHS_A5M2B.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
