@@ -3400,13 +3400,101 @@ export function createAgentBindings(deps) {
             && !(g3Terminals instanceof g3Faces.TerminalSessionServiceClass)) {
             throw refuseG3("the live terminals service is NOT an instance of the TerminalSessionService the supplied terminal module answers — the loaded copy is not the own module instance of the Host; a look-alike TerminalBackendCleanupError would cross a service whose instanceof law never catches it, so the mount refuses")
           }
+
+          // THE REAL RESTRICTED PTY PRODUCER (root 20:38: 实际 producer 不能仅消费者外注 —
+          // the CONSUMER lane no longer accepts an external ptyService). The
+          // §5.1 service facts are PRODUCED HERE from (a) the LIVE `terminals`
+          // service public faces (listBackends(): string[] / list(owner):
+          // TerminalSessionSnapshot[] @ terminal/src/index.ts:143/:308 — the
+          // restricted session lane resolves ONLY this member's own sessions)
+          // and (b) the DEPLOYMENT's own controlled-plan evidence on the form
+          // column (backendIdentity registration facts; the composed open plan
+          // over the published resolveConfig/validateConfig law, graceMs as
+          // declared evidence). A fact the mount cannot answer is answered
+          // NOTHING — the adapter's P_TERM_TARGET_UNRESOLVED law then refuses
+          // the row; nothing is guessed, nothing is posed.
+          const g3DeclaredBackends = new Set(Array.isArray(g3Cfg.declaredBackends) ? g3Cfg.declaredBackends : [])
+          const g3BackendIdentity = g3Cfg.backendIdentity !== undefined && g3Cfg.backendIdentity !== null && typeof g3Cfg.backendIdentity === 'object' ? g3Cfg.backendIdentity : {}
+          const g3OpenCompose = (() => {
+            if (g3Cfg.sessionConfig === undefined || g3Cfg.sessionConfig === null) return null
+            if (!Number.isInteger(g3Cfg.graceMs) || g3Cfg.graceMs < 0) return null
+            try {
+              const resolved = g3Faces.resolveConfig({ ...g3Cfg.sessionConfig })
+              g3Faces.validateConfig(resolved)
+              return Object.freeze({
+                argv: Object.freeze([resolved.shellPath, ...(Array.isArray(resolved.shellArgs) ? resolved.shellArgs.map(String) : [])]),
+                rows: resolved.rows,
+                cols: resolved.cols,
+              })
+            } catch {
+              return null
+            }
+          })()
+          const g3PtyService = Object.freeze({
+            backend: (type) => {
+              if (typeof type !== 'string' || !g3DeclaredBackends.has(type)) return null
+              const live = Array.isArray(g3Terminals?.listBackends?.()) ? g3Terminals.listBackends() : []
+              if (!live.includes(type)) return null
+              const ident = g3BackendIdentity[type]
+              if (ident === null || typeof ident !== 'object'
+                || typeof ident.registrationId !== 'string' || ident.registrationId.length === 0
+                || typeof ident.incarnation !== 'string' || ident.incarnation.length === 0) return null
+              return Object.freeze({
+                registrationId: ident.registrationId,
+                incarnation: ident.incarnation,
+                ...(ident.processEnvelope === undefined || ident.processEnvelope === null ? {} : { processEnvelope: ident.processEnvelope }),
+              })
+            },
+            session: (ownerAgentId, sessionId) => {
+              if (g3Terminals === undefined || g3Terminals === null) return null
+              const memberAgentId = runtimeAgent?.id
+              if (memberAgentId === undefined || String(ownerAgentId) !== String(memberAgentId)) return null
+              let snaps
+              try {
+                snaps = g3Terminals.list(runtimeAgent)
+              } catch {
+                return null
+              }
+              if (!Array.isArray(snaps)) return null
+              const snap = snaps.find((entry) => entry !== null && typeof entry === 'object' && entry.sessionId === sessionId)
+              if (snap === undefined || !Number.isInteger(snap.pid)) return null
+              // The PTY incarnation on the public face is the process identity
+              // (terminal/src/index.ts:308 snapshot pid): a dead/restarted
+              // session changes or drops it — the adapter's drift recheck
+              // reads exactly that movement. status rides verbatim.
+              return Object.freeze({
+                incarnation: `pid:${String(snap.pid)}`,
+                ...(snap.status === undefined || snap.status === null ? {} : { status: snap.status }),
+              })
+            },
+            approvedOpenPlan: () => {
+              if (g3OpenCompose === null) return null
+              // THE deployment-level controlled OPEN PLAN: exactly what the
+              // per-open one-shot backend pins into SubprocessRuntime
+              // .spawnTerminal for THIS mount (same resolveConfig-composed
+              // argv/dims the sessionFactory builds). The adapter RE-VERIFIES
+              // the digest against the ACTUAL launch spec at the entry —
+              // a claim is never the envelope; a mount without declared
+              // graceMs evidence answers NOTHING (open rows TARGET_UNRESOLVED).
+              return Object.freeze({
+                plan: Object.freeze({
+                  argv: g3OpenCompose.argv,
+                  cwd: typeof g3Cfg.spawnCwd === 'string' && g3Cfg.spawnCwd.length > 0 ? g3Cfg.spawnCwd : process.cwd(),
+                  rows: g3OpenCompose.rows,
+                  cols: g3OpenCompose.cols,
+                  graceMs: g3Cfg.graceMs,
+                  ...(g3Cfg.terminalType === undefined ? {} : { terminalType: g3Cfg.terminalType }),
+                }),
+              })
+            },
+          })
           a5G3TerminalInject = Object.freeze({
             providerId: g3Cfg.providerId,
             memberAgentId: g3MemberAgentId,
             sessionHeaderId: g3SessionHeaderId,
             readNative: g3ReadNative,
             declaredBackends: g3Cfg.declaredBackends,
-            ptyService: g3Cfg.ptyService,
+            ptyService: g3PtyService,
             bindingFacts: (toolName) => {
               // The CURRENT dispatcher entry behind this mount's placement of
               // THAT tool (bindingIds are per-tool facts — install.ts:1151),
@@ -3472,9 +3560,7 @@ export function createAgentBindings(deps) {
               ...(g3JobsService !== undefined && g3JobsService !== null && typeof g3JobsService.start === 'function' && typeof g3JobsService.kill === 'function'
                 ? { jobs: g3JobsService, ownerSessionId: () => sessionId }
                 : {}),
-              ...(g3Cfg.ptyService?.approvedOpenPlan === undefined
-                ? {}
-                : { approvedOpenPlan: (callId) => g3Cfg.ptyService.approvedOpenPlan(callId) }),
+              approvedOpenPlan: (callId) => g3PtyService.approvedOpenPlan(callId),
             }),
           })
           observations.push(`a5m2-g3: inject armed for ${sessionId} (evidence keys=${Object.keys(g3Cfg).sort().join(',')} terminals=${g3Terminals === undefined || g3Terminals === null ? 'ABSENT' : 'present'} subprocess=${g3Subprocess === undefined || g3Subprocess === null ? 'ABSENT' : 'present'})`)

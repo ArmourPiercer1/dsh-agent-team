@@ -144,6 +144,60 @@ const registrationFaceComplete = (native) => {
  *
  * @param input - CLOSED key set, see the file header.
  */
+/** THE B-TERMINAL CLOSED-TABLE FLAT VIEW (root 20:38; the PA_FAMILY_TARGET_
+ *  RULES['B-TERMINAL'] entry in control/types.ts is its counterpart). Every
+ *  leaf maps ONE-FOR-ONE from the adapter's CLASSIFY manifest at FULL VALUE
+ *  (the B-CONTROL mint law); snapshot/null-only leaves stay out (the entry
+ *  digest re-verification and the service recheck own them — see the types.ts
+ *  entry comment). An unknown operation passes THROUGH: the grammar refusal
+ *  names it, nothing is invented here. */
+export function a5G3PaTargetFlat(manifest) {
+  if (!isRecord(manifest) || typeof manifest.operation !== 'string') return manifest
+  const base = {
+    operation: manifest.operation,
+    toolName: manifest.toolName,
+    realmId: manifest.realmId,
+    agentId: manifest.agentId,
+    sessionHeaderId: manifest.sessionHeaderId,
+    paramFingerprint: manifest.paramFingerprint,
+  }
+  if (base.operation === 'pty-spawn') {
+    const bt = manifest.backendTarget
+    const pob = manifest.perOpenBackend
+    if (!isRecord(bt) || !isRecord(pob)) return manifest
+    return Object.freeze({
+      ...base,
+      backendPublicType: bt.publicType,
+      backendRegistrationId: bt.serviceRegistrationId,
+      backendIncarnation: bt.serviceIncarnation,
+      perOpenCallId: manifest.perOpenCorrelationCallId,
+      approvedEnvelopeDigest: pob.envelopeDigest,
+    })
+  }
+  const pty = (extra) => {
+    const pt = manifest.ptyTarget
+    if (!isRecord(pt)) return manifest
+    return Object.freeze({ ...base, ptySessionId: pt.sessionId, ptyIncarnation: pt.serviceIncarnation, ...extra })
+  }
+  switch (base.operation) {
+    case 'stdin-write': {
+      if (typeof manifest.effectiveSubmit !== 'boolean' || typeof manifest.background !== 'boolean') return manifest
+      return pty({
+        effectiveSubmit: manifest.effectiveSubmit,
+        background: manifest.background,
+        inputDigest: manifest.inputDigest,
+        inputBytes: manifest.inputBytes,
+      })
+    }
+    case 'output-read': return pty({})
+    case 'signal': return pty({ signalName: manifest.signal })
+    case 'close': return pty({ settlementEvidence: manifest.settlementEvidence })
+    case 'list': return Object.freeze({ ...base, ownerScoped: true })
+    default: return manifest
+  }
+}
+
+
 export function buildG3TerminalWiring (input = {}) {
   const knownInput = new Set([
     'realmId', 'providerId', 'memberAgentId', 'sessionHeaderId', 'readNative',
@@ -279,11 +333,20 @@ export function buildG3TerminalWiring (input = {}) {
         requestedEffects: parsedEffects.value,
         toolName,
         // 载荷法: the four P-adds at FULL VALUE, from the arm's own payload.
+        // The B-TERMINAL targetManifest rides as the PA CLOSED-TABLE flat
+        // view (root 20:38 闭表; the B-CONTROL one-for-one FLAT LEAVES law):
+        // a5G3PaTargetFlat maps every admitted target leaf one-for-one at
+        // full value — a manifest shape the table does not recognize passes
+        // THROUGH unchanged, so the bridge's own grammar refusal (never an
+        // invented shape) stays the verdict. The durable row is CARRIED by
+        // the bridge (pa-control-bridge.ts:457-483 carries and compares, it
+        // never recomputes), and the full nested manifest keeps riding the
+        // live arm's own pairing edges untouched.
         family: Object.freeze({
           familyId: payload.familyId,
           adapterRevision: payload.adapterRevision,
           providerIdentity: payload.providerIdentity,
-          targetManifest: payload.targetManifest,
+          targetManifest: a5G3PaTargetFlat(payload.targetManifest),
         }),
         ...(signal === undefined ? {} : { signal }),
       })

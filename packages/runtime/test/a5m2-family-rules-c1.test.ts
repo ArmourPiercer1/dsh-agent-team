@@ -374,11 +374,15 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(validatePaFamilyTarget('B-MCP', B_MCP_STDIO_LIST)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(deny)
+    // Census as of the a5m2-wire-g3 B-TERMINAL registration (root 20:38
+    // 闭表补齐): B-TERMINAL joined the registered families; B-MCP and
+    // B-SCHEDULE remain the named unregistered gaps.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
-    // ONLY B-INSPECT carries a variant grammar (no schema generalization):
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL'])
+    // variant grammars exist for B-INSPECT (inspectVariant) and B-TERMINAL
+    // (operation) only — no further schema generalization:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(familyId !== 'B-INSPECT')
+      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(familyId !== 'B-INSPECT' && familyId !== 'B-TERMINAL')
     }
   })
 

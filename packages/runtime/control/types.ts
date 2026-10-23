@@ -1338,6 +1338,70 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
+  // A5M2-G3-WIRE B-TERMINAL (root 20:38 闭表补齐; the lane module is
+  // src/plugin/live/governed-families/g3-fsproc-adapters.mjs over the pinned
+  // 639 terminal faces — six verbs, one per-open controlled plan). The
+  // durable claim is the adapter CLASSIFY manifest read as FLAT LEAVES
+  // (the B-CONTROL mint law): the wiring's targetManifestForPaRow maps
+  // every admitted target leaf one-for-one at full value; snapshot-only or
+  // null-only leaves (service status detail, process envelopes, the
+  // approvedPlan object behind its envelope digest, the static
+  // backgroundJobTarget literal, optional caller cwd/name) stay OUT of the
+  // table — the entry-time digest re-verification and the service recheck
+  // own those truths, the durable row never restates them.
+  'B-TERMINAL': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      toolName: 'string',
+      realmId: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'pty-spawn': Object.freeze({
+          adds: Object.freeze({
+            backendPublicType: 'string',
+            backendRegistrationId: 'string',
+            backendIncarnation: 'string',
+            perOpenCallId: 'string',
+            approvedEnvelopeDigest: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'stdin-write': Object.freeze({
+          adds: Object.freeze({
+            ptySessionId: 'string',
+            ptyIncarnation: 'string',
+            effectiveSubmit: 'boolean',
+            background: 'boolean',
+            inputDigest: 'string',
+            inputBytes: 'nonNegativeInt',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'output-read': Object.freeze({
+          adds: Object.freeze({ ptySessionId: 'string', ptyIncarnation: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'signal': Object.freeze({
+          adds: Object.freeze({ ptySessionId: 'string', ptyIncarnation: 'string', signalName: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'close': Object.freeze({
+          adds: Object.freeze({ ptySessionId: 'string', ptyIncarnation: 'string', settlementEvidence: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'list': Object.freeze({
+          adds: Object.freeze({ ownerScoped: 'boolean' }),
+          binds: Object.freeze({ ownerScoped: true }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
+  }),
 } as const)
 
 /* Discriminated-target table legality, checked at module load (root 17:40:
@@ -1346,7 +1410,7 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
  * leaf; every group is a plain leaf map over the EXISTING kinds; every bound
  * leaf satisfies its own kind; group leaves never redeclare a required leaf
  * (one leaf, one law). Zero cost for families without `variant` (all but
- * B-INSPECT). */
+ * B-INSPECT and B-TERMINAL). */
 for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) {
   const variant = rule.variant
   if (variant === undefined) continue

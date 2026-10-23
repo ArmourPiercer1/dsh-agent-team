@@ -439,8 +439,9 @@ config:
 
 **B-TERMINAL 列（`teamToolPlane.terminal`；A5M2-G3-WIRE 接线，root 20:14 表单列补齐）**：
 `terminal_*` 六行的受治挂载证据。**缺省不配 = 零翻转**（无行、无注册、native
-逐字节不变）；配置了但键集不合格 = **挂载被类型化拒绝**（`TERMINAL_ARM_INJECT_INVALID`，
-键集 CLOSED，多余键同样拒绝）。表单列的语义生产者分工：
+逐字节不变）；证据装配出的 inject 不合格 = **挂载被类型化拒绝**
+（`TERMINAL_ARM_INJECT_INVALID`，inject 键集 CLOSED、多余键同样拒绝；
+表单列自身按列读取，未识别的列不产生任何事实）。表单列的语义生产者分工：
 
 ```yaml
 config:
@@ -448,24 +449,32 @@ config:
     terminal:
       providerId: "my-team-provider"          # 行 provider 身份（durable family gate 比对键）
       declaredBackends: ["shell"]             # §5.1 declared_mount：公开的 DECLARED backend 类型集（非空字符串数组）
-      sessionConfig:                          # 可选；REAL LocalPtySession 的 base Config
-        rows: 24                              #   （BashTerminalBackend 同款发布 law：resolveConfig+validateConfig 先行）
-        cols: 80
-      ptyService: !!js/function >-            # 可选但一经启用即必须可答：§5.1 服务事实 seam
-        (ctx) => ({ backend, session, approvedOpenPlan })
-        # backend(type) → {registrationId, incarnation, processEnvelope?}；
-        # session(ownerAgentId, sessionId) → {incarnation, status}；
-        # approvedOpenPlan(callId) → 该次 open 的 CONTROLLED EXECUTION PLAN。
-        # 三者是 DEPLOYMENT 的 controlled backend provider 事实（owner 发布；
-        # 载体不同可经 cordis !!js）。capture 从不发明这些事实：seam 答不出的
-        # 行按 adapter 自身法律逐条类型化拒绝（P_TERM_TARGET_UNRESOLVED 等）。
+      sessionConfig:                          # 装配内 REAL producer 的 base Config
+        rows: 24                              #   （LocalPtySession 同款发布 law：resolveConfig+validateConfig
+        cols: 80                              #     先行；argv = [shellPath, ...shellArgs]）
+      backendIdentity:                        # 部署方自己的 backend 注册事实（§5.1 target identity）
+        shell:                                #   Host 公开面 listBackends() 只答 string[]（index.ts:143），
+          registrationId: "reg-shell-1"       #   registrationId/incarnation 无公开供给者——部署方申报，
+          incarnation: "inc-2026-10-23"       #   未申报 = terminal_open 行 P_TERM_TARGET_UNRESOLVED（fail-closed）
+      graceMs: 5000                           # 受治 OPEN PLAN 的 spawn grace 证据（必填才能答 open plan；
+                                              #   未申报 = open 行 TARGET_UNRESOLVED）
+      spawnCwd: "/absolute/pty-cwd"           # 可选；open plan 的工作目录（缺省 = 部署进程的
+                                              #   process.cwd()——部署事实，非拼装）
+      terminalType: "xterm-256color"          # 可选；缺省 'dumb'（发布 law 的 canonical 默认）
 ```
 
-live 的 `terminals` / `subprocess`（以及 bg 用的 `jobs`）**不进表单**：它们是
-Host 自身的公开服务，由装配经 lazy deps 在挂载时刻读取（`ctx.get` 的
-deps.jobs/web/B-IMAGE 既有模式）；世界缺服务 = 挂载被 hard-visit 法律类型化
-拒绝，已挂载世界的 `TerminalBackendCleanupError` 还须与服务自身的
-`instanceof` 律同实例配对（配对不过 = 拒绝挂载，从不静默装 look-alike 类）。
+**ptyService 三事实不再有外注列（root 20:38 更正）**：`backend`/`session`/
+`approvedOpenPlan` 由装配内的**真实受限 producer** 产生——`session` 只解析
+本 member 自己的 live `terminals.list(owner)` 快照（pid 派生 incarnation，
+status 逐字携带；他主/未知 sid 答 nothing）；`backend` 只应答
+declaredBackends ∩ live `listBackends()` 且有部署方 registration 事实者；
+`approvedOpenPlan` 答本 mount 部署级受治 open plan（resolveConfig 复合
+argv/rows/cols + 申报的 graceMs），adapter 在执行入口用**实际** launch spec
+的 digest 复验——claim 永不是 envelope，答不出的事实按
+`P_TERM_TARGET_UNRESOLVED` fail-closed，从不猜。live 的 `terminals` /
+`subprocess`（及 bg 的 `jobs`）不进表单：Host 自身公开服务，经 lazy deps
+挂载时刻读取；已挂载世界的 `TerminalBackendCleanupError` 还须与 live service
+的 `instanceof` 律同实例配对（配对不过 = 拒绝挂载）。
 
 **read-only 最小配方（Alpha.5 READ slice；P1 回归的机读对象）**：上块是
 含 shell 行的完整形态。本配方**仅为 `read` 提供此配置所需的能力/授权，不配置

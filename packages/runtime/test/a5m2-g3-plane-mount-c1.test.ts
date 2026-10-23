@@ -381,14 +381,17 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     expect(built.value.terminal!.familyRegistrations().map((r) => r.name).sort()).toEqual(['terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal'])
   })
 
-  it('(h) production readCallFacts pairing: the PLACEMENT LIST answers the read for placed rows (positive), and an UNPLACED (census) name never reaches the read at all (negative)', async () => {
-    // (root 20:14 card item 2): paPlacementNameOf must resolve the G3 fixed
-    // spellings from the WIRING'S OWN placementNames, else the production
-    // call-facts read arrives with NO placementName and the registry
-    // refuses the binding lookup (the mount walks but never binds). The
-    // reader below is the integrator seam double; the TUPLE it answers is
-    // the plane's own rev-0 row identity (the same measured fact as the
-    // inject's bindingFacts — a real pairing, not a fake binding).
+  it('(h) placement CALLBACK law (INTEGRATOR SEAM DOUBLE — root 20:38 correction): the PLACEMENT LIST names the read for placed rows (positive), and an UNPLACED (census) name never reaches the read at all (negative)', async () => {
+    // (root 20:14 card item 2 / root 20:38 EVIDENCE CORRECTION):
+    // paPlacementNameOf must resolve the G3 fixed spellings from the
+    // WIRING'S OWN placementNames, else the production call-facts read
+    // arrives with NO placementName. HONESTY TIER (root 20:38): the reader
+    // below is an INTEGRATOR SEAM DOUBLE and its facts object is HAND-BUILT
+    // over the plane's own rev-0 row identity — what this leg proves is the
+    // PLACEMENT CALLBACK through the production read slot (name pairing +
+    // the measured construction+edge double-read law). It proves NOTHING
+    // about the REAL facts supply: that is leg (i), over the shipped
+    // readPaCallFactsForCall and a published mount.
     const reads: Array<Record<string, unknown>> = []
     const plans: Array<Record<string, unknown>> = []
     const readCallFacts = async (request: Record<string, unknown>) => {
@@ -450,5 +453,108 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     const placedRow = builtC.value.definitions.find((d) => d.name === 'terminal_read') as Definition
     await placedRow.execute({ sessionId: 'pty-1' }, { token: { k: 'g3-census-contrast' }, agent: AGENT })
     expect([...new Set(readsC.map((r) => String(r.placementName)))], 'only PLACED spellings reach the read').toEqual(['terminal_read'])
+  })
+
+  it('(i) REAL facts supply (root 20:38): the shipped readPaCallFactsForCall over a PUBLISHED mount answers the production read for the G3 placement', async () => {
+    // Not a double of the reader itself: the REAL shipped entry
+    // (pa-mount-registry readPaCallFactsForCall) resolves the call's facts
+    // through a REAL published mount record (publishPaMount) whose `plane`
+    // member IS the assembly's own face (live walk-plan map, realm,
+    // assembly) and whose Guard dispatcher answers the SAME rev-0 row
+    // tuples the wiring's bindingFacts read — one live source, read through
+    // the registry's own code paths.
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (identity: Record<string, unknown> | string) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const answerCauses: string[][] = []
+    const w = makeInject()
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      // the rev-0 overlay lane: the durable generation source (0 = no
+      // overlay rows; the SAME source the assembly is built with).
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => {
+        const causes: string[] = []
+        const inner = input.diagnose
+        const answer = registry.readPaCallFactsForCall({ ...input, diagnose: (c: { code?: string }) => { causes.push(String(c?.code ?? '')); if (typeof inner === 'function') (inner as (x: unknown) => void)(c) } })
+        answerCauses.push(causes)
+        return answer
+      },
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        // the permission lane's OWN published call-facts shape (the real
+        // reader reads the blueprint tuple / providerVersion / healthy from
+        // this lane; @639 the tuple's revision is a STRING — the A5-M1-D-fix
+        // law pinned in pa-mount-registry.mjs:258-268).
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const def = built.value.definitions.find((d) => d.name === 'terminal_list') as Definition
+      const served = await def.execute({}, { token: { k: 'g3-real-facts' }, agent: AGENT })
+      // SERVED through the real reader: the construction + edge reads both
+      // resolved the live rev-0 tuple through the published mount (a missing
+      // placementName, a mispaired tuple, or a planSnapshot drift would
+      // stale the call before the seat — nothing here answers by hand).
+      expect(served, `the real reader served the row (causes: ${JSON.stringify(answerCauses)})`).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }])
+      // ZERO diagnose causes across BOTH production reads (construction +
+      // edge): every arm of the shipped entry resolved through the
+      // published mount — no refusal was ever on the path.
+      // The reader answers the LIVE dispatcher tuple identity for a placed
+      // name and NOTHING for a name the mount never placed:
+      const answer = await registry.readPaCallFactsForCall({
+        rootSessionId: 'g3-plane-team', instanceId: 'g3-instance', realmId: REALM,
+        callId: 'direct-probe-1', placementName: 'terminal_list',
+        requestedEffects: { effects: [{ kind: 'tool-invoke', toolName: 'terminal_list' }], fingerprint: 'sha256:probe' },
+      })
+      expect(answer, 'the real reader answers for the placed G3 name').toBeDefined()
+      const facts = (answer as Record<string, unknown>)?.facts as Record<string, unknown> | undefined
+      expect((facts?.binding as Record<string, unknown> | undefined)?.bindingId).toBe(`plane-row:${TEMPLATE}:terminal_list`)
+      const miss = await registry.readPaCallFactsForCall({
+        rootSessionId: 'g3-plane-team', instanceId: 'g3-instance', realmId: REALM,
+        callId: 'direct-probe-2', placementName: 'terminal_never_mounted',
+        requestedEffects: { effects: [{ kind: 'tool-invoke', toolName: 'terminal_list' }], fingerprint: 'sha256:probe' },
+      })
+      expect(miss, 'an unplaced placementName answers NOTHING (fail closed, never a name lookup)').toBeUndefined()
+      expect(answerCauses.every((c) => c.length === 0), `no reader refusal crossed the served call (${JSON.stringify(answerCauses)})`).toBe(true)
+    } finally {
+      registry.revokePaMount(identity)
+    }
   })
 })

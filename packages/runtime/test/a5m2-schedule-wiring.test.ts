@@ -458,7 +458,10 @@ describe('a5m2-schedule-wiring — the controlled list/delete wiring over the re
 
   describe('(g) GRAMMAR-STATE PIN: mount+registration+consumption are wired; the grammar gate stays CLOSED pending root', () => {
     it('PA_FAMILY_TARGET_RULES carries NO B-SCHEDULE key (this lane touched nothing) and EVERY minted B-SCHEDULE claim denies exactly the unregistered-family refusal', async () => {
-      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
+      // Census pin updated once for the a5m2-wire-g3 B-TERMINAL registration
+      // (root 20:38 闭表 — a sibling lane's grammar entry, this lane still
+      // touched NOTHING); B-SCHEDULE stays the unregistered gap below.
+      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL'])
       expect(PA_FAMILY_TARGET_RULES['B-SCHEDULE' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
       const world = makeWorld()
       const wiring = unwrap(WIRING_MODULE.createScheduleWiring(world.base))

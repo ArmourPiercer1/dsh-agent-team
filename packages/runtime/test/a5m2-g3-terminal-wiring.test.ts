@@ -72,6 +72,7 @@ type Definition = {
 
 const WIRING = (await import(new URL('../src/plugin/live/governed-families/g3-terminal-wiring.mjs', import.meta.url).href)) as {
   buildG3TerminalWiring: (input: Record<string, unknown>) => Built
+  a5G3PaTargetFlat: (manifest: Record<string, unknown>) => Record<string, unknown>
   A5_G3_TERMINAL_TOOL_NAMES: readonly string[]
   A5_G3_TERMINAL_WIRING_CODES: Record<string, string>
 }
@@ -481,30 +482,55 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
     expect(w.closePlans).toEqual(['exec-open-cleanup'])
   })
 
-  it('(i) grammar fail-closed (measured bytes, never invented kinds): B-TERMINAL has NO registered typed-plan structure and the durable rules gate DENIES its target fail-closed', () => {
-    // The published rules gate (control/types.ts, the SIGNED closed grammar:
-    // kinds string | boolean | nonNegativeInt | countsTriple | obligations
-    // plus the discriminated variants; registered families today:
-    // B-SESSION / B-IMAGE / B-WRITE / B-CONTROL / B-INSPECT) knows NO
-    // B-TERMINAL structure — the exact measured refusal, pinned here as the
-    // DELTA the center must close (this lane invents no kind and never
-    // touches the grammar file):
-    expect(validatePaFamilyTarget('B-TERMINAL', { anything: 'at all' })).toBe(
-      "familyId: no target structure is registered for 'B-TERMINAL'",
-    )
-    // and the OPEN row's governed target (nested backend target + approved
-    // plan + envelope digest) is LEAF-lossless yet UNREGISTERED — the
-    // durable-approval bridge can only deny it, fail closed:
-    const openManifest = {
-      operation: 'pty-spawn',
+  it('(i) B-TERMINAL closed table (root 20:38 闭表): the wiring FLAT VIEW passes the SIGNED grammar for all six verbs; nested/extra/unknown shapes deny fail-closed', () => {
+    // The grammar file now carries PA_FAMILY_TARGET_RULES['B-TERMINAL']
+    // (variant over `operation`, the B-INSPECT discrimination law). The
+    // durable claim is the adapter CLASSIFY manifest through the wiring's
+    // a5G3PaTargetFlat — one-for-one FULL-VALUE leaves (the B-CONTROL mint
+    // law); snapshot/null-only leaves stay OUT (the entry digest re-check
+    // and the service recheck own them). Measured refusals pinned below are
+    // the table's OWN words — never invented.
+    const flat = WIRING.a5G3PaTargetFlat
+    const common = (operation: string, toolName: string) => ({ operation, toolName, realmId: 'realm-g3', agentId: 'agent-1', sessionHeaderId: 'hdr-1', paramFingerprint: 'sha256:p' })
+    const openNested = {
+      ...common('pty-spawn', 'terminal_open'),
       backendTarget: { publicType: 'shell', serviceRegistrationId: 'reg-shell-1', serviceIncarnation: 'inc-1', processEnvelope: 'sandbox:landlock' },
-      perOpenBackend: { approvedPlan: { argv: '/bin/bash', cwd: '/tmp/g3-wire', rows: 24, cols: 80, graceMs: 2000 }, envelopeDigest: 'sha256:x' },
+      perOpenBackend: { approvedPlan: { argv: ['/bin/bash'], cwd: '/tmp/g3-wire', rows: 24, cols: 80, graceMs: 2000 }, envelopeDigest: 'sha256:x' },
       perOpenCorrelationCallId: 'c-1',
-      paramFingerprint: 'sha256:y',
+      requestedCwd: '/tmp/g3-wire',
+      effectDelta: ['os-pty-spawn-shell', 'process-io-envelope'],
     }
-    expect(isLosslessJsonValue(openManifest)).toBe(true)
-    expect(validatePaFamilyTarget('B-TERMINAL', openManifest)).toBe(
-      "familyId: no target structure is registered for 'B-TERMINAL'",
-    )
+    expect(isLosslessJsonValue(openNested)).toBe(true)
+    expect(validatePaFamilyTarget('B-TERMINAL', flat(openNested))).toBeUndefined()
+    // The RAW nested manifest is NOT the durable claim shape (closed keys
+    // deny, fail closed — the flat view is the only claim the table knows):
+    expect(validatePaFamilyTarget('B-TERMINAL', openNested)).toBe('backendPublicType: required by the B-TERMINAL typed plan, absent')
+    const ptyTarget = { sessionId: 'pty-1', serviceIncarnation: 'pid:4242', serviceStatus: { kind: 'running' }, serviceEnvelope: null }
+    expect(validatePaFamilyTarget('B-TERMINAL', flat({
+      ...common('stdin-write', 'terminal_send'), ptyTarget,
+      effectiveSubmit: true, background: false, backgroundJobTarget: null,
+      inputDigest: 'sha256:t', inputBytes: 4, effectDelta: ['shell-input-injection-stdin'],
+    }))).toBeUndefined()
+    expect(validatePaFamilyTarget('B-TERMINAL', flat({
+      ...common('output-read', 'terminal_read'), ptyTarget, offset: null, count: null,
+    }))).toBeUndefined()
+    expect(validatePaFamilyTarget('B-TERMINAL', flat({
+      ...common('signal', 'terminal_signal'), ptyTarget, signal: 'SIGINT', effectDelta: ['os-signal-to-process-group'],
+    }))).toBeUndefined()
+    expect(validatePaFamilyTarget('B-TERMINAL', flat({
+      ...common('close', 'terminal_close'), ptyTarget, effectDelta: ['owned-process-tree-kill'],
+      settlementEvidence: 'the service close outcome (closed | already-closing) is the only termination word',
+    }))).toBeUndefined()
+    expect(validatePaFamilyTarget('B-TERMINAL', flat({ ...common('list', 'terminal_list'), ownerScoped: true }))).toBeUndefined()
+    // binds law: list's ownerScoped is the ONE literal, never a boolean slot:
+    expect(validatePaFamilyTarget('B-TERMINAL', { ...common('list', 'terminal_list'), ownerScoped: false }))
+      .toContain('not the')
+    // an unknown operation passes THROUGH the flat map UNCHANGED and the
+    // table names it (never a fallback group):
+    expect(validatePaFamilyTarget('B-TERMINAL', flat({ ...common('pty-exotic', 'terminal_x') })))
+      .toContain('selects no B-TERMINAL variant group')
+    // the six-verb leaf sets are CLOSED: a smuggled leaf denies with its own name:
+    expect(validatePaFamilyTarget('B-TERMINAL', { ...common('output-read', 'terminal_read'), ptySessionId: 'pty-1', ptyIncarnation: 'pid:4242', smuggled: 'x' }))
+      .toBe('smuggled: not part of the B-TERMINAL typed plan')
   })
 })

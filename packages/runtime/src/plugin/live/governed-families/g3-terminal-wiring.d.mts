@@ -137,3 +137,12 @@ export declare const A5_G3_TERMINAL_WIRING_CODES: Readonly<{
 export declare function buildG3TerminalWiring (
   input?: G3TerminalWiringInput,
 ): G3TerminalWiringAssembly | G3TerminalWiringRefusal
+
+/** THE B-TERMINAL closed-table flat view (root 20:38; counterpart:
+ *  PA_FAMILY_TARGET_RULES['B-TERMINAL'] in control/types.ts). One-for-one
+ *  full-value leaf mapping of the adapter CLASSIFY manifest; an unknown
+ *  operation passes THROUGH unchanged (the grammar refusal names it — never
+ *  an invented shape). */
+export declare function a5G3PaTargetFlat (
+  manifest: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, unknown>>
