@@ -230,7 +230,7 @@ async function waitForMock(mock, pred, timeoutMs, label) {
 
 // ── scenario state + scripted decide ────────────────────────────────────────
 
-const S = { w1: null, w1Child: null, w2: null, w2Child: null, firstEventId: null }
+const S = { w1: null, w1Child: null, w2: null, w2Child: null, firstEventSeq: null }
 const MK = {
   CREATE_W1: `G6_MK_CREATE_W1_${NONCE}`, CREATE_W2: `G6_MK_CREATE_W2_${NONCE}`,
   WORK_W1: `G6_MK_WORK_W1_${NONCE}`, ARCHIVE_W1: `G6_MK_ARCHIVE_W1_${NONCE}`,
@@ -305,13 +305,13 @@ function decide({ req }) {
 const CASES = [
   { id: 'C1', tool: 'session_trace', input: () => ({ session_id: ROOT_G6 }), expect: 'ok' },
   { id: 'C2', tool: 'session_event_trace', input: () => ({ session_id: ROOT_G6 }), expect: 'ok' },
-  { id: 'C2b', tool: 'session_event_read', input: () => ({ session_id: ROOT_G6, ...(S.firstEventId !== null ? { event_id: S.firstEventId } : {}) }), expect: 'ok' },
+  { id: 'C2b', tool: 'session_event_read', input: () => ({ session_id: ROOT_G6, ...(S.firstEventSeq !== null ? { seq: S.firstEventSeq } : {}) }), expect: 'ok' },
   { id: 'C3', tool: 'session_event_search', input: () => ({ session_id: ROOT_G6, query: `G6_MARKER_${NONCE}` }), expect: 'ok' },
-  { id: 'C4', tool: 'session_search', input: () => ({ query: `G6_MARKER_${NONCE}`, scope: 'current' }), expect: 'ok' },
+  { id: 'C4', tool: 'session_search', input: () => ({ query: `G6_MARKER_${NONCE}` }), expect: 'ok' }, // NO session_id -> caller default (:1331 args.session_id ?? caller) = the REAL current-session clamp
   { id: 'C5', tool: 'session_trace', input: () => ({ session_id: S.w1Child }), expect: 'ok' },
   { id: 'C6', tool: 'session_trace', input: () => ({ session_id: 'session-foreign-not-in-team-9f3c' }), expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] },
   { id: 'C7', tool: 'session_trace', input: () => ({ session_id: S.w1Child }), expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] },
-  { id: 'C8', tool: 'session_search', input: () => ({ query: 'anything', scope: 'current' }), expect: 'deny', anyOf: [G6.NO_STEP] },
+  { id: 'C8', tool: 'session_search', input: () => ({ query: 'anything' }), expect: 'deny', anyOf: [G6.NO_STEP] },
   { id: 'C10', tool: 'session_trace', input: () => ({ session_id: 'session-does-not-exist-000000' }), expect: 'deny', anyOf: [G6.NOT_FOUND] },
 ]
 // C9 = caller drift: verified at source level that NO public surface flips the
@@ -504,7 +504,7 @@ async function main() {
     const r = await runCaseTurn(c, ROOT_G6)
     results.push({ id, ...r, expect: c.expect, anyOf: c.anyOf })
     if (id === 'C2') {
-      S.firstEventId = /"(?:eventId|id)"\s*:\s*"([^"]+)"/.exec(r.toolResult ?? '')?.[1] ?? null
+      S.firstEventSeq = Number(/"seq"\s*:\s*(\d+)/.exec(r.toolResult ?? '')?.[1] ?? /seq (\d+)/.exec(r.toolResult ?? '')?.[1] ?? '') || null
       const c2b = await runCaseTurn(CASES.find((x) => x.id === 'C2b'), ROOT_G6)
       results.push({ id: 'C2b', ...c2b, expect: 'ok' })
     }
