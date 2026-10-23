@@ -57,7 +57,7 @@
 | G1 纯查询 14 面 | 未接线 | g1-surface-adapters 可交付组件（59 腿）；生产装配在途 | 接线 `44ece7a3`@feat/a5m2-wire-g1；适配候选 `a0670fa8` | dependency/plugin 资源臂不强塞 |
 | G2 WEB seams | 未接线 | provider-seams 可交付；Team-only 固定 provider 为具名阻塞 | 接线 `e78dee2a`@feat/a5m2-wire-g2 | WEB global/env 禁 |
 | G2 MCP seams | 未接线 | 真 SDK 签名面可交付 | 同上 | request=执行租约 |
-| G2 BROWSER 装配 | 未接线 | team-assembly 候选（真 SDK+公开 launch 面） | 同上 | lease 语义待真 provider |
+| G2 BROWSER 装配 | 未开发（组件独审 BLOCK） | team-assembly 候选独审 BLOCK：MCP pending connect 未计 close/inflight、失败无 rollback、并发 reconnect 覆盖 client/吞 close 失败/提前 closed（需串行轮换+按 generation 跟踪+失败 ownership）；Browser 直连 openNativeBrowser 的 Stagehand.create 失败无清理且 execute 忽略 signal（按公开 worker/真实连接所有权修半开，无 ownedChromium 不得假清理）；makeTransport 须实际 endpoint/spawn/config 同源；真 Team scoped register+close 绑定，不靠 server 名 | 生命周期修复=原 G2 组件 owner 独占 g2-team-assembly.*（int 树两文件，进行中）；接线 `e78dee2a` 只续自身 plane/glue 且 browser 行 fail-closed 钉 BLOCK | 未修组件严禁升 Host/C2；533 组件已关不重开；不 Core/global |
 | G3 fsproc/shell 面 | 未接线 | 适配器+33 腿可交付；per-open 仍 integrator-supplied | 原 owner 续写中（int 树） | §5.1 未完成 |
 | create_goal/get_goal/update_goal | 未开发 | 639 真接口适配实现中（无交付不落"未接线"） | 适配 `8722db94` | packages/goal/tool-goal 锚点 |
 | session_search/trace/event_read/event_search/event_trace | 未开发 | 同上 | 适配 `8e6e7788` | packages/session-query/tool-session-query 锚点 |
