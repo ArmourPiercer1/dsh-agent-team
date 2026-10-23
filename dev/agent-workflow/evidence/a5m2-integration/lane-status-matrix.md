@@ -16,6 +16,12 @@ Integration tips: **signed-source SHAs and center merge SHAs listed separately**
 
 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
+## 22:25 环境回收登记（root）
+- **`/srv/workspace/dsh-plugins/dsh-agent-team/.pnpm-store-a5ie-r5` = RETIRED**：仅仓根这一个可重建 cache 获有条件回收；**新任务禁止引用**；实际删除只 a356 执行（前置由根传），一切开发树内不清理。
+- 仍全保护：r2b、`.pnpmm-r18-store`、`.pnr18-home` 与全部 active。
+- AUTH 查重事实包（供 93c 下一有限名闭集，代码面为准）：int=**50fdce962**；Team 生产 PA 面=int 树 team-wiring.mjs + team-tool-plane.mjs（:796/:1037/:2023-2160/:2228）+ agent-bindings（:3598/:3625/:3649-3656/:3768/:4343-4345）+ types.ts B-TEAM（六叶 adds 在 wire-team@1cc605549 未入 int）；Subagent 生产 PA 面=**joint-cand2 9b5c9f4b2**（subagent-spawn-wiring/adapters + subagent-wiring/adapters + 注册块 rev2/3 真数）。
+- 联合批最终候选已交审：`feat/a5m2-joint-cand2@9b5c9f4b29171d4cf8a2d0ecc7864b567b6a8b79`（v1 6e2279286 被取代；三方 spec 67/67 + 中心真-validator 探针 3 ACCEPT/3 拒字节，spawn 五 accept 同树 spec 测得）。
+
 ## 关键命令最简纪律（root 21:57，对所有仍验证 owner 生效；后续派卡随行）
 每次工具只运行实际 pnpm/node 命令本体；stdout/stderr 可重定向本次唯一 log；命令后不接 tail/echo/其他命令；进程 exit 以工具直接报告的 process exit 为准；日志裁剪=另一次只读。不新 runner 框架；不用 grep0/tail0/touched0/'Done' 行冒整体 RC；旧不可信 RC 不补造。中心自身即刻起同样执行（此前 battery/tsc 等调用中 `; echo RC=$?` 尾缀按本纪律停止，改用单命令+工具 exit）。
 
