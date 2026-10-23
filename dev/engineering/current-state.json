@@ -2,7 +2,7 @@
   "generated_by": "scripts/gen-current-state.mjs",
   "schema_version": 1,
   "source_registry": "dev/engineering/registry.yaml",
-  "source_registry_sha": "a18070f43135d258461c6f66d82eeb10c62833c5",
+  "source_registry_sha": "48680bf52e9f214ecf94540b07e6c4f1c5b3d4fb",
   "source_catalog": "docs/contracts/engineering-baseline/ids.yaml",
   "source_catalog_sha": "3b90277606b26cf080f88e409d75ea52a2e72adb",
   "axes_legend": {
@@ -227,6 +227,14 @@
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
             "exists": true
+          },
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log",
+            "exists": true
+          },
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log",
+            "exists": true
           }
         ]
       }
@@ -313,6 +321,39 @@
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
+            "exists": true
+          },
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "EB1-G",
+      "kind": "implementation-pr",
+      "title": "Contracts shape vs runtime field-set agreement check (read-only)",
+      "decision_status": "proposed",
+      "implementation_status": "implemented_in_branch",
+      "verification_status": "verified_local",
+      "release_status": "not_released",
+      "owners": [
+        "Tooling Owner"
+      ],
+      "refs": [
+        "scripts/contracts-field-agreement.mjs",
+        "tests/doc-consistency/README.md"
+      ],
+      "verification": {
+        "claimed": true,
+        "artifacts": [
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log",
+            "exists": true
+          },
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log",
             "exists": true
           }
         ]

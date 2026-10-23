@@ -88,7 +88,14 @@ entries:
     release_status: not_released
     owners: [Tooling Owner]
     refs: [REQ-EB-0003, AC-EB-0003, dev/engineering/README.md]
-    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log]
+    # Sub-items bound here, not the whole card: the schema/validator cross-check gained
+    # `type` and `minItems` (run-10), and the generator's CLI was made to honour `--root`
+    # instead of accepting and ignoring it (run-11). C1 = this machine, controls only:
+    # no hosted CI run and no real-environment run is claimed or implied.
+    # Narrow review pending as of the 2026-10-23 21:38 instruction.
+    verified_tier: C1
+    verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
   - id: EB1-D
     kind: implementation-pr
     title: Phase-plan citation interface and Idea-to-Contract rules
@@ -118,4 +125,27 @@ entries:
     release_status: not_released
     owners: [Doc/Contract Owner]
     refs: [REQ-EB-0002, AC-EB-0003]
-    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log]
+    # Sub-item bound here: the write surface now carries a second derivative
+    # (docs/contracts/engineering-baseline/INDEX.md) through the same boundary helper,
+    # with the exact-file rule ahead of the area rule and a hard-link target refused
+    # (run-9). C1 local controls only; not merged, not released.
+    # Narrow review pending as of the 2026-10-23 21:38 instruction.
+    verified_tier: C1
+    verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
+  - id: EB1-G
+    kind: implementation-pr
+    title: Contracts shape vs runtime field-set agreement check (read-only)
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    # No catalog REQ covers this card; refs cite the code and its matrix instead of
+    # borrowing a requirement that does not say this. Unpaired declarations stay
+    # NOT_CHECKED and are counted, not counted as passing: 20 of 34 compared.
+    # Narrow review pending as of the 2026-10-23 21:38 instruction. C1 local only.
+    owners: [Tooling Owner]
+    refs: [scripts/contracts-field-agreement.mjs, tests/doc-consistency/README.md]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log]
+    verified_tier: C1
+    verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
