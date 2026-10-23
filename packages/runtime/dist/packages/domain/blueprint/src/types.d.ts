@@ -20,8 +20,10 @@ import type { BlueprintContentHash, BlueprintId, BlueprintRevision, TemplateId }
 import type { RequirementType } from '../../compatibility/src/requirement.js';
 import type { V4ToolBindingAuthoring } from './blueprint-v4.js';
 /**
- * The seven tools whose individual calls a static permission policy may
- * gate (alpha.2 plan §4 + A2C-1). The file tools (`read`, `read_image`,
+ * The tools whose individual calls a static permission policy may
+ * gate — the file tools, the shell class, and (Alpha.5 M2) the
+ * invocation-only pair (alpha.2 plan §4 + A2C-1). The file tools
+ * (`read`, `read_image`,
  * `write`, `edit`, `lsp`) address their target file as the primary
  * resource. The shell class (`bash`, `pwsh` — the pinned-upstream
  * standard preset exposes `bash` on POSIX and `pwsh` on Windows, with
@@ -40,8 +42,26 @@ import type { V4ToolBindingAuthoring } from './blueprint-v4.js';
  * The two shell tools are DISTINCT permission tools (`bash authority !=
  * pwsh authority`): a rule or an approval for one never gates or
  * authorizes the other.
+ *
+ * Alpha.5 M2 (root 20:05 limited card) adds the INVOCATION-ONLY class —
+ * `schedule_list` / `schedule_delete` (`schedule_create` /
+ * `schedule_update` are NOT enabled). These tools carry no matchable
+ * resource space (native: `schedule_list` has an empty parameter face,
+ * `schedule_delete` carries only an opaque record id — never a path,
+ * never a command), so their rules carry the whole-tool `any` resource in
+ * ALL three lanes and `exact`/`subtree` are rejected in every lane of
+ * every role; they are never file tools, never shell tools (no file
+ * matcher, no fingerprint, no canonical operation — the authority is the
+ * invocation itself, projected on the `tool-invoke` arm), and — as for
+ * every class — an absent rule resolves to `policy.default` (no implicit
+ * allow). The membership lives in `schema.ts`
+ * (`PERMISSION_INVOCATION_ONLY_TOOL_NAMES`); the envelope carrier keeps
+ * the frozen seven-name set
+ * (`BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES`). The two
+ * schedule tools are DISTINCT (`schedule_list authority !=
+ * schedule_delete authority`).
  */
-export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh';
+export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete';
 /**
  * The resource a permission rule addresses (alpha.2 plan §6.2):
  *
@@ -287,7 +307,9 @@ export interface BlueprintPermissionMutationEnvelope {
 }
 /** One {@link BlueprintPermissionMutationEnvelope} rule. */
 export interface BlueprintPermissionMutationEnvelopeRule {
-    /** The closed operation-class token (one of {@link PERMISSION_TOOL_NAMES}). */
+    /** The closed operation-class token (one of the frozen seven-name set
+     *  `BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES` — the
+     *  invocation-only schedule names are NOT envelope operation classes). */
     readonly operationClass: string;
     /** The resource matcher; its shape is picked by the operation class (§5). */
     readonly matcher: BlueprintPermissionMutationEnvelopeMatcher;

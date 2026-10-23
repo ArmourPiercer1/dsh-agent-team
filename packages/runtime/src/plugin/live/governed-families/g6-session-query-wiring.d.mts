@@ -163,8 +163,30 @@ export declare const A5_G6_QUERY_WIRING_CODES: Readonly<{
   PLAN_INTEGRITY: 'P_G6_WIRE_PLAN_INTEGRITY'
   PLACEMENT_KEY_ABSENT: 'P_G6_WIRE_PLACEMENT_KEY_ABSENT'
   PLACEMENT_KEY_MOVED: 'P_G6_WIRE_PLACEMENT_KEY_MOVED'
+  SUPPLY_ABSENT: 'P_G6_WIRE_SUPPLY_ABSENT'
+  SUPPLY_INCOMPLETE: 'P_G6_WIRE_SUPPLY_INCOMPLETE'
 }>
+
+/** The REAL-supply build result (root 992 ②): facets/provider/declared-mount
+ *  mapped OFF the live DSH public `sessionQuery` service (the mount-side glue
+ *  passes `ctx.get('sessionQuery')`; the caller law and the Team ceiling are
+ *  the mount's own authorities, never mapped from config). */
+export type G6QuerySupplyResult =
+  | Readonly<{
+      ok: true
+      providerId: string
+      queryPorts: Readonly<Record<string, Readonly<Record<string, (first: unknown, signal: unknown) => unknown>>>>
+      declaredMount: Readonly<{
+        searchBackend: Readonly<{ present: true }> | Readonly<{ present: false; evidence: string }>
+      }>
+    }>
+  | G6SessionQueryWiringRefusal
 
 export declare function buildG6SessionQueryWiring (
   input?: G6SessionQueryWiringInput,
 ): G6SessionQueryWiringAssembly | G6SessionQueryWiringRefusal
+
+export declare function buildG6QuerySupplyFromService (
+  service: unknown,
+  observeCurrent?: () => unknown,
+): G6QuerySupplyResult

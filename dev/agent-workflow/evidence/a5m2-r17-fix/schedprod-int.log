@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+ ✓ test/a5m2-g6-session-query-wiring.test.ts (29 tests) 55ms
+ ✓ test/a5m2-schedule-adapters.test.ts (29 tests) 65ms
+ ✓ test/a5m2-schedule-wiring.test.ts (20 tests) 23ms
+ ✓ test/a5m2-family-rules-c1.test.ts (10 tests) 11ms
+ ✓ test/a5m2-g6-plane-mount-c1.test.ts (8 tests) 40ms
+ ❯ test/a5m2-schedule-production.test.ts (0 test)
+ ✓ test/p6t4-deny.test.ts (3 tests) 4ms
+ ✓ test/a5m2-image-handoff-c1.test.ts (11 tests) 97ms
+ ✓ test/a5m2-g1-wire-c1.test.ts (15 tests) 438ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-schedule-production.test.ts [ test/a5m2-schedule-production.test.ts ]
+Error: Cannot find package '@deepseek-ai/dsh-schedule' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime/test/a5m2-schedule-production.test.ts
+ ❯ test/a5m2-schedule-production.test.ts:69:1
+     67| // imports. registerScheduleTools mints the native faces; ScheduleInpu…
+     68| // is the ONE class identity the native bodies throw and the arm mirro…
+     69| import { ScheduleInputError, registerScheduleTools } from '@deepseek-a…
+       | ^
+     70| import {
+     71|   createGovernedScheduleArm,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  125 passed (125)
+   Start at  18:43:37
+   Duration  2.75s (transform 6.27s, setup 0ms, import 7.24s, tests 734ms, environment 1ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
