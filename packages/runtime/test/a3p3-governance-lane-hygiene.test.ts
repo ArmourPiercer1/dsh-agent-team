@@ -830,6 +830,36 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // storage edge, no plugin edge, no second ordering, no decision-path copy.
     const A5_TOOL_ADMISSION_CASE = join('tool-admission', 'approval-case.ts')
     const A5_TOOL_ADMISSION_KERNEL = join('tool-admission', 'admission-kernel.ts')
+    // A5-M1 (PR358) amendment, booked by the census CI-only round at headSha
+    // efecfe2b4 (census run 39866646962 listed the three rows below as its
+    // reds). The PA↔Control bridge is the SECOND consumer outside the
+    // governance lane to ask the ladder question, and it asks it exactly the
+    // way A4-PR4's operation router does: through the module, for the named
+    // laws only, never a re-spelled ordering. It joins THREE rows and nothing
+    // else — no document read, no reader call, no rung minting, no ceiling
+    // module beyond the two laws it compares with:
+    //   • `authorityRank` — the bridge-side A1-14 rung re-check
+    //     (operation-permission/pa-control-bridge.ts:514 compares the FRESH
+    //     required rung against the rung the decision was given at; a rise
+    //     makes the durable allow unusable and it is not consumed);
+    //   • `mayReview` — the per-effect ladder walk for the REAL decider
+    //     (:857, ADR A3-2 fused rung including the R-1a deny floor);
+    //   • `RuntimeAuthority` — TYPE-ONLY (:128), the closed rung union the
+    //     manifest's rungs are parsed into (:678) and the beneficiary/decider
+    //     refs carry (:241/:273).
+    // DISCLOSED, NOT SILENT: `control/types.ts:124-128` states that this pin
+    // "allows the NAME `RuntimeAuthority` in exactly four files, with
+    // 'sanctioned route: none' for widening that set". That prose was already
+    // behind the row it describes (the row named SIX files before this round:
+    // the adapter, the barrel, the lane types, the permission plane and the
+    // two A5-PR2 admission files). This round spends that route for the
+    // bridge by root ruling, and records it here rather than pretending the
+    // route never existed. What the law actually enforces is unchanged and
+    // keeps every tooth: a consumer of a ladder name must be NAMED in the row
+    // that polices it, so the next file that reaches for the ladder still has
+    // to arrive as an amendment, and the Control lane's own choice to name the
+    // durable owner `ProposalAuthorityPosition` instead of the alias stands.
+    const PA_CONTROL_BRIDGE = join('operation-permission', 'pa-control-bridge.ts')
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -874,11 +904,17 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // rung, and a second ordering table is exactly what this row exists to
       // keep singular. No decision path is added: the reader only SHAPES which
       // actions the projection offers.
-      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts'), A5_TOOL_ADMISSION_CASE]],
+      // A5-M1: the PA↔Control bridge's A1-14 pre-execute rung re-check
+      // compares the fresh required rung against the frozen one WITH THE
+      // LADDER LAW (`authorityRank(fresh) > authorityRank(plan)` at
+      // pa-control-bridge.ts:514) — a second successor/ordering table is what
+      // this row exists to keep singular, and the bridge adds no decision path
+      // beyond refusing an unusable decision.
+      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts'), A5_TOOL_ADMISSION_CASE, PA_CONTROL_BRIDGE]],
       ['isHigherAuthority', [...CEILING_AND_EVALUATOR, OPERATION_ROUTING]],
       // WHO MAY ACT — the ladder half of "legal approval", never fused with the
       // ceiling half (ADR A3-2, spec §7.4).
-      ['mayReview', [...CEILING_AND_EVALUATOR, A5_TOOL_ADMISSION_CASE]],
+      ['mayReview', [...CEILING_AND_EVALUATOR, A5_TOOL_ADMISSION_CASE, PA_CONTROL_BRIDGE]],
       // The EXPANSION-plane ceiling: the number `grantCeiling` must never be
       // confused with (correction X7-R5). PR2 lane C's mutation gate is its next
       // consumer and must arrive as another amendment to this row.
@@ -891,7 +927,12 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // production consumer — it is where the ladder position of the acting
       // surface is chosen (plan:261), which is precisely the mapping that must
       // not be re-decided at each call site.
-      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts'), A5_TOOL_ADMISSION_CASE, A5_TOOL_ADMISSION_KERNEL]],
+      // A5-M1: `RuntimeAuthority` joins for the BRIDGE as a TYPE ONLY
+      // (pa-control-bridge.ts:128 → the closed rung union it parses manifest
+      // rungs into at :678 and the beneficiary/decider refs at :241/:273).
+      // Type-only means exactly what it has always meant in this row: no
+      // runtime governance→operation-permission edge, no load-order coupling.
+      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts'), A5_TOOL_ADMISSION_CASE, A5_TOOL_ADMISSION_KERNEL, PA_CONTROL_BRIDGE]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts', OPERATION_ROUTING]],
       ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts', PERMISSION_APPROVAL]],
@@ -1105,12 +1146,24 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // TYPE/law consumers for the per-effect legality equation (plan §5), with
     // the SAME direction discipline as every row above: no storage edge, no
     // plugin edge; the lane reaches the ladder ONLY through these two files.
+    // A5-M1 (PR358, booked by the census CI-only round at headSha efecfe2b4):
+    // `operation-permission/pa-control-bridge.ts` joins as the SECOND consumer
+    // outside the governance lane, and it takes the ceiling module by path
+    // rather than through the barrel (`:126` — `authorityRank` and `mayReview`,
+    // the two laws its legs compare with; the rung UNION arrives type-only
+    // from `runtime-authority.js` at `:128`). Direction is the reviewed one —
+    // operation-permission → governance, the same shape A4-PR4's
+    // approval-routing.ts established: no storage edge, no plugin edge, no
+    // document read and no reader call (the `teamHardEnvelope` pin above is
+    // what proves that half), and its SURFACE rows state the exact three names
+    // rather than a wildcard.
     expect([...importers].sort()).toEqual([
       join('governance', 'index.ts'),
       join('governance', 'permission-approval.ts'),
       join('governance', 'runtime-authority.ts'),
       join('governance', 'service.ts'),
       join('governance', 'types.ts'),
+      join('operation-permission', 'pa-control-bridge.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
       join('tool-admission', 'admission-kernel.ts'),
       join('tool-admission', 'approval-case.ts'),

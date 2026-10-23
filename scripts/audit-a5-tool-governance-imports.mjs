@@ -91,6 +91,54 @@ const PR1_CONSUMERS = Object.freeze([
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.
   'runtime/controlled-fs/src/',
   'tools/a5p5-tools/src/',
+  // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
+  // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
+  // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:
+  // the law this list enforces is not "who may import" but "which thin
+  // center-interface face each consumer was reviewed for", so a listed file
+  // reaching for a DIFFERENT face of the lane stays a design change, and a
+  // new file stays a finding. Nothing here touches the lane's pure-domain law
+  // or the reverse-edge prohibition — no entry lets `domain/tool-governance`
+  // import anything, and no entry widens a subtree prefix.
+  //
+  // The Control lane's WRITE-side fingerprint: control/service.ts:183 imports
+  // `canonicalJsonFingerprint` (VALUE) and uses it at :2311, where
+  // `requestControl` recomputes the PA operation-manifest digest and refuses
+  // a `reviewPayloadDigest` / `operationFingerprint` pair that is not the
+  // SERVICE-computed digest of the payload it pairs with (malformed → NO row
+  // written). The Control lane already rode this exact domain edge (its own
+  // types.ts names service.ts as the precedent); A5-M1 adds the use sites,
+  // zero lane edits.
+  'runtime/control/service.ts',
+  // The Control lane's READ-side fingerprint plus its call-facts TYPES:
+  // control/types.ts:136 imports `canonicalJsonFingerprint` (VALUE) for the
+  // PR358 f5 item-4 read-back VALUE check at :1285 (a payload that stayed
+  // schema-valid but no longer hashes to the row's pairing re-reads as the
+  // damage it is), and :153 is `import type { RequestedEffectSet, ToolBinding,
+  // ToolPolicyDocument }` — the durable-owner types the call-facts slots carry
+  // at :1407 / :1414 / :1423. The type half is erased at emit (ADR X7-R3):
+  // the Control plane gains no runtime edge from it.
+  'runtime/control/types.ts',
+  // The PA↔Control bridge: operation-permission/pa-control-bridge.ts:91
+  // imports `canonicalJsonFingerprint` (VALUE — the manifest digest it writes
+  // at :394, the assurance-snapshot compare at :752) and :93-98 is `import
+  // type { AdmissionRequest, GovernanceResult, OperationGrant,
+  // RequestedEffectSet }`, the closed vocabulary its admit/guard ports are
+  // typed against rather than restate. Direction is the reviewed one (runtime
+  // lane → domain leaf, no storage, no plugin). NOTE for the record: this file
+  // ALSO consumes the Alpha.4 ladder (`authorityRank` / `mayReview` /
+  // `RuntimeAuthority`); that edge is booked on the a3p3 governance-lane rows
+  // and this list says nothing about it.
+  'runtime/operation-permission/pa-control-bridge.ts',
+  // The governed effect backends row: src/plugin/live/plane-effect-backends
+  // .mjs:64 imports `parseRequestedEffectSet` (VALUE) and uses it at :1050 to
+  // parse the READ row's requested effects into the frozen closed resource
+  // vocabulary BEFORE any backend is reached — the read face's effect
+  // resolution (its window caps are its own READ_ROW_* constants, no lane
+  // symbol). One named symbol, not a barrel-wide reach; the sibling live rows
+  // (agent-bindings / team-tool-plane / ptc-escalation-row) were booked the
+  // same way by their own rounds.
+  'runtime/src/plugin/live/plane-effect-backends.mjs',
 ])
 
 const SPECIFIER_PATTERNS = [
