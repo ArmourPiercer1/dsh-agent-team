@@ -87,23 +87,22 @@
  *     (`pa-control-bridge.ts:428-470`): registered bindings MUST carry the
  *     four P-adds, the targetManifest must pass `isLosslessJsonValue`
  *     (:459), and `validatePaFamilyTarget(familyId, targetManifest)`
- *     (:467) must find the family's registered typed-plan structure. As
- *     measured: `PA_FAMILY_TARGET_RULES` (control/types.ts:1194) carries NO
- *     'B-SESSION-QUERY' entry, and the rev-4 targetManifest is not
- *     expressible with the CURRENT closed kinds — `callerWorkspaceCwd`
- *     admits null and `disclosures` is a string array (no kind covers
- *     either); the closed key-set law refuses BOTH including and omitting
- *     each such key. (`maxSearchResults`'s old always-present-with-undefined
- *     defect is CLOSED at the mint by the merged omission law — eab9a9c0:
- *     non-search rows omit the key, search rows carry the effective cap,
- *     the lossless walk now passes for all five rows.) New
- *     kinds are NOT this lane's to add — the exact rule-grammar delta is
- *     ROUTED TO CENTER (and the manifest-side shape is the adapter owner's,
- *     released code). Until it lands, a real production walk on these
- *     registrations fails CLOSED at the bridge with the bridge's own bytes
- *     (`family-target-invalid: familyId: no target structure is registered
- *     for 'B-SESSION-QUERY'`, or the lossless deny ahead of it) — the
- *     spec pins those refusal strings through the REAL published checkers.
+ *     (:467) must find the family's registered typed-plan structure. The
+ *     rules gate LANDED as the SIGNED two-table pair (root 19:28; the
+ *     family-rules lane at 5a16c4aa, carried in this lane's combined
+ *     tree): 'B-SESSION-QUERY' is a closed five-variant map — toolName the
+ *     variant leaf, callerWorkspaceCwd 'nullableString', disclosures
+ *     'stringArray', maxSearchResults REQUIRED nonNegativeInt on the two
+ *     search rows and EXPLICITLY FORBIDDEN on the three always-mount rows
+ *     (presence of any value denies; omission accepts). With the mint
+ *     omission law (eab9a9c0) ALL FIVE real rev-4 manifests validate —
+ *     the spec pins ACCEPT through the REAL published checker, and pins
+ *     that carrying the old key-with-undefined shape back still refuses
+ *     (the mint must OMIT, never translate). What the bridge still
+ *     enforces beyond the table is registration-side (the four P-adds,
+ *     the registry entry), not vocabulary; the adapter-revision /
+ *     stale-approval duties are unchanged (rev-6 stale explicitly — no
+ *     silent translation). No Host enablement, no C2 claim.
  *
  * STATUS: wiring bridge; NOT C2 — no Host, no ports, no tests/homes, no
  * network. The adapter spec (a5m2-g6-session-query-c1.test.ts) owns the row

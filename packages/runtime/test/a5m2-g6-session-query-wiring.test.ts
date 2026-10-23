@@ -658,43 +658,55 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
   })
 
   describe('(f) NAMED GAPS pinned at their measured bytes through the REAL published checkers — never worded closed', () => {
-    it('PA_CONSUMPTION_BRIDGE_COMPLETION (1): the mintfix omission (eab9a9c0) — non-search targetManifests OMIT maxSearchResults and PASS the lossless walk (pairing flip); the rules gate stays open on the OTHER kinds', () => {
+    it('PA_CONSUMPTION_BRIDGE_COMPLETION (1): the three always-mount rows ACCEPT on the SIGNED closed maps (两表已签 19:28; lane at 5a16c4aa) — key OMITTED (mintfix), lossless TRUE, validatePaFamilyTarget UNDEFINED; the pairing flip end to end', () => {
       const w = makeWorld({ tag: 'f1' })
       const asm = w.build()
       for (const toolName of ['session_trace', 'session_event_trace', 'session_event_read']) {
         const plan = asm.rowOf(toolName).classify(toolName === 'session_trace' ? TRACE_ARGS : { session_id: 's-a', seq: 5 })
         expect(plan.ok).toBe(true)
         const manifest = plan.reviewPayload!.targetManifest as Record<string, unknown>
-        // PAIRING FLIP (measured before/after in the combined round):
-        // BEFORE the merged mintfix this was key-PRESENT-with-undefined
-        // (`'maxSearchResults' in manifest` TRUE — what
-        // validatePaFamilyTarget checks) and isLosslessJsonValue FALSE —
-        // the always-present member killed the walk. AFTER eab9a9c0 the
-        // mint OMITS the key entirely on non-search rows:
+        // BEFORE the mintfix this was key-PRESENT-with-undefined
+        // ('maxSearchResults' in manifest TRUE, isLosslessJsonValue FALSE);
+        // BEFORE the signed table the rules-gate claim was the
+        // unregistered-family denial. BOTH pins retired at the combined
+        // SHA — the REAL mint now validates against the REAL published
+        // checker (root 19:40: the real claim against the real table):
         expect('maxSearchResults' in manifest).toBe(false)
         expect(isLosslessJsonValue(manifest)).toBe(true)
+        expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest), `${toolName} ACCEPTS on the closed map`).toBeUndefined()
+        // the FORBID law keeps its teeth: the SAME manifest with the key
+        // carried back (present-with-undefined, the old mint shape) is
+        // still REFUSED — the mint must OMIT, never translate.
+        const withKey = { ...manifest, maxSearchResults: undefined }
+        expect(typeof validatePaFamilyTarget('B-SESSION-QUERY', withKey), `${toolName} key-present stays denied`).toBe('string')
       }
     })
 
-    it('PA_CONSUMPTION_BRIDGE_COMPLETION (2): even the lossless search-row manifest meets NO registered structure — the wire-pinned unregistered-family denial of the rules gate', () => {
+    it('PA_CONSUMPTION_BRIDGE_COMPLETION (2): the search rows ACCEPT too — maxSearchResults validates as the REQUIRED nonNegativeInt; the rev-4-era unregistered-denial pin RETIRES at the combined SHA (no residual inexpressibility on these manifests)', () => {
       const w = makeWorld({ tag: 'f2' })
       const asm = w.build()
       const plan = asm.rowOf('session_search').classify({ query: 'needle' })
       expect(plan.ok).toBe(true)
       const manifest = plan.reviewPayload!.targetManifest as Record<string, unknown>
-      expect(isLosslessJsonValue(manifest)).toBe(true) // search rows carry the number
-      expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest)).toBe(
-        "familyId: no target structure is registered for 'B-SESSION-QUERY'",
-      )
-      // the measured inexpressibility the delta must close: nullable string,
-      // string array — NO current kind admits either, and the closed key-set
-      // law refuses both including and omitting the keys.
-      expect(manifest.callerWorkspaceCwd).toBe(CWD)
-      expect(Array.isArray(manifest.disclosures)).toBe(true)
+      expect(isLosslessJsonValue(manifest)).toBe(true)
+      // THE RETIRED PIN (verbatim, kept for the record): at afd89fd61 this
+      // leg asserted validatePaFamilyTarget('B-SESSION-QUERY', manifest)
+      // === "familyId: no target structure is registered for
+      // 'B-SESSION-QUERY'". With the SIGNED table in the combined tree the
+      // REAL checker answers UNDEFINED — accepted:
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest)).toBeUndefined()
+      expect(manifest.maxSearchResults).toBe(100)
+      // the disclosure LAW stays mint-side (the table types it, never
+      // enforces it): every row carries the blocker sentence verbatim.
+      expect(manifest.disclosures).toEqual([ADAPTER.A5_G6_NAMED_BLOCKERS.SESSION_HISTORY_RESOURCE_KIND])
+      // nullableString admits the MEASURED null-cwd shape (the old
+      // "nullable kind missing" residual is GONE at the signed table):
       const noCwd = makeWorld({ tag: 'f2b', cwd: undefined })
       const asmNoCwd = noCwd.build()
       const planNoCwd = asmNoCwd.rowOf('session_trace').classify(TRACE_ARGS)
-      expect((planNoCwd.reviewPayload!.targetManifest as Record<string, unknown>).callerWorkspaceCwd).toBe(null)
+      const mNoCwd = planNoCwd.reviewPayload!.targetManifest as Record<string, unknown>
+      expect(mNoCwd.callerWorkspaceCwd).toBe(null)
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', mNoCwd)).toBeUndefined()
     })
 
     it('BACKEND DEPLOYMENT stays named: with absent evidence the census row refuses with the assembly’s evidence string verbatim and NO registration exists', () => {
