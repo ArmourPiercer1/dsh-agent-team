@@ -115,3 +115,20 @@ fixture 级证据身份，不冒充生产接线验收。
 自查（07:2xZ）：`a5m2w-web-gateway + a5m2w-web-c1` 27/27；eslint 本卡全文件
 rc=0；typecheck 本卡行 **0**（残留红全部 = 兄弟卡文件：
 `a5m2-governed-write-row-c1.test.ts`×3、`../tools/a5p5-tools/src/write-slice.ts`×6）。
+
+## CENTER：默认关如何被真实开启（C2 使能链，逐锚亲读 @`98b6827e`/pin639）
+
+根问"默认 off 如何真实使能 + 实际 provider 配置"。答案是**两道独立闸**，全部已核实：
+
+1. **结构闸（Team plane 必须在场）**：建行代码位于 `agent-bindings.mjs:2575` 的
+   `permissionPolicy !== undefined && config?.teamToolPlane` 分支内 ⇒ **非 Team 挂载永远不会创建 web 行**（与 jobs 三件套同闸），`config` = 装配入口 deps 里的 `config`（`:784` 解构，`:825` 缺失即 throw）。
+2. **封闭键闸**：`agent-bindings.mjs:2772` 读 `config?.webGateway?.enabled` **原值**传入装配行；
+   `true` 才激活，`false`/缺省 ⇒ `web-not-enabled` 行（typed 拒），非布尔 ⇒ `web-config-not-boolean`（不强制转换）。
+   **实测：本仓任何 YAML 都没有 `webGateway` 键（grep = 0 命中）⇒ 一切出厂世界 = 关。**
+3. **实际 provider 配置不是我造的面**：seam 是 `plugin/host.ts` 新增的 `deps.web: () => ctx.get('web')`，
+   对应宿主 base bundle 的行 `id: web` = `@deepseek-ai/dsh-web`（`packages/bundle/base/cordis.patch.yml:472-473`），
+   其检索/抓取能力由同段兄弟行 `web-search-deepseek`（`:478-479`）与 `web-fetch-http`（`:483-484`）提供；
+   `packages/web/tool-web/src/index.ts:24` 的 `inject = ['tools', 'web', 'systemPrompt']` 证明该 `web` 槽就是这个服务。
+   ⇒ **开启 = Team plane + `webGateway.enabled: true`；provider 一律复用出厂既有行，零新凭据、零扩权、零新增行。**
+4. **fixture 归 fixture**：本目录 runner 的 G 阶段用 fake WebRuntime + 端点桩（G8 已披露）证明装配律与零计数，
+   **不等于**真外网/真凭据验收；真 DEEPSEEK 凭据缺失属**实际缺项**（不申请、不配置），真 Host preset/DNS 腿属**待审（NOT_VERIFIED）**。
