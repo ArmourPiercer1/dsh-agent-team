@@ -183,7 +183,9 @@ const launchedPids = new Map<string, number>()
 let lastAnsweredPid: number | null = null
 
 // FAITHFUL TEST DOUBLE of the REAL pinned-639 session capability. The fixed
-// Host's @deepseek-ai/dsh-terminal-bash EXPORTS LocalPtySession (index.ts:237):
+// Host's @deepseek-ai/dsh-terminal-bash session class lives at
+// src/session.ts:237 (LocalPtySession; the export map reaches ./src/*, the
+// PRODUCTION supply of that path is flagged unverified to the integrator):
 // initialize() gates startup readiness through the send contract; startSend's
 // done resolves at READINESS/TIMEOUT/CANCEL/SESSION-EXIT with the REAL
 // TerminalSendResult (waitReason is exactly one of 'stdin_read'|'inferred_idle'|
@@ -1486,7 +1488,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     }
   }
 
-  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; noSessionCapability?: boolean; startupFails?: boolean; openPlan?: Record<string, unknown>; deferredSpawn?: boolean; autoSettleSend?: unknown } = {}) {
+  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; noSessionCapability?: boolean; startupFails?: boolean; factoryFails?: boolean; cleanupFails?: boolean; openPlan?: Record<string, unknown>; deferredSpawn?: boolean; autoSettleSend?: unknown } = {}) {
     const terminals = makeTerminalsDouble({ autoSettleSend: deps.autoSettleSend })
     const binding = makeBinding()
     const natives = {} as Record<TerminalName, NativeDouble>
@@ -1561,7 +1563,32 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
             const inner = await Promise.resolve(faithful.factory(handle as never, {}))
             return { ...inner, initialize: async () => { throw new Error('PTY shell did not reach readiness before startup timeout') } }
           }
-        : faithful.factory
+        : deps.factoryFails === true
+          // the capability refuses to CONSTRUCT: the cleanup law cleans the
+          // NOT-CONSTRUCTED resource through provider terminate
+          ? async (handle: Record<string, unknown>) => {
+              const rec: { handle: Record<string, unknown>; terminateCalls: number } = { handle, terminateCalls: 0 }
+              startupHandles.push(rec)
+              const orig = (handle as { terminate: () => Promise<void> }).terminate
+              ;(handle as { terminate: () => Promise<void> }).terminate = async () => { rec.terminateCalls += 1; await orig() }
+              throw new Error('PTY capability construction failed')
+            }
+          : deps.cleanupFails === true
+            // constructed + readiness fails + the cleanup face ALSO fails:
+            // the module must propagate both and claim NO quiescence
+            ? async (handle: Record<string, unknown>) => {
+                const rec: { handle: Record<string, unknown>; terminateCalls: number } = { handle, terminateCalls: 0 }
+                startupHandles.push(rec)
+                const orig = (handle as { terminate: () => Promise<void> }).terminate
+                ;(handle as { terminate: () => Promise<void> }).terminate = async () => { rec.terminateCalls += 1; await orig() }
+                const inner = await Promise.resolve(faithful.factory(handle as never, {}))
+                return {
+                  ...inner,
+                  initialize: async () => { throw new Error('PTY shell did not reach readiness before startup timeout') },
+                  close: async () => { throw new Error('provider terminate failed: EPERM') },
+                }
+              }
+            : faithful.factory
     const controlPort = deps.brokenPort === true
       ? { name: 'broken', prepare: async () => null }
       : G3.createHostTerminalControlPort({
@@ -1981,6 +2008,16 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     // (no ENVELOPE_DRIFT): digest-spawn equality holds on the SAME
     // canonical shape — proven by the pass above plus zero cleanup words
     expect(w.terminals.log.filter((l: string) => l.startsWith('kill')).length).toBe(0)
+    // env NULLISH UNIFIED (root 4fdaf review 1): an ABSENT env must not
+    // materialize env:{} into the launch spec — the digest omitted env, so
+    // the spawned envelope omits it too (the strict ===null test made
+    // undefined diverge from null and re-opened the digest gap)
+    const w2 = await handleWorld({ openPlan: { env: undefined } })
+    const pass2 = await runPass(w2.arms.terminal_open, w2.binding, { type: 'shell' }, 'norm-2')
+    expect(pass2.x.ok).toBe(true)
+    expect((pass2.x.value as Record<string, unknown>).outcome).toBe('opened')
+    expect(Object.prototype.hasOwnProperty.call(w2.launches[0] ?? {}, 'env')).toBe(false)
+    expect(w2.terminals.log.filter((l: string) => l.startsWith('kill')).length).toBe(0)
   })
 
   it('REAL SESSION CAPABILITY REQUIRED: a mount without deps.sessionFactory refuses the open BEFORE any effect — NO registration spawn, NO handle — and names the seam (pinned 639 terminal-bash LocalPtySession); no adapter shim is substituted', async () => {
@@ -1998,8 +2035,9 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const refused = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'startup-1')
     expect(refused.x.code).toBe('P_TERM_OPEN_STARTUP_FAILED')
     // the effect STARTED (the controlled spawn ran) and was CLEANED: the
-    // handle reached awaited terminate BEFORE any publication — an
-    // honest started-and-cleaned, never zero-effect, never a session
+    // CONSTRUCTED session was cleaned through its OWN close() (which awaits
+    // provider terminate — observed via the wrapped counter) BEFORE any
+    // publication — an honest started-and-cleaned, never zero-effect
     expect(w.launches.length).toBe(1)
     expect(w.startupHandles.length).toBe(1)
     expect(w.startupHandles[0]?.terminateCalls).toBe(1)
@@ -2009,6 +2047,29 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(w.terminals.log.some((l: string) => l.startsWith('spawn:dsh-g3-po-startup-1'))).toBe(true) // the PER-OPEN route type reached the service
     expect(w.ptyService.session(AGENT_ID, 'pty-svc-90')).toBeNull()
     expect(String((refused.x as Record<string, unknown>).detail)).toMatch(/started-and-cleaned/)
+  })
+
+  it('CLEANUP PATHS ARE THE REAL LAW: an UN-CONSTRUCTED resource cleans through provider terminate (awaited, failure propagated); a cleanup FAILURE propagates BOTH errors and claims NO quiescence — resources-may-remain is stated, never hidden', async () => {
+    // un-constructed: the factory itself throws -> handle.terminate route
+    const wF = await handleWorld({ factoryFails: true })
+    const refusedF = await runPass(wF.arms.terminal_open, wF.binding, { type: 'shell' }, 'nofac-1')
+    expect(refusedF.x.code).toBe('P_TERM_OPEN_STARTUP_FAILED')
+    expect(wF.launches.length).toBe(1)
+    expect(wF.startupHandles[0]?.terminateCalls).toBe(1) // provider terminate AWAITED
+    expect(String((refusedF.x as Record<string, unknown>).detail)).toMatch(/TERMINATED AND AWAITED to quiescence/)
+    // constructed + readiness fails + CLEANUP also fails: the 4fdaf defect
+    // (swallowing the cleanup rejection while claiming quiescence) is now
+    // a typed started-and-CLEANUP-FAILED word carrying BOTH errors
+    const wC = await handleWorld({ cleanupFails: true })
+    const refusedC = await runPass(wC.arms.terminal_open, wC.binding, { type: 'shell' }, 'cleanup-1')
+    expect(refusedC.x.code).toBe('P_TERM_OPEN_STARTUP_CLEANUP_FAILED')
+    const detail = String((refusedC.x as Record<string, unknown>).detail)
+    expect(detail).toMatch(/readiness/) // the original startup failure rides
+    expect(detail).toMatch(/EPERM/) // AND the cleanup failure — nothing swallowed
+    expect(detail).toMatch(/did NOT reach quiescence/)
+    expect(detail).toMatch(/resources may remain/)
+    expect(detail).toMatch(/started-and-CLEANUP-FAILED/) // the word IS the cleanup failure, no zero-effect dressing
+    expect(wC.ptyService.session(AGENT_ID, 'pty-svc-90')).toBeNull() // never published
   })
 })
 
