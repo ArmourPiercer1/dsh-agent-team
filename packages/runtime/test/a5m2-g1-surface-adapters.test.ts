@@ -483,7 +483,19 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
         const parsed = parseRequestedEffectSet(classified.effects)
         expect(parsed.ok === true ? [] : (parsed as unknown as { problems: Array<{ detail: string }> }).problems).toEqual([])
         expect(kindsOf(classified.effects)).toEqual(EXPECT_KINDS[name] as string[])
-        expect(classified.targetManifest.trusted).toEqual({ ...TRUSTED })
+        // RE-ANCHORED @ 957a5f526 (family-rules round 2): B-CONTROL/B-INSPECT mint
+        // FLAT leaves (bijection mapping in the commit); every other family keeps
+        // the nested trusted envelope. Both spellings assert the SAME five truths.
+        const tm = classified.targetManifest as Record<string, unknown>
+        if (tm.trusted !== undefined) {
+          expect(tm.trusted).toEqual({ ...TRUSTED })
+        } else {
+          expect(tm.trustedMemberAgentId).toBe(TRUSTED.memberAgentId)
+          expect(tm.trustedSessionHeaderId).toBe(TRUSTED.sessionHeaderId)
+          expect(tm.trustedRealmId).toBe(TRUSTED.realmId)
+          expect(tm.trustedOwner).toBe(TRUSTED.owner)
+          expect(tm.trustedProfileId).toBe(TRUSTED.profileId)
+        }
         expect(classified.generations).toMatchObject({
           bindingId: 'binding-3', bindingRevision: 7, policyGeneration: 3, authorityGeneration: 2, definitionIdentity: `def-${name}`,
         })
@@ -805,7 +817,9 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify({}, 'call-l1')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    expect(classified.targetManifest.listLaw).toContain('constrains')
+    // RE-ANCHORED @ 957a5f526: rec53 law rides inspectTarget[0].listLaw (single-item
+    // obligations array keeps the correlated triple together; one closed rule per family)
+    expect((classified.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]?.listLaw).toContain('constrains')
     const result = await row.delegate(classified.plan, { exec: {} })
     expect(result.settled).toBe('NATIVE-RESOLVED-AUTHORIZED-CONSTRAINED')
     const value = result.value as { providers: Array<{ id: string; methods: Array<{ name: string }> }>; authorizedTopology: Record<string, unknown>; excludedUnauthorizedProviders: number }
@@ -828,10 +842,13 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify(goodArgs('cordis_inspect_query'), 'c3')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    expect(classified.targetManifest.topology).toEqual({ topologyRevision: 9, topologyDigest: 'sha256;toponine' })
+    // RE-ANCHORED @ 957a5f526: topology flattens to scalar leaves (same source, same verdict)
+    expect(classified.targetManifest.topologyRevision).toBe(9)
+    expect(classified.targetManifest.topologyDigest).toBe('sha256;toponine')
+    expect((classified.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]).toMatchObject({ platform: 'host', provider: expect.any(String), method: expect.any(String) })
     const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
     expect(client.ok).toBe(true)
-    if (client.ok) expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
+    if (client.ok) expect((client.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]?.clientRoundtrip).toContain('NOT a transport cancel')
   })
 
   // ── U2/U3 + card 5: per-action envelope, REAL parses, REAL shapes ────────
