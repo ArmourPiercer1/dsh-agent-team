@@ -362,7 +362,7 @@ import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/to
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
-import { createG2TeamMount } from './governed-families/g2-team-mount.mjs'
+import { callResourceViaWorkerExecute, createG2ConsumedRelay, createG2TeamMount } from './governed-families/g2-team-mount.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
@@ -3031,6 +3031,41 @@ export function createAgentBindings(deps) {
           }
           if (g2Supply === null || typeof g2Supply !== 'object') {
             throw refuseG2('the deps face carries NO g2TeamAssembly supply accessor — the per-Team supply (scope mcpResources face, pinned SDK client entries, transport factory, stagehand resource mapping) has NO public producer in the host deps face (tokens present: agents/attachments/capabilityTelemetry/config/domain/jobs/llm/resolvePersonaSubstrate/sessionPersistence/subagents/teamToolsRef/web/writerHandoffTimeoutMs @this file); naming the gate without the face is a config defect, not a fallback')
+          }
+          // ROOT 21:24 wiring (additive prelude, zero-touch on the reviewed
+          // call-site lines): when the host supply armed BROWSER entries but
+          // the session pairing cannot ride serialized config, the bindings
+          // pair the REAL halves the family owns — the public worker mapping
+          // + the consumed RELAY (the walk's same-call decision, relayed
+          // verbatim; NOT a PA proof, NOT a second grant). All-or-nothing
+          // holds: pairing appears ONLY when browserEntries are armed.
+          // ROOT 21:30 finite fix: the scoped mcpResources face rides the
+          // REAL per-member scope — state.mcpMountCtx (:2262-2268,
+          // createScope(agentCtx, runtimeAgent), the SAME context the
+          // mini-MCP fibers mount on, "NEVER the shared row ctx"; Agent-
+          // keyed layering: no other Agent sees it, noTeam agents share no
+          // layer with it, agent disposal unwinds it (host layering law,
+          // cited not re-proved). The host apply-ctx read was REMOVED —
+          // apply ctx is no scope key; registering there would be global.
+          if (typeof g2Supply.mcpResources?.register !== 'function'
+            && state.mcpMountCtx !== null && state.mcpMountCtx !== undefined
+            && typeof state.mcpMountCtx.inject === 'function') {
+            try {
+              state.mcpMountCtx.inject(['mcpResources'], (inner) => {
+                if (typeof inner?.mcpResources?.register === 'function') Object.assign(g2Supply, { mcpResources: inner.mcpResources })
+              })
+            } catch { /* mcp-resources absent here — the mount-arm check refuses typed */ }
+          }
+          if (Array.isArray(g2Supply.browserEntries) === false && g2Supply.browserEntries !== null && typeof g2Supply.browserEntries === 'object') {
+            if (typeof g2Supply.consumeBrowserApproval !== 'function' || typeof g2Supply.callResource !== 'function') {
+              Object.assign(g2Supply, {
+                consumeBrowserApproval: createG2ConsumedRelay({
+                  getService: () => (controlServiceRef !== null && typeof controlServiceRef === 'object' ? controlServiceRef.current : undefined),
+                  rootSessionId: String(teamRoot),
+                }),
+                callResource: callResourceViaWorkerExecute,
+              })
+            }
           }
           const readG2Native = (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined)
           const g2Built = await createG2TeamMount({

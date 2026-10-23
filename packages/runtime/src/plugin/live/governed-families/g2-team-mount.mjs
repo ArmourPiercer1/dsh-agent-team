@@ -129,6 +129,9 @@ export async function createG2TeamMount(input = {}) {
     try {
       // the REAL Team-scoped register: the PASSED scope face, bound disposer —
       // never a global resolution, never server-name takeover.
+      if (typeof scopeFaces?.mcpResources?.register !== 'function') {
+        throw Object.assign(new TypeError(`${A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE}: the B-MCP mount ARM requires the scoped mcpResources face from the REAL member/Team scope ctx (bindings state.mcpMountCtx, createScope(agentCtx, runtimeAgent) — the mini-MCP mounting context, NEVER the shared row ctx); an apply-ctx or global-store face is NOT accepted, and a missing face never arms a global registration (root 21:30)`), { code: A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE })
+      }
       port.register(scopeFaces?.mcpResources)
     } catch (error) {
       const cleanup = await disposeBuilt()
@@ -297,13 +300,15 @@ export async function createG2TeamAssemblySupply(input = {}) {
   } catch (error) {
     return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE), `the SIGNED entry loader refused: ${String(error?.message ?? error).slice(0, 300)}`)
   }
-  if (mcpResources === null || typeof mcpResources !== 'object' || typeof mcpResources.register !== 'function') {
-    return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'the scope mcpResources face is REQUIRED — its real producer is the host mcp-resources scope layer (mcp-resources/src/index.ts @639ed01539); this producer names the gap, it never mints a stand-in face')
-  }
+  // ROOT 21:30: face-absent is a LEGITIMATE host-producer answer — the
+  // scoped face is minted per member at the REAL scope (bindings
+  // state.mcpMountCtx, createScope(agentCtx, runtimeAgent)) and augmented
+  // pre-mount; a face from the apply-ctx or the global store is NOT
+  // accepted at the arm (createG2TeamMount refuses there).
   if (typeof makeTransport !== 'function') {
     return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'makeTransport is REQUIRED — the transport factory\'s real producer is the host mcp connection layer over the APPROVED config (stdio/http); minting one here would copy host transport internals into this lane')
   }
-  const supply = { mcpResources, makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
+  const supply = { ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
   // browser supply is ALL-OR-NOTHING (the loader always carries the two
   // public entry functions; arming them WITHOUT the Team PA approval face +
   // the stagehand method mapping would arm a row whose door nobody opened):
@@ -320,4 +325,64 @@ export async function createG2TeamAssemblySupply(input = {}) {
     supply.callResource = callResource
   }
   return Object.freeze({ ok: true, supply })
+}
+
+/**
+ * THE consumed RELAY (root 21:24 law): the lease's consumeApproval answer
+ * is a RELAY of the durable chain the plane walk ALREADY consumed in THIS
+ * SAME CALL — the walk's correlation rides the lease facts
+ * (approvedCallId, commit 1e03e30f4), the record is found by
+ * listControlState().requests[].correlation, the terminal decision is read
+ * through the EXISTING awaitControlDecision. It is NOT a PA proof, NOT a
+ * second grant, NOT a new ledger: vocabulary only as the control package
+ * defines it (status 'pending'|'decided'|'abandoned'; decision 'allow' |
+ * 'deny' | 'stale-denied'). Anything that is not the SAME call's decided
+ * allow answers 'refused' — fail-closed. Bounded wait (deadlineMs), no
+ * unbounded loops.
+ */
+export function createG2ConsumedRelay ({ getService, rootSessionId, deadlineMs = 3000, pollMs = 50 } = {}) {
+  if (typeof getService !== 'function' || typeof rootSessionId !== 'string' || rootSessionId.length === 0) {
+    throw new TypeError('createG2ConsumedRelay: getService (lazy durable ControlService reader) and rootSessionId are REQUIRED')
+  }
+  return async (callFacts) => {
+    const correlation = callFacts?.approvedCallId
+    if (typeof correlation !== 'string' || correlation.length === 0) return 'refused'
+    const deadline = Date.now() + Math.max(0, Number(deadlineMs) || 0)
+    for (;;) {
+      const service = getService()
+      if (service === null || service === undefined || typeof service.listControlState !== 'function' || typeof service.awaitControlDecision !== 'function') return 'refused'
+      let record
+      try {
+        const state = await service.listControlState(rootSessionId)
+        record = (state?.requests ?? []).find((r) => String(r?.correlation ?? '') === correlation)
+      } catch { return 'refused' }
+      if (record !== undefined) {
+        if (record.status === 'decided') {
+          try {
+            const decision = await service.awaitControlDecision({ rootSessionId, requestId: record.requestId })
+            return String(decision?.decision) === 'allow' ? 'consumed' : 'refused'
+          } catch { return 'refused' }
+        }
+        if (record.status !== 'pending') return 'refused'
+      }
+      if (Date.now() >= deadline) return 'refused'
+      await new Promise((resolve) => globalThis.setTimeout(resolve, Math.max(1, Number(pollMs) || 50)))
+    }
+  }
+}
+
+/**
+ * The PUBLIC worker mapping, family-home copy (worker-client.ts:70-71
+ * execute(method,args,signal) on the lease-owned resource.value) — the
+ * bindings may pair it with createG2ConsumedRelay when the host supply
+ * carries browser entries but not the session pairing (all-or-nothing
+ * still enforced at the producer; this only keeps the REAL mapping and
+ * the REAL relay in ONE family module).
+ */
+export async function callResourceViaWorkerExecute (resource, method, args, signal) {
+  const runtime = resource?.value
+  if (typeof runtime?.execute !== 'function') {
+    throw new Error('callResourceViaWorkerExecute: the lease-owned resource.value answers no execute(method, args, signal) (worker-client.ts:70-71) — refusing, no fallback, no runtime swap')
+  }
+  return await runtime.execute(method, args, signal)
 }

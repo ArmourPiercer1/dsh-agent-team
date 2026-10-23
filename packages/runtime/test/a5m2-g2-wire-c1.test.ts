@@ -1110,3 +1110,32 @@ describe('A5M2-G2-WIRE round-22: the same-source comparator over the REAL transp
     expect(badQuery.some((m: string) => m.includes('query'))).toBe(true)
   })
 })
+
+/* ROOT 21:24 — the consumed RELAY unit legs. DISCLOSED service stand-in
+ * speaking the REAL control vocabulary VERBATIM from runtime/control:
+ * status 'pending'|'decided'|'abandoned' (service.ts:1861) and decision
+ * 'allow'|'deny'|'stale-denied' (types.ts CONTROL_DECISION_VALUES). The
+ * relay is a pure adapter — the real-service end-to-end ride is the
+ * Host-acceptance venue (stated, not claimed). */
+describe('A5M2-G2-WIRE round-25: createG2ConsumedRelay — relay, not PA proof, not second grant', () => {
+  const fakeService = (record: Record<string, unknown> | null, decision?: string) => ({
+    listControlState: async () => ({ requests: record === null ? [] : [record] }),
+    awaitControlDecision: async () => { if (decision === undefined) throw new Error('CONTROL_REQUEST_NOT_FOUND'); return { requestId: 'r1', decision } },
+  })
+  it('the SAME call\'s decided allow relays to consumed; deny/stale-denied/abandoned/pending-timeout/absent-correlation all refuse fail-closed', async () => {
+    const ok = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'decided' }, 'allow'), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await ok({ approvedCallId: 'plane-g2:r-1', toolName: 'stagehand_navigate' })).toBe('consumed')
+    const deny = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'decided' }, 'deny'), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await deny({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const stale = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'decided' }, 'stale-denied'), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await stale({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const aband = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'abandoned' }), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await aband({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const pend = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'pending' }), rootSessionId: 'rt', deadlineMs: 60, pollMs: 20 })
+    expect(await pend({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const noCorr = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService(null), rootSessionId: 'rt', deadlineMs: 40, pollMs: 10 })
+    expect(await noCorr({ toolName: 'stagehand_navigate' })).toBe('refused')
+    const missing = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService(null), rootSessionId: 'rt', deadlineMs: 40, pollMs: 10 })
+    expect(await missing({ approvedCallId: 'plane-g2:r-9' })).toBe('refused')
+  })
+})

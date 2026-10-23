@@ -2359,7 +2359,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
  */
 async function buildG2TeamSupply(
   cfg: TeamPluginConfig,
-  scopedMcpResources?: unknown,
 ): Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string } | undefined> {
   const g2Mount = (cfg as { teamToolPlane?: { g2Mount?: Record<string, unknown> } }).teamToolPlane?.g2Mount
   if (g2Mount === null || typeof g2Mount !== 'object') return undefined
@@ -2373,19 +2372,14 @@ async function buildG2TeamSupply(
   const transportEntry = g2Mount.transportEntry
   const serverConfigs = g2Mount.serverConfigs as Array<Record<string, unknown>> | undefined
   const out: Record<string, unknown> = { entryPaths }
-  // ROOT 21:23 — the TEAM-scoped mcpResources face arrives through the
-  // PUBLIC Context injection retrieval (the host's own mcp-client uses
-  // exactly this pattern at server-context.ts:29-31: ctx.inject(
-  // ['mcpResources'], (inner) => inner.mcpResources.register(...)) under
-  // the instance's own fiber ctx — and THIS plugin instance is the Team's
-  // own row instance (per-rootSessionId config), so register() lands on
-  // THIS Team's layer. A global-store read is NOT used: it would bind the
-  // global layer (Team-only violation). Absent/invalid face stays the
-  // producer's typed refusal below — no stand-in, no provider flip.
-  if (scopedMcpResources !== null && typeof scopedMcpResources === 'object'
-    && typeof (scopedMcpResources as { register?: unknown }).register === 'function') {
-    out.mcpResources = scopedMcpResources
-  }
+  // ROOT 21:30: the apply-ctx inject was the WRONG scope (apply ctx !=
+  // the Host's opaque per-Agent scopeOf(this.ctx); per-rootSessionId does
+  // not equal a scope key — registering there would be GLOBAL). The real
+  // member/Team scope ctx ALREADY EXISTS in the glue (bindings
+  // state.mcpMountCtx :2262-2268, `createScope(agentCtx, runtimeAgent)` —
+  // the same context the mini-MCP fibers mount on, "NEVER the shared row
+  // ctx"), and the bindings read the face there and augment the supply
+  // pre-call. The host producer therefore stops minting/passing any face.
   // ROOT 21:02: the factory is Team-owned and REAL over PUBLIC pieces —
   // StdioClientTransport / StreamableHTTPClientTransport (@modelcontextprotocol
   // /client + /client/stdio, the SDK public face transport.ts itself imports)
@@ -2488,19 +2482,6 @@ async function buildG2TeamSupply(
   return await mountMod.createG2TeamAssemblySupply(out)
 }
 
-  // ROOT 21:23 — the PUBLIC scoped retrieval, host's own precedent shape
-  // (server-context.ts:29-31). Synchronous capture into a local: the
-  // inject callback runs against THIS plugin instance's fiber ctx.
-  function readG2ScopedMcpResources(): unknown {
-    let face: unknown = null
-    try {
-      ;(ctx as unknown as { inject?: (tokens: string[], cb: (inner: { mcpResources?: unknown }) => void) => void }).inject?.(['mcpResources'], (inner) => { face = inner.mcpResources ?? null })
-    } catch {
-      face = null // the mcp-resources service is absent in this world — the producer refuses typed
-    }
-    return face
-  }
-
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -2535,7 +2516,7 @@ async function buildG2TeamSupply(
     // buildG2TeamSupply). Absent `teamToolPlane.g2Mount` config answers
     // undefined — the bindings then refuse typed; NOTHING changes for
     // worlds without the block (additive optional, never a hard inject).
-    g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig, readG2ScopedMcpResources())),
+    g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig)),
     // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
     // `llm` service — the SAME token native read-image.ts:119-130 answers
     // `resolveModelInfo` through for its image-capability route gate. Resolved
