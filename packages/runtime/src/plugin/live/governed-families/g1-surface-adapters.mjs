@@ -1,89 +1,84 @@
 /**
  * governed-families/g1-surface-adapters.mjs — A5-M2 module group G1 (root
- * concentrated-fix round): the captured-native-delegate adapter rows for the
- * 14 records of families B-CONTROL / B-HUMAN / B-PRESENT / B-PLUGIN /
- * B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
+ * round-2 REAL-INTERFACE round, rev.3): the captured-native-delegate adapter
+ * rows for the 14 records of families B-CONTROL / B-HUMAN / B-PRESENT /
+ * B-PLUGIN / B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
  * (frozen dispatch index M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json, records
  * 24, 25, 49–54, 83–85, 87, 88, 91; family law M0-B-FAMILY-TARGET-CONTRACTS.md
- * §3 — every effect/target below answers that section's REAL contract
- * effects; a generic tool-invoke shell with prose notes is rejected law).
+ * §3). Metadata modeling is replaced by the REAL manager/host contract:
+ * doubles that EXERCISE it, real async lifecycle, real fs at the edge, and
+ * same-source re-verification at the consumption edge.
  *
  * ── NATIVE-FACE LEDGER (comment-side ONLY: a string literal IS an edge to
  * the audit, so these path facts never live in values) ─────────────────────
  * skill                        HOST pkg dsh-tool-skill, tool-skill/src/index.ts: register @:161 of defineTool @:81; body ctx.skills.list/get(lookup) + isModelInvocable gates :138/:145
- * load_workspace_dependencies  HOST pkg dsh-tool-workspace-dependencies, tool-workspace-dependencies/src/index.ts: register @:249; body memoized installPrimaryRuntime(source, root) @:204-229 (mkdir/cp/rename/rm; no PATH change)
+ * load_workspace_dependencies  HOST pkg dsh-tool-workspace-dependencies, tool-workspace-dependencies/src/index.ts: register @:249; body memoized installPrimaryRuntime(source, root) @:204-229 — THE flow this row mirrors with REAL fs ops at the edge: readdir(source) enumeration, read(source/runtime.json) compatibleManifest, read(root/runtime.json) old manifest, mkdir(parents)+mkdtemp(`${parent}/.primary-runtime-`), cp into the real staging dir, rename previous-slot swap, rename-commit, validatePayloadEntries (actual digest equality)
  * ask_user_question            HOST pkg dsh-tool-ask-user, tool-ask-user/src/index.ts: register @:38; body ctx.userQuestions.ask({questions, agent, signal})
  * exit_plan_mode               HOST pkg dsh-plan-mode, plan-mode/src/index.ts: const EXIT_PLAN_MODE @:67, register @:278; body PlanModeController.loggedActive + ctx.get('userQuestions').ask(plan-review)
- * present                      HOST pkg dsh-tool-present, tool-present/src/index.ts: register @:38; body ctx.fs.lstat/resolve/stat + sessionProjections.stateOf(turnBoundary); durable commit = the tools/result listener's session.append('deliverables/presented')
- * plugin_manager               HOST pkg dsh-boot-plugin-manager, plugin-manager/src/tools.ts: register @:19 (closed 8-action enum); body approveEscalation @:38 then ctx.pluginManager.{listPlugins|listBundles|setPluginEnabled|setBundleEnabled|installBundle|removeBundle|listVersionExemptions|setVersionExemption} @:47-94; host lifecycle in plugin-manager/src/index.ts: waitForInstall @:577, cancelInstall @:588 (too-late / not-running law)
- * cordis_inspect_list          HOST pkg dsh-tool-cordis, tool-cordis/src/index.ts: register @:22; body ctx.cordisInspect.list()
+ * present                      HOST pkg dsh-tool-present, tool-present/src/index.ts: register @:38; body ctx.fs.lstat/resolve/stat + sessionProjections.stateOf(turnBoundary); durable commit = the tools/result listener's session.append('deliverables/presented', {turn, files}) — the SAME-EXEC append carrying the exec callId and the native result's OWN turn is the commit witness; an arbitrary integer is not
+ * plugin_manager               HOST pkg dsh-boot-plugin-manager, plugin-manager/src/tools.ts: register @:19 (closed 8-action enum); body approveEscalation @:38 then ctx.pluginManager.{listPlugins|listBundles|setPluginEnabled|setBundleEnabled|installBundle|removeBundle|listVersionExemptions|setVersionExemption} @:47-94. MANAGER ASYNC CONTRACT (src/index.ts, src/types.ts @ 639ed01539): installBundle(spec, InstallBundleOptions) @:462 — options.requestId (:463-466; types.ts:144) is the CALLER-supplied id the row mints BEFORE the call; settled installs are deleted @:566; waitForInstall(requestId): Promise<ChangeResult|null> @:570-576 — "Completed results are not retained; null establishes neither success nor cancellation"; cancelInstall(requestId): Promise<PluginInstallCancellation> @:585-593 — AWAITED to {status:'cancelled'} only after process exit and file restoration, {status:'too-late'} while applying, {status:'not-running'} otherwise (types.ts:208-210 closed 3-status). GAP reported, never faked: the MODEL tool path (tools.ts:80-85) supplies NO requestId and exposes no cancel/wait — governed installs therefore enter the MANAGER face directly.
+ * cordis_inspect_list          HOST pkg dsh-tool-cordis, tool-cordis/src/index.ts: register @:22; body ctx.cordisInspect.list() — the REAL list enumerates ALL providers ({platform, id, purpose, methods[]} host-then-client, cordis-host-runner/src/inspect-registry.ts:101-105); this row CONSTRAINS that answer to the CURRENT authorized topology
  * cordis_inspect_query         same file register @:41; body ctx.cordisInspect.query(platform, provider, method, input, agent, signal) over cordis-host-runner/src/inspect-registry.ts
  * team_request_control         TEAM own layer: createTeamTools → requestControlSpec → controlService.requestControl
  * team_resolve_control         same → controlService.escalateApprovalLeg / controlService.resolveControl
  * team_list_pending_control    same → controlService.listControlState + listOpenApprovalCases (Leader-only before any read)
  * team_grant_permission        same → permissionSpec('grant'): Leader check, canonicalizeExecIntent/canonicalizeFile, mutatePermission
  * team_revoke_permission       same → permissionSpec('revoke'): reveal-as-expansion gated in the SAME mutation authority (no second ledger)
- * surface:domain_family        NOT a model tool by record design: the mounted Domain port {name, description, decide(request)} consulted AT the effect-commit boundary; the domain-ref effect kind it decides for is domain/tool-governance effects.ts:43,72-113
+ * surface:domain_family        NOT a model tool by record design: the mounted Domain port {name, description, decide(request)} consulted AT the effect-commit boundary; the domain-ref effect kind it decides for is domain/tool-governance effects.ts:43,72-113; the kernel has NO public domain-authority registry — that gap is reported, never faked
  * ───────────────────────────────────────────────────────────────────────────
  *
- * ROOT LAWS IMPLEMENTED (concentrated-fix card; the module stays UNWIRED —
- * wiring is CENTER's after root review — and this lane's own spec proves the
- * laws over NATIVE DOUBLES: no leg here is, or claims, C2):
- *  1. REAL EFFECTS per record (§3), closed effect grammar (effects.ts):
- *     present ⇒ read+meta per exact deliverable + the expose WRITE business
- *     obligation with artifact identity/audience (presentation is NOT
- *     read-only); load_workspace_dependencies ⇒ the real mkdir/cp/rename/rm
- *     F-envelope item-by-item + the post-resolution actual-hash check
- *     surface; plugin_manager ⇒ PER-ACTION I+S — install carries connect(N)
- *     for registry+fallbacks, directory writes for cache/install roots, the
- *     profile-config write (approvedBuilds persistent permission +
- *     activation), the script-process envelope as the host-channel
- *     obligation, and the exemption lane NEVER derivable from install (and
- *     vice versa). S(op,target,right) rides serviceObligations — §1.1: it is
- *     manifest semantics, never an invented PA Effect kind.
- *  2. TRUSTED TARGETS: every plan target carries the mount-time trusted facts
- *     {memberAgentId, sessionHeaderId, realmId, owner, profileId} — a CONFIG
- *     face the model can never name (closed-root refusal) — plus the binding
- *     generations, at the todo reviewPayload position. Model keys alone are
- *     claims, never targets.
- *  3. skill: classify consults the TRUSTED CATALOG port's CURRENT facts
- *     (catalogRevision/catalogDigest/names) and refuses names outside it;
- *     the plan carries the catalog facts the later native get must answer to
- *     — a captured snapshot never justifies the get.
- *  4. domainAuthorityId: verified against the mounted-port registry's
- *     CURRENT facts; a model-supplied id that mismatches refuses typed and
- *     the domain-ref effect carries the TRUSTED id only.
- *  5. plugin install lifecycle: the native tool binds no requestId/signal —
- *     the host manager face does. delegate binds the returned requestId to
- *     the owner + this A invocation, maps exec.signal → cancelInstall(requestId),
- *     preserves too-late / not-running / unknown answers verbatim, and never
- *     claims an abort auto-stopped copying.
- *  6. present commit law: the native promise resolving is NOT the backend
- *     commit — the durable witness is the same-exec tools/result listener's
- *     session append. delegate answers RESULT-PENDING-SESSION-APPEND; COMMITTED
- *     is reachable ONLY through commitWitness(plan, {callId, turn}) answering
- *     the SAME call.
- *  7. delegate placement: a plan delegates at most ONCE; the plan (never the
- *     caller) supplies the arguments, so swapped args are unrepresentable;
- *     M1 A owns the ONE PA edge — this row exposes everything that edge
- *     binds (effects, serviceObligations, trusted target, generations,
- *     full-value parametersFingerprint) and consumes no approval itself.
- *  8. inspect pair: the trusted CURRENT authorized-topology port answers the
- *     target (revision/digest for list; platform/provider/method triple
- *     membership for query).
+ * ROOT LAWS (round-2 card; module stays UNWIRED — wiring is CENTER's; the
+ * spec proving it is NOT C2: every leg runs on doubles and fixture ports):
+ *  L1 REAL EFFECTS per family §3 — never a uniform tool-invoke shell.
+ *  L2 TRUSTED TARGETS: session/realm facts and the TRUSTED PROFILE ID enter
+ *     ONLY as the mount-time CONFIG face; the model cannot supply them.
+ *  L3 SAME-SOURCE RE-VERIFY AT THE CONSUMPTION EDGE: catalog/topology/
+ *     domain-port registry/profile facts/install facts consulted at classify
+ *     are re-read from their trusted sources at the delegate edge; a move
+ *     since classify refuses the plan typed, with zero native entry.
+ *  L4 domainAuthorityId is ONLY the mounted-port registry's CURRENT fact.
+ *  L5 plugin install on the REAL async manager contract (see ledger): the
+ *     row MINTS the invocation-owned requestId BEFORE installBundle and
+ *     passes it in options; cancel is AWAITED to the closed
+ *     PluginInstallCancellation status; too-late/not-running are preserved
+ *     and never imply completion; an aborted install never claims the
+ *     copying auto-stopped; the row never reads a requestId off its return.
+ *  L6 present: the resolving promise is NOT the commit; the commit witness
+ *     is the SAME-EXEC session append (deliverables/presented) carrying the
+ *     exec's callId AND the native result's OWN turn — an arbitrary integer
+ *     is no witness.
+ *  L7 the delegate runs ONLY the plan its own classify produced, at most
+ *     once, with the plan's own frozen arguments (no replay, no swap).
+ *  L8 the inspect pair's target is the CURRENT authorized registry
+ *     topology; the list row CONSTRAINS the real all-providers answer to it
+ *     — unauthorized providers never appear.
+ *  L9 dependency install performs REAL fs operations at the edge: source
+ *     enumeration, real source-manifest read, real old-manifest read, a
+ *     REAL mkdtemp staging directory, and a REAL post-resolution digest
+ *     check. No placeholder strings stand in for these.
+ *  L10 plugin targets are envelope-checked against the trusted profile
+ *     facts; out-of-envelope targets refuse; the approvedBuilds business
+ *     gate (approveEscalation + user answer) is recorded, NEVER re-decided
+ *     here; the exemption lane is never derivable from install.
+ *  L11 capture law: absent capture ⇒ typed refusal, zero native entry, no
+ *     re-resolution.
  *
- * CAPTURE LAW unchanged: no name-based re-resolution, no lazy registry;
- * capture absent ⇒ every entry answers P_G1_NATIVE_CAPTURE_ABSENT; a
- * present-but-wrong capture throws at assembly (config defect, never silent).
+ * Honest boundaries: NO C2 here (native doubles + fixture ports); the real
+ * PA edge, the real append listener, the real manager and the real product
+ * fs are integrator-side — this thin row exposes exactly those seams (the
+ * exec signal, the append witness, the manager face, the install facts).
+ * Windows dimensions: NOT RUN on this Linux harness, never claimed.
  *
- * @module runtime/plugin/live/governed-families/g1-surface-adapters
+ * @module @dsh-agent-team/runtime/plugin/live/governed-families/g1-surface-adapters
  */
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { join } from 'node:path'
 
 export const A5_G1_FAMILY_GROUP = 'G1'
-export const A5_G1_ADAPTER_REVISION = 2
+export const A5_G1_ADAPTER_REVISION = 3
 
-export const A5_G1_TYPED_CODES = Object.freeze({
+const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
   CLASSIFY_INVALID_ARGUMENTS: 'P_G1_CLASSIFY_INVALID_ARGUMENTS',
   CLASSIFY_UNKNOWN_PARAMETER: 'P_G1_CLASSIFY_UNKNOWN_PARAMETER',
@@ -96,559 +91,504 @@ export const A5_G1_TYPED_CODES = Object.freeze({
   SKILL_NAME_NOT_TRUSTED: 'P_G1_SKILL_NAME_NOT_TRUSTED',
   TOPOLOGY_ABSENT: 'P_G1_TRUSTED_TOPOLOGY_ABSENT',
   INSPECT_TARGET_NOT_AUTHORIZED: 'P_G1_INSPECT_TARGET_NOT_AUTHORIZED',
+  INSPECT_RESULT_SHAPE_UNKNOWN: 'P_G1_INSPECT_RESULT_SHAPE_UNKNOWN',
   DOMAIN_REGISTRY_ABSENT: 'P_G1_DOMAIN_REGISTRY_ABSENT',
   DOMAIN_CLAIM_MISMATCH: 'P_G1_DOMAIN_CLAIM_MISMATCH',
+  TRUSTED_FACTS_STALE: 'P_G1_TRUSTED_FACTS_STALE',
   PLUGIN_TARGETS_ABSENT: 'P_G1_PLUGIN_TARGETS_ABSENT',
   PLUGIN_REGISTRY_NOT_TRUSTED: 'P_G1_PLUGIN_REGISTRY_NOT_TRUSTED',
-  INSTALL_LIFECYCLE_ABSENT: 'P_G1_INSTALL_LIFECYCLE_ABSENT',
+  PLUGIN_TARGET_NOT_ENVELOPED: 'P_G1_PLUGIN_TARGET_NOT_ENVELOPED',
+  INSTALL_FACE_ABSENT: 'P_G1_INSTALL_FACE_ABSENT',
   DEPENDENCY_FACTS_ABSENT: 'P_G1_DEPENDENCY_FACTS_ABSENT',
+  DEPENDENCY_SOURCE_INVALID: 'P_G1_DEPENDENCY_SOURCE_INVALID',
   PRESENT_COMMIT_WITNESS_MISMATCH: 'P_G1_PRESENT_COMMIT_WITNESS_MISMATCH',
+}
+export const A5_G1_TYPED_CODES = Object.freeze({ ...CODES })
+
+function pluginActionsList() {
+  return Object.freeze([
+    'list_plugins', 'list_bundles', 'set_plugin', 'set_bundle',
+    'install_bundle', 'remove_bundle', 'list_version_exemptions', 'set_version_exemption',
+  ])
+}
+export const A5_G1_PLUGIN_ACTIONS = pluginActionsList()
+
+const NO_PARAMS = Object.freeze({ type: 'object', properties: Object.freeze({}) })
+/* Declared face parameters per record (the closed root: an undeclared key —
+ * a trusted TARGETS face or anything else — is not this record's face). */
+function params(...names) {
+  return Object.freeze({ type: 'object', properties: Object.freeze(Object.fromEntries(names.map((n) => [n, Object.freeze({})]))) })
+}
+
+const TOOL_NAME_BY_INDEX = Object.freeze({
+  24: 'skill', 25: 'load_workspace_dependencies', 49: 'ask_user_question', 50: 'exit_plan_mode',
+  51: 'present', 52: 'plugin_manager', 53: 'cordis_inspect_list', 54: 'cordis_inspect_query',
+  83: 'team_request_control', 84: 'team_resolve_control', 85: 'team_list_pending_control',
+  87: 'team_grant_permission', 88: 'team_revoke_permission',
 })
-const CODES = A5_G1_TYPED_CODES
 
-const refuse = (code, detail) => ({ ok: false, code, detail })
-
-const canonicalJson = (value) => JSON.stringify(value, (_k, v) => (
-  v !== null && typeof v === 'object' && !Array.isArray(v)
-    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
-    : v
-))
-
-const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex')
-
-/** Model arguments are JSON data (the host parses and validates JSON before
- * any body runs); the plan's snapshot is its own JSON clone. */
-const jsonClone = (value) => JSON.parse(JSON.stringify(value))
-
-function deepFreeze(value) {
-  if (value !== null && typeof value === 'object') {
-    for (const inner of Object.values(value)) deepFreeze(inner)
-    Object.freeze(value)
-  }
-  return value
-}
-
-/** Closed-grammar helpers (effects.ts law: a resource effect carries ONLY
- * {kind, resource}; everything else lives in the targetManifest). */
-const resourceRef = (realmId, kind, canonicalLocator, rights) => ({ realmId, kind, canonicalLocator, rights })
-const toolInvoke = (toolName) => ({ kind: 'tool-invoke', toolName, resource: null })
-const effectRead = (ref) => ({ kind: 'read', resource: ref })
-const effectMeta = (ref) => ({ kind: 'meta', resource: ref })
-const effectWrite = (ref) => ({ kind: 'write', resource: ref })
-const effectConnect = (ref) => ({ kind: 'connect', resource: ref })
-const effectDomainRef = (domainAuthorityId) => ({ kind: 'domain-ref', domainAuthorityId, resource: null })
-
-/** The 8-action closed enum of the captured plugin registration face. */
-export const A5_G1_PLUGIN_ACTIONS = PLUGIN_ACTIONS_LIST()
-function PLUGIN_ACTIONS_LIST() {
-  // Closed set recorded comment-side in the ledger; spelled once, here.
-  return Object.freeze(['list_plugins', 'list_bundles', 'set_plugin', 'set_bundle', 'install_bundle', 'remove_bundle', 'list_version_exemptions', 'set_version_exemption'])
-}
-
-/**
- * THE FROZEN RECORD MAP. recordIndex/family/scope/ownerRole mirror the frozen
- * dispatch index one-for-one; `nativeFaceRef` points into the comment-side
- * NATIVE-FACE LEDGER; `obligations` = the family §3 S-notation business
- * operations the row records into the plan's serviceObligations (plugin
- * answers per-ACTION inside effectsFor instead).
- */
-export const A5_G1_RECORD_SPECS = Object.freeze({
-  skill: Object.freeze({
-    recordIndex: 24, family: 'B-SKILL', scope: 'host-preset-on', ownerRole: 'SERVICE',
-    capture: 'tool-definition', operation: 'load-skill-instructions',
-    parametersTopLevel: Object.freeze(['name']), requiredTopLevel: Object.freeze(['name']),
-    nativeFaceRef: 'ledger:skill',
+const SPEC_TABLE = {
+  skill: {
+    recordIndex: 24, family: 'B-SKILL', scope: 'host-preset-on', ownerRole: 'SERVICE', capture: 'tool',
+    requiredTopLevel: ['name'], parameters: params('name'), nativeFaceRef: 'ledger:skill',
     obligations: Object.freeze([
       Object.freeze({ target: 'skill-catalog-namespace', operation: 'read-load', right: 'read' }),
       Object.freeze({ target: 'current-session-prompt', operation: 'inject', right: 'write' }),
     ]),
-    effectDeltaNotes: Object.freeze(['prompt-injection-surface', 'catalog-publish']),
-  }),
-  load_workspace_dependencies: Object.freeze({
-    recordIndex: 25, family: 'B-DEPENDENCY', scope: 'host-sdk-app-env-only', ownerRole: 'PLUGIN',
-    capture: 'tool-definition', operation: 'query-and-first-execution-install',
-    parametersTopLevel: Object.freeze([]), requiredTopLevel: Object.freeze([]),
-    nativeFaceRef: 'ledger:load_workspace_dependencies',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'workspace-runtime-install-namespace', operation: 'install', right: 'write' }),
+    effectDeltaNotes: Object.freeze([
+      'I: tool-invoke(skill); the TRUSTED catalog CURRENT facts gate classify AND are re-verified at the consumption edge; a captured snapshot can never justify a later get',
+      'S: catalog namespace read/load; the skill content injects into the CURRENT session prompt (session-anchored write obligation)',
     ]),
-    effectDeltaNotes: Object.freeze(['runtime-payload-install-mkdir-cp-rename-rm']),
-  }),
-  ask_user_question: Object.freeze({
-    recordIndex: 49, family: 'B-HUMAN', scope: 'host-preset-on', ownerRole: 'SERVICE',
-    capture: 'tool-definition', operation: 'ask-current-session',
-    parametersTopLevel: Object.freeze(['questions']), requiredTopLevel: Object.freeze(['questions']),
-    nativeFaceRef: 'ledger:ask_user_question',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'owner-session', operation: 'ask', right: 'write' }),
+  },
+  load_workspace_dependencies: {
+    recordIndex: 25, family: 'B-DEPENDENCY', scope: 'host-sdk-app-env-only', ownerRole: 'PLUGIN', capture: 'tool',
+    requiredTopLevel: [], parameters: NO_PARAMS, nativeFaceRef: 'ledger:load_workspace_dependencies',
+    effectDeltaNotes: Object.freeze([
+      'F: the REAL flow, item-by-item over the trusted install facts: enumerate the source dir, read the source runtime.json (compatibleManifest), read the installed old manifest, write the parent (mkdir/mkdtemp staging), write the root (rename-commit), write the .previous slot',
+      'the delegate performs REAL fs operations (readdir, real manifest reads, a REAL mkdtemp staging directory) and a REAL post-resolution digest check against the source manifest — never a placeholder; the install path never touches PATH',
     ]),
-    effectDeltaNotes: Object.freeze(['human-input-channel']),
-  }),
-  exit_plan_mode: Object.freeze({
-    recordIndex: 50, family: 'B-HUMAN', scope: 'host-preset-on', ownerRole: 'SERVICE',
-    capture: 'tool-definition', operation: 'exit-plan-mode-via-host-approval',
-    parametersTopLevel: Object.freeze(['plan']), requiredTopLevel: Object.freeze(['plan']),
-    nativeFaceRef: 'ledger:exit_plan_mode',
+  },
+  ask_user_question: {
+    recordIndex: 49, family: 'B-HUMAN', scope: 'host-preset-on', ownerRole: 'SERVICE', capture: 'tool',
+    requiredTopLevel: ['questions'], parameters: params('questions'), nativeFaceRef: 'ledger:ask_user_question',
+    obligations: Object.freeze([Object.freeze({ target: 'owner-session', operation: 'deliver-question-collect-answer', right: 'write' })]),
+    effectDeltaNotes: Object.freeze(['I: tool-invoke; S: the ask lands on the trusted session/member target (CONFIG face) and the answer re-enters that owner session']),
+  },
+  exit_plan_mode: {
+    recordIndex: 50, family: 'B-HUMAN', scope: 'host-preset-on', ownerRole: 'SERVICE', capture: 'tool',
+    requiredTopLevel: ['plan'], parameters: params('plan'), nativeFaceRef: 'ledger:exit_plan_mode',
     obligations: Object.freeze([
-      Object.freeze({ target: 'owner-session', operation: 'exit-plan', right: 'write' }),
-      Object.freeze({ target: 'host-user-questions-channel', operation: 'plan-review-approval', right: 'read' }),
+      Object.freeze({ target: 'owner-session', operation: 'deliver-plan-review-collect-answer', right: 'write' }),
+      Object.freeze({ target: 'host-plan-mode-approval-channel', operation: 'read-review-outcome', right: 'read' }),
     ]),
-    effectDeltaNotes: Object.freeze(['session-mode-transition-approval-gate']),
-  }),
-  present: Object.freeze({
-    recordIndex: 51, family: 'B-PRESENT', scope: 'host-preset-on', ownerRole: 'SERVICE',
-    capture: 'tool-definition', operation: 'expose-deliverables-no-copy',
-    parametersTopLevel: Object.freeze(['files']), requiredTopLevel: Object.freeze(['files']),
-    commitLaw: 'session-append',
-    nativeFaceRef: 'ledger:present',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'current-session-audience', operation: 'expose', right: 'write' }),
+    effectDeltaNotes: Object.freeze(['I: tool-invoke; S: the plan reaches the CURRENT session owner as the review/exit-plan obligation (write onto the owner session; the outcome reads back over the Host approval channel)']),
+  },
+  present: {
+    recordIndex: 51, family: 'B-PRESENT', scope: 'host-preset-on', ownerRole: 'SERVICE', capture: 'tool',
+    requiredTopLevel: ['files'], parameters: params('files'), nativeFaceRef: 'ledger:present', commitLaw: 'session-append',
+    effectDeltaNotes: Object.freeze([
+      'F: NOT read-only — reading/metadata is observed over each EXACT deliverable, and the row carries the expose WRITE obligation (artifact identity/version + visible audience)',
+      'commit law: the native promise resolving is NOT the commit; the SAME-EXEC session append (deliverables/presented) carrying the exec callId AND the native result\'s own turn witnesses it; an arbitrary integer is no witness',
     ]),
-    effectDeltaNotes: Object.freeze(['file-expose-deliverable-card']),
-  }),
-  plugin_manager: Object.freeze({
-    recordIndex: 52, family: 'B-PLUGIN', scope: 'host-preset-conditional', ownerRole: 'PLUGIN',
-    capture: 'tool-definition', operation: 'profile-management-action',
-    parametersTopLevel: Object.freeze(['action', 'target', 'enabled', 'runtimeVersion', 'acceptRisk', 'approvedBuilds', 'registry', 'offset', 'limit']),
-    requiredTopLevel: Object.freeze(['action']),
-    nativeFaceRef: 'ledger:plugin_manager',
-    effectDeltaNotes: Object.freeze(['profile-config-write-persist-all-sessions', 'npm-install-build-script-exec', 'peer-dep-exemption']),
-  }),
-  cordis_inspect_list: Object.freeze({
-    recordIndex: 53, family: 'B-INSPECT', scope: 'host-preset-cordis-only', ownerRole: 'SERVICE',
-    capture: 'tool-definition', operation: 'list-inspect-providers',
-    parametersTopLevel: Object.freeze([]), requiredTopLevel: Object.freeze([]),
-    nativeFaceRef: 'ledger:cordis_inspect_list',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'authorized-inspect-registry-topology', operation: 'read', right: 'read' }),
+  },
+  plugin_manager: {
+    recordIndex: 52, family: 'B-PLUGIN', scope: 'host-preset-conditional', ownerRole: 'PLUGIN', capture: 'tool',
+    requiredTopLevel: ['action'], parameters: params('action', 'target', 'enabled', 'bundle', 'approvedBuilds', 'registry', 'runtimeVersion', 'acceptRisk'), nativeFaceRef: 'ledger:plugin_manager',
+    effectDeltaNotes: Object.freeze([
+      'PER-ACTION: each of the 8 actions carries its own closed effects+targets, mapped to the manager code paths under the SAME envelope (profile config path, install root, npm cache, exemptions file, registry allow-list); out-of-envelope targets refuse',
+      'install: S (query) + F (N registry destinations = the requested-or-allowed ones plus the configured fallbacks, connect) + writes (npm cache, install root, profile package.json incl. the approvedBuilds persistent permission) + the script-process envelope + activation',
+      'install lifecycle: the invocation-owned requestId is minted BEFORE installBundle(spec, {requestId}); cancelInstall is AWAITED to {status: cancelled|too-late|not-running}; waitForInstall answers ChangeResult|null — "null establishes neither success nor cancellation"',
+      'the version-exemption lane is a SEPARATE action+target — never derivable from install; the dangerous-action escalation is the Host business gate, recorded not re-decided (the init sandbox is NOT widened here)',
     ]),
-    effectDeltaNotes: Object.freeze(['runtime-topology-disclosure']),
-  }),
-  cordis_inspect_query: Object.freeze({
-    recordIndex: 54, family: 'B-INSPECT', scope: 'host-preset-cordis-only', ownerRole: 'SERVICE',
-    capture: 'tool-definition', operation: 'query-inspect-provider',
-    parametersTopLevel: Object.freeze(['platform', 'provider', 'method', 'input']),
-    requiredTopLevel: Object.freeze(['platform', 'provider', 'method']),
-    nativeFaceRef: 'ledger:cordis_inspect_query',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'authorized-inspect-registry-topology', operation: 'read-query', right: 'read' }),
-      Object.freeze({ target: 'client-browser-page', operation: 'roundtrip', right: 'read' }),
+  },
+  cordis_inspect_list: {
+    recordIndex: 53, family: 'B-INSPECT', scope: 'host-preset-cordis-only', ownerRole: 'SERVICE', capture: 'tool',
+    requiredTopLevel: [], parameters: NO_PARAMS, nativeFaceRef: 'ledger:cordis_inspect_list',
+    obligations: Object.freeze([Object.freeze({ target: 'authorized-inspect-topology', operation: 'enumerate', right: 'read' })]),
+    effectDeltaNotes: Object.freeze([
+      'the REAL list enumerates ALL providers; this row CONSTRAINS that answer to the CURRENT authorized topology (providers AND per-provider methods filtered; unauthorized entries never appear), re-verified at the consumption edge',
     ]),
-    effectDeltaNotes: Object.freeze(['runtime-topology-disclosure', 'client-browser-roundtrip']),
-  }),
-  team_request_control: Object.freeze({
-    recordIndex: 83, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL',
-    capture: 'tool-definition', operation: 'request-control',
-    parametersTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName', 'toolName', 'summary']),
-    requiredTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName']),
-    nativeFaceRef: 'ledger:team_request_control',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'control-service-single-ledger', operation: 'request-control', right: 'write' }),
+  },
+  cordis_inspect_query: {
+    recordIndex: 54, family: 'B-INSPECT', scope: 'host-preset-cordis-only', ownerRole: 'SERVICE', capture: 'tool',
+    requiredTopLevel: ['platform', 'provider', 'method'], parameters: params('platform', 'provider', 'method', 'input'), nativeFaceRef: 'ledger:cordis_inspect_query',
+    obligations: Object.freeze([Object.freeze({ target: 'authorized-inspect-topology', operation: 'read-one-method', right: 'read' })]),
+    effectDeltaNotes: Object.freeze([
+      'S: CURRENT authorized topology gates classify AND the consumption edge; claims outside the authorized triples refuse',
+      'client queries ride the Client page roundtrip (pending-until-response; host-side cancellation is NOT a transport cancel — law string)',
     ]),
-    effectDeltaNotes: Object.freeze(['approval-durable-write-via-ControlService']),
-  }),
-  team_resolve_control: Object.freeze({
-    recordIndex: 84, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL',
-    capture: 'tool-definition', operation: 'resolve-control',
-    parametersTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'requestId', 'decision', 'note']),
-    requiredTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'requestId', 'decision']),
-    nativeFaceRef: 'ledger:team_resolve_control',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'control-service-single-ledger', operation: 'resolve-control-or-escalate-leg', right: 'write' }),
+  },
+  team_request_control: {
+    recordIndex: 83, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
+    requiredTopLevel: ['rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName'],
+    parameters: params('rootSessionId', 'requestToken', 'kind', 'targetInstanceId', 'actionName'), nativeFaceRef: 'ledger:team_request_control',
+    obligations: Object.freeze([Object.freeze({ target: 'team-control-ledger', operation: 'request-control', right: 'write' })]),
+    effectDeltaNotes: Object.freeze(['I + S(write) on the team-control ledger (the single authority; no second one exists)']),
+  },
+  team_resolve_control: {
+    recordIndex: 84, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
+    requiredTopLevel: ['rootSessionId', 'requestToken', 'requestId', 'decision'],
+    parameters: params('rootSessionId', 'requestToken', 'requestId', 'decision'), nativeFaceRef: 'ledger:team_resolve_control',
+    obligations: Object.freeze([Object.freeze({ target: 'team-control-ledger', operation: 'resolve-control-or-escalate-leg', right: 'write' })]),
+    effectDeltaNotes: Object.freeze(['I + S(write) resolve (approval cases additionally ride the Host escalation leg)']),
+  },
+  team_list_pending_control: {
+    recordIndex: 85, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
+    requiredTopLevel: ['rootSessionId', 'requestToken'], parameters: params('rootSessionId', 'requestToken'), nativeFaceRef: 'ledger:team_list_pending_control',
+    obligations: Object.freeze([Object.freeze({ target: 'team-control-ledger', operation: 'read-pending', right: 'read' })]),
+    effectDeltaNotes: Object.freeze(['I + S(read) on the same ledger (closed 5/5)']),
+  },
+  team_grant_permission: {
+    recordIndex: 87, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
+    requiredTopLevel: ['rootSessionId', 'requestToken', 'targetInstanceId', 'rules'],
+    parameters: params('rootSessionId', 'requestToken', 'targetInstanceId', 'rules'), nativeFaceRef: 'ledger:team_grant_permission',
+    obligations: Object.freeze([Object.freeze({ target: 'root-permission-authority', operation: 'grant', right: 'write' })]),
+    effectDeltaNotes: Object.freeze(['I + S(write) on the root permission authority; rules canonicalize server-side (never pre-classify)']),
+  },
+  team_revoke_permission: {
+    recordIndex: 88, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL', capture: 'tool',
+    requiredTopLevel: ['rootSessionId', 'requestToken', 'targetInstanceId', 'rules'],
+    parameters: params('rootSessionId', 'requestToken', 'targetInstanceId', 'rules'), nativeFaceRef: 'ledger:team_revoke_permission',
+    obligations: Object.freeze([Object.freeze({ target: 'root-permission-authority', operation: 'revoke', right: 'write' })]),
+    effectDeltaNotes: Object.freeze(['I + S(write); revoked allows can reappear as narrower asks (reveal-as-expansion law)']),
+  },
+  'surface:domain_family': {
+    recordIndex: 91, family: 'B-DOMAIN', scope: 'surface', ownerRole: 'CONNECTOR', capture: 'surface',
+    requiredTopLevel: ['toolName', 'domainAuthorityId', 'targetDigest'],
+    parameters: params('toolName', 'domainAuthorityId', 'targetDigest'), nativeFaceRef: 'ledger:surface:domain_family',
+    obligations: Object.freeze([Object.freeze({ target: 'effect-boundary-ledger', operation: 'record-boundary-decision', right: 'write' })]),
+    effectDeltaNotes: Object.freeze([
+      'the domain-ref effect carries ONLY the TRUSTED domainAuthorityId from the mounted-port registry CURRENT facts (re-verified at the edge); model-supplied ids are claims and mismatch refuses',
     ]),
-    effectDeltaNotes: Object.freeze(['approval-durable-write-via-ControlService']),
-  }),
-  team_list_pending_control: Object.freeze({
-    recordIndex: 85, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL',
-    capture: 'tool-definition', operation: 'list-pending-control',
-    parametersTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'limit']),
-    requiredTopLevel: Object.freeze(['rootSessionId', 'requestToken']),
-    nativeFaceRef: 'ledger:team_list_pending_control',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'control-service-single-ledger', operation: 'read-pending', right: 'read' }),
-    ]),
-    effectDeltaNotes: Object.freeze(['approval-durable-read']),
-  }),
-  team_grant_permission: Object.freeze({
-    recordIndex: 87, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL',
-    capture: 'tool-definition', operation: 'grant-permission',
-    parametersTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'targetInstanceId', 'rules']),
-    requiredTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'targetInstanceId', 'rules']),
-    nativeFaceRef: 'ledger:team_grant_permission',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'permission-overlay-single-mutation-authority', operation: 'grant', right: 'write' }),
-    ]),
-    effectDeltaNotes: Object.freeze(['permission-overlay-durable-write']),
-  }),
-  team_revoke_permission: Object.freeze({
-    recordIndex: 88, family: 'B-CONTROL', scope: 'own-layer', ownerRole: 'CONTROL',
-    capture: 'tool-definition', operation: 'revoke-permission',
-    parametersTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'targetInstanceId', 'rules']),
-    requiredTopLevel: Object.freeze(['rootSessionId', 'requestToken', 'targetInstanceId', 'rules']),
-    nativeFaceRef: 'ledger:team_revoke_permission',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'permission-overlay-single-mutation-authority', operation: 'revoke-reveal-as-expansion-gated', right: 'write' }),
-    ]),
-    effectDeltaNotes: Object.freeze(['permission-overlay-durable-write']),
-  }),
-  'surface:domain_family': Object.freeze({
-    recordIndex: 91, family: 'B-DOMAIN', scope: 'surface', ownerRole: 'CONNECTOR',
-    capture: 'domain-surface', operation: 'domain-decision-at-effect-boundary',
-    parametersTopLevel: Object.freeze(['toolName', 'domainAuthorityId', 'targetDigest']),
-    requiredTopLevel: Object.freeze(['toolName', 'domainAuthorityId']),
-    nativeFaceRef: 'ledger:surface:domain_family',
-    obligations: Object.freeze([
-      Object.freeze({ target: 'mounted-domain-port-registry', operation: 'decide-at-effect-commit', right: 'read' }),
-    ]),
-    effectDeltaNotes: Object.freeze(['domain-business-effect-at-plugin-boundary-family-level']),
-  }),
-})
+  },
+}
+
+function buildSpec(entry) {
+  return Object.freeze({
+    recordIndex: entry.recordIndex,
+    family: entry.family,
+    scope: entry.scope,
+    ownerRole: entry.ownerRole,
+    capture: entry.capture,
+    parametersTopLevel: Object.freeze(entry.parameters.properties === undefined
+      ? []
+      : Object.keys(entry.parameters.properties)),
+    requiredTopLevel: Object.freeze([...entry.requiredTopLevel]),
+    parameters: entry.parameters,
+    nativeFaceRef: entry.nativeFaceRef,
+    ...(entry.commitLaw === undefined ? {} : { commitLaw: entry.commitLaw }),
+    ...(entry.obligations === undefined ? {} : { obligations: entry.obligations }),
+    effectDeltaNotes: entry.effectDeltaNotes,
+  })
+}
+
+export const A5_G1_RECORD_SPECS = Object.freeze(
+  Object.fromEntries(Object.entries(SPEC_TABLE).map(([name, entry]) => [name, buildSpec(entry)])),
+)
 
 export function g1SurfaceAdapterNames() {
   return Object.keys(A5_G1_RECORD_SPECS)
-    .sort((a, b) => A5_G1_RECORD_SPECS[a].recordIndex - A5_G1_RECORD_SPECS[b].recordIndex)
 }
 
-/** Pure parse of one present-file item → closed ResourceRef (relative =
- * workspace, absolute = absolute-path; traversal/empty refuse). The exact
- * file law ALSO lives in the native body — this only makes the EFFECT target
- * well-formed and realm-anchored. */
-function presentFileRef(realmId, rawPath) {
-  if (typeof rawPath !== 'string' || rawPath.length === 0 || rawPath.includes('\0')) return null
-  if (rawPath.startsWith('/') || /^[A-Za-z]:[\\/]/.test(rawPath)) {
-    return resourceRef(realmId, 'absolute-path', rawPath, ['read', 'meta'])
+const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
+const canonical = (value) => JSON.stringify(value, (_key, item) => (
+  isRecord(item) ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item
+))
+const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex')
+const jsonClone = (value) => JSON.parse(JSON.stringify(value))
+const deepFreeze = (value) => {
+  if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) deepFreeze(child)
+    Object.freeze(value)
   }
-  if (rawPath.split(/[/\\]/).some((s) => s === '..')) return null
-  return resourceRef(realmId, 'workspace', rawPath, ['read', 'meta'])
+  return value
+}
+const dirRes = (realmId, canonicalLocator, rights) => ({ realmId, kind: 'directory', canonicalLocator, rights })
+const pathRes = (realmId, canonicalLocator, rights) => ({ realmId, kind: 'absolute-path', canonicalLocator, rights })
+const netRes = (realmId, canonicalLocator) => ({ realmId, kind: 'network-destination', canonicalLocator, rights: ['connect'] })
+const TOOL_NAME_OBLIGATION = Object.freeze({ target: 'host-tool-dispatch', operation: 'invoke-captured-body', right: 'read' })
+
+function classifyRefuse(code, detail) {
+  return Object.freeze({ ok: false, code, detail })
 }
 
-/**
- * Per-record REAL effects + record facts, exactly the family §3 targets
- * (closed effect grammar; S-notation business operations ride separately as
- * serviceObligations — §1.1: manifest semantics, never invented PA kinds).
- * Returns { effects, obligations?, targetFacts } or a typed refusal.
- */
-function effectsFor(recordName, args, trusted, ports) {
-  const realm = trusted.realmId
-  switch (recordName) {
-    case 'present': {
-      if (!Array.isArray(args.files) || args.files.length === 0) {
-        return refuse(CODES.CLASSIFY_INVALID_ARGUMENTS, 'present: files must be a non-empty array')
-      }
-      const effects = [toolInvoke(recordName)]
+function closedRootCheck(spec, rawArgs, providerId) {
+  if (rawArgs === undefined || rawArgs === null) return null
+  if (!isRecord(rawArgs)) {
+    return classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·${spec.family}·${providerId}: model arguments must be one JSON object; nothing is consulted`)
+  }
+  const known = new Set(spec.parametersTopLevel)
+  for (const key of Object.keys(rawArgs)) {
+    if (!known.has(key)) {
+      return classifyRefuse(CODES.CLASSIFY_UNKNOWN_PARAMETER, `${spec.recordIndex}·${spec.family}·${providerId}: '${key}' is not a declared face parameter of this record; trusted TARGETS are CONFIG facts the model cannot supply`)
+    }
+  }
+  for (const required of spec.requiredTopLevel) {
+    if (rawArgs[required] === undefined) {
+      return classifyRefuse(CODES.CLASSIFY_MISSING_PARAMETER, `${spec.recordIndex}·${spec.family}·${providerId}: required parameter '${required}' is absent`)
+    }
+  }
+  return null
+}
+
+/* Trusted CURRENT-fact readers (fixture ports in the spec; the product
+ * mounts the real catalog/topology/profile/install sources at the same
+ * seams). Each returns either { refusal } or the fact record. */
+function currentPluginFacts(ports, spec, providerId) {
+  const facts = typeof ports?.pluginFacts?.current === 'function' ? ports.pluginFacts.current() : undefined
+  const ok = isRecord(facts)
+    && typeof facts.profileConfigLocator === 'string' && facts.profileConfigLocator.length > 0
+    && typeof facts.installRootLocator === 'string' && facts.installRootLocator.length > 0
+    && typeof facts.cacheRootLocator === 'string' && facts.cacheRootLocator.length > 0
+    && typeof facts.exemptionsLocator === 'string' && facts.exemptionsLocator.length > 0
+    && Array.isArray(facts.allowedRegistries) && Array.isArray(facts.fallbackRegistries)
+  if (!ok) {
+    return { refusal: classifyRefuse(CODES.PLUGIN_TARGETS_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the trusted profile facts (profile config path, install root, npm cache, exemptions file, registry allow-list) are not mounted; plugin effects cannot be enumerated`) }
+  }
+  return { facts }
+}
+
+function currentDependencyFacts(ports, spec, providerId) {
+  const facts = typeof ports?.dependencyFacts?.current === 'function' ? ports.dependencyFacts.current() : undefined
+  const ok = isRecord(facts) && typeof facts.sourceLocator === 'string' && facts.sourceLocator.length > 0
+    && typeof facts.rootLocator === 'string' && facts.rootLocator.length > 0
+  if (!ok) {
+    return { refusal: classifyRefuse(CODES.DEPENDENCY_FACTS_ABSENT, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the install facts (source payload directory, runtime root) are not mounted; the F-envelope cannot be enumerated`) }
+  }
+  return { facts }
+}
+
+function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
+  const effects = spec.family === 'B-DOMAIN'
+    ? []
+    : [{ kind: 'tool-invoke', toolName: TOOL_NAME_BY_INDEX[spec.recordIndex] ?? spec.recordIndex, resource: null }]
+  const built = { obligations: null, target: {} }
+  switch (spec.family) {
+    case 'B-PRESENT': {
+      const files = Array.isArray(rawArgs.files) ? rawArgs.files : []
       const deliverables = []
-      for (const file of args.files) {
-        if (file === null || typeof file !== 'object' || Array.isArray(file)) {
-          return refuse(CODES.CLASSIFY_INVALID_ARGUMENTS, 'present: every files[] item must be { path, description? }')
+      for (const file of files) {
+        if (!isRecord(file) || typeof file.path !== 'string' || file.path.length === 0) {
+          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: every presented file needs a non-empty path`) }
         }
-        const unknown = Object.keys(file).filter((k) => k !== 'path' && k !== 'description')
-        if (unknown.length > 0) return refuse(CODES.CLASSIFY_UNKNOWN_PARAMETER, `present: files[].${unknown.join(', ')} not declared`)
-        const ref = presentFileRef(realm, file.path)
-        if (ref === null) return refuse(CODES.CLASSIFY_INVALID_ARGUMENTS, 'present: files[].path is not a well-formed workspace-relative or absolute deliverable path')
-        // F on the EXACT deliverable: read + metadata (contract B-PRESENT).
-        effects.push(effectRead(ref), effectMeta(ref))
-        deliverables.push({ canonicalLocator: ref.canonicalLocator, resourceKind: ref.kind, declaredDescription: typeof file.description === 'string' ? file.description : null })
-      }
-      return {
-        effects,
-        targetFacts: {
-          deliverables,
-          audience: { kind: 'current-session', sessionHeaderId: trusted.sessionHeaderId },
-          // Artifact identity = the exact realm-anchored locators; VERSION is
-          // turn-scoped and exists only once the native result lands — the
-          // commit witness (law 6) is what pins it.
-          artifactVersion: 'turn-scoped-at-result',
-          readOnly: false,
-        },
-      }
-    }
-    case 'load_workspace_dependencies': {
-      const facts = ports.dependencyFacts
-      if (facts === undefined || typeof facts.sourceLocator !== 'string' || typeof facts.rootLocator !== 'string') {
-        return refuse(CODES.DEPENDENCY_FACTS_ABSENT, 'load_workspace_dependencies: the trusted install facts (source/root locators — a CONFIG face) are not mounted; the F envelope has no well-formed target and this row refuses rather than letting a model name paths it cannot be trusted with')
-      }
-      const root = facts.rootLocator
-      const parent = root.replace(/[\\/][^\\/]+[\\/]?$/, '') || root
-      // The REAL mkdir/cp/rename/rm flow of the memoized first-execution
-      // install, item by item (never one blanket "install" line):
-      const effects = [
-        toolInvoke(recordName),
-        effectWrite(resourceRef(realm, 'directory', parent, ['write', 'list'])), // mkdir(parents) + mkdtemp staging class
-        effectWrite(resourceRef(realm, 'directory', `${parent}/.primary-runtime-<mkdtemp>`, ['write', 'list'])), // cp payload → staging
-        effectWrite(resourceRef(realm, 'absolute-path', `${root}.previous`, ['write', 'meta'])), // rm previous / rename staging↔previous
-        effectWrite(resourceRef(realm, 'directory', root, ['write', 'list', 'meta'])), // rename(staging → root): the payload commit edge
-        effectMeta(resourceRef(realm, 'absolute-path', `${root}/runtime.json`, ['meta'])), // compatibleManifest / validatePayloadEntries
-      ]
-      return {
-        effects,
-        targetFacts: {
-          installNamespace: { sourceLocator: facts.sourceLocator, rootLocator: root },
-          // POST-RESOLUTION ACTUAL-HASH CHECK SURFACE: the grant approves the
-          // envelope; success is only reportable when the installed bytes
-          // answered the resolved payload manifest. The memo never bypasses A.
-          hashCheck: { required: 'post-resolution-actual-hash', against: 'resolved payload manifest', memoBypass: 'never' },
-          envelopeConditional: 'entries ride only the first-execution / version-drift install; an already-valid memo performs no FS move',
-          pathChange: 'none — the native body never touches PATH or package-manager settings',
-        },
-      }
-    }
-    case 'plugin_manager': {
-      const facts = ports.pluginFacts
-      if (facts === undefined || typeof facts.profileConfigLocator !== 'string'
-        || typeof facts.installRootLocator !== 'string' || typeof facts.cacheRootLocator !== 'string'
-        || typeof facts.exemptionsLocator !== 'string' || !Array.isArray(facts.allowedRegistries) || !Array.isArray(facts.fallbackRegistries)) {
-        return refuse(CODES.PLUGIN_TARGETS_ABSENT, 'plugin_manager: the trusted profile/install/cache/exemption locators and the registry allow-list are a CONFIG face; unmounted ⇒ no well-formed per-action target exists')
-      }
-      if (typeof args.action !== 'string' || !A5_G1_PLUGIN_ACTIONS.includes(args.action)) {
-        return refuse(CODES.CLASSIFY_UNKNOWN_ACTION, 'plugin_manager: the action is outside the closed 8-action enum of the captured registration face')
-      }
-      const action = args.action
-      const profileConfig = resourceRef(realm, 'absolute-path', facts.profileConfigLocator, ['write', 'meta'])
-      const installRoot = resourceRef(realm, 'directory', facts.installRootLocator, ['write', 'list'])
-      const cacheRoot = resourceRef(realm, 'directory', facts.cacheRootLocator, ['write', 'list'])
-      const exemptions = resourceRef(realm, 'absolute-path', facts.exemptionsLocator, ['write', 'meta'])
-      const effects = [toolInvoke(recordName)]
-      const obligations = []
-      const targetFacts = { action, profileId: trusted.profileId, targetClaim: typeof args.target === 'string' ? args.target : null }
-      switch (action) {
-        case 'list_plugins':
-        case 'list_bundles':
-        case 'list_version_exemptions':
-          obligations.push({ target: 'trusted-profile', operation: action, right: 'read' })
-          break
-        case 'set_plugin':
-        case 'set_bundle':
-          // profile-config durable write; the topology change affects ALL sessions
-          effects.push(effectWrite(profileConfig))
-          obligations.push({ target: 'trusted-profile', operation: 'enable-disable-persist', right: 'write' })
-          obligations.push({ target: 'profile-runtime-topology', operation: 'reconcile-or-restart', right: 'write' })
-          targetFacts.scopeImpact = 'every session in this profile'
-          break
-        case 'install_bundle': {
-          const requested = args.registry === undefined ? null : args.registry
-          if (requested !== null && !(typeof requested === 'string'
-            && [...facts.allowedRegistries, ...facts.fallbackRegistries].includes(requested))) {
-            return refuse(CODES.PLUGIN_REGISTRY_NOT_TRUSTED, 'plugin_manager install_bundle: a model-named registry outside the trusted allow-list is a claim, never a connect target')
-          }
-          const destinations = [...new Set([
-            ...(requested !== null ? [requested] : [...facts.allowedRegistries]),
-            ...facts.fallbackRegistries,
-          ])]
-          for (const url of destinations) effects.push(effectConnect(resourceRef(realm, 'network-destination', url, ['connect'])))
-          effects.push(effectWrite(cacheRoot), effectWrite(installRoot), effectWrite(profileConfig))
-          obligations.push({ target: 'trusted-profile', operation: 'install-resolve-download', right: 'write' })
-          obligations.push({ target: 'build-script-runner', operation: 'host-approvedBuilds-channel', right: 'write', envelope: 'host manager channel (no Team constraint engine is invented here)' })
-          obligations.push({ target: 'trusted-profile', operation: 'approvedBuilds-persistent-permission-write', right: 'write' })
-          obligations.push({ target: 'profile-runtime-topology', operation: 'configure-activation', right: 'write' })
-          targetFacts.versionExemptionDerived = false // the exemption lane is its OWN action
-          targetFacts.buildScriptsClaim = args.approvedBuilds === undefined ? [] : args.approvedBuilds
-          targetFacts.scriptProcessEnvelope = 'resolved-package build scripts execute ONLY through the host approvedBuilds channel; the resolved set is unknown until after A — post-resolution targets beyond THIS envelope stale the plan, they never ride it silently'
-          targetFacts.lifecycle = 'installBundle answers a requestId; waitForInstall/cancelInstall own the settlement (cancel confirmable ONLY while installing; applying ⇒ too-late; not-running never implies completion)'
-          break
+        if (file.path.startsWith('/') || file.path.includes('..')) {
+          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: path '${file.path}' is not a workspace-relative deliverable`) }
         }
-        case 'remove_bundle':
-          effects.push(effectWrite(installRoot), effectWrite(profileConfig))
-          obligations.push({ target: 'trusted-profile', operation: 'remove-exact-installed-target', right: 'write' })
-          break
-        case 'set_version_exemption':
-          // The exemption lane is NEVER derivable from a plain install.
-          effects.push(effectWrite(exemptions))
-          obligations.push({ target: 'trusted-profile', operation: 'version-exemption-grant-or-revoke', right: 'write' })
-          targetFacts.exactPairClaim = {
-            target: typeof args.target === 'string' ? args.target : null,
-            runtimeVersion: typeof args.runtimeVersion === 'string' ? args.runtimeVersion : null,
-            acceptRiskClaim: args.acceptRisk === true,
-          }
-          targetFacts.derivableFromInstall = false
-          break
+        deliverables.push({ path: file.path, ...(typeof file.description === 'string' ? { description: file.description } : {}) })
+        effects.push(
+          { kind: 'read', resource: { realmId, kind: 'workspace', canonicalLocator: file.path, rights: ['read', 'meta'] } },
+          { kind: 'meta', resource: { realmId, kind: 'workspace', canonicalLocator: file.path, rights: ['read', 'meta'] } },
+        )
       }
-      return { effects, obligations, targetFacts }
+      built.target = {
+        deliverables,
+        audience: { kind: 'current-session', sessionHeaderId: trusted.sessionHeaderId },
+        artifactVersion: 'turn-scoped-at-result',
+        readOnly: false,
+      }
+      built.obligations = [{
+        target: 'current-session-audience',
+        operation: 'expose',
+        right: 'write',
+        note: 'present is NOT read-only: the expose obligation carries artifact identity/version + the visible audience; the commit witness is the SAME-EXEC session append (deliverables/presented) carrying the exec callId and the native result turn',
+      }]
+      break
     }
-    case 'skill': {
-      const catalog = ports.trustedCatalog?.current?.()
-      if (catalog === undefined || catalog === null || typeof catalog.catalogRevision !== 'number'
-        || typeof catalog.catalogDigest !== 'string' || !Array.isArray(catalog.names)) {
-        return refuse(CODES.TRUSTED_CATALOG_ABSENT, 'skill: the trusted catalog identity port is not mounted — the plan must carry CURRENT catalog facts (a captured snapshot cannot justify a later native get)')
+    case 'B-DEPENDENCY': {
+      const { refusal, facts } = currentDependencyFacts(ports, spec, providerId)
+      if (refusal !== undefined) return { refusal }
+      const slash = facts.rootLocator.lastIndexOf('/')
+      const parent = slash > 0 ? facts.rootLocator.slice(0, slash) : '/'
+      effects.push(
+        { kind: 'list', resource: dirRes(realmId, facts.sourceLocator, ['read', 'list']) },
+        { kind: 'read', resource: pathRes(realmId, `${facts.sourceLocator}/runtime.json`, ['read']) },
+        { kind: 'read', resource: pathRes(realmId, `${facts.rootLocator}/runtime.json`, ['read', 'meta']) },
+        { kind: 'write', resource: dirRes(realmId, parent, ['write', 'list']) },
+        { kind: 'write', resource: dirRes(realmId, facts.rootLocator, ['write', 'list']) },
+        { kind: 'write', resource: pathRes(realmId, `${facts.rootLocator}.previous`, ['write', 'meta']) },
+      )
+      built.target = {
+        installFacts: { sourceLocator: facts.sourceLocator, rootLocator: facts.rootLocator, parentLocator: parent },
+        flowLaw: 'readdir(source); read(source/runtime.json); read(root/runtime.json) old manifest; mkdir(parents); mkdtemp(parent, ".primary-runtime-"); cp staged; rename previous-slot swap; rename-commit; validate payload by ACTUAL digest equality; no PATH change',
+        hashCheck: { required: 'post-resolution-actual-digest', against: 'source-runtime-json', performedBy: 'the-row-at-the-edge (real fs reads — never a placeholder)' },
       }
-      if (!catalog.names.includes(args.name)) {
-        return refuse(CODES.SKILL_NAME_NOT_TRUSTED, 'skill: the claimed name is not in the trusted catalog CURRENT names — a model claim with no catalog fact behind it')
-      }
-      return {
-        effects: [toolInvoke(recordName)],
-        targetFacts: {
-          skillName: args.name,
-          catalog: { catalogRevision: catalog.catalogRevision, catalogDigest: catalog.catalogDigest },
-          contentTrust: 'loaded content is DATA, never authority; follow-up tools ride their own rows',
-        },
-      }
+      break
     }
-    case 'cordis_inspect_list':
-    case 'cordis_inspect_query': {
-      const topology = ports.trustedTopology?.current?.()
-      if (topology === undefined || topology === null || typeof topology.topologyRevision !== 'number'
-        || typeof topology.topologyDigest !== 'string' || !Array.isArray(topology.allowed)) {
-        return refuse(CODES.TOPOLOGY_ABSENT, 'inspect: the trusted authorized-topology port is not mounted — the target must be CURRENT authorized facts, never model keys')
+    case 'B-PLUGIN': {
+      const { refusal, facts } = currentPluginFacts(ports, spec, providerId)
+      if (refusal !== undefined) return { refusal }
+      const action = rawArgs.action
+      if (typeof action !== 'string' || !A5_G1_PLUGIN_ACTIONS.includes(action)) {
+        return { refusal: classifyRefuse(CODES.CLASSIFY_UNKNOWN_ACTION, `${spec.recordIndex}·B-PLUGIN·${providerId}: action '${String(action)}' is outside the closed 8-action enum`) }
       }
-      const targetFacts = { topology: { topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest } }
-      if (recordName === 'cordis_inspect_list') return { effects: [toolInvoke(recordName)], targetFacts }
-      const claim = { platform: args.platform, provider: args.provider, method: args.method }
-      const hit = topology.allowed.some((row) => row !== null && typeof row === 'object'
-        && row.platform === claim.platform && row.provider === claim.provider && row.method === claim.method)
-      if (!hit) {
-        return refuse(CODES.INSPECT_TARGET_NOT_AUTHORIZED, 'inspect: the platform/provider/method claim is not inside the CURRENT authorized topology — a model key is a claim, not a target')
+      const claimedRegistry = typeof rawArgs.registry === 'string' && rawArgs.registry.length > 0 ? rawArgs.registry : null
+      const allowedRegistries = [...facts.allowedRegistries, ...facts.fallbackRegistries]
+      if (claimedRegistry !== null && !allowedRegistries.includes(claimedRegistry)) {
+        return { refusal: classifyRefuse(CODES.PLUGIN_REGISTRY_NOT_TRUSTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: '${claimedRegistry}' is outside the trusted profile's configured registry allow-list`) }
       }
-      targetFacts.claim = claim
-      if (args.platform === 'client') targetFacts.clientRoundtrip = 'the browser page answers within the configured timeout; the roundtrip is part of the envelope'
-      return { effects: [toolInvoke(recordName)], targetFacts }
+      const targetClaim = typeof rawArgs.target === 'string' && rawArgs.target.length > 0 ? rawArgs.target : null
+      if (['set_plugin', 'set_bundle', 'remove_bundle'].includes(action)) {
+        if (targetClaim === null || targetClaim.includes('/') || targetClaim.includes('\\') || targetClaim.startsWith('.')) {
+          return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: '${action}' needs one entry-name target inside the profile envelope; paths are outside it`) }
+        }
+      }
+      if (action === 'install_bundle') {
+        if (targetClaim === null || /^[a-zA-Z]:[\\/]/.test(targetClaim) || targetClaim.startsWith('/') || targetClaim.startsWith('.')) {
+          return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: install target must be one package spec; absolute or local paths ride outside the manager envelope`) }
+        }
+        const destinations = claimedRegistry !== null
+          ? [claimedRegistry, ...facts.fallbackRegistries]
+          : [...facts.allowedRegistries, ...facts.fallbackRegistries]
+        for (const registry of destinations) {
+          effects.push({ kind: 'connect', resource: netRes(realmId, registry) })
+        }
+        effects.push(
+          { kind: 'write', resource: pathRes(realmId, facts.cacheRootLocator, ['write', 'meta']) },
+          { kind: 'write', resource: dirRes(realmId, facts.installRootLocator, ['write', 'list', 'meta']) },
+          { kind: 'write', resource: pathRes(realmId, facts.profileConfigLocator, ['read', 'write', 'meta']) },
+        )
+        built.obligations = [
+          TOOL_NAME_OBLIGATION,
+          { target: 'profile-package-manager-channel', operation: 'pnpm-run-under-profile-env', right: 'write', note: 'the pnpm run executes as a child process under the profile package-manager env (the script-process envelope); the resolved build-scripts set is only known AFTER the run — targets beyond this envelope stale the plan, never ride silently' },
+          { target: 'host-approvedBuilds-channel', operation: 'build-script-runner-permission', right: 'write', note: 'approvedBuilds is a PERSISTENT permission write into the profile pnpm settings — approveEscalation + the user answer are the business gate; this row records it and never re-decides it (the init sandbox is NOT widened here)' },
+          { target: 'trusted-profile', operation: 'configure-activation', right: 'write', note: 'install writes the profile config and may activate or restart the live profile (scopeImpact: every session of the profile)' },
+        ]
+        built.target = {
+          action,
+          installFacts: {
+            profileConfigLocator: facts.profileConfigLocator,
+            installRootLocator: facts.installRootLocator,
+            cacheRootLocator: facts.cacheRootLocator,
+          },
+          registryPlan: { claimedRegistry, allowedRegistries: [...facts.allowedRegistries], fallbackRegistries: [...facts.fallbackRegistries] },
+          versionExemptionDerived: false,
+        }
+        break
+      }
+      if (action === 'set_version_exemption') {
+        effects.push({ kind: 'write', resource: pathRes(realmId, facts.exemptionsLocator, ['read', 'write', 'meta']) })
+        built.obligations = [
+          TOOL_NAME_OBLIGATION,
+          { target: 'trusted-profile', operation: 'set-version-exemption', right: 'write', note: 'exact (plugin, dshVersion) pair on the user\'s explicit informed decision; crash/data-loss risk is the accepted part; NEVER derivable from an install' },
+        ]
+        built.target = {
+          action,
+          exemptionLocator: facts.exemptionsLocator,
+          exactPairClaim: { target: targetClaim, runtimeVersionClaim: typeof rawArgs.runtimeVersion === 'string' ? rawArgs.runtimeVersion : null },
+          acceptRiskClaim: rawArgs.acceptRisk === true,
+          derivableFromInstall: false,
+        }
+        break
+      }
+      if (action === 'remove_bundle') {
+        effects.push(
+          { kind: 'write', resource: dirRes(realmId, facts.installRootLocator, ['write', 'list', 'meta']) },
+          { kind: 'write', resource: pathRes(realmId, facts.profileConfigLocator, ['read', 'write', 'meta']) },
+        )
+        built.obligations = [
+          TOOL_NAME_OBLIGATION,
+          { target: 'trusted-profile', operation: 'remove-bundle', right: 'write', note: 'profile config + install-root writes; live removal additionally needs the topology reconcile-or-restart step (scopeImpact: every session)' },
+        ]
+        built.target = { action, targetClaim, installFacts: { profileConfigLocator: facts.profileConfigLocator, installRootLocator: facts.installRootLocator }, versionExemptionDerived: false }
+        break
+      }
+      if (action === 'set_plugin' || action === 'set_bundle') {
+        effects.push({ kind: 'write', resource: pathRes(realmId, facts.profileConfigLocator, ['read', 'write', 'meta']) })
+        built.obligations = [
+          TOOL_NAME_OBLIGATION,
+          { target: 'trusted-profile', operation: action === 'set_plugin' ? 'set-plugin-enabled' : 'set-bundle-active', right: 'write', note: 'profile config write; live effect needs the topology reconcile-or-restart step (scopeImpact: every session of the profile)' },
+        ]
+        built.target = { action, targetClaim, enabledClaim: rawArgs.enabled, installFacts: { profileConfigLocator: facts.profileConfigLocator } }
+        break
+      }
+      built.obligations = [{ target: 'trusted-profile', operation: action, right: 'read', note: 'read-only enumeration of the trusted profile state' }]
+      built.target = { action }
+      break
     }
-    case 'surface:domain_family': {
-      const port = ports.domainPortRegistry?.current?.()
-      if (port === undefined || port === null || typeof port.domainAuthorityId !== 'string' || typeof port.portRevision !== 'number') {
-        return refuse(CODES.DOMAIN_REGISTRY_ABSENT, 'domain surface: the mounted-port registry CURRENT facts are unreadable — no decision target exists; fail closed (a Team allow never substitutes for a Domain fact)')
+    case 'B-SKILL': {
+      const catalog = typeof ports?.trustedCatalog?.current === 'function' ? ports.trustedCatalog.current() : undefined
+      if (!isRecord(catalog) || typeof catalog.catalogRevision !== 'number' || typeof catalog.catalogDigest !== 'string' || !Array.isArray(catalog.names)) {
+        return { refusal: classifyRefuse(CODES.TRUSTED_CATALOG_ABSENT, `${spec.recordIndex}·B-SKILL·${providerId}: the TRUSTED catalog CURRENT facts are not mounted — a captured snapshot can never justify a later get`) }
       }
-      if (args.domainAuthorityId !== port.domainAuthorityId) {
-        return refuse(CODES.DOMAIN_CLAIM_MISMATCH, 'domain surface: the model-supplied domainAuthorityId is a CLAIM that does not answer the mounted port CURRENT authority')
+      if (!catalog.names.includes(rawArgs.name)) {
+        return { refusal: classifyRefuse(CODES.SKILL_NAME_NOT_TRUSTED, `${spec.recordIndex}·B-SKILL·${providerId}: '${String(rawArgs.name)}' is not in the CURRENT trusted catalog`) }
       }
-      return {
-        effects: [effectDomainRef(port.domainAuthorityId)],
-        targetFacts: {
-          trustedDomainAuthorityId: port.domainAuthorityId,
-          portRevision: port.portRevision,
-          gatedToolClaim: args.toolName,
-          targetDigestClaim: typeof args.targetDigest === 'string' ? args.targetDigest : null,
-          modelClaimWas: args.domainAuthorityId,
-        },
-      }
+      built.target = { skillName: rawArgs.name, catalog: { catalogRevision: catalog.catalogRevision, catalogDigest: catalog.catalogDigest } }
+      break
     }
-    default: {
-      // B-HUMAN + B-CONTROL: the contract target is I + the S obligation on
-      // the owning session/ledger (serviceObligations below); the effect set
-      // is the accurate tool's tool-invoke arm (§1.1).
-      const targetFacts = { arguments: { ...args } }
-      if (recordName === 'team_grant_permission' || recordName === 'team_revoke_permission') {
-        targetFacts.ruleCountClaim = Array.isArray(args.rules) ? args.rules.length : null
-        targetFacts.canonicalization = 'server-side at the addressed target (never pre-classify: the real FS reads live there)'
+    case 'B-INSPECT': {
+      const topology = typeof ports?.trustedTopology?.current === 'function' ? ports.trustedTopology.current() : undefined
+      if (!isRecord(topology) || typeof topology.topologyRevision !== 'number' || typeof topology.topologyDigest !== 'string' || !Array.isArray(topology.allowed)) {
+        return { refusal: classifyRefuse(CODES.TOPOLOGY_ABSENT, `${spec.recordIndex}·B-INSPECT·${providerId}: the CURRENT authorized registry topology is not mounted`) }
       }
-      return { effects: [toolInvoke(recordName)], targetFacts }
+      built.target = { topology: { topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest } }
+      if (spec.recordIndex === 54) {
+        const claim = { platform: rawArgs.platform, provider: rawArgs.provider, method: rawArgs.method }
+        const authorized = topology.allowed.some((entry) => isRecord(entry)
+          && entry.platform === claim.platform && entry.provider === claim.provider && entry.method === claim.method)
+        if (!authorized) {
+          return { refusal: classifyRefuse(CODES.INSPECT_TARGET_NOT_AUTHORIZED, `${spec.recordIndex}·B-INSPECT·${providerId}: ${String(claim.platform)}/${String(claim.provider)}/${String(claim.method)} is not in the CURRENT authorized topology; a captured manifest snapshot cannot authorize a query`) }
+        }
+        built.target.queryClaim = claim
+        if (claim.platform === 'client') {
+          built.target.clientRoundtrip = 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel'
+        }
+      } else {
+        built.target.listLaw = 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear'
+      }
+      break
     }
+    case 'B-DOMAIN': {
+      const registry = typeof ports?.domainPortRegistry?.current === 'function' ? ports.domainPortRegistry.current() : undefined
+      if (!isRecord(registry) || typeof registry.domainAuthorityId !== 'string' || registry.domainAuthorityId.length === 0 || typeof registry.portRevision !== 'number') {
+        return { refusal: classifyRefuse(CODES.DOMAIN_REGISTRY_ABSENT, `${spec.recordIndex}·B-DOMAIN·${providerId}: no TRUSTED mounted-port registry is available — the kernel has NO public domain-authority registry (gap reported, never faked) and a captured id is never authority`) }
+      }
+      if (rawArgs.domainAuthorityId !== registry.domainAuthorityId) {
+        return { refusal: classifyRefuse(CODES.DOMAIN_CLAIM_MISMATCH, `${spec.recordIndex}·B-DOMAIN·${providerId}: the model-supplied domainAuthorityId '${String(rawArgs.domainAuthorityId)}' is only a CLAIM; authority is the mounted-port registry CURRENT fact`) }
+      }
+      effects.push({ kind: 'domain-ref', domainAuthorityId: registry.domainAuthorityId, resource: null })
+      built.target = {
+        toolNameClaim: rawArgs.toolName,
+        trustedDomainAuthorityId: registry.domainAuthorityId,
+        portRevision: registry.portRevision,
+        targetDigestClaim: rawArgs.targetDigest,
+        modelClaimWas: rawArgs.domainAuthorityId,
+      }
+      break
+    }
+    default:
+      break
   }
+  return { effects, obligations: built.obligations ?? null, target: built.target }
 }
 
-function extractRequestId(value) {
-  const parse = (raw) => {
-    if (raw !== null && typeof raw === 'object') return raw
-    if (typeof raw === 'string') { try { return JSON.parse(raw) } catch { return null } }
-    return null
+export function mountG1SurfaceAdapter(recordName, deps = {}) {
+  const spec = A5_G1_RECORD_SPECS[recordName]
+  if (spec === undefined) {
+    throw new TypeError(`unknown G1 surface record '${String(recordName)}'; the 14 are frozen (${Object.keys(A5_G1_RECORD_SPECS).join(', ')})`)
   }
-  const id = parse(value)?.requestId
-  return typeof id === 'string' && id.length > 0 ? id : null
-}
-
-/**
- * Mount ONE G1 row for a frozen record name (the glue captures the native
- * face at bind time and passes it here; wiring stays CENTER).
- *
- * @param {string} recordName - one of `g1SurfaceAdapterNames()`.
- * @param {object} deps
- * @param {object|undefined} deps.native - the captured face (ToolDefinition
- *   from the public tools.get seam, or the mounted Domain port). `undefined`
- *   ⇒ governed-but-refusing.
- * @param {string} deps.providerId - placing assembly identity.
- * @param {string} [deps.definitionIdentity] - REQUIRED with a capture (the
- *   I arm binds through it).
- * @param {object} deps.trusted - CONFIG/glue facts, never model arguments:
- *   { memberAgentId, sessionHeaderId, realmId, owner, profileId }.
- * @param {() => {bindingId: string, bindingRevision: number, policyGeneration: number, authorityGeneration: number}} deps.bindingFacts
- * @param {object} [deps.ports] - CURRENT-fact ports (family-specific):
- *   { trustedCatalog: {current()}, trustedTopology: {current()},
- *   domainPortRegistry: {current()}, installLifecycle: {waitForInstall,
- *   cancelInstall}, pluginFacts, dependencyFacts }.
- * @param {(row: {event: string, name: string, detail?: string}) => void} [deps.observe]
- */
-export function mountG1SurfaceAdapter(recordName, {
-  native,
-  providerId = 'unknown-placer',
-  definitionIdentity = null,
-  trusted,
-  bindingFacts,
-  ports = {},
-  observe = () => {},
-} = {}) {
-  const spec = Object.hasOwn(A5_G1_RECORD_SPECS, recordName) ? A5_G1_RECORD_SPECS[recordName] : null
-  if (spec === null) {
-    throw new TypeError(`governed-families/g1-surface-adapters: "${String(recordName)}" is not a frozen G1 record (the record set is closed)`)
-  }
-  if (trusted === null || typeof trusted !== 'object'
-    || typeof trusted.memberAgentId !== 'string' || trusted.memberAgentId.length === 0
+  const { native, providerId = 'plugin', definitionIdentity, trusted, bindingFacts, ports = {}, observe } = deps
+  if (!isRecord(trusted) || typeof trusted.memberAgentId !== 'string' || trusted.memberAgentId.length === 0
     || typeof trusted.sessionHeaderId !== 'string' || trusted.sessionHeaderId.length === 0
     || typeof trusted.realmId !== 'string' || trusted.realmId.length === 0
     || typeof trusted.owner !== 'string' || trusted.owner.length === 0
     || typeof trusted.profileId !== 'string' || trusted.profileId.length === 0) {
-    throw new TypeError(`g1-surface-adapters(${recordName}): trusted {memberAgentId, sessionHeaderId, realmId, owner, profileId} is the CONFIG face every plan target must carry — the model can never name it, so mounting without it is a config defect`)
+    throw new TypeError(`G1 record ${spec.recordIndex}: the trusted TARGETS face (memberAgentId, sessionHeaderId, realmId, owner, profileId) is CONFIG that must be provided at mount`)
   }
   if (typeof bindingFacts !== 'function') {
-    throw new TypeError(`g1-surface-adapters(${recordName}): bindingFacts (the M1/Guard generation reader) must be injected; the row mints no generations of its own`)
+    throw new TypeError(`G1 record ${spec.recordIndex}: bindingFacts() must be mounted — the adapter must answer the binding revision the PA edge consults`)
   }
-  const bodyKey = spec.capture === 'domain-surface' ? 'decide' : 'execute'
-  const captured = native !== undefined && native !== null
-  if (captured) {
-    if (typeof native !== 'object' || native.name !== recordName) {
-      throw new TypeError(`g1-surface-adapters(${recordName}): the captured face must be the bind-time object whose name === record name (a mismatch is a same-name shadow / wiring defect)`)
+  if (spec.capture === 'surface' && (native === undefined || native === null)) {
+    throw new TypeError(`G1 record ${spec.recordIndex}: a surface row with no mounted port has nothing to govern; mount the captured port or drop the family`)
+  }
+  if (native !== undefined && native !== null) {
+    if (typeof native !== 'object' || native.name !== recordName || typeof native.description !== 'string') {
+      throw new TypeError(`G1 record ${spec.recordIndex}: the mounted capture must be the SAME native face (same name, description present); a mismatched or reconstructed face is a config defect, not a fallback`)
     }
     if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) {
-      throw new TypeError(`g1-surface-adapters(${recordName}): definitionIdentity is required with a capture (the I arm binds through it)`)
-    }
-    if (typeof native.description !== 'string' || native.description.length === 0) {
-      throw new TypeError(`g1-surface-adapters(${recordName}): the captured face carries no native description (descriptionFrom native-captured has no otherwise)`)
-    }
-    if (typeof native[bodyKey] !== 'function') {
-      throw new TypeError(`g1-surface-adapters(${recordName}): the captured face has no ${bodyKey} function — capture the real face, not a stub`)
-    }
-    if (spec.capture === 'tool-definition' && (native.parameters === null || typeof native.parameters !== 'object')) {
-      throw new TypeError(`g1-surface-adapters(${recordName}): the captured ToolDefinition carries no parameters registration face`)
+      throw new TypeError(`G1 record ${spec.recordIndex}: a captured face must mount WITH its definitionIdentity (provider@commit@entry#params-hash)`)
     }
   }
-
-  const bindBody = captured ? native[bodyKey] : null
-  const bindDefinition = captured ? native : null
+  const captured = native !== undefined && native !== null
+  const bindBody = captured ? (spec.capture === 'surface' ? native.decide : native.execute) : undefined
+  const installFace = deps.installFace
+  const bindInstall = installFace !== undefined && installFace !== null ? installFace.installBundle : undefined
+  const realmId = trusted.realmId
   const plans = new WeakMap()
-  let correlationSeq = 0
 
-  /** classify(args, callId) → the immutable plan the delegate is BOUND to
-   * (law 7: only this plan reaches the body, and it rides at most once). */
-  function classify(args, callId) {
-    if (!captured) {
-      return refuse(CODES.CAPTURE_ABSENT, `${recordName}: mounted WITHOUT a captured native face; every entry refuses typed. There is no name-based re-resolution behind a G1 row.`)
-    }
+  const classify = (args, callId) => {
+    if (!captured) return classifyRefuse(CODES.CAPTURE_ABSENT, `${spec.recordIndex}·${spec.family}·${providerId}: no native capture was mounted; this adapter refuses every call (typed, zero native entry, no re-resolution)`)
     if (typeof callId !== 'string' || callId.length === 0) {
-      return refuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${recordName}: the A invocation correlation (callId) is required at classify time`)
+      return classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·${spec.family}·${providerId}: classify needs the call identity the PA edge and the commit witness both bind to`)
     }
-    if (args === null || typeof args !== 'object' || Array.isArray(args)) {
-      return refuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${recordName}: arguments must be an object`)
-    }
-    const unknownTop = Object.keys(args).filter((k) => !spec.parametersTopLevel.includes(k))
-    if (unknownTop.length > 0) {
-      return refuse(CODES.CLASSIFY_UNKNOWN_PARAMETER, `${recordName}: undeclared top-level parameter(s): ${unknownTop.join(', ')} — the governed root is closed (trusted facts such as memberAgentId are CONFIG faces this channel can never receive)`)
-    }
-    const missingTop = spec.requiredTopLevel.filter((k) => !Object.hasOwn(args, k))
-    if (missingTop.length > 0) {
-      return refuse(CODES.CLASSIFY_MISSING_PARAMETER, `${recordName}: required parameter(s) missing: ${missingTop.join(', ')}`)
-    }
-    const built = effectsFor(recordName, args, trusted, ports)
-    if (built.ok === false) return built
+    const root = closedRootCheck(spec, args, providerId)
+    if (root !== null) return root
+    const built = effectsFor(spec, args ?? {}, realmId, ports, providerId, trusted)
+    if (built.refusal !== undefined) return built.refusal
     const facts = bindingFacts()
-    const generations = {
-      definitionIdentity,
-      providerId,
-      bindingId: facts.bindingId,
-      bindingRevision: facts.bindingRevision,
-      policyGeneration: facts.policyGeneration,
-      authorityGeneration: facts.authorityGeneration,
-    }
+    const classifiedArgs = deepFreeze(jsonClone(args ?? {}))
     const targetManifest = deepFreeze({
-      operation: spec.operation === 'profile-management-action' && typeof args.action === 'string'
-        ? `plugin_manager:${args.action}`
-        : spec.operation,
+      ...built.target,
       trusted: {
         memberAgentId: trusted.memberAgentId,
         sessionHeaderId: trusted.sessionHeaderId,
@@ -656,186 +596,400 @@ export function mountG1SurfaceAdapter(recordName, {
         owner: trusted.owner,
         profileId: trusted.profileId,
       },
-      ...built.targetFacts,
     })
-    const reviewPayload = deepFreeze({
-      familyId: spec.family,
-      adapterRevision: A5_G1_ADAPTER_REVISION,
-      providerIdentity: providerId,
-      definitionIdentity,
-      targetManifest,
+    const effects = deepFreeze(built.effects)
+    const serviceObligations = deepFreeze(built.obligations ?? spec.obligations ?? [TOOL_NAME_OBLIGATION])
+    const generations = deepFreeze({
+      bindingId: facts?.bindingId ?? null,
+      bindingRevision: facts?.bindingRevision ?? null,
+      policyGeneration: facts?.policyGeneration ?? null,
+      authorityGeneration: facts?.authorityGeneration ?? null,
+      definitionIdentity: definitionIdentity ?? null,
+      providerId,
     })
-    const serviceObligations = deepFreeze(built.obligations ?? spec.obligations ?? [])
-    correlationSeq += 1
-    const correlation = `g1.r${A5_G1_ADAPTER_REVISION}.${correlationSeq}.${callId}`
-    const classifiedArgs = deepFreeze(jsonClone(args))
-    const parametersFingerprint = `sha256:${sha256(canonicalJson({
-      recordName,
-      adapterRevision: A5_G1_ADAPTER_REVISION,
-      callId,
-      generations,
-      effects: built.effects,
-      serviceObligations,
-      reviewPayload,
-      args,
-    }))}`
     const plan = deepFreeze({
       recordName,
-      familyId: spec.family,
-      adapterRevision: A5_G1_ADAPTER_REVISION,
       callId,
-      correlation,
+      correlation: `${trusted.sessionHeaderId}/${trusted.memberAgentId}`,
       classifiedArgs,
-      effects: built.effects,
+      effects,
       serviceObligations,
       targetManifest,
-      reviewPayload,
+      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
       generations,
-      parametersFingerprint,
+      parametersFingerprint: `sha256:${sha256(canonical(args ?? {}))}`,
     })
-    plans.set(plan, { state: 'CLASSIFIED', correlation })
-    observe({ event: 'classify', name: recordName, detail: parametersFingerprint })
+    plans.set(plan, { state: 'CLASSIFIED', facts: {} })
+    if (typeof observe === 'function') observe({ event: 'classified', recordName, callId, parametersFingerprint: plan.parametersFingerprint })
     return {
       ok: true,
       plan,
       name: recordName,
       familyId: spec.family,
-      adapterRevision: A5_G1_ADAPTER_REVISION,
-      effects: plan.effects,
-      serviceObligations: plan.serviceObligations,
-      targetManifest: plan.targetManifest,
+      recordIndex: spec.recordIndex,
+      effects,
+      serviceObligations,
+      targetManifest,
       reviewPayload: plan.reviewPayload,
-      generations: plan.generations,
+      generations,
       parametersFingerprint: plan.parametersFingerprint,
     }
   }
 
-  /** Map one cancelInstall answer VERBATIM-honestly (law 5): too-late stays
-   * too-late, not-running never implies completion, unknown stays unknown. */
-  function mapCancelAnswer(answer) {
-    if (answer === null || typeof answer !== 'object') return { state: 'unknown-answer', completionImplied: false, answer }
-    const raw = answer.state ?? (answer.tooLate === true ? 'too-late' : answer.cancelled === true ? 'cancelled' : undefined)
-    switch (raw) {
-      case 'too-late':
-        return { state: 'too-late', completionImplied: false, detail: 'applying already: cancellation is too late; the outcome stays unsettled by this row — never a rollback claim, never a completion claim', answer }
-      case 'not-running':
-        return { state: 'not-running', completionImplied: false, detail: 'not-running CANNOT be read as completion — the settlement is simply unknown to this face', answer }
-      case 'cancelled':
-        return { state: 'cancelled-confirmed', completionImplied: false, detail: 'confirmed only while installing; "copying stopped" is never claimed from this answer', answer }
+  /* L3 — same-source re-verification at the consumption edge: every CURRENT
+   * fact consulted at classify is re-read from its trusted source NOW; any
+   * move since classify (or a vanished source) refuses the plan, typed. */
+  const reVerifyAtEdge = (plan) => {
+    const stored = plan.targetManifest
+    const stale = (detail) => classifyRefuse(CODES.TRUSTED_FACTS_STALE, `${spec.recordIndex}·${spec.family}·${providerId}: trusted facts moved after classify — the plan is stale, not re-approvable: ${detail}`)
+    switch (spec.family) {
+      case 'B-SKILL': {
+        const catalog = typeof ports?.trustedCatalog?.current === 'function' ? ports.trustedCatalog.current() : undefined
+        if (!isRecord(catalog)) return stale('the catalog re-verification source is gone')
+        if (canonical(stored.catalog) !== canonical({ catalogRevision: catalog.catalogRevision, catalogDigest: catalog.catalogDigest })) {
+          return stale(`catalog now answers revision ${String(catalog.catalogRevision)} (${String(catalog.catalogDigest)})`)
+        }
+        if (!Array.isArray(catalog.names) || !catalog.names.includes(stored.skillName)) return stale('the name is no longer in the CURRENT catalog')
+        return null
+      }
+      case 'B-INSPECT': {
+        const topology = typeof ports?.trustedTopology?.current === 'function' ? ports.trustedTopology.current() : undefined
+        if (!isRecord(topology) || !Array.isArray(topology.allowed)) return stale('the topology re-verification source is gone')
+        if (canonical(stored.topology) !== canonical({ topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest })) {
+          return stale(`topology now answers revision ${String(topology.topologyRevision)} (${String(topology.topologyDigest)})`)
+        }
+        if (stored.queryClaim !== undefined && !topology.allowed.some((entry) => isRecord(entry)
+          && entry.platform === stored.queryClaim.platform && entry.provider === stored.queryClaim.provider && entry.method === stored.queryClaim.method)) {
+          return stale('the query triple is no longer in the CURRENT authorized topology')
+        }
+        return null
+      }
+      case 'B-DOMAIN': {
+        const registry = typeof ports?.domainPortRegistry?.current === 'function' ? ports.domainPortRegistry.current() : undefined
+        if (!isRecord(registry)) return stale('the domain-port registry source is gone')
+        if (registry.domainAuthorityId !== stored.trustedDomainAuthorityId || registry.portRevision !== stored.portRevision) {
+          return stale(`the mounted-port registry now answers ${String(registry.domainAuthorityId)}@${String(registry.portRevision)}`)
+        }
+        return null
+      }
+      case 'B-PLUGIN': {
+        const { refusal, facts } = currentPluginFacts(ports, spec, providerId)
+        if (refusal !== undefined) return stale('the trusted profile facts source is gone')
+        if (stored.installFacts !== undefined) {
+          const now = { ...stored.installFacts }
+          if (now.profileConfigLocator !== undefined && now.profileConfigLocator !== facts.profileConfigLocator) return stale('the profile config path moved after classify')
+          if (now.installRootLocator !== undefined && now.installRootLocator !== facts.installRootLocator) return stale('the install root moved after classify')
+          if (now.cacheRootLocator !== undefined && now.cacheRootLocator !== facts.cacheRootLocator) return stale('the npm cache moved after classify')
+        }
+        if (stored.exemptionLocator !== undefined && stored.exemptionLocator !== facts.exemptionsLocator) return stale('the exemptions file moved after classify')
+        if (stored.registryPlan !== undefined
+          && (canonical(stored.registryPlan.allowedRegistries) !== canonical(facts.allowedRegistries)
+            || canonical(stored.registryPlan.fallbackRegistries) !== canonical(facts.fallbackRegistries))) {
+          return stale('the registry allow-list moved after classify')
+        }
+        if (stored.action === 'install_bundle' && stored.registryPlan?.claimedRegistry != null
+          && ![...facts.allowedRegistries, ...facts.fallbackRegistries].includes(stored.registryPlan.claimedRegistry)) {
+          return stale('the claimed registry is no longer inside the trusted allow-list')
+        }
+        return null
+      }
+      case 'B-DEPENDENCY': {
+        const facts = typeof ports?.dependencyFacts?.current === 'function' ? ports.dependencyFacts.current() : undefined
+        if (!isRecord(facts)) return stale('the install facts source is gone')
+        if (facts.sourceLocator !== stored.installFacts.sourceLocator || facts.rootLocator !== stored.installFacts.rootLocator) {
+          return stale(`install facts now answer ${String(facts.sourceLocator)} → ${String(facts.rootLocator)}`)
+        }
+        return null
+      }
       default:
-        return { state: 'unknown-answer', completionImplied: false, answer }
+        return null
     }
   }
 
-  /** The present durable witness (law 6): ONLY the SAME call's listener
-   * append settles the commit; anything else refuses typed. */
+  const digestFile = (path) => {
+    try {
+      return `sha256:${sha256(readFileSync(path, 'utf8'))}`
+    } catch {
+      return null
+    }
+  }
+
   function commitWitness(plan, witness) {
     const entry = plans.get(plan)
-    if (entry === undefined) return refuse(CODES.NOT_OWN_PLAN, `${recordName}: commitWitness answers only to a plan this row classified`)
-    if (entry.state === 'COMMITTED') return refuse(CODES.ALREADY_DELEGATED, 'the commit was already witnessed once')
-    if (entry.state !== 'RESULT_PENDING_SESSION_APPEND') {
-      return refuse(CODES.PRESENT_COMMIT_WITNESS_MISMATCH, `plan is ${entry.state}; there is no pending append to witness`)
+    if (entry === undefined) {
+      return classifyRefuse(CODES.NOT_OWN_PLAN, `${spec.recordIndex}·B-PRESENT·${providerId}: witness for a plan this classify never produced`)
     }
-    if (witness === null || typeof witness !== 'object' || witness.callId !== plan.callId || !Number.isInteger(witness.turn)) {
-      return refuse(CODES.PRESENT_COMMIT_WITNESS_MISMATCH, 'the durable witness must answer THIS call (callId) and carry the native turn number — a same-exec listener append, never an unrelated word')
+    if (entry.state === 'COMMITTED') {
+      return classifyRefuse(CODES.ALREADY_DELEGATED, `${spec.recordIndex}·B-PRESENT·${providerId}: the append already witnessed this call once`)
+    }
+    if (entry.state !== 'RESULT_PENDING_SESSION_APPEND') {
+      return classifyRefuse(CODES.PRESENT_COMMIT_WITNESS_MISMATCH, `${spec.recordIndex}·B-PRESENT·${providerId}: no delegated native result is pending the append (state ${entry.state})`)
+    }
+    const turn = entry.facts.nativeResultTurn
+    if (!Number.isInteger(turn)) {
+      return classifyRefuse(CODES.PRESENT_COMMIT_WITNESS_MISMATCH, `${spec.recordIndex}·B-PRESENT·${providerId}: the native result carried no integer turn; no witness can bind the commit — treat as FAILED-UNKNOWN`)
+    }
+    if (!isRecord(witness) || witness.callId !== entry.facts.planCallId || witness.turn !== turn
+      || witness.sessionHeaderId !== entry.facts.sessionHeaderId) {
+      return classifyRefuse(CODES.PRESENT_COMMIT_WITNESS_MISMATCH, `${spec.recordIndex}·B-PRESENT·${providerId}: the witness must be the SAME-EXEC append (deliverables/presented) carrying callId '${entry.facts.planCallId}', the native result's OWN turn '${String(turn)}', and the trusted sessionHeaderId — an arbitrary integer is no witness`)
     }
     entry.state = 'COMMITTED'
-    entry.commitTurn = witness.turn
-    observe({ event: 'backend-commit', name: recordName, detail: `${plan.correlation}|turn:${witness.turn}` })
-    return { ok: true, settled: 'COMMITTED', turn: witness.turn }
+    return { ok: true, settled: 'COMMITTED', callId: plan.callId, turn }
   }
 
-  /**
-   * The ONE delegate edge: only plans this row classified, only ONCE, and
-   * only the plan's own frozen arguments (the caller cannot swap anything);
-   * M1 A owns the real PA edge — this row consumes no approval itself.
-   * commitLaw rows answer PENDING until the durable witness arrives.
-   */
-  function delegate(plan, ctx = {}) {
+  const delegate = async (plan, ctx = {}) => {
     if (!captured) {
-      return Promise.resolve(refuse(CODES.CAPTURE_ABSENT, `${recordName}: no captured native face — zero native entry, and this refusal never converts into a native lookup`))
+      return classifyRefuse(CODES.CAPTURE_ABSENT, `${spec.recordIndex}·${spec.family}·${providerId}: no native capture mounted; the delegate refuses (typed, zero native entry) — re-resolving a native face here would rebuild the second authority`)
     }
     const entry = plans.get(plan)
-    if (entry === undefined) return Promise.resolve(refuse(CODES.NOT_OWN_PLAN, `${recordName}: delegate answers only to a plan this row classified (the plan, not the caller, owns the arguments)`))
-    if (entry.state !== 'CLASSIFIED') return Promise.resolve(refuse(CODES.ALREADY_DELEGATED, `${recordName}: this plan already delegated (state ${entry.state}); no replay, ever`))
-    if (bindDefinition[bodyKey] !== bindBody) {
-      return Promise.resolve(refuse(CODES.DEFINITION_DRIFT, `${recordName}: the captured face's ${bodyKey} function moved since bind time — there is no replacement-body path`))
+    if (entry === undefined) {
+      return classifyRefuse(CODES.NOT_OWN_PLAN, `${spec.recordIndex}·${spec.family}·${providerId}: the delegate accepts ONLY a plan object this classify produced — never a rebuilt or replayed one; the arguments cannot be swapped after the PA edge`)
     }
-    if (recordName === 'plugin_manager' && plan.targetManifest.action === 'install_bundle' && ports.installLifecycle === undefined) {
-      return Promise.resolve(refuse(CODES.INSTALL_LIFECYCLE_ABSENT, 'plugin_manager install_bundle: the host lifecycle face (waitForInstall/cancelInstall) is not mounted — an install nobody can wait for or cancel is ungovernable; refused BEFORE any native entry (zero fetch)'))
+    if (entry.state !== 'CLASSIFIED') {
+      return classifyRefuse(CODES.ALREADY_DELEGATED, `${spec.recordIndex}·${spec.family}·${providerId}: this classified plan already ran (state ${entry.state}); no replay through the back side`)
+    }
+    const bodyKey = spec.capture === 'surface' ? 'decide' : 'execute'
+    if (typeof bindBody !== 'function' || native[bodyKey] !== bindBody) {
+      entry.state = 'FAILED-UNKNOWN'
+      return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·${spec.family}·${providerId}: the captured definition moved after bind (identity ${String(definitionIdentity ?? 'unset')}); the stale plan is not re-run — reclassify against the new identity`)
+    }
+    const stale = reVerifyAtEdge(plan)
+    if (stale !== null) return stale
+    const args = plan.classifiedArgs
+    const exec = ctx.exec ?? {}
+    entry.facts = {
+      planCallId: plan.callId,
+      execCallId: isRecord(exec) && typeof exec.callId === 'string' ? exec.callId : null,
+      sessionHeaderId: trusted.sessionHeaderId,
+    }
+    if (entry.facts.execCallId !== null && entry.facts.execCallId !== plan.callId) {
+      entry.state = 'FAILED-UNKNOWN'
+      return classifyRefuse(CODES.NOT_OWN_PLAN, `${spec.recordIndex}·${spec.family}·${providerId}: the exec carries callId '${entry.facts.execCallId}' but the plan was classified for '${plan.callId}'; a swapped execution is refused before any entry`)
     }
     entry.state = 'DELEGATED'
-    observe({ event: 'backend-start', name: recordName, detail: plan.correlation })
-    // THE native call: plan-owned arguments, captured function VALUE,
-    // captured receiver; the real exec (incl. its signal) rides unchanged.
-    return Promise.resolve(bindBody.call(bindDefinition, plan.classifiedArgs, ctx.exec)).then(
-      (value) => {
-        if (spec.commitLaw === 'session-append') {
-          entry.state = 'RESULT_PENDING_SESSION_APPEND'
-          observe({ event: 'backend-result', name: recordName, detail: 'pending-session-append' })
-          return {
-            ok: true,
-            value,
-            settled: 'RESULT-PENDING-SESSION-APPEND',
-            commitLaw: 'the durable commit witness is the same-exec tools/result listener session.append; this promise resolving is NOT the backend commit',
-            commitWitness: (witness) => commitWitness(plan, witness),
-          }
-        }
-        if (recordName === 'plugin_manager' && plan.targetManifest.action === 'install_bundle') {
-          const requestId = extractRequestId(value)
-          if (requestId === null) {
-            entry.state = 'NATIVE_RESOLVED_INSTALL_UNBOUND'
-            return { ok: true, value, settled: 'INSTALL-REQUEST-ID-UNBOUND', detail: 'the native result carried no requestId — nothing can be waited on or cancelled; honestly reported, never assumed' }
-          }
-          entry.state = 'INSTALL_REQUESTED'
-          const lifecycle = {
-            requestId,
-            boundTo: { owner: trusted.owner, correlation: plan.correlation, callId: plan.callId },
-            cancelNow: () => mapCancelAnswer(ports.installLifecycle.cancelInstall(requestId)),
-            waitFor: () => Promise.resolve(ports.installLifecycle.waitForInstall(requestId)),
-            law: 'cancel confirmable ONLY while installing; applying ⇒ too-late preserved; not-running never implies completion; an abort does NOT claim copying auto-stopped',
-          }
-          const signal = ctx.exec?.signal
-          if (signal !== undefined && signal !== null && typeof signal.addEventListener === 'function') {
-            if (signal.aborted === true) lifecycle.abortCancelAnswer = lifecycle.cancelNow()
-            else signal.addEventListener('abort', () => { lifecycle.abortCancelAnswer = lifecycle.cancelNow() }, { once: true })
-            lifecycle.abortMappedToCancelInstall = true
-          }
-          observe({ event: 'install-request-bound', name: recordName, detail: requestId })
-          return { ok: true, value, settled: 'INSTALL-REQUESTED', lifecycle }
-        }
-        entry.state = 'NATIVE_RESOLVED'
-        observe({ event: 'backend-commit', name: recordName, detail: plan.correlation })
-        return { ok: true, value, settled: 'NATIVE-RESOLVED' }
-      },
-      (error) => {
+
+    /* L5 — plugin install on the REAL async manager contract. */
+    if (spec.recordIndex === 52 && args.action === 'install_bundle') {
+      if (!isRecord(installFace) || typeof installFace.installBundle !== 'function'
+        || typeof installFace.cancelInstall !== 'function' || typeof installFace.waitForInstall !== 'function') {
+        entry.state = 'REFUSED-NO-INSTALL-FACE'
+        return classifyRefuse(CODES.INSTALL_FACE_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: install_bundle needs the manager face (installBundle/waitForInstall/cancelInstall) mounted; without it the row would have to FAKE the lifecycle — zero manager entry happened`)
+      }
+      if (installFace.installBundle !== bindInstall) {
         entry.state = 'FAILED-UNKNOWN'
-        observe({ event: 'backend-end', name: recordName, detail: 'error' })
-        throw error
-      },
-    )
+        return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted manager face moved after bind; the stale plan is not re-run`)
+      }
+      const requestId = `g1-install-${randomUUID()}`
+      const options = {
+        requestId,
+        ...('enabled' in args ? { enabled: args.enabled } : {}),
+        ...(Array.isArray(args.approvedBuilds) ? { approvedBuilds: args.approvedBuilds } : {}),
+        ...(typeof args.registry === 'string' && args.registry.length > 0 ? { registry: args.registry } : {}),
+      }
+      entry.state = 'INSTALL_PENDING'
+      entry.facts.requestId = requestId
+      entry.facts.boundTo = { owner: trusted.owner, correlation: plan.correlation, callId: plan.callId }
+      const pending = installFace.installBundle(args.target, options)
+      let cancelPromise = null
+      const remember = (mapped) => {
+        entry.facts.cancelAnswer = mapped
+        return mapped
+      }
+      const mapCancelAnswer = (answer) => remember(isRecord(answer) && typeof answer.status === 'string'
+        ? { status: answer.status, completionImplied: false }
+        : { status: 'unknown-answer', completionImplied: false })
+      const cancel = () => {
+        if (cancelPromise === null) {
+          cancelPromise = Promise.resolve(installFace.cancelInstall(requestId))
+            .then(mapCancelAnswer, () => remember({ status: 'cancel-install-failed', completionImplied: false }))
+        }
+        return cancelPromise
+      }
+      if (typeof exec.signal?.addEventListener === 'function') {
+        exec.signal.addEventListener('abort', () => {
+          entry.facts.abortMappedToCancelInstall = true
+          void cancel()
+        }, { once: true })
+      }
+      const wait = async () => {
+        let changeResult
+        try {
+          changeResult = await pending
+          entry.state = 'INSTALL_SETTLED'
+        } catch (error) {
+          entry.state = 'FAILED-UNKNOWN'
+          return { outcome: 'FAILED-UNKNOWN', error: String(error), completionImplied: false }
+        }
+        let after = null
+        try {
+          after = await installFace.waitForInstall(requestId)
+        } catch {
+          after = null
+        }
+        return {
+          outcome: 'CHANGE-RESULT',
+          changeResult,
+          waitForInstallAfterSettle: after,
+          ...(after === null ? { afterSettleNote: 'Completed results are not retained; null establishes neither success nor cancellation' } : {}),
+        }
+      }
+      return {
+        ok: true,
+        settled: 'INSTALL-PENDING',
+        lifecycle: {
+          requestId,
+          boundTo: entry.facts.boundTo,
+          cancel,
+          wait,
+          cancellation: () => entry.facts.cancelAnswer ?? null,
+          get abortMappedToCancelInstall() { return entry.facts.abortMappedToCancelInstall === true },
+          law: 'PluginInstallCancellation {status: cancelled|too-late|not-running} verbatim; cancelled confirms only after process exit and file restoration; too-late/not-running never imply completion; an aborted install never claims the copying auto-stopped; a null wait establishes neither success nor cancellation',
+        },
+      }
+    }
+
+    /* L9 — dependency: the REAL reads BEFORE entering the body (the
+     * compatibleManifest gate is the flow's own first read; entering the
+     * body past a source that cannot even be read would fake the envelope). */
+    let depPre = null
+    if (spec.recordIndex === 25) {
+      const facts = plan.targetManifest.installFacts
+      try {
+        const sourceEntries = readdirSync(facts.sourceLocator)
+        const sourceManifestDigest = digestFile(join(facts.sourceLocator, 'runtime.json'))
+        if (sourceManifestDigest === null) {
+          entry.state = 'REFUSED-SOURCE-INVALID'
+          return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the source payload has no readable runtime.json — the compatibleManifest gate cannot run; the native flow was NOT entered`)
+        }
+        const oldManifestDigest = digestFile(join(facts.rootLocator, 'runtime.json'))
+        mkdirSync(facts.parentLocator, { recursive: true })
+        depPre = { sourceEntries, sourceManifestDigest, oldManifestDigest }
+      } catch (error) {
+        entry.state = 'REFUSED-SOURCE-INVALID'
+        return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the real pre-entry reads failed (${String(error)}); nothing was claimed and the native flow was NOT entered`)
+      }
+    }
+
+    let value
+    let stagingDirectory = null
+    try {
+      if (depPre !== null) {
+        stagingDirectory = mkdtempSync(join(plan.targetManifest.installFacts.parentLocator, '.primary-runtime-'))
+        entry.facts.stagingDirectory = stagingDirectory
+      }
+      value = await bindBody.call(native, args, exec)
+    } catch (error) {
+      entry.state = 'FAILED-UNKNOWN'
+      if (stagingDirectory !== null) rmSync(stagingDirectory, { recursive: true, force: true })
+      throw error
+    }
+    entry.state = 'NATIVE_RESOLVED'
+    entry.facts.nativeResult = value
+
+    if (spec.recordIndex === 51) {
+      const turn = isRecord(value) && Number.isInteger(value.turn) ? value.turn : null
+      entry.state = 'RESULT_PENDING_SESSION_APPEND'
+      entry.facts.nativeResultTurn = turn
+      return {
+        ok: true,
+        settled: 'RESULT-PENDING-SESSION-APPEND',
+        value,
+        commitWitness: (witness) => commitWitness(plan, witness),
+        commitLaw: turn === null
+          ? 'the native result carried no integer turn — the commit cannot be witnessed; treat as FAILED-UNKNOWN'
+          : `the SAME-EXEC session append (deliverables/presented) carrying callId '${plan.callId}' and the native result's own turn '${String(turn)}' is the commit witness; the resolving promise alone is NOT`,
+      }
+    }
+
+    if (spec.recordIndex === 25) {
+      const facts = plan.targetManifest.installFacts
+      try {
+        const installedManifestDigest = digestFile(join(facts.rootLocator, 'runtime.json'))
+        const verified = installedManifestDigest !== null && installedManifestDigest === depPre.sourceManifestDigest
+        entry.state = verified ? 'PAYLOAD-VERIFIED' : 'PAYLOAD-HASH-MISMATCH'
+        return {
+          ok: true,
+          settled: verified ? 'PAYLOAD-VERIFIED' : 'PAYLOAD-HASH-MISMATCH',
+          completionImplied: verified,
+          value,
+          edgeFacts: {
+            sourceEntries: depPre.sourceEntries,
+            sourceManifestDigest: depPre.sourceManifestDigest,
+            oldManifestDigest: depPre.oldManifestDigest,
+            installedManifestDigest,
+            stagingDirectory,
+            stagingNote: 'a REAL mkdtemp directory under the parent existed for the duration of the governed call; the post-resolution check read the REAL installed manifest — no placeholder stood in for any of these',
+          },
+        }
+      } catch (error) {
+        entry.state = 'FAILED-UNKNOWN'
+        return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the real post-resolution read failed (${String(error)}); nothing is claimed`)
+      } finally {
+        if (stagingDirectory !== null) {
+          try {
+            rmSync(stagingDirectory, { recursive: true, force: true })
+          } catch {
+            /* best-effort cleanup; the row never claims cleanup it did not do */
+          }
+        }
+      }
+    }
+
+    if (spec.recordIndex === 53) {
+      const topology = typeof ports?.trustedTopology?.current === 'function' ? ports.trustedTopology.current() : undefined
+      if (!isRecord(value) || !Array.isArray(value.providers)) {
+        entry.state = 'FAILED-UNKNOWN'
+        return classifyRefuse(CODES.INSPECT_RESULT_SHAPE_UNKNOWN, `${spec.recordIndex}·B-INSPECT·${providerId}: the list answer is not the provider-list shape ({providers:[{platform, id, methods}]}); the authorized constraint cannot be applied and nothing unchecked passes through`)
+      }
+      const allowed = new Map()
+      for (const item of topology.allowed) {
+        if (!isRecord(item)) continue
+        const key = `${item.platform}::${item.provider}`
+        if (!allowed.has(key)) allowed.set(key, new Set())
+        allowed.get(key).add(item.method)
+      }
+      const providers = []
+      let excluded = 0
+      for (const provider of value.providers) {
+        const methods = isRecord(provider) ? allowed.get(`${provider.platform}::${provider.id}`) : undefined
+        if (methods === undefined) {
+          excluded += 1
+          continue
+        }
+        providers.push({
+          ...provider,
+          methods: Array.isArray(provider.methods)
+            ? provider.methods.filter((method) => isRecord(method) && methods.has(method.name))
+            : [],
+        })
+      }
+      return {
+        ok: true,
+        settled: 'NATIVE-RESOLVED-AUTHORIZED-CONSTRAINED',
+        value: {
+          providers,
+          authorizedTopology: { topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest },
+          excludedUnauthorizedProviders: excluded,
+        },
+      }
+    }
+
+    return { ok: true, settled: 'NATIVE-RESOLVED', value }
   }
 
-  // Shallow freeze: the row is immutable, but the PASSED-THROUGH native
-  // registration face stays exactly as captured (this row never freezes —
-  // let alone rewrites — a face it does not own).
-  return Object.freeze({
+  const row = {
     name: recordName,
     familyId: spec.family,
     recordIndex: spec.recordIndex,
-    scope: spec.scope,
-    ownerRole: spec.ownerRole,
-    adapterRevision: A5_G1_ADAPTER_REVISION,
-    nativeFaceRef: spec.nativeFaceRef,
-    effectDeltaNotes: spec.effectDeltaNotes,
     capturePresent: captured,
-    providerId,
-    definitionIdentity: captured ? definitionIdentity : null,
-    descriptionFrom: 'native-captured',
-    description: captured ? bindDefinition.description : null,
-    parameters: captured && spec.capture === 'tool-definition' ? bindDefinition.parameters : null,
+    descriptionFrom: captured ? 'native' : 'none',
+    description: captured ? native.description : null,
+    parameters: captured && spec.capture === 'tool' && 'parameters' in native ? native.parameters : null,
+    nativeFaceRef: spec.nativeFaceRef,
+    definitionIdentity: definitionIdentity ?? null,
     classify,
     delegate,
-    commitWitness: spec.commitLaw === 'session-append' ? commitWitness : undefined,
-  })
+  }
+  if (spec.commitLaw === 'session-append') row.commitWitness = commitWitness
+  return Object.freeze(row)
 }

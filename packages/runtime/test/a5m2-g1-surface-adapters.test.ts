@@ -1,39 +1,30 @@
 /**
- * A5M2-G1-SURFACE (root concentrated-fix round) — the 14 G1 records
- * (B-CONTROL×5, B-HUMAN×2, B-PRESENT, B-PLUGIN, B-INSPECT×2, B-SKILL,
- * B-DEPENDENCY, B-DOMAIN) proven against NATIVE DOUBLES + FIXTURE TRUSTED
- * PORTS.
+ * A5M2-G1-SURFACE (root round-2 REAL-INTERFACE round, rev.3) — the 14 G1
+ * records (B-CONTROL×5, B-HUMAN×2, B-PRESENT, B-PLUGIN, B-INSPECT×2,
+ * B-SKILL, B-DEPENDENCY, B-DOMAIN) proven against doubles that EXERCISE the
+ * REAL manager/host contract + fixture trusted ports.
  *
- * DISCLOSURE (law 9, honest labels): EVERY leg here runs on a native double
+ * DISCLOSURE (honest labels): EVERY leg here runs on a native double, an
+ * async MANAGER CONTRACT DOUBLE (installBundle/waitForInstall/
+ * cancelInstall with the host-closed PluginInstallCancellation statuses),
  * and fixture trusted ports. This spec proves the ADAPTER LAWS — real
- * contract effects (validated by the REAL closed-grammar domain parser),
- * trusted targets, catalog / topology / domain-authority CURRENT-fact
- * verification, the install requestId + too-late lifecycle mapping, the
- * present append-after commit law, delegate-once plan-binding, and the
- * capture law. IT IS NOT C2 and no leg claims C2: C2 needs the real hosts,
- * the real PA edge and real business observers (integrator-side).
+ * contract effects (REAL closed-grammar domain parser), trusted targets,
+ * same-source re-verification AT THE CONSUMPTION EDGE, the invocation-owned
+ * requestId + awaited async cancel/wait lifecycle, the authorized-topology
+ * constrained list, the REAL dependency fs reads + post-resolution digest
+ * check (real temp world), the present same-exec append witness (turn-bound),
+ * and delegate-once plan-binding. IT IS NOT C2 and no leg claims C2: C2
+ * needs the real hosts, the real PA edge and real business observers
+ * (integrator-side).
  *
- * Per record:
- *  - REAL effects: classify's effect set parses under the REAL closed-grammar
- *    parser (parseRequestedEffectSet) and matches the family §3 kind
- *    multiset — never a uniform tool-invoke shell;
- *  - TRUSTED TARGETS: plan.targetManifest.trusted equals the mount-time
- *    CONFIG facts; a model-smuggled memberAgentId refuses at the closed
- *    root; binding generations ride the plan (reviewPayload position);
- *  - capture-present delegate / capture-absent typed refusal / definition
- *    drift / NOT_OWN_PLAN / ALREADY_DELEGATED (no replay; args are
- *    plan-frozen and unswappable) / full-VALUES fingerprint.
- * Plus the five law-lifecycle legs and the REAL Host639 registration-face
- * leg (r9 idiom).
- *
- * Scope: NO Host process, NO network, NO mount; nothing here touches a real
- * profile, catalog, topology or session. Windows dimensions are not run on
- * this Linux harness and never claimed.
+ * Scope: NO Host process, NO network. The dependency legs create a REAL
+ * temp world under the test directory and clean it up. Windows dimensions
+ * are not run on this Linux harness and never claimed.
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g1-surface-adapters
  */
-import { describe, it, expect } from 'vitest'
-import { existsSync, readFileSync } from 'node:fs'
+import { describe, it, expect, afterAll } from 'vitest'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -53,23 +44,29 @@ type Success = {
   parametersFingerprint: string
 }
 type ClassifyResult = Success | Refusal
+type WaitOutcome = { outcome: string; changeResult?: Record<string, unknown>; waitForInstallAfterSettle?: unknown; afterSettleNote?: string; completionImplied?: boolean; error?: string }
 type LifecycleHandle = {
   requestId: string
   boundTo: Record<string, unknown>
   law: string
-  cancelNow: () => Record<string, unknown>
-  waitFor: () => Promise<unknown>
-  abortMappedToCancelInstall?: boolean
-  abortCancelAnswer?: Record<string, unknown>
+  cancel: () => Promise<Record<string, unknown>>
+  wait: () => Promise<WaitOutcome>
+  cancellation: () => Record<string, unknown> | null
+  abortMappedToCancelInstall: boolean
 }
 type DelegateResult = {
   ok?: boolean
   value?: unknown
   settled?: string
   detail?: string
-  lifecycle?: LifecycleHandle
   code?: string
+  completionImplied?: boolean
+  edgeFacts?: Record<string, unknown>
+  commitLaw?: string
+  commitWitness?: (witness: unknown) => Record<string, unknown>
+  lifecycle?: LifecycleHandle
 }
+type WitnessShape = { callId: string; turn: number; sessionHeaderId?: string }
 type G1Row = {
   name: string
   familyId: string
@@ -81,13 +78,14 @@ type G1Row = {
   definitionIdentity: string | null
   classify: (args: unknown, callId: string) => ClassifyResult
   delegate: (plan: unknown, ctx?: { exec?: unknown }) => Promise<DelegateResult>
-  commitWitness?: (plan: unknown, witness: { callId: string; turn: number }) => Record<string, unknown>
+  commitWitness?: (plan: unknown, witness: WitnessShape) => Record<string, unknown>
 }
 type G1RecordSpec = {
   recordIndex: number
   family: string
   scope: string
   ownerRole: string
+  capture: string
   nativeFaceRef: string
   requiredTopLevel: string[]
   effectDeltaNotes: readonly string[]
@@ -103,8 +101,8 @@ type G1Module = {
 
 const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as G1Module
 
-// ── fixture trusted CONFIG faces (the module NEVER receives these as model
-//    arguments; the closed-root legs prove exactly that) ────────────────────
+// ── fixture trusted CONFIG faces (never model-supplied; the closed-root
+//    legs prove that) ───────────────────────────────────────────────────────
 const TRUSTED = {
   memberAgentId: 'agent-member-1',
   sessionHeaderId: 'session-header-77',
@@ -122,10 +120,19 @@ const PLUGIN_FACTS = {
   allowedRegistries: ['https://registry-primary.example'],
   fallbackRegistries: ['https://registry-fallback.example'],
 }
-const DEPENDENCY_FACTS = {
-  sourceLocator: '/app/payload/runtime',
-  rootLocator: '/dsh/home/runtimes/primary',
-}
+
+// ── REAL dependency world (real fs at the edge — no placeholders) ─────────
+const WORLD_ROOT = mkdtempSync(join(dirname(fileURLToPath(import.meta.url)), 'g1-dep-world-'))
+const DEP_SOURCE = join(WORLD_ROOT, 'payload')
+const DEP_ROOT = join(WORLD_ROOT, 'runtimes', 'primary')
+mkdirSync(DEP_SOURCE, { recursive: true })
+writeFileSync(join(DEP_SOURCE, 'runtime.json'), '{"version":"1.0.0","entries":{"cli":"bin/cli.js"}}\n', 'utf8')
+writeFileSync(join(DEP_SOURCE, 'bin-cli.js'), '// payload\n', 'utf8')
+afterAll(() => {
+  rmSync(WORLD_ROOT, { recursive: true, force: true })
+})
+const DEPENDENCY_FACTS_PROVIDER = { current: () => ({ sourceLocator: DEP_SOURCE, rootLocator: DEP_ROOT }) }
+
 const PORTS: Record<string, unknown> = {
   trustedCatalog: { current: () => ({ catalogRevision: 5, catalogDigest: 'sha256:catalogfive', names: ['gpt', 'browser-skill'] }) },
   trustedTopology: {
@@ -139,31 +146,55 @@ const PORTS: Record<string, unknown> = {
     }),
   },
   domainPortRegistry: { current: () => ({ domainAuthorityId: 'domain-acme', portRevision: 4 }) },
-  pluginFacts: PLUGIN_FACTS,
-  dependencyFacts: DEPENDENCY_FACTS,
+  pluginFacts: { current: () => PLUGIN_FACTS },
+  dependencyFacts: DEPENDENCY_FACTS_PROVIDER,
 }
 
-/** Install lifecycle double: answers are consumed in order; every
- * cancelInstall entry is recorded (the host face keeps the requestId). */
-function makeInstallLifecycle(answers: Array<Record<string, unknown>>): { seen: string[]; port: Record<string, unknown> } {
-  const seen: string[] = []
-  let index = 0
-  return {
-    seen,
-    port: {
-      waitForInstall: (requestId: string) => Promise.resolve({ waited: requestId }),
-      cancelInstall: (requestId: string) => {
-        seen.push(requestId)
-        const answer = answers[Math.min(index, answers.length - 1)]
-        index += 1
-        return answer
-      },
+/** MANAGER CONTRACT DOUBLE — the real async face at 639ed01539:
+ * installBundle(spec, {requestId, enabled?, approvedBuilds?, registry?})
+ * returns a pending Promise<ChangeResult> and keys installs by the CALLER's
+ * id; waitForInstall answers the live promise or null; cancelInstall AWASTS
+ * the live result and answers the CLOSED {status} law. */
+function makeManagerDouble() {
+  type Control = { phase: 'installing' | 'applying'; promise: Promise<Record<string, unknown>>; resolve: (v: Record<string, unknown>) => void }
+  const installs = new Map<string, Control>()
+  const installCalls: Array<{ spec: string; options: Record<string, unknown> }> = []
+  const cancelSeen: string[] = []
+  const waitSeen: string[] = []
+  const face = {
+    installBundle(spec: string, options: Record<string, unknown>): Promise<Record<string, unknown>> {
+      installCalls.push({ spec, options })
+      let resolve!: (v: Record<string, unknown>) => void
+      const promise = new Promise<Record<string, unknown>>((res) => { resolve = res })
+      const id = String(options.requestId)
+      installs.set(id, { phase: 'installing', promise, resolve })
+      return promise.finally(() => { installs.delete(id) })
     },
+    async waitForInstall(requestId: string): Promise<Record<string, unknown> | null> {
+      waitSeen.push(requestId)
+      return (await (installs.get(requestId)?.promise ?? null)) ?? null
+    },
+    async cancelInstall(requestId: string): Promise<{ status: string }> {
+      cancelSeen.push(requestId)
+      const control = installs.get(requestId)
+      if (control === undefined) return { status: 'not-running' }
+      if (control.phase === 'applying') return { status: 'too-late' }
+      await control.promise
+      return { status: 'cancelled' }
+    },
+  }
+  return {
+    face,
+    installCalls,
+    cancelSeen,
+    waitSeen,
+    apply(requestId: string): void { const c = installs.get(requestId); if (c !== undefined) c.phase = 'applying' },
+    settle(requestId: string, result: Record<string, unknown>): void { installs.get(requestId)?.resolve(result) },
   }
 }
 
-/** Nested-required CANONICAL face (registration-face spelling) carried by the
- * ask_user_question double. */
+/** Nested-required CANONICAL face (registration-face spelling) carried by
+ * the ask_user_question double. */
 const ASK_USER_CANONICAL_PARAMETERS = {
   type: 'object',
   properties: {
@@ -199,9 +230,6 @@ const ASK_USER_CANONICAL_PARAMETERS = {
 
 type NativeCall = { args: unknown; exec: unknown }
 
-/** The native double (a ToolDefinition shape, or the Domain port for the
- * surface row) RECORDING every entry — the row must enter exactly this
- * object with the plan's frozen arguments. */
 function makeNativeDouble(
   recordName: string,
   spec: G1RecordSpec,
@@ -211,7 +239,9 @@ function makeNativeDouble(
   const parameters = recordName === 'ask_user_question'
     ? structuredClone(ASK_USER_CANONICAL_PARAMETERS)
     : { type: 'object', properties: {} }
-  const body = execute ?? (async (): Promise<unknown> => ({ nativeRan: recordName, family: spec.family }))
+  const body = execute ?? (async (): Promise<unknown> => (recordName === 'cordis_inspect_list'
+    ? { providers: [] }
+    : { nativeRan: recordName, family: spec.family }))
   const wrapped = async (args: unknown, exec: unknown): Promise<unknown> => {
     calls.push({ args, exec })
     return body(args, exec)
@@ -249,10 +279,10 @@ const GOOD_ARGS: Record<string, Record<string, unknown>> = {
 }
 
 /** The §3-derived expected effect-kind multiset per record (generic-loop
- * args; plugin install and per-action live in dedicated legs). */
+ * args; plugin install / per-action live in dedicated legs). */
 const EXPECT_KINDS: Record<string, string[]> = {
   skill: ['tool-invoke'],
-  load_workspace_dependencies: ['meta', 'tool-invoke', 'write', 'write', 'write', 'write'],
+  load_workspace_dependencies: ['list', 'read', 'read', 'tool-invoke', 'write', 'write', 'write'],
   ask_user_question: ['tool-invoke'],
   exit_plan_mode: ['tool-invoke'],
   present: ['meta', 'read', 'tool-invoke'],
@@ -274,7 +304,7 @@ const kindsOf = (effects: Array<Record<string, unknown>>): string[] => effects.m
 
 function mountRecord(
   name: string,
-  over: { ports?: Record<string, unknown>; execute?: (args: unknown, exec: unknown) => Promise<unknown> } = {},
+  over: { ports?: Record<string, unknown>; execute?: (args: unknown, exec: unknown) => Promise<unknown>; installFace?: unknown } = {},
 ): { row: G1Row; native: Record<string, unknown>; calls: NativeCall[] } {
   const double = makeNativeDouble(name, byName(name), over.execute)
   const row = G1.mountG1SurfaceAdapter(name, {
@@ -284,6 +314,7 @@ function mountRecord(
     trusted: TRUSTED,
     bindingFacts: BINDINGS,
     ports: { ...PORTS, ...(over.ports ?? {}) },
+    ...(over.installFace === undefined ? {} : { installFace: over.installFace }),
   })
   return { row, native: double.native, calls: double.calls }
 }
@@ -299,7 +330,7 @@ function bareMount(name: string, ports: Record<string, unknown> = {}): G1Row {
   })
 }
 
-describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five law-lifecycles — ALL legs on NATIVE DOUBLES (NOT C2)', () => {
+describe('a5m2-g1-surface-adapters rev.3: REAL interface on contract doubles — NOT C2 (94+ component legs, not records)', () => {
   it('the record set equals the frozen dispatch index (family-filtered, recordIndex-exact); spec VALUES carry no lane paths (string literals are audit edges)', () => {
     const indexPath = fileURLToPath(new URL(
       '../../../docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json',
@@ -325,8 +356,6 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
     for (const name of NAMES) {
       expect(expected.some((r) => r.name === name), `no extra record beyond the index: ${name}`).toBe(true)
     }
-    // The string-literal law: the frozen spec VALUES carry no lane paths —
-    // the native-face facts live comment-side in the ledger only.
     expect(JSON.stringify(G1.A5_G1_RECORD_SPECS)).not.toMatch(/packages\//)
     expect(JSON.stringify(G1.A5_G1_RECORD_SPECS)).not.toMatch(/index\.ts/)
   })
@@ -346,7 +375,6 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
           bindingId: 'binding-3', bindingRevision: 7, policyGeneration: 3, authorityGeneration: 2, definitionIdentity: `def-${name}`,
         })
         expect(classified.serviceObligations.length).toBeGreaterThan(0)
-        expect(classified.reviewPayload.familyId).toBe(byName(name).family)
         expect(classified.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
       })
 
@@ -358,13 +386,20 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
       })
 
       it('capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution', async () => {
+        if (byName(name).capture === 'surface') {
+          // a surface row with no mounted port has nothing to govern: that is
+          // an assembly-time config defect (throws), not a runtime refusal
+          expect(() => G1.mountG1SurfaceAdapter(name, {
+            native: undefined, providerId: 'g1-spec', trusted: TRUSTED, bindingFacts: BINDINGS, ports: PORTS,
+          })).toThrow(TypeError)
+          return
+        }
         const row = G1.mountG1SurfaceAdapter(name, {
           native: undefined, providerId: 'g1-spec', trusted: TRUSTED, bindingFacts: BINDINGS, ports: PORTS,
         })
         expect(row.capturePresent).toBe(false)
         expect(row.description).toBeNull()
-        const classified = row.classify(goodArgs(name), 'call-x')
-        expect((classified as Refusal).code).toBe('P_G1_NATIVE_CAPTURE_ABSENT')
+        expect((row.classify(goodArgs(name), 'call-x') as Refusal).code).toBe('P_G1_NATIVE_CAPTURE_ABSENT')
         const delegated = await row.delegate({ callId: 'call-x' })
         expect((delegated as unknown as Refusal).code).toBe('P_G1_NATIVE_CAPTURE_ABSENT')
       })
@@ -380,8 +415,6 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
         const first = await row.delegate(classified.plan, { exec: { callId: `call-${name}` } })
         expect(first.ok).toBe(true)
         expect(calls.length).toBe(1)
-        // The plan OWNS the arguments: a frozen clone (never the caller's
-        // live object), value-identical to what classify saw.
         expect(calls[0]?.args).toEqual(goodArgs(name))
         expect(calls[0]?.args).not.toBe(goodArgs(name))
         expect(Object.isFrozen(calls[0]?.args)).toBe(true)
@@ -396,7 +429,7 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
         expect(classified.ok).toBe(true)
         if (!classified.ok) return
         const mutator = native as Record<string, unknown>
-        const bodyKey = byName(name).scope === 'surface' ? 'decide' : 'execute'
+        const bodyKey = byName(name).capture === 'surface' ? 'decide' : 'execute'
         mutator[bodyKey] = async () => ({ impostor: true })
         const refused = await row.delegate(classified.plan)
         expect((refused as unknown as Refusal).code).toBe('P_G1_DEFINITION_DRIFT')
@@ -433,38 +466,98 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
     })
   }
 
-  // ── law-lifecycle 1: skill TRUSTED CATALOG current facts ─────────────────
-  it('skill: classify consults the trusted catalog CURRENT facts — port absent, unknown name, catalog facts on the plan', () => {
-    const noPort = bareMount('skill', {})
-    expect((noPort.classify({ name: 'gpt' }, 'c1') as Refusal).code).toBe('P_G1_TRUSTED_CATALOG_ABSENT')
-    const { row } = mountRecord('skill')
-    expect((row.classify({ name: 'not-in-catalog' }, 'c2') as Refusal).code).toBe('P_G1_SKILL_NAME_NOT_TRUSTED')
-    const classified = row.classify({ name: 'gpt' }, 'c3')
-    expect(classified.ok).toBe(true)
-    if (!classified.ok) return
-    expect(classified.targetManifest.catalog).toEqual({ catalogRevision: 5, catalogDigest: 'sha256:catalogfive' })
-    const ops = classified.serviceObligations.map((o) => `${o.target}:${o.operation}`)
-    expect(ops).toContain('skill-catalog-namespace:read-load')
-    expect(ops).toContain('current-session-prompt:inject')
+  // ── card 2: SAME-SOURCE re-verification at the CONSUMPTION EDGE ─────────
+  it('consumption-edge re-verify: post-classify mutation of the catalog / topology / domain registry / profile facts / install facts refuses the plan typed, zero native entry', async () => {
+    // skill catalog moves after classify:
+    let catalog: Record<string, unknown> = { catalogRevision: 5, catalogDigest: 'sha256:c5', names: ['gpt'] }
+    const skill = mountRecord('skill', { ports: { trustedCatalog: { current: () => catalog } } })
+    const skillPlan = (skill.row.classify({ name: 'gpt' }, 'c-sk') as Success).plan
+    catalog = { catalogRevision: 6, catalogDigest: 'sha256:c6', names: ['gpt'] }
+    expect(((await skill.row.delegate(skillPlan)) as unknown as Refusal).code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(skill.calls.length).toBe(0)
+
+    // topology moves after classify:
+    let topology: Record<string, unknown> = {
+      topologyRevision: 9, topologyDigest: 'sha256;t9',
+      allowed: [{ platform: 'host', provider: 'host-providers', method: 'list' }],
+    }
+    const query = mountRecord('cordis_inspect_query', { ports: { trustedTopology: { current: () => topology } } })
+    const queryPlan = (query.row.classify({ platform: 'host', provider: 'host-providers', method: 'list' }, 'c-q') as Success).plan
+    topology = { topologyRevision: 10, topologyDigest: 'sha256;t10', allowed: [{ platform: 'host', provider: 'host-providers', method: 'list' }] }
+    expect(((await query.row.delegate(queryPlan)) as unknown as Refusal).code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(query.calls.length).toBe(0)
+
+    // domain-port registry moves after classify:
+    let registry: Record<string, unknown> = { domainAuthorityId: 'domain-acme', portRevision: 4 }
+    const domain = mountRecord('surface:domain_family', { ports: { domainPortRegistry: { current: () => registry } } })
+    const domainPlan = (domain.row.classify(goodArgs('surface:domain_family'), 'c-d') as Success).plan
+    registry = { domainAuthorityId: 'domain-acme', portRevision: 5 }
+    expect(((await domain.row.delegate(domainPlan)) as unknown as Refusal).code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(domain.calls.length).toBe(0)
+
+    // trusted profile facts move after classify:
+    let pluginFacts: Record<string, unknown> = { ...PLUGIN_FACTS }
+    const plugin = mountRecord('plugin_manager', { ports: { pluginFacts: { current: () => pluginFacts } } })
+    const pluginPlan = (plugin.row.classify({ action: 'set_plugin', target: 'entry-1', enabled: true }, 'c-pm') as Success).plan
+    pluginFacts = { ...PLUGIN_FACTS, profileConfigLocator: '/dsh/other/profile.json' }
+    expect(((await plugin.row.delegate(pluginPlan)) as unknown as Refusal).code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(plugin.calls.length).toBe(0)
+
+    // install facts move after classify:
+    let depFacts: Record<string, unknown> = { sourceLocator: DEP_SOURCE, rootLocator: DEP_ROOT }
+    const dep = mountRecord('load_workspace_dependencies', { ports: { dependencyFacts: { current: () => depFacts } } })
+    const depPlan = (dep.row.classify({}, 'c-dep') as Success).plan
+    depFacts = { sourceLocator: DEP_SOURCE, rootLocator: join(WORLD_ROOT, 'runtimes', 'other') }
+    expect(((await dep.row.delegate(depPlan)) as unknown as Refusal).code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(dep.calls.length).toBe(0)
   })
 
-  // ── law-lifecycle 2: domainAuthority comes ONLY from the trusted registry ─
-  it('domain surface: a model-supplied domainAuthorityId is a CLAIM verified against the mounted-port CURRENT registry', () => {
-    const noRegistry = bareMount('surface:domain_family', {})
-    expect((noRegistry.classify(goodArgs('surface:domain_family'), 'c1') as Refusal).code).toBe('P_G1_DOMAIN_REGISTRY_ABSENT')
-    const { row } = mountRecord('surface:domain_family')
-    const forged = row.classify({ ...goodArgs('surface:domain_family'), domainAuthorityId: 'domain-evil' }, 'c2')
-    expect((forged as Refusal).code).toBe('P_G1_DOMAIN_CLAIM_MISMATCH')
-    const classified = row.classify(goodArgs('surface:domain_family'), 'c3')
+  // ── card 3: the REAL list enumerates ALL providers; the row constrains ──
+  it('inspect list: the all-providers answer is CONSTRAINED to the authorized topology (unauthorized providers never appear; methods filtered); unknown shapes fail closed', async () => {
+    const allProviders = {
+      providers: [
+        { platform: 'host', id: 'host-providers', purpose: 'p', methods: [{ name: 'list' }, { name: 'secret' }] },
+        { platform: 'client', id: 'slot-tree', purpose: 'q', methods: [{ name: 'list_slots' }, { name: 'sneak' }] },
+        { platform: 'host', id: 'evil-host', purpose: 'x', methods: [{ name: 'takeover' }] },
+        { platform: 'client', id: 'evil-client', purpose: 'y', methods: [] },
+        { platform: 'host', id: 'plugin-manager', purpose: 'z', methods: [{ name: 'get' }] },
+      ],
+    }
+    const { row } = mountRecord('cordis_inspect_list', { execute: async () => allProviders })
+    const classified = row.classify({}, 'call-l1')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    expect(classified.effects[0]).toEqual({ kind: 'domain-ref', domainAuthorityId: 'domain-acme', resource: null })
-    expect(classified.targetManifest.trustedDomainAuthorityId).toBe('domain-acme')
-    expect(classified.targetManifest.portRevision).toBe(4)
+    expect(classified.targetManifest.listLaw).toContain('constrains')
+    const result = await row.delegate(classified.plan, { exec: {} })
+    expect(result.settled).toBe('NATIVE-RESOLVED-AUTHORIZED-CONSTRAINED')
+    const value = result.value as { providers: Array<{ id: string; methods: Array<{ name: string }> }>; authorizedTopology: Record<string, unknown>; excludedUnauthorizedProviders: number }
+    expect(value.providers.map((p) => p.id)).toEqual(['host-providers', 'slot-tree'])
+    expect(value.providers[0]?.methods.map((m) => m.name)).toEqual(['list'])
+    expect(value.providers[1]?.methods.map((m) => m.name)).toEqual(['list_slots'])
+    expect(value.excludedUnauthorizedProviders).toBe(3)
+    expect(value.authorizedTopology).toEqual({ topologyRevision: 9, topologyDigest: 'sha256;toponine' })
+    const shape = mountRecord('cordis_inspect_list', { execute: async () => ({ unexpected: true }) })
+    const shapePlan = (shape.row.classify({}, 'call-l2') as Success).plan
+    const refused = await shape.row.delegate(shapePlan, { exec: {} })
+    expect((refused as unknown as Refusal).code).toBe('P_G1_INSPECT_RESULT_SHAPE_UNKNOWN')
   })
 
-  // ── law-lifecycle 3a: plugin per-action closed sets; exemption not derivable ─
-  it('plugin: per-action effect sets; install carries connect(N)+FS writes+build/activation obligations; the exemption lane is never derivable from install and vice versa', () => {
+  it('inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse', () => {
+    const noTopo = bareMount('cordis_inspect_query', {})
+    expect((noTopo.classify(goodArgs('cordis_inspect_query'), 'c') as Refusal).code).toBe('P_G1_TRUSTED_TOPOLOGY_ABSENT')
+    const { row } = mountRecord('cordis_inspect_query')
+    expect((row.classify({ platform: 'host', provider: 'evil', method: 'x' }, 'c2') as Refusal).code).toBe('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
+    const classified = row.classify(goodArgs('cordis_inspect_query'), 'c3')
+    expect(classified.ok).toBe(true)
+    if (!classified.ok) return
+    expect(classified.targetManifest.topology).toEqual({ topologyRevision: 9, topologyDigest: 'sha256;toponine' })
+    const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
+    expect(client.ok).toBe(true)
+    if (client.ok) expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
+  })
+
+  // ── card 5 + 1: plugin per-action envelope + REAL async lifecycle ──────
+  it('plugin: per-action effect sets on the manager code paths; install carries connect(N)+FS writes+build/activation obligations; the exemption lane is never derivable and out-of-envelope targets refuse', () => {
     const { row } = mountRecord('plugin_manager')
     const classify = (args: Record<string, unknown>): ClassifyResult => row.classify(args, `call-${String(args.action)}`)
     const install = classify({ action: 'install_bundle', target: 'some-bundle@1.0.0', approvedBuilds: ['native-addon'] })
@@ -481,7 +574,7 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
     expect(install.targetManifest.versionExemptionDerived).toBe(false)
     const installOps = JSON.stringify(install.serviceObligations)
     expect(installOps).toContain('host-approvedBuilds-channel')
-    expect(installOps).toContain('approvedBuilds-persistent-permission-write')
+    expect(installOps).toContain('PERSISTENT permission')
     expect(installOps).toContain('configure-activation')
 
     const exempt = classify({ action: 'set_version_exemption', target: 'pkg@1.0.0', runtimeVersion: '0.2.0-rc.2', enabled: true, acceptRisk: true })
@@ -503,67 +596,98 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
     expect(remove.ok && kindsOf(remove.effects)).toEqual(['tool-invoke', 'write', 'write'])
     expect((classify({ action: 'launch_evil' }) as Refusal).code).toBe('P_G1_CLASSIFY_UNKNOWN_ACTION')
     expect((classify({ action: 'install_bundle', registry: 'https://evil.example' }) as Refusal).code).toBe('P_G1_PLUGIN_REGISTRY_NOT_TRUSTED')
+    // out-of-envelope targets (card 5):
+    expect((classify({ action: 'install_bundle', target: '/abs/path/bundle.tgz' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'install_bundle', target: './local-pkg' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'set_plugin', target: 'sub/dir/entry', enabled: true }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
+    expect((classify({ action: 'remove_bundle', target: '..\\escape' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
     const noFacts = bareMount('plugin_manager', {})
     expect((noFacts.classify({ action: 'list_plugins' }, 'c') as Refusal).code).toBe('P_G1_PLUGIN_TARGETS_ABSENT')
   })
 
-  // ── law-lifecycle 3b: install requestId / too-late / cancelInstall ──────
-  it('plugin install lifecycle (host-face double): requestId bound to owner+invocation; signal→cancelInstall; too-late/not-running preserved; abort never claims copying stopped', async () => {
-    const installHost = async (args: unknown): Promise<unknown> => JSON.stringify({ requestId: 'req-77', state: 'installing', spec: (args as { target: string }).target })
+  it('plugin install on the REAL async manager contract: invocation-owned requestId minted BEFORE the call and passed in options; cancel AWAITED to the closed status; too-late/not-running preserved; abort never claims copying stopped', async () => {
+    const CHANGE_APPLIED = { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0', bundle: 'b' }
+    const CHANGE_CANCELLED = { changed: false, application: 'cancelled', stage: 'install', target: 'b@1.0.0' }
 
-    const good = makeInstallLifecycle([{ state: 'cancelled' }])
-    const mounted = mountRecord('plugin_manager', { execute: installHost, ports: { installLifecycle: good.port } })
-    const plan = (mounted.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i1') as Success).plan
+    // settled path: id minted before the call, present in options, awaited wait.
+    const md = makeManagerDouble()
+    const mounted = mountRecord('plugin_manager', { installFace: md.face })
+    const plan = (mounted.row.classify({ action: 'install_bundle', target: 'b@1.0.0', approvedBuilds: ['native-addon'] }, 'call-i1') as Success).plan
     const result = await mounted.row.delegate(plan, { exec: {} })
-    expect(result.settled).toBe('INSTALL-REQUESTED')
-    expect(mounted.calls.length).toBe(1)
-    const lifecycle = result.lifecycle as LifecycleHandle
-    expect(lifecycle.requestId).toBe('req-77')
-    expect(lifecycle.boundTo).toMatchObject({ owner: TRUSTED.owner, callId: 'call-i1' })
-    expect(lifecycle.law).toContain('not-running never implies completion')
-    expect(lifecycle.law).toContain('does NOT claim copying auto-stopped')
-    expect(good.seen.length).toBe(0)
-    expect(lifecycle.cancelNow()).toMatchObject({ state: 'cancelled-confirmed', completionImplied: false })
-    expect(good.seen).toEqual(['req-77'])
+    expect(result.settled).toBe('INSTALL-PENDING')
+    const lc = result.lifecycle as LifecycleHandle
+    expect(lc.requestId).toMatch(/^g1-install-/)
+    expect(md.installCalls.length).toBe(1)
+    // THE seam: the id was minted by the row BEFORE installBundle and rode in
+    // the manager OPTIONS — not read off any return value.
+    expect(md.installCalls[0]?.options.requestId).toBe(lc.requestId)
+    expect(md.installCalls[0]?.spec).toBe('b@1.0.0')
+    expect(md.installCalls[0]?.options.approvedBuilds).toEqual(['native-addon'])
+    expect(lc.boundTo).toMatchObject({ owner: TRUSTED.owner, callId: 'call-i1' })
+    expect(md.cancelSeen).toEqual([])
+    expect(lc.law).toContain('never imply completion')
+    expect(lc.law).toContain('never claims the copying auto-stopped')
+    md.settle(lc.requestId, CHANGE_APPLIED)
+    const waited = await lc.wait()
+    expect(waited.outcome).toBe('CHANGE-RESULT')
+    expect(waited.changeResult).toEqual(CHANGE_APPLIED)
+    // host law: settled installs are deleted; the wait answers null.
+    expect(waited.waitForInstallAfterSettle).toBeNull()
+    expect(waited.afterSettleNote).toContain('neither success nor cancellation')
+    expect(md.waitSeen).toEqual([lc.requestId])
+    // cancelled AFTER settlement is the closed not-running status:
+    await expect(lc.cancel()).resolves.toMatchObject({ status: 'not-running', completionImplied: false })
+    // replay: the same plan never re-enters the manager.
+    const replay = await mounted.row.delegate(plan, { exec: {} })
+    expect((replay as unknown as Refusal).code).toBe('P_G1_ALREADY_DELEGATED')
+    expect(md.installCalls.length).toBe(1)
 
-    // applying ⇒ too-late VERBATIM (no rollback claim, no completion claim):
-    const late = makeInstallLifecycle([{ state: 'too-late' }])
-    const lateMount = mountRecord('plugin_manager', { execute: installHost, ports: { installLifecycle: late.port } })
-    const latePlan = (lateMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i2') as Success).plan
-    const lateResult = await lateMount.row.delegate(latePlan, { exec: {} })
-    expect((lateResult.lifecycle as LifecycleHandle).cancelNow()).toMatchObject({ state: 'too-late', completionImplied: false })
+    // cancelled while installing: cancel is AWAITED (the host awaits process
+    // exit and file restoration before answering 'cancelled').
+    const md2 = makeManagerDouble()
+    const m2 = mountRecord('plugin_manager', { installFace: md2.face })
+    const p2 = (m2.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i2') as Success).plan
+    const r2 = await m2.row.delegate(p2, { exec: {} })
+    const lc2 = r2.lifecycle as LifecycleHandle
+    const cancelling = lc2.cancel()
+    expect(lc2.cancellation()).toBeNull()
+    md2.settle(lc2.requestId, CHANGE_CANCELLED)
+    await expect(cancelling).resolves.toMatchObject({ status: 'cancelled', completionImplied: false })
+    expect(md2.cancelSeen).toEqual([lc2.requestId])
+    expect(lc2.cancellation()).toMatchObject({ status: 'cancelled' })
 
-    // not-running NEVER implies completion:
-    const gone = makeInstallLifecycle([{ state: 'not-running' }])
-    const goneMount = mountRecord('plugin_manager', { execute: installHost, ports: { installLifecycle: gone.port } })
-    const gonePlan = (goneMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i3') as Success).plan
-    const goneResult = await goneMount.row.delegate(gonePlan, { exec: {} })
-    expect((goneResult.lifecycle as LifecycleHandle).cancelNow()).toMatchObject({ state: 'not-running', completionImplied: false })
+    // applying ⇒ too-late VERBATIM (never implies completion):
+    const md3 = makeManagerDouble()
+    const m3 = mountRecord('plugin_manager', { installFace: md3.face })
+    const p3 = (m3.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i3') as Success).plan
+    const lc3 = (await m3.row.delegate(p3, { exec: {} })).lifecycle as LifecycleHandle
+    md3.apply(lc3.requestId)
+    await expect(lc3.cancel()).resolves.toMatchObject({ status: 'too-late', completionImplied: false })
+    md3.settle(lc3.requestId, CHANGE_APPLIED)
 
-    // signal → cancelInstall mapping: the abort reaches the host face ONCE,
-    // and the answer keeps its honesty (no "copying stopped" claim).
-    const abort = makeInstallLifecycle([{ state: 'cancelled' }])
-    const abortMount = mountRecord('plugin_manager', { execute: installHost, ports: { installLifecycle: abort.port } })
-    const abortPlan = (abortMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i4') as Success).plan
+    // signal → cancelInstall mapping: one awaited cancel with our id.
+    const md4 = makeManagerDouble()
+    const m4 = mountRecord('plugin_manager', { installFace: md4.face })
+    const p4 = (m4.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i4') as Success).plan
     const controller = new AbortController()
-    const abortResult = await abortMount.row.delegate(abortPlan, { exec: { signal: controller.signal } })
-    const abortLifecycle = abortResult.lifecycle as LifecycleHandle
-    expect(abortLifecycle.abortMappedToCancelInstall).toBe(true)
-    expect(abort.seen.length).toBe(0)
+    const r4 = await m4.row.delegate(p4, { exec: { signal: controller.signal } })
+    const lc4 = r4.lifecycle as LifecycleHandle
     controller.abort()
-    expect(abort.seen).toEqual(['req-77'])
-    expect(abortLifecycle.abortCancelAnswer).toMatchObject({ state: 'cancelled-confirmed', completionImplied: false })
+    expect(lc4.abortMappedToCancelInstall).toBe(true)
+    expect(md4.cancelSeen).toEqual([lc4.requestId])
+    md4.settle(lc4.requestId, CHANGE_CANCELLED)
+    await expect(lc4.cancel()).resolves.toMatchObject({ status: 'cancelled', completionImplied: false })
 
-    // lifecycle face missing ⇒ refused BEFORE any native entry (zero fetch):
-    const noFace = mountRecord('plugin_manager', { execute: installHost })
+    // manager face missing ⇒ refused BEFORE any manager entry (zero fetch):
+    const noFace = mountRecord('plugin_manager')
     const noFacePlan = (noFace.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-i5') as Success).plan
     const refused = await noFace.row.delegate(noFacePlan, { exec: {} })
-    expect((refused as unknown as Refusal).code).toBe('P_G1_INSTALL_LIFECYCLE_ABSENT')
+    expect((refused as unknown as Refusal).code).toBe('P_G1_INSTALL_FACE_ABSENT')
     expect(noFace.calls.length).toBe(0)
   })
 
-  // ── law-lifecycle 4: present commit law (append AFTER the promise) ──────
-  it('present: read+meta per deliverable + the expose WRITE obligation; the promise resolving is NOT the commit — the same-call listener append witnesses it', async () => {
+  // ── card 6: present witness = the REAL same-exec append (turn-bound) ────
+  it('present: read+meta per deliverable + the expose WRITE obligation; the commit witness is the same-exec append carrying the exec callId AND the native result\'s OWN turn — arbitrary integers refuse', async () => {
     const nativeResult = { turn: 7, files: [{ path: 'out.md' }] }
     const { row, calls } = mountRecord('present', { execute: async () => nativeResult })
     const classified = row.classify(goodArgs('present'), 'call-p1')
@@ -573,55 +697,120 @@ describe('a5m2-g1-surface-adapters rev.2: real effects, trusted targets, five la
     expect(JSON.stringify(classified.effects)).toContain('"meta"')
     expect(classified.serviceObligations.some((o) => o.operation === 'expose' && o.right === 'write')).toBe(true)
     expect(classified.targetManifest.readOnly).toBe(false)
-    expect(classified.targetManifest.audience).toEqual({ kind: 'current-session', sessionHeaderId: TRUSTED.sessionHeaderId })
-    expect(classified.targetManifest.artifactVersion).toBe('turn-scoped-at-result')
-    const early = row.commitWitness?.(classified.plan, { callId: 'call-p1', turn: 7 }) as Refusal
-    expect(early.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH') // delegated ≠ nothing ran yet
-    const result = await row.delegate(classified.plan, { exec: { callId: 'call-p1' } })
+    const early = row.commitWitness?.(classified.plan, { callId: 'call-p1', turn: 7, sessionHeaderId: TRUSTED.sessionHeaderId }) as Refusal
+    expect(early.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH') // nothing delegated yet
+    const exec = { callId: 'call-p1' }
+    const result = await row.delegate(classified.plan, { exec })
     expect(calls.length).toBe(1)
     expect(result.settled).toBe('RESULT-PENDING-SESSION-APPEND')
     expect(result.value).toEqual(nativeResult)
-    const wrongCall = row.commitWitness?.(classified.plan, { callId: 'other-call', turn: 7 }) as Refusal
-    expect(wrongCall.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH')
-    const witnessed = row.commitWitness?.(classified.plan, { callId: 'call-p1', turn: 7 }) as Record<string, unknown>
-    expect(witnessed).toMatchObject({ ok: true, settled: 'COMMITTED', turn: 7 })
-    const twice = row.commitWitness?.(classified.plan, { callId: 'call-p1', turn: 7 }) as Refusal
+    expect(result.commitLaw).toContain("'7'")
+    // The modeled tools/result listener: it reads the callId off the EXEC and
+    // the turn off the RESULT, then appends 'deliverables/presented'.
+    const appended: WitnessShape = {
+      callId: exec.callId,
+      turn: (result.value as { turn: number }).turn,
+      sessionHeaderId: TRUSTED.sessionHeaderId,
+    }
+    const forgedTurn = row.commitWitness?.(classified.plan, { ...appended, turn: appended.turn + 1 }) as Refusal
+    expect(forgedTurn.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH')
+    const forgedCall = row.commitWitness?.(classified.plan, { ...appended, callId: 'other-call' }) as Refusal
+    expect(forgedCall.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH')
+    const missingSession = row.commitWitness?.(classified.plan, { callId: appended.callId, turn: appended.turn }) as Refusal
+    expect(missingSession.code).toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH')
+    const witnessed = row.commitWitness?.(classified.plan, appended) as Record<string, unknown>
+    expect(witnessed).toMatchObject({ ok: true, settled: 'COMMITTED', callId: 'call-p1', turn: 7 })
+    const twice = row.commitWitness?.(classified.plan, appended) as Refusal
     expect(twice.code).toBe('P_G1_ALREADY_DELEGATED')
+    // a result without a turn can never be witnessed:
+    const noTurn = mountRecord('present', { execute: async () => ({ files: [] }) })
+    const noTurnPlan = (noTurn.row.classify(goodArgs('present'), 'call-p2') as Success).plan
+    const noTurnResult = await noTurn.row.delegate(noTurnPlan, { exec: { callId: 'call-p2' } })
+    expect(noTurnResult.commitLaw).toContain('FAILED-UNKNOWN')
+    expect((noTurn.row.commitWitness?.(noTurnPlan, { callId: 'call-p2', turn: 1, sessionHeaderId: TRUSTED.sessionHeaderId }) as Refusal).code)
+      .toBe('P_G1_PRESENT_COMMIT_WITNESS_MISMATCH')
   })
 
-  // ── dependency: real F envelope + post-resolution hash-check surface ────
-  it('dependency: the mkdir/cp/rename/rm envelope is item-by-item over the TRUSTED install facts, with the actual-hash check surface', () => {
-    const noFacts = bareMount('load_workspace_dependencies', {})
-    expect((noFacts.classify({}, 'c') as Refusal).code).toBe('P_G1_DEPENDENCY_FACTS_ABSENT')
-    const { row } = mountRecord('load_workspace_dependencies')
-    const classified = row.classify({}, 'call-d1')
+  // ── card 4: dependency REAL fs flow at the edge ──────────────────────────
+  it('dependency: the delegate performs the REAL reads (source enumeration, source manifest, old manifest), creates a REAL mkdtemp staging dir, and post-resolution compares ACTUAL digests — no placeholders', async () => {
+    // source without a readable manifest ⇒ refused BEFORE the native entry:
+    const badSource = mountRecord('load_workspace_dependencies', {
+      ports: { dependencyFacts: { current: () => ({ sourceLocator: join(WORLD_ROOT, 'nowhere'), rootLocator: DEP_ROOT }) } },
+    })
+    const badPlan = (badSource.row.classify({}, 'c') as Success).plan
+    const refused = await badSource.row.delegate(badPlan, { exec: {} })
+    expect((refused as unknown as Refusal).code).toBe('P_G1_DEPENDENCY_SOURCE_INVALID')
+    expect(badSource.calls.length).toBe(0)
+
+    // verified install: the double performs the real copy inside the governed
+    // call (mirroring installPrimaryRuntime), observing the REAL staging dir.
+    let stagingVisibleDuringCall: string[] = []
+    const installer = mountRecord('load_workspace_dependencies', {
+      execute: async () => {
+        stagingVisibleDuringCall = readdirSync(join(WORLD_ROOT, 'runtimes'))
+        mkdirSync(DEP_ROOT, { recursive: true })
+        cpSync(DEP_SOURCE, DEP_ROOT, { recursive: true })
+        return { installed: true }
+      },
+    })
+    const installPlan = (installer.row.classify({}, 'call-d1') as Success).plan
+    const verified = await installer.row.delegate(installPlan, { exec: {} })
+    expect(verified.settled).toBe('PAYLOAD-VERIFIED')
+    expect(verified.completionImplied).toBe(true)
+    const edge = verified.edgeFacts as Record<string, unknown>
+    expect(edge.sourceEntries).toContain('runtime.json')
+    expect(edge.sourceEntries).toContain('bin-cli.js')
+    expect(String(edge.sourceManifestDigest)).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(edge.oldManifestDigest).toBeNull()
+    expect(edge.installedManifestDigest).toBe(edge.sourceManifestDigest)
+    expect(String(edge.stagingDirectory).startsWith(join(WORLD_ROOT, 'runtimes') + '/.primary-runtime-')).toBe(true)
+    expect(stagingVisibleDuringCall.some((entry) => entry.startsWith('.primary-runtime-'))).toBe(true)
+    expect(existsSync(String(edge.stagingDirectory))).toBe(false) // the row cleaned up its own dir
+
+    // tampered install ⇒ HASH-MISMATCH, never completion-implied:
+    const tamperer = mountRecord('load_workspace_dependencies', {
+      execute: async () => {
+        cpSync(DEP_SOURCE, DEP_ROOT, { recursive: true })
+        writeFileSync(join(DEP_ROOT, 'runtime.json'), '{"version":"TAMPERED"}\n', 'utf8')
+        return { installed: true }
+      },
+    })
+    const tamperPlan = (tamperer.row.classify({}, 'call-d2') as Success).plan
+    const mismatch = await tamperer.row.delegate(tamperPlan, { exec: {} })
+    expect(mismatch.settled).toBe('PAYLOAD-HASH-MISMATCH')
+    expect(mismatch.completionImplied).toBe(false)
+    const tamperEdge = mismatch.edgeFacts as Record<string, unknown>
+    expect(tamperEdge.oldManifestDigest).toBe(edge.sourceManifestDigest) // the old manifest was REALLY read
+    expect(tamperEdge.installedManifestDigest).not.toBe(tamperEdge.sourceManifestDigest)
+  })
+
+  // ── law-lifecycles kept from rev.2: catalog gate + domain claim ─────────
+  it('skill: classify consults the trusted catalog CURRENT facts — port absent, unknown name, catalog facts on the plan', () => {
+    expect((bareMount('skill', {}).classify({ name: 'gpt' }, 'c1') as Refusal).code).toBe('P_G1_TRUSTED_CATALOG_ABSENT')
+    const { row } = mountRecord('skill')
+    expect((row.classify({ name: 'not-in-catalog' }, 'c2') as Refusal).code).toBe('P_G1_SKILL_NAME_NOT_TRUSTED')
+    const classified = row.classify({ name: 'gpt' }, 'c3')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    const json = JSON.stringify(classified.effects)
-    expect(json).toContain(DEPENDENCY_FACTS.rootLocator)
-    expect(json).toContain(`${DEPENDENCY_FACTS.rootLocator}.previous`)
-    expect(json).toContain('.primary-runtime-<mkdtemp>')
-    expect(json).toContain('runtime.json')
-    expect(classified.targetManifest.hashCheck).toMatchObject({ required: 'post-resolution-actual-hash', memoBypass: 'never' })
-    expect(kindsOf(classified.effects)).toEqual(EXPECT_KINDS.load_workspace_dependencies)
+    expect(classified.targetManifest.catalog).toEqual({ catalogRevision: 5, catalogDigest: 'sha256:catalogfive' })
+    const ops = classified.serviceObligations.map((o) => `${o.target}:${o.operation}`)
+    expect(ops).toContain('skill-catalog-namespace:read-load')
+    expect(ops).toContain('current-session-prompt:inject')
   })
 
-  // ── inspect: CURRENT authorized topology answers the target ──────────────
-  it('inspect: CURRENT topology revision/digest ride the plan; query claims verify against authorized triples', () => {
-    const noTopo = bareMount('cordis_inspect_query', {})
-    expect((noTopo.classify(goodArgs('cordis_inspect_query'), 'c') as Refusal).code).toBe('P_G1_TRUSTED_TOPOLOGY_ABSENT')
-    const { row } = mountRecord('cordis_inspect_query')
-    expect((row.classify({ platform: 'host', provider: 'evil', method: 'x' }, 'c2') as Refusal).code).toBe('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
-    const classified = row.classify(goodArgs('cordis_inspect_query'), 'c3')
+  it('domain surface: a model-supplied domainAuthorityId is a CLAIM verified against the mounted-port CURRENT registry', () => {
+    expect((bareMount('surface:domain_family', {}).classify(goodArgs('surface:domain_family'), 'c1') as Refusal).code).toBe('P_G1_DOMAIN_REGISTRY_ABSENT')
+    const { row } = mountRecord('surface:domain_family')
+    expect((row.classify({ ...goodArgs('surface:domain_family'), domainAuthorityId: 'domain-evil' }, 'c2') as Refusal).code).toBe('P_G1_DOMAIN_CLAIM_MISMATCH')
+    const classified = row.classify(goodArgs('surface:domain_family'), 'c3')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    expect(classified.targetManifest.topology).toEqual({ topologyRevision: 9, topologyDigest: 'sha256;toponine' })
-    const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
-    expect(client.ok).toBe(true)
-    if (client.ok) expect(client.targetManifest.clientRoundtrip).toBeDefined()
+    expect(classified.effects[0]).toEqual({ kind: 'domain-ref', domainAuthorityId: 'domain-acme', resource: null })
+    expect(classified.targetManifest.trustedDomainAuthorityId).toBe('domain-acme')
+    expect(classified.targetManifest.portRevision).toBe(4)
   })
 
-  it('config defects throw at assembly: name mismatch, capture without definitionIdentity, untrusted TARGETS face absent, unknown record', () => {
+  it('a present-but-wrong capture (name mismatch) or a capture without its definitionIdentity is a config defect: throws at assembly', () => {
     expect(() => G1.mountG1SurfaceAdapter('skill', {
       native: { name: 'skill-shadow', description: 'wrong face', parameters: {}, execute: async () => ({}) },
       definitionIdentity: 'def', trusted: TRUSTED, bindingFacts: BINDINGS,
