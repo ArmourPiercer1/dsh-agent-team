@@ -1,0 +1,7 @@
+OFFICIAL r18 PIN (root 17:30: six-mirror sync + head0 = READY, no further confirmation)
+SHA 2188f15ce953977c681dedeb079a36ca27ddbbd7 (int tip; pure mirror commit over d5454cb23: 6 TS dist mirrors committed by pnpm build RC=0 + glue RC=0, zero src change)
+PER-STEP TRUE RCs at clean checkout (porcelain 0 before and after; no || fallback): git checkout RC=0 porcelain=0; pnpm --filter './packages/client' run build RC=0; pnpm run build:composition RC=0; node scripts/place-dist-glue.mjs RC=0; pnpm check:artifacts:head RC=0 (HEAD carries its own build, 1788 files); pnpm pack RC=0
+tgz /srv/workspace/dsh-plugins/dsh-agent-team/dev-verify-pack/dsh-agent-team-0.1.1-alpha.2.tgz sha256 5a9aa54c372f55e68855198e4b1a9930a399ed52ad670a732a4edd4964613360 size 3648470 B records 1813
+dist seam INSIDE tgz: agent-bindings.mjs fsSeam x2, pa-mount-registry.mjs x1 (measured); identity dsh-agent-team@0.1.1-alpha.2 peers 9 exact
+SCOPE: image verifies the ALREADY-REVIEWED r17 scope; 957 INSPECT/CONTROL rules + B-MCP exist only as unwired candidates on this surface (no registrations reach the runtime), not enabled by this package
+LOGS: client-build-2188f15ce.log build-composition-2188f15ce.log glue-2188f15ce.log check-head-2188f15ce.log pack-2188f15ce.log (this dir); erroneous d545 receipts KEPT unchanged
