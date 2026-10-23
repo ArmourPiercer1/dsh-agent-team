@@ -146,7 +146,13 @@ const PR1_CONSUMERS = Object.freeze([
   // only through the additive deps.web accessor in plugin/host.ts. Zero host edits,
   // zero new ledger, gate keys read RAW and refused typed inside the assembly.
   'runtime/web-gateway/',
-])
+  // A5-M2 B-IMAGE (governed read_image arm) - booked by the CENTER integration round
+  // (the PR #360 face), NOT by the lane: the arm consumes the frozen effect grammar
+  // only (parseRequestedEffectSet, for its own I+F classify self-check). Its mount -
+  // the takeover-table row plus the imageEnabled key - is deliberately NOT applied,
+  // so no production face reaches it yet; the attachment adapter reaches the store
+  // through injected ports only. Zero lane edits, zero new ledger.
+  'runtime/src/plugin/live/governed-families/image.mjs',])
 
 const SPECIFIER_PATTERNS = [
   /\bfrom\s+['"]([^'"]+)['"]/g,
