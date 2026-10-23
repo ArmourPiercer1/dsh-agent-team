@@ -40,9 +40,11 @@
  *          NOT-ATTEMPTED-with-reason; NO hook forged (root law)
  *   C10 N unknown target -> SESSION_QUERY_SESSION_NOT_FOUND
  *
- * GATES: pre-flight BEFORE any boot; refuses on any failure. Ports 3186
- * then 3187 only (3080/3180-3184/3497 blacklisted: dev + p6t6 family +
- * image owner). Budget: teardown = st_blocks×512 deduped by (dev,ino),
+ * GATES: pre-flight BEFORE any boot; refuses on any failure. Ports: the
+ * ruled 3186=WEB + 3187=MOCK endpoints, fixed (no fallback, no scan range;
+ * 3080/3180-3184/3497 blacklisted). Budget: pre-launch verify + phase rechecks
+ * of task-new allocated vs the 250MB total-world account; the 200MB cap is
+ * the separate recovery-increment account. Budget: teardown = st_blocks×512 deduped by (dev,ino),
  * own-exclusive = nlink <= in-world refs, dirs separate; FAIL above 200MB.
  *
  * USAGE: `node g6-host-kit.mjs [--boot] [--port 3186]` — WITHOUT --boot the
@@ -66,6 +68,7 @@ const args = process.argv.slice(2)
 const argValue = (name, dflt) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : dflt }
 const DO_BOOT = args.includes('--boot')
 const BASE_PORT = Number(argValue('--port', 3186))
+const MOCK_PORT_FIXED = Number(argValue('--mock-port', 3187))
 const BLACKLIST_PORTS = new Set([3080, 3180, 3181, 3182, 3183, 3184, 3497])
 
 // Lane law: world + evidence live in THIS worktree. findTestRepoRoot climbs
@@ -97,6 +100,23 @@ const BUDGET_CAP_BYTES = 200 * 1024 * 1024
 // teardown. Preflight therefore refuses when free space is under the floor
 // and records the ledger of known heavy scenes.
 const MIN_FREE_BYTES = Number(argValue('--min-free-bytes', 5 * 1024 * 1024 * 1024))
+// Root 23:2x: the approved TOTAL-WORLD budget (250MB) and the recovery
+// increment (200MB) are SEPARATE accounts; the free-floor and scene ledger
+// do NOT substitute for increment accounting. Before launch the kit verifies
+// THIS TASK's new allocated vs remaining world budget and re-checks at key
+// phases; exceeding stops the relevant steps (budgetHalt), never the scene.
+const TASK_WORLD_CAP_BYTES = Number(argValue('--task-cap-bytes', 250 * 1024 * 1024))
+const RECOVERY_CAP_BYTES = 200 * 1024 * 1024
+const RECOVERY_RECORD_BYTES = 46465024 + 21999616 // root-law accounting of the 874-install scene, measured 22:4xZ
+const MISLANDED_EVIDENCE_DIRS = [
+  '/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a5m2-g6host/run-2026-10-23T22-56-46-169Z',
+  '/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a5m2-g6host/run-2026-10-23T22-57-03-336Z',
+]
+function taskNewAllocated() {
+  let n = 0
+  for (const d of [RUN_DIR, WORLD, ...MISLANDED_EVIDENCE_DIRS]) { try { n += allocatedFootprint(d).totalAllocated } catch { /* absent */ } }
+  return n
+}
 const SCENE_LEDGER = [
   ['frozen-512-scene-dev-pnp-store', '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/.pnp-store'],
   ['frozen-512-scene-plugin-install', '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/plugin-install'],
@@ -396,10 +416,15 @@ async function runPrechecks() {
     return { name, path, allocatedApprox: bytes }
   })
   ck('scene-ledger-recorded', true, JSON.stringify(sceneLedger.map((x) => `${x.name}=${x.allocatedApprox}B`)).slice(0, 280))
-  const port = await freePort([BASE_PORT, BASE_PORT + 1])
-  if (port === undefined) throw new Error(`no free non-blacklisted port in [${BASE_PORT}, ${BASE_PORT + 1}] (3080 dev / 3180-3184 p6t6 / 3182,3497 image owner)`)
-  const mockPort = await freePort([3191, 3192, 3193, 3194, 3195])
-  if (mockPort === undefined) throw new Error('no free mock provider port 3191-3195')
+  // Root 23:2x: the ruled window 3186/3187 = web + mock ENDPOINTS (not two
+  // web candidates). Fixed minimal configuration; NO extra scan ranges. A
+  // busy web port is a refusal, not a fallback. The 3191-alternative applies
+  // only on EVIDENCED occupancy of 3187 by another approved lane (root 23:02)
+  // — none observed; this kit then refuses rather than self-widening.
+  const port = await freePort([BASE_PORT])
+  if (port === undefined) throw new Error(`web port ${BASE_PORT} busy/blacklisted — refusing (3187 is the mock endpoint, not a web fallback)`)
+  const mockPort = MOCK_PORT_FIXED === port ? undefined : await freePort([MOCK_PORT_FIXED])
+  if (mockPort === undefined) throw new Error(`mock port ${MOCK_PORT_FIXED} busy/blacklisted/equals-web — refusing (no self-widening; occupancy conflict evidence needed for an alternative per root 23:02)`)
   return { port, mockPort, hostTree: HOST_TREE, freeBytes, minFreeBytes: MIN_FREE_BYTES, sceneLedger, checks, row: { name: PRODUCTION_ROW_NAME, glue: INSTALLED_GLUE, seam: INSTALLED_SEAM }, rootSessionId: ROOT_G6 }
 }
 const WORLD_NAME_CLEAN = `.a5m2-g6host-${RUN_STAMP}Z`.replace(/^\./, '')
@@ -441,6 +466,13 @@ async function main() {
   writeFileSync(join(RUN_DIR, 'prechecks.json'), JSON.stringify({ ...pre, cases: CASES.map((c) => ({ id: c.id, tool: c.tool, expect: c.expect })), boot: DO_BOOT }, null, 2))
   log(`pre-checks PASS (web ${pre.port}, mock ${pre.mockPort}); production row = installed 874 pack`)
   if (!DO_BOOT) { writeFileSync(join(RUN_DIR, 'READY-TO-BOOT.json'), JSON.stringify({ ready: true, note: 'no --boot given; nothing spawned' }, null, 2)); log('pre-flight-only mode: READY-TO-BOOT, exit 0'); return }
+
+  // PRE-LAUNCH budget verification (root 23:2x): this task's new allocated
+  // vs the remaining TOTAL-WORLD budget, recorded before anything spawns.
+  const budgetPre = taskNewAllocated()
+  writeFileSync(join(RUN_DIR, 'budget-preboot.json'), JSON.stringify({ taskNewAllocatedBytes: budgetPre, taskWorldCapBytes: TASK_WORLD_CAP_BYTES, remainingBytes: TASK_WORLD_CAP_BYTES - budgetPre, recoveryAccount: { capBytes: RECOVERY_CAP_BYTES, recordedNewAllocatedBytes: RECOVERY_RECORD_BYTES, status: RECOVERY_RECORD_BYTES <= RECOVERY_CAP_BYTES ? 'under-cap (recorded at root 23:2x)' : 'OVER — root action' } }, null, 2))
+  log(`pre-launch budget: task-new ${budgetPre}B / world-cap ${TASK_WORLD_CAP_BYTES}B (recovery account separate: ${RECOVERY_RECORD_BYTES}B / ${RECOVERY_CAP_BYTES}B)`)
+  if (budgetPre >= TASK_WORLD_CAP_BYTES) throw new Error(`pre-launch budget REFUSAL: task-new ${budgetPre}B >= world cap ${TASK_WORLD_CAP_BYTES}B`)
 
   // model endpoint wiring (pr-d :1473-1480 prior art): the trusted env layer
   // the host's deepseek-official provider reads for its base URL.
@@ -510,6 +542,13 @@ async function main() {
   if (S.w1Child === null) await dieFatal('member child session id not observable in durable ledger facts')
 
   // ── cases on the leader (P) session ──────────────────────────────────────
+  let budgetHalt = false
+  const phaseBudgetCheck = (where) => {
+    const b = taskNewAllocated()
+    writeFileSync(join(RUN_DIR, `budget-${where}.json`), JSON.stringify({ at: new Date().toISOString(), where, taskNewAllocatedBytes: b, taskWorldCapBytes: TASK_WORLD_CAP_BYTES }, null, 2))
+    if (b >= TASK_WORLD_CAP_BYTES) { budgetHalt = true; log(`BUDGET-HALT at ${where}: task-new ${b}B >= cap ${TASK_WORLD_CAP_BYTES}B — remaining case steps STOPPED`) }
+  }
+  phaseBudgetCheck('post-boot')
   let c1 = await runCaseTurn(CASES[0], ROOT_G6)
   if (c1.status === 'DONE' && DENY_TOKENS.some((d) => c1.toolResult.includes(d))) {
     const how = await resolvePairingIfNeeded('g6-ledger-pair')
@@ -529,6 +568,8 @@ async function main() {
       results.push({ id: 'C2b', ...c2b, expect: 'ok' })
     }
     await resolvePairingIfNeeded(`g6-ledger-${id}`) // a NEW realm may gate a fresh pairing
+    if (budgetHalt) break
+    phaseBudgetCheck(`case-${id}`)
   }
 
   // C7: archive w1 (leader MODEL tool), then leader queries the archived child.
@@ -565,10 +606,10 @@ async function main() {
   try { stopInfo = await instance.stop({ timeoutMs: 30_000 }); log(`host stopped (killed=${stopInfo.killed} portFree=${stopInfo.portFree})`) } finally { try { await mock.close() } catch { /* port check below is authoritative */ } }
   await waitForPortFree(pre.port, 30_000).catch(() => log('WARN port not free 30s after stop'))
   const fp = allocatedFootprint(WORLD)
-  writeFileSync(join(RUN_DIR, 'footprint.json'), JSON.stringify({ world: WORLD, ...fp, cap: BUDGET_CAP_BYTES }, null, 2))
+  writeFileSync(join(RUN_DIR, 'footprint.json'), JSON.stringify({ world: WORLD, ...fp, recoveryIncrementCap: BUDGET_CAP_BYTES, taskNewAllocatedBytes: taskNewAllocated(), taskWorldCapBytes: TASK_WORLD_CAP_BYTES, budgetHalt }, null, 2))
   const fails = verdicts.filter((v) => v.verdict === 'FAIL').length
   log(`verdicts: ${verdicts.filter((v) => v.verdict === 'PASS').length} PASS / ${fails} FAIL / ${verdicts.filter((v) => v.verdict === 'NOT_ATTEMPTED').length} NOT_ATTEMPTED; world own-allocated ${fp.ownExclusiveAllocated}B (+dirs ${fp.dirBytes}B) / cap ${BUDGET_CAP_BYTES}B`)
-  process.exit(fails > 0 || fp.ownExclusiveAllocated + fp.dirBytes > BUDGET_CAP_BYTES ? 2 : 0)
+  process.exit(fails > 0 || budgetHalt === true || fp.ownExclusiveAllocated + fp.dirBytes > BUDGET_CAP_BYTES ? 2 : 0)
 }
 
 main().catch((e) => dieFatal(String(e?.stack ?? e)))
