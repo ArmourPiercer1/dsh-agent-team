@@ -645,7 +645,6 @@ describe('A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, al
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const handoff = await opening
     const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
-    // eslint-disable-next-line no-console
     console.info('RR3 kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + String(driftRows.length))
     expect(handoff.kind, 'synthetic control: the seam-threaded decision authorizes').toBe('authorized')
     expect(driftRows.length).toBe(0)
