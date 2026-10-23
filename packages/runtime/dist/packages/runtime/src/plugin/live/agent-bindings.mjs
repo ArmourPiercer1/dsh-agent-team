@@ -2406,6 +2406,15 @@ export function createAgentBindings(deps) {
       let a5ImageInject = null
       let a5ScheduleInject = null
       let a5ImagePlacedArm = null
+      // A5M2 PROVIDER-IDENTITY SUPPLY (site 4, the ONE reader of record): same
+      // outer-scope discipline as the inject above — it is WIRED ONCE in the
+      // mount assembly (where the plane injection is armed) and READ at two
+      // later moments that live in different blocks: the family registration
+      // after publish, and every consumption the arm/plane performs. It
+      // resolves the LIVE binding authority through the same dispatcher getter
+      // the durable facts read `facts.binding` from; it stores nothing and has
+      // no durable-row / receipt / plane channel (FP-D is structural).
+      let a5ImageProviderIdentity = null
       // A5M2-G6 B-SESSION-QUERY: same outer-scope discipline — the inject is
       // armed next to the plane assembly, the registration lands AFTER
       // publish at the shared fill point below (both must see one binding).
@@ -2874,6 +2883,39 @@ export function createAgentBindings(deps) {
           a5WriteInject = Object.freeze({ arm: writeArm, description: nativeWriteDefinition.description })
           observations.push(`a5m2-write: arm BOUND for ${sessionId} (native=${writeNativeIdentity.slice(0, 32)} member=${writeMemberAgentId.slice(0, 16)} header=${writeSessionHeaderId.slice(0, 16)} root=${writeRootDir.slice(0, 32)})`)
         }
+        // ── A5M2 PROVIDER-IDENTITY SUPPLY (candidate 2026-10-23 SITE 4: wired
+        // ONCE for this mount, here and nowhere else) ───────────────────────
+        // The ONE provider authority is the LIVE binding authority the Guard /
+        // install path already produces — the very dispatcher surface the
+        // call-level facts read `facts.binding` from (pa-mount-registry.mjs
+        // `readCallAuthorityFacts`: `m.guard?.dispatcher?.surface` → the unique
+        // verified + ACTIVE entry → `entry.binding`, the same object this mount
+        // record publishes below). Supply and durable row therefore read the
+        // SAME getter: r18's three-way tie agrees from ONE source instead of
+        // three constants. The reader's inputs are that surface ONLY — no plane
+        // reference, no mount record, no Control row, no receipt — which is why
+        // a row can never become a provider authority through it (FP-D is
+        // structural, not convention). An entry that is absent, unverified, not
+        // ACTIVE, or carries a non-string / empty providerId answers NOTHING:
+        // each consumer fails closed on `undefined` through its own existing
+        // refusal path (mount-refused here, the arm's consumption code at the
+        // consumption point). This module owns NO provider constant for the
+        // image family; the todo/write placement constants carry no provider
+        // comparison and stay untouched (root: do not copy the write pattern —
+        // and never copy its constant).
+        const a5LiveBindingProviderId = (placementName) => {
+          const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(placementName)
+          const binding = entry?.binding
+          if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+            || typeof binding?.providerId !== 'string' || binding.providerId.length === 0) return undefined
+          return binding.providerId
+        }
+        /** The image family's reader: the live authority behind THIS mount's
+         *  read_image placement, ASKED at every consumption moment (the arm is
+         *  constructed before bind, so the value is never captured). THIS is the
+         *  single wiring point (site 4) — the outer-scope binding above is
+         *  assigned exactly once, here, and never re-assigned. */
+        a5ImageProviderIdentity = () => a5LiveBindingProviderId(A5_IMAGE_TOOL_NAME)
         // A5-M2 B-IMAGE (CENTER vertical, root-authorized 实际接线): the governed
         // read_image row's PLACING assembly. The arm law differs from todo/write
         // in the one point the WeakMap algebra imposes (root central card on
@@ -2991,7 +3033,13 @@ export function createAgentBindings(deps) {
                 }
                 a5ImagePlacedArm = createGovernedReadImageArm({
                   definitionIdentity: identity,
-                  providerId: 'a5p5-plane',
+                  // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 1): the arm is built at
+                  // the PLACEMENT moment, which is BEFORE `bindOwnTools` — no
+                  // constant can be honest here, and the value at construction
+                  // would stay wrong forever. So the arm receives the mount's
+                  // ONE reader and re-asks the live binding authority at each
+                  // consumption moment (arm side stores nothing).
+                  provider: a5ImageProviderIdentity,
                   realmId: a5PlaneRealmId,
                   namespaceRoot: imageRootDir,
                   readBounded: imagePort,
@@ -3777,10 +3825,27 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (arm/feed identity mismatch)`)
             throw error
           }
+          // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 2): the provider identity this
+          // family registers under is the LIVE binding authority read AT THIS
+          // MOMENT — after bindOwnTools + publish, so the entry exists — and NOT
+          // a value carried off the arm (the arm was constructed before bind;
+          // reading it back from the arm was the second constant of the r18
+          // drift). An authority that answers nothing registers NOTHING: the
+          // mount is refused through the SAME existing mount-refused path with
+          // its own code, and there is no fallback constant to register under.
+          const imageProviderIdentity = a5ImageProviderIdentity()
+          if (typeof imageProviderIdentity !== 'string' || imageProviderIdentity.length === 0) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed image mount refused for '${sessionId}': the live binding authority behind the read_image placement answers no providerId at the registration moment — the family registration gets no guessed identity, and no row or arm value substitutes for it`,
+            )
+            error.code = 'alpha5-image-arm-mount-refused'
+            observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (no live provider authority)`)
+            throw error
+          }
           registerA5GovernedFamily(imageFed.definitionIdentity, {
             familyId: a5ImagePlacedArm.familyId,
             adapterRevision: a5ImagePlacedArm.adapterRevision,
-            providerIdentity: a5ImagePlacedArm.providerId,
+            providerIdentity: imageProviderIdentity,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
         }
