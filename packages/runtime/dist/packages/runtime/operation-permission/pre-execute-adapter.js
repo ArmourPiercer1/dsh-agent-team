@@ -914,11 +914,16 @@ export function installParameterPermissionListener(agentCtx, params) {
             }
             if (handoff.kind === 'refused') {
                 // Mismatch or PA fault: FAIL CLOSED, in place. No native Ask is
-                // opened, no mark is made, `next()` is never awaited, and the state
-                // this call touched is voided now (the terminal leg stays idempotent
-                // against this early close).
-                paHandoffExecs.delete(exec);
-                paHandoffPorts.close(exec);
+                // opened, no mark is made, `next()` is never awaited. Cleanup
+                // ownership is STATED by the trusted port and NEVER guessed from
+                // `handoff.code`: a duplicate entry that owns nothing must not close,
+                // because that close voided the hand-off the FIRST leg still needed.
+                // Anything not explicitly owned is left alone, and the real
+                // `'tools/result'` terminal leg stays the backstop.
+                if (handoff.ownsHandoff === true) {
+                    paHandoffExecs.delete(exec);
+                    paHandoffPorts.close(exec);
+                }
                 observe({ stage: 'pa-handoff-refused', callId, tool: name, code: handoff.code, detail: handoff.detail });
                 return { kind: 'deny', reason: `${handoff.code} — ${handoff.detail}` };
             }

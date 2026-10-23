@@ -1468,3 +1468,61 @@ describe('A5a DR-D: mixed failed lanes → ONLY the deny lane flips; the reason 
     expect(rows[0]?.['paths']).toEqual(['locked.txt'])
   })
 })
+
+describe('A5-M2 port→adapter — cleanup ownership is STATED, never guessed', () => {
+  it('a refusal that owns NOTHING does not close; an owned refusal closes exactly once', async () => {
+    // The root's last point: `refused` alone told the adapter nothing about
+    // who owns the state, so the adapter closed on EVERY refusal and the
+    // duplicate entry ended the hand-off the FIRST leg still needed. The
+    // trusted port now states it, and the adapter obeys the statement.
+    // A run-unique world name: `createP6T4World` is a CREATE (it refuses an
+    // existing `team_domain`), and this case builds its own world rather than
+    // going through `createEnv`.
+    const world = await createP6T4World(`a5m2-port-ownership-${Date.now().toString(36)}`, ['leader', 'worker'])
+    const service = createControlService({
+      teamDomain: world.domain,
+      blueprintCatalog: world.catalog,
+      externalPolicyFacts: world.ports.externalPolicyFacts,
+      now: () => P6T4_NOW,
+      waitPollIntervalMs: 10,
+    })
+    const resolver = makeFakeResolver()
+    let outcome: { kind: 'refused'; ownsHandoff: boolean; code: string; detail: string } = {
+      kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_IN_FLIGHT', detail: 'a duplicate entry refuses what another leg owns',
+    }
+    const closed: Array<string> = []
+    const ctx = makeFakeAgentCtx()
+    const disposer = installParameterPermissionListener(ctx, {
+      policy: W1_POLICY,
+      resolveTarget: resolver.resolver,
+      controlService: service,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      targetInstanceId: WORKER_ID,
+      isLeader: false,
+      paReadHandoff: {
+        open: async () => outcome,
+        close: (exec) => { closed.push(String((exec as { callId?: string }).callId ?? 'unknown')) },
+        onTerminal: () => () => {},
+      },
+    })
+    const duplicate = await ctx.trigger(
+      makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'a5m2-dup' }),
+      makeNext().fn,
+    )
+    const closesForDuplicate = closed.length
+    outcome = { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_MISMATCH', detail: 'this entry owns the state it refuses' }
+    const owned = await ctx.trigger(
+      makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'a5m2-owned' }),
+      makeNext().fn,
+    )
+    const closesForOwned = closed.length - closesForDuplicate
+    disposer()
+
+    expect(duplicate.kind, 'a refusal still fails closed in place — no allow leaks').toBe('deny')
+    expect(closesForDuplicate, 'the duplicate refused WITHOUT owning state must not close the first leg').toBe(0)
+    expect(owned.kind).toBe('deny')
+    expect(closesForOwned, 'an explicitly owned refusal is cleaned exactly once').toBe(1)
+    expect(closed, 'and the exec cleaned is the one that owned the state').toEqual(['a5m2-owned'])
+  })
+})

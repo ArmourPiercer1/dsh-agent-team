@@ -457,6 +457,10 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     // it reuses no answer, mints nothing and walks nothing a second time.
     expect(second.kind, 'a duplicate open is refused, never an authorization').toBe('refused')
     expect((second as unknown as { code?: string }).code).toBe('PA_HANDOFF_IN_FLIGHT')
+    // The REAL port states cleanup ownership (the adapter obeys this statement
+    // and never guesses from `code`): a duplicate says plainly that it owns
+    // nothing to clean, so the adapter leaves the first leg alone.
+    expect((second as unknown as { ownsHandoff?: boolean }).ownsHandoff, 'the real port states: this entry owns nothing to clean').toBe(false)
     expect(asked.length, 'the duplicate asked the facts entry ZERO extra times').toBe(askedAfterFirst)
     // And the refusal must not disturb the leg that OWNS the token: the close-out
     // bug terminalised the token underneath the first leg, so the first call

@@ -1827,7 +1827,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // The name IS this mount's governed read, so the effect-set question
             // belongs to PA: with no execution identity the call REFUSES, it
             // never falls back to the pre-hand-off lane.
-            return { kind: 'refused', code: 'PA_HANDOFF_UNBOUND', detail: 'this governed read carries no execution token, so no PA hand-off can be opened or redeemed for it' }
+            return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNBOUND', detail: 'this governed read carries no execution token, so no PA hand-off can be opened or redeemed for it' }
           }
           return await readExecutor.paHandoffOpen(exec.arguments, {
             token,
