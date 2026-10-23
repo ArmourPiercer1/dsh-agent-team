@@ -837,17 +837,20 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row2.requestId, decision: 'deny' })
     await expect(second).rejects.toThrow(/APPROVAL_DENIED/)
     expect(world.legInputs.length).toBe(2)
+    // the file's own one-read cast idiom (see the byteCap/callId legs): the
+    // length guard above is the fact; the cast only carries it past tsc.
+    const [leg1, leg2] = world.legInputs as [Record<string, unknown>, Record<string, unknown>]
     const fpOf = (legInput: Record<string, unknown>) => String((legInput.request as { parametersFingerprint?: string }).parametersFingerprint ?? '')
-    const fp1 = fpOf(world.legInputs[0])
-    const fp2 = fpOf(world.legInputs[1])
+    const fp1 = fpOf(leg1)
+    const fp2 = fpOf(leg2)
     expect(fp1).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(fp2).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(fp1).not.toBe(fp2)
     // …over the SAME approved target (the difference is the ORIGINAL
     // parameter spelling, not a different file).
     const targetOf = (legInput: Record<string, unknown>) => String((legInput.family as { targetManifest?: { canonicalTarget?: string } }).targetManifest?.canonicalTarget ?? '')
-    expect(targetOf(world.legInputs[0])).toBe(join(world.fsRoot, 'good.png'))
-    expect(targetOf(world.legInputs[1])).toBe(join(world.fsRoot, 'good.png'))
+    expect(targetOf(leg1)).toBe(join(world.fsRoot, 'good.png'))
+    expect(targetOf(leg2)).toBe(join(world.fsRoot, 'good.png'))
     expect(events.length).toBe(0)
   })
 
