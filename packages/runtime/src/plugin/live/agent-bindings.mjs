@@ -401,18 +401,29 @@ let a5G3TerminalFaces
 async function loadA5G3TerminalFaces () {
   if (a5G3TerminalFaces !== undefined) return a5G3TerminalFaces
   const terminalPkg = await import('@deepseek-ai/dsh-terminal')
+  const bashPkg = await import('@deepseek-ai/dsh-terminal-bash')
   const sessionModule = await import('@deepseek-ai/dsh-terminal-bash/src/session.ts')
   const configModule = await import('@deepseek-ai/dsh-terminal-bash/src/config.ts')
   if (typeof terminalPkg.TerminalBackendCleanupError !== 'function'
     || typeof terminalPkg.TerminalSessionService !== 'function'
+    || typeof bashPkg.Config !== 'function'
     || typeof sessionModule.LocalPtySession !== 'function'
     || typeof configModule.resolveConfig !== 'function'
     || typeof configModule.validateConfig !== 'function') {
-    throw new Error('the pinned terminal faces did not answer their published exports (TerminalBackendCleanupError / TerminalSessionService / LocalPtySession / resolveConfig / validateConfig)')
+    throw new Error('the pinned terminal faces did not answer their published exports (TerminalBackendCleanupError / TerminalSessionService / Config / LocalPtySession / resolveConfig / validateConfig)')
   }
   a5G3TerminalFaces = Object.freeze({
     cleanupErrorClass: terminalPkg.TerminalBackendCleanupError,
     TerminalSessionServiceClass: terminalPkg.TerminalSessionService,
+    // THE REAL CONFIG SCHEMA (root 21:27): the main entry's exported
+    // `Config` is a CALLABLE Schemastery schema (config.ts:96 `z<Config>`,
+    // applied by the Host plugin loader itself) — it MATERIALIZES the
+    // published defaults (backendType/rows/cols/disposeGraceMs/...), and
+    // resolveConfig documents its input as the SCHEMA-RESOLVED config
+    // (config.ts:79-81). The composition therefore is
+    // `resolveConfig(Config(raw))` then `validateConfig` — never a hand-
+    // copied default, never a `.parse` invention, never a new Core export.
+    Config: bashPkg.Config,
     LocalPtySession: sessionModule.LocalPtySession,
     resolveConfig: configModule.resolveConfig,
     validateConfig: configModule.validateConfig,
@@ -3441,7 +3452,12 @@ export function createAgentBindings(deps) {
           const g3OpenBase = (() => {
             if (g3Cfg.sessionConfig === undefined || g3Cfg.sessionConfig === null) return null
             try {
-              const resolved = g3Faces.resolveConfig({ ...g3Cfg.sessionConfig })
+              // the REAL schema materializes the defaults first (root 21:27):
+              // Config(raw) is the Schemastery call the Host loader itself
+              // applies; resolveConfig then owns the dialect shell defaults;
+              // validateConfig asserts the published invariants. A malformed
+              // raw throws HERE (the diagnostic below names it).
+              const resolved = g3Faces.resolveConfig(g3Faces.Config({ ...g3Cfg.sessionConfig }))
               g3Faces.validateConfig(resolved)
               return Object.freeze({
                 argv: Object.freeze([resolved.shellPath, ...(Array.isArray(resolved.shellArgs) ? resolved.shellArgs.map(String) : [])]),
@@ -3589,7 +3605,7 @@ export function createAgentBindings(deps) {
                   ...(Number.isInteger(plan?.rows) ? { rows: plan.rows } : {}),
                   ...(Number.isInteger(plan?.cols) ? { cols: plan.cols } : {}),
                 }
-                const resolved = g3Faces.resolveConfig(config)
+                const resolved = g3Faces.resolveConfig(g3Faces.Config(config))
                 g3Faces.validateConfig(resolved)
                 return new g3Faces.LocalPtySession(handle, resolved)
               },
