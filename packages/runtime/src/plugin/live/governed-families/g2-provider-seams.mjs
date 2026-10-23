@@ -1,11 +1,12 @@
 /**
  * A5-M2 G2 PROVIDER SEAMS — the REAL M0 provider-seam implementations for the
- * three ungoverned connector families (ROOT ROUND-2 card + RE-REVIEW
- * 502bc8316). The seams OWN ordering and per-lease facts for the lane that
- * registers through them. Component status: UNWIRED — wiring stays the
- * CENTER; no Host process, no network, no Windows legs; the legs in
- * a5m2-g2-provider-seams.test.ts are provider/lease DOUBLES, not real-Host
- * proof, and the ordering/capture legs go RED if the sequencing is removed.
+ * three ungoverned connector families (ROOT ROUND-2 card; RE-REVIEW
+ * 502bc8316; FINAL NARROW RULING c0e). The seams OWN ordering and per-lease
+ * facts for the lane that registers through them. Component status: UNWIRED —
+ * wiring stays the CENTER; no Host process, no network, no Windows legs; the
+ * legs in a5m2-g2-provider-seams.test.ts are provider/lease DOUBLES, not
+ * real-Host proof, and the ordering/capture legs go RED if the sequencing or
+ * capture is removed.
  *
  * PUBLIC-ENTRY HONESTY (all @639ed01539, pristine host checkout; these are
  * the ONLY host faces this module builds against — no private API, no patch,
@@ -18,6 +19,12 @@
  *         none-configured single-or-ambiguous :184-190)        index.ts:172-190
  *         provider shape `{id, available(), search|fetch(request, signal?)}`
  *                                                              web/web/src/types.ts:102-119
+ *         METHOD identity (c0e-2) is the JS `provider.search`/`provider.fetch`
+ *         FUNCTION OBJECT plus `provider.id` — frozen at bind and re-verified
+ *         immediately before the real call; the destination envelope is
+ *         endpoint origin + immutable config identity, supplied by the REAL
+ *         factory/config through a REQUIRED live reader (origin alone never
+ *         passes; no HTTP-method string stand-in).
  *         The seam is INERT outside the Team scope: it registers nothing by
  *         itself; only a Team-scoped assembly effect puts it behind the
  *         configured id (a noTeam install registers the raw provider and the
@@ -28,49 +35,45 @@
  *                                    mcp/mcp-resources/src/index.ts:26-33
  *         request union {resources/list, resources/templates/list,
  *         resources/read}                        mcp-resources/src/index.ts:21-24
- *         runtime internals are PRIVATE (layers :51, request :122), so the
- *         live connection is only observable to the connection-OWNING
- *         assembly: the seam REQUIRES its capture point (captureConnection)
- *         and lets NO call through unobserved.
- *  - BROWSER  the seam is a governed resource lease written to the OWNER's
- *         real contract, browser-use-runtime/src/index.ts @639ed01539:
+ *         runtime internals are PRIVATE (layers :51, request :122) and the
+ *         runtime's own request-time re-selection picks its OWN client —
+ *         forwarding through it is therefore NOT client binding (c0e-3).
+ *         This is the M0 OWNED-provider lane: the seam executes the captured
+ *         GENERATION-SPECIFIC dispatch on the captured CLIENT OBJECT itself
+ *         (the owning assembly's real client), never a re-selection, never a
+ *         self-proving getter string. No call passes unobserved: a missing
+ *         or incomplete capture point refuses.
+ *  - BROWSER  the lease is written to the OWNER's real contract,
+ *         browser-use-runtime/src/index.ts @639ed01539:
  *           · OwnedSessionResource = { value, close(): Promise<void> } —
  *             close is REQUIRED (:12-18); a handle without close is a
  *             contract breach, never a silently-"closed" resource.
  *           · open "rejects only after rolling back partial acquisition" —
  *             the FACTORY owns half-open rollback (:23-30; runtime comment
- *             :174 "open() owns rollback; a failed acquisition has no
- *             remaining resource"; stagehand's own open does exactly this,
- *             browser-use-stagehand-native/src/index.ts:108-115).
+ *             :174; the real factory does exactly this: launchChromium then
+ *             openBrowserWorker, and on connect failure await chromium.close()
+ *             — browser-use-stagehand-native/src/index.ts:103-130).
  *           · a PENDING open counts as the entry the moment it starts
  *             (entries.set with `ready` pending, :181) and closeEntry AWAITS
  *             the pending open and closes whatever arrives (:186-197) —
- *             this lease does the same: a pending launch is in-flight, and
- *             a late-arriving launch closes itself.
+ *             this lease does the same. c0e-1: when a late-arriving
+ *             resource's close FAILS, the handle is RETAINED and the SAME
+ *             drainPromise REJECTS CLOSE_FAILED — the lease never reports a
+ *             fake 'closed' and the resource is never dropped.
  *           · a FAILED close retains the entry and REJECTS disposal
- *             (:131-137) — this lease reports CLOSE_FAILED and never a fake
- *             'closed'.
- *         LAUNCH-OWNER GAP (reported, not faked): the six native stagehand
- *         tools' launch owner is constructed PLUGIN-INTERNALLY
- *         (browser-use-stagehand-native/src/index.ts:100-113 @639ed01539);
- *         SessionResourceOptions.open is injectable only at construction
- *         (browser-use-runtime/src/index.ts:22-31), and no public face at
- *         this pin supplies or overrides that factory. This lease IS the
- *         launch owner for a Team-owned provider lane (the §5.5
- *         governed-native-provider close path); it does NOT and cannot own
- *         the host plugin's own lane.
- *
- * HOW THE WEB PIN WORKS (root card 1 + re-review 2, provider level, no Core
- * patch): the owning assembly registers the SEAM as the provider under the
- * declared id and sets its own web config (`searchProvider`/`fetchProvider`,
- * index.ts:55-59) to that id, inside the Team scope. The host selection law
- * fails CLOSED around the pin (configured MISSING / registered-but-
- * UNAVAILABLE), and every dispatch re-verifies the FULL destination envelope
- * — endpoint origin + HTTP-method identity + immutable config identity —
- * from the assembly's CURRENT mount-facts reader (origin alone never
- * passes), then hands the ORIGINAL request object to the REAL provider.
- * Per-lease facts come from the seam's own dispatch ledger — a ledger from
- * inside the selection stack, not a getter on ctx.web.
+ *             (:131-137).
+ *         TEAM-OWNED LAUNCH OWNER (c0e-4, shipped — a named gap is NOT the
+ *         deliverable): createG2BrowserLaunchOwner below IS the real launch
+ *         owner for a Team-owned provider lane, composing the real sequence
+ *         (owned-process launch → runtime open per the native faces
+ *         browser-use-stagehand-native/src/native.ts:95 openNativeBrowser /
+ *         :86 close, host pattern index.ts:105-117) with factory-owned
+ *         half-open rollback and retain-on-close-failure. RESIDUAL GAP
+ *         (reported honestly, not this lane's to fake): the HOST's own six
+ *         stagehand tools construct SessionResources PLUGIN-INTERNALLY
+ *         (browser-use-stagehand-native/src/index.ts:100-113) with no public
+ *         injection point for that factory — that lane cannot be
+ *         interposed at this pin without an upstream seam.
  *
  * STATUS: UNWIRED; `final_declaration` stays null; host use for this lane
  * remains FOREVER-BANNED-FOR-THIS-LANE. Windows dimensions:
@@ -83,7 +86,7 @@ import { URL } from 'node:url'
 
 import { A5_G2_NAMED_BLOCKERS, classifyG2McpSurface } from './g2-connector-adapters.mjs'
 
-export const A5_G2_SEAM_REVISION = 2
+export const A5_G2_SEAM_REVISION = 3
 
 /** Typed refusal codes owned by this module (all prefixed P_G2_SEAM_). */
 export const A5_G2_SEAM_CODES = Object.freeze({
@@ -94,7 +97,6 @@ export const A5_G2_SEAM_CODES = Object.freeze({
   PROVIDER_UNAVAILABLE: 'P_G2_SEAM_PROVIDER_UNAVAILABLE',
   ENDPOINT_DRIFT: 'P_G2_SEAM_ENDPOINT_DRIFT',
   MOUNT_FACTS_INCOMPLETE: 'P_G2_SEAM_MOUNT_FACTS_INCOMPLETE',
-  MOUNT_FACTS_DRIFT: 'P_G2_SEAM_MOUNT_FACTS_DRIFT',
   CONFIG_DRIFT: 'P_G2_SEAM_CONFIG_DRIFT',
   SURFACE_DRIFT: 'P_G2_SEAM_SURFACE_DRIFT',
   CAPTURE_INCOMPLETE: 'P_G2_SEAM_CAPTURE_INCOMPLETE',
@@ -113,14 +115,14 @@ export const A5_G2_SEAM_CODES = Object.freeze({
 })
 
 /**
- * Exact gaps this module reports instead of faking (root re-review 4):
- * the launch-owner seam of the HOST's own stagehand lane is unobservable at
- * this pin; the MCP live transport identity is observable only to the
- * connection-owning assembly.
+ * Exact gaps this module reports instead of faking (root re-review 4 + c0e-4
+ * — the launch-owner gap is NARROWED to the host's own lane because the
+ * Team-owned launch owner SHIPS here; the MCP gap explains why owned-lane
+ * dispatch binds to the captured client instead of the runtime re-selection).
  */
 export const A5_G2_SEAM_NAMED_GAPS = Object.freeze({
-  LAUNCH_OWNER: 'the six native stagehand tools launch from a PLUGIN-INTERNAL SessionResources construction (browser-use-stagehand-native/src/index.ts:100-113 @639ed01539); SessionResourceOptions.open is injectable only at construction (browser-use-runtime/src/index.ts:22-31) and no public face at this pin supplies/overrides that factory — a Team-owned provider lane gets its launch owner HERE (this lease; §5.5 close path), the host plugin lane cannot be interposed without an upstream seam',
-  MCP_LIVE_TRANSPORT: 'McpResourceProvider exposes only request() (mcp/mcp-resources/src/index.ts:26-33 @639ed01539) and the runtime layers are private (:51,:122) — live generation/client identity is observable only to the connection-owning assembly, which is why this seam REQUIRES its captureConnection and lets no call through unobserved',
+  LAUNCH_OWNER: 'RESIDUAL (host lane only): the six native stagehand tools launch from a PLUGIN-INTERNAL SessionResources construction (browser-use-stagehand-native/src/index.ts:100-113 @639ed01539); SessionResourceOptions.open is injectable only at construction (browser-use-runtime/src/index.ts:22-31) and no public face at this pin supplies/overrides that factory. The Team-owned provider lane does NOT need it: its real launch owner is SHIPPED in this file — createG2BrowserLaunchOwner composes the real sequence (launchOwned → openRuntime; native faces openNativeBrowser native.ts:95, close native.ts:86; host pattern index.ts:105-117) with factory-owned half-open rollback',
+  MCP_LIVE_TRANSPORT: 'McpResourceProvider exposes only request() (mcp/mcp-resources/src/index.ts:26-33 @639ed01539); the runtime re-selects its OWN client at request time (:120-125, layers private :51) — forwarding through it cannot bind a captured client (c0e-3). The M0 OWNED-provider lane therefore executes the captured generation-specific dispatch ON THE CAPTURED CLIENT OBJECT; live generation/client identity is supplied by the connection-owning assembly via captureConnection, and no call passes unobserved',
 })
 
 /**
@@ -134,11 +136,12 @@ export const G2_SEAM_BRAND = Symbol.for('dsh.a5m2.g2.seam-wrapped')
  * (browser-use-runtime/src/index.ts:131-197 @639ed01539): new entries
  * refused; every in-flight promise the lease started — INCLUDING a PENDING
  * launch — is awaited; a late-arriving launch closes itself; close runs once
- * after quiescence; a FAILED close retains the entry and REJECTS with
- * CLOSE_FAILED — this lease never reports a fake 'closed'.
+ * after quiescence; ANY failed close (of the settled resource OR of a late
+ * arrival) RETAINS the handle and REJECTS the same drainPromise with
+ * CLOSE_FAILED — this lease never reports a fake 'closed' (c0e-1).
  */
 export const A5_G2_LEASE_DRAIN_SEMANTICS =
-  'lease drain: new run refused from the moment drain begins; every promise the lease itself started (in-flight work AND any PENDING launch) is AWAITED; a launch arriving after the drain began closes itself and is never handed out; close runs exactly once after quiescence; a close that THROWS retains the entry and rejects with CLOSE_FAILED — the lease never reports closed, and CLOSED is terminal with no resurrection path'
+  'lease drain: new run refused from the moment drain begins; every promise the lease itself started (in-flight work AND any PENDING launch) is AWAITED; a launch arriving after the drain began closes itself and is never handed out — and if that late close FAILS, the late handle is RETAINED and the SAME drainPromise REJECTS with CLOSE_FAILED; close runs exactly once after quiescence; any close that THROWS retains the entry and rejects with CLOSE_FAILED — the lease never reports closed, and CLOSED is terminal with no resurrection path'
 
 /** Seam-local typed error (providers throw; hosts surface provider errors). */
 export class G2SeamError extends Error {
@@ -235,24 +238,26 @@ export function createG2FrozenArgsBinding ({ label, value } = {}) {
 }
 
 /**
- * The mount-facts envelope shared by WEB (re-review 2): origin ALONE is not
- * a destination envelope — the SAME-ORIGIN immutable config identity, the
- * endpoint origin and the HTTP-METHOD identity must all be declared, and a
- * CURRENT reader must keep answering all three on every dispatch.
+ * The destination envelope (root re-review 2 as narrowed by c0e-2): the
+ * real factory/config must supply endpointOrigin AND the SAME-ORIGIN
+ * immutable configIdentity through a live reader on every dispatch —
+ * origin alone is not an envelope. (The METHOD identity is NOT part of this
+ * envelope: it is the frozen JS provider[kind] FUNCTION OBJECT plus
+ * provider.id, checked directly against the pinned provider below — never
+ * an HTTP-method string stand-in.)
  */
 function mountFactsProblem (facts, label) {
   if (facts === null || typeof facts !== 'object') {
-    return `${label} did not answer an object ({endpointOrigin, method, configIdentity})`
+    return `${label} did not answer an object ({endpointOrigin, configIdentity})`
   }
   const missing = []
   if (typeof facts.endpointOrigin !== 'string' || facts.endpointOrigin.length === 0) missing.push('endpointOrigin')
-  if (typeof facts.method !== 'string' || facts.method.length === 0) missing.push('method')
   if (typeof facts.configIdentity !== 'string' || facts.configIdentity.length === 0) missing.push('configIdentity')
-  return missing.length > 0 ? `${label} is missing ${missing.join(', ')} — origin alone is not a destination envelope (re-review 2)` : null
+  return missing.length > 0 ? `${label} is missing ${missing.join(', ')} — origin alone is not a destination envelope (c0e-2)` : null
 }
 
 /* ------------------------------------------------------------------ */
-/* WEB seam — provider-level pin (root card 1 + re-review 2).          */
+/* WEB seam — provider-level pin (root card 1 + re-review 2 + c0e-2).  */
 /* ------------------------------------------------------------------ */
 
 /**
@@ -263,19 +268,22 @@ function mountFactsProblem (facts, label) {
  * registers nothing itself: a noTeam install never sees it (inert import,
  * assembly-scoped registration — leg-proven).
  *
- * Every dispatch, inside the same stack the real call runs in, re-verifies:
- * pinned real-provider OBJECT identity → availability mirror → the FULL
- * mount-facts envelope (endpoint origin + HTTP-method identity + immutable
- * config identity — all three, live, every call) → fetch destination from
- * the REAL request path → frozen request binding — then hands the ORIGINAL
- * request object to the REAL provider. Zero forwarding on any drift.
+ * Every dispatch, inside the same stack the real call runs in, re-verifies
+ * BEFORE the real call: pinned real-provider OBJECT identity → `provider.id`
+ * still equals the declared id → the FROZEN `provider.search`/`provider.fetch`
+ * FUNCTION OBJECT is still the one mounted (c0e-2: method identity is the JS
+ * function, not a string) → availability mirror → the destination envelope
+ * (endpoint origin + immutable config identity, live from the REQUIRED
+ * reader) → fetch destination from the REAL request path → frozen request
+ * binding — then hands the ORIGINAL request object to the REAL provider.
+ * Zero forwarding on any drift.
  *
  * @param deps {{
  *   kind: 'search'|'fetch',
  *   providerId: string,
  *   getRealProvider: () => object,
- *   declared: {endpointOrigin: string, method: string, configIdentity: string},
- *   readMountFacts: () => {endpointOrigin: string, method: string, configIdentity: string},
+ *   declared: {endpointOrigin: string, configIdentity: string},
+ *   readMountFacts: () => {endpointOrigin: string, configIdentity: string},
  *   observe?: (event) => void
  * }}
  */
@@ -289,13 +297,13 @@ export function createG2WebProviderSeam ({ kind, providerId, getRealProvider, de
   if (typeof getRealProvider !== 'function') {
     throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: getRealProvider is required — the seam pins the REAL provider OBJECT; a name string is not a pin`)
   }
-  // Re-review 2: the envelope is declared IN FULL and the CURRENT reader is
-  // REQUIRED — omitting the reader cannot build the seam; origin-only can
-  // never pass dispatch.
+  // Re-review 2 + c0e-2: the envelope is declared IN FULL by the real
+  // factory/config and the CURRENT reader is REQUIRED — omitting the reader
+  // cannot build the seam; origin-only can never pass dispatch.
   const declaredProblem = mountFactsProblem(declared, 'declared mount facts (the destination envelope)')
   if (declaredProblem !== null) throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: ${declaredProblem}`)
   if (typeof readMountFacts !== 'function') {
-    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: readMountFacts is REQUIRED — a seam that cannot re-read the CURRENT endpoint/method/config identity per dispatch would freeze a string and call it a fact`)
+    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: readMountFacts is REQUIRED — a seam that cannot re-read the CURRENT endpoint/config identity per dispatch would freeze a string and call it a fact`)
   }
   const pinned = getRealProvider()
   if (pinned === null || typeof pinned !== 'object' || typeof pinned.id !== 'string' || typeof pinned.available !== 'function' || typeof pinned[kind] !== 'function') {
@@ -307,6 +315,10 @@ export function createG2WebProviderSeam ({ kind, providerId, getRealProvider, de
   if (pinned.id !== providerId) {
     throw new G2SeamError(A5_G2_SEAM_CODES.CONFIG_IDENTITY_MISMATCH, `declared providerId ${JSON.stringify(providerId)} does not equal the REAL provider's own id ${JSON.stringify(pinned.id)} — the pin would serve one identity under another's name`)
   }
+  // c0e-2: the METHOD identity — the JS function OBJECT actually mounted —
+  // is frozen here and re-verified (together with provider.id) immediately
+  // before every real call. A rebound provider[kind] is drift, full stop.
+  const pinnedMethod = pinned[kind]
   const frozenDeclared = deepFreeze(jsonClone(declared))
   const declaredOrigin = httpOriginOf(frozenDeclared.endpointOrigin, 'declared endpointOrigin', A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING)
   let lastDispatch = null
@@ -324,24 +336,28 @@ export function createG2WebProviderSeam ({ kind, providerId, getRealProvider, de
     if (now !== pinned) {
       refuse(A5_G2_SEAM_CODES.IDENTITY_DRIFT, `the pinned real ${kind} provider object is no longer the registered generation; refusing to serve under a stale pin — zero forwarding`, { providerId })
     }
+    if (now.id !== providerId) {
+      refuse(A5_G2_SEAM_CODES.IDENTITY_DRIFT, `the pinned provider's own id moved (${JSON.stringify(providerId)} declared, ${JSON.stringify(now.id)} live) before the call — zero forwarding`, { providerId })
+    }
+    if (now[kind] !== pinnedMethod) {
+      refuse(A5_G2_SEAM_CODES.IDENTITY_DRIFT, `the ${kind} METHOD identity moved — the live provider.${kind} is no longer the frozen FUNCTION OBJECT the pin was built on (c0e-2: method identity is the JS function, and it changed underneath); zero forwarding`, { providerId })
+    }
     if (now.available() !== true) {
       refuse(A5_G2_SEAM_CODES.PROVIDER_UNAVAILABLE, `the pinned real ${kind} provider reports unavailable — the host law makes the configured lane WEB_PROVIDER_CONFIGURED_UNAVAILABLE (web/src/index.ts:180 @639ed01539); the seam mirrors that, it never substitutes`, { providerId })
     }
-    // FULL mount facts, live, every dispatch (re-review 2): origin alone is
-    // not a destination — method and immutable config identity must match.
+    // Destination envelope, live, every dispatch (c0e-2): the real
+    // factory/config supplies endpointOrigin + immutable configIdentity;
+    // origin alone never passes.
     let live
     try {
       live = readMountFacts()
     } catch {
-      refuse(A5_G2_SEAM_CODES.MOUNT_FACTS_INCOMPLETE, 'the CURRENT mount-facts reader threw — endpoint/method/config identity cannot be re-verified for this call; zero forwarding')
+      refuse(A5_G2_SEAM_CODES.MOUNT_FACTS_INCOMPLETE, 'the CURRENT mount-facts reader threw — endpoint/config identity cannot be re-verified for this call; zero forwarding')
     }
     const liveProblem = mountFactsProblem(live, 'the CURRENT mount-facts reader')
     if (liveProblem !== null) refuse(A5_G2_SEAM_CODES.MOUNT_FACTS_INCOMPLETE, `${liveProblem}; zero forwarding`)
     if (live.endpointOrigin !== frozenDeclared.endpointOrigin) {
       refuse(A5_G2_SEAM_CODES.ENDPOINT_DRIFT, `the endpoint origin moved (${JSON.stringify(frozenDeclared.endpointOrigin)} pinned, ${JSON.stringify(live.endpointOrigin)} live) — the frozen destination envelope no longer describes the real one; zero forwarding`)
-    }
-    if (live.method !== frozenDeclared.method) {
-      refuse(A5_G2_SEAM_CODES.MOUNT_FACTS_DRIFT, `the endpoint METHOD identity moved (${JSON.stringify(frozenDeclared.method)} pinned, ${JSON.stringify(live.method)} live) — same origin, different method is a DIFFERENT destination contract; zero forwarding`)
     }
     if (live.configIdentity !== frozenDeclared.configIdentity) {
       refuse(A5_G2_SEAM_CODES.CONFIG_DRIFT, `the immutable config identity moved (${JSON.stringify(frozenDeclared.configIdentity.slice(0, 24))}… pinned, ${JSON.stringify(live.configIdentity.slice(0, 24))}… live) — the mounted provider config is not the one the envelope was built on; zero forwarding`)
@@ -361,18 +377,17 @@ export function createG2WebProviderSeam ({ kind, providerId, getRealProvider, de
       providerId,
       destinationOrigin,
       endpointOrigin: live.endpointOrigin,
-      method: live.method,
       configIdentity: live.configIdentity,
       requestFingerprint: binding.fingerprint,
     })
     lastDispatch = facts
     observe({ event: 'dispatch', facts })
-    return await now[kind](request, signal) // the ORIGINAL request object, verbatim
+    return await pinnedMethod.call(now, request, signal) // the FROZEN function, ORIGINAL request, verbatim
   }
 
   const available = () => {
     try {
-      return getRealProvider() === pinned && pinned.available() === true
+      return getRealProvider() === pinned && pinned.id === providerId && pinned[kind] === pinnedMethod && pinned.available() === true
     } catch {
       return false
     }
@@ -384,6 +399,7 @@ export function createG2WebProviderSeam ({ kind, providerId, getRealProvider, de
 
   return Object.freeze({
     provider,
+    pinnedMethod: () => pinnedMethod,
     registrationLaw: deepFreeze({
       registerVia: `ctx.web.${kind === 'search' ? 'registerSearchProvider' : 'registerFetchProvider'}(provider) — web/web/src/index.ts:${kind === 'search' ? '103' : '114'} @639ed01539`,
       configuredProviderIdMustEqual: providerId,
@@ -396,7 +412,8 @@ export function createG2WebProviderSeam ({ kind, providerId, getRealProvider, de
 }
 
 /* ------------------------------------------------------------------ */
-/* MCP seam — request-lease capture (root card 2 + re-review 3).       */
+/* MCP seam — owned-provider captured-client execution                 */
+/* (root card 2 + re-review 3 + c0e-3).                                */
 /* ------------------------------------------------------------------ */
 
 const MCP_METHODS = ['resources/list', 'resources/templates/list', 'resources/read']
@@ -411,33 +428,36 @@ function stdioIdentity (command, cwd) {
  * registers via the PUBLIC `McpResourceRuntime.register(server, provider)`
  * (mcp-resources/src/index.ts:80 @639ed01539).
  *
- * `captureConnection` is REQUIRED (re-review 3 — no call passes unobserved):
- * the seam CAPTURES ONCE at request entry, validates the live facts against
- * the classified surface (stdio compares the FULL args + cwd identity),
- * binds the execution to the captured GENERATION + CLIENT object, and
- * RE-VERIFIES both immediately before forwarding — a rotation between the
- * capture and the execution edge refuses with zero forwarding.
+ * c0e-3 — the runtime's own request-time re-selection (index.ts:120-125)
+ * picks its OWN client, so forwarding through `provider.request` cannot bind
+ * any captured client (claiming otherwise would be a lie, and a self-proving
+ * getter string is forbidden). This is the M0 OWNED-provider lane: the
+ * connection-owning assembly's `captureConnection` is REQUIRED and must
+ * answer the live generation plus the actual CLIENT OBJECT whose `request`
+ * IS the generation-specific dispatch. The seam executes ON THAT CAPTURED
+ * CLIENT — same generation, same client, by construction, with no
+ * re-selection and no unobserved pass-through.
  *
  * @param deps {{
  *   declaredSurfaceConfig: object,           // classified by classifyG2McpSurface
- *   getRealProvider: () => {request: Function},
+ *   getRealProvider: () => object,           // pins the registered slot's provider generation
  *   captureConnection: () => {transport: string, endpointOrigin?: string,
  *        spawn?: {argv0: string, args: string[], cwd: string},
- *        generation: string, client: object},
+ *        generation: string, client: {request: Function}},
  *   observe?: (event) => void
  * }}
  */
 export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvider, captureConnection, observe = () => {} } = {}) {
   const declared = classifyG2McpSurface(declaredSurfaceConfig)
   if (typeof getRealProvider !== 'function') {
-    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: getRealProvider is required — the seam pins the REAL provider object, registered under the same server name`)
+    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: getRealProvider is required — the seam pins the REAL provider object in the registered slot (its generation, not a re-selection)`)
   }
   if (typeof captureConnection !== 'function') {
     throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: captureConnection is REQUIRED — ${A5_G2_SEAM_NAMED_GAPS.MCP_LIVE_TRANSPORT} (published family blocker: ${A5_G2_NAMED_BLOCKERS.MCP})`)
   }
   const pinned = getRealProvider()
-  if (pinned === null || typeof pinned !== 'object' || typeof pinned.request !== 'function') {
-    throw new G2SeamError(A5_G2_SEAM_CODES.REAL_PROVIDER_ABSENT, `no real McpResourceProvider stands behind getRealProvider (shape {request(request, exec)} @mcp-resources/src/index.ts:26-33) — refusing to mount a pin around nothing`)
+  if (pinned === null || typeof pinned !== 'object') {
+    throw new G2SeamError(A5_G2_SEAM_CODES.REAL_PROVIDER_ABSENT, `no real provider object stands behind getRealProvider in the registered slot — refusing to mount a pin around nothing`)
   }
   if (pinned[G2_SEAM_BRAND] === true) {
     throw new G2SeamError(A5_G2_SEAM_CODES.ALREADY_WRAPPED, 'the provider behind getRealProvider is itself a G2 seam — double-wrapping freezes a frozen identity instead of the real one')
@@ -454,7 +474,7 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
     throw new G2SeamError(code, detail, facts)
   }
 
-  /** Validate one capture against the declared surface + completeness law. */
+  /** Validate one capture against completeness law + the declared surface. */
   const checkCapture = (cap) => {
     if (cap === null || typeof cap !== 'object') {
       refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, 'captureConnection did not answer a live-connection object — unobserved is NOT a pass (re-review 3); zero forwarding')
@@ -462,8 +482,8 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
     if (typeof cap.generation !== 'string' || cap.generation.length === 0) {
       refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, `the live connection carries no generation identity (${JSON.stringify(cap.generation ?? null)}) — a call without a locked generation is refused, not labelled "unobserved" and waved through; zero forwarding`)
     }
-    if (cap.client === null || typeof cap.client !== 'object') {
-      refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, 'the live connection carries no client OBJECT identity — the execution cannot be bound to a client; zero forwarding')
+    if (cap.client === null || typeof cap.client !== 'object' || typeof cap.client.request !== 'function') {
+      refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, 'the live connection carries no CLIENT OBJECT with a request() to execute on — c0e-3 binds execution to the captured client; a capture without one is refused, zero forwarding')
     }
     if (cap.transport !== declared.transport) {
       refuse(A5_G2_SEAM_CODES.SURFACE_DRIFT, `the LIVE connection says transport ${JSON.stringify(cap.transport ?? null)}, the declared surface says ${JSON.stringify(declared.transport)}; zero forwarding`)
@@ -488,7 +508,7 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
         if (now !== pinned) {
           refuse(A5_G2_SEAM_CODES.IDENTITY_DRIFT, `the resource provider registered at bind time is not the provider behind the seam now — server "${declared.serverName}" generation rotated underneath the pin; zero forwarding`, { server: declared.serverName })
         }
-        // CAPTURE ONCE under this lease…
+        // CAPTURE ONCE under this lease — generation + the actual client…
         let captured
         try {
           captured = captureConnection()
@@ -502,7 +522,8 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
         const check = binding.verify(request)
         if (check.ok !== true) refuse(A5_G2_SEAM_CODES.ARGUMENTS_REBIND, `${check.detail}; zero forwarding`)
         // …RE-VERIFY at the execution edge: the SAME generation, the SAME
-        // client object, or the captured lease never executes.
+        // client OBJECT — because execution then happens ON THAT OBJECT,
+        // not on a re-selection (c0e-3).
         let recheck
         try {
           recheck = captureConnection()
@@ -516,19 +537,17 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
         const facts = deepFreeze({
           seam: 'mcp',
           capturedAt: 'provider-request-lease', // under the SAME lease as the real request
-          verifiedAt: 'execution-edge', // same generation+client re-verified before forward
           server: declared.serverName,
           method: request.method,
           transport: declared.transport,
           ...(declared.transport === 'streamable-http' ? { endpointOrigin: declared.endpointOrigin } : { spawn: declaredSpawn }),
           connectionIncarnation: captured.generation,
-          clientBound: true, // execution locked to the captured client OBJECT
-          execObserved: exec !== undefined,
+          executedOn: 'captured-client', // c0e-3: the dispatch IS the captured client's request — no runtime re-selection
           requestFingerprint: binding.fingerprint,
         })
         lastDispatch = facts
         observe({ event: 'dispatch', facts })
-        return await now.request(request, exec) // request AND exec forwarded VERBATIM
+        return await captured.client.request(request, exec) // the CAPTURED client executes — same generation, same client
       },
     },
   })
@@ -539,7 +558,7 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
     declaredSurface: declared,
     registrationLaw: deepFreeze({
       registerVia: 'ctx.mcpResources.register(server, provider) — mcp/mcp-resources/src/index.ts:80 @639ed01539 (public registration face; returns the effect disposer)',
-      law: 'the runtime re-selects the provider at REQUEST time from the live exec.agent scope + server (index.ts:120-125 @639ed01539); this seam runs INSIDE that selection — its request() executing for THIS exec is the lease-time proof it served this call, and the generation+client above were captured AND re-verified under that same lease',
+      law: 'the HOST runtime would re-select its own provider/client at request time (index.ts:120-125 @639ed01539) — that path cannot bind a captured client (c0e-3), so this OWNED-lane seam does not use it for execution: the seam was captured-under for THIS exec, and execution happens on the captured client object itself. No Core change; no self-proving getter',
     }),
     lastDispatch: () => lastDispatch,
     stats: () => Object.freeze({ dispatchCount, driftRejects }),
@@ -547,7 +566,144 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
 }
 
 /* ------------------------------------------------------------------ */
-/* BROWSER seam — governed resource LEASE (card 3 + re-review 1).      */
+/* TEAM-OWNED LAUNCH OWNER (c0e-4 — the real deliverable, not a gap).  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The REAL launch owner for a Team-owned provider lane, composing the host's
+ * own real sequence with the OWNER's rollback law
+ * (browser-use-runtime/src/index.ts:23-30 "reject only after rolling back
+ * partial acquisition"; the real factory pattern
+ * browser-use-stagehand-native/src/index.ts:105-117: launchChromium THEN
+ * openBrowserWorker, and on connect failure `await chromium.close()`;
+ * native faces: openNativeBrowser native.ts:95, its close() native.ts:86).
+ *
+ * `open()` resolves an OWNED_SESSION_RESOURCE-shaped handle
+ * `{ value, close(): Promise<void> }` (close REQUIRED, :12-18):
+ *  1. mode 'launch': `launchOwned()` acquires the owned Chromium process
+ *     FIRST (attach skips this stage);
+ *  2. `openRuntime(owned)` opens the runtime ON the owned process — the
+ *     composition point where a half-open failure must roll back: the
+ *     runtime open FAILING ⇒ `launchOwned`'s process is closed before the
+ *     rejection escapes (factory-owned half-open cleanup, per contract);
+ *  3. `handle.close()` closes runtime THEN owned process, EXACTLY ONCE
+ *     (cached), and a throwing close REJECTS and RETAINS — never reports
+ *     closed (owner dispose law :131-137).
+ *
+ * This is what the lease's `openResource` is fed by on the Team lane; the
+ * lease owns PA ordering, this owns acquisition + rollback + close.
+ *
+ * @param deps {{
+ *   mode: 'launch'|'attach',
+ *   launchOwned?: () => Promise<{close: () => unknown}>,   // required for 'launch'
+ *   openRuntime: (owned) => Promise<{close: () => unknown}>,
+ *   observe?: (event) => void
+ * }}
+ */
+export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, observe = () => {} } = {}) {
+  if (mode !== 'launch' && mode !== 'attach') {
+    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: mode must be 'launch' or 'attach' (NativeBrowserConfig.mode @browser-use-stagehand-native native.ts:38)`)
+  }
+  if (typeof openRuntime !== 'function') {
+    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: openRuntime is required — the runtime open (the native face is openNativeBrowser, browser-use-stagehand-native/src/native.ts:95 @639ed01539) that runs on the owned process`)
+  }
+  if (mode === 'launch' && typeof launchOwned !== 'function') {
+    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: launchOwned is required under 'launch' — the owned-Chromium acquisition the host pattern does FIRST (browser-use-stagehand-native/src/index.ts:105 launchChromium @639ed01539)`)
+  }
+  const log = []
+  let opens = 0
+
+  const open = async () => {
+    opens += 1
+    let owned = null
+    if (mode === 'launch') {
+      log.push('owner:launch')
+      owned = await launchOwned()
+      if (owned === null || typeof owned !== 'object' || typeof owned.close !== 'function') {
+        log.push('owner:launch-breach')
+        throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, 'launchOwned resolved without a close()able process handle — nothing further may be acquired on top of a resource nobody can close')
+      }
+    }
+    let runtime
+    try {
+      log.push('owner:runtime')
+      runtime = await openRuntime(owned)
+    } catch (cause) {
+      // Factory-owned HALF-OPEN cleanup (owner contract :23-30; the real
+      // factory does exactly this at stagehand-native index.ts:117): a
+      // failed runtime open must roll back the already-acquired process
+      // BEFORE the rejection escapes.
+      if (owned !== null) {
+        log.push('owner:rollback')
+        try {
+          await owned.close()
+          log.push('owner:rolled-back')
+        } catch (rollbackError) {
+          log.push('owner:rollback-failed')
+          observe({ event: 'rollback-failed', detail: String(rollbackError?.message ?? rollbackError) })
+          throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `open failed (${String(cause?.message ?? cause).slice(0, 120)}) AND the half-open rollback ALSO failed (${String(rollbackError?.message ?? rollbackError).slice(0, 120)}) — the owned process is RETAINED, not dropped`, { mode })
+        }
+      }
+      if (cause instanceof G2SeamError) throw cause
+      throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} open failed after full rollback (cause: ${String(cause?.message ?? cause).slice(0, 160)}) — a rejected acquisition leaves NO remaining resource (owner :174); a retry is a NEW open`, { mode })
+    }
+    if (runtime === null || typeof runtime !== 'object' || typeof runtime.close !== 'function') {
+      if (owned !== null) {
+        log.push('owner:rollback')
+        try {
+          await owned.close()
+          log.push('owner:rolled-back')
+        } catch {
+          log.push('owner:rollback-failed')
+        }
+      }
+      throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, 'openRuntime resolved without an OwnedSessionResource-shaped handle (close REQUIRED, browser-use-runtime index.ts:12-18 @639ed01539)')
+    }
+    log.push('owner:ready')
+    let closing = null
+    return Object.freeze({
+      value: runtime,
+      close: () => {
+        if (closing !== null) return closing // EXACTLY once (cached, like the owner's entry.closing ??=)
+        closing = (async () => {
+          log.push('owner:close')
+          const failures = []
+          try {
+            await runtime.close()
+          } catch (error) {
+            failures.push(`runtime: ${String(error?.message ?? error).slice(0, 120)}`)
+          }
+          if (owned !== null) {
+            try {
+              await owned.close()
+            } catch (error) {
+              failures.push(`owned: ${String(error?.message ?? error).slice(0, 120)}`)
+            }
+          }
+          if (failures.length > 0) {
+            log.push('owner:close-failed')
+            // Owner dispose law :131-137 — failed close RETAINS and REJECTS.
+            throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `close FAILED (${failures.join(' | ')}) — the handle is RETAINED and disposal REJECTED; never reported closed`)
+          }
+          log.push('owner:closed')
+        })()
+        return closing
+      },
+    })
+  }
+
+  return Object.freeze({
+    open,
+    opens: () => opens,
+    order: () => Object.freeze([...log]),
+    ownerSemantics: 'Team-owned launch owner (c0e-4): launchOwned FIRST (host pattern index.ts:105), openRuntime SECOND (native.ts:95 face), connect failure ⇒ await launchOwned.close() BEFORE rejecting (host index.ts:117; owner contract :23-30); handle.close() closes runtime then process EXACTLY ONCE and a throwing close RETAINS + REJECTS CLOSE_FAILED (:131-137) — no fake closed',
+  })
+}
+
+/* ------------------------------------------------------------------ */
+/* BROWSER seam — governed resource LEASE (card 3 + re-review 1 +      */
+/* c0e-1). openResource is fed by createG2BrowserLaunchOwner on the    */
+/* Team lane (c0e-4).                                                  */
 /* ------------------------------------------------------------------ */
 
 /**
@@ -561,14 +717,17 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
  *    it, and a launch arriving after the drain began CLOSES ITSELF
  *    (owner closeEntry: the close sequence awaits the pending open and
  *    closes whatever arrives, :186-197) — CLOSED is terminal, no
- *    resurrection.
+ *    resurrection. c0e-1: if that late close FAILS, the late handle is
+ *    RETAINED and the SAME drainPromise REJECTS with CLOSE_FAILED — the
+ *    failure is never swallowed and the lease never reports 'closed'.
  *  · close is REQUIRED on the handle (owner OwnedSessionResource, :12-18);
  *    a handle without close is OPEN_CONTRACT_BREACH and the lease never
  *    becomes active; a close that THROWS retains the entry and rejects with
  *    CLOSE_FAILED (owner dispose law, :131-137) — never a fake 'closed'.
  *  · Failed open rollback is the FACTORY's contract ("reject only after
- *    rolling back partial acquisition", :23-30, :174) — the lease states
- *    it, deletes its own entry and surfaces LAUNCH_FAILED; a retry is a NEW
+ *    rolling back partial acquisition", :23-30, :174 — the Team lane's
+ *    factory IS createG2BrowserLaunchOwner above, which performs it); the
+ *    lease deletes its entry and surfaces LAUNCH_FAILED; a retry is a NEW
  *    call re-consuming PA.
  *
  * @param deps {{
@@ -584,7 +743,7 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
     throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: mode must be 'launch' or 'attach' (stagehand Config.mode @639ed01539)`)
   }
   if (typeof openResource !== 'function') {
-    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: openResource is required — the real ${mode} factory this lease sequences AFTER the PA edge`)
+    throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: openResource is required — the Team lane feeds the REAL launch owner's open (createG2BrowserLaunchOwner, c0e-4); this lease sequences it AFTER the PA edge`)
   }
   if (typeof consumeApproval !== 'function') {
     throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: consumeApproval is required — the PA consumption edge the lease runs BEFORE any ${mode}`)
@@ -592,6 +751,8 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
   const envelope = launchEnvelope === undefined ? null : deepFreeze(jsonClone(launchEnvelope))
   const log = []
   const inflight = new Set() // EVERY promise this lease started: pending launches AND work
+  const retained = [] // handles that could NOT be closed — never dropped (c0e-1)
+  let lateCloseFailure = null // a late arrival whose close failed during drain
   let state = 'idle' // idle | launching | active | draining | failed | close-failed | closed
   let resource = null
   let init = null
@@ -634,12 +795,14 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
           opened = await openResource({ mode, envelope })
         } catch (cause) {
           // Owner contract: open() owns partial-acquisition rollback
-          // (:23-30, :174) — on rejection nothing remains to close; the
-          // lease deletes its entry and surfaces the failure.
+          // (:23-30, :174) — the Team lane's open IS createG2BrowserLaunchOwner,
+          // which rolled back (or retained and said so); on rejection nothing
+          // further remains for the lease to close.
           log.push('lease:launch-failed')
           state = 'failed'
           init = null
-          throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} failed under the lease (cause: ${String(cause?.message ?? cause).slice(0, 160)}); per the owner contract open() owns rollback, so a rejected acquisition leaves NO remaining resource — a retry is a NEW call re-consuming PA`, { mode })
+          if (cause instanceof G2SeamError) throw cause
+          throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} failed under the lease (cause: ${String(cause?.message ?? cause).slice(0, 160)}); the launch owner owns rollback, so a rejected acquisition leaves NO remaining resource — a retry is a NEW call re-consuming PA`, { mode })
         }
         if (opened === null || typeof opened !== 'object') {
           log.push('lease:launch-failed')
@@ -655,6 +818,7 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
           // swallowed into 'closed'.
           log.push('lease:open-contract-breach')
           state = 'close-failed'
+          retained.push(opened)
           init = Promise.resolve(opened)
           drainPromise = Promise.reject(new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, 'the retained handle has no close() — disposal is REJECTED per the owner dispose law (:131-137 @639ed01539); the lease never reports closed'))
           void drainPromise.catch(() => {}) // the rejection stays observable, never unhandled
@@ -663,13 +827,23 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
         if (state === 'draining' || state === 'closed' || state === 'close-failed') {
           // A late arrival after the drain began CLOSES ITSELF and is never
           // handed out (owner closeEntry: the close sequence awaits the
-          // pending open and closes whatever arrives, :186-197).
+          // pending open and closes whatever arrives, :186-197). If that
+          // late close FAILS (c0e-1): RETAIN the handle, remember the
+          // failure so the drainPromise rejects CLOSE_FAILED, and refuse
+          // the caller — never drop the resource, never fake closed.
           log.push('resource:late-close')
           try {
             await closeHandle(opened, 'late arrival after drain')
-          } finally {
+          } catch (closeError) {
+            retained.push(opened)
+            lateCloseFailure = String(closeError?.message ?? closeError)
+            state = 'close-failed'
+            log.push('resource:late-close-failed')
+            observe({ event: 'late-close-failed', detail: lateCloseFailure })
             init = null
+            throw new G2SeamError(A5_G2_SEAM_CODES.LEASE_CLOSED, `the ${mode} completed after the lease had begun closing and its late close FAILED (${lateCloseFailure.slice(0, 120)}) — the handle is RETAINED and the drain rejects CLOSE_FAILED; the lease never reports closed`)
           }
+          init = null
           throw new G2SeamError(A5_G2_SEAM_CODES.LEASE_CLOSED, `the ${mode} completed after the lease had begun closing — the late-arriving resource closed itself and was never handed out; CLOSED is terminal`)
         }
         log.push('lease:ready')
@@ -722,9 +896,10 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
   /**
    * Real drain per the owner's dispose law: stop admission, await EVERY
    * promise the lease started (work AND pending launches — the inflight
-   * set), close exactly once after quiescence; a throwing close retains the
-   * entry and rejects with CLOSE_FAILED (cached rejection, like the owner's
-   * `disposing ??=`).
+   * set), close exactly once after quiescence; ANY failed close — of the
+   * settled resource OR of a late arrival whose close threw during the wait
+   * (c0e-1) — RETAINS the handle and rejects THIS drainPromise with
+   * CLOSE_FAILED (cached, like the owner's `disposing ??=`).
    */
   const drain = () => {
     if (drainPromise !== null) return drainPromise
@@ -733,6 +908,13 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
       state = 'draining'
       log.push('lease:drain')
       while (inflight.size > 0) await Promise.allSettled([...inflight])
+      // A late arrival whose close failed during the wait (allSettled does
+      // NOT swallow it into silence — c0e-1): the handle is retained above,
+      // the drain REJECTS, the lease never reports closed.
+      if (lateCloseFailure !== null) {
+        log.push('lease:close-failed')
+        throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `a late-arriving resource could not be closed (${lateCloseFailure.slice(0, 160)}) — the handle is RETAINED and disposal REJECTED (owner dispose law :131-137 @639ed01539); the lease never reports closed`)
+      }
       if (resource !== null) {
         const closing = resource
         try {
@@ -741,6 +923,7 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
           // Owner law :131-137 — failed close RETAINS the entry and rejects
           // disposal. Honest state, honest rejection, no fake 'closed'.
           state = 'close-failed'
+          retained.push(closing)
           log.push('resource:close-failed')
           observe({ event: 'close-failed', detail: String(error?.message ?? error) })
           if (error instanceof G2SeamError) throw error
@@ -763,6 +946,7 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
     paRefusals,
     launchCount,
     closeCount,
+    retainedUnclosed: retained.length,
     order: Object.freeze([...log]),
   })
 
@@ -774,9 +958,9 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
     launchOrder: () => Object.freeze([...log]),
     governanceLaw: deepFreeze({
       ordering: 'consumeApproval(callFacts) is awaited BEFORE openResource is ever invoked — the lease owns the order, so the host pre-effect hook race (browser-use-stagehand-native index.ts:192-198 @639ed01539, which can launch/attach before next()) does not exist on this path',
-      launchFactory: 'openResource is the assembly-injected real factory (native-browser face openNativeBrowser, native.ts:95 @639ed01539 when the assembly is the §5.5 owned provider); the lease sequences it, it never launches anything itself. LAUNCH-OWNER GAP for the host lane: ' + A5_G2_SEAM_NAMED_GAPS.LAUNCH_OWNER,
+      launchFactory: 'openResource is the TEAM-OWNED LAUNCH OWNER\'s open — createG2BrowserLaunchOwner in this file composes the real faces (openNativeBrowser native.ts:95, close native.ts:86) with factory-owned half-open rollback (host pattern index.ts:105-117); the lease sequences it and never launches anything itself. RESIDUAL host-lane gap only: ' + A5_G2_SEAM_NAMED_GAPS.LAUNCH_OWNER,
       drain: A5_G2_LEASE_DRAIN_SEMANTICS,
-      ownerContract: 'browser-use-runtime/src/index.ts @639ed01539 — OwnedSessionResource.close REQUIRED (:12-18); open owns partial-acquisition rollback (:23-30,:174); a pending open counts as the entry (:181) and closeEntry awaits AND CLOSES it (:186-197); a failed close retains the entry and REJECTS disposal (:131-137)',
+      ownerContract: 'browser-use-runtime/src/index.ts @639ed01539 — OwnedSessionResource.close REQUIRED (:12-18); open owns partial-acquisition rollback (:23-30,:174); a pending open counts as the entry (:181) and closeEntry awaits AND CLOSES it (:186-197); a failed close retains the entry and REJECTS disposal (:131-137) — including a late arrival whose close fails (c0e-1): retained, drain rejects, never fake closed',
     }),
   })
 }
