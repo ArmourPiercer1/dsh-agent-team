@@ -42,3 +42,24 @@
 | BR-01 | 三当前态文档 + graph current_contract + AGENTS 入口 + 历史 banner | 本分支首批 commit（已含） |
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
+
+## M2 四档状态/owner 表（2026-10-23 15:4xZ，root 15:4x 裁决落表；四档唯一定义：未开发=治理实现仍实质缺口｜未接线=实际适配可交付未生产装配｜接线未测=真实生产路径已接但对应 Host 验收未完｜已测试=明确功能范围/固定版本真实验收。无第五档；阻塞只作备注，不升档不降档。）
+
+| 工具/面 | 档位（按档定义） | 范围与固定版本 | owner/树 | 备注 |
+|---|---|---|---|---|
+| todo_write | 已测试 | todo C2 r14 真 Host 验收 @8b94 包（既有范围） | center/已关弧 | — |
+| write（既有文件） | 已测试 | 既有文件写 C2 r16 @19d54 包，root 14:38 限定既有文件范围接受 | center/已关弧 | 范围外新文件不在此档 |
+| write（新建文件） | 未开发 | 治理实现仍实质缺口（r16 明示限定既有文件） | 待派 | 无第五档 |
+| read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 决策侧 drift 诊断中（seam 缺失候选，见证据目录） |
+| read | 接线未测 | 生产挂载真路径（M1 弧已老版本验收；本固定包组合未重验） | V-RSJ `68701321` 第二 lane 进行中 | Host 验收=r17 后首跑 |
+| search | 接线未测 | 生产 rg 后端真路径 | 同上 | 同上 |
+| jobs | 接线未测 | durable bridge 生产路径 | 同上 | 同上 |
+| G1 纯查询 14 面 | 未接线 | g1-surface-adapters 可交付组件（59 腿）；生产装配在途 | 接线 `44ece7a3`@feat/a5m2-wire-g1；适配候选 `a0670fa8` | dependency/plugin 资源臂不强塞 |
+| G2 WEB seams | 未接线 | provider-seams 可交付；Team-only 固定 provider 为具名阻塞 | 接线 `e78dee2a`@feat/a5m2-wire-g2 | WEB global/env 禁 |
+| G2 MCP seams | 未接线 | 真 SDK 签名面可交付 | 同上 | request=执行租约 |
+| G2 BROWSER 装配 | 未接线 | team-assembly 候选（真 SDK+公开 launch 面） | 同上 | lease 语义待真 provider |
+| G3 fsproc/shell 面 | 未接线 | 适配器+33 腿可交付；per-open 仍 integrator-supplied | 原 owner 续写中（int 树） | §5.1 未完成 |
+| create_goal/get_goal/update_goal | 未开发 | 639 真接口适配实现中（无交付不落"未接线"） | 适配 `8722db94` | packages/goal/tool-goal 锚点 |
+| session_search/trace/event_read/event_search/event_trace | 未开发 | 同上 | 适配 `8e6e7788` | packages/session-query/tool-session-query 锚点 |
+
+适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。
