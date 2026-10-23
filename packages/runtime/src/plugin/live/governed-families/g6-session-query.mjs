@@ -76,6 +76,12 @@
  *     serves on the stale authorization (typed G6SessionQueryRefusal throws,
  *     same codes; entered effects not rewound per the drain semantics). No
  *     stale revision snapshot is trusted; the decision port stays live.
+ *     ROOT-65c539 closure: the final serve ALSO re-verifies the CURRENT
+ *     ceiling over the WHOLE OUTPUT SET — search hits, authorized parents,
+ *     trace lineage members and the target — not only the effective target;
+ *     a member revoked while the set was being assembled (e.g. during the
+ *     title await) refuses the ENTIRE result instead of serving a stale set
+ *     (pre-title filtering alone never substitutes for output membership).
  *
  * UNWIRED: nothing here mounts itself; placement/registration is the CENTER's.
  * No Host boot, no network. Legs in a5m2-g6-session-query-c1.test.ts run the
@@ -205,7 +211,7 @@ import { createHash } from 'node:crypto'
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 import { g3CanonicalRegistrationFace } from './g3-fsproc-adapters.mjs'
 
-export const A5_G6_ADAPTER_REVISION = 3
+export const A5_G6_ADAPTER_REVISION = 4
 export const A5_G6_FAMILY = 'B-SESSION-QUERY'
 
 /** The five tool names, exactly as the host registers them (index.ts:66/:76/:86/:96/:109 @639ed01539). */
@@ -1438,6 +1444,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         if (spec.hasTarget && teamCeiling(effectiveTarget, now.caller) !== true) {
           throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.TEAM_CEILING_DENY, `${stage}: the Team ceiling revoked the effective target '${String(effectiveTarget)}' after admission — nothing is served`)
         }
+        return now.caller
       }
       let portCalls = 0
       const call = async (facetName, method, operation, ...portArgs) => {
@@ -1524,8 +1531,23 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         })
         observe({ event: 'dispatch', facts: lastDispatch })
       }
-      const serve = (value) => {
-        guardFacts('final serve')
+      const serve = (value, outputMembers) => {
+        const guardCaller = guardFacts('final serve')
+        // ROOT-65c539 FINAL MEMBER RECHECK: the guards above only re-decide
+        // the EFFECTIVE TARGET; a result SET (search hits, authorized
+        // parents, trace lineage members) was assembled from members that
+        // passed the ceiling EARLIER. If the live decision revokes any
+        // member across an await (e.g. during the title read), the stale
+        // set is NEVER served: the final output membership is re-verified
+        // against the CURRENT authorization and any revocation refuses the
+        // WHOLE result (entered effects stay, nothing serves).
+        if (outputMembers !== undefined) {
+          for (const member of outputMembers) {
+            if (teamCeiling(member, guardCaller) !== true) {
+              throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.TEAM_CEILING_DENY, `final serve: the Team ceiling revoked set member '${String(member)}' during this operation — the whole result is refused, nothing is served on a stale authorization`)
+            }
+          }
+        }
         observeFacts({ served: 'string' })
         return deepFreeze({ ok: true, value, plan: plan.plan })
       }
@@ -1565,7 +1587,10 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         const displayAuthorized = await authorizeSessionIds(parentIds)
         const authorizedParents = new Set([...displayAuthorized].filter((id) => ceilingOpen(id)))
         const titles = await readTitleSnapshots(collected.items.map((hit) => hit.header.id))
-        return serve(formatSessionSearch(collected, titles, authorizedParents))
+        return serve(
+          formatSessionSearch(collected, titles, authorizedParents),
+          [...collected.items.map((hit) => hit.header.id), ...authorizedParents],
+        )
       }
       if (toolName === 'session_event_search') {
         const { query } = plan.plan.checks
@@ -1580,7 +1605,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         }
         const title = await readTitle(effectiveTarget)
         if (range.from !== undefined && range.to !== undefined && range.from > range.to) {
-          return serve(formatEventSearch(effectiveTarget, title, { items: [], capped: false }))
+          return serve(formatEventSearch(effectiveTarget, title, { items: [], capped: false }), [effectiveTarget])
         }
         // FULL filter build from the (possibly step-capped) range; a degenerate
         // capped bound rides the native INVALID_FILTER taxonomy (the loop
@@ -1605,7 +1630,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
           () => true,
           guardFacts,
         )
-        return serve(formatEventSearch(effectiveTarget, title, collected))
+        return serve(formatEventSearch(effectiveTarget, title, collected), [effectiveTarget])
       }
       if (toolName === 'session_trace') {
         await authorizeTarget(effectiveTarget)
@@ -1631,14 +1656,14 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
           ...descendantIds(descendants),
         ]
         const titles = await readTitleSnapshots(visibleIds)
-        return serve(formatSessionTrace(trace, ancestors, ancestorBoundary, descendants, titles))
+        return serve(formatSessionTrace(trace, ancestors, ancestorBoundary, descendants, titles), visibleIds)
       }
       if (toolName === 'session_event_trace') {
         await authorizeTarget(effectiveTarget)
         const trace = await call('traceQueryPort', 'traceEvent', 'event trace', { sessionId: effectiveTarget, seq: plan.plan.actualArgs.seq }, signal)
         assertObservedTargetAuthorized(caller, effectiveTarget, trace.session)
         const title = await readTitle(effectiveTarget)
-        return serve(formatEventTrace(effectiveTarget, title, trace))
+        return serve(formatEventTrace(effectiveTarget, title, trace), [effectiveTarget])
       }
       // session_event_read
       await authorizeTarget(effectiveTarget)
@@ -1651,7 +1676,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
       }, signal)
       assertObservedTargetAuthorized(caller, effectiveTarget, window.session)
       const title = await readTitle(effectiveTarget)
-      return serve(formatEventRead(effectiveTarget, title, window))
+      return serve(formatEventRead(effectiveTarget, title, window), [effectiveTarget])
     },
     drainSemantics: A5_G6_DRAIN_SEMANTICS,
     drain () {
