@@ -16,18 +16,18 @@ plane/中心（HEAD 现文，行漂已录：矩阵 :405=基线 9b2 位，HEAD= :
 - dispatch lane 真实在册法：`tool-dispatch/closed-world-guard.ts`（`GUARD_DENIAL_REASONS`/`guardDecision`：IDENTITY_ABSENT/IDENTITY_FOREIGN/UNGOVERNED/NATIVE_SHADOWED/DEFINITION_DRIFT/NOT_ACTIVE）、`tool-dispatch/install.ts:116` `definitionIdentityOf`（WeakMap 实例身份）。
 - effects 闭集词：`packages/domain/tool-governance/src/effects.ts:43`（EFFECT_KINDS）、`:57-62`（ToolInvokeEffect `resource:null`）。
 
-## 2. 缺项清单（⑦素材；不豁免）
+## 2. 缺项清单（⑦素材；不豁免；P 落地波后逐条注记）
 
-1. **继承面无 P 前置接管**：无 A 前置、无 owner/revision/incarnation 预检——生产路径未证明（本单主缺；`p-takeover-proposal.md` 交 CENTER）。
-2. 宿主 `:194-197` 无 owning session = **裸 Error 无 typed code**（宿主零字节，P 层补 typed 拒；fixture T11 钉现状）。
-3. **未知顶层键未被拒绝（无 typed 拒）且写入照常发生（该键不被消费进列表）**——根无 `additionalProperties:false`（`src/index.ts:138-157`，仅 `items` 层 :145 封闭）；CENTER 静态复验成立、措辞已照令收紧（fixture T10 回归网，P classify 落地即翻 typed）。
-4. 运行时值法三则（空 content/重复 content/单活多 active）=裸 Error 无 code（T14 分层钉）。
-5. `allowParallelInProgress` 必填无默认 = config 层 `ValidationError`（design-intent，在册非缺陷；T9）。
+1. **继承面无 P 前置接管**：生产装配（注册/placement/mask/takeover 账）未接线——arm 已落 src，`todoEnabled` 消费在 CENTER 共享面（提案=本目录 `p-takeover-proposal.md`）。【生产路径未证明；arm+lane 已证（T15-T18）】
+2. 宿主 `:194-197` 无 owning session = **裸 Error 无 typed code**。【GOVERNED 路径已由 arm typed 替代（T11 翻转证明）；HOST 面原状保留钉死（宿主零字节）】
+3. **未知顶层键（open root，`src/index.ts:138-157`）原生面无 typed 拒且写入照常发生（键不消费进列表）**。【GOVERNED 路径已翻：`P_TODO_CLASSIFY_UNKNOWN_PARAMETER`+零 append（T10 翻转证明）；HOST 面原状保留钉死】
+4. 运行时值法三则（空 content/重复 content/单活多 active）=裸 Error 无 code。【分层不变（T13/T14）：classify 纯 parse 不造平行法（§1.1），dup/单活留原生；blank 为 shape 律 classify 同拒】
+5. `allowParallelInProgress` 必填无默认 = config 层 `ValidationError`（design-intent，在册非缺陷；T9；arm 装配面同律镜像：非布尔=构造即拒）。
 6. goal 家族 durable append/arm/disarm **不属本单**（B-SESSION goal 臂归 goal owner）。
 
 ## 3. 实跑记录（首次失败原文保留）
 
-fixture = `packages/runtime/test/a5-m2-todo-write-c1.test.ts`（14 titled legs T1-T14；本机无 Host 参与）。
+fixture = `packages/runtime/test/a5-m2-todo-write-c1.test.ts`（现 18 titled legs T1-T18；P 落地波前为 14；本机无 Host 参与）。
 
 - 首个套件运行（06-54:18Z，**3 红**——均 fixture 自身缺陷，非宿主行为；该输出当轮直录本目录上报，逐字关键行）：
   - `T1 … AssertionError: expected 'def#2' to be 'def#1' // Object.is equality`（我对 identity 定律外推错：WeakMap 实例身份非名字恒定）
@@ -38,14 +38,21 @@ fixture = `packages/runtime/test/a5-m2-todo-write-c1.test.ts`（14 titled legs T
   - 更早的 `fileURLToPath is not defined`（ReferenceError，导入漏项）为该轮首个真实失败，原文当轮已报。
 - 终跑 `runs/2026-10-23T06-57-31Z/`：`run.log`（verbose，**14 passed，RC=0**）+ `vitest.json`（titled legs 机读正本）+ `typecheck-runtime.log`（`pnpm --filter @dsh-agent-team/runtime run typecheck`，**RC=2**——**我的文件零错误**；剩余 5 红全部来自他人文件 `test/a5m2-readimg-c1.test.ts`（TS2769/TS2349/TS4113×3），非我产、我不碰，只报不改）。
 - 类型修复轮（共享面义务，CENTER 令）：`mount()` 显式注册契约断言替代索引可能空、T2 显式嵌套形、T8 二分支 `then` 收窄、T12 索引改 map——全部我文件内修，无 `!`/`as any`。
+- **P 落地波终跑 `runs/2026-10-23T07-14-09Z/`**：`run.log`（verbose，**18 titled legs passed，RC=0**）+ `vitest.json`（机读正本）+ `typecheck-runtime.log`（**RC=0——整包干净**，此前他人文件 `a5m2-readimg-c1.test.ts` 的 5 红已由其 owner 自修，非我动）+ eslint 两文件 RC=0。**本波首次运行即绿——无当轮新红（如实记录，前波 3 红不因此删除）。**
 
 ## 4. 矩阵 `todo_write (M-14)` 草案（交 CENTER 落笔，V@B=no）
 
 - **⑥**：fixture 级实测 @工作区（tested 面=`7a3540937`+未提交工作区文件，untracked 披露；C1 口径=BASE.C1 之 fixture 层，**不含段1/段3 运行证明**）；证据=`packages/runtime/test/a5-m2-todo-write-c1.test.ts` + `dev/agent-workflow/evidence/alpha5/m2-todo/runs/2026-10-23T06-57-31Z/`；适用性=宿主面 dep-diff（pin639 树内 `todo_write` 依赖路径 `.git/HEAD`==pin 恒等=0/3 源锚复验）+ 仓内装配（plane/guard/dispatch 三件 baseline→HEAD=3/3 漂移，**测对在 HEAD 非 9b2**，V@B=no 如实）。
 - **⑦**：本 README §2 全六条（含 open-root 精确措辞、`:194-197` 裸 Error 分层缺陷、`allowParallelInProgress` 必填在册）。
-- **⑧**：`NOT_WIRED` —— 已闭合格=C1 fixture 全 14 绿（真实 definition/provider 绑定/classify 闭集词 effects+manifest/同名伪造/跨与缺身份 typed 拒/未知名无 abstain/DRAINING 拒/正控写读回一致）；**未闭合项**=P 前置接管 src 未落（提案已交 CENTER）、takeover 账增行未合、段1/段3 与 C2/C3 全套=Host 腿未跑（唯一 Host owner `77a11fa5` 串行，CENTER 下 GO）；**下一格**=CENTER 落 p-takeover-proposal 三件 → T10/T11 翻 typed（落地证明）→ C2 排队。NOT_WIRED 非终点。
+- **⑧**：`NOT_IMPLEMENTED/NOT_WIRED`（复合值，依 CENTER 更正：矩阵第 11 行复合合法；我先稿 `NOT_WIRED` 单值错在 P-src 未落时用了"有实现未接线"定义域）——**NOT_IMPLEMENTED 半格已升**：P arm 真落 src（`governed-families/todo.mjs`，T10/T11 翻转型落地证明 + T15-T18 lane 生产路径腿 = 18/18 绿）；**NOT_WIRED 半格未升**：takeover 账增行/`todoEnabled` 消费/placement+mask  glue 在 CENTER 共享面未合；**下一格**=CENTER 落 `p-takeover-proposal.md`（含 §4 place-dist glue）→ C2a 排 Host（`77a11fa5`）→ C2b 随装配可达。非终点。
 
-## 5. C2 生产可达路径（Host 腿，排队；由 CENTER 排唯一 Host owner `77a11fa5` 串行）
+## 5. P 落地波（根令"owner 不得因登记停等"当轮，2026-10-23）
+
+- **新落 src（我独占新建）**：`packages/runtime/src/plugin/live/governed-families/todo.mjs` = `createGovernedTodoArm`：classify（闭集 op `replace-list`；effects 仅 `{kind:'tool-invoke',toolName:'todo_write',resource:null}`，`@` 半格=bind-time `definitionIdentity`；manifest 严格字段；unknown 顶层键/item 键/shape/枚举/空白/跨与缺 session=typed 拒）；prepare（一次性 ticket——Ask pending/deny 无 ticket ⇒ 体不可达=零 append 的构造性证明）；execute（owner/incarnation 预检 typed→CURRENT-vs-target 混淆拒→**先 claim 后 body** 单飞→绑定期捕获的原生 definition，无按名重找、无 native fallback）；cancel（诚实 race 报告：BEFORE/AFTER-ADMISSION=零 append、ALREADY-COMMITTED 不重写）；drain（全阶 typed 拒）。宿主零字节、零新 I/O 面、零平行值法、**未 import `domain/tool-governance`**（audit 消费者清单无新增）。
+- **fixture 改写**：删测试内 P 参考实现（法归一处）；T10/T11 按原注释**翻为 typed 拒（落地证明）**且 HOST 面原状各自保留钉死；T12/T13 改吃真模块；新增 T15（正控恰一 append+真 fold 读回+backend 日志五连同一 correlation）/T16（Ask pending/deny 零 append+假 ticket NOT_ADMITTED）/T17（C3 三点取消 race 报告）/T18（单飞 re-fire ALREADY_CONSUMED+DRAINING 无 fallback）。
+- **集成批次影响清单（CENTER booking/基线用）**：新 scannable 文件 `packages/runtime/src/plugin/live/governed-families/todo.mjs`（续 booking；测试文件已在 `SCANNED_PATHS_A5M2`）；`lint-identities` 语料 +新身份（todo.mjs 导出面），基线登记归批次；`check-artifacts` 需重建 dist 镜像（新 src .mjs）；census = 文件 558→**560**（+test 已录 559，+src 再 +1）、legs 7010→**+18**（**前报 +14 作废**）、9 titled reds 容差集与 `.ids.txt` 不动。
+
+## 6. C2 生产可达路径（Host 腿，排队；由 CENTER 排唯一 Host owner `77a11fa5` 串行）
 
 - **世界**：`tests/homes/m2-todo-<UTC stamp>`（TEST_METHODS §7 临时世界，gitignored，工作区内）。
 - **Host**：pin639 构建产物入口 `tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port <3180 族>`，DSH_HOME=上世界；a5 分支插件 bundle 经 profile 挂载。

@@ -92,6 +92,31 @@
 `P_TODO_CLASSIFY_INVALID_ARGUMENTS`、`P_TODO_CLASSIFY_NO_OWNING_SESSION`（替代宿主 :194-197 裸 Error）、
 `P_TODO_CLASSIFY_FOREIGN_SESSION`。
 
-**落码后义务**：`packages/runtime/test/a5-m2-todo-write-c1.test.ts` T10/T11 **翻为 typed 拒断言**（fixture 内已注释钉死：翻转为落地证明，静默即红旗）。
+**落码后义务（已履行）**：~~T10/T11 翻为 typed 拒断言~~ —— **已完成**：arm 落地当轮 T10/T11 已翻（typed 拒+零 append），且 HOST 面原状（open root 接受键并写入；裸 Error）各自保留钉死（宿主零字节，pinned≠endorsed）。
 
-**集中面注意（交 CENTER）**：新文件 `packages/runtime/src/plugin/live/governed-families/todo.mjs` 若 import `domain/tool-governance`，`scripts/audit-a5-tool-governance-imports.mjs` 的 reviewed-consumer 允许清单需同步增行（该脚本明示：每次增员 = 一次受审编辑，非静默）；普查基线由 CENTER 明处重录。
+**集中面注意（交 CENTER）**：实现版 arm **未 import** `domain/tool-governance`（effects 词以结构直发，`parseRequestedEffectSet` 兼容证在 fixture T12）⇒ `scripts/audit-a5-tool-governance-imports.mjs` 消费者清单**无新增**；普查/lint 基线重录见 §5。
+
+## 4. place-dist glue 登记（arm 已落 src，装配归 CENTER；API = 实现版，非提案版）
+
+实现体：`packages/runtime/src/plugin/live/governed-families/todo.mjs` → `createGovernedTodoArm(deps)`。deps 全必填（构造即校验，非布尔/缺项=throw，装配失败非静默默认）：
+
+```js
+createGovernedTodoArm({
+  nativeDefinition,          // 绑定期捕获的原生 todo_write definition 对象（成员 ctx 注册现场捕获；绝不按名重找）
+  definitionIdentity,        // definitionIdentityOf(nativeDefinition) @ tool-dispatch/install.ts —— I 臂 @ 半格
+  providerId,                // 放置装配自证（'dsh-agent-team'）
+  agentScopeKey,             // 本 arm 服务的 Agent scope
+  trustedIdentities,         // 计为本 agent 的身份集（Guard scope 同族）
+  allowParallelInProgress,   // 装配期 config 定值（manifest 报策略；执法律留原生）
+  observe,                   // §1.2 最小 backend 日志（classify/admit/backend-start|commit|end/cancel + correlation）
+})
+// 面：classify(args, {agentIdentity, sessionIncarnation}) / prepare(plan)→一次性 ticket
+//     / execute(ticket, exec)（typed 预检→单飞→绑定期 body）/ cancel / drain
+```
+
+**装配三步（CENTER 单 writer，`agent-bindings.mjs`，接 §2 的 `a5TodoBridge` 块）**：
+1. **捕获**：成员 setup 的原生注册现场（preset mount 之后）取 `todo_write` definition 对象 + `definitionIdentityOf` 同刻快照——这是"绑定期捕获"的**唯一合法捕获点**，晚于 = drift。
+2. **placement**：向 Guard/placement feed 以 `origin='inherited-native'`、`definitionIdentity=快照` 发布 governed 行（jobs trio 同通道同法，laziness 法照 jobs 桥注释：def#N mint 于 seam install 之后）；调用路由 = arm 面（classify→A→prepare→consume→execute），**不是** `ScopedDispatcher.byName` 按名路（§1.1）。
+3. **mask**：`todoEnabled` 实例上原生同名 face 先 mask 后发行（Guard `maskedNames`/maskPort 既有通道）；DRAINING 由 arm.drain()+Guard 双闸，fixture T18 已证无 native fallback 可退。
+
+**booking 续清单（CENTER 明处登记用）**：新 scannable 文件 = `packages/runtime/src/plugin/live/governed-families/todo.mjs`（测试文件 `packages/runtime/test/a5-m2-todo-write-c1.test.ts` 已在 `SCANNED_PATHS_A5M2`）；`lint-identities` = todo.mjs 导出面为新身份（`A5_TODO_FAMILY_ID/TOOL_NAME/OPERATION/ADAPTER_REVISION/TYPED_CODES/createGovernedTodoArm`）；`check-artifacts` = 重建 dist 镜像含新 .mjs；census = 文件 558→560（+test、+src）、legs **+18**（前报 +14 作废）、9 titled reds 容差集不动。

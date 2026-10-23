@@ -1,34 +1,34 @@
 /**
  * a5-m2-todo-write-c1 — Alpha.5 M2 row `todo_write (M-14)`, C1 level, per the
  * frozen family contract `m0-closure-v3/M0-B-FAMILY-TARGET-CONTRACTS.md`
- * §3 B-SESSION (保留原生 + 统一前置接管) and §1.2 共用 BASE.C1.
+ * §3 B-SESSION (保留原生 + 统一前置接管) and §1.2 共用 BASE.C1/C3.
  *
- * WHAT THIS FILE ACCEPTS (implements no new production law):
+ * WHAT THIS FILE ACCEPTS (implements no new law beyond the landed arm):
  *  - the pinned host `todo_write` implementation AT 639ed01539 (loaded from
  *    the pristine test-use tree's compiled lib — the tree pin is asserted
  *    before any import; the host is NEVER booted and nothing here claims
  *    段1/段3 runtime-presence proof: preset-mount presence and session-log
- *    visibility are Host legs, queued for the single Host owner);
+ *    visibility are Host legs (C2a/C2b, README §5), queued for the single
+ *    Host owner; the lane legs below are LANE-boundary evidence, not Host);
  *  - the closed-world Guard law (`tool-dispatch/closed-world-guard.ts`) for
  *    same-name forgery, foreign/absent identity, unbound names and DRAINING;
  *  - the plane name gate (`team-tool-plane.mjs` verifyPlaneNames) — `todo_write`
- *    is a reserved native name and a plane row claiming it is refused.
+ *    is a reserved native name and a plane row claiming it is refused;
+ *  - the LANDED P layer `src/plugin/live/governed-families/todo.mjs`
+ *    (createGovernedTodoArm): classify/prepare/execute/cancel/drain.
  *
- * WHAT THIS FILE PINS AS CURRENT-GAP (regression net, NOT endorsement):
- *  the host parameters ROOT is an implicit open object
- *  (`packages/todo/tool-todo/src/index.ts:138-157` carries NO root-level
- *  `additionalProperties: false` — only `items` does, :145), so an unknown
- *  TOP-LEVEL key is NOT refused at the schema layer (no typed 拒) and the
- *  write proceeds as usual (the key is NOT consumed into the list); and the
- *  owning-session refusal is a bare Error with no typed code (:194-197).
- *  Both are the exact cells the P 前置接管 must flip to typed refusals; when
- *  the P classify lands in production, the T10/T4 legs below MUST be flipped
- *  to typed-refusal assertions — do not "fix" them silently.
+ * T10/T11 ARE THE FLIPPED LANDING PROOFS (the regression net of the first C1
+ * round, inverted per its own instruction): on the GOVERNED path an unknown
+ * TOP-LEVEL key and a missing owning session are typed refusals with zero
+ * appends. The HOST-PLANE facts (open root accepts the key and the write
+ * proceeds; the owning-session refusal is a bare Error at host :194-197) stay
+ * pinned on their own legs — the host is zero-byte; pinned is not endorsed.
  *
- * P-PROPOSED material lives here as a REFERENCE IMPLEMENTATION only
- * (`classify`, the TODO_P_* codes): production src placement goes through the
- * CENTER's concentrated wiring (proposal: evidence/alpha5/m2-todo/
- * p-takeover-proposal.md). ⑧ stays NOT_WIRED until that lands + Host C2/C3.
+ * Production registration/placement/mask (the takeover ledger row, the
+ * `todoEnabled` consumer, the arm's glue) belongs to CENTER — proposal:
+ * `dev/agent-workflow/evidence/alpha5/m2-todo/p-takeover-proposal.md`.
+ * Until that lands and the Host C2 legs run, the matrix ⑧ is
+ * NOT_IMPLEMENTED/NOT_WIRED (src exists; production assembly does not).
  *
  * @module test/a5-m2-todo-write-c1
  */
@@ -86,6 +86,47 @@ interface ProjectionDef {
 }
 interface ProjectionEvent { type: string; data: { todos: { content: string; status: string }[] } }
 
+type TodoPlan = object
+type TodoTicket = object
+interface ArmOutcome {
+  ok: boolean
+  code?: string
+  detail?: string
+  plan?: TodoPlan
+  effects?: { kind: string; toolName: string; resource: null }[]
+  manifest?: Record<string, unknown>
+  ticket?: TodoTicket
+  value?: { todos: { content: string; status: string }[]; counts: { pending: number; inProgress: number; completed: number } }
+  settled?: string
+  appendOutcome?: string
+}
+interface TodoArmHandle {
+  familyId: string
+  adapterRevision: number
+  definitionIdentity: string
+  classify(args: unknown, ctx: { agentIdentity: string | null; sessionIncarnation: string | null }): ArmOutcome
+  prepare(plan: TodoPlan | undefined): ArmOutcome
+  execute(ticket: TodoTicket | object, exec: unknown): Promise<ArmOutcome>
+  cancel(target: TodoPlan | TodoTicket): ArmOutcome
+  drain(): void
+}
+const TODO_ARM = (await import(new URL('../src/plugin/live/governed-families/todo.mjs', import.meta.url).href)) as {
+  A5_TODO_FAMILY_ID: string
+  A5_TODO_OPERATION: string
+  A5_TODO_TOOL_NAME: string
+  A5_TODO_ADAPTER_REVISION: number
+  A5_TODO_TYPED_CODES: Record<string, string>
+  createGovernedTodoArm: (deps: {
+    nativeDefinition: HostTool
+    definitionIdentity: string
+    providerId: string
+    agentScopeKey: string
+    trustedIdentities: readonly string[]
+    allowParallelInProgress: boolean
+    observe?: (row: { event: string; correlation: string; detail?: string }) => void
+  }) => TodoArmHandle
+}
+
 let todo: HostTodo
 let ToolArgsErrorName = ''
 let libDigest = ''
@@ -126,9 +167,31 @@ function mount(allowParallel: boolean) {
   if (tool === undefined || projection === undefined) {
     throw new Error(`pinned tool-todo registration contract broken: got ${tools.length} tool(s), ${projections.length} projection(s)`)
   }
-  const exec = { agent: { session: { append: (type: string, data: { todos: unknown }) => { events.push({ type, data: data as ProjectionEvent['data'] }) } } } }
+  const exec = { agent: { identity: 'session-m1', session: { append: (type: string, data: { todos: unknown }) => { events.push({ type, data: data as ProjectionEvent['data'] }) } } } }
   return { tool, projection, events, exec }
 }
+
+/** The arm over the captured native body — the production shape CENTER's glue
+ * will build at bind time (bind-time capture, never a name re-lookup). */
+function arm(allowParallel = true) {
+  const m = mount(allowParallel)
+  const identity = definitionIdentityOf(m.tool)
+  if (identity === null) throw new Error('fixture: the captured native body must carry a placement identity')
+  const observed: { event: string; correlation: string; detail?: string }[] = []
+  const handle = TODO_ARM.createGovernedTodoArm({
+    nativeDefinition: m.tool,
+    definitionIdentity: identity,
+    providerId: 'dsh-agent-team',
+    agentScopeKey: 'session-m1',
+    trustedIdentities: ['session-m1', 'agent-m1'],
+    allowParallelInProgress: allowParallel,
+    observe: (row) => { observed.push(row) },
+  })
+  return { ...m, arm: handle, observed }
+}
+
+const CTX = { agentIdentity: 'session-m1', sessionIncarnation: 'session-m1' }
+const VALID_ARGS = { todos: [{ content: 'alpha', status: 'pending' }, { content: 'beta', status: 'in_progress' }] }
 
 /** The fold the HOST registered (index.ts:120-133): write→list, turn/start→null. */
 function readBack(m: ReturnType<typeof mount>, events: ProjectionEvent[]): unknown {
@@ -162,57 +225,7 @@ const PLANE = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', im
   PLANE_RESERVED_NATIVE_HOST_PIN: string
 }
 
-/* ────────────── P-PROPOSED reference (NOT production law yet) ────────────── */
-/**
- * P 前置 classify per contract §1 + §1.1: PURE parse, closed operation set,
- * effects ONLY from the frozen vocabulary, strict targetManifest. The typed
- * codes below are P-PROPOSED (proposed for the lane's code family; production
- * naming is CENTER/AUTH's call — see p-takeover-proposal.md).
- */
-function classify(
-  args: Record<string, unknown>,
-  ctx: { agentIdentity: string | null; boundSessionIncarnation: string | null },
-) {
-  const unknown = Object.keys(args).filter((k) => k !== 'todos')
-  if (unknown.length > 0) return { ok: false as const, code: 'P_TODO_CLASSIFY_UNKNOWN_PARAMETER', detail: unknown.join(',') }
-  if (!Array.isArray(args.todos)) return { ok: false as const, code: 'P_TODO_CLASSIFY_INVALID_ARGUMENTS', detail: 'todos must be an array' }
-  if (ctx.agentIdentity === null) return { ok: false as const, code: 'P_TODO_CLASSIFY_NO_OWNING_SESSION', detail: 'no exec.agent' }
-  if (ctx.boundSessionIncarnation === null || ctx.boundSessionIncarnation !== ctx.agentIdentity) {
-    return { ok: false as const, code: 'P_TODO_CLASSIFY_FOREIGN_SESSION', detail: 'caller incarnation is not the bound current session' }
-  }
-  const items = args.todos as { content?: unknown; status?: unknown; [k: string]: unknown }[]
-  for (const [i, item] of items.entries()) {
-    const extra = Object.keys(item).filter((k) => k !== 'content' && k !== 'status')
-    if (extra.length > 0) return { ok: false as const, code: 'P_TODO_CLASSIFY_UNKNOWN_PARAMETER', detail: `todos[${i}].${extra[0]}` }
-    if (typeof item.content !== 'string' || item.content.trim().length === 0) {
-      return { ok: false as const, code: 'P_TODO_CLASSIFY_INVALID_ARGUMENTS', detail: `todos[${i}].content must be a non-empty string` }
-    }
-    if (!(STATUSES as readonly string[]).includes(String(item.status))) {
-      return { ok: false as const, code: 'P_TODO_CLASSIFY_INVALID_ARGUMENTS', detail: `todos[${i}].status must be one of ${STATUSES.join('|')}` }
-    }
-  }
-  const canonical = items.map((t) => ({ content: (t.content as string).trim(), status: t.status as string }))
-  const digest = createHash('sha256').update(JSON.stringify(canonical)).digest('hex')
-  return {
-    ok: true as const,
-    effects: [{ kind: 'tool-invoke' as const, toolName: 'todo_write', resource: null }],
-    manifest: {
-      operation: 'replace-list',
-      sessionIncarnation: ctx.boundSessionIncarnation,
-      todosDigest: digest,
-      counts: {
-        pending: canonical.filter((t) => t.status === 'pending').length,
-        inProgress: canonical.filter((t) => t.status === 'in_progress').length,
-        completed: canonical.filter((t) => t.status === 'completed').length,
-      },
-      allowParallelPolicy: 'P-consumed-at-prepare',
-      paramFingerprint: digest,
-    },
-  }
-}
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-describe('a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture level, no Host)', () => {
+describe('a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host)', () => {
   it('T1 real definition/provider binding: pinned apply captures the definition and its placement identity', () => {
     expect(existsSync(TODO_LIB), 'pristine host checkout required (same family as a5-pindir)').toBe(true)
     expect(todo.name).toBe('tool-todo')
@@ -257,7 +270,8 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture l
     expect(root.properties.todos.items.required).toEqual(['content', 'status'])
     expect(root.properties.todos.items.properties.content.type).toBe('string')
     expect(root.properties.todos.items.properties.status.enum).toEqual([...STATUSES])
-    // the root itself declares NO additionalProperties — the open-root gap T10 pins:
+    // the root itself declares NO additionalProperties — the open-root gap the
+    // landed arm refuses on the governed path (T10):
     expect(root.additionalProperties).toBeUndefined()
   })
 
@@ -327,7 +341,7 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture l
 
   it('T7 POSITIVE: owning-session governed write → event append, real projection read-back equals the result, last-write-wins', async () => {
     const m = mount(true)
-    const first = await m.tool.execute({ todos: [{ content: 'alpha', status: 'pending' }, { content: 'beta', status: 'in_progress' }] }, m.exec)
+    const first = await m.tool.execute(VALID_ARGS, m.exec)
     expect(m.events).toHaveLength(1)
     expect(m.events[0]).toEqual({ type: 'todo/write', data: { todos: first.todos } })
     expect(first.counts).toEqual({ pending: 1, inProgress: 1, completed: 0 })
@@ -355,66 +369,85 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture l
     expect(() => todo.Config({})).toThrow(/missing required value/)
     expect(() => todo.Config({ allowParallelInProgress: 'yes' })).toThrow(/expected boolean/)
     expect(todo.Config({ allowParallelInProgress: false })).toEqual({ allowParallelInProgress: false })
-    // and the policy is behavior, not decoration: single-active refuses a second in_progress
   })
 
-  it('T10 REGRESSION NET (current gap, do NOT soften): unknown TOP-LEVEL key gets NO typed refusal and the write proceeds (key not consumed)', async () => {
-    const m = mount(true)
-    // CURRENT FORM (re-verified by CENTER statically): parameters ROOT has no
-    // additionalProperties:false (src :138-157; only items :145 closes), so the
-    // schema layer neither declares nor refuses the key, the body only reads
-    // `todos`, and the append happens anyway. This leg pins the gap as a
-    // regression net. WHEN the P classify lands in production this assertion
-    // MUST be flipped to a typed refusal (P_TODO_CLASSIFY_UNKNOWN_PARAMETER) —
-    // flipping is the landing proof, silence here is a red flag.
-    const res = await m.tool.execute({ todos: [{ content: 'ok', status: 'pending' }], bogus_top_key: 42 }, m.exec)
-    expect(m.events).toHaveLength(1) // append happened: typed refusal ABSENT
-    expect(res.todos).toEqual([{ content: 'ok', status: 'pending' }]) // key NOT consumed into the list
-    // The P reference classify, by contrast, already refuses it typed (contrast pair):
-    const refused = classify({ todos: [{ content: 'ok', status: 'pending' }], bogus_top_key: 42 }, { agentIdentity: 'session-m1', boundSessionIncarnation: 'session-m1' })
+  it('T10 FLIPPED landing proof: governed path typed-refuses unknown TOP-LEVEL keys with ZERO appends (host-plane fact stays pinned, host is zero-byte)', async () => {
+    const a = arm(true)
+    const refused = a.arm.classify({ todos: [{ content: 'ok', status: 'pending' }], bogus_top_key: 42 }, CTX)
     expect(refused.ok).toBe(false)
-    expect(refused.ok === false && refused.code).toBe('P_TODO_CLASSIFY_UNKNOWN_PARAMETER')
+    expect(refused.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.UNKNOWN_PARAMETER)
+    expect(refused.detail).toContain('bogus_top_key')
+    expect(a.events).toHaveLength(0) // the governed path appended nothing
+    // HOST-PLANE FACT (pinned, not endorsed — the host schema layer still has
+    // the implicit open root, src :138-157): the RAW native definition still
+    // accepts the key and writes; the key is NOT consumed into the list.
+    const raw = await a.tool.execute({ todos: [{ content: 'ok', status: 'pending' }], bogus_top_key: 42 }, a.exec)
+    expect(a.events).toHaveLength(1)
+    expect(raw.todos).toEqual([{ content: 'ok', status: 'pending' }])
   })
 
-  it('T11 owning-session refusal is a bare Error today (typed-code gap pinned) with ZERO appends', async () => {
-    const m = mount(true)
-    const err = await m.tool.execute({ todos: [{ content: 'x', status: 'pending' }] }, {}).catch((e: unknown) => e as Error)
-    expect(err).toBeInstanceOf(Error)
-    expect((err as Error).message).toContain('todo_write requires an owning agent session')
-    expect((err as Error).name).toBe('Error') // ⑦: NO typed code at :194-197 — P layer supplies it
-    expect((err as Error & { code?: string }).code).toBeUndefined()
-    expect(m.events).toHaveLength(0)
+  it('T11 FLIPPED landing proof: governed path typed-refuses a missing owning session (replacing the bare Error on THAT path) with ZERO appends', async () => {
+    const a = arm(true)
+    // classify lane: no agent in the trusted context
+    const noCtx = a.arm.classify(VALID_ARGS, { agentIdentity: null, sessionIncarnation: null })
+    expect(noCtx.ok).toBe(false)
+    expect(noCtx.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.NO_OWNING_SESSION)
+    // execute lane: a real ticket consumed by an agent-less exec is refused
+    // BEFORE the native body would bare-throw (host :194-197 never reached)
+    const c = a.arm.classify(VALID_ARGS, CTX)
+    expect(c.ok).toBe(true)
+    if (c.plan === undefined) throw new Error('fixture: classify returned no plan')
+    const p = a.arm.prepare(c.plan)
+    expect(p.ok).toBe(true)
+    if (p.ticket === undefined) throw new Error('fixture: prepare returned no ticket')
+    const refused = await a.arm.execute(p.ticket, {})
+    expect(refused.ok).toBe(false)
+    expect(refused.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.NO_OWNING_SESSION)
+    expect(a.events).toHaveLength(0)
+    // HOST-PLANE FACT (pinned, not endorsed): the raw body still bare-throws.
+    const rawErr = await a.tool.execute(VALID_ARGS, {}).then(
+      () => { throw new Error('T11: the host body must bare-throw without an owning session') },
+      (e: unknown) => e as Error & { code?: string },
+    )
+    expect(rawErr.name).toBe('Error')
+    expect(rawErr.message).toContain('todo_write requires an owning agent session')
+    expect(rawErr.code).toBeUndefined()
+    expect(a.events).toHaveLength(0)
   })
 
-  it('T12 P classify (P-PROPOSED) emits the frozen §1.1 vocabulary only: I=tool-invoke on the exact name, resource null, parses clean', () => {
-    const out = classify({ todos: [{ content: ' a ', status: 'in_progress' }] }, { agentIdentity: 'session-m1', boundSessionIncarnation: 'session-m1' })
+  it('T12 the landed classify emits the frozen §1.1 vocabulary only: I=tool-invoke on the exact name, resource null, parses clean, bound by definitionIdentity', () => {
+    const a = arm(true)
+    const out = a.arm.classify({ todos: [{ content: ' a ', status: 'in_progress' }] }, CTX)
     expect(out.ok).toBe(true)
-    if (!out.ok) return
     expect(out.effects).toEqual([{ kind: 'tool-invoke', toolName: 'todo_write', resource: null }])
-    expect(out.effects.map((e) => e.kind)).toEqual(['tool-invoke'])
+    expect(out.effects?.map((e) => e.kind)).toEqual(['tool-invoke'])
     expect(EFFECT_KINDS).toContain('tool-invoke') // closed vocabulary, zero new kinds
     const parsed = parseRequestedEffectSet(out.effects)
     expect(parsed.ok).toBe(true) // the REAL domain parser accepts the classify output
-    expect(out.manifest.operation).toBe('replace-list')
-    expect(out.manifest.sessionIncarnation).toBe('session-m1')
-    expect(out.manifest.todosDigest).toMatch(/^[0-9a-f]{64}$/)
-    expect(out.manifest.counts).toEqual({ pending: 0, inProgress: 1, completed: 0 })
+    const manifest = out.manifest
+    expect(manifest?.operation).toBe(TODO_ARM.A5_TODO_OPERATION)
+    expect(manifest?.sessionIncarnation).toBe('session-m1') // trusted ctx, never a model field
+    expect(manifest?.todosDigest).toMatch(/^[0-9a-f]{64}$/)
+    expect(manifest?.counts).toEqual({ pending: 0, inProgress: 1, completed: 0 })
+    expect(manifest?.allowParallelPolicy).toBe(true) // the config fact in force is manifest-reported
+    expect(manifest?.paramFingerprint).toBe(manifest?.todosDigest)
+    // the `@` half of the I arm: identity bound at BIND time, never the name
+    expect(a.arm.definitionIdentity).toBe(definitionIdentityOf(a.tool))
+    expect(a.arm.familyId).toBe(TODO_ARM.A5_TODO_FAMILY_ID)
   })
 
-  it('T13 P classify negative: foreign/absent session incarnation and value-law breaks are typed refusals', () => {
-    const ok = { agentIdentity: 'session-m1', boundSessionIncarnation: 'session-m1' }
-    expect(classify({ todos: [] }, { agentIdentity: null, boundSessionIncarnation: 'session-m1' }).ok).toBe(false)
-    const foreign = classify({ todos: [] }, { agentIdentity: 'session-OTHER', boundSessionIncarnation: 'session-m1' })
-    expect(foreign.ok === false && foreign.code).toBe('P_TODO_CLASSIFY_FOREIGN_SESSION')
-    const dup = classify({ todos: [{ content: 'd', status: 'pending' }, { content: ' d ', status: 'completed' }] }, ok)
-    // canonical trim makes these the same content — value law stays in the host body TODAY;
-    // classify is pure-parse and does NOT re-implement host value laws (contract: adapter keeps
-    // native role/owner/resource checks; §1.1 no parallel law):
-    expect(dup.ok).toBe(true)
-    const badEnum = classify({ todos: [{ content: 'x', status: 'archived' }] }, ok)
-    expect(badEnum.ok === false && badEnum.code).toBe('P_TODO_CLASSIFY_INVALID_ARGUMENTS')
-    const blank = classify({ todos: [{ content: '   ', status: 'pending' }] }, ok)
-    expect(blank.ok === false && blank.code).toBe('P_TODO_CLASSIFY_INVALID_ARGUMENTS')
+  it('T13 landed classify negatives: foreign/absent session incarnation, off-enum and shape breaks are typed refusals; HOST VALUE LAWS stay native', () => {
+    const a = arm(true)
+    expect(a.arm.classify(VALID_ARGS, { agentIdentity: 'session-OTHER', sessionIncarnation: 'session-m1' }).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.FOREIGN_SESSION)
+    expect(a.arm.classify(VALID_ARGS, { agentIdentity: 'session-m1', sessionIncarnation: 'session-OTHER' }).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.FOREIGN_SESSION)
+    expect(a.arm.classify({ todos: 'not-array' }, CTX).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(a.arm.classify({ todos: [{ content: 'x', status: 'archived' }] }, CTX).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(a.arm.classify({ todos: [{ content: '   ', status: 'pending' }] }, CTX).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.INVALID_ARGUMENTS)
+    expect(a.arm.classify({ todos: [{ content: 'x', status: 'pending', extra: 1 }] }, CTX).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.UNKNOWN_PARAMETER)
+    // duplicate content is the HOST BODY's value law (§1.1 no parallel law):
+    // classify passes it through, the native body refuses at execute (T14).
+    expect(a.arm.classify({ todos: [{ content: 'd', status: 'pending' }, { content: ' d ', status: 'completed' }] }, CTX).ok).toBe(true)
+    expect(a.events).toHaveLength(0)
   })
 
   it('T14 runtime value tiers stay bare Errors at the host body (⑦ layering pinned) and only touch the append after validation', async () => {
@@ -427,5 +460,90 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture l
     const p = mount(true)
     await p.tool.execute({ todos: [{ content: 'a', status: 'in_progress' }, { content: 'b', status: 'in_progress' }] }, p.exec)
     expect(p.events).toHaveLength(1)
+  })
+
+  it('T15 LANE positive (C2-shape, lane-provable part): classify→prepare→execute = exactly one append, business read-back equals the result, backend log complete on one correlation', async () => {
+    const a = arm(true)
+    const c = a.arm.classify(VALID_ARGS, CTX)
+    expect(c.ok).toBe(true)
+    if (c.plan === undefined) throw new Error('fixture: classify returned no plan')
+    const p = a.arm.prepare(c.plan)
+    expect(p.ok).toBe(true)
+    if (p.ticket === undefined) throw new Error('fixture: prepare returned no ticket')
+    const x = await a.arm.execute(p.ticket, a.exec)
+    expect(x.ok).toBe(true)
+    expect(x.value?.counts).toEqual({ pending: 1, inProgress: 1, completed: 0 })
+    expect(a.events).toHaveLength(1) // EXACTLY one append, by the bound native body
+    expect(a.events[0]).toEqual({ type: 'todo/write', data: { todos: x.value?.todos } })
+    expect(readBack(a, a.events)).toEqual(x.value?.todos) // business result observable through the real host fold
+    const events = a.observed.map((o) => o.event)
+    expect(events).toEqual(['classify', 'admit', 'backend-start', 'backend-commit', 'backend-end'])
+    expect(new Set(a.observed.map((o) => o.correlation)).size).toBe(1) // one invocation correlation
+  })
+
+  it('T16 Ask-pending and deny write ZERO: without a prepare-issued ticket execute is NOT_ADMITTED, the body is unreachable, zero append', async () => {
+    const a = arm(true)
+    const c = a.arm.classify(VALID_ARGS, CTX)
+    expect(c.ok).toBe(true)
+    // the admission answer that never admits (Ask pending OR deny) simply
+    // never calls prepare — the arm's structure is the proof: prepare/execute
+    // have no other door, and the ONLY commit path is a consumed ticket.
+    const fakeTicket = { plan: c.plan } // a hand-built ticket is NOT an issued one
+    const refused = await a.arm.execute(fakeTicket, a.exec)
+    expect(refused.ok).toBe(false)
+    expect(refused.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.NOT_ADMITTED)
+    const strayPrepare = a.arm.prepare({} as TodoPlan)
+    expect(strayPrepare.ok).toBe(false)
+    expect(strayPrepare.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.NOT_ADMITTED)
+    expect(a.events).toHaveLength(0)
+    expect(a.observed.map((o) => o.event)).toEqual(['classify']) // no admit/backend rows exist
+  })
+
+  it('T17 cancel reports the TRUE race settlement at all three points (C3): before-admission / after-admission = zero append, after-commit = ALREADY-COMMITTED', async () => {
+    const a = arm(true)
+    // (a) cancelled while waiting for admission:
+    const c1 = a.arm.classify({ todos: [{ content: 'x', status: 'pending' }] }, CTX)
+    if (c1.plan === undefined) throw new Error('fixture: classify returned no plan')
+    const z1 = a.arm.cancel(c1.plan)
+    expect(z1.settled).toBe('CANCELLED-BEFORE-ADMISSION')
+    expect(z1.appendOutcome).toContain('zero')
+    expect(a.arm.prepare(c1.plan).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.NOT_ADMITTED)
+    // (b) cancelled after admission, before consumption:
+    const c2 = a.arm.classify({ todos: [{ content: 'y', status: 'pending' }] }, CTX)
+    if (c2.plan === undefined) throw new Error('fixture: classify returned no plan')
+    const p2 = a.arm.prepare(c2.plan)
+    if (p2.ticket === undefined) throw new Error('fixture: prepare returned no ticket')
+    const z2 = a.arm.cancel(p2.ticket)
+    expect(z2.settled).toBe('CANCELLED-AFTER-ADMISSION')
+    const late = await a.arm.execute(p2.ticket, a.exec)
+    expect(late.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.CANCELLED)
+    expect(a.events).toHaveLength(0) // both cancellations: the list never moved
+    // (c) the race was lost — the commit already happened, cancel cannot rewrite it:
+    const c3 = a.arm.classify({ todos: [{ content: 'z', status: 'pending' }] }, CTX)
+    if (c3.plan === undefined) throw new Error('fixture: classify returned no plan')
+    const p3 = a.arm.prepare(c3.plan)
+    if (p3.ticket === undefined) throw new Error('fixture: prepare returned no ticket')
+    await a.arm.execute(p3.ticket, a.exec)
+    const z3 = a.arm.cancel(p3.ticket)
+    expect(z3.settled).toBe('ALREADY-COMMITTED')
+    expect(a.events).toHaveLength(1) // the truth: one append rode the log
+  })
+
+  it('T18 single-flight consumption and DRAINING with no native fallback: a consumed ticket never re-fires; after drain every stage refuses typed and the body is unreachable', async () => {
+    const a = arm(true)
+    const c = a.arm.classify(VALID_ARGS, CTX)
+    if (c.plan === undefined) throw new Error('fixture: classify returned no plan')
+    const p = a.arm.prepare(c.plan)
+    if (p.ticket === undefined) throw new Error('fixture: prepare returned no ticket')
+    expect((await a.arm.execute(p.ticket, a.exec)).ok).toBe(true)
+    const reFire = await a.arm.execute(p.ticket, a.exec)
+    expect(reFire.ok).toBe(false)
+    expect(reFire.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.ALREADY_CONSUMED)
+    expect(a.events).toHaveLength(1) // a re-fire can never double-commit
+    a.arm.drain()
+    expect(a.arm.classify(VALID_ARGS, CTX).code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.DRAINING)
+    const after = await a.arm.execute(p.ticket, a.exec)
+    expect(after.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.DRAINING)
+    expect(a.events).toHaveLength(1) // DRAINING: no body reachable, native included (none exists by construction)
   })
 })

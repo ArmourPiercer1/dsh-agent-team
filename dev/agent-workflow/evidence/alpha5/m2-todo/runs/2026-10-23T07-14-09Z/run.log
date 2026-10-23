@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T1 real definition/provider binding: pinned apply captures the definition and its placement identity 4ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T2 parameters shape is the frozen contract text: todos required, item content/status required, enum closed 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T3 plane state: reserved name on the pinned registry, and a plane row CLAIMING the name is typed-refused 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T4 same-name forgery is refused by the real Guard law (drifted body + shadowed native, two typed codes) 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T5 cross/absent identity is typed-refused on the name lane (NEG-2 family, no native fallback) 0ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T6 unknown action spelling has no abstain arm (unbound todo_read, TEAM_TOOL_UNGOVERNED) and DRAINING refuses everything 0ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T7 POSITIVE: owning-session governed write → event append, real projection read-back equals the result, last-write-wins 2ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T8 negative (typed): illegal status enum and unknown ITEM key are ToolArgsError/INVALID_ARGS with ZERO appends 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T9 negative (config layer): allowParallelInProgress is required with NO default and must be boolean 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T10 FLIPPED landing proof: governed path typed-refuses unknown TOP-LEVEL keys with ZERO appends (host-plane fact stays pinned, host is zero-byte) 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T11 FLIPPED landing proof: governed path typed-refuses a missing owning session (replacing the bare Error on THAT path) with ZERO appends 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T12 the landed classify emits the frozen §1.1 vocabulary only: I=tool-invoke on the exact name, resource null, parses clean, bound by definitionIdentity 2ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T13 landed classify negatives: foreign/absent session incarnation, off-enum and shape breaks are typed refusals; HOST VALUE LAWS stay native 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T14 runtime value tiers stay bare Errors at the host body (⑦ layering pinned) and only touch the append after validation 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T15 LANE positive (C2-shape, lane-provable part): classify→prepare→execute = exactly one append, business read-back equals the result, backend log complete on one correlation 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T16 Ask-pending and deny write ZERO: without a prepare-issued ticket execute is NOT_ADMITTED, the body is unreachable, zero append 0ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T17 cancel reports the TRUE race settlement at all three points (C3): before-admission / after-admission = zero append, after-commit = ALREADY-COMMITTED 1ms
+ ✓ packages/runtime/test/a5-m2-todo-write-c1.test.ts > a5-m2-todo-write-c1 — B-SESSION todo arm, BASE.C1 caliber (fixture + lane level, no Host) > T18 single-flight consumption and DRAINING with no native fallback: a consumed ticket never re-fires; after drain every stage refuses typed and the body is unreachable 0ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  07:14:09
+   Duration  958ms (transform 556ms, setup 0ms, import 677ms, tests 146ms, environment 0ms)
+
+JSON report written to /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/dev/agent-workflow/evidence/alpha5/m2-todo/runs/2026-10-23T07-14-09Z/vitest.json
+RC=0
