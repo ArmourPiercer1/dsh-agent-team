@@ -90,6 +90,13 @@ import { createAnchoredGlobBackend } from './glob-backend.mjs'
 import { A5_G1_RECORD_SPECS, A5_G1_ADAPTER_REVISION } from './governed-families/g1-surface-adapters.mjs'
 import { A5_G6_FAMILY, A5_G6_TOOL_NAMES } from './governed-families/g6-session-query.mjs'
 import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-wiring.mjs'
+// A5M2-B-TEAM-WIRE (this lane's additive import rows under the G6 pair): the
+// controlled B-TEAM member-operation wiring bridge and the adapter's OWN
+// family facts (the closed ten + the adapter revision the durable claim
+// carries). The adapter's factory is reached ONLY through the bridge; the
+// plane edits none of it.
+import { A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION, A5_B_TEAM_TOOL_NAMES } from './governed-families/team-adapters.mjs'
+import { buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -1227,6 +1234,62 @@ export function createTeamToolPlaneAssembly(input = {}) {
     scheduleInject = Object.freeze({
       list: Object.freeze({ createArm: scheduleInjectRaw.list.createArm, description: scheduleInjectRaw.list.description, parameters: scheduleInjectRaw.list.parameters, output: Object.freeze({ schema: scheduleInjectRaw.list.output.schema, render: scheduleInjectRaw.list.output.render }) }),
       delete: Object.freeze({ createArm: scheduleInjectRaw.delete.createArm, description: scheduleInjectRaw.delete.description, parameters: scheduleInjectRaw.delete.parameters, output: Object.freeze({ schema: scheduleInjectRaw.delete.output.schema, render: scheduleInjectRaw.delete.output.render }) }),
+    })
+  }
+
+  // A5M2-B-TEAM-WIRE — the B-TEAM MEMBER-OPERATION injection law (this lane's
+  // block; the G6 pair above is the house pattern it copies). The owner
+  // publishes the evidence for the ten member operations (records 74–82 + 86)
+  // under `backends.teamOps`: the provider identity the durable family gate
+  // compares, the MEMBER-SCOPED native capture seam, the FRESH per-dispatch
+  // re-read (adapter L7), the LIVE lane tool set the delegate port reads (the
+  // SAME createTeamTools build the capture came from — adapter L3), and the
+  // seam's own capture-side identity mint. ABSENT (the ordinary config) = the
+  // family is not deployed on this assembly: no seat, no claim face, no
+  // registration, byte-for-byte zero flip. There is no separate enable key
+  // and no fallback row; DEFECTIVE evidence refuses the MOUNT with this
+  // block's own typed code (the same config-is-law discipline the G6 block
+  // obeys). WHAT THIS MOUNT OWNS for B-TEAM is the ADMISSION SIDE only: the
+  // real `paAdmit` seat, the issued call identity, the claim face and the
+  // drain. PLACEMENT of the ten names stays with their registration owner in
+  // agent-bindings, because the plane mounts into the SAME agent tool layer
+  // the lane's raw team_* registrations live in, and the host's NamedEntries
+  // insert refuses a second definition under one name in one layer
+  // (packages/core/scope/src/store.ts:43 measured) — a plane-placed row over
+  // a live raw registration would answer PLANE_PLACEMENT_CONFLICT here. One
+  // name, one placement: the governed row REPLACES the raw registration at
+  // that site, and this plane verifies the placement before any claim.
+  const teamOpsInjectRaw = input.backends?.teamOps
+  const teamOpsInjectInvalid = (why) => ({ ok: false, code: 'TEAM_OPS_ARM_INJECT_INVALID', message: `backends.teamOps: ${why}` })
+  let teamOpsInject = null
+  if (teamOpsInjectRaw !== undefined) {
+    const teamBad = typeof teamOpsInjectRaw.providerId !== 'string' || teamOpsInjectRaw.providerId.length === 0
+      ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against — the bridge invents none)'
+      : typeof teamOpsInjectRaw.readNative !== 'function'
+        ? 'readNative (name) => definition is required — the MEMBER-SCOPED native capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)'
+        : typeof teamOpsInjectRaw.liveNative !== 'function'
+          ? 'liveNative (name) => definition is required — the per-dispatch L7 re-read must be FRESH, never the capture memo (a bind-time constant compared against itself proves nothing)'
+          : typeof teamOpsInjectRaw.teamSet !== 'function'
+            ? 'teamSet () => the CURRENT lane tool set is required — the delegate port is a read of the SAME createTeamTools set the capture came from (adapter L3), and L7 compares that live answer per dispatch'
+            : typeof teamOpsInjectRaw.definitionIdentityOf !== 'function'
+              ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
+              : typeof teamOpsInjectRaw.placementFeed !== 'function'
+                ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
+                : undefined
+    if (teamBad !== undefined) return teamOpsInjectInvalid(teamBad)
+    for (const teamName of A5_B_TEAM_TOOL_NAMES) {
+      if (teamName === readName || teamName === A5_TODO_MOUNT_NAME || teamName === A5_WRITE_MOUNT_NAME || teamName === A5_IMAGE_MOUNT_NAME
+        || A5_G6_TOOL_NAMES.includes(teamName)) {
+        return teamOpsInjectInvalid(`'${teamName}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the B-TEAM block)`)
+      }
+    }
+    teamOpsInject = Object.freeze({
+      providerId: teamOpsInjectRaw.providerId,
+      readNative: teamOpsInjectRaw.readNative,
+      liveNative: teamOpsInjectRaw.liveNative,
+      teamSet: teamOpsInjectRaw.teamSet,
+      definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
+      placementFeed: teamOpsInjectRaw.placementFeed,
     })
   }
 
@@ -4108,6 +4171,75 @@ export function createTeamToolPlaneAssembly(input = {}) {
       return { ok: false, code: 'SESSION_QUERY_ARM_REFUSED', message: `backends.sessionQuery: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
     }
   }
+  // A5M2-B-TEAM-WIRE (root ruling: the mature adapter is wired, not shelved;
+  // nothing here awaits another family): the controlled wiring bridge over
+  // the root-reviewed B-TEAM adapter (rev.1, records 74–82 + 86, imported
+  // VERBATIM — no row law restated, no second gate added) assembled on THIS
+  // mount. THE SEAT IS THE REAL `paAdmit` (:1874/:1908/:1909 law, the CALLABLE
+  // carrying open/edge/closePlan — the bridge accepts exactly that shape), so
+  // a governed team call walks `pa.open -> pa.edge -> consumedProof` before
+  // the delegated chain sees the call, and a refusal (or a missing consume
+  // witness) settles with ZERO delegate entry. Zero-flip law: with no
+  // injection this block is byte-identical to the pre-B-TEAM assembly.
+  const teamOpsTokenLedger = new Map()
+  let teamOpsWiring = null
+  if (teamOpsInject !== null) {
+    // THE ISSUED CALL IDENTITY — the same a5p5 row-mount law the G6 block
+    // obeys (register.ts:196-226): per-mount nonce + seq, with the REAL host
+    // execution token (object | symbol — never String(), which would collide
+    // distinct symbol identities) as the single-flight key. No PA fact lives
+    // here: plan facts live only in paAdmit's own map and die through
+    // closePlan / the edge's finally; this map holds one correlation per
+    // execution token until the mount's ONE release point in dispose.
+    let teamOpsCallSeq = 0
+    const teamOpsMountNonce = String(globalThis.crypto?.randomUUID?.()
+      ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`)
+    const teamOpsPrefix = `team-${String(input.instanceId ?? templateId ?? 'unknown')}-bteam`
+    const teamOpsCorrelationOf = (exec, toolName) => {
+      const raw = exec !== null && typeof exec === 'object' ? exec.token : undefined
+      const tokenKey = (typeof raw === 'object' && raw !== null) ? raw : typeof raw === 'symbol' ? raw : undefined
+      if (tokenKey !== undefined && teamOpsTokenLedger.has(tokenKey)) {
+        // A re-used execution token allocates NOTHING new: the B-TEAM walk
+        // refuses through the bridge's own CALL_ID_ABSENT bytes (one governed
+        // call per execution token) and the mount observes the fact.
+        observe(`a5m2-b-team: token-replay REFUSED name=${String(toolName)} — one governed call per execution token`)
+        return null
+      }
+      teamOpsCallSeq += 1
+      const callId = `${teamOpsPrefix}-${String(toolName)}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${teamOpsMountNonce}-${String(teamOpsCallSeq)}`
+      if (tokenKey !== undefined) teamOpsTokenLedger.set(tokenKey, callId)
+      return callId
+    }
+    try {
+      const builtTeamOps = buildTeamOpsWiring({
+        realmId,
+        providerId: teamOpsInject.providerId,
+        readNative: teamOpsInject.readNative,
+        liveNative: teamOpsInject.liveNative,
+        teamSet: teamOpsInject.teamSet,
+        definitionIdentityOf: teamOpsInject.definitionIdentityOf,
+        correlationOf: teamOpsCorrelationOf,
+        // THE LAZY FEED: the registration owner answers the placement
+        // identity AT MOUNT MOMENT (the adapter re-reads it fresh per call to
+        // familyRegistrations and THROWS on a silent or moved key — never a
+        // guessed def#, never a silent skip).
+        placementFeed: teamOpsInject.placementFeed,
+        // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
+        // Nothing else poses as the admission seat.
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-b-team: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtTeamOps.ok !== true) {
+        return { ok: false, code: 'TEAM_OPS_ARM_REFUSED', message: `backends.teamOps: the wiring bridge refused the mount (${String(builtTeamOps.code)} — ${String(builtTeamOps.detail)})` }
+      }
+      teamOpsWiring = builtTeamOps
+      for (const censusRow of teamOpsWiring.captureCensus) {
+        observe(`a5m2-b-team: DECLARED-INACTIVE ${String(censusRow.name)} (${String(censusRow.reason)}) — native untouched, no definition, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'TEAM_OPS_ARM_REFUSED', message: `backends.teamOps: the adapter's own capture law threw at assembly (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
   const g6Defs = g6Wiring === null ? [] : g6Wiring.definitions
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
@@ -4160,6 +4292,25 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         placementNames: g6Wiring.placementNames,
         declared: g6Wiring.declared,
         familyRegistrations: g6Wiring.familyRegistrations,
+      }) }),
+      // A5M2-B-TEAM-WIRE — THE B-TEAM CLAIM FACE (this lane's block): the
+      // rows the registration owner PLACES (each the complete captured face
+      // with ONLY execute replaced), and the mount-moment family
+      // registration — the adapter's own face, keys read FRESH through the
+      // owner's placement feed, throwing P_B_TEAM_PLACEMENT_KEY_ABSENT /
+      // _MOVED rather than guessing or skipping. The paired post-publish
+      // writer in agent-bindings hands each entry to
+      // registerA5GovernedFamily AT THE SHARED FILL POINT; nothing on the
+      // plane registers anything (the adapter's own L11).
+      ...(teamOpsWiring === null ? {} : { teamOps: Object.freeze({
+        familyId: A5_B_TEAM_FAMILY_ID,
+        adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
+        providerIdentity: teamOpsWiring.providerId,
+        placementNames: teamOpsWiring.placementNames,
+        definitions: teamOpsWiring.definitions,
+        declared: teamOpsWiring.declared,
+        captureCensus: teamOpsWiring.captureCensus,
+        familyRegistrations: teamOpsWiring.familyRegistrations,
       }) }),
       /** A5-M2: the governed-read hand-off face for THIS mount. The plane
        *  stores nothing here: the row holds the token-keyed flight and the
@@ -4363,6 +4514,13 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
               scheduleArms.list.drain()
               scheduleArms.delete.drain()
             }
+            // A5M2-B-TEAM-WIRE (this lane's block): the same drain semantics
+            // the G6 row obeys — a NEW-CALL PROHIBITION only (the adapter's
+            // own DRAIN_SEMANTICS: durable lane commits stay durable, no
+            // rollback, no new dispatch), then the mount's issued-identity
+            // ledger is released at this ONE point.
+            if (teamOpsWiring !== null) teamOpsWiring.drain()
+            teamOpsTokenLedger.clear()
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the

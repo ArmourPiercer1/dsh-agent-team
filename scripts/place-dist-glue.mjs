@@ -158,6 +158,19 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
   },
+  // A5M2 B-TEAM COMBINATION (center, atomic pair per the wiring owner's
+  // disclosure): the wiring module statically imports the adapter module
+  // and bindings statically import the wiring - placing ONE alone leaves a
+  // dangling import on the strict files:[dist] install face, so BOTH join
+  // in this single round; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+  },
   // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
   // production blocks added STATIC relative imports that no placement
   // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
