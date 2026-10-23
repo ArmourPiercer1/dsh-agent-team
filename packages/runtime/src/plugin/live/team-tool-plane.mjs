@@ -3605,7 +3605,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // (its durable correlation) rides the exec token copy into the row
       // body, so a lease-backed body can CONFIRM its own approval — nothing
       // else changes (args identity law untouched; the copy only ADDS).
-      const ran = await consumeG2ApprovedPlan({ row, plan: classified, args: raw, exec: Object.assign({}, exec, { g2ApprovedCallId: correlation }) })
+      const ran = await consumeG2ApprovedPlan({ row, plan: classified, args: raw, exec: Object.assign({}, exec, { g2ApprovedCallId: correlation, g2ConsumedProof: proof }) })
       if (ran === null || typeof ran !== 'object' || ran.ok !== true) {
         throw new Error(`refused-g2 ${ran?.code ?? 'P_G2_EDGE_REFUSED'} — ${ran?.detail ?? 'the G2 consumption edge refused the body'} (zero native entry)`)
       }

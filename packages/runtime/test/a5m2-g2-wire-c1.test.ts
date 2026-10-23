@@ -1070,13 +1070,14 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
     // supply routing (invoke level — the governance walk is the PLANE leg
     // below): the port lease runs the caller mapping on the OPENED worker.
     const row = world.rows.find((r) => r.toolName === 'stagehand_navigate')
-    const acted = await row!.invoke({ url: 'https://example.invalid' }, { agent: { id: WORKER }, g2ApprovedCallId: 'plane-g2:w-browser-supply-7' })
+    const acted = await row!.invoke({ url: 'https://example.invalid' }, { agent: { id: WORKER }, g2ApprovedCallId: 'plane-g2:w-browser-supply-7', g2ConsumedProof: { grant: { grantId: 'gr-7' } } })
     expect(acted).toEqual({ ok: true, value: { ok: true, acted: 'navigate' } })
     expect(workerCalls.length).toBe(1)
     expect(workerCalls[0]?.method).toBe('navigate')
     expect(workerCalls[0]?.resource).toBeDefined() // the OPENED worker chain rides the mapping (the port's own open law shapes it)
     expect(approvals).toEqual(['stagehand_navigate'])
     expect(factsSeen[0]?.approvedCallId).toBe('plane-g2:w-browser-supply-7') // the ONE correlation fact rides the lease facts
+    expect((factsSeen[0]?.consumedProof as { grant?: { grantId?: string } })?.grant?.grantId).toBe('gr-7') // the kernel witness struct rides unchanged
     expect(world.nativeCalls.stagehand_navigate?.length ?? 0).toBe(0)
     // the PLANE leg: B-BROWSER has no PA_FAMILY_TARGET_RULES entry (the
     // browser rule map is ANOTHER lane) — the walk fail-closes there, zero
@@ -1137,5 +1138,18 @@ describe('A5M2-G2-WIRE round-25: createG2ConsumedRelay — relay, not PA proof, 
     expect(await noCorr({ toolName: 'stagehand_navigate' })).toBe('refused')
     const missing = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService(null), rootSessionId: 'rt', deadlineMs: 40, pollMs: 10 })
     expect(await missing({ approvedCallId: 'plane-g2:r-9' })).toBe('refused')
+  })
+})
+
+/* ROOT 21:34 — the Browser approval boundary: kernel-witness shape only. */
+describe('A5M2-G2-WIRE round-26: createG2ConsumedProofApproval — the real final PA proof is the boundary', () => {
+  it('the kernel one-shot witness ({grant:{grantId}}) answers consumed; anything else refuses fail-closed (no correlation substitute, no Control read)', async () => {
+    const boundary = (MOUNT as unknown as { createG2ConsumedProofApproval: () => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedProofApproval()
+    expect(await boundary({ consumedProof: { grant: { grantId: 'gr-1' } } })).toBe('consumed')
+    expect(await boundary({})).toBe('refused')
+    expect(await boundary({ consumedProof: null })).toBe('refused')
+    expect(await boundary({ consumedProof: { grant: null } })).toBe('refused')
+    expect(await boundary({ consumedProof: { grant: { grantId: '' } } })).toBe('refused')
+    expect(await boundary({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
   })
 })

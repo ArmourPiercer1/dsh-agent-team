@@ -362,7 +362,7 @@ import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/to
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
-import { callResourceViaWorkerExecute, createG2ConsumedRelay, createG2TeamMount } from './governed-families/g2-team-mount.mjs'
+import { callResourceViaWorkerExecute, createG2ConsumedProofApproval, createG2TeamMount } from './governed-families/g2-team-mount.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
@@ -3059,10 +3059,12 @@ export function createAgentBindings(deps) {
           if (Array.isArray(g2Supply.browserEntries) === false && g2Supply.browserEntries !== null && typeof g2Supply.browserEntries === 'object') {
             if (typeof g2Supply.consumeBrowserApproval !== 'function' || typeof g2Supply.callResource !== 'function') {
               Object.assign(g2Supply, {
-                consumeBrowserApproval: createG2ConsumedRelay({
-                  getService: () => (controlServiceRef !== null && typeof controlServiceRef === 'object' ? controlServiceRef.current : undefined),
-                  rootSessionId: String(teamRoot),
-                }),
+                // ROOT 21:34: the boundary is the kernel's ONE-SHOT
+                // consumedProof of THIS call (relayed through exec by the
+                // walk's REAL final edge), verified by shape — NOT the
+                // correlation, NOT a Control-state read. The relay helper
+                // stays exported as a passthrough utility only.
+                consumeBrowserApproval: createG2ConsumedProofApproval(),
                 callResource: callResourceViaWorkerExecute,
               })
             }

@@ -249,7 +249,7 @@ export async function createG2TeamMount(input = {}) {
           // the approval this call consumed, when the walk rode it (the ONE
           // pass-through fact, plane :3597 law): the lease's consumeApproval
           // facts carry approvedCallId for per-call confirmation.
-          Object.assign({ toolName: row.toolName, operation: row.operation }, typeof exec?.g2ApprovedCallId === 'string' ? { approvedCallId: exec.g2ApprovedCallId } : {}),
+          Object.assign({ toolName: row.toolName, operation: row.operation }, typeof exec?.g2ApprovedCallId === 'string' ? { approvedCallId: exec.g2ApprovedCallId } : {}, exec?.g2ConsumedProof !== null && typeof exec?.g2ConsumedProof === 'object' ? { consumedProof: exec.g2ConsumedProof } : {}),
           async (resource) => await callResource(resource, BROWSER_METHODS[row.toolName], args, exec?.signal),
           exec?.signal,
           ),
@@ -385,4 +385,25 @@ export async function callResourceViaWorkerExecute (resource, method, args, sign
     throw new Error('callResourceViaWorkerExecute: the lease-owned resource.value answers no execute(method, args, signal) (worker-client.ts:70-71) — refusing, no fallback, no runtime swap')
   }
   return await runtime.execute(method, args, signal)
+}
+
+/**
+ * THE Browser approval boundary (root 21:34): the lease's consumeApproval
+ * answers 'consumed' ONLY on the kernel's REAL final PA consumedProof of
+ * THIS call — the one-shot consume witness the walk already earned
+ * (team-tool-plane :3588 law: allow without its proof never runs the body;
+ * the struct rides the exec unchanged, plane :3597 hunk). NOT the
+ * correlation, NOT a Control-state read, NOT a self-attestation: the row
+ * and this boundary both only RELAY the kernel's witness shape
+ * ({ grant: { grantId: string }, ... } — verified identically at plane
+ * :3067-3069). Missing/malformed proof answers 'refused' — fail-closed.
+ */
+export function createG2ConsumedProofApproval () {
+  return async (callFacts) => {
+    const proof = callFacts?.consumedProof
+    if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string' || proof.grant.grantId.length === 0) {
+      return 'refused'
+    }
+    return 'consumed'
+  }
 }
