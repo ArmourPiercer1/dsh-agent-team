@@ -2025,18 +2025,19 @@ async function main() {
         await new Promise((r) => setTimeout(r, 1000))
       }
     } else if (FIXTURE === 'image') {
-      // OVERLAY-16 (root 18:22:59 narrow fix, driven by the r18 failure run-2026-10-23T18-17-00): the
-      // consumed allow ended in a TERMINAL governance tool error on the SAME call — assistant
-      // tool_use(read_image, IMG_REL) id X -> tool_result{tool_use_id:X, is_error:true,
-      // "Error: refused-image P_…_MISMATCH …"} — visible on the model wire at 18:17:08.044, yet the
-      // kit still sat out the full 120 s store wait, so "stop at the first substantive failure" was
-      // NOT met. The terminal state is now read through the EXISTING callId-paired tool-result entry
-      // point (denialPairSeen over mockRef.requests, the same reader C4/C5 use) and the criterion
-      // ends IMMEDIATELY: no further effects, no store timeout, teardown through the normal finally.
-      // MISATTRIBUTION GUARD (root: another call's error must never be read as this one's): the
-      // refusal counts as terminal only when (i) the wire holds EXACTLY ONE tool_use(read_image,
-      // IMG_REL) id so far — C4's second call cannot exist yet because C4 prompts later — and (ii)
-      // the is_error result's tool_use_id is EXACTLY that id. Anything else keeps the bounded wait.
+      // OVERLAY-17 (root 8595 card, replacing the OVERLAY-16 predicate shape): a tool/result PAIRED
+      // TO THIS CALL carrying is_error === true IS the terminal failure. No 'Error:' prefix and no
+      // P_ code is required — the r18 wire happened to carry "Error: refused-image P_…", but the
+      // authoritative field is the session message's isError (payload-validation requires it to be a
+      // boolean) mapped to the wire's is_error by the provider serializer, and a refusal rendered as
+      // plain JSON would otherwise be missed. A P_ code, when present, is recorded as a DIAGNOSTIC
+      // only. Binding claim, stated narrowly: the reader matches the tool name + file_path inside the
+      // single-call window and then requires the is_error block's tool_use_id to be the ONE
+      // read_image(IMG_REL) id seen on the wire so far; that is a unique-id match on the model wire,
+      // NOT a row-level binding to the durable requestId (the row carries no tool-call id).
+      // ERROR BEATS EFFECT (root card): the terminal check runs BEFORE the store-increment check in
+      // this loop, and it is re-checked inside the model-visible wait below — an attachment object
+      // appearing next to a failed call must not buy another 180 s of blind waiting.
       const wireImageCallIds = () => {
         const ids = new Set()
         for (const r of mockRef?.requests ?? []) {
@@ -2049,49 +2050,72 @@ async function main() {
         }
         return ids
       }
-      const GOV_REFUSAL_PRED = (t) => /^Error:/s.test(t) && /\bP_[A-Z0-9_]{4,}\b/.test(t)
+      // Structural pair, C3-local (the shared denialPairSeen used by C4/C5 is untouched): the same
+      // call's tool result, accepted on is_error === true alone, whatever the text looks like.
+      const pairedErrorThisCall = (msgs) => {
+        const uses = new Set()
+        for (const m of msgs ?? []) {
+          if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
+          for (const b of m.content) {
+            if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) uses.add(b.id)
+          }
+        }
+        if (uses.size === 0) return null
+        for (const m of msgs ?? []) {
+          if (m?.role === 'tool' && uses.has(m.tool_call_id ?? '') && m.is_error === true) {
+            return { callId: m.tool_call_id, text: toolResultText(m.content ?? '') }
+          }
+          if (!Array.isArray(m?.content)) continue
+          for (const b of m.content) {
+            if (b?.type === 'tool_result' && uses.has(b.tool_use_id ?? '') && b.is_error === true) {
+              return { callId: b.tool_use_id, text: toolResultText(b.content ?? '') }
+            }
+          }
+        }
+        return null
+      }
       const sameCallTerminalError = () => {
         const ids = [...wireImageCallIds()]
-        if (ids.length !== 1) return { unique: ids.length === 1, observed: ids, hit: null }
+        if (ids.length !== 1) return { unique: false, observed: ids, hit: null }
         for (const r of mockRef?.requests ?? []) {
-          const hit = denialPairSeen(r?.body?.messages ?? [], { tool: 'read_image', file: IMG_REL }, GOV_REFUSAL_PRED)
+          const hit = pairedErrorThisCall(r?.body?.messages ?? [])
           if (hit !== null && hit.callId === ids[0]) return { unique: true, observed: ids, hit }
         }
         return { unique: true, observed: ids, hit: null }
       }
-      let terminalImgErr = null
-      let terminalBinding = null
-      for (;;) {
-        if (storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel)).length >= 1) break
-        const probe = sameCallTerminalError()
-        if (probe.hit !== null) { terminalImgErr = probe.hit; terminalBinding = probe; break }
-        if (Date.now() >= appendDeadline) break
-        await new Promise((r) => setTimeout(r, 1000))
-      }
-      if (terminalImgErr !== null) {
-        // The RAW wire text is preserved verbatim here (plus mock.log / api-transcript.json). The wire
-        // allow and the ONE Control consumption stay recorded exactly as they happened — both were
-        // true — but C3 is FAILED here and nothing downstream runs: no success is claimed for the
-        // allow leg, and the original failing raw evidence is never rewritten.
-        const codeMatch = /\bP_[A-Z0-9_]{4,}\b/.exec(terminalImgErr.text)
+      // The one stop path for a same-call terminal result (raw preserved; C3 failed; nothing
+      // downstream runs; teardown still goes through the normal finally).
+      const c3TerminalStop = (hit, binding, where) => {
+        const codeMatch = /\bP_[A-Z0-9_]{4,}\b/.exec(hit.text)
         writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
           at: new Date().toISOString(),
           requestId: row1.payload.requestId,
-          reason: 'OVERLAY-16: terminal governance tool error on THIS call (callId-paired is_error tool_result) -> criterion ended immediately; store wait and all later effects skipped',
-          sameCallBinding: {
-            requiredCallId: terminalImgErr.callId,
-            uniqueImageCallOnWireSoFar: true,
-            observedImageCallIds: terminalBinding?.observed ?? [terminalImgErr.callId],
-            reader: 'denialPairSeen over mockRef.requests[*].body.messages — the same entry point C4/C5 use',
+          reason: `OVERLAY-17: the same call's tool result is terminal (is_error=true, paired by tool_use_id; ${where}) -> criterion ended immediately; no further effects or waits`,
+          sameCallPairing: {
+            pairedCallId: hit.callId,
+            uniqueImageCallIdOnWireSoFar: true,
+            observedImageCallIds: binding?.observed ?? [hit.callId],
+            scope: 'model-wire pair on tool name + file_path inside the single-call window; NOT a row-level binding to requestId',
+            reader: "mockRef.requests[*].body.messages, accepted on is_error === true alone (no prefix/code requirement); C4/C5's shared denialPairSeen untouched",
           },
-          terminalToolError: { callId: terminalImgErr.callId, code: codeMatch ? codeMatch[0] : null, rawText: terminalImgErr.text },
+          terminalToolResult: { callId: hit.callId, codeIfAny: codeMatch ? codeMatch[0] : null, rawText: hit.text },
           storeCensus: storeCensus(), baseline: storeBaseline,
         }, null, 2))
-        check('C3', 'the consumed allow reached the model as an image (no terminal governance tool error paired to THIS callId)', false,
-          `callId=${terminalImgErr.callId} code=${codeMatch ? codeMatch[0] : 'n/a'} raw=${jstr(terminalImgErr.text, 700)}`)
-        log(`C3 FIRST-SUBSTANTIVE-FAILURE STOP: terminal governance tool error on the SAME call (callId=${terminalImgErr.callId}${codeMatch ? ' code=' + codeMatch[0] : ''}); store wait and model-visible wait skipped`)
+        check('C3', "the consumed allow reached the model as an image (no is_error tool result paired to this call)", false,
+          `callId=${hit.callId} code=${codeMatch ? codeMatch[0] : 'none (not required)'} raw=${jstr(hit.text, 700)}`)
+        log(`C3 FIRST-SUBSTANTIVE-FAILURE STOP: same-call terminal tool result is_error=true (callId=${hit.callId}${codeMatch ? ' code=' + codeMatch[0] : ''}; ${where}); store/model-visible waits skipped`)
         finishCriterion('C3')
       }
+      let terminalImgErr = null
+      let terminalBinding = null
+      for (;;) {
+        const probe = sameCallTerminalError()
+        if (probe.hit !== null) { terminalImgErr = probe.hit; terminalBinding = probe; break }
+        if (storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel)).length >= 1) break
+        if (Date.now() >= appendDeadline) break
+        await new Promise((r) => setTimeout(r, 1000))
+      }
+      if (terminalImgErr !== null) c3TerminalStop(terminalImgErr, terminalBinding, 'effect wait')
       const gained = storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel))
       if (gained.length === 0) {
         writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
@@ -2122,11 +2146,19 @@ async function main() {
     } else if (FIXTURE === 'image') {
       let imgPair = null
       let imgReq = null
+      // OVERLAY-17: the same-call terminal tool result ends this wait too. An attachment object may
+      // exist while the call still failed (the store write is not the tool's own verdict), so waiting
+      // out 180 s for an envelope that can never arrive is not allowed.
+      let terminalImgErr2 = null
+      let terminalBinding2 = null
       await waitForMock(mock, (r) => {
         const pair = imageVisiblePair(r.body?.messages ?? [])
-        if (pair !== null) { imgPair = pair; imgReq = r }
-        return pair !== null
-      }, 180_000, 'C3 model-visible image result (native two-block envelope with the ORIGINAL-frame clause)')
+        if (pair !== null) { imgPair = pair; imgReq = r; return true }
+        const probe = sameCallTerminalError()
+        if (probe.hit !== null) { terminalImgErr2 = probe.hit; terminalBinding2 = probe; return true }
+        return false
+      }, 180_000, 'C3 model-visible image result (native two-block envelope with the ORIGINAL-frame clause), or the terminal is_error result paired to this call')
+      if (terminalImgErr2 !== null) c3TerminalStop(terminalImgErr2, terminalBinding2, 'model-visible wait')
       if (imgPair === null) {
         check('C3', 'the allowed read_image surfaced to the model: callId-paired tool_result text carries <type>image</type> + "downscaled from 2048x1536 px" (the model-visible text names the ORIGINAL frame)', false, 'no model-visible image tool_result observed')
         finishCriterion('C3')
