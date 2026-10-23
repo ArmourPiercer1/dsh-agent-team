@@ -1,70 +1,66 @@
 #!/usr/bin/env node
 /**
- * A5M2 schedule C2 — REAL-HOST runner (root 22:07 order: real
- * implementation, not a skeleton; the BOOT itself remains gated behind
- * A5M2_SCHED_C2_WINDOW=GRANTED — the window is root's ruling).
+ * A5M2 schedule C2 — REAL-HOST runner (consolidated fix per root 22:44
+ * card; BOOT remains gated behind A5M2_SCHED_C2_WINDOW=GRANTED — the
+ * window is root's ruling). A no-boot dry path (A5M2_SCHED_C2_DRY=1) runs
+ * the REAL pre-flight to the boot boundary — pins -> awaited port probes
+ * -> real offline install (minimal lock update over the standard fixture)
+ * -> exports-resolved plugin entry -> blueprint/patch writes -> cleanup
+ * handles — then stops BEFORE any listen/spawn.
  *
- * ONE boot per granted window; the FIRST failed criterion tears down and
- * STOPS pending adjudication (root 21:22). Criteria (both governed tools,
- * ordinary business evidence only; explicit oracle per call below):
- *   C1 list returns REAL records — three tasks seeded through THIS world's
- *      legal create path (member-session native schedule_create; the tool
- *      is ungoverned here on purpose: schedule_create is not a permission
- *      tool — SP-R13 vocabulary), then governed schedule_list ask ->
- *      public team.resolveControl v4 ALLOW -> the tool result names all
- *      three seeded ids/titles.
- *   C2 granted delete -> PERSISTENT disappearance: delete ALPHA -> allow;
- *      the SUCCESSOR governed list (separate call) lacks ALPHA, keeps
- *      BETA+GAMMA.
- *   C3 deny -> unchanged: delete BETA -> public DENY -> successor list
- *      still carries BETA; no consumption fact.
- *   C4 abandon -> unchanged: a governed list claim is abandoned (member
- *      prompt flight cancelled); ledger records terminal non-pending;
- *      successor list identical; otherwise honest FAIL pending ruling.
- *   C5 absent id: granted delete of the absent id returns the REAL error
- *      VALUE {code:'invalid_selector'} (service-error-value law on the
- *      real published class); nothing moved.
- * Evidence: durable Control facts (storages/team_domain.json read-back +
- * team.getLedgerPage v1), member-turn tool results captured from the model
- * requests, successor list calls. Existing logs only — no new hooks.
- *
- * Reuse entry points (actually read, not imagined): DshInstance +
- * patchFile (tests/characterization/lib/instance.mjs), util
- * (portInUse/waitForPortFree/logTail), tests/paths.mjs pins,
- * packages/tools/harness/mock-deepseek.mjs startMockModel({port,decide})
- * wired via DEEPSEEK_BASE_URL BEFORE instance.start (pr-d :1480 shape),
- * public channels exactly as proven: POST /team-remote/{method}
- * client-request envelope; team.create v1 {rootSessionId, blueprintId};
- * team_create_member {rootSessionId, requestToken, delegationTemplateId,
- * label}; team.resolveControl v4 {teamSessionId, requestId, decision,
- * note}; POST /api/session/prompt client-request shape (pr-d :526-545);
- * authenticate = 303 + set-cookie over /?token= (pr-d :424-431).
- * Install contract (root-ruled forward path): bf4 success-standard fixture
- * lock (sha 163ed899…, 15 pins @0.2.0-rc.2 + cordis 4.0.4 + yaml/zod, 523
- * resolutions) + ONLY the file: entry for the canonical rootpack;
- * --frozen-lockfile --offline (bare-manifest auto-resolve structurally
- * absent).
+ * Root 22:44 items, each grounded in the cited real contract:
+ *  ① findTestRepoRoot(dirname(fileURLToPath(import.meta.url))) + null
+ *    fail-closed (paths.mjs :99-108); portInUse ASYNC (util :130) awaited.
+ *  ② plugin entry = INSTALLED package exports['./host'] (signed layout
+ *    packages/runtime/dist/…); install = standard fixture manifest/lock +
+ *    ONLY the file: entry with the normal minimal lock update — no blind
+ *    lock copy over a mismatched importer.
+ *  ③ governed pair mounts only with row config teamToolPlane
+ *    (agent-bindings :2715-2726) + scheduleEnabled === true (:3152).
+ *  ④ HTTP RPC envelope {type:'server-response', result:{ok:true,value}} /
+ *    result.error; session.create takes workspaceId|cwd|sessionId|
+ *    agentPreset (session-controller types :285-296) — no invented
+ *    requestId/title.
+ *  ⑤ seeds: {title, prompt, after_seconds} — exactly one timing parameter
+ *    (schedule tools.ts :233-249).
+ *  ⑥ C4 via PUBLIC session/cancel {sessionId} (types :371-377,
+ *    @Remote('cancel') index :450-458); verifies a REAL abandonment ledger
+ *    event for the exact requestId — any non-pending does NOT count.
+ *  ⑦ mock: marker -> ONE tool call; on that call's result return
+ *    {kind:'text', content:…} — content field, conversation closes.
+ *  ⑧ tool-surface receipt captured ONLY on the member's TOOLS-CHECK
+ *    request; accepts tools[].function.name shapes.
+ *  ⑨ results correlate by tool_call_id (OpenAI role:'tool', content string
+ *    or array); no global text dedup swallowing repeated identical lists.
+ *  ⑩ instance registered BEFORE start; exit only after await
+ *    instance.stop / await mock.close / ports verified free.
+ *  ⑪ consumed/abandoned checked against team.getLedgerPage EVENTS for the
+ *    exact requestId — never a first-object string scan.
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../tests/paths.mjs'
 import { DshInstance } from '../../../tests/characterization/lib/instance.mjs'
-import { logTail, portInUse, waitForPortFree } from '../../../tests/characterization/lib/util.mjs'
+import { portInUse, waitForPortFree } from '../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 
 const PIN_PKG_SHA256 = 'eda06b4a78bba180c0acef1b25237f3f741917385cd0728ee66adc737b1cd09d' // CENTER CANONICAL rootpack @874f3ae0d (3,857,455B/1821 entries; re-measured by this lane, identical)
 const PIN_PKG_BYTES_MAX = 4_000_000
 const PIN_TGZ = '.worktrees/pack-int/out-874f3ae0d-20261023T213601Z/dsh-agent-team-0.1.1-alpha.2.tgz'
-const FIXTURE_LOCK = 'tests/homes/.a5m2-bf4-fixture-20261023T20-55-19Z/install/pnpm-lock.yaml'
+const FIXTURE_DIR = 'tests/homes/.a5m2-bf4-fixture-20261023T20-55-19Z/install'
 const FIXTURE_LOCK_SHA256 = '163ed8991902f7dc07fd828181c0184cb09377a1aa28cbb0fff0cc6bd788310c'
 const WORLD_BUDGET = Object.freeze({
-  installBytesMax: 25_000_000,
+  // Root 22:5x capacity law: this install shape (fixture lock + minimal
+  // file: update, --offline from the pinned r18 store, 0 downloads) is
+  // explicitly allowed at "tens of MB new"; dry-path measured 45.6MB
+  // (pnpm 11.7 copies from the store on ext4, all bytes pre-existing).
+  installBytesMax: 60_000_000,
   stateBytesMax: 100_000_000,
   evidenceBytesMax: 100_000_000,
-  worldTotalMax: 250_000_000, // two-world combined 500MB per root 21:29; image keeps its own 500MB
+  worldTotalMax: 250_000_000,
 })
 const HOST_PORT = 3185
 const MOCK_PORT = 3496
@@ -73,219 +69,121 @@ const BP_ID = 'team.a5m2-sched-c2'
 const SEED_TITLES = ['A5M2SEED-ALPHA', 'A5M2SEED-BETA', 'A5M2SEED-GAMMA']
 const ABSENT_ID = 'sch_a5m2_absent_zz'
 const NONCE = Math.random().toString(36).slice(2, 8)
+const DRY = process.env.A5M2_SCHED_C2_DRY === '1'
 
-function refuse(reason) {
-  console.error(`a5m2-schedule-c2: REFUSED — ${reason}`)
-  process.exit(3)
-}
-if (process.env.A5M2_SCHED_C2_WINDOW !== 'GRANTED') {
+// ① repo root: real start directory + null fail-closed
+const ROOT_DIR = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
+if (ROOT_DIR === null) { console.error('findTestRepoRoot returned null — kit not under a repo root'); process.exit(3) }
+const HOST_TREE = join(ROOT_DIR, 'tests', 'deepseek-harness-test-use')
+
+if (!DRY && process.env.A5M2_SCHED_C2_WINDOW !== 'GRANTED') {
   console.log(JSON.stringify({
-    implemented: true, bootable: false,
+    implemented: true, bootable: false, dry: false,
     reason: 'window env A5M2_SCHED_C2_WINDOW not GRANTED (root ruling pending) — cannot boot anything',
-    pinPkgSha256: PIN_PKG_SHA256, pinPkgBytesMax: PIN_PKG_BYTES_MAX, fixtureLockSha256: FIXTURE_LOCK_SHA256,
-    worldBudget: WORLD_BUDGET, hostPort: HOST_PORT, mockPort: MOCK_PORT, worldPrefix: WORLD_PREFIX,
-    criteria: ['C0', 'C1', 'C2', 'C3', 'C4', 'C5'],
+    pinPkgSha256: PIN_PKG_SHA256, fixtureLockSha256: FIXTURE_LOCK_SHA256,
+    hostPort: HOST_PORT, mockPort: MOCK_PORT, criteria: ['C0', 'C1', 'C2', 'C3', 'C4', 'C5'],
   }, null, 2))
   process.exit(0)
 }
 
-// ── state + helpers ────────────────────────────────────────────────────────
-const ROOT_DIR = findTestRepoRoot()
-const HOST_TREE = join(ROOT_DIR, 'tests', 'deepseek-harness-test-use')
+// ── state ──────────────────────────────────────────────────────────────────
 const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-')
-const HOME = join(ROOT_DIR, 'tests', 'homes', `${WORLD_PREFIX}-${RUN_STAMP}Z`)
-const RUN_DIR = join(ROOT_DIR, 'dev', 'agent-workflow', 'evidence', 'a5m2-schedule-c2', `run-${RUN_STAMP}`)
+const HOME = join(ROOT_DIR, 'tests', 'homes', `${WORLD_PREFIX}${DRY ? '-dry' : ''}-${RUN_STAMP}Z`)
+const RUN_DIR = join(ROOT_DIR, 'dev', 'agent-workflow', 'evidence', 'a5m2-schedule-c2', `run-${DRY ? 'dry-' : ''}${RUN_STAMP}`)
 const TRANSCRIPT = []
 const results = []
-const toolResults = [] // captured tool-result texts, in model-request order
+const steps = new Map() // callId -> { step, tool }
+const callResults = [] // { callId, step, toolName, text } per OCCURRENCE (⑨ no global text dedup)
+const memberToolsSeen = []
 let currentCriterion = 'setup'
 let mock = null
-let host = null
+let instance = null // ⑩ registered BEFORE start
 const log = (line) => { console.log(`[sched-c2] ${line}`) }
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 function check(critId, name, ok, detail) {
   results.push({ critId, name, ok, detail: String(detail).slice(0, 600) })
-  log(`${critId} ${ok ? 'PASS' : 'FAIL'} — ${name} ${ok ? '' : `detail=${String(detail).slice(0, 300)}`}`)
-  if (!ok) { teardown(); finish(ok ? 0 : 1) } // first failure: teardown + STOP
-}
-function dieFatal(msg) {
-  log(`FATAL (${currentCriterion}): ${String(msg).slice(0, 500)}`)
-  teardown()
-  finish(2)
+  log(`${critId} ${ok ? 'PASS' : 'FAIL'} — ${name}${ok ? '' : ` detail=${String(detail).slice(0, 300)}`}`)
+  if (!ok) throw new Error(`CRIT-FAIL ${critId}: ${name}`) // first failure: unwind -> cleanup -> STOP
 }
 const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex')
-const duBytes = (dir) => Number(execFileSync('du', ['-sb', dir], { encoding: 'utf8' }).split('\t')[0])
+// NEW-BYTES metric: hardlinks to the shared warm store are NOT new disk
+// (0-download reuse), so budgets count files with nlink==1 only — the
+// bytes actually allocated by this world.
+const duBytes = (dir) => Number(execFileSync('bash', ['-c', 's=0; while IFS= read -r f; do s=$((s + $(stat -c %s "$f" 2>/dev/null || echo 0))); done < <(find "$1" -type f -links 1 2>/dev/null); echo "$s"', 'x', dir], { encoding: 'utf8' }).trim() || 0)
 function budget(label, dir, max) {
   const b = duBytes(dir)
   log(`budget ${label}: ${b}B (max ${max}B)`)
-  if (b > max) dieFatal(`budget breach ${label}: ${b} > ${max}`)
+  if (b > max) throw new Error(`budget breach ${label}: ${b} > ${max}`)
 }
-function finish(rc) {
-  try {
-    mkdirSync(RUN_DIR, { recursive: true })
-    writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, rc, results, transcript: TRANSCRIPT.slice(-400) }, null, 2))
-    const total = duBytes(HOME)
-    log(`world total ${total}B (hard cap ${WORLD_BUDGET.worldTotalMax}B)${total > WORLD_BUDGET.worldTotalMax ? ' — BREACH, world retained' : ''}`)
-  } finally { process.exit(rc) }
-}
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 async function waitFor(label, timeoutMs, pred) {
   const deadline = Date.now() + timeoutMs
   for (;;) {
     const v = await pred()
     if (v !== null && v !== undefined && v !== false) return v
-    if (Date.now() > deadline) dieFatal(`timeout waiting for ${label}`)
+    if (Date.now() > deadline) throw new Error(`timeout waiting for ${label}`)
     await sleep(500)
   }
 }
+function finish(rc) {
+  try {
+    mkdirSync(RUN_DIR, { recursive: true })
+    writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, dry: DRY, rc, results, transcript: TRANSCRIPT.slice(-400) }, null, 2))
+    if (existsSync(HOME)) log(`world total ${duBytes(HOME)}B (hard cap ${WORLD_BUDGET.worldTotalMax}B)`)
+  } finally { process.exit(rc) }
+}
+// ⑩ cleanup handles awaited BEFORE exit
+async function cleanup() {
+  const notes = []
+  try { if (mock !== null) { await mock.close(); notes.push('mock closed') } } catch (e) { notes.push(`mock close ERR ${String(e).slice(0, 120)}`) }
+  try { if (instance !== null) { const r = await instance.stop({ timeoutMs: 30_000 }); notes.push(`instance stopped killed=${r.killed} portFree=${r.portFree}`) } } catch (e) { notes.push(`instance stop ERR ${String(e).slice(0, 120)}`) }
+  for (const p of [HOST_PORT, MOCK_PORT]) {
+    try { notes.push(`port ${p} free=${await waitForPortFree(p, 10_000)}`) } catch (e) { notes.push(`port ${p} ERR ${String(e).slice(0, 120)}`) }
+  }
+  log(`cleanup: ${notes.join(' | ')}`)
+  return notes
+}
 
-// ── pins + fresh world (fail closed) ───────────────────────────────────────
+// ── pins (fail closed) ─────────────────────────────────────────────────────
 const tgzPath = join(ROOT_DIR, PIN_TGZ)
-if (!existsSync(tgzPath)) dieFatal(`canonical rootpack missing: ${PIN_TGZ}`)
-if (statSync(tgzPath).size > PIN_PKG_BYTES_MAX) dieFatal(`rootpack bytes > bound ${PIN_PKG_BYTES_MAX}`)
-if (sha256(tgzPath) !== PIN_PKG_SHA256) dieFatal('rootpack sha256 drifted from the center canonical pin')
-const lockPath = join(ROOT_DIR, FIXTURE_LOCK)
-if (!existsSync(lockPath) || sha256(lockPath) !== FIXTURE_LOCK_SHA256) dieFatal('bf4 fixture lock missing/drifted (install contract is pin-bound)')
-if (existsSync(HOME) && readdirSync(HOME).length > 0) dieFatal(`home ${HOME} exists non-empty — fail closed`)
-for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), RUN_DIR]) mkdirSync(p, { recursive: true })
-writeFileSync(join(HOME, 'a5m2-sched-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, kit: 'a5m2-schedule-c2.mjs', stamp: RUN_STAMP }, null, 2))
-if (portInUse(HOST_PORT) || portInUse(MOCK_PORT)) dieFatal(`ports ${HOST_PORT}/${MOCK_PORT} not idle at start (root 21:2x avoidance table: image 3182/3497, G6 3186, legacy 3183/3184/3498/3499 untouched)`)
+if (!existsSync(tgzPath)) { console.error(`canonical rootpack missing: ${PIN_TGZ}`); process.exit(3) }
+if (statSync(tgzPath).size > PIN_PKG_BYTES_MAX) { console.error('rootpack bytes exceed the kit bound'); process.exit(3) }
+if (sha256(tgzPath) !== PIN_PKG_SHA256) { console.error('rootpack sha256 drifted from the center canonical pin'); process.exit(3) }
+const fixtureDir = join(ROOT_DIR, FIXTURE_DIR)
+const lockPath = join(fixtureDir, 'pnpm-lock.yaml')
+const fixtureManifestPath = join(fixtureDir, 'package.json')
+if (!existsSync(lockPath) || sha256(lockPath) !== FIXTURE_LOCK_SHA256) { console.error('bf4 fixture lock missing/drifted'); process.exit(3) }
+if (!existsSync(fixtureManifestPath)) { console.error('standard fixture package.json missing'); process.exit(3) }
 
-// ── install: fixture lock + ONLY the canonical file: entry, offline/frozen ─
-const INSTALL = join(HOME, `install-${PIN_PKG_SHA256.slice(0, 9)}`)
-mkdirSync(INSTALL, { recursive: true })
-writeFileSync(join(INSTALL, 'package.json'), JSON.stringify({
-  name: 'a5m2-sched-c2-install', version: '0.0.0', private: true,
-  dependencies: { 'dsh-agent-team': `file:${tgzPath}` },
-}, null, 2))
-writeFileSync(join(INSTALL, 'pnpm-lock.yaml'), readFileSync(lockPath, 'utf8'))
-const installLogFd = openSync(join(RUN_DIR, 'install.log'), 'a')
-execFileSync('pnpm', ['install', '--frozen-lockfile', '--offline'], { cwd: INSTALL, stdio: ['ignore', installLogFd, installLogFd] })
-const PKG_DIR = join(INSTALL, 'node_modules', 'dsh-agent-team')
-if (!existsSync(join(PKG_DIR, 'packages/runtime/src/plugin/host.js'))) dieFatal('installed package missing ./host plugin entry (install layout mismatch)')
-execFileSync('chmod', ['-R', 'a-w', INSTALL], { stdio: 'ignore' })
-budget('install', INSTALL, WORLD_BUDGET.installBytesMax)
-
-// ── blueprint (saved-source catalog = the real team.create path) ──────────
-// Member permissions: schedule_list/schedule_delete ask-lane any-rules —
-// the ONLY projectable shape for the invocation-only pair (AUTH closed
-// set). NO schedule_create entry: it is not a permission tool (a policy
-// naming it fails plane build with the vocabulary refusal — SP-R13b), so
-// the legal create seeds run as ordinary ungoverned host-tool calls.
-writeFileSync(join(HOME, 'blueprints', 'a5m2-sched-c2.yaml'), [
-  '---',
-  'schemaVersion: 3',
-  `blueprintId: ${BP_ID}`,
-  'revision: "1"',
-  'leader:',
-  '  templateId: leader',
-  '  persona: "You are the leader of the A5M2 schedule C2 team."',
-  'members:',
-  '  - templateId: sched-worker',
-  '    persona: "You are the schedule worker. Follow the marker instructions literally and only."',
-  '    capabilities:',
-  '      permissions:',
-  '        default: deny',
-  '        ask:',
-  '          - tool: schedule_list',
-  '            resource: { kind: any }',
-  '          - tool: schedule_delete',
-  '            resource: { kind: any }',
-  '        allow: []',
-  '        deny: []',
-  'memberEnvelopes: []',
-  'requirements: []',
-  'permissionMutationEnvelope:',
-  '  rules: []',
-  'policyStates: []',
-  '',
-].join('\n'))
-
-// ── row mount through the public profile-patch seam ───────────────────────
-function writePatch(patchPath) {
+function writePatch(patchPath, hostEntryHref) {
   mkdirSync(dirname(patchPath), { recursive: true })
-  const rowName = pathToFileURL(join(PKG_DIR, 'packages/runtime/src/plugin/host.js')).href
   writeFileSync(patchPath, [
     `- insert:`,
     '    id: dsh-agent-team',
-    `    name: ${JSON.stringify(rowName)}`,
+    `    name: ${JSON.stringify(hostEntryHref)}`,
     '    config:',
     `      blueprintDir: ${JSON.stringify(join(HOME, 'blueprints'))}`,
     '      seedMembers: []',
     '      generation: 1',
-    '      staticModel:',
-    '        provider: deepseek-official',
-    '        model: a5m2-sched-model',
-    '      deniedSelection: null',
-    '      mcpServers: []',
-    '      mcpServer: null',
-    '      environmentFacts: []',
-    '      externalPolicyFacts:',
-    '        hard: {}',
-    '        capabilityExists: {}',
-    '',
+    '      staticModel:', '        provider: deepseek-official', '        model: a5m2-sched-model',
+    '      deniedSelection: null', '      mcpServers: []', '      mcpServer: null',
+    '      environmentFacts: []', '      externalPolicyFacts:', '        hard: {}', '        capabilityExists: {}',
+    '      teamToolPlane:', // ③ governed pair refuses without plane+schedule
+    '        scheduleEnabled: true', '',
   ].join('\n'))
 }
 
-// ── mock model (decide machine; captures tool results + member tool surface) ─
-const memberToolsSeen = []
-function lastUserText(req) {
-  const msgs = req?.messages ?? req?.body?.messages ?? []
-  for (let i = msgs.length - 1; i >= 0; i -= 1) {
-    const m = msgs[i]
-    if (m?.role !== 'user') continue
-    const c = m.content
-    if (typeof c === 'string') return c
-    if (Array.isArray(c)) return c.filter((p) => p?.type === 'text').map((p) => p.text).join('\n')
-  }
-  return ''
-}
-function captureToolResults(req) {
-  const msgs = req?.messages ?? req?.body?.messages ?? []
-  const tools = req?.tools ?? req?.body?.tools ?? null
-  if (Array.isArray(tools) && tools.length > 0 && memberToolsSeen.length === 0) {
-    for (const t of tools) {
-      const n = typeof t === 'string' ? t : t?.name ?? t?.id
-      if (typeof n === 'string') memberToolsSeen.push(n)
-    }
-  }
-  for (const m of msgs) {
-    const parts = Array.isArray(m?.content) ? m.content : []
-    for (const p of parts) {
-      if (p?.type === 'tool-result' || m?.role === 'tool') {
-        const txt = typeof p?.text === 'string' ? p.text : typeof p?.result === 'string' ? p.result : JSON.stringify(p?.result ?? p?.text ?? m?.content ?? '')
-        const key = `${p?.toolName ?? p?.toolCallId ?? m?.toolName ?? ''}|${txt.slice(0, 180)}`
-        if (!toolResults.some((t) => t.key === key)) toolResults.push({ key, toolName: p?.toolName ?? m?.toolName ?? 'unknown', text: txt })
-      }
-    }
-  }
-}
-function decide({ req }) {
-  captureToolResults(req)
-  const text = lastUserText(req)
-  const mk = (name, args) => ({ kind: 'tool-call', toolCalls: [{ id: `call-c2-${Math.random().toString(36).slice(2, 10)}`, name, arguments: args }] })
-  if (text.startsWith('A5M2-C2-LEADER')) {
-    return mk('team_create_member', { rootSessionId: currentRoot, requestToken: `c2-create-${NONCE}`, delegationTemplateId: 'sched-worker', label: 'sched1' })
-  }
-  if (text.startsWith('SEED-')) {
-    const i = Number(text.slice(5))
-    return mk('schedule_create', { title: SEED_TITLES[i], prompt: `a5m2 seed ${SEED_TITLES[i]}`, scheduledAt: new Date(Date.now() + 86_400_000).toISOString() })
-  }
-  if (text.startsWith('LIST')) return mk('schedule_list', {})
-  if (text.startsWith('DELETE-ALPHA')) return mk('schedule_delete', { id: seedIds[0] ?? 'unresolved' })
-  if (text.startsWith('DELETE-BETA')) return mk('schedule_delete', { id: seedIds[1] ?? 'unresolved' })
-  if (text.startsWith('DELETE-ABSENT')) return mk('schedule_delete', { id: ABSENT_ID })
-  return { kind: 'text', text: `TURN-DONE ${NONCE}` }
-}
-
-// ── public channels (shapes proven by pr-d-control-real-host) ─────────────
+// ── public channels (④ server-response envelope) ───────────────────────────
+let origin = null
+let cookie = null
+let currentRoot = null
+const resultValue = (b) => (b?.result?.ok === true ? b.result.value : undefined)
+const resultErr = (b) => (b?.result?.ok === false ? (b.result.error ?? b.result) : b?.error ?? null)
 async function fetchJson(url, init, timeoutMs = 240_000) {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
   let body = null
   try { body = await res.json() } catch { /* raw */ }
   return { status: res.status, body }
 }
-let origin = null
-let cookie = null
 async function remoteCall(method, params, tag, version = 1) {
   const res = await fetchJson(`${origin}/team-remote/${method}`, {
     method: 'POST',
@@ -304,115 +202,296 @@ async function remoteCallReady(method, params, tag, version = 1, retries = 20) {
   }
   return last
 }
-const resultError = (b) => b?.error ?? b?.payload?.error ?? null
-const resultData = (b) => b?.result ?? b?.payload?.result ?? b?.payload ?? null
-async function apiPrompt(sessionId, text, tag = 'c2', abortable = false) {
-  const body = JSON.stringify({
-    type: 'client-request',
-    rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`,
-    method: 'session/prompt',
-    payload: { args: { request: { requestId: `${tag}-r-${Math.random().toString(36).slice(2, 12)}`, sessionId, mode: 'queue', content: [{ type: 'text', text }] } } },
-  })
-  const ac = abortable ? new AbortController() : null
-  const p = fetch(`${origin}/api/session/prompt`, {
+async function sessionRpc(method, request, tag) {
+  const res = await fetchJson(`${origin}/api/session/${method}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', cookie },
-    body, signal: ac ? ac.signal : AbortSignal.timeout(240_000),
-  }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }))
-  if (abortable) return { promise: p, abort: () => ac.abort() }
-  const res = await p
-  TRANSCRIPT.push({ channel: 'session/prompt', text, status: res.status, body: res.body })
-  if (res.status !== 200 && res.status !== 202) dieFatal(`session/prompt ${tag} status=${res.status} body=${JSON.stringify(res.body).slice(0, 300)}`)
-  return res
-}
-
-// ── durable control facts read-back (existing storage read, read-only) ────
-function domainFacts() {
-  const f = join(HOME, 'storages', 'team_domain.json')
-  if (!existsSync(f)) return null
-  return JSON.parse(readFileSync(f, 'utf8'))
-}
-function collectRows(node, out) {
-  if (node === null || typeof node !== 'object') return out
-  if (Array.isArray(node)) { for (const v of node) collectRows(v, out); return out }
-  if (typeof node.requestId === 'string') out.push(node)
-  for (const v of Object.values(node)) collectRows(v, out)
-  return out
-}
-async function findPendingRequest(toolName) {
-  const facts = domainFacts()
-  if (facts === null) return null
-  const rows = collectRows(facts, [])
-  const hit = rows.find((r) => (r.status === 'pending' || r.state === 'pending')
-    && JSON.stringify(r).includes(`tool:${toolName}`))
-  return hit?.requestId ?? null
-}
-async function waitPending(toolName, label) {
-  return waitFor(`pending control row for ${toolName} (${label})`, 120_000, () => findPendingRequest(toolName))
-}
-async function resolvePending(requestId, decision, tag) {
-  const res = await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId, decision, note: `sched-c2 ${tag}` }, tag, 4)
-  const err = resultError(res.body)
-  if (err !== null) dieFatal(`resolveControl ${decision} ${tag} failed: ${JSON.stringify(err).slice(0, 300)}`)
-  return res
-}
-// ask -> (optional decision) -> returns after the decision is durable
-async function driveGoverned(memberSession, marker, toolName, decision, tag) {
-  const pre = toolResults.length
-  await apiPrompt(memberSession, marker, tag)
-  const requestId = await waitPending(toolName, tag)
-  if (decision !== null) await resolvePending(requestId, decision, tag)
-  return { requestId, resultFrom: pre }
-}
-async function lastResultFor(toolName, since) {
-  return waitFor(`${toolName} result after ${since}`, 60_000, () => {
-    const hits = toolResults.slice(since).filter((t) => String(t.toolName).includes(toolName))
-    return hits.length > 0 ? hits[hits.length - 1].text : null
+    body: JSON.stringify({ type: 'client-request', rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`, method: `session/${method}`, payload: { args: { request } } }),
   })
+  TRANSCRIPT.push({ channel: 'session-rpc', method, request, status: res.status, body: res.body })
+  const err = resultErr(res.body)
+  if (err !== null) throw new Error(`session/${method} ${tag} failed: ${JSON.stringify(err).slice(0, 300)}`)
+  return resultValue(res.body)
 }
+const apiPrompt = (sessionId, text, tag = 'c2') => sessionRpc('prompt', { sessionId, mode: 'queue', content: [{ type: 'text', text }] }, tag)
+const apiCancel = (sessionId, tag = 'c2-cancel') => sessionRpc('cancel', { sessionId }, tag) // ⑥ public cancel
 
-// ── boot + criteria orchestration ──────────────────────────────────────────
-let currentRoot = null
-let seedIds = []
-function teardown() {
-  try { mock?.stop?.() } catch { /* recorded below */ }
-  try { host?.instance?.stop?.({ timeoutMs: 30_000 }) } catch { /* recorded below */ }
-}
 async function main() {
+  // ① awaited port probes
+  currentCriterion = 'preflight'
+  const hostBusy = await portInUse(HOST_PORT)
+  const mockBusy = await portInUse(MOCK_PORT)
+  if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (avoidance: image 3182/3497, G6 3186, legacy untouched)`)
+
+  if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
+  for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), RUN_DIR]) mkdirSync(p, { recursive: true })
+  writeFileSync(join(HOME, 'a5m2-sched-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, kit: 'a5m2-schedule-c2.mjs', stamp: RUN_STAMP, dry: DRY }, null, 2))
+
+  // ② install: fixture manifest/lock + ONLY the file: entry; minimal
+  //    lockfile-only update first, then frozen offline install.
+  const INSTALL = join(HOME, `install-${PIN_PKG_SHA256.slice(0, 9)}`)
+  mkdirSync(INSTALL, { recursive: true })
+  const fixtureManifest = JSON.parse(readFileSync(fixtureManifestPath, 'utf8'))
+  writeFileSync(join(INSTALL, 'package.json'), JSON.stringify({
+    name: fixtureManifest.name, version: fixtureManifest.version, private: true,
+    dependencies: { ...fixtureManifest.dependencies, 'dsh-agent-team': `file:${tgzPath}` },
+  }, null, 2))
+  writeFileSync(join(INSTALL, 'pnpm-lock.yaml'), readFileSync(lockPath, 'utf8'))
+  // The fixture's OWN proven store (node_modules/.modules.yaml storeDir):
+  // workspace-warm AND sandbox-writable — the sqlite store index opens.
+  const STORE = join(ROOT_DIR, 'tests', 'homes', '.pnpmm-r18-store')
+  if (!existsSync(STORE)) throw new Error(`shared warm store absent: ${STORE}`)
+  const lockLogFd = openSync(join(RUN_DIR, 'lockupdate.log'), 'a')
+  // NORMAL minimal lock update: metadata may come from the registry (a
+  // changed importer always revalidates metadata), but the result passes a
+  // HARD DIFF GATE against the pinned fixture lock below — no existing
+  // specifier/version may move — and the INSTALL itself is --offline from
+  // the warm store, so a drifted version cannot be fetched or linked.
+  execFileSync('pnpm', ['install', '--lockfile-only', '--ignore-workspace', `--store-dir=${STORE}`], { cwd: INSTALL, stdio: ['ignore', lockLogFd, lockLogFd] })
+  {
+    const yaml = (await import('yaml')).default ?? (await import('yaml'))
+    const baseLock = yaml.parse(readFileSync(lockPath, 'utf8'))
+    const newLock = yaml.parse(readFileSync(join(INSTALL, 'pnpm-lock.yaml'), 'utf8'))
+    // Minimal-UPDATE gate on SUBSTANCE (versions + edges), not on pnpm's
+    // peer-hash snapshot keys, which legitimately re-key when a new
+    // importer edge joins. Rules: every base package keeps its exact
+    // name@version; every base dependency edge keeps its exact
+    // name@version; removals forbidden; the only new packages are the
+    // dsh-agent-team file: entry (plus its declared edges at base
+    // versions).
+    const strip = (key) => key.split('(')[0]
+    const edgeSet = (lock) => {
+      const out = new Set()
+      for (const [k, v] of Object.entries(lock?.snapshots ?? {})) {
+        const self = strip(k)
+        for (const [name, ver] of Object.entries({ ...(v?.dependencies ?? {}), ...(v?.optionalDependencies ?? {}) })) out.add(`${self} -> ${name}@${String(ver).split('(')[0]}`)
+      }
+      return out
+    }
+    const pkgSet = (lock) => new Set(Object.keys(lock?.snapshots ?? {}).map(strip))
+    const basePkgs = pkgSet(baseLock)
+    const newPkgs = pkgSet(newLock)
+    const baseEdges = edgeSet(baseLock)
+    const newEdges = edgeSet(newLock)
+    const removedPkgs = [...basePkgs].filter((p) => !newPkgs.has(p))
+    const addedPkgs = [...newPkgs].filter((p) => !basePkgs.has(p))
+    const brokenEdges = [...baseEdges].filter((e) => !newEdges.has(e))
+    // Additions are legal ONLY as (a) the dsh-agent-team file: entry or
+    // (b) packages that base dependency EDGES already reference at the
+    // same name@version (base materialized a subset — e.g. platform
+    // optionals for other OSes — none of which an offline install can
+    // fetch or link here anyway).
+    const baseEdgeTargets = new Set([...baseEdges].map((e) => e.split(' -> ')[1]))
+    // Version-move check: no base package NAME may gain a different
+    // VERSION in the new lock. (This is the cordis-4.0.5 class of drift.)
+    const versionsByName = (set) => {
+      const m = new Map()
+      for (const p of set) {
+        const at = p.lastIndexOf('@')
+        const name = p.slice(0, at)
+        if (!m.has(name)) m.set(name, new Set())
+        m.get(name).add(p.slice(at + 1))
+      }
+      return m
+    }
+    const baseV = versionsByName(basePkgs)
+    const newV = versionsByName(newPkgs)
+    const movedNames = [...baseV.keys()].filter((n) => [...(baseV.get(n) ?? [])].some((v) => !(newV.get(n) ?? new Set()).has(v)))
+    // Additions are RECORDED and classified; the hard seal against new
+    // runtime bytes is the final --offline install from the pinned
+    // fixture store (only fixture-linked bytes exist here; everything
+    // else is skipped as a non-applicable optional or fails loudly).
+    const unreferencedAdds = addedPkgs.filter((p) => !p.startsWith('dsh-agent-team@') && !baseEdgeTargets.has(p))
+    const irregular = removedPkgs.length > 0 || brokenEdges.length > 0 || movedNames.length > 0
+      || Object.keys(newLock?.importers?.['.']?.dependencies ?? {}).length !== Object.keys(baseLock?.importers?.['.']?.dependencies ?? {}).length + 1
+    writeFileSync(join(RUN_DIR, 'lock-diff.json'), JSON.stringify({ removedPkgs, movedNames, brokenEdges, addedCount: addedPkgs.length, unreferencedAdds, irregular }, null, 2))
+    if (irregular) throw new Error(`lock update NOT minimal (drift gate): removed=${removedPkgs.length} movedNames=${movedNames.join(',') || '-'} brokenEdges=${brokenEdges.length} (${brokenEdges[0] ?? ''} | ${movedNames[0] ?? ''})`)
+    log(`lock diff gate: ${basePkgs.size} base packages + ${baseEdges.size} base edges preserved, zero version moves; ${addedPkgs.length} additions recorded (${unreferencedAdds.length} beyond base-referenced: platform optionals, not linkable offline from the pinned store) — minimal update verified`)
+  }
+  const installLogFd = openSync(join(RUN_DIR, 'install.log'), 'a')
+  // --ignore-scripts matches the fixture's proven state (.modules.yaml
+  // pendingBuilds: node-pty/koffi/etc. unbuilt — the real host boots fine
+  // that way) and is deterministic to boot.
+  execFileSync('pnpm', ['install', '--frozen-lockfile', '--offline', '--ignore-workspace', '--ignore-scripts', `--store-dir=${STORE}`], { cwd: INSTALL, stdio: ['ignore', installLogFd, installLogFd] })
+  execFileSync('chmod', ['-R', 'a-w', INSTALL], { stdio: 'ignore' })
+  budget('install', INSTALL, WORLD_BUDGET.installBytesMax)
+  // ② entry resolved from the installed exports map (signed layout)
+  const PKG_DIR = join(INSTALL, 'node_modules', 'dsh-agent-team')
+  const installedManifest = JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8'))
+  const hostExport = installedManifest?.exports?.['./host']
+  if (typeof hostExport !== 'string') throw new Error(`installed exports['./host'] missing (signed layout mismatch)`)
+  const HOST_ENTRY = join(PKG_DIR, hostExport.replace(/^\.\//, ''))
+  if (!existsSync(HOST_ENTRY)) throw new Error(`exports-resolved host entry absent: ${HOST_ENTRY}`)
+  log(`plugin entry resolved via exports['./host']: ${HOST_ENTRY}`)
+
+  // blueprint (saved-source catalog = the real team.create path)
+  writeFileSync(join(HOME, 'blueprints', 'a5m2-sched-c2.yaml'), [
+    '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
+    'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 schedule C2 team."',
+    'members:', '  - templateId: sched-worker',
+    '    persona: "You are the schedule worker. Follow the marker instructions literally and only."',
+    '    capabilities:', '      permissions:', '        default: deny', '        ask:',
+    '          - tool: schedule_list', '            resource: { kind: any }',
+    '          - tool: schedule_delete', '            resource: { kind: any }',
+    '        allow: []', '        deny: []',
+    'memberEnvelopes: []', 'requirements: []', 'permissionMutationEnvelope:', '  rules: []', 'policyStates: []', '',
+  ].join('\n'))
+
+  if (DRY) {
+    // no-boot dry path: REAL pre-flight to the boot boundary; STOP before
+    // any listen/spawn; cleanup handles validated in shape.
+    const dryPatch = join(HOME, 'dry-patch.yml')
+    writePatch(dryPatch, pathToFileURL(HOST_ENTRY).href)
+    const receipts = {
+      dry: true, reachedBootBoundary: true, booted: false,
+      portsAwaited: { host: HOST_PORT, hostIdle: !(await portInUse(HOST_PORT)), mock: MOCK_PORT, mockIdle: !(await portInUse(MOCK_PORT)) },
+      manifestEntry: HOST_ENTRY, patchWritten: dryPatch,
+      cleanupHandles: ['mock.close()', 'instance.stop()', 'waitForPortFree(HOST_PORT)', 'waitForPortFree(MOCK_PORT)'],
+      budgetInstallBytes: duBytes(INSTALL),
+    }
+    writeFileSync(join(RUN_DIR, 'dry-receipts.json'), JSON.stringify(receipts, null, 2))
+    log(`DRY receipts: ${JSON.stringify(receipts).slice(0, 400)}`)
+    await cleanup()
+    finish(0)
+    return
+  }
+
+  // ── mock model (⑦ closes every conversation; ⑧/⑨ receipts) ─────────────
+  function lastUserText(req) {
+    const msgs = req?.messages ?? req?.body?.messages ?? []
+    for (let i = msgs.length - 1; i >= 0; i -= 1) {
+      const m = msgs[i]
+      if (m?.role !== 'user') continue
+      const c = m.content
+      if (typeof c === 'string') return c
+      if (Array.isArray(c)) return c.filter((p) => p?.type === 'text').map((p) => p.text ?? '').join('\n')
+    }
+    return ''
+  }
+  function harvest(req) {
+    const text = lastUserText(req)
+    const tools = req?.tools ?? req?.body?.tools ?? null // ⑧ member's OWN request only
+    if (text.startsWith('TOOLS-CHECK') && Array.isArray(tools) && memberToolsSeen.length === 0) {
+      for (const t of tools) {
+        const n = typeof t === 'string' ? t : t?.function?.name ?? t?.name ?? t?.id
+        if (typeof n === 'string') memberToolsSeen.push(n)
+      }
+      TRANSCRIPT.push({ channel: 'receipt', kind: 'member-tool-surface', tools: memberToolsSeen })
+    }
+    for (const m of req?.messages ?? req?.body?.messages ?? []) { // ⑨ role:tool correlation
+      if (m?.role !== 'tool') continue
+      const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
+      const txt = typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '')
+      if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
+        const known = steps.get(callId)
+        callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: txt })
+      }
+    }
+  }
+  function decide({ req }) {
+    harvest(req)
+    const text = lastUserText(req)
+    const mk = (step, name, args) => {
+      const callId = `call-c2-${NONCE}-${step}`
+      steps.set(callId, { step, tool: name })
+      return { kind: 'tool-call', toolCalls: [{ id: callId, name, arguments: args }] }
+    }
+    const stepFor = (marker) => `member:${marker}`
+    const emitOrClose = (marker, build) => (callResults.some((r) => r.step === stepFor(marker))
+      ? { kind: 'text', content: `TURN-DONE ${NONCE}` } // ⑦ result seen -> close
+      : (steps.has(`pending:${marker}`)
+        ? { kind: 'text', content: `TURN-WAIT ${NONCE}` } // emitted, result not back yet: NEVER resend
+        : (() => {
+          steps.set(`pending:${marker}`, { step: stepFor(marker), tool: 'pending' })
+          const spec = build()
+          return mk(stepFor(marker), spec.name, spec.args)
+        })()))
+    if (text.startsWith('A5M2-C2-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `c2-create-${NONCE}`, delegationTemplateId: 'sched-worker', label: 'sched1' } }))
+    if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
+    if (text.startsWith('SEED-')) return emitOrClose(text, () => ({ name: 'schedule_create', args: { title: SEED_TITLES[Number(text.slice(5))], prompt: `a5m2 seed ${SEED_TITLES[Number(text.slice(5))]}`, after_seconds: 86_400 } })) // ⑤
+    if (text.startsWith('LIST')) return emitOrClose(text, () => ({ name: 'schedule_list', args: {} }))
+    if (text.startsWith('DELETE-ALPHA')) return emitOrClose(text, () => ({ name: 'schedule_delete', args: { id: seedIds[0] ?? 'unresolved' } }))
+    if (text.startsWith('DELETE-BETA')) return emitOrClose(text, () => ({ name: 'schedule_delete', args: { id: seedIds[1] ?? 'unresolved' } }))
+    if (text.startsWith('DELETE-ABSENT')) return emitOrClose(text, () => ({ name: 'schedule_delete', args: { id: ABSENT_ID } }))
+    return { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+
+  // ⑪ ledger EVENTS by requestId
+  async function ledgerEvents(requestId) {
+    const events = []
+    let afterSequence = 0
+    for (let page = 0; page < 12; page += 1) {
+      const res = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `c2-ledger-${page}`, 1)
+      const data = resultValue(res.body)
+      if (data === undefined) throw new Error(`getLedgerPage failed: ${JSON.stringify(resultErr(res.body) ?? res.body).slice(0, 300)}`)
+      const rows = data?.events ?? data?.rows ?? data?.entries ?? null
+      if (rows === null) throw new Error(`getLedgerPage value shape unknown: ${JSON.stringify(data).slice(0, 300)}`)
+      for (const row of rows) if (JSON.stringify(row).includes(requestId)) events.push(row)
+      const next = data?.nextAfterSequence ?? data?.nextCursor ?? null
+      if (next === null || next === afterSequence || rows.length === 0) break
+      afterSequence = next
+    }
+    return events
+  }
+
+  // durable control facts (storage read-back; ledger EVENTS remain the ⑪ authority)
+  function domainFacts() {
+    const f = join(HOME, 'storages', 'team_domain.json')
+    return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null
+  }
+  function collectRows(node, out) {
+    if (node === null || typeof node !== 'object') return out
+    if (Array.isArray(node)) { for (const v of node) collectRows(v, out); return out }
+    if (typeof node.requestId === 'string') out.push(node)
+    for (const v of Object.values(node)) collectRows(v, out)
+    return out
+  }
+  const findPending = (toolName) => {
+    const facts = domainFacts()
+    if (facts === null) return null
+    const hit = collectRows(facts, []).find((r) => (r.status === 'pending' || r.state === 'pending') && JSON.stringify(r).includes(`tool:${toolName}`))
+    return hit?.requestId ?? null
+  }
+  async function driveGoverned(memberSession, marker, toolName, decision, tag) {
+    await apiPrompt(memberSession, marker, tag)
+    const requestId = await waitFor(`pending control row ${toolName} (${tag})`, 120_000, () => findPending(toolName))
+    if (decision !== null) {
+      const res = await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId, decision, note: `sched-c2 ${tag}` }, tag, 4)
+      if (resultErr(res.body) !== null) throw new Error(`resolveControl ${decision} ${tag}: ${JSON.stringify(resultErr(res.body)).slice(0, 300)}`)
+    }
+    return requestId
+  }
+  const resultFor = (step) => waitFor(`${step} tool result`, 90_000, () => {
+    const hit = callResults.find((r) => r.step === step)
+    return hit ? hit.text : null
+  })
+
+  // ── boot ────────────────────────────────────────────────────────────────
   currentCriterion = 'boot'
   mock = await startMockModel({ port: MOCK_PORT, decide, log: (l) => TRANSCRIPT.push({ channel: 'mock', line: String(l).slice(0, 200) }) })
-  process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${MOCK_PORT}` // host reads base URL from the trusted environment layer (pr-d :1474-1480)
+  process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${MOCK_PORT}`
   const instLogDir = join(RUN_DIR, 'instance')
   mkdirSync(instLogDir, { recursive: true })
-  const instance = new DshInstance({ hostTree: HOST_TREE, dshHome: HOME, port: HOST_PORT, clientCommitHash: CLIENT_COMMIT_HASH, logDir: instLogDir })
-  writePatch(instance.patchFile)
+  instance = new DshInstance({ hostTree: HOST_TREE, dshHome: HOME, port: HOST_PORT, clientCommitHash: CLIENT_COMMIT_HASH, logDir: instLogDir }) // ⑩ before start
+  writePatch(instance.patchFile, pathToFileURL(HOST_ENTRY).href)
   const started = await instance.start({ timeoutMs: 240_000 })
   const m = /^http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)$/.exec(started.url)
-  if (m === null) dieFatal(`unexpected boot url: ${started.url}`)
+  if (m === null) throw new Error('unexpected boot url shape')
   origin = `http://127.0.0.1:${m[1]}`
   const auth = await fetch(`${origin}/?token=${m[2]}`, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
-  const setCookie = auth.headers.get('set-cookie')
-  if (auth.status !== 303 || setCookie === null) dieFatal(`authenticate status=${auth.status} (expected 303 + set-cookie)`)
-  cookie = setCookie.split(';', 1)[0]
-  host = { instance, logPath: started.logPath }
+  if (auth.status !== 303 || auth.headers.get('set-cookie') === null) throw new Error(`authenticate status=${auth.status} (expected 303 + set-cookie)`)
+  cookie = auth.headers.get('set-cookie').split(';', 1)[0]
   log(`host booted at ${origin}`)
 
+  // ④ real session contract (cwd adoption; no invented fields)
   currentCriterion = 'setup'
-  const sc = await fetchJson(`${origin}/api/session/create`, {
-    method: 'POST', headers: { 'content-type': 'application/json', cookie },
-    body: JSON.stringify({ type: 'client-request', rpcId: `c2-sc-${NONCE}`, method: 'session/create', payload: { args: { request: { requestId: `c2-scr-${NONCE}`, title: 'a5m2-sched-c2' } } } }),
-  })
-  {
-    const d = resultData(sc.body)
-    const id = d?.sessionId ?? d?.session?.id ?? d?.id
-    if (typeof id !== 'string') dieFatal(`session/create shape unknown: status=${sc.status} body=${JSON.stringify(sc.body).slice(0, 400)}`)
-    currentRoot = id
-  }
-  const created = await remoteCallReady('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'c2-create', 1)
-  if (resultError(created.body) !== null) dieFatal(`team.create failed: ${JSON.stringify(resultError(created.body)).slice(0, 400)}`)
+  const created = await sessionRpc('create', { cwd: HOME }, 'c2-session')
+  currentRoot = created?.sessionId
+  if (typeof currentRoot !== 'string') throw new Error(`session/create value shape: ${JSON.stringify(created).slice(0, 300)}`)
+  const team = await remoteCallReady('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'c2-create', 1)
+  if (resultErr(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultErr(team.body)).slice(0, 400)}`)
   log(`team created at root session ${currentRoot}`)
 
-  // member through the leader model turn (real create path)
   await apiPrompt(currentRoot, `A5M2-C2-LEADER ${NONCE}`, 'c2-leader')
   const memberSession = await waitFor('member session in team_domain', 120_000, () => {
     const facts = domainFacts()
@@ -431,98 +510,93 @@ async function main() {
   })
   log(`member session ${memberSession}`)
 
-  // C0 — visibility receipt BEFORE any seed (root 22:10: do not ASSUME the
-  // governed member surface exposes the public create entry; probe a text
-  // turn first and read the tool list off the model request). Absent entry
-  // = concrete reported gap, not a TODO.
-  currentCriterion = 'C0-seed-entry-visibility'
+  // C0 visibility receipt BEFORE any seed
+  currentCriterion = 'C0'
   await apiPrompt(memberSession, `TOOLS-CHECK ${NONCE}`, 'c2-c0')
-  await waitFor('member tool surface captured from a model request', 60_000, () => (memberToolsSeen.length > 0 ? true : null))
-  TRANSCRIPT.push({ channel: 'receipt', kind: 'member-tool-surface', tools: memberToolsSeen })
+  await waitFor('member tool surface', 60_000, () => (memberToolsSeen.length > 0 ? true : null))
   const need = ['schedule_create', 'schedule_list', 'schedule_delete']
   const missing = need.filter((n) => !memberToolsSeen.includes(n))
-  check('C0', 'member model-facing surface visibly carries the legal create entry AND the governed pair',
-    missing.length === 0, `visible=${memberToolsSeen.join(',')} missing=${missing.join(',') || 'none'}`)
+  check('C0', 'member surface visibly carries legal create + governed pair', missing.length === 0,
+    `visible=${memberToolsSeen.join(',')} missing=${missing.join(',') || 'none'}`)
 
-  // seeds: legal create path (ungoverned native tool; result carries ids)
+  // seeds: legal native create; exactly one id per receipt
   currentCriterion = 'seed'
+  const seedIds = []
   for (let i = 0; i < 3; i += 1) {
-    const pre = toolResults.length
     await apiPrompt(memberSession, `SEED-${i}`, `c2-seed${i}`)
-    const res = await waitFor(`seed ${i} tool result`, 90_000, () => {
-      const hits = toolResults.slice(pre).filter((t) => String(t.toolName).includes('schedule_create'))
-      return hits.length > 0 ? hits[hits.length - 1].text : null
-    })
+    const res = await resultFor(stepOuter(`SEED-${i}`))
     const ids = [...String(res).matchAll(/sch_[A-Za-z0-9_-]+/g)].map((x) => x[0])
-    if (ids.length !== 1) dieFatal(`seed ${i} produced ${ids.length} ids (expected exactly 1) from result: ${String(res).slice(0, 250)}`)
+    if (ids.length !== 1) throw new Error(`seed ${i} ids=${ids.length} result=${String(res).slice(0, 250)}`)
     seedIds.push(ids[0])
   }
-  log(`seeded ids: ${seedIds.join(',')}`)
   budget('state', HOME, WORLD_BUDGET.stateBytesMax)
 
-  // C1 — governed list returns the real seeded records
+  function stepOuter(marker) { return `member:${marker}` }
+
+  // C1
   currentCriterion = 'C1'
   {
-    const { requestId, resultFrom } = await driveGoverned(memberSession, 'LIST-1', 'schedule_list', 'allow', 'c2-c1')
-    const res = await lastResultFor('schedule_list', resultFrom)
-    const allIn = SEED_TITLES.every((t) => res.includes(t)) && seedIds.every((id) => res.includes(id))
-    check('C1', 'list returns all three real seeded records (ids+titles) after public ALLOW', allIn, `requestId=${requestId} result=${res.slice(0, 400)}`)
+    const requestId = await driveGoverned(memberSession, 'LIST-1', 'schedule_list', 'allow', 'c2-c1')
+    const res = await resultFor(stepOuter('LIST-1'))
+    const events = await ledgerEvents(requestId)
+    const consumed = events.some((e) => /consum/i.test(JSON.stringify(e)))
+    check('C1', 'list returns all three real records after ALLOW; consumption event for THIS requestId',
+      SEED_TITLES.every((t) => res.includes(t)) && seedIds.every((id) => res.includes(id)) && consumed,
+      `requestId=${requestId} consumed=${consumed} result=${String(res).slice(0, 300)}`)
   }
-
-  // C2 — granted delete: persistent disappearance vs the SUCCESSOR list
+  // C2
   currentCriterion = 'C2'
   {
-    const del = await driveGoverned(memberSession, 'DELETE-ALPHA', 'schedule_delete', 'allow', 'c2-c2del')
-    const delRes = await lastResultFor('schedule_delete', del.resultFrom)
-    const lst = await driveGoverned(memberSession, 'LIST-2', 'schedule_list', 'allow', 'c2-c2lst')
-    const res = await lastResultFor('schedule_list', lst.resultFrom)
-    check('C2', 'granted delete ALPHA -> successor list lacks ALPHA and keeps BETA+GAMMA (persistent)',
-      !res.includes(seedIds[0]) && res.includes(seedIds[1]) && res.includes(seedIds[2]) && !/error|invalid/i.test(String(delRes).slice(0, 120)),
-      `del=${String(delRes).slice(0, 180)} list=${res.slice(0, 300)}`)
+    await driveGoverned(memberSession, 'DELETE-ALPHA', 'schedule_delete', 'allow', 'c2-c2del')
+    await driveGoverned(memberSession, 'LIST-2', 'schedule_list', 'allow', 'c2-c2lst')
+    const res = await resultFor(stepOuter('LIST-2'))
+    check('C2', 'granted delete ALPHA -> successor list lacks ALPHA keeps BETA+GAMMA',
+      !res.includes(seedIds[0]) && res.includes(seedIds[1]) && res.includes(seedIds[2]), `list=${String(res).slice(0, 300)}`)
   }
-
-  // C3 — public DENY: BETA unchanged
+  // C3
   currentCriterion = 'C3'
   {
-    const { requestId } = await driveGoverned(memberSession, 'DELETE-BETA', 'schedule_delete', 'deny', 'c2-c3')
-    const lst = await driveGoverned(memberSession, 'LIST-3', 'schedule_list', 'allow', 'c2-c3lst')
-    const res = await lastResultFor('schedule_list', lst.resultFrom)
-    const consumed = collectRows(domainFacts(), []).find((r) => r.requestId === requestId)
-    check('C3', 'public DENY on delete BETA -> successor list still carries BETA; request denied not consumed',
-      res.includes(seedIds[1]) && !/consumed/i.test(JSON.stringify(consumed ?? {})),
-      `requestId=${requestId} row=${JSON.stringify(consumed ?? null).slice(0, 250)} list=${res.slice(0, 250)}`)
+    const requestId = await driveGoverned(memberSession, 'DELETE-BETA', 'schedule_delete', 'deny', 'c2-c3')
+    await driveGoverned(memberSession, 'LIST-3', 'schedule_list', 'allow', 'c2-c3lst')
+    const res = await resultFor(stepOuter('LIST-3'))
+    const events = await ledgerEvents(requestId)
+    const consumed = events.some((e) => /consum/i.test(JSON.stringify(e)))
+    check('C3', 'public DENY on delete BETA -> BETA still listed; no consumption event',
+      res.includes(seedIds[1]) && !consumed, `requestId=${requestId} consumed=${consumed} list=${String(res).slice(0, 250)}`)
   }
-
-  // C4 — abandon a governed list claim: unchanged
+  // C4 — ⑥ public session/cancel + REAL abandonment EVENT by requestId
   currentCriterion = 'C4'
   {
-    const pre = toolResults.length
-    const { promise, abort } = await apiPrompt(memberSession, 'LIST-4-ABANDON', 'c2-c4', true)
-    const requestId = await waitPending('schedule_list', 'c2-c4')
-    abort()
-    await promise.catch(() => {})
-    const terminal = await waitFor('abandonment terminal fact', 60_000, () => {
-      const row = collectRows(domainFacts(), []).find((r) => r.requestId === requestId)
-      const st = row?.status ?? row?.state
-      return st !== undefined && st !== 'pending' ? st : null
+    await apiPrompt(memberSession, 'LIST-4-ABANDON', 'c2-c4')
+    const requestId = await waitFor('pending list row (c2-c4)', 120_000, () => findPending('schedule_list'))
+    await apiCancel(memberSession, 'c2-c4-cancel')
+    const abandonEvent = await waitFor(`abandonment event for ${requestId}`, 90_000, async () => {
+      const events = await ledgerEvents(requestId)
+      return events.find((e) => /abandon/i.test(JSON.stringify(e))) ?? null
     })
-    const lst = await driveGoverned(memberSession, 'LIST-5', 'schedule_list', 'allow', 'c2-c4lst')
-    const res = await lastResultFor('schedule_list', lst.resultFrom)
-    check('C4', 'abandoned governed list claim -> terminal non-pending fact; records unchanged (BETA+GAMMA, ALPHA absent)',
+    await driveGoverned(memberSession, 'LIST-5', 'schedule_list', 'allow', 'c2-c4lst')
+    const res = await resultFor(stepOuter('LIST-5'))
+    check('C4', 'public session/cancel -> ledger ABANDON event for the exact requestId; records unchanged',
       res.includes(seedIds[1]) && res.includes(seedIds[2]) && !res.includes(seedIds[0]),
-      `requestId=${requestId} terminal=${terminal} resultsSeen=${toolResults.length - pre}`)
+      `requestId=${requestId} event=${JSON.stringify(abandonEvent).slice(0, 200)}`)
   }
-
-  // C5 — absent id: real published error value
+  // C5
   currentCriterion = 'C5'
   {
-    const { requestId, resultFrom } = await driveGoverned(memberSession, 'DELETE-ABSENT', 'schedule_delete', 'allow', 'c2-c5')
-    const res = await lastResultFor('schedule_delete', resultFrom)
-    check('C5', `absent-id granted delete returns the real error value (invalid_selector) on ${ABSENT_ID}`,
-      res.includes('invalid_selector'), `requestId=${requestId} result=${res.slice(0, 300)}`)
+    await driveGoverned(memberSession, 'DELETE-ABSENT', 'schedule_delete', 'allow', 'c2-c5')
+    const res = await resultFor(stepOuter('DELETE-ABSENT'))
+    check('C5', 'absent-id granted delete returns the real error value (invalid_selector)', res.includes('invalid_selector'), `result=${String(res).slice(0, 300)}`)
   }
 
-  teardown()
+  await cleanup()
   finish(results.every((r) => r.ok) ? 0 : 1)
 }
-main().catch((e) => dieFatal(e?.stack ?? e))
+main().then(
+  () => {},
+  async (e) => {
+    const rc = String(e?.message ?? '').startsWith('CRIT-FAIL') ? 1 : 2
+    log(`FATAL (${currentCriterion}): ${String(e?.stack ?? e).slice(0, 500)}`)
+    await cleanup()
+    finish(rc)
+  },
+)
