@@ -648,10 +648,31 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     expect(mount).toContain('provider: a5ImageProviderIdentity,')
     expect(planeSrc).toContain('providerIdentity: typeof arm.resolveProviderId === \'function\' ? arm.resolveProviderId() : arm.providerId,')
     expect(planeSrc).not.toContain('providerIdentity: \'a5p5-plane\'')
-    // ...and the fix did NOT copy the write pattern: the todo/write placement
-    // constants are still there, byte-unchanged, because they carry no provider
-    // comparison (root: do not copy the write pattern).
-    expect(matchAll(mount, /providerId: 'a5p5-plane',/g), 'exactly the todo + write placement constants remain').toHaveLength(2)
+    // ...and the fix did NOT copy the write pattern: the placement constants
+    // are still there, byte-unchanged, because they carry no provider
+    // comparison (root: do not copy the write pattern). CENTER LANDING
+    // RE-ANCHOR (int 596825662 + b156a9edb): the lane base (1f0bc21f4) held
+    // exactly 2 (todo :2755 + write :2850); the B-SCHEDULE production block
+    // that landed on int BEFORE this chain legitimately adds THREE more of
+    // its OWN family placement constants (scheduleProductionPort :3105,
+    // schedule assembly built :3144/:3167) — measured on the merged source,
+    // all five belong to todo/write/schedule placements. RE-ANCHOR 2
+    // (B-SUBAGENT joint batch, int merge cc6a0f643d1b0b4cae4ef4604c2c8fde1bb66b0f):
+    // the joint adds EXACTLY TWO more legitimate family-mount constants, both
+    // in agent-bindings.mjs and enumerated HERE so the pin records WHICH sites
+    // and WHY — (1) the B-SUBAGENT SPAWN wiring/registration constant passed to
+    // createSubagentSpawnWiring (the spawn-family one-bound container, :3254)
+    // and (2) the B-SUBAGENT CONTROLS wiring/registration constant passed to
+    // createBSubagentControlWiring (the controls-family wiring, :3783).
+    // Measured on the merged source, all seven belong to todo/write/schedule/
+    // subagent-spawn/subagent-controls placements. No IMAGE arm/
+    // registration/callFacts site carries a constant: the FP-A2/FP-D legs
+    // above prove the live supply and the unchanged comparisons on the real
+    // objects, and the plane pin below stays.
+    expect(
+      matchAll(mount, /providerId: 'a5p5-plane',/g),
+      "todo + write + the three schedule-block placement constants + the two B-SUBAGENT joint constants (spawn wiring via createSubagentSpawnWiring, controls wiring via createBSubagentControlWiring) remain; none at an image site",
+    ).toHaveLength(7)
     expect(planeSrc).toContain('providerId: \'a5p5-plane\'') // the rev.0 row-lane tuple, untouched
     // the plane never reads the provider off a row/receipt for supply purposes.
     expect(planeSrc).not.toMatch(/providerIdentity:\s*(manifest|receipt|row)/)

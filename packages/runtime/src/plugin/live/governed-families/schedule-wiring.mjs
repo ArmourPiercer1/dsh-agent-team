@@ -106,7 +106,7 @@ import {
   A5_B_SCHEDULE_RECORD_SPECS,
   createScheduleAdapterAssembly,
 } from './schedule-adapters.mjs'
-import { registerA5GovernedFamily } from '../pa-mount-registry.mjs'
+import { A5_GOVERNED_FAMILIES, a5GovernedFamilyFor, registerA5GovernedFamily } from '../pa-mount-registry.mjs'
 
 export const A5_B_SCHEDULE_WIRING_REVISION = 1
 
@@ -307,8 +307,31 @@ export function createScheduleWiring(input = {}) {
   // throw leaves the registry untouched: no partial registration, ever.
   const mountGovernedFamilies = () => {
     const registrations = adapterResult.familyRegistrations()
+    // ATOMIC family write (root 308 law): a conflict on the SECOND key must
+    // not leave the FIRST behind. PREFLIGHT every key BEFORE any write (a
+    // conflicting prior claim refuses the whole family with zero bytes
+    // entered), then write; an unexpected mid-write throw unwinds exactly
+    // the keys this mount wrote (the writer's own rollback — never a
+    // half-registered family answering the gate).
     for (const registration of registrations) {
-      registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+      const prior = a5GovernedFamilyFor(registration.definitionIdentity)
+      if (prior !== undefined) {
+        const error = new Error(`P_B_SCHEDULE_REGISTRATION_CONFLICT — the placement identity of '${registration.name}' is already claimed by family '${String(prior.familyId)}'; the whole B-SCHEDULE family write is refused BEFORE any key is entered (atomicity law: the second conflict never leaves the first)`)
+        error.code = 'P_B_SCHEDULE_REGISTRATION_CONFLICT'
+        throw error
+      }
+    }
+    const written = []
+    try {
+      for (const registration of registrations) {
+        registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+        written.push(registration.definitionIdentity)
+      }
+    } catch (error) {
+      for (const key of written) {
+        delete A5_GOVERNED_FAMILIES[key]
+      }
+      throw error
     }
     return deepFreeze(registrations.map((registration) => ({
       name: registration.name,
@@ -349,4 +372,175 @@ export function createScheduleWiring(input = {}) {
   })
   observe({ event: 'b-schedule-wire:assembled', adapterRevision: A5_B_SCHEDULE_ADAPTER_REVISION, mounted: adapterResult.definitions.map((definition) => definition.name) })
   return wiring
+}
+
+/* ── PRODUCTION ARM SURFACE (root 18:11 continuation) ──────────────────────
+ * The 59a factory above stays byte-intact as the assembly asset; these
+ * exports make the family PRODUCTION-REACHABLE through the plane's REAL PA
+ * edges (paAdmit.open → paAdmit.edge → the ONE consumeForExecution witness
+ * → the governed body → dispose). THE 18:52 NARROW RULING (root): the body
+ * may NOT bypass the adapter — the arm's execute IS the adapter row's own
+ * `delegate(plan, { exec })`, i.e. the full signed SAME-PLAN execution
+ * boundary runs on every production dispatch: edgeIntegrity (drain, the
+ * CURRENT native face + execute identity, the CURRENT service object + every
+ * method identity), NOT_OWN_PLAN, the fresh re-classify and PLAN_STALE
+ * fingerprint, the ALREADY_DISPATCHED plan-object memo, the owner REFERENCE
+ * law (exec.agent vs the bound Agent OBJECT — the host's identity-refusal
+ * VALUE), the abort law, the frozen port call, and the L6 mirror
+ * (`instanceof` the INJECTED published ScheduleInputError class — the same
+ * module identity the native bodies throw). Native fidelity (root: 保真
+ * native) lives INSIDE that boundary: the production port is the NATIVE
+ * DISPATCH PORT — its list/delete methods forward to the BOUND native face
+ * with the owner's exec, so the host closure remains the final body (its
+ * per-call `rootCtx.schedule` read, ScheduleId mint and operationError
+ * mirror all run) BEHIND every adapter check. THE PORT IS THE RAW SERVICE
+ * (root 19:17): glue supplies the REAL published ScheduleService — the
+ * ctx.schedule handle through a CURRENT FEED the entry reads from the
+ * host's global service store — and liveScheduleService() re-reads that
+ * feed at every dispatch edge exactly where the host bodies resolve
+ * rootCtx.schedule. The signed PORT_DRIFT legs are therefore REAL service-
+ * drift checks: a service object or a service method replaced underneath
+ * the mount refuses BEFORE any port entry. The native TOOL face never
+ * masquerades as the service (its output is a rendered view set / tool
+ * VALUE, not the service's record stream — double-mapping a normal value
+ * or feeding a {code,message} VALUE through records.map is exactly the
+ * mis-layering this law closes); it keeps its real role as the capture
+ * IDENTITY behind liveNative (不绕批准, 不绕adapter).
+ * The 11-leaf projection (mintTargetManifest above) is the ONE claim face —
+ * production arms and the 59a seat share it byte-for-byte; taskId rides
+ * null-or-exact as measured (the nullable kind stays root's single signed
+ * column); create/update have NO arm, NO row, NO registration (the trigger
+ * gap is open — they are not enabled). */
+
+/** The 11-leaf measured projection as the ONE production claim face (the
+ *  59a seat's own mintTargetManifest, byte-identical by construction). */
+export function mintScheduleTargetManifest (plan) {
+  return mintTargetManifest(plan)
+}
+
+/**
+ * One governed production arm for ONE enabled name ('schedule_list' or
+ * 'schedule_delete'). The PLANE calls this at the placement moment with the
+ * definition it ACTUALLY places (the image law: identity binds off the
+ * placed def, never a glue-time snapshot).
+ *
+ * @param input {{
+ *   name: string,
+ *   assembly: object,              // a successful createScheduleWiring result
+ *   nativeDefinition: object,      // the captured native face (agentCtx.tools.get)
+ *   capturedAgent: object,         // the member Agent object (owner同Agent)
+ *   ScheduleInputError: Function,  // the REAL published class (同Host错误类)
+ *   definitionIdentity: string,    // definitionIdentityOf(placedDef) at placement
+ *   providerId: string,
+ *   observe?: (row: object) => void,
+ * }} input
+ * @returns a frozen `{ ok: true, arm }` (classify / execute / drain) or a
+ *          frozen `{ ok: false, code, message }` refusal.
+ */
+export function createGovernedScheduleArm (input = {}) {
+  const name = input.name
+  if (name !== 'schedule_list' && name !== 'schedule_delete') {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, `the production arm exists ONLY for the controlled subset {schedule_list, schedule_delete} — '${String(name)}' is never enabled (TRIGGER_GOVERNANCE gap open for create/update)`)
+  }
+  const assembly = input.assembly
+  if (!isRecord(assembly) || assembly.ok !== true || typeof assembly.rowOf !== 'function') {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, 'the arm needs a successful createScheduleWiring assembly — no assembly, no classify law, no arm')
+  }
+  const row = assembly.rowOf(name)
+  if (row === undefined || row === null || typeof row.classify !== 'function' || row.active !== true) {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, `the assembly carries no ACTIVE row for '${name}' — an INACTIVE row gets no production arm, never a degraded one`)
+  }
+  const native = input.nativeDefinition
+  if (!isRecord(native) || native.name !== name || typeof native.execute !== 'function'
+    || typeof native.description !== 'string' || native.description.length === 0
+    || !isRecord(native.output) || typeof native.output.render !== 'function') {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, `the captured native '${name}' definition is incomplete (name/description/parameters/output{schema,render}/execute) — the mount IS the native face and has no other source`)
+  }
+  if (!isRecord(input.capturedAgent) || !isRecord(input.capturedAgent.session) || typeof input.capturedAgent.session.id !== 'string' || input.capturedAgent.session.id.length === 0) {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, 'the arm demands the live owner Agent OBJECT (session.id non-empty) — the identity law runs on the host reference, never on a session string')
+  }
+  if (typeof input.ScheduleInputError !== 'function') {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, "the arm demands the REAL published ScheduleInputError class (import '@deepseek-ai/dsh-schedule') — a duck class cannot mirror the host's own error law (root ③)")
+  }
+  if (typeof input.definitionIdentity !== 'string' || input.definitionIdentity.length === 0) {
+    return refuseAssembly(WIRE_CODES.INPUT_INVALID, 'the arm binds off the definitionIdentity of the definition the plane ACTUALLY placed — never a hand-spelled string')
+  }
+  const providerId = typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'a5p5-plane'
+  const observe = typeof input.observe === 'function' ? input.observe : () => {}
+  // the native face, the owner Agent object and the error class are INPUT
+  // LAWS here (validated below); at dispatch they are retained by the
+  // assembly/port closures — the delegate re-reads the bound capture and the
+  // adapter's L6 mirror runs against the assembly-injected class identity.
+  let drained = false
+
+  const classify = (raw) => {
+    if (drained) {
+      return { ok: false, code: 'P_B_SCHEDULE_DRAINING', detail: `${name}: draining — new calls are refused (new-call prohibition only; committed durable state is untouched)` }
+    }
+    const classified = row.classify(raw)
+    if (classified.ok !== true) {
+      return { ok: false, code: String(classified.code ?? 'P_B_SCHEDULE_CLASSIFY_INVALID'), detail: String(classified.detail ?? 'the adapter classify refused this call') }
+    }
+    const targetManifest = mintTargetManifest(classified.plan)
+    if (targetManifest.ok === false) {
+      observe({ event: 'b-schedule-arm:claim-mint-refused', name, code: targetManifest.code })
+      return { ok: false, code: targetManifest.code, detail: targetManifest.message }
+    }
+    // The closed effect set: tool-invoke names THIS row (the todo arm's
+    // precedent — the policy decides by tool name; no new resource kind).
+    const effects = deepFreeze([{ kind: 'tool-invoke', toolName: name, resource: null }])
+    return deepFreeze({
+      ok: true,
+      plan: classified.plan,
+      targetManifest,
+      effects,
+      // The family block's four P-adds at FULL VALUE (载荷法, the settled
+      // plane law): the bridge composes the durable manifest from this and
+      // checks it against the mount's own registration.
+      reviewPayload: Object.freeze({
+        familyId: A5_B_SCHEDULE_FAMILY_ID,
+        adapterRevision: A5_B_SCHEDULE_ADAPTER_REVISION,
+        providerIdentity: providerId,
+        targetManifest,
+      }),
+    })
+  }
+
+  // THE execution boundary IS the adapter's own delegate (root 18:52
+  // 不绕adapter): every dispatch re-runs edgeIntegrity (drain / CURRENT
+  // native face + execute / CURRENT service + method identities), the
+  // fresh re-classify + PLAN_STALE fingerprint, the ALREADY_DISPATCHED
+  // plan-object memo, the owner REFERENCE law, the abort law, the frozen
+  // port call and the L6 error mirror. The arm adds NOTHING in front of it
+  // — no pre-entry owner check, no native shortcut — so a drain landing
+  // between the PA await and this call refuses at the boundary BEFORE any
+  // native entry, and a plan re-presented after its flight answers
+  // ALREADY_DISPATCHED. Native fidelity rides inside: the production port
+  // forwards to the BOUND native face with the owner exec (the host closure
+  // is still the final body), and the L6 mirror runs against the REAL
+  // published class identity the adapter was assembled with.
+  const execute = async (plan, exec) => {
+    const ran = await row.delegate(plan, { exec })
+    observe({ event: 'b-schedule-arm:delegated', name, ok: ran?.ok === true, settled: typeof ran?.settled === 'string' ? ran.settled : undefined, code: typeof ran?.code === 'string' ? ran.code : undefined })
+    return ran
+  }
+
+  const arm = deepFreeze({
+    name,
+    familyId: A5_B_SCHEDULE_FAMILY_ID,
+    adapterRevision: A5_B_SCHEDULE_ADAPTER_REVISION,
+    providerId,
+    definitionIdentity: input.definitionIdentity,
+    classify,
+    execute,
+    drain: () => {
+      drained = true
+      // The assembly's own drain rides: new calls refuse at BOTH legs (the
+      // adapter row classify and the arm), committed durable state is
+      // untouched (new-call prohibition ONLY, the adapter's DRAIN_SEMANTICS).
+      assembly.drain()
+    },
+  })
+  observe({ event: 'b-schedule-arm:created', name, definitionIdentity: String(input.definitionIdentity).slice(0, 32) })
+  return deepFreeze({ ok: true, arm })
 }

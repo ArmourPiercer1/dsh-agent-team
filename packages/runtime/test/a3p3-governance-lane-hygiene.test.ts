@@ -237,6 +237,13 @@ describe('production consumers: exactly the PR4 assembly layer (PR3 landed dorma
     // offender for naming even this one type.
     const BARREL_TYPE_ADMISSIONS: Readonly<Record<string, readonly string[]>> = {
       [join('operation-permission', 'approval-routing.ts')]: ['SubtreeContains'],
+      // A5M2-r17 (seam-threading round, booked by the center on the census-red
+      // review): the PA<->Control bridge imports the SAME pure matcher-relation
+      // TYPE ONLY - `SubtreeContains` - to thread the mount's containment seam
+      // into the pure-core expansion calls. TYPE-ONLY (erased at emit, zero
+      // runtime edge); no other mutation symbol appears in the file (the
+      // non-vacuity legs below keep policing that).
+      [join('operation-permission', 'pa-control-bridge.ts')]: ['SubtreeContains'],
     }
     const importsViaBarrel = (rel: string, source: string): boolean => {
       const inLane = rel.startsWith(`governance${sep}`)

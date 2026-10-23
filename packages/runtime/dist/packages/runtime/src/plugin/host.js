@@ -1569,6 +1569,23 @@ export async function apply(ctx, config) {
             controlServiceRef,
             ptcEscalationRef,
             now: () => new Date().toISOString(),
+            // B-SCHEDULE PORT BOUNDARY (root 19:17): the REAL published
+            // ScheduleService raw handle / CURRENT FEED — the global service store
+            // read under 'schedule', the SAME name the host's own schedule bodies
+            // resolve `rootCtx.schedule` from at every dispatch. The signed adapter
+            // is fed the raw service (never a wrapper of the native TOOL face — the
+            // tool output is a rendered view set, not the service's record stream),
+            // and the feed is re-read LIVE so a service object or method replaced
+            // underneath the mount is observed as the signed PORT_DRIFT it is.
+            // Absence answers undefined (the glue fail-closes; no stand-in exists).
+            scheduleServiceFeed: () => {
+                try {
+                    return ctx.get?.('schedule');
+                }
+                catch {
+                    return undefined;
+                }
+            },
             // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
             // blueprint resolver (the glue's dynamic Team authority — the three-
             // case contract in bound-blueprint.ts: a bound ref resolves through
@@ -1597,6 +1614,23 @@ export async function apply(ctx, config) {
             // leaves the current route unresolvable, which the governed arm refuses at
             // the same pre-resource position native does.
             llm: () => ctx.get('llm'),
+            // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
+            // DSH public `sessionQuery` service — the registered SessionQueryEngine
+            // whose five facets (search / trace / event-read / authorization /
+            // titles) ARE the governed supply. Resolved AT MOUNT TIME (additive
+            // optional, never a hard inject): worlds without the service keep the
+            // family DECLARED-INACTIVE (honest census, zero flip). Facets are never
+            // injected through config — the glue maps them off THIS service
+            // (buildG6QuerySupplyFromService).
+            sessionQuery: () => ctx.get('sessionQuery'),
+            // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
+            // `sessionProjections` accessor — the caller law reads the actual exec
+            // owner's own turnBoundary projection (stateOf(agent.session,
+            // 'turnBoundary'), workspace-access.ts:56-69 @639ed01539); the
+            // current-session default rides it and refuses with the row's own
+            // NO_CURRENT_STEP guard when the projection is unavailable — never a
+            // fabricated boundary. Additive optional, never a hard inject.
+            sessionProjections: () => ctx.get('sessionProjections'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

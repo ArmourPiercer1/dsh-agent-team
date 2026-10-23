@@ -67,6 +67,10 @@ describe('the tool-governance lane audit', () => {
       'runtime/controlled-fs/src/cf-errors.ts',
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
+      // A5M2 (census run 40014719612 red, booked by the center): the post-consume
+      // write row - TYPE-ONLY FsWriteReceipt/GovernanceResult vocabulary; erased
+      // at emit, zero runtime edge.
+      'runtime/controlled-fs/src/post-consume-write.ts',
       // A5-M1: the PA↔Control bridge — the manifest digest it writes
       // (pa-control-bridge.ts:394) and the assurance snapshot it compares
       // (:752), plus the closed admission vocabulary its ports are typed
@@ -74,6 +78,18 @@ describe('the tool-governance lane audit', () => {
       // LADDER edge is booked on the a3p3 rows, not here.
       'runtime/operation-permission/pa-control-bridge.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
+      // A5M2 (census run 40014719612 red, booked by the center): the governed
+      // family adapters/wiring - each consumes the ONE thin closed-vocabulary
+      // face it names (parseRequestedEffectSet / parseResourceRef), exactly the
+      // ptc-escalation-row pattern; runtime lane -> domain leaf, zero edges back.
+      // ORDER follows the audit verdict (list order of the script): wiring before
+      // query, team-wiring with its family block.
+      'runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+      'runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+      'runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+      'runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+      'runtime/src/plugin/live/governed-families/image.mjs',
+      'runtime/src/plugin/live/governed-families/team-wiring.mjs',
       // A5-M1: the governed effect backends row — `parseRequestedEffectSet`
       // (plane-effect-backends.mjs:64) resolving the READ row's requested
       // effects into the frozen closed resource vocabulary at :1050, before
@@ -97,6 +113,11 @@ describe('the tool-governance lane audit', () => {
       'runtime/tool-dispatch/closed-world-guard.ts',
       'runtime/tool-dispatch/install.ts',
       'runtime/tool-dispatch/scoped-dispatcher.ts',
+      // A5M2 (census run 40014719612 red, booked by the center): the gateway lane -
+      // canonicalJsonFingerprint + resourceEquals (index.ts:108-111) and the
+      // TYPE-ONLY gateway/governance vocabulary (types.ts:31-40,111).
+      'runtime/web-gateway/src/index.ts',
+      'runtime/web-gateway/src/types.ts',
       'tools/a5p5-tools/src/args.ts',
       'tools/a5p5-tools/src/effects-schema.ts',
       'tools/a5p5-tools/src/pipeline.ts',
