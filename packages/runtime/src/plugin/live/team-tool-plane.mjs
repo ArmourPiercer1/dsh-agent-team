@@ -1816,9 +1816,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** A5-M2: the governed-read hand-off face for THIS mount. The plane
        *  stores nothing here: the row holds the token-keyed flight and the
        *  correlation law, and the adapter's `tools/result` observer is what
-       *  drives open/close. Absent when the mount carries no governed read
-       *  row — every other world and every other name keeps the old path. */
-      paReadHandoff: readExecutor === null ? undefined : Object.freeze({
+       *  drives open/close. A mount that carries NO governed read row does not
+       *  declare the field at all — it is omitted, NOT set to `undefined`, so a
+       *  consumer that decides by field presence reads "this plane never offers
+       *  the capability" rather than "it offered one and broke". A mount that
+       *  DOES declare it keeps the fail-closed law: whatever it holds reaches
+       *  the adapter and a broken one refuses the install. Every other world
+       *  and every other name keeps the old path. */
+      ...(readExecutor === null ? {} : { paReadHandoff: Object.freeze({
         open: async (exec) => {
           if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
           if (exec.name !== readName) return { kind: 'no-match' }
@@ -1838,7 +1843,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
           const correlation = readExecutor.paHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
           if (typeof correlation === 'string') livePaPlan.delete(correlation)
         },
-      }),
+      }) }),
       /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
       livePaPlan,
       /** 9e fix-3: the CONFIRMED durable generation reader (the root's
