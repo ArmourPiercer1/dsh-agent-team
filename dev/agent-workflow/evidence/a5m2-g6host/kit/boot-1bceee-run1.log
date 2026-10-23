@@ -1,0 +1,6 @@
+[g6-kit 23:40:25] pre-checks PASS (web 3186, mock 3187); production row = installed 874 pack
+[g6-kit 23:40:25] pre-launch budget: task-new 49152B / world-cap 262144000B (recovery account separate: 68464640B / 209715200B)
+[g6-kit 23:40:25] mock: mock: listening on 127.0.0.1:3187
+[g6-kit 23:40:27] host up at http://127.0.0.1:3186 (token scrubbed); cookie exchanged
+[g6-kit 23:40:27] FATAL: team.create failed: {"code":"NO_RESULT","message":"null"}
+[g6-kit 23:40:27] host stopped (killed=true portFree=true started=true)
