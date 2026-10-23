@@ -83,9 +83,9 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, chmodSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync, chmodSync } from 'node:fs' // realpathSync: OVERLAY-11b homes-root proof
 import { deflateSync } from 'node:zlib'
-import { dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path' // basename: OVERLAY-11b homes-root proof (a missing import here crashed module load — caught by the OVERLAY-15 probe-hold test copy, never by node --check)
 import { pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
 import { createHash } from 'node:crypto'
@@ -170,15 +170,32 @@ import { parseWorldArg, isDirectEntry, WorldSafetyError } from '../lib/world-saf
 // path contains a `.worktrees` segment — correctly, and it is what caught this during the guard
 // self-check: this kit is AUTHORED inside .worktrees/a5m2-imgverify, so a homes root derived from
 // its own file location could never host a world. DSH_HOME lives in the SUPERPROJECT's
-// tests/homes (workspace-internal, gitignored), exactly where the r11-r17 worlds are. --homes-root
-// overrides, and an override under .worktrees is still refused by the guard itself, not by a
-// string test here.
+// tests/homes (workspace-internal, gitignored), exactly where the r11-r17 worlds are.
+// OVERLAY-11b (root 17:42 item 2): there is NO homes-root override — an arbitrary resolve() there
+// would have WIDENED the guard's root set, which is the one thing the entry-safety law forbids. The
+// root is the single derived superproject path, and it is re-proved before use: no .worktrees
+// segment, basename `homes` under a `tests` directory, its realpath exists and sits directly under
+// the realpath of the superproject. Any failure exits before a write. The guard's own protections
+// (parseWorldArg, protected roots, realpath re-check) stay exactly as shipped.
 const SUPERPROJECT_ROOT = (() => {
   const seg = REPO.split('/')
   const i = seg.lastIndexOf('.worktrees')
   return i > 0 ? seg.slice(0, i).join('/') || '/' : REPO
 })()
-const HOMES_ROOT = resolve(argValue('homes-root', join(SUPERPROJECT_ROOT, 'tests', 'homes')))
+const HOMES_ROOT = join(SUPERPROJECT_ROOT, 'tests', 'homes')
+function assertHomesRoot() {
+  const fail = (why) => {
+    console.error(`FATAL: homes root rejected (${why}): ${HOMES_ROOT} — the world root is fixed to the verified superproject tests/homes; no override exists and the entry-safety guard is not widened.`)
+    process.exit(1)
+  }
+  if (HOMES_ROOT.split('/').includes('.worktrees')) fail('under a .worktrees segment')
+  if (basename(HOMES_ROOT) !== 'homes' || basename(dirname(HOMES_ROOT)) !== 'tests') fail('not <root>/tests/homes')
+  let realHomes, realSuper
+  try { realHomes = realpathSync(HOMES_ROOT); realSuper = realpathSync(SUPERPROJECT_ROOT) } catch (e) { fail(`realpath unavailable: ${e.code ?? e.message}`) }
+  if (realHomes === realSuper || !realHomes.startsWith(`${realSuper}/`) || realHomes.slice(realSuper.length + 1).split('/').length !== 2) fail(`realpath ${realHomes} is not <superproject>/tests/homes`)
+  return realHomes
+}
+assertHomesRoot()
 const ENTRY_DIRECT = isDirectEntry(import.meta.url, process.argv[1])
 const WORLD_REL = ENTRY_DIRECT ? argValue('world', null) : null
 let HOME
@@ -241,7 +258,21 @@ if (!RUN_STAMP.startsWith(`${RUN_TAG}-`)) {
     process.exit(1)
   }
 }
-const RUN_DIR = join(EVIDENCE_DIR, `run-${RUN_STAMP.slice(RUN_TAG.length + 1)}`)
+// OVERLAY-14 (root 17:42 item 3): the suffix after "<RUN_TAG>-" becomes a RUN DIR NAME, and teardown
+// runs scrubDir() over the run directory (a RECURSIVE read-write pass). So the suffix must be ONE
+// safe basename: no separator, no dot-dot, no leading dot — otherwise `--run-stamp a5m2-img-r18-x/
+// ../../…` would relocate the run dir outside the evidence tree and point the scrub at foreign
+// files. Belt and braces: the resolved RUN_DIR is additionally asserted to sit STRICTLY inside
+// EVIDENCE_DIR, and the check runs for imports too (it cannot exit the importing process, so an
+// imported misuse throws instead of silently writing elsewhere).
+const RUN_SUFFIX = RUN_STAMP.slice(RUN_TAG.length + 1)
+const RUN_SUFFIX_OK = /^[A-Za-z0-9][A-Za-z0-9._@-]*$/.test(RUN_SUFFIX) && !RUN_SUFFIX.includes('..')
+const RUN_DIR = join(EVIDENCE_DIR, `run-${RUN_SUFFIX}`)
+if (!RUN_SUFFIX_OK || !resolve(RUN_DIR).startsWith(`${resolve(EVIDENCE_DIR)}/`)) {
+  const msg = `run identity invalid: --run-stamp must be "${RUN_TAG}-<one safe basename>" with no path separator or dot-dot (got ${JSON.stringify(RUN_STAMP)}); the run dir stays strictly inside ${EVIDENCE_DIR}`
+  if (ENTRY_DIRECT) { console.error(`FATAL: ${msg}`); process.exit(1) }
+  throw new Error(msg)
+}
 
 // The DESIGNATED host runtime (root ruling 10:03 item 2): the test-use
 // checkout INSIDE the worktree tree (the runtime host, distinct from the
@@ -431,6 +462,7 @@ class FirstFailureStop extends Error {}
 
 async function dieFatal(msg, isCriterionFailure = false) {
   log(`${isCriterionFailure ? 'FIRST-FAILURE-STOP' : 'FATAL'} ${msg}`)
+  closeAllProbeHolds('dieFatal') // root 17:42: no held probe socket survives this exit path
   try {
     mkdirSync(RUN_DIR, { recursive: true })
     for (const h of EVID.hostLogs) {
@@ -511,6 +543,21 @@ async function releaseHold(port, why) {
   PORT_HELD.delete(port)
   await new Promise((res) => { srv.close(() => res()) })
   log(`port ${port} hold released (${why})`)
+}
+// OVERLAY-15 (root 17:42 supplement): EVERY probe socket this run opened is closed on EVERY exit
+// path. Before this, the entry catch set only process.exitCode, so an init-time exception (or any
+// throw between selection and start) left HELD LISTENERS bound in a lingering process — a port that
+// looks busy to the next lane and a self-collision risk for the Host about to bind it. Idempotent,
+// never throws, and it stamps the truth into PORT_PROBE so port-probe.json says which port was
+// released on which exit path.
+function closeAllProbeHolds(why) {
+  for (const [port, srv] of [...PORT_HELD.entries()]) {
+    PORT_HELD.delete(port)
+    try { srv.close() } catch { /* already closed */ }
+    try { srv.unref() } catch { /* ok */ }
+    const rec = PORT_PROBE.filter((r) => r.port === port && r.held === true).at(-1)
+    if (rec) { rec.held = false; rec.released = `closed on exit path (${why})` }
+  }
 }
 function assertPortAllowed(port, label) {
   if (FORBIDDEN_PORTS.includes(port)) {
@@ -1334,6 +1381,11 @@ async function bootHost({ label, port, boot, phase }) {
   const rec = { label, port, instance, logPath: null, token: null, cookie: null, origin: null, pid: null }
   writeTeamPatchFile(instance.patchFile, phase)
   writeFileSync(join(HOME, 'p6t6-directive.json'), JSON.stringify({ boot, phase, reportDir: RUN_DIR, runStamp: RUN_STAMP, rootSessionId: ROOT }, null, 2))
+  // OVERLAY-13 (root 17:42 item 1): this process HELD the bind-probe socket for this port to keep it
+  // race-free; the Host is about to bind the SAME port, so the hold MUST be released here for the
+  // port this boot owns — otherwise the kit collides with itself (the earlier fix released only the
+  // mock hold). Generic on `port`, no-op when nothing is held.
+  await releaseHold(port, `${label} binds it now`)
   const started = await instance.start({ timeoutMs: 240_000 })
   rec.logPath = started.logPath
   rec.pid = instance.child?.pid ?? null
@@ -1617,7 +1669,7 @@ async function main() {
   if (FIXTURE !== 'todo' && FIXTURE !== 'write' && FIXTURE !== 'image') await dieFatal(`--fixture invalid: ${FIXTURE}`)
   mkdirSync(RUN_DIR, { recursive: true })
   RUN_LOG = join(RUN_DIR, 'run.log')
-  log(`RUN IDENTITY (r18 image C2 re-verification of the r17 lexical-seam fix): MOUNT SURFACE = ROOT package pin ${SOURCE_PIN_SHA} tgz ${EXPECT_TGZ_SHA} (${EXPECT_ENTRIES} file records, install-surface gate 473 lines, tree INFO ${EXPECT_SURFACE_SHA} of the install-surface manifest / ${EXPECT_TREE_SHA} of the full per-file manifest); pin law: PACKAGE == COMMITTED TREE at that SHA except package.json pack normalization (measured 1812/1813), glue 16/16 dist-vs-src drift 0, fsSeam present on the dist face (2+1), the six TS mirrors committed by a real build (center check:artifacts:head verdict=ok compared=1788 drift=0) — see ${'packages-pins/' + SOURCE_PIN_SHA}/MANIFEST-2188f15ce.txt; DELTA vs the r17 mount surface = the r17 lexical-seam fix (agent-bindings / pa-mount-registry / pa-control-bridge dist) + the compiled B-CONTROL/B-INSPECT leaf-flatten table (control/types dist) + pack normalization, path-set otherwise byte-identical, and C1 is the discriminator for the second one; SCOPE: image verifies the already-reviewed r17 image scope ONLY — the 957 INSPECT/CONTROL rules and the B-MCP gap are UNWIRED candidates on this surface, not enabled; helper row = ${INSTALL_DIR}-adjacent mount-helper-root plugin.mjs == ${EXPECT_PLUGIN_SHA} (file + blob at ${SOURCE_PIN_SHA}); IMAGE fixture invariants: synthetic 2048x1536 PNG under examples/*/.sessions/ (gitignored, Host .gitignore UNTOUCHED), store override maxImageDimension=1024 via profile-patch override of id=attachment-local -> REAL normalization 1024x768 + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image, PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE, never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible ORIGINAL dimensions text + image part byte-identical to the stored object, deny/public-abandon ZERO commits, abandon through the p6t6 abandonControlRequest authority (NOT nativeAbort); ROOT LAWS: ONE round, first SUBSTANTIVE failure stops (no chained append/model-visible waits after a dead fact), NO todo emission in image mode (asserted on ledger + session storage + model wire at every leg boundary), requestIds always live from the ledger, forbidden ports [${FORBIDDEN_PORTS.join(', ')}], bind-probed and held until start (port-probe.json), world prefix ${WORLD_PREFIX} under tests/homes only, world + install surface RETAINED (this kit contains no rm/prune/df); r1-r17 pins and evidence KEPT byte-for-byte`)
+  log(`RUN IDENTITY (r18 image C2 re-verification of the r17 lexical-seam fix): MOUNT SURFACE = ROOT package pin ${SOURCE_PIN_SHA} tgz ${EXPECT_TGZ_SHA} (${EXPECT_ENTRIES} file records, install-surface gate 473 lines, tree INFO ${EXPECT_SURFACE_SHA} of the install-surface manifest / ${EXPECT_TREE_SHA} of the full per-file manifest); pin law: PACKAGE == COMMITTED TREE at that SHA except package.json pack normalization (measured 1812/1813), glue 16/16 dist-vs-src drift 0, fsSeam present on the dist face (2+1), the six TS mirrors committed by a real build (center check:artifacts:head verdict=ok compared=1788 drift=0) — see ${'packages-pins/' + SOURCE_PIN_SHA}/MANIFEST-2188f15ce.txt; DELTA vs the r17 mount surface = the r17 lexical-seam fix (agent-bindings / pa-mount-registry / pa-control-bridge dist) + the compiled B-CONTROL/B-INSPECT leaf-flatten table (control/types dist) + pack normalization, path-set otherwise byte-identical, and C1 is the discriminator for the second one; SCOPE: image verifies the already-reviewed r17 image scope ONLY — the 957 INSPECT/CONTROL rules and the B-MCP gap are UNWIRED candidates on this surface, not enabled; helper row = ${INSTALL_DIR}-adjacent mount-helper-root plugin.mjs == ${EXPECT_PLUGIN_SHA} (file + blob at ${SOURCE_PIN_SHA}); IMAGE fixture invariants: synthetic 2048x1536 PNG under examples/*/.sessions/ (gitignored, Host .gitignore UNTOUCHED), store override maxImageDimension=1024 via profile-patch override of id=attachment-local -> REAL normalization 1024x768 + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image, PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE, never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible ORIGINAL dimensions text + image part byte-identical to the stored object, deny/public-abandon ZERO commits, abandon through the p6t6 abandonControlRequest authority (NOT nativeAbort); ROOT LAWS: ONE round; a criterion's failures stop the run AT that criterion (finishCriterion throws once its checks are recorded — checks themselves record, they do not each throw), and OVERLAY-8a/8b additionally stop inside C3 before any further wait so the run never advances to the next criterion or keeps blind-waiting after a side-effecting dead fact, NO todo emission in image mode (asserted on ledger + session storage + model wire at every leg boundary), requestIds always live from the ledger, forbidden ports [${FORBIDDEN_PORTS.join(', ')}], bind-probed and held until start (port-probe.json), world prefix ${WORLD_PREFIX} under tests/homes only, world + install surface RETAINED (this kit contains no rm/prune/df); r1-r17 pins and evidence KEPT byte-for-byte`)
   REALM_ESC = REALM.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
   // OVERLAY-12 (read-only validation mode, purely additive). `--validate-only` re-verifies the
@@ -1649,7 +1701,7 @@ async function main() {
     try { listeners = execFileSync('ss', ['-ltn'], { encoding: 'utf8' }).split('\n').filter((l) => new RegExp(`:(${[...new Set([...FORBIDDEN_PORTS, ...HOST_PORT_CANDIDATES, ...MOCK_PORT_CANDIDATES])].join('|')})\\b`).test(l)).map((l) => l.trim().split(/\s+/)[3]) } catch { /* ss unavailable */ }
     note('port plan (READ-ONLY ss -ltn; this kit binds NOTHING here)', `listeners-in-family=[${listeners.join(' ') || 'none'}] host-candidates=[${HOST_PORT_CANDIDATES.join(',')}] mock-candidates=[${MOCK_PORT_CANDIDATES.join(',')}] forbidden=[${FORBIDDEN_PORTS.join(',')}]`, true)
     say('mount-helper-root (executor-created, verified by preflight)', `${join(HOME, 'mount-helper-root')} exists=${existsSync(join(HOME, 'mount-helper-root'))}`)
-    log(`VALIDATE-ONLY ${bad.length === 0 ? 'OK — bundle coherent, NOTHING created or mounted' : `FAILED: ${bad.join('; ')}`}`)
+    log(`VALIDATE-ONLY ${bad.length === 0 ? 'OK — bundle coherent. Writes: ONLY this run dir\'s own run.log + validate-only.json under the evidence dir. NO world, NO install surface, NO mount, NO port bound, NO Host or mock started.' : `FAILED: ${bad.join('; ')} (same write footprint)`}`)
     writeFileSync(join(RUN_DIR, 'validate-only.json'), JSON.stringify({ at: new Date().toISOString(), bad, home: HOME, homesRoot: HOMES_ROOT, pin: SOURCE_PIN_SHA, hostHead, hostDirty }, null, 2))
     process.exit(bad.length === 0 ? 0 : 1)
   }
@@ -2178,6 +2230,7 @@ async function main() {
     }
     await dieFatal(`unhandled: ${String(error?.message ?? error)}\nhost tail:\n${host !== null ? logTail(host.logPath, 30) : '<no host>'}`)
   } finally {
+    closeAllProbeHolds('main finally') // root 17:42: uniform close, whatever the outcome above
     await sweepLiveHosts().catch(() => { /* best-effort */ })
     try { await mock.close() } catch { /* already */ }
     try {
@@ -2216,6 +2269,9 @@ async function main() {
 // Importing the module must never execute the run (2026-10-23 incident class).
 if (ENTRY_DIRECT) {
   main().catch((error) => {
+    // root 17:42: an init/entry-time exception must not leave probe listeners behind; exitCode
+    // alone is not enough because the sockets are still bound while the loop drains.
+    try { closeAllProbeHolds('entry catch') } catch { /* never throws */ }
     console.error(`a5m2-todo-c2: uncaught ${String(error?.stack ?? error)}`)
     process.exitCode = 1
   })

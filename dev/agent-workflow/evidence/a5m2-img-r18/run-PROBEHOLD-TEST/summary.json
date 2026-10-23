@@ -1,0 +1,53 @@
+{
+  "task": "A5M2 todo C2 single bounded real-host run",
+  "runStamp": "a5m2-img-r18-PROBEHOLD-TEST",
+  "fatal": "FORCED-INIT-EXCEPTION (probe-hold close test)",
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-img-r18-PROBEHOLD-TEST",
+  "worldRetained": true,
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "GOVERNED read_image row binding: durable row on lane plane-image (B-IMAGE rev2 manifest, canonicalTarget + declaredMediaType + byteCap), requiredAuthority leader x2, ZERO old parameter-permission rows for read_image (the hand-off EMPIRICALLY opens the old front door at zero) + the member surface carries read_image with the CAPTURED NATIVE description bytes",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C2",
+      "name": "PENDING with ZERO side effects: no consumption, ZERO new attachment-store objects, source PNG byte-untouched",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C3",
+      "name": "PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE new store object (name-sha == byte-sha) + REAL normalization 1024x768 with the ORIGINAL 2048x1536 dimensions in the model-visible text and the stored bytes as the image part",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C4",
+      "name": "PUBLIC DENY of the SAME image (fresh callId -> row2 on lane plane-image): ZERO consumptions, ZERO new store objects, structural callId-paired refusal surfaced to the member",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "C5",
+      "name": "PUBLIC ABANDON via the existing p6t6 abandonControlRequest route: one abandon fact, ZERO consumptions, store unchanged, callId-paired refusal to the member",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "H1",
+      "name": "test-use porcelain EMPTY + HEAD baseline before and after; :3080 zero-touch BY CONSTRUCTION",
+      "status": "not-run",
+      "checks": []
+    },
+    {
+      "id": "H2",
+      "name": "every allocated port released + no surviving host/mock process (ps proof)",
+      "status": "not-run",
+      "checks": []
+    }
+  ],
+  "pass": false,
+  "exitCode": 1
+}

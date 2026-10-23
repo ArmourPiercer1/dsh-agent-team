@@ -35,7 +35,8 @@ Mount delta vs r17 (9 paths, see `MANIFEST-2188f15ce.txt` §C): pack normalizati
 ```bash
 cd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-imgverify
 
-# 3a. read-only bundle validation — creates nothing, binds nothing, boots nothing
+# 3a. read-only bundle validation. Writes ONLY its own run.log + validate-only.json in a NEW
+# evidence run dir; NO world, NO install surface, NO mount, NO port bound, NO Host/mock started.
 node tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs \
   --world a5m2-img-r18-<UTC-stamp> --fixture image --validate-only      # expect RC 0
 
@@ -48,24 +49,29 @@ mkdir -p /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-img-r18-<UTC
 
 # 3c. THE one bounded round
 node tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs \
-  --world a5m2-img-r18-<UTC-stamp> --fixture image
-# exit 0 = all criteria pass · 2 = a criterion failed (first-failure stop) · 1 = fatal
+  --world a5m2-img-r18-$(date -u +%Y-%m-%dT%H-%M-%S) --fixture image
+# exit 0 = all criteria pass · 2 = a criterion failed (stopped at that criterion) · 1 = fatal
+# CANONICAL COMMAND ONLY (root 17:42): --fixture image is MANDATORY (the flag defaults to `todo`);
+# no other flag is passed — homes root is fixed, the run stamp defaults to UTC, and the evidence
+# directory defaults to this worktree's dev/agent-workflow/evidence/a5m2-img-r18/run-<stamp>/.
 ```
 
-Defaults (all overridable): `--worktree ../a5-m2-int` (supplies `tests/paths.mjs` Host-baseline pin `639ed015…` + the harness scripts; verified `HEAD==baseline`, porcelain 0, `bin.js` present), `--testuse <worktree>/tests/deepseek-harness-test-use`, `--homes-root` = superproject `tests/homes` (the guard refuses any world under a `.worktrees` segment — see patch OVERLAY-11), `--evidence-dir dev/agent-workflow/evidence/a5m2-img-r18` (inside this worktree).
+Defaults the canonical command relies on: homes root = the ONE verified superproject root `/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes` (OVERLAY-11b — **the `--homes-root` override was DELETED** at root's 17:42 ruling: an arbitrary `resolve()` there would have widened the guard's root set; `tests/kits/lib/world-safety.mjs` stays byte-identical); run stamp = `${RUN_TAG}-<UTC>` with the suffix restricted to ONE safe basename and the resolved run dir asserted strictly inside the evidence dir (OVERLAY-14 — closes a `../../` escape that pointed the teardown `scrubDir()` recursive read-write pass at foreign files); worktree = `../a5-m2-int` (`tests/paths.mjs` Host-baseline pin `639ed015…`; verified `HEAD==baseline`, porcelain 0, `bin.js` present); testuse = `<worktree>/tests/deepseek-harness-test-use`; evidence dir = this worktree's `dev/agent-workflow/evidence/a5m2-img-r18` (pre-existing r17 flag, untouched). Legacy note: `--worktree ../a5-m2-int` (supplies `tests/paths.mjs` Host-baseline pin `639ed015…` + the harness scripts; verified `HEAD==baseline`, porcelain 0, `bin.js` present), `--testuse <worktree>/tests/deepseek-harness-test-use`, `--homes-root` = superproject `tests/homes` (the guard refuses any world under a `.worktrees` segment — see patch OVERLAY-11), `--evidence-dir dev/agent-workflow/evidence/a5m2-img-r18` (inside this worktree).
 
 **Cleanup law (root 17:4x re-stated)**: the kit performs NO recursive cleanup anywhere — no `rm`/`rmSync`/`rmdirSync`/`unlinkSync`/`renameSync`, no `prune`, no `df`, no shell delete. Every filesystem mutation is `mkdir -p`, a file write, `chmod a-w`, or an extract-if-missing tar of the pinned tgz into `tests/homes/<world>/install-2188f15ce/package`; teardown kills only the two processes it started, and the single rewrite of existing files is `scrubDir(RUN_DIR)` (token scrub of the evidence files the kit itself wrote). The world must be pre-created by its one owner and is retained.
 
 **World naming law**: basename must start with `a5m2-img-r18-` or the kit exits 1 before touching disk.
 
-**Ports (root 17:4x correction, OVERLAY-6b)**: the image lane's OWN historical pair — host `3182`, mock `3497` — is reused, and only after a real free + **no-in-flight** check (any TCP socket in any state on the port refuses the candidate; recorded in `port-probe.json`). **Forbidden and asserted**: `3080` (stable dev), `3180/3181` (family defaults), `3183/3498` + `3184/3499` (two prior INFRA worlds, quiescence unproven), `3185` (never released), `3186/3500` (RSJ-frozen). Selection is an ACTIVE bind-probe on 127.0.0.1, the winning socket is HELD until the moment the mock/Host binds it, and every attempt (including rejected and explicitly-passed ports) lands in `<run>/port-probe.json`. Read-only inventory at 17:36Z: only `127.0.0.1:3080` listens in the family; `3183-3185` and `3498` free.
+**Probe holds**: every bind-probe socket this run opens is closed on EVERY exit path (OVERLAY-15) — `dieFatal`, `main`'s `finally`, and the entry catch (which used to set only `exitCode`, leaving held listeners in a lingering process). The Host hold is released inside `bootHost` immediately before `instance.start()` for the port that boot owns (OVERLAY-13 — previously only the mock hold was released, so the Host would have collided with its own held listener on 3182). Proven with an ephemeral-port test copy (39182/39183, never a lane port): forced init exception → exit 1, `ss -ltn` shows 0 listeners, `port-probe.json` stamps `held=false, released="closed on exit path (dieFatal)"`; the entry-catch variant also left 0 listeners. The same test copy caught two missing imports in my own new code (`basename`, `realpathSync`) that crashed module load — a class `node --check` cannot see.
+
+**Ports (root 17:42 correction, OVERLAY-6b)**: the image lane's OWN historical pair — host `3182`, mock `3497` — is reused, and only after a real free + **no-in-flight** check (any TCP socket in any state on the port refuses the candidate; recorded in `port-probe.json`). **Forbidden and asserted**: `3080` (stable dev), `3180/3181` (family defaults), `3183/3498` + `3184/3499` (two prior INFRA worlds, quiescence unproven), `3185` (never released), `3186/3500` (RSJ-frozen). Selection is an ACTIVE bind-probe on 127.0.0.1, the winning socket is HELD until the moment the mock/Host binds it, and every attempt (including rejected and explicitly-passed ports) lands in `<run>/port-probe.json`. Read-only inventory at 17:36Z: only `127.0.0.1:3080` listens in the family; `3183-3185` and `3498` free.
 
 ## 4. Root laws, and where each is enforced in code
 
 | law | enforcement |
 | --- | --- |
 | one round, no auto next round | `main()` is single-pass; no loop, no re-entry; exit codes above |
-| stop at first SUBSTANTIVE failure | `finishCriterion()` throws `FirstFailureStop`; OVERLAY-8a stops right after the ONE-consumption fact and writes `c3-first-failure-stop.json`; OVERLAY-8b stops after a zero-store gain and skips the 180 s envelope wait; the 90 s consumption wait is the only wait on that path |
+| stop at first SUBSTANTIVE failure — stated precisely | each `check()` RECORDS; `finishCriterion('<id>')` is what throws `FirstFailureStop`, so the run stops at the END of the failing criterion's own checks — it never silently advances to the NEXT criterion and never blind-waits after a side-effecting dead fact. OVERLAY-8a stops inside C3 right after the ONE-consumption fact (writes `c3-first-failure-stop.json`) and 8b after a zero-store gain, both BEFORE the remaining waits. The earlier terminal deny/consume/store-0 short-circuits are kept. |`finishCriterion()` throws `FirstFailureStop`; OVERLAY-8a stops right after the ONE-consumption fact and writes `c3-first-failure-stop.json`; OVERLAY-8b stops after a zero-store gain and skips the 180 s envelope wait; the 90 s consumption wait is the only wait on that path |
 | no 90+300 chained waits | the terminal-decision guard (root 15:27) plus 8a/8b: no wait is chained behind an already-false fact; image mode never polls todo rows (8b removed a guaranteed 120 s stall) |
 | image mode NEVER emits todo | OVERLAY-9 `assertNoTodoInImageMode()` at the C1/C2/C3/C4/C5 boundaries: zero `plane-todo` lane facts in the durable ledger, zero `todo/write` entries in the member session storage, zero `todo_write` tool calls on the model wire; each boundary writes `zero-todo-law-<phase>.json` |
 | no reuse of prior ctrl requestIds | ids are read live from the ledger rows (`row1/2/3.payload.requestId`); no `ctrl-…` literal exists in the kit |
@@ -76,7 +82,7 @@ Defaults (all overridable): `--worktree ../a5-m2-int` (supplies `tests/paths.mjs
 
 ## 5. Deliverables in this tree
 
-* `tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs` — sha256 `549d5a9b95e58a407c846f1c6339e5bde7e717d2c3ad740261d7b56096224a63` (includes OVERLAY-6b: port selection back to this lane's own 3182/3497) (base `aa242e37451d2e58944ff26af7a1069fbb1786392dfc80ad114a84f9b1069fd2`; diff = 319 insertions / 35 deletions, every patch named — `KIT-OVERLAY-DIFF.md`)
+* `tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs` — sha256 `80814253a01ce955543609f1dec6b39baa15ee74ab0c56d741c9d4b58d50d8d5` (OVERLAY-6b/11b/13/14/15: ports, fixed homes root, host-hold release, run-stamp containment, uniform hold close) (base `aa242e37451d2e58944ff26af7a1069fbb1786392dfc80ad114a84f9b1069fd2`; diff = 319 insertions / 35 deletions, every patch named — `KIT-OVERLAY-DIFF.md`)
 * `packages-pins/2188f15ce…/` — tgz + plugin.mjs + three manifests + `MANIFEST-2188f15ce.txt` + `artifact0-readonly-2188f15ce.txt`
 * `dev/agent-workflow/evidence/a5m2-img-r18/` — this README, `KIT-OVERLAY-DIFF.md`, `LEGS-INVENTORY.md`, `run-2026-10-23T17-36-29/` (the read-only validate-only receipt), `pin-audit/` (the four read-only scripts + drift corroboration + the validate-only receipt)
 * Lineage note: the kit base is the **full successor** `aa242e37…` of the lost uncommitted `5b039e9b…` asset (incident asset, unrecoverable locally — recorded in `dev/agent-workflow/evidence/a5-world-safety/README.md`); this is minimal reuse/reconstruction, **not** a recovery.

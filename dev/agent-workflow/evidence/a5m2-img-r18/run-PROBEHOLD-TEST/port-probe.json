@@ -1,0 +1,36 @@
+{
+  "forbidden": [
+    3080,
+    3180,
+    3181,
+    3183,
+    3184,
+    3185,
+    3186,
+    3498,
+    3499,
+    3500
+  ],
+  "attempts": [
+    {
+      "at": "2026-10-23T17:44:37.407Z",
+      "label": "host",
+      "port": 39182,
+      "connectProbe": "no-listener",
+      "inFlight": "no-socket",
+      "bindProbe": "bound",
+      "held": false,
+      "released": "closed on exit path (dieFatal)"
+    },
+    {
+      "at": "2026-10-23T17:44:37.423Z",
+      "label": "mock",
+      "port": 39183,
+      "connectProbe": "no-listener",
+      "inFlight": "no-socket",
+      "bindProbe": "bound",
+      "held": false,
+      "released": "closed on exit path (dieFatal)"
+    }
+  ]
+}
