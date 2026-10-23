@@ -36,7 +36,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot } from '../../../tests/paths.mjs'
-import { validatePaFamilyTarget } from '../control/types.js'
+import { validatePaFamilyTarget, validatePaFamilyTargetAgainstRule } from '../control/types.js'
+import { A5_B_SUBAGENT_SPAWN_CANONICAL_JSON, A5_B_SUBAGENT_SPAWN_NAMED_GAPS } from '../src/plugin/live/governed-families/subagent-spawn-adapters.mjs'
 
 type Definition = {
   [face: string]: unknown
@@ -50,7 +51,7 @@ type PaRequest = {
   realmId?: string
   callId?: string
   parametersFingerprint?: string
-  requestedEffects?: { effects: Array<{ kind: string; toolName?: string; resource: unknown }> }
+  requestedEffects?: { effects: Array<{ kind: string; toolName?: string; resource: unknown }>; fingerprint?: string }
   toolName?: string
   signal?: unknown
   family?: { familyId?: string; adapterRevision?: number; providerIdentity?: string; definitionIdentity?: string; targetManifest?: unknown }
@@ -65,7 +66,7 @@ type WiringValue = {
   mountNames: readonly string[]
   definitions: Definition[]
   declared: Array<{ name: string; recordIndex: number; status: string; reason: string }>
-  rowOf: (name: string) => { classify: (args: unknown) => { ok: boolean; plan?: { parametersFingerprint: string; operation: string; target: SpawnTarget } } } | undefined
+  rowOf: (name: string) => { classify: (args: unknown) => { ok: boolean; plan?: { parametersFingerprint: string; operation: string; target: SpawnTarget; args: Record<string, unknown>; namedGaps: Record<string, string> } } } | undefined
   familyRegistrations: () => Array<{ name: string; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }>
   wiringCodes: Record<string, string>
 }
@@ -249,12 +250,22 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     expect(req.callId).toBe('call-wire-9') // the REAL public exec.callId, never synthesized
     expect(req.toolName).toBe('subagent')
     expect(req.requestedEffects.effects).toEqual([{ kind: 'tool-invoke', toolName: 'subagent', resource: null }])
+    // THE CANONICAL DIGEST rides the parsed envelope (domain algebra, G6
+    // precedent; the kernel reads request.requestedEffects.fingerprint at
+    // admission-kernel.ts:215 — a hand-spelled envelope dies deeper in the
+    // walk, measured by the spawn plane-mount spec).
+    expect(String(req.requestedEffects?.fingerprint)).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(req.parametersFingerprint).toBe(classified.plan.parametersFingerprint) // the plan's OWN digest — the execute-call's internal classify re-mints an equal one; the digest IS the plan's identity (载荷法)
     expect(req.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(req.family?.familyId).toBe('B-SUBAGENT')
     expect(req.family?.adapterRevision).toBe(1)
     expect(req.family?.providerIdentity).toBe('a5p5-plane')
-    expect(req.family?.definitionIdentity).toBe('cap:subagent')
+    // THE IDENTITY THE CALL IS EXECUTING UNDER (production-leg law, house
+    // G6-mount precedent (c)): the P-add names the plane feed's FRESH
+    // placement identity — the very key the registration (and the PA gate's
+    // binding lookup at pa-control-bridge :427) resolves — never the
+    // capture-side constant.
+    expect(req.family?.definitionIdentity).toBe(PLANE_FEED('subagent').definitionIdentity)
     // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; encoding per root
     // 21:01): the entry in PA_FAMILY_TARGET_RULES['B-SUBAGENT'] pairs exactly
     // these keys — childClaim rides the SIGNED 'nullableString' leaf, so the
@@ -272,6 +283,11 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
       effect: t.effect,
       model: t.model,
       depth: t.depth,
+      // the JOINT encoding's two full-value fields (root 21:20): canonical
+      // JSON of the WHOLE call args and the WHOLE named-gaps record — the
+      // lane's own canonicalizer, digests untouched beside them.
+      argsCanonical: A5_B_SUBAGENT_SPAWN_CANONICAL_JSON(classified.plan.args),
+      namedGapsCanonical: A5_B_SUBAGENT_SPAWN_CANONICAL_JSON(classified.plan.namedGaps),
     })
     expect(t.child.claim).toBeNull() // the sentinel encodes the CONST null claim
     expect(req.signal).toBe(CONTROLLER.signal)
@@ -348,33 +364,120 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
 })
 
 describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only', () => {
-  it('table/mint pair EXACTLY through the REAL validator: the mint null stays null; ANY string (incl. the retired sentinel text) is a legal distinct value; wrong type/missing deny; list_models never claims a service-mint', async () => {
+  it('a call whose PLACEMENT moved under the mount fails closed PLACEMENT_ABSENT — no PA walk opens, no body runs', async () => {
+    SERVICE_STARTS.length = 0
+    PA_CALLS.length = 0
+    paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
+    const wiring = wire({ placementFeed: () => undefined }) // the row dispatches; its placement no longer stands
+    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    if (def === undefined) throw new Error('no def')
+    const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-noplacement-1', signal: CONTROLLER.signal })
+      .then(() => undefined, (e: unknown) => e as Error)
+    expect(String(error?.message)).toContain(CODES.PLACEMENT_ABSENT)
+    expect(PA_CALLS).toHaveLength(0)
+    expect(SERVICE_STARTS).toHaveLength(0)
+  })
+  it('the JOINT encoding (root 21:20) through the SAME validator law: the five operation-discriminated spawn variants pass; full VALUES (prompt whole, unknown keys, null and empty string) round-trip; action binds each row\u2019s OWN operation; the CURRENT table rejects the joint shape BY NAME and the old shape denies under the joint law \u2014 no silent translation in either direction', async () => {
     SERVICE_STARTS.length = 0
     PA_CALLS.length = 0
     paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire()
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
-    if (def === undefined) throw new Error('no def')
-    await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-pair-1', signal: CONTROLLER.signal })
-    const manifest = PA_CALLS[PA_CALLS.length - 1]?.family?.targetManifest as Record<string, unknown>
-    expect(manifest.childClaim).toBeNull() // the mint carries the null ITSELF (root 21:01)
-    expect(validatePaFamilyTarget('B-SUBAGENT', manifest)).toBeUndefined() // REAL mint passes the REAL table
-    // the retired sentinel is now just one legal string among all — a claim
-    // that HAPPENS to spell it validates identically; no rewriting exists to
-    // confuse the two (that is what lossless over string|null means):
-    expect(validatePaFamilyTarget('B-SUBAGENT', { ...manifest, childClaim: 'service-mints-child-identity (claim not carried at this seam)' })).toBeUndefined()
-    expect(validatePaFamilyTarget('B-SUBAGENT', { ...manifest, childClaim: '' })).toBeUndefined() // '' is the THIRD distinct outcome
-    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...manifest, childClaim: 42 }))).toContain('childClaim')
-    const { childClaim: _drop, ...noClaim } = manifest
-    expect(String(validatePaFamilyTarget('B-SUBAGENT', noClaim))).toContain('childClaim') // missing ≠ null
-    // list_models honesty: it addresses NO child — its per-row truth rides
-    // childAdjudication, and no manifest fact ever spells "service-mints":
+    // THE JOINT B-SUBAGENT LAW as adjudicated (root 21:20): ONE
+    // operation-discriminated entry; COMMON required strings (operation,
+    // contract, action, revision, effect, depth, argsCanonical,
+    // namedGapsCanonical \u2014 the last two FULL canonical JSON, never digests);
+    // the five SPAWN groups add parent/childAdjudication/model (string) +
+    // childClaim on the SIGNED 'nullableString' leaf (the 21:01 encoding
+    // stands untouched: missing \u2260 null \u2260 ''); `action` is BOUND to the
+    // row\u2019s original operation. Driven through
+    // validatePaFamilyTargetAgainstRule \u2014 the exported pure law of ONE
+    // entry, the exact code the real table enters through. THE TABLE ITSELF
+    // IS THE 9d968 LANE\u2019S TO LAND; this spec never edits it.
+    const SPAWN_ADDS = { parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' } as const
+    const OPS = ['subagent-spawn', 'subagent-fork-spawn', 'subagent-spawn-external-codex', 'subagent-spawn-external-claude-code', 'subagent-model-routes-read'] as const
+    const jointRule = {
+      required: { operation: 'string', contract: 'string', action: 'string', revision: 'string', effect: 'string', depth: 'string', argsCanonical: 'string', namedGapsCanonical: 'string' },
+      currentFields: ['operation', 'contract'],
+      variant: {
+        leaf: 'operation',
+        by: Object.fromEntries(OPS.map((op) => [op, { adds: SPAWN_ADDS, binds: { action: op } }])),
+      },
+    } as unknown as Parameters<typeof validatePaFamilyTargetAgainstRule>[1]
+    // ONE joint real mint: every spawn row walks the REAL admitted seat;
+    // each captured manifest is that row\u2019s variant of the joint entry.
+    const tricky = { description: 'd1', prompt: 'full text\n with lines', opt_empty: '', keep_null: null, zeta_key: 'z', alpha_key: 7 }
+    const byOp = new Map<string, Record<string, unknown>>()
+    const ROWS = [['subagent', 'subagent-spawn'], ['subagent_fork', 'subagent-fork-spawn'], ['subagent_codex', 'subagent-spawn-external-codex'], ['subagent_claude_code', 'subagent-spawn-external-claude-code'], ['list_subagent_models', 'subagent-model-routes-read']] as const
+    for (const [name, op] of ROWS) {
+      const def = wiring.definitions.find((d) => d.name === name)
+      if (def === undefined) throw new Error(`no def ${name}`)
+      await def.execute(name === 'list_subagent_models' ? {} : { ...tricky }, { agent: AGENT_REF, callId: `call-joint-${name}`, signal: CONTROLLER.signal })
+      const manifest = PA_CALLS[PA_CALLS.length - 1]?.family?.targetManifest as Record<string, unknown>
+      expect(manifest.operation, name).toBe(op)
+      expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, manifest), name).toBeUndefined()
+      byOp.set(op, manifest)
+    }
+    expect(PA_CALLS).toHaveLength(5)
+    // REVISION/REGISTRATION RIDE THE SAME ROUND (joint law): the family
+    // block of every mint and every registration entry names the ONE
+    // adapter-revision constant of this module generation — no second
+    // source to drift; the anti-translation weight is the SHAPE (the
+    // fingerprint moves with every added field), and the revision names the
+    // round that shape was minted in.
+    const regs = wiring.familyRegistrations()
+    expect(regs).toHaveLength(5)
+    for (const call of PA_CALLS) expect(call.family?.adapterRevision).toBe(regs[0]?.entry.adapterRevision)
+    const m0 = byOp.get('subagent-spawn') as Record<string, unknown>
+    // action is BOUND to the row\u2019s own original operation: a crossed
+    // binding (or any foreign string) denies through the same code.
+    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, action: 'subagent-fork-spawn' }))).toContain('action')
+    // FULL VALUES, not digests: argsCanonical parses back to the WHOLE call
+    // (prompt whole, unknown-but-legal keys whole, null and \'\' the distinct
+    // values they are); re-canonicalizing the parse reproduces the string
+    // byte-for-byte (canonical key order); no digest text stands in.
+    const carried = JSON.parse(String(m0.argsCanonical)) as Record<string, unknown>
+    expect(carried).toStrictEqual(tricky)
+    expect(A5_B_SUBAGENT_SPAWN_CANONICAL_JSON(carried)).toBe(String(m0.argsCanonical))
+    expect(String(m0.argsCanonical)).not.toContain('sha256:') // the VALUES ride, not their identities
+    expect(JSON.parse(String(m0.namedGapsCanonical))).toStrictEqual(A5_B_SUBAGENT_SPAWN_NAMED_GAPS)
+    // the list row\u2019s args canonical is the WHOLE call (an empty object is
+    // an empty call, not an omission) and it carries the same full gaps.
+    expect(byOp.get('subagent-model-routes-read')?.argsCanonical).toBe('{}')
+    // the string family and the missing-key law, same code, named refusals:
+    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, argsCanonical: 42 }))).toContain('argsCanonical')
+    const { namedGapsCanonical: _dropGaps, ...noGaps } = m0
+    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, noGaps))).toContain('namedGapsCanonical')
+    // the SIGNED leaf survives the joint shape untouched (root 21:01): null
+    // passes, any string passes VERBATIM (the retired sentinel is just one
+    // legal string among all), \'\' is the third distinct outcome, 42 and a
+    // missing key deny, named \u2014 missing \u2260 null \u2260 \'\'.
+    expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: null })).toBeUndefined()
+    expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: 'service-mints-child-identity (claim not carried at this seam)' })).toBeUndefined()
+    expect(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: '' })).toBeUndefined()
+    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, { ...m0, childClaim: 42 }))).toContain('childClaim')
+    const { childClaim: _dropClaim, ...noClaim } = m0
+    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, noClaim))).toContain('childClaim')
+    // NO SILENT TRANSLATION, BOTH DIRECTIONS, through the REAL current table:
+    // the joint shape is refused BY NAME until the 9d968 table lands (the
+    // closed-key law is EXACT; a walk carrying facts the table has not
+    // ratified does not pass \u2014 it fails closed, coordinated, not guessed)...
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', m0))).toContain('not part of the B-SUBAGENT typed plan')
+    // ...and the OLD 10-field shape, which the CURRENT table still accepts,
+    // denies under the joint law \u2014 an approval minted on the old bytes can
+    // never answer a call carrying the new ones (and every added field
+    // moves the operationFingerprint, so the durable rows cannot translate
+    // either).
+    const { argsCanonical: _dropArgs, ...oldShape } = noGaps
+    expect(validatePaFamilyTarget('B-SUBAGENT', oldShape)).toBeUndefined() // old shape = what the CURRENT table accepts TODAY
+    expect(String(validatePaFamilyTargetAgainstRule('B-SUBAGENT', jointRule, oldShape))).toContain('argsCanonical')
+    // list_models honesty (carried over, unchanged): it addresses NO child \u2014
+    // its per-row truth rides childAdjudication, no manifest fact spells
+    // "service-mints":
     const lmPlan = wiring.rowOf('list_subagent_models')?.classify({})
     if (lmPlan?.ok !== true || lmPlan.plan === undefined) throw new Error('list row did not classify')
     expect(lmPlan.plan.target.child.claim).toBeNull()
     expect(lmPlan.plan.target.child.adjudication).toContain('no child addressed')
     expect(JSON.stringify(lmPlan.plan.target)).not.toContain('service-mints')
-    expect(PA_CALLS).toHaveLength(1) // exactly ONE real walk rode this execute
   })
   it('registrations key on the fed def#N identities, never the captured ones; an absent feed throws', () => {
     const wiring = wire()
@@ -394,7 +497,14 @@ describe('a5m2-subagent-spawn-wiring (f) import closure', () => {
     const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'plugin', 'live', 'governed-families', 'subagent-spawn-wiring.mjs'), 'utf8')
     const code = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, '')
     const statics = [...code.matchAll(/import\s+[\s\S]*?from\s+'([^']+)'/g)].map((m) => String(m[1]))
-    expect(statics).toEqual(['./subagent-spawn-adapters.mjs'])
+    // TWO statics, both published algebras: the lane's own adapter module
+    // and the DOMAIN closed effect vocabulary (parseRequestedEffectSet —
+    // the same import the G6 wiring obeys). No other project surface, no
+    // dynamic import, no require.
+    expect(statics).toEqual([
+      './subagent-spawn-adapters.mjs',
+      '../../../../../domain/tool-governance/src/index.js',
+    ])
     expect(code).not.toContain('import(')
     expect(code).not.toMatch(/require\(/)
   })

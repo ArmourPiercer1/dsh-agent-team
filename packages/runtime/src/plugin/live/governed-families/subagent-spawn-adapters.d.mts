@@ -164,4 +164,9 @@ export declare const A5_B_SUBAGENT_SPAWN_EFFECT_LABELS: Readonly<Record<string, 
 export declare const A5_B_SUBAGENT_SPAWN_CODES: Readonly<Record<string, string>>
 export declare const A5_B_SUBAGENT_SPAWN_NAMED_GAPS: Readonly<Record<string, string>>
 
+/** The lane's ONE canonicalizer (joint encoding, root 21:20): full canonical
+ *  JSON — the algebra behind parametersFingerprint and the manifest's
+ *  argsCanonical/namedGapsCanonical. Pure, deterministic, export-additive. */
+export declare const A5_B_SUBAGENT_SPAWN_CANONICAL_JSON: (value: unknown) => string
+
 export declare function createSubagentSpawnAdapterAssembly(input?: BSubagentSpawnAssemblyInput): BSubagentSpawnAssemblyResult

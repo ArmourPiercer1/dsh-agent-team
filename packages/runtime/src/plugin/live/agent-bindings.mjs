@@ -3264,10 +3264,14 @@ export function createAgentBindings(deps) {
             // throw from the walk is the CALL's throw (the adapter catches
             // nothing).
             paAdmit: (request) => {
-              if (typeof a5PlaneValue?.paAdmit !== 'function') {
+              // THE REAL SEAT rides the mount as `spawnPaSeat` (the plane's
+              // out-hand for owner-built wiring — production-leg law, found
+              // by the spawn plane-mount spec: the value carries NO top-level
+              // paAdmit; the other lanes get the seat IN at assembly).
+              if (typeof a5PlaneValue?.spawnPaSeat !== 'function') {
                 throw new Error('the plane PA walk is not mounted on this assembly — the spawn rows have no admission path and enter nothing')
               }
-              return a5PlaneValue.paAdmit(request)
+              return a5PlaneValue.spawnPaSeat(request)
             },
             observe: (row) => observations.push(`a5m2-spawn: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
           })

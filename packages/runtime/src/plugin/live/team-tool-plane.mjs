@@ -4482,6 +4482,15 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
       placementNames: Object.freeze(allDefs.map((d) => d.name)),
+      // THE REAL SEAT for the owner-built SPAWN wiring (production-leg law,
+      // found by a5m2-subagent-spawn-plane-mount-c1): the other lanes get
+      // paAdmit IN at assembly (the plane builds their bridge); the spawn
+      // wiring is built by its owner BEFORE this mount exists, so this mount
+      // hands the seat OUT — paAdmit ITSELF, the callable + open/edge/
+      // closePlan, the one funnel every governed call passes. Nothing else
+      // poses as the seat. Zero flip: the key rides ONLY a spawn-carrying
+      // mount; every other world stays byte-identical.
+      ...(spawnInject === null ? {} : { spawnPaSeat: paAdmit }),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the

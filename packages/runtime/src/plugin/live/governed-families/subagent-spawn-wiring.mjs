@@ -55,10 +55,17 @@
  */
 import {
   A5_B_SUBAGENT_SPAWN_ADAPTER_REVISION,
+  A5_B_SUBAGENT_SPAWN_CANONICAL_JSON,
   A5_B_SUBAGENT_SPAWN_FAMILY_ID,
   A5_B_SUBAGENT_SPAWN_TOOL_NAMES,
   createSubagentSpawnAdapterAssembly,
 } from './subagent-spawn-adapters.mjs'
+// THE CLOSED EFFECT VOCABULARY is the DOMAIN's published algebra (house
+// precedent g6-session-query-wiring.mjs:116): the parse mint carries the set
+// with its canonical fingerprint — the plane/kernel read that digest
+// verbatim (admission-kernel.ts:215); a hand-spelled envelope without it
+// dies deeper in the walk (measured by the spawn plane-mount spec).
+import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 
 export const A5_B_SPAWN_WIRING_REVISION = 1
 
@@ -70,6 +77,8 @@ export const A5_B_SPAWN_WIRING_CODES = Object.freeze({
   ADMISSION_ABSENT: 'P_B_SPAWN_WIRE_ADMISSION_ABSENT',
   CALL_IDENTITY_ABSENT: 'P_B_SPAWN_WIRE_CALL_IDENTITY_ABSENT',
   CALL_CANCELLED: 'P_B_SPAWN_WIRE_CALL_CANCELLED',
+  PLACEMENT_ABSENT: 'P_B_SPAWN_WIRE_PLACEMENT_ABSENT',
+  EFFECTS_UNPARSABLE: 'P_B_SPAWN_WIRE_EFFECTS_UNPARSABLE',
   ADMIT_PROOF_ABSENT: 'P_B_SPAWN_WIRE_ADMIT_PROOF_ABSENT',
   PA_ANSWER_UNRECOGNIZED: 'P_B_SPAWN_WIRE_PA_ANSWER_UNRECOGNIZED',
 })
@@ -116,8 +125,6 @@ export function createSubagentSpawnWiring(input = {}) {
   if (!isRecord(input.captured)) {
     return refuseAssembly(A5_B_SPAWN_WIRING_CODES.INPUT_INVALID, 'captured {name -> {native, definitionIdentity}} is REQUIRED — the family review P-adds carry the captured definition identity of THIS row')
   }
-  const capturedIdentities = new Map(Object.entries(input.captured).map(([name, capture]) => [name, isRecord(capture) ? capture.definitionIdentity : undefined]))
-
   // THE ADMIT SEAT → THE PLANE'S PA WALK (the module's ONE added function).
   const admit = async ({ name, familyId, classified, exec }) => {
     const plan = isRecord(classified) && classified.ok === true && isRecord(classified.plan) ? classified.plan : null
@@ -132,9 +139,32 @@ export function createSubagentSpawnWiring(input = {}) {
     if (callId === null) {
       return deepFreeze({ ok: false, code: A5_B_SPAWN_WIRING_CODES.CALL_IDENTITY_ABSENT, detail: `'${String(name)}' carries no public exec.callId — the PA walk keys the durable row, the grant and the consumed witness on the public call identity; this wiring fabricates none` })
     }
-    // The CLOSED effect envelope vocabulary (todo.mjs :233 verbatim shape).
-    const requestedEffects = deepFreeze({ effects: [{ kind: 'tool-invoke', toolName: String(name), resource: null }] })
-    const definitionIdentity = capturedIdentities.get(name)
+    // The CLOSED effect envelope is PARSED, not hand-carried (domain
+    // algebra; G6 precedent): the parse output is the canonical
+    // { effects, fingerprint } record the whole walk keys on. A vocabulary
+    // the frozen parser refuses is a row defect: fail closed, typed, zero
+    // native entry.
+    const parsedEffects = parseRequestedEffectSet([{ kind: 'tool-invoke', toolName: String(name), resource: null }])
+    if (parsedEffects.ok !== true) {
+      return deepFreeze({ ok: false, code: A5_B_SPAWN_WIRING_CODES.EFFECTS_UNPARSABLE, detail: `'${String(name)}': the row's effect set is not the frozen closed vocabulary (${String(parsedEffects.problems?.[0]?.detail ?? 'parse refused')})` })
+    }
+    const requestedEffects = parsedEffects.value
+    // THE IDENTITY THE CALL IS EXECUTING UNDER (production-leg law, house
+    // precedent a5m2-g6-plane-mount (c): family keys are the PLACEMENT
+    // identities through the plane feed, never capture-side identities).
+    // The PA gate looks the registration up by the LIVE binding identity of
+    // the call (pa-control-bridge :427) — this mount's registration is keyed
+    // on the same fresh feed answer (familyRegistrations), so the P-add
+    // names the identity the walk will actually resolve. An absent/moved
+    // feed at CALL time means this row's placement no longer stands: fail
+    // closed before PA is asked — zero walk, zero native entry. (The
+    // capture-side identity stays exactly where it belongs: the adapter's
+    // own verified-handle law, not a family claim.)
+    const fed = typeof input.placementFeed === 'function' ? input.placementFeed(String(name)) : undefined
+    const definitionIdentity = isRecord(fed) && typeof fed.definitionIdentity === 'string' && fed.definitionIdentity.length > 0 ? fed.definitionIdentity : null
+    if (definitionIdentity === null) {
+      return deepFreeze({ ok: false, code: A5_B_SPAWN_WIRING_CODES.PLACEMENT_ABSENT, detail: `'${String(name)}' is dispatching but the plane placement feed answers NO current placement for it — this row's placement moved or vanished; the PA walk is not opened and the captured body is never entered` })
+    }
     // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; encoding fixed by
     // root 21:01): the family's PA_FAMILY_TARGET_RULES['B-SUBAGENT'] entry
     // (control/types.ts) pairs field-for-field with the adapter's typed plan
@@ -162,6 +192,16 @@ export function createSubagentSpawnWiring(input = {}) {
       effect: String(target.effect),
       model: String(target.model),
       depth: String(target.depth),
+      // THE JOINT LIMITED ENCODING (root 21:20, spawn side): the plan's FULL
+      // canonical args and the family's FULL named-gaps record ride the
+      // manifest as canonical JSON — NOT digests, NOT summaries. message/
+      // prompt text whole, unknown-but-legal args keys whole, key order
+      // canonical, null and '' the distinct values they are. The same
+      // canonicalizer minted parametersFingerprint — one algebra in this
+      // lane; the digests stay what they always were (identities), and the
+      // VALUES now travel alongside instead of behind them.
+      argsCanonical: A5_B_SUBAGENT_SPAWN_CANONICAL_JSON(plan.args),
+      namedGapsCanonical: A5_B_SUBAGENT_SPAWN_CANONICAL_JSON(plan.namedGaps),
     })
     const family = deepFreeze({
       familyId: typeof familyId === 'string' && familyId.length > 0 ? familyId : A5_B_SUBAGENT_SPAWN_FAMILY_ID,

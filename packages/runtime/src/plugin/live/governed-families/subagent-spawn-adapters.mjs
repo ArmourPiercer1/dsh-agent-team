@@ -178,6 +178,14 @@ const canonicalJson = (value) => JSON.stringify(value, (_k, v) => (
     ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
     : v
 ))
+/** THE JOINT ENCODING'S CANONICALIZER (root 21:20, spawn-side mint): the
+ *  PA-projected targetManifest carries argsCanonical/namedGapsCanonical as
+ *  FULL canonical JSON — message/prompt text whole, unknown-but-legal args
+ *  keys whole, key order canonical, null and '' distinct — produced by the
+ *  SAME algebra that mints `parametersFingerprint` below: ONE canonicalizer
+ *  in this lane, never a second one, never a digest in place of the values.
+ *  Additive export only — no adapter behavior changes. */
+export const A5_B_SUBAGENT_SPAWN_CANONICAL_JSON = canonicalJson
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex')
 const refuse = (code, detail) => deepFreeze({ ok: false, code, detail })
 const jsonClone = (value) => JSON.parse(JSON.stringify(value))
