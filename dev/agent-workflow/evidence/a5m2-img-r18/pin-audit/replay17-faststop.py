@@ -19,8 +19,19 @@ kit = io.open(KIT, encoding='utf-8').read()
 
 i = kit.index('function toolResultText(')
 tool_result_text = kit[i:kit.index('\n}', i) + 2]
-helpers = kit[kit.index('      const wireImageCallIds = () => {'):kit.index('      let terminalImgErr = null')]
-loop = kit[kit.index('      let terminalImgErr = null'):kit.index('      if (terminalImgErr !== null) c3TerminalStop')]
+# OVERLAY-17b moved the helpers into the C3 common scope (4-space indent); find them by content so
+# this harness keeps working regardless of indentation depth.
+h0 = kit.index('const wireImageCallIds = () => {')
+h0 = kit.rindex('\n', 0, h0) + 1
+# OVERLAY-17b put a `if (FIXTURE === 'write') {` between the helpers and the image branch: cut the
+# helpers at that statement, and take the loop from its own declaration.
+w0 = kit.index("if (FIXTURE === 'write') {", h0)
+w0 = kit.rindex('\n', 0, w0) + 1
+t0 = kit.index('let terminalImgErr = null')
+t0 = kit.rindex('\n', 0, t0) + 1
+assert h0 < w0 < t0
+helpers = kit[h0:w0]
+loop = kit[t0:kit.index('if (terminalImgErr !== null) c3TerminalStop')]
 assert 'pairedErrorThisCall' in helpers and 'sameCallTerminalError' in helpers
 assert 'const probe = sameCallTerminalError()' in loop
 assert loop.index('sameCallTerminalError()') < loop.index('storeCensus()'), 'error must be probed BEFORE the store increment'

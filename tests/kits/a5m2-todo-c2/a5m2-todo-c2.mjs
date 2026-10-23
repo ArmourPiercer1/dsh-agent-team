@@ -2018,6 +2018,91 @@ async function main() {
     // todo/write rows — that row cannot exist in image mode, and doing so was a guaranteed
     // 120 s stall on every image run.)
     const appendDeadline = Date.now() + 120_000
+    // OVERLAY-17b (root 18:52 narrow scope BLOCK): these helpers were declared INSIDE the first
+    // image branch, which closes before the model-visible block below — the second block's references
+    // would have thrown ReferenceError on the success path. They now live in the C3 COMMON scope, the
+    // only place both image blocks can see them, with behaviour unchanged.
+    // OVERLAY-17 (root 8595 card, replacing the OVERLAY-16 predicate shape): a tool/result PAIRED
+    // TO THIS CALL carrying is_error === true IS the terminal failure. No 'Error:' prefix and no
+    // P_ code is required — the r18 wire happened to carry "Error: refused-image P_…", but the
+    // authoritative field is the session message's isError (payload-validation requires it to be a
+    // boolean) mapped to the wire's is_error by the provider serializer, and a refusal rendered as
+    // plain JSON would otherwise be missed. A P_ code, when present, is recorded as a DIAGNOSTIC
+    // only. Binding claim, stated narrowly: the reader matches the tool name + file_path inside the
+    // single-call window and then requires the is_error block's tool_use_id to be the ONE
+    // read_image(IMG_REL) id seen on the wire so far; that is a unique-id match on the model wire,
+    // NOT a row-level binding to the durable requestId (the row carries no tool-call id).
+    // ERROR BEATS EFFECT (root card): the terminal check runs BEFORE the store-increment check in
+    // this loop, and it is re-checked inside the model-visible wait below — an attachment object
+    // appearing next to a failed call must not buy another 180 s of blind waiting.
+    const wireImageCallIds = () => {
+      const ids = new Set()
+      for (const r of mockRef?.requests ?? []) {
+        for (const m of (r?.body?.messages ?? [])) {
+          if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
+          for (const b of m.content) {
+            if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) ids.add(b.id)
+          }
+        }
+      }
+      return ids
+    }
+    // Structural pair, C3-local (the shared denialPairSeen used by C4/C5 is untouched): the same
+    // call's tool result, accepted on is_error === true alone, whatever the text looks like.
+    const pairedErrorThisCall = (msgs) => {
+      const uses = new Set()
+      for (const m of msgs ?? []) {
+        if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
+        for (const b of m.content) {
+          if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) uses.add(b.id)
+        }
+      }
+      if (uses.size === 0) return null
+      for (const m of msgs ?? []) {
+        if (m?.role === 'tool' && uses.has(m.tool_call_id ?? '') && m.is_error === true) {
+          return { callId: m.tool_call_id, text: toolResultText(m.content ?? '') }
+        }
+        if (!Array.isArray(m?.content)) continue
+        for (const b of m.content) {
+          if (b?.type === 'tool_result' && uses.has(b.tool_use_id ?? '') && b.is_error === true) {
+            return { callId: b.tool_use_id, text: toolResultText(b.content ?? '') }
+          }
+        }
+      }
+      return null
+    }
+    const sameCallTerminalError = () => {
+      const ids = [...wireImageCallIds()]
+      if (ids.length !== 1) return { unique: false, observed: ids, hit: null }
+      for (const r of mockRef?.requests ?? []) {
+        const hit = pairedErrorThisCall(r?.body?.messages ?? [])
+        if (hit !== null && hit.callId === ids[0]) return { unique: true, observed: ids, hit }
+      }
+      return { unique: true, observed: ids, hit: null }
+    }
+    // The one stop path for a same-call terminal result (raw preserved; C3 failed; nothing
+    // downstream runs; teardown still goes through the normal finally).
+    const c3TerminalStop = (hit, binding, where) => {
+      const codeMatch = /\bP_[A-Z0-9_]{4,}\b/.exec(hit.text)
+      writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
+        at: new Date().toISOString(),
+        requestId: row1.payload.requestId,
+        reason: `OVERLAY-17: the same call's tool result is terminal (is_error=true, paired by tool_use_id; ${where}) -> criterion ended immediately; no further effects or waits`,
+        sameCallPairing: {
+          pairedCallId: hit.callId,
+          uniqueImageCallIdOnWireSoFar: true,
+          observedImageCallIds: binding?.observed ?? [hit.callId],
+          scope: 'model-wire pair on tool name + file_path inside the single-call window; NOT a row-level binding to requestId',
+          reader: "mockRef.requests[*].body.messages, accepted on is_error === true alone (no prefix/code requirement); C4/C5's shared denialPairSeen untouched",
+        },
+        terminalToolResult: { callId: hit.callId, codeIfAny: codeMatch ? codeMatch[0] : null, rawText: hit.text },
+        storeCensus: storeCensus(), baseline: storeBaseline,
+      }, null, 2))
+      check('C3', "the consumed allow reached the model as an image (no is_error tool result paired to this call)", false,
+        `callId=${hit.callId} code=${codeMatch ? codeMatch[0] : 'none (not required)'} raw=${jstr(hit.text, 700)}`)
+      log(`C3 FIRST-SUBSTANTIVE-FAILURE STOP: same-call terminal tool result is_error=true (callId=${hit.callId}${codeMatch ? ' code=' + codeMatch[0] : ''}; ${where}); store/model-visible waits skipped`)
+      finishCriterion('C3')
+    }
     if (FIXTURE === 'write') {
       for (;;) {
         if (wfState().sha === WF_TGT_SHA) break
@@ -2025,87 +2110,6 @@ async function main() {
         await new Promise((r) => setTimeout(r, 1000))
       }
     } else if (FIXTURE === 'image') {
-      // OVERLAY-17 (root 8595 card, replacing the OVERLAY-16 predicate shape): a tool/result PAIRED
-      // TO THIS CALL carrying is_error === true IS the terminal failure. No 'Error:' prefix and no
-      // P_ code is required — the r18 wire happened to carry "Error: refused-image P_…", but the
-      // authoritative field is the session message's isError (payload-validation requires it to be a
-      // boolean) mapped to the wire's is_error by the provider serializer, and a refusal rendered as
-      // plain JSON would otherwise be missed. A P_ code, when present, is recorded as a DIAGNOSTIC
-      // only. Binding claim, stated narrowly: the reader matches the tool name + file_path inside the
-      // single-call window and then requires the is_error block's tool_use_id to be the ONE
-      // read_image(IMG_REL) id seen on the wire so far; that is a unique-id match on the model wire,
-      // NOT a row-level binding to the durable requestId (the row carries no tool-call id).
-      // ERROR BEATS EFFECT (root card): the terminal check runs BEFORE the store-increment check in
-      // this loop, and it is re-checked inside the model-visible wait below — an attachment object
-      // appearing next to a failed call must not buy another 180 s of blind waiting.
-      const wireImageCallIds = () => {
-        const ids = new Set()
-        for (const r of mockRef?.requests ?? []) {
-          for (const m of (r?.body?.messages ?? [])) {
-            if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
-            for (const b of m.content) {
-              if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) ids.add(b.id)
-            }
-          }
-        }
-        return ids
-      }
-      // Structural pair, C3-local (the shared denialPairSeen used by C4/C5 is untouched): the same
-      // call's tool result, accepted on is_error === true alone, whatever the text looks like.
-      const pairedErrorThisCall = (msgs) => {
-        const uses = new Set()
-        for (const m of msgs ?? []) {
-          if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
-          for (const b of m.content) {
-            if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) uses.add(b.id)
-          }
-        }
-        if (uses.size === 0) return null
-        for (const m of msgs ?? []) {
-          if (m?.role === 'tool' && uses.has(m.tool_call_id ?? '') && m.is_error === true) {
-            return { callId: m.tool_call_id, text: toolResultText(m.content ?? '') }
-          }
-          if (!Array.isArray(m?.content)) continue
-          for (const b of m.content) {
-            if (b?.type === 'tool_result' && uses.has(b.tool_use_id ?? '') && b.is_error === true) {
-              return { callId: b.tool_use_id, text: toolResultText(b.content ?? '') }
-            }
-          }
-        }
-        return null
-      }
-      const sameCallTerminalError = () => {
-        const ids = [...wireImageCallIds()]
-        if (ids.length !== 1) return { unique: false, observed: ids, hit: null }
-        for (const r of mockRef?.requests ?? []) {
-          const hit = pairedErrorThisCall(r?.body?.messages ?? [])
-          if (hit !== null && hit.callId === ids[0]) return { unique: true, observed: ids, hit }
-        }
-        return { unique: true, observed: ids, hit: null }
-      }
-      // The one stop path for a same-call terminal result (raw preserved; C3 failed; nothing
-      // downstream runs; teardown still goes through the normal finally).
-      const c3TerminalStop = (hit, binding, where) => {
-        const codeMatch = /\bP_[A-Z0-9_]{4,}\b/.exec(hit.text)
-        writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
-          at: new Date().toISOString(),
-          requestId: row1.payload.requestId,
-          reason: `OVERLAY-17: the same call's tool result is terminal (is_error=true, paired by tool_use_id; ${where}) -> criterion ended immediately; no further effects or waits`,
-          sameCallPairing: {
-            pairedCallId: hit.callId,
-            uniqueImageCallIdOnWireSoFar: true,
-            observedImageCallIds: binding?.observed ?? [hit.callId],
-            scope: 'model-wire pair on tool name + file_path inside the single-call window; NOT a row-level binding to requestId',
-            reader: "mockRef.requests[*].body.messages, accepted on is_error === true alone (no prefix/code requirement); C4/C5's shared denialPairSeen untouched",
-          },
-          terminalToolResult: { callId: hit.callId, codeIfAny: codeMatch ? codeMatch[0] : null, rawText: hit.text },
-          storeCensus: storeCensus(), baseline: storeBaseline,
-        }, null, 2))
-        check('C3', "the consumed allow reached the model as an image (no is_error tool result paired to this call)", false,
-          `callId=${hit.callId} code=${codeMatch ? codeMatch[0] : 'none (not required)'} raw=${jstr(hit.text, 700)}`)
-        log(`C3 FIRST-SUBSTANTIVE-FAILURE STOP: same-call terminal tool result is_error=true (callId=${hit.callId}${codeMatch ? ' code=' + codeMatch[0] : ''}; ${where}); store/model-visible waits skipped`)
-        finishCriterion('C3')
-      }
       let terminalImgErr = null
       let terminalBinding = null
       for (;;) {
@@ -2152,10 +2156,11 @@ async function main() {
       let terminalImgErr2 = null
       let terminalBinding2 = null
       await waitForMock(mock, (r) => {
-        const pair = imageVisiblePair(r.body?.messages ?? [])
-        if (pair !== null) { imgPair = pair; imgReq = r; return true }
+        // error BEFORE success: an envelope that is present must not mask this call's terminal result.
         const probe = sameCallTerminalError()
         if (probe.hit !== null) { terminalImgErr2 = probe.hit; terminalBinding2 = probe; return true }
+        const pair = imageVisiblePair(r.body?.messages ?? [])
+        if (pair !== null) { imgPair = pair; imgReq = r; return true }
         return false
       }, 180_000, 'C3 model-visible image result (native two-block envelope with the ORIGINAL-frame clause), or the terminal is_error result paired to this call')
       if (terminalImgErr2 !== null) c3TerminalStop(terminalImgErr2, terminalBinding2, 'model-visible wait')
