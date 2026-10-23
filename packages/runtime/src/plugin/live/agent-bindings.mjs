@@ -369,6 +369,13 @@ import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWirin
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
+// A5M2-B-TEAM-WIRE (this lane's additive import row under the family rows):
+// the B-TEAM member-operation family CLAIM, computed by the wiring bridge's
+// OWN capture predicate over THIS member's lane set. The bridge itself is
+// assembled by the plane (it owns the real `paAdmit` seat); this assembly
+// owns the PLACEMENT and the post-publish family registration at the shared
+// fill point. No adapter law is restated here.
+import { claimTeamOpsFamily } from './governed-families/team-wiring.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
 // A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
@@ -2419,6 +2426,10 @@ export function createAgentBindings(deps) {
       // armed next to the plane assembly, the registration lands AFTER
       // publish at the shared fill point below (both must see one binding).
       let a5G6Inject = null
+      // A5M2-B-TEAM-WIRE (this lane's declaration, hoisted beside the G6 one
+      // for the same reason: the arm site and the post-publish fill point sit
+      // in different nested blocks of this setup body).
+      let a5TeamOpsInject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2616,6 +2627,14 @@ export function createAgentBindings(deps) {
       // Coverage Gate (the `teamTools` capability + the Team runtime are
       // the authority owner). Empty on every legacy / alpha.1 setup.
       let selectedTeamToolNames = []
+      // A5M2-B-TEAM-WIRE (this lane's declarations, hoisted beside
+      // selectedTeamToolNames for the SAME reason: the claim is computed in
+      // the registration block below, while the arm, the placement and the
+      // post-publish fill point live further out in this setup body).
+      let a5TeamOpsCfg = undefined
+      let a5TeamOpsClaim = Object.freeze({ names: Object.freeze([]), census: Object.freeze([]) })
+      const a5TeamOpsNativeByName = new Map()
+      const a5TeamOpsAllowedNames = new Set()
       if (teamTools) {
         // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
         // registers only the catalog tools the template's teamTools entry
@@ -2625,8 +2644,39 @@ export function createAgentBindings(deps) {
         const catalog = Array.isArray(teamTools.tools) ? teamTools.tools : []
         const selected =
           capabilities.mode === 'selective' ? selectTeamTools(catalog, capabilities.teamTools) : [...catalog]
-        selectedTeamToolNames = selected.map((def) => def.name)
-        for (const def of selected) {
+        // ── A5M2-B-TEAM-WIRE (this lane's block at the site the adapter
+        // itself designates for B-TEAM registration) ───────────────────────
+        // The owner publishes the member-operation evidence on
+        // `config.teamToolPlane.teamMemberOps`. ABSENT (every existing config)
+        // = a5TeamOpsClaim.names is empty = the selection and the
+        // registration below are byte-for-byte what they were before this
+        // block: zero flip, no new behaviour. WHEN armed, exactly the names
+        // the wiring bridge can actually capture (the bridge's own
+        // registration-face + capture-identity predicate over THIS member's
+        // selected lane set) are claimed: the raw catalog registration yields
+        // for them here, and the GOVERNED row takes their placement after the
+        // plane mounts (below, before the Guard's own-tool bind). One name,
+        // one placement — the plane mounts into this SAME agent tool layer
+        // and the host's NamedEntries.insert refuses a second definition
+        // under one name in one layer (packages/core/scope/src/store.ts:43,
+        // measured), so a double registration is not an option at any point.
+        a5TeamOpsCfg = config?.teamToolPlane?.teamMemberOps
+        if (a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null) {
+          for (const def of selected) a5TeamOpsNativeByName.set(def.name, def)
+          for (const def of selected) a5TeamOpsAllowedNames.add(def.name)
+          a5TeamOpsClaim = claimTeamOpsFamily({
+            catalog: selected,
+            allowedNames: [...a5TeamOpsAllowedNames],
+            definitionIdentityOf,
+          })
+          observations.push(`a5m2-b-team: family claim for ${sessionId} = ${a5TeamOpsClaim.names.length === 0 ? 'DECLARED-INACTIVE (census below)' : a5TeamOpsClaim.names.join(',')} (census=${a5TeamOpsClaim.census.map((row) => `${row.name}:${row.reason}`).join(',') || 'none'})`)
+        }
+        const a5TeamOpsClaimedNames = new Set(a5TeamOpsClaim.names)
+        const a5TeamOpsRawSelected = a5TeamOpsClaimedNames.size === 0
+          ? selected
+          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name))
+        selectedTeamToolNames = a5TeamOpsRawSelected.map((def) => def.name)
+        for (const def of a5TeamOpsRawSelected) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
@@ -3304,6 +3354,62 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-g6: inject armed for ${sessionId} (evidence keys=${Object.keys(g6Cfg).sort().join(',')})`)
         }
+        // ── A5M2-B-TEAM-WIRE (this lane's block): the B-TEAM member-operation
+        // injection, armed from the SAME owner evidence the claim above read
+        // (`config.teamToolPlane.teamMemberOps`). The plane owns the ADMISSION
+        // side — its real `paAdmit` seat occupies the adapter's REQUIRED admit
+        // seam (a factory plus `admit({ok:true})` is factory assembly, not
+        // wiring) — and this assembly owns the capture seams below and the
+        // PLACEMENT after the mount. The capture obeys the member-scoping law
+        // the todo/write/image captures obey: the native faces come from
+        // THIS member's selected lane set (the capability selector already
+        // applied the blueprint's teamTools allowlist), and the live re-read
+        // answers the CURRENT lane build, so the adapter's per-dispatch L7
+        // check is a live reading — never a bind-time constant compared with
+        // itself. ABSENT evidence = a5TeamOpsInject stays null = the plane
+        // call below is byte-identical to the pre-B-TEAM assembly.
+        a5TeamOpsInject = null
+        if (a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null && a5TeamOpsClaim.names.length > 0) {
+          const teamOpsBad = typeof a5TeamOpsCfg.providerId !== 'string' || a5TeamOpsCfg.providerId.length === 0
+            ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against)'
+            : undefined
+          if (teamOpsBad !== undefined) {
+            observations.push(`a5m2-b-team: arm-REFUSED for ${sessionId} (${teamOpsBad.slice(0, 60)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': ${teamOpsBad}`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          a5TeamOpsInject = Object.freeze({
+            providerId: a5TeamOpsCfg.providerId,
+            // ONE-CAPTURE seam: this member's own selected lane set.
+            readNative: (name) => a5TeamOpsNativeByName.get(name),
+            // FRESH per-dispatch read of the LIVE lane build, still scoped to
+            // what THIS member is allowed: a rebuilt set answers a different
+            // object and the adapter refuses DEFINITION_DRIFT with zero
+            // delegate entry.
+            liveNative: (name) => {
+              if (!a5TeamOpsAllowedNames.has(name)) return undefined
+              const live = Array.isArray(teamToolsRef.current?.tools) ? teamToolsRef.current.tools : []
+              return live.find((def) => def?.name === name)
+            },
+            // THE DELEGATE PORT'S SOURCE: the same live lane set — capture
+            // and port are two reads of ONE createTeamTools build (adapter
+            // L3); a rebuilt set behind a stale capture is a split mount.
+            teamSet: () => (Array.isArray(teamToolsRef.current?.tools) ? teamToolsRef.current.tools : []),
+            definitionIdentityOf,
+            // THE RUNTIME PLACEMENT FEED: the identity of whatever the scoped
+            // layer answers under this name, read FRESH at mount moment —
+            // never a build-time snapshot, never a hand-spelled key.
+            placementFeed: (name) => {
+              const placed = agentCtx.tools.get(name, runtimeAgent)
+              const identity = definitionIdentityOf(placed)
+              return identity === null || identity === undefined
+                ? undefined
+                : Object.freeze({ definitionIdentity: identity, realmId: a5PlaneRealmId })
+            },
+          })
+          observations.push(`a5m2-b-team: inject armed for ${sessionId} (claim=${a5TeamOpsClaim.names.join(',')})`)
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3377,13 +3483,15 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
             ...(a5ScheduleInject === null ? {} : { schedule: a5ScheduleInject }),
+            // A5M2-B-TEAM-WIRE (this lane's row in the shared backends union).
+            ...(a5TeamOpsInject === null ? {} : { teamOps: a5TeamOpsInject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3406,6 +3514,40 @@ export function createAgentBindings(deps) {
         }
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
+        // ── A5M2-B-TEAM-WIRE (this lane's block): THE PLACEMENT of the
+        // governed member-operation rows, BEFORE the Guard's own-tool bind.
+        // The raw catalog registration of exactly these names yielded for
+        // them above, so each name keeps ONE placement in this layer; the
+        // Guard then binds the GOVERNED definition's placement identity
+        // (install.ts bindOwnTools re-reads the scoped layer and requires the
+        // seam's mint), and the plane's seat admits the call only through the
+        // real PA walk. A row the mount did not emit — or a claimed name the
+        // mount did not mount — is a mount defect: refuse fail-closed, never
+        // place a stand-in and never register a guess.
+        if (a5TeamOpsInject !== null) {
+          const teamPlaneFace = built.value.teamOps
+          if (teamPlaneFace === undefined || teamPlaneFace === null) {
+            observations.push(`a5m2-b-team: placement-REFUSED for ${sessionId} (the plane surfaced no member-operation face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': the plane accepted the injection but surfaced no wiring face — nothing is placed and nothing registers`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          const mountedNames = new Set(teamPlaneFace.placementNames)
+          for (const claimed of a5TeamOpsClaim.names) {
+            if (!mountedNames.has(claimed)) {
+              observations.push(`a5m2-b-team: placement-REFUSED for ${sessionId} (claimed '${claimed}' is not on the mounted face)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': the claim and the mounted face diverge on '${claimed}' — a raw tool would be left unregistered and a governed row unplaced`,
+              ), { code: 'alpha5-team-arm-mount-refused' })
+            }
+          }
+          for (const definition of teamPlaneFace.definitions) {
+            toolDisposers.push(agentCtx.tools.register(definition))
+            a5PlaneOwnNames.push(definition.name)
+            a5PlaneOwnedNames.push(definition.name)
+            observations.push(`a5m2-b-team: governed row PLACED ${String(definition.name)} for ${sessionId} (raw catalog registration yielded for this name)`)
+          }
+        }
         // GLUE-7: the Guard's feed resolves through this live handle (the
         // def#N identity mints later, in the seam's install flow — a
         // build-time snapshot was measured live refusing a legitimate
@@ -3937,6 +4079,39 @@ export function createAgentBindings(deps) {
             throw error
           }
           observations.push(`a5m2-schedule: family REGISTERED for ${sessionId} (placement=${String(scheduleRegistrations[0].definitionIdentity).slice(0, 32)}+... family=B-SCHEDULE; create/update NOT registered)`)
+        }
+        // ── A5M2-B-TEAM-WIRE (this lane's block): THE PAIRED FAMILY
+        // REGISTRATION at the settled single fill point (post publish, like
+        // every sibling family). The keys are the placement feed's RUNTIME
+        // identities of the definitions this assembly PLACED above, read
+        // fresh through the adapter's own `familyRegistrations()` face — a
+        // silent feed THROWS (P_B_TEAM_PLACEMENT_KEY_ABSENT) and a moved
+        // identity THROWS (P_B_TEAM_PLACEMENT_KEY_MOVED); neither is ever
+        // guessed and neither is ever skipped silently. DECLARED-INACTIVE
+        // census rows have no definition, no placement and no registration:
+        // the native stays untouched behind them.
+        if (a5TeamOpsInject !== null) {
+          const teamOpsPlane = a5PlaneValue?.teamOps
+          if (teamOpsPlane === undefined || teamOpsPlane === null) {
+            observations.push(`a5m2-b-team: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation family registration refused for '${sessionId}': the plane surfaced no wiring face at the fill point`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          let teamOpsRegistrations
+          try {
+            teamOpsRegistrations = teamOpsPlane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-b-team: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          for (const registration of teamOpsRegistrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-b-team: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} record=${String(registration.recordIndex)})`)
+          }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
