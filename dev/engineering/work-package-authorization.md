@@ -40,9 +40,14 @@ are outside this work package.
 
 ## What the ids carry (recorded here, not in the normative file)
 
-`ids.yaml` is normative and is not edited by this line. Its 19 entries stay
-`proposed-not-ratified` until the Contract Owner says otherwise — that value describes
-contractual force, not permission to do mechanical work on this line. Per the 22:20 ruling:
+`ids.yaml` is normative and is not edited by this line. Its entries break down as **18
+REQ/INV/AC ids carrying `normative_status: proposed-not-ratified`** (10 invariant, 4
+requirement, 4 acceptance) plus **1 Idea carrying `normative_status:
+idea-no-execution-authority`** — counted in the file itself (`grep -oE "kind: [a-z]+"` gives 10
+invariant + 4 requirement + 4 acceptance + 1 idea = 19), not taken from its header comment,
+which reads "every entry below is `proposed-not-ratified`" and does not match the Idea's own
+value at line 143. Those values are not edited here and say nothing about permission to do
+mechanical work on this line. Per the 22:20 ruling:
 
 - **INV-EB-0001 … INV-EB-0008** index the original Alpha.5 contracts. They restate, they do
   not create; the authoritative text is where `source_anchor` points.
@@ -51,6 +56,8 @@ contractual force, not permission to do mechanical work on this line. Per the 22
 - **INV-EB-0010** protects the boundary index only. It is not authority for any E4 cleanup.
 - **REQ-EB-0004** may *describe* a dynamic tool-source derivation. The E2 implementation is
   not authorized; a sentence about a mechanism is not a work order for it.
-- **IDEA-EB-0001** is still an idea. Nothing promoted it, and its file says so.
+- **IDEA-EB-0001** is `idea-no-execution-authority`: an idea, carrying no execution
+  authority. Nothing promoted it, and its own entry says so.
 
-No batch ratification was performed, and none is implied by this file existing.
+No batch ratification was performed, and none is implied by this file existing: the 18
+REQ/INV/AC ids stay `proposed-not-ratified` and the Idea keeps `idea-no-execution-authority`.

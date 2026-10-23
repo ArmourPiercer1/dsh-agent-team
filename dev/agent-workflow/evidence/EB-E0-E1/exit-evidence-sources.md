@@ -182,3 +182,65 @@ file that silently changes is worth less than one that admits it changed.
 
 Controls after this round: **93/0, RC=0** (`controls-run-18.log`; run-1..17 untouched).
 `docs:sync --check` RC=0 with the two new/edited current-state documents in scope.
+
+## 9. The acceptance levels, read from their source, and the segments I had wrong
+
+Section 7 item 4 and section 8 both kept a wrong model of C1/C2/C3 while correcting something
+else: they treated the levels as **places** ("where a claim was observed"). They are not
+places. Read from the established definition -- PR #355
+`8f84a7845944964ef17e167aebfde8e2d9617570`,
+`docs/plans/active/alpha5-convergence/PLAN-B-20261022.md` lines 157–159 -- C1/C2/C3 name
+**verification responsibility and coverage**:
+
+| level | what it verifies |
+| --- | --- |
+| **C1** | Adapter-local: one surface's interface, arguments, effects, native parity and its exact security negatives. A CI run may execute C1. |
+| **C2** | Real-Host integration: the surface wired into the running assembly, permission positives/negatives and lifecycle legs, at a fixed SHA. **A branch-local real-Host run is C2** -- it proves integration, not the candidate. |
+| **C3** | Final verification of a fixed candidate: one pinned HEAD, the full tool matrix, cross-tool interaction, replayable C1/C2, independent review. |
+
+The decisive tell that my gloss was wrong: a Host run appears under **both** C2 and C3, so
+"Host" cannot be what C3 means; and CI can sit at C1, so "second environment" cannot be what
+C2 means.
+
+Consequence for the pairing this file argued about in §8: `verified_ci` + `verified_tier: C1`
+is legal -- CI executed an Adapter-level check -- **provided real CI actually executed that
+C1 evidence**. Binding a locally produced log to a commit does not substitute. The tools
+verify that an artifact exists and that the commit resolves; they cannot verify who executed
+it. That is a stated limit of the check and the part a reviewer reads, not a licence, and it
+gets no new gate: inventing one was the error §8 already retracted.
+
+Exact segments corrected in this pass, quoted so the change is checkable rather than
+described:
+
+- `dev/engineering/README.md` — "C1 = this machine, static analysis or local controls; C2 = a
+  hosted or second-environment run; C3 = a real-environment (Host) run." → replaced by the
+  responsibility/coverage definitions above with the citation. Same file, the `verified_host`
+  row read "when C1 is offered for real-environment behaviour" → now "when Adapter-local (C1)
+  evidence is offered for an integration claim", and the bullet "C1 masquerading upward …
+  `verified_host` asserted from C1 evidence" → "an integration or candidate claim argued from
+  Adapter-local evidence".
+- `dev/engineering/registry.yaml` — three comments, e.g. "C1 = this machine, controls only: no
+  hosted CI run and no real-environment run is claimed or implied" → "C1 here is the
+  Adapter-local level (PLAN-B 157-159): static/contract-level checks on this surface. No C2
+  real-Host integration verification and no C3 candidate verification is claimed or implied."
+  Status values, tiers, commits and artifacts are untouched: this is wording only.
+- `dev/engineering/doc-ownership.yaml` — header said "a changed source path is matched by the
+  FIRST glob that matches, in order", which described the defect §8 item 2 retracted in the
+  code. It now states the implemented rule: fewest actual `*`, then longest static prefix, ties
+  keep declaration order.
+- `dev/engineering/work-package-authorization.md` — "Its 19 entries stay
+  `proposed-not-ratified`" → **18 REQ/INV/AC** ids at `proposed-not-ratified` (10 invariant, 4
+  requirement, 4 acceptance) **plus 1 Idea** at `idea-no-execution-authority`, counted in the
+  file. No batch ratification.
+
+Two segments that differ from what I had asserted, reported rather than smoothed over:
+
+1. There is **no line 278 in any file this line owns** (`dev/engineering/README.md` is 159
+   lines, `registry.yaml` 151, `work-package-authorization.md` 56,
+   `tests/doc-consistency/README.md` 137). The branch-local-real-Host-is-C2 correction was
+   applied at the segments listed above, found by grepping every `C3`/`real-environment`
+   claim rather than by a line number.
+2. `docs/contracts/engineering-baseline/ids.yaml` line 3 says "every entry below is
+   `proposed-not-ratified`", which is not true of `IDEA-EB-0001` at line 143
+   (`idea-no-execution-authority`). That file is normative and outside this line's write
+   grant, so the discrepancy is recorded here for its owner; nothing was edited.

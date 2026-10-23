@@ -95,7 +95,7 @@ Claim metadata, what it is for, and the code that refuses without it:
 | --- | --- | --- |
 | `verification_artifacts` | any `verified_*` | `FAKE_VERIFICATION` when empty, or when a listed path does not exist |
 | `verification_commit` | `verified_ci`, `verified_host` | `CLAIM_UNBOUND` when absent, or when it is 40-hex but names no commit object here |
-| `verified_tier` | `verified_host` | `CLAIM_TIER_MISSING` without C2/C3; `CLAIM_TIER_MISMATCH` when C1 is offered for real-environment behaviour; `CLAIM_TIER_UNKNOWN` outside C1/C2/C3 |
+| `verified_tier` | `verified_host` | `CLAIM_TIER_MISSING` without C2/C3; `CLAIM_TIER_MISMATCH` when Adapter-local (C1) evidence is offered for an integration claim; `CLAIM_TIER_UNKNOWN` outside C1/C2/C3 |
 | `merged_commit` | `implementation_status: merged` | `MERGED_CLAIM_UNCORROBORATED` unless it exists and is an ancestor of `origin/master` |
 | — | `release_status: candidate` / `released` | `RELEASE_CLAIM_UNCORROBORATED` unless `verified_host` at C2/C3 plus that ancestry |
 
@@ -105,20 +105,36 @@ a gap. Corrected per the responsibility layering, and the rule was not touched:
 
 - `verification_status` names **which layer is being claimed** — local work, a CI run, a real
   environment — and therefore which corroboration the rules demand of it.
-- `verified_tier` names **the tier of the evidence recorded** in `verification_artifacts`:
-  C1 = this machine, static analysis or local controls; C2 = a hosted or second-environment
-  run; C3 = a real-environment (Host) run.
+- `verified_tier` names **the verification responsibility and coverage** of the evidence
+  recorded in `verification_artifacts`, following the established acceptance levels
+  (PR #355 `8f84a7845944964ef17e167aebfde8e2d9617570`,
+  `docs/plans/active/alpha5-convergence/PLAN-B-20261022.md` lines 157–159):
+  - **C1** — Adapter-local verification: one surface's interface, arguments, effects, native
+    parity and the exact security negatives around it. A CI run may well execute C1.
+  - **C2** — real-Host integration verification: the surface wired into the running assembly,
+    with the permission positives and negatives and the lifecycle legs, at a fixed SHA. A
+    branch-local real-Host run is C2, not C3: it verifies integration, not the candidate.
+  - **C3** — final verification of a fixed candidate: one pinned HEAD, the whole tool matrix,
+    cross-tool interaction, replayable C1/C2 evidence, independent review.
 
-Because they answer different questions, `verified_ci` with `verified_tier: C1` is a legal
-record: a CI-layer claim whose listed artifacts happen be locally produced logs, bound to a
-commit. What the rules refuse is abuse, not vocabulary:
+  The levels are **not** machines. They do not mean "this machine", "a second environment", or
+  "the Host": a Host run belongs to C2 or C3 depending on what it covers, and CI can sit at C1.
+  Where this README said otherwise, that wording was wrong and is replaced here.
+
+Because the axes answer different questions, `verified_ci` with `verified_tier: C1` is a legal
+record -- CI executed an Adapter-level check. But the claim is only as good as its execution:
+**a real CI run must actually have produced that C1 evidence**; binding a locally produced log
+to a commit does not stand in for it. The tools check existence and binding, not who ran what,
+so that half is what the writer attests and a reviewer reads -- a stated limit of the check,
+not a licence. What the rules refuse is abuse, not vocabulary:
 
 - **a wrong SHA** — `verification_commit` that is 40-hex but names no commit object
   (`CLAIM_UNBOUND`);
 - **local masquerading as CI** — a `verified_ci` / `verified_host` claim with nothing bound to
   a commit (`CLAIM_UNBOUND`), or `verified_*` with no existing artifact (`FAKE_VERIFICATION`);
-- **C1 masquerading upward** — `verified_host` asserted from C1 evidence
-  (`CLAIM_TIER_MISMATCH`), or from no C2/C3 tier at all (`CLAIM_TIER_MISSING`).
+- **C1 masquerading upward** — an integration or candidate claim (`verified_host`) argued from
+  Adapter-local evidence (`CLAIM_TIER_MISMATCH`), or from no C2/C3 tier at all
+  (`CLAIM_TIER_MISSING`).
 
 No rule refuses the *combination*, and adding one would invent a law the layering does not
 contain — which is also why the earlier "known gap" line here was not a finding about the

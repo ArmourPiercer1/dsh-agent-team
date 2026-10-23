@@ -7,7 +7,11 @@
 # owners where an owner is actually known, and says "unowned" everywhere else.
 #
 # Semantics (scripts/docs-probe.mjs):
-#   * a changed source path is matched by the FIRST glob that matches, in order;
+#   * a changed source path is matched by the MOST SPECIFIC rule that matches: fewest
+#     actual `*` characters wins, then the longest static prefix before the first `*`,
+#     and a tie keeps declaration order (scripts/doc-checks.mjs, `selectOwningDocs`).
+#     First-match-wins was the earlier behaviour and it silently disabled every rule
+#     written below a broader one; declaration order is not a specificity claim;
 #   * matching an entry turns the advisory into a named document list;
 #   * matching nothing yields `DOC_IMPACT_UNOWNED` — a coverage measurement, not a
 #     failure;
