@@ -353,7 +353,13 @@ describe('a5m2-subagent-spawn-adapters (d) thin mirror + targets', () => {
     if (sub === undefined || list === undefined) throw new Error('no rows')
     expect(sub.classify('nope')).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
     expect(sub.classify({ prompt: 'p' })).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
-    expect(sub.classify({ description: 'd', prompt: '' })).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
+    // REAL NATIVE DIFFERENCE (root review correction; the 639ed compiled
+    // schema — tool-subagent params :390-399 + tools jsonschema :604 —
+    // enforces required+type ONLY): an EMPTY description/prompt is LEGAL
+    // native tool-layer input; the SERVICE owns any emptiness law, so the
+    // row must NOT INPUT_INVALID first.
+    expect(sub.classify({ description: 'd', prompt: '' }).ok).toBe(true)
+    expect(sub.classify({ description: '', prompt: 'p' }).ok).toBe(true)
     expect(sub.classify({ description: 'd', prompt: 'p', provider: 7 })).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
     expect(sub.classify({ description: 'd', prompt: 'p', run_in_background: 'yes' })).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
     // provider WITHOUT model (and vice versa) is NOT refused here — the
@@ -368,6 +374,14 @@ describe('a5m2-subagent-spawn-adapters (d) thin mirror + targets', () => {
     expect(plan.target.model).toContain('row mirrors NONE')
     expect(list.classify({ model: 7 })).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
     expect(assembly.inFlight().dispatches).toBe(0) // every mirror answered with ZERO delegate entry
+    // the native-acceptance PIN: empty strings ride THROUGH the captured
+    // body to the SERVICE (the row never pre-refuses) — the body builds the
+    // durable request with label ''/text '' and the service decides.
+    const fork = assembly.rowOf('subagent_fork')
+    if (fork === undefined) throw new Error('no fork row')
+    const emptyPlan = fork.classify({ description: '', prompt: '' }).plan
+    if (emptyPlan === undefined) throw new Error('empty strings must classify — the native accepts them')
+    expect(await fork.delegate(emptyPlan, { exec: EXEC })).toMatchObject({ ok: true, settled: 'delegated' })
   })
 })
 

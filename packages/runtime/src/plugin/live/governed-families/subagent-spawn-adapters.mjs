@@ -59,9 +59,13 @@
  *     request; governance ownership rides on it). list_subagent_models has
  *     NO identity law (measured) and the row invents none.
  *  L5 THIN ARGUMENT MIRROR, REFUSAL CLASS: only what the dispatcher schema
- *     enforces BEFORE the body (description/prompt non-empty strings;
+ *     enforces BEFORE the body — and the compiled 639ed schema (tool-
+ *     subagent params :390-399 + tools jsonschema :604) enforces EXACTLY
+ *     required+type: description/prompt are required STRINGS and an EMPTY
+ *     string is legal native tool-layer input the SERVICE decides about —
+ *     the row invents no emptiness law (root review correction).
  *     provider/model/reasoning_effort optional strings; run_in_background
- *     optional boolean; list provider/model optional strings) — typed
+ *     optional boolean; list provider/model optional strings — typed
  *     REFUSALS (mount-anomaly class), never invented lane VALUES: the
  *     provider/model PAIRING law, the allowed-selection policy and the
  *     closed run-mode law are BODY/SERVICE facts (NAMED below), and
@@ -379,8 +383,8 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
       if (optionalStringViolation(args, 'provider')) return lawMiss("argument 'provider' must be a string when present (dispatcher-shape mirror)")
       if (optionalStringViolation(args, 'model')) return lawMiss("argument 'model' must be a string when present (dispatcher-shape mirror); the model-requires-provider law is the BODY's")
     } else {
-      if (typeof args.description !== 'string' || args.description.length === 0) return lawMiss('description must be a non-empty string (dispatcher-shape mirror of the required schema field)')
-      if (typeof args.prompt !== 'string' || args.prompt.length === 0) return lawMiss('prompt must be a non-empty string (dispatcher-shape mirror of the required schema field)')
+      if (typeof args.description !== 'string') return lawMiss('description must be a string (dispatcher-shape mirror of the required schema field ONLY — the compiled schema enforces required+type; an EMPTY string is legal native tool-layer input and rides to the service, which owns any emptiness law)')
+      if (typeof args.prompt !== 'string') return lawMiss('prompt must be a string (dispatcher-shape mirror of the required schema field ONLY — the compiled schema enforces required+type; an EMPTY string is legal native tool-layer input and rides to the service, which owns any emptiness law)')
       for (const field of ['provider', 'model', 'reasoning_effort']) {
         if (optionalStringViolation(args, field)) return lawMiss(`argument '${field}' must be a string when present (dispatcher-shape mirror; the PAIRING/allowed-selection laws are the body's)`)
       }
