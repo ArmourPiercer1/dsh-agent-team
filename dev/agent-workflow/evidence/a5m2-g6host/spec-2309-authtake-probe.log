@@ -1,0 +1,332 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6
+
+ ❯ packages/domain/test/a1-permission-policy.test.ts (83 tests | 15 failed) 217ms
+     ✓ legacy blueprint parses with no capabilities at all 15ms
+     ✓ capabilities WITHOUT permissions parse (permissions omitted works) 6ms
+     ✓ absent permissions leave the hashable projection byte-identical (legacy 4 keys only) 14ms
+     ✓ default: ask parses into the normalized policy (deep-frozen) 2ms
+     ✓ default: deny parses 1ms
+     ✓ the minimal shell permission parses: bash at tool level via resource any 3ms
+     ✓ a MEMBER template can carry its own permissions (per-template scope) 7ms
+     ✓ exact.path is trimmed on normalization (repo string-field rule) 3ms
+     ✓ default: allow rejects (no silent privilege expansion) 2ms
+     ✓ missing default rejects 7ms
+     ✓ non-string default rejects 2ms
+     ✓ a missing required lane (allow) rejects 5ms
+     ✓ a non-array lane rejects 3ms
+     ✓ an unknown field on the policy rejects 2ms
+     ✓ an unknown field on a rule rejects 4ms
+     ✓ a rule missing its tool rejects 2ms
+     ✓ a rule missing its resource rejects 2ms
+     ✓ an unsupported tool rejects 2ms
+     ✓ a resource kind outside the closed vocabulary rejects (glob is not A1) 2ms
+     ✓ exact without a path rejects 2ms
+     ✓ an empty exact path rejects 2ms
+     ✓ an exact resource carrying extra fields rejects 1ms
+     ✓ any with a path rejects 2ms
+     ✓ any with another extra field rejects 1ms
+     ✓ a rule over a path longer than the structural bound rejects 5ms
+     ✓ member: bash + any in the allow lane rejects (A2C-1 unchanged for members — diagnostics byte-identical to the pre-change leader pin) 3ms
+     ✓ leader: bash + exact in the allow lane rejects (role-aware trailing — the leader allow-lane exception is stated, never exact) 1ms
+     ✓ leader: bash + exact in the ask lane rejects (every lane is closed for exact bash) 1ms
+     ✓ leader: bash + exact in the deny lane rejects (every lane is closed for exact bash) 0ms
+     ✓ member: bash + exact in the allow lane rejects with the byte-identical pre-PR diagnostic 1ms
+     ✓ bash + any in the ask lane PARSES (ask/deny stay the legal bash lanes) 1ms
+     ✓ changes when permissions are ADDED (legacy vs present) 1ms
+     ✓ changes when permissions are CHANGED (default ask -> deny) 1ms
+     ✓ changes when permissions are REMOVED (present -> legacy) 3ms
+     ✓ changes when a rule moves between lanes (declaration order is content) 6ms
+     ✓ identical permissions (re-parse) hash identically 5ms
+     ✓ identical permissions with shuffled YAML key order hash identically 7ms
+     ✓ duplicate rules are preserved in declaration order (no de-dup, no reorder) 3ms
+     ✓ re-parsing yields a structurally identical normalized policy (pure function) 6ms
+     ✓ reordering rules in the source changes the hash (order is content) 2ms
+     ✓ a file tool + subtree parses and normalizes (trimmed path, closed shape) 1ms
+     ✓ every file-class tool accepts subtree in the allow lane 4ms
+     ✓ the shell class rejects subtree in every lane (the A2C-1 shell contract) 1ms
+     ✓ an empty subtree path rejects (the exact path constraints ride on subtree) 1ms
+     ✓ the hashable projection carries the subtree kind (order/content still hash) 1ms
+     ✓ PERMISSION_TOOL_NAMES pins the closed tool names (A2C-1: the shell class bash/pwsh; Alpha.5 M2 root 20:05: + the invocation-only pair; root 22:13: + the five G6 session-query names) 0ms
+     ✓ PERMISSION_POLICY_DEFAULTS pins ask|deny (no allow) 0ms
+     ✓ PERMISSION_RESOURCE_KINDS pins the closed kind vocabulary (A2C-7: subtree joins exact | any) 0ms
+     ✓ PERMISSION_RULE_FIELDS / PERMISSION_POLICY_FIELDS pin the closed field sets 0ms
+     ✓ the two names join the closed vocabulary and the closed invocation-only set (create/update absent) 0ms
+     ✓ leader allow lane: { tool: schedule_list, resource: any } parses (rule IS the invocation authority) 1ms
+     ✓ member allow lane: { tool: schedule_list, resource: any } parses (rule IS the invocation authority) 0ms
+     ✓ leader ask lane: { tool: schedule_list, resource: any } parses (rule IS the invocation authority) 2ms
+     ✓ member ask lane: { tool: schedule_list, resource: any } parses (rule IS the invocation authority) 1ms
+     ✓ leader deny lane: { tool: schedule_list, resource: any } parses (rule IS the invocation authority) 0ms
+     ✓ member deny lane: { tool: schedule_list, resource: any } parses (rule IS the invocation authority) 1ms
+     ✓ leader allow lane: { tool: schedule_delete, resource: any } parses (rule IS the invocation authority) 0ms
+     ✓ member allow lane: { tool: schedule_delete, resource: any } parses (rule IS the invocation authority) 3ms
+     ✓ leader ask lane: { tool: schedule_delete, resource: any } parses (rule IS the invocation authority) 1ms
+     ✓ member ask lane: { tool: schedule_delete, resource: any } parses (rule IS the invocation authority) 1ms
+     ✓ leader deny lane: { tool: schedule_delete, resource: any } parses (rule IS the invocation authority) 0ms
+     ✓ member deny lane: { tool: schedule_delete, resource: any } parses (rule IS the invocation authority) 0ms
+     × allow lane schedule_list 'exact' rejects MALFORMED_DTO (resource.any only) 5ms
+     × allow lane schedule_list 'subtree' rejects MALFORMED_DTO (resource.any only) 2ms
+     × ask lane schedule_list 'exact' rejects MALFORMED_DTO (resource.any only) 1ms
+     × ask lane schedule_list 'subtree' rejects MALFORMED_DTO (resource.any only) 1ms
+     × deny lane schedule_list 'exact' rejects MALFORMED_DTO (resource.any only) 1ms
+     × deny lane schedule_list 'subtree' rejects MALFORMED_DTO (resource.any only) 1ms
+     × allow lane schedule_delete 'exact' rejects MALFORMED_DTO (resource.any only) 1ms
+     × allow lane schedule_delete 'subtree' rejects MALFORMED_DTO (resource.any only) 1ms
+     × ask lane schedule_delete 'exact' rejects MALFORMED_DTO (resource.any only) 4ms
+     × ask lane schedule_delete 'subtree' rejects MALFORMED_DTO (resource.any only) 1ms
+     × deny lane schedule_delete 'exact' rejects MALFORMED_DTO (resource.any only) 2ms
+     × deny lane schedule_delete 'subtree' rejects MALFORMED_DTO (resource.any only) 4ms
+     ✓ schedule_create is not an enabled permission tool (MALFORMED_DTO at .tool) 1ms
+     ✓ schedule_update is not an enabled permission tool (MALFORMED_DTO at .tool) 1ms
+     × the envelope carrier keeps the frozen seven-name operationClass set — the schedule names never widen it 1ms
+     ✓ the original seven names parse exactly as before (bash deny-any still legal) 2ms
+     ✓ all five G6 names are vocabulary members; none touches the frozen envelope set 1ms
+     ✓ the five names × three lanes × both roles parse with the whole-tool any resource under default:deny (named rule = the only legal exception) 24ms
+     × exact and subtree are refused for every G6 name in every lane of every role (no resource space exists to project — no cross-tool borrowing) 1ms
+     × the envelope carrier still refuses a G6 name as operationClass (the seven-name set stays frozen; no any-matcher exists there) 1ms
+     ✓ the original seven names + schedule pair stay byte-identical neighbors of the class (bash deny-any still the shell law) 1ms
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts (56 tests | 6 failed) 90ms
+     ✓ carries a single-use grant that re-parses, and registers exactly once 18ms
+     ✓ carries the WHOLE effect set and the case identity; mints nothing 5ms
+     ✓ two calls asking the same legal question share the case identity; the plan names the highest rung 1ms
+     ✓ a policy DENY no longer short-circuits the door: it rides the ONE case at its rung (ruling ①) 12ms
+     ✓ the model cannot route around the ladder: a Human Admin ask is refused, not minted 1ms
+     ✓ a cross-Realm effect inside the set is a forged scope 1ms
+     ✓ a DRAINING binding admits nothing (ADAPTER_DRAINING, PR1 state machine stands) 1ms
+     ✓ a stale binding generation is a refusal (re-assembly, not admission) 1ms
+     ✓ an enforced CLAIM with no probe observation never reaches mint (probe answers first) 1ms
+     ✓ a probe-MATCHED enforced record admits, and the ORDER is probe-then-mint 1ms
+     ✓ happy ride: requires-approval → leader leg → issue → consume ONCE 2ms
+     ✓ the leader leg does NOT cover an effect the hard envelope raised (per-effect, whole-set refusal) 1ms
+     ✓ a deny PROJECTED into the envelope while the Ask is open kills the issue (stale is a refusal, not a retry) 0ms
+     ✓ a moved authority generation between approval and execution is APPROVAL_STALE (resume with an old token) 0ms
+     ✓ a stale BINDING generation at issue time is refused even with a fresh approval 0ms
+     ✓ an approval carrying a DIFFERENT effect-set fingerprint never issues this call 0ms
+     ✓ a presentation made for ANOTHER member never issues here — the case identity binds the member (F-1) 1ms
+     ✓ a case identity forged around the fingerprint is refused on the same leg, before any mint 0ms
+     ✓ cross-Member Grant theft: the leader-leg grant spent by ANOTHER member refuses 0ms
+     ✓ before the edge: refused with the grant UNspent 1ms
+     ✓ during: request ≠ terminated; settlement decides; the spent grant stays spent 1ms
+     ✓ after: a terminated lease never reopens; a spent grant never re-consumes 1ms
+     ✓ a broken expiry policy fails the mint CLOSED (never an expiry at zero or ∞) 0ms
+     ✓ control 低阶 deny 升阶: an overlay-bound deny escalates to Human User — the Leader cannot lift it, Human User can 1ms
+     ✓ control Envelope deny 升阶 + admin 单次批准: a hard-envelope deny lands at Human Admin; the one-shot approval is legal and mutates nothing 1ms
+     ✓ control whole-effect joint authority: an allowed effect may not slip through beside a denied one 0ms
+     ✓ control 未知来源: a deny whose owning authority cannot be established refuses with an accurate diagnosis, zero mints (ruling ③) 0ms
+     ✓ control 来源/世代变化: a deny landing as a mutation (generation bumped) turns the open Ask stale — stale is a refusal 1ms
+     ✓ control 环境不支持: a capability fact that turns off between approval and issue kills the mint with zero side effects (ruling ②) 1ms
+     ✓ 对照表 (user review 520a250d): SAME policy deny, SAME envelope coverage, six source states — distinguishable and rung-capped 2ms
+     ✓ F-1 (final-head review): coexisting deny sources over ONE scope are AMBIGUOUS in every array order — first-wins let order decide the outcome 1ms
+     ✓ F-2 (final-head review): a SECOND deny arriving after the approval cannot mint on the unchanged MAX rung — per-effect provenance IS part of the case 1ms
+     ✓ R-1a: a deny the envelope never projects is NOT a leader-leg mint — unattributed, zero mints (ruling ③, review R-1a) 1ms
+     ✓ R-2a: a denied effect under a top-rung beneficiary says NO-UPPER-RUNG — the authority is known, nobody sits above (not ③) 1ms
+     ✓ R-1b: the plan states WHICH deny rides at WHICH rung (plan value + observe) — PR3 presents exactly this 1ms
+     ✓ an allow-lane read rule projects read + meta + tool-invoke arms on the realm-qualified scope 1ms
+     ✓ a deny-lane write rule yields R-1a deny sources with version stamped at READ time 1ms
+     ✓ a subtree rule REQUIRES the containment seam; with it, coverage answers per the injected law 0ms
+     ✓ unprojectable DENIES refuse the construction (no silent weakening): file any-deny and lsp resource-deny 1ms
+     ✓ the shell class keeps only whole-tool rules; allow-any is leader-only and dual-gated 1ms
+     ✓ uncanonicalizable resources: allow SKIPS (tightens, noted); ask/deny REFUSE (a dropped rule loosens) 0ms
+     ✓ default deny: the covers table answers per effect kind (the assembly gate rides it) 0ms
+     ✓ file any-ALLOW projects only the tool-invoke arm and DISCLOSES the resource-dimension gap 0ms
+     ✓ shape violations refuse before anything is derived (defence, the blueprint already validated) 0ms
+     × allow-lane any projects the tool-invoke arm as ALLOW with no tightening note and no shell dual gate 13ms
+     ✓ ask-lane any projects ASK; an absent rule stays no-authority (no implicit allow — 缺省 law) 1ms
+     × deny-lane any projects DENY with the shared R-1a deny sources (narrowed law: truly file only) 1ms
+     ✓ cross-tool no-cross: a schedule_list authority never answers for schedule_delete (and vice versa) 0ms
+     × exact/subtree resources refuse the projection in every lane (no file matcher exists for the class) 1ms
+     ✓ schedule_create / schedule_update are NOT enabled permission tools (card: create/update 禁启) 0ms
+     ✓ the original seven names did not move: file any-deny still refuses, file any-lanes still disclose, member shell allow still refuses 1ms
+     × allow-lane any projects the single tool-invoke arm as ALLOW for EVERY G6 name — no notes, no dual gate, no I/O companion arm 2ms
+     ✓ ask-lane any projects ASK; an absent rule stays no-authority for every G6 name (no implicit allow under default:ask) 0ms
+     × deny-lane any projects DENY for all five names at once with five R-1a sources (one per ruleIndex, shared algebra) 1ms
+     ✓ cross-name no-cross across the G6 five: an authority for one never answers for any other 0ms
+     × exact/subtree are refused for every G6 name in every lane (projection refuses even partially — the class carries no resource space) 1ms
+ ✓ packages/runtime/test/a3-permission-resolver.test.ts (28 tests) 8ms
+ ✓ packages/runtime/test/a2c2-permission-coverage.test.ts (18 tests) 11ms
+ ✓ packages/runtime/test/a2c1-pwsh-permission.test.ts (28 tests) 11ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > allow lane schedule_list 'exact' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > allow lane schedule_list 'subtree' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > ask lane schedule_list 'exact' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > ask lane schedule_list 'subtree' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > deny lane schedule_list 'exact' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > deny lane schedule_list 'subtree' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > allow lane schedule_delete 'exact' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > allow lane schedule_delete 'subtree' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > ask lane schedule_delete 'exact' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > ask lane schedule_delete 'subtree' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > deny lane schedule_delete 'exact' rejects MALFORMED_DTO (resource.any only)
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > deny lane schedule_delete 'subtree' rejects MALFORMED_DTO (resource.any only)
+Error: expected MALFORMED_DTO but nothing was thrown
+ ❯ expectCode packages/domain/test/t2-helpers.ts:41:11
+     39|   const threw = capture(fn)
+     40|   if (threw === undefined) {
+     41|     throw new Error(`expected ${code} but nothing was thrown`)
+       |           ^
+     42|   }
+     43|   if (!isTeamContractError(threw)) {
+ ❯ packages/domain/test/a1-permission-policy.test.ts:1115:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only schedule vocabulary (Alpha.5 M2, root 20:05) > the envelope carrier keeps the frozen seven-name operationClass set — the schedule names never widen it
+Error: expected MALFORMED_DTO but nothing was thrown
+ ❯ expectCode packages/domain/test/t2-helpers.ts:41:11
+     39|   const threw = capture(fn)
+     40|   if (threw === undefined) {
+     41|     throw new Error(`expected ${code} but nothing was thrown`)
+       |           ^
+     42|   }
+     43|   if (!isTeamContractError(threw)) {
+ ❯ packages/domain/test/a1-permission-policy.test.ts:1157:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13) > exact and subtree are refused for every G6 name in every lane of every role (no resource space exists to project — no cross-tool borrowing)
+Error: expected MALFORMED_DTO but nothing was thrown
+ ❯ expectCode packages/domain/test/t2-helpers.ts:41:11
+     39|   const threw = capture(fn)
+     40|   if (threw === undefined) {
+     41|     throw new Error(`expected ${code} but nothing was thrown`)
+       |           ^
+     42|   }
+     43|   if (!isTeamContractError(threw)) {
+ ❯ packages/domain/test/a1-permission-policy.test.ts:1301:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  packages/domain/test/a1-permission-policy.test.ts > invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13) > the envelope carrier still refuses a G6 name as operationClass (the seven-name set stays frozen; no any-matcher exists there)
+Error: expected MALFORMED_DTO but nothing was thrown
+ ❯ expectCode packages/domain/test/t2-helpers.ts:41:11
+     39|   const threw = capture(fn)
+     40|   if (threw === undefined) {
+     41|     throw new Error(`expected ${code} but nothing was thrown`)
+       |           ^
+     42|   }
+     43|   if (!isTeamContractError(threw)) {
+ ❯ packages/domain/test/a1-permission-policy.test.ts:1334:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > invocation-only class: schedule_list / schedule_delete projection law (root 20:05) > allow-lane any projects the tool-invoke arm as ALLOW with no tightening note and no shell dual gate
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "rule allow[0] (schedule_list whole-tool allow over ALL resources): only the tool-invoke arm projects — resource-scoped effects fall to no-authority ⇒ Ask (TIGHTER than declared, disclosed never silent)",
++ ]
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:919:29
+    917|       const spell = r.value.buildDocument().rules.map((rule) => `${rul…
+    918|       expect(spell).toEqual([`tool-invoke@${REALM}|tool:${name}:allow`…
+    919|       expect(r.value.notes).toEqual([]) // the TIGHTER note is a file-…
+       |                             ^
+    920|       expect(r.value.coversEffect(toolInvokeEffect(name))).toBe(true)
+    921|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > invocation-only class: schedule_list / schedule_delete projection law (root 20:05) > deny-lane any projects DENY with the shared R-1a deny sources (narrowed law: truly file only)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:946:18
+    944|   it('deny-lane any projects DENY with the shared R-1a deny sources (n…
+    945|     const r = projOf({ default: 'ask', allow: [], ask: [], deny: [{ to…
+    946|     expect(r.ok).toBe(true) // the OLD condition ("not shell") refused…
+       |                  ^
+    947|     if (!r.ok) return
+    948|     expect(r.value.buildDocument().rules.every((rule) => rule.maximumE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > invocation-only class: schedule_list / schedule_delete projection law (root 20:05) > exact/subtree resources refuse the projection in every lane (no file matcher exists for the class)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:977:24
+    975|         for (const kind of ['exact', 'subtree'] as const) {
+    976|           const r = projOf({ default: 'ask', allow: [], ask: [], deny:…
+    977|           expect(r.ok).toBe(false)
+       |                        ^
+    978|           if (r.ok) return
+    979|           expect(r.error.details?.['refusal']).toBe('projection-rule-m…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > invocation-only class: G6 session-query projection law (root 22:13) > allow-lane any projects the single tool-invoke arm as ALLOW for EVERY G6 name — no notes, no dual gate, no I/O companion arm
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "rule allow[0] (session_search whole-tool allow over ALL resources): only the tool-invoke arm projects — resource-scoped effects fall to no-authority ⇒ Ask (TIGHTER than declared, disclosed never silent)",
++ ]
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:1036:29
+    1034|       const spell = r.value.buildDocument().rules.map((rule) => `${rul…
+    1035|       expect(spell).toEqual([`tool-invoke@${REALM}|tool:${name}:allow`…
+    1036|       expect(r.value.notes).toEqual([])
+       |                             ^
+    1037|       expect(r.value.coversEffect(toolInvokeEffect(name))).toBe(true)
+    1038|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > invocation-only class: G6 session-query projection law (root 22:13) > deny-lane any projects DENY for all five names at once with five R-1a sources (one per ruleIndex, shared algebra)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:1054:18
+    1052|   it('deny-lane any projects DENY for all five names at once with five…
+    1053|     const r = projOf({ default: 'ask', allow: [], ask: [], deny: G6.ma…
+    1054|     expect(r.ok).toBe(true)
+       |                  ^
+    1055|     if (!r.ok) return
+    1056|     const sources = r.value.denySources()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > invocation-only class: G6 session-query projection law (root 22:13) > exact/subtree are refused for every G6 name in every lane (projection refuses even partially — the class carries no resource space)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:1077:24
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+
+ Test Files  2 failed | 3 passed (5)
+      Tests  21 failed | 192 passed (213)
+   Start at  23:13:57
+   Duration  4.33s (transform 5.94s, setup 0ms, import 9.77s, tests 337ms, environment 1ms)
+
