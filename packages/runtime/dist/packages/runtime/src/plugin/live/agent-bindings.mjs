@@ -3211,8 +3211,23 @@ export function createAgentBindings(deps) {
           onObserve: (row) => observations.push(String(row)),
         })
         if (built.ok !== true) {
+          // ROOT 20:04 window 1: the mount was ALUILT between the G2 block and
+          // this refusal — a plane-build refusal thrown over it would leak the
+          // live ports. Close it AWAITED first; the close failure rides the
+          // observations AND the thrown message; the refusal stays the CAUSE.
+          let g2LeakNote = ''
+          if (a5G2Mount !== null) {
+            const g2Closed = await a5G2Mount.dispose()
+            if (g2Closed.ok !== true) {
+              g2LeakNote = ` (plus the G2 Team mount close FAILED: ${g2Closed.failures.join(' | ')})`
+              observations.push(`a5m2-g2: plane-refusal cleanup FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
+            } else {
+              observations.push(`a5m2-g2: TEAM MOUNT closed on plane-refusal for ${sessionId}`)
+            }
+            a5G2Mount = null
+          }
           const error = new Error(
-            `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': ${built.message} (code: ${built.code})`,
+            `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': ${built.message} (code: ${built.code})${g2LeakNote}`,
           )
           error.code = `alpha5-team-tool-plane-${String(built.code).toLowerCase()}`
           observations.push(`a5-plane: mount-REFUSED for ${sessionId} (${built.code})`)
@@ -3220,6 +3235,16 @@ export function createAgentBindings(deps) {
         }
         const placed = built.value.mount(agentCtx)
         if (placed.ok !== true) {
+          // ROOT 20:04 window 2: the same leak law at the placement throw.
+          if (a5G2Mount !== null) {
+            const g2Closed = await a5G2Mount.dispose()
+            if (g2Closed.ok !== true) {
+              observations.push(`a5m2-g2: placement-refusal cleanup FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
+            } else {
+              observations.push(`a5m2-g2: TEAM MOUNT closed on placement-refusal for ${sessionId}`)
+            }
+            a5G2Mount = null
+          }
           const error = new Error(
             `agent-bindings: alpha.5 Team tool plane placement refused for '${sessionId}' ('${placed.name}'): ${placed.message} (code: ${placed.code})`,
           )
@@ -3249,20 +3274,40 @@ export function createAgentBindings(deps) {
           // and-swallowed, nothing survives un-handled). Root 19:31 item 4:
           // close failures are REPORTED facts, never swallowed.
           return Promise.resolve().then(async () => {
-            const planeDisposed = await placed.dispose()
+            // ROOT 20:04 window 3: a REJECTED plane dispose must NOT skip the
+            // G2 close — the mount owns ports the plane release never covers.
+            // Both failures are preserved: the plane rejection is the primary
+            // error thrown, the G2 failure rides the observation channel in
+            // FULL and joins the thrown message.
+            let planeError = null
+            let planeDisposed
+            try {
+              planeDisposed = await placed.dispose()
+            } catch (error) {
+              planeError = error
+            }
+            let g2Message = null
             if (a5G2Mount !== null) {
-              const g2Closed = await a5G2Mount.dispose()
-              if (g2Closed.ok !== true) {
-                observations.push(`a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
-                globalThis.console?.error(`[dsh-agent-team] a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
-              } else {
-                observations.push(`a5m2-g2: TEAM MOUNT closed for ${sessionId}`)
+              try {
+                const g2Closed = await a5G2Mount.dispose()
+                if (g2Closed.ok !== true) {
+                  g2Message = g2Closed.failures.join(' | ')
+                } else {
+                  observations.push(`a5m2-g2: TEAM MOUNT closed for ${sessionId}`)
+                }
+              } catch (error) {
+                g2Message = String(error?.message ?? error).slice(0, 200)
               }
             }
+            if (g2Message !== null) {
+              observations.push(`a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Message}`)
+              globalThis.console?.error(`[dsh-agent-team] a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Message}`)
+            }
+            if (planeError !== null) {
+              throw new Error(`agent-bindings: alpha.5 plane dispose failed for '${sessionId}'${g2Message !== null ? ` — AND the G2 Team mount close failed: ${g2Message}` : ''}`, { cause: planeError })
+            }
+            if (g2Message !== null) throw new Error(`agent-bindings: alpha.5 G2 Team mount close failed for '${sessionId}': ${g2Message}`)
             return planeDisposed
-          }).catch((error) => {
-            observations.push(`a5m2-g2: teardown close REJECTED for ${sessionId}: ${String(error?.message ?? error).slice(0, 200)}`)
-            globalThis.console?.error(`[dsh-agent-team] a5m2-g2: teardown close REJECTED for ${sessionId}: ${String(error?.message ?? error).slice(0, 200)}`)
           })
         })
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
@@ -6350,9 +6395,18 @@ export function createAgentBindings(deps) {
     // (and the deny scope) unwound-never on close.
     for (const d of toolDisposers.splice(0)) {
       try {
-        if (typeof d === 'function') d()
-        else if (d !== null && typeof d === 'object' && typeof d.dispose === 'function') d.dispose()
-      } catch { /* the scope unwind covers it */ }
+        // ROOT 20:04 window 3 (chain half): a disposer that answers a Promise
+        // is now AWAITED on this real async close chain (the G2 Team mount's
+        // plane-release + port-close rides it) — a returned Promise was
+        // previously DROPPED, so its failures could only ever be logged by
+        // the disposer itself. Rejections land here with their message in the
+        // observation channel (recorded, not silenced); the synchronous
+        // law of every other disposer is UNCHANGED (no lifecycle rework).
+        const out = typeof d === 'function' ? d() : (d !== null && typeof d === 'object' && typeof d.dispose === 'function' ? d.dispose() : undefined)
+        if (out !== null && typeof out === 'object' && typeof out.then === 'function') await out
+      } catch (error) {
+        observations.push(`p6t6: close: disposer rejected: ${error instanceof Error ? error.message : String(error)}`)
+      }
     }
     // GLUE-5: the PR7 live assemblies close with the row (pc-CONTRACT §3
     // checklist 4 — the ASSEMBLY lifecycle owns the lease window, and
