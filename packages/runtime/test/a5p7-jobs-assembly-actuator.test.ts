@@ -314,7 +314,7 @@ const backendsRow = (await import(
 )) as { createGovernedJobsBridge: (input: Record<string, unknown>) => unknown }
 
 const PLANE_POLICY = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
-const planeBase = { permissionPolicy: PLANE_POLICY, realmId: 'realm-jobs', templateId: 'tpl-1', role: 'member', instanceId: 'inst-1' }
+const planeBase = { teamSessionId: 'a5p7-jobs-team-root', permissionPolicy: PLANE_POLICY, realmId: 'realm-jobs', templateId: 'tpl-1', role: 'member', instanceId: 'inst-1' }
 
 describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () => {
   it('key ABSENT mounts no job row at all (the zero-flip law by absence)', () => {

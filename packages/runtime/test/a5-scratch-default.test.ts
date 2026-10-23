@@ -28,6 +28,9 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+// ask-lane worlds need a real Control leg (a requires-approval outcome never
+// runs its body without one); the C1 stand-in lands the kernel's own grant.
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
@@ -53,11 +56,13 @@ let row: PlaneRow
 
 function buildWith(confined: Record<string, unknown>): Built {
   return row.createTeamToolPlaneAssembly({
+    teamSessionId: 'a5scratchdef-team-root',
     permissionPolicy: ALLOW_ALL,
     realmId: REALM,
     templateId: 'a5scratchdef-tpl',
     role: 'member',
     instanceId: 'a5scratchdef-instance',
+    controlLeg: approvingControlLeg(),
     plane: {
       fsInstance: { fs: 'a5scratchdef-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' },
       confinedProvider: confined,
