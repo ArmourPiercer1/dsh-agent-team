@@ -1,0 +1,4 @@
+# cmd: pnpm --filter @dsh-agent-team/runtime run typecheck
+# date: 2026-10-23T11:21:36Z
+$ tsc -p tsconfig.json
+TS_RC=0

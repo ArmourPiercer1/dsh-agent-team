@@ -1,0 +1,2 @@
+cmd: pnpm exec eslint packages/runtime/test/a5m2-image-row-c1.test.ts
+exit: 0 (clean = no output above)
