@@ -961,7 +961,12 @@ export interface PaCallFactsPolicySource {
 /** One realm-scoped ceiling entry as the facts carry it (the adapter hands
  *  the closed document pair to the pure core through `ceilingDocuments`). */
 export interface PaCallFactsBlueprint {
-    readonly revision: number;
+    /** The blueprint revision as the permission lane's own binding tuple carries
+     *  it — a STRING identity (`permission-plane.ts` `BindingTuple.revision`,
+     *  emitted as `String(blueprint.revision)`), never a number and never coerced.
+     *  A `ToolBinding.revision` IS a number; the two are different counters and
+     *  are never compared with each other. */
+    readonly revision: string;
     readonly contentHash: string;
     readonly templateId: string;
     /** The member instance's canonical working directory. */

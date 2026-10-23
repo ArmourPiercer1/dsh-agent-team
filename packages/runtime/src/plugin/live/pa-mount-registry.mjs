@@ -179,26 +179,53 @@ async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamil
   if (typeof entryBinding.revision !== 'number' || entryBinding.revision < 1) { report?.('bad-binding-revision'); return undefined }
   if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) { report?.('bad-definition-identity'); return undefined }
   // one governed lane: the plane the mount answers for must BE the call's realm.
-  if (m.plane?.realmId === undefined || m.plane.realmId !== realmId) return undefined
+  // A5-M1-D: the two attribution arms on this branch, each naming what THIS line
+  // sees (no realm on the mount vs. a realm that is not this call's).
+  if (m.plane?.realmId === undefined) { report?.('no-mount-realm'); return undefined }
+  if (m.plane.realmId !== realmId) { report?.('realm-mismatch'); return undefined }
   // beneficiary: the mount's DURABLE attribution ONLY (the manifest carries
   // no such field to compare — comparing a non-existent self-report was
   // the bug; the pure core trusts the verifier's own rung comparison).
   const beneficiary = m.beneficiaryAuthority
-  if (beneficiary !== 'leader' && beneficiary !== 'member') return undefined
+  // The VALUE is never printed (it is durable attribution, not an identity face);
+  // the code says only that the mount carries no member/leader attribution.
+  if (beneficiary !== 'leader' && beneficiary !== 'member') { report?.('bad-beneficiary-authority'); return undefined }
   // tuple + blueprint facts: the permission lane's OWN currentBinding
   // source, read fresh; unhealthy lane ⇒ undefined (never a stale answer).
   const plane = typeof m.readers?.permissionPlane === 'function' ? m.readers.permissionPlane() : m.readers?.permissionPlane
   const callFacts = plane?.currentCallFacts?.(member.teamSessionId, member.instanceId)
-  if (callFacts === undefined || callFacts.healthy !== true) return undefined
+  // A5-M1-D: this early exit runs BEFORE the tuple block below, so it needs its
+  // own name or the first failure of a call would be blamed on the tuple. Two
+  // different facts on this one line: the lane answered nothing, or the lane
+  // STATED it is not healthy. Neither is explained here — the lane owns why.
+  if (callFacts === undefined) { report?.('no-call-facts-answer'); return undefined }
+  if (callFacts.healthy !== true) { report?.('unhealthy-call-facts'); return undefined }
   const tuple = callFacts.tuple
   if (
     tuple === undefined || typeof tuple !== 'object'
     || typeof tuple.blueprintId !== 'string' || tuple.blueprintId.length === 0
     || typeof tuple.contentHash !== 'string' || tuple.contentHash.length === 0
-    || typeof tuple.revision !== 'number'
+    // A5-M1-D-fix: the tuple's revision is the blueprint revision AS THE LANE
+    // PRODUCES IT — `permission-plane.ts:684` emits `revision:
+    // String(blueprint.revision)` and its `BindingTuple` declares
+    // `readonly revision: string` (`:508`). Asking for a number here made every
+    // production call fail this conjunct and the read answer undefined. The
+    // contract is the REAL string identity, compared exactly (no coercion: a
+    // number, a blank string or a non-string never becomes a revision).
+    || typeof tuple.revision !== 'string' || tuple.revision.length === 0
     || typeof tuple.templateId !== 'string' || tuple.templateId.length === 0
     || typeof tuple.cwd !== 'string' || tuple.cwd.length === 0
-  ) return undefined
+  ) {
+    // A5-M1-D, report-only: the verdict is the block's own conjuncts (untouched
+    // order, untouched outcome). The name is emitted ONLY when the revision
+    // conjunct itself is what failed — type versus empty value are two different
+    // facts and both are observable here; when a different member of the tuple
+    // failed, nothing is claimed (that arm stays uncoded by ruling).
+    if (report !== undefined && (typeof tuple?.revision !== 'string' || tuple.revision.length === 0)) {
+      report(typeof tuple?.revision === 'string' ? 'bad-tuple-revision-empty' : 'bad-tuple-revision-not-a-string')
+    }
+    return undefined
+  }
   const providerVersion = callFacts.providerVersion
   if (typeof providerVersion !== 'string' || providerVersion.length === 0) return undefined
   // durable overlay generation (the decision lane's OWN `latest` source:
@@ -335,14 +362,20 @@ async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamil
 export async function readPaCallFactsForCall(input = {}) {
   const { mount, rootSessionId, instanceId, realmId, callId, requestedEffects, placementName, diagnose } = input
   // A5-M1-D: one LOCAL sink for the ONE question a caller cannot answer from an
-  // `undefined` answer — which binding-identity arm this call failed. Output-only
-  // by construction: it is called on the branch that is already returning
-  // `undefined`, nothing reads it back, it holds no state between calls, and a
-  // sink that throws is swallowed here so it can never reach the verdict. Every
-  // other refusal on this path — the input guards, the permission lane, the
-  // overlay, the ceiling, the policy projection, the plan, the generation reader
-  // — keeps answering plain `undefined` EXACTLY as before: this delta does not
-  // narrate the whole facts protocol, only the identity of the call's binding.
+  // `undefined` answer — which arm of THIS call's own identity did not hold.
+  // Output-only by construction: it is called on the branch that is already
+  // returning `undefined`, nothing reads it back, it holds no state between
+  // calls, and a sink that throws is swallowed here so it can never reach the
+  // verdict. It covers the arms a call must cross to reach its own binding: the
+  // six input guards, the mount lookup, the placement → family → unique-carrier
+  // resolution, the binding tuple fields, and the mount's own realm / beneficiary
+  // attribution. Everything from the permission lane onward (that lane, the
+  // blueprint tuple, the provider version, the durable overlay, the ceiling pair,
+  // the policy projection, the live plan, the generation reader) keeps answering
+  // plain `undefined` EXACTLY as the baseline — so an `entry-cause` that names
+  // nothing AFTER a call that did resolve its binding is itself the localisation:
+  // the refusal came from that untouched block. This delta does not narrate the
+  // whole facts protocol, and it decides nothing.
   const report = typeof diagnose !== 'function' ? undefined : (code) => {
     try {
       diagnose({ code })
@@ -350,12 +383,15 @@ export async function readPaCallFactsForCall(input = {}) {
       // never the verdict's problem
     }
   }
-  if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) return undefined
-  if (typeof instanceId !== 'string' || instanceId.length === 0) return undefined
-  if (typeof realmId !== 'string' || realmId.length === 0) return undefined
-  if (typeof callId !== 'string' || callId.length === 0) return undefined
-  if (requestedEffects === null || typeof requestedEffects !== 'object' || !Array.isArray(requestedEffects.effects)) return undefined
-  if (typeof requestedEffects.fingerprint !== 'string' || requestedEffects.fingerprint.length === 0) return undefined
+  // A5-M1-D: these six arms fire before anything is read, so they are named too
+  // — each one is the fact this very line checks (a missing/blank identity, a
+  // non-array effect set, an absent fingerprint), nothing more.
+  if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) { report?.('no-root-session-id'); return undefined }
+  if (typeof instanceId !== 'string' || instanceId.length === 0) { report?.('no-instance-id'); return undefined }
+  if (typeof realmId !== 'string' || realmId.length === 0) { report?.('no-realm-id'); return undefined }
+  if (typeof callId !== 'string' || callId.length === 0) { report?.('no-call-id'); return undefined }
+  if (requestedEffects === null || typeof requestedEffects !== 'object' || !Array.isArray(requestedEffects.effects)) { report?.('bad-call-effects'); return undefined }
+  if (typeof requestedEffects.fingerprint !== 'string' || requestedEffects.fingerprint.length === 0) { report?.('bad-effect-fingerprint'); return undefined }
   const m = mount ?? resolvePaMount(rootSessionId, instanceId)
   if (m === undefined) { report?.('no-mount'); return undefined }
   const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }

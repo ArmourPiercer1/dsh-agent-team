@@ -730,7 +730,11 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
       return undetermined('the facts carry an empty or malformed static-layer source tuple — policy facts with no stated source are not facts')
     }
     const blueprint = facts.blueprint
-    if (blueprint === null || typeof blueprint !== 'object' || !Number.isInteger(blueprint.revision)
+    // The blueprint revision is the lane's STRING identity (see
+    // `PaCallFactsBlueprint.revision`); the binding's own `revision` above stays
+    // an integer counter — two different counters, two different checks, no
+    // coercion in either direction.
+    if (blueprint === null || typeof blueprint !== 'object' || !nonEmpty(blueprint.revision)
       || !nonEmpty(blueprint.contentHash) || !nonEmpty(blueprint.templateId) || !nonEmpty(blueprint.cwd) || !nonEmpty(blueprint.providerVersion)) {
       return undetermined('the facts blueprint tuple is malformed — the plane the facts were read from is not established')
     }
