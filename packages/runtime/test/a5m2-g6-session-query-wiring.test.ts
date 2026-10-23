@@ -230,7 +230,11 @@ function makeWorld (opts: WorldOpts) {
         const req = request as Record<string, unknown>
         const seed = sessions.get(String(req.sessionId))
         if (seed === undefined) throw Object.assign(new Error('session was not found'), { code: 'SESSION_QUERY_SESSION_NOT_FOUND' })
-        return { target: record(seed), ancestors: [], descendants: [], complete: true }
+        // the adapter's event-trace lane authorizes the RESPONSE's .session
+        // header (g6-session-query.mjs:1664) and renders trace.target as the
+        // EVENT record (:826-834) — the port face carries both.
+        const target = (seed.events ?? []).find((ev) => ev.seq === req.seq) ?? { seq: Number(req.seq), type: 'message', surface: 'chat', time: 1731000000000 }
+        return { session: record(seed).header, target, ancestors: [], descendants: [], complete: true, replacementChain: [], replacedEventSeqs: [], sourceEventSeqs: [], derivedEventSeqs: [] }
       }),
     }),
     eventReadQueryPort: Object.freeze({
@@ -280,7 +284,8 @@ function makeWorld (opts: WorldOpts) {
   const hidden = new Set(opts.hideNative ?? [])
 
   const readNative = (name: string) => (hidden.has(name) ? undefined : natives.get(name))
-  const readCaller = () => ({ id: CALLER_ID, ...(cwd === undefined ? {} : { cwd }) })
+  let callerNow = CALLER_ID
+  const readCaller = () => ({ id: callerNow, ...(cwd === undefined ? {} : { cwd }) })
   const teamCeiling = (target: string) => ceiling.has(target)
   const declaredMount = { searchBackend: opts.searchBackend ?? { present: true as const } }
 
@@ -321,6 +326,9 @@ function makeWorld (opts: WorldOpts) {
 
   return {
     natives, qp, calls, nativeBodies, ceiling, paCalls, closePlanCalls, readNative, baseInput,
+    /** The caller face is swappable so the drift legs can move the caller
+     *  A→B inside the PA-await window (root 18:2x TOCTOU legs). */
+    setCaller: (id: string) => { callerNow = id },
     portCalls: () => calls.length,
     build (over: Record<string, unknown> = {}) {
       // the adapter's own contradiction law: evidence of NO backend with a
@@ -418,7 +426,10 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       expect(noFeed.detail!).toContain('placementFeed')
       const noPa = WIRE.buildG6SessionQueryWiring({ ...w.baseInput, pa: undefined })
       expect(noPa.ok).toBe(false)
-      expect(noPa.detail!).toContain('pa {open, edge, closePlan}')
+      // root 18:2x defect ③: the seat is accepted in its PRODUCTION shape —
+      // the pinned bytes name the callable paAdmit face, not a plain-object
+      // test that rejected it.
+      expect(noPa.detail!).toContain('CALLABLE with open / edge / closePlan')
       const stray = WIRE.buildG6SessionQueryWiring({ ...w.baseInput, nativeFallback: true })
       expect(stray.ok).toBe(false)
       expect(stray.detail!).toContain('nativeFallback')
@@ -684,6 +695,120 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       expect(refusal.code).toBe(SC.DECLARED_MOUNT_ABSENT)
       expect(refusal.detail!).toContain(evidence)
       expect(() => asm.familyRegistrations()).toThrow(CODES.PLACEMENT_KEY_ABSENT) // census rows never reach registration
+    })
+  })
+
+  describe('(g) root 18:2x defect round — production seat shape, one capture, TOCTOU close, issued identity', () => {
+    it('g1: the PRODUCTION seat shape assembles and walks — paAdmit is a CALLABLE carrying open/edge/closePlan (team-tool-plane.mjs:1214/:1679/:1713/:1714)', async () => {
+      const w = makeWorld({ tag: 'g1' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const callablePa = Object.assign(
+        async () => { throw new Error('the CALLABLE face of paAdmit never runs on the split-path walk — only the attached methods do') },
+        methods,
+      )
+      const asm = w.build({ pa: callablePa })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      const served = String(await def.execute(TRACE_ARGS, { callId: 'exec-callable-seat' }))
+      expect(String(served)).toContain('s-a')
+      expect(w.closePlanCalls()).toBe(1)
+      expect(w.calls.length).toBeGreaterThan(0)
+    })
+
+    it('g2: ONE CAPTURE per name — the seam answers the adapter and the placed definition with the SAME object; a second read is structurally impossible', () => {
+      const w = makeWorld({ tag: 'g2' })
+      const first = new Map<string, Record<string, unknown>>()
+      const reads: string[] = []
+      const seam = (name: string) => {
+        reads.push(name)
+        const base = w.readNative(name)
+        if (base === undefined) return undefined
+        if (!first.has(name)) {
+          first.set(name, { ...base, description: `[g2-first-capture] ${name}` })
+          return first.get(name)
+        }
+        // A second read would spread THIS polluted clone into the placed
+        // definition — the assertions below pin it never happens.
+        return { ...base, description: `[g2-SECOND-READ-POLLUTION-${String(reads.length)}] ${name}` }
+      }
+      const asm = w.build({ readNative: seam })
+      expect(asm.ok).toBe(true)
+      for (const name of ['session_search', 'session_event_search', 'session_trace', 'session_event_trace', 'session_event_read']) {
+        expect(reads.filter((n) => n === name).length, `seam reads for ${name}`).toBe(1)
+      }
+      for (const definition of asm.definitions) {
+        expect(String(definition.description)).toBe(`[g2-first-capture] ${definition.name}`)
+      }
+      expect(asm.definitions.length).toBe(5)
+    })
+
+    it('g3: caller A→B DURING the PA wait refuses with P_G6_WIRE_PLAN_DRIFT, zero port entry — the grant never rides a newer scope', async () => {
+      const w = makeWorld({ tag: 'g3' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const driftingPa = Object.freeze({
+        ...methods,
+        open: async (walk: Record<string, unknown>) => {
+          const answered = await (methods.open as (x: Record<string, unknown>) => Promise<unknown>)(walk)
+          w.setCaller('caller-B-after-approval') // the caller moves while PA is asked
+          return answered
+        },
+      })
+      const asm = w.build({ pa: driftingPa })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_search')!
+      const refusal = await asRefusal(def.execute({ query: 'needle' }, { callId: 'exec-drift' }))
+      expect(refusal.code).toBe(CODES.PLAN_DRIFT)
+      expect(refusal.message).toContain('frozen plan')
+      expect(w.calls.length, 'zero port entry on the drift path').toBe(0)
+      expect(w.closePlanCalls(), 'the plan fact still dies with the call').toBe(1)
+    })
+
+    it('g4: args MUTATED during the PA wait never execute — the body runs the frozen APPROVED snapshot', async () => {
+      const w = makeWorld({ tag: 'g4' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const args: Record<string, unknown> = { session_id: 's-a', seq: 5 }
+      const mutatingPa = Object.freeze({
+        ...methods,
+        open: async (walk: Record<string, unknown>) => {
+          args.session_id = 's-zzz' // caller-side mutation lands AFTER classify, DURING the PA await
+          return await (methods.open as (x: Record<string, unknown>) => Promise<unknown>)(walk)
+        },
+      })
+      const asm = w.build({ pa: mutatingPa })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_event_trace')!
+      const served = String(await def.execute(args, { callId: 'exec-mutated' }))
+      // served = the APPROVED target s-a; had the mutated s-zzz (no such
+      // session) reached the row, invoke would have refused NOT_FOUND.
+      expect(String(served)).toContain('s-a')
+      expect(String(served)).not.toContain('s-zzz')
+      expect(w.calls.length).toBeGreaterThan(0)
+      expect(w.closePlanCalls()).toBe(1)
+    })
+
+    it('g5: the ISSUED identity — the correlationOf seam owns the call id end-to-end (walk, proof leg, closePlan); an exec without callId is admissible through it', async () => {
+      const w = makeWorld({ tag: 'g5' })
+      let minted = 0
+      const asm = w.build({ correlationOf: (_exec: unknown, name: string) => `g5-issued-${name}-${String(minted += 1)}` })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      const served = String(await def.execute(TRACE_ARGS, { token: {} })) // NO callId on the exec
+      expect(String(served)).toContain('s-a')
+      const openLegs = w.paCalls.filter((c) => c.leg === 'open')
+      expect(openLegs[0]!.callId).toBe('g5-issued-session_trace-1')
+      expect(w.paCalls.filter((c) => c.leg === 'closePlan')[0]!.callId).toBe('g5-issued-session_trace-1')
+    })
+
+    it('g6: no issuer, no exec identity — CALL_ID_ABSENT refuses before the seat; no plan fact is opened', async () => {
+      const w = makeWorld({ tag: 'g6' })
+      const asm = w.build()
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { token: {} }))
+      expect(refusal.code).toBe(CODES.CALL_ID_ABSENT)
+      expect(w.paCalls.length).toBe(0)
+      expect(w.calls.length).toBe(0)
+      expect(w.closePlanCalls()).toBe(0)
     })
   })
 })
