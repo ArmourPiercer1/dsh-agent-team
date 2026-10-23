@@ -444,8 +444,8 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     expect(text, 'the honest word is cancellation').toContain('cancelled')
   })
 
-  it('M3 a second open on the same token reuses the ORIGINAL state — nothing is re-minted, nothing is re-walked', async () => {
-    const { handoff, asked } = handoffMount()
+  it('M3 a second open on the same token is a SIDE-EFFECT-FREE refusal — no reuse, and the first leg keeps its state', async () => {
+    const { plane, read, handoff, asked } = handoffMount()
     const file = join(ROOT_DIR, 'target.txt')
     const token = Symbol('a5m2-handoff-m3')
     const execLike = { name: 'read', token, arguments: { file_path: file } }
@@ -453,8 +453,38 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     expect(first.kind).toBe('authorized')
     const askedAfterFirst = asked.length
     const second = await handoff.open(execLike)
-    expect(second.kind, 'the duplicate is still an authorization, not a refusal').toBe('authorized')
-    expect(second.correlation, 'the SAME correlation, never a second one').toBe(first.correlation)
+    // Root's law: an authorization is NOT transferable. The duplicate refuses;
+    // it reuses no answer, mints nothing and walks nothing a second time.
+    expect(second.kind, 'a duplicate open is refused, never an authorization').toBe('refused')
+    expect((second as unknown as { code?: string }).code).toBe('PA_HANDOFF_IN_FLIGHT')
     expect(asked.length, 'the duplicate asked the facts entry ZERO extra times').toBe(askedAfterFirst)
+    // And the refusal must not disturb the leg that OWNS the token: the close-out
+    // bug terminalised the token underneath the first leg, so the first call
+    // refused with the very grant it had earned. It still redeems here.
+    const body = await read.execute({ file_path: file }, { token })
+    expect(joined(body), 'the owning leg still redeems after a refused duplicate').toContain('alpha5-m1-read-line-1')
+    expect(plane.livePaPlan.size, 'the redeemed call leaves no plan fact behind').toBe(0)
+  })
+
+  it('M4 a close that lands on an in-flight leg ends it: nothing is registered late and the token is never re-armed', async () => {
+    const { plane, handoff } = handoffMount()
+    const file = join(ROOT_DIR, 'target.txt')
+    const token = Symbol('a5m2-handoff-m4')
+    const execLike = { name: 'read', token, arguments: { file_path: file } }
+    const opened = handoff.open(execLike)
+    // Close while the leg is still in flight: the placeholder is released and
+    // the leg's own re-check after the await must drop its answer.
+    handoff.close(execLike)
+    const late = await opened
+    expect((late as unknown as { kind?: string }).kind, 'a closed leg never hands off').toBe('refused')
+    expect(plane.livePaPlan.size, 'the dropped answer registers nothing').toBe(0)
+    const again = await handoff.open(execLike)
+    expect((again as unknown as { code?: string }).code, 'a terminal token is never re-armed').toBe('PA_HANDOFF_TERMINAL')
+    // RECORDED COVERAGE GAP (honest): this file can only mount the ALL-ALLOW
+    // walk, and `livePaPlan` is written ONLY on the requires-approval branch
+    // (team-tool-plane.mjs:1171-1180). So the plan-fact DROP on a pending close
+    // — the fix that made the placeholder carry its own correlation — is NOT
+    // exercised here; it needs a mount with a real Control leg. Not counted as
+    // covered.
   })
 })
