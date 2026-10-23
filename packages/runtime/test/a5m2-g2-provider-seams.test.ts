@@ -11,11 +11,16 @@
  *    endpoint origin + immutable config identity from a REQUIRED live reader
  *    (origin alone cannot pass). Team-scope only — a noTeam install keeps
  *    ZERO seam effect (leg-proven).
- *  - MCP request lease (c0e-3): the runtime's request-time re-selection
- *    picks its OWN client (mcp-resources/src/index.ts:120-125 @639ed01539),
- *    so this OWNED-lane seam executes the generation-specific dispatch ON
- *    THE CAPTURED CLIENT OBJECT itself — never a forwarding re-selection,
- *    never an unobserved pass-through, never a self-proving getter string.
+ *  - MCP request lease (c0e-3 + 57f5): the runtime's request-time
+ *    re-selection picks its OWN client (mcp-resources/src/index.ts:120-125
+ *    @639ed01539), so this OWNED-lane seam executes the generation-specific
+ *    dispatch ON THE CAPTURED CLIENT ITSELF — and on the REAL SDK interface:
+ *    the internal McpResourceRequest's top-level uri/cursor are mapped into
+ *    per-branch params for listResources / listResourceTemplates /
+ *    readResource with { signal, timeout } options preserving the ORIGINAL
+ *    timeout config, mirroring the pinned host mapping
+ *    (mcp/mcp-client/src/connection.ts:367-384 @639ed01539). The internal
+ *    request object is never handed over; no self-proving getter strings;
  *    stdio locks FULL args + cwd.
  *  - BROWSER governed lease (c0e-1), owner contract
  *    browser-use-runtime/src/index.ts @639ed01539: PA-before-launch is
@@ -30,19 +35,25 @@
  *    open SECOND — browser-use-stagehand-native index.ts:105-117 pattern,
  *    native faces native.ts:95/:86) with factory-owned half-open rollback
  *    (runtime open fails ⇒ process closed BEFORE rejecting) and
- *    exactly-once retain-on-failure close. The lease's openResource is fed
- *    by this owner (integration leg). RESIDUAL (reported): the HOST's own
- *    lane constructs SessionResources plugin-internally (index.ts:100-113) —
- *    not interposable at this pin; the named gap is explicitly NOT the
- *    deliverable.
+ *    exactly-once retain-on-failure close. 57f5 boundary: an uncleaned
+ *    half-open/uncloseable handle is RETAINED AT OWNER LEVEL (observable
+ *    retained()), the owner is POISONED and reopening is BANNED, and the
+ *    lease fed by it moves TERMINAL close-failed with a REJECTED drain — no
+ *    reopen over a leak, no drain that "finds nothing" and reports closed;
+ *    a CLEAN rollback retains nothing and stays RECOVERABLE. The lease's
+ *    openResource is fed by this owner (integration legs). RESIDUAL
+ *    (reported): the HOST's own lane constructs SessionResources
+ *    plugin-internally (index.ts:100-113) — not interposable at this pin;
+ *    the named gap is explicitly NOT the deliverable.
  *  - Consumption edge (card 4): consumeG2ApprovedPlan enforces the frozen
  *    actualArgs binding AT the edge; swapped args, rotated classify-time
  *    facts, or a moved row state refuse with zero native entry.
  *
  * Red-on-removal: ordering/capture/drain/rollback legs fail if the module's
- * sequencing is removed (this pass measured: swallowing the late-close
- * failure, forwarding through a re-selection instead of the captured client,
- * and deleting the launch-owner rollback each turn the matching legs RED).
+ * sequencing is removed (measured across c0e/57f5 passes: swallowing the
+ * late-close failure, forwarding through a re-selection instead of the
+ * captured generation, deleting the launch-owner rollback, and removing the
+ * frozen-method check each turned the matching legs RED).
  * Disclosed stand-ins: every provider/lease/native-primitive behind the
  * seams is a TEST-owned double — these legs are NOT C2 and prove no
  * real-Host dimension; the real faces they mirror are cited in the module
@@ -69,7 +80,13 @@ interface WebSeamResult {
   lastDispatch: () => SeamFacts | null
   stats: () => { dispatchCount: number, driftRejects: number }
 }
-interface McpClient { request: (r: unknown, e: unknown) => Promise<unknown>, calls: Array<Record<string, unknown>> }
+interface McpSdkCall { branch: string, params: unknown, options: Record<string, unknown> }
+interface McpClient {
+  listResources: (p: { cursor?: string } | undefined, o: Record<string, unknown>) => Promise<unknown>
+  listResourceTemplates: (p: { cursor?: string } | undefined, o: Record<string, unknown>) => Promise<unknown>
+  readResource: (p: { uri: string }, o: Record<string, unknown>) => Promise<unknown>
+  calls: McpSdkCall[]
+}
 interface McpSeamResult {
   provider: { request: (r: unknown, e: unknown) => Promise<unknown> }
   serverName: string
@@ -79,7 +96,7 @@ interface McpSeamResult {
   stats: () => { dispatchCount: number, driftRejects: number }
 }
 interface OwnedHandle { value: unknown, close: () => Promise<void> }
-interface LaunchOwnerResult { open: () => Promise<OwnedHandle>, opens: () => number, order: () => readonly string[], ownerSemantics: string }
+interface LaunchOwnerResult { open: () => Promise<OwnedHandle>, opens: () => number, order: () => readonly string[], retained: () => readonly unknown[], poisoned: () => boolean, ownerSemantics: string }
 interface LeaseSnapshot {
   state: string
   mode: string
@@ -111,7 +128,7 @@ const S = (await import(new URL('../src/plugin/live/governed-families/g2-provide
   A5_G2_SEAM_CODES: Record<
     | 'REAL_PROVIDER_ABSENT' | 'CONFIG_IDENTITY_MISMATCH' | 'ALREADY_WRAPPED' | 'IDENTITY_DRIFT'
     | 'PROVIDER_UNAVAILABLE' | 'ENDPOINT_DRIFT' | 'MOUNT_FACTS_INCOMPLETE'
-    | 'CONFIG_DRIFT' | 'SURFACE_DRIFT' | 'CAPTURE_INCOMPLETE' | 'REQUEST_METHOD_UNKNOWN'
+    | 'CONFIG_DRIFT' | 'SURFACE_DRIFT' | 'CAPTURE_INCOMPLETE' | 'REQUEST_METHOD_UNKNOWN' | 'REQUEST_PARAMS_INVALID'
     | 'ARGUMENTS_REBIND' | 'DESTINATION_INVALID' | 'ASSEMBLY_FACTS_MISSING' | 'PA_NOT_CONSUMED'
     | 'LEASE_DRAINING' | 'LEASE_CLOSED' | 'LAUNCH_FAILED' | 'OPEN_CONTRACT_BREACH' | 'CLOSE_FAILED'
     | 'ARGS_REBOUND' | 'PLAN_UNUSABLE',
@@ -152,9 +169,19 @@ const SEARCH_FACTS: MountFacts = { endpointOrigin: 'https://search.deepseek.exam
 const FETCH_FACTS: MountFacts = { endpointOrigin: 'https://fetch.deepseek.example', configIdentity: 'sha256:cfg-fetch-b2' }
 
 function mcpSlot (): { generation: string } { return { generation: 'slot-1' } } // the registered slot's provider object
+// The REAL SDK surface the pinned host maps to (mcp/mcp-client/src/connection.ts:373-381
+// @639ed01539): the captured generation's trio — NO raw request() exists on
+// this double, so whatever the seam hands over is observed per branch with
+// its exact params + options.
 function mcpClient (): McpClient {
-  const dbl: McpClient = { calls: [], request: async () => ({}) }
-  dbl.request = async (r, e) => { dbl.calls.push({ request: r, exec: e }); return { served: 'captured-client' } }
+  const dbl = { calls: [] as McpSdkCall[] } as McpClient
+  const record = (branch: string) => async (p: { cursor?: string, uri?: string } | undefined, o: Record<string, unknown>): Promise<unknown> => {
+    dbl.calls.push({ branch, params: p === undefined ? undefined : { ...p }, options: o })
+    return { served: branch }
+  }
+  dbl.listResources = record('listResources')
+  dbl.listResourceTemplates = record('listResourceTemplates')
+  dbl.readResource = record('readResource')
   return dbl
 }
 interface NativeDef { name: string, description: string, execute: (args: unknown, exec: unknown) => Promise<unknown>, calls: Array<Record<string, unknown>> }
@@ -186,7 +213,8 @@ function syncError (fn: () => unknown): SeamError {
   throw new Error('expected a typed throw — the call returned normally')
 }
 const flush = async (n = 16): Promise<void> => { for (let i = 0; i < n; i += 1) await Promise.resolve() }
-const EXEC: Record<string, unknown> = { agent: { id: 'agent-g2-seams' } }
+const SIGNAL = new AbortController().signal // what the host passes as options.signal (connection.ts:370)
+const EXEC: Record<string, unknown> = { agent: { id: 'agent-g2-seams' }, signal: SIGNAL }
 
 /* ── WEB seam ─────────────────────────────────────────────────────── */
 describe('a5m2-g2-seams WEB pin', () => {
@@ -347,35 +375,56 @@ describe('a5m2-g2-seams WEB pin', () => {
 /* ── MCP seam ─────────────────────────────────────────────────────── */
 describe('a5m2-g2-seams MCP request lease', () => {
   const httpConfig = { serverName: 'remote-api', transport: 'streamable-http', endpointUrl: 'https://mcp.example/mcp' }
-  const httpCapture = (client: McpClient) => () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', client })
+  const TIMEOUT = 4500 // the ORIGINAL connection timeout CONFIG the capture must carry (connection.ts:370 toolCallTimeoutMs)
+  const httpCapture = (client: McpClient) => () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', timeout: TIMEOUT, client })
 
-  it('execution IS the captured client (c0e-3): request AND exec object identity reach the captured client\'s own request; nothing forwards through a re-selection; generation is captured once and re-verified at the edge; a capture without an executable client lets NO call through; the missing capture point cannot build', async () => {
+  it('REAL-INTERFACE dispatch on the captured generation (57f5): per-branch SDK params + {signal, timeout} options per mcp-client/src/connection.ts:367-384 — the internal request object is NEVER handed over; the ORIGINAL timeout config is preserved; generation captured once and re-verified at the edge; captures without the executable trio or the timeout config let NO call through; the missing capture point cannot build', async () => {
     const slot = mcpSlot()
     const client = mcpClient()
     let captures = 0
     const seam = S.createG2McpProviderSeam({
       declaredSurfaceConfig: httpConfig,
       getRealProvider: () => slot,
-      captureConnection: () => { captures += 1; return { transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', client } },
+      captureConnection: () => { captures += 1; return { transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', timeout: TIMEOUT, client } },
     })
     const req = { method: 'resources/list' }
     await seam.provider.request(req, EXEC)
     expect(captures).toBe(2) // capture once + execution-edge re-verify
-    expect(client.calls.length).toBe(1) // the CAPTURED client executed…
-    expect(client.calls[0]?.['request']).toBe(req) // …with the ORIGINAL request…
-    expect(client.calls[0]?.['exec']).toBe(EXEC) // …and THIS call's exec, verbatim
-    expect(String(seam.lastDispatch()?.['executedOn'])).toBe('captured-client')
+    expect(client.calls.length).toBe(1) // the CAPTURED generation executed…
+    expect(client.calls[0]?.branch).toBe('listResources') // …through the SDK branch the host maps to (connection.ts:373)
+    expect(client.calls[0]?.params).toBeUndefined() // no cursor ⇒ UNDEFINED params (connection.ts:374) — never the internal request object
+    expect(client.calls[0]?.options).toEqual({ signal: SIGNAL, timeout: TIMEOUT }) // {signal: exec.signal, timeout: <original config>} — connection.ts:370
+    expect(String(seam.lastDispatch()?.['executedOn'])).toBe('captured-generation')
+    expect(String(seam.lastDispatch()?.['dispatchBranch'])).toBe('listResources')
     expect(seam.lastDispatch()?.['connectionIncarnation']).toBe('gen-1')
+    // READ branch: params are BUILT as { uri } from the top-level uri — no
+    // method/cursor/exec, no internal McpResourceRequest dump (:381).
+    await seam.provider.request({ method: 'resources/read', uri: 'u:9' }, EXEC)
+    expect(client.calls[1]?.branch).toBe('readResource')
+    expect(client.calls[1]?.params).toEqual({ uri: 'u:9' })
+    expect(JSON.stringify(client.calls[1]?.params)).not.toMatch(/method|cursor|signal|exec/)
+    expect(client.calls[1]?.options).toEqual({ signal: SIGNAL, timeout: TIMEOUT })
+    // TEMPLATES branch carries the explicit cursor (:377-379):
+    await seam.provider.request({ method: 'resources/templates/list', cursor: 'c-7' }, EXEC)
+    expect(client.calls[2]?.branch).toBe('listResourceTemplates')
+    expect(client.calls[2]?.params).toEqual({ cursor: 'c-7' })
+    // malformed params refuse BEFORE any capture or dispatch is touched:
+    const dispatched = client.calls.length
+    expect((await asyncError(() => seam.provider.request({ method: 'resources/read' }, EXEC))).code).toBe(SC.REQUEST_PARAMS_INVALID) // read with no top-level uri
+    expect((await asyncError(() => seam.provider.request({ method: 'resources/list', cursor: 42 }, EXEC))).code).toBe(SC.REQUEST_PARAMS_INVALID) // non-string cursor
+    expect(client.calls.length).toBe(dispatched) // zero dispatch
     // A capture that cannot execute is refused per call — no pass-through
     // (stable slot objects: a per-call NEW provider object would itself be
     // an identity drift, which the pin must and does refuse first):
-    const slotA = mcpSlot(); const slotB = mcpSlot(); const slotC = mcpSlot()
-    const noClient = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotA, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1' }) })
+    const slotA = mcpSlot(); const slotB = mcpSlot(); const slotC = mcpSlot(); const slotD = mcpSlot()
+    const noClient = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotA, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', timeout: TIMEOUT }) })
     expect((await asyncError(() => noClient.provider.request({ method: 'resources/list' }, EXEC))).code).toBe(SC.CAPTURE_INCOMPLETE)
-    const dumbClient = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotB, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', client: { noRequest: true } }) })
-    expect((await asyncError(() => dumbClient.provider.request({ method: 'resources/list' }, EXEC))).code).toBe(SC.CAPTURE_INCOMPLETE)
-    const noGen = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotC, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example' }) })
+    const dumbClient = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotB, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', timeout: TIMEOUT, client: { noRequest: true } }) })
+    expect((await asyncError(() => dumbClient.provider.request({ method: 'resources/list' }, EXEC))).code).toBe(SC.CAPTURE_INCOMPLETE) // no generation-specific trio
+    const noGen = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotC, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', timeout: TIMEOUT }) })
     expect((await asyncError(() => noGen.provider.request({ method: 'resources/list' }, EXEC))).code).toBe(SC.CAPTURE_INCOMPLETE)
+    const noTimeout = S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => slotD, captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', client }) })
+    expect((await asyncError(() => noTimeout.provider.request({ method: 'resources/list' }, EXEC))).code).toBe(SC.CAPTURE_INCOMPLETE) // no ORIGINAL timeout config ⇒ no options.timeout — never an invented default
     // The missing capture point cannot even build the seam:
     expect(syncError(() => S.createG2McpProviderSeam({ declaredSurfaceConfig: httpConfig, getRealProvider: () => mcpSlot() })).message).toMatch(/captureConnection is REQUIRED/)
   })
@@ -392,8 +441,8 @@ describe('a5m2-g2-seams MCP request lease', () => {
         phase += 1
         // entry capture: gen-1/client A; execution-edge re-capture: rotated ⇒ REFUSED
         return phase === 2
-          ? { transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-2', client: clientB }
-          : { transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', client: clientA }
+          ? { transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-2', timeout: TIMEOUT, client: clientB }
+          : { transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: 'gen-1', timeout: TIMEOUT, client: clientA }
       },
     })
     const drift = await asyncError(() => rotating.provider.request({ method: 'resources/read', uri: 'u:1' }, EXEC))
@@ -405,7 +454,7 @@ describe('a5m2-g2-seams MCP request lease', () => {
     const perCall = S.createG2McpProviderSeam({
       declaredSurfaceConfig: httpConfig,
       getRealProvider: () => slot,
-      captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: currentClient === clientA ? 'gen-1' : 'gen-2', client: currentClient }),
+      captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: currentClient === clientA ? 'gen-1' : 'gen-2', timeout: TIMEOUT, client: currentClient }),
     })
     await perCall.provider.request({ method: 'resources/list' }, EXEC)
     currentClient = clientB
@@ -418,7 +467,7 @@ describe('a5m2-g2-seams MCP request lease', () => {
     const pinned = S.createG2McpProviderSeam({
       declaredSurfaceConfig: { ...httpConfig, connectionIncarnation: 'gen-1' },
       getRealProvider: () => slot,
-      captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: pinnedGen, client: clientA }),
+      captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://mcp.example', generation: pinnedGen, timeout: TIMEOUT, client: clientA }),
     })
     await pinned.provider.request({ method: 'resources/list' }, EXEC)
     pinnedGen = 'gen-2'
@@ -427,7 +476,7 @@ describe('a5m2-g2-seams MCP request lease', () => {
     const rePointed = S.createG2McpProviderSeam({
       declaredSurfaceConfig: httpConfig,
       getRealProvider: () => slot,
-      captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://evil.example', generation: 'gen-1', client: clientA }),
+      captureConnection: () => ({ transport: 'streamable-http', endpointOrigin: 'https://evil.example', generation: 'gen-1', timeout: TIMEOUT, client: clientA }),
     })
     expect((await asyncError(() => rePointed.provider.request({ method: 'resources/list' }, EXEC))).code).toBe(SC.SURFACE_DRIFT)
     // registered slot-object swap:
@@ -452,7 +501,7 @@ describe('a5m2-g2-seams MCP request lease', () => {
     const stdio = S.createG2McpProviderSeam({
       declaredSurfaceConfig: { serverName: 'local-svc', transport: 'stdio', command: ['/usr/local/bin/svc', '--profile', 'prod'], cwd: '/srv/mcp' },
       getRealProvider: () => slot,
-      captureConnection: () => ({ ...stdioLive, client: stdioClient }),
+      captureConnection: () => ({ ...stdioLive, timeout: TIMEOUT, client: stdioClient }),
     })
     await stdio.provider.request({ method: 'resources/list' }, EXEC)
     expect(stdioClient.calls.length).toBe(1)
@@ -468,7 +517,7 @@ describe('a5m2-g2-seams MCP request lease', () => {
 /* ── TEAM-OWNED launch owner (c0e-4 — shipped) ────────────────────── */
 describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
   interface OwnerDouble { owner: LaunchOwnerResult, order: string[], launches: number, runtimeOpens: number, procCloses: number, runtimeCloses: number }
-  function ownerDouble (opts: { mode?: 'launch' | 'attach', failRuntime?: boolean, failProcClose?: boolean, failRuntimeClose?: boolean, failRollback?: boolean } = {}): OwnerDouble {
+  function ownerDouble (opts: { mode?: 'launch' | 'attach', failRuntime?: boolean, failProcClose?: boolean, failRuntimeClose?: boolean, failRollback?: boolean, invalidRuntime?: boolean } = {}): OwnerDouble {
     const order: string[] = []
     let launches = 0
     let runtimeOpens = 0
@@ -490,7 +539,8 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
       openRuntime: async () => {
         runtimeOpens += 1
         order.push('runtime:open')
-        if (opts.failRuntime === true) throw new Error('CDP connect exploded')
+        if (opts.failRuntime === true && runtimeOpens === 1) throw new Error('CDP connect exploded') // the FIRST open fails; a recoverable retry succeeds
+        if (opts.invalidRuntime === true) return { handle: 'not-an-OwnedSessionResource' } // resolves WITHOUT close()
         return {
           close: async () => {
             runtimeCloses += 1
@@ -528,19 +578,36 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
     expect(d.runtimeCloses).toBe(0) // …nothing else existed to close
     expect(d.order).toEqual(['proc:launch', 'runtime:open', 'proc:close']) // close BEFORE the rejection resolves
     expect(d.owner.order()).toEqual(['owner:launch', 'owner:runtime', 'owner:rollback', 'owner:rolled-back'])
+    // CLEAN rollback = RECOVERABLE boundary (57f5): nothing retained, not
+    // poisoned — a retry is simply a new open (RED if clean failure poisoned):
+    expect(d.owner.retained().length).toBe(0)
+    expect(d.owner.poisoned()).toBe(false)
+    const retry = await d.owner.open()
+    expect(retry.value).toBeTruthy()
+    expect(d.owner.retained().length).toBe(0)
     const attach = ownerDouble({ mode: 'attach' })
     const handle = await attach.owner.open()
     expect(handle.value).toBeTruthy()
     expect(attach.launches).toBe(0) // attach owns only the connection (NativeBrowserConfig.mode)
   })
 
-  it('a rollback that ALSO fails RETAINS the process and rejects CLOSE_FAILED with both causes — never silently dropped; a throwing handle.close() REJECTS and RETAINS (owner :131-137), re-close re-rejects, never a fake closed', async () => {
+  it('57f5: a rollback that ALSO fails RETAINS the handle AT OWNER LEVEL (observable), POISONS the owner and BANS reopening — not local words; a throwing handle.close() REJECTS and RETAINS (owner :131-137) with the same hold + ban, re-close re-rejects, never a fake closed', async () => {
     const rolled = ownerDouble({ failRuntime: true, failRollback: true })
     const err = await asyncError(() => rolled.owner.open())
     expect(err.code).toBe(SC.CLOSE_FAILED)
     expect(err.message).toMatch(/RETAINED/) // the process is not dropped
     expect(err.message).toMatch(/CDP connect exploded/) // BOTH causes ride the refusal
     expect(rolled.owner.order()).toContain('owner:rollback-failed')
+    // REAL owner-level hold, observable — not just the message (RED if the
+    // retention were only text):
+    expect(rolled.owner.poisoned()).toBe(true)
+    expect(rolled.owner.retained().length).toBe(1)
+    expect(rolled.owner.retained()[0]).toBeTruthy() // the actual uncleaned process handle
+    // FAILURE BAN: reopening over the retained half-open resource is refused:
+    const banned = await asyncError(() => rolled.owner.open())
+    expect(banned.code).toBe(SC.CLOSE_FAILED)
+    expect(banned.message).toMatch(/POISONED/)
+    expect(rolled.launches).toBe(1) // the ban refused BEFORE acquiring anything
     const d = ownerDouble({ failRuntimeClose: true })
     const handle = await d.owner.open()
     const closeErr = await asyncError(() => handle.close())
@@ -549,6 +616,27 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
     expect(again.code).toBe(SC.CLOSE_FAILED) // cached rejection — never a later fake success
     expect(d.owner.order()).toContain('owner:close-failed')
     expect(d.owner.order()).not.toContain('owner:closed')
+    expect(d.owner.poisoned()).toBe(true) // a handle that refused to die is held, not forgotten
+    expect(d.owner.retained().length).toBe(1)
+    expect((await asyncError(() => d.owner.open())).message).toMatch(/POISONED/) // same ban after a failed close
+  })
+
+  it('57f5: the INVALID-RUNTIME branch never swallows a failing rollback — the breach surfaces BOTH failures, the process handle and the uncloseable runtime are retained at owner level, and the owner is poisoned', async () => {
+    const d = ownerDouble({ invalidRuntime: true, failRollback: true })
+    const err = await asyncError(() => d.owner.open())
+    expect(err.code).toBe(SC.OPEN_CONTRACT_BREACH)
+    expect(err.message).toMatch(/rollback ALSO FAILED/) // RED while the rollback error is swallowed
+    expect(err.message).toMatch(/process refuses to die/)
+    expect(d.procCloses).toBe(1) // the owner TRIED the rollback
+    expect(d.owner.poisoned()).toBe(true)
+    expect(d.owner.retained().length).toBe(1) // the half-open process handle is held
+    expect((await asyncError(() => d.owner.open())).message).toMatch(/POISONED/)
+    // same branch, rollback CLEAN: breach + runtime-reference retention, poison (uncloseable handle), but the PROCESS died:
+    const clean = ownerDouble({ invalidRuntime: true })
+    expect((await asyncError(() => clean.owner.open())).code).toBe(SC.OPEN_CONTRACT_BREACH)
+    expect(clean.procCloses).toBe(1)
+    expect(clean.owner.poisoned()).toBe(true) // the uncloseable runtime handle is still retained
+    expect(clean.owner.retained().length).toBe(1)
   })
 
   it('LEASE × LAUNCH OWNER integration (the Team lane end-to-end): PA refused ⇒ the owner never opens (zero launches); PA consumed ⇒ work runs on the owner handle and drain closes THROUGH the owner (runtime then process)', async () => {
@@ -571,6 +659,46 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
     expect(d.procCloses).toBe(1)
     expect(d.order.lastIndexOf('runtime:close')).toBeLessThan(d.order.indexOf('proc:close'))
     expect(lease.launchOrder().indexOf('lease:pa:consumed')).toBeLessThan(lease.launchOrder().indexOf('lease:launch:launch'))
+  })
+
+  it('57f5 lease × owner FAILURE BOUNDARY: a factory that RETAINED a half-open handle moves the lease TERMINAL close-failed — no reopen, and drain REJECTS instead of "finding nothing and closing"; a CLEAN rollback stays recoverable (retry = new call)', async () => {
+    // retained side: runtime open fails AND the process rollback fails ⇒
+    // owner holds + poisons; the lease must NOT become reopenable and its
+    // drain must not fake-close over a half-open it cannot see.
+    const leaked = ownerDouble({ failRuntime: true, failRollback: true })
+    const bad = S.createG2BrowserResourceLease({
+      mode: 'launch',
+      openResource: async () => await leaked.owner.open(),
+      consumeApproval: () => 'consumed',
+    })
+    const runErr = await asyncError(() => bad.run({ toolName: 'stagehand_navigate' }, async () => 'never'))
+    expect(runErr.code).toBe(SC.CLOSE_FAILED) // the owner's retained-failure surfaces
+    expect(bad.state()).toBe('close-failed') // NOT 'failed' — RED while the lease reopens over a leak
+    expect((await asyncError(() => bad.run({ toolName: 'stagehand_navigate' }, async () => 'never'))).code).toBe(SC.LEASE_CLOSED) // refused, zero new launches
+    expect(leaked.launches).toBe(1)
+    const drainErr = await asyncError(() => bad.drain()) // RED if drain resolves 'closed' here
+    expect(drainErr.code).toBe(SC.CLOSE_FAILED)
+    expect(drainErr.message).toMatch(/RETAINED a half-open resource/)
+    expect(bad.launchOrder()).toContain('lease:launch-retained')
+    expect(bad.launchOrder()).not.toContain('lease:closed') // never a fake closed
+    expect(leaked.owner.poisoned()).toBe(true) // the owner-level hold is the recovery boundary above
+    // recoverable side: CLEAN rollback (rollback succeeds) — the lease stays
+    // retryable as a NEW call and drains cleanly.
+    const clean = ownerDouble({ failRuntime: true })
+    const ok = S.createG2BrowserResourceLease({
+      mode: 'launch',
+      openResource: async () => await clean.owner.open(),
+      consumeApproval: () => 'consumed',
+    })
+    expect((await asyncError(() => ok.run({ toolName: 'stagehand_navigate' }, async () => 'never'))).code).toBe(SC.LAUNCH_FAILED)
+    expect(ok.state()).toBe('failed') // RECOVERABLE: nothing was retained
+    await ok.run({ toolName: 'stagehand_navigate' }, async () => 'work') // retry = new call, new PA
+    expect(clean.owner.opens()).toBe(2)
+    expect(clean.owner.retained().length).toBe(0)
+    const snap = await ok.drain()
+    expect(snap.state).toBe('closed')
+    expect(clean.runtimeCloses).toBe(1)
+    expect(clean.procCloses).toBe(2) // one rollback + one real close
   })
 })
 

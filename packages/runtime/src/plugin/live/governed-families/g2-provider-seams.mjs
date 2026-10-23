@@ -38,11 +38,19 @@
  *         runtime internals are PRIVATE (layers :51, request :122) and the
  *         runtime's own request-time re-selection picks its OWN client —
  *         forwarding through it is therefore NOT client binding (c0e-3).
- *         This is the M0 OWNED-provider lane: the seam executes the captured
- *         GENERATION-SPECIFIC dispatch on the captured CLIENT OBJECT itself
- *         (the owning assembly's real client), never a re-selection, never a
- *         self-proving getter string. No call passes unobserved: a missing
- *         or incomplete capture point refuses.
+ *         This is the M0 OWNED-provider lane: the seam executes the
+ *         generation-specific dispatch ON THE CAPTURED CLIENT — and per the
+ *         57f5 card on the REAL SDK interface, mirroring the pinned host
+ *         mapping (mcp/mcp-client/src/connection.ts:367-384 @639ed01539):
+ *         the internal McpResourceRequest's TOP-LEVEL uri/cursor and exec
+ *         are NEVER handed to a raw request; the seam builds per-branch
+ *         params for the captured generation's `listResources` /
+ *         `listResourceTemplates` (undefined, or { cursor }) and
+ *         `readResource` ({ uri }) with options { signal: exec.signal,
+ *         timeout: <original configured value, connection.ts:370
+ *         toolCallTimeoutMs, carried on the capture — never invented> } on
+ *         the SAME captured generation object (the :368 pin idiom). No call
+ *         passes unobserved; no self-proving getter string.
  *  - BROWSER  the lease is written to the OWNER's real contract,
  *         browser-use-runtime/src/index.ts @639ed01539:
  *           · OwnedSessionResource = { value, close(): Promise<void> } —
@@ -86,7 +94,7 @@ import { URL } from 'node:url'
 
 import { A5_G2_NAMED_BLOCKERS, classifyG2McpSurface } from './g2-connector-adapters.mjs'
 
-export const A5_G2_SEAM_REVISION = 3
+export const A5_G2_SEAM_REVISION = 4
 
 /** Typed refusal codes owned by this module (all prefixed P_G2_SEAM_). */
 export const A5_G2_SEAM_CODES = Object.freeze({
@@ -101,6 +109,7 @@ export const A5_G2_SEAM_CODES = Object.freeze({
   SURFACE_DRIFT: 'P_G2_SEAM_SURFACE_DRIFT',
   CAPTURE_INCOMPLETE: 'P_G2_SEAM_CAPTURE_INCOMPLETE',
   REQUEST_METHOD_UNKNOWN: 'P_G2_SEAM_REQUEST_METHOD_UNKNOWN',
+  REQUEST_PARAMS_INVALID: 'P_G2_SEAM_REQUEST_PARAMS_INVALID',
   ARGUMENTS_REBIND: 'P_G2_SEAM_ARGUMENTS_REBIND',
   DESTINATION_INVALID: 'P_G2_SEAM_DESTINATION_INVALID',
   ASSEMBLY_FACTS_MISSING: 'P_G2_SEAM_ASSEMBLY_FACTS_MISSING',
@@ -428,22 +437,26 @@ function stdioIdentity (command, cwd) {
  * registers via the PUBLIC `McpResourceRuntime.register(server, provider)`
  * (mcp-resources/src/index.ts:80 @639ed01539).
  *
- * c0e-3 — the runtime's own request-time re-selection (index.ts:120-125)
- * picks its OWN client, so forwarding through `provider.request` cannot bind
- * any captured client (claiming otherwise would be a lie, and a self-proving
- * getter string is forbidden). This is the M0 OWNED-provider lane: the
- * connection-owning assembly's `captureConnection` is REQUIRED and must
- * answer the live generation plus the actual CLIENT OBJECT whose `request`
- * IS the generation-specific dispatch. The seam executes ON THAT CAPTURED
- * CLIENT — same generation, same client, by construction, with no
- * re-selection and no unobserved pass-through.
+ * c0e-3 + 57f5 — the runtime's own request-time re-selection (index.ts:
+ * 120-125) picks its OWN client, so forwarding through `provider.request`
+ * cannot bind any captured client (claiming otherwise would be a lie, and a
+ * self-proving getter string is forbidden). This is the M0 OWNED-provider
+ * lane: `captureConnection` is REQUIRED and must answer the live generation,
+ * the ORIGINAL timeout config, and the actual CLIENT OBJECT exposing the
+ * generation-specific resource dispatch trio {listResources,
+ * listResourceTemplates, readResource} — the real SDK surface the host maps
+ * to (mcp/mcp-client/src/connection.ts:373-381 @639ed01539). The seam
+ * dispatches the request's TOP-LEVEL uri/cursor into per-branch params +
+ * {signal, timeout} options on THAT captured client — same generation, same
+ * client, by construction, with no re-selection and no raw-request dump.
  *
  * @param deps {{
  *   declaredSurfaceConfig: object,           // classified by classifyG2McpSurface
  *   getRealProvider: () => object,           // pins the registered slot's provider generation
  *   captureConnection: () => {transport: string, endpointOrigin?: string,
  *        spawn?: {argv0: string, args: string[], cwd: string},
- *        generation: string, client: {request: Function}},
+ *        generation: string, timeout: number,
+ *        client: {listResources: Function, listResourceTemplates: Function, readResource: Function}},
  *   observe?: (event) => void
  * }}
  */
@@ -482,8 +495,11 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
     if (typeof cap.generation !== 'string' || cap.generation.length === 0) {
       refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, `the live connection carries no generation identity (${JSON.stringify(cap.generation ?? null)}) — a call without a locked generation is refused, not labelled "unobserved" and waved through; zero forwarding`)
     }
-    if (cap.client === null || typeof cap.client !== 'object' || typeof cap.client.request !== 'function') {
-      refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, 'the live connection carries no CLIENT OBJECT with a request() to execute on — c0e-3 binds execution to the captured client; a capture without one is refused, zero forwarding')
+    if (cap.client === null || typeof cap.client !== 'object' || typeof cap.client.listResources !== 'function' || typeof cap.client.listResourceTemplates !== 'function' || typeof cap.client.readResource !== 'function') {
+      refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, 'the live connection carries no CLIENT OBJECT exposing the generation-specific resource dispatch trio {listResources, listResourceTemplates, readResource} — the REAL SDK surface the host maps to (mcp/mcp-client/src/connection.ts:373-381 @639ed01539); a capture without it is refused, zero forwarding')
+    }
+    if (typeof cap.timeout !== 'number' || !(cap.timeout > 0)) {
+      refuse(A5_G2_SEAM_CODES.CAPTURE_INCOMPLETE, `the live connection carries no original timeout CONFIG (${JSON.stringify(cap.timeout ?? null)}) — options.timeout must PRESERVE the connection's configured value (connection.ts:370 toolCallTimeoutMs @639ed01539), never an invented one; zero forwarding`)
     }
     if (cap.transport !== declared.transport) {
       refuse(A5_G2_SEAM_CODES.SURFACE_DRIFT, `the LIVE connection says transport ${JSON.stringify(cap.transport ?? null)}, the declared surface says ${JSON.stringify(declared.transport)}; zero forwarding`)
@@ -503,6 +519,16 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
         const binding = createG2FrozenArgsBinding({ label: 'mcp-request', value: request })
         if (request === null || typeof request !== 'object' || !MCP_METHODS.includes(request.method)) {
           refuse(A5_G2_SEAM_CODES.REQUEST_METHOD_UNKNOWN, `request.method ${JSON.stringify(request?.method ?? null)} is outside the McpResourceRequest union {resources/list, resources/templates/list, resources/read} (mcp-resources/src/index.ts:21-24 @639ed01539); zero forwarding`)
+        }
+        // REAL-INTERFACE params law (57f5): the params are BUILT from the
+        // request's top-level uri/cursor per the host mapping — a read
+        // without a string uri or a non-string cursor is a malformed
+        // request, refused BEFORE any capture or dispatch is touched.
+        if (request.method === 'resources/read' && typeof request.uri !== 'string') {
+          refuse(A5_G2_SEAM_CODES.REQUEST_PARAMS_INVALID, `resources/read carries no top-level string uri (${JSON.stringify(request.uri ?? null)}) — { uri } params are built from the real request, never invented (connection.ts:381 @639ed01539); zero forwarding`)
+        }
+        if (request.method !== 'resources/read' && request.cursor !== undefined && typeof request.cursor !== 'string') {
+          refuse(A5_G2_SEAM_CODES.REQUEST_PARAMS_INVALID, `cursor must be a string or absent (${JSON.stringify(request.cursor)?.slice(0, 80)}) (connection.ts:374-379: undefined or { cursor } only); zero forwarding`)
         }
         const now = getRealProvider()
         if (now !== pinned) {
@@ -533,6 +559,27 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
         if (recheck === null || typeof recheck !== 'object' || recheck.generation !== captured.generation || recheck.client !== captured.client) {
           refuse(A5_G2_SEAM_CODES.SURFACE_DRIFT, `the connection generation/client changed between the capture and the execution edge (generation ${JSON.stringify(captured.generation)} → ${JSON.stringify(recheck?.generation ?? null)}) — the captured lease does not execute on a rotated connection; zero forwarding`)
         }
+        // REAL-INTERFACE DISPATCH (57f5): mirror of the pinned host mapping
+        // (mcp/mcp-client/src/connection.ts:367-384 @639ed01539) — the
+        // generation is PINNED once from the capture (:368 idiom), the
+        // internal request's top-level uri/cursor are mapped into per-branch
+        // params (undefined or { cursor }; { uri } for read — the internal
+        // request object itself is NEVER handed to the SDK), and options
+        // carry { signal: exec.signal, timeout: <original config> } (:370).
+        const generation = captured.client
+        const options = { signal: exec?.signal, timeout: captured.timeout }
+        let dispatchBranch
+        let params
+        if (request.method === 'resources/list') {
+          dispatchBranch = 'listResources'
+          params = request.cursor === undefined ? undefined : { cursor: request.cursor }
+        } else if (request.method === 'resources/templates/list') {
+          dispatchBranch = 'listResourceTemplates'
+          params = request.cursor === undefined ? undefined : { cursor: request.cursor }
+        } else {
+          dispatchBranch = 'readResource'
+          params = { uri: request.uri }
+        }
         dispatchCount += 1
         const facts = deepFreeze({
           seam: 'mcp',
@@ -542,12 +589,15 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
           transport: declared.transport,
           ...(declared.transport === 'streamable-http' ? { endpointOrigin: declared.endpointOrigin } : { spawn: declaredSpawn }),
           connectionIncarnation: captured.generation,
-          executedOn: 'captured-client', // c0e-3: the dispatch IS the captured client's request — no runtime re-selection
+          executedOn: 'captured-generation', // the dispatch runs on the pinned captured client…
+          dispatchBranch, // …through the REAL SDK method the host maps to (connection.ts:373-381)
           requestFingerprint: binding.fingerprint,
         })
         lastDispatch = facts
         observe({ event: 'dispatch', facts })
-        return await captured.client.request(request, exec) // the CAPTURED client executes — same generation, same client
+        if (dispatchBranch === 'readResource') return await generation.readResource(params, options)
+        if (dispatchBranch === 'listResources') return await generation.listResources(params, options)
+        return await generation.listResourceTemplates(params, options)
       },
     },
   })
@@ -590,6 +640,13 @@ export function createG2McpProviderSeam ({ declaredSurfaceConfig, getRealProvide
  *     (cached), and a throwing close REJECTS and RETAINS — never reports
  *     closed (owner dispose law :131-137).
  *
+ * 57f5 boundary law: every half-open or uncloseable handle the owner cannot
+ * clean up is RETAINED AT OWNER LEVEL (`retained()`), the owner is POISONED,
+ * and further `open()` calls are BANNED until assembly disposal — no reopen
+ * over a retained resource, no failure swallowed into amnesia. A CLEAN
+ * rollback (every partial acquisition closed) retains NOTHING and stays
+ * RECOVERABLE: retry is simply a new open.
+ *
  * This is what the lease's `openResource` is fed by on the Team lane; the
  * lease owns PA ordering, this owns acquisition + rollback + close.
  *
@@ -611,17 +668,29 @@ export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, ob
     throw new TypeError(`${A5_G2_SEAM_CODES.ASSEMBLY_FACTS_MISSING}: launchOwned is required under 'launch' — the owned-Chromium acquisition the host pattern does FIRST (browser-use-stagehand-native/src/index.ts:105 launchChromium @639ed01539)`)
   }
   const log = []
+  const retainedHandles = [] // OWNER-level holds (57f5): real references, never just words
+  let poisoned = false
   let opens = 0
+  const poison = (handle, why) => {
+    if (handle !== null && handle !== undefined) retainedHandles.push(handle)
+    poisoned = true
+    log.push('owner:poisoned')
+    observe({ event: 'poisoned', why })
+  }
 
   const open = async () => {
+    if (poisoned) {
+      throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `this launch owner is POISONED — a prior failure RETAINED ${retainedHandles.length} uncleaned handle(s) at owner level; reopening over a retained half-open resource is BANNED (57f5: real hold + failure ban; recovery boundary = a NEW owner after the assembly disposes the retained handles)`)
+    }
     opens += 1
     let owned = null
     if (mode === 'launch') {
       log.push('owner:launch')
       owned = await launchOwned()
       if (owned === null || typeof owned !== 'object' || typeof owned.close !== 'function') {
+        poison(owned, 'launchOwned resolved a handle nobody can close')
         log.push('owner:launch-breach')
-        throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, 'launchOwned resolved without a close()able process handle — nothing further may be acquired on top of a resource nobody can close')
+        throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, 'launchOwned resolved without a close()able process handle — the reference is RETAINED at owner level, the owner is POISONED (reopen banned); nothing further may be acquired on top of a resource nobody can close')
       }
     }
     let runtime
@@ -640,24 +709,30 @@ export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, ob
           log.push('owner:rolled-back')
         } catch (rollbackError) {
           log.push('owner:rollback-failed')
-          observe({ event: 'rollback-failed', detail: String(rollbackError?.message ?? rollbackError) })
-          throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `open failed (${String(cause?.message ?? cause).slice(0, 120)}) AND the half-open rollback ALSO failed (${String(rollbackError?.message ?? rollbackError).slice(0, 120)}) — the owned process is RETAINED, not dropped`, { mode })
+          poison(owned, `half-open rollback failed: ${String(rollbackError?.message ?? rollbackError)}`)
+          throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `open failed (${String(cause?.message ?? cause).slice(0, 120)}) AND the half-open rollback ALSO failed (${String(rollbackError?.message ?? rollbackError).slice(0, 120)}) — the owned process handle is RETAINED AT OWNER LEVEL (retainedHandles) and the owner is POISONED: reopen BANNED, not dropped, not forgotten`, { mode })
         }
       }
       if (cause instanceof G2SeamError) throw cause
-      throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} open failed after full rollback (cause: ${String(cause?.message ?? cause).slice(0, 160)}) — a rejected acquisition leaves NO remaining resource (owner :174); a retry is a NEW open`, { mode })
+      throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} open failed after CLEAN full rollback (cause: ${String(cause?.message ?? cause).slice(0, 160)}) — nothing is retained (RECOVERABLE boundary, owner not poisoned): a retry is a NEW open`, { mode })
     }
     if (runtime === null || typeof runtime !== 'object' || typeof runtime.close !== 'function') {
+      // Invalid-runtime branch (57f5): the rollback failure is NEVER
+      // swallowed — it rides the refusal and poisons the owner (the process
+      // stayed half-open AND the runtime handle is uncloseable).
+      let breachRollback = null
       if (owned !== null) {
         log.push('owner:rollback')
         try {
           await owned.close()
           log.push('owner:rolled-back')
-        } catch {
+        } catch (rollbackError) {
+          breachRollback = String(rollbackError?.message ?? rollbackError)
           log.push('owner:rollback-failed')
         }
       }
-      throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, 'openRuntime resolved without an OwnedSessionResource-shaped handle (close REQUIRED, browser-use-runtime index.ts:12-18 @639ed01539)')
+      poison(runtime ?? { uncloseableRuntime: true }, breachRollback !== null ? `invalid runtime AND rollback failed: ${breachRollback}` : 'invalid runtime handle cannot be closed')
+      throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, `openRuntime resolved without an OwnedSessionResource-shaped handle (close REQUIRED, browser-use-runtime index.ts:12-18 @639ed01539) — the reference is RETAINED at owner level and the owner POISONED${breachRollback !== null ? `; the process rollback ALSO FAILED (${breachRollback.slice(0, 120)}) — both failures surface, neither swallowed` : ''}`)
     }
     log.push('owner:ready')
     let closing = null
@@ -668,22 +743,33 @@ export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, ob
         closing = (async () => {
           log.push('owner:close')
           const failures = []
+          let runtimeFailed = false
+          let ownedFailed = false
           try {
             await runtime.close()
           } catch (error) {
+            runtimeFailed = true
             failures.push(`runtime: ${String(error?.message ?? error).slice(0, 120)}`)
           }
           if (owned !== null) {
             try {
               await owned.close()
             } catch (error) {
+              ownedFailed = true
               failures.push(`owned: ${String(error?.message ?? error).slice(0, 120)}`)
             }
           }
           if (failures.length > 0) {
             log.push('owner:close-failed')
-            // Owner dispose law :131-137 — failed close RETAINS and REJECTS.
-            throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `close FAILED (${failures.join(' | ')}) — the handle is RETAINED and disposal REJECTED; never reported closed`)
+            // Owner dispose law :131-137 + 57f5: whatever refused to close
+            // is RETAINED at owner level and the owner POISONED — no reopen
+            // over it, and the rejection is permanent (never a later fake
+            // success).
+            if (runtimeFailed) retainedHandles.push(runtime)
+            if (ownedFailed) retainedHandles.push(owned)
+            poisoned = true
+            log.push('owner:poisoned')
+            throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `close FAILED (${failures.join(' | ')}) — the uncloseable handle(s) are RETAINED at owner level (retained ${retainedHandles.length}) and disposal REJECTED; never reported closed`)
           }
           log.push('owner:closed')
         })()
@@ -696,7 +782,9 @@ export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, ob
     open,
     opens: () => opens,
     order: () => Object.freeze([...log]),
-    ownerSemantics: 'Team-owned launch owner (c0e-4): launchOwned FIRST (host pattern index.ts:105), openRuntime SECOND (native.ts:95 face), connect failure ⇒ await launchOwned.close() BEFORE rejecting (host index.ts:117; owner contract :23-30); handle.close() closes runtime then process EXACTLY ONCE and a throwing close RETAINS + REJECTS CLOSE_FAILED (:131-137) — no fake closed',
+    retained: () => Object.freeze([...retainedHandles]), // 57f5: REAL owner-level holds, observable
+    poisoned: () => poisoned,
+    ownerSemantics: 'Team-owned launch owner (c0e-4 + 57f5): launchOwned FIRST (host pattern index.ts:105), openRuntime SECOND (native.ts:95 face), connect failure ⇒ await launchOwned.close() BEFORE rejecting (host index.ts:117; owner contract :23-30); a CLEAN rollback retains nothing and stays RECOVERABLE (retry = new open); any uncleaned half-open/uncloseable handle is RETAINED AT OWNER LEVEL and POISONS the owner — reopen BANNED until assembly disposal; handle.close() closes runtime then process EXACTLY ONCE and a throwing close RETAINS + REJECTS CLOSE_FAILED (:131-137) — no fake closed',
   })
 }
 
@@ -726,9 +814,13 @@ export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, ob
  *    CLOSE_FAILED (owner dispose law, :131-137) — never a fake 'closed'.
  *  · Failed open rollback is the FACTORY's contract ("reject only after
  *    rolling back partial acquisition", :23-30, :174 — the Team lane's
- *    factory IS createG2BrowserLaunchOwner above, which performs it); the
- *    lease deletes its entry and surfaces LAUNCH_FAILED; a retry is a NEW
- *    call re-consuming PA.
+ *    factory IS createG2BrowserLaunchOwner above). 57f5 boundary: a CLEAN
+ *    rollback (LAUNCH_FAILED) retains nothing — the lease deletes its entry
+ *    and a retry is a NEW call re-consuming PA; a factory that RETAINED a
+ *    half-open handle (CLOSE_FAILED / OPEN_CONTRACT_BREACH from the
+ *    owner-level hold + poison) moves the lease TERMINAL close-failed with a
+ *    REJECTED drain — never a reopen over the retained resource, never a
+ *    drain that reports 'closed' over a half-open it cannot see.
  *
  * @param deps {{
  *   mode: 'launch'|'attach',
@@ -795,14 +887,29 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
           opened = await openResource({ mode, envelope })
         } catch (cause) {
           // Owner contract: open() owns partial-acquisition rollback
-          // (:23-30, :174) — the Team lane's open IS createG2BrowserLaunchOwner,
-          // which rolled back (or retained and said so); on rejection nothing
-          // further remains for the lease to close.
+          // (:23-30, :174) — the Team lane's open IS createG2BrowserLaunchOwner.
+          // 57f5 draws the boundary honestly: if the factory rejections says
+          // it RETAINED something (CLOSE_FAILED / OPEN_CONTRACT_BREACH — the
+          // owner-level hold + poison), the lease moves TERMINAL close-failed
+          // with a REJECTED drain: no reopen over a half-open resource the
+          // lease cannot see, and a drain that finds no handle must never
+          // report 'closed'. A CLEAN rollback (LAUNCH_FAILED) retains nothing
+          // and stays RECOVERABLE: the entry is deleted and a retry is a NEW
+          // call re-consuming PA.
+          const code = cause instanceof G2SeamError ? cause.code : undefined
+          if (code === A5_G2_SEAM_CODES.CLOSE_FAILED || code === A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH) {
+            log.push('lease:launch-retained')
+            state = 'close-failed'
+            init = null
+            drainPromise = Promise.reject(new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `the launch factory RETAINED a half-open resource at owner level and POISONED itself (${String(cause?.message ?? '').slice(0, 200)}) — the lease found no handle of its own yet refuses to fake 'closed': no reopen, disposal REJECTED (57f5); recovery boundary = a NEW owner+lease after the assembly disposes the retained handles`))
+            void drainPromise.catch(() => {}) // observable, never unhandled
+            throw cause
+          }
           log.push('lease:launch-failed')
           state = 'failed'
           init = null
           if (cause instanceof G2SeamError) throw cause
-          throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} failed under the lease (cause: ${String(cause?.message ?? cause).slice(0, 160)}); the launch owner owns rollback, so a rejected acquisition leaves NO remaining resource — a retry is a NEW call re-consuming PA`, { mode })
+          throw new G2SeamError(A5_G2_SEAM_CODES.LAUNCH_FAILED, `${mode} failed under the lease (cause: ${String(cause?.message ?? cause).slice(0, 160)}); the launch owner rolled back CLEANLY (nothing retained) — a retry is a NEW call re-consuming PA`, { mode })
         }
         if (opened === null || typeof opened !== 'object') {
           log.push('lease:launch-failed')
