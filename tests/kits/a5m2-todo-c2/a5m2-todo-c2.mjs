@@ -1544,9 +1544,34 @@ async function preflight() {
   {
     const pkgMeta = JSON.parse(readFileSync(join(INSTALL_PKG, 'package.json'), 'utf8'))
     const helperMeta = JSON.parse(readFileSync(join(HOME, 'mount-helper-root', 'package', 'package.json'), 'utf8'))
-    for (const [label, meta] of [['install-19d54bd72/package/package.json', pkgMeta], ['mount-helper-root/package/package.json', helperMeta]]) {
+    // OVERLAY-18 (root 21:30 — the one product-pin omission behind 307c bash-15524 REAL_RC1, preflight,
+    // never booted): the bf4e89e1 package legitimately declares TEN approved DSH peers — center
+    // 1d2e97dd7 added @deepseek-ai/dsh-schedule under root's 20:25 ruling — while this identity check
+    // still demanded exactly nine, so the nearest-manifest gate refused a legal pin. The check becomes
+    // the EXACT approved set, read off the fixed bf4e89e1 manifest: every one of the ten names present
+    // at its exact pinned version AND no peer outside that list. This is not a blind 9 -> 10 count and
+    // it does not tolerate any extra, renamed or unpinned peer (the exact-value map subsumes the old
+    // "every version === 0.2.0-rc.2" clause). No safety or business criterion was touched.
+    const EXPECT_PEERS = {
+      '@deepseek-ai/dsh': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-agent': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-llm': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-mcp-client': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-schedule': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-scope': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-session': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-spill-local': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-storage-domain': '0.2.0-rc.2',
+      '@deepseek-ai/dsh-tool-fs-search': '0.2.0-rc.2',
+    }
+    const peersExact = (deps) => {
+      const names = Object.keys(deps ?? {})
+      const want = Object.entries(EXPECT_PEERS)
+      return names.length === want.length && want.every(([n, v]) => deps?.[n] === v)
+    }
+    for (const [label, meta] of [[`${INSTALL_DIR}/package/package.json`, pkgMeta], ['mount-helper-root/package/package.json', helperMeta]]) {
       const peers = Object.entries(meta.peerDependencies ?? {})
-      const ok = meta.name === 'dsh-agent-team' && meta.version === '0.1.1-alpha.2' && peers.length === 9 && peers.every(([, v]) => v === '0.2.0-rc.2') && (meta.exports?.['./host'] ?? '').endsWith('/plugin/host.js')
+      const ok = meta.name === 'dsh-agent-team' && meta.version === '0.1.1-alpha.2' && peersExact(meta.peerDependencies) && (meta.exports?.['./host'] ?? '').endsWith('/plugin/host.js')
       log(`nearest manifest (${label}): ${meta.name}@${meta.version} peers=${peers.length}x${[...new Set(peers.map(([, v]) => v))].join(',')} (${ok ? 'IDENTITY-OK' : 'IDENTITY-BAD'})`)
       if (!ok) await dieFatal(`root identity manifest bad at ${label}`)
     }
