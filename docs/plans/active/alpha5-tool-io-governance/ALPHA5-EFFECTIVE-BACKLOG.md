@@ -50,8 +50,8 @@
 | todo_write | 已测试 | todo PA hand-off C2 **r11** 真 Host 验收 @31f7 包 / pin bbde8（root 签收口径，更正：非 r14@8b94——r14 是 write 旧 kit 判据失败轮） | center/已关弧 | — |
 | write（既有文件） | 已测试 | 既有文件写 C2 r16 @19d54 包，root 14:38 限定既有文件范围接受 | center/已关弧 | 范围外新文件不在此档 |
 | write（新建文件） | 未开发 | 治理实现仍实质缺口（r16 明示限定既有文件） | 待派 | 无第五档 |
-| read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 决策侧 drift 诊断中（seam 缺失候选，见证据目录） |
-| read | 接线未测 | 生产挂载真路径（M1 弧已老版本验收；本固定包组合未重验） | V-RSJ `68701321` 第二 lane 进行中 | Host 验收=r17 后首跑 |
+| read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 根因已证并落 FIX 候选 `337170983`（决策侧贯通 mount lexical seam；原形状 drifted 分支零触发、缺席逐字节不变；残余 leader-rung 为独立权限门如实记录）；Host 复验仍待（新 Host 冻结） |
+| read | 接线未测 | 生产挂载真路径（M1 弧已老版本验收；本固定包组合未重验） | V-RSJ `68701321`（已停；其未提交 kit 实际已失/待重建=恢复损失，不得改称按设计重写） | Host 验收冻结待 infra 安全入口实测 |
 | search | 接线未测 | 生产 rg 后端真路径 | 同上 | 同上 |
 | jobs | 接线未测 | durable bridge 生产路径 | 同上 | 同上 |
 | G1 纯查询子集（inspect×2 + team_list_pending_control） | 未接线 | g1-surface-adapters 组件（59 腿）+ wiring 候选 g1-query-wiring（15 腿，center 实测并入）可交付未生产装配 | 接线 `44ece7a3`@feat/a5m2-wire-g1 | 子集由冻结表推导（capture=tool ∧ 全 read 义务） |
@@ -59,10 +59,10 @@
 | G2 WEB seams 面 | 未接线 | provider-seams 可交付（registerSearchProvider/registerFetchProvider WEB pins） | 接线 `e78dee2a`@feat/a5m2-wire-g2 | WEB global/env 禁 |
 | G2 WEB 真实 Team-scoped 固定 provider | 未开发 | 实际 provider 仍缺（真 Team scoped register+close 绑定实现缺位，禁 server 名匹配） | 原 G2 组件 owner 生命周期修复卡内 | 具名阻塞 |
 | G2 MCP seams | 未接线 | 真 SDK 签名面可交付 | 同上 | request=执行租约 |
-| G2 BROWSER 装配 | 未开发（组件独审 BLOCK） | team-assembly 候选独审 BLOCK：MCP pending connect 未计 close/inflight、失败无 rollback、并发 reconnect 覆盖 client/吞 close 失败/提前 closed（需串行轮换+按 generation 跟踪+失败 ownership）；Browser 直连 openNativeBrowser 的 Stagehand.create 失败无清理且 execute 忽略 signal（按公开 worker/真实连接所有权修半开，无 ownedChromium 不得假清理）；makeTransport 须实际 endpoint/spawn/config 同源；真 Team scoped register+close 绑定，不靠 server 名 | 生命周期修复=原 G2 组件 owner 独占 g2-team-assembly.*（int 树两文件，进行中）；接线 `e78dee2a` 只续自身 plane/glue 且 browser 行 fail-closed 钉 BLOCK | 未修组件严禁升 Host/C2；533 组件已关不重开；不 Core/global |
-| G3 fsproc/shell 适配面 | 未接线 | 适配器+33 腿可交付未生产装配 | 原 owner 续写中（int 树） | 合并归 center |
+| G2 BROWSER 装配 | 未开发（组件独审 BLOCK） | team-assembly 候选独审 BLOCK：MCP pending connect 未计 close/inflight、失败无 rollback、并发 reconnect 覆盖 client/吞 close 失败/提前 closed（需串行轮换+按 generation 跟踪+失败 ownership）；Browser 直连 openNativeBrowser 的 Stagehand.create 失败无清理且 execute 忽略 signal（按公开 worker/真实连接所有权修半开，无 ownedChromium 不得假清理）；makeTransport 须实际 endpoint/spawn/config 同源；真 Team scoped register+close 绑定，不靠 server 名 | root 16:26 复审：Browser 公开 worker 原阻断关闭、准该部分续接线；MCP 只余三残差一次修（assembly 338–340 connect 失败且 rollback close 失败须持久 retained 真实 next；440–448 最终 close 不得先清全部 owner 再失败丢句柄；close 入口立即拒新 admission/dispose registration）=原 owner 5dbe 独占 assembly/spec@`feat/a5m2-g2fix`（16:32 实际送达开工）；真 transport/Team scope 仍接线义务，不以三修冒 C2 | 未修组件严禁升 Host/C2；不 Core/global |
+| G3 fsproc/shell 适配面 | 未接线 | 34 腿候选已入面（`1e0d82cd`）；root 16:36/16:38 六项真合同裁决拆分修复：g3a=cancel/close/jobs+terminate 拒绝/send intent/cancelRequested（`cf8e0202`），g3b=PTY 真 send/read 能力+normalize-before-spawn+shape service（原 6fdf），独占块由 center 合并核组合 | `cf8e0202`@a5m2-g3a + 6fdf@a5m2-g3b | schema 分类/per-open 真 register 路径保留，34 double 不再当闭 |
 | G3 受控 PTY per-open 真实供给 | 未开发 | 真实 Host 供给实现中（现仅 integrator-supplied perOpenRegistration(callId)），§5.1 未完成 | 原 owner | 无同名 API≠无实现路（root 15:08） |
 | create_goal/get_goal/update_goal | 未接线 | g5 三型别行适配已交付（GoalService 七签名逐一对表、真编译产物 fixed point、20 腿+红除实测，center 实测并入）未生产装配；具名实缺口随行不冒闭：AUTHORITY（authority.ts:80-118 UNOBSERVED）/WRAPUP（exec.deferContext）/AGENT_AUTH | 适配 `8722db94`（已停笔交付） | census 27/28/29 无需改表 |
-| session_search/trace/event_read/event_search/event_trace | 未接线 | g6 五型别行适配已交付（639 file:line 全锚，26 腿+红除实测，center 实测并入）未生产装配；search 二行 declared_mount INACTIVE（抽象后端组合+SESSION_QUERY_SEARCH_DISABLED） | 适配 `8e6e7788`（已停笔交付） | 残差具名导出：TARGET_PREAUTH/PARENT_FILTER/TITLES_PRESENTATION/SESSION_HISTORY_RESOURCE_KIND |
+| session_search/trace/event_read/event_search/event_trace | 未开发（部分实现） | root 16:14 集中裁决降档：PREAUTH∩ceiling 交集、service-safe 存在性、捕获 schema 类型强校验、输出/呈现保真+parentSession 过滤+trace 原形状、分页真 receiver、include_root_sessions:false 实现+INACTIVE 真实构造证据——六项 BLOCK 修在途（`8e6e7788`@a5m2-g6fix，41P RC0 已根实读，先 commit 三文件）；整组成熟度不得冒称 | 修复中 `8e6e7788` | 残差具名导出：TARGET_PREAUTH/PARENT_FILTER/TITLES_PRESENTATION/SESSION_HISTORY_RESOURCE_KIND |
 
 适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。
