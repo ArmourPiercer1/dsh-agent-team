@@ -70,14 +70,29 @@
  * EXISTING-target path (they refuse swapped parents before any open), not
  * as a creation license.
  *
- * MAINTAINED SCOPE (root review, do not overclaim): (a) the new-file path
- * stays HELD pending the root ruling on the limitation report above; (b)
- * this module is NOT yet created by any production path — the real
- * final-edge assembly (paAdmitEdge → closure construction) is unwired in
- * this commit and its proof belongs to the integration owner; (c) the
- * helper-verified windows (root realpath, fd identity) ride a RESTRICTED
- * deployment under the governed root — this is NOT physical safety for an
- * arbitrary mutable directory tree (no openat2 today, law 4).
+ * MAINTAINED SCOPE (root reviews, do not overclaim): this wiring covers
+ * EXISTING files ONLY; (a) the new-file path stays HELD pending the root
+ * ruling on the limitation report above; (b) this module is NOT yet created
+ * by any production path — the real final-edge assembly (paAdmitEdge →
+ * closure construction) is unwired in this commit and its proof belongs to
+ * the integration owner; (c) the helper-verified windows (root realpath,
+ * fd identity) ride a RESTRICTED deployment under the governed root — this
+ * is NOT physical safety for an arbitrary mutable directory tree (no
+ * openat2 today, law 4); (d) THE LINE NEITHER OWNER CROSSES: fingerprint
+ * equality AT THE FACTORY IS NOT AUTHORIZATION — it only binds one plan to
+ * one consumed context. Authorization exists exactly once: the private
+ * closure call made AFTER the real M1 complete final edge (`paAdmitEdge`:
+ * PartA full verification → fresh-facts recheck → one-shot consume)
+ * answered allow. Nothing minted, mirrored, or fingerprint-matched here
+ * substitutes for that edge.
+ *
+ * Multi-chunk cancellation (root ruling, existing-file wiring round):
+ * cancellation is checked BEFORE EVERY chunk; a cancelled call stops all
+ * further writes immediately, never reports success, and never claims
+ * "zero written" — truncation and the earlier chunks' bytes are real
+ * effects. The refusal carries the OBSERVED byte count in the message and
+ * rides the existing law verbatim (`write-side-effect-unconfirmed`,
+ * `sideEffectPossible: true`, code EXECUTION_TERMINATION_UNCONFIRMED).
  *
  * @module packages/runtime/controlled-fs/src/post-consume-write
  */

@@ -403,6 +403,90 @@ describe('a5m2 post-consume write closure — state C + the P-laws on the existi
     }
   })
 
+  it('T-C5 mid-write cancellation (real FD, prototype-intercepted chunks): stops after the N-th round, reports the OBSERVED bytes, never "zero written"', async () => {
+    const w = mkWorld('c5')
+    writeFileSync(path.join(w.root, 't.txt'), 'PRE-EXISTING-ORIGINAL\n')
+    const content = 'ABCDEFGHIJKLMNOP' // 16 utf-8 bytes, 4 bytes per real chunk
+    const signal = { aborted: false }
+    const proto = await handlePrototype(w.root)
+    const real = proto.write
+    let calls = 0
+    try {
+      proto.write = async function (
+        this: unknown,
+        buffer: Uint8Array,
+        offset?: number,
+        length?: number,
+        position?: number | null,
+      ) {
+        calls += 1
+        const capped = Math.min(length ?? buffer.length, 4)
+        const r = await real.call(this as never, buffer, offset ?? 0, capped, position)
+        if (calls === 3) signal.aborted = true // cancelled AFTER the 3rd round
+        return r
+      }
+      const closure = createPostConsumeWriteClosure(
+        mkPlan(w.root, 't.txt', content),
+        { parametersFingerprint: 'fp-plan-1', signal },
+        { instanceRootDir: w.root },
+      )
+      const r = await closure.write()
+      // ① not success
+      expect(r.ok).toBe(false)
+      if (r.ok) throw new Error('unreachable')
+      // ② honest side effect: truncation + 3 chunks' bytes are REAL effects
+      expect(r.error.code).toBe('EXECUTION_TERMINATION_UNCONFIRMED')
+      expect(r.error.details?.['cfReason']).toBe('write-side-effect-unconfirmed')
+      expect(r.error.details?.['sideEffectUnknown']).toBe(true)
+      expect(r.error.message).toContain('12 observed bytes')
+      // ③ the 12 landed bytes are really there, prefix byte-exact —
+      //    cancellation is NOT zero-write
+      const landed = readFileSync(path.join(w.root, 't.txt'))
+      expect(landed.length).toBe(12)
+      expect(landed.toString('utf8')).toBe('ABCDEFGHIJKL')
+      // ④ exactly the sent rounds ran — the 4th chunk was NEVER issued
+      expect(calls).toBe(3)
+    } finally {
+      proto.write = real
+    }
+  })
+
+  it('T-C6 control (same payload, same chunk caps, never aborted): success with the full UTF-8 length — cancellation is the only stop', async () => {
+    const w = mkWorld('c6')
+    writeFileSync(path.join(w.root, 't.txt'), 'PRE-EXISTING-ORIGINAL\n')
+    const content = 'ABCDEFGHIJKLMNOP'
+    const proto = await handlePrototype(w.root)
+    const real = proto.write
+    let calls = 0
+    try {
+      proto.write = async function (
+        this: unknown,
+        buffer: Uint8Array,
+        offset?: number,
+        length?: number,
+        position?: number | null,
+      ) {
+        calls += 1
+        const capped = Math.min(length ?? buffer.length, 4)
+        return await real.call(this as never, buffer, offset ?? 0, capped, position)
+      }
+      const closure = createPostConsumeWriteClosure(
+        mkPlan(w.root, 't.txt', content),
+        { parametersFingerprint: 'fp-plan-1' },
+        { instanceRootDir: w.root },
+      )
+      const r = await closure.write()
+      expect(r.ok).toBe(true)
+      if (!r.ok) throw new Error('unreachable')
+      const landed = readFileSync(path.join(w.root, 't.txt'))
+      expect(landed.length).toBe(Buffer.byteLength(content, 'utf8'))
+      expect(landed.toString('utf8')).toBe(content)
+      expect(calls).toBe(4)
+    } finally {
+      proto.write = real
+    }
+  })
+
   it('T-P1 no post-approval substitution: the write takes ZERO parameters, extra arguments cannot change the frozen bytes', async () => {
     const w = mkWorld('p1')
     writeFileSync(path.join(w.root, 't.txt'), 'ORIGINAL\n')

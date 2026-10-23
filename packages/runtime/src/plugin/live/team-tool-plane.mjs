@@ -87,6 +87,7 @@ export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'tea
  *  (closed key + injected arm; never a config spelling — see the todo entry in
  *  PLANE_SUPPORTED_NATIVE_TAKEOVERS and the todo gate in the assembly). */
 export const A5_TODO_MOUNT_NAME = 'todo_write'
+export const A5_WRITE_MOUNT_NAME = 'write'
 
 /**
  * The host registration law (measured at the pinned host: core tools
@@ -490,6 +491,15 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // `execute` through the arm's bind-time snapshot - 保留原生 (M0-B §B-SESSION);
   // the plane re-implements no host law and holds no authority of its own.
   todo: Object.freeze(['todo_write']),
+  // A5-M2 B-WRITE (CENTER vertical): the governed existing-file write row
+  // mounts at the FIXED native spelling 'write' behind the closed
+  // `writeEnabled` key plus an injected arm (same law as the todo row). The
+  // same-name, same-meaning implementation this ledger records: classify is
+  // pure-lexical, admission walks THIS plane's PA, and the BODY is the
+  // reviewed post-consume execution closure (verify-before-truncate, no
+  // O_CREAT — the new-file path stays HELD); no native body is re-entered
+  // and no authority lives below this line.
+  write: Object.freeze(['write']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -846,6 +856,55 @@ export function createTeamToolPlaneAssembly(input = {}) {
     todoInject = Object.freeze({ arm, description: todoInjectRaw.description })
   }
 
+  // Gate 0d (A5-M2 B-WRITE, CENTER vertical): the SAME-shaped CLOSED
+  // CONSUMPTION KEY for the governed existing-file write row. ABSENT = FALSE
+  // (zero-flip law by absence); a non-boolean is a config defect refused on
+  // the existing PLANE_CONFIG_INCOMPLETE surface. `backends.write` carries
+  // the arm the assembly owner built over the reviewed POST-CONSUME WRITE
+  // CLOSURE (governed-families/write.mjs) plus the CAPTURED native
+  // description bytes; the pairing is enforced BOTH directions (the glob
+  // gate's ④ law: config law, not wiring — no half mount, no silent
+  // fallback, no re-entrant native body anywhere below).
+  const writeEnabledRaw = input.plane?.writeEnabled
+  if (writeEnabledRaw !== undefined && typeof writeEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: `planeCfg.writeEnabled must be a boolean when present — got ${JSON.stringify(writeEnabledRaw) ?? String(writeEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const writeEnabled = writeEnabledRaw === true
+  const writeInjectRaw = input.backends?.write
+  const writeInjectInvalid = (why) => ({ ok: false, code: 'WRITE_ARM_INJECT_INVALID', message: `backends.write: ${why}` })
+  if (writeEnabled && writeInjectRaw === undefined) {
+    return writeInjectInvalid('writeEnabled is true but no governed write arm is injected - the mount would mask the native name with nothing behind it; there is no fallback row and no silent disable')
+  }
+  if (!writeEnabled && writeInjectRaw !== undefined) {
+    return writeInjectInvalid('an arm is injected while writeEnabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let writeInject = null
+  if (writeInjectRaw !== undefined) {
+    const arm = writeInjectRaw.arm
+    const bad = arm === null || typeof arm !== 'object'
+      ? 'the arm is missing (the governed-families/write arm object is the injected face)'
+      : (typeof arm.familyId !== 'string' || arm.familyId.length === 0)
+        ? 'arm.familyId is not a non-empty string'
+        : (!Number.isInteger(arm.adapterRevision) || arm.adapterRevision < 0)
+          ? 'arm.adapterRevision is not a non-negative integer'
+          : (typeof arm.providerId !== 'string' || arm.providerId.length === 0)
+            ? 'arm.providerId is not a non-empty string'
+            : !['classify', 'prepare', 'execute', 'cancel', 'drain'].every((m) => typeof arm[m] === 'function')
+              ? 'the arm does not carry the full classify/prepare/execute/cancel/drain face'
+              : (typeof writeInjectRaw.description !== 'string' || writeInjectRaw.description.length === 0)
+                ? 'the captured native description is missing (the row mounts the HOST description bytes verbatim - same-name, same-meaning)'
+                : undefined
+    if (bad !== undefined) return writeInjectInvalid(bad)
+    writeInject = Object.freeze({ arm, description: writeInjectRaw.description })
+    if (readName === A5_WRITE_MOUNT_NAME) {
+      return writeInjectInvalid(`the read row already mounts under '${A5_WRITE_MOUNT_NAME}' (planeCfg.readName) - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
+    }
+  }
+
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
   // generation read for this mount, asked FRESH at every point that needs an
   // authority generation — the mount kick, EACH admission's construction, and
@@ -1036,6 +1095,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // and ONLY when this mount actually placed it: an unmounted world answers
     // undefined here exactly as before (zero flip).
     if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
+    if (writeInject !== null && spelling === A5_WRITE_MOUNT_NAME) return A5_WRITE_MOUNT_NAME
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -1063,8 +1123,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // `exec.token` (object|symbol, never stringified) and allocates its own
   // correlation string for the PA walk. No name/model-call field is ever
   // composed into an identity here.
-  const todoTokenLedger = new Map() // token(object|symbol) -> { correlation, settled }
+  const governedTokenLedger = new Map() // token(object|symbol) -> { correlation, settled }
   let todoCorrSeq = 0
+  let writeCorrSeq = 0
   // A5-M2: `family` (optional) is the governed-family review block THIS call
   // carries, sourced ONLY from the arm's classify output the row drove (never
   // model input, never a plane invention). It rides to the durable Control leg
@@ -1906,7 +1967,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       if (tokenKey === undefined) {
         throw new Error('refused-todo exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields')
       }
-      const priorFlight = todoTokenLedger.get(tokenKey)
+      const priorFlight = governedTokenLedger.get(tokenKey)
       if (priorFlight !== undefined) {
         throw new Error(`refused-todo exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed todo_write call; one token runs one governed flight and a settled token is never re-armed (the read row's single-flight law, verbatim)`)
       }
@@ -1916,7 +1977,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // alone could collide across mounts; the read lane's nonce plays the
       // same role there).
       const correlation = `plane-todo:${realmId}-${String(todoCorrSeq)}`
-      todoTokenLedger.set(tokenKey, { correlation, settled: false })
+      governedTokenLedger.set(tokenKey, { correlation, settled: false })
       const signal = exec?.signal
       let abortListener
       try {
@@ -2072,11 +2133,190 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // defeating the whole single-flight law — the ledger's whole point is
         // "this token has been spent"); the map is released when the mount is
         // disposed, which is the only legal end of the memory obligation.
-        todoTokenLedger.set(tokenKey, { correlation, settled: true })
+        governedTokenLedger.set(tokenKey, { correlation, settled: true })
       }
     },
     output: TODO_ROW_PRESENTATION_FACE,
     presentCall: (args) => ({ card: 'generic', title: 'Update todo list', kind: 'other', rawInput: args?.todos }),
+  })]
+
+  // A5-M2 B-WRITE: the governed existing-file write row. THE vertical, same
+  // law as the todo row above (classify pure → ONE PA walk with the family
+  // block → arm.prepare(grant) → the kernel's one-shot execution edge → the
+  // arm's consumed-proof entry), with ONE body difference the root ruling
+  // demands: below the edge NOTHING re-enters a native definition — the arm
+  // mints THE private ZERO-ARGUMENT post-consume write closure from the
+  // frozen plan facts alone and calls it. Identity is the shared token
+  // ledger's allocation; consumed tokens are never re-armed until dispose.
+  const writeDefs = writeInject === null ? [] : [Object.freeze({
+    name: A5_WRITE_MOUNT_NAME,
+    // The CAPTURED native description bytes (Gate 0d) — same-name,
+    // same-meaning, never a plane-invented wording.
+    description: writeInject.description,
+    parameters: Object.freeze({
+      type: 'object',
+      properties: {
+        file_path: { type: 'string', description: 'Path to write, resolved against this member\'s admitted file root.' },
+        content: { type: 'string', description: 'Full UTF-8 text content to write.' },
+      },
+      required: ['file_path', 'content'],
+    }),
+    execute: async (raw, exec) => {
+      const arm = writeInject.arm
+      // Identity law (fix-1, shared ledger): the REAL registry token; absent
+      // is a typed front refusal — zero classify, zero walk, zero row.
+      const execToken = exec?.token
+      const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+      if (tokenKey === undefined) {
+        throw new Error('refused-write exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields')
+      }
+      const priorFlight = governedTokenLedger.get(tokenKey)
+      if (priorFlight !== undefined) {
+        throw new Error(`refused-write exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (todo/write share ONE token ledger: a registry token spans exactly one flight of one row); one token runs one governed flight and a settled token is never re-armed (the read row's single-flight law, verbatim)`)
+      }
+      writeCorrSeq += 1
+      const correlation = `plane-write:${realmId}-${String(writeCorrSeq)}`
+      governedTokenLedger.set(tokenKey, { correlation, settled: false })
+      const signal = exec?.signal
+      let abortListener
+      try {
+      // OWNER-CURRENT BEFORE THE FREEZE (fix-4 law, same authority leg as the
+      // todo row and paAdmitPartA): a legitimate mid-call revision
+      // republishes BEFORE the plan freezes its generations, not after the
+      // grant was minted. A faulting leg is OBSERVED, never absorbed.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-write-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
+      let classified
+      try {
+        classified = arm.classify(raw, exec, correlation)
+      } catch (error) {
+        throw new Error(`refused-write arm-unavailable — the governed write arm could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
+      }
+      if (classified.ok !== true || classified.plan === undefined) {
+        throw new Error(`refused-write ${classified.code ?? 'P_WRITE_CLASSIFY_INVALID_ARGUMENTS'} — ${classified.detail ?? 'the governed classify refused this call before admission'}`)
+      }
+      // Once a PLAN exists, an abort in any later wait links to the arm's
+      // cancel law; the listener is removed in the finally (never outlives
+      // the flight).
+      if (signal !== undefined && typeof signal.addEventListener === 'function') {
+        abortListener = () => { arm.cancel(classified.plan) }
+        signal.addEventListener('abort', abortListener, { once: true })
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        throw new Error(`refused-write effects-unparsable — the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+      }
+      const walk = {
+        realmId,
+        callId: correlation,
+        parametersFingerprint: classified.parametersFingerprint,
+        requestedEffects: parsedEffects.value,
+        toolName: A5_WRITE_MOUNT_NAME,
+        family: Object.freeze({
+          familyId: classified.reviewPayload.familyId,
+          adapterRevision: classified.reviewPayload.adapterRevision,
+          providerIdentity: classified.reviewPayload.providerIdentity,
+          targetManifest: classified.reviewPayload.targetManifest,
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      }
+      const opened = await paAdmit.open(walk)
+      if (opened.kind === 'deny') {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`refused-write ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+      }
+      if (opened.cancelled === true) {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`write · cancelled — the call was cancelled at the PA edge before admission (${String(settled.writeOutcome ?? 'zero write')})`)
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        arm.cancel(classified.plan)
+        throw new Error(`refused-write APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal arm state never substitutes for the kernel answer`)
+      }
+      let prepared
+      try {
+        prepared = arm.prepare(classified.plan, opened.grant)
+      } catch (error) {
+        paAdmit.closePlan(walk.callId)
+        arm.cancel(classified.plan)
+        throw new Error(`refused-write arm-unavailable — the arm threw while preparing the grant (${String(error?.message ?? error).slice(0, 160)}); the plan fact was closed and nothing ran`)
+      }
+      if (prepared.ok !== true) {
+        paAdmit.closePlan(walk.callId)
+        throw new Error(`refused-write ${prepared.code ?? 'P_WRITE_NOT_ADMITTED'} — ${prepared.detail ?? 'the arm refused the kernel grant'}`)
+      }
+      const edge = await paAdmit.edge({
+        ...walk,
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      })
+      if (edge.kind === 'deny') {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`refused-write ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+      }
+      if (edge.cancelled === true) {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`write · cancelled — the call was cancelled at the execution edge (${String(settled.writeOutcome ?? 'zero write')}; the approval stays unspent and is never replayed)`)
+      }
+      // The witness law (todo ruling): `consumed: true` comes ONLY from the
+      // REAL final edge's consumedProof; the row never self-attests.
+      const proof = edge.consumedProof
+      if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`refused-write CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the row never self-attests consumption from a missing denial and the closure is never minted (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+      }
+      // The NAMED race (fix-3 law): an abort landing between the REAL
+      // consume and the closure's first microtask — the consumed grant is
+      // ledger truth and NEVER rolls back; the closure that was never
+      // claimed writes ZERO.
+      if (signal?.aborted === true) {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`write · cancelled — the call was aborted after the execution edge consumed the grant and before the closure began (the consumption is a settled fact and is never rolled back; ${String(settled.writeOutcome ?? 'zero write')})`)
+      }
+      // THE private closure call: the consumed proof, the plan, and the
+      // call's own signal (the closure's multi-chunk cancellation law) — no
+      // other argument crosses the approval line.
+      const ran = await arm.execute(classified.plan, { consumed: true, grant: proof.grant, signal })
+      if (ran.ok !== true) {
+        throw new Error(`refused-write ${ran.code ?? 'P_WRITE_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the closure'}`)
+      }
+      return ran.value
+      } finally {
+        if (abortListener !== undefined && typeof signal?.removeEventListener === 'function') {
+          signal.removeEventListener('abort', abortListener)
+        }
+        // Every path settles the token (shared ledger, root ruling @ 9c817:
+        // used identities are NEVER evicted; the map dies with the mount).
+        governedTokenLedger.set(tokenKey, { correlation, settled: true })
+      }
+    },
+    output: Object.freeze({
+      schema: Object.freeze({
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          canonicalLocator: Object.freeze({ type: 'string', required: true }),
+          writtenFingerprint: Object.freeze({ type: 'string', required: true }),
+          existingFileOnly: Object.freeze({ type: 'boolean', required: true }),
+        },
+      }),
+    }),
+    presentCall: (args) => ({ card: 'generic', title: 'Write file (governed)', kind: 'other', rawInput: args?.file_path }),
+    render: (_args, value) => [{
+      type: 'text',
+      text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (existing-file governed write, ${String(value?.writtenFingerprint ?? '')}).`,
+    }],
   })]
 
   const baseDefs = readExecutor === null ? defs : Object.freeze([
@@ -2141,9 +2381,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -2268,6 +2508,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // with the mount regardless).
             if (todoInject !== null) todoInject.arm.drain()
             livePaPlan.clear()
+            // The token ledger's ONE release point (root ruling @ 9c817):
+            // used exec.token identities live for the WHOLE life of the
+            // mount — dispose is the only legal end of that obligation.
+            governedTokenLedger.clear()
             for (const d of disposers) {
               try {
                 if (typeof d === 'function') d()

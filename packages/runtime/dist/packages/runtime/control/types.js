@@ -674,6 +674,25 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget', 'declaredMediaType']),
     }),
+    // A5-M2 B-WRITE (existing-file write over the post-consume closure). The
+    // approved question names ONE target file and the exact bytes' fingerprint;
+    // `existingFileOnly: true` is HELD-PATH honesty IN the approved fact: this
+    // family never creates (the closure carries no O_CREAT), a new-file target
+    // stays HELD pending the root ruling. Resource-derived truth (the file's
+    // bytes, the target's real identity) belongs to the post-approval closure
+    // edge, never to this table (rule doc above).
+    'B-WRITE': Object.freeze({
+        required: Object.freeze({
+            familyId: 'string',
+            adapterRevision: 'nonNegativeInt',
+            operation: 'string',
+            realmId: 'string',
+            canonicalTarget: 'string',
+            contentFingerprint: 'string',
+            existingFileOnly: 'boolean',
+        }),
+        currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
+    }),
 });
 function isPaFamilyTargetField(kind, value) {
     switch (kind) {

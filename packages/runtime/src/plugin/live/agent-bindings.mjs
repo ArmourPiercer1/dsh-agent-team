@@ -359,6 +359,7 @@ import { A5_GOVERNED_FAMILIES, publishPaMount, readPaCallFactsForCall, registerA
 // no authority: admission lives in the M1 A assembly, the durable answers in the
 // AUTH bridge — both already wired below).
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
+import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
 // A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
@@ -2371,6 +2372,7 @@ export function createAgentBindings(deps) {
       // family — a const inside either block would leave the other half unable to
       // reach it (the 9e-4 lesson).
       let a5TodoInject = null
+      let a5WriteInject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2719,6 +2721,88 @@ export function createAgentBindings(deps) {
           a5TodoInject = Object.freeze({ arm: todoArm, description: nativeTodoDefinition.description })
           observations.push(`a5m2-todo: arm BOUND for ${sessionId} (native=${todoNativeIdentity.slice(0, 32)} member=${todoMemberAgentId.slice(0, 16)} header=${todoSessionHeaderId.slice(0, 16)})`)
         }
+        // A5-M2 B-WRITE (CENTER vertical, root ruling 09:19): the governed
+        // existing-file write arm. The native `write` definition is captured
+        // ONLY for its bind-time IDENTITY and description bytes — its
+        // execute is NEVER re-entered: below the final edge the arm mints the
+        // reviewed ZERO-ARGUMENT post-consume write closure (controlled-fs
+        // post-consume-write) from the frozen plan alone. The write namespace
+        // is the SAME governed fs instance the read row anchors on
+        // (`planeCfg.fsInstance`); no anchor, no write mount (config defect,
+        // refused — never a silently different root).
+        if (planeCfg.writeEnabled === true) {
+          const refuseWrite = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed write mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-write-arm-mount-refused'
+            observations.push(`a5m2-write: arm-REFUSED for ${sessionId}`)
+            return error
+          }
+          let nativeWriteDefinition
+          try {
+            nativeWriteDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_WRITE_TOOL_NAME) : undefined
+          } catch (error) {
+            throw refuseWrite(`the global tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
+          }
+          if (nativeWriteDefinition === null || typeof nativeWriteDefinition !== 'object') {
+            throw refuseWrite('no native write definition stands on the global tool face — the arm binds its definitionIdentity and description through the captured OBJECT')
+          }
+          const writeNativeIdentity = definitionIdentityOf(nativeWriteDefinition)
+          if (typeof writeNativeIdentity !== 'string' || writeNativeIdentity.length === 0) {
+            throw refuseWrite('the captured native definition answers no definitionIdentityOf identity')
+          }
+          const writeMemberAgentId = typeof runtimeAgent?.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const writeSessionHeaderId = typeof runtimeAgent?.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (writeMemberAgentId === undefined || writeSessionHeaderId === undefined) {
+            throw refuseWrite('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the arm carries no fallback for either')
+          }
+          const writeRootDir = planeCfg.fsInstance?.rootDir
+          if (typeof writeRootDir !== 'string' || writeRootDir.length === 0) {
+            throw refuseWrite('writeEnabled is true while planeCfg.fsInstance carries no rootDir — the write namespace must be the SAME governed fs instance the read row anchors on; a second root is a config defect')
+          }
+          let writeArm
+          try {
+            writeArm = createGovernedWriteArm({
+              definitionIdentity: writeNativeIdentity,
+              providerId: 'a5p5-plane',
+              realmId: a5PlaneRealmId,
+              memberAgentId: writeMemberAgentId,
+              sessionHeaderId: writeSessionHeaderId,
+              instanceRootDir: writeRootDir,
+              bindingFacts: () => {
+                // The live dispatcher tuple behind THIS mount's write
+                // placement (the todo law verbatim): unreadable answers
+                // THROW; classify/edge refuse with it; fail closed.
+                const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(A5_WRITE_TOOL_NAME)
+                const binding = entry?.binding
+                if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+                  || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+                  || !Number.isInteger(binding.revision)
+                  || !Number.isInteger(binding.policyGeneration)
+                  || !Number.isInteger(binding.authorityGeneration)) {
+                  throw new Error('the live dispatcher binding behind write is unreadable (no verified/ACTIVE tuple on the Guard dispatcher surface)')
+                }
+                return {
+                  bindingId: binding.bindingId,
+                  bindingRevision: binding.revision,
+                  policyGeneration: binding.policyGeneration,
+                  authorityGeneration: binding.authorityGeneration,
+                }
+              },
+              observe: (row) => observations.push(`a5m2-write: ${String(row?.event ?? 'event')} ${String(row?.correlation ?? '')} ${String(row?.detail ?? '')}`),
+            })
+          } catch (error) {
+            throw refuseWrite(`the arm rejected its bind-time inputs (${String(error?.message ?? error).slice(0, 200)})`)
+          }
+          if (typeof nativeWriteDefinition.description !== 'string' || nativeWriteDefinition.description.length === 0) {
+            throw refuseWrite('the captured native definition carries no description — the same-name, same-meaning mount has no other source for it')
+          }
+          a5WriteInject = Object.freeze({ arm: writeArm, description: nativeWriteDefinition.description })
+          observations.push(`a5m2-write: arm BOUND for ${sessionId} (native=${writeNativeIdentity.slice(0, 32)} member=${writeMemberAgentId.slice(0, 16)} header=${writeSessionHeaderId.slice(0, 16)} root=${writeRootDir.slice(0, 32)})`)
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -2817,9 +2901,10 @@ export function createAgentBindings(deps) {
           // source, and second sources are what this move removes.
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
-          ...(a5JobsBridge === null && a5TodoInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
+            ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3212,6 +3297,27 @@ export function createAgentBindings(deps) {
             providerIdentity: a5TodoInject.arm.providerId,
           })
           observations.push(`a5m2-todo: family REGISTERED for ${sessionId} (placement=${String(todoFed.definitionIdentity).slice(0, 32)} family=${a5TodoInject.arm.familyId})`)
+        }
+        // B-WRITE registration: same law, same single fill point (the
+        // registry's shared read serves BOTH the plane-side facts and the
+        // durable verifier; a bound arm with no placement identity is a
+        // broken mount and refuses — no guessed key, no silent skip).
+        if (a5WriteInject !== null) {
+          const writeFed = a5PlaneValue?.placementFeed?.(A5_WRITE_TOOL_NAME)
+          if (typeof writeFed?.definitionIdentity !== 'string' || writeFed.definitionIdentity.length === 0) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed write mount refused for '${sessionId}': the placed row answered no definition identity through the placement feed — the family registration has no trusted key`,
+            )
+            error.code = 'alpha5-write-arm-mount-refused'
+            observations.push(`a5m2-write: family-registration-REFUSED for ${sessionId} (no placement identity)`)
+            throw error
+          }
+          registerA5GovernedFamily(writeFed.definitionIdentity, {
+            familyId: a5WriteInject.arm.familyId,
+            adapterRevision: a5WriteInject.arm.adapterRevision,
+            providerIdentity: a5WriteInject.arm.providerId,
+          })
+          observations.push(`a5m2-write: family REGISTERED for ${sessionId} (placement=${String(writeFed.definitionIdentity).slice(0, 32)} family=${a5WriteInject.arm.familyId})`)
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
