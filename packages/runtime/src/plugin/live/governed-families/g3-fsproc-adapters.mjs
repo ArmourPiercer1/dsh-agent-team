@@ -198,6 +198,7 @@ function typedCodes(prefix) {
     DECLARED_ABSENT: `${prefix}_DECLARED_SERVICE_ABSENT`,
     NOT_ADMITTED: `${prefix}_NOT_ADMITTED`,
     ALREADY_CONSUMED: `${prefix}_ALREADY_CONSUMED`,
+    REQUIRED_MISSING: `${prefix}_CLASSIFY_REQUIRED_MISSING`,
     CANCELLED: `${prefix}_CANCELLED`,
     DRAINING: `${prefix}_DRAINING`,
     DEFINITION_DRIFT: `${prefix}_DEFINITION_DRIFT`,
@@ -230,6 +231,7 @@ export const A5_G3_PTC_TYPED_CODES = Object.freeze({
 })
 
 const refuse = (code, detail) => ({ ok: false, code, detail })
+const refusePort = (code, detail) => ({ code, detail })
 
 const canonicalJson = (value) => JSON.stringify(value, (_k, v) => (
   v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -371,6 +373,41 @@ export function g3CanonicalRegistrationFace(parameters) {
 
 /** True when the capture is shaped as a compiled JSON Schema ENVELOPE
  *  (type:'object' + properties map): parameter keys live in `properties`. */
+/**
+ * THE parameter-entry map of a captured definition (root ruling 66a521):
+ * production classify runs over the REAL defineTool PRODUCT — a compiled
+ * {type:'object',properties,required} whose parameter keys live in
+ * `properties` (envelope keys are NEVER parameters, and Object.keys of the
+ * whole schema would answer exactly that envelope). A capture is treated as
+ * compiled when it is envelope-shaped AND every property is a fixed point of
+ * the host lift (the same authoritative test the face derivation uses);
+ * authored captures keep their own top-level keys. ONE law, used by the
+ * closed surface, the required law, and the face — they can never disagree.
+ */
+function g3ParameterEntries(parameters) {
+  if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) return {}
+  // THE SAME authoritative compiled test the face uses (whole-envelope fixed
+  // point) — surface, required law, and face can never disagree.
+  if (isCompiledParameterLift(parameters)) return parameters.properties
+  // Compiled ENVELOPE that failed the fixed point (tampered/forged capture):
+  // parameters still live in `properties` — envelope keys are never
+  // parameters — authored markers inside get authored semantics (face law).
+  if (hasCompiledEnvelope(parameters)) return parameters.properties
+  return parameters
+}
+
+/** REQUIRED names per the captured definition: the compiled product's closed
+ *  `required` array, else the authored map's property-level markers. */
+function g3RequiredParameterNames(parameters) {
+  if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) return []
+  if (hasCompiledEnvelope(parameters)) {
+    return Array.isArray(parameters.required) ? parameters.required.filter((k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(parameters.properties ?? {}, k)) : []
+  }
+  return Object.entries(parameters)
+    .filter(([, v]) => v !== null && typeof v === 'object' && v.required === true)
+    .map(([k]) => k)
+}
+
 function hasCompiledEnvelope(parameters) {
   return parameters.type === 'object'
     && parameters.properties !== null
@@ -553,18 +590,53 @@ function deepJsonEqual(a, b) {
 
 /**
  * THE terminal control-port adapter over the REAL host entry (root boundary
- * ruling: name the entry — `@deepseek-ai/dsh-terminal` TerminalSessionService
- * @639ed01539, the same service the mounted model tools drive). The
- * integrator supplies the LIVE service (`ctx.terminals`), the live owner
- * Agent resolver (the service authorizes by the EXACT Agent — an id string
- * never substitutes), and — for background sends — the `ctx.jobs` registry.
+ * ruling + root 66a521 correction: a runnable NARROW port over the pinned
+ * 639 types — the entry is `@deepseek-ai/dsh-terminal` TerminalSessionService
+ * @639ed01539, the same service the mounted model tools drive:
+ * lib/types/index.d.ts spawn :60 / startSend :76 / read :82 / signal :90 /
+ * kill :98 / list :104; every operation is authorized by the EXACT live
+ * owner Agent — an id string never substitutes). The integrator supplies the
+ * LIVE service (`ctx.terminals`), the live owner Agent resolver, and — for
+ * background sends — the `ctx.jobs` JobRegistry (`jobs/jobs` lib types:
+ * JobSpec.owner is the branded session id, NEVER omitted — an unowned job is
+ * open to any caller; JobHooks = {cancel(reason?):void synchronous,
+ * done:Promise<JobOutcome{status:'completed'|'killed'|'failed',detail?}>};
+ * JobOutputSource pulls the operation's output into the registry ring;
+ * JobRegistry.kill(id, caller, reason) is owner-checked).
+ *
+ * §5.1 GOVERNANCE SHAPE (root 66a521): the governed open target is the
+ * PER-OPEN PRIVATE CONTROLLED BACKEND + its APPROVED ENVELOPE, never the
+ * public `type`. A public spawn CANNOT carry that registration, so:
+ *  - `deps.controlledSpawn(request, context)` (the integrator's per-open
+ *    provider / CENTER seam) is REQUIRED: it spawns through the per-open
+ *    one-shot registration and returns the NATIVE-shaped spawn result
+ *    ({sessionId,name?,type,pid?,status:{kind,...},motd}) plus the
+ *    `ownedResource` it created (the resource the adapter must clean up if
+ *    governance refuses after the effect started).
+ *  - Without it the adapter REFUSES the open typed (P_TERM_OPEN_PROVIDER_
+ *    ABSENT) — it does NOT fall back to a public-type spawn. send/read/
+ *    signal/kill/list ride the service's EXISTING per-session authorization
+ *    (the session identity IS the per-open handle once published).
+ *
+ * CANCEL/CLEANUP HONESTY (root 66a521): an effect entered (`spawn` returned,
+ * `startSend` started) is an EFFECT ENTRY — after any await the adapter
+ * re-checks the live cancel/drain verdict, and a resource that already
+ * started is CLEANED UP (service.kill / operation.cancel) and the refusal
+ * carries `cleanup` + `effectsStarted:true`. Such a call NEVER claims zero
+ * effects. Cancelling an ASYNC send is operation.cancel — NEVER killing the
+ * persistent PTY — and its real settle is AWAITED.
  *
  * @param deps.terminals - the live TerminalSessionService face.
- * @param deps.resolveOwner - (exec) => the live Agent for the call's owner
- *   (the adapter refuses typed when it cannot answer; it never guesses).
- * @param deps.jobs - optional live JobRegistry (`ctx.jobs`) for
+ * @param deps.resolveOwner - (exec) => the live Agent (required; the service
+ *   authorizes by the EXACT Agent).
+ * @param deps.ownerSessionId - (ownerAgentId) => the branded owner SessionId
+ *   for jobs specs (required whenever background sends are mounted; the spec
+ *   NEVER omits owner — unowned jobs are forbidden here).
+ * @param deps.jobs - optional live ctx.jobs JobRegistry (start/kill) for
  *   run_in_background sends; absent = background sends REFUSE typed.
- * @returns a G3ControlPort routed to the real service.
+ * @param deps.controlledSpawn - ({type,name?,cwd?}, context) =>
+ *   { result: native TerminalSpawnResult-shaped, ownedResource?: {sessionId} }
+ *   | { ok:false, code, detail }: THE per-open controlled backend entry.
  */
 export function createHostTerminalControlPort(deps) {
   const terminals = deps?.terminals
@@ -579,6 +651,13 @@ export function createHostTerminalControlPort(deps) {
   if (jobs !== null && (typeof jobs.start !== 'function' || typeof jobs.kill !== 'function')) {
     throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.jobs must be the live ctx.jobs JobRegistry face (start/kill) when supplied')
   }
+  if (jobs !== null && typeof deps.ownerSessionId !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.ownerSessionId(ownerAgentId) is required when jobs are supplied — JobSpec.owner is never omitted (an unowned job is open to any caller)')
+  }
+  const controlledSpawn = deps.controlledSpawn ?? null
+  if (controlledSpawn !== null && typeof controlledSpawn !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.controlledSpawn must be a function (the per-open controlled-backend provider) or absent')
+  }
   const ownerOrRefusal = (exec) => {
     const owner = deps.resolveOwner(exec)
     if (owner === null || owner === undefined) {
@@ -586,25 +665,145 @@ export function createHostTerminalControlPort(deps) {
     }
     return { owner }
   }
+  /** THE real kill: awaits quiescent cleanup; the service answer (true =
+   *  newly closed, false = same close already in flight) is forwarded. */
+  /** the branded owner SessionId reader (JobSpec.owner / owner-checked kill) */
+  const ownerSessionId = deps.ownerSessionId
+  const killSession = async (owner, sessionId, reason) =>
+    (await terminals.kill(owner, sessionId, ...(reason === undefined ? [] : [reason]))) === true
+      ? 'closed'
+      : 'already-closing'
+  const nativeSessionStatus = (v) => {
+    if (v !== null && typeof v === 'object' && typeof v.kind === 'string') return v
+    return { kind: String(v ?? 'running') }
+  }
   const asPort = {
     name: 'dsh-terminal:ctx.terminals',
     async prepare(spec) {
       const { owner, refusal } = ownerOrRefusal(spec.exec)
       if (refusal !== undefined) return refusal
       const canonical = spec.canonical ?? {}
+      const cancelled = () => typeof spec.isCancelled === 'function' && spec.isCancelled() === true
+      /** THE CLEANUP FACE (root 66a521): a resource that started before a
+       *  governance refusal is killed through the service and the refusal
+       *  reports the cleanup truth — effectsStarted is never hidden. */
+      const cleanupOwned = async (owned, detail) => {
+        const sid = String(owned?.sessionId ?? '')
+        if (sid.length === 0) {
+          return refusePort('P_TERM_CLEANUP_UNOWNED', `governance refused after the open started but the provider answered no ownedResource sessionId — the adapter cannot clean what it cannot own (${detail})`)
+        }
+        try {
+          const outcome = await killSession(owner, sid)
+          return { started: true, sessionId: sid, outcome }
+        } catch (error) {
+          return { started: true, sessionId: sid, outcome: 'cleanup-failed', detail: String(error?.message ?? error) }
+        }
+      }
+      const record = (resource) => {
+        if (resource !== null && resource !== undefined && typeof spec.recordStarted === 'function') {
+          try { spec.recordStarted(resource) } catch { /* the register is best-effort observability */ }
+        }
+      }
+      /** CANCEL BEFORE ANY EFFECT (root ruling 66a521 boundary): between the
+       *  prepare entry and the real start there is a synchronous window —
+       *  cancel/drain landing there is answered HONESTLY AS ZERO EFFECTS.
+       *  The after-effect refusal belongs ONLY to a resource that actually
+       *  STARTED; never invent it for a window the provider never entered. */
+      const cancelledBeforeEffect = () => cancelled()
+        ? { zeroEffects: true, code: 'P_TERM_CANCELLED_BEFORE_EFFECT', detail: 'cancel/drain moved BEFORE any real effect started (the provider was never entered / no operation started): zero body, zero resource — the honest zero-effect word, never dressed as an after-effect refusal' }
+        : null
+      const refusalAfterEffects = async (owned, code, detail) => {
+        const cleanup = await cleanupOwned(owned, detail)
+        return { ok: false, answer: { refused: true, effectsStarted: true, code, detail, cleanup } }
+      }
+      /** CURRENT-FACTS re-check after an await (root 66a521): the arm's live
+       *  target recheck rides the prepare spec; a move refuses AND cleans. */
+      const factsMoved = () => {
+        const r = typeof spec.recheckFacts === 'function' ? spec.recheckFacts() : null
+        return r !== null && r !== undefined && r.ok === false ? r : null
+      }
       if (spec.toolName === 'terminal_open') {
-        // THE real open: service.spawn(owner, {type,name,cwd}) → the
-        // registry-minted TerminalSpawnResult (sessionId/pid/status/motd).
-        const result = await terminals.spawn(owner, {
+        // §5.1: THE governed target is the per-open private controlled
+        // backend + approved envelope. No provider ⇒ typed refusal — never a
+        // public-type spawn behind governance.
+        if (controlledSpawn === null) {
+          return { ok: false, code: 'P_TERM_OPEN_PROVIDER_ABSENT', detail: 'terminal_open governs the PER-OPEN PRIVATE controlled backend registration + approved envelope (§5.1 core): the integrator must supply deps.controlledSpawn over that registration — spawning through the PUBLIC type is not the governed entry, and the adapter refuses rather than dressed-up success' }
+        }
+        // The per-open backend IS starting now: register an intent marker
+        // FIRST, so a provider that is entered but never answers is still a
+        // VISIBLE started effect to cancel — cleanup law covers even an
+        // unanswered provider (best-effort kill of the intended id; honest
+        // nothing-to-kill if the service never minted one).
+        record({
+          sessionId: `unanswered-open:${String(spec.callId)}`,
+          __kind: 'open-intent',
+          callId: spec.callId,
+          // intent identity: what the governed registration WAS (service-
+          // answered); the started resource is VISIBLE in the live
+          // inventory from the first microsecond, before any provider
+          // answer exists
+          ...(spec.manifest?.perOpenBackend === undefined
+            ? {}
+            : { governedRegistration: spec.manifest.perOpenBackend }),
+        })
+        {
+          const preCancel = cancelledBeforeEffect()
+          if (preCancel !== null) return preCancel
+        }
+        const spawned = await controlledSpawn({
           type: String(canonical.type ?? ''),
           ...(typeof canonical.name === 'string' && canonical.name.length > 0 ? { name: canonical.name } : {}),
           ...(typeof canonical.cwd === 'string' && canonical.cwd.length > 0 ? { cwd: canonical.cwd } : {}),
-        })
+        }, { owner, callId: spec.callId, correlation: spec.correlation })
+        if (spawned === null || spawned.ok === false) {
+          return { ok: false, code: spawned?.code ?? 'P_TERM_TARGET_UNRESOLVED', detail: spawned?.detail ?? 'the per-open controlled-backend provider refused the spawn' }
+        }
+        // THE effect started: re-check cancel/drain AFTER the await. A move
+        // refuses here and CLEANUP the started resource — never zero effects.
+        // BOTH rechecks answer after the await. A CANCEL moves the
+        // operation's own decision first and routes the cleanup of the
+        // started resource — the CURRENT-FACTS recheck is consulted when the
+        // facts in fact moved (root rulings: cancel law AND drift law, each
+        // on its own trigger).
+        record({ ...(spawned?.ownedResource ?? spawned?.result ?? {}), __kind: 'open-session' })
+        if (cancelled()) {
+          return refusalAfterEffects(spawned.ownedResource ?? spawned.result, 'P_TERM_CANCELLED_AFTER_EFFECT', 'cancel/drain moved after the per-open backend spawn started: the started resource was cleaned through the service (cleanup truth attached); this call NEVER claims zero effects')
+        }
+        const openDrift = factsMoved()
+        if (openDrift !== null) {
+          // If cancel/drain ALSO moved, the cancel law owns this refusal:
+          // clean the started resource, then hand the entry a CANCELLED edge
+          // so the caller gets the honest after-cancel word — never a drift
+          // code dressed over a cancelled decision.
+          if (cancelled()) {
+            const cleanup = await cleanupOwned(spawned.ownedResource ?? spawned.result, 'cancel moved after the per-open backend spawn started')
+            const edge = new Error('cancelled after a started effect')
+            edge.a5Edge = 'CANCELLED-AFTER-EFFECT'
+            edge.a5Cleanup = cleanup
+            throw edge
+          }
+          return refusalAfterEffects(spawned.ownedResource ?? spawned.result, openDrift.code ?? 'P_TERM_TARGET_DRIFT', `current target facts moved after the per-open backend spawn started (${openDrift.detail ?? 'recheck refused'}): the started resource was cleaned through the service — effects started, this call refuses with the cleanup truth, never a zero-effect word`)
+        }
+        // NATIVE result fields ride VERBATIM (sessionId/kind-bearing status/
+        // pid/type/motd) — native-shaped pass-through, not a re-shape.
+        const result = spawned.result ?? {}
         return {
           ok: true,
           handle: {
-            identity: { sessionId: String(result?.sessionId ?? ''), pid: result?.pid ?? null, status: String(result?.status ?? ''), motdBytes: typeof result?.motd === 'string' ? result.motd.length : 0 },
-            invoke: async () => ({ outcome: 'opened', sessionId: String(result?.sessionId ?? ''), pid: result?.pid ?? null, status: String(result?.status ?? ''), motd: typeof result?.motd === 'string' ? result.motd : '' }),
+            identity: {
+              sessionId: String(result.sessionId ?? ''),
+              pid: result.pid ?? null,
+              status: nativeSessionStatus(result.status),
+            },
+            invoke: async () => ({
+              outcome: 'opened',
+              sessionId: result.sessionId,
+              ...(result.name !== undefined ? { name: result.name } : {}),
+              type: result.type,
+              pid: result.pid,
+              status: nativeSessionStatus(result.status),
+              motd: typeof result.motd === 'string' ? result.motd : '',
+            }),
           },
         }
       }
@@ -614,7 +813,7 @@ export function createHostTerminalControlPort(deps) {
           ok: true,
           handle: {
             identity: { sessionId },
-            invoke: async () => ({ outcome: await terminals.kill(owner, sessionId) ? 'closed' : 'already-closing' }),
+            invoke: async () => ({ outcome: await killSession(owner, sessionId) }),
           },
         }
       }
@@ -647,70 +846,219 @@ export function createHostTerminalControlPort(deps) {
       if (spec.toolName === 'terminal_send') {
         const sessionId = String(canonical.sessionId ?? '')
         if (canonical.run_in_background === true) {
-          // A background send is the HOST jobs contract (ctx.jobs owns the id,
-          // the ring, the settlement; kill is the real control). Without the
-          // supplied registry the adapter REFUSES typed — a fake jobId is the
-          // one answer it must never give.
+          // A background send is the HOST jobs contract. Owner is NEVER
+          // omitted (unowned jobs are open to any caller); hooks carry
+          // cancel(reason) synchronous + eventually-settling done; the
+          // operation output rides an output source into the ring;
+          // registry.kill(id, caller, reason) is the owner-checked control.
           if (jobs === null) {
             return { ok: false, code: 'P_TERM_BG_PORT_UNWIRED', detail: 'run_in_background requires the integrator-supplied ctx.jobs JobRegistry on this port: the jobs face owns the background id; without it the send refuses typed (the host tool-terminal mounts the same pair)' }
           }
+          const ownerSessionId = deps.ownerSessionId(owner?.id ?? '')
+          if (typeof ownerSessionId !== 'string' || ownerSessionId.length === 0) {
+            return { ok: false, code: 'P_TERM_BG_OWNER_UNRESOLVED', detail: 'the branded owner SessionId is unresolvable for this member: JobSpec.owner is never omitted — an unowned job is open to any caller, so the background send refuses typed' }
+          }
           const sendRequest = { text: String(canonical.text ?? ''), submit: canonical.submit !== false }
-          // THE real start (spec.ts:117 JobSpec.run): jobs.start(spec) mints
-          // the id and calls run(job) SYNCHRONOUSLY; the hooks' `done`
-          // promise is how the real result is awaited; registry.kill(id) is
-          // the real control face. The operation starts inside run() —
-          // preflight refusal registers nothing (host law).
-          const jobId = jobs.start({
+          let operation = null
+          // The output source ACCUMULATES the operation's consumed deltas
+          // (readOutput yields what was produced since the PRIOR call); the
+          // JobSourceRead contract is whole-stream offsets (types.d.ts:30).
+          let outputBuffer = ''
+          let settleResolve = null
+          const settlePromise = new Promise((resolve) => { settleResolve = resolve })
+          const specOut = {
             kind: 'pty-send',
             label: `g3 terminal_send ${sessionId}`,
-            run: () => {
-              const operation = terminals.startSend(owner, sessionId, sendRequest)
+            owner: ownerSessionId,
+            output: [{
+              channel: 'stdout',
+              read: (fromByte) => {
+                const produced = operation?.readOutput?.() ?? { delta: '', truncated: false }
+                if (typeof produced?.delta === 'string' && produced.delta.length > 0) outputBuffer += produced.delta
+                return {
+                  text: fromByte >= outputBuffer.length ? '' : outputBuffer.slice(fromByte),
+                  nextOffset: outputBuffer.length,
+                  lossy: produced?.truncated === true,
+                }
+              },
+            }],
+            run: (_job) => {
+              // THE effect starts inside run() — preflight refusal registers
+              // nothing (host law); after run() the job id exists.
+              operation = terminals.startSend(owner, sessionId, sendRequest)
               return {
-                done: operation.done.then((settled) => ({
-                  outcome: 'settled',
-                  waitReason: String(settled?.waitReason ?? ''),
-                  sessionStatus: String(settled?.sessionStatus ?? ''),
-                })),
+                // JobHooks.cancel (jobs types.d.ts:102): SYNCHRONOUS,
+                // idempotent; the operation (NOT the PTY) is cancelled and
+                // `done` settles.
+                cancel: (reason) => { operation?.cancel(typeof reason === 'string' ? reason : undefined) },
+                done: operation.done.then((settled) => {
+                  const outcome = {
+                    status: String(settled?.waitReason ?? '') === 'cancelled' ? 'killed' : 'completed',
+                    detail: `waitReason: ${String(settled?.waitReason ?? 'unknown')}`,
+                    ...(typeof settled?.viewport === 'string' && settled.viewport.length > 0 ? { result: settled.viewport } : {}),
+                  }
+                  if (settleResolve !== null) settleResolve(outcome)
+                  return outcome
+                }),
               }
             },
-          })
-          const id = String(jobId ?? '')
+          }
+        {
+          const preCancel = cancelledBeforeEffect()
+          if (preCancel !== null) return preCancel
+        }
+          const jobId = String(jobs.start(specOut) ?? '')
+          record({ __kind: 'job', jobId })
+          const stopStartedJob = async (code, detail) => {
+            // The job STARTED (id minted, starter ran): cancel through the
+            // OWNER-CHECKED control face (kill(id, caller)) and AWAIT the
+            // real settle — never zero effects, never an orphan.
+            const killAnswer = jobs.kill(jobId, ownerSessionId, code === 'P_TERM_TARGET_DRIFT' ? 'target facts moved after the background send started' : 'cancelled after the background send started')
+            const settled = killAnswer === 'requested' ? await settlePromise : null
+            return { ok: false, answer: { refused: true, effectsStarted: true, code, detail, cleanup: { started: true, jobId, kill: killAnswer, settled } } }
+          }
+          if (cancelled()) {
+            return stopStartedJob('P_TERM_CANCELLED_AFTER_EFFECT', 'cancel/drain moved after jobs.start minted the job and started the operation: the job was killed through the owner-checked registry.kill(id, caller) and its real settle was awaited')
+          }
+          const bgDrift = factsMoved()
+          if (bgDrift !== null) {
+            return stopStartedJob(bgDrift.code ?? 'P_TERM_TARGET_DRIFT', `current target facts moved after jobs.start started the operation (${bgDrift.detail ?? 'recheck refused'}): the job was killed owner-checked and its settle awaited — effects started, never a zero-effect word`)
+          }
           return {
             ok: true,
             handle: {
-              identity: { jobId: id, background: true, sessionId },
-              invoke: async () => ({ outcome: 'accepted', jobId: id }),
-              terminate: async () => ({ kill: jobs.kill(id), note: 'registry.kill answers requested | already-finished — the jobs record owns the settlement' }),
+              identity: { jobId, background: true, sessionId },
+              invoke: async () => ({ outcome: 'accepted', jobId }),
+              // ASYNC TERMINATION AWAITS THE REAL RESULT (root 66a521):
+              // registry.kill(id, caller) answers requested | already-finished;
+              // 'requested' is followed until the hooks' done outcome settles.
+              terminate: async () => {
+                const kill = jobs.kill(jobId, ownerSessionId)
+                const settled = kill === 'requested' ? await settlePromise : null
+                return { kill, settled, note: 'registry.kill(id, caller) answers requested | already-finished; a requested kill is followed to the awaited JobOutcome — the jobs record owns the settlement' }
+              },
             },
           }
         }
-        // THE real foreground send: startSend → TerminalSendOperation; the
-        // real result is awaited through operation.done (a
-        // TerminalSendResult: viewport/waitReason/sessionStatus/truncated).
+        // THE real foreground send: startSend → TerminalSendOperation. The
+        // effect STARTED at startSend: if governance moved during the async
+        // admission the operation is cancelled (NOT the PTY killed — the
+        // persistent session survives a cancelled send) and the REAL settle
+        // is awaited before the refusal answers.
+        {
+          const preCancel = cancelledBeforeEffect()
+          if (preCancel !== null) return preCancel
+        }
         const operation = terminals.startSend(owner, sessionId, {
           text: String(canonical.text ?? ''),
           submit: canonical.submit !== false,
         })
+        // THE register carries the OPERATION, not the session: the cancel
+        // cleanup law for a send cancels the OPERATION — killing the
+        // persistent PTY for a cancelled send is the WRONG face.
+        record({ __kind: 'send-operation', operation, sessionId })
+        if (cancelled()) {
+          operation.cancel()
+          const settled = await operation.done
+          return { ok: false, answer: { refused: true, effectsStarted: true, code: 'P_TERM_CANCELLED_AFTER_EFFECT', detail: 'cancel/drain moved after startSend started the operation: the operation was cancelled (the persistent PTY is NOT killed by a cancelled send) and its real settle was awaited', cleanup: { started: true, sessionId, settled } } }
+        }
+        const sendDrift = factsMoved()
+        if (sendDrift !== null) {
+          operation.cancel()
+          const settled = await operation.done
+          return { ok: false, answer: { refused: true, effectsStarted: true, code: sendDrift.code ?? 'P_TERM_TARGET_DRIFT', detail: `current target facts moved after startSend started the operation (${sendDrift.detail ?? 'recheck refused'}): the operation was cancelled — NOT the PTY killed — and its real settle was awaited`, cleanup: { started: true, sessionId, settled } } }
+        }
         return {
           ok: true,
           handle: {
             identity: { sessionId, exclusiveSend: true },
             invoke: async () => await operation.done,
-            terminate: async () => ({ cancelled: operation.cancel(), note: 'operation.cancel requests SIGINT; false after settlement — the operation answer is the word' }),
+            // CANCELLING AN ASYNC SEND = operation.cancel (SIGINT request);
+            // NEVER service.kill of the persistent PTY. The real settle
+            // arrives through done — awaited, not narrated.
+            terminate: async () => {
+              const requested = operation.cancel()
+              if (!requested) return { cancelled: false, note: 'operation already settled — cancel answered false' }
+              const settled = await operation.done
+              return { cancelled: true, settled, note: 'operation.cancel requested SIGINT; the awaited TerminalSendResult is the word (the PTY session survives)' }
+            },
           },
         }
       }
       return { ok: false, code: 'P_TERM_PORT_TOOL_UNKNOWN', detail: `the dsh-terminal adapter does not route tool ${JSON.stringify(String(spec.toolName ?? ''))}` }
     },
-    /** THE real terminate face for a live session: service.kill AWAITS
-     *  quiescent cleanup; true = newly closed, false = the same close is
-     *  already in flight — answered, never assumed. */
+    /** CURRENT live word for a committed handle (arm cancel ALREADY-COMMITTED
+     *  rides this, root 66a521): the SESSION ROW from the service's own list
+     *  answer, or an honest unknown — never a synthesized live claim. The
+     *  async authoritative face is arm-side terminal_close/terminate. */
+    /** THE CANCEL CLEANUP FACE (root ruling 66a521): cancel of an EXECUTING
+     *  call cleans the resource STARTED BEHIND THAT CALL through the RIGHT
+     *  face — an in-flight send cancels its OPERATION (operation.done
+     *  awaited; NEVER terminals.kill on the persistent PTY), a background
+     *  job gets an OWNER-CHECKED kill with the JobOutcome awaited, an
+     *  unanswered open kills its SESSION. Returns a promise of the truth
+     *  (the sync cancel word cannot carry the real settle; the execution
+     *  result path reports its own after-effect refusal). */
+    cancelCleanup(resource, context) {
+      try {
+        if (resource?.__kind === 'send-operation') {
+          if (typeof resource.operation?.cancel !== 'function') {
+            return Promise.resolve({ routed: false, code: 'P_TERM_CLEANUP_FACE_ABSENT', detail: 'the in-flight send operation answers no cancel() — nothing is claimed cleaned' })
+          }
+          const cancelledNow = resource.operation.cancel(String(context?.reason ?? 'cancelled by the caller before the operation settled')) !== false
+          return Promise.resolve(resource.operation.done)
+            .then((settled) => ({ routed: true, face: 'operation.cancel', cancelReturned: cancelledNow, settled }))
+            .catch((error) => ({ routed: true, face: 'operation.cancel', settled: 'settle-failed', detail: String(error?.message ?? error) }))
+        }
+        if (resource?.__kind === 'job') {
+          if (jobs === null) {
+            return Promise.resolve({ routed: false, code: 'P_TERM_BG_PORT_UNWIRED', detail: 'a background job started but the host jobs control face is not wired — the adapter cannot kill what it cannot own' })
+          }
+          const caller = typeof ownerSessionId === 'function' ? ownerSessionId(String(context?.memberAgentId ?? '')) : undefined
+          const word = jobs.kill(String(resource.jobId), caller, String(context?.reason ?? 'cancelled'))
+          return Promise.resolve(word).then((answer) => ({ routed: answer === 'requested', face: 'jobs.kill(owner-checked)', word: answer }))
+        }
+        const sid = String(resource?.sessionId ?? '')
+        if (sid.length === 0 || sid.startsWith('unanswered-open:')) {
+          // The provider was entered but NEVER answered: no resource the
+          // adapter can own exists. The effect-visibility duty is already
+          // discharged (the entry is recorded, inFlight/drain report it);
+          // the cleanup word is HONEST: nothing was minted, nothing killed.
+          return Promise.resolve({ routed: false, nothingToKill: true, code: 'P_TERM_CLEANUP_NOTHING_MINTED', detail: 'the per-open provider was entered but answered no ownedResource — there is no minted session/job to clean; the started-effect remains VISIBLE in inFlight/drain, never hidden' })
+        }
+        const { owner: cleanupOwner, refusal: ownerRefusal } = ownerOrRefusal({ agent: context?.exec?.agent ?? null })
+        if (ownerRefusal !== undefined) {
+          return Promise.resolve({ routed: false, code: 'P_TERM_PORT_OWNER_UNRESOLVED', detail: 'the cancel cleanup cannot answer the live owner Agent — the service authorizes by the EXACT Agent and the adapter never guesses one; nothing is claimed cleaned' })
+        }
+        return Promise.resolve(killSession(cleanupOwner, sid, String(context?.reason ?? 'cancelled')))
+          .then((outcome) => ({ routed: true, face: 'terminals.kill', sessionId: sid, outcome }))
+      } catch (error) {
+        return Promise.resolve({ routed: false, code: 'P_TERM_CLEANUP_FAILED', detail: String(error?.message ?? error) })
+      }
+    },
+    handleStatus(handle) {
+      const sessionId = String(handle?.identity?.sessionId ?? '')
+      if (sessionId.length === 0) return { live: 'no session identity on this handle' }
+      try {
+        const rows = terminals.list(handle?.owner ?? null)
+        const list = Array.isArray(rows) ? rows : null
+        if (list === null) return { live: 'pending — the service list resolves asynchronously (terminal_close/terminate carry the settled word)' }
+        const row = list.find((r) => String(r?.sessionId ?? '') === sessionId)
+        return row === undefined
+          ? { live: false, note: 'the service no longer lists this session' }
+          : { live: true, session: row }
+      } catch (error) {
+        return { live: 'unknown', error: String(error?.message ?? error) }
+      }
+    },
+    /** THE real terminate face for a live session (terminal_close semantics):
+     *  service.kill awaits quiescent cleanup; its answer is forwarded. */
     async terminate(handle, context) {
       const sessionId = String(handle?.identity?.sessionId ?? '')
       if (sessionId.length === 0) return { terminated: false, reason: 'the handle carries no session identity — nothing to kill' }
       const { owner, refusal } = ownerOrRefusal(context?.exec ?? {})
       if (refusal !== undefined) return { terminated: false, reason: refusal.detail }
-      return { terminated: await terminals.kill(owner, sessionId), via: 'ctx.terminals.kill' }
+      return { terminated: await killSession(owner, sessionId), via: 'ctx.terminals.kill' }
     },
   }
   return deepFreeze(asPort)
@@ -793,8 +1141,19 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
   }
 
   /** The closed top-level surface = the CAPTURED definition's OWN parameter
-   *  keys (dynamic config mirrors, never a hand-written superset). */
-  const declaredSurface = declaredAbsent ? [] : Object.keys(nativeDefinition.parameters ?? {})
+   *  keys (dynamic config mirrors, never a hand-written superset). ROOT
+   *  RULING 66a521: production classify runs over the REAL defineTool
+   *  PRODUCT, whose `parameters` is the COMPILED JSON Schema
+   *  {type:'object',properties,required} — parameter keys of a compiled
+   *  capture come from its `properties` entries; Object.keys of the whole
+   *  schema would answer envelope keys (['type','properties','required']),
+   *  which are NEVER parameters. Authored-shape captures keep their own
+   *  top-level keys (same law as the face: g3ParameterEntries). */
+  const declaredSurface = declaredAbsent ? [] : Object.keys(g3ParameterEntries(nativeDefinition.parameters ?? {}))
+  /** REQUIRED per the captured definition's closed law (the REAL defineTool
+   *  product raises ToolArgsError on a missing required argument at its own
+   *  execute — the governed row refuses the same class at classify). */
+  const declaredRequired = declaredAbsent ? [] : g3RequiredParameterNames(nativeDefinition.parameters ?? {})
   /** The derived canonical registration face (r9); null exactly when absent. */
   const parametersFace = declaredAbsent ? null : g3CanonicalRegistrationFace(nativeDefinition.parameters ?? {})
 
@@ -901,6 +1260,10 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     if (unknown.length > 0) {
       return refuse(codes.UNKNOWN_PARAMETER, `parameter(s) outside the CAPTURED definition surface (${declaredSurface.join('|') || 'no parameters'}): ${unknown.join(', ')} — the governed root mirrors the actual mounted config and is closed`)
     }
+    const missing = declaredRequired.filter((k) => !Object.prototype.hasOwnProperty.call(args, k))
+    if (missing.length > 0) {
+      return refuse(codes.REQUIRED_MISSING, `required parameter(s) missing per the CAPTURED definition's closed required law (${declaredRequired.join('|')}): ${missing.join(', ')} — the REAL defineTool product raises ToolArgsError on this at execute; the governed row refuses it at classify with zero effects`)
+    }
     const generations = generationFacts()
     const v = validate(args, { refuse, canonicalJson, sha256, serviceFacts, controlPort, realmId, exec, callId, memberAgentId, generations })
     if (v.ok !== true) return refuse(v.code, v.detail)
@@ -958,7 +1321,16 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       snapshot,
       recheckTarget: typeof v.recheckTarget === 'function' ? v.recheckTarget : null,
       handleRequest: v.handleRequest !== null && typeof v.handleRequest === 'object' ? deepFreeze(v.handleRequest) : null,
+      // the port receives the CLASSIFIED manifest (service-answered targets:
+      // per-open governed registration + approved envelope + backend
+      // target) as its own handle request — the governed identity the port
+      // spawns behind is the one classify admitted.
+      handleManifest: v.manifest !== null && typeof v.manifest === 'object' ? deepFreeze(v.manifest) : null,
       handle: null,
+      startedResource: null,
+      startedFact: null,
+      refusedWithEffects: false,
+      settlementOverride: null,
       backgroundJobId: null,
     }
     plans.set(plan, entry)
@@ -1035,6 +1407,14 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
         // ctx.terminals). Without a handle route the arm is the faithful
         // delegate of the captured body (control plane + exec fidelity).
         if (controlPort !== null && typeof controlPort.prepare === 'function') {
+          // PREPARE IS AN EFFECT ENTRY (root ruling 66a521): the port's
+          // prepare may START real work (spawn behind the per-open governed
+          // backend, startSend, jobs.start). The plan is EXECUTING from here
+          // — a refusal after a started effect carries the cleanup truth and
+          // NEVER claims zero effects; the port re-checks cancel/drain and
+          // the CURRENT target facts through these live seams after every
+          // await.
+          entry.state = 'EXECUTING'
           return Promise.resolve()
             .then(() => controlPort.prepare({
               toolName,
@@ -1043,20 +1423,63 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
               callId: plan.callId,
               correlation: entry.correlation,
               handleRequest: entry.handleRequest,
+              manifest: entry.handleManifest,
+              isCancelled: () => entry.state === 'CANCELLED' || draining,
+              recheckFacts: () => (typeof entry.recheckTarget === 'function' ? entry.recheckTarget() : null),
+              // THE CLEANUP REGISTER (root ruling 66a521): the port records
+              // what STARTED behind this call here (ownedResource before the
+              // answer, handle after it); the cancel face's cleanup law and
+              // drain() read exactly this — no started resource is invisible.
+              recordStarted: (resource) => {
+                if (resource !== null && typeof resource === 'object') entry.startedResource = resource
+              },
             }))
             .then((prepared) => {
               // A port ANSWER (jobs-shaped refusal/carry, {ok:false,answer})
               // routes VERBATIM — it already executed on the real face; the
               // arm commits its word and enters nothing.
               if (prepared !== null && prepared.ok === false && prepared.answer !== null && typeof prepared.answer === 'object') {
+                // A port REFUSAL with cleanup truth (root ruling 66a521: an
+                // effect entry that refused AFTER a real start): it commits
+                // VERBATIM — the caller sees the port's own refusal shape
+                // (refused/effectsStarted/code/detail/cleanup); the arm
+                // never re-wraps an after-effect refusal into success. A
+                // carry answer (a job accepted WITHOUT a handle) keeps the
+                // word-of-record commit above.
+                if (prepared.answer.refused === true) {
+                  // The port's refusal is an EDGE, not a value: the outer
+                  // commit handler owns the final shape; returning it as a
+                  // value would re-wrap it into {ok:true,value} — success
+                  // narration over a refusal. Throw with the refusal
+                  // attached; the catch below commits it VERBATIM.
+                  const edge = new Error('the control port refused after effects started')
+                  edge.a5Edge = 'REFUSED-AFTER-EFFECTS'
+                  edge.a5Refusal = prepared.answer
+                  throw edge
+                }
                 entry.state = 'COMMITTED'
                 observe({ event: 'backend-commit', correlation: entry.correlation, detail: 'port-answer' })
                 observe({ event: 'backend-end', correlation: entry.correlation, detail: 'ok' })
                 return { ok: true, value: prepared.answer }
               }
+              if (prepared !== null && prepared.zeroEffects === true) {
+                // The port MEASURED zero started effects (cancel/drain moved
+                // before the provider was ever entered): its honest
+                // zero-effect word rides the CANCELLED edge — code and
+                // detail verbatim, never the generic after-effect claim.
+                const edge = new Error('cancel moved before any real effect started')
+                edge.a5Edge = 'CANCELLED-ZERO-EFFECT'
+                edge.a5Refusal = { code: prepared.code ?? 'P_TERM_CANCELLED_BEFORE_EFFECT', detail: prepared.detail ?? 'zero started effects' }
+                throw edge
+              }
               if (prepared === null || prepared.ok !== true || typeof prepared.handle?.invoke !== 'function') {
                 const edge = new Error('the control port refused the handle at the entry')
                 edge.a5Edge = 'REFUSED-AT-ENTRY'
+                // a zero-effect port word (cancel before any real start)
+                // rides its OWN edge kind: the commit below answers the
+                // port's honest zero-effect word with its code, not the
+                // generic before-edge claim.
+                if (prepared?.zeroEffects === true) edge.a5Edge = 'CANCELLED-ZERO-EFFECT'
                 edge.a5Refusal = prepared !== null && prepared.ok === false
                   ? refuse(prepared.code ?? codes.TARGET_UNRESOLVED, prepared.detail ?? 'the control port refused the real handle: zero invoke, zero body')
                   : refuse(codes.TARGET_UNRESOLVED, 'the control port did not answer a real handle for this call: a governed row never executes behind an unanswered handle')
@@ -1072,6 +1495,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
                 throw edge
               }
               entry.handle = prepared.handle
+              entry.startedResource = prepared.handle
               // A REAL background job (host ctx.jobs id from the handle the
               // port answered) OUTLIVES this call and every drain word —
               // recorded as UNCLEARED from the handle's identity, never
@@ -1080,9 +1504,8 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
               if (plan.canonical?.run_in_background === true && typeof bgJob === 'string' && bgJob.length > 0) {
                 entry.backgroundJobId = bgJob
               }
-              // EXECUTING begins at the real INVOKE: a refused/unanswered
-              // handle never carries an execution word.
-              entry.state = 'EXECUTING'
+              // EXECUTING was entered at PREPARE (a started effect is an
+              // effect entry); the invoke rides on top of it.
               return prepared.handle.invoke(entry.snapshot)
             })
         }
@@ -1108,6 +1531,39 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'cancelled-at-edge' })
             return refuse(codes.CANCELLED, 'cancelled before the body: zero effects (the commit-edge re-check stopped it)')
           }
+          if (error?.a5Edge === 'REFUSED-AFTER-EFFECTS') {
+            entry.state = 'EXECUTING-REFUSED'
+            entry.refusedWithEffects = true
+            entry.startedFact = error.a5Refusal?.cleanup ?? { started: true, note: 'the port reported effects started' }
+            entry.settlementOverride = 'refused after effects — the caller never received a commitment; the resource cleanup is reported in the refusal'
+            observe({ event: 'backend-end', correlation: entry.correlation, detail: 'refused-after-effects' })
+            // VERBATIM content (refused/effectsStarted/code/detail/cleanup)
+            // PLUS the protocol's `ok:false` (the refusal was committed as a
+            // refusal, never a success value).
+            return { ok: false, ...error.a5Refusal }
+          }
+          if (error?.a5Edge === 'CANCELLED-AFTER-EFFECT') {
+            entry.state = 'CANCELLED'
+            observe({ event: 'backend-end', correlation: entry.correlation, detail: 'cancelled-after-effect' })
+            // CANCELLED is a decision; a resource had ALREADY STARTED behind
+            // it. The started resource is cleaned (cleanup truth attached)
+            // and the word states BOTH facts — never a zero-effect claim.
+            return {
+              ok: false,
+              code: 'P_TERM_CANCELLED_AFTER_EFFECT',
+              detail: 'cancel/drain moved while the per-open backend spawn was in flight: the call refuses as CANCELLED (the decision owns the outcome, not the drift code) AND effects started — the started resource was cleaned through the service (cleanup truth attached); this word NEVER claims zero effects',
+              effectsStarted: true,
+              cleanup: error.a5Cleanup ?? { started: true, outcome: 'unknown — the cleanup answer did not settle' },
+            }
+          }
+          if (error?.a5Edge === 'CANCELLED-ZERO-EFFECT') {
+            entry.state = 'CANCELLED'
+            observe({ event: 'backend-end', correlation: entry.correlation, detail: 'cancelled-before-effect' })
+            // the PORT measured that no real effect had started (the
+            // provider was never entered / no operation started): its
+            // honest zero-effect code and detail ride verbatim.
+            return refuse(error.a5Refusal?.code ?? 'P_TERM_CANCELLED_BEFORE_EFFECT', error.a5Refusal?.detail ?? 'cancel moved before any real effect started: zero resource')
+          }
           if (error?.a5Edge === 'DRAINING') {
             entry.state = 'DRAINED-AT-EDGE'
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'drained-at-edge' })
@@ -1132,21 +1588,53 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       const bg = entry.backgroundJobId !== null
         ? ` A background job (${entry.backgroundJobId}) started by that body is LIVE and UNCLEARED — this word settles nothing about it; only job_kill/its own settlement or the PTY close evidence does.`
         : ''
-      return { ok: true, settled: 'ALREADY-COMMITTED', bodyOutcome: `one — the body ran and committed; cancellation cannot retract it (for stateful faces the PTY/session resource survives the word).${bg}` }
+      const word = { ok: true, settled: 'ALREADY-COMMITTED', bodyOutcome: `one — the body ran and committed; cancellation cannot retract it (for stateful faces the PTY/session resource survives the word).${bg}` }
+      // The LIVE session word of a committed HANDLE comes from the PORT's
+      // current facts (root ruling 66a521): whatever the service answers
+      // now, never a claim of our own.
+      if (entry.handle !== null && controlPort !== null && typeof controlPort.handleStatus === 'function') {
+        word.sessionWord = controlPort.handleStatus(entry.handle) ?? { live: 'unknown — the port answered no current status' }
+      }
+      return word
     }
     if (entry.state === 'EXECUTING') {
-      // A LIVE HANDLE answers for itself: the port's terminate is ROUTED (the
-      // real control face — service.kill / operation.cancel) and its ANSWER
-      // is reported, never upgraded into a settlement this arm cannot prove.
-      if (entry.handle !== null && controlPort !== null && typeof controlPort.terminate === 'function') {
-        const answer = controlPort.terminate(entry.handle, { exec: entry.snapshot, correlation: entry.correlation })
+      // CANCEL IS NOT CLOSE/KILL (root ruling 66a521): the word never
+      // settles the operation and never claims zero effects. But the
+      // CLEANUP LAW is this arm's own duty, not the port's: when the effect
+      // has ALREADY STARTED behind this call (the port recorded its started
+      // resource / handle), the cancel CLEANS that resource — through the
+      // right face: an in-flight SEND cancels its OPERATION (never kills
+      // the PTY), a started-but-unanswered OPEN kills its session, a
+      // background job gets an owner-checked kill — and AWAWS the real
+      // settle (void — the sync word cannot carry it; the execution
+      // result-path reports its own after-effect refusal truth).
+      const live = controlPort !== null ? (entry.startedResource ?? entry.handle ?? null) : null
+      if (live === null) {
+        // NO resource is recorded as started yet (the provider window / the
+        // pre-handle phase): the word reports the truth — effectsStarted at
+        // minimum UNKNOWN, never zero — and cleans NOTHING speculatively
+        // (cancel is not close, and an unstarted resource is nobody's kill).
+        return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', bodyOutcome: 'unknown — this plan is EXECUTING on the control-port path but NO resource is recorded as started yet: PREPARE IS AN EFFECT ENTRY, the effect boundary is inside prepare; effectsStarted is at minimum UNKNOWN — never zero — await the execution result (refusal paths carry the port cleanup truth)' }
+      }
+      if (live !== null) {
+        const settlePromise = Promise.resolve(controlPort.cancelCleanup?.(live, {
+          exec: entry.snapshot,
+          correlation: entry.correlation,
+          memberAgentId,
+          reason: 'cancelled by the caller before the operation settled',
+        })).catch((error) => ({ routed: false, code: 'P_TERM_CLEANUP_FAILED', detail: String(error?.message ?? error) }))
+        // the word settles when the REAL cleanup settles (the async real
+        // result is awaited — the word never narrates ahead of it)
+        entry.cancelCleanup = settlePromise
         return {
           ok: true,
           settled: 'UNKNOWN-IN-FLIGHT',
-          bodyOutcome: 'unknown — the real handle is executing; the control port was NOT asked to terminate it (terminating a session is a different act from cancelling this call — terminal_close/close owns that)',
-          terminateFaceAnswer: 'available on this plan: port.terminate(handle) routes the real kill/cancel and its answer is the word (see drain()/inFlight() for live inventory)',
-          terminateRouting: answer !== null && typeof answer === 'object' ? answer : { routed: false },
+          bodyOutcome: 'unknown — the effect had ALREADY STARTED behind this call: the cleanup law is RUNNING through the right face (operation.cancel for an in-flight send / service kill for an unanswered open / owner-checked jobs kill for a background job) and its real settle is AWAITED before this word reports cleanup truth; effectsStarted is TRUE — never zero; cancelling a call does NOT close the session (terminal_close owns that) nor retract a committed body',
+          cleanupSettled: settlePromise,
         }
+      }
+      if (controlPort !== null) {
+        return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', bodyOutcome: 'unknown — this plan is EXECUTING on the control-port path: PREPARE IS AN EFFECT ENTRY, so the real effect may already have STARTED (per-open spawn / startSend / jobs.start) or the handle is mid-invoke; effectsStarted is at minimum UNKNOWN — never zero — await the execution result (refusal paths carry the port cleanup truth)' }
       }
       return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', bodyOutcome: 'unknown — the body has been entered and its effect boundary is inside it; this arm claims neither zero nor committed (await the execution result)' }
     }
@@ -1171,18 +1659,23 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     const live = []
     for (const entry of trackedEntries) {
       const open = entry.state === 'CLASSIFIED' || entry.state === 'PREPARED' || entry.state === 'CLAIMED' || entry.state === 'EXECUTING'
-      if (open || entry.backgroundJobId !== null || entry.handle !== null) {
+      // A refusal AFTER effects started is NOT settled business: the
+      // started resource and the missing settlement evidence stay visible
+      // (UNCLEARED FACTS law — refusal is not settlement).
+      const refusedWithEffects = entry.refusedWithEffects === true
+      if (open || refusedWithEffects || entry.backgroundJobId !== null || entry.handle !== null) {
         live.push(Object.freeze({
           correlation: entry.correlation,
           toolName,
           state: entry.state,
+          ...(entry.startedFact !== null && entry.startedFact !== undefined ? { startedFact: entry.startedFact } : {}),
           backgroundJobId: entry.backgroundJobId,
           // HANDLE OWNERSHIP: the identity the REAL face answered (service
           // session/pid/jobId), recorded from the handle — never claimed.
           handleIdentity: entry.handle !== null && entry.handle.identity !== null && typeof entry.handle.identity === 'object'
             ? Object.freeze({ ...entry.handle.identity })
             : null,
-          settlementEvidence: entry.backgroundJobId !== null ? 'none observed by this arm — the host jobs record owns it' : null,
+          settlementEvidence: entry.settlementOverride ?? (entry.backgroundJobId !== null ? 'none observed by this arm — the host jobs record owns it' : null),
         }))
       }
     }
@@ -1255,6 +1748,20 @@ function validateTerminalOpen(args, h) {
   if (bf === null || typeof bf.registrationId !== 'string' || typeof bf.incarnation !== 'string') {
     return refuse('P_TERM_TARGET_UNRESOLVED', `the terminals service does not currently register public backend ${JSON.stringify(args.type)} (registrationId/incarnation unreadable): an unresolved target is refused, never guessed from the model's type string`)
   }
+  // §5.1 GOVERNANCE CORE (root ruling 66a521): what the admission covers is
+  // the PER-OPEN PRIVATE CONTROLLED BACKEND — the one-shot registration the
+  // integrator mints for THIS exact call (correlated by callId) — plus its
+  // APPROVED PROCESS/IO ENVELOPE. The public `type` only SELECTS the
+  // declared backend family; it is never the governed target, and the
+  // private registration identity + envelope digest MUST be resolvable from
+  // service facts at classify and again at the entry. A mount whose seam
+  // cannot answer them is not the §5.1 backend: TARGET_UNRESOLVED, not a
+  // public-type spawn dressed as governance.
+  const po = serviceFacts?.perOpenRegistration?.(callId) ?? null
+  if (po === null || typeof po.privateRegistrationId !== 'string' || po.privateRegistrationId.length === 0
+    || typeof po.envelopeDigest !== 'string' || po.envelopeDigest.length === 0) {
+    return refuse('P_TERM_TARGET_UNRESOLVED', `no per-open private controlled-backend registration (+approved envelope digest) is answerable for call ${JSON.stringify(callId)}: §5.1 governs the per-open backend and its approved envelope — the public type alone never spawns under governance`)
+  }
   const canonical = { type: args.type, ...(args.name !== undefined ? { name: args.name } : {}), ...(args.cwd !== undefined ? { cwd: args.cwd } : {}) }
   return {
     ok: true,
@@ -1266,6 +1773,12 @@ function validateTerminalOpen(args, h) {
         serviceRegistrationId: bf.registrationId,
         serviceIncarnation: bf.incarnation,
         processEnvelope: bf.processEnvelope ?? null,
+      }),
+      // THE governed target: per-open private registration + approved
+      // envelope digest (service answers; correlated to this exact call).
+      perOpenBackend: Object.freeze({
+        privateRegistrationId: po.privateRegistrationId,
+        envelopeDigest: po.envelopeDigest,
       }),
       // §5.1 correlation: CENTER mints the per-open PRIVATE one-shot backend
       // registration for this exact call; the arm records the correlation
@@ -1279,6 +1792,10 @@ function validateTerminalOpen(args, h) {
       const now = serviceFacts?.backend?.(args.type) ?? null
       if (now === null || now.registrationId !== bf.registrationId || now.incarnation !== bf.incarnation) {
         return { ok: false, code: 'P_TERM_TARGET_DRIFT', detail: `the backend registration/incarnation moved between approval and the entry (${bf.registrationId}@${bf.incarnation} -> ${now === null ? 'unresolvable' : `${now.registrationId}@${now.incarnation}`})` }
+      }
+      const nowPo = serviceFacts?.perOpenRegistration?.(callId) ?? null
+      if (nowPo === null || nowPo.privateRegistrationId !== po.privateRegistrationId || nowPo.envelopeDigest !== po.envelopeDigest) {
+        return { ok: false, code: 'P_TERM_TARGET_DRIFT', detail: `the per-open private backend registration / approved envelope moved between approval and the entry (${po.privateRegistrationId} -> ${nowPo === null ? 'unresolvable' : nowPo.privateRegistrationId})` }
       }
       return { ok: true }
     },
@@ -1705,6 +2222,14 @@ export function createGovernedTerminalArms(deps) {
   if (ptyService === null || typeof ptyService.backend !== 'function' || typeof ptyService.session !== 'function') {
     throw new TypeError('g3-fsproc-adapters/terminal: ptyService {backend, session} is required — target identity/incarnation must be CURRENT service facts, not model claims')
   }
+  // §5.1 GOVERNANCE INTERFACE (root ruling 66a521): the seam MUST answer the
+  // PER-OPEN private controlled-backend registration + approved envelope for
+  // a call. A seam that cannot answer it is not the §5.1 backend feed:
+  // assembly REFUSES (the row would otherwise die at every classify with a
+  // fake look of life); the refusal names the missing capability.
+  if (typeof ptyService.perOpenRegistration !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/terminal: ptyService.perOpenRegistration(callId) => {privateRegistrationId, envelopeDigest} is REQUIRED — §5.1 governs the per-open private controlled backend + approved envelope, never the public type; the integrator wires this reader to the registration the per-open provider mints (MISSING public host capability at 639ed01539: no per-open registration read on ctx.terminals)')
+  }
   if (deps.controlPort !== undefined && deps.controlPort !== null
     && (typeof deps.controlPort !== 'object' || typeof deps.controlPort.prepare !== 'function')) {
     throw new TypeError('g3-fsproc-adapters/terminal: controlPort must answer prepare(canonical+exec) => a REAL handle (see createHostTerminalControlPort over ctx.terminals) — a port without a real handle route is not a control port')
@@ -1751,6 +2276,7 @@ export function createGovernedTerminalArms(deps) {
       bindingFacts: deps.bindingFacts,
       serviceFacts: Object.freeze({
         backend: (type) => ptyService.backend(type),
+        perOpenRegistration: (callId) => ptyService.perOpenRegistration(callId),
         session: (ownerAgentId, sessionId) => ptyService.session(ownerAgentId, sessionId),
       }),
       controlPort: deps.controlPort ?? null,
