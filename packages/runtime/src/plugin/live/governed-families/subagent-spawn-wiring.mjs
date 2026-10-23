@@ -67,7 +67,14 @@ import {
 // dies deeper in the walk (measured by the spawn plane-mount spec).
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 
-export const A5_B_SPAWN_WIRING_REVISION = 1
+// REV 2 (root 21:20 joint encoding, handoff 9d968@4e96decc §Revision): the
+// minted manifest grew the two canonical VALUE leaves (argsCanonical/
+// namedGapsCanonical). A mint change is a VISIBLE revision bump of THIS
+// module's generation — the rev-1 mint pinned at 8c314fb94 is never silently
+// translated. The family-block adapterRevision rides its own module (unchanged
+// here): the registration pairing the reviewed table entry measures stays
+// byte-stable while the WIRING mint generation advances openly.
+export const A5_B_SPAWN_WIRING_REVISION = 2
 
 /** Typed codes OWNED by this wiring layer (P_B_SPAWN_WIRE_*). The ADAPTER's
  *  refusals keep their own P_B_SPAWN_* codes verbatim; PA verdict codes
