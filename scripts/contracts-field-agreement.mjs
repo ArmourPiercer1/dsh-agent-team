@@ -27,8 +27,10 @@
  *   - Pairings are written out below by hand, not guessed from names. `TEAM_PROJECTION_FIELDS`
  *     for `TeamProjectionDto` is a judgement about two names that a string-similarity rule
  *     would get wrong in both directions. Anything not paired is reported as uncovered.
- *   - It reads. It never writes, never gates, and is not wired into docs:sync or
- *     docs:probe: a documentation line has no authority over someone else's package.
+ *   - It reads. It never writes. Its findings reach `docs:sync --check` and `docs:probe` as
+ *     the `contracts-shape` rule, because a rule nobody runs has stopped being a rule.
+ *     `docs:sync --write` does not run this comparison: it regenerates derivatives, and a
+ *     shape mismatch is not something regeneration can repair.
  *
  * Exit: 0 no findings, 1 findings, 2 refused (missing package, no pairs readable).
  */
