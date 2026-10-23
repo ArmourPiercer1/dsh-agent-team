@@ -48,7 +48,7 @@ gets its own throwaway fixture Git repository under the gitignored
 | probe honesty (P2) | registry + derived view present | `STATE_BRIDGE_UNAVAILABLE` / `STALE_GENERATED_VIEW`: missing inputs are never reported as green |
 | registry grammar (P2) | list-shaped `refs`/`owners`/artifacts, unique keys, closed field set | `registry-duplicate-key` (repeated key in a mapping, repeated top-level scalar, or a second `entries:`), `REGISTRY_REF_SCALAR`, `REGISTRY_OWNER_TYPE`, `REGISTRY_REF_UNRESOLVED`, `REGISTRY_UNKNOWN_FIELD` |
 | evidence location (P2) | `.log`/`.txt`/`.md` under `dev/agent-workflow/evidence/` | `ARTIFACT_LOCATION_UNCONTROLLED`, `ARTIFACT_TYPE_UNSUPPORTED` |
-| schema/validator agreement (EB1-C) | `registry.schema.json` matches the enforced field set, enums, patterns and `additionalProperties:false` | `SCHEMA_MISSING`, `SCHEMA_REQUIRED_MISMATCH`, `SCHEMA_FIELD_MISSING`/`_EXTRA`, `SCHEMA_ENUM_MISMATCH`, `SCHEMA_PATTERN_MISMATCH`, `SCHEMA_CONSTRAINT_MISMATCH` |
+| schema/validator agreement (EB1-C) | `registry.schema.json` matches the enforced field set, enums, patterns and `additionalProperties:false` | `SCHEMA_MISSING`, `SCHEMA_REQUIRED_MISMATCH`, `SCHEMA_FIELD_MISSING`/`_EXTRA`, `SCHEMA_ENUM_MISMATCH`, `SCHEMA_PATTERN_MISMATCH`, `SCHEMA_KEYWORD_MISSING` (a dropped `enum`/`pattern` is not agreement), `SCHEMA_CONSTRAINT_MISMATCH` |
 | delivery-claim binding (EB1-C) | local work stays `verified_local` | `CLAIM_UNBOUND` (no/wrong commit), `CLAIM_TIER_MISMATCH` (C1 asserted as host), `MERGED_CLAIM_UNCORROBORATED`, `RELEASE_CLAIM_UNCORROBORATED` |
 | ratification needs a decision (EB1-D) | `proposed-not-ratified` ids | `ID_RATIFIED_WITHOUT_DECISION`; `ID_RATIFIED_BY_UNKNOWN_NOTE` |
 
@@ -81,7 +81,11 @@ gets its own throwaway fixture Git repository under the gitignored
    now compares the two on every run — the keywords the schema uses (required, enum,
    pattern, additionalProperties) are read straight from the validator's own constants, so
    drift is a finding (`SCHEMA_ENUM_MISMATCH` and siblings) rather than a review catch.
-   The first thing it caught was in the alignment commit itself: the documented
+   The commit-field rule is one constant, not two: `COMMIT_REX` is what the claim checks
+   execute (40 hex, because the value has to name a commit object — an abbreviated hex
+   cannot) and `COMMIT_RE` is that same rule read as a source string for the comparison, so
+   the documented pattern cannot quietly be looser than the enforced one. The first thing
+   the comparison caught was in the alignment commit itself: the documented
    `verified_tier` values were the `verification_status` vocabulary, while the validator
    accepts `C1|C2|C3`.
 6. **An assertion weak enough to survive a WARN.** `rc == 1` plus "output contains

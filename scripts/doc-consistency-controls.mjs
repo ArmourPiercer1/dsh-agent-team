@@ -151,8 +151,8 @@ owners:
         refs: { type: 'array' },
         verification_artifacts: { type: 'array' },
         verified_tier: { enum: ['C1', 'C2', 'C3'] },
-        verification_commit: { type: 'string', pattern: '^[0-9a-f]{7,40}$' },
-        merged_commit: { type: 'string', pattern: '^[0-9a-f]{7,40}$' },
+        verification_commit: { type: 'string', pattern: '^[0-9a-f]{40}$' },
+        merged_commit: { type: 'string', pattern: '^[0-9a-f]{40}$' },
       },
     } } },
   }, null, 2) + '\n',
@@ -609,6 +609,22 @@ control('NEG-48 schema drifting from the enforced enum is refused', (d) => {
   j.properties.entries.items.properties.verified_tier.enum = ['verified_local', 'verified_ci', 'verified_host'];
   writeFile(d, p, JSON.stringify(j, null, 2) + '\n');
   return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_ENUM_MISMATCH')];
+});
+
+control('NEG-50 a schema that drops an enum keyword is refused', (d) => {
+  const p = 'dev/engineering/registry.schema.json';
+  const j = JSON.parse(read(d, p));
+  delete j.properties.entries.items.properties.kind.enum;
+  writeFile(d, p, JSON.stringify(j, null, 2) + '\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_KEYWORD_MISSING')];
+});
+
+control('NEG-51 a schema that drops a pattern keyword is refused', (d) => {
+  const p = 'dev/engineering/registry.schema.json';
+  const j = JSON.parse(read(d, p));
+  delete j.properties.entries.items.properties.id.pattern;
+  writeFile(d, p, JSON.stringify(j, null, 2) + '\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_KEYWORD_MISSING')];
 });
 
 control('NEG-49 a documented field the validator does not accept is refused', (d) => {

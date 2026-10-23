@@ -34,7 +34,12 @@ const ID_RE = /^EB[0-9]-[A-Z0-9-]+$/;
 // validator and the schema cross-check below read the same list.
 const TIERS = ['C1', 'C2', 'C3'];
 const SCHEMA_PATH = 'dev/engineering/registry.schema.json';
-const COMMIT_RE = '^[0-9a-f]{7,40}$';
+// A claim commit has to name a commit object, so abbreviated hex is not enough here;
+// 40 hex is what the checks below enforce. COMMIT_REX is used by those checks and
+// COMMIT_RE is the same rule as a source string for the schema comparison, so there
+// is no second, drifting definition of what a commit field must look like.
+const COMMIT_REX = /^[0-9a-f]{40}$/;
+const COMMIT_RE = COMMIT_REX.source;
 
 function git(root, args) {
   try {
@@ -212,7 +217,7 @@ export function validateRegistry(doc, root) {
     }
     if (claimsVerified && e.verification_status !== 'verified_local') {
       const commit = String(e.verification_commit || '');
-      if (!/^[0-9a-f]{40}$/.test(commit)) {
+      if (!COMMIT_REX.test(commit)) {
         findings.push({ code: 'CLAIM_UNBOUND', detail: `${id}: ${e.verification_status} requires verification_commit (40-hex); local work must stay verified_local` });
       } else if (git(root, ['cat-file', '-t', commit]) !== 'commit') {
         findings.push({ code: 'CLAIM_UNBOUND', detail: `${id}: verification_commit ${commit} is not a commit in this repository` });
@@ -227,7 +232,7 @@ export function validateRegistry(doc, root) {
     }
     if (e.implementation_status === 'merged') {
       const mc = String(e.merged_commit || e.verification_commit || '');
-      const ok = /^[0-9a-f]{40}$/.test(mc) && git(root, ['cat-file', '-t', mc]) === 'commit' && git(root, ['merge-base', '--is-ancestor', mc, 'origin/master']) !== null;
+      const ok = COMMIT_REX.test(mc) && git(root, ['cat-file', '-t', mc]) === 'commit' && git(root, ['merge-base', '--is-ancestor', mc, 'origin/master']) !== null;
       if (!ok) findings.push({ code: 'MERGED_CLAIM_UNCORROBORATED', detail: `${id}: implementation_status=merged needs merged_commit that exists and is an ancestor of origin/master` });
     }
     if (e.release_status === 'candidate' || e.release_status === 'released') {
@@ -310,14 +315,21 @@ export function checkSchemaAgreement(root) {
   const wantEnum = Object.assign({ kind: KINDS, verified_tier: TIERS }, ENUMS);
   for (const k of Object.keys(wantEnum)) {
     const got = props[k] && props[k].enum;
-    if (got && !same([...got].sort(), [...wantEnum[k]].sort())) {
+    if (!got) {
+      // Silence is not agreement: the comparison only ran when the keyword existed, so
+      // a schema that said nothing about the vocabulary passed a validator that enforces one.
+      out.push({ code: 'SCHEMA_KEYWORD_MISSING', detail: k + ': ' + SCHEMA_PATH + ' states no enum, but the value set is enforced [' + wantEnum[k].join(',') + ']' });
+      continue;
+    }
+    if (!same([...got].sort(), [...wantEnum[k]].sort())) {
       out.push({ code: 'SCHEMA_ENUM_MISMATCH', detail: k + ': schema=[' + got.join(',') + '] enforced=[' + wantEnum[k].join(',') + ']' });
     }
   }
   const wantPattern = { id: ID_RE.source, verification_commit: COMMIT_RE, merged_commit: COMMIT_RE };
   for (const k of Object.keys(wantPattern)) {
     const got = props[k] && props[k].pattern;
-    if (got && got !== wantPattern[k]) out.push({ code: 'SCHEMA_PATTERN_MISMATCH', detail: k + ': schema=/' + got + '/ enforced=/' + wantPattern[k] + '/' });
+    if (!got) out.push({ code: 'SCHEMA_KEYWORD_MISSING', detail: k + ': ' + SCHEMA_PATH + ' states no pattern, but /' + wantPattern[k] + '/ is enforced' });
+    else if (got !== wantPattern[k]) out.push({ code: 'SCHEMA_PATTERN_MISMATCH', detail: k + ': schema=/' + got + '/ enforced=/' + wantPattern[k] + '/' });
   }
   if (item.additionalProperties !== false) {
     out.push({ code: 'SCHEMA_CONSTRAINT_MISMATCH', detail: SCHEMA_PATH + ' does not say additionalProperties:false, yet the entry field set is closed (REGISTRY_UNKNOWN_FIELD)' });
