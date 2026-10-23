@@ -14,7 +14,12 @@ Integration tips: **signed-source SHAs and center merge SHAs listed separately**
 | B-TEAM (Team) | 接线未测 | read-source `1eb278c37`; center merge `4ea06e4c4`; **paired batch `304deb368`** (six adds+rev2+(g)-flip one commit) + mirrors `1cc605549` drift=0 | read-source NOT in int; merge commit on lane branch only | NOT in int; 候根 source 审 (resolve/VALUE/复核); family-rules-c1 21/23 = pre-registered landing-time re-anchor; **binds=FULL-VALUE law**: fact-source prose never rides a bound literal — route to B-SUBAGENT groups at review; 144/144+tsc+eslint0
 | B-CONTROL/G1, AUTH, checker | 接线未测/landed | g1 fix 87/87 `942b0d1a5`; AUTH picks; checker `833e261da` | **landed** int (705742ad5…874f3ae0d chain) | local gates only; official CI still not-all-green |
 
-维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
+## 22:4x 落地记录（root 22:33/34 两签）
+- **B-SUBAGENT 联合批 LANDED** = merge `cc6a0f643`（候选 `9b5c9f4b2` 全树：表 fbebc3c52+4e96decc6、spawn 9f95a81157b、controls 7c6869879）；**AUTH 467c8f301 LANDED** = pick `edd68f0f4`。int tip **`6ca866d8c…`**。签名块零覆盖实测（G6 adapter `b7549786fb74`、wiring `135f64f88123` 逐字节 vs 874f3ae0d；AUTH 24 名在位）。中心两枚已披露机械件：typecheck typing-only cast（探针行 globalThis.console，运行时字节同）+ glue map +4（29 placements）。门：typecheck RC=0、check:artifacts OK 1800、check:artifacts:head "HEAD carries its own build" 1800、install-manifest RC=0、电池 **853/857**。
+- **4 红全为落地时各 owner 枚举/前提针（产品零回归）**：team-wiring (g)=10-leaf 翻针对未落六叶（9c 配对批候审中）；schedule-wiring (g)="九族无 B-SUBAGENT"枚举过时（schedule lane）；g6-plane-mount (a2)=session_* 投影拒针前提被根签 AUTH 词表改变（G6 owner 重锚 + 语义已根签）；provider-identity FP-E 常量计数 5→7（两新合法族挂载，provider-identity owner eb4d6466）。
+- G2 r29 `acc4d8d3b`：无条件 rotation 保证删（源码+spec 同删，镜像 B-MCP 缺席法）；公开面无 browser 代际 token 精确披露（owner-gated）；手写 manifest 腿改标 GRAMMAR 腿。Schedule：根八项硬错**全项对真合同核实成立**，集中卡一次修 + 无 boot dry-到边界路径承诺在册。均候根。
+
+## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
 - **`/srv/workspace/dsh-plugins/dsh-agent-team/.pnpm-store-a5ie-r5` = RETIRED**：仅仓根这一个可重建 cache 获有条件回收；**新任务禁止引用**；实际删除只 a356 执行（前置由根传），一切开发树内不清理。
