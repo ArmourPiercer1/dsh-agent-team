@@ -637,6 +637,10 @@ function createShutBackend(backendId) {
  *    fs?: { canonicalizeResource?, subtreeContains? },
  *    plane?: { realmId, names?, confinedProvider?, definitionOwnerAuthority?, fsInstance?, globEnabled? },
  *    backends?: { search?, glob?, shell? },            // wiring-kit override point
+ *    authorityFacts?: {
+ *      overlayGeneration?: (teamSessionId, memberInstanceId) => Promise<number>,   // THE one durable read
+ *      ensureAuthorityCurrent?: (teamSessionId, memberInstanceId, generation) => void | Promise<void>, // NAMED assembly-write leg, a SIBLING of the reader — the mount's owner republishes this scope's governed bindings onto the generation the CURRENT admission just read, before its AdmissionRequest is captured
+ *    },
  *    onObserve?: (row: string) => void }
  * Returns { ok:true, value: plane } | { ok:false, code, message }.
  * NEVER throws for a policy/config reason — refusals are typed (the mount
@@ -736,6 +740,29 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: true, value: g }
   }
   const paAuthorityGeneration = () => paGenerationConfirmed
+  // A5-M1 (root ruling on the same-turn gap): the NAMED assembly-write leg, a
+  // SIBLING of `overlayGeneration` (a read) and never folded into it — a
+  // scope-wide binding write arriving through a reader is exactly the disguised
+  // write the ruling forbids.
+  // WHY IT IS NEEDED: `paAdmitBody` is the ONE funnel every governed call in
+  // production passes (the row paths mount `pa: paAdmit`; nothing else reads
+  // the mount face), while the assembly boundary that legitimately owns writes
+  // (`prepareAgentForRequest`) runs only where a NEW INPUT is delivered. So the
+  // 2nd..N-th LLM step of one turn — and any wake that reaches `paAdmit`
+  // without a delivery — would capture its AdmissionRequest on a binding the
+  // Guard stamped with a generation the durable overlay has already moved past,
+  // and the kernel's identity leg (`tool-admission/admission-kernel.ts:245-254`)
+  // would refuse it until the next user input. This leg lets the mount's OWNER
+  // (agent-bindings, which holds both the ScopedGuardHandle and this mount)
+  // republish the generation at the call boundary. THE PLANE NEVER STAMPS A
+  // BINDING: it asks, and if nothing is published the call stays unpaired and
+  // the kernel refuses it — no re-stamping here to make a pair.
+  // IT COSTS NO DURABLE READ: the leg is handed the generation THIS call just
+  // read, so an admission still performs exactly one durable read (see
+  // `paAdmitBody`), and no value an earlier call read is ever reused.
+  // ABSENT leg = no owner mounted to publish (the unit worlds of this file and
+  // any world without a Guard): nothing moves, and the identity leg answers.
+  const paEnsureAuthorityCurrent = input.authorityFacts?.ensureAuthorityCurrent
   if (typeof paGenerationReader === 'function') {
     void paReadGenerationFresh()
   }
@@ -900,6 +927,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // would admit a call under a generation nobody read for it). A read that
     // faults or answers a non-generation refuses the call here, before
     // admitCall, with zero grant and zero Control row.
+    let paCallGeneration
     if (typeof paGenerationReader === 'function') {
       const freshAuthority = await paReadGenerationFresh()
       if (freshAuthority.ok !== true) {
@@ -909,6 +937,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
           detail: `this admission opens on no read authority generation — ${freshAuthority.detail}; the previously confirmed value is withdrawn rather than reused`,
         }
       }
+      paCallGeneration = freshAuthority.value
     }
     // PR358 fix-4: an invocation ALREADY cancelled never enters governance at
     // all — zero PA consumption, zero Control row. It stays the BACKEND's
@@ -924,6 +953,34 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // dead invocation into a backend.)
       return { kind: 'allow', cancelled: true }
     }
+    // A5-M1 same-turn boundary (root ruling, authorized): ask the mount's OWNER
+    // to bring this scope's governed bindings onto the generation THIS call just
+    // read — before the call-level entry is asked below, and therefore BEFORE
+    // this call captures its `AdmissionRequest`. This is the whole reason the
+    // leg exists: the 2nd..N-th LLM step of one turn and every non-delivery wake
+    // reach this funnel without passing the request boundary, so a generation
+    // that moved mid-turn must land here or the call is refused until the next
+    // user input.
+    // NO SECOND DURABLE READ: `paCallGeneration` is the number read at the top
+    // of this function and nothing else — the leg is served from the read this
+    // call already paid for, which is why this seam adds no cache and reuses no
+    // value an earlier call confirmed.
+    // A leg that faults is OBSERVED, never absorbed: the bindings then still
+    // carry the older generation, so this call goes on UNPAIRED and the kernel's
+    // identity leg answers it with its own typed refusal. The execution edge
+    // further below never calls this leg — a verifier able to publish would
+    // repair its own drift instead of reporting it.
+    if (typeof paEnsureAuthorityCurrent === 'function' && paCallGeneration !== undefined) {
+      try {
+        await paEnsureAuthorityCurrent(
+          String(input.teamSessionId ?? ''),
+          String(input.instanceId ?? ''),
+          paCallGeneration,
+        )
+      } catch (error) {
+        observe(`a5m1-authority-leg: ensure-current(g=${String(paCallGeneration)}) threw (${String(error?.message ?? error).slice(0, 160)}) — this call continues UNPAIRED and the kernel identity leg refuses it`)
+      }
+    }
     // ── A5-M1 (root ruling on 091f56d37): the AdmissionRequest carries the
     // REAL binding this call stands on, read NOW through the ONE public
     // call-level entry — never a synthesized row identity.
@@ -937,16 +994,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // Unanswerable here = this call has NO verifiable binding identity at all,
     // so it is refused with the kernel's own identity code BEFORE any
     // admission work: zero admitCall, zero grant, zero Control row, zero body.
-    // DISCLOSED pairing law (not bent here): the live tuple carries the
-    // DISPATCHER's generations (`tool-dispatch/install.ts:1160`, production 0
-    // until PR2 feeds the overlay/authority generations into the Binding)
+    // THE PAIRING LAW (root ruling, not bent here): the live tuple carries the
+    // DISPATCHER's generations (`tool-dispatch/install.ts:1149-1164` — the real
+    // number the Guard was installed with, and what a refresh republishes),
     // while the admission kernel's identity leg compares
     // `binding.authorityGeneration` against THIS assembly's durable overlay
-    // generation (`tool-admission/admission-kernel.ts:245-254`). So a world
-    // with a permission-overlay row (generation ≥ 1) refuses at admission
-    // with `authority-generation-drift` — the kernel's documented law
-    // ("stale generation: re-assembly, not admission"). The plane states the
-    // real tuple verbatim and never re-stamps a generation to make a pair.
+    // generation (`tool-admission/admission-kernel.ts:245-254`, kept EXACT).
+    // Both sides come from the ONE durable reader in agent-bindings, and the
+    // owner republishes the bindings onto each call's fresh number through the
+    // leg above. Where no owner published (no leg, or the leg faulted) the pair
+    // simply does not hold and the kernel's own refusal
+    // (`authority-generation-drift`) answers: the plane states the real tuple
+    // verbatim and never re-stamps a generation to make a pair.
     const placementName = paPlacementNameOf(toolName)
     let paRequestBinding = paRev0RowBindingFor(toolName)
     let paConstructionBinding
