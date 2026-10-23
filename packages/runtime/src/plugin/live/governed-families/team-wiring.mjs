@@ -154,9 +154,6 @@ export const A5_B_TEAM_WIRING_CODES = Object.freeze({
   EDGE_CANCELLED: 'P_B_TEAM_WIRE_EDGE_CANCELLED',
   CONSUME_PROOF_MISSING: 'P_B_TEAM_WIRE_CONSUME_PROOF_MISSING',
   ALREADY_ADMITTED: 'P_B_TEAM_WIRE_ALREADY_ADMITTED',
-  // A durable QUERY claim that no public Team read answers is not admitted.
-  CLAIM_UNVERIFIED: 'P_B_TEAM_WIRE_CLAIM_UNVERIFIED',
-  FACTS_ABSENT: 'P_B_TEAM_WIRE_FACTS_ABSENT',
 })
 const WIRE = A5_B_TEAM_WIRING_CODES
 
@@ -322,65 +319,15 @@ const defaultCorrelationOf = (exec) => (isRecord(exec) && nonEmptyString(exec.ca
  *          `{ ok: false, code, detail }` refusal (an omitted capture law
  *          answers the ADAPTER's own P_B_TEAM_* bytes, never a stand-in).
  */
-/**
- * THE DURABLE ROSTER READER (root 20:15 ①): the seat's verification of a
- * QUERY target reads the PUBLIC durable Team roster — `memberInstances.list`
- * over this Team's root, the same published read four other production sites
- * already use (agent-bindings:1088 / :2053 / :3563 / :4791). It answers facts
- * DERIVED FROM THE ROW'S OWN CONTENT (the row's `instanceId`, its
- * `childSessionId` pairing, its `templateId`), never a count standing in for
- * identity and never a caller-supplied answer.
- *
- * `listMemberInstances` is injected as the published seam itself, so the
- * reader holds no state, caches nothing, and reads the store again on every
- * call (a roster that moved between calls is read as it now is).
- */
-export function createTeamRosterFacts (input) {
-  const teamRoot = isRecord(input) ? input.teamRoot : undefined
-  const listMemberInstances = isRecord(input) ? input.listMemberInstances : undefined
-  if (typeof teamRoot !== 'string' || teamRoot.length === 0 || typeof listMemberInstances !== 'function') {
-    throw new Error(String(WIRE.INPUT_INVALID) + ': the roster reader needs the durable teamRoot and the published memberInstances.list seam')
-  }
-  const rowsFor = (root) => (root === teamRoot ? listMemberInstances() : [])
-  return Object.freeze({
-    isTeamRoot: (root) => root === teamRoot,
-    memberExists: (root, instanceId) => {
-      for (const row of rowsFor(root)) {
-        if (isRecord(row) && String(row.instanceId ?? '') === instanceId) return true
-      }
-      return false
-    },
-    // The row's own durable content, for the leaf mint's identity fields (NOT
-    // a size, NOT a synthesized id): undefined when the roster does not carry
-    // the instance at all.
-    memberRow: (root, instanceId) => {
-      for (const row of rowsFor(root)) {
-        if (isRecord(row) && String(row.instanceId ?? '') === instanceId) {
-          const childSessionId = String(row.childSessionId ?? '')
-          const templateId = String(row.templateId ?? '')
-          return Object.freeze({
-            instanceId: String(row.instanceId),
-            ...(childSessionId.length === 0 ? {} : { childSessionId }),
-            ...(templateId.length === 0 ? {} : { templateId }),
-          })
-        }
-      }
-      return undefined
-    },
-    rosterRows: (root) => rowsFor(root).filter((row) => isRecord(row) && typeof row.instanceId === 'string' && row.instanceId.length > 0)
-      .map((row) => String(row.instanceId)),
-  })
-}
-
 export function buildTeamOpsWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(WIRE.INPUT_INVALID, 'the wiring bridge takes one input record')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'durableFacts'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
       return wiringRefuse(WIRE.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, liveNative, teamSet, placementFeed, definitionIdentityOf, correlationOf, pa, observe}`)
     }
   }
-  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, durableFacts } = input
+  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {} } = input
   if (!nonEmptyString(realmId)) return wiringRefuse(WIRE.INPUT_INVALID, 'realmId is REQUIRED (non-empty string) — the walk has no realm without it')
   if (!nonEmptyString(providerId)) return wiringRefuse(WIRE.INPUT_INVALID, 'providerId is REQUIRED (non-empty string) — the durable family gate compares the provider identity the owner published, and this bridge invents none')
   if (typeof readNative !== 'function') return wiringRefuse(WIRE.INPUT_INVALID, 'readNative (name) => definition | undefined is REQUIRED — the MEMBER-SCOPED capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)')
@@ -492,14 +439,6 @@ export function buildTeamOpsWiring (input = {}) {
   const admittedPlans = new WeakSet()
   const stats = { admits: 0, admittedOnce: 0, admissionRefusals: 0, mintRefusals: 0, toolLawValues: 0, walks: 0, edges: 0, witnessed: 0 }
 
-  // The three pure-read rows whose durable target is ALREADY a fact of this
-  // Team (root 20:07's mature subset): the roster, the bound template set, one
-  // member's durable config view. Their claims are verifiable from the
-  // published reads, so they are verified. The seven write rows are NOT
-  // claimed tested here — their targets carry the write dimension and the
-  // named gaps, and no label is forced onto them.
-  const DURABLE_QUERY_NAMES = new Set(['team_list_members', 'team_list_templates', 'team_inspect_config'])
-
   const wireAdmit = async (ctx) => {
     const classified = isRecord(ctx) ? ctx.classified : undefined
     const plan = isRecord(classified) ? classified.plan : undefined
@@ -524,30 +463,6 @@ export function buildTeamOpsWiring (input = {}) {
       stats.toolLawValues += 1
       observe({ event: 'b-team-wire:tool-law-value', name, code: plan.toolError.code, paEntry: false })
       return Object.freeze({ ok: true })
-    }
-    // ROOT 20:11 (74/75/76 first): a durable QUERY target is verified against
-    // the PUBLISHED Team reads before any PA question is minted — the caller's
-    // root/member claim is an ASSERTION, and the durable roster is the
-    // authority (root 20:07: the claims still ride raw). No public answer, no
-    // admission: not a wider gate on the writes, exactly the three read rows
-    // whose targets are already durable facts of this Team.
-    if (DURABLE_QUERY_NAMES.has(String(name))) {
-      if (durableFacts === undefined || durableFacts === null) {
-        stats.admissionRefusals += 1
-        observe({ event: 'b-team-wire:claim-facts-ABSENT', name, paEntry: false })
-        return wiringRefuse(WIRE.FACTS_ABSENT, `'${String(name)}': a durable query target cannot be admitted while this world publishes no Team roster read — an unverified durable claim is never a pass (zero PA entry)`)
-      }
-      const rootClaim = isRecord(plan.target) && isRecord(plan.target.root) ? plan.target.root.claim : undefined
-      const memberClaim = isRecord(plan.target) && isRecord(plan.target.member) ? plan.target.member.claim : undefined
-      const rootOk = typeof rootClaim === 'string' && durableFacts.isTeamRoot(rootClaim) === true
-      const memberOk = String(name) !== 'team_inspect_config'
-        ? true
-        : typeof memberClaim === 'string' && durableFacts.memberExists(String(rootClaim), memberClaim) === true
-      if (!rootOk || !memberOk) {
-        stats.admissionRefusals += 1
-        observe({ event: 'b-team-wire:claim-UNVERIFIED', name, scope: rootOk ? 'member' : 'root', paEntry: false })
-        return wiringRefuse(WIRE.CLAIM_UNVERIFIED, `'${String(name)}': the ${rootOk ? 'member' : 'root'} claim ${rootOk ? String(memberClaim) : String(rootClaim)} is not answered by the published Team roster — the durable target of a query is verified, not trusted (zero PA entry)`)
-      }
     }
     const targetManifest = mintTargetManifest(plan)
     if (targetManifest.ok === false) {

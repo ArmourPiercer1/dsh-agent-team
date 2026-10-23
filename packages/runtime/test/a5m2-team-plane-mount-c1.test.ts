@@ -100,9 +100,6 @@ const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs
   readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<unknown>
 }
 const createTeamToolPlaneAssembly = PLANE_ROW.createTeamToolPlaneAssembly
-const BRIDGE = (await import(new URL('../src/plugin/live/governed-families/team-wiring.mjs', import.meta.url).href)) as {
-  createTeamRosterFacts: (input: Record<string, unknown>) => Record<string, unknown>
-}
 const { registerA5GovernedFamily, a5GovernedFamilyFor, readPaCallFactsForCall } = REGISTRY
 
 const POLICY_ASK = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
@@ -187,12 +184,6 @@ function makeLane (opts: { missing?: string[] } = {}) {
   const placedByName = new Map<string, Definition>()
   const inject = Object.freeze({
     providerId: PROVIDER,
-    // The published roster the seat verifies a query target against (rows
-    // carry their own instanceId; nothing here is a count or a yes-constant).
-    durableFacts: BRIDGE.createTeamRosterFacts({
-        teamRoot: 's-root-plane',
-        listMemberInstances: () => [{ instanceId: 'mi-9', childSessionId: 's-child-mi9', templateId: 'tpl-worker' }],
-      }),
     readNative: (name: string) => lane.find((def) => def.name === name),
     liveNative: (name: string) => lane.find((def) => def.name === name),
     teamSet: () => lane,
@@ -286,8 +277,6 @@ describe('A5M2-B-TEAM-PLANE-MOUNT — the B-TEAM block in the REAL plane: inject
         ['no lane set', { teamSet: undefined }],
         ['no identity mint', { definitionIdentityOf: undefined }],
         ['no placement feed', { placementFeed: undefined }],
-        ['no durable roster read', { durableFacts: undefined }],
-        ['a roster read without the two answers', { durableFacts: { isTeamRoot: 1 } }],
       ] as Array<[string, Record<string, unknown> | undefined]>) {
         const inject = Object.freeze({ ...Object.fromEntries(Object.entries(lane.inject).filter(([key]) => key !== 'providerId')), providerId: PROVIDER, ...patch })
         const built = buildPlane({ backends: { teamOps: inject } })
