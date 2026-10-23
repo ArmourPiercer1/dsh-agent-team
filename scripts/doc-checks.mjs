@@ -371,7 +371,7 @@ export function checkRatification(root) {
   if (!existsSync(file)) return [];
   const text = readFileSync(file, 'utf8');
   const findings = [];
-  const entryRe = /- id: ([A-Z]+-EB-\d{4})([\s\S]*?)(?=\n  - id: |\n[a-z_]+:|$)/g;
+  const entryRe = /- id: ([A-Z]+-EB-\d{4})([\s\S]*?)(?=\n {2}- id: |\n[a-z_]+:|$)/g;
   let m;
   while ((m = entryRe.exec(text))) {
     const [, id, body] = m;

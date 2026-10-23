@@ -84,26 +84,6 @@ export const PAIRS = [
 
 const PROPERTY_RE = /^(readonly\s+)?([A-Za-z_$][\w$]*)\s*(\?)?\s*:\s*(.+)$/;
 
-/** Strip comments a property parser must not mistake for content. */
-function stripComments(lines) {
-  const out = [];
-  let inBlock = false;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (inBlock) {
-      if (line.includes('*/')) inBlock = false;
-      continue;
-    }
-    if (line.startsWith('/*')) {
-      if (!line.includes('*/')) inBlock = true;
-      continue;
-    }
-    if (!line || line.startsWith('//')) continue;
-    out.push(line);
-  }
-  return out;
-}
-
 /**
  * Read every `export interface X { ... }` in a file.
  * Returns { props: {name: {fields:Set, optional:Set, notChecked:[]}}, all: [names] }

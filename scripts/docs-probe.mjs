@@ -31,7 +31,6 @@ import {
   checkPlanCitationBlocks,
   selectOwningDocs,
   BLOCKING_PREFIXES,
-  isBlockingFinding,
   contractShapeFindings,
   checkRatification,
 } from './doc-checks.mjs';
@@ -92,7 +91,7 @@ function classify(paths) {
   return out;
 }
 
-export function probe(root, { base = null, worktreeOnly = false, strict = false } = {}) {
+export function probe(root, { base = null, worktreeOnly = false } = {}) {
   if (!existsSync(join(root, '.git')) && git(root, ['rev-parse', '--git-dir']) === null) {
     return { refused: 'NOT_A_GIT_REPO' };
   }
@@ -243,7 +242,17 @@ if (invokedDirectly) {
     console.log('REFUSED BASE_REQUIRED: pass --base <verified-ref> or --worktree-only (a missing base is never treated as "no changes")');
     process.exit(2);
   }
-  const result = probe(root, { base, worktreeOnly: args.includes('--worktree-only'), strict: args.includes('--strict') });
+  // A flag that is parsed and never read is worse than no flag: `--strict` was exactly
+  // that, advertised by nothing and honoured by nothing, so `docs:probe --strict` reported
+  // the ordinary verdict while pretending otherwise. Unknown flags are named and refused;
+  // the CLI has no behaviour a typo can switch on.
+  const known = new Set(['--root', '--base', '--worktree-only', '--json']);
+  const unknown = args.filter((a) => a.startsWith('--') && !known.has(a));
+  if (unknown.length) {
+    console.log(`REFUSED UNKNOWN_FLAG: ${unknown.join(', ')} is not a flag of docs:probe (known: ${[...known].join(', ')})`);
+    process.exit(2);
+  }
+  const result = probe(root, { base, worktreeOnly: args.includes('--worktree-only') });
   if (result.refused) {
     console.log(`REFUSED ${result.refused}`);
     process.exit(2);

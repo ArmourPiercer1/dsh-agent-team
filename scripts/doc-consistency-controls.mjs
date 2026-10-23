@@ -741,7 +741,11 @@ function contractsFixture(slug, shape) {
   return dir;
 }
 
-control('POS-15 a declaration and its runtime field set that agree produce no finding', (d) => {
+// POS-15, NEG-69, NEG-70, NEG-71, NEG-73 call the checker inside this process, so they
+// build their own fixture (`contractsFixture`) instead of using the harness directory: a
+// comparison run in the test process cannot be reached by a child process's fixture, and
+// their unused `_d` says that out loud rather than pretending to consume it.
+control('POS-15 a declaration and its runtime field set that agree produce no finding', (_d) => {
   const dir = contractsFixture('cfa-pos', `export const THING_FIELDS: readonly string[] = [\n  'a',\n  'b',\n]\n\nexport interface ThingDto {\n  readonly a: string\n  readonly b?: string\n}\n`);
   PAIRS.push({ interface: 'ThingDto', fields: 'THING_FIELDS' });
   try {
@@ -758,7 +762,7 @@ control('POS-15 a declaration and its runtime field set that agree produce no fi
   }
 });
 
-control('NEG-69 a field the runtime set forgot is refused', (d) => {
+control('NEG-69 a field the runtime set forgot is refused', (_d) => {
   const dir = contractsFixture('cfa-missing-runtime', `export const THING_FIELDS: readonly string[] = ['a']\n\nexport interface ThingDto {\n  readonly a: string\n  readonly b: string\n}\n`);
   PAIRS.push({ interface: 'ThingDto', fields: 'THING_FIELDS' });
   try {
@@ -773,7 +777,7 @@ control('NEG-69 a field the runtime set forgot is refused', (d) => {
   }
 });
 
-control('NEG-70 a construct the reader cannot parse is NOT_CHECKED, never a pass', (d) => {
+control('NEG-70 a construct the reader cannot parse is NOT_CHECKED, never a pass', (_d) => {
   // Index signatures, methods and inline objects are outside the subset. Reporting them
   // as unchecked is the whole point: the alternative is a comparison that silently
   // covers less than it claims.
@@ -791,7 +795,7 @@ control('NEG-70 a construct the reader cannot parse is NOT_CHECKED, never a pass
   }
 });
 
-control('NEG-71 a nested object property is refused, one line or several', (d) => {
+control('NEG-71 a nested object property is refused, one line or several', (_d) => {
   // Both layouts have to land in NOT_CHECKED. The single-line form used to be counted as
   // an ordinary field because the guard read a capture group that did not exist; the
   // multi-line form used to close the interface at its own `}`, adopting the nested member
@@ -816,7 +820,6 @@ control('NEG-71 a nested object property is refused, one line or several', (d) =
 });
 
 control('NEG-72 refs minItems 0 is agreement, only a positive floor is drift', (d) => {
-  const p = 'dev/engineering/registry.schema.json';
   mutateSchema(d, (j) => { j.properties.entries.items.properties.refs.minItems = 0; });
   const zero = run(SYNC, ['--check', '--root', d]);
   const zeroOut = (zero.out.match(/SCHEMA_[A-Z_]+/g) || []).join(',');
@@ -828,7 +831,7 @@ control('NEG-72 refs minItems 0 is agreement, only a positive floor is drift', (
   ];
 });
 
-control('NEG-73 an array compared as a v1 subset is not also reported unpaired', (d) => {
+control('NEG-73 an array compared as a v1 subset is not also reported unpaired', (_d) => {
   const dir = contractsFixture('cfa-v1dedupe', [
     'export const BASE_FIELDS: readonly string[] = [', "  'a',", ']', '',
     'export const WIDE_FIELDS: readonly string[] = [', "  ...BASE_FIELDS,", "  'b',", ']', '',
@@ -846,6 +849,22 @@ control('NEG-73 an array compared as a v1 subset is not also reported unpaired',
   } finally {
     PAIRS.pop();
   }
+});
+
+control('NEG-76 docs:probe names and refuses a flag it does not implement', (d) => {
+  // `--strict` used to be parsed from argv, passed to probe(), destructured and dropped on
+  // the floor: the command ran the ordinary check and its exit was read as the strict
+  // verdict. Same class as the `--root` bug in the generator, found by the repo's lint rule
+  // rather than by a test. A flag is now either honoured or refused by name.
+  const strict = run(PROBE, ['--worktree-only', '--strict', '--root', d]);
+  const typo = run(PROBE, ['--worktree-only', '--worktree-onlyy', '--root', d]);
+  const ok = run(PROBE, ['--worktree-only', '--root', d]);
+  return [
+    { ok: strict.code === 2 && strict.out.includes('UNKNOWN_FLAG') && strict.out.includes('--strict'), why: `--strict exit=${strict.code}: ${strict.out.trim().split('\n')[0]}` },
+    { ok: typo.code === 2 && typo.out.includes('--worktree-onlyy'), why: `a typo is named, not ignored: exit=${typo.code}` },
+    { ok: !strict.out.includes('blocking=') && !typo.out.includes('blocking='), why: 'a refused run prints no verdict at all' },
+    { ok: ok.code === 0 || ok.code === 1, why: 'the honoured flags still work: exit=' + ok.code },
+  ];
 });
 
 control('NEG-74 contracts drift blocks the gates, not just the standalone script', (d) => {
