@@ -453,6 +453,14 @@ export type PaReadHandoffOutcome = {
     readonly kind: 'refused';
     readonly code: string;
     readonly detail: string;
+    /** Cleanup ownership, stated EXPLICITLY and NEVER inferred from `code`:
+     *  `true` — this very entry created state on this exec, the adapter voids
+     *  it; `false` — a DUPLICATE entry refusing what ANOTHER leg owns, so the
+     *  adapter must not touch that leg's state (closing here used to end the
+     *  first owner's hand-off); absent — an unknown port shape, in which case
+     *  the adapter closes nothing and the `'tools/result'` terminal leg stays
+     *  the backstop for the exec that really ran. */
+    readonly ownsHandoff?: boolean;
 };
 /** The A5-M2 hand-off ports, supplied by the glue from ONE plane mount. */
 export interface PaReadHandoffPorts {

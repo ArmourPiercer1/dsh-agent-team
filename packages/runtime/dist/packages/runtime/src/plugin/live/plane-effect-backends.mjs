@@ -1164,7 +1164,7 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         // A TERMINAL token is never re-armed: no new correlation, no new walk,
         // no revival of a hand-off this execution already ended.
         ownsTokenTerminal = false
-        return { kind: 'refused', code: 'PA_HANDOFF_TERMINAL', detail: 'this execution token is already terminal, so no PA hand-off may be opened on it again' }
+        return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_TERMINAL', detail: 'this execution token is already terminal, so no PA hand-off may be opened on it again' }
       }
       if (mode === 'open' && prior !== undefined && prior.handedOff === true) {
         // ① A second open is refused UNCONDITIONALLY and without side effects,
@@ -1174,7 +1174,7 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         // used to mark a second call authorized while it owned no flight, and
         // this leg's finally then settled the token the FIRST leg still needed.
         ownsTokenTerminal = false
-        return { kind: 'refused', code: 'PA_HANDOFF_IN_FLIGHT', detail: 'a PA hand-off is already open for this execution token; a second open is refused without touching the in-flight state and no answer is reused' }
+        return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_IN_FLIGHT', detail: 'a PA hand-off is already open for this execution token; a second open is refused without touching the in-flight state and no answer is reused' }
       }
       if (prior !== undefined && !prior.settled && prior.handedOff !== true) {
         ownsTokenTerminal = false
@@ -1284,7 +1284,7 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       let gate
       if (mode === 'open') {
         if (typeof pa.open !== 'function') {
-          return { kind: 'refused', code: 'PA_HANDOFF_UNAVAILABLE', detail: 'this plane mounts no PA admission-open entry, so no pre-dispatch hand-off can be opened' }
+          return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNAVAILABLE', detail: 'this plane mounts no PA admission-open entry, so no pre-dispatch hand-off can be opened' }
         }
         paOpenSeq += 1
         const mySeq = paOpenSeq
@@ -1305,7 +1305,7 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
           if (tokenKey !== undefined && paHandoffs.get(tokenKey)?.seq === mySeq) paHandoffs.delete(tokenKey)
           closeOwnedPlan()
           ownsTokenTerminal = false
-          return { kind: 'refused', code: 'PA_HANDOFF_FAULT', detail: `Part A threw and is never treated as an authorization: ${String(error?.message ?? error).slice(0, 180)}` }
+          return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `Part A threw and is never treated as an authorization: ${String(error?.message ?? error).slice(0, 180)}` }
         }
         // ④ AFTER the await the world is re-checked, not assumed: the mount
         // must still be this row's mount, and this leg must still own the
@@ -1320,14 +1320,14 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
             ownsTokenTerminal = false
             readTokenLedger.set(tokenKey, { correlation: ownedCallId ?? 'unknown', settled: true })
             observe('governed-read pa-handoff dropped — mount torn down during the walk')
-            return { kind: 'refused', code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down while PA was being asked; the answer is dropped and nothing is authorized' }
+            return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down while PA was being asked; the answer is dropped and nothing is authorized' }
           }
           if (held === undefined || held.seq !== mySeq) {
             closeOwnedPlan()
             ownsTokenTerminal = false
             readTokenLedger.set(tokenKey, { correlation: ownedCallId ?? 'unknown', settled: true })
             observe('governed-read pa-handoff dropped — the leg was closed while PA was being asked')
-            return { kind: 'refused', code: 'PA_HANDOFF_CLOSED', detail: 'this hand-off leg was closed while PA was being asked; the answer is dropped and nothing is authorized' }
+            return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_CLOSED', detail: 'this hand-off leg was closed while PA was being asked; the answer is dropped and nothing is authorized' }
           }
         }
       } else if (handoffClaim !== undefined) {

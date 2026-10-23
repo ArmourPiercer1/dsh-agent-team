@@ -500,7 +500,19 @@ export type PaReadHandoffOutcome =
   | { readonly kind: 'no-match' }
   | { readonly kind: 'authorized'; readonly correlation?: string }
   | { readonly kind: 'cancelled' }
-  | { readonly kind: 'refused'; readonly code: string; readonly detail: string }
+  | {
+      readonly kind: 'refused'
+      readonly code: string
+      readonly detail: string
+      /** Cleanup ownership, stated EXPLICITLY and NEVER inferred from `code`:
+       *  `true` — this very entry created state on this exec, the adapter voids
+       *  it; `false` — a DUPLICATE entry refusing what ANOTHER leg owns, so the
+       *  adapter must not touch that leg's state (closing here used to end the
+       *  first owner's hand-off); absent — an unknown port shape, in which case
+       *  the adapter closes nothing and the `'tools/result'` terminal leg stays
+       *  the backstop for the exec that really ran. */
+      readonly ownsHandoff?: boolean
+    }
 
 /** The A5-M2 hand-off ports, supplied by the glue from ONE plane mount. */
 export interface PaReadHandoffPorts {
@@ -1406,11 +1418,16 @@ export function installParameterPermissionListener(
       }
       if (handoff.kind === 'refused') {
         // Mismatch or PA fault: FAIL CLOSED, in place. No native Ask is
-        // opened, no mark is made, `next()` is never awaited, and the state
-        // this call touched is voided now (the terminal leg stays idempotent
-        // against this early close).
-        paHandoffExecs.delete(exec)
-        paHandoffPorts.close(exec)
+        // opened, no mark is made, `next()` is never awaited. Cleanup
+        // ownership is STATED by the trusted port and NEVER guessed from
+        // `handoff.code`: a duplicate entry that owns nothing must not close,
+        // because that close voided the hand-off the FIRST leg still needed.
+        // Anything not explicitly owned is left alone, and the real
+        // `'tools/result'` terminal leg stays the backstop.
+        if (handoff.ownsHandoff === true) {
+          paHandoffExecs.delete(exec)
+          paHandoffPorts.close(exec)
+        }
         observe({ stage: 'pa-handoff-refused', callId, tool: name, code: handoff.code, detail: handoff.detail })
         return { kind: 'deny', reason: `${handoff.code} — ${handoff.detail}` }
       }
