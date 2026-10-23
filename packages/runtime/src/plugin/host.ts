@@ -109,7 +109,6 @@ import type {
 import { commitDurableFact } from '../../action-router/index.js'
 import type { CanonicalKeyContains, PermissionAuthorityFacts, TeamPermissionPlane } from './permission-plane.js'
 import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from '../../../domain/blueprint/src/index.js'
-import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js'
 import type { StorageDomainSeam } from '../../../storage/schema/index.js'
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
@@ -3310,8 +3309,8 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
           }
           // pre-alpha3 PR4: release the overlay store's own domain handle
           // (the durable rows stay on the medium; the plane is stateless).
-          // Never fails the row teardown.
           try {
+            // Never fails the row teardown.
           } catch {
             // a throwing close is swallowed: the row teardown proceeds
           }

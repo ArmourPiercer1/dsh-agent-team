@@ -2515,8 +2515,8 @@ export async function apply(ctx, config) {
             }
             // pre-alpha3 PR4: release the overlay store's own domain handle
             // (the durable rows stay on the medium; the plane is stateless).
-            // Never fails the row teardown.
             try {
+                // Never fails the row teardown.
             }
             catch {
                 // a throwing close is swallowed: the row teardown proceeds
