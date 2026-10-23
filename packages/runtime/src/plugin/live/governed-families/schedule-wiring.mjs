@@ -393,63 +393,24 @@ export function createScheduleWiring(input = {}) {
  * DISPATCH PORT — its list/delete methods forward to the BOUND native face
  * with the owner's exec, so the host closure remains the final body (its
  * per-call `rootCtx.schedule` read, ScheduleId mint and operationError
- * mirror all run) BEHIND every adapter check. Drift is anchored on
- * HOST-VISIBLE state: glue re-derives the port from the live native faces,
- * so a host re-registration answers a different port object and the signed
- * DEFINITION_DRIFT/PORT_DRIFT legs refuse with ZERO dispatch — a dynamic
- * replacement never executes (不绕批准, 不绕adapter).
+ * mirror all run) BEHIND every adapter check. THE PORT IS THE RAW SERVICE
+ * (root 19:17): glue supplies the REAL published ScheduleService — the
+ * ctx.schedule handle through a CURRENT FEED the entry reads from the
+ * host's global service store — and liveScheduleService() re-reads that
+ * feed at every dispatch edge exactly where the host bodies resolve
+ * rootCtx.schedule. The signed PORT_DRIFT legs are therefore REAL service-
+ * drift checks: a service object or a service method replaced underneath
+ * the mount refuses BEFORE any port entry. The native TOOL face never
+ * masquerades as the service (its output is a rendered view set / tool
+ * VALUE, not the service's record stream — double-mapping a normal value
+ * or feeding a {code,message} VALUE through records.map is exactly the
+ * mis-layering this law closes); it keeps its real role as the capture
+ * IDENTITY behind liveNative (不绕批准, 不绕adapter).
  * The 11-leaf projection (mintTargetManifest above) is the ONE claim face —
  * production arms and the 59a seat share it byte-for-byte; taskId rides
  * null-or-exact as measured (the nullable kind stays root's single signed
  * column); create/update have NO arm, NO row, NO registration (the trigger
  * gap is open — they are not enabled). */
-
-/** The list-forward's dispatch-moment signal stand-in: the adapter's own
- *  delegate enforces the call's REAL abort law BEFORE the port call (the
- *  `exec.signal.aborted → internal_error` leg), and the published service
- *  `list` takes no signal (tools.ts:443) — the native face still reads a
- *  signal object, and the one it reads is a settled non-aborted fact. */
-const LIST_DISPATCH_SIGNAL = Object.freeze({ aborted: false })
-
-/**
- * THE PRODUCTION PORT (root 18:52): a ScheduleService-shaped NATIVE DISPATCH
- * port. Its `list`/`delete` methods forward to the BOUND native faces with
- * the OWNER Agent's exec, so the host closure stays the final body behind
- * every adapter check (native fidelity: per-call rootCtx read, ScheduleId
- * mint, operationError mirror all run). create/update/catalog/history exist
- * only for the factory's shape law (A5_B_SCHEDULE_SERVICE_METHODS) — calling
- * one is a drift event, and they refuse loudly with zero native entry.
- *
- * @param input {{
- *   nativeList: object, nativeDelete: object,   // the BOUND captured faces
- *   capturedAgent: object,                       // the owner Agent OBJECT
- * }} input
- */
-export function createScheduleNativeDispatchPort (input = {}) {
-  const nativeList = input.nativeList
-  const nativeDelete = input.nativeDelete
-  const capturedAgent = input.capturedAgent
-  if (!isRecord(nativeList) || typeof nativeList.execute !== 'function'
-    || !isRecord(nativeDelete) || typeof nativeDelete.execute !== 'function'
-    || !isRecord(capturedAgent)) {
-    throw new TypeError('P_B_SCHEDULE_INPUT_INVALID — the native dispatch port needs the BOUND list/delete faces (execute functions) and the owner Agent object')
-  }
-  const notEnabled = async () => {
-    throw new Error('P_B_SCHEDULE_NOT_ENABLED — create/update/catalog/history never dispatch in production (TRIGGER_GOVERNANCE gap open; the family mounts list/delete only): a call reaching this method is drift, not a route')
-  }
-  return Object.freeze({
-    // The published service signatures (A5_B_SCHEDULE_SERVICE_METHODS):
-    // list({ sessionId }) → the native body re-reads rootCtx.schedule and
-    // reads agent.session.id from the OWNER exec itself; the port's
-    // sessionId argument never travels — the owner reference is the fact.
-    list: async (_input) => nativeList.execute({}, { agent: capturedAgent, signal: LIST_DISPATCH_SIGNAL }),
-    delete: async (input2, signal) => nativeDelete.execute({ id: input2.id }, { agent: capturedAgent, signal }),
-    create: notEnabled,
-    catalog: notEnabled,
-    history: notEnabled,
-    update: notEnabled,
-  })
-}
 
 /** The 11-leaf measured projection as the ONE production claim face (the
  *  59a seat's own mintTargetManifest, byte-identical by construction). */

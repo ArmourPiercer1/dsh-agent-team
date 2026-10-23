@@ -173,27 +173,8 @@ export declare function createScheduleWiring(input?: BScheduleWiringInput): BSch
 
 /* ── PRODUCTION ARM SURFACE (root 18:11 + 18:52) ─────────────────────────
  * Types for the production-reachability exports; the semantics (delegate-
- * boundary law, native-dispatch-port law, real-error-class mirror) live in
- * the `.mjs`. */
-
-/** The production port: ScheduleService-shaped native DISPATCH port. The
- *  list/delete forwards run the BOUND native faces with the owner exec;
- *  create/catalog/history/update exist for the shape law only and refuse
- *  loudly (the family mounts list/delete; TRIGGER_GOVERNANCE gap open). */
-export interface BScheduleNativeDispatchPort {
-  list: (input: { sessionId: string }) => Promise<unknown>
-  delete: (input: { sessionId: string; id: string }, signal?: unknown) => Promise<unknown>
-  create: (...args: never[]) => Promise<never>
-  catalog: (...args: never[]) => Promise<never>
-  history: (...args: never[]) => Promise<never>
-  update: (...args: never[]) => Promise<never>
-}
-export interface BScheduleNativeDispatchPortInput {
-  readonly nativeList: { execute: (...args: never[]) => unknown } & Record<string, unknown>
-  readonly nativeDelete: { execute: (...args: never[]) => unknown } & Record<string, unknown>
-  readonly capturedAgent: Record<string, unknown>
-}
-export declare function createScheduleNativeDispatchPort(input?: BScheduleNativeDispatchPortInput): Readonly<BScheduleNativeDispatchPort>
+ * boundary law, RAW-SERVICE current-feed port law (root 19:17), real-
+ * error-class mirror) live in the `.mjs`. */
 
 /** The ONE production claim face: the 11-leaf measured projection (taskId
  *  rides null-or-exact as measured; the nullable kind is root's column). */

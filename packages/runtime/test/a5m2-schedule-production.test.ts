@@ -19,17 +19,19 @@
  * (edgeIntegrity: drain / CURRENT native face + execute / CURRENT service +
  * method identities; NOT_OWN_PLAN; fresh re-classify + PLAN_STALE; the
  * ALREADY_DISPATCHED plan-object memo; the owner REFERENCE law; the abort
- * law; the frozen port call; the L6 mirror). Native fidelity (保真native)
- * rides INSIDE that boundary: the production port is the NATIVE DISPATCH
- * port — its list/delete forwards run the BOUND `registerScheduleTools`
- * faces with the owner exec, so the host closure remains the final body
- * (its per-call `rootCtx.schedule` read, its `exec.agent !== agent`
- * REFERENCE law and its operationError mirror against the SAME module
- * identity of `ScheduleInputError` all still run) BEHIND every adapter
- * check. Drift is anchored on host-visible state: the glue re-derives the
- * port from the live native pair, so a host re-registration answers a
- * DIFFERENT port object and the signed drift legs refuse with zero
- * dispatch — a dynamic replacement never executes (不绕批准).
+ * law; the frozen port call; the L6 mirror). THE PORT IS THE RAW SERVICE
+ * (root 19:17): the adapter is fed the REAL published ScheduleService —
+ * ctx.schedule itself through a CURRENT FEED (`() => rootCtx.schedule`,
+ * the spec mirror of the entry's lazy strict global-store read under
+ * 'schedule') — never a wrapper of the native TOOL face: the tool output
+ * is a rendered view set / tool VALUE, and mapping it a second time or
+ * feeding a {code,message} VALUE through the delegate's records.map is
+ * exactly the mis-layering closed here. liveScheduleService() re-reads the
+ * feed at every dispatch edge exactly where the host bodies resolve
+ * rootCtx.schedule, so the signed PORT_DRIFT legs are REAL service drift:
+ * a service OBJECT or a service METHOD replaced underneath the mount
+ * refuses BEFORE any port entry, in either direction (the replacement
+ * service records nothing; the bound one is never asked again).
  *
  * create/update: never mounted, never registered, never armable (the closed
  * inject key set refuses even a test that tries). The trigger gap stays open.
@@ -77,7 +79,6 @@ import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, memberCaller, p6t4Seed } fr
 import { ScheduleInputError, registerScheduleTools } from '@deepseek-ai/dsh-schedule'
 import {
   createGovernedScheduleArm,
-  createScheduleNativeDispatchPort,
   createScheduleWiring,
 } from '../src/plugin/live/governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from '../src/plugin/live/governed-families/schedule-adapters.mjs'
@@ -279,7 +280,9 @@ interface World {
   legInputs: Record<string, unknown>[]
   legResults: { decision?: string; detail?: string; requestId?: string }[]
   throwNextDeleteError: (e: Error | null) => void
-  rereregisterNative: () => void
+  throwNextListError: (e: Error | null) => void
+  swapScheduleService: (next: Record<string, unknown>) => void
+  rebindScheduleList: (fn: (input: unknown) => Promise<unknown>) => void
   arms: {
     schedule_list: { definitionIdentity: string; classify: (raw: unknown) => Record<string, unknown>; execute: (plan: Record<string, unknown>, exec: Record<string, unknown>) => Promise<Record<string, unknown>>; drain: () => void }
     schedule_delete: { definitionIdentity: string; classify: (raw: unknown) => Record<string, unknown>; execute: (plan: Record<string, unknown>, exec: Record<string, unknown>) => Promise<Record<string, unknown>>; drain: () => void }
@@ -317,16 +320,26 @@ async function mountWorld(
   }]
   const serviceCalls = { list: [] as unknown[], delete: [] as unknown[] }
   const throwNextDelete: { error: Error | null } = { error: null }
+  // THE RAW SERVICE: the FULL published ctx.schedule shape (the adapter's
+  // shape law refuses a partial port). list/delete carry the recorded fake;
+  // the never-enabled methods exist and refuse loudly (the world mirrors
+  // the real service's SHAPE, and this mount never dispatches them).
+  const notEnabled = async () => { throw new Error('never-enabled in this world') }
   const rootCtx = {
     schedule: {
-      list: async (input: unknown) => { serviceCalls.list.push(input); return rows.slice() },
+      list: async (input: unknown) => { serviceCalls.list.push(input); if (throwNextList.error !== null) throw throwNextList.error; return rows.slice() },
       delete: async (input: unknown, signal: unknown) => {
         serviceCalls.delete.push({ input, signal })
         if (throwNextDelete.error !== null) throw throwNextDelete.error
         return { deleted: true, id: (input as { id: string }).id }
       },
-    },
+      create: notEnabled,
+      catalog: notEnabled,
+      history: notEnabled,
+      update: notEnabled,
+    } as Record<string, unknown>,
   }
+  const throwNextList: { error: Error | null } = { error: null }
   const faces = new Map<string, Record<string, unknown>>()
   const toolCtx = { tools: { register: (def: Record<string, unknown>) => { faces.set(String(def.name), def); return () => { faces.delete(String(def.name)) } } } }
   registerScheduleTools(rootCtx as never, toolCtx as never, agent as never)
@@ -334,21 +347,16 @@ async function mountWorld(
   const nativeDelete = faces.get(DELETE)
   if (nativeList === undefined || nativeDelete === undefined) throw new Error('the published registerScheduleTools did not answer the list/delete faces')
 
-  // THE family assembly — the PRODUCTION port law mirrored verbatim from
-  // the glue: a native dispatch port over the BOUND faces, with a
-  // liveScheduleService that RE-DERIVES from the live native pair (so the
-  // signed drift check is anchored on host-visible state, never a constant
-  // self-compare).
-  const schedulePort = createScheduleNativeDispatchPort({ nativeList: nativeList as never, nativeDelete: nativeDelete as never, capturedAgent: agent as never })
-  const derivedPort: { key: unknown[]; port: Record<string, unknown> } = { key: [nativeList, nativeDelete], port: schedulePort as unknown as Record<string, unknown> }
-  const liveScheduleService = () => {
-    const pair = [faces.get(LIST), faces.get(DELETE)]
-    if (pair[0] === derivedPort.key[0] && pair[1] === derivedPort.key[1]) return derivedPort.port
-    derivedPort.key = pair
-    derivedPort.port = createScheduleNativeDispatchPort({ nativeList: pair[0] as never, nativeDelete: pair[1] as never, capturedAgent: agent as never }) as unknown as Record<string, unknown>
-    return derivedPort.port
-  }
-  const rereregisterNative = () => { registerScheduleTools(rootCtx as never, toolCtx as never, agent as never) }
+  // THE family assembly — the PRODUCTION port law (root 19:17) mirrored
+  // verbatim from the glue: the RAW ctx.schedule handle at bind time and a
+  // CURRENT FEED liveScheduleService() that re-reads the store at every
+  // dispatch edge (the spec mirror of the entry's lazy strict
+  // ctx.get('schedule')). The native faces keep their real role: the
+  // capture IDENTITY behind liveNative, never a service stand-in.
+  const schedulePort = rootCtx.schedule
+  const liveScheduleService = () => rootCtx.schedule
+  const swapScheduleService = (next: Record<string, unknown>) => { rootCtx.schedule = next }
+  const rebindScheduleList = (fn: (input: unknown) => Promise<unknown>) => { (rootCtx.schedule as { list: unknown }).list = fn }
   const assemblyWiring = createScheduleWiring({
     providerId: PROVIDER,
     declaredService: Object.freeze({ present: true }),
@@ -518,7 +526,9 @@ async function mountWorld(
     rootCtx: rootCtx as unknown as { schedule: Record<string, unknown> },
     rows, serviceCalls, observed, legInputs, legResults, arms: placedArms, listIdentity, deleteIdentity,
     throwNextDeleteError: (e: Error | null) => { throwNextDelete.error = e },
-    rereregisterNative,
+    throwNextListError: (e: Error | null) => { throwNextList.error = e },
+    swapScheduleService,
+    rebindScheduleList,
   } as unknown as World
 }
 
@@ -657,11 +667,18 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(Array.isArray(rows)).toBe(true)
     expect(String(rows[0]?.id)).toBe('sch_a5m2_prod_1')
     expect(String(rows[0]?.deliveryMode)).toBe('host')
+    // SINGLE conversion, measured: the RAW service record (status ACTIVE,
+    // scheduledAt in 2026-01-01) was mapped exactly once by the delegate —
+    // state derived from the raw bytes, raw fields intact (a double map of
+    // an already-viewed row is the mis-layering root 19:17 closed).
+    expect(String(rows[0]?.state)).toBe('overdue')
+    expect(String(rows[0]?.title)).toBe('lane row')
+    expect(String(rows[0]?.status)).toBe('ACTIVE')
     expect((world.serviceCalls.list[0] as { sessionId: string }).sessionId).toBe(String(world.agent.session.id))
     expect(delegatedRows(world)).toHaveLength(1)
   })
 
-  it('SP-B2 a dynamic replacement NEVER executes: a host re-registration (fresh native faces behind the same mount) answers the signed DEFINITION_DRIFT at the delegate boundary with ZERO further service entry — the drift check is anchored on host-visible state, and the combined RC is carried by BOTH the arm event and the assembly refusal event (root 18:52)', async () => {
+  it('SP-B2 REAL service drift, both signed legs: (a) the service OBJECT replaced underneath the mount answers PORT_DRIFT with zero entries on either service, (b) a METHOD rebound under the same object answers PORT_DRIFT too — the current feed observes the ACTUAL ctx.schedule, and the combined RC rides the arm event AND the assembly refusal event (root 19:17)', async () => {
     const world = await mountWorld('b2')
     const arm = world.arms.schedule_list
     const c1 = arm.classify({})
@@ -669,18 +686,33 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(first.ok).toBe(true)
     expect(first.settled).toBe('service')
     expect(world.serviceCalls.list).toHaveLength(1)
-    // the host re-registers the schedule tools behind the mount: liveNative
-    // and the derived port BOTH see new objects — the delegate refuses
-    // BEFORE any port entry, and no replacement body ever runs.
-    world.rereregisterNative()
-    const c2 = arm.classify({})
-    expect(c2.ok).toBe(true)
-    const second = await arm.execute(c2.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    // (a) the service OBJECT is replaced underneath the mount.
+    const replacedCalls: unknown[] = []
+    world.swapScheduleService({
+      list: async (input: unknown) => { replacedCalls.push(input); return [] },
+      delete: async () => ({ deleted: false }),
+      create: async () => { throw new Error('never') },
+      catalog: async () => { throw new Error('never') },
+      history: async () => { throw new Error('never') },
+      update: async () => { throw new Error('never') },
+    })
+    const second = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
     expect(second.ok).toBe(false)
-    expect(second.code).toBe('P_B_SCHEDULE_DEFINITION_DRIFT')
+    expect(second.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
     expect(world.serviceCalls.list).toHaveLength(1)
-    expect(world.observed.some((r) => r.startsWith('arm:b-schedule-arm:delegated') && r.includes('P_B_SCHEDULE_DEFINITION_DRIFT'))).toBe(true)
-    expect(world.observed.some((r) => r.startsWith('wire:b-schedule:refusal') && r.includes('P_B_SCHEDULE_DEFINITION_DRIFT'))).toBe(true)
+    expect(replacedCalls).toHaveLength(0)
+    // (b) the SAME object with a rebound list method — the method-identity
+    // leg of the same signed check; the drift is observed BEFORE any entry.
+    let reboundHits = 0
+    world.rebindScheduleList(async () => { reboundHits += 1; return [] })
+    const third = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    expect(third.ok).toBe(false)
+    expect(third.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
+    expect(reboundHits).toBe(0)
+    expect(world.serviceCalls.list).toHaveLength(1)
+    // 组合真RC: the exact typed code rides BOTH observable channels.
+    expect(world.observed.filter((r) => r.includes('P_B_SCHEDULE_PORT_DRIFT') && r.startsWith('arm:b-schedule-arm:delegated'))).toHaveLength(2)
+    expect(world.observed.filter((r) => r.startsWith('wire:b-schedule:refusal:P_B_SCHEDULE_PORT_DRIFT'))).toHaveLength(2)
   })
 
   it('SP-B3 the admitted delete body reaches the service with the OWNER session and the EXACT branded id and settles the native value — exactly one dispatch', async () => {
@@ -705,7 +737,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(world.serviceCalls.delete).toHaveLength(0)
   })
 
-  it('SP-B5 同Host错误类 by MODULE IDENTITY: a real ScheduleInputError thrown by the service settles its own {code, message} through the host operationError mirror inside the captured closure — the delegate settles it as the settled service VALUE, not internal_error, not a throw', async () => {
+  it('SP-B5 同Host错误类 by MODULE IDENTITY with COMPLETE return/error fidelity: a real ScheduleInputError thrown by delete settles its own {code, message} through the L6 mirror, and one thrown by LIST settles VERBATIM as service-error-value — no TypeError, no internal_error, no second mapping (root 19:17)', async () => {
     const world = await mountWorld('b5')
     // the code is one of the PUBLIC Schedule input codes (the published
     // d.ts restricts the union — itself a proof the REAL class is in hand)
@@ -713,10 +745,16 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const arm = world.arms.schedule_delete
     const classified = arm.classify({ id: 'sch_a5m2_prod_1' })
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
-    // the mirror ran INSIDE the host closure (its operationError caught the
-    // imported class identity); the delegate settles the returned value —
-    // one class, one module identity, host law end to end.
-    expect(ran).toEqual({ ok: true, settled: 'service', value: { code: 'invalid_selector', message: 'The schedule selector is not valid.' } })
+    // the service THROWS; the frozen port call rethrows; the delegate's L6
+    // mirror runs `instanceof` against the assembly-injected class identity
+    // — one module identity from the service to the settled tool VALUE.
+    expect(ran).toEqual({ ok: true, settled: 'service-error-value', value: { code: 'invalid_selector', message: 'The schedule selector is not valid.' } })
+    // the list side is the mis-layering's old failure point: a VALUE from
+    // the service must settle VERBATIM, never crash records.map.
+    world.throwNextListError(new ScheduleInputError('invalid_rule', 'The selector is not valid.'))
+    const listArm = world.arms.schedule_list
+    const listRan = await listArm.execute(listArm.classify({}).plan as Record<string, unknown>, execFor(world.agent))
+    expect(listRan).toEqual({ ok: true, settled: 'service-error-value', value: { code: 'invalid_rule', message: 'The selector is not valid.' } })
   })
 
   it('SP-B6 owner同Agent is the delegate\u2019s own REFERENCE law: an id/session-bytes LOOK-ALIKE settles the host internal_error VALUE with ZERO service entry; a FRESH plan by the bound object dispatches (the refused plan rides the same one-shot memo — no re-arm)', async () => {

@@ -365,7 +365,7 @@ import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-famil
 // — the SAME module the host's registerScheduleTools throws through at
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
-import { createGovernedScheduleArm, createScheduleNativeDispatchPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
+import { createGovernedScheduleArm, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
@@ -3040,43 +3040,28 @@ export function createAgentBindings(deps) {
             }
             scheduleNatives[scheduleName] = nativeFace
           }
-          // THE NATIVE DISPATCH PORT (root 18:52 不绕adapter + 保真native):
-          // the arm's execute IS the adapter row's own delegate, and the
-          // delegate's frozen port call forwards to the BOUND native faces
-          // with the owner exec — the host closure stays the final body
-          // BEHIND the full signed boundary. Drift is anchored on HOST-
-          // VISIBLE state: liveScheduleService() re-derives from the CURRENT
-          // native pair, so a host re-registration answers a DIFFERENT port
-          // object and the signed DEFINITION_DRIFT/PORT_DRIFT legs refuse
-          // with zero dispatch — a dynamic replacement never executes. The
-          // wiring seat (`admit`) stays inert: PRODUCTION admission is the
-          // plane's REAL PA edge inside the row, never a factory double.
-          const scheduleNativePair = () => {
-            try {
-              return [
-                typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_B_SCHEDULE_LIST_MOUNT_NAME, runtimeAgent) : undefined,
-                typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_B_SCHEDULE_DELETE_MOUNT_NAME, runtimeAgent) : undefined,
-              ]
-            } catch {
-              return [undefined, undefined]
-            }
+          // THE PORT BOUNDARY (root 19:17): the signed adapter is fed the
+          // REAL published ScheduleService — the raw ctx.schedule handle
+          // through the entry's CURRENT FEED (the lazy strict global-store
+          // read under 'schedule'). liveScheduleService() re-reads the feed
+          // at every dispatch edge exactly where the host bodies resolve
+          // rootCtx.schedule, so the signed PORT_DRIFT legs are REAL: a
+          // service object or a service method replaced underneath the
+          // mount refuses BEFORE any port entry. There is no native-tool
+          // stand-in (that mis-layering turned the host's own {code,message}
+          // values into a TypeError/internal_error and re-mapped already-
+          // mapped views): the TOOL face is not a service. The native faces
+          // keep their real role — the capture IDENTITY behind liveNative.
+          // The wiring seat (`admit`) stays inert: PRODUCTION admission is
+          // the plane's REAL PA edge inside the row, never a factory double.
+          const rawScheduleService = typeof deps.scheduleServiceFeed === 'function' ? deps.scheduleServiceFeed() : undefined
+          if (rawScheduleService === null || typeof rawScheduleService !== 'object' || Array.isArray(rawScheduleService)
+            || typeof rawScheduleService.list !== 'function' || typeof rawScheduleService.delete !== 'function'
+            || typeof rawScheduleService.create !== 'function' || typeof rawScheduleService.update !== 'function'
+            || typeof rawScheduleService.catalog !== 'function' || typeof rawScheduleService.history !== 'function') {
+            throw refuseSchedule('the production port needs the REAL ctx.schedule raw handle — the entry feed answered no full ScheduleService-shaped service (list/delete/create/update/catalog/history). The native TOOL face is NOT a service stand-in (root 19:17); mount the host schedule service or keep the gate closed')
           }
-          const scheduleProductionPort = createScheduleNativeDispatchPort({
-            nativeList: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME],
-            nativeDelete: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME],
-            capturedAgent: runtimeAgent,
-          })
-          const scheduleDerivedPort = { key: [scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME], scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME]], port: scheduleProductionPort }
-          const liveScheduleProductionService = () => {
-            const pair = scheduleNativePair()
-            if (pair[0] === scheduleDerivedPort.key[0] && pair[1] === scheduleDerivedPort.key[1]) return scheduleDerivedPort.port
-            scheduleDerivedPort.key = pair
-            // the host re-registered behind the mount: answer a FRESHLY
-            // derived port — the signed drift check refuses the dispatch
-            // (never a replacement-body dispatch through a stale port).
-            scheduleDerivedPort.port = createScheduleNativeDispatchPort({ nativeList: pair[0], nativeDelete: pair[1], capturedAgent: runtimeAgent })
-            return scheduleDerivedPort.port
-          }
+          const liveScheduleProductionService = () => (typeof deps.scheduleServiceFeed === 'function' ? deps.scheduleServiceFeed() : rawScheduleService)
           const scheduleAssembly = createScheduleWiring({
             providerId: 'a5p5-plane',
             declaredService: Object.freeze({ present: true }),
@@ -3085,7 +3070,7 @@ export function createAgentBindings(deps) {
               schedule_delete: Object.freeze({ native: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME], definitionIdentity: `capture-side:${sessionId}:schedule_delete` }),
             }),
             liveNative: (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined),
-            scheduleService: scheduleProductionPort,
+            scheduleService: rawScheduleService,
             liveScheduleService: liveScheduleProductionService,
             capturedAgent: runtimeAgent,
             ScheduleInputError,
