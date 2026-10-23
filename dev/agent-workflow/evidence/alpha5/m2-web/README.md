@@ -109,6 +109,7 @@ fixture 级证据身份，不冒充生产接线验收。
   端点桩**（披露：桩≠真实外网段）。load-bearing run =
   `runs/2026-10-23T07-26-08Z/`（20/20 EXIT=0）。
 - 真 provider/外网正控段 = **ENV_BLOCK 明列**（phases.G.env_block：真外网
+  - **CENTER 口径更正（2026-10-23，根 07:4x 裁；原文不删）**：上述三项不是一律 ENV_BLOCK。真外网 allow-through 与真 DEEPSEEK 凭据 = **实际缺项**（本环境确无凭据，不申请、不配置新凭据）；真 Host preset 复跑 / 真 DNS 腿 = **待审（NOT_VERIFIED，本轮未授权 Host 窗口）**，属验收状态而非环境结论。
   allow-through、真 DEEPSEEK 凭据、真 Host web-preset 复跑），未用 fixture 顶替。
 
 自查（07:2xZ）：`a5m2w-web-gateway + a5m2w-web-c1` 27/27；eslint 本卡全文件
