@@ -158,6 +158,27 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
   },
+  // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
+  // production blocks added STATIC relative imports that no placement
+  // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
+  // `files: ["dist"]` install face (exact failure class documented for
+  // todo.mjs). Four modules join the list; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+  },
   // A5M2-G1-WIRE (root ruling 15:28 工具适配不等待中心接线): the plane now
   // imports the committed G1 adapter module by relative specifier (Gate 0f
   // reads `A5_G1_RECORD_SPECS` / the adapter-revision constant off the
