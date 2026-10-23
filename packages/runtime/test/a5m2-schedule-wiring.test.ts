@@ -26,8 +26,9 @@
  *      refused P_B_SCHEDULE_WIRE_NON_SUBSET_CAPTURE BEFORE the adapter sees
  *      it (never silently dropped, never half-mounted); their claims fall
  *      closed — no registration key ever enters the production registry for
- *      them, and the family-target grammar keeps denying every B-SCHEDULE
- *      claim (see (g));
+ *      them, while the family-target grammar itself is REGISTERED at this
+ *      base (see (g)) — create/update fall closed on the closed capture and
+ *      the closed key set alone;
  *  (d) REGISTRATION LAW through the PRODUCTION registry: family keys are the
  *      RUNTIME placement identities (the test's feed is backed by the REAL
  *      `definitionIdentityOf` mint), never the capture-side strings; a silent
@@ -48,18 +49,19 @@
  *  (f) C1 at the row face: the list row's parameters are the captured closed
  *      face (a caller-passed sessionId is refused with zero admission), and
  *      the service-call sessionId is the BOUND owner's — never a caller string;
- *  (g) GRAMMAR-STATE PIN (disclosed, not papered over): as of this revision
- *      PA_FAMILY_TARGET_RULES carries NO 'B-SCHEDULE' key (the measured
- *      taskId leaf is null-or-non-empty-string and no existing closed kind
- *      types that union — sentineling is a fabricated fact, inventing a kind
- *      is forbidden; the exact minimal contract delta is escalated to root —
- *      family-rules round-3 precedent). So mount + registration + the
- *      consumption edge are WIRED, while the grammar gate stays CLOSED:
- *      validatePaFamilyTarget('B-SCHEDULE', mintedManifest) must deny
- *      exactly `familyId: no target structure is registered for 'B-SCHEDULE'`
- *      for BOTH minted shapes — every real B-SCHEDULE claim fails closed
- *      until root signs the delta. Nothing here claims list/delete are
- *      wired end to end.
+ *  (g) GRAMMAR-STATE PIN (re-anchored at the REGISTERED base): the signed
+ *      family-chain landing put the closed 'B-SCHEDULE' rule into
+ *      PA_FAMILY_TARGET_RULES (nine families at this base; the
+ *      nullableString/stringArray kinds carry the measured taskId leaf —
+ *      the round-3 escalation was SIGNED, not worked around). The mint →
+ *      durable-pending path is therefore OPEN: validatePaFamilyTarget
+ *      ACCEPTS BOTH minted shapes (list taskId null, delete the exact
+ *      validated id) — the eleven lossless leaves pass the signed rule
+ *      instead of denying. B-TERMINAL/B-SUBAGENT keys are NOT here (G3
+ *      BLOCKED, spawn entry-scoped). Wiring is proved at this file's
+ *      factory level; the real-plane pass-through lives in
+ *      a5m2-schedule-production.test.ts; end-to-end on Host is claimed
+ *      nowhere (候选接线未测).
  *
  * DISCLOSED STAND-INS: the native faces are hand-minted COMPLETE captures
  * (name/description/parameters/output{schema,render}/execute — the real
@@ -456,16 +458,20 @@ describe('a5m2-schedule-wiring — the controlled list/delete wiring over the re
     })
   })
 
-  describe('(g) GRAMMAR-STATE PIN: mount+registration+consumption are wired; the grammar gate stays CLOSED pending root', () => {
-    it('PA_FAMILY_TARGET_RULES carries NO B-SCHEDULE key (this lane touched nothing) and EVERY minted B-SCHEDULE claim denies exactly the unregistered-family refusal', async () => {
-      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
-      expect(PA_FAMILY_TARGET_RULES['B-SCHEDULE' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
+  describe('(g) GRAMMAR-STATE PIN: mount+registration+consumption are wired; the B-SCHEDULE table is REGISTERED at this base — both minted shapes PASS the signed rule (the mint to durable-pending path is open)', () => {
+    it('PA_FAMILY_TARGET_RULES answers the nine landed families (B-TERMINAL/B-SUBAGENT are NOT among them — G3 BLOCKED, spawn entry-scoped) and validatePaFamilyTarget ACCEPTS both minted shapes: the lossless eleven leaves with taskId null (list) and the exact validated id (delete)', async () => {
+      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
+      expect(PA_FAMILY_TARGET_RULES['B-TERMINAL' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
+      expect(PA_FAMILY_TARGET_RULES['B-SUBAGENT' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
       const world = makeWorld()
       const wiring = unwrap(WIRING_MODULE.createScheduleWiring(world.base))
       await wiring.definitions.find((d) => d.name === 'schedule_list')!.execute({}, execFor(world.capturedAgent))
       await wiring.definitions.find((d) => d.name === 'schedule_delete')!.execute({ id: 'task-exact-3' }, execFor(world.capturedAgent))
+      expect(world.admitsSeen).toHaveLength(2)
+      const taskIds = world.admitsSeen.map((seen) => String((seen.family!.targetManifest as Record<string, unknown>).taskId))
+      expect(taskIds).toEqual(['null', 'task-exact-3'])
       for (const seen of world.admitsSeen) {
-        expect(validatePaFamilyTarget(FAMILY, seen.family!.targetManifest)).toBe(`familyId: no target structure is registered for '${FAMILY}'`)
+        expect(validatePaFamilyTarget(FAMILY, seen.family!.targetManifest)).toBeUndefined()
       }
     })
   })
