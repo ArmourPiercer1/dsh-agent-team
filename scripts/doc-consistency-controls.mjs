@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
 import { checkGeneratedTarget } from './generated-write.mjs';
 import { checkContractsFieldAgreement, parseInterfaces, PAIRS } from './contracts-field-agreement.mjs';
+import { selectOwningDocs } from './doc-checks.mjs';
 import { GENERATED_FILES } from './generated-write.mjs';
 import { renderContractIndex, validateRegistry, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 
@@ -849,6 +850,53 @@ control('NEG-73 an array compared as a v1 subset is not also reported unpaired',
   } finally {
     PAIRS.pop();
   }
+});
+
+control('NEG-77 a broad glob must not shadow the specific rule written below it', (_d) => {
+  // First-match-wins made line order decide which rule meant anything: `packages/**` sat
+  // above the per-package rules added later, so those rules could never fire and their
+  // owner documents were dead text that still printed as configured in the map. Selection is
+  // by specificity now, and this control pins both directions of the file order so nobody
+  // can restore the old behaviour by re-sorting the YAML.
+  const specific = '  - glob: packages/runtime/src/**\n    docs:\n      - docs/terminology.md\n';
+  const broad = '  - glob: packages/**\n    docs:\n      - docs/glossary.md\n';
+  const dir = makeFixture('owner-specificity');
+  const resolveWith = (body) => {
+    writeFile(dir, 'dev/engineering/doc-ownership.yaml', `schema_version: 1\nowners:\n${body}`);
+    const res = selectOwningDocs(dir, ['packages/runtime/src/x.ts'], []);
+    return { docs: res.owned[0] ? res.owned[0].docs.join(',') : '(none)', findings: res.findings.map((f) => f.code).join(',') };
+  };
+  const broadFirst = resolveWith(`${broad}${specific}`);
+  const specificFirst = resolveWith(`${specific}${broad}`);
+  return [
+    { ok: broadFirst.docs === 'docs/terminology.md', why: `specific rule must win when declared last, won: [${broadFirst.docs}]` },
+    { ok: specificFirst.docs === 'docs/terminology.md', why: `same answer when declared first: [${specificFirst.docs}]` },
+    { ok: broadFirst.docs === specificFirst.docs, why: `file order is not a rule: ${broadFirst.docs} vs ${specificFirst.docs}` },
+    { ok: broadFirst.findings === '', why: 'no findings from resolving: ' + (broadFirst.findings || '(none)') },
+  ];
+});
+
+control('NEG-78 enforce belongs to the rule that matched, not to the broadest one', (_d) => {
+  // A specific advisory rule must not inherit a self-imposed refusal from a broad rule that
+  // also matches, and a broad enforced rule must still bind a path nothing more specific
+  // covers. Both halves matter: inheriting would gate code this line does not own, and
+  // losing the enforce flag would silently drop a refusal this line does impose on itself.
+  const dir = makeFixture('owner-enforce');
+  const run2 = (body, path) => {
+    writeFile(dir, 'dev/engineering/doc-ownership.yaml', `schema_version: 1\nowners:\n${body}`);
+    const res = selectOwningDocs(dir, [path], []);
+    return res.owned[0] ? `${res.owned[0].docs.join(',')}|enforce=${res.owned[0].enforce}` : '(no match)';
+  };
+  const advisorySpecific = '  - glob: packages/runtime/src/**\n    docs:\n      - docs/terminology.md\n';
+  const enforcedBroad = '  - glob: packages/**\n    docs:\n      - docs/glossary.md\n    enforce: true\n';
+  const narrowOnly = run2(enforcedBroad, 'packages/runtime/src/x.ts');
+  const withSpecific = run2(`${enforcedBroad}${advisorySpecific}`, 'packages/runtime/src/x.ts');
+  const otherPkg = run2(`${enforcedBroad}${advisorySpecific}`, 'packages/legacy/src/x.ts');
+  return [
+    { ok: narrowOnly.endsWith('enforce=true'), why: 'the broad enforced rule binds when nothing more specific matches: ' + narrowOnly },
+    { ok: withSpecific.endsWith('enforce=false') && withSpecific.startsWith('docs/terminology.md'), why: 'the specific advisory rule answers on its own terms: ' + withSpecific },
+    { ok: otherPkg.endsWith('enforce=true'), why: `a sibling package still falls to the broad rule: ${otherPkg}` },
+  ];
 });
 
 control('NEG-76 docs:probe names and refuses a flag it does not implement', (d) => {

@@ -99,14 +99,30 @@ Claim metadata, what it is for, and the code that refuses without it:
 | `merged_commit` | `implementation_status: merged` | `MERGED_CLAIM_UNCORROBORATED` unless it exists and is an ancestor of `origin/master` |
 | — | `release_status: candidate` / `released` | `RELEASE_CLAIM_UNCORROBORATED` unless `verified_host` at C2/C3 plus that ancestry |
 
-The tiers describe **where a claim was observed**, not how confident anyone feels: C1 = this
-machine, static analysis or local controls; C2 = a hosted or second-environment run; C3 = a
-real-environment (Host) run. `verified_local` deliberately needs no `verification_commit`: it
-asserts nothing about another machine, which is also why C1 evidence is not allowed to stand
-in for `verified_host`. Known gap, not hidden here: the rules do **not** refuse
-`verified_ci` carrying `verified_tier: C1`, which is self-contradictory — the commit binding
-fires, the tier comparison does not (`gen-current-state.mjs`, the `verified_host`-only tier
-branch). Tightening it is a rule change, so it is reported rather than done from here.
+The two fields are **orthogonal axes**, and an earlier version of this paragraph got that
+wrong by calling one pairing "self-contradictory" and describing the absence of a refusal as
+a gap. Corrected per the responsibility layering, and the rule was not touched:
+
+- `verification_status` names **which layer is being claimed** — local work, a CI run, a real
+  environment — and therefore which corroboration the rules demand of it.
+- `verified_tier` names **the tier of the evidence recorded** in `verification_artifacts`:
+  C1 = this machine, static analysis or local controls; C2 = a hosted or second-environment
+  run; C3 = a real-environment (Host) run.
+
+Because they answer different questions, `verified_ci` with `verified_tier: C1` is a legal
+record: a CI-layer claim whose listed artifacts happen be locally produced logs, bound to a
+commit. What the rules refuse is abuse, not vocabulary:
+
+- **a wrong SHA** — `verification_commit` that is 40-hex but names no commit object
+  (`CLAIM_UNBOUND`);
+- **local masquerading as CI** — a `verified_ci` / `verified_host` claim with nothing bound to
+  a commit (`CLAIM_UNBOUND`), or `verified_*` with no existing artifact (`FAKE_VERIFICATION`);
+- **C1 masquerading upward** — `verified_host` asserted from C1 evidence
+  (`CLAIM_TIER_MISMATCH`), or from no C2/C3 tier at all (`CLAIM_TIER_MISSING`).
+
+No rule refuses the *combination*, and adding one would invent a law the layering does not
+contain — which is also why the earlier "known gap" line here was not a finding about the
+rules but a finding about this paragraph.
 
 `released` is not defined by this line. What the tools do is refuse the word without
 corroboration, which is not the same as deciding what a release is — tag, `stable` push, or
@@ -129,7 +145,15 @@ whatever its registry entry's `owners` says, and there is no separate role roste
 branch.
 
 Ratification, as far as tooling reaches: an id in `ids.yaml` marked `proposed-not-ratified`
-stays that way until a registry entry records a `decision_status` for it. The tools do not
-detect a *missing* ratification — no rule requires an id to be ratified, and inventing that
-requirement would be this line promoting its own contract. Whether to ratify is the Contract
-Owner's judgement, expressed by editing the normative file, which this line cannot write.
+stays that way until the Contract Owner records a decision. Nothing here promotes an id, and
+the value is **not** read as "unauthorized work": what an id carries is decided id by id, and
+the layering is recorded in `work-package-authorization.md`. `normative_status` says how much
+contractual force a sentence has; it has never meant "this file may not be read, cited or
+mechanically refined". Two semantics worth stating because they are easy to over-read:
+
+- **INV-EB-0004** is consumed per *applicable* path: a code path that cannot both consume and
+  produce the two consumption modes is not required to fake the other one. It is not a rule
+  that every call must exercise both.
+- An **AC being "newer"** means its *content* drifted from what it accepts, not that its file
+  mtime is later. Nothing in this line compares timestamps; generated output carries no
+  wall-clock for exactly that reason.

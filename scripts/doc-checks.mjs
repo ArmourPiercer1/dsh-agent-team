@@ -435,11 +435,32 @@ export function selectOwningDocs(root, sourcePaths, changedDocs) {
     const body = esc.split('**').join('\u0000').split('*').join('[^/]*').split('\u0000').join('.*');
     return new RegExp('^' + body + '$');
   };
+  // The rule that means anything is the most specific one that matches, not the first one
+  // written. The map used `entries.find`, and `packages/**` sat above the per-package rules
+  // added later -- so those later rules could never fire and their owner documents were dead
+  // text while looking configured. Declaration order must not be a hidden authority over
+  // which rule applies: specificity decides, and the answer is the same whichever way the
+  // file happens to be ordered.
+  const rank = (e) => [-((e.glob.match(/\*/g) || []).length), e.glob.split('*')[0].length];
+  const beats = (a, b) => {
+    const [x, y] = [rank(a), rank(b)];
+    if (x[0] !== y[0]) return x[0] > y[0];
+    return x[1] !== y[1] ? x[1] > y[1] : a.order < b.order;
+  };
+  const pickRule = (path) => {
+    let best = null;
+    for (const e of entries) {
+      if (!toRe(e.glob).test(path)) continue;
+      if (!best || beats(e, best)) best = e;
+    }
+    return best;
+  };
+  entries.forEach((e, i) => { e.order = i; });
   const findings = [];
   const owned = [];
   const unowned = [];
   for (const p of sourcePaths) {
-    const hit = entries.find((e) => toRe(e.glob).test(p));
+    const hit = pickRule(p);
     if (!hit) { unowned.push(p); continue; }
     for (const doc of hit.docs) {
       if (!existsSync(join(root, doc))) findings.push({ code: 'DOC_OWNER_DOC_MISSING', detail: `doc-ownership.yaml: ${hit.glob} -> ${doc} (owner document does not exist)` });
