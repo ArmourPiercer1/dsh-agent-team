@@ -1,0 +1,1 @@
+/* synthetic fixtures used by the suite — self-generated, no sensitive content */
