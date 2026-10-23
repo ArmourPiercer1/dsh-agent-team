@@ -1238,7 +1238,7 @@ describe('a5m2-g6 row facts — five typed rows, captured bytes, evidence mount'
     expect(S.A5_G6_PORT_FAMILIES['authorization']?.facet).toBe('authorizationQueryPort')
     expect(S.A5_G6_PORT_FAMILIES['titles']?.facet).toBe('titlesQueryPort')
     expect(S.A5_G6_PORT_FAMILIES['search']?.required).toBe(false)
-    expect(S.A5_G6_ADAPTER_REVISION).toBe(3)
+    expect(S.A5_G6_ADAPTER_REVISION).toBe(4)
   })
 
   it('classify stays pure and closed-surface: unknown/missing params refused; effects are the single tool-invoke; the fingerprint is canonical', async () => {
@@ -1410,5 +1410,48 @@ describe('a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and 
     expect(out.error?.code).toBe(SC.CALLER_DRIFT)
     expect(String(out.error?.message)).toContain('cursor-continuation request')
     expect(w.calls.filter((entry) => entry.method === 'searchEvents').length).toBe(1)
+  })
+
+  it('OUTPUT-SET MEMBER revocation (trace lineage): p-root revoked during the titles await while the target s-a stays allowed — the WHOLE stale set is refused at final serve, nothing serves', async () => {
+    const revoked = new Set<string>()
+    const w = await makeWorld({
+      teamCeilingFn: (id) => !revoked.has(id),
+      afterPort: (method) => { if (method === 'readTitleSnapshots') revoked.add('p-root') },
+    })
+    const out = await w.rowCall('session_trace', { session_id: 's-a' })
+    expect(out.error?.code).toBe(SC.TEAM_CEILING_DENY)
+    expect(String(out.error?.message)).toContain('final serve')
+    expect(String(out.error?.message)).toContain("set member 'p-root'")
+    expect(out.value).toBeUndefined()
+    // entered effects stay (not rewound): the titles read DID happen — but
+    // the assembled lineage set never reaches the model.
+    expect(w.calls.filter((entry) => entry.method === 'readTitleSnapshots').length).toBe(1)
+    expect(w.calls.filter((entry) => entry.method === 'traceSession').length).toBe(1)
+  })
+
+  it('OUTPUT-SET MEMBER revocation (search HIT, hasTarget=false row): s-b revoked during the titles await — the whole result set is refused, the stale hit list is never served', async () => {
+    const revoked = new Set<string>()
+    const w = await makeWorld({
+      teamCeilingFn: (id) => !revoked.has(id),
+      afterPort: (method) => { if (method === 'readTitleSnapshots') revoked.add('s-b') },
+    })
+    const out = await w.rowCall('session_search', { query: 'needle' })
+    expect(out.error?.code).toBe(SC.TEAM_CEILING_DENY)
+    expect(String(out.error?.message)).toContain("set member 's-b'")
+    expect(out.value).toBeUndefined()
+    expect(w.calls.filter((entry) => entry.method === 'searchSessions').length).toBe(1)
+    expect(w.calls.filter((entry) => entry.method === 'readTitleSnapshots').length).toBe(1)
+  })
+
+  it('OUTPUT-SET MEMBER revocation (AUTHORIZED PARENT): p-root revoked during the titles await — authorizedParents membership is rechecked too, whole result refused', async () => {
+    const revoked = new Set<string>()
+    const w = await makeWorld({
+      teamCeilingFn: (id) => !revoked.has(id),
+      afterPort: (method) => { if (method === 'readTitleSnapshots') revoked.add('p-root') },
+    })
+    const out = await w.rowCall('session_search', { query: 'needle' })
+    expect(out.error?.code).toBe(SC.TEAM_CEILING_DENY)
+    expect(String(out.error?.message)).toContain("set member 'p-root'")
+    expect(out.value).toBeUndefined()
   })
 })

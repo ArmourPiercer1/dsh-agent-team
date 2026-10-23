@@ -203,7 +203,13 @@ export interface G6AdapterDeps {
  *  any LATER recheck (dispatch, await resumption, cursor-continuation
  *  construction, final serve) rejects with G6SessionQueryRefusal carrying
  *  the SAME closed P_G6_* codes — zero further forwarding, entered effects
- *  not rewound, nothing served. */
+ *  not rewound, nothing served.
+ *  OUTPUT-SET MEMBERSHIP (rev 4, root-65c539): the final serve re-verifies
+ *  the LIVE ceiling over the WHOLE output set — search hits, authorized
+ *  parents, trace lineage members and the effective target — not only the
+ *  target; a member revoked while the set was assembled (e.g. during the
+ *  title await) refuses the ENTIRE result rather than serving a stale set.
+ *  Pre-lookup filtering never substitutes for output-membership recheck. */
 export interface G6Refusal {
   ok: false
   code: string
