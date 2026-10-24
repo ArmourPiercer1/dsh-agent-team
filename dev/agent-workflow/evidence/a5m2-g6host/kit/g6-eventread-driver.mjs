@@ -108,6 +108,17 @@ const PATCHES = [
   ['case-c2b-strict-content',
     "{ id: 'C2b', tool: 'session_event_read', input: () => ({ session_id: ROOT_G6, seq: S.eventSeq }), expect: 'ok', mustInclude: () => [String(S.eventSeq)] },",
     "{ id: 'C2b', tool: 'session_event_read', input: () => ({ session_id: ROOT_G6, seq: S.eventSeq }), expect: 'ok', mustInclude: () => [ROOT_G6, String(S.eventSeq), `G6_MARKER_${NONCE}`] },"],
+  // TEST-BLUEPRINT-ONLY permission denial of the 15 raw-surface tools the
+  // coverage gate reported (root approval 2026-10-24T15:0x). EXACT tool names
+  // only — no wildcard, no whole-plugin switch-off, NOT a product fix and NOT
+  // a waiver of these 15 tools' delivery. session_query / session_event_read
+  // are NEVER denied (asserted below and again at parse time).
+  ['blueprint-deny-15-leader',
+    "    builtinToolDeny:\n      - subagent_fork\n    skills:",
+    "    builtinToolDeny:\n      - subagent_fork\n      - ask_user_question\n      - create_goal\n      - exit_plan_mode\n      - get_goal\n      - glob\n      - grep\n      - job_kill\n      - job_list\n      - job_output\n      - present\n      - skill\n      - update_goal\n      - web_fetch\n      - web_search\n      - workflow\n    skills:"],
+  ['blueprint-deny-15-worker',
+    "      builtinToolDeny:\n        - subagent_fork\n      skills:",
+    "      builtinToolDeny:\n        - subagent_fork\n        - ask_user_question\n        - create_goal\n        - exit_plan_mode\n        - get_goal\n        - glob\n        - grep\n        - job_kill\n        - job_list\n        - job_output\n        - present\n        - skill\n        - update_goal\n        - web_fetch\n        - web_search\n        - workflow\n      skills:"],
 ]
 
 function deriveKit () {
@@ -185,16 +196,23 @@ async function collectPreflight (outDir) {
     ck('pinpatch-all-anchors-exact-once', false, String(e?.message ?? e))
   }
 
-  // 5. full blueprint dry-validated by the DELIVERED parser (no boot)
+  // 5. full blueprint dry-validated by the DELIVERED parser (no boot), over
+  // the DERIVED blueprint the run will actually submit
+  const RAW15 = ['ask_user_question', 'create_goal', 'exit_plan_mode', 'get_goal', 'glob', 'grep', 'job_kill', 'job_list', 'job_output', 'present', 'skill', 'update_goal', 'web_fetch', 'web_search', 'workflow']
+  const SESSION_TOOLS = ['session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace']
   try {
-    const kitSrc = readFileSync(KIT, 'utf8')
-    const m = kitSrc.match(/const BLUEPRINT_YAML = `([\s\S]*?)\n`\n/)
+    const m = deriveKit().source.match(/const BLUEPRINT_YAML = `([\s\S]*?)\n`\n/)
     const yaml = m[1].replaceAll('${BLUEPRINT_ID}', 'g6-query-bp')
     const bpMod = await import(pathToFileURL(join(packRoot, 'packages/runtime/dist/packages/domain/blueprint/src/validate.js')).href)
     const core = bpMod.parseBlueprint(yaml)
-    ck('blueprint-parser-replay-on-real-source', core?.schemaVersion === 3 && typeof core?.contentHash === 'string', `schemaVersion=${String(core?.schemaVersion)} contentHash=${String(core?.contentHash).slice(0, 16)}…`)
+    ck('blueprint-parser-replay-on-derived-source', core?.schemaVersion === 3 && typeof core?.contentHash === 'string', `schemaVersion=${String(core?.schemaVersion)} contentHash=${String(core?.contentHash).slice(0, 16)}…`)
+    const lanes = [core?.leader?.capabilities?.builtinToolDeny ?? [], ...(core?.members ?? []).map((mb) => mb?.capabilities?.builtinToolDeny ?? [])]
+    const exact = lanes.length >= 2 && lanes.every((l) => RAW15.every((t) => l.includes(t)) && l.filter((t) => RAW15.includes(t)).length === RAW15.length)
+    ck('blueprint-deny-exact-15-both-lanes', exact, `lanes=${String(lanes.length)} sizes=${JSON.stringify(lanes.map((l) => l.length))} raw15 all present, none faked/wildcarded`)
+    const leaked = lanes.flat().filter((t) => SESSION_TOOLS.includes(t))
+    ck('blueprint-deny-excludes-session-query-targets', leaked.length === 0, `session_* in deny lists: ${JSON.stringify(leaked)} (must be empty — the target tool stays live)`)
   } catch (e) {
-    ck('blueprint-parser-replay-on-real-source', false, String(e?.message ?? e))
+    ck('blueprint-parser-replay-on-derived-source', false, String(e?.message ?? e))
   }
 
   // 6. HOME / ports / df — this window's numbers (6GiB df floor, HOME 64MiB)
