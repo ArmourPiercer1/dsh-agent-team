@@ -135,9 +135,18 @@ export function readSessionLines (home) {
     try { text = decodeSessionLogFrames(readFileSync(file.path)).toString('utf8') }
     catch { continue }
     for (const raw of text.split('\n')) {
+      // Real event exports prefix each line with the session id and a pipe
+      // (`session-team-child-…| {json}` — measured in
+      // `dev/agent-workflow/evidence/alpha5/v4-flip/runs/live-2026-10-17T23-24-17/
+      // a5-member-bash-events.txt`); the durable log itself is bare JSONL. Both
+      // parse, and the session id is kept as `sessionId`.
       const trimmed = raw.trim()
       if (trimmed.length === 0) continue
-      try { lines.push({ file: file.path, line: JSON.parse(trimmed) }) } catch { /* partial tail line */ }
+      const prefixed = /^([^|\s]+)\|\s*(\{.*)$/.exec(trimmed)
+      try {
+        if (prefixed !== null) lines.push({ file: file.path, sessionId: prefixed[1], line: JSON.parse(prefixed[2]) })
+        else lines.push({ file: file.path, sessionId: null, line: JSON.parse(trimmed) })
+      } catch { /* partial tail line */ }
     }
   }
   return lines
@@ -230,30 +239,46 @@ export async function teamReadyBarrier ({ origin, cookie, budgetMs = 180_000, po
   for (;;) {
     polls += 1
     const res = await remoteCall(origin, cookie, 'team.listRoots', {}, 'bteam-ready', 3)
-    const err = resultError(res.body)
-    if (err === null) return { ready: true, polls, body: res.body }
-    const starting = err.code === 'internal-error'
-      && err.details?.reason === 'runtime-not-ready'
-      && String(err.message).includes('state: starting')
-    if (!starting) throw new Error(`readiness barrier STOP (polls=${String(polls)}): ${JSON.stringify(err).slice(0, 400)}`)
+    const outcome = remoteOutcome(res)
+    if (outcome.state === 'ok') return { ready: true, polls, value: outcome.value }
+    // Only the EXACT starting refusal is waited on; an unknown answer is a stop,
+    // never a green readiness.
+    const err = outcome.error
+    const starting = outcome.state === 'error'
+      && err?.code === 'internal-error'
+      && err?.details?.reason === 'runtime-not-ready'
+      && String(err?.message).includes('state: starting')
+    if (!starting) throw new Error(`readiness barrier STOP (polls=${String(polls)}, state=${outcome.state}): ${JSON.stringify(err).slice(0, 400)}`)
     if (Date.now() > deadline) throw new Error(`readiness budget exhausted (polls=${String(polls)})`)
     log(`starting… poll ${String(polls)}`)
     await new Promise((resolve) => setTimeout(resolve, pollMs))
   }
 }
 
-/** Pull the typed error out of a Remote result body (null when the call
- *  succeeded) — the same envelope shape the proven kits read. */
-export function resultError (body) {
-  if (body?.ok === true) return null
-  if (body?.type === 'client-response' && body.payload?.ok === true) return null
-  const err = body?.error ?? body?.payload?.error ?? body
-  if (!isRemoteError(err)) return null
-  return err
-}
-
-function isRemoteError (value) {
-  return typeof value === 'object' && value !== null && typeof value.code === 'string'
+/**
+ * THREE-STATE classification of a Remote RPC answer, on the envelope the public
+ * kit actually reads (`tests/kits/send-message-liveness-smoke/
+ * send-message-liveness-smoke.mjs:1220-1222`: success is
+ * `status === 200 && body?.result?.ok === true`, data at `body.result.value`).
+ * A non-200, an empty or non-JSON body, a 200 without a `result`, or a
+ * `result.ok === false` are never collapsed into success: they are `error`
+ * (a typed answer exists) or `unknown` (nothing trustworthy was answered).
+ */
+export function remoteOutcome (response) {
+  const body = response?.body
+  const result = body?.result
+  if (response?.status === 200 && result !== null && typeof result === 'object' && result.ok === true) {
+    return { state: 'ok', value: result.value ?? null, body }
+  }
+  const typed = result?.ok === false
+    ? (result.error ?? { code: 'RESULT_NOT_OK', detail: result })
+    : (typeof body?.error === 'object' && body.error !== null && typeof body.error.code === 'string' ? body.error : null)
+  if (typed !== null) return { state: 'error', error: typed, body }
+  return {
+    state: 'unknown',
+    error: { code: 'REMOTE_ANSWER_UNTRUSTWORTHY', status: response?.status ?? null, body: typeof body === 'string' ? body.slice(0, 160) : body ?? null },
+    body,
+  }
 }
 
 /**
@@ -274,19 +299,19 @@ export async function createUniqueTeamRoot ({ origin, cookie, runStamp, blueprin
     ...(initialWorkPrompt === undefined ? {} : { initialWork: { prompt: initialWorkPrompt } }),
   })
   const created = await remoteCall(origin, cookie, 'team.create', params, `bteam-create-${runStamp}`, version)
-  const createError = resultError(created.body)
-  if (createError !== null) {
-    return { ok: false, rootSessionId, params, stage: 'create', error: createError }
+  const createOutcome = remoteOutcome(created)
+  if (createOutcome.state !== 'ok') {
+    return { ok: false, rootSessionId, params, stage: 'create', state: createOutcome.state, error: createOutcome.error ?? null }
   }
   const after = await remoteCall(origin, cookie, 'team.listRoots', {}, `bteam-readback-${runStamp}`, 3)
-  const afterError = resultError(after.body)
-  const listed = collectStrings(after.body)
+  const afterOutcome = remoteOutcome(after)
+  const listed = collectStrings(afterOutcome.value ?? afterOutcome.body)
   return {
-    ok: afterError === null && listed.includes(rootSessionId),
+    ok: afterOutcome.state === 'ok' && listed.includes(rootSessionId),
     rootSessionId,
     params,
     stage: 'readback',
-    createBody: created.body,
+    createValue: createOutcome.value,
     readbackListed: listed.includes(rootSessionId),
   }
 }
@@ -308,8 +333,8 @@ export async function teamFirstQuery ({ origin, cookie, teamSessionId }) {
   const closed = [...REMOTE_TEAM_GET_PROJECTION_FIELDS]
   if (closed.length !== 1 || closed[0] !== 'teamSessionId') throw new Error(`team.getProjection closed set drifted: ${closed.join(', ')}`)
   const res = await remoteCall(origin, cookie, 'team.getProjection', { teamSessionId }, 'bteam-query', 3)
-  const err = resultError(res.body)
-  return { ok: err === null, teamSessionId, method: 'team.getProjection', closedFields: closed, error: err ?? null, body: res.body }
+  const outcome = remoteOutcome(res)
+  return { ok: outcome.state === 'ok', state: outcome.state, teamSessionId, method: 'team.getProjection', closedFields: closed, error: outcome.error ?? null, value: outcome.state === 'ok' ? outcome.value : null }
 }
 
 /** Every string in a nested Remote payload (read-back containment check). */
@@ -352,23 +377,63 @@ export function toolOutcomeOf (block, message, eventError) {
  * error, missing flag or `TOOL_OUTCOME_UNKNOWN` → unknown (never counted as a
  * pass).
  */
-export function sameCallToolPairs (events, toolName) {
+/**
+ * THE DURABLE pairing, built on the schema this repository's own live evidence
+ * shows (`dev/agent-workflow/evidence/alpha5/v4-flip/runs/live-2026-10-17T23-24-17/
+ * a5-member-bash-events.txt`):
+ *   assistant/message → `data.message.content[]` items
+ *     `{ type: 'tool-call', id, name, arguments }`   (NOT `tool_use`/`input`)
+ *   tool/call        → `data.callId`, `data.name`, `data.arguments`
+ *   tool/result      → `data.message = { role: 'tool', source: { kind, callId },
+ *                        toolCallId, content: [{ type: 'text', text }], isError? }`
+ * so the same-call key is `data.message.toolCallId` (falling back to
+ * `data.message.source.callId`) and the error face is `data.message.isError` —
+ * there is no `tool_result` block and no `is_error` in the durable record.
+ * Outcomes are three-state and absence is never a pass: explicit
+ * `isError === false` → ok, explicit `true` or a `data.error` other than
+ * `TOOL_OUTCOME_UNKNOWN` → error, missing flag or `TOOL_OUTCOME_UNKNOWN` →
+ * unknown.
+ */
+export function durableToolOutcome (message, eventError) {
+  if (eventError?.code === TOOL_OUTCOME_UNKNOWN) return 'unknown'
+  if (message?.isError === true || (eventError !== undefined && eventError !== null)) return 'error'
+  if (message?.isError === false) return 'ok'
+  return 'unknown'
+}
+
+export function durableToolPairs (events, toolName) {
   const calls = new Map()
+  const invoked = new Set()
   const results = new Map()
   for (const { line } of events) {
     if (line?.type === 'assistant/message') {
       for (const block of line?.data?.message?.content ?? []) {
-        if (block?.type === 'tool_use' && block.name === toolName) calls.set(block.id, { id: block.id, name: block.name, arguments: block.input ?? block.arguments ?? null })
+        if (block?.type === 'tool-call' && block.name === toolName) calls.set(block.id, { id: block.id, name: block.name, arguments: block.arguments ?? null })
       }
     }
+    if (line?.type === 'tool/call' && typeof line?.data?.callId === 'string') invoked.add(line.data.callId)
     if (line?.type === 'tool/result') {
       const message = line?.data?.message
-      for (const block of message?.content ?? []) {
-        if (block?.type === 'tool_result' && calls.has(block.tool_use_id)) {
-          const error = line?.data?.error ?? null
-          results.set(block.tool_use_id, { content: block.content, isErrorWire: block.is_error, isErrorMessage: message?.isError ?? null, error, outcome: toolOutcomeOf(block, message, error) })
-        }
+      const callId = message?.toolCallId ?? message?.source?.callId
+      if (typeof callId === 'string' && calls.has(callId)) {
+        const error = line?.data?.error ?? null
+        results.set(callId, { content: message?.content ?? null, isError: message?.isError ?? null, error, outcome: durableToolOutcome(message, error) })
       }
+    }
+  }
+  return [...calls.values()].map((call) => {
+    const result = results.get(call.id) ?? null
+    return { ...call, result, paired: result !== null, outcome: result?.outcome ?? 'unknown', invoked: invoked.has(call.id) }
+  })
+}
+
+export function wireToolPairs (messages, toolName) {
+  const calls = new Map()
+  const results = new Map()
+  for (const message of messages ?? []) {
+    for (const block of message?.content ?? []) {
+      if (block?.type === 'tool_use' && block.name === toolName) calls.set(block.id, { id: block.id, name: block.name, arguments: block.input ?? null })
+      if (block?.type === 'tool_result' && calls.has(block.tool_use_id)) results.set(block.tool_use_id, { content: block.content, isErrorWire: block.is_error ?? null, outcome: toolOutcomeOf(block, {}, null) })
     }
   }
   return [...calls.values()].map((call) => {
@@ -377,6 +442,13 @@ export function sameCallToolPairs (events, toolName) {
   })
 }
 
+/**
+ * The MESSAGES WIRE face (a different source): `serialize.ts:121` converts an
+ * internal message into `{ type: 'tool_result', tool_use_id, content, is_error? }`
+ * inside an assistant `tool_use` pairing, and `is_error` is emitted only when
+ * `isError !== undefined`. Kept separate on purpose — durable records and wire
+ * payloads are never read with one another's field names.
+ */
 /** Events of the session log that belongs to this run: the file must carry the
  *  run's marker, so a foreign session can never answer for the case. */
 export function sessionEventsForRun (home, marker) {
@@ -405,12 +477,12 @@ export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, se
     'Call the team tool `team_list_members` exactly once now and report the member instance ids verbatim.',
   ].join('\n')
   const prompt = await apiPrompt(origin, cookie, sessionId, directive, `bteam-members-${runStamp}`)
-  const promptError = resultError(prompt.body)
+  const promptOutcome = remoteOutcome(prompt)
   const deadline = Date.now() + budgetMs
   let pairs = []
   for (;;) {
     const events = sessionEventsForRun(home, marker)
-    pairs = sameCallToolPairs(events, 'team_list_members')
+    pairs = durableToolPairs(events, 'team_list_members')
     if (pairs.some((pair) => pair.paired)) break
     if (Date.now() > deadline) break
     await new Promise((resolve) => setTimeout(resolve, pollMs))
@@ -421,14 +493,15 @@ export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, se
   const outcomes = pairs.map((pair) => pair.outcome)
   const count = (state) => outcomes.filter((value) => value === state).length
   return {
-    ok: promptError === null && paired.length > 0
+    ok: promptOutcome.state === 'ok' && paired.length > 0
       && count('ok') === pairs.length && pairs.length > 0
       && missing.length === 0
       && (!expectOnce || pairs.length === 1),
     marker,
     sessionId,
-    promptError,
-    calls: pairs.map((pair) => ({ id: pair.id, paired: pair.paired, outcome: pair.outcome, isErrorWire: pair.result?.isErrorWire ?? null, isErrorMessage: pair.result?.isErrorMessage ?? null })),
+    promptState: promptOutcome.state,
+    promptError: promptOutcome.error ?? null,
+    calls: pairs.map((pair) => ({ id: pair.id, paired: pair.paired, invoked: pair.invoked, outcome: pair.outcome, isError: pair.result?.isError ?? null })),
     outcomeCounts: { ok: count('ok'), error: count('error'), unknown: count('unknown') },
     missing,
     pairCount: paired.length,
@@ -518,9 +591,28 @@ export function precheck () {
  * minus `initialWork` plus `workspace`; anything else is a typed
  * `unknown-field` refusal server-side, so this builder refuses locally first.
  */
+/**
+ * `blueprintRevision` is a POSITIVE SAFE INTEGER on the wire:
+ * `packages/remote/src/contracts/ids.ts:161-166` (`parseRemoteBlueprintRevision`)
+ * requires `typeof raw === 'number'`, `Number.isInteger`, `>= 1` and
+ * `Number.isSafeInteger`, throwing `INVALID_BLUEPRINT_REVISION` otherwise. A
+ * command-line flag arrives as a STRING, so it is converted and validated here
+ * instead of being forwarded as-is (a string would be a typed refusal, and a
+ * silent default would be a fabrication).
+ */
+export function blueprintRevisionOf (raw) {
+  if (raw === undefined || raw === null || raw === '') return undefined
+  const value = typeof raw === 'number' ? raw : Number(String(raw).trim())
+  if (!Number.isFinite(value) || !Number.isInteger(value) || value < 1 || !Number.isSafeInteger(value)) {
+    throw new Error(`INVALID_BLUEPRINT_REVISION: ${String(raw)} is not a positive safe integer (contracts/ids.ts:161-166)`)
+  }
+  return value
+}
+
 export function teamCreateParams ({ version, blueprintId, blueprintRevision, rootSessionId, initialWork, workspace }) {
+  const revision = blueprintRevisionOf(blueprintRevision)
   const closed = version === 2 ? [...REMOTE_TEAM_CREATE_FIELDS_V2] : [...REMOTE_TEAM_CREATE_FIELDS]
-  const provided = { blueprintId, blueprintRevision, rootSessionId, ...(initialWork === undefined ? {} : { initialWork }), ...(workspace === undefined ? {} : { workspace }) }
+  const provided = { blueprintId, ...(revision === undefined ? {} : { blueprintRevision: revision }), rootSessionId, ...(initialWork === undefined ? {} : { initialWork }), ...(workspace === undefined ? {} : { workspace }) }
   const unknown = Object.keys(provided).filter((key) => !closed.includes(key))
   if (unknown.length > 0) throw new Error(`team.create v${String(version)}: unknown field(s) ${unknown.join(', ')} — the closed set is ${closed.join(', ')}`)
   return provided
