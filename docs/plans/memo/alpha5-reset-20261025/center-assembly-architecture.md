@@ -164,3 +164,29 @@ ARC-A/B 是**中心架构完成的硬条件**；ARC-C 须证明 Bridge 架构实
 - **STOP 定义**：发生权限旁路、跨 Scope 扩权、未授权副作用、无法说明的 native fallback、测试不能检测植入缺陷、阻断接口需要改安全法、WIP/资源超预算或独立复审仍 blocking 时，停止**受影响执行面**，登记事实→复现→Owner→影响→替代→要求裁决；可隔离的无关只读调查继续。不能将失败改写为 PASS。
 
 本文仅确定目标/约束，不声称完整公开 Host seam 已经验证。阶段 1 的核实结果可修订实现路线，**但不能以“实现不便”为由自行削弱 CA-01/02/03 或 CI-01…12**。
+
+
+## 10. 两份独立审查的强制补充（与前文冲突时本节优先）
+
+### 10.1 已知 Definition TOCTOU 风险与 H0 前置证明
+
+固定 Host 的执行路径会在 Guard 验证之后、真正分发 Body 时再次 resolveExecution。若两者之间发生同名注册换代、Scope 变化或异步暂停，Guard 所验证的 Definition 与实际 Body 可能不同；事后撤销旧 Binding 不能证明未验证的 Body 没有执行。
+
+S1 的 H0 必须优先验证这一风险：固定 Host + 真实公共注册/dispatch 路径；覆盖注册换代、同名覆盖、Scope/Definition 变化及可控异步竞争；记录 Guard 身份、最终 dispatch 身份、Body 调用计数和外部效果。通过条件是未验证 Body 调用次数为零，且正确版本的正控确实执行。仅事后检测漂移、撤销 Binding 或生成审计记录均为失败。
+
+若公开 Host seam 无法在 Body 前可靠阻断，记录 CORE_SEAM_BLOCKER，并阻断依赖此保证的 G1-F/S4 路径。任何缩小威胁模型或限定产品范围的方案都需要用户明确裁决；不得用“已有 Guard”“事后撤销”或实现不便自行豁免。此项是待验证风险，不应在没有实验时宣称已经复现可利用漏洞。
+
+### 10.2 可信计算基（TCB）与实际效果边界
+
+| 层 | 可信责任 | 不能据此宣称 |
+|---|---|---|
+| HostSurfaceAdapter | 从固定 Host 公共 seam 取得实际 Definition/Scope/执行身份和生命周期事实 | 只凭调用前快照就能抵抗 Host 在 dispatch 时重新解析 |
+| Registry | 对已受审 Contribution 做确定性 schema/冲突校验，产出只读注册视图 | 注册成功即获得用户授权 |
+| GovernanceKernel | 唯一授权状态转换、generation/freshness、一次性 Grant consume、受限 capability 签发、生命周期与审计关联 | 能隔离同进程任意恶意模块；能理解每个 Family 的领域语义 |
+| Ordinary Family | 解析参数、描述领域效果、格式化结果、调用受限能力 | 可直接持有无限制 FS/process/network，或靠自报 effectSet 证明效果完整 |
+| Trusted Provider | 在授权范围内实际执行并强制可兑现的资源约束 | 能强制自己无法控制的远端/OS 行为 |
+| Named Bridge | 适配特殊 Host transport/realm/job 生命周期并传递可信事实 | 可另建审批权威或绕过共同准入 |
+
+Family/Bridge 是受审第一方代码，不是同进程沙箱。若允许运行不受信任的动态代码，须另行设计进程、OS 沙箱或远端隔离；TS interface、闭包或 capability 类型本身不构成恶意代码隔离。
+
+对于无法预先完整枚举的 PTC/动态 I/O 等效果，必须在每个真实效果边界重新授权，或由可信 Provider 对已批准的完整范围实施强制约束。只接受 Family 自报 effectSet 不足以签发实际执行能力。
