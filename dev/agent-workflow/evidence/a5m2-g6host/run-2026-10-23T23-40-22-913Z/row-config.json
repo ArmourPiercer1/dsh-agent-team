@@ -1,0 +1,17 @@
+{
+  "bootPhase": "create",
+  "rootSessionId": "session-team-g6-2026-10-23T23-4",
+  "blueprintSource": "<inline BLUEPRINT_YAML>",
+  "generation": 1,
+  "seedMembers": [],
+  "staticModel": {
+    "provider": "deepseek-official",
+    "model": "g6-model-v1"
+  },
+  "glueUrl": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs",
+  "seamUrl": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs",
+  "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6host-2026-10-23T23-40-22-913ZZ",
+  "teamToolPlane": {
+    "sessionQuery": true
+  }
+}

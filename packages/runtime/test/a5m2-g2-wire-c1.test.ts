@@ -1,0 +1,1981 @@
+import { PA_FAMILY_TARGET_RULES, assertPaFamilyTargetRuleLegality, validatePaFamilyTargetAgainstRule } from '../control/types.js'
+import { g2ApprovedTargetMismatches, g2ResolveBrowserPublicEntries } from '../src/plugin/host.js'
+/**
+ * A5M2-G2-WIRE C1 (G2 lane, root ruling 15:28; wiring + assembly legs ONLY):
+ * the EXTERNAL-CONNECTION family (WEB / MCP / BROWSER) wired into the
+ * PRODUCTION plane along the established governed-row pattern — the closed
+ * consumption keys, the typed fail-closed injection points, the placement-
+ * moment rowset build, the mount-time family registration keyed by the RUNTIME
+ * placement identity (the agent-bindings law, performed here through the
+ * plane's OWN placementFeed), the ONE shared PA walk (open -> the REAL final
+ * edge -> consumedProof — no parallel permission path, no generic
+ * tool-invoke pseudo-governance), the shared token ledger's single-flight law
+ * and the reviewed consumption edge `consumeG2ApprovedPlan` as the ONE entry
+ * to any row body.
+ *
+ * FOUR-TIER HONESTY (no fifth tier). These are ASSEMBLY-LEVEL legs: they
+ * never reach 已测试 by definition. Per-surface truth, stated where the
+ * evidence stops:
+ *  - WEB: NOT WIRED. The mount path and the typed injection point exist and
+ *    refuse everything this world can supply (pinned verbatim below). The
+ *    named blocker is the real Team-only FIXED provider: WEB global/env
+ *    per-realm composition is FORBIDDEN (configured-id flip,
+ *    DSH_WEB_SEARCH_PROVIDER / DSH_WEB_FETCH_PROVIDER, per-realm composition
+ *    bypass), and no Team-scoped fixed provider object exists here — the
+ *    plane's fail-closed point accepts ONLY a createG2WebProviderSeam product
+ *    (brand-verified) and mounts NOTHING otherwise.
+ *  - MCP: the plane row mounts, registers, walks the real PA path and carries
+ *    its B-MCP family block at full value (pinned). The durable family row
+ *    lands at a NAMED CENTER BLOCKER this branch does not own: the PA family
+ *    target-rule table (`PA_FAMILY_TARGET_RULES`, control/types.ts) carries no
+ *    B-MCP entry, so the leg refuses the claim BEFORE any durable row, grant,
+ *    consume or native entry — the exact landing point is pinned verbatim in
+ *    the walk leg. Until the center registers the B-MCP target structure
+ *    (the M0 §3 closed-set schema is the source; the flat rule grammar needs a
+ *    center design decision for the per-operation variance), an approved MCP
+ *    consumption cannot land — correctly, by fail-closed design.
+ *  - BROWSER: NOT WIRED — PINNED BLOCKED by the root ruling: the Team
+ *    assembly component (g2-team-assembly.mjs, the BROWSER port) is review-
+ *    BLOCKED on lifecycle defects and its owner is fixing it on their own
+ *    card; this branch never edits it and never implies browser-row
+ *    readiness. What lands here is the honest wiring skeleton: the gate, the
+ *    typed injection point, and the module's own honest declared_mount
+ *    INACTIVE rows refusing every call verbatim (bundle-off default). The
+ *    root gap list rides below as the pinned blocker note.
+ *
+ * Disclosed stand-ins (the lane specs own the REAL halves): the native
+ * definitions the trio/six rows capture are TEST-owned objects (production:
+ * the owning assembly's `tools.get(name, scope)` reads); the B-MCP
+ * `declaredService` proof is the assembly-owner-side stand-in (production:
+ * the connection-owning assembly supplies it from approved config). What THIS
+ * spec proves is the WIRING law: what mounts, what registers, what walks, and
+ * exactly which honest refusals stand where a real provider/proof/rule is
+ * absent.
+ *
+ * Scope: NO Host, NO network, NO :3080; worlds are workspace-internal and
+ * removed after.
+ *
+ * @module @dsh-agent-team/runtime/test/a5m2-g2-wire-c1
+ */
+import { describe, it, expect, afterAll } from 'vitest'
+import { mkdirSync, rmSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { findTestRepoRoot, homeRoot } from '../../../tests/paths.mjs'
+import {
+  createBlueprintSnapshotRef,
+  parseBlueprintContentHash,
+  parseBlueprintId,
+  parseBlueprintRevision,
+  parseChildSessionId,
+  parseInstanceId,
+  parseTemplateId,
+} from '../../contracts/src/index.js'
+import { createBlueprintCatalog, parseBlueprint } from '../../domain/blueprint/src/index.js'
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
+import { parseRequestedEffectSet, parseToolBinding } from '../../domain/tool-governance/src/index.js'
+import type { ToolBinding, RequestedEffectSet, AdmissionRequest } from '../../domain/tool-governance/src/index.js'
+import { createTeamDomain } from '../../storage/repositories/index.js'
+import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
+import { createControlService } from '../control/index.js'
+import type { ControlService } from '../control/index.js'
+import type { PaCallFactsCeilingSlot } from '../control/types.js'
+import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import { untestedAssurance, definitionIdentityOf } from '../tool-dispatch/index.js'
+import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
+import {
+  createPaControlLeg,
+  createPaEffectsVerifier,
+} from '../operation-permission/pa-control-bridge.js'
+import type {
+  PaControlLegInput,
+  PaControlLegResult,
+  PaEffectsVerifierDeps,
+} from '../operation-permission/pa-control-bridge.js'
+import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
+import {
+  P6T4_BLUEPRINT_SOURCE,
+  P6T4_NOW,
+  P6T4_ROOT,
+  memberCaller,
+  p6t4Seed, leaderCaller,} from './p6t4-helpers.js'
+
+/** THE PINNED BROWSER BLOCKER (root ruling after the center review of
+ *  6f9aec97). Recorded for this wire spec, NOT fixed here — the original G2
+ *  component owner fixes g2-team-assembly.mjs on their own card. This branch
+ *  never stages, merges or implies a browser row riding the unfixed
+ *  component, and NEVER escalates it to Host/C2 tier. */
+const G2_BROWSER_ASSEMBLY_BLOCKED = [
+  'PINNED BLOCKED (root ruling): the Team BROWSER assembly component (g2-team-assembly.mjs createG2TeamBrowserPort) is review-BLOCKED on lifecycle defects;',
+  'browser: direct openNativeBrowser connect -> Stagehand.create failure leaves no cleanup and execute ignores signal — cancel half-open per the public worker/real-connection ownership;',
+  'attach without an owned Chromium may not fake cleanup;',
+  'makeTransport must derive endpoint/spawn/config from ONE source;',
+  'MCP pending connect not counted in close/inflight; failure has no rollback; concurrent reconnect overwrites client / swallows close failures / premature closed — needs serialized rotation, per-generation tracking, failure ownership;',
+  'real Team-SCOPED register+close binding, never server-name matching.',
+].join(' ')
+
+interface PlaneAssemblyValue {
+  ownNames: readonly string[]
+  definitions: ReadonlyArray<{
+    name: string
+    description: string
+    parameters: unknown
+    execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
+  }>
+  placementFeed: (name: string) => { definitionIdentity?: string; realmId: string } | undefined
+  livePaPlan: Map<string, { approvalCaseId: string; effectSetFingerprint: string; perEffectRequired: unknown[]; requestedEffects?: unknown }>
+  realmId: string
+  assembly: ProductionAdmissionAssembly
+}
+interface PlaneResult {
+  ok: boolean
+  code?: string
+  message?: string
+  value?: PlaneAssemblyValue
+}
+type PlaneFactory = (input: Record<string, unknown>) => PlaneResult
+
+const REPO = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
+if (REPO === null) throw new Error('a5m2-g2-wire: no repo root carrying tests/paths.mjs — failing closed')
+const STAMP = new Date().toISOString().replace(/[:.]/g, '-')
+const WORLD_ROOT = join(homeRoot(REPO), `a5m2-g2-wire-${STAMP}`)
+afterAll(() => { rmSync(WORLD_ROOT, { recursive: true, force: true }) })
+
+let worldSeq = 0
+function worldDir(label: string): string {
+  const dir = join(WORLD_ROOT, `${String(++worldSeq)}-${label}`)
+  mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+const CHAIN_WORLD = worldDir('chain')
+const seam = new FileStorageSeam(CHAIN_WORLD)
+const domain = await createTeamDomain(seam)
+const blueprint = parseBlueprint(P6T4_BLUEPRINT_SOURCE)
+const catalog = createBlueprintCatalog([blueprint])
+const repos = domain.repositories
+await repos.teamSessions.put({
+  rootSessionId: P6T1_FIXTURE.rootSessionId,
+  blueprint: createBlueprintSnapshotRef({
+    blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
+    revision: parseBlueprintRevision(String(blueprint.revision)),
+    contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
+  }),
+  defaultWorkspace: P6T1_FIXTURE.defaultWorkspace,
+  createdAt: P6T1_FIXTURE.createdAt,
+  generation: 1,
+})
+await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: P6T1_FIXTURE.rootSessionId })
+const WORKER = String(p6t4Seed('worker').instanceId)
+for (const name of ['leader', 'worker'] as const) {
+  const seed = p6t4Seed(name)
+  await repos.memberInstances.put({
+    rootSessionId: P6T1_FIXTURE.rootSessionId,
+    instanceId: parseInstanceId(String(seed.instanceId)),
+    templateId: parseTemplateId(String(seed.templateId)),
+    label: String(seed.label),
+    childSessionId: parseChildSessionId(String(seed.childSessionId)),
+    lifecycle: 'RUNNING',
+    createdAt: P6T1_FIXTURE.createdAt,
+    activityVersion: 1,
+  })
+}
+
+const DIRECT_POLICY: TemplatePermissionPolicy = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
+const EMPTY_DOCS: AuthorityEnvelopeDocuments = Object.freeze({
+  teamHardEnvelope: Object.freeze({ rules: [] }),
+  permissionMutationEnvelope: Object.freeze({ status: 'absent' as const }),
+})
+function factSlot(slot: unknown): PaCallFactsCeilingSlot | undefined {
+  if (slot === null || typeof slot !== 'object') return undefined
+  if ('status' in (slot as Record<string, unknown>) && (slot as { status?: string }).status === 'unavailable') return undefined
+  return slot as PaCallFactsCeilingSlot
+}
+
+const registryModule = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+  A5_GOVERNED_FAMILIES: Record<string, { familyId: string; adapterRevision: number; providerIdentity: string }>
+  registerA5GovernedFamily: (definitionIdentity: string, entry: { familyId: string; adapterRevision: number; providerIdentity: string }) => void
+  a5GovernedFamilyFor: (definitionIdentity: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
+}
+const familyTable = registryModule.A5_GOVERNED_FAMILIES
+const registerA5GovernedFamily = registryModule.registerA5GovernedFamily
+const a5GovernedFamilyFor = registryModule.a5GovernedFamilyFor
+const PLANE_PROVIDER = 'a5p5-plane'
+
+interface RealmTruth { readonly assembly: ProductionAdmissionAssembly; plane?: PlaneAssemblyValue }
+const realmTruths = new Map<string, RealmTruth>()
+
+const verifierReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (input) => {
+  const truth = realmTruths.get(input.manifest.realmId)
+  if (truth === undefined) return undefined
+  if (input.rootSessionId !== P6T4_ROOT) return undefined
+  const durable = repos.memberInstances.get(P6T4_ROOT, input.manifest.member.instanceId)
+  if (durable === undefined) return undefined
+  const binding = parseToolBinding({ ...input.manifest.binding })
+  if (!binding.ok) return undefined
+  const effects = parseRequestedEffectSet(input.manifest.effects)
+  if (!effects.ok) return undefined
+  const request: AdmissionRequest = Object.freeze({
+    binding: binding.value,
+    member: Object.freeze({ teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) }),
+    callId: input.manifest.callId,
+    realmId: input.manifest.realmId,
+    parametersFingerprint: input.manifest.parametersFingerprint,
+    requestedEffects: effects.value as RequestedEffectSet,
+  })
+  const livePlan = truth.assembly.planApproval(request)
+  if (!livePlan.ok) return undefined
+  const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
+  const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
+  if (hard === undefined || mutation === undefined) return undefined
+  const family = a5GovernedFamilyFor(String(binding.value.definitionIdentity))
+  return {
+    policySource: { staticLayerRefs: ['a5m2-g2-wire-tpl:directive-policy'], overlayGeneration: 0 },
+    realmId: input.manifest.realmId,
+    ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
+    policyDocument: truth.assembly.policyDocument(),
+    denySources: truth.assembly.denySources(),
+    effects: effects.value as RequestedEffectSet,
+    member: { teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) },
+    beneficiaryAuthority: 'member',
+    binding: binding.value,
+    blueprint: {
+      revision: String(blueprint.revision),
+      contentHash: String(blueprint.contentHash),
+      templateId: 'a5m2-g2-wire-tpl',
+      cwd: CHAIN_WORLD,
+      providerVersion: PLANE_PROVIDER,
+    },
+    planSnapshot: {
+      approvalCaseId: livePlan.value.approvalCaseId,
+      effectSetFingerprint: livePlan.value.effectSetFingerprint,
+      perEffectRequired: livePlan.value.perEffectRequired,
+    },
+    authorityGeneration: 0,
+    ...(family === undefined ? {} : { governedFamily: family }),
+  }
+}
+const paVerifier = createPaEffectsVerifier({ readCallFacts: verifierReadCallFacts })
+
+const service: ControlService = createControlService({
+  teamDomain: domain,
+  blueprintCatalog: catalog,
+  externalPolicyFacts: async () => makeExternalPolicyFacts(),
+  now: () => P6T4_NOW,
+  waitPollIntervalMs: 5,
+  paEffectsVerifier: paVerifier,
+})
+
+async function stateNow() {
+  return service.listControlState(P6T4_ROOT)
+}
+
+// the leader's allow, found through the durable row (the todo-round idiom:
+// the row is discovered by the plane's OWN callId in its reviewPayload —
+// never by a spec-side re-derivation).
+const approvedRowCallIds = new Set<string>()
+async function approveRowForCall(callId: string): Promise<void> {
+  const deadline = Date.now() + 3000
+  for (;;) {
+    if (!approvedRowCallIds.has(callId)) {
+      const found = (await stateNow()).requests.find((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === callId)
+      if (found !== undefined) {
+        approvedRowCallIds.add(callId)
+        await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: (found as { requestId: string }).requestId, decision: 'allow' })
+        return
+      }
+    }
+    if (Date.now() > deadline) throw new Error(`no durable PA row appeared for ${callId}`)
+    await new Promise((r) => setTimeout(r, 5))
+  }
+}
+
+// ── the committed G2 family modules (the reviewed candidates this wiring
+//    mounts — imported, NEVER edited by this branch) ────────────────────────
+const planeModule = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as {
+  createTeamToolPlaneAssembly: PlaneFactory
+  A5_G2_WEB_MOUNT_NAMES: readonly string[]
+  A5_G2_MCP_MOUNT_NAMES: readonly string[]
+  A5_G2_BROWSER_MOUNT_NAMES: readonly string[]
+}
+const { A5_G2_WEB_MOUNT_NAMES, A5_G2_MCP_MOUNT_NAMES, A5_G2_BROWSER_MOUNT_NAMES } = planeModule
+const G2A = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as {
+  A5_G2_FAMILY: Record<'web' | 'mcp' | 'browser', string>
+  A5_G2_ADAPTER_REVISION: number
+  A5_G2_TYPED_CODES: Record<string, string>
+  A5_G2_NAMED_BLOCKERS: Record<'WEB' | 'MCP' | 'BROWSER', string>
+  A5_G2_REGISTRATION_SCHEMAS: Record<string, unknown>
+  createG2McpResourceAdapters: (deps: Record<string, unknown>) => Record<string, G2Row>
+  createG2BrowserAdapters: (deps: Record<string, unknown>) => Record<string, G2Row>
+}
+const SEAMS = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as {
+  G2_SEAM_BRAND: symbol
+  consumeG2ApprovedPlan: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
+}
+interface G2Row {
+  familyId: string
+  adapterRevision: number
+  toolName: string
+  operation: string
+  mountCondition: string
+  providerId: string
+  active?: boolean
+  registrationSchema: unknown
+  classify: (args: unknown) => Promise<Record<string, unknown>> | Record<string, unknown>
+  invoke: (args: unknown, exec: Record<string, unknown>) => Promise<Record<string, unknown>>
+  drain: () => void
+}
+
+// ── TEST-owned native stand-ins (disclosed; the lane specs own the REAL
+//    host bodies). The row must enter exactly the captured OBJECT; the
+//    stand-ins record their entries so "zero native entry" is measured. ─────
+interface CapturedCall { args: Record<string, unknown>; exec: Record<string, unknown> }
+function makeNativeStandIn(name: string): { def: { name: string; description: string; execute: (args: Record<string, unknown>, exec: Record<string, unknown>) => Promise<unknown> }; calls: CapturedCall[] } {
+  const calls: CapturedCall[] = []
+  const def = {
+    name,
+    description: `TEST native ${name} description — the captured bytes the governed row must carry verbatim.`,
+    execute(args: Record<string, unknown>, exec: Record<string, unknown>) {
+      calls.push({ args, exec })
+      return Promise.resolve({ text: `mcp-native:${name}` })
+    },
+  }
+  return { def, calls }
+}
+
+const MCP_SERVER = 'g2w-server'
+// The host StdioConfig shape @639ed01539: `command` is the argv ARRAY.
+const MCP_DECLARED = Object.freeze({
+  present: true as const,
+  serverName: MCP_SERVER,
+  transport: 'stdio',
+  command: ['/usr/bin/true', '-stdio'],
+})
+
+const bindingFixtures = new Map<string, ReturnType<typeof parseToolBinding>>()
+function bindingOf(key: string): ToolBinding | undefined {
+  const parsed = bindingFixtures.get(key)
+  return parsed !== undefined && parsed.ok ? parsed.value : undefined
+}
+
+interface Mounted {
+  plane: PlaneAssemblyValue
+  rows: G2Row[]
+  nativeCalls: Record<string, CapturedCall[]>
+  legInputs: Record<string, unknown>[]
+  legResults: PaControlLegResult[]
+  observed: string[]
+  registered: Record<string, string>
+  mount: Record<string, unknown> | null
+}
+interface MountOpts {
+  declared?: Record<string, unknown> | undefined
+  inactive?: boolean
+  surface?: 'mcp' | 'browser' | 'web'
+  familyGate?: 'g2McpEnabled' | 'g2BrowserEnabled' | 'g2WebEnabled'
+  policy?: TemplatePermissionPolicy
+  /** The production G2 TEAM MOUNT owns the rowset on this path: the signed
+   *  ports + adapters ride the mount's OWN backends face, over the SAME
+   *  readNative capture the plane sees (the mount places the SAME natives). */
+  mountFactory?: (ctx: { readNative: (name: string) => { name: string; description: string; execute: (args: Record<string, unknown>, exec: Record<string, unknown>) => Promise<unknown> } | undefined }) => Promise<Record<string, unknown>>
+  mountBackendKey?: 'g2Mcp' | 'g2Browser' | 'g2Web'
+}
+async function mountWorld(label: string, opts: MountOpts = {}): Promise<Mounted> {
+  const surface = opts.surface ?? 'mcp'
+  const gateKey = opts.familyGate ?? 'g2McpEnabled'
+  let names = surface === 'mcp' ? [...A5_G2_MCP_MOUNT_NAMES] : surface === 'web' ? [...A5_G2_WEB_MOUNT_NAMES] : [...A5_G2_BROWSER_MOUNT_NAMES]
+  const natives: Record<string, ReturnType<typeof makeNativeStandIn>> = {}
+  for (const n of names) natives[n] = makeNativeStandIn(n)
+  const nativeOf = (n: string): ReturnType<typeof makeNativeStandIn> => {
+    const nat = natives[n]
+    if (nat === undefined) throw new Error(`no native stand-in allocated for ${n}`)
+    return nat
+  }
+  const readNative = (name: string) => nativeOf(name).def
+  let rows: G2Row[] = []
+  const descriptions: Record<string, string> = {}
+  for (const n of names) descriptions[n] = nativeOf(n).def.description
+  let mount: Record<string, unknown> | null = null
+  let createRowset: () => G2Row[] = () => {
+    const built = surface === 'mcp'
+      ? G2A.createG2McpResourceAdapters({
+        realmId: `a5m2-g2-wire-${label}`,
+        providerId: PLANE_PROVIDER,
+        readNative,
+        definitionIdentityOf,
+        ...(opts.inactive === true ? {} : { declaredService: opts.declared ?? MCP_DECLARED }),
+      })
+      : G2A.createG2BrowserAdapters({
+        realmId: `a5m2-g2-wire-${label}`,
+        providerId: PLANE_PROVIDER,
+        readNative,
+        definitionIdentityOf,
+        ...(opts.inactive === true ? {} : { declaredService: opts.declared ?? {} }),
+      })
+    rows = names.map((n) => built[n]).filter((r): r is G2Row => r !== undefined)
+    if (surface === 'mcp' && opts.inactive !== true) {
+      // the stdio trio answers the DECLARED server identity only; keep the
+      // rowset closed to the three records.
+      return rows
+    }
+    return rows
+  }
+  let extraBackendFace: Record<string, unknown> = {}
+  if (opts.mountFactory !== undefined) {
+    mount = await opts.mountFactory({ readNative })
+    const refused = mount as { ok?: boolean; code?: string; message?: string }
+    if (refused.ok !== true) throw new Error(`the G2 team mount refused (${String(refused.code)}): ${String(refused.message)}`)
+    const be = (mount as { backends?: Record<string, { createRowset: () => G2Row[]; descriptions: Record<string, string> }> }).backends?.[opts.mountBackendKey ?? 'g2Mcp']
+    if (be === undefined) throw new Error('the G2 team mount answered no backend for this surface')
+    createRowset = be.createRowset
+    extraBackendFace = { ...(be as unknown as Record<string, unknown>) }
+    for (const n of names) {
+      const captured = be.descriptions[n]
+      if (typeof captured === 'string' && captured.length > 0) descriptions[n] = captured
+    }
+    rows = createRowset()
+    // a surface may honestly mount a SUBSET of the closed table (the lane
+    // pairing law): registration/binding follows the MOUNTED rows only.
+    names = names.filter((n) => rows.some((r) => r.toolName === n))
+  }
+  const realmId = `a5m2-g2-wire-${label}`
+  const observed: string[] = []
+  const legInputs: Record<string, unknown>[] = []
+  const legResults: PaControlLegResult[] = []
+  const built = planeModule.createTeamToolPlaneAssembly({
+    permissionPolicy: opts.policy ?? DIRECT_POLICY,
+    realmId,
+    templateId: 'a5m2-g2-wire-tpl',
+    role: 'member',
+    instanceId: WORKER,
+    teamSessionId: P6T4_ROOT,
+    plane: { [gateKey]: true },
+    backends: { [surface === 'mcp' ? 'g2Mcp' : surface === 'web' ? 'g2Web' : 'g2Browser']: { ...extraBackendFace, createRowset, descriptions } },
+    authorityFacts: {
+      overlayGeneration: async () => 0,
+      ensureAuthorityCurrent: async () => {},
+    },
+    controlLeg: async (legInput: unknown) => {
+      legInputs.push(legInput as Record<string, unknown>)
+      const result = await createPaControlLeg({
+        controlService: service,
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        beneficiaryAuthority: 'member',
+        governedFamilies: familyTable,
+      })(legInput as PaControlLegInput)
+      legResults.push(result)
+      return result
+    },
+    readCallFacts: async (input: Record<string, unknown>) => {
+      const truth = realmTruths.get(String(input.realmId))
+      if (truth === undefined) return undefined
+      if (String(input.rootSessionId) !== P6T4_ROOT) return undefined
+      const durable = repos.memberInstances.get(P6T4_ROOT, String(input.instanceId))
+      if (durable === undefined) return undefined
+      // The call's row identity: the tool-invoke effect carries the mounted
+      // tool name (the readCallFacts seam speaks the plane's own fields — no
+      // invented parameter is read).
+      const effectList = (input.requestedEffects as { effects?: Array<{ kind?: string; toolName?: string }> } | undefined)?.effects ?? []
+      const toolName = String(effectList.find((e) => e?.kind === 'tool-invoke')?.toolName ?? '')
+      const binding = bindingOf(`${label}:${toolName}`)
+      if (binding === undefined) return undefined
+      const rawEffects = (input.requestedEffects as { effects?: unknown[] } | undefined)?.effects ?? input.requestedEffects
+      const effects = parseRequestedEffectSet(rawEffects as unknown[])
+      if (!effects.ok) return undefined
+      const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
+      const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
+      if (hard === undefined || mutation === undefined) return undefined
+      const family = a5GovernedFamilyFor(String(binding.definitionIdentity))
+      const livePlan = truth.plane?.livePaPlan.get(String(input.callId))
+      return {
+        kind: livePlan === undefined ? 'no-approval-question' : 'call-facts',
+        facts: {
+          policySource: { staticLayerRefs: ['a5m2-g2-wire-tpl:directive-policy'], overlayGeneration: 0 },
+          realmId: String(input.realmId),
+          ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
+          policyDocument: truth.assembly.policyDocument(),
+          denySources: truth.assembly.denySources(),
+          effects: (livePlan?.requestedEffects as RequestedEffectSet | undefined) ?? (effects.value as RequestedEffectSet),
+          member: { teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) },
+          beneficiaryAuthority: 'member',
+          binding,
+          blueprint: {
+            revision: String(blueprint.revision),
+            contentHash: String(blueprint.contentHash),
+            templateId: 'a5m2-g2-wire-tpl',
+            cwd: CHAIN_WORLD,
+            providerVersion: PLANE_PROVIDER,
+          },
+          ...(livePlan === undefined ? {} : {
+            planSnapshot: {
+              approvalCaseId: livePlan.approvalCaseId,
+              effectSetFingerprint: livePlan.effectSetFingerprint,
+              perEffectRequired: livePlan.perEffectRequired,
+            },
+          }),
+          authorityGeneration: 0,
+          ...(family === undefined ? {} : { governedFamily: family }),
+        },
+      }
+    },
+    onObserve: (row: string) => { observed.push(String(row)) },
+  })
+  if (built.ok !== true || built.value === undefined) {
+    throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
+  }
+  const plane = built.value
+  realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
+  const registered: Record<string, string> = {}
+  for (const name of names) {
+    const fed = plane.placementFeed(name)
+    const identity = String(fed?.definitionIdentity ?? '')
+    if (identity.length === 0) throw new Error(`the placed ${name} row answered no placement definition identity`)
+    // THE mount-time registration write — the PRODUCTION function (the
+    // agent-bindings law), keyed by the runtime identity the seam minted.
+    registerA5GovernedFamily(identity, {
+      familyId: rows.find((r) => r.toolName === name)?.familyId ?? '',
+      adapterRevision: rows.find((r) => r.toolName === name)?.adapterRevision ?? -1,
+      providerIdentity: rows.find((r) => r.toolName === name)?.providerId ?? '',
+    })
+    registered[name] = identity
+    const parsed = parseToolBinding({
+      bindingId: `a5m2-g2-wire:${label}:${name}`,
+      agentScopeKey: `a5m2-g2-wire:${label}:${name}`,
+      toolName: name,
+      definitionIdentity: identity,
+      providerId: PLANE_PROVIDER,
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'trusted-host',
+      assurance: untestedAssurance('team-trusted-extension', 'trusted-host', plane.realmId),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    if (!parsed.ok) throw new Error(`binding fixture refused: ${JSON.stringify(parsed)}`)
+    bindingFixtures.set(`${label}:${name}`, parsed)
+  }
+  const nativeCalls: Record<string, CapturedCall[]> = {}
+  for (const n of names) nativeCalls[n] = nativeOf(n).calls
+  return { plane, rows, nativeCalls, legInputs, legResults, observed, registered, mount }
+}
+
+function execFor(callId: string, over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    agent: { id: WORKER },
+    // THE real Host exec shape (fixed 639 ToolExecution): one branded symbol
+    // per execution; NO tokenKey (that field does not exist on the public
+    // surface). Replay legs reuse the SAME exec object.
+    token: Symbol(`exec-${callId}`),
+    ...over,
+  }
+}
+
+const basePlaneInput = (realmId: string, plane: Record<string, unknown> = {}): Record<string, unknown> => ({
+  permissionPolicy: DIRECT_POLICY,
+  realmId,
+  templateId: 'a5m2-g2-wire-tpl',
+  role: 'member',
+  instanceId: WORKER,
+  teamSessionId: P6T4_ROOT,
+  plane,
+})
+
+describe('A5M2-G2-WIRE C1: the external-connection family mounts on the governed-row pattern, fail-closed everywhere a real provider/proof/rule is absent', () => {
+  it('zero-flip law: no key and explicit-false are byte-identical worlds; none of the eleven G2 spellings mounts', () => {
+    const off = planeModule.createTeamToolPlaneAssembly(basePlaneInput('a5m2-g2-wire-off'))
+    expect(off.ok, JSON.stringify(off.message)).toBe(true)
+    const explicitOff = planeModule.createTeamToolPlaneAssembly(basePlaneInput('a5m2-g2-wire-off2', {
+      g2WebEnabled: false, g2McpEnabled: false, g2BrowserEnabled: false,
+    }))
+    expect(explicitOff.ok, JSON.stringify(explicitOff.message)).toBe(true)
+    expect(explicitOff.value?.ownNames).toEqual(off.value?.ownNames)
+    for (const spelling of [...A5_G2_WEB_MOUNT_NAMES, ...A5_G2_MCP_MOUNT_NAMES, ...A5_G2_BROWSER_MOUNT_NAMES]) {
+      expect(off.value?.ownNames.includes(spelling), spelling).toBe(false)
+    }
+  })
+
+  it('closed-key pairing BOTH directions on every surface + a non-boolean gate is a config defect on the existing refusal grammar', () => {
+    const surfaces: Array<[string, string, string]> = [
+      ['g2WebEnabled', 'g2Web', 'G2_WEB_INJECT_INVALID'],
+      ['g2McpEnabled', 'g2Mcp', 'G2_MCP_INJECT_INVALID'],
+      ['g2BrowserEnabled', 'g2Browser', 'G2_BROWSER_INJECT_INVALID'],
+    ]
+    const inject = { createRowset: () => [{ toolName: 'x', familyId: 'X', adapterRevision: 1, providerId: PLANE_PROVIDER, mountCondition: 'always', registrationSchema: { type: 'object' }, classify: () => ({}), invoke: async () => ({}), drain: () => {} }], descriptions: { x: 'd' } }
+    for (const [key, injectKey, code] of surfaces) {
+      // (a) key on, no injection -> refuse (nothing may mask native names with nothing behind it)
+      const halfA = planeModule.createTeamToolPlaneAssembly(basePlaneInput(`a5m2-g2-wire-halfA-${injectKey}`, { [key]: true }))
+      expect(halfA.ok).toBe(false)
+      expect(halfA.code).toBe(code)
+      expect(String(halfA.message)).toContain('there is no fallback row and no silent disable')
+      // (b) injection, key off -> refuse (config law, not wiring)
+      const halfB = planeModule.createTeamToolPlaneAssembly({
+        ...basePlaneInput(`a5m2-g2-wire-halfB-${injectKey}`),
+        backends: { [injectKey]: { createRowset: () => [], descriptions: {} } },
+      })
+      expect(halfB.ok).toBe(false)
+      expect(halfB.code).toBe(code)
+      expect(String(halfB.message)).toContain('the gate is config law, not wiring')
+      // (c) non-boolean gate -> the EXISTING refusal grammar
+      const badGate = planeModule.createTeamToolPlaneAssembly({
+        ...basePlaneInput(`a5m2-g2-wire-badGate-${injectKey}`, { [key]: 'yes' }),
+        backends: { [injectKey]: inject },
+      })
+      expect(badGate.ok).toBe(false)
+      expect(badGate.code).toBe('PLANE_CONFIG_INCOMPLETE')
+    }
+  })
+
+  it('WEB is a fail-closed TYPED injection point, not a route: the named Team-only FIXED provider blocker and the seam-brand law refuse every web mount this world can supply', () => {
+    const descriptions = { web_search: 'TEST native web_search description.', web_fetch: 'TEST native web_fetch description.' }
+    const webRow = (toolName: string): Record<string, unknown> => ({
+      toolName, familyId: G2A.A5_G2_FAMILY.web, adapterRevision: G2A.A5_G2_ADAPTER_REVISION,
+      providerId: PLANE_PROVIDER, mountCondition: 'always',
+      registrationSchema: G2A.A5_G2_REGISTRATION_SCHEMAS[toolName],
+      classify: () => ({ ok: false }), invoke: async () => ({ ok: false }), drain: () => {},
+    })
+    // (a) injection WITHOUT the Team-only fixed provider lanes: named-blocker refusal, forbidden routes quoted
+    const noLanes = planeModule.createTeamToolPlaneAssembly({
+      ...basePlaneInput('a5m2-g2-wire-web-nolanes', { g2WebEnabled: true }),
+      backends: { g2Web: { createRowset: () => [webRow('web_search'), webRow('web_fetch')], descriptions } },
+    })
+    expect(noLanes.ok).toBe(false)
+    expect(noLanes.code).toBe('G2_WEB_INJECT_INVALID')
+    expect(String(noLanes.message)).toContain('teamFixedWebProviderLanes is required')
+    expect(String(noLanes.message)).toContain('WEB global/env per-realm composition is FORBIDDEN')
+    expect(String(noLanes.message)).toContain('DSH_WEB_SEARCH_PROVIDER')
+    // (b) a lane whose provider is NOT a createG2WebProviderSeam product (no brand): refused at the row check
+    const unbranded = planeModule.createTeamToolPlaneAssembly({
+      ...basePlaneInput('a5m2-g2-wire-web-unbranded', { g2WebEnabled: true }),
+      backends: {
+        g2Web: {
+          createRowset: () => [webRow('web_search')],
+          descriptions,
+          teamFixedWebProviderLanes: {
+            web_search: {
+              provider: { id: 'hand-made', available: () => true, search: async () => ({}) },
+              registrationLaw: { configuredProviderIdMustEqual: 'hand-made' },
+              stats: () => ({}),
+            },
+          },
+        },
+      },
+    })
+    expect(unbranded.ok).toBe(false)
+    expect(unbranded.code).toBe('G2_WEB_INJECT_INVALID')
+    expect(String(unbranded.message)).toContain('createG2WebProviderSeam product')
+    expect(String(unbranded.message)).toContain('never a hand-made stand-in')
+    // (c) the seams module carries the brand the check reads (no invented constant)
+    expect(typeof SEAMS.G2_SEAM_BRAND).toBe('symbol')
+    // (d) a BROWSER/MCP injection carrying the WEB-only lane face is a contract confusion
+    const confused = planeModule.createTeamToolPlaneAssembly({
+      ...basePlaneInput('a5m2-g2-wire-web-confused', { g2McpEnabled: true }),
+      backends: { g2Mcp: { createRowset: () => [], descriptions: {}, teamFixedWebProviderLanes: {} } },
+    })
+    expect(confused.ok).toBe(false)
+    expect(confused.code).toBe('G2_MCP_INJECT_INVALID')
+    expect(String(confused.message)).toContain('B-WEB-only face')
+  })
+
+  it('rowset contract refusals: the factory throw rides VERBATIM; empty/async rowsets, cross-family or non-closed names, a foreign providerIdentity and missing captured descriptions all refuse the mount', () => {
+    const blocker = new Error('NAMED BLOCKER: no Team-scoped fixed provider is suppliable in this world — refusing the mount instead of substituting')
+    const thrown = planeModule.createTeamToolPlaneAssembly({
+      ...basePlaneInput('a5m2-g2-wire-rowset-throw', { g2WebEnabled: true }),
+      backends: { g2Web: { createRowset: () => { throw blocker }, descriptions: {}, teamFixedWebProviderLanes: { web_search: {}, web_fetch: {} } } },
+    })
+    expect(thrown.ok).toBe(false)
+    expect(thrown.code).toBe('G2_WEB_INJECT_INVALID')
+    expect(String(thrown.message)).toContain(blocker.message)
+    const row = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
+      toolName: 'list_mcp_resources', familyId: G2A.A5_G2_FAMILY.mcp, adapterRevision: G2A.A5_G2_ADAPTER_REVISION,
+      providerId: PLANE_PROVIDER, mountCondition: 'declared_mount',
+      registrationSchema: G2A.A5_G2_REGISTRATION_SCHEMAS.list_mcp_resources,
+      classify: () => ({ ok: false }), invoke: async () => ({ ok: false }), drain: () => {},
+      ...over,
+    })
+    const mountWith = (realm: string, createRowset: () => unknown, descriptions: Record<string, string> = { list_mcp_resources: 'TEST captured bytes.' }) =>
+      planeModule.createTeamToolPlaneAssembly({
+        ...basePlaneInput(realm, { g2McpEnabled: true }),
+        backends: { g2Mcp: { createRowset, descriptions } },
+      })
+    const empty = mountWith('a5m2-g2-wire-rowset-empty', () => [])
+    expect(empty.ok).toBe(false)
+    expect(String(empty.message)).toContain('no non-empty rowset array')
+    const async = mountWith('a5m2-g2-wire-rowset-async', () => Promise.resolve([row()]))
+    expect(async.ok).toBe(false)
+    expect(String(async.message)).toContain('must answer synchronously')
+    const crossFamily = mountWith('a5m2-g2-wire-rowset-cross', () => [row({ toolName: 'web_fetch', familyId: G2A.A5_G2_FAMILY.web })])
+    expect(crossFamily.ok).toBe(false)
+    expect(String(crossFamily.message)).toContain('closed B-MCP spellings')
+    const invented = mountWith('a5m2-g2-wire-rowset-invented', () => [row({ toolName: 'do_everything' })])
+    expect(invented.ok).toBe(false)
+    expect(String(invented.message)).toContain('closed B-MCP spellings')
+    const foreign = mountWith('a5m2-g2-wire-rowset-foreign', () => [row({ providerId: 'someone-else' })])
+    expect(foreign.ok).toBe(false)
+    expect(String(foreign.message)).toContain('providerIdentity is not')
+    const noDescription = mountWith('a5m2-g2-wire-rowset-nodesc', () => [row()], {})
+    expect(noDescription.ok).toBe(false)
+    expect(String(noDescription.message)).toContain('captured native description')
+    const twice = mountWith('a5m2-g2-wire-rowset-twice', () => [row(), row()])
+    expect(twice.ok).toBe(false)
+    expect(String(twice.message)).toContain('one name, one placement')
+  })
+
+  it('BROWSER surface: PINNED BLOCKED — the root lifecycle-gap note rides this spec verbatim; only the module\u2019s own honest declared_mount INACTIVE six mount, every call refuses typed, zero native entry', async () => {
+    // The blocker note is PINNED (recorded for the center; fixed by the G2
+    // component owner on their own card — never on this branch).
+    for (const clause of [
+      'review-BLOCKED on lifecycle defects',
+      'openNativeBrowser connect -> Stagehand.create failure leaves no cleanup',
+      'execute ignores signal',
+      'attach without an owned Chromium may not fake cleanup',
+      'ONE source',
+      'serialized rotation, per-generation tracking, failure ownership',
+      'never server-name matching',
+    ]) {
+      expect(G2_BROWSER_ASSEMBLY_BLOCKED, clause).toContain(clause)
+    }
+    // The module\u2019s own BROWSER named blocker exists and stays honest.
+    expect(G2A.A5_G2_NAMED_BLOCKERS.BROWSER).toContain('zero-launch')
+    const world = await mountWorld('browser-inactive', { surface: 'browser', familyGate: 'g2BrowserEnabled', inactive: true })
+    expect(world.rows.length).toBe(6)
+    for (const row of world.rows) {
+      expect(row.active, row.toolName).toBe(false)
+      expect(row.mountCondition).toBe('declared_mount')
+      const def = world.plane.definitions.find((d) => d.name === row.toolName)
+      expect(def, row.toolName).toBeDefined()
+      await expect(def?.execute({ instruction: 'x', url: 'https://a.example' }, execFor(`browser-${row.toolName}`))).rejects.toThrow(/P_G2_DECLARED_MOUNT_ABSENT/)
+      await expect(def?.execute({ instruction: 'x' }, execFor(`browser2-${row.toolName}`))).rejects.toThrow(
+        new RegExp(`${row.toolName}: declared_mount is unproven \\(the experimental stagehand provider is not declared present by the owning assembly; the bundle is off by default\\): the six rows stay unmounted and substitute nothing`),
+      )
+      expect(world.nativeCalls[row.toolName]?.length ?? 0).toBe(0)
+    }
+    // nothing was asked, nothing was authorized, nothing ran.
+    const state = await stateNow()
+    expect(state.requests.length).toBe(0)
+  })
+
+  it('MCP declared_mount ABSENT: the trio mounts at the native spellings as honest INACTIVE rows; classify refuses P_G2_DECLARED_MOUNT_ABSENT with the module wording VERBATIM; zero rows, zero native entry', async () => {
+    const world = await mountWorld('mcp-inactive', { inactive: true })
+    const state0 = await stateNow()
+    for (const name of [...A5_G2_MCP_MOUNT_NAMES]) {
+      const def = world.plane.definitions.find((d) => d.name === name)
+      expect(def, name).toBeDefined()
+      // the captured native description bytes + the closed registration face
+      expect(def?.description).toBe(`TEST native ${name} description — the captured bytes the governed row must carry verbatim.`)
+      expect(def?.parameters).toEqual(G2A.A5_G2_REGISTRATION_SCHEMAS[name])
+      await expect(def?.execute({ server: MCP_SERVER }, execFor(`inactive-${name}`))).rejects.toThrow(
+        new RegExp(`refused-g2 P_G2_DECLARED_MOUNT_ABSENT — ${name}: declared_mount is unproven \\(no present flag\\): the MCP server this trio would speak for is not declared present by the owning assembly — nothing mounts and nothing is substituted \\(zero rows, zero grants, zero native entry\\)`),
+      )
+      expect(world.nativeCalls[name]?.length ?? 0).toBe(0)
+    }
+    const state1 = await stateNow()
+    expect(state1.requests.length).toBe(state0.requests.length)
+    // the mount-time family registration STILL stands for every placed name:
+    // keyed by the runtime placement identity, frozen, answering the B-MCP
+    // family (the mount registers; the row refuses — the two facts are
+    // independent and both honest).
+    for (const name of [...A5_G2_MCP_MOUNT_NAMES]) {
+      const fed = world.plane.placementFeed(name)
+      const identity = String(fed?.definitionIdentity ?? '')
+      expect(identity.length).toBeGreaterThan(0)
+      expect(world.registered[name]).toBe(identity)
+      expect(familyTable[identity]).toEqual({ familyId: G2A.A5_G2_FAMILY.mcp, adapterRevision: G2A.A5_G2_ADAPTER_REVISION, providerIdentity: PLANE_PROVIDER })
+      expect(Object.isFrozen(familyTable[identity])).toBe(true)
+      expect(a5GovernedFamilyFor(identity)).toBe(familyTable[identity])
+    }
+  })
+
+  it('MCP ACTIVE trio: the row walks the ONE PA path carrying its B-MCP family block at FULL value and lands at the named CENTER blocker (no PA_FAMILY_TARGET_RULES entry) BEFORE any durable row, grant, consume or native entry; single-flight law rides the shared ledger', async () => {
+    const world = await mountWorld('mcp-active')
+    const def = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
+    expect(def).toBeDefined()
+    // (a) exec-token-unbound: zero classify, zero walk, zero row.
+    await expect(def?.execute({ server: MCP_SERVER }, { agent: { id: WORKER } })).rejects.toThrow(/refused-g2 exec-token-unbound/)
+    // (b) the walk: a REAL token, one flight. Since the family-rules lane
+    //     LANDED the B-MCP rule map (f1e0c92ec cherry-pick) and this lane
+    //     landed the D1-D3 flat mint (adapter revision 2), the claim PASSES
+    //     the typed target law; the leader's allow consumes it and the row's
+    //     captured-native dispatch fires — the FIRST end-to-end green on this
+    //     family. The un-mounted world's row is the DEFAULT rowset: its
+    //     connectionIncarnation is the honest 'unobserved' and D2 keeps the
+    //     full blocker text as the reason.
+    const exec1 = execFor('active-1')
+    const running = def?.execute({ server: MCP_SERVER }, exec1) as Promise<Record<string, unknown>>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-1`)
+    const outcome = await running
+    expect(outcome).toBeDefined()
+    expect(world.legInputs.length).toBe(1)
+    const legInput = world.legInputs[0] as Record<string, Record<string, unknown>>
+    expect(String(legInput.callId)).toBe(`plane-g2:${world.plane.realmId}-1`)
+    expect(legInput.family).toEqual(expect.objectContaining({
+      familyId: G2A.A5_G2_FAMILY.mcp,
+      adapterRevision: G2A.A5_G2_ADAPTER_REVISION,
+      providerIdentity: PLANE_PROVIDER,
+    }))
+    const manifest = legInput.family?.targetManifest as Record<string, unknown>
+    expect(manifest.mcpVariant).toBe('stdio:list')
+    expect(manifest.operation).toBe('resources/list')
+    expect(manifest.server).toBe(MCP_SERVER)
+    expect(manifest.cursor).toBeNull()
+    expect(manifest.connectionIncarnation).toBe('unobserved')
+    expect(String(manifest.connectionIncarnationReason)).toContain('NAMED BLOCKER (B-MCP)')
+    expect(manifest.domainAuthorityId).toBeNull()
+    expect(String(world.legResults[0]?.decision)).toBe('approve')
+    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(1)
+    // (c) exec-token-replay on the SHARED ledger: the SPENT token never
+    //     re-arms; a consumed call is never re-run by a replayed token.
+    await expect(def?.execute({ server: MCP_SERVER }, exec1)).rejects.toThrow(/refused-g2 exec-token-replay/)
+    expect(world.legInputs.length).toBe(1)
+    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(1)
+  })
+
+  it('the server-identity law survives the wiring: an undeclared server swap refuses INSIDE the row before the walk (zero leg, zero row, zero native entry)', async () => {
+    const world = await mountWorld('mcp-identity')
+    const def = world.plane.definitions.find((d) => d.name === 'read_mcp_resource')
+    expect(def).toBeDefined()
+    const state0 = await stateNow()
+    await expect(def?.execute({ server: 'a-different-server', uri: 'mcp://x' }, execFor('identity-1'))).rejects.toThrow(
+      /refused-g2 P_G2_CLASSIFY_INVALID_ARGUMENTS — .*is not the declared server of this mount/,
+    )
+    expect(world.legInputs.length).toBe(0)
+    const state = await stateNow()
+    expect(state.requests.length).toBe(state0.requests.length)
+    expect(world.nativeCalls.read_mcp_resource?.length ?? 0).toBe(0)
+  })
+
+  it('drain law through the mounted def: after the row drains, a fresh token\u2019s call refuses P_G2_DRAINING with zero walk, zero row and zero native entry (an entered body is never rewound)', async () => {
+    const world = await mountWorld('mcp-drain')
+    const row = world.rows.find((r) => r.toolName === 'list_mcp_resources')
+    row?.drain()
+    const def = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
+    const state0 = await stateNow()
+    await expect(def?.execute({ server: MCP_SERVER }, execFor('drain-1'))).rejects.toThrow(/refused-g2 P_G2_DRAINING/)
+    expect(world.legInputs.length).toBe(0)
+    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(0)
+    const state = await stateNow()
+    expect(state.requests.length).toBe(state0.requests.length)
+  })
+})
+
+const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as {
+  createG2TeamMount: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
+}
+
+interface StandInSdk {
+  Client: new (_i: unknown, _o: unknown) => unknown
+  makeTransport: (target: Record<string, unknown>) => Record<string, unknown>
+  connects: unknown[]
+  sends: unknown[]
+  clientCalls: Array<{ method: string; params: unknown; options: Record<string, unknown> | undefined }>
+  transports: Array<{ closed: boolean; target: Record<string, unknown> }>
+}
+function makeStandInSdk(): StandInSdk {
+  const connects: unknown[] = []
+  const sends: unknown[] = []
+  const clientCalls: Array<{ method: string; params: unknown; options: Record<string, unknown> | undefined }> = []
+  const transports: Array<{ closed: boolean; target: Record<string, unknown> }> = []
+  // DISCLOSED stand-in for the pinned @modelcontextprotocol/client 2.0.0:
+  // implements the REAL generation dispatch trio the seam requires
+  // (g2-provider-seams.mjs:498 @this tree; the host maps them at
+  // mcp-client connection.ts:373-381 @639ed01539). The REAL-SDK legs are the
+  // owner's venue (kernel checkout, 17/17); THIS venue proves the mount law.
+  class ClientStandIn {
+    onclose: (() => void) | null = null
+    constructor(_info: unknown, _opts: unknown) {}
+    async connect(transport: Record<string, unknown>): Promise<void> {
+      connects.push(transport)
+      const start = transport.start as (() => Promise<void>) | undefined
+      if (typeof start === 'function') await start()
+    }
+    async close(): Promise<void> {}
+    async listResources(params: unknown, options?: Record<string, unknown>) {
+      clientCalls.push({ method: 'listResources', params, options })
+      return { resources: [{ uri: 'mcp://res/42', name: 'res-42' }] }
+    }
+    async listResourceTemplates(params: unknown, options?: Record<string, unknown>) {
+      clientCalls.push({ method: 'listResourceTemplates', params, options })
+      return { resourceTemplates: [] }
+    }
+    async readResource(params: unknown, options?: Record<string, unknown>) {
+      clientCalls.push({ method: 'readResource', params, options })
+      return { contents: [{ uri: 'mcp://res/42', text: 'res-42-body' }] }
+    }
+  }
+  const makeTransport = (target: Record<string, unknown>): Record<string, unknown> => {
+    const rec = { closed: false, target }
+    transports.push(rec)
+    return {
+      start: async () => {},
+      send: (frame: unknown) => { sends.push(frame) },
+      close: async () => { rec.closed = true },
+    }
+  }
+  return { Client: ClientStandIn, makeTransport, connects, sends, clientCalls, transports }
+}
+
+describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the plane faces — Team-only face binding, REAL dispatch on the generation, the generation tie at consume, awaited cleanup', () => {
+  it('the absent world stays honest: no mounts, and WEB answers the SIGNED route gap verbatim (no global/env route rides)', async () => {
+    const m = (await MOUNT.createG2TeamMount({ realmId: 'r', providerId: PLANE_PROVIDER, readNative: () => undefined, definitionIdentityOf })) as { ok: boolean; backends: Record<string, unknown>; webRouteGap: Record<string, string>; dispose: () => Promise<{ ok: boolean }> }
+    expect(m.ok).toBe(true)
+    expect(Object.keys(m.backends)).toEqual([])
+    expect(m.webRouteGap.publicFaces).toContain('registerSearchProvider')
+    expect(m.webRouteGap.gap).toContain('CORE_SEAM_BLOCKER')
+    expect(m.backends.g2Web).toBeUndefined()
+    expect((await m.dispose()).ok).toBe(true)
+  })
+
+  it('refusal laws AWAIT their cleanup: no PASSED scope face means NO registration (never a global lookup) and the half-built port is really closed; attach without cdpEndpoint and a browser mount without the REQUIRED callResource mapping refuse CONFIG_INCOMPLETE', async () => {
+    const sdk = makeStandInSdk()
+    const noFace = (await MOUNT.createG2TeamMount({
+      realmId: 'r', providerId: PLANE_PROVIDER, readNative: (n: string) => ({ name: n, description: 'd', execute: async () => ({}) }), definitionIdentityOf,
+      mcpMount: { declaredSurfaceConfig: { ...MCP_DECLARED }, resourceServerName: MCP_SERVER, entries: { Client: sdk.Client }, makeTransport: sdk.makeTransport, toolCallTimeoutMs: 1234    },
+    })) as { ok: boolean; code?: string; message?: string }
+    expect(noFace.ok).toBe(false)
+    expect(noFace.code).toBe('P_G2_ASM_FACE_INCOMPLETE')
+    expect(sdk.transports.length).toBe(0)
+    const badAttach = (await MOUNT.createG2TeamMount({
+      realmId: 'r', providerId: PLANE_PROVIDER, readNative: (n: string) => ({ name: n, description: 'd', execute: async () => ({}) }), definitionIdentityOf,
+      browserMount: { mode: 'attach', nativeConfig: {}, entries: { launchChromium: async () => ({}), openBrowserWorker: async () => ({}) }, consumeApproval: async () => 'consumed', callResource: async () => ({}) },
+    })) as { ok: boolean; code?: string }
+    expect(badAttach.ok).toBe(false)
+    expect(badAttach.code).toBe('P_G2_ASM_CONFIG_INCOMPLETE')
+    const noMap = (await MOUNT.createG2TeamMount({
+      realmId: 'r', providerId: PLANE_PROVIDER, readNative: (n: string) => ({ name: n, description: 'd', execute: async () => ({}) }), definitionIdentityOf,
+      browserMount: { mode: 'launch', nativeConfig: {}, entries: { launchChromium: async () => ({}), openBrowserWorker: async () => ({}) }, consumeApproval: async () => 'consumed' },
+    })) as { ok: boolean; code?: string; message?: string }
+    expect(noMap.ok).toBe(false)
+    expect(noMap.code).toBe('P_G2_ASM_CONFIG_INCOMPLETE')
+    expect(String(noMap.message)).toContain('callResource')
+  })
+
+  it('MCP mount, REAL dispatch: the Team-scoped register binds the PASSED face; the FIRST generation is up BEFORE placement (gen-1 rides the approved question); an approved call DISPATCHES on the mount generation client (uri verbatim, the approved 1234ms timeout in options, ZERO captured-native entry); the flat rev-2 target carries mcpVariant/spawn/cursor/connection at FULL value with no fingerprint; a rotation to gen-2 REFUSES consume on the generation tie; dispose closes for real', async () => {
+    const sdk = makeStandInSdk()
+    const faceCalls: Array<{ server: string; provider: Record<string, unknown> }> = []
+    let disposers = 0
+    const face = {
+      register: (server: string, provider: Record<string, unknown>) => {
+        faceCalls.push({ server, provider })
+        return () => { disposers += 1 }
+      },
+    }
+    let portsRef: Record<string, { stats: () => Record<string, unknown>; request: (req: unknown, exec: unknown) => Promise<unknown> }> = {}
+    const world = await mountWorld('mount-active', {
+      mountFactory: async ({ readNative }) => {
+        const m = (await MOUNT.createG2TeamMount({
+          realmId: 'a5m2-g2-wire-mount-active', providerId: PLANE_PROVIDER, readNative, definitionIdentityOf,
+          scopeFaces: { mcpResources: face },
+          mcpMount: { declaredSurfaceConfig: { ...MCP_DECLARED }, resourceServerName: MCP_SERVER, entries: { Client: sdk.Client }, makeTransport: sdk.makeTransport, toolCallTimeoutMs: 1234 },
+        })) as Record<string, unknown>
+        if (m.ok !== true) throw new Error(`mount refused: ${String(m.code)} ${String(m.message)}`)
+        portsRef = m.ports as typeof portsRef
+        return m
+      },
+    })
+    expect(faceCalls.length).toBe(1)
+    expect(faceCalls[0]?.server).toBe(MCP_SERVER)
+    expect(sdk.connects.length).toBe(1)
+    expect(portsRef.mcp!.stats().generation).toBe('gen-1')
+    const read = world.plane.definitions.find((d) => d.name === 'read_mcp_resource')
+    expect(world.rows.length).toBe(3)
+    // POSITIVE DISPATCH through the ONE PA path: approve, then the mount's
+    // TEAM-BOUND invoke answers on the approved generation's client.
+    const callId = `plane-g2:${world.plane.realmId}-1`
+    const running = read?.execute({ server: MCP_SERVER, uri: 'mcp://res/42' }, execFor('mount-1')) as Promise<Record<string, unknown>>
+    await approveRowForCall(callId)
+    const outcome = await running
+    const contents = (outcome as { contents?: Array<{ text?: string }> }).contents
+    expect(contents?.[0]?.text).toBe('res-42-body')
+    expect(sdk.clientCalls.length).toBe(1)
+    expect(sdk.clientCalls[0]?.method).toBe('readResource')
+    expect((sdk.clientCalls[0]?.params as Record<string, unknown>).uri).toBe('mcp://res/42')
+    expect(sdk.clientCalls[0]?.options?.timeout).toBe(1234)
+    // the captured native was NEVER the door: zero native entries.
+    for (const n of ['list_mcp_resources', 'read_mcp_resource', 'list_mcp_resource_templates']) expect(world.nativeCalls[n]?.length ?? 0).toBe(0)
+    // the FLAT rev-2 target (D1/D2/D3), machine-pinned fingerprint-free.
+    const manifest = (world.legInputs[0] as { family?: { targetManifest?: Record<string, unknown> } }).family?.targetManifest as Record<string, unknown>
+    expect(manifest.mcpVariant).toBe('stdio:read')
+    expect(manifest.operation).toBe('resources/read')
+    expect(manifest.record).toBe('surface:mcp_stdio')
+    expect(manifest.transport).toBe('stdio')
+    expect(manifest.spawnArgv0).toBe('/usr/bin/true')
+    expect(manifest.spawnArgCount).toBe(1)
+    expect(manifest.spawnCwd).toBe('') // the RAW empty string survives (no falsy normalization)
+    expect(manifest.connectionIncarnation).toBe('gen-1')
+    expect(manifest.connectionIncarnationReason).toBeNull() // D2: a real gen up => measured absence, null
+    expect(manifest.domainAuthorityId).toBeNull()
+    expect(manifest.uriVerbatim).toBe('mcp://res/42')
+    expect(typeof manifest.uriOpacity).toBe('string')
+    expect('surface' in manifest).toBe(false)
+    expect('cursor' in manifest).toBe(false) // cursor is STRUCTURALLY out on read groups
+    for (const key of Object.keys(manifest)) expect(key.toLowerCase()).not.toContain('fingerprint')
+    // cursor variants: raw value binds; ABSENCE emits null (D2), never a
+    // missing key, and the null NEVER rides the native leg.
+    const list = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
+    const running2 = list?.execute({ server: MCP_SERVER, cursor: 'page-2' }, execFor('mount-2')) as Promise<unknown>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-2`)
+    await running2
+    const manifest2 = (world.legInputs[1] as { family?: { targetManifest?: Record<string, unknown> } }).family?.targetManifest as Record<string, unknown>
+    expect(manifest2.mcpVariant).toBe('stdio:list')
+    expect(manifest2.cursor).toBe('page-2')
+    const running3 = list?.execute({ server: MCP_SERVER }, execFor('mount-3')) as Promise<unknown>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-3`)
+    await running3
+    const manifest3 = (world.legInputs[2] as { family?: { targetManifest?: Record<string, unknown> } }).family?.targetManifest as Record<string, unknown>
+    expect(manifest3.cursor).toBeNull()
+    expect(sdk.clientCalls.length).toBe(3)
+    // THE GENERATION TIE (root 19:31 item 3): rotate underneath the mount —
+    // an approval against gen-1 now REFUSES consume on the drift law.
+    const rotated = (portsRef.mcp as unknown as { reconnect: () => Promise<unknown> })
+    await rotated.reconnect()
+    expect(portsRef.mcp!.stats().generation).toBe('gen-2')
+    const callsBefore = sdk.clientCalls.length
+    // the drift refusal sits AT CONSUME: the approval still lands (the
+    // target facts are unchanged), the generation tie refuses the BODY.
+    const running4 = read?.execute({ server: MCP_SERVER, uri: 'mcp://res/43' }, execFor('mount-4')) as Promise<unknown>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-4`)
+    await expect(running4).rejects.toThrow(/GENERATION_DRIFT|P_G2_EDGE_REFUSED/)
+    expect(sdk.clientCalls.length).toBe(callsBefore) // zero forwarding on drift
+    // close-drain: the bound face unregisters, the owned generations close,
+    // and afterwards the port refuses SCOPE_CLOSED.
+    const mount = world.mount as { dispose: () => Promise<{ ok: boolean; failures: string[] }> }
+    const closed = await mount.dispose()
+    expect(closed, JSON.stringify(closed.failures)).toEqual({ ok: true, failures: [] })
+    expect(disposers).toBe(1)
+    const after = portsRef.mcp!.stats()
+    expect(after.disposed).toBe(true)
+    expect(after.transportsClosed).toBe(2) // gen-1 and gen-2 both really closed
+    await expect(portsRef.mcp!.request({ server: MCP_SERVER, method: 'resources/list' }, {})).rejects.toThrow(/SCOPE_CLOSED/)
+  })
+
+  it('BROWSER mount supply leg: the row actuates through the SIGNED port lease (consumeApproval -> worker -> callResource mapping), never through the captured native; the PLANE leg stays fail-closed at the still-unregistered B-BROWSER target rule (a different lane — no fake green)', async () => {
+    const workerCalls: Array<{ resource: unknown; method: unknown; args: unknown }> = []
+    const approvals: string[] = []
+    const factsSeen: Record<string, unknown>[] = []
+    const world = await mountWorld('browser-supply', {
+      surface: 'browser',
+      familyGate: 'g2BrowserEnabled',
+      mountBackendKey: 'g2Browser',
+      mountFactory: async ({ readNative }) => {
+        const m = (await MOUNT.createG2TeamMount({
+          realmId: 'a5m2-g2-wire-browser-supply', providerId: PLANE_PROVIDER, readNative, definitionIdentityOf,
+          browserMount: {
+            mode: 'launch', nativeConfig: {},
+            declaredServiceFacts: { modelOrigin: 'https://model.example.invalid' },
+            entries: { launchChromium: async () => ({ pid: 4242, endpoint: 'http://127.0.0.1:9222', close: async () => {} }), openBrowserWorker: async () => ({ tab: 't1', close: async () => {} }) },
+            consumeApproval: async (facts: Record<string, unknown>) => { approvals.push(String(facts.toolName)); factsSeen.push(facts); return 'consumed' },
+            callResource: async (resource: unknown, method: unknown, args: unknown) => { workerCalls.push({ resource, method, args }); return { ok: true, acted: String(method) } },
+          },
+        })) as Record<string, unknown>
+        if (m.ok !== true) throw new Error(`browser mount refused: ${String(m.code)} ${String(m.message)}`)
+        return m
+      },
+    })
+    expect(world.rows.length).toBe(6)
+    // supply routing (invoke level — the governance walk is the PLANE leg
+    // below): the port lease runs the caller mapping on the OPENED worker.
+    const row = world.rows.find((r) => r.toolName === 'stagehand_navigate')
+    const acted = await row!.invoke({ url: 'https://example.invalid' }, { agent: { id: WORKER }, g2ApprovedCallId: 'plane-g2:w-browser-supply-7', g2ConsumedProof: { grant: { grantId: 'gr-7' } } })
+    expect(acted).toEqual({ ok: true, value: { ok: true, acted: 'navigate' } })
+    expect(workerCalls.length).toBe(1)
+    expect(workerCalls[0]?.method).toBe('navigate')
+    expect(workerCalls[0]?.resource).toBeDefined() // the OPENED worker chain rides the mapping (the port's own open law shapes it)
+    expect(approvals).toEqual(['stagehand_navigate'])
+    expect(factsSeen[0]?.approvedCallId).toBe('plane-g2:w-browser-supply-7') // the ONE correlation fact rides the lease facts
+    expect((factsSeen[0]?.consumedProof as { grant?: { grantId?: string } })?.grant?.grantId).toBe('gr-7') // the kernel witness struct rides unchanged
+    expect(world.nativeCalls.stagehand_navigate?.length ?? 0).toBe(0)
+    // the PLANE leg (updated @ root 21:57 table round): the B-BROWSER rule
+    // EXISTS now (this lane's table entry) — the walk fail-closes on the
+    // rowset's OLD hand-written nested claim (no flat browserVariant mint
+    // until the adapters' browser mint joins the table, the same pairing
+    // law B-MCP followed). Closed refusal, zero worker entry beyond the
+    // invoke-level proof above — still no fake green.
+    const def = world.plane.definitions.find((d) => d.name === 'stagehand_observe')
+    // root 22:26: the REAL mint claims now VALIDATE at the table inside
+    // the walk — the walk moves PAST the target law to the durable
+    // approval boundary (proven by the walk blocking there until the
+    // caller's abort; it no longer refuses at the target). Bounded, no
+    // approval is minted here, zero entry — still no fake green.
+    const ac = new AbortController()
+    const timed = globalThis.setTimeout(() => ac.abort(), 250)
+    await expect(def?.execute({ instruction: 'what is on this page' }, execFor('browser-1', { signal: ac.signal }))).rejects.toThrow(/cancelled|refused-g2/)
+    globalThis.clearTimeout(timed)
+    expect(world.nativeCalls.stagehand_observe ?? []).toHaveLength(0)
+    const mount = world.mount as { dispose: () => Promise<{ ok: boolean }> }
+    expect((await mount.dispose()).ok).toBe(true)
+  })
+})
+
+/* ROOT 21:14 — exact-shape legs over the REAL assembly transportTarget
+ * shape (:273-278 spawn.{argv0,args,cwd}/endpointUrl FULL URL). The
+ * comparator the host factory consumes, tested directly: no 13-leg
+ * double-proof, no Host. */
+describe('A5M2-G2-WIRE round-22: the same-source comparator over the REAL transportTarget shape', () => {
+  const STDIO_REC = { serverName: 'g2w-server', transport: 'stdio', command: '/usr/bin/true', args: ['-a', '-b'], cwd: '' }
+  const HTTP_REC = { serverName: 'g2w-http', transport: 'streamable-http', url: 'https://mcp.example.invalid/v1/mcp?session=42' }
+  it('positive: the real stdio target (argv0, EVERY arg, RAW empty cwd) and the real http FULL URL (origin+path+query) bind clean', () => {
+    expect(g2ApprovedTargetMismatches({ server: 'g2w-server', transport: 'stdio', spawn: { argv0: '/usr/bin/true', args: ['-a', '-b'], cwd: '' } }, STDIO_REC)).toEqual([])
+    expect(g2ApprovedTargetMismatches({ server: 'g2w-http', transport: 'streamable-http', endpointUrl: 'https://mcp.example.invalid/v1/mcp?session=42' }, HTTP_REC)).toEqual([])
+  })
+  it('negative: SAME arg COUNT different args and SAME origin different path/query both mismatch BEFORE construction', () => {
+    const badArgs = g2ApprovedTargetMismatches({ server: 'g2w-server', transport: 'stdio', spawn: { argv0: '/usr/bin/true', args: ['-a', '-x'], cwd: '' } }, STDIO_REC)
+    expect(badArgs.some((m: string) => m.includes('args[1]'))).toBe(true)
+    const badPath = g2ApprovedTargetMismatches({ server: 'g2w-http', transport: 'streamable-http', endpointUrl: 'https://mcp.example.invalid/v2/mcp?session=42' }, HTTP_REC)
+    expect(badPath.some((m: string) => m.includes('path'))).toBe(true)
+    const badQuery = g2ApprovedTargetMismatches({ server: 'g2w-http', transport: 'streamable-http', endpointUrl: 'https://mcp.example.invalid/v1/mcp?session=43' }, HTTP_REC)
+    expect(badQuery.some((m: string) => m.includes('query'))).toBe(true)
+  })
+})
+
+/* ROOT 21:24 — the consumed RELAY unit legs. DISCLOSED service stand-in
+ * speaking the REAL control vocabulary VERBATIM from runtime/control:
+ * status 'pending'|'decided'|'abandoned' (service.ts:1861) and decision
+ * 'allow'|'deny'|'stale-denied' (types.ts CONTROL_DECISION_VALUES). The
+ * relay is a pure adapter — the real-service end-to-end ride is the
+ * Host-acceptance venue (stated, not claimed). */
+describe('A5M2-G2-WIRE round-25: createG2ConsumedRelay — relay, not PA proof, not second grant', () => {
+  const fakeService = (record: Record<string, unknown> | null, decision?: string) => ({
+    listControlState: async () => ({ requests: record === null ? [] : [record] }),
+    awaitControlDecision: async () => { if (decision === undefined) throw new Error('CONTROL_REQUEST_NOT_FOUND'); return { requestId: 'r1', decision } },
+  })
+  it('the SAME call\'s decided allow relays to consumed; deny/stale-denied/abandoned/pending-timeout/absent-correlation all refuse fail-closed', async () => {
+    const ok = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'decided' }, 'allow'), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await ok({ approvedCallId: 'plane-g2:r-1', toolName: 'stagehand_navigate' })).toBe('consumed')
+    const deny = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'decided' }, 'deny'), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await deny({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const stale = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'decided' }, 'stale-denied'), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await stale({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const aband = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'abandoned' }), rootSessionId: 'rt', deadlineMs: 100 })
+    expect(await aband({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const pend = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService({ correlation: 'plane-g2:r-1', requestId: 'r1', status: 'pending' }), rootSessionId: 'rt', deadlineMs: 60, pollMs: 20 })
+    expect(await pend({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+    const noCorr = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService(null), rootSessionId: 'rt', deadlineMs: 40, pollMs: 10 })
+    expect(await noCorr({ toolName: 'stagehand_navigate' })).toBe('refused')
+    const missing = (MOUNT as unknown as { createG2ConsumedRelay: (i: Record<string, unknown>) => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedRelay({ getService: () => fakeService(null), rootSessionId: 'rt', deadlineMs: 40, pollMs: 10 })
+    expect(await missing({ approvedCallId: 'plane-g2:r-9' })).toBe('refused')
+  })
+})
+
+/* ROOT 21:34 — the Browser approval boundary: kernel-witness shape only. */
+describe('A5M2-G2-WIRE round-26: createG2ConsumedProofApproval — the real final PA proof is the boundary', () => {
+  it('the kernel one-shot witness ({grant:{grantId}}) answers consumed; anything else refuses fail-closed (no correlation substitute, no Control read)', async () => {
+    const boundary = (MOUNT as unknown as { createG2ConsumedProofApproval: () => (f: Record<string, unknown>) => Promise<string> }).createG2ConsumedProofApproval()
+    expect(await boundary({ consumedProof: { grant: { grantId: 'gr-1' } } })).toBe('consumed')
+    expect(await boundary({})).toBe('refused')
+    expect(await boundary({ consumedProof: null })).toBe('refused')
+    expect(await boundary({ consumedProof: { grant: null } })).toBe('refused')
+    expect(await boundary({ consumedProof: { grant: { grantId: '' } } })).toBe('refused')
+    expect(await boundary({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+  })
+})
+
+/* ROOT 22:26 pairing card — the table mirrors the REAL mint (names,
+ * browser-* operations, full targets kept IN the manifest), and the
+ * real mint now rides the same flat leaves. No value moved to body
+ * facts, nothing deleted to fit the table. */
+/* root 22:39 honesty: these are GRAMMAR legs over hand-built manifests in
+ * the mint's exact real shape — they are NOT the cross-table real-mint
+ * evidence (registered as the next round's leg); no component green count
+ * stands in for the chain. */
+describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> mint-shape grammar (NOT cross-table mint evidence)', () => {
+  const rule = () => {
+    const entry = PA_FAMILY_TARGET_RULES['B-BROWSER']
+    if (entry === undefined) throw new Error('B-BROWSER table entry missing')
+    return entry
+  }
+  const realNavigate = {
+    browserVariant: 'launch:navigate', record: 'surface:browser_owned', operation: 'browser-navigate', mode: 'launch',
+    connectionIncarnation: 'gen-1', providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone. Incarnation rotation stale-proofs an approval ONLY IF the connection-owning assembly injects the real fact via declaredService.connectionIncarnation — while the fact reads unobserved the rotation is UNPROVEN, never a claimed guarantee (B-BROWSER re-selection law mirroring the signed B-MCP absence wording @639ed01539)', connectionIncarnationReason: null,
+    domainAuthorityId: null, businessObligations: [{ service: 'browser', action: 'navigate', right: 'connect', entry: 'x' }],
+    url: 'https://target.example.invalid/deep?q=1', destinationOrigin: 'https://target.example.invalid', pageId: null,
+  }
+  const realObserveAttach = { ...realNavigate, browserVariant: 'attach:observe', operation: 'browser-observe', mode: 'attach', modelDestinationOrigin: 'https://model.example.invalid', instructionDigest: 'a'.repeat(64), attachEndpointOrigin: 'http://127.0.0.1:9222', attachNote: 'attached browser may also be changed by its user (native GUIDANCE); incarnation re-check belongs to the owned provider (§5.5)' }
+  delete (realObserveAttach as Record<string, unknown>).url
+  delete (realObserveAttach as Record<string, unknown>).destinationOrigin
+  it('the REAL launch:navigate and attach:observe manifests validate against the entry (full targets IN the approval manifest); module-load legality holds', () => {
+    expect(() => assertPaFamilyTargetRuleLegality('B-BROWSER', rule())).not.toThrow()
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), realNavigate)).toBeUndefined()
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), realObserveAttach)).toBeUndefined()
+  })
+  it('lossless negatives: dropping url/pageId-null/domainAuthorityId-null refuses; a bare digest without modelDestinationOrigin refuses; launch mode with an attach variant refuses (bound literal)', () => {
+    const noUrl = { ...realNavigate } as Record<string, unknown>
+    delete noUrl.url
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noUrl))).toContain('url')
+    const noPage = { ...realNavigate } as Record<string, unknown>
+    delete noPage.pageId
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noPage))).toContain('pageId')
+    const noDa = { ...realNavigate } as Record<string, unknown>
+    delete noDa.domainAuthorityId
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noDa))).toContain('domainAuthorityId')
+    const digestOnly = { ...realObserveAttach } as Record<string, unknown>
+    delete digestOnly.modelDestinationOrigin
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), digestOnly))).toContain('modelDestinationOrigin')
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), { ...realNavigate, mode: 'attach' }))).toContain('mode')
+  })
+})
+
+/* ROOT 22:44 — REAL factory mint through the CURRENT validator. No
+ * hand-built manifests here: the adapters' OWN classifyCall produces the
+ * targetManifest and the table validator judges it. The generation fact
+ * is the REAL injected supply (declaredService.connectionIncarnation =
+ * what the connection-owning assembly injects) — 'gen-real-2244' rides
+ * every manifest verbatim; 'unobserved' is not passed off as a real
+ * binding. screenshot/tabs variants judge their REAL targets too. */
+describe('A5M2-G2-WIRE round-30: the REAL mint validates at the table (positive+negative)', () => {
+  it('mount supply path (root 22:44): declaredServiceFacts.connectionIncarnation REACHES the minted manifest verbatim (mount :231 passthrough closed); absent facts stay the honest unobserved/null', () => {
+    const withGen = mint({ mode: 'launch', modelOrigin: 'https://model.example.invalid', connectionIncarnation: 'gen-facts-31', connectionIncarnationReason: 'owner mount generation' })
+    const shot = withGen.stagehand_screenshot!.classify({})
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), shot.targetManifest)).toBeUndefined()
+    expect(shot.targetManifest!.connectionIncarnation).toBe('gen-facts-31')
+    expect(shot.targetManifest!.connectionIncarnationReason).toBe('owner mount generation')
+    const without = mint({ mode: 'launch', modelOrigin: 'https://model.example.invalid' })
+    const shot2 = without.stagehand_screenshot!.classify({})
+    expect(shot2.targetManifest!.connectionIncarnation).toBe('unobserved')
+    expect(shot2.targetManifest!.connectionIncarnationReason).toBeNull()
+  })
+
+  const mint = (declared: Record<string, unknown>) => (G2A as unknown as {
+    createG2BrowserAdapters: (i: Record<string, unknown>) => Record<string, { classify: (a: Record<string, unknown>) => { ok?: boolean; targetManifest?: Record<string, unknown>; code?: string; detail?: string } }>
+  }).createG2BrowserAdapters({
+    realmId: 'r-real-2244', providerId: 'p-real-2244', readNative: (name: string) => ({ name, definitionIdentity: 'di-2244', execute: async () => ({ ok: true, value: 'native' }) }),
+    definitionIdentityOf: () => 'def-2244', observe: () => {},
+    declaredService: { present: true, ...declared },
+  })
+  const rule = () => {
+    const entry = PA_FAMILY_TARGET_RULES['B-BROWSER']
+    if (entry === undefined) throw new Error('B-BROWSER table entry missing')
+    return entry
+  }
+  it('launch: the factory OWN navigate/act/screenshot/tabs manifests validate; the injected generation fact rides verbatim (no unobserved in the real-binding leg)', () => {
+    const rows = mint({ mode: 'launch', modelOrigin: 'https://model.example.invalid', connectionIncarnation: 'gen-real-2244', connectionIncarnationReason: 'owner-injected mount generation' })
+    const nav = rows.stagehand_navigate!.classify({ url: 'https://target.example.invalid/deep?q=1' })
+    expect(nav.ok).toBe(true)
+    expect(nav.targetManifest!.connectionIncarnation).toBe('gen-real-2244')
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), nav.targetManifest)).toBeUndefined()
+    const act = rows.stagehand_act!.classify({ instruction: 'click the save button' })
+    expect(act.ok).toBe(true)
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), act.targetManifest)).toBeUndefined()
+    const shot = rows.stagehand_screenshot!.classify({ fullPage: true })
+    expect(shot.ok).toBe(true)
+    expect(shot.targetManifest!.fullPage).toBe(true)
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), shot.targetManifest)).toBeUndefined()
+    const tabsNew = rows.stagehand_tabs!.classify({ action: 'new', url: 'https://tabtarget.example.invalid/x' })
+    expect(tabsNew.ok).toBe(true)
+    expect(tabsNew.targetManifest!.url).toBe('https://tabtarget.example.invalid/x')
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), tabsNew.targetManifest)).toBeUndefined()
+    const tabsList = rows.stagehand_tabs!.classify({ action: 'list' })
+    expect(tabsList.targetManifest!.url).toBeNull() // explicit null device, never a silently missing target field
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), tabsList.targetManifest)).toBeUndefined()
+  })
+  it('attach + negatives: the attach-mode navigate/observe manifests validate with the real endpoint target; a REAL manifest stripped of url / generation reason-as-fact still refuses at the table', () => {
+    const rows = mint({ mode: 'attach', cdpEndpointOrigin: 'http://127.0.0.1:9222', modelOrigin: 'https://model.example.invalid', connectionIncarnation: 'gen-real-2244' })
+    const nav = rows.stagehand_navigate!.classify({ url: 'https://target.example.invalid/' })
+    expect(nav.targetManifest!.attachEndpointOrigin).toBe('http://127.0.0.1:9222')
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), nav.targetManifest)).toBeUndefined()
+    const stripped = { ...(nav.targetManifest as Record<string, unknown>) }
+    delete stripped.url
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), stripped))).toContain('url')
+    const swapped = { ...(nav.targetManifest as Record<string, unknown>), browserVariant: 'attach:act' }
+    // the REAL navigate manifest re-labelled as an ACT group claim is
+    // refused for the ACT group's required target leaves (the variant
+    // discriminant selects a REAL group; the table still refuses closed)
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), swapped))).toContain('modelDestinationOrigin')
+  })
+})
+
+/* ROOT 06:0x — trio v2 on the REAL plane seams. The facts reader IS the
+ * real readPaCallFactsForCall (live import); its undefined under the
+ * facts law must surface as the typed refusal. consume rides an edge of
+ * the REAL consumeForExecution shape (DISCLOSED stand-in for the edge
+ * object; the full one-shot round trip through a live plane walk is the
+ * registered pending E2E, not claimed here). */
+describe('A5M2-WIRE round-37: trio v2 — real call-facts read, plane consume edge, fixed fetch', () => {
+  const MOD = async () => (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as {
+    createG2WebCenterPorts: (i: Record<string, unknown>) => {
+      factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
+      grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: { consumedProof?: unknown }; error?: { code?: string } }> }
+      resolveSearchOrigin: () => string
+      beginCall: (c: Record<string, unknown>) => () => void
+    }
+  }
+  const REG = async () => (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as { readPaCallFactsForCall: (i: Record<string, unknown>) => Promise<unknown> }
+  it('capture through the REAL readPaCallFactsForCall: no live context refuses CALL_CONTEXT_ABSENT; a fed context runs the REAL reader, whose undefined (unhealthy mount source) surfaces as FACTS_INCOMPLETE — zero stand-in facts', async () => {
+    const m = await MOD()
+    const reg = await REG()
+    const noCtx = m.createG2WebCenterPorts({ readCallFacts: reg.readPaCallFactsForCall })
+    expect((await noCtx.factsSource.capture({ realmId: 'r', grantId: 'g-1', bindingId: 'b' })).error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT')
+    const withCtx = m.createG2WebCenterPorts({
+      readCallFacts: reg.readPaCallFactsForCall,
+      resolveCallContext: () => ({ rootSessionId: 'rt-web', instanceId: 'mi-1', realmId: 'r', placementName: 'stagehand_navigate', requestedEffects: { effects: [], fingerprint: 'fp-1' } }),
+    })
+    const cap = await withCtx.factsSource.capture({ realmId: 'r', grantId: 'g-1', bindingId: 'b' })
+    expect(cap.ok).toBe(false)
+    expect(cap.error?.code).toBe('G2_WEB_FACTS_INCOMPLETE') // the REAL reader answered undefined: no mount published for the pair
+  })
+  it('origin answers the real config value or refuses per call; cancel at the relay boundary declines before any relay state is spent', async () => {
+    const m = await MOD()
+    const ports = m.createG2WebCenterPorts({ searchOriginFacts: { origin: 'https://search.example.invalid' } })
+    expect(ports.resolveSearchOrigin()).toBe('https://search.example.invalid')
+    expect(() => m.createG2WebCenterPorts({}).resolveSearchOrigin()).toThrow(/G2_WEB_SEARCH_ORIGIN_ABSENT/)
+    const p = m.createG2WebCenterPorts({ assemblyId: 'asm-9' })
+    const end = p.beginCall({ grant: { grantId: 'g-c' }, call: { callId: 'call-c' }, proof: { grant: { grantId: 'g-c' } }, effects: { effects: [] }, assemblyId: 'asm-9' })
+    const cancelled = await p.grantAuthority.consume({ facts: { effects: { effects: [] } }, correlation: { grantId: 'g-c' }, isCancelled: () => true })
+    expect(cancelled.error?.code).toBe('G2_WEB_CANCELLED')
+    const after = await p.grantAuthority.consume({ facts: { effects: { effects: [] } }, correlation: { grantId: 'g-c' }, isCancelled: () => false })
+    expect(after.ok).toBe(true) // the cancel declined WITHOUT burning the one relay
+    end()
+  })
+})
+
+/* ROOT 23bc six-item card — trio v3 verification (real-shape reader
+ * stand-in WHERE THE READER IS THE SUBJECT only; the real-reader round
+ * trip stays pinned above. Relay: grant/call SEPARATE identities, both
+ * lawful read answers, real overlayGeneration, ONE consumption layer,
+ * WebConsumedGrant carrying the REAL grantId. */
+describe('A5M2-WIRE round-39: six-item card — v3 relay facts/consume', () => {
+  const MOD = async () => (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as {
+    createG2WebCenterPorts: (i: Record<string, unknown>) => {
+      factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
+      grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
+      beginCall: (c: Record<string, unknown>) => () => void
+    }
+  }
+  const baseFacts = { member: { teamSessionId: 'rt', instanceId: 'mi' }, callId: 'call-77', binding: { revision: 5, bindingId: 'b-1' }, authorityGeneration: 9, policySource: { overlayGeneration: 12 }, effects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] } }
+  const ctxOf = (kind: string, planSnapshot?: unknown) => ({
+    grant: { grantId: 'grant-9' }, call: { callId: 'call-77', realmId: 'r' }, binding: { bindingId: 'b-1' },
+    member: baseFacts.member, effects: baseFacts.effects, placement: { name: 'web_fetch' }, assemblyId: 'asm-1',
+    _kind: kind, _snap: planSnapshot,
+  })
+  const reader = ((i: Record<string, unknown>) => reader.next(i)) as { (i: Record<string, unknown>): Promise<unknown>; next: (i: Record<string, unknown>) => Promise<unknown> }
+  it('grantId is NOT callId: capture resolves by the PRESENTED GRANT and rides the REAL call identity into the reader; both lawful answers are accepted (no planSnapshot forced on all-allow); policy generation maps from the real overlayGeneration', async () => {
+    const m = await MOD()
+    const seen: Record<string, unknown>[] = []
+    reader.next = ((i: Record<string, unknown>) => { seen.push(i); return Promise.resolve({ kind: 'no-approval-question', facts: baseFacts }) }) as never
+    const p = m.createG2WebCenterPorts({ readCallFacts: reader, assemblyId: 'asm-1' })
+    const end = p.beginCall(ctxOf('no-approval-question'))
+    expect((await p.factsSource.capture({ realmId: 'r', grantId: 'grant-WRONG' })).error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT')
+    const cap = await p.factsSource.capture({ realmId: 'r', grantId: 'grant-9' })
+    expect(cap.ok).toBe(true)
+    expect(((seen[0] ?? {}) as Record<string, unknown>).callId).toBe('call-77') // the REAL call rode, not the grant
+    expect(((seen[0] ?? {}) as Record<string, unknown>).instanceId).toBe('mi')
+    expect(cap.value?.policyGeneration).toBe(12) // real overlayGeneration
+    expect(cap.value?.bindingRevision).toBe(5)
+    expect('planSnapshot' in (cap.value as object)).toBe(false) // all-allow never forced
+    reader.next = ((i: Record<string, unknown>) => { seen.push(i); return Promise.resolve({ kind: 'call-facts', facts: { ...baseFacts, planSnapshot: { plan: 'p' } } }) }) as never
+    const cap2 = await p.factsSource.capture({ realmId: 'r', grantId: 'grant-9' })
+    expect(cap2.ok).toBe(true)
+    expect((cap2.value as Record<string, unknown>).planSnapshot).toEqual({ plan: 'p' })
+    end()
+    expect(() => p.beginCall({ ...ctxOf('x'), assemblyId: 'asm-OTHER' })).toThrow(/G2_WEB_ASSEMBLY_MISMATCH/)
+    expect(() => p.beginCall({ grant: { grantId: 'g' }, call: { callId: '' }, assemblyId: 'asm-1' })).toThrow(/REAL grant AND the REAL current call/)
+  })
+  it('ROOT 81e7 unique-consume ruling: the gateway NEVER second-deducts — it VERIFIES and RELAYS the same call\'s real plane-edge proof (exact grant identity, ONE relay); no proof refuses; policy generation reads the NESTED facts.policySource.overlayGeneration', async () => {
+    const m = await MOD()
+    const p = m.createG2WebCenterPorts({ assemblyId: 'asm-1' })
+    const proof = { grant: { grantId: 'grant-9' } }
+    const ctx = { ...ctxOf('call-facts'), proof }
+    const end = p.beginCall(ctx)
+    const facts = { authorityGeneration: 9, member: baseFacts.member, bindingRevision: 5, effects: baseFacts.effects }
+    const con = await p.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
+    expect(con.ok).toBe(true)
+    expect(con.value?.grantId).toBe('grant-9')
+    expect(con.value?.consumedProof).toEqual(proof as never)
+    const again = await p.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9' }, isCancelled: () => false })
+    expect(again.error?.code).toBe('G2_WEB_PROOF_ALREADY_RELAYED') // ONE relay, never re-spent
+    end()
+    const p2 = m.createG2WebCenterPorts({ assemblyId: 'asm-1' })
+    const end2 = p2.beginCall({ ...ctxOf('call-facts'), proof: { grant: { grantId: 'grant-DIFF' } } })
+    const mis = await p2.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9' }, isCancelled: () => false })
+    expect(mis.error?.code).toBe('G2_WEB_GRANT_IDENTITY_MISMATCH')
+    end2()
+    const p3 = m.createG2WebCenterPorts({ assemblyId: 'asm-1' })
+    const end3 = p3.beginCall(ctxOf('call-facts')) // no proof announced
+    const noProof = await p3.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9' }, isCancelled: () => false })
+    expect(noProof.error?.code).toBe('G2_WEB_CONSUME_PROOF_MISSING') // independent entry without real proof refuses
+    end3()
+    // nested policySource fact (first `it` above already pins capture)
+    expect(baseFacts.policySource.overlayGeneration).toBe(12)
+  })
+})
+
+/* ROOT 00:31 first real caller-supply piece: the lanes the plane's B-WEB
+ * closed face already fail-closes on, supplied over the REAL seam. */
+describe('A5M2-WIRE round-40: fixed web lanes through the REAL createG2WebProviderSeam', () => {
+  it('the web_fetch lane carries a real seam product (brand/id/available/fetch), the registration law equals the provider\'s OWN id, stats reads — the plane-law fields the fail-close point demands', async () => {
+    const mm = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as { createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, { provider: Record<string, unknown> & Record<string, never>; registrationLaw: { configuredProviderIdMustEqual: string }; stats: () => unknown }> }
+    const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown>; G2_SEAM_BRAND: symbol }
+    const provider = { id: 'local-fetch', available: () => true, fetch: async () => ({ ok: true }) }
+    const lanes = mm.createG2WebFixedLanes({
+      fixedProvider: provider,
+      seamMod,
+      declared: { origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-fixed-1' },
+      readMountFacts: () => ({ origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-fixed-1' }),
+    })
+    const lane = lanes.web_fetch
+    if (lane === undefined) throw new Error('web_fetch lane missing')
+    expect((lane.provider as Record<symbol | string, unknown>)[(seamMod as unknown as { G2_SEAM_BRAND: symbol }).G2_SEAM_BRAND]).toBe(true) // the brand the fail-close point reads
+    expect(typeof lane.provider.fetch).toBe('function')
+    expect(typeof lane.provider.available).toBe('function')
+    expect(lane.registrationLaw.configuredProviderIdMustEqual).toBe('local-fetch')
+    expect(typeof lane.stats()).toBe('object')
+    expect(() => mm.createG2WebFixedLanes({ fixedProvider: null, seamMod })).toThrow(/REAL fixed provider object/)
+  })
+})
+
+/* ROOT card cut: the STANDARD g2Web backend face, built from the real
+ * adapters over the real branded seam lanes. */
+describe('A5M2-WIRE round-45: createG2WebBackend — standard face, sync contract, honest throws', () => {
+  it('rows are the standard G2 face (toolName/familyId/adapterRevision/providerId + classify/invoke/drain functions); lanes ride branded; empty-lane/description-less builds THROW (no empty rowset, no placeholder bytes)', async () => {
+    const mm = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>>; descriptions: Record<string, string>; teamFixedWebProviderLanes: Record<string, unknown> }; createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, unknown> }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, unknown> }
+    const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown> }
+    const provider = { id: 'local-fetch', available: () => true, fetch: async () => ({ ok: true }) }
+    const lanes = mm.createG2WebFixedLanes({ fixedProvider: provider, seamMod, declared: { origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-1' }, readMountFacts: () => ({ origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-1' }) })
+    const backend = mm.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-1', providerId: 'a5p5-plane',
+      readNative: () => undefined, definitionIdentityOf: () => 'di-web-1',
+      lanes, descriptions: { web_fetch: 'fetch one exact URL under the governed web family law', web_search: 'search closed query sets under the governed web family law' },
+    })
+    const rows = backend.createRowset()
+    // lane-pairing law (r49): fetch-only lanes ⇒ web_search row is
+    // honestly NOT part of the rowset; only web_fetch rides.
+    expect(rows.map((x) => x.toolName).sort()).toEqual(['web_fetch'])
+    for (const row of rows) {
+      expect(typeof row.classify === 'function' && typeof row.invoke === 'function' && typeof row.drain === 'function').toBe(true)
+      expect(row.providerId).toBe('a5p5-plane')
+      expect(Number.isInteger(row.adapterRevision)).toBe(true)
+    }
+    expect(Object.keys(backend.teamFixedWebProviderLanes)).toEqual(['web_fetch'])
+    expect(() => mm.createG2WebBackend({ webAdaptersMod: adapters, realmId: 'r', providerId: 'a5p5-plane', readNative: () => undefined, definitionIdentityOf: () => 'd', lanes: {}, descriptions: { web_fetch: 'x' } })).toThrow(/seam-branded fixed lanes/)
+    expect(() => mm.createG2WebBackend({ webAdaptersMod: adapters, realmId: 'r', providerId: 'a5p5-plane', readNative: () => undefined, definitionIdentityOf: () => 'd', lanes, descriptions: {} })).toThrow(/captured description BYTES/)
+  })
+})
+
+/* B-WEB closed table: legality + REAL-mint pairing through the row's own
+ * classifyCall law (nothing hand-written). */
+describe('A5M2-WIRE round-47: B-WEB table entry against the real web mint', () => {
+  it('the entry passes its own legality law; both real manifests validate; a tampered destination is refused', async () => {
+    const C = (await import('../control/types.js')) as typeof import('../control/types.js')
+    const rule = C.PA_FAMILY_TARGET_RULES['B-WEB']
+    expect(rule).toBeDefined()
+    if (rule === undefined) throw new Error('B-WEB entry missing')
+    expect(C.assertPaFamilyTargetRuleLegality('B-WEB', rule)).toBeUndefined()
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, { classify: (a: Record<string, unknown>) => { ok: boolean; targetManifest?: Record<string, unknown> } }> }
+    const req = <T,>(v: T | undefined): T => { if (v === undefined) throw new Error('web row missing'); return v }
+    const rows = adapters.createG2WebAdapters({ realmId: 'r-web', providerId: 'a5p5-plane', readNative: (name: string) => ({ name, definitionIdentity: 'di-w-' + name, execute: async () => ({ ok: true }) }), definitionIdentityOf: (name: string) => 'di-w-' + name, searchOrigin: 'https://search.example.invalid' })
+    const fetchRow = req(rows.web_fetch).classify({ url: 'https://target.example.invalid/a?b=1' })
+    expect(fetchRow.ok, JSON.stringify(fetchRow)).toBe(true)
+    const manifest = fetchRow.targetManifest as Record<string, unknown>
+    // ROOT 02:17 ENCODING (approved r48 diff): the leaf is now the FULL
+    // snapshot losslessly encoded by the existing canonicalJsonStringify —
+    // the table pairs it as the same-named required 'string'. Verified
+    // here: both real manifests VALIDATE; parse-back equals the snapshot
+    // branch-for-branch including nulls, searchOrigin key-ABSENCE and the
+    // named-blocker text (no summary, no hash, nothing moved).
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, manifest)).toBeUndefined()
+    const enc = String(manifest.providerIdentityAtClassify)
+    expect(typeof manifest.providerIdentityAtClassify).toBe('string')
+    const back = JSON.parse(enc) as Record<string, unknown>
+    expect(back.observed).toBe(false) // observed:false branch preserved byte-exact
+    expect(String(back.reason)).toContain('B-WEB') // named blocker verbatim
+    const adapters2 = adapters
+    const observedRows = adapters2.createG2WebAdapters({ realmId: 'r-web', providerId: 'a5p5-plane', readNative: (name: string) => ({ name, definitionIdentity: 'di-w-' + name, execute: async () => ({ ok: true }) }), definitionIdentityOf: (name: string) => 'di-w-' + name, readProviderFacts: () => ({ fetchProviderId: 'local-fetch', searchProviderId: null }) })
+    const m2 = (req(observedRows.web_fetch).classify({ url: 'https://target.example.invalid/x' }) as { targetManifest?: Record<string, unknown> }).targetManifest as Record<string, unknown>
+    const b2 = JSON.parse(String(m2.providerIdentityAtClassify)) as Record<string, unknown>
+    expect(b2.observed).toBe(true)
+    expect(b2.fetchProviderId).toBe('local-fetch')
+    expect(b2.searchProviderId).toBe(null)
+    expect('searchOrigin' in b2).toBe(false) // KEY-ABSENCE preserved, not null
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, m2)).toBeUndefined()
+    const searchRow = req(rows.web_search).classify({ queries: ['alpha', 'beta'] })
+    expect(searchRow.ok).toBe(true)
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, searchRow.targetManifest as Record<string, unknown>)).toBeUndefined()
+    // HONEST LAW BOUNDARY (measured this round): the TABLE is a
+    // type/closedness law — a well-typed tampered VALUE passes it by
+    // design; the value's integrity rides the canonical FINGERPRINT
+    // (parametersFingerprint/reviewPayloadDigest over the payload) and the
+    // effects (the exact origin is in the connect effect — asserted on the
+    // classify result itself). Structural tampering IS refused here:
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, smuggledKey: 'x' })).not.toBeUndefined()
+    const fetchEffects = JSON.stringify((req(rows.web_fetch).classify({ url: 'https://target.example.invalid/a?b=1' }) as { effects?: unknown }).effects)
+    expect(fetchEffects).toContain('target.example.invalid') // the exact destination origin rides the effects, not a moved-out copy
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, url: undefined })).not.toBeUndefined()
+  })
+})
+
+/* THE vertical (root card): the REAL production chain end to end —
+ * mount builds backends.g2Web (createG2WebAdapters rows over the real
+ * branded seam lane + the fixed provider face) → plane injection →
+ * g2RowExecute's ONE final edge is the ONLY consume → the team-bound
+ * body lands the SAME fixed provider → all-allow carries NO Control /
+ * approval row, and no approval is ever resolved. Existing fixtures
+ * only: real FileStorage/TeamDomain/PA controlLeg; NOTHING hand-written
+ * about PA outcomes. */
+describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
+  it('ONE governed call end to end: real PA question answered ONCE, plane edge consumes ONCE, fixed provider receives the exact url, capture-native is NOT the door, replay refuses before any second fire, web_search honestly unmounted for lack of its lane', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as {
+      createG2TeamMount: (i: Record<string, unknown>) => Promise<Record<string, unknown>>
+      createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, unknown>
+    }
+    const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown> }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2FixedWebFace: (p: object) => { fetch: (r: Record<string, unknown>, s?: unknown) => Promise<unknown> }; createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const fetchCalls: Array<{ url: unknown; signalSeen: boolean }> = []
+    const fixedProvider = {
+      id: 'team-fixed-fetch-vertical',
+      available: () => true,
+      fetch: async (request: Record<string, unknown>, signal?: unknown) => {
+        fetchCalls.push({ url: request?.url, signalSeen: signal instanceof AbortSignal })
+        return { ok: true, content: 'THE BODY' }
+      },
+    }
+    const declared = { origin: 'https://target.example.invalid', endpointOrigin: 'https://target.example.invalid', configIdentity: 'vertical-cfg-1' }
+    // ROOT 3-card ③: NO fixed-face dispatch input anymore — the row
+    // dispatches through the VERIFIED seam-branded lane (built over the
+    // SAME real provider), so provider/config/current-facts re-verification
+    // runs on the real call; the recorder provider below is what the seam
+    // pins, so every lane dispatch lands there.
+    const verticalLanes = MOUNT.createG2WebFixedLanes({ fixedProvider, seamMod, declared, readMountFacts: () => declared })
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'a5m2-g2-wire-web-vertical' }) as unknown as { beginCall: (c: Record<string, unknown>) => () => void }
+    const world = await mountWorld('web-vertical', {
+      surface: 'web',
+      familyGate: 'g2WebEnabled',
+      mountBackendKey: 'g2Web',
+      mountFactory: async ({ readNative }) => await MOUNT.createG2TeamMount({
+        realmId: 'a5m2-g2-wire-web-vertical',
+        providerId: PLANE_PROVIDER,
+        readNative,
+        definitionIdentityOf,
+        webMount: {
+          lanes: verticalLanes,
+          // ROOT 23bc-CARD ② in production: the row body announces the call
+          // in the REAL supply ledger — here the REAL trio for THIS team
+          // root (same assembly id as the mount's announce pairing).
+          resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'a5m2-g2-wire-web-vertical' }),
+        },
+        observe: () => {},
+      }),
+    })
+    // the closed web table meets the lane law: web_search has NO lane in a
+    // fetch-only fixed provider world — it is honestly NOT mounted.
+    const defFetch = world.plane.definitions.find((d: { name: string }) => d.name === 'web_fetch')
+    const defSearch = world.plane.definitions.find((d: { name: string }) => d.name === 'web_search')
+    expect(defFetch).toBeDefined()
+    expect(defSearch).toBeUndefined()
+    // GRAMMAR FACT measured this run (pinned, not worked around): the
+    // blueprint allow-lane grammar carries ONLY builtin tool names
+    // ('rule allow[0].tool must be one of read|…' — extension tools can
+    // NEVER ride an all-allow lane; default:'allow' is refused outright).
+    // A governed B-WEB call therefore always asks; its ALL-ALLOW-equivalent
+    // is the PA answer itself (a decision), consumed ONCE at the edge —
+    // the no-Control-row facts path stays pinned in the no-approval-
+    // question arms of this spec family (r37/r39), not faked here.
+    const exec1 = execFor('vertical-1')
+    const running = (defFetch as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<Record<string, unknown>> }).execute({ url: 'https://target.example.invalid/page' }, exec1)
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-1`) // the leader's answer — a DECISION, not a consume
+    const outcome = await running
+    expect(outcome).toBeDefined()
+    expect(fetchCalls.length).toBe(1)
+    expect(fetchCalls[0]?.url).toBe('https://target.example.invalid/page')
+    // team-bound body (mcp actuation law): the capture-native is NOT the
+    // door — zero native entries on a consumed call.
+    expect(world.nativeCalls['web_fetch']?.length ?? 0).toBe(0)
+    // EXACTLY ONE PA leg ran for the call (the question the leader
+    // ANSWERED — a decision), the plane edge consumed it ONCE, and the
+    // provider saw exactly one request. livePaPlan is empty again because
+    // the answer SETTLED (pending-plan map, not a ledger).
+    expect(world.legInputs.length).toBe(1)
+    expect(String((world.legInputs[0] as Record<string, unknown>)['callId'])).toBe(`plane-g2:${world.plane.realmId}-1`)
+    const truth = realmTruths.get(world.plane.realmId)
+    expect(truth?.plane?.livePaPlan.size).toBe(0)
+    // the replay law still holds on the plane edge (one token, one flight):
+    await expect((defFetch as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }).execute({ url: 'https://target.example.invalid/page' }, exec1)).rejects.toThrow(/exec-token-replay/)
+    expect(fetchCalls.length).toBe(1) // the refusal never reached the provider: consume is not double-fired
+  })
+})
+/* ROOT round-51 CARD: beginCall is the PRODUCTION inFlight gate of every
+ * governed web call. The legs run the REAL trio (g2-web-supply) through
+ * the REAL backend invoke (g2-team-mount) — neither is stubbed. */
+describe('A5M2-WIRE round-51: beginCall wired on the real web row body', () => {
+  interface Venue { row: { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }; fetches: string[]; trio: { beginCall: (c: Record<string, unknown>) => () => void }; release: () => void; lane: { stats: () => Record<string, number>; lastDispatch: () => Record<string, unknown> | null }; driftTo: (c: string) => void }
+  const makeVenue = async (opts: { assemblyId: string; announcedAssemblyId?: string; withPorts?: boolean }): Promise<Venue> => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, unknown> }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const trio = WS.createG2WebCenterPorts({ assemblyId: opts.assemblyId }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number>; lastDispatch: () => Record<string, unknown> | null } }
+    const fetches: string[] = []
+    let settleGate: () => void = () => {}
+    const gate = new Promise<void>((res) => { settleGate = res })
+    // ROOT 3-card ③ at the row body: the ONLY dispatch route is the REAL
+    // seam-branded lane over the real provider — its config/identity law is
+    // live on every call; the venue flips readMountFacts to prove it runs.
+    const declared51 = { endpointOrigin: 'https://lane.invalid', configIdentity: 'cfg-51' }
+    let liveCfg = declared51.configIdentity
+    const realProvider = { id: 'lane-prov-51', available: () => true, fetch: async (r: Record<string, unknown>) => { fetches.push(String(r?.url)); await gate; return { ok: true } } }
+    const lane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'lane-prov-51', getRealProvider: () => realProvider, declared: declared51, readMountFacts: () => ({ endpointOrigin: declared51.endpointOrigin, configIdentity: liveCfg }) })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-51', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-51-' + name, execute: async () => ({ ok: true }) }),
+      definitionIdentityOf: (name: string) => 'di-51-' + name,
+      lanes: { web_fetch: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats } },
+      descriptions: { web_fetch: 'governed fetch row' },
+      ...(opts.withPorts === false ? { resolveWebCenterPorts: () => null } : { resolveWebCenterPorts: () => ({ ports: trio, assemblyId: opts.announcedAssemblyId ?? opts.assemblyId }) }),
+    })
+    const row = (backend.createRowset()[0] ?? {}) as Venue['row']
+    return { row, fetches, trio, release: () => settleGate(), lane, driftTo: (c: string) => { liveCfg = c } }
+  }
+  const EXEC_OK = { g2ApprovedCallId: 'call-1', g2ConsumedProof: { grant: { grantId: 'grant-1' } } }
+  it('the gate refuses BEFORE the provider: missing callId is the non-conflation TypeError; wrong assembly is G2_WEB_ASSEMBLY_MISMATCH; no trio entry is G2_WEB_CENTER_PORTS_ABSENT — zero fetches on all three', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51' })
+    await expect(v.row.invoke({ url: 'https://x.invalid/' }, { g2ConsumedProof: { grant: { grantId: 'g' } } })).rejects.toThrow(/announced separately/)
+    const w = await makeVenue({ assemblyId: 'asm-owner', announcedAssemblyId: 'asm-impostor' })
+    await expect(w.row.invoke({ url: 'https://x.invalid/' }, EXEC_OK)).rejects.toThrow(/G2_WEB_ASSEMBLY_MISMATCH/)
+    const n = await makeVenue({ assemblyId: 'asm-51c', withPorts: false })
+    await expect(n.row.invoke({ url: 'https://x.invalid/' }, EXEC_OK)).rejects.toThrow(/G2_WEB_CENTER_PORTS_ABSENT/)
+    expect(v.fetches.length + w.fetches.length + n.fetches.length).toBe(0)
+  })
+  it('one grant, one live context: a concurrent second call on the SAME grant throws G2_WEB_GRANT_INFLIGHT while the first is in flight; after the first CLOSES (success), inFlight is EMPTY — the same grant announces cleanly again', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51b' })
+    const first = v.row.invoke({ url: 'https://hold.invalid/' }, { g2ApprovedCallId: 'call-A', g2ConsumedProof: { grant: { grantId: 'grant-SAME' } } })
+    await new Promise((r) => setTimeout(r, 5))
+    await expect(v.row.invoke({ url: 'https://second.invalid/' }, { g2ApprovedCallId: 'call-B', g2ConsumedProof: { grant: { grantId: 'grant-SAME' } } })).rejects.toThrow(/G2_WEB_GRANT_INFLIGHT/)
+    expect(v.fetches).toEqual(['https://hold.invalid/']) // the refused twin never reached the provider
+    v.release()
+    await expect(first).resolves.toBeDefined()
+    expect(v.lane.stats().dispatchCount).toBe(1) // the ONE dispatch rode the VERIFIED lane
+    const closer = v.trio.beginCall({ grant: { grantId: 'grant-SAME' }, call: { callId: 'call-reuse' }, assemblyId: 'asm-51b' }) // EMPTY ledger: re-announce succeeds
+    closer()
+  })
+  it('the closer runs on REFUSAL too: a body that throws after announcing leaves no inFlight entry (same grant announces again right after)', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51d' })
+    await expect(v.row.invoke({ notTheUrl: true } as Record<string, unknown>, EXEC_OK)).rejects.toThrow(/G2_WEB_FETCH_URL_INVALID/)
+    const closer = v.trio.beginCall({ grant: { grantId: 'grant-1' }, call: { callId: 'call-2' }, assemblyId: 'asm-51d' })
+    closer()
+  })
+  it('the lane keeps its current-facts law INSIDE the production body: config-identity drift is refused by the seam before the provider sees the request, the closer still runs (ledger empty), and a clean call carries seam-measured trusted facts', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51e' })
+    v.driftTo('cfg-MOVED')
+    await expect(v.row.invoke({ url: 'https://x.invalid/' }, EXEC_OK)).rejects.toThrow(/CONFIG_DRIFT|identity moved/)
+    expect(v.fetches.length).toBe(0) // zero forwarding: the provider never saw the request
+    const closer = v.trio.beginCall({ grant: { grantId: 'grant-1' }, call: { callId: 'call-3' }, assemblyId: 'asm-51e' }) // refusal closed the ledger too (finally law)
+    closer()
+    v.driftTo('cfg-51')
+    const p = v.row.invoke({ url: 'https://ok.invalid/' }, { g2ApprovedCallId: 'call-4', g2ConsumedProof: { grant: { grantId: 'grant-4' } } })
+    await new Promise((r) => setTimeout(r, 5))
+    v.release()
+    await p
+    expect(v.lane.stats().dispatchCount).toBe(1)
+    const facts = v.lane.lastDispatch() as Record<string, unknown>
+    expect(facts.providerId).toBe('lane-prov-51') // the pinned provider
+    expect(facts.destinationOrigin).toBe('https://ok.invalid') // measured FROM the real request path
+    expect(facts.configIdentity).toBe('cfg-51') // live-verified current fact
+  })
+})
+
+/* ROOT round-55 CARD (search 必交 → exact external gap): the CONSUMER chain
+ * user-config -> PUBLIC provider ctor -> governed lane is now REAL. These
+ * legs run the REAL seam + REAL backend over a CONTRACT-LEVEL provider
+ * double (tier named honestly: the mock stands where the user's credential
+ * would resolve; real external-network acceptance waits on USER config —
+ * recorded tier, never a waiver). */
+describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)', () => {
+  it('createG2WebFixedLanes mints the web_search lane ONLY with the search half: branded, kind-search law; fetch-only worlds stay fetch-only (row-pairing law intact)', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, Record<string, unknown>> }
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const exa = { id: 'exa', available: () => true, search: async () => ({ ok: true }) }
+    const declared = { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-s' }
+    const plain = MOUNT.createG2WebFixedLanes({ fixedProvider: { id: 'fetchp', available: () => true, fetch: async () => ({}) }, declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'c' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'c' }), seamMod: seams })
+    expect(plain.web_search).toBeUndefined() // NOT-READY world: NO lane, row stays unmounted
+    const withSearch = MOUNT.createG2WebFixedLanes({ fixedProvider: { id: 'fetchp', available: () => true, fetch: async () => ({}) }, declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'c' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'c' }), seamMod: seams, search: { fixedSearchProvider: exa, searchMaxResults: 8, declared, readMountFacts: () => declared } })
+    expect(withSearch.web_search).toBeDefined()
+    expect(String((withSearch.web_search?.registrationLaw as { registerVia?: string })?.registerVia ?? '')).toMatch(/registerSearchProvider/)
+    expect(withSearch.web_search?.provider).not.toBe(exa) // the lane is the SEAM product, never the raw provider
+  })
+  it('END-TO-END row body on the SEARCH lane: classify pins the search facts, invoke dispatches the public one-query request through the branded lane with the beginCall gate, closer settles; multi-query rows hit the NAMED gap with ZERO dispatches', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-r55' }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    const seen: Array<Record<string, unknown>> = []
+    const declared = { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-s55' }
+    // the REAL public WebSearchResult shape (web/src/types.ts:35-42):
+    // {content?, sources, truncated} — the double answers under THAT schema.
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); const n = seen.length; return { content: 'answer-' + String(n), sources: [{ url: 'https://r.invalid/' + String(n), title: 't' + String(n) }, { url: 'https://r.invalid/shared', title: 'shared' }], truncated: n > 1 } } }
+    const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared, readMountFacts: () => declared })
+    const fetchLane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-55', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-' + name, description: 'd-' + name, execute: async () => ({ ok: true }) }),
+      definitionIdentityOf: (name: string) => 'di-' + name,
+      searchOrigin: 'https://api.exa.ai', // e51-final ②: SAME origin the lane endpoint derives from (one config, all facts)
+      lanes: { web_fetch: { provider: fetchLane.provider, registrationLaw: fetchLane.registrationLaw, stats: fetchLane.stats }, web_search: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats, searchMaxResults: 8 } },
+      descriptions: { web_fetch: 'fw', web_search: 'sw' },
+      resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'asm-r55' }),
+    })
+    const rows = backend.createRowset()
+    const search = rows.find((r) => r.toolName === 'web_search') as Record<string, unknown> & { classify: (a: Record<string, unknown>) => Promise<Record<string, unknown>>, invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<Record<string, unknown>> }
+    expect(search).toBeDefined() // the row mounts ONLY because its lane exists (pairing law)
+    const cls = await search.classify({ queries: ['governed one query'] }) as Record<string, unknown>
+    expect(cls.ok === true || cls.canonical !== undefined || cls.targetManifest !== undefined, JSON.stringify(Object.keys(cls))).toBe(true)
+    const EXEC = { g2ApprovedCallId: 'c55', g2ConsumedProof: { grant: { grantId: 'g55' } } }
+    const out = await search.invoke({ queries: ['governed one query'] }, EXEC)
+    expect(out).toMatchObject({ ok: true })
+    expect(seen).toEqual([{ query: 'governed one query', maxResults: 8 }]) // the PUBLIC one-query request, verbatim
+    expect(lane.stats().dispatchCount).toBe(1)
+    {
+      const v = (out as { value: { sources?: unknown[]; truncated?: boolean; content?: string } }).value
+      expect(v.sources?.length).toBe(2) // the REAL result schema rides through, nothing lost
+      expect(v.truncated).toBe(false)
+      expect(v.content).toBe('answer-1')
+    }
+    // e51-final ③: multi-query is CONSUMED, not exempted — bounded
+    // per-query single dispatches of the PUBLIC request inside the ONE
+    // already-consumed call (no second PA), same grant, same signal.
+    const signals: Array<unknown> = []
+    const ac = new AbortController()
+    const merged = await search.invoke({ queries: ['a', 'b'] }, { g2ApprovedCallId: 'c56', g2ConsumedProof: { grant: { grantId: 'g56' } }, signal: ac.signal }) as { value: { sources: Array<Record<string, unknown>>; truncated: boolean; content: string } }
+    void signals
+    expect(seen.slice(1)).toEqual([{ query: 'a', maxResults: 8 }, { query: 'b', maxResults: 8 }]) // per-query PUBLIC requests, order kept
+    expect(lane.stats().dispatchCount).toBe(3) // 1 + 2: the bounded list was the CLOSED approved one
+    // faithful aggregate per mergeSearchResults (search.ts:258-292): dedupe
+    // by url, round-robin by rank, content joined under query headers,
+    // truncated = OR of the per-query answers.
+    expect(merged.value.sources.map((src) => src.url)).toEqual(['https://r.invalid/2', 'https://r.invalid/3', 'https://r.invalid/shared'])
+    expect(merged.value.truncated).toBe(true) // OR: query 'b' answered truncated
+    expect(merged.value.content).toBe('### a\n\nanswer-2\n\n### b\n\nanswer-3')
+    // the ONE announce covered all dispatches; it settled once (finally):
+    const closer = trio.beginCall({ grant: { grantId: 'g56' }, call: { callId: 'c57' }, assemblyId: 'asm-r55' }) // EMPTY ledger post-call
+    closer()
+    // empty/shape-broken queries: mount-defect refusal, ZERO dispatches
+    const before = lane.stats().dispatchCount
+    await expect(search.invoke({ queries: [] }, { g2ApprovedCallId: 'c58', g2ConsumedProof: { grant: { grantId: 'g58' } } })).rejects.toThrow(/G2_WEB_SEARCH_QUERY_ARGS_INVALID/)
+    expect(lane.stats().dispatchCount).toBe(before)
+  })
+  it('the search lane keeps its own current-facts law: config drift is refused by the seam before the provider, the closer still runs', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-r55c' }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    let live = 'cfg-live'
+    const seen: Array<Record<string, unknown>> = []
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); return { sources: [], truncated: false } } } // the REAL WebSearchResult schema
+    const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared: { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-live' }, readMountFacts: () => ({ endpointOrigin: 'https://api.exa.ai', configIdentity: live }) })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-55c', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-' + name, description: 'd-' + name, execute: async () => ({ ok: true }) }),
+      definitionIdentityOf: (name: string) => 'di-' + name,
+      searchOrigin: 'https://api.exa.ai', // e51-final ②: SAME origin the lane endpoint derives from (one config, all facts)
+      lanes: {
+        web_fetch: (() => { const f = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) }); return { provider: f.provider, registrationLaw: f.registrationLaw, stats: f.stats } })(),
+        web_search: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats, searchMaxResults: 8 },
+      },
+      descriptions: { web_fetch: 'fw', web_search: 'sw' },
+      resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'asm-r55c' }),
+    })
+    const search = (backend.createRowset().find((r) => r.toolName === 'web_search') ?? {}) as { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    live = 'cfg-MOVED'
+    await expect(search.invoke({ queries: ['x'] }, { g2ApprovedCallId: 'cA', g2ConsumedProof: { grant: { grantId: 'gA' } } })).rejects.toThrow(/CONFIG_DRIFT|identity moved/)
+    expect(seen.length).toBe(0)
+    live = 'cfg-live'
+    const closer = trio.beginCall({ grant: { grantId: 'gA' }, call: { callId: 'cB' }, assemblyId: 'asm-r55c' }) // closed on refusal too
+    closer()
+  })
+  it('supply passthrough: webSearchNotReady (the NAMED external gap) rides the supply verbatim; absent stays absent (no invented readiness)', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2TeamAssemblySupply: (i: Record<string, unknown>) => Promise<{ ok: boolean; supply?: Record<string, unknown> }> }
+    const LAUNCH = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/src/launch.ts', import.meta.url).href
+    const WORKER = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/src/worker-client.ts', import.meta.url).href
+    const made = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}), webSearchNotReady: 'G2_WEB_SEARCH_NOT_READY: provider "exa" selected — $EXA_API_KEY unset' })
+    expect((made.supply as Record<string, unknown>).webSearchNotReady).toBe('G2_WEB_SEARCH_NOT_READY: provider "exa" selected — $EXA_API_KEY unset')
+    const clean = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}) })
+    expect('webSearchNotReady' in (clean.supply as Record<string, unknown>)).toBe(false)
+    // root 04:3x ①: the DERIVED endpoint origin rides the supply too (lane +
+    // supply end to end — nothing downstream re-derives the target).
+    const withOrigin = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}), webSearchEndpointOrigin: 'https://api.exa.ai' })
+    expect((withOrigin.supply as Record<string, unknown>).webSearchEndpointOrigin).toBe('https://api.exa.ai')
+    expect('webSearchEndpointOrigin' in (clean.supply as Record<string, unknown>)).toBe(false)
+  })
+  it('e51-final ②: a searchOrigin that CONTRADICTS the lane endpoint origin refuses the mount (approval A never carries credentials to B)', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => unknown }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
+    const exa = { id: 'exa', available: () => true, search: async () => ({ sources: [], truncated: false }) }
+    const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared: { endpointOrigin: 'https://api.exa.ai', configIdentity: 'i' }, readMountFacts: () => ({ endpointOrigin: 'https://api.exa.ai', configIdentity: 'i' }) })
+    const fetchLane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) })
+    expect(() => MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-cx', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di', description: 'd', execute: async () => ({}) }),
+      definitionIdentityOf: () => 'di',
+      searchOrigin: 'https://evil.example.invalid',
+      lanes: { web_fetch: { provider: fetchLane.provider, registrationLaw: fetchLane.registrationLaw, stats: fetchLane.stats }, web_search: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats, endpointOrigin: 'https://api.exa.ai' } },
+      descriptions: { web_fetch: 'fw', web_search: 'sw' },
+      resolveWebCenterPorts: () => null,
+    })).toThrow(/G2_WEB_SEARCH_ORIGIN_CONTRADICTION/)
+  })
+  it('e51-final ① REAL public roots (639 compiled): official defaults/??/resolveApiKey contract bytes — explicit empty apiKey stays empty (no || env flip); defaults filled make the provider CALLABLE (available() true)', async () => {
+    const HOSTPKG = new URL('../../../tests/deepseek-harness-test-use/packages/web/', import.meta.url).href
+    const exa = (await import(new URL('web-search-exa/lib/index.js', HOSTPKG).href)) as unknown as { ExaSearchProvider: new (o: Record<string, unknown>) => { available: () => boolean }, EXA_DEFAULT_BASE_URL: string, EXA_DEFAULT_SEARCH_TYPE: string, EXA_DEFAULT_HIGHLIGHTS_PER_RESULT: number }
+    const mk = (key: unknown) => new exa.ExaSearchProvider({ apiKey: key, baseURL: exa.EXA_DEFAULT_BASE_URL, searchType: exa.EXA_DEFAULT_SEARCH_TYPE, highlightsPerResult: exa.EXA_DEFAULT_HIGHLIGHTS_PER_RESULT })
+    expect(mk('').available()).toBe(false) // explicit empty: official ?? semantics keep '' (host mirror keeps the SAME semantics: undefined-checks, never ||)
+    expect(mk('contract-test-key').available()).toBe(true)
+    const ds = (await import(new URL('web-search-deepseek/lib/index.js', HOSTPKG).href)) as unknown as { DeepSeekSearchProvider: new (r: () => Record<string, unknown>) => { available: () => boolean } }
+    // host mirror VERBATIM shape: literal absent + resolveApiKey closure + resolved base + schema-defaulted numerics
+    const dsp = new ds.DeepSeekSearchProvider(() => ({ apiKeyEnv: 'DEEPSEEK_API_KEY', resolveApiKey: async () => 'from-env', baseURL: 'https://api.deepseek.com/anthropic/v1', model: 'deepseek-v4-flash', apiVersion: '2023-06-01', maxTokens: 4096, maxUses: 5 }))
+    expect(dsp.available()).toBe(true) // env EXISTING is not enough by itself — the closure RESOLVES; the provider reads no env itself
+  })
+  it('root 04:3x ② snapshot law at the seam contract: CONSTANT resolved frame (provider options and seam facts read the SAME frozen snapshot) — facts recomputed per dispatch always equal the pin; a MOVING frame is the drift leg above; both together make endpoint drift unbuildable', async () => {
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: { search: (r: Record<string, unknown>) => Promise<unknown> }; stats: () => Record<string, number> } }
+    const declared = { endpointOrigin: 'https://api.deepseek.com', configIdentity: 'g2-web-search:deepseek-official|https://api.deepseek.com' }
+    // the host's snapshot shape: base captured ONCE; the facts closure
+    // re-runs against the SAME frozen frame (not a live env/config source).
+    const snapshotBase = 'https://api.deepseek.com/anthropic/v1'
+    // the file's established type face for the two-URL-declaration trap (same
+    // structural face host.ts:795 uses): the runtime object IS a URL and .origin
+    // is its real property; the assertion's meaning (origin equality) is unchanged.
+    const facts = () => { const u = new URL(snapshotBase) as unknown as { origin: string }; return { endpointOrigin: u.origin, configIdentity: 'g2-web-search:deepseek-official|' + u.origin } }
+    expect(facts()).toEqual(declared)
+    let reached = 0
+    const pinned = { id: 'deepseek-official', available: () => true, search: async () => { reached += 1; return { sources: [], truncated: false } } } // ONE object: the seam's provider-identity pin law (its own drift guard) applies to the legs too
+    const seam = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'deepseek-official', getRealProvider: () => pinned, declared, readMountFacts: facts })
+    await seam.provider.search({ query: 'q1' })
+    await seam.provider.search({ query: 'q2' })
+    expect(reached).toBe(2)
+    expect(seam.stats().driftRejects ?? 0).toBe(0)
+  })
+  it('root 05:0x THE DEPLOYMENT CAP is supplied, never cancelled: per-request maxResults + WebRuntime enforcement (capSources web/src/index.ts:196-199) on single calls, and the merge re-applies the TOTAL cap with droppedSource-truncated (search.ts:270-279)', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> }; createG2WebFixedLanes: (i: Record<string, unknown>) => unknown }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    // lane law: a search half WITHOUT the cap is the typed refusal the
+    // mount itself raises — the lane cannot cancel the deployment cap.
+    expect(() => MOUNT.createG2WebFixedLanes({ fixedProvider: { id: 'f', available: () => true, fetch: async () => ({}) }, declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'c' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'c' }), seamMod: seams, search: { fixedSearchProvider: { id: 'exa', available: () => true, search: async () => ({}) }, declared: {}, readMountFacts: () => ({}) } })).toThrow(/searchMaxResults/)
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-cap57' }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    const reqs: Array<Record<string, unknown>> = []
+    const over = (n: number, base: number) => ({ sources: Array.from({ length: n }, (_, i) => ({ url: 'https://r.invalid/' + String(base + i) })), truncated: false })
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { reqs.push(r); return over(5, reqs.length * 10) } }
+    const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared: { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cap' }, readMountFacts: () => ({ endpointOrigin: 'https://api.exa.ai', configIdentity: 'cap' }) })
+    const fetchLane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-cap', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-' + name, description: 'd', execute: async () => ({}) }),
+      definitionIdentityOf: (name: string) => 'di-' + name,
+      searchOrigin: 'https://api.exa.ai',
+      lanes: { web_fetch: { provider: fetchLane.provider, registrationLaw: fetchLane.registrationLaw, stats: fetchLane.stats }, web_search: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats, searchMaxResults: 3 } },
+      descriptions: { web_fetch: 'fw', web_search: 'sw' },
+      resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'asm-cap57' }),
+    })
+    const search = (backend.createRowset().find((r) => r.toolName === 'web_search') ?? {}) as { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<{ value: { sources: Array<Record<string, unknown>>; truncated: boolean } }> }
+    // single: over-return is TRUNCATED by the enforcement law + the request carried the cap
+    const one = await search.invoke({ queries: ['solo'] }, { g2ApprovedCallId: 'k1', g2ConsumedProof: { grant: { grantId: 'g1' } } })
+    expect(reqs[0]).toEqual({ query: 'solo', maxResults: 3 })
+    expect(one.value.sources.length).toBe(3)
+    expect(one.value.truncated).toBe(true)
+    // multi: per-response caps + TOTAL merge cap with droppedSource accuracy
+    const two = await search.invoke({ queries: ['a', 'b'] }, { g2ApprovedCallId: 'k2', g2ConsumedProof: { grant: { grantId: 'g2' } } })
+    expect(two.value.sources.length).toBe(3) // cap 3 over 3+3 deduped candidates
+    expect(two.value.truncated).toBe(true)
+    expect(two.value.sources.map((src) => src.url)).toEqual(['https://r.invalid/20', 'https://r.invalid/30', 'https://r.invalid/21']) // round-robin, then break merge at the cap
+  })
+
+  // ROOT final card: the BROKEN HOP regression (r75 break: producer wrote
+  // input.entries, the assembly ignored it and re-resolved via entryPaths
+  // — the resolved pair NEVER reached the lease). These legs go RED on
+  // that exact shape: they assert the producer-resolved pair reaches
+  // supply.browserEntries BY IDENTITY, through the real assembly supply.
+  it('SINGLE SOURCE: the producer-resolved pair reaches supply.browserEntries BY IDENTITY (no loader shadow)', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const root = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/', import.meta.url).href
+    const built = await g2ResolveBrowserPublicEntries({ launchEntry: root + 'src/launch.ts', workerEntry: root + 'src/worker-client.ts' })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      // NO entryPaths at all: with a valid resolved pair in hand the
+      // supply must NOT answer ENTRY_INCOMPLETE (root card), and there is
+      // no loader-pinned pair that could shadow the producer's.
+      entries: built.entries,
+      entriesProvenance: built.provenance,
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+      consumeBrowserApproval: async () => ({ ok: true }),
+      callResource: async () => ({ ok: true }),
+    })
+    expect(supply.ok).toBe(true)
+    if (supply.ok !== true) return
+    const s = supply.supply as { browserEntries: { launchChromium: unknown; openBrowserWorker: unknown }; entriesProvenance: Record<string, unknown> }
+    // IDENTITY, not copy, not re-resolution: the VERY functions the
+    // producer resolved are the ones the lease will call.
+    expect(s.browserEntries.launchChromium).toBe((built.entries as { launchChromium: unknown }).launchChromium)
+    expect(s.browserEntries.openBrowserWorker).toBe((built.entries as { openBrowserWorker: unknown }).openBrowserWorker)
+    // the ACTUAL source rides the supply (recorded, not guessed)
+    expect(s.entriesProvenance.carrier).toBe('producer-resolved-pair')
+    expect(String(s.entriesProvenance.launchTarget)).toContain('src/launch.ts')
+  })
+  it('armed but HALF pair: refused NAMED before anything reaches the lease', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      entries: { launchChromium: () => ({}) },
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+      consumeBrowserApproval: async () => ({ ok: true }),
+      callResource: async () => ({ ok: true }),
+    })
+    expect(supply.ok).toBe(false)
+    expect(supply.code).toBe('G2_BROWSER_SUPPLIER_UNRESOLVED')
+  })
+  it('no pair armed AND no entryPaths: ENTRY_INCOMPLETE stays correct (typed refusal, no shared fallback)', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+    })
+    expect(supply.ok).toBe(false)
+    expect(supply.code).toBe('P_G2_ASM_ENTRY_INCOMPLETE')
+  })
+  // ROOT 05:27 residual: armed must NEVER run the old browser loader; the
+  // old launchEntry/workerEntry are not preconditions of the producer pair
+  // nor of the SDK Client. Real supply-branch control below.
+  it('armed FULL pair + STALE BROKEN browser entryPaths: old loader never runs, the pair still supplies', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const root = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/', import.meta.url).href
+    const built = await g2ResolveBrowserPublicEntries({ launchEntry: root + 'src/launch.ts', workerEntry: root + 'src/worker-client.ts' })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      entries: built.entries,
+      entriesProvenance: built.provenance,
+      // approval-era stale paths pointing at NOTHING — pre-fix these threw
+      // ENTRY_INCOMPLETE through loadG2TeamAssemblyEntries and blocked the
+      // complete pair; post-fix armed they are simply not consulted.
+      entryPaths: { launchEntry: '/nonexistent/stale-generation/launch.ts', workerEntry: '/nonexistent/stale-generation/worker.ts' },
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+      consumeBrowserApproval: async () => ({ ok: true }),
+      callResource: async () => ({ ok: true }),
+    })
+    expect(supply.ok).toBe(true)
+    if (supply.ok !== true) return
+    const s = supply.supply as { browserEntries: { launchChromium: unknown } }
+    expect(s.browserEntries.launchChromium).toBe((built.entries as { launchChromium: unknown }).launchChromium)
+  })
+  it('armed pair + SDK-ONLY entryPaths: the SDK Client loads INDEPENDENTLY (old browser entries are not its precondition)', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const root = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/', import.meta.url).href
+    const built = await g2ResolveBrowserPublicEntries({ launchEntry: root + 'src/launch.ts', workerEntry: root + 'src/worker-client.ts' })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const sdkClientEntry = new URL('../../../tests/deepseek-harness-test-use/packages/mcp/mcp-client/node_modules/@modelcontextprotocol/client/dist/index.mjs', import.meta.url).href
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      entries: built.entries,
+      entriesProvenance: built.provenance,
+      entryPaths: { sdkClientEntry },
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+      consumeBrowserApproval: async () => ({ ok: true }),
+      callResource: async () => ({ ok: true }),
+    })
+    expect(supply.ok).toBe(true)
+    if (supply.ok !== true) return
+    const s = supply.supply as { entries?: { Client?: unknown }; browserEntries: { launchChromium: unknown } }
+    expect(typeof s.entries?.Client).toBe('function') // the REAL venue SDK class, independently loaded
+    expect(s.browserEntries.launchChromium).toBe((built.entries as { launchChromium: unknown }).launchChromium)
+  })
+})

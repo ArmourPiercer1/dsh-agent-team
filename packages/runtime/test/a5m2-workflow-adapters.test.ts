@@ -331,8 +331,13 @@ describe('a5m2-workflow-adapters (c) assembly refusals', () => {
     expect(refuse({ workflowDelegates: undefined })).toBe(CODES.DELEGATES_ABSENT)
     expect(refuse({ liveWorkflowDelegates: undefined })).toBe(CODES.INPUT_INVALID)
     expect(refuse({ liveWorkflowDelegates: () => ({ ...delegates }) })).toBe(CODES.DELEGATE_DRIFT)
+    // LAW 2026-10-25 (root C2): captured-native-only is NO LONGER required —
+    // a governed RUNNER ADAPTER delegate (it takes over the public engine
+    // consumer call with the per-run subagentProvider override) is a legal,
+    // RULED delegation, not a split. The rebinding/container laws below
+    // (edgeIntegrity per-dispatch identity) remain fatal drift.
     const rebuilt = { ...delegates, workflow: async () => ({ kind: 'foreground', runId: 'rebuilt', agentsStarted: 0, result: null }) }
-    expect(refuse({ workflowDelegates: rebuilt, liveWorkflowDelegates: () => rebuilt })).toBe(CODES.DELEGATE_SET_SPLIT)
+    expect(ADAPTER.createWorkflowAdapterAssembly({ ...base, workflowDelegates: rebuilt, liveWorkflowDelegates: () => rebuilt }).ok, 'an adapter delegate assembles as the ruled runner take-over').toBe(true)
     const partial: Record<string, Definition['execute']> = { ...delegates }
     delete partial.ralph
     expect(refuse({ workflowDelegates: partial, liveWorkflowDelegates: () => partial })).toBe(CODES.DELEGATE_METHOD_ABSENT)

@@ -75,6 +75,14 @@ const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
  */
 const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
   '@deepseek-ai/dsh': EXPECTED_PEER_RANGE,
+  // A5M2 census run 40063499790 (head 447e14ac2) attribution: the root manifest
+  // now auditedly carries THREE more host-provided peers, each at the SAME
+  // exact RC pin (package.json:52/:54/:60 = 0.2.0-rc.2, no range), added by the
+  // governed schedule / launch-environment / web-tool lanes. Same hard-coded
+  // discipline as the original nine: never derived from the manifest under test.
+  '@deepseek-ai/dsh-launch-environment': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-schedule': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-tool-web': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-agent': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-llm': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-mcp-client': EXPECTED_PEER_RANGE,

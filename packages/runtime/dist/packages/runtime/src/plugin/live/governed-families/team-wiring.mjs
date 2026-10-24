@@ -666,12 +666,19 @@ export function buildTeamOpsWiring (input = {}) {
     // seat's own existing admission / edge cancellation codes (no new refusal
     // vocabulary): before the composition no PA question opens, after the
     // grant the lane is never entered.
+    // THE PAIRED VERSION. The claim below mints `pairingRevision`; the same
+    // expression is what the mount publishes into the family registration (the
+    // adapter's registration face takes its revision from the same constant the
+    // claim reads), so a durable approval carries ONE version and the
+    // registration carries that same version. Comparing them is therefore a
+    // comparison of the claim's version against the registration this mount
+    // actually published - not a wiring counter, which revokes nothing.
+    const pairingRevision = A5_B_TEAM_ADAPTER_REVISION
     const published = typeof registrationOf === 'function' ? registrationOf() : undefined
     const registrationMismatch = (where) => {
       if (!isRecord(published)) return undefined
-      if (published.adapterRevision === A5_B_TEAM_ADAPTER_REVISION
-        && published.providerIdentity === providerId) return undefined
-      return `${String(name)}: the ${where} carries adapterRevision ${JSON.stringify(published.adapterRevision)} / providerIdentity ${JSON.stringify(published.providerIdentity)} while this claim composes under ${String(A5_B_TEAM_ADAPTER_REVISION)} / ${JSON.stringify(providerId)} — a claim is never minted, and never forwarded to the lane, on a registration this claim does not match`
+      if (published.adapterRevision === pairingRevision && published.providerIdentity === providerId) return undefined
+      return `${String(name)}: the ${where} carries adapterRevision ${JSON.stringify(published.adapterRevision)} / providerIdentity ${JSON.stringify(published.providerIdentity)} while this claim mints pairingRevision ${String(pairingRevision)} / ${JSON.stringify(providerId)} — a claim is never minted, and never forwarded to the lane, on a registration it does not match`
     }
     {
       const mismatch = registrationMismatch('published registration')
@@ -696,7 +703,7 @@ export function buildTeamOpsWiring (input = {}) {
       // 载荷法: the four P-adds at FULL VALUE, from the adapter's own facts.
       family: Object.freeze({
         familyId: A5_B_TEAM_FAMILY_ID,
-        adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
+        adapterRevision: pairingRevision,
         providerIdentity: providerId,
         targetManifest,
       }),
@@ -769,7 +776,7 @@ export function buildTeamOpsWiring (input = {}) {
         // approval is not carried into the lane on a stale version.
         const current = typeof registrationOf === 'function' ? registrationOf() : undefined
         const stale = isRecord(current)
-          && (current.adapterRevision !== A5_B_TEAM_ADAPTER_REVISION || current.providerIdentity !== providerId)
+          && (current.adapterRevision !== pairingRevision || current.providerIdentity !== providerId)
         if (stale) {
           stats.admissionRefusals += 1
           observe({ event: 'b-team-wire:registration-claim-MISMATCH', name, stage: 'post-grant', laneEntry: false })

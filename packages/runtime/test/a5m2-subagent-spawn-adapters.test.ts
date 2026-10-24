@@ -387,9 +387,23 @@ describe('a5m2-subagent-spawn-adapters (d) thin mirror + targets', () => {
 
 // ── (e) the live-caller law (four SPAWN bodies THROW; the read does not) ──
 describe('a5m2-subagent-spawn-adapters (e) live-caller law', () => {
-  it('the four SPAWN rows throw the BODY\'S OWN bytes; list_subagent_models has no identity law', async () => {
-    const assembly = mount()
-    for (const name of ['subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code']) {
+  it('BLOCK SCOPED TO 39/40: the child-bearing rows refuse BEFORE the PA walk and BEFORE the body (module constant); 41/42 still throw the BODY\'S OWN bytes; list_subagent_models has no identity law', async () => {
+    let admitCalls = 0
+    const assembly = mount({ admit: async (ctx: Record<string, unknown>) => { admitCalls += 1; void ctx; return { ok: true } } })
+    for (const name of ['subagent', 'subagent_fork']) {
+      const definition = assembly.definitions.find((d) => d.name === name)
+      if (definition === undefined) throw new Error('no def')
+      // DUAL-PATH PIN (center card): the block precedes classify/admit, so
+      // FOREGROUND-shaped AND background/continuable-shaped calls meet the
+      // SAME refusal — the continuable path (manager create/resume, never
+      // provider.start) is refused by this very ordering.
+      for (const args of [{ description: 'd', prompt: 'p' }, { description: 'd', prompt: 'p', run_in_background: true }]) {
+        await expect(definition.execute(args, { signal: CONTROLLER.signal }))
+          .rejects.toThrow(/P_B_SPAWN_CHILD_GOVERNANCE_UNGOVERNED/)
+      }
+    }
+    expect(admitCalls, 'the refusal precedes the PA walk: ZERO approval consumed').toBe(0)
+    for (const name of ['subagent_codex', 'subagent_claude_code']) {
       const definition = assembly.definitions.find((d) => d.name === name)
       if (definition === undefined) throw new Error('no def')
       await expect(definition.execute({ description: 'd', prompt: 'p' }, { signal: CONTROLLER.signal }))
@@ -405,19 +419,19 @@ describe('a5m2-subagent-spawn-adapters (e) live-caller law', () => {
 
 // ── (f) delegation fidelity through the REAL captured bodies ──────────────
 describe('a5m2-subagent-spawn-adapters (f) delegation fidelity', () => {
-  it('continuable spawn: the durable request carries the LIVE parent REFERENCE; the inbox ack is the value', async () => {
+  it('continuable spawn (MECHANISM CARRIED ON THE UNBLOCKED RECORD 41 — the block covers 39/40 only): the durable request carries the LIVE parent REFERENCE; the inbox ack is the value', async () => {
     const harness = await makeHarness()
     // re-capture against THIS harness so the body's closure calls these doubles
-    HOST_SPAWN_MINT.apply(harness.ctx, { provider: 'in-process-test', toolName: 'subagent', enableRunInBackground: true, backgroundMode: 'continuable', maxDepth: 'provider-managed' })
-    const native = harness.ctx.tools.get('subagent') as unknown as Definition
-    const delegates: Record<string, Definition['execute']> = { subagent: native.execute }
+    HOST_SPAWN_MINT.apply(harness.ctx, { provider: 'in-process-test', toolName: 'subagent_codex', enableRunInBackground: true, backgroundMode: 'continuable', maxDepth: 'provider-managed' })
+    const native = harness.ctx.tools.get('subagent_codex') as unknown as Definition
+    const delegates: Record<string, Definition['execute']> = { subagent_codex: native.execute }
     const assembly = mount({
-      captured: { subagent: { native, definitionIdentity: 'cap:subagent-live' } },
+      captured: { subagent_codex: { native, definitionIdentity: 'cap:codex-live' } },
       liveNative: () => native,
       spawnDelegates: delegates,
       liveSpawnDelegates: () => delegates,
     })
-    const definition = assembly.definitions.find((d) => d.name === 'subagent')
+    const definition = assembly.definitions.find((d) => d.name === 'subagent_codex')
     if (definition === undefined) throw new Error('no def')
     const value = await definition.execute({ description: 'research', prompt: 'dig in' }, EXEC)
     expect(value).toEqual({ kind: 'continuable', subagentId: 'sub-77' })
@@ -428,18 +442,18 @@ describe('a5m2-subagent-spawn-adapters (f) delegation fidelity', () => {
     expect(request.label).toBe('research')
     expect(request.prompt).toEqual([{ type: 'text', text: 'dig in' }])
   })
-  it('foreground spawn: the settle answer passes through VERBATIM; abort reaches the body law', async () => {
+  it('foreground spawn (carrier: the unblocked record 42): the settle answer passes through VERBATIM; abort reaches the body law', async () => {
     const harness = await makeHarness()
-    HOST_SPAWN_MINT.apply(harness.ctx, { provider: 'fork-test', toolName: 'subagent_fork', enableRunInBackground: true, backgroundMode: 'one-shot', maxDepth: 'provider-managed' })
-    const native = harness.ctx.tools.get('subagent_fork') as unknown as Definition
-    const delegates: Record<string, Definition['execute']> = { subagent_fork: native.execute }
+    HOST_SPAWN_MINT.apply(harness.ctx, { provider: 'fork-test', toolName: 'subagent_claude_code', enableRunInBackground: true, backgroundMode: 'one-shot', maxDepth: 'provider-managed' })
+    const native = harness.ctx.tools.get('subagent_claude_code') as unknown as Definition
+    const delegates: Record<string, Definition['execute']> = { subagent_claude_code: native.execute }
     const assembly = mount({
-      captured: { subagent_fork: { native, definitionIdentity: 'cap:fork-live' } },
+      captured: { subagent_claude_code: { native, definitionIdentity: 'cap:claude-live' } },
       liveNative: () => native,
       spawnDelegates: delegates,
       liveSpawnDelegates: () => delegates,
     })
-    const definition = assembly.definitions.find((d) => d.name === 'subagent_fork')
+    const definition = assembly.definitions.find((d) => d.name === 'subagent_claude_code')
     if (definition === undefined) throw new Error('no def')
     const value = await definition.execute({ description: 'review', prompt: 'read it' }, EXEC)
     expect(value).toEqual({ kind: 'foreground', runId: 'run-1', output: [{ type: 'text', text: 'child done' }] })
@@ -537,17 +551,17 @@ describe('a5m2-subagent-spawn-adapters (h) drift + verified-handle + snapshot', 
   })
   it('THE VERIFIED READ IS THE INVOKED READ — a feed turning over to a second set is never invoked', async () => {
     const harness = await makeHarness()
-    HOST_SPAWN_MINT.apply(harness.ctx, { provider: 'fork-test', toolName: 'subagent_fork', enableRunInBackground: true, backgroundMode: 'one-shot', maxDepth: 'provider-managed' })
-    const native = harness.ctx.tools.get('subagent_fork') as unknown as Definition
-    const good: Record<string, Definition['execute']> = { subagent_fork: native.execute }
+    HOST_SPAWN_MINT.apply(harness.ctx, { provider: 'fork-test', toolName: 'subagent_claude_code', enableRunInBackground: true, backgroundMode: 'one-shot', maxDepth: 'provider-managed' })
+    const native = harness.ctx.tools.get('subagent_claude_code') as unknown as Definition
+    const good: Record<string, Definition['execute']> = { subagent_claude_code: native.execute }
     let poisonHits = 0
-    const poisoned: Record<string, Definition['execute']> = { subagent_fork: (async () => {
+    const poisoned: Record<string, Definition['execute']> = { subagent_claude_code: (async () => {
       poisonHits += 1
       return { kind: 'continuable', subagentId: 'POISON' }
     }) as Definition['execute'] }
     let reads = 0
     const assembly = mount({
-      captured: { subagent_fork: { native, definitionIdentity: 'cap:fork-handle' } },
+      captured: { subagent_claude_code: { native, definitionIdentity: 'cap:claude-handle' } },
       liveNative: () => native,
       spawnDelegates: good,
       liveSpawnDelegates: () => {
@@ -555,7 +569,7 @@ describe('a5m2-subagent-spawn-adapters (h) drift + verified-handle + snapshot', 
         return reads <= 2 ? good : poisoned // read 1 = assembly split-check, read 2 = the edge
       },
     })
-    const definition = assembly.definitions.find((d) => d.name === 'subagent_fork')
+    const definition = assembly.definitions.find((d) => d.name === 'subagent_claude_code')
     if (definition === undefined) throw new Error('no def')
     const value = await definition.execute({ description: 'd', prompt: 'p' }, EXEC)
     expect(value).toMatchObject({ kind: 'foreground', runId: 'run-1' }) // the VERIFIED body answered
@@ -587,11 +601,11 @@ describe('a5m2-subagent-spawn-adapters (i/j) admit + registration + drain + gaps
         return { ok: false, code: 'PA_DENY', detail: 'walk stopped' }
       },
     })
-    const definition = assembly.definitions.find((d) => d.name === 'subagent')
+    const definition = assembly.definitions.find((d) => d.name === 'subagent_codex')
     if (definition === undefined) throw new Error('no def')
     const error = await definition.execute({ description: 'd', prompt: 'p' }, EXEC).then(() => undefined, (e: unknown) => e as Error & { spawnRefusal?: { code?: string } })
     expect(error?.spawnRefusal?.code).toBe('PA_DENY')
-    expect(seen).toMatchObject({ name: 'subagent', recordIndex: 39, familyId: 'B-SUBAGENT' })
+    expect(seen).toMatchObject({ name: 'subagent_codex', recordIndex: 41, familyId: 'B-SUBAGENT' })
     expect(seen.exec).toBe(EXEC)
   })
   it('familyRegistrations: placement keys only (5 records); ABSENT/MOVED throw; drain = new-call prohibition', () => {

@@ -1235,15 +1235,88 @@ export interface PaFamilyTargetRule {
 }
 
 export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>> = Object.freeze({
+  // A5M2 (root 01:01 card, G5 lane supply): the B-SESSION family carries TWO
+  // minted claim shapes under ONE signed entry — the todo `replace-list` plan
+  // (todo.mjs:234-246, unchanged field-for-field) and the G5 goal-service
+  // face (g5-goal-wiring.mjs flat projection over g5-goal-service.mjs rev.1
+  // plan facts, records 27/28/29). Discriminated through the ALREADY-SIGNED
+  // variant grammar (root 17:40 mechanism, the B-SUBAGENT encoding precedent):
+  // the shared required leaf is `operation` — both mints emit it as a literal
+  // their LANE mints from census truth (todo.mjs:64 'replace-list'; the G5
+  // census A5_G5_GOAL_RECORDS 'goal-read'/'goal-create'/'goal-action-
+  // dispatch') — and each group closes over its own exact key set. ZERO new
+  // kinds: the goal leaves ride the committed grammar (string, boolean,
+  // nonNegativeInt, stringArray, nullableString — root 18:42: missing ≠ null
+  // ≠ '' stay three outcomes; the authority pair is nullable on BOTH sides so
+  // observed/UNOBSERVED stay distinguishable end-to-end, never a silent
+  // pass). `namedGaps` carries the adapter's VERBATIM gap strings — the
+  // disclosure contract stays mint-side like every family's. `binds` pins
+  // each goal group's toolName to its ONE literal (full-value binding — a
+  // goal variant can never ride another tool's leaf); the todo group binds
+  // nothing (it has no constant leaf of its own; its field set was and stays
+  // the signed six-over-the-leaf). TODO CLAIM VERDICTS ARE PRESERVED: every
+  // denial the flat rule produced for a real todo claim (first-missing-
+  // required in the same field order, foreign-key closed-set, wrong-type)
+  // rides the SAME bytes through the group law; the only refusal that did not
+  // exist before is for an operation literal NO mint can produce, which
+  // selected nothing before only because nothing typed the leaf at all.
+  // currentFields keeps the signed trio (current-facts law unmoved; the goal
+  // groups add NOTHING to it).
   'B-SESSION': Object.freeze({
     required: Object.freeze({
       operation: 'string',
-      agentId: 'string',
-      sessionHeaderId: 'string',
-      todosDigest: 'string',
-      counts: 'countsTriple',
-      allowParallelPolicy: 'boolean',
-      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'replace-list': Object.freeze({
+          adds: Object.freeze({
+            agentId: 'string',
+            sessionHeaderId: 'string',
+            todosDigest: 'string',
+            counts: 'countsTriple',
+            allowParallelPolicy: 'boolean',
+            paramFingerprint: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'goal-read': Object.freeze({
+          adds: Object.freeze({
+            toolName: 'string',
+            recordIndex: 'nonNegativeInt',
+            portMethods: 'stringArray',
+            authorityObserved: 'boolean',
+            authorityKind: 'nullableString',
+            authorityReason: 'nullableString',
+            namedGaps: 'stringArray',
+          }),
+          binds: Object.freeze({ toolName: 'get_goal' }),
+        }),
+        'goal-create': Object.freeze({
+          adds: Object.freeze({
+            toolName: 'string',
+            recordIndex: 'nonNegativeInt',
+            portMethods: 'stringArray',
+            authorityObserved: 'boolean',
+            authorityKind: 'nullableString',
+            authorityReason: 'nullableString',
+            namedGaps: 'stringArray',
+          }),
+          binds: Object.freeze({ toolName: 'create_goal' }),
+        }),
+        'goal-action-dispatch': Object.freeze({
+          adds: Object.freeze({
+            toolName: 'string',
+            recordIndex: 'nonNegativeInt',
+            portMethods: 'stringArray',
+            authorityObserved: 'boolean',
+            authorityKind: 'nullableString',
+            authorityReason: 'nullableString',
+            namedGaps: 'stringArray',
+          }),
+          binds: Object.freeze({ toolName: 'update_goal' }),
+        }),
+      }),
     }),
     currentFields: Object.freeze(['operation', 'agentId', 'sessionHeaderId']),
   }),
@@ -1268,7 +1341,105 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
   // stays HELD pending the root ruling. Resource-derived truth (the file's
   // bytes, the target's real identity) belongs to the post-approval closure
   // edge, never to this table (rule doc above).
+  'B-BROWSER': Object.freeze({
+    required: Object.freeze({
+      browserVariant: 'string',
+      connectionIncarnation: 'string',
+      providerReSelectionLaw: 'string',
+      connectionIncarnationReason: 'nullableString',
+      domainAuthorityId: 'nullableString',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'browserVariant',
+      by: Object.freeze({
+        'launch:navigate': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', url: 'string', destinationOrigin: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-navigate', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:act': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-act', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:observe': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-observe', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:extract': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:navigate': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', url: 'string', destinationOrigin: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-navigate', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:act': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-act', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:observe': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-observe', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:extract': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'launch:screenshot': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', fullPage: 'boolean', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-screenshot', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:screenshot': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', fullPage: 'boolean', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-screenshot', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'launch:tabs': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', branch: 'string', url: 'nullableString', destinationOrigin: 'nullableString', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-tabs', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:tabs': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', branch: 'string', url: 'nullableString', destinationOrigin: 'nullableString', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-tabs', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['browserVariant', 'operation', 'record', 'mode']),
+  }),
+  'B-WEB': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      // ROOT 02:17: same-named required 'string' — the mint carries the
+      // snapshot losslessly via the existing canonicalJsonStringify (observed
+      // branches, every ID/null, searchOrigin key-absence all preserved byte-
+      // exact). Not a new object kind; nothing moved out of the plan.
+      providerIdentityAtClassify: 'string',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'fetch-exact-url': Object.freeze({
+          adds: Object.freeze({ url: 'string', destinationOrigin: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'search-queries': Object.freeze({
+          adds: Object.freeze({ queriesSummary: 'stringArray', queryCount: 'nonNegativeInt', destinationOrigin: 'string', providerOriginSource: 'string' }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'providerIdentityAtClassify']),
+  }),
   'B-WRITE': Object.freeze({
+    // A5M2-G3 REAL-GAP card (2026-10-25): the write plan is EXISTENCE-
+    // HONEST — existence is unknowable at pure classify, so the approved
+    // target states the LAW both outcomes obey (the reviewed r16 existing-
+    // file closure; the new FD-bound O_EXCL create closure) instead of the
+    // old `existingFileOnly: true` promise, which was FALSE for any call
+    // whose approval would create. `directoryCreation: false` is the
+    // closed-effect-set fact (I:tool-invoke + F(write exact file) only —
+    // mkdir lives outside the grant; disclosed deviation from the native
+    // mkdir-recursive spelling).
     required: Object.freeze({
       familyId: 'string',
       adapterRevision: 'nonNegativeInt',
@@ -1276,25 +1447,184 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
       realmId: 'string',
       canonicalTarget: 'string',
       contentFingerprint: 'string',
-      existingFileOnly: 'boolean',
+      existingFileLaw: 'string',
+      newFileLaw: 'string',
+      directoryCreation: 'boolean',
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
   }),
-  // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten; the lane
-  // module that produces this claim is
-  // src/plugin/live/governed-families/g1-surface-adapters.mjs, records
-  // 83/84/85/87/88 - every B-CONTROL target is the trusted TARGETS config
-  // envelope, minted as FLAT LEAVES one-for-one at classify). These fields are
-  // CONFIG facts the mount provides and the model can never supply
-  // (closedRootCheck law); no resource-derived truth rides here, so
-  // currentFields is what THIS call's binding/member/realm facts can restate.
+  // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten, then the
+  // root LIMITED BUILD ORDER 2026-10-25: the four self-governance records
+  // 83/84/87/88 (plus the 85 read row) proceed under the authorized Alpha5
+  // tool scope - the strict variant 7529218e5 §5 named the closing change
+  // explicitly ("request identity + action facts INTO the target"); this
+  // entry IS that change, closed at the ORIGINAL REAL TARGET'S FULL VALUES
+  // - no dropped values, no digest/summary work-around. The lane module that
+  // produces this claim is
+  // src/plugin/live/governed-families/g1-surface-adapters.mjs (records
+  // 83/84/85/87/88; the B-CONTROL mint side). The five trusted TARGETS
+  // config leaves ride FLAT one-for-one (the signed 7529218e5 floor -
+  // CONFIG facts the mount provides and the model can never supply); the
+  // request identity and action facts now ride the DISCRIMINATED variant
+  // group, keyed by the minted own-key leaf `controlRecord` (the B-INSPECT
+  // variant grammar, reused - no new table kind). Optional argument leaves
+  // ride the sanctioned REVIEWED ENCODING: the full value's canonical JSON,
+  // or the literal 'absent' when the caller omitted it - never a removed
+  // key, never a hash. The mint side stamps the B-CONTROL family adapter
+  // revision 8 (A5_G1_CONTROL_ADAPTER_REVISION): the encoding digest moved,
+  // so any earlier B-CONTROL-era approval is EXPLICITLY stale - retired
+  // encodings are never translated, and the other G1 families keep 7.
+  // currentFields: what THIS call's binding/member/realm facts restate.
+  // A5-M2 B-EDIT (root FS-EDIT card 2026-10-25, the write leaf's sibling):
+  // the edit plan is the M-02 pre-booked shape — the approved target carries
+  // the PAIRED read law ("edit/replace 另需 read effect；配对 read effect
+  // 走同一受治理读臂, 不得另起弱读面", quoted verbatim into the arm's
+  // readEffectLaw law-fact) plus the existence-honest `creationPossible:
+  // false` (the edit NEVER creates; an absent target is a typed closure
+  // refusal) and the echo law (before/after ride ONLY under the paired read
+  // effect — M-02's condition on the before/after face). Producing module:
+  // src/plugin/live/governed-families/edit.mjs. No new kinds, no new
+  // ledger; currentFields is the write leaf's trusted trio, unmoved.
+  'B-EDIT': Object.freeze({
+    required: Object.freeze({
+      familyId: 'string',
+      adapterRevision: 'nonNegativeInt',
+      operation: 'string',
+      realmId: 'string',
+      canonicalTarget: 'string',
+      oldFingerprint: 'string',
+      newFingerprint: 'string',
+      replaceAll: 'boolean',
+      creationPossible: 'boolean',
+      editFileLaw: 'string',
+      readEffectLaw: 'string',
+      echoLaw: 'string',
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
+  }),
+  // A5M2 FS-EDIT card 2026-10-25 PART D (root continuation card): the
+  // str_replace_editor family rides the B-INSPECT variants/discriminant
+  // template — ONE command-keyed closed map, four groups. The discriminant
+  // `sreVariant` is a required 'string' leaf (the validator's own law);
+  // each group adds ONLY the law-facts its shipped closure branch actually
+  // carries (post-consume-sre.ts). creationPossible is the existence-honest
+  // required leaf every branch states; the card law "creationPossible 仅
+  // create 组 true" rides GRAMMAR-side as a BOUND law leaf per group (the
+  // validator only lets adds leaves bind, so the literal is a string law:
+  // exactly ONE group binds a creation law, the other three bind the
+  // never-creates law — paired constants, not arbitrary strings). The
+  // read-carrying groups (view/str_replace/insert) carry M-02's pre-booked
+  // paired-read line and the echo law; the create group asks NO read and
+  // echoes NOTHING.
+  'B-SRE': Object.freeze({
+    required: Object.freeze({
+      familyId: 'string',
+      adapterRevision: 'nonNegativeInt',
+      operation: 'string',
+      realmId: 'string',
+      canonicalTarget: 'string',
+      sreVariant: 'string',
+      creationPossible: 'boolean',
+    }),
+    variant: Object.freeze({
+      leaf: 'sreVariant',
+      by: Object.freeze({
+        view: Object.freeze({
+          adds: Object.freeze({ viewRange: 'string', maxOutputChars: 'nonNegativeInt', viewLaw: 'string', readEffectLaw: 'string', echoLaw: 'string', neverCreatesLaw: 'string' }),
+          binds: Object.freeze({ neverCreatesLaw: 'this B-SRE branch never creates: an absent target is a typed refusal inside the closure, zero creation (the write row existence-honest law); creationPossible false' }),
+        }),
+        create: Object.freeze({
+          adds: Object.freeze({ fileTextFingerprint: 'string', createFileLaw: 'string', creationLaw: 'string' }),
+          binds: Object.freeze({ creationLaw: 'create is the ONLY B-SRE branch whose reviewed law can bring a file into being (O_EXCL through the verified final-parent fd); a present target loses with zero bytes; creationPossible true' }),
+        }),
+        str_replace: Object.freeze({
+          adds: Object.freeze({ oldFingerprint: 'string', newFingerprint: 'string', strReplaceLaw: 'string', readEffectLaw: 'string', echoLaw: 'string', neverCreatesLaw: 'string' }),
+          binds: Object.freeze({ neverCreatesLaw: 'this B-SRE branch never creates: an absent target is a typed refusal inside the closure, zero creation (the write row existence-honest law); creationPossible false' }),
+        }),
+        insert: Object.freeze({
+          adds: Object.freeze({ newStrFingerprint: 'string', insertLine: 'nonNegativeInt', insertLaw: 'string', readEffectLaw: 'string', echoLaw: 'string', neverCreatesLaw: 'string' }),
+          binds: Object.freeze({ neverCreatesLaw: 'this B-SRE branch never creates: an absent target is a typed refusal inside the closure, zero creation (the write row existence-honest law); creationPossible false' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
+  }),
   'B-CONTROL': Object.freeze({
     required: Object.freeze({
+      controlRecord: 'string',
       trustedMemberAgentId: 'string',
       trustedSessionHeaderId: 'string',
       trustedRealmId: 'string',
       trustedOwner: 'string',
       trustedProfileId: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'controlRecord',
+      by: Object.freeze({
+        // 83 team_request_control - the request identity (requestToken) and
+        // the action facts (kind/targetInstanceId/actionName) ride the
+        // target at full value; toolName/summary are OPTIONAL on the lane
+        // face (packages/tools requestControlSpec), so they ride as the
+        // reviewed-encoding string ('absent' when omitted).
+        'request-control': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            requestKind: 'string',
+            requestTargetInstanceId: 'string',
+            requestActionName: 'string',
+            requestToolName: 'string',
+            requestSummary: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        // 84 team_resolve_control - the case identity (requestId) and the
+        // decision ride the target; note is OPTIONAL (reviewed encoding).
+        'resolve-control': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            requestCaseId: 'string',
+            requestDecision: 'string',
+            requestNote: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        // 85 team_list_pending_control (the read row the 03:05 closed-key
+        // hand-over arms): the requestToken identity rides the target;
+        // limit is OPTIONAL (reviewed encoding).
+        'list-pending': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            requestLimit: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        // 87 team_grant_permission / 88 team_revoke_permission - the
+        // permission-subject instance and the rules structure ride the
+        // target: rules is REQUIRED on the lane face and rides the full
+        // value's canonical JSON under the reviewed encoding (no new table
+        // kind, no digest).
+        'grant-permission': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            permissionTargetInstanceId: 'string',
+            permissionRules: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'revoke-permission': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            permissionTargetInstanceId: 'string',
+            permissionRules: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+      }),
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
@@ -1359,6 +1689,255 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
       }),
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
+  }),
+  // A5M2-G3-WIRE B-TERMINAL (root 20:38 闭表补齐; the lane module is
+  // src/plugin/live/governed-families/g3-fsproc-adapters.mjs over the pinned
+  // 639 terminal faces — six verbs, one per-open controlled plan). The
+  // durable claim is the adapter CLASSIFY manifest read as FLAT LEAVES
+  // (the B-CONTROL mint law): the wiring's a5G3PaTargetFlat maps every
+  // admitted target leaf one-for-one at FULL VALUE — root 21:07 全值契约:
+  // the approvedPlan members, the process envelope and the output window
+  // ride the row under the sanctioned REVIEWED ENCODING (a string leaf
+  // carrying the canonical JSON of the original value, 'absent' for a
+  // null/missing one — see the wiring helper; no new table kind). The
+  // digest-only re-verification law is UNCHANGED (the digest rides beside
+  // the full values and the entry still re-verifies it against the actual
+  // launch). Snapshot wobble stays out (service status detail, the static
+  // backgroundJobTarget literal, optional caller cwd/name): the service
+  // recheck owns those, the durable row never restates them.
+  'B-TERMINAL': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      toolName: 'string',
+      realmId: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'pty-spawn': Object.freeze({
+          adds: Object.freeze({
+            backendPublicType: 'string',
+            backendRegistrationId: 'string',
+            backendIncarnation: 'string',
+            processEnvelopeJson: 'string',
+            perOpenCallId: 'string',
+            approvedEnvelopeDigest: 'string',
+            // 全值契约 (root 21:07): the approved controlled plan rides at
+            // full value beside its digest under the reviewed encoding.
+            planArgvJson: 'string',
+            planExecutableJson: 'string',
+            planArgv0Json: 'string',
+            planCwd: 'string',
+            planRows: 'nonNegativeInt',
+            planCols: 'nonNegativeInt',
+            planGraceMs: 'nonNegativeInt',
+            planTerminalType: 'string',
+            planEnvJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'stdin-write': Object.freeze({
+          adds: Object.freeze({
+            ptySessionId: 'string',
+            ptyIncarnation: 'string',
+            effectiveSubmit: 'boolean',
+            background: 'boolean',
+            inputDigest: 'string',
+            inputBytes: 'nonNegativeInt',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'output-read': Object.freeze({
+          adds: Object.freeze({
+            ptySessionId: 'string',
+            ptyIncarnation: 'string',
+            // 全值契约 (root 21:07): the window travels at full value under
+            // the reviewed encoding ('absent' = the unconstrained read).
+            offsetJson: 'string',
+            countJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'signal': Object.freeze({
+          adds: Object.freeze({ ptySessionId: 'string', ptyIncarnation: 'string', signalName: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'close': Object.freeze({
+          adds: Object.freeze({ ptySessionId: 'string', ptyIncarnation: 'string', settlementEvidence: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'list': Object.freeze({
+          adds: Object.freeze({ ownerScoped: 'boolean' }),
+          binds: Object.freeze({ ownerScoped: true }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
+  }),
+  /* A5M2-G3-LSP-WIRE B-LSP (root 2026-10-24 LSP REAL-OWNER card via center;
+   * the lane module is packages/runtime/src/plugin/live/governed-families/
+   * g3-lsp-wiring.mjs — its a5LspPaTargetFlat is this entry's counterpart,
+   * the delegate arm is the COMMITTED fsproc adapter createGovernedLspArm
+   * (681568c84, imported as-is; the 8e62 untouchable law).
+   * THE FIXED SCOPE (root ruling, zero-code refusal not accepted): EXACTLY
+   * the four navigation operations at the tool-lsp pin (LSP_OPERATIONS) —
+   * goToDefinition / findReferences / goToImplementation / hover — with the
+   * model-facing ONE-BASED UTF-16 coordinates, the host workspace handling
+   * and the capability ceilings PRESERVED (the captured native body owns
+   * them; nothing here degrades them) and explicitly NO diagnostics /
+   * executeCommand: the closed `by` set IS the refusal — a fifth spelling
+   * selects no group and denies at the discriminant law.
+   * The §5.2 target facts ride as reviewed-encoding leaves per the root
+   * 21:07 全值契约: canonical-JSON string leaves ('absent' = null/missing)
+   * at FULL VALUE — server binary identity + policy generation (a realm
+   * disposes on policy change; the arm's recheck names the movement), the
+   * document kind/canonical-locator/revision (the approval-window snapshot
+   * law: a moved revision refuses at the entry), the bound workspace root,
+   * and the coordinates at full value as nonNegativeInt (the arm's ONE-BASED
+   * classify law keeps them >= 1 — 'absent'/zero never passes the arm).
+   * All four groups carry the SAME shape and the empty binding: navigation
+   * is READ-only (the effect grammar carries the one read leg; there is no
+   * write, no launch, no diagnostics lane to bind). currentFields restates
+   * exactly what THIS call's binding/member/realm facts can re-check. */
+  'B-LSP': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      toolName: 'string',
+      realmId: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'goToDefinition': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'findReferences': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'goToImplementation': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'hover': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
+  }),
+  /* A5M2-G3 B-PTC run_code (root 04:4x throughput card; 闭表补齐 for this
+   * family — the counterpart of the wiring-side flat view
+   * src/plugin/live/governed-families/g3-ptc-wiring.mjs a5G3PtcPaTargetFlat,
+   * MINTED from the adapter's own CLASSIFY manifest bytes, g3-fsproc-
+   * adapters.mjs validateRunCode). The single `program-run` variant carries
+   * the measured target at FULL VALUE: the interpreter identity pair, the
+   * EVIDENCED effective envelope pair (mode + the config-declared
+   * enforcement census — the row states exactly what the supply face
+   * answers, the arm refuses the run when a fact stops being evidenced),
+   * the child-channel facts (capabilityList as a closed stringArray, its
+   * digest, and the two budget leaves under the ACTUAL mapping — root
+   * final limited ruling: canonical-JSON nullableString, a number ONLY
+   * when a supplier really observes it, the total-count cap carrying the
+   * honest NOT-IMPLEMENTED disclosure constant verbatim; the old
+   * nonNegativeInt mandatory reading was adapter-side over-specification
+   * and is WITHDRAWN), the code/
+   * description digests, and the escalation request as MANIFEST DATA
+   * (nullableString: null = no request; the ANSWER lives only on the
+   * ptc-escalation-row bridge, never here). Object leaves (timeoutPolicy)
+   * ride under the sanctioned 受审编码 canonical-JSON string ('absent' =
+   * null), the B-TERMINAL reviewed-encoding precedent — no new kind. The
+   * envelope/budget/channel DRIFT law stays the adapter's own recheckTarget
+   * at the entry; currentFields names only the pure-data identity legs a
+   * CURRENT call restates, mirroring B-TERMINAL. ENABLEMENT IS NOT THIS
+   * TABLE: governance mounts on the PUBLIC tools/pre-execute seam
+   * (the reserved native run_code is host-UNREGISTRABLE — index.ts:1080);
+   * nothing here claims Host verification. */
+  'B-PTC': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      toolName: 'string',
+      realmId: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'program-run': Object.freeze({
+          adds: Object.freeze({
+            interpreterRuntimeIdentity: 'string',
+            interpreterLanguage: 'string',
+            envelopeMode: 'string',
+            envelopeEnforcement: 'string',
+            timeoutPolicyJson: 'string',
+            capabilityList: 'stringArray',
+            capabilityCount: 'nonNegativeInt',
+            channelDigest: 'string',
+            maxParallelSubCalls: 'nullableString',
+            runDispatchBudget: 'nullableString',
+            lineageFacts: 'string',
+            codeDigest: 'string',
+            descriptionDigest: 'string',
+            timeoutMsJson: 'string',
+            requestedSandboxMode: 'nullableString',
+            justificationDigest: 'nullableString',
+            effectDelta: 'stringArray',
+          }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
   }),
   /* A5-M2 B-SCHEDULE (root 19:06: rule mapping lands on the ALREADY-APPROVED
    * 18:42 structure; the two kinds are signed). The MINT this entry pairs

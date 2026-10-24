@@ -460,9 +460,10 @@ describe('a5m2-schedule-wiring — the controlled list/delete wiring over the re
   })
 
   describe('(g) GRAMMAR-STATE PIN: mount+registration+consumption are wired; the B-SCHEDULE table is REGISTERED at this base — both minted shapes PASS the signed rule (the mint to durable-pending path is open)', () => {
-    it('PA_FAMILY_TARGET_RULES answers the ten landed families (re-anchored per root 23:09: the joint batch landed B-SUBAGENT at int cc6a0f643 — ten by name; B-TERMINAL is STILL not among them — G3 BLOCKED, spawn entry-scoped) and validatePaFamilyTarget ACCEPTS both minted shapes: the lossless eleven leaves with taskId null (list) and the exact validated id (delete)', async () => {
-      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
-      expect(PA_FAMILY_TARGET_RULES['B-TERMINAL' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
+    it('PA_FAMILY_TARGET_RULES answers the fifteen landed families (re-anchored at the joint merge: the int batch landed B-SUBAGENT at cc6a0f643 — ten by name; B-TERMINAL JOINS from the a5m2-wire-g3 additive entry, root 20:38 闭表补齐, riding directly after B-INSPECT) and validatePaFamilyTarget ACCEPTS both minted shapes: the lossless eleven leaves with taskId null (list) and the exact validated id (delete)', async () => {
+      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'] /* census sync (this lane's B-PTC round): B-BROWSER/B-WEB rode in on the G2 re-anchor merge and these two pins never refreshed (pre-existing int drift, reported); B-PTC joins after B-TERMINAL per root 04:4x 闭表补齐 */)
+      expect(PA_FAMILY_TARGET_RULES['B-TERMINAL' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
+      expect(PA_FAMILY_TARGET_RULES['B-LSP']).toBeDefined()
       expect(PA_FAMILY_TARGET_RULES['B-SUBAGENT']).toBeDefined()
       const world = makeWorld()
       const wiring = unwrap(WIRING_MODULE.createScheduleWiring(world.base))

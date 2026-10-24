@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/packages/runtime
+
+ ✓ test/a5m2-g2-wire-c1.test.ts (24 tests) 524ms
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  23:40:13
+   Duration  3.38s (transform 2.14s, setup 0ms, import 2.72s, tests 524ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

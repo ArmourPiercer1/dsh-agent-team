@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ❯ test/a5m2-g6-pa-supply-c1.test.ts (10 tests | 2 failed) 104ms
+     ✓ the block's identity bytes are pinned (revision, family, closed codes) 2ms
+     ✓ closed input keys: an unknown key is refused naming the exact face (the wiring bridge's known-input law, mirrored at the SUPPLY side) 1ms
+     ✓ PA-MOUNT ABSENT refuses the whole assembly: deployment evidence never exists for a mount the PA verifier cannot resolve 0ms
+     ✓ published mount → assembled supply: frozen envelope + frozen supply; the presented ports/functions ride BY REFERENCE, unfrozen (this block never freezes the owner's objects) 1ms
+     ✓ maxSearchResults presence-omission on the SUPPLY side: absent cap = key GONE (hasOwnProperty false, in-probe false); present cap travels its value 1ms
+     ✓ the PLANE-GATE minimums are mirrored exactly: blank providerId, non-record ports, non-callable caller/ceiling, searchBackend-less declaredMount each refuse with INPUT_INVALID 1ms
+     ✓ mount-identity mismatch (defense in depth, the readPaCallFactsForCall law): the resolved mount answering a DIFFERENT instanceId refuses the assembly 0ms
+     ✓ lifecycle: revoke by identity returns the world to mount-absent — re-assembly then refuses (public queries are the ONE truth, no cache in this block) 0ms
+     × NON-SEARCH real mint (session_event_read): the adapter's own classify() carries NO maxSearchResults key — hasOwnProperty false, ownKeys exclude it, in-probe false (the PA validator's actual probe) — while the supply-assembled caller/target facts ride the manifest 95ms
+     × SEARCH real mint (session_search): the cap carried by the ASSEMBLED supply (7) rides the REAL mint with the key PRESENT — supply-side omission law and mint-side omission law close the same circle 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g6-pa-supply-c1.test.ts > a5m2-g6 pa-supply — REAL mint legs: the assembled supply rides the adapter's own targetManifest (zero hand-written manifests) > NON-SEARCH real mint (session_event_read): the adapter's own classify() carries NO maxSearchResults key — hasOwnProperty false, ownKeys exclude it, in-probe false (the PA validator's actual probe) — while the supply-assembled caller/target facts ride the manifest
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1161:11
+
+ ❯ compose test/a5m2-g6-pa-supply-c1.test.ts:242:14
+ ❯ test/a5m2-g6-pa-supply-c1.test.ts:250:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a5m2-g6-pa-supply-c1.test.ts > a5m2-g6 pa-supply — REAL mint legs: the assembled supply rides the adapter's own targetManifest (zero hand-written manifests) > SEARCH real mint (session_search): the cap carried by the ASSEMBLED supply (7) rides the REAL mint with the key PRESENT — supply-side omission law and mint-side omission law close the same circle
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1161:11
+
+ ❯ compose test/a5m2-g6-pa-supply-c1.test.ts:242:14
+ ❯ test/a5m2-g6-pa-supply-c1.test.ts:266:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 passed (10)
+   Start at  05:36:23
+   Duration  623ms (transform 314ms, setup 0ms, import 378ms, tests 104ms, environment 0ms)
+
