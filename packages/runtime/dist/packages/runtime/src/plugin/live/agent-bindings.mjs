@@ -4462,6 +4462,12 @@ export function createAgentBindings(deps) {
             ...(a5SpawnWiring === null ? {} : { spawn: a5SpawnWiring }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
             ...(a5ScheduleInject === null ? {} : { schedule: a5ScheduleInject }),
+            // A5M2 G3 B-TERMINAL (root 19:08; the narrow-audit fix on the
+            // merge): the terminal family's row in the shared backends union.
+            // The guard above already names a5G3TerminalInject; WITHOUT this
+            // row the plane never receives the deployment evidence and the
+            // post-publish registration reads no wiring face -> mount-refused.
+            ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
             // A5M2-B-TEAM-WIRE (this lane's row in the shared backends union).
             ...(a5TeamOpsInject === null ? {} : { teamOps: a5TeamOpsInject }),
             // A5-M2 B-SUBAGENT-CONTROL-WIRING (this lane's row in the shared
