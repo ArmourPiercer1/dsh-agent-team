@@ -90,6 +90,7 @@ export function createScheduleBindAfterDef(deps) {
   const disposers = []
   const originalDefs = new Map() // name -> the ORIGINAL definition object (never copied, never replaced)
   let bound = false
+  let bindStarted = false
   let disposed = false
   let gateOpenedBy = null // the gate's {ok:true} proof while the pair is closing (audit line)
   const note = (event, extra) => deps.observe?.({ event, ...(extra ?? {}) })
@@ -125,10 +126,14 @@ export function createScheduleBindAfterDef(deps) {
   /** PER-DISPATCH identity law (card 3): CURRENT def object, CURRENT execute,
    *  CURRENT service object and the BOUND list/delete METHOD identities. */
   function verifyLive(agent, name, bindMethods) {
+    // bindMethods.executes: name -> the execute reference SAVED at bind time.
     const current = deps.readToolDefinition(name, agent)
     const def = originalDefs.get(name)
-    if (current !== def || current?.execute !== def?.execute) {
-      throw breakpoint('native-definition-drift', 'the CURRENT native def/execute to still BE the bound original', 'the def or its execute changed', `per-dispatch:${name}`)
+    if (current !== def) {
+      throw breakpoint('native-definition-drift', 'the CURRENT native def to still BE the bound original object', 'a different def object answered', `per-dispatch:${name}`)
+    }
+    if (current.execute !== bindMethods.executes.get(name)) {
+      throw breakpoint('native-execute-drift', `the def's execute to still be the bound reference (captured at bind time)`, 'the def object now carries a DIFFERENT execute', `per-dispatch:${name}`)
     }
     // The feed is re-asked HERE (root ② law: a bind-time constant compared
     // against itself proves nothing) — the CURRENT live object is the answer.
@@ -147,7 +152,11 @@ export function createScheduleBindAfterDef(deps) {
       || typeof serviceAtBind.list !== 'function' || typeof serviceAtBind.delete !== 'function') {
       throw breakpoint('service-shape', 'full ScheduleService-shaped live handle (list/delete)', String(serviceAtBind), 'execute/live service identity')
     }
-    const bindMethods = Object.freeze({ service: serviceAtBind, list: serviceAtBind.list, delete: serviceAtBind.delete })
+    const bindMethods = Object.freeze({ service: serviceAtBind, list: serviceAtBind.list, delete: serviceAtBind.delete, executes: new Map() })
+    // The bind-time EXECUTE references (root residual 4): current.execute
+    // compared against def.execute on the SAME object is a tautology; the
+    // comparison runs against these SAVED references instead.
+    for (const [name, def] of originalDefs.entries()) bindMethods.executes.set(name, def.execute)
     // (1) CANONICAL GATE FIRST: the wiring's family registration + arm build
     // must answer {ok:true} BEFORE this module opens any waterfall face.
     // Any failure needs no pair-closing here — none exists yet (law A).
@@ -188,50 +197,76 @@ export function createScheduleBindAfterDef(deps) {
           throw breakpoint('plane-edge-unwired', 'the wiring to supply the REAL plane-edge consume (pa.open→pa.edge) at bind time', 'no consumePaAtBody dep', 'tools/execute body boundary')
         }
         const def = originalDefs.get(exec.name)
-        verifyLive(agent, exec.name, bindMethods)
-        let answer
+        // THE ONE-FLIGHT TOKEN (root residual 3): open→edge does NOT arm the
+        // plane's governedTokenLedger itself (the ROWS do that around it) —
+        // so the flight reuses the SAME ledger through the plane's narrow
+        // paTokenLedger face: take BEFORE any PA entry, settle in the finally
+        // that wraps the WHOLE governed flight (PA + next). A replayed token
+        // refuses with zero PA entry; no new ledger exists anywhere here.
+        const ownsFlight = deps.takePaToken
+          ? await Promise.resolve(deps.takePaToken(exec)) === true
+          : true
+        if (!ownsFlight) {
+          throw breakpoint('pa-token-replay', 'this execution token to own its FIRST and ONLY governed flight (the plane ledger answers it)', 'the token already owns a flight (in-flight or settled — never re-armed)', 'governedTokenLedger law')
+        }
         try {
-          answer = await deps.consumePaAtBody(exec, def)
-        } catch (error) {
-          note('pa-consume-fault', { name: exec.name, detail: String(error?.message ?? error).slice(0, 140) })
-          throw breakpoint('pa-consume-fault', 'the plane-edge walk to answer cleanly', `threw ${String(error?.message ?? error).slice(0, 140)}`, 'tools/execute body boundary')
+          verifyLive(agent, exec.name, bindMethods)
+          let answer
+          try {
+            answer = await deps.consumePaAtBody(exec, def)
+          } catch (error) {
+            note('pa-consume-fault', { name: exec.name, detail: String(error?.message ?? error).slice(0, 140) })
+            throw breakpoint('pa-consume-fault', 'the plane-edge walk to answer cleanly', `threw ${String(error?.message ?? error).slice(0, 140)}`, 'tools/execute body boundary')
+          }
+          // THE PROOF IS NEVER A BOOLEAN (root verbatim: 不能bool true):
+          if (typeof answer !== 'object' || answer === null) {
+            throw breakpoint('pa-consume-proof-invalid', 'the raw plane-edge answer OBJECT ({kind:"allow", consumedProof:{grant:{grantId}}})', `answered ${typeof answer} (${String(answer)})`, 'tools/execute body boundary')
+          }
+          if (answer.cancelled === true) {
+            throw breakpoint('pa-cancelled', 'no cancellation before the body (the grant stays unspent and is never replayed)', `cancelled at the ${answer.stage === 'edge' ? 'execution edge' : 'PA open'} stage`, 'tools/execute body boundary')
+          }
+          if (answer.kind !== 'allow') {
+            throw breakpoint('pa-edge-refused', 'the execution edge to answer kind:"allow"', `kind ${String(answer.kind)} code ${String(answer.code ?? 'n/a')}`, 'tools/execute body boundary')
+          }
+          const proof = answer.consumedProof
+          if (!isRecord(proof) || !isRecord(proof.grant) || typeof proof.grant.grantId !== 'string') {
+            throw breakpoint('pa-consume-proof-missing', 'an allow answered WITH its one-shot consume witness (consumedProof.grant.grantId) — never a self-attested consumption', 'allow without the witness', 'tools/execute body boundary')
+          }
+          // POST-AWAIT recheck (old adapter body-entry bounds, carried): the
+          // consumed grant is ledger truth, NEVER rolled back; the body is
+          // entered ZERO times on dispose or a post-consume abort.
+          if (disposed) {
+            throw breakpoint('disposed-during-consume', 'the pair to still stand after the consume', 'the bind closed during the PA await (consumption stays settled, body never entered)', 'tools/execute post-consume')
+          }
+          if (exec.signal?.aborted === true) {
+            throw breakpoint('cancelled-before-body', 'no abort between the consume and the body (the consumption is settled fact and is never rolled back)', 'signal aborted after the edge', 'tools/execute post-consume')
+          }
+          verifyLive(agent, exec.name, bindMethods)
+          // (3) EXACTLY ONE next(). THE TRUE-BOUNDARY ORDERING LAW (root
+          // residual 5, measured): cordis composes waterfall listeners
+          // OUTERMOST-FIRST in subscription order (vendor/cordis/src/events.ts
+          // :229-243 `cbs.shift()` chain; later listener = MORE INNER), and
+          // this module registers at the EARLIEST moment the real ACTIVE tuple
+          // exists (the bind-moment), so every already-registered downstream
+          // hook has already run its pre-await before the checks above — the
+          // verification above IS the last moment before the true native for
+          // that chain. A hook registering AFTER this bind would run INSIDE —
+          // honestly disclosed as the ordering bound of any hook route; it is
+          // OBSERVED below at result settlement, never papered over by
+          // refusing an already-executed body (zero side effects were never a
+          // post-next claim). The flight's finally settles the token either
+          // way.
+          const result = await next()
+          if (disposed) note('post-boundary-pair-closed', { name: exec.name, detail: 'the pair closed while the inner chain ran; the body already ran — the settled result passes through, the fact is OBSERVED (post-next refusal was never a zero-side-effect boundary)' })
+          const liveAfter = deps.scheduleServiceFeed?.()
+          if (liveAfter !== bindMethods.service || liveAfter?.list !== bindMethods.list) note('post-boundary-service-drift', { name: exec.name, detail: 'the live service face moved during the inner chain; OBSERVED, the settled result is not retroactively refused' })
+          return result
+        } finally {
+          // ONE settle for the WHOLE governed flight (take→PA→next→finally),
+          // also on every refusal path after the take: a refused flight's
+          // token is closed, never left armed, never re-armed.
+          try { deps.settlePaToken?.(exec) } catch { /* the ledger close is best-effort; the plane ledger entry stays settled-safe */ }
         }
-        // THE PROOF IS NEVER A BOOLEAN (root verbatim: 不能bool true):
-        if (typeof answer !== 'object' || answer === null) {
-          throw breakpoint('pa-consume-proof-invalid', 'the raw plane-edge answer OBJECT ({kind:"allow", consumedProof:{grant:{grantId}}})', `answered ${typeof answer} (${String(answer)})`, 'tools/execute body boundary')
-        }
-        if (answer.cancelled === true) {
-          throw breakpoint('pa-cancelled', 'no cancellation before the body (the grant stays unspent and is never replayed)', `cancelled at the ${answer.stage === 'edge' ? 'execution edge' : 'PA open'} stage`, 'tools/execute body boundary')
-        }
-        if (answer.kind !== 'allow') {
-          throw breakpoint('pa-edge-refused', 'the execution edge to answer kind:"allow"', `kind ${String(answer.kind)} code ${String(answer.code ?? 'n/a')}`, 'tools/execute body boundary')
-        }
-        const proof = answer.consumedProof
-        if (!isRecord(proof) || !isRecord(proof.grant) || typeof proof.grant.grantId !== 'string') {
-          throw breakpoint('pa-consume-proof-missing', 'an allow answered WITH its one-shot consume witness (consumedProof.grant.grantId) — never a self-attested consumption', 'allow without the witness', 'tools/execute body boundary')
-        }
-        // POST-AWAIT recheck (old adapter body-entry bounds, carried): the
-        // consumed grant is ledger truth, NEVER rolled back; the body is
-        // entered ZERO times on dispose or a post-consume abort.
-        if (disposed) {
-          throw breakpoint('disposed-during-consume', 'the pair to still stand after the consume', 'the bind closed during the PA await (consumption stays settled, body never entered)', 'tools/execute post-consume')
-        }
-        if (exec.signal?.aborted === true) {
-          throw breakpoint('cancelled-before-body', 'no abort between the consume and the body (the consumption is settled fact and is never rolled back)', 'signal aborted after the edge', 'tools/execute post-consume')
-        }
-        verifyLive(agent, exec.name, bindMethods)
-        // (3) EXACTLY ONE next(): the downstream around chain (their awaits)
-        // runs INSIDE this await, then the true native body; the boundary
-        // continues after it (addendum B).
-        const result = await next()
-        if (disposed) {
-          throw breakpoint('disposed-around-chain', 'the pair to stand for the whole downstream around chain', 'the bind closed while downstream hooks/body ran — the settled result is NOT accepted', 'tools/execute around-chain')
-        }
-        const liveAfter = deps.scheduleServiceFeed?.()
-        if (liveAfter !== bindMethods.service || liveAfter?.list !== bindMethods.list) {
-          throw breakpoint('service-identity-drift-post-body', 'the bound live face to stand through the whole chain', 'the service changed while downstream ran — the result is not accepted', 'tools/execute around-chain')
-        }
-        return result
       }))
       // post-execute: ACCEPT (observe only) — the owning registry normalizes
       // through its output contract (:1864-1884); replacing is out of scope.
@@ -265,20 +300,24 @@ export function createScheduleBindAfterDef(deps) {
     for (let attempt = 0; attempt < attempts; attempt += 1) {
       if (disposed || bound) return
       originalDefs.clear()
-      let missing = false
+      let ready = false
       try {
         captureOriginalDefs(agent)
+        // The def face alone is NOT the tuple: readiness is the REAL Guard
+        // dispatcher-surface entry answering ACTIVE for THIS def identity
+        // (the same fields pa-mount-registry.mjs:430-441 reads). Absent =
+        // keep the pair closed and keep waiting (root residual 2).
+        ready = !([...originalDefs.entries()].some(([name, def]) => deps.nativeReady?.(name, def) !== true))
       } catch (error) {
         if (error?.breakpoint?.kind !== 'def-absent-post-created') throw error
-        missing = true
       }
-      if (!missing) {
+      if (ready) {
         await bindExecutions(agent)
         return
       }
       await wait(tickMs)
     }
-    throw breakpoint('def-never-appeared', `the ORIGINAL pair to become publicly visible within ${String(attempts)}×${String(tickMs)}ms (the published-def safe point)`, 'no def at the end of the bounded window', SCHEDULE_AFTER_DEF_BIND_POINTS.upstreamDefFirstAppears)
+    throw breakpoint('native-never-active', `the ORIGINAL pair to reach the REAL Guard surface as an ACTIVE binding for the bound def identity within ${String(attempts)}×${String(tickMs)}ms (published def + real tuple)`, 'def face and/or ACTIVE tuple never answered (pair stayed closed)', 'pa-mount-registry.mjs:451-459 bindingFamilyOf/entryOf law')
   }
 
   /** Start: NO capture at setup; the first read happens only post-created. */
@@ -287,8 +326,16 @@ export function createScheduleBindAfterDef(deps) {
       throw breakpoint('agent-unreadable', 'the exact member Agent object', String(runtimeAgent), 'bind target')
     }
     disposers.push(deps.subscribeAgentCreated(({ agent }) => {
-      if (agent !== runtimeAgent || bound || disposed) return
-      const run = bindAfterDefSafePoint(agent).catch((error) => {
+      if (agent !== runtimeAgent || bound || disposed || bindStarted) return
+      bindStarted = true
+      // THE SERIAL-QUEUE LAW (root residual 1, Host core/agent/src/index.ts:
+      // 549-554 `await ctx.serial(carrier,'agent/created',…)` + cordis serial
+      // awaits EACH listener in order): awaiting a poll HERE would block the
+      // registrar queued behind us — the def could then never appear. The
+      // handler therefore returns SYNCHRONOUSLY and the bounded safe point
+      // runs DETACHED: later registrars run, the pair stays CLOSED until the
+      // real ACTIVE tuple answers, and a final refusal arms the deny lane.
+      void bindAfterDefSafePoint(agent).catch((error) => {
         note('bind-refused', { detail: String(error?.message ?? error).slice(0, 220), breakpoint: error?.breakpoint ?? null })
         // In production the wiring owns the fail-closed DENY lane (typed,
         // zero-effect); re-throwing inside the host's awaited created announce
@@ -296,9 +343,6 @@ export function createScheduleBindAfterDef(deps) {
         if (deps.onBindRefused) deps.onBindRefused(error)
         else throw error
       })
-      // The created announce is AWAITED and serial (S1 timing law): the
-      // bounded safe-point wait rides that await, never a detached race.
-      return run
     }))
     note('awaiting-def', { law: 'no setup-time fetch; bind only at the published-def safe point' })
   }

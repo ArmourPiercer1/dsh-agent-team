@@ -5194,6 +5194,35 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
+      /** A5M2 B-SCHEDULE bind-after-def (root residual 3): a NARROW face over
+       *  the mount's ONE existing `governedTokenLedger` — the SAME Map the
+       *  todo/write/image/read/G1 rows share, under the SAME laws this file's
+       *  G1 rows state verbatim: a registry token (object|symbol only, never
+       *  a composed identity) spans exactly ONE governed flight; a taken
+       *  token is refused as a replay while in-flight AND after settled
+       *  (never re-armed); settle marks the flight terminal. NOT a new
+       *  ledger: no second Map, no durable state, mount-lifetime like every
+       *  row's use of it. Hook-route consumers (the bind-after-def wiring)
+       *  take BEFORE any PA entry and settle in the flight's finally — the
+       *  same take→PA→next→finally discipline the rows run inline. */
+      paTokenLedger: Object.freeze({
+        take: (token, correlation) => {
+          const tokenLike = (typeof token === 'object' && token !== null) || typeof token === 'symbol'
+          if (!tokenLike) return false
+          if (governedTokenLedger.has(token)) return false
+          governedTokenLedger.set(token, { correlation: String(correlation ?? 'hook-flight'), settled: false })
+          return true
+        },
+        settle: (token) => {
+          const tokenLike = (typeof token === 'object' && token !== null) || typeof token === 'symbol'
+          if (!tokenLike) return false
+          const prior = governedTokenLedger.get(token)
+          if (prior === undefined) return false
+          if (!prior.settled) governedTokenLedger.set(token, { correlation: prior.correlation, settled: true })
+          return true
+        },
+        peek: (token) => governedTokenLedger.get(token),
+      }),
       /** A5M2-G6 B-SESSION-QUERY: the session-query wiring face for THIS
        *  mount (omitted, NOT set to `undefined`, when the family is not
        *  deployed — the presence-decision law the hand-off faces obey). The

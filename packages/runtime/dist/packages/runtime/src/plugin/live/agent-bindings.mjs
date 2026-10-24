@@ -3528,13 +3528,36 @@ export function createAgentBindings(deps) {
           if (typeof deps.scheduleServiceFeed !== 'function') {
             throw refuseSchedule('the entry answers no schedule service feed — the production port has no supply face (the native TOOL face is NOT a service stand-in, root 19:17); mount the host schedule service or keep the gate closed')
           }
-          // Bind-scope state for the REAL supply (card #2): the arms the
-          // canonical gate builds, the bind-time placement feed it answers,
-          // and exactly the family keys the gate wrote (pair-close ledger-
-          // free bookkeeping — the durable ONE ledger stays the plane's).
+          // Bind-scope state for the REAL supply (card #2 + root re-review):
+          // the arms the canonical gate builds, the ORIGINAL defs' runtime
+          // identities (the ONLY keys the gate wrote), and exactly those
+          // family keys (pair-close bookkeeping — the durable ONE ledger
+          // stays the plane's own governedTokenLedger).
           const a5ScheduleArms = new Map()
-          const a5SchedulePlacement = new Map()
+          const a5ScheduleBound = new Map() // name -> definitionIdentityOf(ORIGINAL def)
           const a5ScheduleWrittenKeys = []
+          // THE REAL ACTIVE-TUPLE READER (root residual 2): the SAME guard
+          // dispatcher surface the pa-mount-registry trust read uses
+          // (pa-mount-registry.mjs bindingFamilyOf: surface.entryOf(name) →
+          // binding.definitionIdentity + status ACTIVE). NO private
+          // placement map: the feed answers ONLY while the live dispatcher
+          // carries the BOUND def as the ACTIVE binding under this name.
+          const a5ScheduleSurfaceEntry = (name) => {
+            const surface = a5p1Guard?.dispatcher?.surface
+            if (typeof surface?.entryOf !== 'function') return undefined
+            let entry
+            try {
+              entry = surface.entryOf(name)
+            } catch {
+              return undefined
+            }
+            const binding = entry?.binding
+            if (binding === null || typeof binding !== 'object') return undefined
+            if (binding.status !== 'ACTIVE') return undefined
+            if (typeof binding.bindingId !== 'string' || binding.bindingId.length === 0) return undefined
+            if (binding.definitionIdentity !== a5ScheduleBound.get(name)) return undefined
+            return binding
+          }
           const a5ScheduleBind = createScheduleBindAfterDef({
             readToolDefinition: (name, agent) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, agent) : undefined),
             subscribeAgentCreated: (fn) => {
@@ -3546,6 +3569,23 @@ export function createAgentBindings(deps) {
               : { on: (event, handler) => { const d = agentCtx.on(event, handler, { global: true }); return typeof d === 'function' ? d : () => {} } }),
             registerGuardFor: (agent) => (fn) => (typeof agent?.ctx?.tools?.guard === 'function' ? agent.ctx.tools.guard(fn) : undefined),
             scheduleServiceFeed: () => deps.scheduleServiceFeed(),
+            // Root residual 1/2: the safe point is ONLY complete when the
+            // live dispatcher surface carries the ORIGINAL def as the REAL
+            // ACTIVE tuple (the same entry the PA trust read will resolve);
+            // the created handler itself never blocks the serial queue.
+            nativeReady: (name, definition) => a5ScheduleBound.size > 0
+              ? a5ScheduleSurfaceEntry(name) !== undefined
+              : (a5p1Guard?.dispatcher?.surface?.entryOf?.(name)?.binding?.status === 'ACTIVE'
+                && a5p1Guard?.dispatcher?.surface?.entryOf?.(name)?.binding?.definitionIdentity === definitionIdentityOf(definition)),
+            takePaToken: (exec) => {
+              const ledger = a5PlaneValue?.paTokenLedger
+              if (typeof ledger?.take !== 'function') return false // no plane ledger = no flight (fail-closed)
+              return ledger.take(exec?.token, `plane-schedule:${a5PlaneRealmId}:${String(exec?.name ?? '?')}:${String(exec?.callId ?? '')}`)
+            },
+            settlePaToken: (exec) => {
+              const ledger = a5PlaneValue?.paTokenLedger
+              if (typeof ledger?.settle === 'function') ledger.settle(exec?.token)
+            },
             // REAL plane-edge supply (root limited-fix card #2): the SAME
             // a5PlaneValue.paAdmit closure the sibling families consume, the
             // EXISTING 11-leaf claim (adapter classify → mintTargetManifest →
@@ -3632,7 +3672,12 @@ export function createAgentBindings(deps) {
                 liveScheduleService: () => deps.scheduleServiceFeed(),
                 capturedAgent: runtimeAgent,
                 ScheduleInputError,
-                placementFeed: (name) => a5SchedulePlacement.get(name),
+                // The REAL authority answers, never a private map: the live
+                // dispatcher entry ONLY, and ONLY when it carries the bound
+                // ORIGINAL def as the ACTIVE tuple (root residual 2).
+                placementFeed: (name) => (a5ScheduleSurfaceEntry(name) === undefined
+                  ? undefined
+                  : Object.freeze({ definitionIdentity: a5ScheduleBound.get(name), realmId: a5PlaneRealmId })),
                 admit: async () => {
                   throw new Error('P_B_SCHEDULE_PRODUCTION_ADMIT_INERT — production B-SCHEDULE consumption is the bind-after-def plane-edge walk at the execute body boundary; a call reaching this seat is drift, not a route')
                 },
@@ -3673,7 +3718,7 @@ export function createAgentBindings(deps) {
                 }
               }
               for (const [name, arm] of arms) a5ScheduleArms.set(name, arm)
-              for (const entry of identities) a5SchedulePlacement.set(entry.name, Object.freeze({ definitionIdentity: entry.identity, realmId: a5PlaneRealmId }))
+              for (const entry of identities) a5ScheduleBound.set(entry.name, entry.identity)
               observations.push(`a5m2-schedule: REAL ARMS bound + family REGISTERED for ${sessionId} at the bind moment (runtime identities of the ORIGINAL defs; create/update NOT registered)`)
               return Object.freeze({ ok: true, arms: arms.size, families: identities.length })
             },
@@ -3686,7 +3731,7 @@ export function createAgentBindings(deps) {
                 a5ScheduleWrittenKeys.length = 0
               }
               a5ScheduleArms.clear()
-              a5SchedulePlacement.clear()
+              a5ScheduleBound.clear()
             },
             onBindRefused: (error) => {
               // Typed, zero-effect refusal (gate a/e law): the DENY lane only,
