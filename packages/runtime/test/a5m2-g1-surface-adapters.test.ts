@@ -107,7 +107,10 @@ type G1Row = {
   parameters: Record<string, unknown> | null
   definitionIdentity: string | null
   classify: (args: unknown, callId: string) => ClassifyResult
-  delegate: (plan: unknown, ctx?: { exec?: unknown }) => Promise<DelegateResult>
+  // REAL ctx contract of the consolidated card: exec rides always; the install
+  // lane adds consumeAfterGrant — a thunk answering with the PLANE's own admit
+  // verdict (any record; only ok === true governs, the adapter law).
+  delegate: (plan: unknown, ctx?: { exec?: unknown; consumeAfterGrant?: () => Promise<unknown> }) => Promise<DelegateResult>
   commitWitness?: (plan: unknown, witness: WitnessShape) => Record<string, unknown>
 }
 type G1RecordSpec = {
@@ -735,7 +738,7 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const md = makeManagerDouble()
     const order: string[] = []
     const face = {
-      installBundle: (spec: unknown, options: unknown) => {
+      installBundle: (spec: Parameters<typeof md.face.installBundle>[0], options: Parameters<typeof md.face.installBundle>[1]) => {
         order.push('enter')
         return md.face.installBundle(spec, options)
       },
