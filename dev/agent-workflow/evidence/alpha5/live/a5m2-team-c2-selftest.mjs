@@ -7,7 +7,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { zstdCompressSync, zstdDecompressSync } from 'node:zlib'
-import { decodeSessionLogFrames, remoteOutcome, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, blueprintRevisionOf, ensureTeamRootLive, teamReadState, teamLedgerPage, durableToolPairs, wireToolPairs, toolOutcomeOf, durableToolOutcome } from './a5m2-team-c2-runner.mjs'
+import { decodeSessionLogFrames, remoteOutcome, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, blueprintRevisionOf, ensureTeamRootLive, teamReadState, teamLedgerPage, blueprintArtifactSupply, durableToolPairs, wireToolPairs, toolOutcomeOf, durableToolOutcome } from './a5m2-team-c2-runner.mjs'
 
 const first = Buffer.from('{"line":"frame-one"}\n')
 const second = Buffer.from('{"line":"frame-two"}\n')
@@ -136,6 +136,14 @@ contract.ledgerPageAnswers = (await teamLedgerPage({ origin: 'http://127.0.0.1:1
 contract.ledgerLimitIsValidated = (await Promise.all([0, -1, 1.5, 'x'].map(async (bad) => {
   try { await teamLedgerPage({ origin: 'http://127.0.0.1:1', cookie: 'c', teamSessionId: 'r', limit: bad }); return false } catch { return true }
 }))).every(Boolean)
+/* REAL v3 blueprint supply, measured on an existing in-tree artifact through
+ * the production source gate — no synthetic id is accepted. */
+const V3_ARTIFACT = '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml'
+const supply = blueprintArtifactSupply(V3_ARTIFACT)
+contract.realV3ArtifactSupplyAnswersIdentity = supply.ok === true && supply.blueprintId === 'team.a5nx-main' && supply.schemaVersion === 3
+contract.artifactRevisionBecomesANumber = typeof supply.blueprintRevision === 'number' && supply.blueprintRevision === 1
+contract.artifactContentHashRecorded = typeof supply.contentHash === 'string' && /^[0-9a-f]{64}$/.test(supply.contentHash)
+contract.syntheticSourceIsRefused = blueprintArtifactSupply('/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/dev/agent-workflow/evidence/alpha5/live/a5m2-team-c2-selftest.mjs').ok === false
 contract.wireFaceSeparateAndAbsenceUnknown = wireToolPairs([{ role: 'assistant', content: [{ type: 'tool_use', id: 'w1', name: 'team_list_members', input: {} }] }, { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'w1', content: [] }] }], 'team_list_members')[0].outcome === 'unknown'
 console.log(JSON.stringify(result, null, 2))
 result.contract = contract
