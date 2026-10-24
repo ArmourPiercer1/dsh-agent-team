@@ -681,13 +681,28 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // source are exactly: todo arm :3048, write arm :3143, subagent-spawn
     // wiring :3443, G2 team mount :3689, G5 goal inject :4078, subagent-
     // controls wiring :4333 - all family registration/wiring constants.
+    // RE-ANCHOR 4 (census 6c08 run, NEW RED #2; CENTER-verified enumeration
+    // BEFORE re-anchoring): net SIX -> EIGHT, +2 REAL family additions and zero
+    // retirements. The two new literals are both attributable to the SIGNED
+    // d675 CARD #2 REAL SUPPLY (1e76e51910446dc564218853551cff78154ce752, blame-
+    // verified; preserved byte-identical by the root residual round b4f9fc51a
+    // merged at e0d89a233): the providerId constants feeding the schedule PAIR's
+    // bind/publish supply at agent-bindings.mjs:3664 and :3698 - the same
+    // family-registration category as every other counted site (RE-ANCHOR 3
+    // claimed bind-after-def wired WITHOUT a literal provider constant at the
+    // mount face; CARD #2 superseded that shape by the real guard-surface pair
+    // supply, so the claim is now stale, not violated). The SIX carried forward,
+    // re-measured at their MOVED lines: todo :3055, write :3150, subagent-spawn
+    // :3450, G2 team mount :3849, G5 goal inject :4238, subagent-controls
+    // :4493. All EIGHT are family registration/wiring constants; no IMAGE
+    // arm/registration/callFacts comparison site carries a constant.
     // No IMAGE arm/registration/callFacts site carries a constant: the FP-A2/
     // FP-D legs above prove the live supply and the unchanged comparisons on
     // the real objects, and the plane pin below stays.
     expect(
       matchAll(mount, /providerId: 'a5p5-plane',/g),
-      "todo + write + subagent-spawn wiring + subagent-controls + the G2 team mount + the G5 goal inject family constants, measured SIX on the merged tree after the bind-after-def retirement of the three old B-SCHEDULE literals (RE-ANCHOR 3 above; every site enumerated with its line)",
-    ).toHaveLength(6)
+      "todo + write + subagent-spawn + G2 team mount + G5 goal + subagent-controls + the schedule PAIR bind/publish constants (CARD #2), measured EIGHT on the merged tree (RE-ANCHOR 4 above; every site enumerated with its line)",
+    ).toHaveLength(8)
     expect(planeSrc).toContain('providerId: \'a5p5-plane\'') // the rev.0 row-lane tuple, untouched
     // The plane never reads the provider off a MANIFEST or RECEIPT for supply
     // purposes, and the FP-A/FP-D legs above byte-pin every COMPARISON site to
