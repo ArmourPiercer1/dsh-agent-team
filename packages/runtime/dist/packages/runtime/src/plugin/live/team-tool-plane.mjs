@@ -94,6 +94,11 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // same bridge law as G6 — the committed G3 adapter is reached THROUGH the
 // wiring module only (the adapter itself is never imported or edited here).
 import { buildG3TerminalWiring, A5_G3_TERMINAL_TOOL_NAMES } from './governed-families/g3-terminal-wiring.mjs'
+// A5M2-PWSH GOVERNED MOUNT (CENTER pwsh card, root FIXED scope 2026-10-25):
+// the win32 shell's governed row rides the same bridge law as the terminal
+// family — the ARM CLASS (governed-families/pwsh-arm.mjs) and the mount
+// bridge are reached through the wiring module only.
+import { buildPwshGovernedWiring, A5_PWSH_MOUNT_NAME } from './governed-families/pwsh-wiring.mjs'
 // A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25): the
 // interposition rides the PUBLIC tools/pre-execute seam — the plane only
 // gates the inject, hands the REAL seat (paAdmit) and the identity seam to
@@ -638,6 +643,22 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // the six lands the honest DECLARED-INACTIVE census - no def, native
   // untouched.
   terminal: Object.freeze(['terminal_open', 'terminal_send', 'terminal_read', 'terminal_signal', 'terminal_close', 'terminal_list']),
+  // A5M2-PWSH (CENTER pwsh source card, root 2026-10-25): the governed pwsh
+  // row mounts at the FIXED native spelling 'pwsh' behind the closed
+  // `backends.pwsh` inject key (never the configurable names map — the same
+  // law as every family row above). The same-name, same-meaning ledger
+  // entry (route-records-v3c.json FC-SHL-P, target GOVERNED_TAKEOVER_HOST_
+  // BODY): the row classifies through the ARM CLASS (closed keys both
+  // directions, the closed FC-SHL-P census effects, typed ENV refusal
+  // classes), walks THIS plane's ONE PA admission (open/edge/one-shot
+  // consumedProof), and the BODY is the CAPTURED native pwsh def's own
+  // execute — REAL foreground PowerShell and, behind the native's jobs
+  // mount, REAL background job registration; 保留原生, the plane re-enters
+  // no other body and holds no authority below this line. A member the
+  // capture cannot answer (the pinned-639 loader gates the tool
+  // disabled-unless-win32) lands the honest DECLARED-INACTIVE census: no
+  // def, native untouched, no registration — never a fake arm.
+  pwsh: Object.freeze(['pwsh']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -1471,6 +1492,38 @@ export function createTeamToolPlaneAssembly(input = {}) {
     terminalInject = Object.freeze({ ...terminalInjectRaw })
   }
 
+  // ── A5M2-PWSH GOVERNED MOUNT injection law (CENTER pwsh card, root 2026-10-25) ──
+  // The CLOSED `backends.pwsh` key, the presence discipline verbatim: ABSENT
+  // = the family is not deployed on this assembly (zero rows, zero flip); a
+  // DEFECTIVE inject refuses the MOUNT with a typed code (config is law).
+  // The inject is the OWNER-PUBLISHED deployment evidence: the member-scoped
+  // native capture seam, the identity pair, and the EXPLICIT BOOLEAN mount
+  // declaration (config law BOTH directions — `false` is the honest
+  // DECLARED-INACTIVE census, never a silent default).
+  const pwshInjectRaw = input.backends?.pwsh
+  const pwshInjectInvalid = (why) => ({ ok: false, code: 'PWSH_ARM_INJECT_INVALID', message: `backends.pwsh: ${why}` })
+  let pwshInject = null
+  if (pwshInjectRaw !== undefined) {
+    const pBad = typeof pwshInjectRaw.providerId !== 'string' || pwshInjectRaw.providerId.length === 0
+      ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against)'
+      : typeof pwshInjectRaw.memberAgentId !== 'string' || pwshInjectRaw.memberAgentId.length === 0
+        ? 'memberAgentId must be the REAL member Agent id (exec.agent.id shape) — the arm owns state through the exact Agent, never a name lookup'
+        : typeof pwshInjectRaw.sessionHeaderId !== 'string' || pwshInjectRaw.sessionHeaderId.length === 0
+          ? 'sessionHeaderId must be the durable session header id — the ownership leg, never guessed'
+          : typeof pwshInjectRaw.readNative !== 'function'
+            ? 'readNative (name) => definition is required — the MEMBER-SCOPED native capture seam (agentCtx.tools.get(name, runtimeAgent) law; the global face is NOT a fallback)'
+            : typeof pwshInjectRaw.declaredMount !== 'boolean'
+              ? 'declaredMount must be the explicit BOOLEAN mount declaration (config law BOTH directions: true arms the family on a captured native; false lands the honest DECLARED-INACTIVE census; absence is a config defect, not a default)'
+              : pwshInjectRaw.jobsMounted !== undefined && typeof pwshInjectRaw.jobsMounted !== 'function'
+                ? 'jobsMounted must be () => boolean when carried (the background capability face the arm law consults)'
+                : undefined
+    if (pBad !== undefined) return pwshInjectInvalid(pBad)
+    if (A5_PWSH_MOUNT_NAME === readName || A5_PWSH_MOUNT_NAME === A5_TODO_MOUNT_NAME || A5_PWSH_MOUNT_NAME === A5_WRITE_MOUNT_NAME || A5_PWSH_MOUNT_NAME === A5_IMAGE_MOUNT_NAME) {
+      return pwshInjectInvalid(`'${A5_PWSH_MOUNT_NAME}' is already claimed on this mount - one name, one placement`)
+    }
+    pwshInject = Object.freeze({ ...pwshInjectRaw })
+  }
+
   // ── A5-M2 B-SUBAGENT CONTROL injection law (this lane's block, root 21:01 card) ──
   // The control trio (census 44/45/46) arrives as the wiring's OWN built
   // definitions (captured native faces with ONLY execute replaced) — the
@@ -1910,6 +1963,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // worlds answer undefined exactly as before (zero flip; no whole-family
     // whitelist, no fake binding, never a guessed mapping).
     if (g3Wiring !== null && g3Wiring.placementNames.includes(spelling)) return spelling
+    // A5M2-PWSH: the governed pwsh row mounts at its FIXED native spelling,
+    // resolved ONLY while THIS mount's wiring actually placed it (the reused
+    // source is the wiring's own placement list; zero flip otherwise).
+    if (pwshWiring !== null && pwshWiring.placementNames.includes(spelling)) return spelling
     // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the arm route places the row
     // through the OWNER's scoped registration, so `g1Inject` stays null — the
     // name resolves ONLY while the owner's placement ledger CURRENTLY holds
@@ -4851,6 +4908,46 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const g3Defs = g3Wiring === null ? [] : g3Wiring.definitions
+  // ── A5M2-PWSH GOVERNED MOUNT build (the same seat + placement law as every
+  // sibling family: THE REAL SEAT is paAdmit itself, the identity seam is the
+  // plane's own definitionIdentityOf, the registration key rides the fresh
+  // placementFeed; a refusal is typed, an inactive census is observed) ──
+  let pwshWiring = null
+  if (pwshInject !== null) {
+    try {
+      const builtPwsh = buildPwshGovernedWiring({
+        realmId,
+        providerId: pwshInject.providerId,
+        memberAgentId: pwshInject.memberAgentId,
+        sessionHeaderId: pwshInject.sessionHeaderId,
+        readNative: pwshInject.readNative,
+        declaredMount: pwshInject.declaredMount,
+        jobsMounted: pwshInject.jobsMounted,
+        // THE LAZY FEED (the placedByName law, verbatim): the registration
+        // key and the row's re-verify both read the placement record at
+        // LOOKUP time — never an eager snapshot, never a guessed def#.
+        placementFeed: (name) => {
+          const d = placedByName.get(name)
+          if (d === undefined) return undefined
+          const identity = definitionIdentityOf(d)
+          return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
+        },
+        identityOf: (def) => definitionIdentityOf(def),
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-pwsh: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtPwsh.ok !== true) {
+        return { ok: false, code: 'PWSH_ARM_REFUSED', message: `backends.pwsh: the wiring bridge refused the mount (${String(builtPwsh.code)} — ${String(builtPwsh.detail)})` }
+      }
+      pwshWiring = builtPwsh
+      for (const declaredRow of pwshWiring.declared) {
+        observe(`a5m2-pwsh: DECLARED-INACTIVE ${String(declaredRow.name)} (${String(declaredRow.reason).slice(0, 160)}) — native untouched, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'PWSH_ARM_REFUSED', message: `backends.pwsh: the bridge threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
+  const pwshDefs = pwshWiring === null ? [] : pwshWiring.definitions
   // ── A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25) ──
   // NOT a placement: ZERO definitions, ZERO registration of the reserved
   // name (the P1 host law stands absolute). The plane gates the inject
@@ -5160,9 +5257,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && g3Defs.length === 0 && g2Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && g3Defs.length === 0 && pwshDefs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...g3Defs, ...g2Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...g3Defs, ...pwshDefs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -5247,6 +5344,17 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         placementNames: g3Wiring.placementNames,
         declared: g3Wiring.declared,
         familyRegistrations: g3Wiring.familyRegistrations,
+      }) }),
+      /** A5M2-PWSH (CENTER pwsh card): the governed pwsh family face for
+       *  THIS mount (omitted, NOT set to `undefined`, when not deployed).
+       *  The mount writer reads `familyRegistrations()` AFTER publish and
+       *  pairs each entry with `registerA5GovernedFamily`; the drain rides
+       *  this mount's dispose, never the writer's. */
+      ...(pwshWiring === null ? {} : { pwsh: Object.freeze({
+        familyId: pwshWiring.familyId,
+        placementNames: pwshWiring.placementNames,
+        declared: pwshWiring.declared,
+        familyRegistrations: pwshWiring.familyRegistrations,
       }) }),
       /** A5M2 G3 B-PTC run_code GUARD (root final limited ruling): the
        *  guard wiring face for THIS mount (omitted, NOT set to `undefined`,
@@ -5532,6 +5640,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // releases at its ONE legal end, beside the plane's own
             // token-ledger release below.
             if (g3Wiring !== null) g3Wiring.drain()
+      if (pwshWiring !== null) pwshWiring.drain()
             g3TokenLedger.clear()
             // A5M2 G3 B-PTC run_code GUARD: the same teardown law — the
             // guard's word is a new-call prohibition (matching run_code
