@@ -1,43 +1,44 @@
 #!/usr/bin/env node
 /**
- * A5M2 CONTROL host-window runner — minimal governed-Control vertical slice
- * (root card 2026-10-29: ONE runnable slice, A's lifecycle verbatim, no new
- * framework, no C1-C5 expansion).
+ * A5M2 CONTROL host-window runner — minimal governed-Control vertical slice.
+ * Scope per the root's a738 narrow review: 83 REQUEST -> 85 DISCOVERY -> 84
+ * DECISION on the designated requestId -> IDENTITY REFUSAL (the member's own
+ * resolve attempt refused, no extra durable decision fact). The EDIT/
+ * consumption leg is REMOVED (A's known unclosed second leg; NOT covered here
+ * and NOT claimed — consumption stays explicitly UNTESTED, so this window
+ * never declares a full C2 on its own).
  *
- * SCENARIO (one boot, exactly four governed model turns' worth of tool calls,
- * every Control decision/read as a REAL tool-registry toolCall — RPC rides
- * OBSERVATION ONLY and never decides):
- *   L1 leader  toolCall team_create_member        (A lifecycle, unchanged)
- *   L2 member  toolCall team_request_control      (record 83 via the registry;
- *                                                  durable control-request-recorded)
- *   L3 leader  toolCall team_list_pending_control (record 85 via the registry)
- *              toolCall team_resolve_control ALLOW (record 84 via the registry;
- *                                                  settles L2's request)
- *   L4 member  toolCall edit -> the ask-lane adapter parks ITS request row;
- *              a second leader list+resolve toolCall turn allows it; THE SAME
- *              blocked call consumes it (control-allow-consumed) and the bytes
- *              change. Durable double-check via team.getLedgerPage (product
- *              wire, observation) + read-only team_domain.json scan.
+ * Every Control decision/read is a REAL tool-registry toolCall; RPC rides
+ * OBSERVATION ONLY (the transcript check proves no RPC write ever decided).
+ *   L1 leader  toolCall team_create_member
+ *   L2 member  toolCall team_request_control  (record 83, PA-armed CONTROL row
+ *              via the deployer closed key g1PureQuery.control:true — the real
+ *              takeover, not just the native; durable control-request-recorded)
+ *   L3 leader  toolCall team_list_pending_control (85 discovery must answer
+ *              with the designated request) -> toolCall team_resolve_control
+ *              ALLOW (84) on THAT requestId
+ *   L4 member  toolCall team_resolve_control ATTEMPT -> REFUSED (the member's
+ *              surface carries no resolver)
+ *
+ * Outer-layer permissions are FULLY ARRANGED for this scenario (root a738 ③):
+ * member: allow-lane tool-invoke team_request_control (its outer Ask is
+ * arranged BEFORE the call — never parked waiting on its own 83 round trip);
+ * leader: governed, allow-lane for exactly the three leader tools this
+ * scenario calls. Default deny elsewhere, both roles.
  *
  * BOOT is behind the root's ruling: A5M2_CONTROL_WINDOW=GRANTED. Without it:
- * NOT_RUN receipt, rc 3 (never a green line). A5M2_CONTROL_DRY=1 runs the REAL
- * pre-flight (install -> entry resolution -> patch) to the boot boundary and
- * stops BEFORE any spawn.
+ * NOT_RUN receipt, rc 3. A5M2_CONTROL_DRY=1 runs the REAL pre-flight to the
+ * boot boundary and stops BEFORE any spawn — its receipt is NOT_RUN/
+ * booted:false, never a green PASS (root a738 ④).
  *
- * PRODUCT (mount law exactly as A's fifth-window runner — read from
- * .worktrees/a5m2-wire-g3/.../05-edit-window-runner.mjs, sha256-verified原件):
- *   HOST     = ROOT_DIR/tests/deepseek-harness-test-use (639 CLI tree; the
- *              npm install dir is NEVER the Host).
- *   PRODUCT  = INSTALL_DIR (37646 npm-form fixture, READ-ONLY; no install, no
- *              clone, no chmod): INSTALL_DIR/node_modules/dsh-agent-team
- *              exports['./host'] -> HOST_ENTRY -> cordis profile-patch insert
- *              onto instance.patchFile (the public seam; CORE PATCH BUDGET 0).
- *   PINS     = tgz name/dir-prefix/sha256 triple + driver/product DOUBLE-PIN
- *              (runner-identity.json: this file's git HEAD + file sha256 vs
- *              composed product SHA + pack sha256 + installDir).
- * Fixed (root 2026-10-29): host port 3184, mock port 3499 (PRE-CHECK ONLY,
- * occupied => refuse, NEVER kill foreign); fresh explicit world home
- * tests/homes/a5m2-ctl-hw-<UTC>Z (fail closed if non-empty; NEVER deleted).
+ * PRODUCT (mount law = A's fifth-window runner verbatim): HOST =
+ * ROOT_DIR/tests/deepseek-harness-test-use (639 CLI tree; the npm install dir
+ * is NEVER the Host). PRODUCT = INSTALL_DIR (37646 npm-form fixture, READ-ONLY
+ * triple pin) -> exports['./host'] -> public cordis profile-patch insert
+ * (CORE PATCH BUDGET 0). Fixed: host 3184, mock 3499 (pre-check only, NEVER
+ * kill foreign); fresh explicit tests/homes/a5m2-ctl-hw-<UTC>Z (fail closed if
+ * non-empty; NEVER deleted). MOUNTED barrier before the first RPC (root
+ * one-point card; ported from A's committed fix a7f7c0e8e / 7f6bbd46c law).
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
@@ -50,7 +51,7 @@ import { portInUse, waitForPortFree } from '../../../../../tests/characterizatio
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
 const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // root-accepted product (same pack A's fifth window ran)
-const EXPECTED_PACK_SHA = 'sha256:3652b2ce19025d0d25d8b661fc08f0a3cb0737bb7b4fbc339fd61a12e2b5fd7c' // root 2026-10-29 receipt (measured equal by B read-only)
+const EXPECTED_PACK_SHA = 'sha256:3652b2ce19025d0d25d8b661fc08f0a3cb0737bb7b4fbc339fd61a12e2b5fd7c' // root receipt (measured equal by B read-only)
 const EXPECTED_LOCK_SHA = 'sha256:7685317ff1ba675f6d3f6b012907360579c3c85bd1bc3319d0248483bde3c659' // root receipt (measured equal by B read-only)
 const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
 const EXPECTED_TGZ_DIR_PREFIX = 'out-37646ac2-'
@@ -62,7 +63,7 @@ const BP_ID = 'team.a5m2-ctl-hw'
 const WINDOW_GO = process.env.A5M2_CONTROL_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_CONTROL_DRY === '1'
 const INSTALL_DIR = process.env.A5M2_CONTROL_INSTALL_DIR
-  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2' // root 2026-10-29 exact path; absence fail-closes rc3
+  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2' // root's exact path; absence fail-closes rc3
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -77,9 +78,9 @@ if (ROOT_DIR === null) { console.error('findTestRepoRoot returned null'); proces
 const HOST_TREE = join(ROOT_DIR, 'tests', 'deepseek-harness-test-use')
 if (!existsSync(HOST_TREE)) notRun(`639 host checkout absent at ${HOST_TREE}`)
 
-// ── blueprints (A's lifecycle shapes verbatim; ONLY the worker's teamTools
-//    face differs: exactly one member operation, request-control — per the
-//    root ruling; NO resolve/self-approve/policy for any member) ────────────
+// ── blueprints: BOTH roles governed with a complete outer permission
+//    arrangement for THIS scenario (root a738 ③); default deny everywhere else;
+//    member teamTools face = request-control only (no resolver, no self-approve)
 const ANCHOR_V3_YAML = [
   '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}.boot-anchor`, 'revision: "1"',
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 CONTROL window team."',
@@ -92,6 +93,11 @@ const ANCHOR_V3_YAML = [
 const SAVED_BP_V3_YAML = [
   '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 CONTROL window team. Resolve member control requests through your team tools when instructed; keep answers brief."',
+  '  capabilities:', '    permissions:', '      default: deny', '      allow:', // LEADER governed + OUTER ARRANGED (root a738 ③): exactly the three leader tools this scenario calls, any resource; nothing else.
+  '          - tool: team_create_member', '            resource:', '              kind: any',
+  '          - tool: team_list_pending_control', '            resource:', '              kind: any',
+  '          - tool: team_resolve_control', '            resource:', '              kind: any',
+  '        ask: []', '        deny: []',
   'members:', '  - templateId: ctl-worker',
   '    persona: "You are the control worker. Follow the marker instructions literally and only."',
   '    capabilities:', '      teamTools:', '        kind: allow', '        items:',
@@ -102,20 +108,16 @@ const SAVED_BP_V3_YAML = [
   '        - job_list', '        - job_output', '        - present', '        - skill',
   '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
-  '      permissions:', '        default: deny', '        allow:',
-  '          - tool: read', '            resource:', '              kind: exact',
-  `              path: '@@TARGET_ABS@@'`,
-  '          - tool: write', '            resource:', '              kind: exact',
-  `              path: '@@TARGET_ABS@@'`,
-  '        ask:',
-  '          - tool: edit', '            resource:', '              kind: any',
-  '        deny: []',
+  '      permissions:', // MEMBER governed + OUTER ARRANGED: the 83 tool call rides an ALLOW lane — its outer Ask is arranged BEFORE the call, never parked waiting on its own 83 round trip (root a738 ③).
+  '        default: deny', '        allow:',
+  '          - tool: team_request_control', '            resource:', '              kind: any',
+  '        ask: []', '        deny: []',
   'teamEnvelope:', '  allow:',
   '    - assign-task', '    - create-member', '    - send-message',
   '    - report-progress', '    - request-control', '    - resolve-control',
   '  deny: []',
-  // member mutation envelope: request-control ONLY (verified M1 shape, kit
-  // :1284-1293 law; validate.js :962-978 schema). NO resolve, NO self-approve.
+  // member mutation envelope: request-control ONLY (verified M1 shape). NO
+  // resolve, NO self-approve — L4 proves the refusal.
   'memberEnvelopes:', '  - templateId: ctl-worker', '    envelope:', '      allow:',
   '        - request-control', '      deny: []', 'requirements: []',
   'permissionMutationEnvelope:', '  rules: []',
@@ -126,13 +128,13 @@ const SAVED_BP_V3_YAML = [
 const NONCE = Math.random().toString(36).slice(2, 8)
 const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-')
 const HOME = join(ROOT_DIR, 'tests', 'homes', `${WORLD_PREFIX}-${DRY ? 'dry-' : ''}${RUN_STAMP}Z`) // fresh EXPLICIT home (root-pinned law)
-const FSROOT = join(HOME, 'fsroot')
 const RUN_DIR = join(ROOT_DIR, 'dev', 'agent-workflow', 'evidence', 'a5m2-control-host-window', `runs-${DRY ? 'dry-' : ''}${RUN_STAMP}`)
 const TRANSCRIPT = []
 const checks = []
-const steps = new Map()      // callId -> {step, tool}
+const steps = new Map()      // callId -> {step, tool} — callIds UNIQUE per emission (root a738: no dedupe/mixing)
 const callResults = []       // harvested tool results (THE registry-execution witness)
-const memberToolsSeen = []
+const memberToolsSeen = []   // filled ONLY from the member's real TOOLS-CHECK request (root a738 ②)
+let callSeq = 0
 let currentCriterion = 'setup'
 let mock = null
 let instance = null
@@ -157,10 +159,15 @@ async function waitFor(label, budgetMs, fn) {
   }
 }
 function finish(code) {
-  const pass = checks.every((c) => c.ok) && code === 0
+  // root a738 ④: DRY never PASSes — its honest verdict is NOT_RUN/booted:false
+  // (rc 3), even when every preflight step succeeded.
+  const preflightOk = checks.length > 0 && checks.every((c) => c.ok) && code === 0
+  const pass = !DRY && preflightOk
+  const verdict = DRY ? 'NOT_RUN' : (pass ? 'PASS' : 'FAIL')
   const summary = {
-    runner: '05-control-window-runner.mjs', scenario: 'control-slice', dry: DRY,
-    booted: !DRY && instance !== null, verdict: pass ? 'PASS' : (DRY ? 'DRY' : 'FAIL'),
+    runner: '05-control-window-runner.mjs', scenario: 'control-slice-83-85-84-identity', dry: DRY,
+    booted: !DRY && instance !== null, verdict,
+    scopeNote: 'consumption/EDIT leg NOT covered this window (explicitly UNTESTED, root a738 scope) — full C2 is NOT claimed by this receipt',
     ports: { host: HOST_PORT, mock: MOCK_PORT }, world: HOME, runDir: RUN_DIR,
     checks, stamps: { nonce: NONCE, runStamp: RUN_STAMP },
   }
@@ -169,8 +176,8 @@ function finish(code) {
     writeFileSync(join(RUN_DIR, 'summary.json'), JSON.stringify(summary, null, 2))
     writeFileSync(join(RUN_DIR, 'transcript.jsonl'), TRANSCRIPT.map((t) => JSON.stringify(t)).join('\n'))
   } catch { /* evidence best-effort; verdict unchanged */ }
-  console.log(JSON.stringify({ verdict: summary.verdict, pass, checks: checks.filter((c) => !c.ok).length, runDir: RUN_DIR }, null, 2))
-  process.exit(pass ? 0 : (code === 0 ? 2 : code))
+  console.log(JSON.stringify({ verdict, pass, failed: checks.filter((c) => !c.ok).length, checks: checks.length, runDir: RUN_DIR }, null, 2))
+  process.exit(DRY ? 3 : (pass ? 0 : (code === 0 ? 2 : code)))
 }
 
 // ── f86 fixture reuse (READ-ONLY triple pin, A law verbatim) ───────────────
@@ -208,15 +215,12 @@ function writePatch(patchPath, hostEntryHref) {
     '        staticModel:', '          provider: deepseek-official', '          model: a5m2-control-window-model',
     '        deniedSelection: null', '        mcpServers: []', '        mcpServer: null',
     '        environmentFacts: []', '        externalPolicyFacts:', '          hard: {}', '          capabilityExists: {}',
-    '        teamToolPlane:', // the EDIT gate (L4 ask lane needs the governed fs arm): A's closed key + world fs root
-    '          editEnabled: true',
-    "          realmId: 'a5m2-ctl-hw-realm'",
-    '          fsInstance:',
-    "            fs: 'a5m2-ctl-hw-fs'",
-    `            rootDir: ${JSON.stringify(FSROOT)}`,
-    "            realmId: 'a5m2-ctl-hw-realm'",
-    "            kind: 'absolute-path'", '',
-  ].join('\n'))
+    '        teamToolPlane:',
+    "          realmId: 'a5m2-ctl-hw-realm'", // pins a5PlaneRealmId (trusted identity pairing fact of every arm row)
+    '          g1PureQuery:', // THE CONTROL takeover (root a738 ③): the deployer CLOSED KEY that arms the
+    '            control: true', // B-CONTROL write rows 83/84 as PA governed rows over the captured natives
+    '',                          // (agent-bindings :5452-5788 law: EXACTLY true, closed grammar; any other
+  ].join('\n'))                   // value REFUSES the mount typed — never a silently widening config)
 }
 
 function resultError(body) {
@@ -341,12 +345,10 @@ async function controlFacts() { // durable double-check, product wire, OBSERVATI
   }
   return byType
 }
-function domainFacts() { // read-only durable scan: member binding (instanceId + sessionId) for ctl-worker
+function domainFacts() { // read-only durable scan (A's two-map law verbatim)
   const f = join(HOME, 'storages', 'team_domain.json')
   if (!existsSync(f)) return null
   const doc = safeParse(readFileSync(f, 'utf8'))
-  // A's two-map law verbatim (05-edit-window-runner domainFacts): member
-  // bindings under kind 'team-member', template per instanceId wherever it pairs.
   const memberBindings = new Map()
   const templates = new Map()
   const seen = new Set()
@@ -363,20 +365,32 @@ function domainFacts() { // read-only durable scan: member binding (instanceId +
   return hits.length === 1 ? { instanceId: hits[0][0], sessionId: hits[0][1] } : null
 }
 
-async function cleanup() {
+async function cleanup() { // root a738 ⑤: cleanup failures mark the window NON-GREEN
   const notes = []
-  try { if (instance !== null) { await instance.stop(); notes.push('host stopped') } } catch (e) { notes.push(`host-stop ERR ${String(e).slice(0, 120)}`) }
-  try { if (mock !== null) { await mock.close(); notes.push('mock closed') } } catch (e) { notes.push(`mock-close ERR ${String(e).slice(0, 120)}`) }
-  try { notes.push(`hostPortFree=${await waitForPortFree(HOST_PORT, 20_000)}`) } catch (e) { notes.push('hostPortFree ERR') }
-  try { notes.push(`mockPortFree=${await waitForPortFree(MOCK_PORT, 20_000)}`) } catch (e) { notes.push('mockPortFree ERR') }
+  let ok = true
+  try {
+    if (instance !== null) { await instance.stop(); notes.push('host stopped') }
+  } catch (e) { ok = false; notes.push(`host-stop ERR ${String(e).slice(0, 120)}`) }
+  try { if (mock !== null) { await mock.close(); notes.push('mock closed') } } catch (e) { ok = false; notes.push(`mock-close ERR ${String(e).slice(0, 120)}`) }
+  let hostFree = false
+  let mockFree = false
+  try { hostFree = await waitForPortFree(HOST_PORT, 20_000) } catch { hostFree = false }
+  try { mockFree = await waitForPortFree(MOCK_PORT, 20_000) } catch { mockFree = false }
+  if (instance !== null) { // only a window that really booted owes free ports
+    check('cleanup', `host port ${String(HOST_PORT)} free after stop`, hostFree === true, `free=${String(hostFree)}`)
+    check('cleanup', `mock port ${String(MOCK_PORT)} free after stop`, mockFree === true, `free=${String(mockFree)}`)
+  }
+  if (notes.some((n) => n.includes('ERR'))) ok = false
+  check('cleanup', 'host stop completed without error', ok, notes.join(' | ').slice(0, 300))
   notes.push('world retained (root law: NEVER delete HOME/raw)')
   log(`cleanup: ${notes.join(' | ')}`)
   return notes
 }
 
 // ── mock model program: Control decisions ride ONLY tool-registry toolCalls ─
+function bodyOf(req) { return req?.body ?? req ?? {} }
 function lastUserText(req) {
-  const msgs = req?.messages ?? req?.body?.messages ?? []
+  const msgs = bodyOf(req).messages ?? []
   for (let i = msgs.length - 1; i >= 0; i -= 1) {
     const m = msgs[i]
     if (m?.role !== 'user') continue
@@ -387,49 +401,39 @@ function lastUserText(req) {
   return ''
 }
 function harvest(req) {
-  for (const m of req?.messages ?? req?.body?.messages ?? []) {
-    if (m?.role === 'tool') {
-      const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
-      if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
-        const known = steps.get(callId)
-        callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '') })
-      }
-      continue
-    }
-    if (!Array.isArray(m?.content)) continue
-    for (const b of m.content) {
-      if (b?.type !== 'tool_result') continue
-      const callId = typeof b.tool_use_id === 'string' ? b.tool_use_id : ''
-      if (callId.length === 0 || callResults.some((r) => r.callId === callId)) continue
-      const known = steps.get(callId)
-      if (known === undefined) continue
-      callResults.push({ callId, step: known.step, toolName: known.tool, text: typeof b.content === 'string' ? b.content : JSON.stringify(b.content ?? ''), isError: b.is_error === true })
-    }
+  const msgs = bodyOf(req).messages ?? []
+  for (const m of msgs) {
+    if (m?.role !== 'tool') continue
+    const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
+    if (callId.length === 0 || callResults.some((r) => r.callId === callId)) continue // unique per emission; never mix
+    const known = steps.get(callId)
+    const text = typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '')
+    // real role=tool error parsing (root a738): honour explicit flags; the
+    // text stays verbatim for the identity-refusal read.
+    const isError = m?.isError === true || m?.is_error === true
+      || (typeof m?.content === 'object' && m?.content !== null && (m.content.isError === true || m.content.is_error === true))
+    callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text, isError })
   }
 }
-function toolsAfterMarker(msgs, markerPrefix) {
-  let idx = -1
+function markerIndex(msgs, markerPrefix) {
   for (let i = msgs.length - 1; i >= 0; i -= 1) {
     const m = msgs[i]
     if (m?.role !== 'user') continue
     const c = m.content
     const t = typeof c === 'string' ? c : Array.isArray(c) ? c.filter((p) => p?.type === 'text').map((p) => p.text ?? '').join('\n') : ''
-    if (t.startsWith(markerPrefix)) { idx = i; break }
+    if (t.startsWith(markerPrefix)) return i
   }
+  return -1
+}
+function toolsAfterMarker(msgs, markerPrefix) {
+  const idx = markerIndex(msgs, markerPrefix)
   if (idx === -1) return 0
   let n = 0
   for (let i = idx + 1; i < msgs.length; i += 1) if (msgs[i]?.role === 'tool') n += 1
   return n
 }
 function toolMsgsAfter(msgs, markerPrefix) {
-  let idx = -1
-  for (let i = msgs.length - 1; i >= 0; i -= 1) {
-    const m = msgs[i]
-    if (m?.role !== 'user') continue
-    const c = m.content
-    const t = typeof c === 'string' ? c : Array.isArray(c) ? c.filter((p) => p?.type === 'text').map((p) => p.text ?? '').join('\n') : ''
-    if (t.startsWith(markerPrefix)) { idx = i; break }
-  }
+  const idx = markerIndex(msgs, markerPrefix)
   return msgs.slice(idx + 1).filter((m) => m?.role === 'tool')
 }
 function extractListedRequestId(content) {
@@ -438,15 +442,23 @@ function extractListedRequestId(content) {
 }
 function decide({ req }) {
   harvest(req)
-  const msgs = req?.messages ?? req?.body?.messages ?? []
-  const first = msgs[0]
-  const firstText = Array.isArray(first?.content) ? first.content.map((b) => (b !== null && typeof b === 'object' && typeof b.text === 'string' ? b.text : '')).join('') : (typeof first?.content === 'string' ? first.content : '')
-  if (firstText.startsWith('Create a concise title') || firstText.startsWith('Generate the session title')) return { kind: 'text', content: 'a5m2 control window session' }
+  const body = bodyOf(req)
+  const msgs = body.messages ?? []
   const text = lastUserText(req)
   const mk = (step, name, args) => {
-    const callId = `call-ctlhw-${NONCE}-${step}`
+    const callId = `call-ctlhw-${NONCE}-${String(++callSeq)}` // UNIQUE per emission (root a738: multi-round safe)
     steps.set(callId, { step, tool: name })
     return { kind: 'tool-call', toolCalls: [{ id: callId, name, arguments: args }] }
+  }
+  if (text.startsWith('TOOLS-CHECK')) { // E0 witness: the member's REAL request surface, filled HERE only
+    const seen = new Set(memberToolsSeen)
+    for (const t of body.tools ?? []) {
+      const name = t?.function?.name ?? t?.name ?? (typeof t === 'string' ? t : null)
+      if (typeof name === 'string' && name.length > 0) seen.add(name)
+    }
+    memberToolsSeen.length = 0
+    memberToolsSeen.push(...seen)
+    return { kind: 'text', content: `ACK-C0 ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-LEADER-CREATE ${NONCE}`)) {
     return toolsAfterMarker(msgs, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`) === 0
@@ -462,7 +474,7 @@ function decide({ req }) {
   }
   if (text.startsWith(`A5M2-CTLHW-LEADER-RESOLVE ${NONCE}`)) {
     const n = toolsAfterMarker(msgs, `A5M2-CTLHW-LEADER-RESOLVE ${NONCE}`)
-    if (n === 0) return mk('leader:list85', 'team_list_pending_control', { rootSessionId: currentRoot, requestToken: `ctlhw-list-${NONCE}-${Date.now()}` })
+    if (n === 0) return mk('leader:list85', 'team_list_pending_control', { rootSessionId: currentRoot, requestToken: `ctlhw-list-${NONCE}-${String(Date.now())}` })
     if (n === 1) {
       const requestId = extractListedRequestId(toolMsgsAfter(msgs, `A5M2-CTLHW-LEADER-RESOLVE ${NONCE}`)[0]?.content)
       if (requestId === null) return { kind: 'text', content: `CTLHW_EXTRACT_FAIL ${NONCE}` }
@@ -470,12 +482,13 @@ function decide({ req }) {
     }
     return { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
-  if (text.startsWith(`A5M2-CTLHW-MEMBER-EDIT ${NONCE}`)) {
-    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-EDIT ${NONCE}`) === 0
-      ? mk('member:edit', 'edit', { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-CTL-CONSUMED' })
+  if (text.startsWith(`A5M2-CTLHW-MEMBER-RESOLVE-ATTEMPT ${NONCE}`)) { // IDENTITY REFUSAL leg: the requesting member must never resolve
+    const rid = /rid=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
+    if (rid === null) return { kind: 'text', content: `CTLHW_NO_RID ${NONCE}` }
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-RESOLVE-ATTEMPT ${NONCE}`) === 0
+      ? mk('member:resolveAttempt', 'team_resolve_control', { rootSessionId: currentRoot, requestToken: `ctlhw-selfres-${NONCE}`, requestId: rid, decision: 'deny', note: 'identity refusal witness' })
       : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
-  if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
   return { kind: 'text', content: `TURN-DONE ${NONCE}` }
 }
 
@@ -485,13 +498,12 @@ async function main() {
   const mockBusy = await portInUse(MOCK_PORT)
   if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (pinned 3184/3499; never kill foreign)`)
   if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
-  for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), FSROOT, RUN_DIR]) mkdirSync(p, { recursive: true })
+  for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), RUN_DIR]) mkdirSync(p, { recursive: true })
   writeFileSync(join(HOME, 'a5m2-ctl-hw-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, runner: '05-control-window-runner.mjs', composedSha: COMPOSED_SHA, packSha256: EXPECTED_PACK_SHA, stamp: RUN_STAMP }, null, 2))
   try {
     const selfSha = execFileSync('git', ['-C', ROOT_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
     writeFileSync(join(RUN_DIR, 'runner-identity.json'), JSON.stringify({ runnerFullSha: selfSha, runnerFileSha256: sha256(fileURLToPath(import.meta.url)), composedSha: COMPOSED_SHA, packTgz: tgzPath, packSha256: EXPECTED_PACK_SHA, installDir: INSTALL_DIR, ports: { host: HOST_PORT, mock: MOCK_PORT } }, null, 2))
   } catch { /* identity best-effort */ }
-  writeFileSync(join(FSROOT, 'notes.txt'), 'alpha\nbeta\ngamma\n', 'utf8')
 
   { // REAL entry resolution from the f86 fixture (READ-ONLY; A's hookup verbatim)
     const installedManifest = JSON.parse(readFileSync(join(PKG_DIR_READ, 'package.json'), 'utf8'))
@@ -501,7 +513,7 @@ async function main() {
     if (!existsSync(HOST_ENTRY)) throw new Error(`host entry absent: ${HOST_ENTRY}`)
     log(`plugin entry resolved from the f86 fixture exports['./host']: ${HOST_ENTRY}`)
   }
-  writeFileSync(join(HOME, 'blueprints', 'a5m2-ctl-hw.yaml'), SAVED_BP_V3_YAML.replaceAll('@@TARGET_ABS@@', join(FSROOT, 'notes.txt')))
+  writeFileSync(join(HOME, 'blueprints', 'a5m2-ctl-hw.yaml'), SAVED_BP_V3_YAML)
 
   if (DRY) {
     const dryPatch = join(HOME, 'dry-patch.yml')
@@ -509,9 +521,9 @@ async function main() {
     writeFileSync(join(RUN_DIR, 'dry-receipts.json'), JSON.stringify({
       dry: true, reachedBootBoundary: true, booted: false,
       portsAwaited: { host: HOST_PORT, hostIdle: !(await portInUse(HOST_PORT)), mock: MOCK_PORT, mockIdle: !(await portInUse(MOCK_PORT)) },
-      manifestEntry: HOST_ENTRY, fsRoot: FSROOT, patchWritten: dryPatch, world: HOME,
+      manifestEntry: HOST_ENTRY, patchWritten: dryPatch, world: HOME,
     }, null, 2))
-    finish(0)
+    finish(0) // DRY verdict is NOT_RUN by law (root a738 ④), rc 3
     return
   }
 
@@ -552,15 +564,15 @@ async function main() {
   log(`member instance=${member.instanceId} session=${member.sessionId}`)
 
   await apiPrompt(member.sessionId, `TOOLS-CHECK ${NONCE}`, 'ctlhw-c0')
-  await waitFor('member tool surface', 60_000, () => (memberToolsSeen.length > 0 ? true : null))
+  await waitFor('member tool surface (real request tools)', 60_000, () => (memberToolsSeen.length > 0 ? true : null))
   check('E0', 'member surface carries team_request_control', memberToolsSeen.includes('team_request_control'), `visible=${memberToolsSeen.join(',')}`)
   check('E0', 'member surface carries NO team_resolve_control (no self-approve)', !memberToolsSeen.includes('team_resolve_control'), `visible=${memberToolsSeen.join(',')}`)
 
-  // L2: 83 via the registry (member model toolCall)
+  // L2: 83 via the registry (member model toolCall, PA-armed CONTROL row)
   currentCriterion = 'L2-83'
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-REQ ${NONCE} inst=${member.instanceId}`, 'ctlhw-req')
   const req83Result = await waitFor('team_request_control tool result', 120_000, () => callResults.find((r) => r.step === 'member:req83') ?? null)
-  check('L2-83', 'team_request_control EXECUTED through the tool registry (harvested tool result)', req83Result?.isError !== true, String(req83Result?.text).slice(0, 200))
+  check('L2-83', 'team_request_control EXECUTED through the tool registry (harvested tool result, no error flag)', req83Result?.isError !== true, `isError=${String(req83Result?.isError)} text=${String(req83Result?.text).slice(0, 160)}`)
   const facts83 = await waitFor('durable control-request-recorded for R83', 60_000, async () => {
     const byType = await controlFacts()
     const hit = byType['control-request-recorded'].find((e) => String(e.payload?.summary ?? '').includes(`A5M2-CTLHW-R83 ${NONCE}`))
@@ -572,40 +584,28 @@ async function main() {
   currentCriterion = 'L3-85-84'
   await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-RESOLVE ${NONCE}`, 'ctlhw-resolve1')
   const listResult = await waitFor('team_list_pending_control tool result', 120_000, () => callResults.find((r) => r.step === 'leader:list85') ?? null)
-  check('L3-85', 'team_list_pending_control EXECUTED through the tool registry', listResult !== null && listResult.isError !== true, String(listResult?.text).slice(0, 200))
+  check('L3-85', 'team_list_pending_control EXECUTED through the tool registry', listResult !== null && listResult.isError !== true, String(listResult?.text).slice(0, 160))
+  check('L3-85', '85 DISCOVERY answers with the designated request on its page', String(listResult?.text).includes(r83), `requestId=${r83}`)
   const resResult = await waitFor('team_resolve_control tool result', 120_000, () => callResults.find((r) => r.step === 'leader:res84') ?? null)
-  check('L3-84', 'team_resolve_control EXECUTED through the tool registry (ALLOW)', resResult !== null && resResult.isError !== true, String(resResult?.text).slice(0, 200))
-  await waitFor('durable control-decision-recorded for R83', 60_000, async () => {
+  check('L3-84', 'team_resolve_control EXECUTED through the tool registry (ALLOW, no error flag)', resResult !== null && resResult.isError !== true, String(resResult?.text).slice(0, 160))
+  const factsDecided = await waitFor('durable control-decision-recorded for R83', 60_000, async () => {
     const byType = await controlFacts()
-    return (byType['control-decision-recorded'] ?? []).some((e) => e.payload?.requestId === r83 && e.payload?.decision === 'allow')
+    return (byType['control-decision-recorded'] ?? []).some((e) => e.payload?.requestId === r83 && e.payload?.decision === 'allow') ? byType : null
   })
-  check('L3', 'L2 request settled by a model-tool decision (durable)', true, `requestId=${r83}`)
+  check('L3', 'the DESIGNATED request r83 was settled by the model-tool decision (durable)', true, `requestId=${r83}`)
 
-  // L4: ask-lane row -> model-tool decision -> THE blocked call consumes it
-  currentCriterion = 'L4-consume'
-  const target = join(FSROOT, 'notes.txt')
-  const shaBefore = sha256(target)
-  await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-EDIT ${NONCE}`, 'ctlhw-edit')
-  const parked = await waitFor('ask-lane parked a pending request for the blocked edit', 120_000, async () => {
-    const byType = await controlFacts()
-    const decided = new Set((byType['control-decision-recorded'] ?? []).map((e) => e.payload?.requestId))
-    const fresh = (byType['control-request-recorded'] ?? []).map((e) => e.payload?.requestId)
-      .filter((r) => typeof r === 'string' && !decided.has(r) && r !== r83)
-    return fresh.length > 0 ? fresh[0] : null
-  })
-  await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-RESOLVE ${NONCE}`, 'ctlhw-resolve2')
-  const consumed = await waitFor('control-allow-consumed for the ask-lane request', 180_000, async () => {
-    const byType = await controlFacts()
-    return (byType['control-allow-consumed'] ?? []).some((e) => e.payload?.requestId === parked)
-  })
-  check('L4', 'THE blocked call consumed the model-tool decision (same-call consumption, durable fact)', consumed === true, `requestId=${parked}`)
-  const after = await waitFor('edit tool result', 60_000, () => callResults.find((r) => r.step === 'member:edit') ?? null)
-  check('L4', 'blocked edit returned OK after consumption', after?.isError !== true, String(after?.text).slice(0, 200))
-  check('L4', 'the governed bytes changed on disk', sha256(target) !== shaBefore && readFileSync(target, 'utf8').includes('BETA-CTL-CONSUMED'), `before=${shaBefore.slice(0, 18)} after=${sha256(target).slice(0, 18)}`)
+  // L4: IDENTITY REFUSAL — the requesting member's own resolve attempt must be
+  // refused, and it must add NO durable decision fact.
+  currentCriterion = 'L4-identity'
+  await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-RESOLVE-ATTEMPT ${NONCE} rid=${r83}`, 'ctlhw-selfres')
+  const selfRes = await waitFor('member resolve-attempt tool result (refusal expected)', 120_000, () => callResults.find((r) => r.step === 'member:resolveAttempt') ?? null)
+  const refused = selfRes?.isError === true || !String(selfRes?.text ?? '').includes('"ok":true')
+  check('L4', 'member resolve attempt REFUSED (surface denial / typed refusal — a member has no resolver)', refused === true, `isError=${String(selfRes?.isError)} text=${String(selfRes?.text).slice(0, 160)}`)
+  const factsFinal = await controlFacts()
+  check('L4', 'the identity refusal left NO extra durable decision fact', factsFinal['control-decision-recorded'].length === 1, `decided=${String(factsFinal['control-decision-recorded'].length)}`)
 
-  const finalFacts = await controlFacts()
-  check('V', 'ledger: recorded=2 decided=2 consumed=1 (no duplicates)', finalFacts['control-request-recorded'].length === 2 && finalFacts['control-decision-recorded'].length === 2 && finalFacts['control-allow-consumed'].length === 1, `recorded=${finalFacts['control-request-recorded'].length} decided=${finalFacts['control-decision-recorded'].length} consumed=${finalFacts['control-allow-consumed'].length}`)
-  check('V', 'decisions were NOT RPC-driven (RPC transcript carries only reads/observation)', !TRANSCRIPT.some((t) => t.channel === 'team-remote' && t.method === 'team.resolveControl'), 'observation-only transcript verified')
+  check('V', 'ledger: exactly recorded=1 and decided=1 for the slice (consumption/EDIT NOT covered — explicitly untested, no C2 claim here)', factsFinal['control-request-recorded'].length === 1 && factsDecided['control-decision-recorded'].length === 1, `recorded=${String(factsFinal['control-request-recorded'].length)} decided=${String(factsDecided['control-decision-recorded'].length)}`)
+  check('V', 'decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)', !TRANSCRIPT.some((t) => t.channel === 'team-remote' && t.method === 'team.resolveControl'), 'observation-only transcript verified')
 
   await cleanup()
   finish(0)

@@ -1,0 +1,19 @@
+{
+  "runner": "05-control-window-runner.mjs",
+  "scenario": "control-slice-83-85-84-identity",
+  "dry": true,
+  "booted": false,
+  "verdict": "NOT_RUN",
+  "scopeNote": "consumption/EDIT leg NOT covered this window (explicitly UNTESTED, root a738 scope) — full C2 is NOT claimed by this receipt",
+  "ports": {
+    "host": 3184,
+    "mock": 3499
+  },
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-dry-2026-10-24T10-39-33-107ZZ",
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-dry-2026-10-24T10-39-33-107Z",
+  "checks": [],
+  "stamps": {
+    "nonce": "gpc4a0",
+    "runStamp": "2026-10-24T10-39-33-107Z"
+  }
+}

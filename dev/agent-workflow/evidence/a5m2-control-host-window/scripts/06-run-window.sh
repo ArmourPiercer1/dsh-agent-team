@@ -10,7 +10,7 @@
 #   host    = tests/deepseek-harness-test-use (639)  ports 3184 + mock 3499
 #   HOME    = tests/homes/a5m2-ctl-hw-<UTC>Z fresh, explicit, NEVER deleted
 set -euo pipefail
-REPO_WT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+REPO_WT="$(cd "$(dirname "$0")/../../../../.." && pwd)"
 cd "$REPO_WT"
 RUNNER=dev/agent-workflow/evidence/a5m2-control-host-window/scripts/05-control-window-runner.mjs
 TS=$(date -u +%Y%m%dT%H-%M-%SZ)
