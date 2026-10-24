@@ -107,7 +107,16 @@ const SAVED_BP_V3_YAML = [
   '    - assign-task', '    - create-member', '    - send-message',
   '    - report-progress', '    - request-control', '    - resolve-control',
   '  deny: []',
-  'memberEnvelopes: []', 'requirements: []',
+  // root-A 09:5xZ: ONLY this isolated worker's mutation envelope gains ONE
+  // operation — request-control (raising an ask). Shape + operation name are
+  // the VERIFIED M1 approval-纵切 law, copied verbatim from
+  // tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs :1284-1293
+  // ({templateId, envelope:{allow:[…'request-control'], deny:[]}}); schema law
+  // = validate.js :962-978 (templateId must resolve; envelope = validateEnvelope
+  // {allow,deny}). NO resolve-control for the worker (cannot answer/approve
+  // itself); the Leader + team resolution path is untouched (teamEnvelope above).
+  'memberEnvelopes:', '  - templateId: edit-worker', '    envelope:', '      allow:',
+  '        - request-control', '      deny: []', 'requirements: []',
   'permissionMutationEnvelope:', '  rules: []',
   'teamHardEnvelope:', '  rules: []',
   'policyStates: []', 'metadata: {}', '---', '',
