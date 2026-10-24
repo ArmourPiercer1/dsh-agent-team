@@ -1832,7 +1832,10 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     // the host's snapshot shape: base captured ONCE; the facts closure
     // re-runs against the SAME frozen frame (not a live env/config source).
     const snapshotBase = 'https://api.deepseek.com/anthropic/v1'
-    const facts = () => { const u = new URL(snapshotBase); return { endpointOrigin: u.origin, configIdentity: 'g2-web-search:deepseek-official|' + u.origin } }
+    // the file's established type face for the two-URL-declaration trap (same
+    // structural face host.ts:795 uses): the runtime object IS a URL and .origin
+    // is its real property; the assertion's meaning (origin equality) is unchanged.
+    const facts = () => { const u = new URL(snapshotBase) as unknown as { origin: string }; return { endpointOrigin: u.origin, configIdentity: 'g2-web-search:deepseek-official|' + u.origin } }
     expect(facts()).toEqual(declared)
     let reached = 0
     const pinned = { id: 'deepseek-official', available: () => true, search: async () => { reached += 1; return { sources: [], truncated: false } } } // ONE object: the seam's provider-identity pin law (its own drift guard) applies to the legs too
