@@ -1,5 +1,5 @@
 /**
- * A5-M2 EDIT/SRE PA HAND-OFF (root 2026-10-26, the SECOND existing blocker):
+ * A5-M2 EDIT/SRE PA HAND-OFF (root 2026-10-24, the SECOND existing blocker):
  * the governed EDIT and SRE rows join the pre-dispatch hand-off under the
  * audited WRITE law — the ONE durable effect-set Ask per call belongs to PA,
  * the body takes its claim ONCE under the ORIGINAL correlation, and cancel /
@@ -341,7 +341,7 @@ interface Mounted {
   fam: Fam
   /** true when THIS world answers the effect-set question through the ONE
    *  durable PA row. `str_replace_editor` JOINED the closed vocabulary as an
-   *  invocation-only tool (root 2026-10-26 registration): SRE all-allow and
+   *  invocation-only tool (root 2026-10-24 registration): SRE all-allow and
    *  deny are now expressible, so the row is no longer forced by a vocabulary
    *  gap — it is chosen per world (`ask: true`), exactly like EDIT. */
   withRow: boolean
@@ -385,7 +385,7 @@ async function mountWorld(fam: Fam, label: string, opts: { ask?: boolean } = {})
       : Object.freeze({
           default: 'deny',
           allow: [
-            // B-SRE after the 2026-10-26 registration: the INVOCATION is
+            // B-SRE after the 2026-10-24 registration: the INVOCATION is
             // named by the invocation-only str_replace_editor rule (kind
             // 'any' — the rule IS the invoke authority, projecting NO file
             // arm); R/F stay EXACT independent read/write rules. Together

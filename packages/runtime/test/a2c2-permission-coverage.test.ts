@@ -91,7 +91,7 @@ const STRICT_DENY: TemplatePermissionPolicy = { default: 'deny', allow: [], ask:
  *  controls stay OUT of the vocabulary (Gate 0f refuses their mount):
  *  `team_request_control` keeps the OTHER_MANAGED_TEAM_TOOL class alive
  *  and pins the exclusion boundary. */
-// The FOUR self-governance controls joined the vocabulary 2026-10-26 — the
+// The FOUR self-governance controls joined the vocabulary 2026-10-24 — the
   // non-vocabulary control example is a synthetic still-outside name.
 const TEAM_TOOLS = ['team_delegate', 'team_follow_up', 'team_inspect_config', 'team_future_control']
 

@@ -3838,7 +3838,7 @@ export function createAgentBindings(deps) {
             serviceGeneration: (typeof deps.scheduleLifecycle?.currentGeneration === 'function'
               ? () => deps.scheduleLifecycle.currentGeneration()
               : undefined),
-            // ② CONTINUATION CARD (root 2026-10-26 fork ruling): the
+            // ② CONTINUATION CARD (root 2026-10-24 fork ruling): the
             // create/update governed ARMS bind under the SAME law; their
             // gate reads the SAME public generation face (epoch/ACTIVE
             // first) and while the ruled fork is NOT the mounted provider
@@ -4069,7 +4069,7 @@ export function createAgentBindings(deps) {
             },
             observe: (row) => observations.push(`a5m2-schedule-bind: ${String(row?.event ?? 'event')} for ${sessionId}`),
           })
-          // MOUNT PROBE (root 2026-10-26 fork ruling; the single-timer law
+          // MOUNT PROBE (root 2026-10-24 fork ruling; the single-timer law
           // observer): the provider slot 'schedule' holds ONE plugin per
           // assembly — the original OR the ruled fork, never both, so the
           // durable timer obligation has exactly one owner. The measured
@@ -5124,7 +5124,7 @@ export function createAgentBindings(deps) {
           // child: no admitted call context exists behind it (children
           // are established only under the PER-RUN closures the runner
           // registers) — its chain face refuses by construction.
-          // RALPH IS NOT CLOSED (honest word, root card 2026-10-26): the
+          // RALPH IS NOT CLOSED (honest word, root card 2026-10-24): the
           // ralph row's captured body starts the SAME public
           // ctx.workflowEngine with the FIXED Config.subagentProvider name
           // (tool-ralph/src/index.ts :34/:186-191/:219/:445); a per-run
@@ -5206,7 +5206,7 @@ export function createAgentBindings(deps) {
               // ANY extra field (parentAgent / agentOptions / signal) is
               // REFUSED typed here — forwarding-then-dropping or dropping
               // silently would pretend a support the seam does not have
-              // (root interface card 2026-10-26).
+              // (root interface card 2026-10-24).
               if (typeof args?.admittedCallId !== 'string' || args.admittedCallId.length === 0) throw new Error('P_B_ORCH_CHILD_ROUTE_INPUT: the bridge install needs the admitted child-call identity')
               for (const extra of ['parentAgent', 'agentOptions', 'signal']) {
                 if (args?.[extra] !== undefined) throw new Error(`P_B_ORCH_CHAIN_FIELD_UNSUPPORTED: createChildSession takes no '${extra}' — refusing typed instead of silently dropping it`)
@@ -5272,7 +5272,7 @@ export function createAgentBindings(deps) {
             try {
               const located = locateTemplate(sid, instanceId, undefined, undefined, undefined)
               // The REAL located-template field is `templateId` (root
-              // interface card 2026-10-26) — not `id`.
+              // interface card 2026-10-24) — not `id`.
               if (typeof located?.templateId === 'string' && located.templateId.length > 0) templateId = located.templateId
             } catch { /* unresolved below, typed */ }
             if (templateId === null) {
@@ -8707,7 +8707,7 @@ export function createAgentBindings(deps) {
                   onTerminal: (observer) => agentCtx.on('tools/result', observer),
                 },
               }),
-          // A5-M2 EDIT/SRE HAND-OFF PORTS (root 2026-10-26, the SECOND known
+          // A5-M2 EDIT/SRE HAND-OFF PORTS (root 2026-10-24, the SECOND known
           // blocker — the ONE durable effect-set Ask for the governed EDIT /
           // SRE rows belongs to PA, exactly as for read/write/image; wiring
           // them was an implementation-SCOPE choice until this card, never a
@@ -10726,7 +10726,7 @@ export function createAgentBindings(deps) {
   // answer a Leader of Team A addressing root B would be re-validated
   // against Team B's rows as Team B's leader (the pending-list +
   // resolve-control cross-team chain).
-  // THE CHILD IDENTITY BRIDGE (root ruling 2026-10-26 item A): a
+  // THE CHILD IDENTITY BRIDGE (root ruling 2026-10-24 item A): a
   // trusted identity ROUTING / lifecycle index ONLY — no second
   // permission decision, no grants, no ledger (the durable member
   // ledger above stays the single authority for real members). Provider

@@ -443,7 +443,7 @@ export const PERMISSION_TOOL_NAMES = [
     'cordis_inspect_list',
     'cordis_inspect_query',
     'team_list_pending_control',
-    // B-TEAM self-governance four (records 83/84/87/88; root 2026-10-26
+    // B-TEAM self-governance four (records 83/84/87/88; root 2026-10-24
     // limited card: the mount takeover is PRODUCTION fact — tools.ts
     // team_request_control / team_resolve_control / team_grant_permission /
     // team_revoke_permission — and the old declared-INACTIVE comment was
@@ -456,7 +456,7 @@ export const PERMISSION_TOOL_NAMES = [
     'team_resolve_control',
     'team_grant_permission',
     'team_revoke_permission',
-    // B-SRE (root 2026-10-26): the str_replace_editor INVOCATION registers
+    // B-SRE (root 2026-10-24): the str_replace_editor INVOCATION registers
     // invocation-only so the I rule is expressible at all. R/F stay exact
     // read/write rules on their own: an invocation-only rule projects NO
     // file arm (exact/subtree refuse for this class), so this is never a
@@ -540,7 +540,7 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES = [
     // self-governance controls (team_request_control / team_resolve_control
     // / team_grant_permission / team_revoke_permission) stay OUT: declared
     // INACTIVE, Gate 0f refuses their mount.// self-governance controls' old stay-OUT/INACTIVE disclosure (same
-    // names) is RETIRED by the 2026-10-26 registration below: the takeover
+    // names) is RETIRED by the 2026-10-24 registration below: the takeover
     // is production fact, records 83/84/87/88.
     'team_list_members',
     'team_list_templates',
@@ -561,7 +561,7 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES = [
     'cordis_inspect_list',
     'cordis_inspect_query',
     'team_list_pending_control',
-    // B-TEAM self-governance four (records 83/84/87/88, root 2026-10-26):
+    // B-TEAM self-governance four (records 83/84/87/88, root 2026-10-24):
     // registered on the 85 pattern — tool-invoke arm, 'any' resource, the
     // exact realm|tool:name projection; the envelope and native resolver
     // identity UNCHANGED. B-SRE str_replace_editor registers on the same

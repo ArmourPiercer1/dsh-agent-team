@@ -360,7 +360,7 @@ let realmSeq = 0
 function directAssembly(
   documents?: () => AuthorityEnvelopeDocuments,
   realm?: string,
-  // A7 (root 2026-10-26): an optional policy so a MIXED effect set (some
+  // A7 (root 2026-10-24): an optional policy so a MIXED effect set (some
   // effects policy-allowed, one asking) can be built over the REAL assembly;
   // every existing caller keeps DIRECT_POLICY by default.
   policy: TemplatePermissionPolicy = DIRECT_POLICY,
@@ -2661,7 +2661,7 @@ describe('A5M2-CHAIN-POS: a registered family is approved, guarded and consumed'
   })
 })
 
-// ── A7. MIXED effect sets — the producer contract (root ruling 2026-10-26) ─
+// ── A7. MIXED effect sets — the producer contract (root ruling 2026-10-24) ─
 // The durable-chain regression for the shared PA producer bug the root
 // located (approval-case.ts: the plan loop walked only needApproval, so a
 // mixed set reached the strict Control manifest with too FEW rungs —
@@ -2673,7 +2673,10 @@ describe('A5M2-CHAIN-POS: a registered family is approved, guarded and consumed'
 // ControlService validator; the all-allow set still mints NO case.
 
 const A7_LOCATOR = '/a5m2-a7-regression/notes.txt'
-const A7_MIXED_POLICY: TemplatePermissionPolicy = Object.freeze({
+// The type ARGUMENT gives the nested allow[] elements their context (a bare
+// Object.freeze({…}) widens tool: 'read'|'write' to string — the real tsc
+// diagnostic at this line); no cast, no `as unknown`.
+const A7_MIXED_POLICY = Object.freeze<TemplatePermissionPolicy>({
   default: 'ask',
   allow: [
     { tool: 'read', resource: { kind: 'exact' as const, path: A7_LOCATOR } },

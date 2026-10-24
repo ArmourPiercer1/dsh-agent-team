@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (40 = 35 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five; root 20:05/22:13/22:4x/22:32) + Team self-governance four + B-SRE one; root 2026-10-26 registration)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (40 = 35 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five; root 20:05/22:13/22:4x/22:32) + Team self-governance four + B-SRE one; root 2026-10-24 registration)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -1379,7 +1379,7 @@ describe('invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13)',
 // both files' closed effect envelope is `tool-invoke` ONLY, resource
 // null; NOT in int — root review in flight, naming pre-wires the channel
 // only). (The FOUR Team self-governance controls' stay-OUT/INACTIVE line
-// is RETIRED by the 2026-10-26 registration below — the takeover is
+// is RETIRED by the 2026-10-24 registration below — the takeover is
 // production fact, records 83/84/87/88; B-SRE str_replace_editor joins on
 // the same 85 invocation-only pattern.) No prefix, no
 // whole-native sweep, no I/O exemption: the tool-invoke arm is the entire
@@ -1392,7 +1392,7 @@ const CONFIRMED_SETS_26 = [
   'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
   'team_send_message', 'team_report_progress', 'team_archive_member',
   'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
-  // root 2026-10-26 limited card: the FOUR Team self-governance controls'
+  // root 2026-10-24 limited card: the FOUR Team self-governance controls'
   // mount takeover is production fact (tools.ts; records 83/84/87/88) — the
   // old stay-OUT/INACTIVE disclosure retired; B-SRE str_replace_editor
   // registers invocation-only so its I rule is expressible (R/F stay exact
@@ -1430,7 +1430,7 @@ describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:
     ]
   }
 
-  it('membership: all twenty-six confirmed names are in (the four controls + B-SRE REGISTERED 2026-10-26); the un-adjudicated orchestration names stay OUT', () => {
+  it('membership: all twenty-six confirmed names are in (the four controls + B-SRE REGISTERED 2026-10-24); the un-adjudicated orchestration names stay OUT', () => {
     for (const name of CONFIRMED_SETS_26) expect(PERMISSION_TOOL_NAMES).toContain(name)
     for (const out of ['workflow', 'ralph', 'web_fetch', 'todo_write']) {
       expect(PERMISSION_TOOL_NAMES.includes(out)).toBe(false)

@@ -4075,7 +4075,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // approved readEffectLaw fact); the arm receipt {canonicalLocator,...}
   // projects onto the native spelling here and nowhere else.
 
-  // ── A5-M2 EDIT PA HAND-OFF (root 2026-10-26: the SECOND existing
+  // ── A5-M2 EDIT PA HAND-OFF (root 2026-10-24: the SECOND existing
   // blocker; the audited WRITE hand-off law mirrored VERBATIM — one durable
   // effect-set Ask per call at PA, single synchronous take, cancel/result/
   // dispose reclamation; NOT a second approval, NO native fallback) ──
@@ -4332,7 +4332,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         throw new Error('refused-edit exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token')
       }
       const priorFlight = governedTokenLedger.get(tokenKey)
-      // A5-M2 EDIT HAND-OFF redemption (root 2026-10-26, the audited WRITE
+      // A5-M2 EDIT HAND-OFF redemption (root 2026-10-24, the audited WRITE
       // law verbatim): the ONE in-flight HANDED-OFF flight on this token IS
       // this body's redemption — it was opened FOR this exact execution at
       // pre-dispatch, so the ledger's single-flight law holds. The take is
@@ -4564,7 +4564,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // ONE PA walk with the family block, kernel-grant prepare, real edge,
   // consumed-proof witness, fix-3 abort race, risk facts IN-BAND).
 
-  // ── A5-M2 SRE PA HAND-OFF (root 2026-10-26: the SECOND existing
+  // ── A5-M2 SRE PA HAND-OFF (root 2026-10-24: the SECOND existing
   // blocker; the audited WRITE hand-off law mirrored VERBATIM — one durable
   // effect-set Ask per call at PA, single synchronous take, cancel/result/
   // dispose reclamation; NOT a second approval, NO native fallback) ──
@@ -4815,7 +4815,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         throw new Error('refused-sre exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token')
       }
       const priorFlight = governedTokenLedger.get(tokenKey)
-      // A5-M2 SRE HAND-OFF redemption (root 2026-10-26, the audited WRITE
+      // A5-M2 SRE HAND-OFF redemption (root 2026-10-24, the audited WRITE
       // law verbatim): the single synchronous take of the pre-dispatch claim,
       // under the ORIGINAL correlation; a lost flight refuses, a re-entrant
       // redemption finds no flight, any other prior stays the typed replay
@@ -7205,7 +7205,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
           if (typeof correlation === 'string') livePaPlan.delete(correlation)
         },
       }) }),
-      /** A5-M2 EDIT/SRE HAND-OFF (root 2026-10-26, the SECOND existing
+      /** A5-M2 EDIT/SRE HAND-OFF (root 2026-10-24, the SECOND existing
        *  blocker): the governed EDIT / SRE hand-off faces for THIS mount —
        *  the SAME audited port shape and the SAME presence law as
        *  `paWriteHandoff`/`paImageHandoff`: a mount with NO governed edit /
@@ -7350,7 +7350,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // SAME ordering — before the arm's drain, so a late leg's
             // after-await re-check drops any answer that lands after this.
             if (imageInject !== null) imageHandoffCloseAll()
-            // A5-M2 EDIT/SRE hand-off (root 2026-10-26): the SAME teardown
+            // A5-M2 EDIT/SRE hand-off (root 2026-10-24): the SAME teardown
             // law, the SAME ordering — before the arm's drain, so a late
             // leg's after-await re-check drops any answer that lands after.
             if (editInject !== null) editHandoffCloseAll()
@@ -7372,7 +7372,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // The arm is the placement-moment construction (central-card ②),
             // so the drain reaches the SAME arm the rows drove.
             if (imageArm !== null) imageArm.drain()
-            // A5-M2 EDIT/SRE HAND-OFF (root 2026-10-26): the SAME drain law —
+            // A5-M2 EDIT/SRE HAND-OFF (root 2026-10-24): the SAME drain law —
             // without it a LATE post-dispose call is a NEW identity (the
             // ledger release) entering a DEAD mount, where the ask walk never
             // settles; the drain makes it a typed refusal at classify

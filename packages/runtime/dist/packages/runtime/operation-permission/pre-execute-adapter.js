@@ -784,7 +784,7 @@ export function installParameterPermissionListener(agentCtx, params) {
     // before any registration (the same R6 discipline as the missing guard
     // seam): a half hand-off must never silently degrade into the old Ask.
     // Truly ABSENT (no governed read/write/image/edit/sre row, no-Team) keeps the pre-hand-off path.
-    // A5-M2 (root 2026-10-26 residual): the EDIT/SRE ports join THIS validation —
+    // A5-M2 (root 2026-10-24 residual): the EDIT/SRE ports join THIS validation —
     // a half-wired paEditHandoff/paSreHandoff refuses the install too, never a
     // silent degrade to the old Ask.
     for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff], ['paImageHandoff', params.paImageHandoff], ['paEditHandoff', params.paEditHandoff], ['paSreHandoff', params.paSreHandoff]]) {
@@ -800,7 +800,7 @@ export function installParameterPermissionListener(agentCtx, params) {
     // mounted name and returns 'no-match' for everything else, so an absent
     // port changes NOTHING and the old path stays untouched for every other
     // name and world.
-    // A5-M2 (root 2026-10-26, second existing blocker): the EDIT and SRE rows
+    // A5-M2 (root 2026-10-24, second existing blocker): the EDIT and SRE rows
     // join the SAME list under the SAME law — supplied only when the mount
     // carries the verified + ACTIVE row, each port owning exactly ONE name,
     // 'no-match' elsewhere, absent changing nothing. The ORDER is
@@ -813,7 +813,7 @@ export function installParameterPermissionListener(agentCtx, params) {
     // the cleanup mechanism — the mount's plan fact is a strong Map keyed by a
     // string, so only the terminal leg below clears it.
     const paHandoffExecs = new WeakSet();
-    // A5-M2 (root 2026-10-26): the hand-off walk, ONCE per call, SHARED by
+    // A5-M2 (root 2026-10-24): the hand-off walk, ONCE per call, SHARED by
     // both ladder entries — the supported-tool path (its historical position,
     // after the capability preflight) and the UNSUPPORTED pass-through. An
     // invocation-only mounted row (the governed str_replace_editor) has no
@@ -887,7 +887,7 @@ export function installParameterPermissionListener(agentCtx, params) {
         // interference, the resolver is never called.
         const toolClass = classifyPermissionTool(name);
         if (toolClass.kind === 'unsupported') {
-            // A5-M2 (root 2026-10-26): before the pass-through, the hand-off
+            // A5-M2 (root 2026-10-24): before the pass-through, the hand-off
             // ports get their shot — a governed invocation-only row (the
             // str_replace_editor mount) is PORT-OWNED even where this adapter has
             // no canonical operation. No port claims it ⇒ the pass-through below

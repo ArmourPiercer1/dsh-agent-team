@@ -1528,7 +1528,7 @@ describe('A5-M2 port→adapter — cleanup ownership is STATED, never guessed', 
 })
 
 // ---------------------------------------------------------------------------
-// A5-M2 (root 2026-10-26): VOCABULARY + ENTRY REACHABILITY at the REAL
+// A5-M2 (root 2026-10-24): VOCABULARY + ENTRY REACHABILITY at the REAL
 // adapter. str_replace_editor is a registered INVOCATION-ONLY permission
 // tool, but this adapter has no canonical operation for it — classify
 // answers 'unsupported'. The hand-off ports must still get their shot

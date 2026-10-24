@@ -621,7 +621,7 @@ export interface InstallParameterPermissionListenerParams {
      */
     readonly paImageHandoff?: PaReadHandoffPorts;
     /**
-     * A5-M2 PA-EDIT HAND-OFF (root 2026-10-26, the SECOND known blocker — an
+     * A5-M2 PA-EDIT HAND-OFF (root 2026-10-24, the SECOND known blocker — an
      * existing-blocker fix kept SEPARATE from the dense-rungs `e10` core): the
      * SAME audited port shape, supplied only when THIS mount carries the
      * verified + ACTIVE governed EDIT row. The ONE durable effect-set Ask
