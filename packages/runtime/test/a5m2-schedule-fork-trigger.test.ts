@@ -20,12 +20,12 @@ const here = dirname(fileURLToPath(import.meta.url))
 const forkRoot = join(here, '..', '..', '..', 'forks', 'dsh-schedule')
 
 let ScheduleRuntime: (new (...args: unknown[]) => { requestDrive: () => void }) | undefined
-let loadError: string = ''
+let _loadError: string = ''
 try {
   const mod = await import('../../../forks/dsh-schedule/src/runtime.ts')
   ScheduleRuntime = mod.ScheduleRuntime
 } catch (error: unknown) {
-  loadError = String(error)
+  _loadError = String(error)
 }
 const LOADABLE = ScheduleRuntime !== undefined
 
