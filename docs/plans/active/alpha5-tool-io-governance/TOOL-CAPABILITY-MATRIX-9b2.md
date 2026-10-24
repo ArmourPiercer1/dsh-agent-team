@@ -174,6 +174,6 @@
 ## 当前补充（2026-10-24 09:03:32 / 09:04:45 UTC 用户裁决；**只追加不改写上方冻结快照**）
 
 - 上方 A-6 行 `plugin_manager` 的 `逐名：UNKNOWN` 为**历史冻结值**，原样保留。
-- 当期口径由本补充覆盖：Alpha.5 对 `plugin_manager` **仅治理"安装动作"的权限审批**；内部 pnpm 文件 IO／网络／任意初始化**不承诺隔离**（阶段性合同边界，**非功能/测试完成声称**）。
+- 当期口径由本补充覆盖：**豁免仅 `plugin_manager.install_bundle` 一 action 的内部 IO**（pnpm 文件/网络/任意初始化当期不承诺隔离）；**其余 7 action 原义务不变**；install_bundle 本身仍走真实 PA＋Host 审批、末端 fresh、wait/cancel final；7/8 现状＝源路径不冒 Host（阶段性合同边界，**非功能/测试完成声称**）。
 - **OPEN 复议**（非永久豁免、非自动 Alpha.6 施工）：是否升级到安装内部 IO 管控及其证据/维护代价 —— 见 `ALPHA5-EFFECTIVE-BACKLOG.md` BL-20/BL-21。
 - 边界与四档正位＝`dev/agent-workflow/evidence/a5m2-integration/TOOL-TABLE-CURRENT.md`（合同 owner＝CENTER）；PR361 工程基线升级更新体系由 root 直送专属 lane 记录同一权威链接（避免双权威）。
