@@ -378,6 +378,8 @@ import { A5_B_SUBAGENT_RECORD_SPECS } from './governed-families/subagent-adapter
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
 import { createGovernedScheduleArm, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
+import { createBOrchestrationExecutionWiring } from './governed-families/workflow-wiring.mjs'
+import { A5_B_ORCHESTRATION_TOOL_NAMES } from './governed-families/workflow-adapters.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
@@ -2501,6 +2503,7 @@ export function createAgentBindings(deps) {
       // carries it into the plane's ONE placement, and the post-publish
       // family registration write (the 9e-4 lesson).
       let a5SubagentControlInject = null
+      let a5BOrchestrationInject = null
       // A5-M2 B-SESSION: the mount-time bound governed todo arm (null = this world
       // mounts none, the zero-flip law). Declared in the SAME lexical scope as both
       // the plane assembly that injects it and the later publish that registers its
@@ -4400,6 +4403,119 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-b-subagent-control: trio ARMED for ${sessionId} (placement rides the plane; records=${Object.keys(subagentControlCaptured).join(',')})`)
         }
+        // A5M2-WIRE-G2 B-ORCHESTRATION execution arm (records 47 workflow /
+        // 48 ralph): the REAL consumer behind the frozen adapters (root
+        // 637842 correction). Same-source law: the member-scoped capture IS
+        // the definition this member executes (the Agent object is the scope
+        // key, no global-layer fallback); placement rides the PLANE (the
+        // host scoped-shadow law, core/tools/src/index.ts:804 — the global
+        // host registration is SHADOWED for this member, never a second
+        // registration in one scope; the family registration keys read the
+        // PLANE feed fresh, so a name whose placement did not take answers
+        // no key and the mount REFUSES rather than papering over — the
+        // ownership handover IS the placement + identity law, verified at
+        // every dispatch by the adapter's liveNative identity gate); PA is
+        // the plane's ONE funnel read LAZILY (rows run only after publish).
+        // workflow is the always record: invisible to the member scope =
+        // config defect, refused. ralph is the conditional capture: absent
+        // (host-preset-off worlds) = the adapter's honest DECLARED row —
+        // zero-flip law, nothing here flips.
+        if (planeCfg.bOrchestrationEnabled === true) {
+          const refuseBOrch = (why) => {
+            const error = new Error(`agent-bindings: alpha5 governed B-ORCHESTRATION mount refused for '${sessionId}': ${why}`)
+            error.code = 'alpha5-b-orchestration-arm-mount-refused'
+            observations.push(`a5m2-b-orchestration: mount-REFUSED for ${sessionId} (${String(why).slice(0, 140)})`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseBOrch('the member Agent object is unreadable — the scope-aware native capture has no scope key')
+          }
+          const bOrchCaptured = {}
+          const bOrchDelegates = {}
+          for (const orchName of A5_B_ORCHESTRATION_TOOL_NAMES) {
+            let nativeFace
+            try {
+              nativeFace = agentCtx.tools.get(orchName, runtimeAgent)
+            } catch (error) {
+              if (orchName === 'workflow') throw refuseBOrch(`the member-scoped tool face could not be read for the native workflow definition (${String(error?.message ?? error).slice(0, 120)})`)
+              continue
+            }
+            const visible = nativeFace !== null && typeof nativeFace === 'object' && typeof nativeFace.execute === 'function'
+            if (!visible) {
+              if (orchName === 'workflow') throw refuseBOrch('no executable native workflow definition is visible to this member scope (record 47 is the always record — masking the name with nothing behind it is the plane\'s own refused class; there is no fallback row and no silent disable)')
+              continue
+            }
+            let captureIdentity
+            try {
+              captureIdentity = definitionIdentityOf(nativeFace)
+            } catch {
+              captureIdentity = undefined
+            }
+            if (typeof captureIdentity !== 'string' || captureIdentity.length === 0) {
+              throw refuseBOrch(`the captured native ${orchName} answers no definition identity — the virtual identity law`)
+            }
+            bOrchCaptured[orchName] = Object.freeze({ native: nativeFace, definitionIdentity: captureIdentity })
+            bOrchDelegates[orchName] = nativeFace.execute
+          }
+          const bOrchLiveDelegates = Object.freeze({ ...bOrchDelegates })
+          const bOrchAssembly = createBOrchestrationExecutionWiring({
+            providerId: 'a5p5-plane',
+            captured: Object.freeze({ ...bOrchCaptured }),
+            liveNative: (name) => {
+              const live = agentCtx.tools.get(name, runtimeAgent)
+              const mine = (bOrchAssembly?.definitions ?? []).find((d) => d.name === name)
+              if (live !== undefined && live !== null && mine !== undefined && live === mine) {
+                let mineIdentity
+                try {
+                  mineIdentity = definitionIdentityOf(mine)
+                } catch {
+                  mineIdentity = undefined
+                }
+                const fed = a5PlaneValue?.placementFeed?.(name)
+                if (fed !== undefined && fed !== null && typeof mineIdentity === 'string' && fed.definitionIdentity === mineIdentity) {
+                  return bOrchCaptured[name]?.native
+                }
+              }
+              return live
+            },
+            workflowDelegates: Object.freeze({ ...bOrchDelegates }),
+            liveWorkflowDelegates: () => bOrchLiveDelegates,
+            placementFeed: (name) => {
+              const fed = a5PlaneValue?.placementFeed?.(name)
+              if (fed === undefined || fed === null) return undefined
+              return {
+                definitionIdentity: typeof fed.definitionIdentity === 'string' && fed.definitionIdentity.length > 0 ? fed.definitionIdentity : undefined,
+                realmId: typeof fed.realmId === 'string' && fed.realmId.length > 0 ? fed.realmId : undefined,
+              }
+            },
+            pa: Object.assign(
+              (walk) => {
+                if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
+                  return Promise.reject(new Error('the placed plane answers no paAdmit funnel — the execution arms have no unadmitted path'))
+                }
+                return a5PlaneValue.paAdmit(walk)
+              },
+              {
+                closePlan: (callId) => {
+                  a5PlaneValue?.paAdmit?.closePlan?.(callId)
+                },
+              },
+            ),
+            observe: (row) => observations.push(`a5m2-b-orchestration: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
+          })
+          if (bOrchAssembly.ok !== true) {
+            throw refuseBOrch(`the execution wiring refused its inputs (${String(bOrchAssembly.code)}: ${String(bOrchAssembly.message ?? '').slice(0, 160)})`)
+          }
+          a5BOrchestrationInject = Object.freeze({
+            definitions: bOrchAssembly.definitions,
+            familyId: bOrchAssembly.familyId,
+            providerId: bOrchAssembly.providerId,
+            placementNames: bOrchAssembly.placementNames,
+            familyRegistrations: bOrchAssembly.familyRegistrations,
+            dispose: bOrchAssembly.dispose,
+          })
+          observations.push(`a5m2-b-orchestration: ARMED for ${sessionId} (workflow always${Object.prototype.hasOwnProperty.call(bOrchCaptured, 'ralph') ? ' + captured ralph' : '; ralph carried as the adapter\'s DECLARED row — zero-flip'})`)
+        }
         // A5M2 G3 B-TERMINAL (root 19:08, wiring lane; the G6 block's division
         // of labor verbatim): the Team-plane owner PUBLISHES the deployment
         // evidence under `planeCfg.terminal` — providerId, the DECLARED public
@@ -4812,7 +4928,7 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -4833,6 +4949,7 @@ export function createAgentBindings(deps) {
             // placement — ownNames, the Guard's assembly-owned bind and
             // bindingFeed, and the PA placement attribution resolve them.
             ...(a5SubagentControlInject === null ? {} : { subagentControl: a5SubagentControlInject }),
+            ...(a5BOrchestrationInject === null ? {} : { bOrchestration: a5BOrchestrationInject }),
             // A5M2-G5 MOUNT-ARM (this lane's row in the shared backends
             // union): the goal bag rides the plane's own `backends.goal`
             // reader; null = no key at all = byte-identical pre-G5 assembly.
@@ -5865,6 +5982,28 @@ export function createAgentBindings(deps) {
           for (const controlRegistration of controlRegistrations) {
             registerA5GovernedFamily(controlRegistration.definitionIdentity, controlRegistration.entry)
             observations.push(`a5m2-b-subagent-control: family REGISTERED for ${sessionId} (record=${String(controlRegistration.recordIndex)} ${String(controlRegistration.name)} placement=${String(controlRegistration.definitionIdentity).slice(0, 32)})`)
+          }
+        }
+        // A5M2-WIRE-G2 B-ORCHESTRATION registration: same law, same single
+        // fill point — keys are the PLACED definitions' identities read
+        // fresh through the wiring's familyRegistrations (the adapter's own
+        // PLACEMENT_KEY_ABSENT/_MOVED laws ride; this block is transport
+        // only — a silent or moved feed throws, never guesses, never skips).
+        if (a5PlaneValue?.bOrchestration !== undefined) {
+          let bOrchRegistrations
+          try {
+            bOrchRegistrations = a5PlaneValue.bOrchestration.familyRegistrations()
+          } catch (error) {
+            const refusal = new Error(
+              `agent-bindings: alpha5 governed B-ORCHESTRATION family registration refused for '${sessionId}': ${String(error?.message ?? error).slice(0, 220)}`,
+            )
+            refusal.code = 'alpha5-b-orchestration-arm-mount-refused'
+            observations.push(`a5m2-b-orchestration: family-registration-REFUSED for ${sessionId} (placement feed silent or moved)`)
+            throw refusal
+          }
+          for (const bOrchRegistration of bOrchRegistrations) {
+            registerA5GovernedFamily(bOrchRegistration.definitionIdentity, bOrchRegistration.entry)
+            observations.push(`a5m2-b-orchestration: family REGISTERED for ${sessionId} (record=${String(bOrchRegistration.recordIndex)} placement=${String(bOrchRegistration.definitionIdentity).slice(0, 28)})`)
           }
         }
         // A5M2-G6 B-SESSION-QUERY: THE SAME fill point, the SAME law — the

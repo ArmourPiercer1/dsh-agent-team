@@ -71,7 +71,8 @@ describe('A5M2 B-ORCH execution consumer: outer PA governance over the ORIGINAL 
     expect(walk.family.familyId).toBe('B-ORCHESTRATION')
     expect(walk.family.recordIndex).toBe(47)
     expect(walk.family.targetManifest.addressClaim).toBeNull()
-    expect(walk.family.targetManifest.childGovernance).toContain('runtime-types.ts:40-48')
+    expect(walk.family.targetManifest.childGovernance).toContain('host.ts:197-207')
+    expect(walk.family.targetManifest.childGovernance).toContain('index.ts:804')
     expect(walk.family.targetManifest.childGovernance).toContain('invariant.ts:53-54')
     expect(walk.requestedEffects).toBeDefined() // the DOMAIN parser's canonical value, not a minted envelope
     expect(typeof walk.parametersFingerprint).toBe('string')

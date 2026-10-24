@@ -75,14 +75,28 @@ function deepFreeze (value) {
 const rawEffectsFor = (toolName) => [{ kind: 'tool-invoke', toolName, resource: null }]
 
 /** The truthful per-call target manifest mint: this family makes NO
- *  external address claim (a workflow/ralph call targets an engine RUN;
- *  fan-out and children live behind start()). The manifest CARRIES the
- *  child-governance breakpoint verbatim — the consumer states exactly
- *  what it does not govern. */
+ *  external address claim (a workflow/ralph call targets an engine RUN).
+ *  The child-governance line is the MEASURED chain, not an assertion:
+ *  every agent() child starts via the subagents SERVICE —
+ *  workflow-ptc/src/host.ts:197-207 `startChild` calls
+ *  `this.subagents.start(provider, {prompt, parent, signal, agentOptions?})`
+ *  with NO admission callback between the decision and the start and NO
+ *  toolFilter/scope passed; the child is a DISTINCT agent scope, so this
+ *  plane's governed definitions (scoped registrations shadow globals,
+ *  core/tools/src/index.ts:804) do NOT ride onto the child — the child's
+ *  own tool calls answer the host GLOBAL face, not the rows. Cancel
+ *  convergence is REAL at this seam (the child inherits the run
+ *  controller signal, host.ts:202; run.cancel reaches children,
+ *  workflow/src/runtime-types.ts:45-46); the only child census is the
+ *  settled agentsStarted invariant (workflow/src/invariant.ts:53-54).
+ *  Therefore per-child admission AT THE START MOMENT has no existing
+ *  governance entry reachable from this tool seam — carried as the
+ *  measured gap, never claimed closed, never papered over by the
+ *  native's own authority. */
 const mintTargetManifest = (name) => deepFreeze({
   addressClaim: null,
   record: A5_B_ORCHESTRATION_RECORD_SPECS[name]?.recordIndex,
-  childGovernance: 'NOT GOVERNED AT THIS SEAM — public run face is result/cancel/dispose (workflow/workflow/src/runtime-types.ts:40-48 @639ed01539); the only child census in pinned source is the settled agentsStarted invariant (workflow/src/invariant.ts:53-54); per-child independent admission is the engine/CENTER obligation (workflow-adapters.mjs:149-150)',
+  childGovernance: 'MEASURED GAP, NOT CLAIMED: children start via the subagents SERVICE (workflow-ptc/src/host.ts:197-207 startChild -> subagents.start with parent+signal, no admission callback, no toolFilter); children are distinct agent scopes so the plane rows do not ride them (core/tools/src/index.ts:804 scoped shadow is per-scope); cancel convergence via the inherited run signal IS real (host.ts:202, runtime-types.ts:45-46); the settled agentsStarted invariant is the only child census (invariant.ts:53-54)',
 })
 
 /**
