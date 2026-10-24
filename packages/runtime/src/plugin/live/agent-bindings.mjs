@@ -3010,7 +3010,7 @@ export function createAgentBindings(deps) {
         // per-Team supply face does not exist in the host deps today — that
         // is the named gap, stated with the deps token list as source
         // evidence inside the refusal itself.
-        if (planeCfg.g2McpEnabled === true || planeCfg.g2BrowserEnabled === true) {
+        if (planeCfg.g2McpEnabled === true || planeCfg.g2BrowserEnabled === true || planeCfg.g2WebEnabled === true) {
           const refuseG2 = (why) => {
             const error = new Error(`agent-bindings: alpha.5 G2 Team mount refused for '${sessionId}': ${why}`)
             error.code = 'alpha5-g2-mount-refused'
@@ -3096,8 +3096,7 @@ export function createAgentBindings(deps) {
             ...(planeCfg.g2WebEnabled === true && g2Supply.webFixedLanes !== null && typeof g2Supply.webFixedLanes === 'object'
               ? { webMount: {
                 lanes: g2Supply.webFixedLanes,
-                ...(g2Supply.webFixedTransport !== null && typeof g2Supply.webFixedTransport === 'object' ? { face: g2Supply.webFixedTransport } : {}),
-                resolveWebCenterPorts: () => {
+                  resolveWebCenterPorts: () => {
                   const ports = liveWebG2CenterPortsByRoot.get(String(teamRoot))
                   return ports === undefined ? null : { ports, assemblyId: String(teamRoot) }
                 },
@@ -3851,7 +3850,9 @@ export function createAgentBindings(deps) {
         // pairing with the landed B-MCP rule map, applying to the whole G2
         // group, not to MCP alone.
         if (a5G2Mount !== null) {
-          const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? [])]
+          // root 3-card: B-WEB rides the SAME loop with the SAME law — the
+          // g2Web rowset was silently unregistered (two-family drift).
+          const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? []), ...(a5G2Mount.backends.g2Web?.createRowset() ?? [])]
           for (const g2Row of g2Rows) {
             const g2Fed = a5PlaneValue?.placementFeed?.(g2Row.toolName)
             if (typeof g2Fed?.definitionIdentity !== 'string' || g2Fed.definitionIdentity.length === 0) {
