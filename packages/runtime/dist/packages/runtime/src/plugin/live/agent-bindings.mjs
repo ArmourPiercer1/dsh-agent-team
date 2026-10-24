@@ -3404,10 +3404,16 @@ export function createAgentBindings(deps) {
           // reader the Guard awaits — never a constant), and the search
           // origin ONLY from the row-declared fixed web config (fetch
           // mounts carry no search origin => typed refusal per call).
+          // ROOT 06:0x REAL-SEAM trio: the ONE lawful read is the plane's
+          // public call-level entry (readPaCallFactsForCall — REAL import,
+          // no durable-row assembly); consume rides the SAME plane's
+          // consumeForExecution edge. The live call context (walked
+          // effects/grant) is fed by the web row's own plane walk via
+          // resolveCallContext — until that feeds, every port refuses
+          // TYPED (kept honest refusal; zero constants, zero Control
+          // assembly).
           const g2WebCenterPorts = createG2WebCenterPorts({
-            getService: () => (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? controlServiceRef.current : undefined),
-            teamRoot: gatewayRootKey,
-            readGenerations: (teamSessionId, memberInstanceId) => readAuthorityGeneration(teamSessionId, memberInstanceId),
+            readCallFacts: readPaCallFactsForCall,
             searchOriginFacts: typeof config?.webGateway?.searchOrigin === 'string' ? { origin: config.webGateway.searchOrigin } : undefined,
           })
           liveWebGatewayAssemblies.set(gatewayRootKey, createLiveWebGatewayAssembly({
@@ -3415,10 +3421,26 @@ export function createAgentBindings(deps) {
             grantAuthority: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.grantAuthority,
             factsSource: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.factsSource,
             resolveSearchOrigin: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.resolveSearchOrigin,
-            ctxWeb: typeof deps.web === 'function'
+            // ROOT 06:0x: fetch rides the FIXED capture+bind transport when
+            // this root's Team declared one (the host-resolved public
+            // HttpFetchProvider face) — NOT the old dynamic deps.web
+            // method re-read; no fixed transport declared keeps the seam
+            // path for the fetch lane. search stays independently
+            // disclosed (absent origin refuses per call).
+            ctxWeb: typeof deps.web === 'function' || typeof deps.webFixed === 'function'
               ? {
-                fetch: (request) => { const seam = deps.web(); return seam?.fetch?.(request) },
-                search: (request) => { const seam = deps.web(); return seam?.search?.(request) },
+                fetch: (request, signal) => {
+                  const fixed = typeof deps.webFixed === 'function' ? deps.webFixed() : undefined
+                  if (fixed !== null && typeof fixed === 'object' && typeof fixed.fetch === 'function') return fixed.fetch(request, signal)
+                  const seam = typeof deps.web === 'function' ? deps.web() : undefined
+                  return seam?.fetch?.(request, signal)
+                },
+                search: (request, signal) => {
+                  const fixed = typeof deps.webFixed === 'function' ? deps.webFixed() : undefined
+                  if (fixed !== null && typeof fixed === 'object' && typeof fixed.search === 'function') return fixed.search(request, signal)
+                  const seam = typeof deps.web === 'function' ? deps.web() : undefined
+                  return seam?.search?.(request, signal)
+                },
               }
               : undefined,
             // NO search-origin resolver is passed here (root product-closure

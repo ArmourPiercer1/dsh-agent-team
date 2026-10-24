@@ -92,89 +92,98 @@ export function createG2FixedWebFace (provider, { searchProvider } = {}) {
  * input does not exist publicly today, the port answers a TYPED refusal
  * — the honest decline the header law demands, never stand-in facts.
  */
-export function createG2WebCenterPorts ({ getService, teamRoot, readGenerations, searchOriginFacts } = {}) {
-  const typed = (code, message) => Object.assign(new Error(`${code}: ${message}`), { code })
+/**
+ * THE center-edge trio, root 06:0x REAL-SEAM route (supersedes the
+ * durable-Control read — a DECIDED allow is a DECISION, not a consume;
+ * reviewPayload is not trusted effects; the all-allow path may hold no
+ * Control row at all — listControlState assembly of facts is forbidden).
+ * The ONE lawful read: the plane's OWN public call-level entry
+ * `readPaCallFactsForCall` (pa-mount-registry :400-418: the CURRENT
+ * facts of ONE live call keyed by the REAL call identity, no durable row
+ * required), and the SAME plane's execution edge
+ * `assembly.consumeForExecution(grant, { currentAuthorityGeneration,
+ * member, callId, realmId, bindingId, bindingRevision,
+ * parametersFingerprint, requestedEffects, cancelRequested })` whose
+ * success witness IS the one-shot consumedProof. grant → call → binding
+ * identity is the read's own law (a row-carried bindingId is COMPARED,
+ * never trusted). Generations are the REAL numbers the read answers
+ * (facts.authorityGeneration / facts.binding.revision) — never a
+ * hand-assembled three-generation object.
+ *
+ * The live call context (mount, walked effects, placement name, grant)
+ * is injected by the OWNING entry via `resolveCallContext(grantId)` —
+ * until the web row's own plane walk feeds it, resolveCallContext answers
+ * undefined and every port refuses TYPED (the kept honest refusal; no
+ * effects/grantId constants, no stand-in facts).
+ */
+export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, consumeEdge, searchOriginFacts } = {}) {
+  const decline = (code, message) => ({ ok: false, error: { code, message, sideEffectUnknown: false } })
+  const resolve = (grantId) => {
+    if (typeof resolveCallContext !== 'function') return undefined
+    try { return resolveCallContext(String(grantId)) } catch { return undefined }
+  }
   const resolveSearchOrigin = () => {
-    const origin = searchOriginFacts === null || searchOriginFacts === undefined ? undefined : searchOriginFacts.origin
+    const origin = searchOriginFacts === null || typeof searchOriginFacts !== 'object' ? undefined : searchOriginFacts.origin
     if (typeof origin !== 'string' || origin.length === 0) {
-      // search single-column: no real search provider/endpoint/config/
-      // current facts exist — refused EVERY call, config-bound (a
-      // fixed-URL fake is structurally impossible here).
-      throw typed('G2_WEB_SEARCH_ORIGIN_ABSENT', 'no real search origin rides this mount config: search is refused, fetch never stands in')
+      throw Object.assign(new Error('G2_WEB_SEARCH_ORIGIN_ABSENT: no real search origin rides this mount config: search is refused, fetch never stands in'), { code: 'G2_WEB_SEARCH_ORIGIN_ABSENT' })
     }
     return origin
   }
   const factsSource = Object.freeze({
     capture: async ({ realmId, grantId, bindingId } = {}) => {
-      const service = typeof getService === 'function' ? getService() : undefined
-      if (service === undefined || typeof service.listControlState !== 'function') {
-        return { ok: false, error: { code: 'G2_WEB_FACTS_UNAVAILABLE', message: 'the durable ControlService public query face is not readable here; the row declines rather than fabricating trusted facts', sideEffectUnknown: false } }
-      }
-      if (typeof readGenerations !== 'function') {
-        return { ok: false, error: { code: 'G2_WEB_FACTS_UNAVAILABLE', message: 'no REAL generation reader was injected (bindingRevision/authorityGeneration/policyGeneration must come from the plane live faces — constants are forbidden currentness)', sideEffectUnknown: false } }
-      }
-      let record
-      try {
-        const state = await service.listControlState(String(teamRoot))
-        record = (state?.requests ?? []).find((r) => String(r?.reviewPayload?.callId ?? '') === String(grantId) || String(r?.correlation ?? '') === String(grantId))
-      } catch {
-        return { ok: false, error: { code: 'G2_WEB_FACTS_UNAVAILABLE', message: 'the durable request read refused; declining, no stand-in facts', sideEffectUnknown: false } }
-      }
-      if (record === undefined) {
-        return { ok: false, error: { code: 'G2_WEB_FACTS_UNKNOWN_GRANT', message: `no durable request carries grant/correlation ${JSON.stringify(String(grantId))} on THIS team root; the center ledger answers unknown, never guessed`, sideEffectUnknown: false } }
-      }
-      const generations = await readGenerations(String(teamRoot), String(record.reviewPayload?.instanceId ?? realmId ?? ''))
-      const effects = record.reviewPayload?.effects
-      if (generations === null || typeof generations !== 'object' || typeof effects === 'undefined') {
-        // effects travel ONLY as trusted center data; a request without
-        // them is incomplete facts — refuse typed (factsIncomplete law).
-        return { ok: false, error: { code: 'G2_WEB_FACTS_INCOMPLETE', message: 'trusted effects are absent from the durable request (the center-edge owners must carry them — B-TEAM-style registrationOf-shape ledger); declining per factsIncompleteMessage law, never a fabricated effects set', sideEffectUnknown: false } }
+      if (typeof readCallFacts !== 'function') return decline('G2_WEB_FACTS_UNAVAILABLE', 'no readPaCallFactsForCall-shaped reader injected; declining, never assembling facts from anywhere else')
+      const ctx = resolve(grantId)
+      if (ctx === undefined || ctx === null) return decline('G2_WEB_CALL_CONTEXT_ABSENT', `no live call context resolves grant ${JSON.stringify(String(grantId))} on this entry: the row's own plane walk must feed it; kept typed refusal, zero stand-in`)
+      const read = await readCallFacts({
+        rootSessionId: String(ctx.rootSessionId), instanceId: String(ctx.instanceId),
+        realmId: String(realmId ?? ctx.realmId ?? ''), callId: String(grantId),
+        requestedEffects: ctx.requestedEffects, placementName: ctx.placementName,
+      })
+      if (read === undefined) return decline('G2_WEB_FACTS_INCOMPLETE', 'readPaCallFactsForCall answered undefined (the facts law: any missing/unhealthy/contradicting source fails closed; no defaulted shape)')
+      const facts = read.facts
+      if (read.kind !== 'call-facts') return decline('G2_WEB_FACTS_INCOMPLETE', `the read answered ${JSON.stringify(read.kind)}: planSnapshot source does not exist on this call; the gateway law demands the complete 12-field contract, never a synthesized 12th field`)
+      const presented = String(bindingId ?? '')
+      if (presented.length > 0 && typeof facts?.binding?.bindingId === 'string' && facts.binding.bindingId !== presented) {
+        return decline('G2_WEB_BINDING_IDENTITY_MISMATCH', 'the row-carried bindingId contradicts the call\'s own binding identity — compared, never trusted')
       }
       return {
         ok: true,
         value: Object.freeze({
-          member: Object.freeze({ teamSessionId: String(teamRoot), instanceId: String(record.reviewPayload?.instanceId ?? realmId ?? '') }),
+          member: facts.member,
           callId: String(grantId),
-          bindingRevision: generations.bindingRevision,
-          authorityGeneration: generations.authorityGeneration,
-          policyGeneration: generations.policyGeneration,
-          effects: Object.freeze({ effects: Object.freeze([...effects]) }),
-          bindingId: String(bindingId ?? ''),
+          bindingRevision: facts.binding.revision,
+          authorityGeneration: facts.authorityGeneration,
+          policyGeneration: facts.policyGeneration,
+          effects: facts.effects,
+          bindingId: presented,
         }),
       }
     },
   })
   const grantAuthority = Object.freeze({
     consume: async ({ facts, correlation, isCancelled } = {}) => {
-      const service = typeof getService === 'function' ? getService() : undefined
-      if (service === undefined || typeof service.listControlState !== 'function' || typeof service.awaitControlDecision !== 'function') {
-        return { ok: false, error: { code: 'G2_WEB_GRANT_UNAVAILABLE', message: 'no durable ControlService public face to consume through; the row refuses, no default-open', sideEffectUnknown: false } }
+      if (typeof consumeEdge !== 'function') return decline('G2_WEB_CONSUME_EDGE_ABSENT', 'no plane consumeForExecution edge injected; ONE consume is never simulated')
+      if (typeof isCancelled === 'function' && isCancelled() === true) return decline('G2_WEB_CANCELLED', 'cancelled at the consume boundary — zero consume performed (C3 law)')
+      const ctx = resolve(correlation?.grantId)
+      if (ctx === undefined || ctx === null || ctx.grant === undefined) return decline('G2_WEB_CALL_CONTEXT_ABSENT', 'the consume edge needs the call\'s REAL grant from the live context; absent, no consume happens')
+      const edge = await consumeEdge(ctx.grant, {
+        ...(typeof isCancelled === 'function' ? { cancelRequested: isCancelled() === true } : {}),
+        currentAuthorityGeneration: facts?.authorityGeneration,
+        member: facts?.member,
+        callId: String(correlation?.grantId),
+        realmId: String(ctx.realmId ?? ''),
+        bindingId: String(correlation?.bindingId ?? facts?.bindingId ?? ''),
+        bindingRevision: facts?.bindingRevision,
+        parametersFingerprint: correlation?.payloadFingerprint,
+        requestedEffects: ctx.requestedEffects,
+      })
+      if (edge === undefined || edge === null || edge.kind !== 'allow') return decline('G2_WEB_GRANT_NOT_ALLOWED', 'the execution edge did not answer allow; refusals pass through verbatim, never re-judged open')
+      if (edge.cancelled === true) return decline('G2_WEB_CANCELLED', 'the edge answered allow WITH cancellation at the decision point — treated as cancelled, not consumed')
+      const proof = edge.consumedProof
+      if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+        return decline('G2_WEB_CONSUME_PROOF_MISSING', 'the edge answered allow WITHOUT its one-shot consume witness — the row never self-attests; body does not run')
       }
-      if (typeof isCancelled === 'function' && isCancelled() === true) {
-        return { ok: false, error: { code: 'G2_WEB_CANCELLED', message: 'cancelled at the consume boundary — zero consume performed (C3 law)', sideEffectUnknown: false } }
-      }
-      let record
-      try {
-        const state = await service.listControlState(String(teamRoot))
-        record = (state?.requests ?? []).find((r) => String(r?.reviewPayload?.callId ?? '') === String(correlation?.grantId) || String(r?.correlation ?? '') === String(correlation?.grantId))
-      } catch {
-        return { ok: false, error: { code: 'G2_WEB_GRANT_UNAVAILABLE', message: 'the durable read refused at the consume boundary', sideEffectUnknown: false } }
-      }
-      if (record === undefined || record.status !== 'decided') {
-        return { ok: false, error: { code: 'G2_WEB_GRANT_NOT_ALLOWED', message: 'no decided durable request for this grant/correlation; ONE consume is never performed against pending/unknown', sideEffectUnknown: false } }
-      }
-      try {
-        const decision = await service.awaitControlDecision({ rootSessionId: String(teamRoot), requestId: record.requestId })
-        if (String(decision?.decision) !== 'allow') {
-          return { ok: false, error: { code: 'G2_WEB_GRANT_NOT_ALLOWED', message: `the durable decision is ${JSON.stringify(String(decision?.decision))}; refusals pass through verbatim, never re-judged open`, sideEffectUnknown: false } }
-        }
-      } catch {
-        return { ok: false, error: { code: 'G2_WEB_GRANT_UNAVAILABLE', message: 'awaitControlDecision refused at the decision point', sideEffectUnknown: false } }
-      }
-      // The kernel ALREADY consumed the allow exactly-once at the last
-      // mile; the effects the gateway re-checks are the SAME trusted
-      // facts captured above (facts came from the durable record).
-      return { ok: true, value: Object.freeze({ effects: Object.freeze({ effects: facts?.effects?.effects ?? [] }) }) }
+      return { ok: true, value: Object.freeze({ effects: Object.freeze({ effects: [...(facts?.effects?.effects ?? [])] }), consumedProof: proof }) }
     },
   })
   return Object.freeze({ grantAuthority, factsSource, resolveSearchOrigin })

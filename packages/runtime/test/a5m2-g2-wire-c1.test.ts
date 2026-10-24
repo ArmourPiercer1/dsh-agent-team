@@ -1279,34 +1279,59 @@ describe('A5M2-G2-WIRE round-30: the REAL mint validates at the table (positive+
   })
 })
 
-/* ROOT 03:0x — the center-edge trio on REAL public query shapes
- * (durable-control vocabulary verbatim: status 'decided', decision
- * 'allow'). The service stand-in is DISCLOSED; the arms/declines are
- * the adapters' real behavior. */
-describe('A5M2-G2-WIRE round-35: web center-edge trio — capture/consume/origin on the real shapes', () => {
-  const ports = (svc: Record<string, unknown>, extra?: Record<string, unknown>) => import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href).then((mm) => (mm as { createG2WebCenterPorts: (i: Record<string, unknown>) => { grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: unknown; error?: { code?: string; message?: string } }> }; factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }; resolveSearchOrigin: () => string } }).createG2WebCenterPorts({ getService: () => svc, teamRoot: 'rt-web', readGenerations: async () => ({ bindingRevision: 3, authorityGeneration: 7, policyGeneration: 11 }), ...extra }))
-  const decided = { requests: [{ requestId: 'req-1', correlation: 'grant-9', status: 'decided', reviewPayload: { callId: 'grant-9', instanceId: 'mi-1', effects: [{ kind: 'connect', resource: { origin: 'https://target.example.invalid' } }] } }], awaitControlDecision: async () => ({ requestId: 'req-1', decision: 'allow' }) }
-  const svc = (rec: Record<string, unknown> | null) => ({ listControlState: async () => ({ requests: rec === null ? [] : [rec] }), awaitControlDecision: decided.awaitControlDecision })
-  it('capture reads ONLY the durable record + the injected REAL generation reader (no constants); unknown grant and missing effects decline typed; consume performs its judgement only on a DECIDED+allow record and passes deny verbatim; search origin refuses per call when the config carries none', async () => {
-    const p = await ports(svc(decided.requests[0] as Record<string, unknown>))
-    const cap = await p.factsSource.capture({ realmId: 'rl', grantId: 'grant-9', bindingId: 'b-1' })
-    expect(cap.ok).toBe(true)
-    expect((cap.value?.member as Record<string, unknown>).teamSessionId).toBe('rt-web')
-    expect(cap.value?.authorityGeneration).toBe(7) // REAL reader value
-    expect(cap.value?.callId).toBe('grant-9')
-    const unknown = await ports(svc(null)).then((x) => x.factsSource.capture({ grantId: 'nope' }))
-    expect(unknown.ok).toBe(false)
-    expect(unknown.error?.code).toBe('G2_WEB_FACTS_UNKNOWN_GRANT')
-    const noEffects = await ports(svc({ requestId: 'r', correlation: 'g2', status: 'decided', reviewPayload: { callId: 'g2' } })).then((x) => x.factsSource.capture({ grantId: 'g2' }))
-    expect(noEffects.error?.code).toBe('G2_WEB_FACTS_INCOMPLETE')
-    const con = await p.grantAuthority.consume({ facts: cap.value, correlation: { grantId: 'grant-9', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
+/* ROOT 06:0x — trio v2 on the REAL plane seams. The facts reader IS the
+ * real readPaCallFactsForCall (live import); its undefined under the
+ * facts law must surface as the typed refusal. consume rides an edge of
+ * the REAL consumeForExecution shape (DISCLOSED stand-in for the edge
+ * object; the full one-shot round trip through a live plane walk is the
+ * registered pending E2E, not claimed here). */
+describe('A5M2-WIRE round-37: trio v2 — real call-facts read, plane consume edge, fixed fetch', () => {
+  const MOD = async () => (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as {
+    createG2WebCenterPorts: (i: Record<string, unknown>) => {
+      factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
+      grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: { consumedProof?: unknown }; error?: { code?: string } }> }
+      resolveSearchOrigin: () => string
+    }
+  }
+  const REG = async () => (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as { readPaCallFactsForCall: (i: Record<string, unknown>) => Promise<unknown> }
+  it('capture through the REAL readPaCallFactsForCall: no live context refuses CALL_CONTEXT_ABSENT; a fed context runs the REAL reader, whose undefined (unhealthy mount source) surfaces as FACTS_INCOMPLETE — zero stand-in facts', async () => {
+    const m = await MOD()
+    const reg = await REG()
+    const noCtx = m.createG2WebCenterPorts({ readCallFacts: reg.readPaCallFactsForCall })
+    expect((await noCtx.factsSource.capture({ realmId: 'r', grantId: 'g-1', bindingId: 'b' })).error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT')
+    const withCtx = m.createG2WebCenterPorts({
+      readCallFacts: reg.readPaCallFactsForCall,
+      resolveCallContext: () => ({ rootSessionId: 'rt-web', instanceId: 'mi-1', realmId: 'r', placementName: 'stagehand_navigate', requestedEffects: { effects: [], fingerprint: 'fp-1' } }),
+    })
+    const cap = await withCtx.factsSource.capture({ realmId: 'r', grantId: 'g-1', bindingId: 'b' })
+    expect(cap.ok).toBe(false)
+    expect(cap.error?.code).toBe('G2_WEB_FACTS_INCOMPLETE') // the REAL reader answered undefined: no mount published for the pair
+  })
+  it('consume rides the edge shape verbatim, demands the one-shot consumedProof, cancel performs ZERO consume; origin answers the real config value or refuses per call', async () => {
+    const m = await MOD()
+    const calls: unknown[][] = []
+    const edge = (grant: unknown, opts: Record<string, unknown>) => { calls.push([grant, opts]); return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'g-1' } } }) }
+    const ports = m.createG2WebCenterPorts({
+      resolveCallContext: () => ({ grant: { grantId: 'g-1', bindingId: 'b-1' }, realmId: 'r', requestedEffects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }], fingerprint: 'fp' } }),
+      consumeEdge: edge,
+      searchOriginFacts: { origin: 'https://search.example.invalid' },
+    })
+    const facts = { authorityGeneration: 9, member: { teamSessionId: 'rt', instanceId: 'mi' }, bindingRevision: 4, effects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] } }
+    const con = await ports.grantAuthority.consume({ facts, correlation: { grantId: 'g-1', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
     expect(con.ok).toBe(true)
-    const pend = await ports(svc({ requestId: 'r', correlation: 'g3', status: 'pending', reviewPayload: { callId: 'g3', effects: [] } })).then((x) => x.grantAuthority.consume({ correlation: { grantId: 'g3' }, isCancelled: () => false }))
-    expect(pend.error?.code).toBe('G2_WEB_GRANT_NOT_ALLOWED')
-    const denied = await ports({ listControlState: async () => ({ requests: [{ requestId: 'r', correlation: 'g4', status: 'decided', reviewPayload: { callId: 'g4', effects: [] } }] }), awaitControlDecision: async () => ({ decision: 'deny' }) }).then((x) => x.grantAuthority.consume({ correlation: { grantId: 'g4' }, isCancelled: () => false }))
-    expect(denied.error?.code).toBe('G2_WEB_GRANT_NOT_ALLOWED')
-    expect(() => p.resolveSearchOrigin()).toThrow(/G2_WEB_SEARCH_ORIGIN_ABSENT/)
-    const pw = await ports(svc(decided.requests[0] as Record<string, unknown>), { searchOriginFacts: { origin: 'https://search.example.invalid' } })
-    expect(pw.resolveSearchOrigin()).toBe('https://search.example.invalid')
+    expect(con.value?.consumedProof).toEqual({ grant: { grantId: 'g-1' } })
+    const sent = ((calls[0] ?? []) as unknown[])[1] as Record<string, unknown>
+    expect(sent.currentAuthorityGeneration).toBe(9) // REAL numbers ride, assembled nowhere by us
+    expect(sent.parametersFingerprint).toBe('fp')
+    let edgeRan = false
+    const cancelled = await m.createG2WebCenterPorts({ resolveCallContext: () => ({ grant: { grantId: 'g' }, realmId: 'r', requestedEffects: { effects: [], fingerprint: 'f' } }), consumeEdge: () => { edgeRan = true; return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'g' } } }) } })
+      .grantAuthority.consume({ facts, correlation: { grantId: 'g' }, isCancelled: () => true })
+    expect(cancelled.error?.code).toBe('G2_WEB_CANCELLED')
+    expect(edgeRan).toBe(false) // zero consume on cancel-first
+    const noProof = await m.createG2WebCenterPorts({ resolveCallContext: () => ({ grant: { grantId: 'g-2' }, realmId: 'r', requestedEffects: { effects: [], fingerprint: 'f' } }), consumeEdge: () => Promise.resolve({ kind: 'allow' }) })
+      .grantAuthority.consume({ facts, correlation: { grantId: 'g-2' }, isCancelled: () => false })
+    expect(noProof.error?.code).toBe('G2_WEB_CONSUME_PROOF_MISSING')
+    expect(ports.resolveSearchOrigin()).toBe('https://search.example.invalid')
+    expect(() => m.createG2WebCenterPorts({}).resolveSearchOrigin()).toThrow(/G2_WEB_SEARCH_ORIGIN_ABSENT/)
   })
 })

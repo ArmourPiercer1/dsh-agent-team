@@ -561,6 +561,10 @@ interface GlueModule {
      * worlds without the web service stay byte-identical.
      */
     readonly web?: () => unknown
+    /** ROOT 06:0x: the FIXED capture+bind web face when this root's Team
+     *  declared webFixedProvider (built from the public root package);
+     *  undefined = none declared — the gateway keeps the seam path. */
+    readonly webFixed?: () => Promise<unknown>
     /**
      * A5-M2 B-IMAGE (mirrors `jobs`/`web` above): the LAZY host attachment
      * store accessor for the governed read_image row's triple (the 639 public
@@ -2568,6 +2572,12 @@ async function buildG2TeamSupply(
     jobs: () => ctx.get('jobs'),
     // M2 B-WEB (a5m2w): the same lazy global-store read as jobs, resolved at call time.
     web: () => ctx.get('web'),
+    webFixed: async () => {
+      const g2Cfg = (resolvedRowConfig as { teamToolPlane?: { g2Mount?: unknown } }).teamToolPlane?.g2Mount
+      if (typeof g2Cfg !== 'object' || g2Cfg === null) return undefined
+      const built = await buildG2TeamSupply(resolvedRowConfig)
+      return (built?.supply as { webFixedTransport?: unknown } | undefined)?.webFixedTransport
+    },
     // A5-M2 B-IMAGE: the same lazy shape for the 639 public `attachments` service
     // (the store hand-face of the governed read_image triple). Additive optional,
     // never in a hard inject: worlds without the service answer the assembly's
