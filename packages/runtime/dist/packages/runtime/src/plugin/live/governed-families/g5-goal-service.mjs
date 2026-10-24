@@ -556,7 +556,39 @@ export function createG5GoalServiceAdapter({
     throw assemblyDefect('readExecutionFacts, when supplied, must be a function answering {kind:\'direct-human\'} | {kind:\'goal-round\'} — the execution authority the host derives in authority.ts:111-118; without it the row reports the dimension UNOBSERVED, it never claims it checked')
   }
 
-  /** The port method FUNCTION OBJECTS frozen at bind (L7): drift = refused. */
+  /**
+ * L7 bind-time identity capture, two lawful modes (root source-review card
+ * 2026-10-24, after the first live window refused a HEALTHY dispatch with
+ * P_G5_GOAL_CAPTURE_DRIFT):
+ *  - REAL-FACE mode — the port answers its public TypertRemoteService binding
+ *    (Host639 GoalService: `typertRemote` is an own data property answering
+ *    the FROZEN bindTypertRemote record { service, serviceKey, namespace };
+ *    protocol/src/index.ts:150-178 @639ed01539). Cordis createTraceable hands
+ *    out a FRESH shadow-method Proxy for every function read
+ *    (vendor/cordis/src/utils.ts:171-197), so on this face wrapper identity is
+ *    meaningless and the former `wrapper ===` law false-refused every
+ *    dispatch. Fresh verification now runs against the REAL service object and
+ *    the REAL public method identities reached through that public binding —
+ *    no private cordis.original seam, no bare service.execute, no
+ *    providerId-string standing in for identity.
+ *  - DIRECT-FACE mode — a port without the public binding (an in-process
+ *    stand-in) keeps the ORIGINAL strict law verbatim: the frozen port
+ *    function objects must answer every later read unchanged.
+ * Execution is untouched in both modes: runPortCalls dispatches through the
+ * live port face (the shadow-tracked GoalService), never through the binding.
+ */
+  const realBinding = (() => {
+    const binding = goals.typertRemote
+    if (!isRecord(binding) || !Object.isFrozen(binding) || !isRecord(binding.service)) return null
+    const realMethods = {}
+    for (const method of Object.keys(A5_G5_GOAL_SERVICE_METHODS)) {
+      if (typeof binding.service[method] !== 'function') continue
+      realMethods[method] = binding.service[method]
+    }
+    if (Object.keys(realMethods).length === 0) return null
+    return Object.freeze({ service: binding.service, methods: Object.freeze(realMethods) })
+  })()
+  /** The port method FUNCTION OBJECTS frozen at bind (L7, DIRECT-FACE): drift = refused. */
   const frozenPortMethods = {}
   for (const method of Object.keys(A5_G5_GOAL_SERVICE_METHODS)) {
     if (typeof goals[method] === 'function') frozenPortMethods[method] = goals[method]
@@ -619,6 +651,31 @@ export function createG5GoalServiceAdapter({
       if (live !== bound.def) return 'the face behind readNative is no longer the captured object — the governed call refuses; there is no replacement-body path and no native fallback'
       if (live.description !== descriptionBytes) return "the captured definition's description bytes moved since bind time"
       if (canonicalJson(live.parameters) !== canonicalJson(parametersSchema)) return "the captured definition's compiled parameter schema moved since bind time"
+      if (realBinding !== null) {
+        // REAL-FACE fresh verification (L7): re-read the PUBLIC binding through
+        // the live face EVERY dispatch; refuse missing / provider swap / real
+        // method replacement. The per-read shadow wrappers Cordis hands out
+        // are never compared against each other — that comparison is the
+        // false-positive this card removes; the drift law itself stays.
+        let liveBinding
+        try {
+          liveBinding = goals.typertRemote
+        } catch {
+          return 'the public typertRemote binding threw on re-read — the real service identity cannot be re-verified for this dispatch'
+        }
+        if (!isRecord(liveBinding) || !Object.isFrozen(liveBinding) || !isRecord(liveBinding.service)) {
+          return 'the port no longer answers a frozen public typertRemote binding — a gutted or foreign provider face is drift, full stop'
+        }
+        if (liveBinding.service !== realBinding.service) return 'the typertRemote binding answers a different real service — the provider underneath the frozen bind was swapped'
+        for (const method of portMethods) {
+          const now = goals[method]
+          if (typeof now !== 'function') return `the port method "${method}" (${A5_G5_GOAL_SERVICE_METHODS[method]?.source ?? 'unknown source'}) is no longer a function`
+          if (typeof liveBinding.service[method] !== 'function' || liveBinding.service[method] !== realBinding.methods[method]) {
+            return `the real service method "${method}" was replaced underneath the frozen bind — a rebound service method is drift, full stop`
+          }
+        }
+        return null
+      }
       for (const method of portMethods) {
         const now = goals[method]
         if (typeof now !== 'function') return `the port method "${method}" (${A5_G5_GOAL_SERVICE_METHODS[method]?.source ?? 'unknown source'}) is no longer a function`
