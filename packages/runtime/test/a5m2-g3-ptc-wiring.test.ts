@@ -35,6 +35,7 @@
  * @module @dsh-agent-team/runtime/test/a5m2-g3-ptc-wiring
  */
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
@@ -103,7 +104,19 @@ function makeNative (enumValue: readonly string[], calls: string[]): Definition 
   }
 }
 
-const GOOD_FACTS = () => ({
+type Facts = {
+  interpreter: { runtimeIdentity: string, language: string } | null
+  effectiveEnvelope: { mode: string, enforcement: string }
+  timeout: { defaultMs: number, maxMs: number }
+  childChannel: {
+    capabilityList: string[]
+    channelDigest: string
+    maxParallelSubCalls: number | null
+    runDispatchBudget: number | null
+  }
+}
+
+const GOOD_FACTS = (): Facts => ({
   interpreter: {
     runtimeIdentity: 'ptc-runtime:NodePtcRuntime:typescript:process',
     language: 'typescript',
@@ -284,7 +297,9 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(asm.declared).toHaveLength(1)
     expect(asm.declared[0]).toMatchObject({ name: 'run_code', status: 'DECLARED-INACTIVE', reason: 'capture-absent' })
     expect(asm.familyRegistrations()).toEqual([])
-    expect(() => asm.drain()).not.toThrow()
+    const drain = asm.drain
+    expect(drain, 'the assembly always carries the drain word').toBeTypeOf('function')
+    expect(() => drain!()).not.toThrow()
     expect(w.seamReads).toEqual(['run_code'])
   })
 
@@ -297,7 +312,8 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(w.nativeCalls).toEqual(['native-execute'])
     expect(w.walks.length).toBe(1)
     expect(w.closePlans).toEqual(['exec-run-1'])
-    const walk = w.walks[0]
+    expect(w.walks.length).toBe(1)
+    const walk = w.walks[0] as Record<string, unknown>
     const family = walk.family as Record<string, unknown>
     expect(family.familyId).toBe('B-PTC')
     expect(family.providerIdentity).toBe(PROVIDER)
@@ -361,9 +377,9 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     const asm = w.build()
     const registrations = asm.familyRegistrations()
     expect(registrations).toHaveLength(1)
-    expect(registrations[0].name).toBe('run_code')
-    expect(registrations[0].definitionIdentity).toBe(definitionIdentityOf(asm.definitions[0]))
-    expect(registrations[0].entry).toMatchObject({ familyId: 'B-PTC', providerIdentity: PROVIDER })
+    expect(registrations[0]?.name).toBe('run_code')
+    expect(registrations[0]?.definitionIdentity).toBe(definitionIdentityOf(asm.definitions[0] as Definition))
+    expect(registrations[0]?.entry).toMatchObject({ familyId: 'B-PTC', providerIdentity: PROVIDER })
 
     const wNoFeed = makeWorld({ captureAbsent: false, noFeed: true })
     const asmNoFeed = wNoFeed.build()
@@ -416,8 +432,8 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     // pinned forward, not deleted): the plane carries NO runCode
     // contribution and the bindings NO inject — re-adding a placement
     // arm is RED until the seam card legitimately lands.
-    const planeSrc = readFileSync(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url), 'utf8')
-    const bindingsSrc = readFileSync(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url), 'utf8')
+    const planeSrc = readFileSync(fileURLToPath(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href), 'utf8')
+    const bindingsSrc = readFileSync(fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href), 'utf8')
     expect(planeSrc).not.toContain('buildG3RunCodeWiring')
     expect(planeSrc).not.toContain('runCodeDefs')
     expect(bindingsSrc).not.toContain('a5G3RunCodeInject')
