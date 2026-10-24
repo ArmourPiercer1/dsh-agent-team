@@ -255,6 +255,19 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
   },
+  {
+    // ROOT 01:01 trustedTopology supply wiring (this branch's mount-arm
+    // block): `agent-bindings.mjs` now statically imports the a067 supply
+    // factory (picked from int 12c850c6a) by RELATIVE specifier — same
+    // GLUE-5/g1-query class: without this placement the dist copy of the
+    // binding dies at `ERR_MODULE_NOT_FOUND …
+    // ./governed-families/g1-trusted-topology-supply.mjs` on the strict
+    // `files: ["dist"]` install face. The module's own import closure is
+    // exactly [node:crypto] (a067 spec leg G), so ONE row covers it.
+    // Byte-identical like every entry; drift gate D compares src vs dist.
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative
