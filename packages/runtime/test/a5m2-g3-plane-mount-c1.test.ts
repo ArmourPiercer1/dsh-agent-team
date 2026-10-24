@@ -197,7 +197,7 @@ function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | unde
   }
 }
 
-function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown>; route?: { reads: number, revokeAfter: number, generation: { value: string, revoked: boolean } }; mount?: { box: { captured: unknown }, current: () => unknown } } = {}) {
+function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown>; route?: { reads: number, revokeAfter: number, generation: { value: string, revoked: boolean } }; mount?: { box: { captured: unknown }, current: () => unknown }; effect?: (disposer: () => void, name: string) => void } = {}) {
   const portCalls = opts.portCalls ?? []
   const absent = new Set(opts.absent ?? [])
   // THE MOUNT GENERATION (ruling 2 (a)) in spec shape: one value per
@@ -210,6 +210,12 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
   // (captured = the identity publishPaMount returned; current = a fresh
   // resolvePaMount read at every answer).
   const mount = opts.mount ?? { box: { captured: 'spec-mount' as unknown }, current: () => 'spec-mount' as unknown }
+  // THE DISPOSE-ORDERING SEAM (root residue card): the SAME closure the
+  // live capture registers through agentCtx.effect is registered here
+  // through the spec-supplied effect face — the leg drives the REGISTERED
+  // disposer, never a hand-flipped boolean.
+  const g3RevokeGeneration = () => { route.generation.revoked = true }
+  if (opts.effect !== undefined) opts.effect(g3RevokeGeneration, 'dsh-agent-team/g3-mount-generation')
   // THE LIVE SNAPSHOT SOURCE (root 21:36: the CONTROL/QUERY rows ride live
   // facts): one mutable snapshot list feeds BOTH the terminals face's list()
   // and the producer-shaped session() resolution (pid-derived incarnation,
@@ -1388,5 +1394,31 @@ describe('A5M2-G3-PTC-GUARD-PLANE — run_code placement through the ORIGINAL PA
     } finally {
       if (idB !== undefined) registry.revokePaMount('g3-plane-team', 'g3-instance', idB)
     }
+  })
+
+  it('(m) the dispose-ORDERING law (root residue card): the scope EFFECT disposer (guaranteed at scope.dispose on the loop path, before the detach event) revokes the epoch BEFORE any later answer, and the late event is a harmless idempotent repeat', async () => {
+    const route = { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-m', revoked: false } }
+    let registered: (() => void) | undefined
+    let registeredName = ''
+    const w = makeInject({
+      route,
+      effect: (disposer, name) => { registered = disposer; registeredName = name },
+    })
+    const pty = w.inject.ptyService as { backend: (t: string) => unknown }
+    const expectAnswer = { registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-m' }
+    expect(pty.backend('shell'), 'alive epoch answers the route identity').toEqual(expectAnswer)
+    expect(typeof registered, 'the revoke rode the scope effect registration (agentCtx.effect), not only an event listener').toBe('function')
+    expect(registeredName, 'named effect — discoverable, never anonymous').toBe('dsh-agent-team/g3-mount-generation')
+    // THE LOOP PATH: scope.dispose runs the registered disposer at
+    // agent-loop :540-546 — BEFORE the registry ever reaches the detach-time
+    // agent/disposed emit (:513-514 via :561). Drive the REGISTERED disposer
+    // (the very closure makeInject received through the seam):
+    ;(registered as () => void)()
+    expect(pty.backend('shell'), 'the disposer-revoked epoch answers NOTHING to any later read').toBeNull()
+    // THE LATE EVENT: detach eventually fires agent/disposed — the same
+    // idempotent closure runs again; nothing throws, nothing re-opens:
+    ;(registered as () => void)()
+    expect(pty.backend('shell'), 'the late event is a harmless repeat — idempotent, still nothing').toBeNull()
+    expect(route.generation.revoked, 'the epoch stays dead — revoke is terminal, never reopened by a second path').toBe(true)
   })
 })
