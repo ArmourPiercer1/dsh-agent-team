@@ -4108,6 +4108,10 @@ export function createAgentBindings(deps) {
           // stays the plane's own governedTokenLedger).
           const a5ScheduleArms = new Map()
           const a5ScheduleBound = new Map() // name -> definitionIdentityOf(ORIGINAL def)
+          // A5M2 coverage-safety card: null OUTSIDE a schedule mount; the
+          // mount branch fills it with the live references below (one view,
+          // never a state copy).
+          let a5CoverageScheduleFacts = null
           const a5ScheduleWrittenKeys = []
           // THE REAL ACTIVE-TUPLE READER (root residual 2): the SAME guard
           // dispatcher surface the pa-mount-registry trust read uses
@@ -4383,6 +4387,16 @@ export function createAgentBindings(deps) {
             },
             observe: (row) => observations.push(`a5m2-schedule-bind: ${String(row?.event ?? 'event')} for ${sessionId}`),
           })
+
+          // A5M2 coverage-safety card: a LIVE VIEW (no copies, no second
+          // ledger) into the SAME schedule facts for the coverage producer —
+          // the identity map, the real hook gate, the ACTIVE-identity surface
+          // entry. Read at coverage time; bound flips with the pair.
+          a5CoverageScheduleFacts = {
+            isBound: () => a5ScheduleBind.isBound(),
+            identityOf: (name) => a5ScheduleBound.get(name),
+            surfaceEntry: a5ScheduleSurfaceEntry,
+          }
           // MOUNT PROBE (root 2026-10-24 fork ruling; the single-timer law
           // observer): the provider slot 'schedule' holds ONE plugin per
           // assembly — the original OR the ruled fork, never both, so the
@@ -7930,6 +7944,35 @@ export function createAgentBindings(deps) {
       // only: an absent policy skips every line below (invariant §1.2 —
       // the legacy / alpha.1 path runs byte-for-byte as before; the gate
       // is absent, not disabled-quietly).
+      // A5M2 coverage-safety card (root ruling 2026-10-24, producer v2 —
+      // ONE producer, read live at every evaluation): stage 1 sees ONLY what
+      // THIS scope really governs at read time — (1) vocabulary members the
+      // operation-permission adapter really routes (classifyPermissionTool,
+      // the same class function the pre-execute ladder uses; the step-1
+      // Guard's fail-closed law proves refusal until the hand-off:
+      // governed, recorded not-yet-ready); (2) invocation-only names ONLY
+      // with a real ACTIVE placement definition on the plane's OWN placement
+      // feed (a5PlaneOwnNames alone carries DECLARED-INACTIVE rows — never
+      // governance); (3) the Schedule pair ONLY while the REAL hooks hold
+      // it (isBound(): gate + same-scope pre/execute/post + guard success,
+      // reset by pair-close; the ORIGINAL-definition identity map; the
+      // dispatcher surface entry ACTIVE on that SAME identity). Intent
+      // flags (scheduleEnabled / governed names / armed hints) are not
+      // facts. No second ledger, no state copy: every source is read live
+      // through references that already exist.
+      const coveragePlacementGoverned = (name) => {
+        const fed = a5PlaneValue?.placementFeed?.(name)
+        return typeof fed?.definitionIdentity === 'string' && fed.definitionIdentity.length > 0
+      }
+      const coverageScheduleGoverned = (name) => a5CoverageScheduleFacts !== null
+        && a5CoverageScheduleFacts.isBound()
+        && typeof a5CoverageScheduleFacts.identityOf(name) === 'string'
+        && a5CoverageScheduleFacts.surfaceEntry(name) !== undefined
+      const coverageManagedGroundTruth = () => PERMISSION_TOOL_NAMES.filter(
+        (name) => classifyPermissionTool(name).kind !== 'unsupported'
+          || (a5PlaneOwnNames.includes(name) && coveragePlacementGoverned(name))
+          || coverageScheduleGoverned(name),
+      )
       if (permissionPolicy !== undefined) {
         const finalSurfaceNames = coverageSurfaceNames(agentCtx, sessionId, runtimeAgent)
         const mcpIntroduced = mcpIntroducedToolNames(
@@ -7937,32 +7980,8 @@ export function createAgentBindings(deps) {
           finalSurfaceNames,
         )
         const verdict = evaluatePermissionCoverage(finalSurfaceNames, {
-          // A5M2 (root security ruling 2026-10-24): the CLOSED VOCABULARY
-          // says what a blueprint may NAME; it is not a claim that THIS scope
-          // governs the name. Stage 1 of the evaluator must therefore see
-          // only vocabulary members the operation-permission adapter REALLY
-          // governs here — its canonical classes (classifyPermissionTool:
-          // the SAME function the pre-execute ladder routes on, so the gate
-          // and the runtime can never disagree). An invocation-only name is
-          // governed only where it is actually PLACED, and that real fact
-          // already rides teamToolNames below (GLUE-5 placement attribution);
-          // un-placed, it keeps its original class — a proven MCP owner is
-          // never claimed by the vocabulary, and a sensitive name the scope
-          // has not taken over still refuses the setup (no default-deny
-          // downgrade through a legal word list). No second ledger, no new
-          // list, no touched default.
-          managedToolNames: PERMISSION_TOOL_NAMES.filter(
-            (name) => classifyPermissionTool(name).kind !== 'unsupported',
-          ),
-          // GLUE-5: the placed plane names are TEAM-OWNED by authority
-          // (the assembly placed them and the Guard bindOwnTools-verified
-          // them — placement attribution IS their management fact), so they
-          // enter the gate with the team-tool authority owner. They can
-          // never slip past unattributed: a plane name on the surface that
-          // this setup did NOT place cannot exist (own-layer registration
-          // is assembly-only), and anything else on the surface keeps its
-          // original classification — the gate stays as red as it was.
-          teamToolNames: [...selectedTeamToolNames, ...a5PlaneOwnNames],
+          managedToolNames: coverageManagedGroundTruth(),
+          teamToolNames: [...selectedTeamToolNames, ...a5PlaneOwnNames.filter(coveragePlacementGoverned)],
           mcpToolNames: mcpIntroduced,
         })
         if (!verdict.ok) {
@@ -9164,6 +9183,37 @@ export function createAgentBindings(deps) {
           toolDisposers.push(disposeShellObserver)
           observations.push('alpha2-artifact-grant: shell-result-observer installed')
         }
+      // A5M2 coverage-safety card — THE FINAL verification (root: after the
+      // dependency installs succeeded and BEFORE the Agent leaves setup for
+      // the Host; a failure throws here exactly like the post-publish
+      // family-registration refusals above — the Agent is handed to nobody,
+      // the setup-failure unwind rolls the mount back, and the step-1 Guard
+      // keeps every call refused meanwhile). The early check stays as the
+      // gap-detector: identities are minted at publish and the paramadapter
+      // / family installs complete after it, so only HERE are all
+      // governance facts final (placement definitions, the schedule hooks'
+      // real bound state, the adapter's live classes).
+      if (permissionPolicy !== undefined) {
+        const finalVerificationSurface = coverageSurfaceNames(agentCtx, sessionId, runtimeAgent)
+        const finalVerificationVerdict = evaluatePermissionCoverage(finalVerificationSurface, {
+          managedToolNames: coverageManagedGroundTruth(),
+          teamToolNames: [...selectedTeamToolNames, ...a5PlaneOwnNames.filter(coveragePlacementGoverned)],
+          mcpToolNames: mcpIntroducedToolNames(
+            state.a2c2PreMcpSurface ?? finalVerificationSurface,
+            finalVerificationSurface,
+          ),
+        })
+        if (!finalVerificationVerdict.ok) {
+          observations.push(`alpha2-perm: coverage FINAL-REFUSED for ${sessionId} (a late install changed the governed truth after the precheck)`)
+          throw new PermissionCoverageUnmanagedError(
+            buildPermissionCoverageErrorDetail(finalVerificationVerdict, {
+              instanceId,
+              presetId: undefined,
+            }),
+          )
+        }
+        observations.push(`alpha2-perm: coverage FINAL-PASS for ${sessionId} (post-install truth)`)
+      }
       }
     }
   }
