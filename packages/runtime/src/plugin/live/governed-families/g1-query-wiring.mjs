@@ -119,7 +119,15 @@ const ALLOWED_PORTS = Object.freeze(['trustedTopology'])
 /** Dependency/plugin resource-arm inputs the factory refuses on sight — the
  *  card forbids this wiring to carry them AT ALL (they stay the mount-time
  *  CONFIG seams the adapter module itself declares for their own records). */
-const FORBIDDEN_ARMS = Object.freeze(['controlledInstall', 'installFace', 'hostEscalation'])
+// THE ARM LAW (user ruling 2026-10-25 09:03:32, limited consolidated card):
+// 'controlledInstall' (B-DEPENDENCY) stays refused in EVERY world.
+// installFace/hostEscalation are no longer construction-HOLD arms: they are
+// accepted ONLY when the mounted row set is exactly the B-PLUGIN supply
+// (the plugin install lane — the real public manager face plus the Host's
+// exported adjudicator; the Host approval is preserved, the manager is not
+// forked). Every other world — the pure-query subset included — keeps the
+// refusal message and semantics byte-for-byte.
+const FORBIDDEN_ALWAYS_ARMS = Object.freeze(['controlledInstall'])
 
 const deepFreeze = (value) => {
   if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
@@ -242,15 +250,15 @@ export function createG1QueryWiring(input = {}) {
   // resource arm presented to this factory is a config defect, refused —
   // never silently dropped (a silent drop would let the same mount present it
   // again at the next seam and call the row wired).
-  for (const arm of FORBIDDEN_ARMS) {
+  for (const arm of FORBIDDEN_ALWAYS_ARMS) {
     if (input[arm] !== undefined) {
       return refuseAssembly(A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED, `'${arm}' is a dependency/plugin resource arm: the pure-query wiring candidate accepts NO such arm (card ruling — no immature-arm completion claims); the adapter module keeps that seam for its own record, this module never mounts it`)
     }
   }
-  const knownInput = new Set(['providerId', 'subset', 'captured', 'placementFeed', 'trusted', 'bindingFacts', 'ports', 'admit', 'observe'])
+  const knownInput = new Set(['providerId', 'subset', 'captured', 'placementFeed', 'trusted', 'bindingFacts', 'ports', 'arms', 'admit', 'observe'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the candidate takes exactly {providerId, subset?, captured, placementFeed, trusted, bindingFacts, ports, admit, observe}`)
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the candidate takes exactly {providerId, subset?, captured, placementFeed, trusted, bindingFacts, ports, arms?, admit, observe}`)
     }
   }
   if (typeof input.placementFeed !== 'function') {
@@ -303,6 +311,30 @@ export function createG1QueryWiring(input = {}) {
     }
   }
   const ports = Object.freeze({ ...portsIn })
+  // THE INSTALL ARMS (user ruling 09:03:32): accepted only for the exact
+  // B-PLUGIN row set, shape-validated at assembly; the adapter re-verifies
+  // identity at every edge (moved face/adjudicator → DEFINITION_DRIFT, zero
+  // re-run). This is the ONLY arm acceptance the candidate has ever granted;
+  // every non-plugin subset refuses.
+  const armsIn = input.arms ?? {}
+  let armsForRows = null
+  if (input.arms !== undefined) {
+    if (!isRecord(armsIn)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'arms must be a record (or absent)')
+    for (const key of Object.keys(armsIn)) {
+      if (!subsetIsPluginOnly || (key !== 'installFace' && key !== 'hostEscalation')) {
+        return refuseAssembly(A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED, `arms.${key}: the candidate accepts installFace/hostEscalation ONLY for a mounted row set that is exactly the B-PLUGIN supply (every other world keeps the pure-query refusal byte-for-byte)`)
+      }
+    }
+    if (armsIn.installFace !== undefined && (!isRecord(armsIn.installFace)
+      || typeof armsIn.installFace.installBundle !== 'function' || typeof armsIn.installFace.waitForInstall !== 'function' || typeof armsIn.installFace.cancelInstall !== 'function')) {
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'arms.installFace must answer the manager lifecycle face {installBundle, waitForInstall, cancelInstall} — the @Remote contract at 639 index.ts:461/:574/:584; anything else is refused at assembly, never discovered at the edge')
+    }
+    if (armsIn.hostEscalation !== undefined && (!isRecord(armsIn.hostEscalation)
+      || typeof armsIn.hostEscalation.approveEscalation !== 'function' || typeof armsIn.hostEscalation.sandboxPolicy?.resolve !== 'function')) {
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'arms.hostEscalation must mount the REAL gate ingredients {approveEscalation (the public export), sandboxPolicy.resolve} (+ approver) — the exact tools.ts:38-44 seams; the Team PA never stands in for the Host adjudicator')
+    }
+    armsForRows = Object.freeze({ ...armsIn })
+  }
   const subsetNames = new Set(subset.map((entry) => entry.name))
   // A capture presented for a NON-subset record is an attempt to wire a
   // non-query row through the pure-query candidate: a config defect, refused.
@@ -364,6 +396,9 @@ export function createG1QueryWiring(input = {}) {
       trusted: input.trusted,
       bindingFacts: input.bindingFacts,
       ports: mountPorts,
+      // the install arms reach ONLY the B-PLUGIN row (the one family the
+      // consolidated card armed); the DECLARED row never receives them.
+      ...(entry.familyId === 'B-PLUGIN' && armsForRows !== null ? armsForRows : {}),
     })
     const name = entry.name
     const execute = async (args, exec) => {
@@ -372,15 +407,57 @@ export function createG1QueryWiring(input = {}) {
         observe({ event: 'g1-wire:classify-REFUSED', name, code: classified.code })
         throw refusalToThrow(classified)
       }
-      const admitted = await input.admit(Object.freeze({ name, recordIndex: entry.recordIndex, familyId: entry.familyId, classified, exec }))
-      if (admitted?.ok !== true) {
-        observe({ event: 'g1-wire:admission-REFUSED', name, code: String(admitted?.code ?? 'ADMISSION_REFUSED') })
-        throw refusalToThrow(admitted ?? { code: 'ADMISSION_REFUSED', detail: 'the admission seam refused this call' })
+      const admitNow = async () => input.admit(Object.freeze({ name, recordIndex: entry.recordIndex, familyId: entry.familyId, classified, exec }))
+      // FRESH-CONSUMPTION ORDER (user ruling 2026-10-25 09:03:32): for the
+      // plugin INSTALL action the formal Team-PA consumption runs only AFTER
+      // the Host approval was granted — row.delegate invokes
+      // consumeAfterGrant() itself, right after the adjudicator's grant and
+      // its own fresh binding/policy/authority re-read; the thunk answers
+      // with the PLANE's own verdict (a real admit call), never a faked
+      // approval, and a refusal there means zero manager entry. Every other
+      // call — the 7 shipped plugin actions included — keeps the
+      // classify -> admit -> delegate order byte-for-byte (不重开).
+      const isPluginInstall = entry.familyId === 'B-PLUGIN'
+        && isRecord(classified.targetManifest) && classified.targetManifest.action === 'install_bundle'
+      if (!isPluginInstall) {
+        const admitted = await admitNow()
+        if (admitted?.ok !== true) {
+          observe({ event: 'g1-wire:admission-REFUSED', name, code: String(admitted?.code ?? 'ADMISSION_REFUSED') })
+          throw refusalToThrow(admitted ?? { code: 'ADMISSION_REFUSED', detail: 'the admission seam refused this call' })
+        }
       }
-      const settled = await row.delegate(classified.plan, { exec })
+      const settled = await row.delegate(classified.plan, isPluginInstall
+        ? {
+          exec,
+          consumeAfterGrant: async () => {
+            const admitted = await admitNow()
+            if (admitted?.ok !== true) {
+              observe({ event: 'g1-wire:admission-REFUSED', name, code: String(admitted?.code ?? 'ADMISSION_REFUSED') })
+            }
+            return admitted ?? { ok: false, code: 'ADMISSION_REFUSED', detail: 'the admission seam refused this call' }
+          },
+        }
+        : { exec })
       if (settled?.ok !== true) {
         observe({ event: 'g1-wire:delegate-REFUSED', name, code: String(settled?.code ?? 'P_G1_DELEGATE_REFUSED') })
         throw refusalToThrow(settled)
+      }
+      // LIFECYCLE CLOSURE (card: an INSTALL-PENDING without a value is never
+      // handed back as if settled): the tool call RIDES the install to its
+      // observed end — wait() reads only what the settle listener recorded
+      // plus what waitForInstall answered; the final value is the OBSERVED
+      // ChangeResult (string face, as the native's own output face). An
+      // unobserved end throws typed; the row never claims completion it did
+      // not watch (waitForInstall null establishes neither success nor
+      // cancellation; cancel answers ride the lifecycle verbatim).
+      if (settled.settled === 'INSTALL-PENDING' && isRecord(settled.lifecycle) && typeof settled.lifecycle.wait === 'function') {
+        const outcome = await settled.lifecycle.wait()
+        if (outcome?.outcome === 'SETTLED-OBSERVED' && outcome.changeResult !== null && outcome.changeResult !== undefined) {
+          observe({ event: 'g1-wire:install-SETTLED-OBSERVED', name, requestId: String(settled.lifecycle.requestId ?? '') })
+          return JSON.stringify(outcome.changeResult)
+        }
+        observe({ event: 'g1-wire:install-UNSETTLED', name, outcome: String(outcome?.outcome ?? 'unknown') })
+        throw new Error(`the install did not reach an observed settle (${String(outcome?.error ?? outcome?.outcome ?? 'unknown')}); the row never claims an unobserved completion (waitForInstall null establishes neither success nor cancellation)`)
       }
       observe({ event: 'g1-wire:delegated', name, settled: settled.settled })
       return settled.value

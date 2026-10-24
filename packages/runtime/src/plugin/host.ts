@@ -647,6 +647,21 @@ interface GlueModule {
      */
     readonly sandbox?: () => unknown
     readonly sandboxPolicy?: () => unknown
+    // A5M2-G1-WIRE B-PLUGIN install seams (user ruling 2026-10-25 09:03:32,
+    // limited consolidated card): the LIVE PluginManager service (the same
+    // one the tool face and the Web controls share — no fork), the profile
+    // context whose dir the manager's own facts hang off (index.ts:209), the
+    // approval channel the Host gate routes through, and the EXPORTED
+    // approveEscalation adjudicator (public dsh-sandbox export, lazy dynamic
+    // import per the dsh-launch-environment precedent at :2732 — a world
+    // without the module answers undefined; the install lane then stays
+    // fail-closed at the adapter edge). Additive optional accessors only:
+    // they govern the plugin_manager INSTALL action and gate NOTHING else —
+    // no startup/initialization code constraint, no other tool's IO touched.
+    readonly pluginManager?: () => unknown
+    readonly profileContext?: () => unknown
+    readonly pluginApproval?: () => unknown
+    readonly pluginApproveEscalation?: () => Promise<unknown>
     /**
      * A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
      * DSH public `sessionQuery` service accessor (the same ctx.get shape as
@@ -3163,6 +3178,18 @@ async function buildG2TeamSupply(
     // 639 global-store token; sandboxPolicy is the ctx property beside it).
     sandbox: () => ctx.get('sandbox'),
     sandboxPolicy: () => ctx.sandboxPolicy,
+    // A5M2-G1-WIRE B-PLUGIN install seams — call-time reads, honest absence
+    // (an unregistered token throws at ctx.get; the reader answers undefined
+    // and the plugin install lane keeps its adapter-edge fail-closed posture).
+    pluginManager: () => { try { return ctx.get('pluginManager') } catch { return undefined } },
+    profileContext: () => { try { return ctx.get('profileContext') } catch { return undefined } },
+    pluginApproval: () => { try { return ctx.get('approval') } catch { return undefined } },
+    pluginApproveEscalation: async () => {
+      try {
+        const mod = (await import('@deepseek-ai/dsh-sandbox')) as unknown as { approveEscalation?: unknown }
+        return typeof mod.approveEscalation === 'function' ? mod.approveEscalation : undefined
+      } catch { return undefined }
+    },
     // A5M2 G3 B-PTC run_code GUARD (root final limited ruling, the real
     // supply line — see the type declaration above): the LIVE registered
     // PTC runtime instance through the SAME 639 global-store token the

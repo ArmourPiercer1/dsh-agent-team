@@ -1144,6 +1144,48 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       }
       const postGateStale = reVerifyAtEdge(plan)
       if (postGateStale !== null) return postGateStale
+      /* FRESH CONSUMPTION BOUNDARY (user ruling 2026-10-25 09:03:32): the
+       * formal Team-PA consumption runs AFTER the Host approval was granted.
+       * The real binding/policy/authority generations are re-read HERE — a
+       * tuple that moved during the awaited gate STALES the plan (zero
+       * manager entry, the granted escalation is consumed by nothing) — and
+       * the consumeAfterGrant() thunk answers with the PLANE's own admit
+       * verdict: a real admission call, never a callback faking approved.
+       * Absent thunk (non-wiring mounts) keeps this edge's own law: the
+       * re-verify above already ran; the plan is entered on its plan. */
+      if (typeof ctx.consumeAfterGrant === 'function') {
+        let nowGenerations
+        try {
+          const nowFacts = bindingFacts()
+          nowGenerations = {
+            bindingId: nowFacts?.bindingId ?? null,
+            bindingRevision: nowFacts?.bindingRevision ?? null,
+            policyGeneration: nowFacts?.policyGeneration ?? null,
+            authorityGeneration: nowFacts?.authorityGeneration ?? null,
+          }
+        } catch (error) {
+          entry.state = 'REFUSED-CONSUME-UNREADABLE'
+          return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the binding facts could not be re-read at the post-grant consume boundary (${String(error)}); the plan is stale, not re-approvable — zero manager entry happened`)
+        }
+        if (nowGenerations.bindingId !== plan.generations.bindingId
+          || nowGenerations.bindingRevision !== plan.generations.bindingRevision
+          || nowGenerations.policyGeneration !== plan.generations.policyGeneration
+          || nowGenerations.authorityGeneration !== plan.generations.authorityGeneration) {
+          entry.state = 'REFUSED-CONSUME-GENERATION-MOVED'
+          return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the binding/policy/authority tuple moved during the awaited Host gate (bound ${canonical(plan.generations)} now ${canonical(nowGenerations)}) — a moved tuple is never re-run on a granted approval; zero manager entry happened`)
+        }
+        let consumed
+        try {
+          consumed = await ctx.consumeAfterGrant()
+        } catch (error) {
+          consumed = { ok: false, code: CODES.CLASSIFY_INVALID_ARGUMENTS, detail: `consumeAfterGrant threw: ${String(error)}` }
+        }
+        if (!isRecord(consumed) || consumed.ok !== true) {
+          entry.state = 'REFUSED-AFTER-GRANT-CONSUME'
+          return classifyRefuse(String(consumed?.code ?? 'P_G1_INSTALL_CONSUME_REFUSED'), `${spec.recordIndex}·B-PLUGIN·${providerId}: the PLANE's own admission refused at the post-grant consume boundary (${String(consumed?.detail ?? consumed?.code ?? 'refused')}) — the answer is the plane's, the row never fakes an approval; zero manager entry happened`)
+        }
+        entry.facts.consumedAfterGrant = { at: 'post-host-approval', generations: nowGenerations }
+      }
       const requestId = `g1-install-${randomUUID()}`
       const options = {
         requestId,

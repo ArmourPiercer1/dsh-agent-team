@@ -140,6 +140,8 @@ const mintCaptureIdentity = (providerId, entry, face) => `g1-capture@${providerI
  *   bindingFacts: () => object,                           // live binding-revision reader
  *   topology?: { current: () => unknown },                // trustedTopology supply (B-INSPECT rows; absence keeps the module's own call-time refusal)
  *   pluginFacts?: { current: () => unknown },             // pluginFacts supply (B-PLUGIN rows only; the wiring whitelist refuses it for any other row set)
+ *   installFace?: { installBundle, waitForInstall, cancelInstall }, // the LIVE manager lifecycle (B-PLUGIN install only; wiring arm law)
+ *   hostEscalation?: { approveEscalation, sandboxPolicy, approver }, // the REAL Host gate seams (B-PLUGIN install only)
  *   observe?: (row: object) => void,
  * }} mount
  * @returns frozen `{ ok: true, assembly }` or a frozen `{ ok: false, code, message }`
@@ -167,6 +169,12 @@ export function createG1QueryAssembly(mount = {}) {
   }
   if (typeof mount.bindingFacts !== 'function') {
     return refuseAssembly(CODES.EVIDENCE_ABSENT, 'bindingFacts() must be mounted — the adapter answers the binding revision the PA edge consults')
+  }
+  if (mount.installFace !== undefined && !isRecord(mount.installFace)) {
+    return refuseAssembly(CODES.EVIDENCE_ABSENT, 'mount.installFace must be a record (the LIVE manager lifecycle face {installBundle, waitForInstall, cancelInstall} — the wiring validates its shape; an arm-less mount simply omits it and install_bundle stays fail-closed at the adapter edge)')
+  }
+  if (mount.hostEscalation !== undefined && !isRecord(mount.hostEscalation)) {
+    return refuseAssembly(CODES.EVIDENCE_ABSENT, 'mount.hostEscalation must be a record (the REAL gate ingredients {approveEscalation, sandboxPolicy, approver} of tools.ts:38-44 — the Team PA never stands in for the Host adjudicator)')
   }
   if (mount.pluginFacts !== undefined && (!isRecord(mount.pluginFacts) || typeof mount.pluginFacts.current !== 'function')) {
     return refuseAssembly(CODES.EVIDENCE_ABSENT, 'mount.pluginFacts must be { current: () => the CURRENT profile facts } — a live CURRENT-facts source or nothing (the B-PLUGIN rows\' classify law reads it per call; a frozen snapshot is not a CURRENT-facts source)')
@@ -277,6 +285,16 @@ export function createG1QueryAssembly(mount = {}) {
         // row set presenting pluginFacts is refused ARM_NOT_ACCEPTED —
         // this layer only threads what the mount supplied.
         ...(mount.pluginFacts === undefined ? {} : { pluginFacts: mount.pluginFacts }),
+      }),
+    }),
+    // the INSTALL ARMS (user ruling 2026-10-25 09:03:32): threaded to the
+    // wiring untouched — the wiring's arm law is the authority (only an
+    // exactly-B-PLUGIN row set is accepted; shape validated there at
+    // assembly; the adapter re-verifies identity at every edge).
+    ...(mount.installFace === undefined && mount.hostEscalation === undefined ? {} : {
+      arms: Object.freeze({
+        ...(mount.installFace === undefined ? {} : { installFace: mount.installFace }),
+        ...(mount.hostEscalation === undefined ? {} : { hostEscalation: mount.hostEscalation }),
       }),
     }),
     admit,
