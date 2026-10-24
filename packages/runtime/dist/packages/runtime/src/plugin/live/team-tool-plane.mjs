@@ -1581,6 +1581,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // edge refuses (see the execution edge below); it never falls back to a
   // scalar getter or a constant.
   const paReadCallFacts = input.readCallFacts
+  // A5M2 B-SCHEDULE bind-after-def (root 00:3x, zero-registration law): the
+  // names the bind-after-def mount GOVERNS this mount declared (scheduleEnabled
+  // only; absent/undefined = an unmounted world answers undefined below — the
+  // zero flip). The pair is NEVER placed by this plane; the list exists so
+  // the trust read of the native pair's dispatch resolves through THIS
+  // ORIGINAL placement-name source (no parallel placement source).
+  const scheduleGovernedNames = Array.isArray(input.scheduleGovernedNames) ? input.scheduleGovernedNames : null
   // THE plane's own row-name mapping point (the same native-class ↔ mounted-
   // name law `createLaneDecide` documents at the lane face): a call's
   // tool-invoke name resolves to the row THIS plane placed, so a backend
@@ -1618,6 +1625,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // live tuple, and the edge refuses `TOOL_BINDING_UNVERIFIED` when the
     // entry cannot answer; no fake binding path exists on this family).
     if (teamOpsWiring !== null && teamOpsWiring.placementNames.includes(spelling)) return spelling
+    // A5M2 B-SCHEDULE bind-after-def: the governed native pair resolves to its
+    // OWN native spelling — ONLY when this mount declared the pair governed;
+    // an unmounted world answers undefined (zero flip). No row is placed and
+    // no definition is registered here (zero-registration law): the resolution
+    // exists so the REAL call-level binding behind the native definitions is
+    // what the downstream trust read reaches, never a `plane-row:` stand-in.
+    if (scheduleGovernedNames !== null && scheduleGovernedNames.includes(spelling)) return spelling
     // A5-M2 B-SUBAGENT CONTROL (root 21:01 card, this lane's block): the
     // control trio mounts at its OWN native spellings — placed by THIS plane
     // through the shared machinery — ONLY while this mount actually wired it

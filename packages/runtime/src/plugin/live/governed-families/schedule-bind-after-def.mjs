@@ -79,6 +79,15 @@ export function createScheduleBindAfterDef(deps) {
       }
       originalDefs.set(name, def)
     }
+    // BIND-MOMENT RE-READ (gate b): a look-alike copy that answers the SECOND
+    // read of the same name is refused here, before any listener exists — the
+    // binding only ever holds the ORIGINAL objects captured above.
+    for (const name of PAIR) {
+      const again = deps.readToolDefinition(name, agent)
+      if (again !== originalDefs.get(name)) {
+        throw breakpoint('def-identity-drift', 'the same original definition object at the bind-moment re-read', 'a different object (look-alike copy)', `pair:${name}`)
+      }
+    }
     return true
   }
 
@@ -88,39 +97,55 @@ export function createScheduleBindAfterDef(deps) {
       || typeof serviceAtBind.list !== 'function' || typeof serviceAtBind.delete !== 'function') {
       throw breakpoint('service-shape', 'full ScheduleService-shaped live handle (list/delete)', String(serviceAtBind), 'execute/live service identity')
     }
+    const events = deps.agentEventsFor ? deps.agentEventsFor(agent) : deps.agentEvents
+    const registerGuard = deps.registerGuardFor ? deps.registerGuardFor(agent) : deps.registerGuard
     const isOurs = (exec) => exec?.agent === agent && originalDefs.has(exec?.name)
-    // pre-execute: PA consume-for-execution is MANDATORY (guard alone never
-    // substitutes); exact original-def identity + family definitionIdentity.
-    disposers.push(deps.agentEvents.on('tools/pre-execute', (exec, next) => {
+    // pre-execute: scope + identity checks ONLY — the run_code D2 lesson is
+    // law here: consuming a ticket at pre-execute would leave the downstream
+    // Ask stages uncovered, so the final PA consume lives AT the execute body
+    // boundary below. This leg may still DENY fail-closed, never permit.
+    disposers.push(events.on('tools/pre-execute', (exec, next) => {
       if (!isOurs(exec)) return next()
-      const def = originalDefs.get(exec.name)
-      const consumed = deps.consumePa?.(exec.callId ?? exec.id, def) === true
-      if (!consumed) {
-        note('pa-not-consumed', { name: exec.name })
-        return Promise.resolve({ kind: 'deny', reason: 'a5m2-schedule: PA was not consumed for this execution — the guard lane is defense-in-depth, never the permit' })
-      }
+      note('governed-pre', { name: exec.name })
       return next()
     }))
-    // execute: live service identity must still be the SAME object the bind
-    // saw (PORT_DRIFT legs are REAL); name+agent already exact.
-    disposers.push(deps.agentEvents.on('tools/execute', (exec, next) => {
+    // execute = THE BODY BOUNDARY: live service identity re-check first,
+    // then the FINAL PA consume (one consume per one native dispatch — the
+    // witness is taken exactly here and nowhere else), then next() hands the
+    // REAL native body to the host's own dispatch. Drift or a missing
+    // witness refuse BEFORE any body entry; nothing is consumed on a refusal.
+    disposers.push(events.on('tools/execute', async (exec, next) => {
       if (!isOurs(exec)) return next()
       const live = deps.scheduleServiceFeed?.()
       if (live !== serviceAtBind) {
         note('service-identity-drift', { name: exec.name })
-        return Promise.reject(breakpoint('service-identity-drift', 'the SAME live service object as at bind time', 'a different object underneath execute', 'tools/execute'))
+        throw breakpoint('service-identity-drift', 'the SAME live service object as at bind time', 'a different object underneath execute', 'tools/execute')
       }
+      const def = originalDefs.get(exec.name)
+      const consume = deps.consumePaAtBody ?? deps.consumePa
+      let witness = false
+      try {
+        witness = await Promise.resolve(consume?.(exec, def)) === true
+      } catch (error) {
+        note('pa-consume-fault', { name: exec.name, detail: String(error?.message ?? error).slice(0, 140) })
+        throw breakpoint('pa-consume-fault', 'the PA consume at the body boundary to answer cleanly', `threw ${String(error?.message ?? error).slice(0, 140)}`, 'tools/execute body boundary')
+      }
+      if (witness !== true) {
+        note('pa-not-consumed', { name: exec.name })
+        throw breakpoint('pa-not-consumed', 'a TRUE PA witness at the execute body boundary (Ask stages covered through this very boundary)', 'no witness consumed', 'tools/execute body boundary')
+      }
+      note('pa-consumed-at-body', { name: exec.name })
       return next() // never rewrite signal, never touch identity (contract)
     }))
     // post-execute: ACCEPT (observe only) — the owning registry normalizes
     // through its output contract (:1864-1884); replacing is out of scope.
-    disposers.push(deps.agentEvents.on('tools/post-execute', (exec, result, next) => {
+    disposers.push(events.on('tools/post-execute', (exec, result, next) => {
       if (isOurs(exec)) note('governed-result', { name: exec.name, isError: result?.isError === true })
       return next()
     }))
     // guard: monotonic agent-scoped DENY-lane only (defense-in-depth before
     // the PA lane; a guard alone never permits, per binding law).
-    disposers.push(deps.registerGuard((exec) => {
+    disposers.push(registerGuard((exec) => {
       if (isOurs(exec) && deps.consumePa?.peekConsumed?.(exec.callId ?? exec.id) === 'pending-denial') {
         return 'a5m2-schedule: pending PA denial (guard lane)'
       }
@@ -128,6 +153,10 @@ export function createScheduleBindAfterDef(deps) {
     }))
     bound = true
     note('bound-after-def', { defs: [...originalDefs.keys()], serviceCaptured: true })
+    // The wiring owns the CANONICAL family registration at this moment (the
+    // ORIGINAL def objects just bound are its only trusted key source — no
+    // parallel placement identity, no capture-side string).
+    deps.onBinded?.({ agent, definitions: Object.freeze([...originalDefs.entries()].map(([name, definition]) => Object.freeze({ name, definition }))) })
   }
 
   /** Start: NO capture at setup; the first read happens only post-created. */
@@ -142,7 +171,12 @@ export function createScheduleBindAfterDef(deps) {
         bindExecutions(agent)
       } catch (error) {
         note('bind-refused', { detail: String(error?.message ?? error).slice(0, 220), breakpoint: error?.breakpoint ?? null })
-        throw error
+        // In production the wiring owns the fail-closed DENY lane (typed,
+        // zero-effect); re-throwing inside the host's awaited created announce
+        // would fault the member's turn for a governance-only refusal. With
+        // no refuse owner injected, the throw stays (test/factory worlds).
+        if (deps.onBindRefused) deps.onBindRefused(error)
+        else throw error
       }
     }))
     note('awaiting-def', { law: 'no setup-time fetch; bind only after the original def appears' })
