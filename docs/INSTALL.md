@@ -478,10 +478,15 @@ wiring 刷新（`ptyService.premintOpenPlan`）；预 mint 失败答 NOTHING，a
 type `dsh-g3-po-<callId>-<seq>`）——身份答
 `{ registrationId: "dsh-g3-po:<type>", incarnation: <挂载世代> }`：世代 =
  capture 时刻 mint 的每 mount 一个值，**被替换/已作废的世代即刻失效其旧批准**
- （Agent 作用域撤销走既有公开生命周期事件 `agent/disposed`——Host
- core/agent runtime-types.ts:270 声明、index.ts:514 在每次 handle dispose
- 时发射，即 dropResidency 所 await 的那条路——订阅回调即翻转 revoked，与行级
- mount 撤销双保险；此后一切读取答 NOTHING，in-flight 调用在 adapter 入口
+ （Agent 作用域撤销的**主路径是 scope 效应 disposer**——
+ `agentCtx.effect(disposer, 'dsh-agent-team/g3-mount-generation')`（公开效应
+ 注册面；agentCtx 即插件 Context，AgentSetup 契约 core/agent index.ts:51）。
+ 顺序依据（root 复审事实）：loop 路径 cancel→whenIdle→**scope.dispose**
+ （agent-loop :540-546）先跑 disposer，而 `agent/disposed` 事件要到 detach
+ （core/agent emitDisposed :513-514，经 :561）才发射——彼时本 scope 监听器已
+ 卸载，事件仅作**幂等第二路径**（detach 可见的 drop 仍覆盖），行级撤销第三
+ 保险；**注册失败 fail-visible**：没有保证的 scope-dispose 撤销路径，世代
+ 即刻作废、拒答而非继续服役；此后一切读取答 NOTHING，in-flight 调用在 adapter 入口
  recheck 处以 `P_TERM_TARGET_DRIFT` 命名 old→unresolvable 拒绝，零端口进入；
  不追踪任何无关公共 backend，也不为其新设注册 API）。
  **当前发布配对（root consolidated 1b）**：`backend` 每次作答都重读

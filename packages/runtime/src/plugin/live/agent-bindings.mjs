@@ -3535,23 +3535,44 @@ export function createAgentBindings(deps) {
           }
           await g3PremintOpenPlan()
           g3RouteGeneration = { value: randomUUID(), revoked: false }
-          // ITEM 1a (consolidated card): the revoke must reach AGENT scope,
-          // not only row close. The EXISTING PUBLIC lifecycle event
-          // `agent/disposed` (Host core/agent runtime-types.ts:270, emitted
-          // by the registry at index.ts:514 on every handle dispose — the
-          // very call dropResidency awaits) revokes this mount's generation
-          // the moment the agent's residency drops or is replaced. No
-          // ledger: one subscription on the agent's own public event face
-          // (the same bus this file already uses for 'tools/result'); the
-          // unsubscribe, when the face offers one, rides toolDisposers.
+          // ITEM 1a RESIDUE (root review of 73ce2188a — dispose ORDERING):
+          // the agent/disposed EVENT is LATE on the loop path — Host runs
+          // cancel -> whenIdle -> scope.dispose (agent-loop :540-546), and
+          // the registry emits agent/disposed only LATER at detach
+          // (core/agent emitDisposed :513-514, reached via :561), by which
+          // time this scope's listeners are unloaded: an event-only revoke
+          // NEVER fires on that path. PRIMARY here is therefore the scope's
+          // own EFFECT DISPOSER — `agentCtx.effect(disposer, name)` is the
+          // framework's public effect registration (agentCtx is the plugin
+          // Context by the AgentSetup contract, core/agent index.ts:51; the
+          // Host itself registers agent effects this way), and scope.dispose
+          // runs it on the loop path GUARANTEED, before any later answer.
+          // The epoch flip is IDEMPOTENT, so the event subscription (kept as
+          // the second path for detach-visible drops) and the row-close
+          // disposer are harmless repeats. REGISTRATION FAILURE IS
+          // FAIL-VISIBLE: an epoch without a guaranteed scope-dispose revoke
+          // is REVOKED at once — it never continues answering (the row
+          // refuses rather than a revoke path silently missing).
+          const g3RevokeGeneration = () => {
+            if (g3RouteGeneration !== null) g3RouteGeneration.revoked = true
+          }
+          if (typeof agentCtx?.effect === 'function') {
+            try {
+              agentCtx.effect(() => g3RevokeGeneration, 'dsh-agent-team/g3-mount-generation')
+            } catch (error) {
+              g3RevokeGeneration()
+              observations.push(`a5m2-g3: effect-disposer registration FAILED for ${sessionId}: ${String(error?.message ?? error).slice(0, 140)} — the generation is REVOKED AT ONCE (fail-visible: no guaranteed revoke path means no answers)`)
+            }
+          } else {
+            g3RevokeGeneration()
+            observations.push(`a5m2-g3: agentCtx.effect ABSENT for ${sessionId} — the generation is REVOKED AT ONCE (fail-visible: scope-dispose ordering cannot be guaranteed without the effect registration)`)
+          }
           if (typeof agentCtx?.on === 'function') {
             try {
-              const g3DisposeUnsub = agentCtx.on('agent/disposed', () => {
-                if (g3RouteGeneration !== null) g3RouteGeneration.revoked = true
-              })
+              const g3DisposeUnsub = agentCtx.on('agent/disposed', g3RevokeGeneration)
               if (typeof g3DisposeUnsub === 'function') toolDisposers.push(g3DisposeUnsub)
             } catch (error) {
-              observations.push(`a5m2-g3: agent/disposed subscription FAILED for ${sessionId}: ${String(error?.message ?? error).slice(0, 140)} — generation revoke keeps the row-close path only (disclosed)`)
+              observations.push(`a5m2-g3: agent/disposed subscription FAILED for ${sessionId}: ${String(error?.message ?? error).slice(0, 140)} — the effect-disposer (scope.dispose, loop-path guaranteed) remains the primary revoke (disclosed)`)
             }
           }
           const g3PtyService = Object.freeze({
