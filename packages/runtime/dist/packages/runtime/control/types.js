@@ -1032,7 +1032,12 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
      * enforcement census — the row states exactly what the supply face
      * answers, the arm refuses the run when a fact stops being evidenced),
      * the child-channel facts (capabilityList as a closed stringArray, its
-     * digest, the two deployer-declared positive budgets), the code/
+     * digest, and the two budget leaves under the ACTUAL mapping — root
+     * final limited ruling: canonical-JSON nullableString, a number ONLY
+     * when a supplier really observes it, the total-count cap carrying the
+     * honest NOT-IMPLEMENTED disclosure constant verbatim; the old
+     * nonNegativeInt mandatory reading was adapter-side over-specification
+     * and is WITHDRAWN), the code/
      * description digests, and the escalation request as MANIFEST DATA
      * (nullableString: null = no request; the ANSWER lives only on the
      * ptc-escalation-row bridge, never here). Object leaves (timeoutPolicy)
@@ -1041,8 +1046,9 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
      * envelope/budget/channel DRIFT law stays the adapter's own recheckTarget
      * at the entry; currentFields names only the pure-data identity legs a
      * CURRENT call restates, mirroring B-TERMINAL. ENABLEMENT IS NOT THIS
-     * TABLE: the mount is the plane's closed backends.runCode gate; nothing
-     * here claims Host verification. */
+     * TABLE: governance mounts on the PUBLIC tools/pre-execute seam
+     * (the reserved native run_code is host-UNREGISTRABLE — index.ts:1080);
+     * nothing here claims Host verification. */
     'B-PTC': Object.freeze({
         required: Object.freeze({
             operation: 'string',
@@ -1065,8 +1071,8 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
                         capabilityList: 'stringArray',
                         capabilityCount: 'nonNegativeInt',
                         channelDigest: 'string',
-                        maxParallelSubCalls: 'nonNegativeInt',
-                        runDispatchBudget: 'nonNegativeInt',
+                        maxParallelSubCalls: 'nullableString',
+                        runDispatchBudget: 'nullableString',
                         lineageFacts: 'string',
                         codeDigest: 'string',
                         descriptionDigest: 'string',

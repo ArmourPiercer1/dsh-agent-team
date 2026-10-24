@@ -124,6 +124,7 @@ const G3 = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc
   A5_G3_LSP_TYPED_CODES: Record<string, string>
   A5_G3_PTC_TYPED_CODES: Record<string, string>
   A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS: readonly string[]
+  A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE: string
   g3CanonicalRegistrationFace: (spec: Record<string, unknown>) => Record<string, unknown>
   createGovernedTerminalArms: (deps: Record<string, unknown>) => Record<TerminalName, Arm>
   createGovernedLspArm: (deps: Record<string, unknown>) => Arm
@@ -1171,7 +1172,11 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
     expect(c.manifest?.interpreterTarget).toEqual({ runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' })
     expect(c.manifest?.effectiveEnvelope).toEqual({ mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' })
     expect(c.manifest?.timeoutPolicy).toEqual({ defaultMs: 30000, maxMs: 120000 })
-    expect(c.manifest?.childChannel).toMatchObject({ capabilityCount: 4, channelDigest: 'sha256:chan-1', maxParallelSubCalls: 8, runDispatchBudget: 64 })
+    // ACTUAL mapping (root final limited ruling): a supplied observation
+    // rides as given; the total-count cap leaf carries the disclosure
+    // constant verbatim — the 64 the facts supplied never survives as a
+    // claimed cap, because NO mechanism enforces any.
+    expect(c.manifest?.childChannel).toMatchObject({ capabilityCount: 4, channelDigest: 'sha256:chan-1', maxParallelSubCalls: 8, runDispatchBudget: G3.A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE })
     expect((c.manifest?.childChannel as Record<string, unknown>).capabilityList).toEqual(['bash', 'read', 'todo__write', 'write'])
     expect(c.manifest?.nestedToolsSecondGovernance).toBeUndefined() // ruled NOT evidence
     expect(String(c.manifest?.codeDigest)).toBe(`sha256:${createHash('sha256').update(code, 'utf8').digest('hex')}`)
@@ -1248,17 +1253,42 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
     expect(faces).toBe('adapterRevision,cancel,classify,declaredAbsent,definitionIdentity,drain,execute,familyId,inFlight,parametersFace,prepare,providerId,toolName')
   })
 
-  it('THE REAL ENVELOPE/BUDGET LAW (root ruling: null/empty does NOT count): an unevidenced EFFECTIVE envelope or a null budget refuses P_PTC_ENVELOPE_UNEVIDENCED at classify AND at the entry, never running behind an unenforced claim', async () => {
+  it('THE ENVELOPE LAW + ACTUAL BUDGET MAPPING (root FINAL LIMITED ruling): a null/empty ENVELOPE still refuses at classify AND at the entry; a GARBAGE supplied budget refuses typed; an unobservable (null) budget SERVES carrying the honest disclosure leaf', async () => {
     const noEnvelope = await ptcWorld({ noEnvelope: true })
     const dark = noEnvelope.arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-dark')
     expect(dark.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ENVELOPE_UNEVIDENCED)
     expect(dark.detail).toMatch(/not an implementation/)
     expect(noEnvelope.native.calls.length).toBe(0)
+    // (i) the WITHDRAWAL: null budget observations CLASSIFY — the run
+    // carries the disclosure leaf instead of a fake number.
     const noBudget = await ptcWorld({ noBudget: true })
-    const poor = noBudget.arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-poor')
-    expect(poor.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ENVELOPE_UNEVIDENCED)
-    expect(poor.detail).toMatch(/maxParallelSubCalls/)
-    expect(noBudget.native.calls.length).toBe(0)
+    const faceless = noBudget.arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-faceless')
+    expect(faceless.ok).toBe(true)
+    expect(faceless.manifest?.childChannel).toMatchObject({ maxParallelSubCalls: null, runDispatchBudget: G3.A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE })
+    // (ii) garbage NEVER passes: a supplied non-number budget refuses typed.
+    const garbageWorld = await ptcWorld()
+    const garbageNative = await makeNative('run_code', CAPTURED.run_code)
+    const garbageBinding = makeBinding()
+    const garbageArm = G3.createGovernedRunCodeArm({
+      nativeDefinition: garbageNative.def,
+      definitionIdentity: 'run_code@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'run_code@v1' }),
+      providerId: 'g3-test-provider',
+      memberAgentId: AGENT_ID,
+      sessionHeaderId: HEADER_ID,
+      realmId: 'realm-g3-test',
+      bindingFacts: garbageBinding.read,
+      ptcFacts: () => ({
+        interpreter: { runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' },
+        effectiveEnvelope: { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
+        timeout: { defaultMs: 30000, maxMs: 120000 },
+        childChannel: { capabilityList: ['read'], channelDigest: 'sha256:chan-1', runDispatchBudget: 'four' },
+      }),
+    })
+    const garbage = garbageArm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-garbage')
+    expect(garbage.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ENVELOPE_UNEVIDENCED)
+    expect(garbage.detail).toMatch(/runDispatchBudget/)
+    void garbageWorld
     // The same law AT THE ENTRY: an envelope evidenced at classify that
     // stops being evidenced inside the pre-entry window refuses there too.
     let envelopeLive = true

@@ -40,7 +40,16 @@
  * / P_PTC_TARGET_UNEVIDENCED naming the missing fact) — the bridge never
  * launders a half-fed fact set into a mount.
  *
- * MOUNT STATUS — UNMOUNTED, P1 (root independent review, consolidated
+ * MODULE ENTRIES (root FINAL LIMITED ruling on run_code, 2026-10-25):
+ *  ① buildG3RunCodeWiring — the def-PLACEMENT bridge: RETIRED and
+ *     UNMOUNTED FOREVER (the P1 fact below stands; the anti-reintroduction
+ *     pins in the spec keep it red if anyone re-adds the placement path).
+ *  ② buildG3RunCodeGuard — the GUARD-SEAM entry WIRED per the ruling: one
+ *     scope-filtered `tools/pre-execute` listener over the PUBLIC seam,
+ *     classify → PA open → edge ONE consume → allow → the RESERVED native
+ *     runs untouched. TIER: 接线未测 (wired, not Host-tested).
+ *
+ * MOUNT STATUS ① — UNMOUNTED, P1 (root independent review, consolidated
  * run_code card): the HOST 639 UNCONDITIONALLY reserves the name —
  * registering or shadowing `run_code` THROWS (core/tools/src/index.ts:
  * 1080-1081 "reserved for the PTC mode presentation transport and cannot
@@ -57,15 +66,20 @@
  * mirrored by NOTHING (concurrency ptc.ts:334/495/660; cancellation
  * rootCallId/parentToken/agent/signal :538-555; timeout+sandbox prepare
  * :622, schemas :689, runtime.resolve/run :697-708). Zero shadow
- * registration, zero new scheduling accounts. OBLIGATION LAW: the total
- * dispatch budget (`runDispatchBudget`) STAYS a listed functional gap
- * (zero face anywhere in the 639 tree) — its absence removes no native
- * guarantee and no obligation is silently deleted.
+ * registration, zero new scheduling accounts. OBLIGATION LAW — ACTUAL
+ * MAPPING per the final limited ruling: the per-run TOTAL dispatch cap is
+ * NOT IMPLEMENTED (zero face anywhere in the 639 tree), it is DISCLOSED
+ * through the manifest leaf (A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE) and
+ * is explicitly NOT a self-issued release gate; the old every-run mandatory
+ * refusal was adapter-side over-specification and is WITHDRAWN. Channel
+ * facts, the envelope answer, per-nested A, parent cancellation and
+ * one-consume each STAY mandatory every run.
  */
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 import {
   A5_G3_ADAPTER_REVISION,
   A5_G3_FAMILIES,
+  A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE,
   createGovernedRunCodeArm,
 } from './g3-fsproc-adapters.mjs'
 
@@ -158,8 +172,11 @@ export function a5G3PtcPaTargetFlat(manifest) {
     capabilityList: channel.capabilityList,
     capabilityCount: channel.capabilityCount,
     channelDigest: channel.channelDigest,
-    maxParallelSubCalls: channel.maxParallelSubCalls,
-    runDispatchBudget: channel.runDispatchBudget,
+    // ACTUAL mapping (root final limited ruling): canonical-JSON string
+    // ONLY for a real supplier observation; the total-count cap leaf
+    // carries the disclosure constant verbatim (never a fake number).
+    maxParallelSubCalls: Number.isFinite(channel.maxParallelSubCalls) ? JSON.stringify(channel.maxParallelSubCalls) : null,
+    runDispatchBudget: Number.isFinite(channel.runDispatchBudget) ? JSON.stringify(channel.runDispatchBudget) : A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE,
     lineageFacts: channel.lineageFacts,
     codeDigest: manifest.codeDigest,
     descriptionDigest: manifest.descriptionDigest,
@@ -459,5 +476,291 @@ export function buildG3RunCodeWiring (input = {}) {
     },
     familyRegistrations,
   })
+  return assembly
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// THE GUARD-SEAM ENTRY (root FINAL LIMITED ruling on run_code, 2026-10-25).
+// The def-PLACEMENT builder above stays RETIRED and UNMOUNTED (the P1 fact
+// stands forever: the host FORBIDS registering or shadowing 'run_code' —
+// core/tools/src/index.ts:1080-1081, PR355 §2.3; a placement arm would
+// roll back the whole plane). What the ruling WIRES instead is this second
+// entry, which never registers, never shadows, and never wraps the body:
+//
+//   ONE scope-filtered listener on the PUBLIC `tools/pre-execute` waterfall
+//   (639 index.ts:153; every dispatch — INCLUDING the reserved native
+//   transport, index.ts:1216 — rides the SAME funnel at :1505-1507). The
+//   listener matches exactly `exec.name === 'run_code'` AND
+//   `exec.agent.id === memberAgentId`; everything else passes through
+//   `next()` byte-untouched (zero effect). For a matching call it walks the
+//   SAME governed law the retired def used to walk internally — classify →
+//   pa.open → pa.edge ONE consume → arm.prepare — and then:
+//     · REFUSE  → return the typed decision BEFORE ever calling next():
+//       zero body entry, the reserved transport never dispatches;
+//     · ALLOW   → return next(): the waterfall continues (the sibling
+//       listeners still decide, the terminal answers allow) and the
+//       RESERVED NATIVE runs UNTOUCHED — its concurrency
+//       (ptc.ts:316-317/:447-452/:495/:660), parent cancellation and drain
+//       (:538-555), timeout + sandbox (:697-708 + NodePtcRuntime clamp/
+//       wall-timer) and per-child registry rides (:620-624/:687-691) are
+//       HOST-side facts this seam never mirrors, replaces, or re-accounts.
+//
+// The plan record closes when THIS admission walk settles (the grant was
+// consumed at the edge — the settled fact; the body's fate is the native's
+// own word). One listener, zero new scheduling accounts, zero placement,
+// zero registration of the reserved name. TIER: WIRED (接线) — 接线未测;
+// real-Host acceptance is a later card. ─────────────────────────────────
+export const A5_G3_PTC_GUARD_STATUS = Object.freeze({
+  entry: 'tools/pre-execute scope-filtered interposition (public seam; never a registration)',
+  tier: 'WIRED-NOT-TESTED (root final limited ruling 2026-10-25; 已测试 needs the real-Host acceptance)',
+  registrationBan: 'ABSOLUTE — 639 core/tools/src/index.ts:1080-1081 (PR355 §2.3); the reserved native is never registered, shadowed, or wrapped',
+  nativeUntouched: 'concurrency ptc.ts:316-317/:447-452/:495/:660; parent cancel :538-555; timeout+sandbox :697-708; sub-calls ride the original registry :620-624/:687-691',
+})
+
+export const A5_G3_PTC_GUARD_CODES = Object.freeze({
+  INPUT_INVALID: 'RUNCODE_GUARD_INPUT_INVALID',
+  IDENTITY_UNBOUND: 'RUNCODE_GUARD_IDENTITY_UNBOUND',
+  CALL_ID_ABSENT: 'RUNCODE_GUARD_CALL_ID_ABSENT',
+  TOKEN_REPLAY: 'RUNCODE_GUARD_TOKEN_REPLAY',
+  DRAINED: 'RUNCODE_GUARD_DRAINED',
+  ARM_UNAVAILABLE: 'RUNCODE_GUARD_ARM_UNAVAILABLE',
+  KEY_MOVED: 'RUNCODE_GUARD_KEY_MOVED',
+})
+
+const refusalToDecision = (refusal) => deepFreeze({
+  kind: 'deny',
+  reason: `run_code governed refusal ${String(refusal?.code ?? 'REFUSED')} — ${String(refusal?.detail ?? 'refused without detail')}`,
+})
+
+export function buildG3RunCodeGuard (input = {}) {
+  const knownInput = new Set([
+    'realmId', 'providerId', 'memberAgentId', 'sessionHeaderId', 'readNative',
+    'ptcFacts', 'bindingFacts', 'identityOf', 'pa', 'observe',
+  ])
+  for (const key of Object.keys(input)) {
+    if (!knownInput.has(key)) {
+      return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, `unknown input key '${key}' — the guard surface is closed; an unrecognized knob never silently widens the mount`)
+    }
+  }
+  const {
+    realmId, providerId, memberAgentId, sessionHeaderId, readNative,
+    ptcFacts, bindingFacts, identityOf, pa, observe = () => {},
+  } = input
+  if (typeof realmId !== 'string' || realmId.length === 0) return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'realmId is REQUIRED (the realm joins every resource identity)')
+  if (typeof providerId !== 'string' || providerId.length === 0) return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'providerId is REQUIRED (the family entry carries the provider identity verbatim)')
+  if (typeof memberAgentId !== 'string' || memberAgentId.length === 0) return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'memberAgentId is REQUIRED — the listener matches exec.agent.id EXACTLY (the scope face already filters; this is the belt-and-suspenders face), never a name lookup')
+  if (typeof sessionHeaderId !== 'string' || sessionHeaderId.length === 0) return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'sessionHeaderId is REQUIRED — the durable session header (exec.agent.session.header.id) is the ownership leg')
+  if (typeof readNative !== 'function') return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, "readNative (name) => definition | undefined is REQUIRED — the LIVE member-scoped face (the 85 capture law runs HERE, once; the same face later answers the drift check); a throwing face is honest absence (capture-unreadable), never a fallback")
+  if (typeof ptcFacts !== 'function') return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'ptcFacts () => facts | null is REQUIRED — the LIVE supplier of interpreter/effectiveEnvelope/timeout/childChannel (the ACTUAL budget mapping: absence is honest, a supplied number must be positive finite)')
+  if (typeof bindingFacts !== 'function') return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, "bindingFacts (toolName) => {bindingId, bindingRevision, policyGeneration, authorityGeneration} is REQUIRED — the CURRENT dispatcher binding of THAT tool's entry, read LIVE")
+  if (typeof identityOf !== 'function') return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'identityOf (definition) => string | null is REQUIRED — the plane definitionIdentityOf seam applied to the CAPTURED RESERVED NATIVE (no placed definition exists; the ledger key is the native identity itself)')
+  const paSeatOk = typeof pa === 'function' && typeof pa.open === 'function' && typeof pa.edge === 'function' && typeof pa.closePlan === 'function'
+  if (!paSeatOk) {
+    return wiringRefuse(A5_G3_PTC_GUARD_CODES.INPUT_INVALID, 'pa is REQUIRED in the REAL published shape — the plane\'s paAdmit: a CALLABLE seat carrying open / edge / closePlan (the P1 item-1 law: a plain-object duck or a memberless function is garbage and refuses)')
+  }
+  // THE ONE CAPTURE (85 law): exactly one read feeds the arm bind; the face
+  // stays LIVE afterwards for the drift check (liveDispatcher re-reads it).
+  let captureReads = 0
+  let captured
+  let captureReason = 'capture-absent'
+  try {
+    captureReads += 1
+    captured = readNative(A5_G3_RUN_CODE_TOOL_NAME)
+  } catch (error) {
+    captured = undefined
+    captureReason = `capture-unreadable (${String(error?.message ?? error).slice(0, 120)})`
+  }
+  const native = captured === null || captured === undefined ? undefined : captured
+  if (native === undefined || !registrationFaceComplete(native)) {
+    observe({ event: 'g3-ptc-wire:guard-declared', name: A5_G3_RUN_CODE_TOOL_NAME, reason: native === undefined ? captureReason : 'registration-face-incomplete', mount: A5_G3_PTC_GUARD_STATUS })
+    return Object.freeze({
+      ok: true,
+      kind: 'pre-execute-guard',
+      familyId: A5_G3_FAMILIES.PTC,
+      providerId,
+      armed: false,
+      declared: Object.freeze([Object.freeze({ name: A5_G3_RUN_CODE_TOOL_NAME, familyId: A5_G3_FAMILIES.PTC, status: 'DECLARED-INACTIVE', reason: native === undefined ? captureReason : 'registration-face-incomplete' })]),
+      onPreExecute: null,
+      familyRegistrations: () => Object.freeze([]),
+      drain: () => deepFreeze({ event: 'g3-ptc-wire:guard-drain', semantics: 'nothing was armed — the word settles no resource' }),
+    })
+  }
+  const identity = identityOf(native)
+  if (typeof identity !== 'string' || identity.length === 0) {
+    throw new Error(`${A5_G3_PTC_GUARD_CODES.IDENTITY_UNBOUND}: 'run_code' — the definitionIdentityOf seam answered no identity for the CAPTURED reserved native; the guard cannot bind (a guessed or null identity is forbidden)`)
+  }
+  const arm = createGovernedRunCodeArm({
+    nativeDefinition: native,
+    definitionIdentity: identity,
+    liveDispatcher: () => {
+      // THE LIVE DRIFT FACE: the CURRENT reserved-native definition's
+      // identity, read through the SAME member-scoped seam. A moved or
+      // unreadable face answers null — the arm's own drift law refuses.
+      try {
+        const current = readNative(A5_G3_RUN_CODE_TOOL_NAME)
+        if (current === null || current === undefined) return null
+        const now = identityOf(current)
+        return typeof now === 'string' && now.length > 0 ? Object.freeze({ definitionIdentity: now, realmId }) : null
+      } catch {
+        return null
+      }
+    },
+    providerId,
+    memberAgentId,
+    sessionHeaderId,
+    realmId,
+    bindingFacts: () => bindingFacts(A5_G3_RUN_CODE_TOOL_NAME),
+    ptcFacts,
+    observe: (event) => { observe({ source: 'g3-ptc-adapter', ...event }) },
+  })
+  let drained = false
+  const tokenLedger = new Map()
+  const inFlightCalls = new Set()
+  const onPreExecute = async (exec, next) => {
+    if (!isRecord(exec) || exec.name !== A5_G3_RUN_CODE_TOOL_NAME) return next()
+    const agent = exec.agent
+    if (!isRecord(agent) || agent.id !== memberAgentId) return next()
+    if (drained) {
+      observe({ event: 'g3-ptc-wire:guard-deny', name: A5_G3_RUN_CODE_TOOL_NAME, code: A5_G3_PTC_GUARD_CODES.DRAINED })
+      return refusalToDecision({ code: A5_G3_PTC_GUARD_CODES.DRAINED, detail: 'the guard was drained — new run_code calls refuse TYPED; nothing runs unadmitted and the reserved native is never reached' })
+    }
+    const callId = typeof exec.callId === 'string' && exec.callId.length > 0 ? exec.callId : null
+    if (callId === null) {
+      return refusalToDecision({ code: A5_G3_PTC_GUARD_CODES.CALL_ID_ABSENT, detail: 'the execution answered no ISSUED call identity — the PA walk has no single-flight key; a guessed correlation is forbidden (zero body entry)' })
+    }
+    const rawToken = exec.token
+    const tokenKey = (rawToken !== null && typeof rawToken === 'object') || typeof rawToken === 'symbol' ? rawToken : undefined
+    if (tokenKey !== undefined && tokenLedger.has(tokenKey)) {
+      observe({ event: 'g3-ptc-wire:guard-deny', name: A5_G3_RUN_CODE_TOOL_NAME, code: A5_G3_PTC_GUARD_CODES.TOKEN_REPLAY })
+      return refusalToDecision({ code: A5_G3_PTC_GUARD_CODES.TOKEN_REPLAY, detail: 'one governed walk per execution token — a replayed token never opens a second admission walk (zero body entry)' })
+    }
+    if (tokenKey !== undefined) tokenLedger.set(tokenKey, callId)
+    if (inFlightCalls.has(callId)) {
+      return refusalToDecision({ code: A5_G3_PTC_GUARD_CODES.TOKEN_REPLAY, detail: `call ${callId} already carries an in-flight admission walk — one walk per issued call identity` })
+    }
+    inFlightCalls.add(callId)
+    const signal = exec.signal
+    try {
+      if (isRecord(signal) && signal.aborted === true) {
+        return deepFreeze({ kind: 'cancel' })
+      }
+      const classified = arm.classify(exec.arguments, exec, callId)
+      if (classified.ok !== true) {
+        observe({ event: 'g3-ptc-wire:guard-classify-REFUSED', name: A5_G3_RUN_CODE_TOOL_NAME, code: classified.code })
+        return refusalToDecision(classified)
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.EFFECTS_UNPARSABLE, `run_code: the arm's effect set is not the frozen closed vocabulary (${String(parsedEffects.problems?.[0]?.detail ?? 'parse refused')}) (zero body entry)`))
+      }
+      const payload = classified.reviewPayload
+      const walk = Object.freeze({
+        realmId,
+        callId,
+        parametersFingerprint: classified.parametersFingerprint,
+        requestedEffects: parsedEffects.value,
+        toolName: A5_G3_RUN_CODE_TOOL_NAME,
+        family: Object.freeze({
+          familyId: payload.familyId,
+          adapterRevision: payload.adapterRevision,
+          providerIdentity: payload.providerIdentity,
+          targetManifest: a5G3PtcPaTargetFlat(payload.targetManifest),
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      })
+      const opened = await pa.open(walk)
+      if (opened?.cancelled === true) {
+        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.ADMISSION_CANCELLED, 'run_code: cancelled at the PA open edge before admission — zero body entry'))
+      }
+      if (opened?.kind === 'deny') return refusalToDecision(opened)
+      if (opened?.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.APPROVAL_NOT_LANDED, `run_code: the admission answered ${String(opened?.kind ?? 'unsettled')} without a landed grant — internal state never substitutes for the kernel answer (zero body entry)`))
+      }
+      const edge = await pa.edge(Object.freeze({
+        ...walk,
+        grant: opened.grant,
+        ...(opened.paDurableMint === undefined ? {} : { paDurableMint: opened.paDurableMint }),
+        ...(opened.request === undefined ? {} : { request: opened.request }),
+      }))
+      if (edge?.cancelled === true) {
+        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.EDGE_CANCELLED, 'run_code: cancelled at the execution edge — the approval stays unspent and is never replayed; zero body entry'))
+      }
+      if (edge?.kind === 'deny') return refusalToDecision(edge)
+      const proof = edge?.consumedProof
+      if (!isRecord(proof) || !isRecord(proof.grant) || typeof proof.grant.grantId !== 'string') {
+        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.CONSUME_PROOF_MISSING, 'run_code: the execution edge answered allow without its one-shot consume witness — the row never substitutes a self-attested consumption; the reserved native was NOT dispatched (zero body entry)'))
+      }
+      if (isRecord(signal) && signal.aborted === true) {
+        arm.cancel(classified.plan)
+        return deepFreeze({ kind: 'cancel' })
+      }
+      const prepared = arm.prepare(classified.plan, proof.grant)
+      if (prepared?.ok !== true) {
+        observe({ event: 'g3-ptc-wire:guard-prepare-REFUSED', name: A5_G3_RUN_CODE_TOOL_NAME, code: prepared?.code })
+        return refusalToDecision(isRecord(prepared) && typeof prepared.code === 'string'
+          ? prepared
+          : wiringRefuse(A5_G3_PTC_WIRING_CODES.PREPARE_REFUSED, 'run_code: the arm refused to record the kernel grant — zero body entry'))
+      }
+      // ONE CONSUME is spent (the edge witness above). ALLOW: hand the call
+      // to the waterfall — the sibling listeners still decide and the
+      // terminal answers; when the chain allows, the RESERVED NATIVE runs
+      // with the ORIGINAL exec (identity/signal fused by the registry) and
+      // ALL its native guarantees. The decision travels VERBATIM.
+      const decision = await next()
+      observe({ event: decision?.kind === 'allow' ? 'g3-ptc-wire:guard-allowed' : 'g3-ptc-wire:guard-downstream', name: A5_G3_RUN_CODE_TOOL_NAME, callId, kind: String(decision?.kind ?? 'unsettled') })
+      return decision
+    } finally {
+      // THE PLAN CLOSE: this admission walk settles its own plan record on
+      // EVERY exit (the plane finally law carried); the grant consumption
+      // made at the edge is a settled fact and is never rolled back.
+      inFlightCalls.delete(callId)
+      try { pa.closePlan(callId) } catch { /* the close word never masks a decision */ }
+    }
+  }
+  const assembly = Object.freeze({
+    ok: true,
+    kind: 'pre-execute-guard',
+    familyId: A5_G3_FAMILIES.PTC,
+    revision: A5_G3_PTC_WIRING_REVISION,
+    adapterRevision: A5_G3_ADAPTER_REVISION,
+    providerId,
+    armed: true,
+    declared: Object.freeze([]),
+    onPreExecute,
+    familyRegistrations: () => {
+      // The ledger key is the CURRENT reserved-native identity through the
+      // SAME seam; a MOVED identity throws (identities do not float).
+      let now = identity
+      try {
+        const current = readNative(A5_G3_RUN_CODE_TOOL_NAME)
+        if (current !== null && current !== undefined) {
+          const fresh = identityOf(current)
+          if (typeof fresh === 'string' && fresh.length > 0) now = fresh
+        }
+      } catch {
+        throw new Error(`${A5_G3_PTC_GUARD_CODES.KEY_MOVED}: the reserved-native face is unreadable at the registration moment — a guessed key is forbidden and a silent skip is the drift the family gate measures`)
+      }
+      if (now !== identity) {
+        throw new Error(`${A5_G3_PTC_GUARD_CODES.KEY_MOVED}: the reserved-native identity moved between capture and the registration read (${identity} -> ${now}) — the mount is broken and re-registers nothing`)
+      }
+      return Object.freeze([Object.freeze({
+        name: A5_G3_RUN_CODE_TOOL_NAME,
+        definitionIdentity: identity,
+        entry: Object.freeze({
+          familyId: A5_G3_FAMILIES.PTC,
+          adapterRevision: A5_G3_ADAPTER_REVISION,
+          providerIdentity: providerId,
+        }),
+      })])
+    },
+    drain: () => {
+      drained = true
+      if (arm !== null) { arm.drain() }
+      return deepFreeze({ event: 'g3-ptc-wire:guard-drain', semantics: 'new-call prohibition only — no resource is settled by this word' })
+    },
+    mount: A5_G3_PTC_GUARD_STATUS,
+    captureReadsAtBuild: captureReads,
+  })
+  observe({ event: 'g3-ptc-wire:guard-mounted', name: A5_G3_RUN_CODE_TOOL_NAME, identity, mount: A5_G3_PTC_GUARD_STATUS })
   return assembly
 }

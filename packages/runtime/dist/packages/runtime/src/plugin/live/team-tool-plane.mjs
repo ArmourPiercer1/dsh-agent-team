@@ -94,6 +94,13 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // same bridge law as G6 — the committed G3 adapter is reached THROUGH the
 // wiring module only (the adapter itself is never imported or edited here).
 import { buildG3TerminalWiring, A5_G3_TERMINAL_TOOL_NAMES } from './governed-families/g3-terminal-wiring.mjs'
+// A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25): the
+// interposition rides the PUBLIC tools/pre-execute seam — the plane only
+// gates the inject, hands the REAL seat (paAdmit) and the identity seam to
+// the guard builder, and exposes the wiring face. The reserved native
+// 'run_code' is NEVER placed, registered, or shadowed here (P1 law:
+// core/tools/src/index.ts:1080-1081 — absolute).
+import { buildG3RunCodeGuard } from './governed-families/g3-ptc-wiring.mjs'
 // A5M2-G5 B-SESSION GOAL SERVICE (this lane's additive import rows under
 // the G6 pair): the goal wiring bridge and the adapter's OWN census face —
 // imported VERBATIM, no law restated here.
@@ -4804,6 +4811,61 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const g3Defs = g3Wiring === null ? [] : g3Wiring.definitions
+  // ── A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25) ──
+  // NOT a placement: ZERO definitions, ZERO registration of the reserved
+  // name (the P1 host law stands absolute). The plane gates the inject
+  // shape, hands the REAL seat (`pa: paAdmit`) and the identity seam to the
+  // guard builder, and exposes the wiring face; the bindings side installs
+  // the ONE scoped `tools/pre-execute` listener after publish. Zero-flip:
+  // with no injection this is byte-identical to the pre-guard assembly.
+  const runCodeGuardInjectRaw = input.backends?.runCodeGuard
+  let runCodeGuardInject = null
+  if (runCodeGuardInjectRaw !== undefined && runCodeGuardInjectRaw !== null) {
+    const badGuard = typeof runCodeGuardInjectRaw.providerId !== 'string' || runCodeGuardInjectRaw.providerId.length === 0
+      ? 'providerId is required (the family entry carries the provider identity verbatim)'
+      : typeof runCodeGuardInjectRaw.memberAgentId !== 'string' || runCodeGuardInjectRaw.memberAgentId.length === 0
+        ? 'memberAgentId is required (the REAL member Agent id — the exact scope filter of the listener)'
+        : typeof runCodeGuardInjectRaw.sessionHeaderId !== 'string' || runCodeGuardInjectRaw.sessionHeaderId.length === 0
+          ? 'sessionHeaderId is required (the durable session header)'
+          : typeof runCodeGuardInjectRaw.readNative !== 'function'
+            ? 'readNative (name) => definition | undefined is required — the LIVE member-scoped face (capture-once runs in the guard; the same face answers the drift check)'
+            : typeof runCodeGuardInjectRaw.ptcFacts !== 'function'
+              ? 'ptcFacts () => facts | null is required — the LIVE supply face (the ACTUAL budget mapping: absence honest, supplied numbers positive finite)'
+              : typeof runCodeGuardInjectRaw.bindingFacts !== 'function'
+                ? 'bindingFacts (toolName) => the CURRENT dispatcher binding tuple is required, read LIVE'
+                : undefined
+    if (badGuard !== undefined) {
+      return { ok: false, code: 'RUN_CODE_GUARD_INJECT_INVALID', message: `backends.runCodeGuard: ${badGuard}` }
+    }
+    runCodeGuardInject = Object.freeze({ ...runCodeGuardInjectRaw })
+  }
+  let runCodeGuardWiring = null
+  if (runCodeGuardInject !== null) {
+    try {
+      const builtRcGuard = buildG3RunCodeGuard({
+        realmId,
+        providerId: runCodeGuardInject.providerId,
+        memberAgentId: runCodeGuardInject.memberAgentId,
+        sessionHeaderId: runCodeGuardInject.sessionHeaderId,
+        readNative: runCodeGuardInject.readNative,
+        ptcFacts: runCodeGuardInject.ptcFacts,
+        bindingFacts: runCodeGuardInject.bindingFacts,
+        identityOf: (def) => definitionIdentityOf(def),
+        // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-g3-ptc: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}${event?.reason === undefined ? '' : ` (${String(event.reason)})`}`),
+      })
+      if (builtRcGuard.ok !== true) {
+        return { ok: false, code: 'RUN_CODE_GUARD_REFUSED', message: `backends.runCodeGuard: the guard wiring refused the mount (${String(builtRcGuard.code)} — ${String(builtRcGuard.detail)})` }
+      }
+      runCodeGuardWiring = builtRcGuard
+      for (const censusRow of runCodeGuardWiring.declared) {
+        observe(`a5m2-g3-ptc: DECLARED-INACTIVE ${String(censusRow.name)} (${String(censusRow.reason)}) — guard not armed, native untouched, no listener, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'RUN_CODE_GUARD_REFUSED', message: `backends.runCodeGuard: the guard's own capture/identity law threw at assembly (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
   const g5Defs = g5Wiring === null ? [] : g5Wiring.definitions
   // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the trio definitions the
   // control WIRING built (captured native faces, ONLY execute replaced; each
@@ -5117,6 +5179,21 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         declared: g3Wiring.declared,
         familyRegistrations: g3Wiring.familyRegistrations,
       }) }),
+      /** A5M2 G3 B-PTC run_code GUARD (root final limited ruling): the
+       *  guard wiring face for THIS mount (omitted, NOT set to `undefined`,
+       *  when not deployed — the same presence-decision law). The mount
+       *  writer installs `onPreExecute` as ONE agent-scoped
+       *  `tools/pre-execute` listener AFTER publish, pairs
+       *  `familyRegistrations()` with `registerA5GovernedFamily` at the
+       *  settled fill point, and the drain rides this mount's teardown,
+       *  never the writer's. */
+      ...(runCodeGuardWiring === null ? {} : { runCodeGuard: Object.freeze({
+        familyId: runCodeGuardWiring.familyId,
+        armed: runCodeGuardWiring.armed,
+        declared: runCodeGuardWiring.declared,
+        onPreExecute: runCodeGuardWiring.onPreExecute,
+        familyRegistrations: runCodeGuardWiring.familyRegistrations,
+      }) }),
 
       /** A5M2-G5 B-SESSION GOAL SERVICE (this lane's block): the goal wiring
        *  face for THIS mount (omitted, NOT set to `undefined`, when the
@@ -5386,6 +5463,11 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // token-ledger release below.
             if (g3Wiring !== null) g3Wiring.drain()
             g3TokenLedger.clear()
+            // A5M2 G3 B-PTC run_code GUARD: the same teardown law — the
+            // guard's word is a new-call prohibition (matching run_code
+            // calls then refuse TYPED; in-flight walks settle on their
+            // own); the reserved native was never ours to drain.
+            if (runCodeGuardWiring !== null) runCodeGuardWiring.drain()
             // A5M2-G5 B-SESSION GOAL SERVICE: the SAME teardown law —
             // DRAINING is the wiring's new-call prohibition (committed
             // session appends stay durable; the adapter owns no cancellable
