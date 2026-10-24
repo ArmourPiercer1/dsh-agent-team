@@ -113,7 +113,8 @@ describe('A5M2 TGP real-chain: PA before the durable chain, derived legal instan
     const e = h.ensured[0] as Record<string, unknown>
     expect(e.rootSessionId).toBe('team-root-1')
     expect(e.templateId).toBe('tpl-worker-1')
-    expect(e.parentAgent, 'attribution is the LIVE parent Agent').toBe(h.parent)
+    expect(e.parentAgent === undefined, 'the REAL chain request carries NO parentAgent (attribution waits for root\'s identity contract — no drop-pretense)').toBe(true)
+    expect(e.agentOptions === undefined && e.signal === undefined, 'no dropped fields ride the chain request either').toBe(true)
     expect(String(e.instanceId)).toMatch(INSTANCE_ID_PATTERN)
     expect(String(e.instanceId), 'the parent instance is NEVER reused as the child').not.toBe('member-inst-1')
     expect(String(e.instanceId), 'deterministic from the ADMITTED identity, no UUID').toBe(childInstanceIdForAdmittedCall('team-root-1', 'orch-call-1#child-1'))
@@ -160,6 +161,8 @@ describe('A5M2 TGP real-chain: PA before the durable chain, derived legal instan
     const h = mkHarness()
     expect(h.provider.capabilities.outputSchema).toBe(false)
     expect(h.provider.capabilities.depthLimit).toBe(false)
+    expect(h.provider.capabilities.agentOptions, 'the chain face takes no agentOptions — declared FALSE, refused, never silently dropped').toBe(false)
+    await expect(h.provider.start({ ...h.request, agentOptions: { tools: ['read'] } })).rejects.toThrow(A5_TGP_CODES.UNSUPPORTED_CAPABILITY)
     await expect(h.provider.start({ ...h.request, outputSchema: { type: 'object' } })).rejects.toThrow(A5_TGP_CODES.UNSUPPORTED_CAPABILITY)
     expect(h.walked.length).toBe(0)
     expect(h.ensured.length).toBe(0)

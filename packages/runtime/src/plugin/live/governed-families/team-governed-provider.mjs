@@ -1,11 +1,22 @@
 /**
- * THE TEAM-GOVERNED SUBAGENT PROVIDER — REAL-CHAIN SUPPLY (supersedes the
- * REJECTED candidate of e4389610; root rulings 2026-10-25 C1/C2). The
- * candidate's accepted defects are FIXED BY CONSTRUCTION here: no raw
- * agents.create pairing (the child is established through the REAL
- * durable member chain — the existing childFactory.createChildSession +
- * agentSetup('fresh-member') row-commit path, the same chain boot seeds
- * and delegation ride); no restrict-substitutes-setup (the child's world
+ * THE TEAM-GOVERNED SUBAGENT PROVIDER — GOVERNED SUPPLY behind the
+ * standing blocks (supersedes the REJECTED candidate of e4389610; root
+ * rulings 2026-10-25 C1/C2, CORRECTED 2026-10-26: the "children must
+ * commit fresh durable Team-Member rows" reading was an ADDED
+ * requirement and is WITHDRAWN — M0-B127 asks for a restricted child
+ * factory, per-child independent admission, the full-tools CENTER
+ * restriction and an owner-cancel budget, NOT new Team membership, and
+ * the one shared child->owning-member/root identity contract is OWNED
+ * BY ROOT (internal identity binding + setup/lifecycle/revocation short
+ * flow; children hold NO independent member powers, no parent-envelope
+ * widening, no parallel ledger). This module therefore treats child
+ * establishment as the INJECTED childChain seam it is and makes NO
+ * member-row architecture claim: whatever the identity contract lands
+ * as, it swaps behind the SAME provider face without touching the
+ * public-engine consumer takeover or the result protocol.) The
+ * candidate's accepted defects stay fixed by construction: no raw
+ * agents.create pairing (creation rides the injected childChain face);
+ * no restrict-substitutes-setup (the child's world
  * is the ACTIVATED TEMPLATE — template-authorized capabilities, never an
  * unrestricted publish, never a widening); no parentAgent-WeakMap
  * correlation (the provider exists as a PER-RUN closure carrying the
@@ -14,8 +25,8 @@
  * consumer, normalized by mapWorkDeliveryResult only); no self-forged
  * UUIDs (the child instance id is a DETERMINISTIC derivation of the
  * PA-admitted child call identity, inside the existing
- * INSTANCE_ID_PATTERN namespace; the durable row commits through the
- * existing fresh-member chain — no new ledger).
+ * INSTANCE_ID_PATTERN namespace — a NAMING derivation only; no ledger
+ * claim of any kind).
  *
  * The module is the SUPPLY behind the standing safety blocks (the
  * workflow constant seat and the 39/40 first-statement block still
@@ -27,12 +38,14 @@
  *     walk over the plane's ONE funnel (`parentCallId#child-N` derived
  *     from the admitted call identity — a reversible audit identity); a
  *     deny/fault/aborted answer throws before anything exists.
- *  2. DURABLE CHAIN CREATION — childChain.ensureChild(root, instance,
- *     template) is the arm's wrapper over the EXISTING childFactory +
- *     ensureLiveAgent + ensureMaterialized faces (agent-bindings
- *     childFactory/createChildSession: the fresh-member setup commits the
- *     durable MemberInstance row through the activation funnel — the
- *     boot-seed/delegation chain, nothing invented here).
+ *  2. CHAIN CREATION VIA THE INJECTED FACE — childChain.ensureChild
+ *     (root, instance, template — the REAL accepted request; extras are
+ *     typed-refused by the wrapper, never silently dropped) is the arm's
+ *     wrapper over the existing childFactory + ensureLiveAgent +
+ *     ensureMaterialized faces. The wrapper today routes the fresh-member
+ *     path because that is a REAL restricted-factory face available now;
+ *     it is an IMPLEMENTATION DETAIL behind the block, not a required
+ *     architecture (root correction 2026-10-26).
  *  3. SETTLEMENT PRECHECK BEFORE CREATION — the per-run binding
  *     (rootSessionId + the real workDelivery port) and the activated
  *     templateId must be answerable BEFORE the child exists: a child
@@ -169,19 +182,22 @@ export function createTeamGovernedSubagentProvider (input = {}) {
 
   return Object.freeze({
     name,
-    // one-shot delegation only. CAPABILITIES HONESTY: start() enforces
-    // ONLY agentOptions — outputSchema/depthLimit/toolFilter/persona are
-    // declared FALSE and typed-REFUSED on demand (the functional gaps
-    // stay on the MUST-DELIVER list, never a silent ignore).
-    capabilities: Object.freeze({ agentOptions: true, outputSchema: false, depthLimit: false, toolFilter: false, persona: false }),
+    // one-shot delegation only. CAPABILITIES HONESTY (root interface card
+    // 2026-10-26): the durable chain face takes NO agentOptions (and the
+    // wrapper would have to DROP them — dropping while claiming support is
+    // pretending success, forbidden), so agentOptions is declared FALSE
+    // and typed-REFUSED, exactly like outputSchema/depthLimit/toolFilter/
+    // persona. Every false flag is a MUST-DELIVER item, never a silent
+    // ignore in either direction.
+    capabilities: Object.freeze({ agentOptions: false, outputSchema: false, depthLimit: false, toolFilter: false, persona: false }),
     inheritsParentContext: false,
     /** LAW 1: admission before creation; the correlation is this closure. */
     async start (request) {
       const parent = isRecord(request) ? request.parent : undefined
       if (parent === undefined || parent === null) throw tgpThrow(CODES.NO_PARENT_CONTEXT, 'request.parent is absent — a Team-governed child is attributed to the LIVE parent Agent, nothing else')
       const signal = request.signal
-      if (request.outputSchema !== undefined || request.maxDepth !== undefined || request.toolFilter !== undefined || request.persona !== undefined) {
-        throw tgpThrow(CODES.UNSUPPORTED_CAPABILITY, 'this provider declares outputSchema/depthLimit/toolFilter/persona FALSE and enforces them nowhere — a request touching them is refused typed (the capability gap is a MUST-DELIVER item, never a silent ignore)')
+      if (request.agentOptions !== undefined || request.outputSchema !== undefined || request.maxDepth !== undefined || request.toolFilter !== undefined || request.persona !== undefined) {
+        throw tgpThrow(CODES.UNSUPPORTED_CAPABILITY, 'this provider declares agentOptions/outputSchema/depthLimit/toolFilter/persona FALSE and enforces them nowhere — a request touching them is refused typed (the capability gap is a MUST-DELIVER item, never a silent ignore or a silent drop)')
       }
       if (signal?.aborted === true) throw tgpThrow(CODES.CANCELLED, 'the caller signal was already aborted before the child admission opened')
       // LAW 3 PRECHECK (before anything is admitted or created): the
@@ -237,13 +253,19 @@ export function createTeamGovernedSubagentProvider (input = {}) {
       const instanceId = childInstanceIdForAdmittedCall(binding.rootSessionId, childCallId)
       let child
       try {
+        // THE REAL accepted request of the chain face is exactly
+        // { rootSessionId, instanceId, templateId } (+ the chain's own
+        // workspace default law — agent-bindings childFactory: contract-
+        // explicit workspace else the team's effective default). Sending
+        // parentAgent/agentOptions/signal through a wrapper that drops
+        // them would claim support the seam does not have; they are NOT
+        // sent. (Cancellation still rides the delivery signal below; the
+        // parent attribution law arrives with root's shared identity
+        // contract — nothing is faked until it lands.)
         child = await input.childChain.ensureChild({
           rootSessionId: binding.rootSessionId,
           instanceId,
           templateId: input.templateId,
-          parentAgent: parent,
-          ...(isRecord(request.agentOptions) ? { agentOptions: request.agentOptions } : {}),
-          ...(signal === undefined ? {} : { signal }),
         })
       } catch (error) {
         closePlan(childCallId)
