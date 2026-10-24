@@ -5831,6 +5831,12 @@ export function createAgentBindings(deps) {
             lspSupply = createA5LspRealmSupply({
               assembly: lspAssembly,
               memberId: lspMemberAgentId,
+              // THE APPROVED GENERATION (root ruling 2026-10-25, P1-b): the
+              // supply is the execution face of exactly this
+              // (member x generation) tuple — its query backend ensures/
+              // syncs it on the FIRST GOVERNED CALL (the real lifecycle
+              // trigger; the mount itself stays zero-process).
+              generation: lPol.generation,
               serverIdentityOf: (memberId, generation) => (memberId === lspMemberAgentId && generation === lPol.generation) ? lspServerIdentity : null,
             })
           } catch (error) {
@@ -5847,12 +5853,21 @@ export function createAgentBindings(deps) {
             readNative: lspReadNative,
             bindingFacts: lspBindingFacts,
             lspFacts: lspSupply.facts,
+            // THE EXECUTION PORT (root ruling P1-a): the supply's delegate
+            // port rides into the plane (and through it into the arm), so
+            // the four operations EXECUTE on the approved realm — NOT via
+            // the native body's ctx.lsp.query extension route.
+            controlPort: lspSupply.controlPort,
             lifecycle: Object.freeze({
               syncGeneration: (generation) => lspSupply.syncGeneration(generation),
+              // THE ensure-on-call trigger (root ruling P1-b): the wiring
+              // drives THIS at every governed call's entry — the assembly's
+              // own net answers the approved (member x generation) live.
+              ensureLive: async () => await lspSupply.ensureLive(),
               drainAll: () => lspSupply.drainAll(),
             }),
           })
-          observations.push(`a5m2-g3-lsp: inject armed for ${sessionId} (realm=${a5LspInject.realmId} server=${lspServerIdentity}) — assembly LAZY (no process at mount; facts answer TARGET_UNRESOLVED until a policy round ensures the realm)`)
+          observations.push(`a5m2-g3-lsp: inject armed for ${sessionId} (realm=${a5LspInject.realmId} server=${lspServerIdentity} generation=${lPol.generation}) — execution on the supply PORT (zero process at mount; the first governed call drives the real lifecycle through prepare)`)
         }
         // ── A5M2 G3 B-PTC run_code GUARD inject (root FINAL LIMITED ruling
         // 2026-10-25; the a5G3TerminalInject capture law, the guard-seam

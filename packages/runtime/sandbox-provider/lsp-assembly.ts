@@ -82,7 +82,10 @@ export interface LspAssemblyOptions {
   readonly deps?: ProviderDeps
   /** The (member × generation) → policy map. Calling it is itself the discipline: generations are explicit. */
   readonly policyFor: (memberId: string, generation: string) => LspRealmPolicy
-  /** Readiness over the live pipes: default = one line-JSON ping must answer with the payload pid. */
+  /** Readiness over the live pipes: default = the STANDARD LSP initialize
+   *  handshake (Content-Length framed `initialize` → capabilities →
+   *  `initialized`); integrators may inject a stricter probe, never a
+   *  weaker echo. */
   readonly ready?: (instance: LspInstance) => Promise<boolean>
   readonly readyTimeoutMs?: number
   readonly terminateGraceMs?: number
@@ -106,6 +109,51 @@ export interface LspRealmAssembly {
   size(): number
 }
 
+/**
+ * THE LSP BASE PROTOCOL CODEC (root LSP-review ruling 2026-10-25): the ONE
+ * Content-Length framing implementation this package uses — the assembly's
+ * readiness handshake and the consumer-side query backend (the realm supply)
+ * both ride it, so no second dialect exists. Exported for that single
+ * documented consumer; it carries no policy.
+ */
+export function encodeLspMessage(message: unknown): string {
+  const body = JSON.stringify(message)
+  return `Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`
+}
+
+/** A streaming decoder for the Content-Length framing. `push` returns the
+ *  complete JSON messages the chunk completed; malformed framing THROWS —
+ *  a framing desync is fatal to the round-trip contract, never re-synced. */
+export function createLspFrameDecoder(maxBytes = 8 * 1024 * 1024): {
+  push: (chunk: Buffer | string) => readonly unknown[]
+} {
+  let pending = Buffer.alloc(0)
+  return {
+    push: (chunk) => {
+      pending = Buffer.concat([pending, Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), 'utf8')])
+      const out: unknown[] = []
+      for (;;) {
+        if (pending.length > maxBytes) throw new Error('lsp framing: pending buffer exceeded the bound — the stream is not LSP-framed')
+        const headerEnd = pending.indexOf('\r\n\r\n')
+        if (headerEnd < 0) {
+          if (pending.length > 64 * 1024) throw new Error('lsp framing: no header terminator within the header bound')
+          break
+        }
+        const header = pending.subarray(0, headerEnd).toString('ascii')
+        const match = /content-length:\s*(\d+)/i.exec(header)
+        if (match === null) throw new Error('lsp framing: header block carries no Content-Length')
+        const length = Number(match[1])
+        const bodyStart = headerEnd + 4
+        if (pending.length < bodyStart + length) break
+        const body = pending.subarray(bodyStart, bodyStart + length).toString('utf8')
+        pending = pending.subarray(bodyStart + length)
+        out.push(JSON.parse(body))
+      }
+      return out
+    },
+  }
+}
+
 export function createLspRealmAssembly(options: LspAssemblyOptions): LspRealmAssembly {
   const instances = new Map<string, LspInstance>()
   const emit = (event: LspAssemblyEvent): void => { options.journal?.(event) }
@@ -124,11 +172,16 @@ export function createLspRealmAssembly(options: LspAssemblyOptions): LspRealmAss
     })
   }
 
-  /** Default readiness: one line-JSON ping must be answered with the payload's pid. */
+  /** STANDARD-LSP readiness (root LSP-review ruling 2026-10-25: the old raw
+   *  line-JSON ping was a transport echo, NOT the protocol — readiness is now
+   *  the real LSP initialize handshake over Content-Length framing): send
+   *  `initialize` (id 0), await the framed response carrying
+   *  `result.capabilities`, then deliver `initialized`. end/error/timeout
+   *  before that is NOT ready. */
   function defaultReady(instance: LspInstance): Promise<boolean> {
     return new Promise((resolve) => {
       const timeoutMs = options.readyTimeoutMs ?? 15_000
-      let buffer = ''
+      const decoder = createLspFrameDecoder()
       let done = false
       const finish = (value: boolean): void => {
         if (done) return
@@ -140,21 +193,26 @@ export function createLspRealmAssembly(options: LspAssemblyOptions): LspRealmAss
         resolve(value)
       }
       const onData = (chunk: unknown): void => {
-        buffer += String(chunk)
-        for (;;) {
-          const nl = buffer.indexOf('\n')
-          if (nl < 0) break
-          const line = buffer.slice(0, nl)
-          buffer = buffer.slice(nl + 1)
-          if (!line.startsWith('{')) continue
-          let parsed: unknown
-          try {
-            parsed = JSON.parse(line)
-          } catch {
-            continue
+        let messages: readonly unknown[]
+        try {
+          messages = decoder.push(chunk as Buffer | string)
+        } catch {
+          finish(false)
+          return
+        }
+        for (const msg of messages) {
+          const m = msg as { id?: unknown, result?: { capabilities?: unknown } }
+          if (m.id === 0 && m.result !== null && typeof m.result === 'object'
+            && m.result.capabilities !== null && typeof m.result.capabilities === 'object') {
+            try {
+              instance.handle.stdin.write(encodeLspMessage({ jsonrpc: '2.0', method: 'initialized', params: {} }))
+            } catch {
+              finish(false)
+              return
+            }
+            finish(true)
+            return
           }
-          const p = parsed as Record<string, unknown>
-          if (p['pong'] === 1 && p['pid'] === instance.pid) { finish(true); return }
         }
       }
       const onEnd = (): void => { finish(false) }
@@ -164,7 +222,12 @@ export function createLspRealmAssembly(options: LspAssemblyOptions): LspRealmAss
       instance.handle.stdout.on('end', onEnd)
       instance.handle.stdout.on('error', onError)
       try {
-        instance.handle.stdin.write('{"ping":1}\n')
+        instance.handle.stdin.write(encodeLspMessage({
+          jsonrpc: '2.0',
+          id: 0,
+          method: 'initialize',
+          params: { processId: null, rootUri: null, capabilities: {}, clientInfo: { name: 'a5m2-lsp-realm-assembly', version: '1' } },
+        }))
       } catch {
         finish(false)
       }

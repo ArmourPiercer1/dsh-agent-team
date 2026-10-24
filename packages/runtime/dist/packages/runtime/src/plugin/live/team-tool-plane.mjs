@@ -1647,10 +1647,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
     const lIsRec = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
     const lWant = ['bindingFacts', 'lifecycle', 'lspFacts', 'memberAgentId', 'providerId', 'readNative', 'realmId', 'sessionHeaderId']
     if (!lIsRec(lspInjectRaw)) {
-      return lspInjectInvalid('the inject must be a record with exactly the closed keys {providerId, memberAgentId, sessionHeaderId, readNative, bindingFacts, realmId, lspFacts, lifecycle}')
+      return lspInjectInvalid('the inject must be a record with exactly the closed keys {providerId, memberAgentId, sessionHeaderId, readNative, bindingFacts, realmId, lspFacts, lifecycle, controlPort?}')
     }
     for (const key of Object.keys(lspInjectRaw)) {
-      if (!lWant.includes(key)) return lspInjectInvalid(`unknown inject key '${key}' — the backends.lsp surface is CLOSED (the bridge's own input law mirrors this set; a wider pose is a drift, not a capability)`)
+      if (!lWant.includes(key) && key !== 'controlPort') return lspInjectInvalid(`unknown inject key '${key}' — the backends.lsp surface is CLOSED (the bridge's own input law mirrors this set; a wider pose is a drift, not a capability)`)
+    }
+    // THE controlPort (root LSP-review ruling 2026-10-25, P1-a): OPTIONAL,
+    // but when present it is the REAL delegate port (the supply's prepare/
+    // drift/handleStatus/cancelCleanup/liveHandles over the approved realm)
+    // and the governed rows EXECUTE there; absent, the rows keep the
+    // faithful captured-body delegate (the native ctx.lsp.query extension
+    // route) — a disclosed route, never a silent one.
+    if (lspInjectRaw.controlPort !== undefined && lspInjectRaw.controlPort !== null) {
+      const cp = lspInjectRaw.controlPort
+      if (!lIsRec(cp) || typeof cp.prepare !== 'function' || typeof cp.drift !== 'function'
+        || typeof cp.handleStatus !== 'function' || typeof cp.cancelCleanup !== 'function' || typeof cp.liveHandles !== 'function') {
+        return lspInjectInvalid('controlPort, when present, must be the integrator\'s REAL delegate port {prepare, drift, handleStatus, cancelCleanup, liveHandles} (the adapter\'s own port law) — never a duck, never a pose')
+      }
     }
     for (const key of lWant) {
       if (lspInjectRaw[key] === undefined) return lspInjectInvalid(`'${key}' is REQUIRED (closed key set — no default, no fallback, never an inferred identity)`)
@@ -1679,6 +1692,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
                         ? 'lifecycle.syncGeneration/drainAll must be functions (the policy-change discipline ride and the mount-drain net-zero teardown)'
                         : undefined
     if (lBad !== undefined) return lspInjectInvalid(lBad)
+    // THE ensure-on-call hook (root LSP-review ruling 2026-10-25, P1-b):
+    // OPTIONAL on the lifecycle face; when present the wiring drives it at
+    // the ENTRY of every governed call (the real lifecycle trigger: first
+    // assembly / hot reuse / the R-2 rebuild when the generation moved).
+    if (lspInjectRaw.lifecycle.ensureLive !== undefined && typeof lspInjectRaw.lifecycle.ensureLive !== 'function') {
+      return lspInjectInvalid('lifecycle.ensureLive, when present, must be an async () => unknown hook (the ensure-on-call trigger the wiring entry drives — root ruling P1-b; a non-function never substitutes)')
+    }
     if (A5_G3_LSP_TOOL_NAME === readName || A5_G3_LSP_TOOL_NAME === A5_TODO_MOUNT_NAME || A5_G3_LSP_TOOL_NAME === A5_WRITE_MOUNT_NAME || A5_G3_LSP_TOOL_NAME === A5_IMAGE_MOUNT_NAME) {
       return lspInjectInvalid(`'${A5_G3_LSP_TOOL_NAME}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the B-LSP block)`)
     }
@@ -5643,6 +5663,22 @@ export function createTeamToolPlaneAssembly(input = {}) {
         readNative: lspInject.readNative,
         lspFacts: lspInject.lspFacts,
         bindingFacts: lspInject.bindingFacts,
+        // THE EXECUTION ROUTE (root LSP-review ruling 2026-10-25, P1-a):
+        // the owner-published REALM SUPPLY port rides straight to the arm —
+        // with it the four operations EXECUTE on the approved
+        // (member x generation) realm (prepare drives the real lifecycle;
+        // the handle invokes the confined round-trip). UNDEFINED passes
+        // through as absent = the faithful captured-body delegate — the
+        // mount writer that arms the supply always passes the port; the
+        // route decision is visible HERE, not hidden in fallbacks.
+        controlPort: lspInject.controlPort,
+        // THE LIFECYCLE TRIGGER (root ruling P1-b): the supply's ensure-
+        // on-call hook, driven by the wiring at every governed call's entry
+        // — production calls the realm assembly's own discipline HERE (the
+        // plane 6120 face's execution-side twin; zero manual sync anywhere).
+        realmEnsure: typeof lspInject.lifecycle.ensureLive === 'function'
+          ? async () => await lspInject.lifecycle.ensureLive()
+          : undefined,
         correlationOf: lspCorrelationOf,
         // THE LAZY FEED (pb §6, the placedByName law, verbatim): the
         // registration key and the arm's entry re-verify both read the
