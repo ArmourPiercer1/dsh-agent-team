@@ -200,6 +200,9 @@ async function captureNative(name: string, executeOverride?: (args: Record<strin
 /* ── recording goal-service port (synchronous, pinned seven-method shape) ── */
 interface PortCall { method: string, args: unknown[] }
 const callAt = (calls: PortCall[], i: number): PortCall => calls[i] as unknown as PortCall
+// Checked first-entry read (the length pins above make a missing entry a
+// hard failure, not an undefined comparing equal).
+const first = <T>(xs: T[]): T => xs[0] as T
 interface FakePort { port: Record<string, unknown>, calls: PortCall[] }
 function fakeGoals(current: Record<string, unknown> | undefined, nextViews: Record<string, Record<string, unknown>> = {}, omit: readonly string[] = []): FakePort {
   const calls: PortCall[] = []
@@ -609,7 +612,7 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
     const served = await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'blocked', blocked_reason: 'x' }, exec)
     expect(served).toEqual(nativeView) // the native body's projection rides the walk verbatim
     expect(seen.length).toBe(1) // ONE body, entered exactly once per ONE admission
-    expect(seen[0].exec).toBe(exec) // the dispatch exec VERBATIM through the bridge
+    expect(first(seen).exec).toBe(exec) // the dispatch exec VERBATIM through the bridge
     expect(w.port.calls.length).toBe(0) // zero port entry for the delegate arm
     expect(w.nativeEntered()).toBe(1)
     const walks = w.seat.openWalks()

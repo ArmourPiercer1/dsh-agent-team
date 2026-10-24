@@ -96,6 +96,9 @@ interface RowResult {
   detail?: string
   value?: Record<string, unknown>
   plan?: RowPlan
+  // classify() answers THE PLAN ITSELF: targetManifest rides the result at
+  // top level (the port-entry refusals answer without one — hence optional).
+  targetManifest?: RowPlanManifest
   dispatch?: Array<{ method: string, source: string }>
   authorityObserved?: boolean
   nativeDelegated?: boolean
@@ -121,6 +124,7 @@ interface G5Row {
   runPlan(plan: unknown, exec: Record<string, unknown>): Promise<RowResult>
   drain(): void
   draining(): boolean
+  stats(): { dispatches: number, refuses: number, driftRejects: number, nativeDelegations: number }
 }
 interface G5Adapter {
   get_goal: G5Row
@@ -349,6 +353,10 @@ const VIEW = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
 // the proven-interface discipline forbids; if any code path needed one,
 // freezing this object without one would throw).
 const EXEC = Object.freeze({ agent: Object.freeze({ id: 'agent-g5-c1' }) })
+
+// Checked first-entry read: the preceding toBe(1) length pins make a missing
+// entry a hard test failure, not an undefined silently comparing equal.
+const first = <T>(xs: T[]): T => xs[0] as T
 
 async function world(opts: {
   current?: Record<string, unknown>
@@ -885,8 +893,8 @@ describe('a5m2-g5 delegation — recorded tuples match the real signatures', () 
     // exec VERBATIM (same object — the public deferContext the native
     // wrap-up needs rides it):
     expect(delegated.length).toBe(1)
-    expect(delegated[0].args).toEqual({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' })
-    expect(delegated[0].exec).toBe(execWithWrap)
+    expect(first(delegated).args).toEqual({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' })
+    expect(first(delegated).exec).toBe(execWithWrap)
     // ZERO port entry — the delegate answers BEFORE any goals.get (the
     // native re-reads the goal through ITS OWN ctx.goals inside its body;
     // the trusted facts reader may also read it — neither is the row's port):
@@ -896,7 +904,7 @@ describe('a5m2-g5 delegation — recorded tuples match the real signatures', () 
     expect(wraps).toEqual([{ role: 'user', nativeWrapUp: true }])
     // The native projection rides VERBATIM — no second goalValue pass:
     expect((served.value as { activation?: string }).activation).toBe('disarmed')
-    expect((served.dispatch as Array<{ method: string }>)[0].method).toBe('native-execute(update_goal)')
+    expect(first(served.dispatch as Array<{ method: string }>).method).toBe('native-execute(update_goal)')
     expect(untrusted.adapter.update_goal.stats().nativeDelegations).toBe(1)
     // DELEGATE IDENTITY (capture-drift is REFUSED, never delegated): swap the
     // face behind the seam and the SAME call refuses at the identity
@@ -994,7 +1002,7 @@ describe('a5m2-g5 delegation — recorded tuples match the real signatures', () 
     const done = await cw.w.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 3, action: 'complete' }, cw.exec)
     expect(done.ok).toBe(true)
     expect(cw.deferred.length).toBe(1)
-    const m = cw.deferred[0]
+    const m = first(cw.deferred)
     expect(m.role).toBe('user') // createUserMessage's own shape (public @639)
     expect(m.source).toEqual({ kind: 'tool-goal', form: 'notice', summary: `complete: ${objective}` }) // (tool-goal:325-328 + boundContextSummary)
     expect(m.content).toEqual(pristineRender(objective)) // BYTE-EQUAL to the pristine renderer
@@ -1003,8 +1011,8 @@ describe('a5m2-g5 delegation — recorded tuples match the real signatures', () 
     const blockedDone = await bw.w.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 3, action: 'blocked', blocked_reason: 'the blocker' }, bw.exec)
     expect(blockedDone.ok).toBe(true)
     expect(bw.deferred.length).toBe(1)
-    expect(bw.deferred[0].content).toEqual(pristineRender(objective, 'the blocker'))
-    expect(String((bw.deferred[0].source as { summary: string }).summary)).toBe(`blocked: ${objective}`)
+    expect(first(bw.deferred).content).toEqual(pristineRender(objective, 'the blocker'))
+    expect(String((first(bw.deferred).source as { summary: string }).summary)).toBe(`blocked: ${objective}`)
     // NOT on the direct-human path (the host's condition is kind==='goal-round', :319).
     const hw = await world({
       current: VIEW({ roundsStarted: 3 }),
