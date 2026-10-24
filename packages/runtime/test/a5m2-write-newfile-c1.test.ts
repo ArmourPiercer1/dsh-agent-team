@@ -103,7 +103,7 @@ describe('a5m2 post-consume CREATE closure — the new-file law is REAL', () => 
     expect(st.nlink).toBe(1)
   })
 
-  it('C2 a NESTED contained parent binds through the fd chain: the file lands inside the ROOT, not wherever the name may later point', async () => {
+  it('C2 a NESTED contained parent resolves at its mapped real spelling and the create rides the final-parent fd: the file lands inside the ROOT', async () => {
     const w = mkWorld('c2')
     mkdirSync(path.join(w.root, 'a', 'b'), { recursive: true })
     const closure = createPostConsumeCreateClosure(
@@ -235,6 +235,123 @@ describe('a5m2 post-consume CREATE closure — the new-file law is REAL', () => 
   it('C10 the create closure is a PRIVATE executor: it rides no public barrel (mirrors the write closure guard)', () => {
     expect(laneBarrel).not.toHaveProperty('createPostConsumeCreateClosure')
     expect(laneBarrel).not.toHaveProperty('PostConsumeCreatePlan')
+  })
+
+  // ── root P2 pins (2026-10-25): the checks and the real-effect protocol ──
+  // The cancellation seams use a COUNTING getter on signal.aborted — every
+  // isAborted read advances it — so each pin exercises the EXACT check the
+  // ruling named, deterministically (no timing luck).
+
+  function countingSignal(abortFromRead: number): { readonly aborted: boolean } {
+    let reads = 0
+    return { get aborted() { reads += 1; return reads >= abortFromRead } }
+  }
+
+  it('D1 cancellation landing between the parent bind and the create refuses with ZERO creation (P2-1: the bind await is a real await point)', async () => {
+    const w = mkWorld('d1')
+    // check order: (1) top, (2) pre-bind, (3) post-bind/pre-create -> abort
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'never.txt', 'never lands\n'),
+      { parametersFingerprint: 'fp-create-plan-1', signal: countingSignal(3) },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('effect-outside-grant')
+    expect(r.error.message).toContain('after the parent bind but before the create')
+    expect(existsSync(path.join(w.root, 'never.txt'))).toBe(false)
+  })
+
+  it('D2 cancellation AT/AFTER the exclusive create is a REAL side effect: undetermined, sideEffectPossible, the created file STANDS (P2-1 second half)', async () => {
+    const w = mkWorld('d2')
+    // check order: (1) top, (2) pre-bind, (3) post-bind, (4) post-create -> abort
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'created-then-cancelled.txt', ''),
+      { parametersFingerprint: 'fp-create-plan-1', signal: countingSignal(4) },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('write-side-effect-unconfirmed')
+    expect(r.error.details?.['sideEffectUnknown']).toBe(true)
+    expect(r.error.message).toContain('STANDS at the exact target')
+    // the file was really created — asserted by re-stat, never by the word
+    expect(lstatSync(path.join(w.root, 'created-then-cancelled.txt')).isFile()).toBe(true)
+  })
+
+  it('D3 a STABLE trusted root symlink (/alias -> /real/root) answers normally through the frozen-real + relative mapping, and a CHILD-path symlink still refuses (P2-2: mapping does not relax children)', async () => {
+    const w = mkWorld('d3')
+    const realRoot = path.join(w.root, 'real')
+    mkdirSync(realRoot)
+    const alias = path.join(w.root, 'alias')
+    symlinkSync(realRoot, alias)
+    const closure = createPostConsumeCreateClosure(
+      Object.freeze({
+        approvedRootLexical: alias,
+        approvedRootReal: realpathSync(alias),
+        approvedLocator: path.join(alias, 'via-alias.txt'),
+        content: 'lands via the alias root\n',
+        planFingerprint: 'fp-create-plan-1',
+      }),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: alias },
+    )
+    const r = await closure.write()
+    expect(r.ok, JSON.stringify(r)).toBe(true)
+    expect(readFileSync(path.join(realRoot, 'via-alias.txt'), 'utf8')).toBe('lands via the alias root\n')
+    // children stay strict: a symlinked CHILD parent under the alias root refuses
+    mkdirSync(path.join(realRoot, 'sub'))
+    symlinkSync(realRoot, path.join(realRoot, 'loop'))
+    const hostile = createPostConsumeCreateClosure(
+      Object.freeze({
+        approvedRootLexical: alias,
+        approvedRootReal: realpathSync(alias),
+        approvedLocator: path.join(alias, 'loop', 'hostile.txt'),
+        content: 'no\n',
+        planFingerprint: 'fp-create-plan-1',
+      }),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: alias },
+    )
+    const h = await hostile.write()
+    expect(h.ok).toBe(false)
+    if (h.ok) throw new Error('unreachable')
+    expect(h.error.details?.['cfReason']).toBe('symlink-alias')
+    expect(existsSync(path.join(realRoot, 'hostile.txt'))).toBe(false)
+  })
+
+  it('D4 a failed post-create identity re-read settles write-side-effect-unconfirmed with sideEffectPossible — never a bare throw past the protocol (P2-3)', async () => {
+    const w = mkWorld('d4')
+    const probe = await (await import('node:fs/promises')).open(path.join(w.root, '.probe'), 'w')
+    const proto = Object.getPrototypeOf(probe) as { stat: (opts?: unknown) => Promise<unknown> }
+    const original = proto.stat
+    let calls = 0
+    proto.stat = async function (this: unknown, opts?: unknown) {
+      calls += 1
+      // the FIRST handle.stat the closure performs is the post-create
+      // identity re-read (no stat runs before the create): fail exactly it
+      if (calls === 1) throw Object.assign(new Error('injected stat failure'), { code: 'EIO' })
+      return original.call(this, opts)
+    }
+    try {
+      const closure = createPostConsumeCreateClosure(
+        mkPlan(w.root, 'identity-fail.txt', 'content never checked\n'),
+        { parametersFingerprint: 'fp-create-plan-1' },
+        { instanceRootDir: w.root },
+      )
+      const r = await closure.write()
+      expect(r.ok).toBe(false)
+      if (r.ok) throw new Error('unreachable')
+      expect(r.error.details?.['cfReason']).toBe('write-side-effect-unconfirmed')
+      expect(r.error.details?.['sideEffectUnknown']).toBe(true)
+      expect(r.error.message).toContain('identity re-read failed')
+      expect(existsSync(path.join(w.root, 'identity-fail.txt'))).toBe(true)
+    } finally {
+      proto.stat = original
+      await probe.close()
+    }
   })
 
   it('C11 the empty string is a legal create: zero-byte file lands with the empty-content fingerprint', async () => {
