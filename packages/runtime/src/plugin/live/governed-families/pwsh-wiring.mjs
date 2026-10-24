@@ -27,6 +27,7 @@
  * never as an invented PA kind).
  */
 
+import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 import { createGovernedPwshArm, PWSH_FAMILY_ID, PWSH_ADAPTER_REVISION } from './pwsh-arm.mjs'
 
 export const A5_PWSH_MOUNT_NAME = 'pwsh'
@@ -39,6 +40,8 @@ export const A5_PWSH_WIRING_CODES = Object.freeze({
   EDGE_CANCELLED: 'PWSH_WIRE_EDGE_CANCELLED',
   CONSUME_PROOF_MISSING: 'PWSH_WIRE_CONSUME_PROOF_MISSING',
   PLACEMENT_DRIFT: 'PWSH_WIRE_PLACEMENT_DRIFT',
+  EFFECTS_UNPARSABLE: 'PWSH_WIRE_EFFECTS_UNPARSABLE',
+  NATIVE_EXECUTE_DRIFT: 'PWSH_WIRE_NATIVE_EXECUTE_DRIFT',
   PLACEMENT_KEY_ABSENT: 'PWSH_WIRE_PLACEMENT_KEY_ABSENT',
   PLACEMENT_KEY_MOVED: 'PWSH_WIRE_PLACEMENT_KEY_MOVED',
 })
@@ -78,13 +81,20 @@ export function buildPwshGovernedWiring (input = {}) {
                 ? 'identityOf (def) => identity is required — the plane\'s own definition-identity seam'
                 : undefined
   if (bad !== undefined) return { ok: false, code: A5_PWSH_WIRING_CODES.INPUT_INVALID, detail: bad }
+  // UNIFIED FACE (root final card item 1): the mount writer ALWAYS calls
+  // `familyRegistrations()` (agent-bindings:6353 law — the same call site
+  // every sibling face rides), so the INACTIVE census answers the SAME
+  // face shape: a FUNCTION answering the empty list. A bare array here
+  // made even declared=false mounts die at the registration loop with
+  // "familyRegistrations is not a function" — the census is honest
+  // precisely by answering empty, not by answering mis-shaped.
   const inactive = (reason) => ({
     ok: true,
     familyId: PWSH_FAMILY_ID,
     adapterRevision: PWSH_ADAPTER_REVISION,
     definitions: Object.freeze([]),
     placementNames: Object.freeze([]),
-    familyRegistrations: Object.freeze([]),
+    familyRegistrations: () => Object.freeze([]),
     declared: Object.freeze([Object.freeze({ name: A5_PWSH_MOUNT_NAME, reason })]),
     drain: () => Object.freeze({ ok: true, served: 0 }),
   })
@@ -106,9 +116,18 @@ export function buildPwshGovernedWiring (input = {}) {
   if (!isRecord(native) || typeof native.execute !== 'function' || typeof native.name !== 'string') {
     return inactive('PWSH_NATIVE_UNCAPTURED_ENV — the member-scoped capture answered no native pwsh def (the pinned 639 loader gates the tool disabled-unless-win32; on this host that is ENV-NOT-AVAILABLE, and a governed row never mounts over an absent body)')
   }
-  const arm = createGovernedPwshArm({
+  // ESCALATION capability = the captured native parameter surface verbatim
+  // (root final card item 4; the arm validates against the NATIVE's own
+  // enum + pairing law — nothing widened, flow preserved).
+  const nativeParams = isRecord(native.parameters) ? native.parameters : {}
+  const sandboxParamDef = isRecord(nativeParams.sandbox_permissions) ? nativeParams.sandbox_permissions : undefined
+  const governedArm = createGovernedPwshArm({
     declared: () => true,
     jobsFace: typeof input.jobsMounted === 'function' ? input.jobsMounted : () => false,
+    escalation: Object.freeze({
+      parameterKeys: Object.freeze(['sandbox_permissions', 'justification'].filter((k) => Object.prototype.hasOwnProperty.call(nativeParams, k))),
+      sandboxEnum: Object.freeze(Array.isArray(sandboxParamDef?.enum) ? [...sandboxParamDef.enum] : []),
+    }),
     // The MOUNT's env truth is the CAPTURE ITSELF: reaching here means the
     // win32-gated native was captured; the arm class's own gates stay the
     // standalone component's law (pwsh-arm spec legs (c)/(f)).
@@ -116,13 +135,6 @@ export function buildPwshGovernedWiring (input = {}) {
     resolveBinary: () => A5_PWSH_MOUNT_NAME,
   })
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
-  const boundIdentity = input.identityOf(native)
-  if (typeof boundIdentity !== 'string' && boundIdentity !== null && boundIdentity !== undefined) {
-    throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.IDENTITY_UNBOUND, 'identityOf answered a non-identity — an unbound arm would drift-refuse every call while LOOKING mounted; the seam answers string or null'))
-  }
-  if (boundIdentity === null || boundIdentity === undefined) {
-    return { ok: false, code: A5_PWSH_WIRING_CODES.IDENTITY_UNBOUND, detail: 'identityOf could not answer an identity for the captured native def — the placement moment binds or refuses, never mounts blind' }
-  }
 
   async function execute (...forwardArgs) {
     const exec = forwardArgs[1]
@@ -132,15 +144,22 @@ export function buildPwshGovernedWiring (input = {}) {
       throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.INPUT_INVALID, `${A5_PWSH_MOUNT_NAME}: the row is scoped to member '${String(input.memberAgentId).slice(0, 8)}…' — exec.agent.id answered ${JSON.stringify(exec?.agent?.id ?? null)}`))
     }
     // LOOKUP-time placement re-verify (never an eager snapshot): the def THIS
-    // mount placed must still BE the placement under the plane's own feed.
+    // mount placed must still BE the placement under the plane's own feed
+    // (compared against the PLACED-WRAPPER identity — the wrapper IS what
+    // the plane placed; the native def never rides this leg).
     const placement = input.placementFeed(A5_PWSH_MOUNT_NAME)
     if (!isRecord(placement) || placement.definitionIdentity !== boundIdentity || placement.realmId !== input.realmId) {
-      throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.PLACEMENT_DRIFT, `${A5_PWSH_MOUNT_NAME}: the CURRENT placement record is not this mount's bound identity — a replaced/removed placement never keeps serving off the old capture`))
+      throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.PLACEMENT_DRIFT, `${A5_PWSH_MOUNT_NAME}: the CURRENT placement record is not this mount's bound PLACED-DEF identity — a replaced/removed placement never keeps serving off the old capture`))
+    }
+    // THE OTHER BINDING: the native body reference re-verify (typed, its
+    // own leg) — the same placement under a swapped execute is drift too.
+    if (native.execute !== nativeExecute) {
+      throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.NATIVE_EXECUTE_DRIFT, `${A5_PWSH_MOUNT_NAME}: the captured native def now carries a DIFFERENT execute than the mount bound — the real body moved under the row (zero PA entry)`))
     }
     // ① the ARM's own classify (closed keys per mount shape, the closed
     // FC-SHL-P census effects, typed ENV refusals) — pure pre-edge.
     const args = forwardArgs[0]
-    const classified = arm.classify(args)
+    const classified = governedArm.classify(args)
     if (classified.ok !== true) {
       observe({ event: 'pwsh-wire:classify-REFUSED', name: A5_PWSH_MOUNT_NAME, code: classified.code })
       throw refusalToThrow(wiringRefuse(classified.code, `${A5_PWSH_MOUNT_NAME}: the arm's classify refused (${String(classified.detail ?? '')}) (zero PA entry)`)
@@ -148,14 +167,25 @@ export function buildPwshGovernedWiring (input = {}) {
     }
     const plan = classified.plan
     const signal = exec.signal
-    // THE G1-baseline PA effect face; the FC-SHL-P census names ride the
-    // targetManifest as the family's recorded S-side effects (a manifest
-    // shape the closed table does not recognize passes THROUGH unchanged).
+    // THE CANONICAL EFFECT SET (root final card item 3): the REAL kernel
+    // reads `requestedEffects.effects` (team-tool-plane:2057 destructures
+    // through it) — a bare array starved it. The terminal wiring law
+    // verbatim: parseRequestedEffectSet answers the canonical
+    // { effects, fingerprint } record and THAT rides the walk; an
+    // unparsable set refuses with zero PA entry.
+    const parsedEffects = parseRequestedEffectSet([{ kind: 'tool-invoke', toolName: A5_PWSH_MOUNT_NAME, resource: null }])
+    if (parsedEffects.ok !== true) {
+      throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.EFFECTS_UNPARSABLE, `${A5_PWSH_MOUNT_NAME}: the requested effect set is not the frozen closed vocabulary (${String(parsedEffects.problems?.[0]?.detail ?? 'parse refused')}) (zero PA entry)`))
+    }
+    // The FC-SHL-P census names ride the targetManifest as the family's
+    // recorded S-side effects (a manifest shape the closed table does not
+    // recognize passes THROUGH unchanged; the manifest NEVER self-attests
+    // OS isolation — see the arm's isolation-caliber block).
     const walk = Object.freeze({
       realmId: input.realmId,
       callId,
       parametersFingerprint: plan.parametersFingerprint,
-      requestedEffects: Object.freeze([Object.freeze({ kind: 'tool-invoke', toolName: A5_PWSH_MOUNT_NAME, resource: null })]),
+      requestedEffects: parsedEffects.value,
       toolName: A5_PWSH_MOUNT_NAME,
       family: Object.freeze({
         familyId: PWSH_FAMILY_ID,
@@ -201,7 +231,7 @@ export function buildPwshGovernedWiring (input = {}) {
       // PowerShell command; with the jobs mount mounted behind the native
       // tool, run_in_background rides its REAL job registration. The row
       // never re-shapes the native answer.
-      const ran = await native.execute(...forwardArgs)
+      const ran = await nativeExecute(...forwardArgs)
       observe({ event: 'pwsh-wire:served', name: A5_PWSH_MOUNT_NAME, callId, mode: plan.background ? 'background' : 'foreground' })
       return ran
     } finally {
@@ -209,7 +239,25 @@ export function buildPwshGovernedWiring (input = {}) {
     }
   }
 
+  // THE TWO BINDINGS, KEPT APART (root final card item 2, no constant
+  // self-attestation): (a) THE PLACEMENT IDENTITY binds the identity of
+  // the definition THIS MOUNT PLACES — the WRAPPER def handed to the plane
+  // (`identityOf` is the plane's WeakMap algebra: an identity per def
+  // OBJECT, so the native and its wrapper carry DISTINCT identities;
+  // binding the native here guaranteed placement drift at every dispatch
+  // and PLACEMENT_KEY_MOVED at registration); (b) THE NATIVE EXECUTE
+  // BINDING pins the captured native body's FUNCTION REFERENCE, re-verified
+  // per dispatch — a swapped native body under the same placement is its
+  // own typed drift. Each fact is checked against its own source.
+  const nativeExecute = native.execute
   const definition = Object.freeze({ ...native, execute })
+  const boundIdentity = input.identityOf(definition)
+  if (boundIdentity !== null && boundIdentity !== undefined && typeof boundIdentity !== 'string') {
+    throw refusalToThrow(wiringRefuse(A5_PWSH_WIRING_CODES.IDENTITY_UNBOUND, 'identityOf answered a non-string, non-null identity — the seam is the plane\'s WeakMap algebra; anything else is a config defect'))
+  }
+  if (boundIdentity === null || boundIdentity === undefined) {
+    return { ok: false, code: A5_PWSH_WIRING_CODES.IDENTITY_UNBOUND, detail: 'identityOf could not answer an identity for the definition THIS mount places — the placement moment binds or refuses, never mounts blind' }
+  }
   let mountedKey // fresh-feed law bookkeeping: the identity must not float
   // THE REGISTRATION KEYS LAW (the G3 wiring law verbatim): read
   // placementFeed FRESH at the registration moment; a silent feed THROWS

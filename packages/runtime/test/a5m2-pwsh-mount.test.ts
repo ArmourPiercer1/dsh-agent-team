@@ -54,8 +54,12 @@ function seat (opts: SeatOpts = {}) {
       closePlan: (callId: string) => { log.push(`close:${callId}`) },
     },
   )
+  const walks: Rec[] = []
+  const origOpen = paAdmit.open
+  paAdmit.open = async (walk: Rec) => { walks.push(walk); return origOpen(walk) }
   return {
     log,
+    walks,
     face: paAdmit,
   }
 }
@@ -65,14 +69,25 @@ interface BuildOpts {
   native?: unknown
   seat?: ReturnType<typeof seat>
   placement?: unknown | (() => unknown)
-  identity?: string | null
 }
 
+// THE IDENTITY SEAM AS THE PLANE ACTUALLY IS: definitionIdentityOf is a
+// WeakMap algebra — an identity per def OBJECT, ISSUED/MEMOIZED, the native
+// def and the mount's wrapper def carrying DISTINCT identities (root final
+// card item 2: no constant self-attestation). The placement feed answers the
+// identity of the definition ACTUALLY PLACED (the wiring's definitions
+// entry), exactly as the plane's placedByName law.
 function build (opts: BuildOpts = {}) {
   const s = opts.seat ?? seat()
   const nativeDef = 'native' in opts ? opts.native : nativePwsh()
-  let placements = 0
-  const identity = opts.identity === undefined ? 'ident-pwsh-1' : opts.identity
+  const ids = new WeakMap<object, string>()
+  let seq = 0
+  const identityOf = (def: unknown): string | null => {
+    if (def === null || typeof def !== 'object') return null
+    if (!ids.has(def)) ids.set(def, `ident-${String(++seq)}`)
+    return ids.get(def) as string
+  }
+  const wiringRef: { current?: WiringOk } = {}
   const wiring = buildPwshGovernedWiring({
     realmId: REALM,
     providerId: 'a5p5-plane',
@@ -82,19 +97,58 @@ function build (opts: BuildOpts = {}) {
     declaredMount: opts.declaredMount ?? true,
     jobsMounted: () => true,
     placementFeed: () => {
-      placements += 1
-      const p = 'placement' in opts ? opts.placement : { definitionIdentity: identity, realmId: REALM }
-      return typeof p === 'function' ? (p as () => unknown)() : p
+      if ('placement' in opts) {
+        const p = opts.placement
+        return typeof p === 'function' ? (p as () => unknown)() : p
+      }
+      const placed = (wiringRef.current?.definitions ?? [])[0]
+      return placed === undefined ? undefined : Object.freeze({ definitionIdentity: identityOf(placed) as string, realmId: REALM })
     },
-    identityOf: () => identity,
+    identityOf,
     pa: s.face,
   } as never)
-  return { wiring, s, calls: () => placements, nativeDef }
+  wiringRef.current = wiring as unknown as WiringOk
+  return { wiring, s, nativeDef, identityOf }
+}
+
+// A build variant whose placement feed answers a CHOSEN identity — the
+// (h) leg uses it to feed the NATIVE def's identity where the mount bound
+// the WRAPPER's (a real drift scenario the plane can hit on replacement).
+function buildWithFeed (s: ReturnType<typeof seat>, feed: (ids: { native: string, wrapper: () => string | null }) => unknown) {
+  const nativeDef = nativePwsh()
+  const ids = new WeakMap<object, string>()
+  let seq = 0
+  const identityOf = (def: unknown): string | null => {
+    if (def === null || typeof def !== 'object') return null
+    if (!ids.has(def)) ids.set(def, `ident-${String(++seq)}`)
+    return ids.get(def) as string
+  }
+  const wiringRef: { current?: WiringOk } = {}
+  const wiring = buildPwshGovernedWiring({
+    realmId: REALM,
+    providerId: 'a5p5-plane',
+    memberAgentId: AGENT_ID,
+    sessionHeaderId: HEADER_ID,
+    readNative: (name: string) => (name === 'pwsh' ? nativeDef : undefined),
+    declaredMount: true,
+    jobsMounted: () => true,
+    placementFeed: () => feed({
+      native: identityOf(nativeDef) as string,
+      wrapper: () => {
+        const placed = (wiringRef.current?.definitions ?? [])[0]
+        return placed === undefined ? null : identityOf(placed)
+      },
+    }),
+    identityOf,
+    pa: s.face,
+  } as never)
+  wiringRef.current = wiring as unknown as WiringOk
+  return { wiring, s, nativeDef, identityOf }
 }
 
 const exec = (callId: string, agentId: string = AGENT_ID): Rec => ({ callId, agent: { id: agentId } })
 
-interface WiringOk { ok: true, familyId: string, adapterRevision: number, definitions: Rec[], placementNames: string[], declared: Array<Record<string, string>>, familyRegistrations: () => unknown, drain: () => unknown }
+interface WiringOk { ok: true, familyId: string, adapterRevision: number, definitions: Rec[], placementNames: string[], declared: Array<Record<string, string>>, familyRegistrations: () => unknown, drain: () => unknown, boundIdentity?: string | null }
 const okW = (w: unknown): WiringOk => w as WiringOk
 
 describe('a5m2 governed pwsh mount (bridge law)', () => {
@@ -104,6 +158,13 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
     expect(okW(off.wiring).definitions).toHaveLength(0)
     expect(okW(off.wiring).placementNames).toHaveLength(0)
     expect(okW(off.wiring).declared[0]?.reason).toContain('MOUNT_NOT_DECLARED')
+    // UNIFIED FACE (root final card item 1): the mount writer ALWAYS calls
+    // familyRegistrations() (agent-bindings:6353 law) — the inactive census
+    // answers the SAME face shape: a function answering the empty list, so
+    // declared=false mounts complete with zero registrations instead of
+    // dying at "familyRegistrations is not a function".
+    expect(typeof okW(off.wiring).familyRegistrations).toBe('function')
+    expect(okW(off.wiring).familyRegistrations()).toEqual([])
     const on = build()
     expect(on.wiring.ok).toBe(true)
     expect(okW(on.wiring).definitions).toHaveLength(1)
@@ -175,7 +236,7 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
     const good = build()
     expect(() => okW(good.wiring).familyRegistrations()).not.toThrow()
     const regs = okW(good.wiring).familyRegistrations() as Array<Record<string, unknown>>
-    expect((regs[0] as { definitionIdentity: string }).definitionIdentity).toBe('ident-pwsh-1')
+    expect((regs[0] as { definitionIdentity: string }).definitionIdentity).toBe(okW(good.wiring).boundIdentity)
     expect((regs[0] as { entry: Record<string, unknown> }).entry).toEqual({ familyId: PWSH_FAMILY_ID, adapterRevision: 1, providerIdentity: 'a5p5-plane' })
     const moved = build({ placement: () => ({ definitionIdentity: 'floats', realmId: REALM }) })
     expect(() => okW(moved.wiring).familyRegistrations()).toThrow(/does not float|PLACEMENT_KEY_MOVED/)
@@ -215,6 +276,81 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
     expect((wiring as { code?: string }).code).toBe('PWSH_WIRE_PA_SEAT_INVALID')
   })
 
+  it('(h) THE TWO BINDINGS KEPT APART (root final card item 2): placement identity binds the PLACED WRAPPER def (distinct from the native def identity — no constant self-attestation); the native execute reference is its OWN binding, swapped under the same placement = typed drift with zero PA entry', async () => {
+    const h = build()
+    const def = okW(h.wiring).definitions[0] as Rec
+    // distinctness: the wrapper identity bound at placement is NOT the
+    // native def's identity (a constant seam would answer one for both).
+    expect(okW(h.wiring).boundIdentity).toBe(h.identityOf(def))
+    expect(okW(h.wiring).boundIdentity).not.toBe(h.identityOf(h.nativeDef))
+    // the NATIVE's identity as the placement answer is DRIFT (proves the
+    // binding really is the placed def, not "some identity" — the feed is
+    // re-pointed at the NATIVE identity, a real replacement scenario):
+    const driftSeat = seat()
+    const drift = buildWithFeed(driftSeat, (placedIds) => Object.freeze({ definitionIdentity: placedIds.native, realmId: REALM }))
+    const driftDef = okW(drift.wiring).definitions[0] as Rec
+    await expect((driftDef.execute as (...a: unknown[]) => Promise<unknown>)({ command: 'x', description: 'd' }, exec('c-drift-native')))
+      .rejects.toThrow(/PLACED-DEF identity/)
+    expect(driftSeat.log).toHaveLength(0)
+    // the OTHER binding: same placement, swapped native body -> typed drift,
+    // zero PA entry (the two legs are checked against their own sources).
+    const swap = build()
+    const swapDef = okW(swap.wiring).definitions[0] as Rec
+    ;(swap.nativeDef as Rec).execute = async () => 'SWAPPED'
+    await expect((swapDef.execute as (...a: unknown[]) => Promise<unknown>)({ command: 'x', description: 'd' }, exec('c-swap')))
+      .rejects.toThrow(/NATIVE_EXECUTE_DRIFT|DIFFERENT execute/)
+    expect(swap.s.log).toHaveLength(0)
+  })
+
+  it('(i) THE CANONICAL REQUESTED EFFECT SET (root final card item 3): the walk carries the parseRequestedEffectSet { effects, fingerprint } RECORD (the real kernel destructures requestedEffects.effects — a bare array starves it)', async () => {
+    const h = build()
+    const def = okW(h.wiring).definitions[0] as Rec
+    await (def.execute as (...a: unknown[]) => Promise<unknown>)({ command: 'Get-Date', description: 'show time' }, exec('c-canonical'))
+    expect(h.s.walks).toHaveLength(1)
+    const re = h.s.walks[0]?.requestedEffects as Record<string, unknown>
+    expect(Array.isArray(re)).toBe(false) // NOT a bare array — the record shape
+    expect(Array.isArray(re.effects)).toBe(true)
+    expect(re.effects).toEqual([{ kind: 'tool-invoke', toolName: 'pwsh', resource: null }])
+    expect(typeof re.fingerprint).toBe('string')
+    expect((re.fingerprint as string).length).toBeGreaterThan(0)
+  })
+
+  it('(j) NATIVE-LEGAL ESCALATION FLOW PRESERVED, NOTHING WIDENED (root final card item 4): the captured native enum + pairing law is the ONLY escalation surface; a native-legal pair dispatches verbatim to the native body (whose host chain keeps the ORIGINAL approval semantics), enum/pairing violations refuse BEFORE any PA entry, and a native WITHOUT the keys keeps them closed', async () => {
+    const escParams = { command: { type: 'string', required: true }, description: { type: 'string', required: true }, sandbox_permissions: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, justification: { type: 'string' } }
+    let bodyArgs: unknown
+    let escCalls = 0
+    const escNative = nativePwsh({
+      parameters: escParams,
+      execute: async (...a: unknown[]) => { bodyArgs = a[0]; escCalls += 1; return { content: [{ text: 'escalated' }] } },
+    })
+    const h = build({ native: escNative })
+    const def = okW(h.wiring).definitions[0] as Rec
+    const ran = await (def.execute as (...a: unknown[]) => Promise<unknown>)(
+      { command: 'git status', description: 'show status', sandbox_permissions: 'workspace-write', justification: 'needs write access for the fix' },
+      exec('c-esc'),
+    )
+    expect(ran).toEqual({ content: [{ text: 'escalated' }] })
+    expect((bodyArgs as Rec).sandbox_permissions).toBe('workspace-write') // rides the native VERBATIM
+    expect(h.s.walks).toHaveLength(1) // ONE walk; escalation is not a second authority
+    // OUT-OF-ENUM: refused pre-edge (the governed row grants nothing).
+    await expect((def.execute as (...a: unknown[]) => Promise<unknown>)(
+      { command: 'x', description: 'd', sandbox_permissions: 'anything-goes', justification: 'j' }, exec('c-enum')),
+    ).rejects.toThrow(/PWSH_INPUT_SANDBOX_MODE_UNSUPPORTED/)
+    // PAIRING LAW: sandbox without justification refuses (native description law).
+    await expect((def.execute as (...a: unknown[]) => Promise<unknown>)(
+      { command: 'x', description: 'd', sandbox_permissions: 'workspace-write' }, exec('c-pair')),
+    ).rejects.toThrow(/PWSH_INPUT_JUSTIFICATION_MISSING/)
+    expect(h.s.walks).toHaveLength(1) // BOTH refusals: zero further PA entries
+    expect(escCalls).toBe(1)
+    // NOTHING WIDENED: a native WITHOUT the escalation surface keeps the keys closed.
+    const plain = build()
+    const plainDef = okW(plain.wiring).definitions[0] as Rec
+    await expect((plainDef.execute as (...a: unknown[]) => Promise<unknown>)(
+      { command: 'x', description: 'd', sandbox_permissions: 'workspace-write', justification: 'j' }, exec('c-plain')),
+    ).rejects.toThrow(/PWSH_INPUT_KEYS_UNKNOWN/)
+    expect(plain.s.log).toHaveLength(0)
+  })
+
   it('(g) SOURCE LAW (readFileSync precedent): the plane ledger carries the pwsh takeover row and the CLOSED backends.pwsh gate; the placement census resolves ONLY through the wiring\'s own placement list; the family face + drain ride the mount; the bindings side carries the capture-arm law, the union row and the fresh registration loop', () => {
     const here = dirname(fileURLToPath(import.meta.url))
     const read = (...parts: string[]) => readFileSync(join(here, '..', 'src', 'plugin', 'live', ...parts), 'utf8')
@@ -239,5 +375,15 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
     expect(wiring).toContain('ENV-NOT-AVAILABLE')
     expect(wiring).toContain('consumedProof')
     expect(wiring).toContain('tool-invoke')
+    // the four final-card laws are spelled where they execute:
+    expect(wiring).toContain('familyRegistrations: () => Object.freeze([])')
+    expect(wiring).toContain('parseRequestedEffectSet')
+    expect(wiring).toContain('NATIVE_EXECUTE_DRIFT')
+    expect(wiring).toContain('PLACED-WRAPPER')
+    const arm = read('governed-families', 'pwsh-arm.mjs')
+    expect(arm).toContain('pwsh-sandbox') // OS isolation exists ONLY via the chosen confine
+    expect(arm).toContain('is NOT isolation') // danger-full-access caliber
+    expect(arm).toContain('timeout/output/spill')
+    expect(arm).toContain('self-attest')
   })
 })
