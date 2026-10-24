@@ -335,7 +335,7 @@
  *                                 entry — the global prompt layer is never
  *                                 touched; idempotent)
  */
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
@@ -366,6 +366,7 @@ import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-famil
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
 import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
+import { a5G3RouteIdentity } from './governed-families/g3-terminal-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
@@ -2477,6 +2478,13 @@ export function createAgentBindings(deps) {
       // deployment evidence, captured into a plane inject below (null = the
       // family is not deployed on this mount: zero flip).
       let a5G3TerminalInject = null
+          // THE MOUNT GENERATION (user ruling 2 (a), center dispatch): ONE value
+          // per mount, minted at capture; a replaced mount mints its OWN value
+          // and the old mount's disposer REVOKES the old one — a revoked or
+          // replaced generation can never pair an approval made under it (the
+          // adapter's entry recheck refuses with its own drift word). Hoisted
+          // beside the inject face because the teardown disposer below flips it.
+          let g3RouteGeneration = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -3511,15 +3519,26 @@ export function createAgentBindings(deps) {
             }
           }
           await g3PremintOpenPlan()
+          g3RouteGeneration = { value: randomUUID(), revoked: false }
           const g3PtyService = Object.freeze({
             backend: (type) => {
-              // LIVE existence only; the registration GENERATION has no
-              // public supplier (gap above) — NOTHING is answered, so the
-              // governed open row refuses with P_TERM_TARGET_UNRESOLVED.
-              if (typeof type !== 'string' || !g3DeclaredBackends.has(type)) return null
+              // THE ROUTE IDENTITY (user ruling 2 (a)/(c), center dispatch):
+              // the governed target is THIS mount's Team controlled route —
+              // the per-open one-shot backend this mount mints through the
+              // public TerminalSessionService.registerBackend (terminal/src/
+              // index.ts:125 @639ed01539) — bound to the MOUNT GENERATION.
+              // No unrelated public backend is ever named or tracked. The
+              // declared ∩ live law is KEPT (a type the service no longer
+              // registers answers nothing); a revoked generation (unmounted)
+              // answers nothing, so an approval made under a dead generation
+              // cannot be replayed under a live one.
               const live = Array.isArray(g3Terminals?.listBackends?.()) ? g3Terminals.listBackends() : []
-              if (!live.includes(type)) return null
-              return null
+              return a5G3RouteIdentity({
+                type,
+                declared: [...g3DeclaredBackends],
+                live,
+                generation: g3RouteGeneration,
+              })
             },
             session: (ownerAgentId, sessionId) => {
               if (g3Terminals === undefined || g3Terminals === null) return null
@@ -3739,6 +3758,11 @@ export function createAgentBindings(deps) {
           // publication IDENTITY — the live entry is removed only when it is
           // still the one this setup published; a stale disposer clears
           // nothing (the newer mount stays published).
+          // Ruling 2 (a): the SAME teardown start revokes this mount's ROUTE
+          // GENERATION — from here on the pty service answers NOTHING as a
+          // target identity, so a held approval made under this generation
+          // can never execute against any later state (no stale reuse).
+          if (g3RouteGeneration !== null) g3RouteGeneration.revoked = true
           revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
           return placed.dispose()
         })

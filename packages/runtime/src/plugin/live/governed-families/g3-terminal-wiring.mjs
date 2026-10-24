@@ -587,3 +587,36 @@ export function buildG3TerminalWiring (input = {}) {
   })
   return assembly
 }
+
+/**
+ * THE ROUTE IDENTITY LAW (user ruling 2, center dispatch — supersedes the
+ * registration-generation gap): the governed target of a terminal_open is
+ * the REAL Team controlled route — the per-open one-shot backend this
+ * mount mints through TerminalSessionService.registerBackend (adapter
+ * :684/:953, internalType `dsh-g3-po-<callId>-<seq>`) — NOT a public Host
+ * backend registration, and this helper answers exactly that:
+ *  - `registrationId` = `dsh-g3-po:<type>` — the stable identity of THIS
+ *    mount's per-open route family for the declared type (the adapter's own
+ *    id space; (c) no unrelated public backend is ever tracked or named);
+ *  - `incarnation` = the MOUNT GENERATION — one value per mount, minted at
+ *    capture, stable across every read of the same mount, and DIFFERENT for
+ *    every replacement mount; a replaced or revoked generation can therefore
+ *    never pair an old approval (the adapter's entry recheck at
+ *    g3-fsproc-adapters.mjs:2258 refuses with P_TERM_TARGET_DRIFT naming
+ *    old→new — (a) no stale reuse).
+ * Fail-closed to `null` (→ P_TERM_TARGET_UNRESOLVED) when the type is not
+ * declared, is not live in the service's current registration set, or the
+ * generation has been revoked (unmount). Pure: every input is passed in —
+ * the capture supplies the live faces verbatim.
+ * @param input - { type, declared, live, generation: { value, revoked } }.
+ * @returns {{ registrationId: string, incarnation: string }} | null.
+ */
+export function a5G3RouteIdentity (input = {}) {
+  const { type, declared, live, generation } = input
+  if (typeof type !== 'string' || type.length === 0) return null
+  if (!Array.isArray(declared) || !declared.includes(type)) return null
+  if (!Array.isArray(live) || !live.includes(type)) return null
+  if (generation === null || typeof generation !== 'object' || generation.revoked === true) return null
+  if (typeof generation.value !== 'string' || generation.value.length === 0) return null
+  return Object.freeze({ registrationId: `dsh-g3-po:${type}`, incarnation: generation.value })
+}

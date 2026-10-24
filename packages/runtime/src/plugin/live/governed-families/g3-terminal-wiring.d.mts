@@ -150,3 +150,14 @@ export declare function buildG3TerminalWiring (
 export declare function a5G3PaTargetFlat (
   manifest: Readonly<Record<string, unknown>>,
 ): Readonly<Record<string, unknown>>
+
+/** THE ROUTE IDENTITY LAW (user ruling 2): the terminal_open target is THIS
+ *  mount's Team controlled route (per-open one-shot registration family)
+ *  bound to the MOUNT GENERATION — never a public backend identity, and a
+ *  revoked/replaced generation answers null (no stale approval pairs). */
+export declare function a5G3RouteIdentity (input: {
+  type?: unknown
+  declared?: readonly string[]
+  live?: readonly string[]
+  generation?: { value: string, revoked?: boolean } | null
+}): Readonly<{ registrationId: string, incarnation: string }> | null
