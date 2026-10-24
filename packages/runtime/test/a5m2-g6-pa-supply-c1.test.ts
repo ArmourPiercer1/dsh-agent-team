@@ -243,6 +243,21 @@ describe('a5m2-g6 pa-supply — REAL mint legs: the assembled supply rides the a
       realmId: 'realm-g6-supply',
       ...value,
       readNative: (name: string) => captured[name as ToolName],
+      // RE-ANCHOR (center PA-SUPPLY card, int tip 24ae09279): the adapter's
+      // constructor has required the PUBLIC Provider lifecycle since root
+      // ruling 3 (g6-session-query.mjs:1161 'lifecycle { currentGeneration()
+      // ... } is required', landed at int via 3a0662bad). Production carries
+      // it in the plane inject (team-tool-plane G6 block) fed by the host
+      // ctx.inject(['sessionQuery']) fiber - NOT through the presented-
+      // facts assembly: a lifecycle observer is the assembly's RUNTIME face,
+      // never a presented deployment fact, so the block's closed
+      // KNOWN_INPUT_KEYS law stays frozen and this leg feeds the double the
+      // plane would receive: ONE stable ACTIVE generation-1 observer over
+      // the same port object the facets were built from. classify-only legs
+      // never dispatch, so no generation check past the shape gate is ever
+      // exercised here.
+      lifecycle: { currentGeneration: () => ({ id: 1, service: (value as Record<string, unknown>)['queryPorts'] }) },
+      generation: 1,
     }).rows
   }
 
