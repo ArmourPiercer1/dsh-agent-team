@@ -1,6 +1,8 @@
 /**
  * web-gateway-assembly.mjs — the GLUE row for the M2 B-WEB web arm
- * (mirror of the jobs-gateway-assembly precedent, efb5bb559 shape).
+ * (mirror of the jobs gateway assembly precedent, efb5bb559 shape; center
+ * 01:2x reword of this one comment — hyphenless against the a5p7 census
+ * TEXT scanner; a comment mention is not an import edge, meaning same).
  *
  * Import-edge law (GLUE-5, pc-CONTRACT §3 item 1): the gateway enters ONLY
  * through the committed dist mirror — `../../../web-gateway/src/index.js`

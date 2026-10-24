@@ -1,0 +1,3 @@
+FAIL check-install-manifest: 2 issue(s) over 5 graph visit(s); lock leg: FAILED (2 manifest/lock issue(s); negative control alive)
+  - pnpm-lock.yaml: yaml specifier mismatch manifest=2.8.0 lock=2.9.0
+  - pnpm-lock.yaml: yaml version is neither the manifest exact version nor its peer-context form: lock=2.9.0

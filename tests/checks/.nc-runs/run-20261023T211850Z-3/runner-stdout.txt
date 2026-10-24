@@ -1,0 +1,24 @@
+PASS BASE-green(lock PASS; browser-only react) — baseline gate open; run dir /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/tests/checks/.nc-runs/run-20261023T211850Z-3
+PASS M1 dual-reach shared react: client-first enqueue, HOST still FAIL (exit=1, diagnostic ok)
+PASS M2 reachable file missing (exit=1, diagnostic ok)
+PASS M3 dangling snapshot key (exit=1, diagnostic ok)
+PASS M3b banner says lock leg FAILED
+PASS M4 manifest yaml bump, lock untouched => specifier mismatch (exit=1, diagnostic ok)
+PASS M5 required peer deleted => undeclared (exit=1, diagnostic ok)
+PASS M6 peer version != dsh peer version (exit=1, diagnostic ok)
+PASS M7 browser-table member as Node dependency (exit=1, diagnostic ok)
+PASS M8a computed concat import rejected (exit=1, diagnostic ok)
+PASS M8b rejection carries file:line + verbatim expr
+PASS M9 parser syntax diagnostics fail-closed (exit=1, diagnostic ok)
+PASS M10 no lock under root => SKIPPED, no lock claim (exit=0, diagnostic ok)
+PASS M11 ./client[import] inherits browser identity (exit=0, diagnostic ok)
+PASS M12 same var name wrong file/structure => rejected (exit=1, diagnostic ok)
+PASS M13 require(spec) outside audited bundle site => rejected (exit=1, diagnostic ok)
+PASS C1 rowConfig.<other> ?? default must NOT satisfy seamUrl binding (exact-prop predicate) (exit=1, diagnostic ok)
+PASS C2 for-of must CONTAIN the site with initializer const-candidate (same-function else not enough) (exit=1, diagnostic ok)
+PASS C3 two URLs with wrong specs must NOT be consumed as S5/S6 (exit=1, diagnostic ok)
+PASS L1 lock with real blank line after importers: => PASS (exit=0, diagnostic ok)
+PASS S1-POS fully legal const site consumes (same fixture as C5) (exit=0, diagnostic ok)
+PASS C5 ONLY const->let flips (all else legal incl. existing target) => rejected (exit=1, diagnostic ok)
+runner v4 failures=0 (run dir kept: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/tests/checks/.nc-runs/run-20261023T211850Z-3; stdout: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/tests/checks/.nc-runs/run-20261023T211850Z-3/runner-stdout.txt)
+RUNNER PASS

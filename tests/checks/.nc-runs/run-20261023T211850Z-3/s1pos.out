@@ -1,0 +1,2 @@
+  note: audited site S1 consumed: host.js loadLegacyInspect literal array (1 targets enqueued+verified)
+OK check-install-manifest: graph=3 visits ('./client' browser entry vs host graphs separated; 0 unaudited/unhandled computed sites — 1 audited-site handler consumption(s) recorded in notes above; any other runtime-constructed specifier would have been rejected with file:line+expr); lock leg: PASS

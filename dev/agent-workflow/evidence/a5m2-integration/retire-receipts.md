@@ -36,3 +36,16 @@ retained and rebuildable; final df 13,586,227,200 B). g6fix was NOT part of the 
 surface. Center registrations stand verbatim above; dispatch to g1fix/g2fix/g3a/g3b paths
 is prohibited (trees gone, receipts archived here). ACTIVE protected during current work:
 .pnr18-home / .pnpmm-r18-store / bf4fixture / the 307c Host kit pack.
+
+## 根01:21 退役登记（中心逐树核实事实；remove 由 a356 按真 RC 条件执行，中心不删）
+
+| tree | branch | HEAD | remote 等值 | tracked/WIP | 独有物 | 任务/owner 释放 | 裁 |
+|---|---|---|---|---|---|---|---|
+| a5m2-joint-cand | feat/a5m2-joint-cand | 6e2279286a | YES | 0/0 stash | 无 | joint-cand 验证轮已闭并入，无待续 | **RETIRE-READY** |
+| a5m2-joint-cand2 | feat/a5m2-joint-cand2 | 9b5c9f4b29 | YES | 0/0 stash | 无 | 同上轮次，已闭 | **RETIRE-READY** |
+| a5m2-family-rules | feat/a5m2-family-rules | 4e96decc6b | YES | 0/0 stash | 无 | census spec 全量入 int（flip 已吸收），rules lane 可另树接管 | **RETIRE-READY** |
+| a5m2-wire-merge | feat/a5m2-wire-merge | fd555c117d | YES | 0/0 stash | 无 | 前代中心合流树，被 a5-m2-int 取代 | **RETIRE-READY** |
+| a5m2-pinbuild | (detached) | 2188f15ce9 | commit 可达 origin/int | 0/0 stash | **`dsh-agent-team-0.1.1-alpha.2.tgz`（ignored 未推独件）** | pin 轮已闭，但 tgz 未证与他 pack 同字节 | **PROTECT 本轮**（a356 若先证 tgz 同字节母本或先迁走，可转 RETIRE-READY） |
+| eb-e0-e1 | — | — | — | — | — | 原 owner 在跑（CI 修复等待 + E0/迁移 handover） | **排除**（根令；porcelain0≠退役） |
+
+注意：joint-cand/joint-cand2 同时在 a356 的 7 文件小组内——**整树 remove 与文件级 dedupe 同路径不得并写**，a356 协调先后（先 remove 则该组在这两树自然消失，母本在他树存续）。

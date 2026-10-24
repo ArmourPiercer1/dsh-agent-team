@@ -1,0 +1,2 @@
+  note: browser entry reached via condition chain ./client[import]; inherits ./client browser identity
+OK check-install-manifest: graph=5 visits ('./client' browser entry vs host graphs separated; 0 unaudited/unhandled computed sites — 0 audited-site handler consumption(s) recorded in notes above; any other runtime-constructed specifier would have been rejected with file:line+expr); lock leg: PASS

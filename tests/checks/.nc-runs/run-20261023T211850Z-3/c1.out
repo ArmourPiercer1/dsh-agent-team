@@ -1,0 +1,4 @@
+FAIL check-install-manifest: 3 issue(s) over 4 graph visit(s); lock leg: PASS
+  - literal new URL() module target missing: ../../root-binding/harness/seam.mjs (packages/runtime/dist/packages/runtime/src/plugin/host.js:2)
+  - unaudited non-js/mjs relative target at packages/runtime/dist/packages/runtime/src/plugin/host.js:2 expr="../../root-binding/harness/seam.mjs"
+  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/host.js:7 expr="seamUrl"

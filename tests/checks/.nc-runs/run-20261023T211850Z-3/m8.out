@@ -1,0 +1,3 @@
+FAIL check-install-manifest: 2 issue(s) over 5 graph visit(s); lock leg: PASS
+  - computed import() rejected (no audited structural match) at hostdep.js:2 expr="\"./hostdep.js\" + s"
+  - computed import() rejected (no audited structural match) at hostdep.js:4 expr="e ? \"./hostdep.js\" : \"./shared.js\""

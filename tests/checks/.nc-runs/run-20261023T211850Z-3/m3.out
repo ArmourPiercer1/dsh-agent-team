@@ -1,0 +1,2 @@
+FAIL check-install-manifest: 1 issue(s) over 5 graph visit(s); lock leg: FAILED (1 manifest/lock issue(s); negative control alive)
+  - pnpm-lock.yaml: 1 importer version-ref(s) without snapshot key: yaml@2.9.0

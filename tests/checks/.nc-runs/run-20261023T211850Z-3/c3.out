@@ -1,0 +1,3 @@
+FAIL check-install-manifest: 2 issue(s) over 4 graph visit(s); lock leg: PASS
+  - unaudited non-js/mjs relative target at packages/runtime/dist/packages/runtime/src/plugin/team-skills.js:3 expr="./wrong/one"
+  - unaudited non-js/mjs relative target at packages/runtime/dist/packages/runtime/src/plugin/team-skills.js:4 expr="./wrong/two"
