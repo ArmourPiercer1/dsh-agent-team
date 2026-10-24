@@ -177,6 +177,16 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
   },
+  // A5M2-G6 WIRE LANE closure completion (root ruling 3 increment): the G6
+  // mirror's OWN static import (g6-session-query.mjs:212 -> the canonical
+  // registration face) had no placement row — on the strict install face
+  // the G6 modules died ERR_MODULE_NOT_FOUND at load. One placement,
+  // byte-identical like every other row; the file's own imports are
+  // node builtins + ./ptc-escalation-row.mjs (already placed above).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

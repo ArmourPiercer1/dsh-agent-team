@@ -1560,6 +1560,44 @@ export async function apply(ctx, config) {
                 ptcRouter.onAgentDisposed(payload.agent);
             }, { global: true });
         }
+        // A5M2-G6 lifecycle observer (root ruling 3, lane increment 1): one
+        // optional child fiber on the PUBLIC ctx.inject face; its callback firing
+        // IS the generation boundary. Methods bind once per generation downstream;
+        // the fiber's public `state` (cordis lib/types/fiber.d.ts:109-110;
+        // FiberState.ACTIVE = 2, fiber.d.ts:67-70) answers liveness. Absent face /
+        // non-ACTIVE / pre-activation fiber => null => the arm fail-closes.
+        const sessionQueryLifecycle = (() => {
+            let generation = 0;
+            let current = null;
+            let fiber = null;
+            let observable = false;
+            if (typeof ctx.inject === 'function') {
+                observable = true;
+                try {
+                    const created = ctx.inject(['sessionQuery'], (child) => {
+                        generation += 1;
+                        current = { id: generation, service: child.get('sessionQuery') };
+                    });
+                    fiber = (created ?? null);
+                }
+                catch {
+                    observable = false;
+                    fiber = null;
+                    current = null;
+                }
+            }
+            return {
+                currentGeneration() {
+                    if (!observable || fiber === null)
+                        return null;
+                    // FiberState.ACTIVE — cordis lib/types/fiber.d.ts:67-70 (public const
+                    // enum; the literal rides the structural independence rule).
+                    if (fiber.state !== 2)
+                        return null;
+                    return current;
+                },
+            };
+        })();
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1597,6 +1635,26 @@ export async function apply(ctx, config) {
             // leaves the current route unresolvable, which the governed arm refuses at
             // the same pre-resource position native does.
             llm: () => ctx.get('llm'),
+            // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
+            // DSH public `sessionQuery` service — the registered SessionQueryEngine
+            // whose five facets (search / trace / event-read / authorization /
+            // titles) ARE the governed supply. Resolved AT MOUNT TIME (additive
+            // optional, never a hard inject): worlds without the service keep the
+            // family DECLARED-INACTIVE (honest census, zero flip). Facets are never
+            // injected through config — the glue maps them off THIS service
+            // (buildG6QuerySupplyFromService).
+            sessionQuery: () => ctx.get('sessionQuery'),
+            // Root ruling 3: the governed supply binds to a generation of THIS
+            // observer, never to a per-read ctx.get identity.
+            sessionQueryLifecycle,
+            // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
+            // `sessionProjections` accessor — the caller law reads the actual exec
+            // owner's own turnBoundary projection (stateOf(agent.session,
+            // 'turnBoundary'), workspace-access.ts:56-69 @639ed01539); the
+            // current-session default rides it and refuses with the row's own
+            // NO_CURRENT_STEP guard when the projection is unavailable — never a
+            // fabricated boundary. Additive optional, never a hard inject.
+            sessionProjections: () => ctx.get('sessionProjections'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ✓ test/a5m2-g6-session-query-wiring.test.ts (42 tests) 57ms
+ ✓ test/a5m2-g6-session-query-c1.test.ts (55 tests) 256ms
+
+ Test Files  2 passed (2)
+      Tests  97 passed (97)
+   Start at  05:12:17
+   Duration  878ms (transform 822ms, setup 0ms, import 1.01s, tests 313ms, environment 0ms)
+

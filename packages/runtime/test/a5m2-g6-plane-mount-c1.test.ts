@@ -228,6 +228,11 @@ function makeInject (opts: { searchPresent?: boolean, nativeBodies?: string[], p
       queryPorts: searchPresent ? ports : Object.fromEntries(Object.entries(ports).filter(([facet]) => facet !== 'searchQueryPort')),
       readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
       teamCeiling: (target: string) => target === 's-a' || target === CALLER_ID,
+      // Root ruling 3: the inject contract carries the public Provider
+      // lifecycle observer + the pinned generation (production a5G6Inject
+      // mirrors these from g6Supply; agent-bindings :3210).
+      lifecycle: { currentGeneration: () => ({ id: 1, service: ports as unknown }) },
+      generation: 1,
       declaredMount: { searchBackend: searchPresent ? { present: true as const } : { present: false as const, evidence: 'no session-query backend deployed on this assembly (plane-mount spec)' } },
     }),
     natives,

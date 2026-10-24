@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ✓ test/a5m2-g6-plane-mount-c1.test.ts (8 tests) 31ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  05:05:14
+   Duration  1.11s (transform 746ms, setup 0ms, import 947ms, tests 31ms, environment 0ms)
+

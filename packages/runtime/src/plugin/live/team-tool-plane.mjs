@@ -1003,7 +1003,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'teamCeiling is required — the Team-plane ceiling decision port is the owner-side injection; no permissive stand-in exists here (fail closed)'
               : !g6IsRec(sessionQueryInjectRaw.declaredMount) || !g6IsRec(sessionQueryInjectRaw.declaredMount.searchBackend)
                 ? 'declaredMount.searchBackend {present:true} | {present:false, evidence} is required — the search rows ride the deployment\'s real evidence either way'
-                : undefined
+                // Root ruling 3 (lane increment 1): currentness rides the
+                // PUBLIC Provider lifecycle — an arm WITHOUT the observer
+                // cannot be built at all (fail closed; no per-read identity
+                // law exists any more to fall back to).
+                : !g6IsRec(sessionQueryInjectRaw.lifecycle) || typeof sessionQueryInjectRaw.lifecycle.currentGeneration !== 'function'
+                  ? 'lifecycle { currentGeneration() } is required — the PUBLIC Provider lifecycle observer (the host-side ctx.inject([\'sessionQuery\']) fiber); currentness unknowable must never become allow-by-default'
+                  : !Number.isInteger(sessionQueryInjectRaw.generation)
+                    ? 'generation (a non-negative integer) is required — the ACTIVE Provider generation the mount pins; every lifecycle refusal quotes it against the live one'
+                    : undefined
     if (g6Bad !== undefined) return sessionQueryInjectInvalid(g6Bad)
     for (const g6Name of A5_G6_TOOL_NAMES) {
       if (g6Name === readName || g6Name === A5_TODO_MOUNT_NAME || g6Name === A5_WRITE_MOUNT_NAME || g6Name === A5_IMAGE_MOUNT_NAME) {
@@ -1017,6 +1025,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
       readCaller: sessionQueryInjectRaw.readCaller,
       teamCeiling: sessionQueryInjectRaw.teamCeiling,
       declaredMount: sessionQueryInjectRaw.declaredMount,
+      lifecycle: sessionQueryInjectRaw.lifecycle,
+      generation: sessionQueryInjectRaw.generation,
       ...(sessionQueryInjectRaw.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInjectRaw.maxSearchResults }),
     })
   }
@@ -3438,6 +3448,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
         readCaller: sessionQueryInject.readCaller,
         teamCeiling: sessionQueryInject.teamCeiling,
         declaredMount: sessionQueryInject.declaredMount,
+        lifecycle: sessionQueryInject.lifecycle,
+        generation: sessionQueryInject.generation,
         ...(sessionQueryInject.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInject.maxSearchResults }),
         correlationOf: g6CorrelationOf,
         // THE LAZY FEED (pb §6, the placedByName law right below): the

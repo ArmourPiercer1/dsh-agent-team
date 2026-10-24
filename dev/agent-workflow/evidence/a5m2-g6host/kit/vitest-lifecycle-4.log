@@ -1,0 +1,623 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts (54 tests | 48 failed) 296ms
+     ✓ the pinned baseline is the unique source: tests/paths.mjs SHA + version + the checkout itself 2ms
+     ✓ the REAL built plugin registers EXACTLY the five tools with pinned description bytes and compiled parameters the REAL host validator accepts 190ms
+     ✓ canonical SOURCE lines behind rev 2 are TEXT-PINNED (tool face, input DSL, operations, workspace law, boundary, presentation, extraction, types, service signatures) 3ms
+     ✓ the SAFE-FAILURES mirror in the module EQUALS the source table entry-for-entry (rev-2 sanitize law) 0ms
+     ✓ runtime proof on the built service: abstract search absent; concrete trace/read/authorization/titles all 2-formal 27ms
+     × type violations on the captured compiled schema are refused typed with ZERO port entry 13ms
+     ✓ the REAL host validator agrees on the SAME captured schema (fixed point; the r9 idiom) 1ms
+     × the input-law body taxonomy rides the native messages through the planning envelope 1ms
+     × a foreign target and a MISSING target answer the ONE native failure — byte-equal to each other and to the native oracle — pre-read, zero read-port entry 2ms
+     × the caller-self target rides the native short-circuit (workspace-access.ts:81) — zero filterSessions, direct read 1ms
+     × the Team ceiling denies PRE-READ with zero port entry and no existence information (classify AND invoke) 3ms
+     × session_search INTERSECTS the ceiling into the result lane: a same-workspace hit outside the ceiling is not served (the native oracle serves it — the ceiling is the Team-side delta) 1ms
+     × event_search PRE-AUTHORIZES an explicit target before searchEvents, and a rogue page session fails the observed-header assert 1ms
+     × current-session search without a step boundary throws the native NO_CURRENT_STEP failure in both pipelines 1ms
+     × session_trace: identical string (title header, created, ancestors nearest-first, descendants) 1ms
+     × session_trace on a foreign parent line stops at the boundary note (identical) 1ms
+     × session_event_trace: identical string (target line, replaced-by, seq lists) 1ms
+     × session_event_read: identical string (```json fenced target, Before neighbors with semantic text); keys ride only when supplied 1ms
+     × session_event_search: identical strings for hits, current-step exclusion (seq to = 49), and the native empty-window string (title read BEFORE the short-circuit, zero searchEvents) 1ms
+     × session_search: identical multi-hit string with the parent display through the AUTHORIZED filter (authorized id / root / [outside workspace]) and the cap note 1ms
+     × title unavailability renders the SAME in both pipelines (rejected observation → untitled (title unavailable: CODE)) 1ms
+     × an UNAUTHORIZED service failure rides the ONE target failure identically in both pipelines (sanitize:134-136) 1ms
+     × a REAL SessionQueryError from the port surfaces with the TABLE-safe message and code, identical to the native oracle; the raw message never rides 1ms
+     × an unknown port failure collapses to SESSION_QUERY_TOOL_FAILED in both pipelines 1ms
+     × the native repeated-cursor law rides SESSION_QUERY_INVALID_CURSOR with the native message (no row-local code) 1ms
+     × an off-contract page (items missing) is a governance integrity refusal — the row refuses to serve or page further 1ms
+     × parent_session_ids ride REAL authorizeSessionIds pre-authorization; unauthorized parents are dropped; root null joins ONLY when include is true — byte-equal to the native oracle 1ms
+     × include_root_sessions:false queries parents WITHOUT the root clause; false alone skips the lane 1ms
+     × an ALL-unauthorized parent lane serves the native empty string with ZERO searchSessions entry 1ms
+     × the ceiling intersects the parent lane too: an authorized-but-ceiling-denied parent never reaches the service filter 1ms
+     × evidence law: silence throws; present:false + evidence constructs WITHOUT any search facet, INACTIVE carries the evidence verbatim, and trace/event-read stay fully REAL (native oracle byte-equal without a search port) 4ms
+     × evidence/wiring contradictions THROW at placement (present:true without a facet; present:false WITH one; present:false without the evidence string) 3ms
+     × cursor paging rides the PINNED receiver: the second request carries the cursor on the SAME normalized request, byte-equal to the native oracle 1ms
+     × the RECEIVER OBJECT moving (same functions, swapped instance) refuses PORT_RECEIVER_MOVED with zero forwarding 1ms
+     × a rebound METHOD FUNCTION on the pinned receiver refuses PORT_METHOD_MOVED with zero forwarding 1ms
+     × caller drift (workspace move between classify and entry) refuses CALLER_DRIFT with zero forwarding 9ms
+     × pre-aborted signals and drained rows refuse typed with zero port entry; dispatch facts (portCalls, portMethod) are observable 1ms
+     × five ACTIVE typed rows (present:true evidence) carry the CAPTURED description bytes + output {type:string}, map to the five real methods, and name ONLY the resource-kind residual 1ms
+     × classify stays pure and closed-surface: unknown/missing params refused; effects are the single tool-invoke; the fingerprint is canonical 1ms
+     × a missing native capture refuses NATIVE_FACE_ABSENT (no re-authored schema, no substituted body) 1ms
+     × config defects THROW at placement: identity, caller reader, ceiling, and the search arity law 1ms
+     × session_event_search — the search-FAMILY target row still answers the Team ceiling at classify AND invoke with zero port entry 0ms
+     × session_trace ANCESTOR lane: a ceiling-denied ancestor stops at the boundary note and NEVER enters the title port (native names it; the row does not) 0ms
+     × session_trace DESCENDANT lane: a ceiling-denied descendant rides the null under-disclosure and never reaches visibleIds/title reads 1ms
+     × ceiling REVOKED between entry and the first dispatch (live decision port, no stale snapshot): typed refusal BEFORE any port entry 0ms
+     × caller moved ACROSS THE AUTHORIZATION AWAIT: the resumption recheck refuses CALLER_DRIFT — the read port is never entered 1ms
+     × caller moved at the LAST AWAIT BEFORE SERVE: the titles-resumption recheck refuses — effects not rewound, NOTHING IS SERVED 0ms
+     × mid-PAGING caller revocation: page 1 resolves, the resumption recheck refuses — the continuation request is never built or sent 1ms
+     × the CURSOR-CONTINUATION REQUEST CONSTRUCTION is its own revalidation point (freshness gate, not the port edge) 1ms
+     × OUTPUT-SET MEMBER revocation (trace lineage): p-root revoked during the titles await while the target s-a stays allowed — the WHOLE stale set is refused at final serve, nothing serves 1ms
+     × OUTPUT-SET MEMBER revocation (search HIT, hasTarget=false row): s-b revoked during the titles await — the whole result set is refused, the stale hit list is never served 0ms
+     × OUTPUT-SET MEMBER revocation (AUTHORIZED PARENT): p-root revoked during the titles await — authorizedParents membership is rechecked too, whole result refused 0ms
+     × non-search rows: the KEY IS ABSENT AT ALL (hasOwnProperty false + ownKeys exclude it) — never a present-and-undefined member 0ms
+     × search rows stay UNCHANGED: the key is PRESENT carrying the effective cap (default 100; configured 1 stays 1) on BOTH search-family rows 0ms
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts (8 tests | 5 failed) 17ms
+     ✓ (a) zero flip: no injection = no wiring face and no session_* placement 5ms
+     ✓ (a2) the policy grammar pins session_* to the durable-approval lane: an allow entry outside the fs/shell family is refused at the projection 0ms
+     ✓ (b) defective owner evidence refuses the MOUNT (config is law, not wiring) 0ms
+     × (c) REAL placement + lazy feed keys + PRODUCTION registry round-trip (placement identity, never capture identity) 7ms
+     × (d) no control leg: the REAL paAdmit fails the walk CLOSED on its own bytes — zero port entry, native untouched 1ms
+     × (e) durable-approval lane with the kernel minting the grant: the REAL edge consumes the one-shot proof, the ports serve; a re-used token is refused by the single-flight law 1ms
+     × (f) dispose: the wiring drains (the row’s own DRAINING bytes) and the issued-identity ledger releases 1ms
+     × (g) declared census: no searchBackend evidence = three placed rows; the two search names keep their natives 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 53 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (c) REAL placement + lazy feed keys + PRODUCTION registry round-trip (placement identity, never capture identity)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:288:22
+    286|     const w = makeInject()
+    287|     const built = buildPlane({ backends: { sessionQuery: w.inject } })
+    288|     expect(built.ok).toBe(true)
+       |                      ^
+    289|     if (built.ok !== true) return
+    290|     const value = built.value
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/53]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (d) no control leg: the REAL paAdmit fails the walk CLOSED on its own bytes — zero port entry, native untouched
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:321:22
+    319|     const sink: string[] = []
+    320|     const built = buildPlane({ backends: { sessionQuery: w.inject } },…
+    321|     expect(built.ok).toBe(true)
+       |                      ^
+    322|     if (built.ok !== true) return
+    323|     const placed = built.value.mount(fakeAgentCtx([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/53]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (e) durable-approval lane with the kernel minting the grant: the REAL edge consumes the one-shot proof, the ports serve; a re-used token is refused by the single-flight law
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:340:22
+    338|     const seen: Array<{ family: Record<string, unknown> | undefined }>…
+    339|     const built = buildPlane({ backends: { sessionQuery: w.inject }, c…
+    340|     expect(built.ok).toBe(true)
+       |                      ^
+    341|     if (built.ok !== true) return
+    342|     const def = built.value.definitions.find((d) => d.name === 'sessio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/53]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (f) dispose: the wiring drains (the row’s own DRAINING bytes) and the issued-identity ledger releases
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:371:22
+    369|     const w = makeInject()
+    370|     const built = buildPlane({ backends: { sessionQuery: w.inject }, c…
+    371|     expect(built.ok).toBe(true)
+       |                      ^
+    372|     if (built.ok !== true) return
+    373|     const placed = built.value.mount(fakeAgentCtx([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/53]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (g) declared census: no searchBackend evidence = three placed rows; the two search names keep their natives
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:385:22
+    383|     const w = makeInject({ searchPresent: false })
+    384|     const built = buildPlane({ backends: { sessionQuery: w.inject } })
+    385|     expect(built.ok).toBe(true)
+       |                      ^
+    386|     if (built.ok !== true) return
+    387|     const placedNames = [...(built.value.sessionQuery?.placementNames …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 captured-schema typed validation — the compiled bytes decide, nothing coerces > type violations on the captured compiled schema are refused typed with ZERO port entry
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:736:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 captured-schema typed validation — the compiled bytes decide, nothing coerces > the input-law body taxonomy rides the native messages through the planning envelope
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:765:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 pre-authorization intersection and existence-safe errors > a foreign target and a MISSING target answer the ONE native failure — byte-equal to each other and to the native oracle — pre-read, zero read-port entry
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:784:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 pre-authorization intersection and existence-safe errors > the caller-self target rides the native short-circuit (workspace-access.ts:81) — zero filterSessions, direct read
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:802:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 pre-authorization intersection and existence-safe errors > the Team ceiling denies PRE-READ with zero port entry and no existence information (classify AND invoke)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:813:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 pre-authorization intersection and existence-safe errors > session_search INTERSECTS the ceiling into the result lane: a same-workspace hit outside the ceiling is not served (the native oracle serves it — the ceiling is the Team-side delta)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:826:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 pre-authorization intersection and existence-safe errors > event_search PRE-AUTHORIZES an explicit target before searchEvents, and a rogue page session fails the observed-header assert
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:836:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 pre-authorization intersection and existence-safe errors > current-session search without a step boundary throws the native NO_CURRENT_STEP failure in both pipelines
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:849:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > session_trace: identical string (title header, created, ancestors nearest-first, descendants)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:861:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > session_trace on a foreign parent line stops at the boundary note (identical)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:874:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > session_event_trace: identical string (target line, replaced-by, seq lists)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:882:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > session_event_read: identical string (```json fenced target, Before neighbors with semantic text); keys ride only when supplied
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:892:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > session_event_search: identical strings for hits, current-step exclusion (seq to = 49), and the native empty-window string (title read BEFORE the short-circuit, zero searchEvents)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:906:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > session_search: identical multi-hit string with the parent display through the AUTHORIZED filter (authorized id / root / [outside workspace]) and the cap note
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:933:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > title unavailability renders the SAME in both pipelines (rejected observation → untitled (title unavailable: CODE))
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:951:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 native output fidelity — every served string byte-equals the REAL operations+presentation oracle > an UNAUTHORIZED service failure rides the ONE target failure identically in both pipelines (sanitize:134-136)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:961:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 service-lane error semantics — the mirrored safe table, not row codes > a REAL SessionQueryError from the port surfaces with the TABLE-safe message and code, identical to the native oracle; the raw message never rides
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:976:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 service-lane error semantics — the mirrored safe table, not row codes > an unknown port failure collapses to SESSION_QUERY_TOOL_FAILED in both pipelines
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:989:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 service-lane error semantics — the mirrored safe table, not row codes > the native repeated-cursor law rides SESSION_QUERY_INVALID_CURSOR with the native message (no row-local code)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:999:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 service-lane error semantics — the mirrored safe table, not row codes > an off-contract page (items missing) is a governance integrity refusal — the row refuses to serve or page further
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1016:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > parent_session_ids ride REAL authorizeSessionIds pre-authorization; unauthorized parents are dropped; root null joins ONLY when include is true — byte-equal to the native oracle
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1026:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > include_root_sessions:false queries parents WITHOUT the root clause; false alone skips the lane
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1042:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > an ALL-unauthorized parent lane serves the native empty string with ZERO searchSessions entry
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1058:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > the ceiling intersects the parent lane too: an authorized-but-ceiling-denied parent never reaches the service filter
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1068:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > evidence law: silence throws; present:false + evidence constructs WITHOUT any search facet, INACTIVE carries the evidence verbatim, and trace/event-read stay fully REAL (native oracle byte-equal without a search port)
+AssertionError: expected [Function] to throw error matching /REAL deployment evidence/u but got 'g6-session-query: lifecycle { current…'
+
+- Expected:
+/REAL deployment evidence/u
+
++ Received:
+"g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)"
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1084:9
+    1082|       readCaller: () => undefined,
+    1083|       teamCeiling: () => true,
+    1084|     })).toThrow(/REAL deployment evidence/u)
+       |         ^
+    1085|     const w = await makeWorld({ searchBackend: { present: false, evide…
+    1086|     expect(w.adapter.rows['session_search'].active).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > evidence/wiring contradictions THROW at placement (present:true without a facet; present:false WITH one; present:false without the evidence string)
+AssertionError: expected [Function] to throw error matching /must agree/u but got 'g6-session-query: lifecycle { current…'
+
+- Expected:
+/must agree/u
+
++ Received:
+"g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)"
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1100:93
+    1098|
+    1099|   it('evidence/wiring contradictions THROW at placement (present:true …
+    1100|     await expect(makeWorld({ searchBackend: { present: true }, provide…
+       |                                                                                             ^
+    1101|     const w = await makeWorld()
+    1102|     const base = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 receiver-pinned dispatch and pinned-receiver paging > cursor paging rides the PINNED receiver: the second request carries the cursor on the SAME normalized request, byte-equal to the native oracle
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1147:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 receiver-pinned dispatch and pinned-receiver paging > the RECEIVER OBJECT moving (same functions, swapped instance) refuses PORT_RECEIVER_MOVED with zero forwarding
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1164:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 receiver-pinned dispatch and pinned-receiver paging > a rebound METHOD FUNCTION on the pinned receiver refuses PORT_METHOD_MOVED with zero forwarding
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1173:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 receiver-pinned dispatch and pinned-receiver paging > caller drift (workspace move between classify and entry) refuses CALLER_DRIFT with zero forwarding
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1183:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 receiver-pinned dispatch and pinned-receiver paging > pre-aborted signals and drained rows refuse typed with zero port entry; dispatch facts (portCalls, portMethod) are observable
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1197:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 row facts — five typed rows, captured bytes, evidence mount > five ACTIVE typed rows (present:true evidence) carry the CAPTURED description bytes + output {type:string}, map to the five real methods, and name ONLY the resource-kind residual
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1218:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 row facts — five typed rows, captured bytes, evidence mount > classify stays pure and closed-surface: unknown/missing params refused; effects are the single tool-invoke; the fingerprint is canonical
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1245:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 row facts — five typed rows, captured bytes, evidence mount > a missing native capture refuses NATIVE_FACE_ABSENT (no re-authored schema, no substituted body)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1258:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 row facts — five typed rows, captured bytes, evidence mount > config defects THROW at placement: identity, caller reader, ceiling, and the search arity law
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1274:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > session_event_search — the search-FAMILY target row still answers the Team ceiling at classify AND invoke with zero port entry
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1297:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > session_trace ANCESTOR lane: a ceiling-denied ancestor stops at the boundary note and NEVER enters the title port (native names it; the row does not)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1309:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > session_trace DESCENDANT lane: a ceiling-denied descendant rides the null under-disclosure and never reaches visibleIds/title reads
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1323:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > ceiling REVOKED between entry and the first dispatch (live decision port, no stale snapshot): typed refusal BEFORE any port entry
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1336:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > caller moved ACROSS THE AUTHORIZATION AWAIT: the resumption recheck refuses CALLER_DRIFT — the read port is never entered
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1346:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > caller moved at the LAST AWAIT BEFORE SERVE: the titles-resumption recheck refuses — effects not rewound, NOTHING IS SERVED
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1362:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > mid-PAGING caller revocation: page 1 resolves, the resumption recheck refuses — the continuation request is never built or sent
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1378:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > the CURSOR-CONTINUATION REQUEST CONSTRUCTION is its own revalidation point (freshness gate, not the port edge)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1397:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > OUTPUT-SET MEMBER revocation (trace lineage): p-root revoked during the titles await while the target s-a stays allowed — the WHOLE stale set is refused at final serve, nothing serves
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1417:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > OUTPUT-SET MEMBER revocation (search HIT, hasTarget=false row): s-b revoked during the titles await — the whole result set is refused, the stale hit list is never served
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1434:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck > OUTPUT-SET MEMBER revocation (AUTHORIZED PARENT): p-root revoked during the titles await — authorizedParents membership is rechecked too, whole result refused
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1448:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 mint omission law — non-search targetManifests OMIT maxSearchResults; search rows byte-unchanged > non-search rows: the KEY IS ABSENT AT ALL (hasOwnProperty false + ownKeys exclude it) — never a present-and-undefined member
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1462:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/53]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 mint omission law — non-search targetManifests OMIT maxSearchResults; search rows byte-unchanged > search rows stay UNCHANGED: the key is PRESENT carrying the effective cap (default 100; configured 1 stays 1) on BOTH search-family rows
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ makeWorld test/a5m2-g6-session-query-c1.test.ts:496:21
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1479:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/53]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  53 failed | 9 passed (62)
+   Start at  05:01:33
+   Duration  1.36s (transform 1.50s, setup 0ms, import 1.83s, tests 312ms, environment 0ms)
+
