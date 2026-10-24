@@ -58,6 +58,25 @@ export const A5_B_ORCH_WIRING_CODES = Object.freeze({
 
 const CODES = A5_B_ORCH_WIRING_CODES
 
+/**
+ * FAIL-CLOSED SAFETY BLOCK RESTORED (root independent review of e4389610,
+ * 2026-10-25: the candidate is NOT acceptable). The drift-gate note below
+ * STANDS but is SECOND LINE only: a seat guard reading provider
+ * registration (isActive = "a disposer exists") plus a planeCfg self-declared
+ * routing name is NOT a readiness proof — the provider's start is only
+ * agents.create + tools.restrict (no real Team agentSetup/Guard/PA/IO supply
+ * pre-publication), it returns handle.result although the pinned AgentHandle
+ * (639) answers NO result face (no prompt followup / whenIdle / real result
+ * read), and the three routing names are the team plugin's own config, never
+ * the workflow/ralph plugins' actual resolved provider. So the TEMPORARY
+ * block returns as a MODULE CONSTANT, FIRST statement, no flip surface —
+ * removed only by the root full-source card pairing that reuses the REAL
+ * Team member create/run chain + real Host interfaces (child-identity
+ * contract changes go to root as a concrete minimal diff; fabricating an
+ * isActive readiness proof is forbidden).
+ */
+const CHILD_GOVERNANCE_FAIL_CLOSED = true
+
 // THE CHILD-GOVERNANCE STATE is a RUNTIME FACT now, not a constant: the
 // seat reads the governed-provider face (input.governedProvider) at every
 // admit — a missing or inactive provider (an unpaired world, or a
@@ -150,6 +169,9 @@ function buildWiring (input, assembly, seat) {
     && gp.activeCalls instanceof WeakMap
 
   seat.admit = async (envelope) => {
+    if (CHILD_GOVERNANCE_FAIL_CLOSED) {
+      return refuse(CODES.CHILD_GOVERNANCE_UNGOVERNED, 'the execution arm is FAIL-CLOSED pending the REAL Team member create/run-chain pairing (root independent review of e4389610): the candidate provider is only agents.create+tools.restrict (no real Team agentSetup/Guard/PA/IO pre-publication supply; the audit chain stands: children ride the parent preset generation NOT this member\'s shadow/guard/deny — activationFence knows only root/durable-member childSessionIds, a fresh UUID has no row and passes, agentSetup never runs, child policy natively answers never) returning handle.result although the pinned AgentHandle answers NO result face (no prompt followup / whenIdle / real result read), and isActive-plus-self-declared-routing is no readiness proof — so the restored constant block REFUSES before the PA walk (zero PA consumed, zero body entry) and the masked native stays unreachable; the drift gate below stays as second-line defense for the future pairing')
+    }
     if (!governedProviderLive()) {
       // DRIFT GATE (pairing C, center card): the seat opens ONLY when the
       // Team-governed provider is REGISTERED and ROUTED (isActive is the
