@@ -41,7 +41,16 @@ leader:
       items: []
     permissions:
       default: ask
-      allow: []
+      allow:
+        # The ONLY explicit allow in this window: the target query, whole-tool
+        # `any` resource, syntax copied from real gate-passed artifacts
+        # (natexe a5nx-main.yaml:47-50 and alpha5-pr1r kit-r1r main.yaml:26-30,
+        # both `- tool: <name>` + `resource: {kind: any}`). PA is untouched: the
+        # final consume law still runs on the guarded mutation path, this only
+        # states the lane. No allow-all, no wildcard tool.
+        - tool: team_list_members
+          resource:
+            kind: any
       ask: []
       deny: []
 members:
