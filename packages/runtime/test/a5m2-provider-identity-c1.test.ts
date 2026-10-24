@@ -687,14 +687,14 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // d675 CARD #2 REAL SUPPLY (1e76e51910446dc564218853551cff78154ce752, blame-
     // verified; preserved byte-identical by the root residual round b4f9fc51a
     // merged at e0d89a233): the providerId constants feeding the schedule PAIR's
-    // bind/publish supply at agent-bindings.mjs:3664 and :3698 - the same
+    // bind/publish supply at agent-bindings.mjs:3688 and :3722 (lines measured POST the b6ef58117 final-round merge; they stood at :3664/:3698 at census 6c08 - the merge shifted them +24, blame unchanged) - the same
     // family-registration category as every other counted site (RE-ANCHOR 3
     // claimed bind-after-def wired WITHOUT a literal provider constant at the
     // mount face; CARD #2 superseded that shape by the real guard-surface pair
     // supply, so the claim is now stale, not violated). The SIX carried forward,
     // re-measured at their MOVED lines: todo :3055, write :3150, subagent-spawn
-    // :3450, G2 team mount :3849, G5 goal inject :4238, subagent-controls
-    // :4493. All EIGHT are family registration/wiring constants; no IMAGE
+    // :3450, G2 team mount :3873, G5 goal inject :4238, subagent-controls
+    // :4517. All EIGHT are family registration/wiring constants; no IMAGE
     // arm/registration/callFacts comparison site carries a constant.
     // No IMAGE arm/registration/callFacts site carries a constant: the FP-A2/
     // FP-D legs above prove the live supply and the unchanged comparisons on
