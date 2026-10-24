@@ -22,12 +22,14 @@ import {
   A5_B_UPSTREAMTEAM_CODES,
   A5_B_UPSTREAMTEAM_FAMILY_ID,
   A5_B_UPSTREAMTEAM_MOUNT_CONDITION,
-  A5_B_UPSTREAMTEAM_NAMED_GAPS,
+  A5_B_UPSTREAMTEAM_NATIVE_DELEGATED,
+  A5_B_UPSTREAMTEAM_SERVICE_ROWED_NAMES,
   A5_B_UPSTREAMTEAM_RECORD_SPECS,
   A5_B_UPSTREAMTEAM_TOOL_NAMES,
   createUpstreamTeamRow,
   upstreamTeamPlacementEntry,
   type BUpstreamTeamPa,
+  type BUpstreamTeamNativeHandle,
   type BUpstreamTeamPort,
   type BUpstreamTeamRow,
 } from '../src/plugin/live/governed-families/upstreamteam.mjs'
@@ -75,14 +77,52 @@ describe('A5-M2 B-UPSTREAMTEAM adapter rows', () => {
     })
   })
 
-  it('rows the six transcribed records and refuses the three untranscribed names typed', () => {
-    expect(Object.keys(A5_B_UPSTREAMTEAM_NAMED_GAPS)).toEqual(['spawn_teammate', 'wait_agent', 'team_task_list'])
-    expect(upstreamTeamPlacementEntry('wait_agent')).toBeNull()
-    expect(upstreamTeamPlacementEntry('team_task_list')).toBeNull()
-    expect(upstreamTeamPlacementEntry('spawn_teammate')).toBeNull()
-    expect(upstreamTeamPlacementEntry('team_task_get')).not.toBeNull()
-    expect(refusalCode(createUpstreamTeamRow('wait_agent', {}))).toBe(A5_B_UPSTREAMTEAM_CODES.rowNotRowed)
+  it('rows every record: six service rows plus three native-delegated rows', () => {
+    expect([...A5_B_UPSTREAMTEAM_SERVICE_ROWED_NAMES].sort()).toEqual([
+      'interrupt_agent', 'list_agents', 'send_message', 'team_task_create', 'team_task_get', 'team_task_update',
+    ])
+    expect([...A5_B_UPSTREAMTEAM_NATIVE_DELEGATED]).toEqual(['spawn_teammate', 'wait_agent', 'team_task_list'])
+    for (const name of A5_B_UPSTREAMTEAM_TOOL_NAMES) {
+      expect(upstreamTeamPlacementEntry(name), name).not.toBeNull()
+    }
+    expect(upstreamTeamPlacementEntry('wait_agent')?.valueSide).toBe('captured-native')
+    expect(upstreamTeamPlacementEntry('team_task_get')?.valueSide).toBe('transcribed-service-port')
     expect(refusalCode(createUpstreamTeamRow('no_such_tool', {}))).toBe(A5_B_UPSTREAMTEAM_CODES.rowNotRowed)
+  })
+
+  it('enters the captured native for the delegated names and keeps its semantics', async () => {
+    const admitted: string[] = []
+    const pa: BUpstreamTeamPa = (request) => {
+      admitted.push(request.operation)
+      return request.run()
+    }
+    const definition = { name: 'wait_agent' }
+    const seenExec: unknown[] = []
+    const native: BUpstreamTeamNativeHandle = {
+      definition,
+      execute: (args, exec) => {
+        seenExec.push({ args, exec })
+        return 'native-answer'
+      },
+    }
+    const exec = { signal: { aborted: false } }
+    const row = createUpstreamTeamRow('wait_agent', {
+      callerAgent: 'agent-7', pa, exec, native,
+      args: { timeout_ms: 30000 },
+      definitionIdentityOf: () => 'def-1',
+      placementFeed: () => ({ definitionIdentity: 'def-1', realmId: 'r1' }),
+    })
+    expect(row.ok).toBe(true)
+    expect(row.ok === true ? row.invoke() : null).toBe('native-answer')
+    expect(admitted).toEqual(['upstreamteam-wait'])
+    expect(seenExec[0]).toEqual({ args: { timeout_ms: 30000 }, exec })
+    expect(refusalCode(createUpstreamTeamRow('wait_agent', { callerAgent: 'a', pa, exec })))
+      .toBe(A5_B_UPSTREAMTEAM_CODES.nativeHandleMissing)
+    expect(refusalCode(createUpstreamTeamRow('wait_agent', {
+      callerAgent: 'a', pa, exec, native,
+      definitionIdentityOf: () => 'def-1',
+      placementFeed: () => ({ definitionIdentity: 'def-OTHER' }),
+    }))).toBe(A5_B_UPSTREAMTEAM_CODES.nativeDrift)
   })
 
   it('rides the plane PA funnel and derives the roster from the caller', async () => {
