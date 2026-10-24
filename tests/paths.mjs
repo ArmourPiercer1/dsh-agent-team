@@ -37,26 +37,30 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
  * canonical per-worktree location, gitignored), or the absolute path
  * `DSH_TEST_USE_ROOT` names.
  *
- * ROOT 02:04 HANDLING NOTE (G5 lane, no Host; receipt goes to center, center
- * forwards to a356): this g5 worktree carries a nested
- * `tests/deepseek-harness-test-use` created at 01:42 by a `clone --shared`
- * taken from the INT worktree's tree instead of the read-only shared
- * baseline, with generated `lib/` outputs rsynced in and an offline install
- * run against it — a violation of the zero-copy order in force at that
- * moment, and a PARTIAL restore besides: it has no `node_modules`, so it
- * resolves no runtime, while the repo-root base already does.
+ * ROOT 02:04 HANDLING + 02:3x AMENDMENT (G5 lane, no Host) — both facts
+ * stand together; the lane does not delete anything and the default shape
+ * is unchanged:
  *
- * Per that directive this tree's Host-test-runtime references go back to the
+ * (02:04) This g5 worktree carries a nested `tests/deepseek-harness-test-use`
+ * created at 01:42 by a `clone --shared` from the INT worktree's tree instead
+ * of the read-only shared baseline, with generated `lib/` outputs rsynced in
+ * and an offline install run against it — a violation of the zero-copy order
+ * in force at that moment. It is NOT removed, NOT permission-changed and NOT
+ * tidied (root/a356 rule its scope), and until that ruling lands the
+ * default repo-relative shape below still resolves to it in this worktree.
+ *
+ * (02:3x) The migration of the LANE'S Host-test-runtime references to the
  * pre-existing, 639-pin-consistent READ-ONLY BASE
  * `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use`
  * (measured HEAD `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain 0,
- * `node_modules` present). THE BASE IS SUPPLIED BY THE RUN, NOT BY A
- * COMMITTED DEFAULT: this tracked file hardcodes no absolute path, and the
- * upward walk below keeps its original meaning everywhere else — a worktree
- * whose nested tree is absent (or whose pin fails) resolves the base through
- * `DSH_TEST_USE_ROOT`. The nested clone is NOT removed, NOT permission-
- * changed and NOT tidied: root and a356 rule its scope, this lane does not
- * delete it.
+ * `node_modules` present) is supplied by THE LANE'S OWN ENTRY, not by a
+ * committed default: `packages/runtime/test/a5m2-g5-lane-entry.mjs` sets
+ * `DSH_TEST_USE_ROOT` to that base and runs the lane's three specs through
+ * it. `paths.mjs` hardcodes no absolute path; this constant's default is
+ * byte-identical to the pre-amendment value, so other lanes and any direct
+ * `vitest run` (a full battery included) keep their original behavior.
+ * Consumers that must reach the base read `TEST_USE_REL` / go through
+ * `testUsePath` below.
  */
 export const TEST_USE_REL = process.env.DSH_TEST_USE_ROOT ?? 'tests/deepseek-harness-test-use'
 
