@@ -431,6 +431,34 @@ export const PLACEMENTS = [
     src: 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
     dist: 'packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
   },
+  // A5M2 M2 RELEASE CLOSURE (center single writer, root ruling 2026-10-25;
+  // cold-import RED proven by the real installed package - evidence
+  // logs-0a3f11b2-20261024T084352Z/22-cold-*.log + 23-closure-scan.txt):
+  // agent-bindings.mjs :404-406 and team-tool-plane.mjs :130 statically
+  // import these three governed-family modules on the LIVE mount face, yet
+  // NO placement ever carried them into dist. tsc never emits .mjs; the
+  // drift gate (check D) only sees modules LISTED here (the todo.mjs lesson
+  // repeated: UNPLACED is invisible); author-side vitest reads SRC, so the
+  // hole stayed invisible until the strict files:["dist"] face booted its
+  // cold import RED with ERR_MODULE_NOT_FOUND on ./governed-families/workflow-wiring.mjs.
+  // The closure of these three is self-contained and measured:
+  // workflow-wiring -> workflow-adapters; team-governed-provider ->
+  // workflow-adapters; workflow-adapters imports no .mjs. Byte-identical
+  // placement like every entry here; check D now pins src==dist for all
+  // three. team-governed-provider ships as SUPPLY behind its fail-closed
+  // block - placement is NOT closure and this changes no semantics.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/workflow-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/workflow-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+  },
 ]
 
 // Direct-invocation guard: the placement runs only when this file IS the
