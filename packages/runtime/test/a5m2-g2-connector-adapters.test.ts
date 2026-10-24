@@ -376,11 +376,24 @@ describe('a5m2-g2 B-MCP', () => {
     const listed = okOutcome(await rows.list_mcp_resources.invoke({ server: 'local-tool' }))
     expect(defs.list_mcp_resources.calls.length).toBe(1)
     expect(listed.effects).toEqual([{ kind: 'tool-invoke', toolName: 'list_mcp_resources', resource: null }])
-    expect(listed.targetManifest['surface']).toEqual({
+    // FLAT mint (D1-D3, signed migration): the surface projects LOSSLESSLY
+    // at top level; the nested object is GONE (asserted absent).
+    expect(listed.targetManifest['surface']).toBeUndefined()
+    expect(listed.targetManifest['mcpVariant']).toBe('stdio:list')
+    expect({
+      record: listed.targetManifest['record'],
+      transport: listed.targetManifest['transport'],
+      connectionIncarnation: listed.targetManifest['connectionIncarnation'],
+      spawnArgv0: listed.targetManifest['spawnArgv0'],
+      spawnArgCount: listed.targetManifest['spawnArgCount'],
+      spawnCwd: listed.targetManifest['spawnCwd'],
+    }).toEqual({
       record: 'surface:mcp_stdio',
       transport: 'stdio',
       connectionIncarnation: 'unobserved',
-      spawn: { argv0: '/usr/local/bin/local-tool', argCount: 1, cwd: '/srv/mcp' },
+      spawnArgv0: '/usr/local/bin/local-tool',
+      spawnArgCount: 1,
+      spawnCwd: '/srv/mcp',
     })
     expect(listed.targetManifest['operation']).toBe('resources/list')
     const read = okOutcome(await rows.read_mcp_resource.invoke({ server: 'local-tool', uri: 'mcp://local-tool/blob/../../weird%20path' }))
@@ -414,7 +427,8 @@ describe('a5m2-g2 B-MCP', () => {
       { kind: 'domain-ref', domainAuthorityId: 'da-remote', resource: null },
     ])
     expect(parseRequestedEffectSet(plan.effects).ok).toBe(true)
-    expect((plan.targetManifest['surface'] as Record<string, unknown>)['record']).toBe('surface:mcp_http_dynamic')
+    expect(plan.targetManifest['record']).toBe('surface:mcp_http_dynamic') // FLAT (D1)
+    expect(plan.targetManifest['endpointOrigin']).toBe('https://mcp.example:8443')
     expect(plan.targetManifest['cursor']).toBe('cur-2')
     // header VALUES never ride the manifest (presence is a provider-side fact)
     expect(JSON.stringify(plan.targetManifest)).not.toContain('secret-value')
@@ -456,9 +470,10 @@ describe('a5m2-g2 B-MCP', () => {
       declaredService: { present: true, serverName: 'remote-api', transport: 'streamable-http', endpointUrl: 'https://mcp.example/mcp', connectionIncarnation: 'conn-gen-7' },
     })
     const plan = okOutcome(await withInc.list_mcp_resources.invoke({ server: 'remote-api' }))
-    const surface = plan.targetManifest['surface'] as Record<string, unknown>
-    expect(surface['connectionIncarnation']).toBe('conn-gen-7') // the owner-injected CURRENT fact, frozen at classify
-    expect(plan.targetManifest['connectionIncarnationReason']).toBeUndefined()
+    expect(plan.targetManifest['surface']).toBeUndefined() // FLAT (D1)
+    expect(plan.targetManifest['connectionIncarnation']).toBe('conn-gen-7') // the owner-injected CURRENT fact, frozen at classify
+    expect(plan.targetManifest['mcpVariant']).toBe('http:list')
+    expect(plan.targetManifest['connectionIncarnationReason']).toBeNull() // D2 always-emit: MEASURED ABSENCE is null, not a missing key
     expect(plan.targetManifest['providerReSelectionLaw']).toMatch(/REQUEST time/)
     const bare = A.createG2McpResourceAdapters({
       realmId: 'realm-g2',
@@ -467,8 +482,7 @@ describe('a5m2-g2 B-MCP', () => {
       declaredService: { present: true, serverName: 'remote-api', transport: 'streamable-http', endpointUrl: 'https://mcp.example/mcp' },
     })
     const res = await bare.list_mcp_resources.classify({ server: 'remote-api' })
-    const bareSurface = res.targetManifest?.['surface'] as Record<string, unknown>
-    expect(bareSurface['connectionIncarnation']).toBe('unobserved')
+    expect(res.targetManifest?.['connectionIncarnation']).toBe('unobserved') // FLAT (D1): the NAMED-BLOCKER pairing rides the flat leaf
     expect(res.targetManifest?.['connectionIncarnationReason']).toBe(A.A5_G2_NAMED_BLOCKERS.MCP)
   })
 
