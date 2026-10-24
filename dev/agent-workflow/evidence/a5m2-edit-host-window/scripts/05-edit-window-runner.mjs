@@ -583,8 +583,8 @@ async function main() {
         })()))
     if (text.startsWith('A5M2-EDITHW-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `ehw-create-${NONCE}`, delegationTemplateId: 'edit-worker', label: 'edit1' } }))
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
-    if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: join(FSROOT, 'notes.txt'), old_string: 'beta', new_string: 'BETA-ALLOWED' } }))
-    if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: join(FSROOT, 'notes.txt'), old_string: 'alpha', new_string: 'ALPHA-DENIED' } }))
+    if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } })) // root ruling: the EDIT row's anchor contract is RELATIVE-to-root (edit.mjs :89-94 path.isAbsolute refuses); workspace/FSROOT stay aligned so the relative spelling resolves to the SAME target via canonicalLocator :233-236
+    if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } })) // same single-variable ruling as the allow arm
     return { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
 
