@@ -1,4 +1,8 @@
-# PENDING new-product driver delta (B control window) — staged, NOT applied
+# APPLIED 2026-10-24 — new product 4a26ac9a receipt (f86 pipeline; pins recomputed read-only by B: tgz e3e845f0..0bc9f = 4,337,935 B, lock d23fe07c..d9c0, fixture pkg a435be55..81374, INSTALL_DIR install-e3e845f0)
+Real parseBlueprint on the int-tip 0c15d1448c vocabulary: SAVED_BP + ANCHOR PASS — member allow [team_request_control] kind:any; leader allow [create_member, list_pending_control, resolve_control] all kind:any, defaults deny, ask/deny complete (the parse caught and fixed one splice omission: member ask/deny line). DRY to boot boundary rc3 NOT_RUN on the NEW pins. Boot only on root GO. History below (as staged).
+
+---
+# (history) PENDING new-product driver delta (B control window) — staged, NOT applied
 
 Root's FINAL B-authorization ruling (verbatim force): 83/84 are **not** PA
 exemptions; the old PR-D/native behaviour cannot prove the new CONTROL arm;

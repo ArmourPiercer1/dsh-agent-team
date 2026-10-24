@@ -20,21 +20,18 @@
  *   L4 member  toolCall team_resolve_control ATTEMPT -> REFUSED (the member's
  *              surface carries no resolver)
  *
- * Outer-layer arrangement (root's FINAL B-authorization ruling, supersedes
- * every earlier reading here): 83/84 are NOT PA-exempt — the old PR-D/native
- * behaviour proves NOTHING about the new CONTROL arm. The closed permission
- * vocabulary still lacks team_request_control/team_resolve_control (87/88 too;
- * only 85 is registered, invocation-only); that registration is the MAIN
- * writer's shared-writer job (85-pattern four names + SRE; no new matcher/
- * ledger, native roles/envelopes/ceiling/default-deny untouched) — B never
- * writes schema and never calls "default deny + empty rules" an arrangement
- * (that claim is RETRACTED; the current rules below are the OLD-product
- * interim, honest label: arrangement INCOMPLETE until the new product).
- * The prepared driver delta for the new product (few lines, per-role exact
- * kind:any single-tool rules — projected exact realm|tool:name, NOT alltools;
- * everything else stays deny) is staged at PENDING-NEWPRODUCT-DRIVER-DELTA.md
- * next to this runner; it goes in ONLY when the main's new product SHA receipt
- * lands (pins swapped in the same change).
+ * Outer-layer arrangement per the root's FINAL B ruling, NOW REALIZED on the
+ * NEW product 4a26ac9a904dc6ad1cef56b8b1c096ab88e131de (closed-vocabulary
+ * registration 0c15d1448c: 83/84/87/88 ruleable on the 85 invocation-only
+ * pattern; envelope + native resolver identity UNTOUCHED): per-role exact
+ * kind:any SINGLE-TOOL allow rules (projecting exact realm|tool:name, NOT
+ * alltools) — MEMBER: team_request_control only; LEADER: create_member +
+ * list_pending_control + resolve_control (no 83 — the leader does not
+ * request). Everything else stays default deny on BOTH roles; 87/88 carry
+ * no rules here (not this scenario's roles). Pins swapped from the f86
+ * receipt recomputed read-only by B (tgz e3e845f0..0bc9f = 4,337,935 B;
+ * lock d23fe07c..d9c0; fixture pkg a435be55..81374). 37646-era claims are
+ * retired; the old PR-D/native behaviour never proved the new CONTROL arm.
  *
  * BOOT is behind the root's ruling: A5M2_CONTROL_WINDOW=GRANTED. Without it:
  * NOT_RUN receipt, rc 3. A5M2_CONTROL_DRY=1 runs the REAL pre-flight to the
@@ -60,11 +57,11 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // root-accepted product (same pack A's fifth window ran)
-const EXPECTED_PACK_SHA = 'sha256:3652b2ce19025d0d25d8b661fc08f0a3cb0737bb7b4fbc339fd61a12e2b5fd7c' // root receipt (measured equal by B read-only)
-const EXPECTED_LOCK_SHA = 'sha256:7685317ff1ba675f6d3f6b012907360579c3c85bd1bc3319d0248483bde3c659' // root receipt (measured equal by B read-only)
+const COMPOSED_SHA = '4a26ac9a904dc6ad1cef56b8b1c096ab88e131de' // NEW product (int tip; carries the closed-vocab registration 0c15d1448c line — NOT a 37646 descendant, disclosed)
+const EXPECTED_PACK_SHA = 'sha256:e3e845f082bb4bdc843f52e715ee5d30385495f37c70bc53d02497003720bc9f' // f86 receipt, recomputed by B read-only (4,337,935 B)
+const EXPECTED_LOCK_SHA = 'sha256:d23fe07ca7d7935562083dee5c7bb255afd4517199f0033021c9646fda67d9c0' // f86 receipt, recomputed by B read-only
 const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
-const EXPECTED_TGZ_DIR_PREFIX = 'out-37646ac2-'
+const EXPECTED_TGZ_DIR_PREFIX = 'out-4a26ac9a-'
 const PACK_BYTES_MAX = 8_000_000
 const HOST_PORT = 3184 // root-pinned for B
 const MOCK_PORT = 3499 // root-pinned for B
@@ -73,7 +70,7 @@ const BP_ID = 'team.a5m2-ctl-hw'
 const WINDOW_GO = process.env.A5M2_CONTROL_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_CONTROL_DRY === '1'
 const INSTALL_DIR = process.env.A5M2_CONTROL_INSTALL_DIR
-  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2' // root's exact path; absence fail-closes rc3
+  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-e3e845f0' // f86 frozen-offline install (RC=0, down 0); absence fail-closes rc3
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -113,11 +110,11 @@ const SAVED_BP_V3_YAML = [
   '      - update_goal', '      - web_fetch', '      - web_search', '      - workflow',
   '    skills:', '      kind: allow', '      items: []',
   '    mcp:', '      kind: allow', '      items: []',
-  '    permissions:', '      default: deny', '      allow:', // OLD-PRODUCT INTERIM: only the TWO vocab-nameable faces get allow lanes;
-  '          - tool: team_create_member', '            resource:', '              kind: any',
-  '          - tool: team_list_pending_control', '            resource:', '              kind: any', // 83/84 are NOT exempt — they await the MAIN's closed-vocabulary registration; the
-  '      ask: []', '      deny: []', // prepared per-role delta (exact kind:any single-tool rules) is staged in
-  '', // PENDING-NEWPRODUCT-DRIVER-DELTA.md (apply ONLY with the new product SHA pins).
+  '    permissions:', '      default: deny', '      allow:', // NEW PRODUCT 4a26ac9a: all THREE leader scenario faces are ruleable —
+  '          - tool: team_create_member', '            resource:', '              kind: any', // exact kind:any SINGLE-TOOL rules (exact realm|tool:name projections,
+  '          - tool: team_list_pending_control', '            resource:', '              kind: any', // NOT alltools). 83 stays OFF the leader (it does not request); the rest deny.
+  '          - tool: team_resolve_control', '            resource:', '              kind: any',
+  '      ask: []', '      deny: []',
   'members:', '  - templateId: ctl-worker',
   '    persona: "You are the control worker. Follow the marker instructions literally and only."',
   '    capabilities:', '      teamTools:', '        kind: allow', '        items:',
@@ -128,9 +125,10 @@ const SAVED_BP_V3_YAML = [
   '        - job_list', '        - job_output', '        - present', '        - skill',
   '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
-  '      permissions:', // OLD-PRODUCT INTERIM (vocabulary lacks the name — arrangement INCOMPLETE,
-  '        default: deny', '        allow: []', // vocabulary (the real parse proved no rule can
-  '        ask: []', '        deny: []', // request-control ENVELOPE below is this call's outer arrangement (root a738 ③).
+  '      permissions:', // NEW PRODUCT 4a26ac9a (registration 0c15d1448c made the 83 face ruleable):
+  '        default: deny', '        allow:', // exact kind:any SINGLE-TOOL rule for 83 (projects exact realm|tool:name,
+  '          - tool: team_request_control', '            resource:', '              kind: any', // NOT alltools); everything else stays deny. Envelope + native identity stand.
+  '        ask: []', '        deny: []', // closed permissions shape stays complete (validator requires ask/deny).
   'teamEnvelope:', '  allow:',
   '    - assign-task', '    - create-member', '    - send-message',
   '    - report-progress', '    - request-control', '    - resolve-control',
