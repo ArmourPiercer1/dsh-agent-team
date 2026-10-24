@@ -13,6 +13,13 @@ Host (both local passes were DRY, which is NOT_RUN by law).
       bash dev/agent-workflow/evidence/a5m2-g5-host-window-b/scripts/06-run-g5-window.sh
     # pre-proof (zero spawns, exits NOT_RUN rc3): A5M2_G5_DRY=1 replaces GRANTED
 
+Vocab prep (card 48bdce5f, center order 2026-10-24): the worker template's ask lane names
+EXACTLY ONE rule `{ tool: get_goal, resource: { kind: any } }` (invocation-only; create/update
+stay default-deny; no global-any). Ask-lane = named channel -> real Control request (E1 same-
+requestId consume, E2 exact APPROVAL_DENIED face; ledger 2/2/1/0 unchanged). This blueprint is
+MALFORMED_DTO against the pre-vocab 71f parser BY DESIGN — repin to the fixed candidate package
+(vocab 48bdce5f + static producer), then REAL parser + DRY rc3; GO separate.
+
 Ports: **borrowed B slot 3184 host / 3499 mock** (`A5M2_G5_SLOT`, default B — root FINAL scheduling
 2026-10-24: G6 borrows A 3183/3498; G5 borrows B; B-Control's own batches take priority, this
 window queues after them). The borrow is exclusive and valid only while the slot owner runs no
