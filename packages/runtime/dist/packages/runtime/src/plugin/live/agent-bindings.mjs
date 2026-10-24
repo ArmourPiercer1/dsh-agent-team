@@ -6984,9 +6984,40 @@ export function createAgentBindings(deps) {
           }
           const g1RosterRow = domain.repositories.memberInstances.list(String(teamRoot))
             .find((row) => String(row?.instanceId ?? '') === String(instanceId))
-          const g1ProfileId = typeof g1RosterRow?.templateId === 'string' && g1RosterRow.templateId.length > 0
+          // ROOT 14:1x G1 PROFILE CARD (the one finite producer fix): the
+          // activation flow creates the child session BEFORE committing the
+          // MemberInstance row (DevPlan 19.2 journal order; the child-factory
+          // comment at :10010 — "the child artifact is durable before the
+          // member record"), so a FRESH-member mount legitimately sees no row
+          // yet. For that window ONLY the profile rides the ALREADY-VERIFIED
+          // `boundTemplate` of this very setup (resolveConsumptionViews →
+          // locateTemplate: the fresh-member hint bridges only when the row is
+          // absent AND the id re-resolves in the CURRENT owning-root bound
+          // blueprint — a miss throws there, never here). The durable row
+          // keeps precedence; a present row answering no templateId, or one
+          // CONFLICTING with the bound template, REFUSES; a cold mount
+          // missing its row still REFUSES (P0-1 §3.4 — the hint is not an
+          // authorization fallback). No raw hint read, no fake profile, no
+          // early durable row, no parallel identity account.
+          const g1RowProfileId = typeof g1RosterRow?.templateId === 'string' && g1RosterRow.templateId.length > 0
             ? String(g1RosterRow.templateId)
             : null
+          const g1BoundProfileId = typeof boundTemplate?.templateId === 'string' && boundTemplate.templateId.length > 0
+            ? String(boundTemplate.templateId)
+            : null
+          let g1ProfileId = null
+          if (g1RosterRow !== undefined) {
+            if (g1RowProfileId !== null && (g1BoundProfileId === null || g1BoundProfileId === g1RowProfileId)) {
+              g1ProfileId = g1RowProfileId
+            } else {
+              observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (the roster row for instance ${String(instanceId)} answers no templateId or conflicts with the bound template '${String(g1BoundProfileId)}' — no profile is invented)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': the durable roster row for instance '${String(instanceId)}' answers no templateId or conflicts with the bound blueprint template '${String(g1BoundProfileId)}' — the arm invents no profile identity`,
+              ), { code: 'alpha5-g1-arm-mount-refused' })
+            }
+          } else if (bindPath === 'fresh-member' && g1BoundProfileId !== null) {
+            g1ProfileId = g1BoundProfileId
+          }
           if (g1ProfileId === null) {
             observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (the durable roster answers no templateId for instance ${String(instanceId)} — the trusted profileId has no real producer)`)
             throw Object.assign(new Error(
