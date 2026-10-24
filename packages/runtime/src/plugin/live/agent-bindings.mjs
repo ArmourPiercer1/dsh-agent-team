@@ -360,6 +360,7 @@ import { A5_GOVERNED_FAMILIES, a5GovernedFamilyFor, publishPaMount, readPaCallFa
 // AUTH bridge — both already wired below).
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
+import { A5_EDIT_TOOL_NAME, createGovernedEditArm } from './governed-families/edit.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
 // A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer; the
 // spawn block below is the spawn writer's): the PRODUCTION WIRING over the
@@ -2515,6 +2516,7 @@ export function createAgentBindings(deps) {
       // reach it (the 9e-4 lesson).
       let a5TodoInject = null
       let a5WriteInject = null
+      let a5EditInject = null
       // B-IMAGE: the injection carries a FACTORY (identity mints at the
       // placement moment); the placed handle comes back through the factory's
       // closure for the ONE-table family registration below.
@@ -3182,6 +3184,91 @@ export function createAgentBindings(deps) {
           }
           a5WriteInject = Object.freeze({ arm: writeArm, description: nativeWriteDefinition.description })
           observations.push(`a5m2-write: arm BOUND for ${sessionId} (native=${writeNativeIdentity.slice(0, 32)} member=${writeMemberAgentId.slice(0, 16)} header=${writeSessionHeaderId.slice(0, 16)} root=${writeRootDir.slice(0, 32)})`)
+        }
+        // ── A5-M2 B-EDIT (root FS-EDIT card 2026-10-25): the governed edit
+        // arm. IDENTICAL law to the write block above: the native `edit` is
+        // captured through the MEMBER'S OWN scope for bind-time identity and
+        // description bytes only — its execute is NEVER re-entered; below the
+        // final edge the arm mints the reviewed ZERO-ARGUMENT post-consume
+        // edit closure (controlled-fs post-consume-edit) from the frozen plan
+        // alone. Same governed fs instance, no anchor no mount (config
+        // defect). The effect set carries M-02's pre-booked paired read:
+        // I:tool-invoke + F(read exact file) + F(write exact file).
+        if (planeCfg.editEnabled === true) {
+          const refuseEdit = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed edit mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-edit-arm-mount-refused'
+            observations.push(`a5m2-edit: arm-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseEdit('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          let nativeEditDefinition
+          try {
+            nativeEditDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_EDIT_TOOL_NAME, runtimeAgent) : undefined
+          } catch (error) {
+            throw refuseEdit(`the member-scoped tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
+          }
+          if (nativeEditDefinition === null || typeof nativeEditDefinition !== 'object') {
+            throw refuseEdit('no native edit definition is visible to this member scope (global layer, the joined preset generation, and the member own layer all resolve no such body) — the arm binds its definitionIdentity and description through the captured OBJECT')
+          }
+          const editNativeIdentity = definitionIdentityOf(nativeEditDefinition)
+          if (typeof editNativeIdentity !== 'string' || editNativeIdentity.length === 0) {
+            throw refuseEdit('the captured native definition answers no definitionIdentityOf identity')
+          }
+          const editMemberAgentId = typeof runtimeAgent?.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const editSessionHeaderId = typeof runtimeAgent?.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (editMemberAgentId === undefined || editSessionHeaderId === undefined) {
+            throw refuseEdit('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the arm carries no fallback for either')
+          }
+          const editRootDir = planeCfg.fsInstance?.rootDir
+          if (typeof editRootDir !== 'string' || editRootDir.length === 0) {
+            throw refuseEdit('editEnabled is true while planeCfg.fsInstance carries no rootDir — the edit namespace must be the SAME governed fs instance the read/write rows anchor on; a second root is a config defect')
+          }
+          let editArm
+          try {
+            editArm = createGovernedEditArm({
+              definitionIdentity: editNativeIdentity,
+              providerId: 'a5p5-plane',
+              realmId: a5PlaneRealmId,
+              memberAgentId: editMemberAgentId,
+              sessionHeaderId: editSessionHeaderId,
+              instanceRootDir: editRootDir,
+              bindingFacts: () => {
+                // The live dispatcher tuple behind THIS mount's edit
+                // placement (the write law verbatim): unreadable answers
+                // THROW; classify/edge refuse with it; fail closed.
+                const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(A5_EDIT_TOOL_NAME)
+                const binding = entry?.binding
+                if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+                  || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+                  || !Number.isInteger(binding.revision)
+                  || !Number.isInteger(binding.policyGeneration)
+                  || !Number.isInteger(binding.authorityGeneration)) {
+                  throw new Error('the live dispatcher binding behind edit is unreadable (no verified/ACTIVE tuple on the Guard dispatcher surface)')
+                }
+                return {
+                  bindingId: binding.bindingId,
+                  bindingRevision: binding.revision,
+                  policyGeneration: binding.policyGeneration,
+                  authorityGeneration: binding.authorityGeneration,
+                }
+              },
+              observe: (row) => observations.push(`a5m2-edit: ${String(row?.event ?? 'event')} ${String(row?.correlation ?? '')} ${String(row?.detail ?? '')}`),
+            })
+          } catch (error) {
+            throw refuseEdit(`the arm rejected its bind-time inputs (${String(error?.message ?? error).slice(0, 200)})`)
+          }
+          if (typeof nativeEditDefinition.description !== 'string' || nativeEditDefinition.description.length === 0) {
+            throw refuseEdit('the captured native definition carries no description — the same-name, same-meaning mount has no other source for it')
+          }
+          a5EditInject = Object.freeze({ arm: editArm, description: nativeEditDefinition.description })
+          observations.push(`a5m2-edit: arm BOUND for ${sessionId} (native=${editNativeIdentity.slice(0, 32)} member=${editMemberAgentId.slice(0, 16)} header=${editSessionHeaderId.slice(0, 16)} root=${editRootDir.slice(0, 32)})`)
         }
         // ── A5M2 PROVIDER-IDENTITY SUPPLY (candidate 2026-10-23 SITE 4: wired
         // ONCE for this mount, here and nowhere else) ───────────────────────
@@ -5185,10 +5272,11 @@ export function createAgentBindings(deps) {
             : undefined,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
+            ...(a5EditInject === null ? {} : { edit: a5EditInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
             ...(a5SpawnWiring === null ? {} : { spawn: a5SpawnWiring }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
@@ -6157,6 +6245,27 @@ export function createAgentBindings(deps) {
             providerIdentity: a5WriteInject.arm.providerId,
           })
           observations.push(`a5m2-write: family REGISTERED for ${sessionId} (placement=${String(writeFed.definitionIdentity).slice(0, 32)} family=${a5WriteInject.arm.familyId})`)
+        }
+        // B-EDIT registration: same law, same single fill point (the
+        // registry's shared read serves BOTH the plane-side facts and the
+        // durable verifier; a bound arm with no placement identity is a
+        // broken mount and refuses — no guessed key, no silent skip).
+        if (a5EditInject !== null) {
+          const editFed = a5PlaneValue?.placementFeed?.(A5_EDIT_TOOL_NAME)
+          if (typeof editFed?.definitionIdentity !== 'string' || editFed.definitionIdentity.length === 0) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed edit mount refused for '${sessionId}': the placed row answered no definition identity through the placement feed — the family registration has no trusted key`,
+            )
+            error.code = 'alpha5-edit-arm-mount-refused'
+            observations.push(`a5m2-edit: family-registration-REFUSED for ${sessionId} (no placement identity)`)
+            throw error
+          }
+          registerA5GovernedFamily(editFed.definitionIdentity, {
+            familyId: a5EditInject.arm.familyId,
+            adapterRevision: a5EditInject.arm.adapterRevision,
+            providerIdentity: a5EditInject.arm.providerId,
+          })
+          observations.push(`a5m2-edit: family REGISTERED for ${sessionId} (placement=${String(editFed.definitionIdentity).slice(0, 32)} family=${a5EditInject.arm.familyId})`)
         }
         // B-IMAGE registration: same law, same single fill point. The arm the
         // FACTORY built at placement is the source of the claim (its identity
