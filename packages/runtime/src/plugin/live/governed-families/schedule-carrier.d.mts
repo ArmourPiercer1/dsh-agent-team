@@ -29,11 +29,13 @@ export interface ScheduleCarrierIntent {
 export type ScheduleCarrierAdmissionResult = true | { readonly ok: false, readonly code: string, readonly detail?: string }
 
 export interface ScheduleTriggerCarrierDeps {
-  /** LIVE a5PlaneValue: paAdmit.open/edge + paTokenLedger.take/settle. */
+  /** LIVE a5PlaneValue: paAdmit.open/edge + paTokenLedger.take/settle. The
+   *  PA answers are validated AT RUNTIME by the carrier (kind/cancelled/
+   *  grant/…); the declaration stays honest-open, never a false-narrow. */
   readonly plane: {
     readonly paAdmit?: {
-      open: (walk: Record<string, unknown>) => Promise<{ kind?: string, cancelled?: boolean, grant?: unknown, paDurableMint?: unknown, request?: unknown, placementName?: unknown, paConstructionBinding?: unknown } | null | undefined>
-      edge: (walk: Record<string, unknown>) => Promise<{ kind?: string, cancelled?: boolean } | null | undefined>
+      open: (walk: Record<string, unknown>) => Promise<unknown>
+      edge: (walk: Record<string, unknown>) => Promise<unknown>
     }
     readonly paTokenLedger?: {
       take: (token: object | symbol, correlation?: string) => boolean
@@ -47,7 +49,10 @@ export interface ScheduleTriggerCarrierDeps {
 }
 
 export interface ScheduleTriggerCarrier {
-  readonly admit: (intent: ScheduleCarrierIntent) => Promise<ScheduleCarrierAdmissionResult>
+  /** Input is UNTRUSTED data validated at runtime (closed key set +
+   *  fingerprint law); the typed surface never pretends a caller-supplied
+   *  object is well-shaped. */
+  readonly admit: (intent: unknown) => Promise<ScheduleCarrierAdmissionResult>
   readonly dispose: () => void
   readonly SCHEDULE_CARRIER_REVISION: 1
 }

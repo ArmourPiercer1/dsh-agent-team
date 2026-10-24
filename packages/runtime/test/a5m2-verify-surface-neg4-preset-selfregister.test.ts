@@ -62,7 +62,7 @@ const PLANE = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', im
 
 // 639 read-only base: the family law this record carries is stated in the
 // committed glue as an observable fact — read it from disk (fail closed).
-const GLUE_SOURCE = readFileSync(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url), 'utf8')
+const GLUE_SOURCE = readFileSync(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href, 'utf8')
 
 const TRUSTED = {
   memberAgentId: 'agent-member-n4',

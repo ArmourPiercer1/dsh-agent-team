@@ -6,23 +6,34 @@
  */
 import { describe, expect, it } from 'vitest'
 import { createScheduleTriggerCarrier, SCHEDULE_CARRIER_TOOL_NAME } from '../src/plugin/live/governed-families/schedule-carrier.mjs'
+import type { ScheduleTriggerCarrierDeps } from '../src/plugin/live/governed-families/schedule-carrier.d.mts'
 
-function makePlane(answer = { kind: 'approved', grant: { g: 1 }, placementName: 'pn', paConstructionBinding: { b: 1 } }) {
-  const calls = { open: [], edge: [], taken: [], settled: [] }
+type PlaneLike = NonNullable<ScheduleTriggerCarrierDeps['plane']>
+type Calls = {
+  open: Array<Record<string, unknown>>
+  edge: Array<Record<string, unknown>>
+  taken: Array<{ token: object | symbol, correlation?: string }>
+  settled: Array<object | symbol>
+}
+type FakePlane = PlaneLike & { calls: Calls }
+type PaAnswer = { kind?: string, cancelled?: boolean, grant?: unknown, paDurableMint?: unknown, request?: unknown, placementName?: unknown, paConstructionBinding?: unknown }
+
+function makePlane(answer: PaAnswer = { kind: 'approved', grant: { g: 1 }, placementName: 'pn', paConstructionBinding: { b: 1 } }): FakePlane {
+  const calls: Calls = { open: [], edge: [], taken: [], settled: [] }
   return {
     calls,
     paAdmit: {
-      open: async (walk) => { calls.open.push(walk); return answer },
-      edge: async (walk) => { calls.edge.push(walk); return answer },
+      open: async (walk: Record<string, unknown>) => { calls.open.push(walk); return answer },
+      edge: async (walk: Record<string, unknown>) => { calls.edge.push(walk); return answer },
     },
     paTokenLedger: {
-      take: (token, correlation) => { calls.taken.push({ token, correlation }); return true },
-      settle: (token) => { calls.settled.push(token); return true },
+      take: (token: object | symbol, correlation?: string) => { calls.taken.push({ token, correlation }); return true },
+      settle: (token: object | symbol) => { calls.settled.push(token); return true },
     },
   }
 }
 
-const intent = (over = {}) => ({
+const intent = (over: Record<string, unknown> = {}) => ({
   ownerSessionId: 'sess-owner',
   taskId: 'task-1',
   revision: null,
@@ -39,8 +50,8 @@ const intent = (over = {}) => ({
   ...over,
 })
 
-function makeCarrier(planeOver, probeOver = {}) {
-  const plane = makePlane(planeOver)
+function makeCarrier(planeOver?: PaAnswer, probeOver: { probeFn?: () => boolean } = {}) {
+  const plane = makePlane(planeOver ?? undefined)
   let mounted = true
   const carrier = createScheduleTriggerCarrier({
     plane,
@@ -50,7 +61,7 @@ function makeCarrier(planeOver, probeOver = {}) {
       ? { mounted: true, generation: 'ScheduleService:true' }
       : { mounted: false, generation: '' }),
   })
-  return { plane, carrier, setMounted: (v) => { mounted = v } }
+  return { plane, carrier, setMounted: (v: boolean) => { mounted = v } }
 }
 
 describe('a5m2 schedule trigger carrier (shared binding interface)', () => {
@@ -78,7 +89,7 @@ describe('a5m2 schedule trigger carrier (shared binding interface)', () => {
     ]
     for (const bad of bads) {
       const res = await carrier.admit(bad)
-      expect(res.ok).toBe(false)
+      expect(res).not.toBe(true)
     }
     expect(plane.calls.open).toHaveLength(0)
   })
@@ -132,7 +143,9 @@ describe('a5m2 schedule trigger carrier (shared binding interface)', () => {
   it('a refused open settles the token and stays retryable (denial is not consumption)', async () => {
     let first = true
     const plane = makePlane()
-    plane.paAdmit.open = async (walk) => {
+    const pa = plane.paAdmit
+    if (pa === undefined) throw new Error('fake plane must carry paAdmit')
+    pa.open = async (walk: Record<string, unknown>) => {
       plane.calls.open.push(walk)
       const answer = first ? { kind: 'deny' } : { kind: 'approved', grant: { g: 2 } }
       first = false
@@ -145,7 +158,7 @@ describe('a5m2 schedule trigger carrier (shared binding interface)', () => {
       consumerProbe: () => ({ mounted: true, generation: 'ScheduleService:true' }),
     })
     const res = await carrier.admit(intent())
-    expect(res.ok).not.toBe(true)
+    expect(res).not.toBe(true)
     expect(plane.calls.settled).toHaveLength(1)
     expect(await carrier.admit(intent())).toBe(true) // retry lands (backoff law), no starvation
   })
