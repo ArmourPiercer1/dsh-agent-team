@@ -2469,6 +2469,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // actually placed it — census rows and unmounted worlds answer undefined
     // exactly as before (zero flip; no hardcoded roster, no new authority).
     if (g5Wiring !== null && g5Wiring.placementNames.includes(spelling)) return spelling
+    // A5M2-G6/LSP (root card 2026-10-24 @48bd, the same producer gap the 71f
+    // G5 branch closed, in its two remaining families): the session-query
+    // rows and the LSP row mount on THIS face through the SAME paAdmit, yet
+    // the resolver never named them — an invocation died at the binding
+    // identity gate (no-placement-name) before PA. THE REUSED SOURCES ARE
+    // THE TWO WIRINGS' OWN PLACEMENT LISTS (g6-session-query-wiring :496 and
+    // g3-lsp-wiring :463, ACTIVE rows only, the Team85/G3/G5 pattern): a
+    // spelling resolves iff THIS mount's wiring actually placed it — census
+    // rows and unmounted worlds answer undefined exactly as before (zero
+    // flip; no hardcoded roster, no new authority, no kernel fallback).
+    if (g6Wiring !== null && g6Wiring.placementNames.includes(spelling)) return spelling
+    if (lspWiring !== null && lspWiring.placementNames.includes(spelling)) return spelling
     // A5M2-PWSH: the governed pwsh row mounts at its FIXED native spelling,
     // resolved ONLY while THIS mount's wiring actually placed it (the reused
     // source is the wiring's own placement list; zero flip otherwise).
