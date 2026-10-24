@@ -351,7 +351,7 @@ describe('a5m2-spawn-plane-mount (d) REAL fail-closed walk', () => {
     SERVICE_STARTS.length = 0
     const { plane, dispose } = mountedPair()
     try {
-      const def = plane.definitions.find((d) => d.name === 'subagent')
+      const def = plane.definitions.find((d) => d.name === 'subagent_codex')
       if (def === undefined) throw new Error('no placed def')
       const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-pm-d1', signal: CONTROLLER.signal })
         .then(() => undefined, (e: unknown) => e as Error)
@@ -359,6 +359,14 @@ describe('a5m2-spawn-plane-mount (d) REAL fail-closed walk', () => {
       // MEASURED byte (this spec's first run): the plane's own PartA refuses
       // with its OWN code — the typed refusal rides the row's family name.
       expect(String(error?.message)).toContain('APPROVAL_REQUEST_UNAVAILABLE')
+      expect(SERVICE_STARTS).toHaveLength(0)
+      // THE BLOCK ON THE REAL PLANE MOUNT: the child-bearing row refuses
+      // BEFORE the plane walk (no APPROVAL byte even minted for it) and the
+      // captured body never runs — the mask stays placed, execution shut.
+      const blocked = plane.definitions.find((d) => d.name === 'subagent')
+      if (blocked === undefined) throw new Error('the blocked row must STILL be placed (masking surface untouched)')
+      await expect(blocked.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-pm-blocked', signal: CONTROLLER.signal }))
+        .rejects.toThrow(/P_B_SPAWN_CHILD_GOVERNANCE_UNGOVERNED/)
       expect(SERVICE_STARTS).toHaveLength(0)
     } finally {
       dispose()
@@ -374,7 +382,7 @@ describe('a5m2-spawn-plane-mount (e) REAL admitted consume on the kernel mint la
     const sink: string[] = []
     const { plane, dispose } = mountedPair({ controlLeg: mintingControlLeg(seen), sink })
     try {
-      const def = plane.definitions.find((d) => d.name === 'subagent')
+      const def = plane.definitions.find((d) => d.name === 'subagent_codex')
       if (def === undefined) throw new Error('no placed def')
       const outcome = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-pm-e1', signal: CONTROLLER.signal })
         .then((v) => ({ kind: 'value' as const, v }), (e: unknown) => ({ kind: 'error' as const, e: e as Error }))
