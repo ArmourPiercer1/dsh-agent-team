@@ -3468,6 +3468,12 @@ export function createAgentBindings(deps) {
               const resolved = g3Faces.resolveConfig(g3Faces.Config({ ...g3Cfg.sessionConfig }))
               g3Faces.validateConfig(resolved)
               return Object.freeze({
+                // THE REAL IMPLEMENTATION TYPE of the controlled route this
+                // assembly carries (consolidated card item 2): it is the
+                // materialized terminal-bash Config's OWN backendType — the
+                // type the published implementation declares for itself,
+                // never a label copied from the model's request.
+                backendType: resolved.backendType,
                 argv: Object.freeze([resolved.shellPath, ...(Array.isArray(resolved.shellArgs) ? resolved.shellArgs.map(String) : [])]),
                 rows: resolved.rows,
                 cols: resolved.cols,
@@ -3478,6 +3484,15 @@ export function createAgentBindings(deps) {
               return null
             }
           })()
+          // ITEM 2 (consolidated card): the identity binds to the REAL
+          // controlled-route implementation type(s) this assembly carries —
+          // exactly ONE here: the materialized Config's backendType. Every
+          // OTHER declared type is truthfully listed as UNCOVERED and
+          // answers NOTHING (a Host-side name existing never proves an
+          // implementation; the label must never impersonate one).
+          const g3CoveredTypes = Object.freeze(g3OpenBase === null ? [] : [g3OpenBase.backendType])
+          const g3Uncovered = Object.freeze([...g3DeclaredBackends].filter((t) => !g3CoveredTypes.includes(t)))
+          observations.push(`a5m2-g3: controlled-route types=[${g3CoveredTypes.join(',')}] UNCOVERED-declared=[${g3Uncovered.join(',')}] for ${sessionId} (uncovered types REFUSE, never impersonate)`)
           let g3OpenPlan = null
           const g3PremintOpenPlan = async () => {
             g3OpenPlan = null
@@ -3520,24 +3535,52 @@ export function createAgentBindings(deps) {
           }
           await g3PremintOpenPlan()
           g3RouteGeneration = { value: randomUUID(), revoked: false }
+          // ITEM 1a (consolidated card): the revoke must reach AGENT scope,
+          // not only row close. The EXISTING PUBLIC lifecycle event
+          // `agent/disposed` (Host core/agent runtime-types.ts:270, emitted
+          // by the registry at index.ts:514 on every handle dispose — the
+          // very call dropResidency awaits) revokes this mount's generation
+          // the moment the agent's residency drops or is replaced. No
+          // ledger: one subscription on the agent's own public event face
+          // (the same bus this file already uses for 'tools/result'); the
+          // unsubscribe, when the face offers one, rides toolDisposers.
+          if (typeof agentCtx?.on === 'function') {
+            try {
+              const g3DisposeUnsub = agentCtx.on('agent/disposed', () => {
+                if (g3RouteGeneration !== null) g3RouteGeneration.revoked = true
+              })
+              if (typeof g3DisposeUnsub === 'function') toolDisposers.push(g3DisposeUnsub)
+            } catch (error) {
+              observations.push(`a5m2-g3: agent/disposed subscription FAILED for ${sessionId}: ${String(error?.message ?? error).slice(0, 140)} — generation revoke keeps the row-close path only (disclosed)`)
+            }
+          }
           const g3PtyService = Object.freeze({
             backend: (type) => {
-              // THE ROUTE IDENTITY (user ruling 2 (a)/(c), center dispatch):
-              // the governed target is THIS mount's Team controlled route —
-              // the per-open one-shot backend this mount mints through the
-              // public TerminalSessionService.registerBackend (terminal/src/
-              // index.ts:125 @639ed01539) — bound to the MOUNT GENERATION.
-              // No unrelated public backend is ever named or tracked. The
-              // declared ∩ live law is KEPT (a type the service no longer
-              // registers answers nothing); a revoked generation (unmounted)
-              // answers nothing, so an approval made under a dead generation
-              // cannot be replayed under a live one.
+              // THE ROUTE IDENTITY (ruling 2 + consolidated card 1a/1b/2):
+              // declared ∩ LIVE ∩ COVERED, generation alive, AND the mount
+              // pairing — this closure's captured publication identity must
+              // EQUAL the CURRENTLY published one for (teamRoot, instanceId)
+              // (resolvePaMount re-read at every answer). Publishing a newer
+              // mount over the pair therefore invalidates THIS reader on its
+              // NEXT answer without any cooperation from it (a new mount's
+              // fresh generation alone never revokes an old closure — the
+              // pairing does); not-yet-published answers NOTHING. Every
+              // refusal is NAMED here and answers null → the row refuses at
+              // classify with P_TERM_TARGET_UNRESOLVED, zero port entry.
+              const currentIdentity = resolvePaMount(String(teamRoot), String(instanceId))?.identity
+              if (paMountIdentity === undefined || currentIdentity !== paMountIdentity) {
+                observations.push(`a5m2-g3: mount-identity REFUSED for '${String(type)}' (${paMountIdentity === undefined ? 'this mount is not yet published' : 'this mount was SUPERSEDED by a newer publication for the same pair'}) — the target answers NOTHING, zero port entry`)
+                return null
+              }
               const live = Array.isArray(g3Terminals?.listBackends?.()) ? g3Terminals.listBackends() : []
               return a5G3RouteIdentity({
                 type,
                 declared: [...g3DeclaredBackends],
                 live,
+                covered: g3CoveredTypes,
                 generation: g3RouteGeneration,
+                capturedIdentity: paMountIdentity,
+                currentIdentity,
               })
             },
             session: (ownerAgentId, sessionId) => {
