@@ -29,7 +29,7 @@
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../../../tests/paths.mjs'
@@ -170,12 +170,37 @@ function finish(rc) {
   try {
     mkdirSync(RUN_DIR, { recursive: true })
     writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, dry: DRY, rc, composedSha: COMPOSED_SHA, results, transcript: TRANSCRIPT.slice(-400) }, null, 2))
+    tl(`FINISH rc=${String(rc)}`)
   } finally { process.exit(rc) }
 }
+// [root timestamps 2026-10-24] an ISOLATED wallclock timeline for judging
+// secondary ordering (teardown vs closed-domain): records cleanup start,
+// first-OBSERVED arrivals of new Host-log lines (poll granularity 250ms —
+// an OBSERVATION time, honestly labelled, not the writer's time), FATAL,
+// and finish-rc. It writes a SEPARATE raw/timeline.log ONLY; the Host's own
+// log file is byte-untouched (never reordered, never rewritten); observer
+// untouched; not a gate — records only.
+function tl(msg) {
+  try { appendFileSync(join(RUN_DIR, 'timeline.log'), `${new Date().toISOString()} ${String(msg).slice(0, 340)}\n`) } catch { /* record-only */ }
+}
 async function cleanup() {
+  tl('CLEANUP-BEGIN')
   const notes = []
   try { if (mock !== null) { await mock.close(); notes.push('mock closed') } } catch (e) { notes.push(`mock close ERR ${String(e).slice(0, 120)}`) }
+  // [root timestamps] the ordering probe: was the closed-domain/FAILED line
+  // ALREADY in the Host log when cleanup began, or does it appear only under
+  // stop/teardown? Both sides get a labelled snapshot around instance.stop().
+  const hostLogTail = (tag) => {
+    try {
+      const lines = String(readFileSync(instance === null ? '/dev/null' : instance.logPath, 'utf8')).split('\n')
+      tl(`${tag} lines=${String(lines.length)} last=${lines[lines.length - 2] ?? ''}`)
+      const failed = lines.filter((l) => l.includes('[dsh-agent-team] bootstrap FAILED') || l.includes('remote mount: FAILED') || l.includes('remote mount: SKIPPED'))
+      tl(`${tag} refusal-lines-present=${String(failed.length)}${failed.length > 0 ? ` first=${failed[0].slice(0, 200)}` : ''}`)
+    } catch (e) { tl(`${tag} read-ERR ${String(e).slice(0, 120)}`) }
+  }
+  hostLogTail('HOSTLOG-SNAPSHOT-BEFORE-STOP')
   try { if (instance !== null) { const r = await instance.stop({ timeoutMs: 30_000 }); notes.push(`instance stopped killed=${r.killed} portFree=${r.portFree}`) } } catch (e) { notes.push(`instance stop ERR ${String(e).slice(0, 120)}`) }
+  hostLogTail('HOSTLOG-SNAPSHOT-AFTER-STOP')
   for (const p of [HOST_PORT, MOCK_PORT]) {
     try { const free = await waitForPortFree(p, 10_000); notes.push(`port ${p} free=${free}`) } catch (e) { notes.push(`port ${p} ERR ${String(e).slice(0, 120)}`) }
   }
@@ -346,10 +371,20 @@ const REMOTE_MOUNT_REFUSALS = Object.freeze([
 async function remoteMountGate({ readLog, childGone = () => false, budgetMs = 120_000, pollMs = 250 }) {
   const deadline = Date.now() + budgetMs
   let polls = 0
+  let seenLines = 0
   for (;;) {
     polls += 1
     if (childGone() === true) throw new Error('HOST_CHILD_EXITED before the Team Remote mounted: no team RPC was attempted')
     const text = String(readLog() ?? '')
+    // observation timestamps (root 2026-10-24): first-seen arrival of each
+    // new Host-log line — OBSERVATION time at <=pollMs granularity, honest
+    // about not being the writer's own timestamp.
+    const lines = text.split('\n')
+    while (seenLines < lines.length && lines[lines.length - 1] !== '') {
+      const line = lines[seenLines]
+      if (line.length > 0) tl(`HOSTLOG-observed L${String(seenLines + 1)}: ${line}`)
+      seenLines += 1
+    }
     const found = REMOTE_MOUNT_REFUSALS.find((entry) => entry.pattern.test(text))
     if (found !== undefined) {
       const line = text.split('\n').find((row) => found.pattern.test(row)) ?? found.name
@@ -625,6 +660,7 @@ main().then(
   () => {},
   async (e) => {
     const rc = String(e?.message ?? '').startsWith('CRIT-FAIL') ? 1 : 2
+    tl(`FATAL (${currentCriterion}) rc=${String(rc)} msg=${String(e?.message ?? e).slice(0, 240)}`)
     log(`FATAL (${currentCriterion}): ${String(e?.stack ?? e).slice(0, 500)}`)
     await cleanup()
     finish(rc)
