@@ -8,7 +8,7 @@
  * Never touches another PGID, never touches 3080, deletes nothing.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { appendFileSync, existsSync, mkdirSync, openSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { createConnection } from 'node:net'
@@ -97,6 +97,18 @@ for (const port of PORTS) portsAfter[String(port)] = await portFree(port)
 const locks = existsSync(HOME_ABS) ? spawnSync('bash', ['-c', `ls -la ${HOME_ABS}/*.lock 2>/dev/null; ls -la ${HOME_ABS}.lock 2>/dev/null`], { encoding: 'utf8' }).stdout.trim() : 'HOME absent'
 const fixtureLockAfter = sha256(FIXTURE_LOCK)
 facts.end = { verdict, exitInfo, elapsedMs: Date.now() - t0, portsAfter, lockState: locks, fixtureLockBefore, fixtureLockAfter, fixtureLockUnchanged: fixtureLockBefore === fixtureLockAfter, finalHomeBytes: duBytes(HOME_ABS), groupMembers: members(groupPgid), endedAt: new Date().toISOString() }
+facts.childExitEventAt = exitInfo?.at ?? null
 appendFileSync(join(OUT_DIR, 'monitor-facts.json'), `${JSON.stringify(facts, null, 2)}\n`)
 stampLine(`end verdict=${verdict} exit=${JSON.stringify(exitInfo)} ports=${JSON.stringify(portsAfter)} fixtureLockUnchanged=${String(facts.end.fixtureLockUnchanged)}`)
 process.exitCode = verdict === 'ok' && exitInfo !== null && exitInfo.code === 0 ? 0 : 1
+// Root's evidence requirement: the MONITOR's own exit code is captured by real
+// observation at exit time (not inferred later), together with the child's exit
+// event instant, and written back into monitor-facts.json.
+process.on('exit', (code) => {
+  try {
+    const observed = code === null || code === undefined ? process.exitCode : code
+    const patched = { ...facts, monitorExitCode: observed, monitorExitWasPlanned: observed === process.exitCode, monitorExitedAt: new Date().toISOString() }
+    writeFileSync(join(OUT_DIR, 'monitor-facts.json'), `${JSON.stringify(patched, null, 2)}\n`)
+    appendFileSync(LOG, `monitor own exit code=${String(observed)} at ${patched.monitorExitedAt} (child exit event at ${String(facts.childExitEventAt)})\n`)
+  } catch { /* the log line above is the fallback record */ }
+})

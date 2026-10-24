@@ -1,0 +1,87 @@
+{
+  "trace": [
+    {
+      "leg": "C-FRESH-HOME",
+      "ok": true,
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T05-19-07Z",
+      "at": "2026-10-24T05:19:07.582Z"
+    },
+    {
+      "leg": "C-MOUNT-CANDIDATE",
+      "ok": true,
+      "detail": "dsh-agent-team@0.1.1-alpha.2 row=…/host.js exports=.,./host,./spill-local,./client,./package.json",
+      "at": "2026-10-24T05:19:07.583Z"
+    },
+    {
+      "leg": "C-PORT-FREE",
+      "ok": true,
+      "detail": "port=3180 probe refused a connect",
+      "at": "2026-10-24T05:19:07.586Z"
+    },
+    {
+      "leg": "C-MOUNT-VALIDATE",
+      "ok": true,
+      "detail": "B-TEAM rev-2 face: no A-TODO gates, no permissionPolicy key, world-scoped fs root",
+      "at": "2026-10-24T05:19:07.587Z"
+    },
+    {
+      "leg": "C-PROFILE-LAYER-WRITTEN",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T05-19-07Z/profiles/web/cordis.patch.yml",
+      "at": "2026-10-24T05:19:07.587Z"
+    },
+    {
+      "leg": "C-MOCK-MODEL",
+      "ok": true,
+      "detail": "127.0.0.1:3497 scripted, exactly-one-call decide",
+      "at": "2026-10-24T05:19:07.596Z"
+    },
+    {
+      "leg": "C-BOOT",
+      "ok": true,
+      "detail": "http://127.0.0.1:3180/?token=REDACTED",
+      "at": "2026-10-24T05:19:09.854Z"
+    },
+    {
+      "leg": "C-PORT-EXPLICIT",
+      "ok": true,
+      "detail": "port=3180",
+      "at": "2026-10-24T05:19:09.854Z"
+    },
+    {
+      "leg": "C-RUNTIME-ABORT",
+      "ok": false,
+      "detail": "PLUGIN_BOOTSTRAP_FAILED: [dsh-agent-team] bootstrap FAILED: PermissionCoverageUnmanagedError: permission coverage gate failed for instance 'inst-leader': 15 unmanaged tool(s) on the final model-facing surface: ask_user_question (unknown-unmanaged), create_goal (unknown-unmanaged), exit_plan_mode (unknown-unmanaged), get_goa",
+      "at": "2026-10-24T05:19:10.114Z"
+    },
+    {
+      "leg": "child-exit",
+      "ok": true,
+      "detail": "exit code=0 signal=null",
+      "at": "2026-10-24T05:19:10.180Z"
+    },
+    {
+      "leg": "port-free-after-stop",
+      "ok": true,
+      "detail": "independent probe of 3180 after the child exit event",
+      "at": "2026-10-24T05:19:10.181Z"
+    },
+    {
+      "leg": "teardown",
+      "ok": true,
+      "detail": "childExit=true portFreeProbe=true worldBytes=11472/67108864 mockFree=true",
+      "at": "2026-10-24T05:19:10.184Z"
+    }
+  ],
+  "ok": false,
+  "error": "PLUGIN_BOOTSTRAP_FAILED: [dsh-agent-team] bootstrap FAILED: PermissionCoverageUnmanagedError: permission coverage gate failed for instance 'inst-leader': 15 unmanaged tool(s) on the final model-facing surface: ask_user_question (unknown-unmanaged), create_goal (unknown-unmanaged), exit_plan_mode (unknown-unmanaged), get_goa",
+  "teardown": {
+    "childExit": true,
+    "childExitDetail": "exit code=0 signal=null",
+    "portFreeProbe": true,
+    "mockPort": 3497,
+    "mockFree": true,
+    "worldBytes": 11472,
+    "worldCeilingBytes": 67108864
+  }
+}

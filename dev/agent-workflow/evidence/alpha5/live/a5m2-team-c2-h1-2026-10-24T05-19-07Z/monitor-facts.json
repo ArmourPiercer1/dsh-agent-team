@@ -1,0 +1,142 @@
+{
+  "stamp": "2026-10-24T05-19-07Z",
+  "monitorPid": 2,
+  "monitorPgid": 2,
+  "homeAbs": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T05-19-07Z",
+  "outDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/dev/agent-workflow/evidence/alpha5/live/a5m2-team-c2-h1-2026-10-24T05-19-07Z",
+  "limits": {
+    "WALL_MS": 300000,
+    "HOME_CEILING": 67108864,
+    "MIN_FREE": 6442450944,
+    "PORTS": [
+      3180,
+      3497,
+      3498
+    ]
+  },
+  "samples": [
+    {
+      "elapsedMs": 1003,
+      "homeBytes": 4872,
+      "dfAvail": 8848265216
+    },
+    {
+      "elapsedMs": 2011,
+      "homeBytes": 4872,
+      "dfAvail": 8848265216
+    },
+    {
+      "elapsedMs": 3020,
+      "homeBytes": 11472,
+      "dfAvail": 8848162816
+    },
+    {
+      "elapsedMs": 4028,
+      "homeBytes": 11472,
+      "dfAvail": 8848224256
+    },
+    {
+      "elapsedMs": 5038,
+      "homeBytes": 11472,
+      "dfAvail": 8848142336
+    },
+    {
+      "elapsedMs": 6045,
+      "homeBytes": 11472,
+      "dfAvail": 8847855616
+    },
+    {
+      "elapsedMs": 7055,
+      "homeBytes": 11472,
+      "dfAvail": 8847847424
+    },
+    {
+      "elapsedMs": 8063,
+      "homeBytes": 11472,
+      "dfAvail": 8847847424
+    },
+    {
+      "elapsedMs": 9072,
+      "homeBytes": 11472,
+      "dfAvail": 8847847424
+    },
+    {
+      "elapsedMs": 10079,
+      "homeBytes": 11472,
+      "dfAvail": 8847847424
+    },
+    {
+      "elapsedMs": 11087,
+      "homeBytes": 11472,
+      "dfAvail": 8847839232
+    },
+    {
+      "elapsedMs": 12096,
+      "homeBytes": 11472,
+      "dfAvail": 8847839232
+    },
+    {
+      "elapsedMs": 13109,
+      "homeBytes": 11472,
+      "dfAvail": 8847839232
+    },
+    {
+      "elapsedMs": 14118,
+      "homeBytes": 11472,
+      "dfAvail": 8847835136
+    },
+    {
+      "elapsedMs": 15130,
+      "homeBytes": 11472,
+      "dfAvail": 8847831040
+    },
+    {
+      "elapsedMs": 16139,
+      "homeBytes": 11472,
+      "dfAvail": 8847826944
+    },
+    {
+      "elapsedMs": 17147,
+      "homeBytes": 11472,
+      "dfAvail": 8847822848
+    },
+    {
+      "elapsedMs": 18158,
+      "homeBytes": 11472,
+      "dfAvail": 8847822848
+    }
+  ],
+  "breaches": [],
+  "startedAt": "2026-10-24T05:19:07.110Z",
+  "child": {
+    "pid": 12,
+    "pgid": 12,
+    "launchedAt": "2026-10-24T05:19:07.120Z",
+    "distinctFromMonitor": "NEW group led by the runner itself, distinct from the monitor"
+  },
+  "end": {
+    "verdict": "ok",
+    "exitInfo": {
+      "code": 1,
+      "signal": null,
+      "at": "2026-10-24T05:19:25.126Z"
+    },
+    "elapsedMs": 18178,
+    "portsAfter": {
+      "3180": true,
+      "3497": true,
+      "3498": true
+    },
+    "lockState": "",
+    "fixtureLockBefore": "dad670ae749c2da364b42d19aa3eacc0ec0f01b60d1c1009bff5ef37fb35217a",
+    "fixtureLockAfter": "dad670ae749c2da364b42d19aa3eacc0ec0f01b60d1c1009bff5ef37fb35217a",
+    "fixtureLockUnchanged": true,
+    "finalHomeBytes": 11472,
+    "groupMembers": [],
+    "endedAt": "2026-10-24T05:19:25.307Z"
+  },
+  "childExitEventAt": "2026-10-24T05:19:25.126Z",
+  "monitorExitCode": 1,
+  "monitorExitWasPlanned": true,
+  "monitorExitedAt": "2026-10-24T05:19:25.308Z"
+}
