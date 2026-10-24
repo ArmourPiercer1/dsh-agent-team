@@ -2176,6 +2176,15 @@ export async function apply(ctx, config) {
                     return null;
                 facade[key] = value.bind(source);
             }
+            // OPTIONAL FORK SEAM (root 2026-10-26 fork ruling): the ruled fork
+            // publishes registerTriggerAdmission as a public assembly method; the
+            // original plugin does NOT and must mount byte-identically. Captured
+            // BY NAME only when this generation answers it — never required, never
+            // invented, same stable source receiver.
+            const forkSeam = source['registerTriggerAdmission'];
+            if (typeof forkSeam === 'function') {
+                facade['registerTriggerAdmission'] = forkSeam.bind(source);
+            }
             return Object.freeze(facade);
         };
         // B-SCHEDULE LIFECYCLE FACE (root 2026-10-24 residual, user-approved
