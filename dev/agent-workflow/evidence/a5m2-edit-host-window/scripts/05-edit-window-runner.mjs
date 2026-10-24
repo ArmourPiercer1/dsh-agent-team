@@ -460,6 +460,19 @@ async function ledgerFactsAll(factType, needle) {
   hits.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
   return hits
 }
+function permissionRuleShape(fact) {
+  const p = fact?.payload ?? {}
+  const rule = Array.isArray(p.rules) ? p.rules[0] : (p.rule ?? p ?? {})
+  const m = rule.matcher ?? rule ?? {}
+  const target = m.resource ?? m.path ?? m.value ?? null
+  const op = p.operation ?? p.op ?? rule.operation ?? rule.effect ?? null
+  return {
+    matcherKind: m.kind ?? null,
+    target: typeof target === 'string' ? target : null,
+    op: op ?? null,
+    hasExactRule: m.kind === 'exact' && typeof target === 'string' && /(^|\/)notes\.txt$/.test(target),
+  }
+}
 async function ledgerFactPresent(factType, needle) {
   let afterSequence = 0
   for (let pageNo = 0; pageNo < 50; pageNo += 1) {
@@ -643,7 +656,7 @@ async function main() {
         const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
         if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
           const known = steps.get(callId)
-          callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '') })
+          callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? ''), isError: m?.is_error === true })
         }
         continue
       }
@@ -923,14 +936,13 @@ async function main() {
   // permission-mutated ledger fact whose payload carries the rule verbatim.
   currentCriterion = 'E8a'
   await apiPrompt(currentRoot, 'GRANT-EDIT', 'ehw-e8')
-  const grantOutcome = await waitFor('GRANT-EDIT result', 60_000, () => {
-    const hit = callResults.find((r) => r.step === stepOuter('GRANT-EDIT'))
-    return hit ? hit.text : null
-  })
+  const grantHit = await waitFor('GRANT-EDIT result', 60_000, () => callResults.find((r) => r.step === stepOuter('GRANT-EDIT')) ?? null)
   const e8Fact = await ledgerFactPresent('permission-mutated', 'notes.txt')
-  check('E8a', 'grant (87): Leader call EXECUTED without rejection AND durable permission-mutated fact carries the exact rule',
-    e8Fact !== null && !/rejected|NOT_LEADER|unwired|"isError":true/i.test(String(grantOutcome)),
-    `fact=${JSON.stringify(e8Fact).slice(0, 220)} result=${String(grantOutcome).slice(0, 260)}`)
+  const e8Shape = permissionRuleShape(e8Fact)
+  check('E8a', 'grant (87): structured success (captured isError===false, no rejection text) AND durable permission-mutated fact with the EXACT rule on the notes.txt target (substring is not enough; op recorded)',
+    e8Fact !== null && grantHit?.isError === false && !/rejected|NOT_LEADER|unwired/i.test(String(grantHit?.text))
+    && e8Shape.hasExactRule === true,
+    `factSeq=${String(e8Fact?.sequence)} shape=${JSON.stringify(e8Shape)} isError=${String(grantHit?.isError)} result=${String(grantHit?.text).slice(0, 240)}`)
 
   // [E8b probe, non-blocking] EDIT behavior after the grant overlay is
   // RECORDED, never pre-claimed: either the PA lane consumed the overlay
@@ -958,7 +970,13 @@ async function main() {
   results.push({
     critId: 'E8b', blocking: false, ok: null,
     name: 'post-grant EDIT behavior probe (recorded honestly; consumed-vs-still-ask, NEVER a PASS claim)',
-    verdict: e8bReq === null ? 'no-pending (overlay-consumed shape)' : 'still-ask (pending created; denied for cleanup)',
+    verdict: e8bReq !== null
+      ? 'still-ask (pending created; denied for cleanup)'
+      : (/refused|P_EDIT|IO_POLICY|APPROVAL_DENIED|denied|Error/i.test(String(e8bRes))
+        ? 'no-pending, outcome NOT success — cause NOT recorded, NO overlay-effect claim'
+        : (sha256(target) !== e8bShaBefore
+          ? 'overlay-effect (bytes moved on success)'
+          : 'no-pending, no byte move — cause NOT recorded, NO overlay-effect claim')),
     detail: `pending=${String(e8bReq)} shaBefore=${e8bShaBefore} shaNow=${sha256(target)} result=${String(e8bRes).slice(0, 260)}`,
   })
   log(`E8b PROBE (non-blocking): pending=${String(e8bReq)} sha ${e8bShaBefore.slice(0, 12)}->${sha256(target).slice(0, 12)}`)
@@ -968,10 +986,8 @@ async function main() {
   // (carrier coverage is part of the fixture; no silent pass).
   currentCriterion = 'E9a'
   await apiPrompt(currentRoot, 'REVOKE-EDIT', 'ehw-e9')
-  const revokeOutcome = await waitFor('REVOKE-EDIT result', 60_000, () => {
-    const hit = callResults.find((r) => r.step === stepOuter('REVOKE-EDIT'))
-    return hit ? hit.text : null
-  })
+  const revokeHit = await waitFor('REVOKE-EDIT result', 60_000, () => callResults.find((r) => r.step === stepOuter('REVOKE-EDIT')) ?? null)
+  const revokeOutcome = String(revokeHit?.text ?? '')
   // [root false-pass card 1 fix] the FIRST permission-mutated row from seq 0
   // would happily be E8a's GRANT — the revoke must be proven by a NEW fact
   // strictly after the grant fact, with a DISTINCT payload, plus structured
@@ -980,10 +996,12 @@ async function main() {
   const e9New = e9All.filter((f) => e8Fact?.sequence != null && typeof f.sequence === 'number' && f.sequence > e8Fact.sequence)
   const e9Last = e9New.length > 0 ? e9New[e9New.length - 1] : null
   const e9PayloadDistinct = e9Last !== null && JSON.stringify(e9Last.payload) !== JSON.stringify(e8Fact?.payload)
-  const e9Structured = String(revokeOutcome).length > 0 && !/rejected|NOT_LEADER|unwired|"isError":true|error/i.test(String(revokeOutcome))
-  check('E9a', 'revoke (88): structured-success call AND a NEW permission-mutated fact with sequence STRICTLY after the grant fact and a DISTINCT payload (the grant fact can no longer impersonate the revoke)',
-    e9Last !== null && e9PayloadDistinct && e9Structured,
-    `grantSeq=${String(e8Fact?.sequence)} newFacts=${JSON.stringify(e9New).slice(0, 260)} payloadDistinct=${String(e9PayloadDistinct)} structured=${String(e9Structured)} result=${String(revokeOutcome).slice(0, 240)}`)
+  const e9Shape = permissionRuleShape(e9Last)
+  const e9OpOk = e9Shape.op === null ? true : /revoke/i.test(String(e9Shape.op)) // op field, WHEN present, must be the revoke family
+  const e9Structured = revokeHit?.isError === false && String(revokeOutcome).length > 0 && !/rejected|NOT_LEADER|unwired|error/i.test(String(revokeOutcome))
+  check('E9a', 'revoke (88): structured success (captured isError===false) AND a NEW permission-mutated fact STRICTLY after the grant seq, DISTINCT payload, EXACT rule on notes.txt, op (when present) = revoke family',
+    e9Last !== null && e9PayloadDistinct && e9Structured && e9Shape.hasExactRule === true && e9OpOk,
+    `grantSeq=${String(e8Fact?.sequence)} newSeq=${String(e9Last?.sequence)} shape=${JSON.stringify(e9Shape)} payloadDistinct=${String(e9PayloadDistinct)} isError=${String(revokeHit?.isError)} result=${String(revokeOutcome).slice(0, 240)}`)
 
   // [E9b hard, zero-residue] after the revoke, a fresh EDIT must NOT execute
   // silently: bytes MUST be unchanged. A pending row reappearing is the
