@@ -283,6 +283,7 @@ export async function createG2TeamMount(input = {}) {
         ...(typeof webMount.readProviderFacts === 'function' ? { readProviderFacts: webMount.readProviderFacts } : {}),
         lanes: webMount.lanes,
         ...(webMount.face !== null && typeof webMount.face === 'object' ? { fixedFace: webMount.face } : {}),
+        ...(typeof webMount.resolveWebCenterPorts === 'function' ? { resolveWebCenterPorts: webMount.resolveWebCenterPorts } : {}),
         descriptions: Object.freeze({
           web_fetch: String(readNative('web_fetch')?.description ?? ''),
           web_search: String(readNative('web_search')?.description ?? ''),
@@ -509,7 +510,7 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
  * contract: an honest inability to row is a THROW at build, never an
  * empty rowset.
  */
-export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions, fixedFace } = {}) {
+export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions, fixedFace, resolveWebCenterPorts } = {}) {
   if (lanes === null || typeof lanes !== 'object' || lanes.web_fetch === undefined || lanes.web_fetch.provider === undefined) {
     throw new Error('G2_SUPPLY_ENTRY_INVALID: the g2Web backend requires the seam-branded fixed lanes (createG2WebFixedLanes product); without them the plane fail-closes by law, so nothing is injected here either')
   }
@@ -543,13 +544,38 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
       if (fixedFace === null || typeof fixedFace !== 'object' || typeof fixedFace.fetch !== 'function') {
         throw new Error('G2_WEB_FIXED_FACE_ABSENT: a mounted web_fetch row without the fixed provider face is a mount defect, never a fall-back to the shared seam')
       }
-      const url = args?.url
-      if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
-      const out = await fixedFace.fetch({ url }, (exec?.signal) ?? undefined)
-      // the row-body answer law (measured at the consumption edge): the
-      // edge returns the invoke answer and the plane reads ran.value —
-      // the same {ok,value} struct the g2Mcp bound body answers with.
-      return Object.freeze({ ok: true, value: out })
+      // ROOT 23bc-CARD ② in production: EVERY governed web call announces
+      // itself in the supply's inFlight ledger through beginCall — the REAL
+      // grant (exec.g2ConsumedProof.grant, the plane edge's one-shot
+      // witness) and the REAL current call (exec.g2ApprovedCallId) are
+      // announced SEPARATELY; nothing is conflated, nothing is invented
+      // (effects ride the proof's own real carrier when it carries them).
+      // The closer runs on completion AND on refusal (finally) — the
+      // ledger never leaks an entry.
+      const announced = typeof resolveWebCenterPorts === 'function' ? resolveWebCenterPorts() : null
+      if (announced === null || announced.ports === null || typeof announced.ports.beginCall !== 'function') {
+        throw new Error('G2_WEB_CENTER_PORTS_ABSENT: the gateway trio (beginCall) has no entry for this team root — a governed web call without its inFlight gate is refused typed, never run unannounced')
+      }
+      const closer = announced.ports.beginCall({
+        grant: exec?.g2ConsumedProof?.grant,
+        call: { callId: exec?.g2ApprovedCallId, realmId },
+        member: { teamSessionId: announced.assemblyId, instanceId: String(exec?.agent?.id ?? '') },
+        ...(exec?.g2ConsumedProof?.effects !== undefined ? { effects: exec.g2ConsumedProof.effects } : {}),
+        placement: { name: `web_${row.toolName}` },
+        assemblyId: announced.assemblyId,
+        proof: exec?.g2ConsumedProof,
+      })
+      try {
+        const url = args?.url
+        if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
+        const out = await fixedFace.fetch({ url }, (exec?.signal) ?? undefined)
+        // the row-body answer law (measured at the consumption edge): the
+        // edge returns the invoke answer and the plane reads ran.value —
+        // the same {ok,value} struct the g2Mcp bound body answers with.
+        return Object.freeze({ ok: true, value: out })
+      } finally {
+        closer() // completion AND refusal both settle: one live context per grant, then GONE
+      }
     },
   }))
   return Object.freeze({
