@@ -118,9 +118,27 @@ export function createG2FixedWebFace (provider, { searchProvider } = {}) {
  */
 export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, consumeEdge, searchOriginFacts } = {}) {
   const decline = (code, message) => ({ ok: false, error: { code, message, sideEffectUnknown: false } })
+  // CALL-SCOPED in-flight relay (root 06:0x follow-through): the row's
+  // execution entry announces the REAL current call while it runs and
+  // clears it in `finally` — a transient slot, not a ledger (nothing
+  // persists, nothing is judged here). resolveCallContext still wins if
+  // the entry prefers a resolver of its own.
+  const inFlight = new Map()
+  const beginCall = (context) => {
+    const callId = String(context?.callId ?? '')
+    if (callId.length === 0) throw new TypeError('beginCall: the REAL current call identity is required; nothing announces an absent call')
+    if (inFlight.has(callId)) throw new Error(`G2_WEB_CALL_INFLIGHT: call ${JSON.stringify(callId)} is already announced; one live context per call, never overwritten`)
+    inFlight.set(callId, Object.freeze({ ...context }))
+    let closed = false
+    return () => { if (!closed) { closed = true; inFlight.delete(callId) } }
+  }
   const resolve = (grantId) => {
-    if (typeof resolveCallContext !== 'function') return undefined
-    try { return resolveCallContext(String(grantId)) } catch { return undefined }
+    // grant -> call identity: the presented grantId IS the call identity
+    // on this plane (the read's own law); a context whose callId ever
+    // disagrees is refused, never trusted.
+    const ctx = typeof resolveCallContext === 'function' ? (() => { try { return resolveCallContext(String(grantId)) } catch { return undefined } })() : inFlight.get(String(grantId))
+    if (ctx !== undefined && ctx !== null && typeof ctx.callId === 'string' && ctx.callId !== String(grantId)) return undefined
+    return ctx
   }
   const resolveSearchOrigin = () => {
     const origin = searchOriginFacts === null || typeof searchOriginFacts !== 'object' ? undefined : searchOriginFacts.origin
@@ -186,5 +204,5 @@ export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, con
       return { ok: true, value: Object.freeze({ effects: Object.freeze({ effects: [...(facts?.effects?.effects ?? [])] }), consumedProof: proof }) }
     },
   })
-  return Object.freeze({ grantAuthority, factsSource, resolveSearchOrigin })
+  return Object.freeze({ grantAuthority, factsSource, resolveSearchOrigin, beginCall })
 }
