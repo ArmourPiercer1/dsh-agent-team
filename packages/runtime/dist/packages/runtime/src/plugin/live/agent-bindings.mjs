@@ -2533,6 +2533,13 @@ export function createAgentBindings(deps) {
       // deployment evidence, captured into a plane inject below (null = the
       // family is not deployed on this mount: zero flip).
       let a5G3TerminalInject = null
+      // A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25):
+      // the inject for the GUARD-SEAM entry, built below from
+      // `planeCfg.runCode` (null = not deployed = zero flip). NOT the
+      // retired placement arm (that token is pinned-retired): the guard
+      // registers nothing and wraps nothing — it hands the plane ONE
+      // pre-execute listener's worth of deployment evidence.
+      let a5G3RunCodeGuardInject = null
       // A5M2-G5 MOUNT-ARM (this lane's declaration, hoisted the same way):
       // the backends.goal bag built below; null = no inject = the plane call is
       // byte-identical to the pre-G5 assembly. The pairing keys land AFTER the
@@ -4731,6 +4738,143 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-g3: inject armed for ${sessionId} (evidence keys=${Object.keys(g3Cfg).sort().join(',')} terminals=${g3Terminals === undefined || g3Terminals === null ? 'ABSENT' : 'present'} subprocess=${g3Subprocess === undefined || g3Subprocess === null ? 'ABSENT' : 'present'} jobs=${g3LiveJobs !== null ? 'live-accessor(probe-present)' : typeof deps.jobs === 'function' ? 'accessor-probe-abstained(no-registry-face-now; bg refuses typed)' : 'no-accessor(bg refuses typed)'})`)
         }
+        // ── A5M2 G3 B-PTC run_code GUARD inject (root FINAL LIMITED ruling
+        // 2026-10-25; the a5G3TerminalInject capture law, the guard-seam
+        // shape) ── the Team-plane owner PUBLISHES deployment evidence under
+        // `planeCfg.runCode`: providerId ONLY. `declared` (the old
+        // deployer-declared budget pair) is REFUSED: the ruling withdrew the
+        // mandatory-total-cap reading; the ACTUAL mapping carries the honest
+        // NOT-IMPLEMENTED disclosure leaf, and a declared number no
+        // mechanism enforces would be fake evidence. ABSENT = zero flip.
+        // What THIS side owns: the LIVE member-scoped native face (the 85
+        // capture-once law runs INSIDE the guard builder; `undefined`/throw
+        // is legal and lands the DECLARED-INACTIVE census — PTC worlds
+        // only), the REAL member identity pair (the todo capture law), the
+        // LIVE ptcFacts supplier reading ONLY public faces, and the CURRENT
+        // dispatcher binding reader (the todo law verbatim).
+        const g3PtcCfg = planeCfg.runCode
+        if (g3PtcCfg !== undefined && g3PtcCfg !== null) {
+          const refuseG3Ptc = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-PTC run_code guard refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-g3-runcode-mount-refused'
+            observations.push(`a5m2-g3-ptc: guard-inject-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (typeof g3PtcCfg.providerId !== 'string' || g3PtcCfg.providerId.length === 0) {
+            throw refuseG3Ptc('planeCfg.runCode.providerId is required (the family entry carries the provider identity verbatim)')
+          }
+          if (g3PtcCfg.declared !== undefined && g3PtcCfg.declared !== null) {
+            throw refuseG3Ptc('planeCfg.runCode.declared is WITHDRAWN by the root final limited ruling — the total-count cap is NOT-IMPLEMENTED and DISCLOSED; a declared number no mechanism enforces is fake evidence (remove the key)')
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseG3Ptc('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const rcMemberAgentId = typeof runtimeAgent.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const rcSessionHeaderId = typeof runtimeAgent.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (rcMemberAgentId === undefined || rcSessionHeaderId === undefined) {
+            throw refuseG3Ptc('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the guard carries no fallback for either')
+          }
+          const rcReadNative = (name) => (
+            typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+          )
+          const rcConfined = planeCfg.confinedProvider
+          const rcLauncher = typeof rcConfined?.assembly?.launcherPath === 'string' ? rcConfined.assembly.launcherPath : ''
+          const rcEnforcementText = rcLauncher === ''
+            ? 'confine-unset (host sandbox default)'
+            : `landlock-launcher pinned (sha256:${String(rcConfined?.assembly?.launcherSha256 ?? '').slice(0, 16)})`
+          const rcPtcFacts = () => {
+            let runtime
+            try {
+              runtime = typeof deps.ptcRuntime === 'function' ? deps.ptcRuntime() : undefined
+            } catch {
+              runtime = undefined // ctx.get throws on an unregistered token — honest absence
+            }
+            const language = typeof runtime?.language === 'string' && runtime.language.length > 0 ? runtime.language : null
+            const isolation = typeof runtime?.isolation === 'string' && runtime.isolation.length > 0 ? runtime.isolation : null
+            const runtimeIdentity = language === null || isolation === null
+              ? null
+              : `ptc-runtime:${String(runtime?.constructor?.name ?? 'unknown')}:${language}:${isolation}`
+            const interpreter = runtimeIdentity === null
+              ? null
+              : Object.freeze({ runtimeIdentity, language })
+            const timeoutFace = runtime?.timeout
+            const timeout = timeoutFace !== null && typeof timeoutFace === 'object'
+              && Number.isFinite(timeoutFace.defaultMs) && Number.isFinite(timeoutFace.maxMs)
+              ? Object.freeze({ defaultMs: timeoutFace.defaultMs, maxMs: timeoutFace.maxMs })
+              : null
+            let mode = null
+            try {
+              const sp = typeof deps.sandboxPolicy === 'function' ? deps.sandboxPolicy() : undefined
+              const policy = sp?.resolve?.({ session: runtimeAgent.session })
+              if (typeof policy?.mode === 'string' && policy.mode.length > 0) mode = policy.mode
+            } catch {
+              mode = null // an unreadable effective policy is honest absence — the guard refuses typed
+            }
+            const effectiveEnvelope = mode === null ? null : Object.freeze({ mode, enforcement: rcEnforcementText })
+            let capabilityList = null
+            try {
+              const surface = agentCtx.tools.schemas(runtimeAgent)
+              if (Array.isArray(surface)) {
+                capabilityList = surface
+                  .map((def) => (def !== null && typeof def === 'object' && typeof def.name === 'string' ? def.name : null))
+                  .filter((n) => typeof n === 'string' && n !== 'run_code')
+              }
+            } catch {
+              capabilityList = null
+            }
+            const channelDigest = capabilityList === null
+              ? null
+              : `sha256:${createHash('sha256').update(JSON.stringify([...capabilityList].sort())).digest('hex')}`
+            // THE ACTUAL BUDGET MAPPING (root final limited ruling): NO
+            // budget numbers are supplied — maxParallelSubCalls is a PRIVATE
+            // registry field (index.ts:839) and the total-count cap has ZERO
+            // face in the 639 tree; the adapter carries the disclosure leaf.
+            // Nothing observed is faked; nothing faked is observed.
+            return Object.freeze({
+              interpreter,
+              effectiveEnvelope,
+              timeout,
+              childChannel: Object.freeze({ capabilityList, channelDigest }),
+            })
+          }
+          a5G3RunCodeGuardInject = Object.freeze({
+            providerId: g3PtcCfg.providerId,
+            memberAgentId: rcMemberAgentId,
+            sessionHeaderId: rcSessionHeaderId,
+            readNative: rcReadNative,
+            ptcFacts: rcPtcFacts,
+            bindingFacts: (toolName) => {
+              // The CURRENT dispatcher entry behind THIS agent's view of
+              // THAT tool, read LIVE through the Guard dispatcher's own
+              // surface (the terminal/todo reader law verbatim: an
+              // unverified/ACTIVE-less/malformed tuple answers NOTHING).
+              const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(String(toolName))
+              const binding = entry?.binding
+              if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+                || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+                || !Number.isInteger(binding.revision)
+                || !Number.isInteger(binding.policyGeneration)
+                || !Number.isInteger(binding.authorityGeneration)) {
+                throw new Error(`the live dispatcher binding behind ${String(toolName)} is unreadable (no verified/ACTIVE tuple on the Guard dispatcher surface)`)
+              }
+              return {
+                bindingId: binding.bindingId,
+                bindingRevision: binding.revision,
+                policyGeneration: binding.policyGeneration,
+                authorityGeneration: binding.authorityGeneration,
+              }
+            },
+          })
+          const rcSupplyCensus = (() => {
+            const f = rcPtcFacts()
+            return `interpreter=${f.interpreter === null ? 'NOT_READY(no-ptc-runtime-face)' : 'live'} envelope.mode=${f.effectiveEnvelope === null ? 'NOT_READY(sandboxPolicy.resolve-unreadable)' : 'live'} envelope.enforcement=declared(${rcEnforcementText}) timeout=${f.timeout === null ? 'absent(null-legal)' : 'live'} capabilityList=${f.childChannel.capabilityList === null ? 'NOT_READY(schemas-unreadable)' : `live(${String(f.childChannel.capabilityList.length)})`} budgets=disclosed(NOT-IMPLEMENTED total-cap per root final limited ruling; no fake observations)`
+          })()
+          observations.push(`a5m2-g3-ptc: guard-inject armed for ${sessionId} (evidence keys=${Object.keys(g3PtcCfg).sort().join(',')} ${rcSupplyCensus})`)
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -4804,7 +4948,7 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -4818,6 +4962,12 @@ export function createAgentBindings(deps) {
             // row the plane never receives the deployment evidence and the
             // post-publish registration reads no wiring face -> mount-refused.
             ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
+            // A5M2 G3 B-PTC run_code GUARD (root final limited ruling): the
+            // audited pair — the guard names a5G3RunCodeGuardInject, THIS row
+            // carries it to the plane's CLOSED `backends.runCodeGuard` key
+            // (a lost row is the 760364998 class the union-c1 spec measures;
+            // the plane reads input.backends?.runCodeGuard).
+            ...(a5G3RunCodeGuardInject === null ? {} : { runCodeGuard: a5G3RunCodeGuardInject }),
             // A5M2-B-TEAM-WIRE (this lane's row in the shared backends union).
             ...(a5TeamOpsInject === null ? {} : { teamOps: a5TeamOpsInject }),
             // A5-M2 B-SUBAGENT-CONTROL-WIRING (this lane's row in the shared
@@ -5978,6 +6128,53 @@ export function createAgentBindings(deps) {
           for (const registration of g3Registrations) {
             registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
             observations.push(`a5m2-g3: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
+        }
+
+        // ── A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling): the
+        // ONE agent-scoped `tools/pre-execute` listener installs on the REAL
+        // scoped face (agentCtx — the same surface
+        // installParameterPermissionListener rides; the AGENT-SCOPED law of
+        // operation-permission/pre-execute-adapter.ts:109), the disposer
+        // rides the shared toolDisposers drain; THEN the paired family
+        // registration at the settled fill point (post publish, every
+        // sibling's law). ZERO shadow registration: nothing named
+        // 'run_code' is registered anywhere — the ledger key is the
+        // RESERVED NATIVE's OWN definition identity read through the
+        // plane's identity seam; a moved/unreadable identity THROWS (never
+        // guessed, never skipped). An unarmed guard (capture census
+        // DECLARED-INACTIVE) installs NOTHING — zero flip, native untouched.
+        if (a5G3RunCodeGuardInject !== null) {
+          const rcPlane = a5PlaneValue?.runCodeGuard
+          if (rcPlane === undefined || rcPlane === null) {
+            const detail = 'the plane accepted the runCodeGuard injection but surfaced no wiring face — the mount is broken and installs nothing'
+            observations.push(`a5m2-g3-ptc: guard-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-PTC run_code guard refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-runcode-mount-refused' })
+          }
+          if (rcPlane.armed === true && typeof rcPlane.onPreExecute === 'function') {
+            const disposeRunCodeGuard = agentCtx.on('tools/pre-execute', rcPlane.onPreExecute)
+            toolDisposers.push(typeof disposeRunCodeGuard === 'function'
+              ? disposeRunCodeGuard
+              : () => { /* the face answered no disposer — the plane drain still refuses new walks */ })
+            observations.push(`a5m2-g3-ptc: guard LISTENER installed for ${sessionId} (tools/pre-execute, agent-scoped; reserved native untouched)`)
+          } else {
+            observations.push(`a5m2-g3-ptc: guard DECLARED-INACTIVE for ${sessionId} (capture census above — no listener, no registration, the reserved native stays untouched)`)
+          }
+          let rcGuardRegistrations
+          try {
+            rcGuardRegistrations = rcPlane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g3-ptc: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-PTC run_code family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-runcode-mount-refused' })
+          }
+          for (const registration of rcGuardRegistrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-g3-ptc: family REGISTERED for ${sessionId} (native=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
           }
         }
 

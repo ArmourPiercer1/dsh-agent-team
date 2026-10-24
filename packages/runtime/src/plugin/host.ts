@@ -667,6 +667,22 @@ interface GlueModule {
      * rows report the dimension UNOBSERVED rather than claim a check.
      */
     readonly goals?: () => unknown
+    /**
+     * A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25,
+     * the faithful public-seam wiring): the LAZY DSH public `ptcRuntime`
+     * accessor — the SAME 639 global-store token the host tool registry
+     * itself reads (`ctx.get('ptcRuntime')`, core/tools/src/index.ts) —
+     * whose public readonly faces (`language`, `isolation`, the `timeout`
+     * getter {defaultMs,maxMs}) compose the interpreter identity the B-PTC
+     * manifest must answer. Additive optional, never a hard inject: an
+     * unregistered token throws at ctx.get and the guard's ptcFacts reader
+     * answers honest absence (interpreter null → the run refuses typed);
+     * worlds without PTC mode keep the family DECLARED-INACTIVE, zero
+     * flip. (9459 withdrew the EARLY arm's copy of this line; the GUARD
+     * needs the interpreter face again — this is the re-supply PAIRED with
+     * the type declaration here, not a re-mount of the retired placement.)
+     */
+    readonly ptcRuntime?: () => unknown
   }): TeamAgentBindings
 }
 
@@ -2894,6 +2910,13 @@ async function buildG2TeamSupply(
     // 639 global-store token; sandboxPolicy is the ctx property beside it).
     sandbox: () => ctx.get('sandbox'),
     sandboxPolicy: () => ctx.sandboxPolicy,
+    // A5M2 G3 B-PTC run_code GUARD (root final limited ruling, the real
+    // supply line — see the type declaration above): the LIVE registered
+    // PTC runtime instance through the SAME 639 global-store token the
+    // host registry reads. An unregistered token throws at ctx.get and
+    // the reader's try/catch answers honest absence — DECLARED-INACTIVE,
+    // zero flip. Never a hard inject.
+    ptcRuntime: () => ctx.get('ptcRuntime'),
     // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
     // DSH public `sessionQuery` service — the registered SessionQueryEngine
     // whose five facets (search / trace / event-read / authorization /

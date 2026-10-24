@@ -50,6 +50,7 @@ const HEADER = 's-header-1'
 const ADAPTER = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc-adapters.mjs', import.meta.url).href)) as {
   createGovernedRunCodeArm: (deps: Record<string, unknown>) => unknown
   A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS: readonly string[]
+  A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE: string
 }
 
 type Definition = {
@@ -71,14 +72,31 @@ type Asm = {
   familyRegistrations: () => Array<{ name: string, definitionIdentity: string, entry: Record<string, unknown> }>
 }
 
+type GuardAsm = {
+  ok: boolean
+  code?: string
+  detail?: string
+  kind: string
+  armed: boolean
+  declared: Array<Record<string, unknown>>
+  onPreExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>) | null
+  familyRegistrations: () => Array<{ name: string, definitionIdentity: string, entry: Record<string, unknown> }>
+  drain: () => Record<string, unknown>
+  mount?: Record<string, string>
+}
+
 const PTC_WIRING = (await import(new URL('../src/plugin/live/governed-families/g3-ptc-wiring.mjs', import.meta.url).href)) as {
   buildG3RunCodeWiring: (input: Record<string, unknown>) => Asm
+  buildG3RunCodeGuard: (input: Record<string, unknown>) => GuardAsm
   a5G3PtcPaTargetFlat: (manifest: Record<string, unknown>) => Record<string, unknown>
   A5_G3_RUN_CODE_TOOL_NAME: string
   A5_G3_PTC_WIRING_CODES: Record<string, string>
   A5_G3_PTC_MOUNT_STATUS: { mounted: boolean, code: string, evidence: string, nextShape: string }
+  A5_G3_PTC_GUARD_STATUS: Record<string, string>
+  A5_G3_PTC_GUARD_CODES: Record<string, string>
 }
 const CODES = PTC_WIRING.A5_G3_PTC_WIRING_CODES
+const GUARD_CODES = PTC_WIRING.A5_G3_PTC_GUARD_CODES
 
 /** The MEASURED host minted schema face (639 escalation.ts:41 via ptc.ts:110):
  *  the two escalation TARGETS — never the 3-member bridge ask vocabulary. */
@@ -321,8 +339,11 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(target.operation).toBe('program-run')
     expect(target.interpreterRuntimeIdentity).toBe('ptc-runtime:NodePtcRuntime:typescript:process')
     expect(target.envelopeMode).toBe('workspace-write')
-    expect(target.maxParallelSubCalls).toBe(10)
-    expect(target.runDispatchBudget).toBe(64)
+    // ACTUAL mapping (root final limited ruling): a supplied observation is
+    // the canonical-JSON STRING; the total-count cap carries the honest
+    // NOT-IMPLEMENTED disclosure constant verbatim — never a fake number.
+    expect(target.maxParallelSubCalls).toBe('10')
+    expect(target.runDispatchBudget).toBe(ADAPTER.A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE)
     expect(target.requestedSandboxMode).toBeNull()
     expect(target.justificationDigest).toBeNull()
     // the 闭表 pairing: the flat view validates against the REAL table.
@@ -332,23 +353,49 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(w.events.some((e) => e.event === 'g3-ptc-wire:served')).toBe(true)
   })
 
-  it('(e) budget NOT_READY is the TYPED refusal with zero PA entry and zero body entry (named blocker leg, never an invented budget)', async () => {
-    const w = makeWorld({
+  it('(e) budget law = ACTUAL MAPPING (root final limited ruling): absence SERVES on the disclosure leaf; a GARBAGE supplied number refuses TYPED with zero PA entry and zero body entry; an absent child-channel ANSWER still refuses', async () => {
+    // (e1) THE WITHDRAWAL PROVEN POSITIVE: the retired every-run refusal is
+    // gone — an unobservable budget pair (nulls, the honest answer of a
+    // world with no public face) SERVES, carrying the disclosure leaf.
+    const wServe = makeWorld({
       facts: () => {
         const facts = GOOD_FACTS()
-        facts.childChannel = { ...facts.childChannel, runDispatchBudget: null }
+        facts.childChannel = { ...facts.childChannel, maxParallelSubCalls: null, runDispatchBudget: null }
         return facts
       },
     })
-    const asm = w.build()
-    const def = asm.definitions[0] as Definition
-    const error = await refusalOf(def.execute({ code: 'return 1', description: 'budget-less' }, w.execFor('exec-run-2')))
-    expect(error).not.toBeNull()
-    expect(String(error?.message)).toContain('P_PTC_ENVELOPE_UNEVIDENCED')
-    expect(String(error?.message)).toContain('runDispatchBudget')
-    expect(w.walks.length).toBe(0)
-    expect(w.nativeCalls).toEqual([])
-    expect(w.closePlans).toEqual([])
+    const defServe = wServe.build().definitions[0] as Definition
+    const servedValue = await defServe.execute({ code: 'return 1', description: 'face-less budget' }, wServe.execFor('exec-run-2'))
+    expect(servedValue).toBe('NATIVE-TRANSPORT-ANSWER')
+    expect(wServe.nativeCalls).toEqual(['native-execute'])
+    expect(wServe.walks.length).toBe(1)
+    // (e2) garbage NEVER passes: a supplied non-number budget refuses TYPED
+    // before the PA seat, the body entered zero times.
+    const wBad = makeWorld({
+      facts: () => {
+        const facts = GOOD_FACTS()
+        facts.childChannel = { ...facts.childChannel, runDispatchBudget: 'four' as unknown as number }
+        return facts
+      },
+    })
+    const defBad = wBad.build().definitions[0] as Definition
+    const errorBad = await refusalOf(defBad.execute({ code: 'return 1', description: 'garbage budget' }, wBad.execFor('exec-run-3')))
+    expect(errorBad).not.toBeNull()
+    expect(String(errorBad?.message)).toContain('P_PTC_ENVELOPE_UNEVIDENCED')
+    expect(String(errorBad?.message)).toContain('runDispatchBudget')
+    expect(wBad.walks.length).toBe(0)
+    expect(wBad.nativeCalls).toEqual([])
+    expect(wBad.closePlans).toEqual([])
+    // (e3) M0's channel FACTS stay mandatory every run: the child-channel
+    // ANSWER itself absent refuses P_PTC_TARGET_UNRESOLVED.
+    const wNo = makeWorld({
+      facts: () => ({ ...GOOD_FACTS(), childChannel: null }),
+    })
+    const defNo = wNo.build().definitions[0] as Definition
+    const errorNo = await refusalOf(defNo.execute({ code: 'return 1', description: 'no channel answer' }, wNo.execFor('exec-run-4')))
+    expect(errorNo).not.toBeNull()
+    expect(String(errorNo?.message)).toContain('P_PTC_TARGET_UNRESOLVED')
+    expect(wNo.walks.length).toBe(0)
   })
 
   it('(f) interpreter face absent answers TYPED P_PTC_TARGET_UNRESOLVED — no unattributed run, no PA entry', async () => {
@@ -437,5 +484,179 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(planeSrc).not.toContain('buildG3RunCodeWiring')
     expect(planeSrc).not.toContain('runCodeDefs')
     expect(bindingsSrc).not.toContain('a5G3RunCodeInject')
+  })
+})
+
+// ── THE GUARD-SEAM ENTRY (root FINAL LIMITED ruling 2026-10-25): the WIRED
+// shape — one scope-filtered `tools/pre-execute` listener over the PUBLIC
+// seam; the reserved native is never registered, shadowed, or wrapped. ──
+function makeGuardWorld (opts: { captureAbsent?: boolean, swapNativeAfterBuild?: boolean } = {}) {
+  const nativeCalls: string[] = []
+  const natives = new Map<string, Definition>()
+  if (opts.captureAbsent !== true) natives.set('run_code', makeNative(REAL_ENUM, nativeCalls))
+  const bindingFactsValue = { bindingId: 'a5p1:scope:run_code', bindingRevision: 1, policyGeneration: 0, authorityGeneration: 0 }
+  const walks: Array<Record<string, unknown>> = []
+  const closePlans: string[] = []
+  let denyOpen = false
+  const pa = Object.assign(async function paAdmitDouble () {
+    return { kind: 'deny', code: 'DOUBLE_NOT_A_DIRECT_CALL' }
+  }, {
+    open: async (walk: Record<string, unknown>) => {
+      walks.push(walk)
+      if (denyOpen) return { kind: 'deny', code: 'ADMISSION_REFUSED', detail: 'spec world: the admission refused' }
+      return {
+        kind: 'approved',
+        grant: Object.freeze({
+          grantId: `grant-${String(walks.length)}`,
+          callId: walk.callId,
+          realmId: walk.realmId,
+          bindingId: bindingFactsValue.bindingId,
+          bindingRevision: bindingFactsValue.bindingRevision,
+          parametersFingerprint: walk.parametersFingerprint,
+          singleUse: true,
+        }),
+      }
+    },
+    edge: async (input: Record<string, unknown>) => ({ kind: 'allow', consumedProof: { grant: input.grant } }),
+    closePlan: (callId: string) => { closePlans.push(callId) },
+  })
+  let nextCalls = 0
+  const events: Array<Record<string, unknown>> = []
+  const readNative = (name: string) => natives.get(name)
+  const guard = PTC_WIRING.buildG3RunCodeGuard({
+    realmId: REALM,
+    providerId: PROVIDER,
+    memberAgentId: MEMBER,
+    sessionHeaderId: HEADER,
+    readNative,
+    ptcFacts: GOOD_FACTS,
+    bindingFacts: () => ({ ...bindingFactsValue }),
+    identityOf: (def: unknown) => definitionIdentityOf(def),
+    pa,
+    observe: (event: Record<string, unknown>) => { events.push(event) },
+  })
+  const allowNext = async () => {
+    nextCalls += 1
+    return { kind: 'allow' } as Record<string, unknown>
+  }
+  const execFor = (over: Record<string, unknown> = {}) => Object.freeze({
+    name: 'run_code',
+    callId: 'g-call-1',
+    arguments: { code: 'return 1', description: 'guard leg' },
+    agent: { id: MEMBER, session: { header: { id: HEADER } } },
+    ...over,
+  })
+  return {
+    guard,
+    events,
+    walks,
+    closePlans,
+    nativeCalls,
+    nextCalls: () => nextCalls,
+    allowNext,
+    execFor,
+    refuseAtOpen: () => { denyOpen = true },
+    swapNative: () => {
+      const fresh = makeNative(REAL_ENUM, nativeCalls)
+      natives.set('run_code', Object.assign(Object.create(Object.getPrototypeOf(fresh)), fresh))
+    },
+    readNative,
+  }
+}
+
+describe('A5M2-G3-PTC-GUARD — the wired run_code interposition (root final limited ruling)', () => {
+  it('(k) scope filter: every NON-matching call passes through next() byte-untouched (zero walk, zero PA)', async () => {
+    const w = makeGuardWorld()
+    const onPre = w.guard.onPreExecute
+    expect(onPre).toBeTypeOf('function')
+    const fn = onPre as NonNullable<GuardAsm['onPreExecute']>
+    expect(await fn(w.execFor({ name: 'grep' }), w.allowNext)).toEqual({ kind: 'allow' })
+    expect(await fn(w.execFor({ agent: { id: 'agent-other' } }), w.allowNext)).toEqual({ kind: 'allow' })
+    expect(w.nextCalls()).toBe(2)
+    expect(w.walks.length).toBe(0)
+    expect(w.closePlans).toEqual([])
+  })
+
+  it('(l) matching call: classify -> open -> edge ONE consume -> prepare -> next() runs ONCE and its decision travels VERBATIM; the plan closes once', async () => {
+    const w = makeGuardWorld()
+    const fn = w.guard.onPreExecute as NonNullable<GuardAsm['onPreExecute']>
+    const decision = await fn(w.execFor(), w.allowNext)
+    expect(decision).toEqual({ kind: 'allow' })
+    expect(w.nextCalls()).toBe(1)
+    expect(w.walks.length).toBe(1)
+    expect(w.closePlans).toEqual(['g-call-1'])
+    const family = ((w.walks[0] as Record<string, unknown>).family as Record<string, unknown>).targetManifest as Record<string, unknown>
+    expect(family.operation).toBe('program-run')
+    expect(family.runDispatchBudget).toBe(ADAPTER.A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE)
+    expect(w.events.some((e) => e.event === 'g3-ptc-wire:guard-mounted')).toBe(true)
+    expect(w.events.some((e) => e.event === 'g3-ptc-wire:guard-allowed')).toBe(true)
+    // the ledger key is the RESERVED NATIVE's own identity — NO definition
+    // is placed, NO name is registered by the guard assembly.
+    const regs = w.guard.familyRegistrations()
+    expect(regs).toHaveLength(1)
+    expect(regs[0]?.definitionIdentity).toBe(definitionIdentityOf(w.readNative('run_code') as object))
+    expect(JSON.stringify(Object.keys(w.guard))).not.toContain('definitions')
+  })
+
+  it('(m) refusal BEFORE next(): a denied admission returns the typed deny with the next() face NEVER CALLED (zero body entry) and one plan close', async () => {
+    const w = makeGuardWorld()
+    w.refuseAtOpen()
+    const fn = w.guard.onPreExecute as NonNullable<GuardAsm['onPreExecute']>
+    const decision = await fn(w.execFor(), w.allowNext)
+    expect(decision.kind).toBe('deny')
+    expect(String(decision.reason)).toContain('ADMISSION_REFUSED')
+    expect(w.nextCalls()).toBe(0)
+    expect(w.closePlans).toEqual(['g-call-1'])
+  })
+
+  it('(n) capture absent: armed=false, NO listener face, the DECLARED-INACTIVE census names the reason, registrations stay empty', () => {
+    const w = makeGuardWorld({ captureAbsent: true })
+    expect(w.guard.ok).toBe(true)
+    expect(w.guard.armed).toBe(false)
+    expect(w.guard.onPreExecute).toBeNull()
+    expect(w.guard.declared[0]).toMatchObject({ name: 'run_code', status: 'DECLARED-INACTIVE', reason: 'capture-absent' })
+    expect(w.guard.familyRegistrations()).toEqual([])
+    expect(w.events.some((e) => e.event === 'g3-ptc-wire:guard-declared')).toBe(true)
+  })
+
+  it('(o) token replay: the SAME execution token never opens a second admission walk (typed deny, zero next())', async () => {
+    const w = makeGuardWorld()
+    const fn = w.guard.onPreExecute as NonNullable<GuardAsm['onPreExecute']>
+    const sharedToken = { t: 'transport-1' }
+    expect((await fn(w.execFor({ token: sharedToken }), w.allowNext)).kind).toBe('allow')
+    const replay = await fn(w.execFor({ token: sharedToken }), w.allowNext)
+    expect(replay.kind).toBe('deny')
+    expect(String(replay.reason)).toContain(GUARD_CODES.TOKEN_REPLAY)
+    expect(w.walks.length).toBe(1)
+    expect(w.nextCalls()).toBe(1)
+  })
+
+  it('(p) drain: the word is a new-call prohibition — later matching calls refuse TYPED and the reserved native is never reached', async () => {
+    const w = makeGuardWorld()
+    const fn = w.guard.onPreExecute as NonNullable<GuardAsm['onPreExecute']>
+    expect((await fn(w.execFor(), w.allowNext)).kind).toBe('allow')
+    w.guard.drain()
+    const after = await fn(w.execFor({ callId: 'g-call-2' }), w.allowNext)
+    expect(after.kind).toBe('deny')
+    expect(String(after.reason)).toContain(GUARD_CODES.DRAINED)
+    expect(w.nextCalls()).toBe(1)
+  })
+
+  it('(q) identities do not float: a MOVED reserved-native identity THROWS at the registration read (never a guessed key)', () => {
+    const w = makeGuardWorld({ swapNativeAfterBuild: true })
+    w.swapNative()
+    expect(() => w.guard.familyRegistrations()).toThrow(GUARD_CODES.KEY_MOVED)
+  })
+
+  it('(r) status honesty: the PLACEMENT entry stays UNMOUNTED forever; the GUARD entry carries the registration ban and the untouched-native face verbatim', () => {
+    expect(PTC_WIRING.A5_G3_PTC_MOUNT_STATUS.mounted).toBe(false)
+    expect(PTC_WIRING.A5_G3_PTC_GUARD_STATUS.registrationBan).toContain('1080-1081')
+    expect(PTC_WIRING.A5_G3_PTC_GUARD_STATUS.tier).toContain('WIRED-NOT-TESTED')
+    expect(PTC_WIRING.A5_G3_PTC_GUARD_STATUS.nativeUntouched).toContain('660')
+    const guardSrc = readFileSync(fileURLToPath(new URL('../src/plugin/live/governed-families/g3-ptc-wiring.mjs', import.meta.url).href), 'utf8')
+    // the guard entry NEVER touches the placement/registration surfaces
+    const guardSection = guardSrc.slice(guardSrc.indexOf('export function buildG3RunCodeGuard'))
+    expect(guardSection).not.toContain('placementFeed')
+    expect(guardSection).not.toContain('definitions.push')
   })
 })

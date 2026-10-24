@@ -2518,23 +2518,37 @@ function validateRunCode(args, h) {
   if (typeof args.code !== 'string' || args.code.length === 0) {
     return refuse('P_PTC_CLASSIFY_INVALID_ARGUMENTS', 'code must be a non-empty string')
   }
-  // THE REAL BUDGET/ENVELOPE LAW (root final ruling): a null/empty envelope
-  // answer is NOT an implementation. The EFFECTIVE mode (host
-  // resolveSandboxPolicy/exec-agent face), the ENFORCEMENT ANSWER (host
-  // SandboxEnforcement — 'full' | 'partial' — or an explicit non-empty
-  // string; null/empty never passes), and the REAL dispatch budget
-  // (maxParallelSubCalls: the registry's validated concurrency cap, host
-  // tools index.ts:693 default 10; runDispatchBudget: this tree's
-  // child-channel bound — POSITIVE FINITE NUMBERS, never null) are
-  // mandatory facts: an unevidenced envelope refuses TYPED and the run
-  // never proceeds behind a bare claim.
+  // THE REAL ENVELOPE LAW + THE ACTUAL BUDGET MAPPING (root FINAL LIMITED
+  // RULING on run_code; the old adapter-side text that demanded "positive
+  // finite runDispatchBudget EVERY RUN" was OVER-SPECIFICATION, not user
+  // evidence — WITHDRAWN, and its refusal retired: neither a permanent
+  // all-refusal nor a fake number). The EFFECTIVE M0 B-PTC requirements
+  // (lines 157-160) are exactly: the sub-call CHANNEL list/budget facts,
+  // per-nested independent A, parent cancellation, one-consume each —
+  // NONE is a per-run TOTAL dispatch finite positive cap. Mandatory still,
+  // every run, honestly: the EFFECTIVE mode + the ENFORCEMENT ANSWER
+  // (null/empty is not an implementation) and the PRESENCE of the
+  // child-channel answer (M0's channel list/digest facts). A budget
+  // NUMBER that a supplier really observes must be a positive finite
+  // number — garbage never passes. What is NOT claimed, with the honest
+  // label: the TOTAL-count cap is NOT IMPLEMENTED (zero face in the host
+  // 639 tree; no mechanism counts or limits a run's total child
+  // dispatches); it is DISCLOSED through the manifest leaf (constant
+  // below) and explicitly NOT a self-issued release gate.
+  // maxParallelSubCalls is the CONCURRENCY-overlap cap — a different
+  // quantity, never equated with the total count — and no "observed"
+  // number is ever faked for the unobservable private registry field
+  // (host index.ts:839; the old ':693 default 10' cite was a stale
+  // host-era line reference, corrected by measurement).
   const budgetProblem = (channel) => {
     if (channel === null || typeof channel !== 'object') return 'the child-channel answer is absent'
-    if (!Number.isFinite(channel.maxParallelSubCalls) || channel.maxParallelSubCalls <= 0) {
-      return `maxParallelSubCalls is not a positive finite number (${JSON.stringify(channel.maxParallelSubCalls ?? null)})`
+    if (channel.maxParallelSubCalls !== undefined && channel.maxParallelSubCalls !== null
+      && (!Number.isFinite(channel.maxParallelSubCalls) || channel.maxParallelSubCalls <= 0)) {
+      return `the supplied maxParallelSubCalls observation is not a positive finite number (${JSON.stringify(channel.maxParallelSubCalls)})`
     }
-    if (!Number.isFinite(channel.runDispatchBudget) || channel.runDispatchBudget <= 0) {
-      return `runDispatchBudget is not a positive finite number (${JSON.stringify(channel.runDispatchBudget ?? null)})`
+    if (channel.runDispatchBudget !== undefined && channel.runDispatchBudget !== null
+      && (!Number.isFinite(channel.runDispatchBudget) || channel.runDispatchBudget <= 0)) {
+      return `the supplied runDispatchBudget observation is not a positive finite number (${JSON.stringify(channel.runDispatchBudget)})`
     }
     return null
   }
@@ -2577,7 +2591,7 @@ function validateRunCode(args, h) {
   }
   const budgetIssue = budgetProblem(channel)
   if (budgetIssue !== null) {
-    return refuse('P_PTC_ENVELOPE_UNEVIDENCED', `the REAL dispatch budget is not evidenced (${budgetIssue}): null/absent budget does not count — the host registry answers a validated positive cap (index.ts:693)`)
+    return refuse('P_PTC_ENVELOPE_UNEVIDENCED', `the dispatch-budget answer is malformed (${budgetIssue}): a SUPPLIED budget observation must be a positive finite number — while the NOT-IMPLEMENTED total-count cap is disclosed through the manifest leaf, never refused here (root final limited ruling: M0 lines 157-160 require the channel facts, per-nested A, parent cancellation and one-consume each — NOT a per-run total dispatch cap)`)
   }
   const canonical = {
     code: args.code,
@@ -2602,8 +2616,12 @@ function validateRunCode(args, h) {
         capabilityList: Object.freeze(channel.capabilityList.slice().sort()),
         capabilityCount: channel.capabilityList.length,
         channelDigest: channel.channelDigest,
-        maxParallelSubCalls: channel.maxParallelSubCalls,
-        runDispatchBudget: channel.runDispatchBudget,
+        // ACTUAL mapping (root final limited ruling): budget numbers ride
+        // the manifest ONLY as real supplier observations (null when the
+        // face is unobservable — never a fake); the total-count cap leaf
+        // carries the honest disclosure constant verbatim.
+        maxParallelSubCalls: Number.isFinite(channel.maxParallelSubCalls) ? channel.maxParallelSubCalls : null,
+        runDispatchBudget: A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE,
         lineageFacts: 'sub-dispatch parents ride exec.token and share exec.rootCallId (faithful exec forward)',
       }),
       codeDigest: `sha256:${sha256(args.code)}`,
@@ -2628,7 +2646,7 @@ function validateRunCode(args, h) {
       }
       const nowBudgetProblem = budgetProblem(nowChannel)
       if (nowBudgetProblem !== null) {
-        return { ok: false, code: 'P_PTC_ENVELOPE_UNEVIDENCED', detail: `the REAL dispatch budget stopped being evidenced between approval and the entry (${nowBudgetProblem})` }
+        return { ok: false, code: 'P_PTC_ENVELOPE_UNEVIDENCED', detail: `the dispatch-budget answer went malformed between approval and the entry (${nowBudgetProblem}): a supplied budget observation must stay a positive finite number` }
       }
       if (nowInterp === null || nowInterp.runtimeIdentity !== interp.runtimeIdentity) {
         return { ok: false, code: 'P_PTC_TARGET_DRIFT', detail: 'the interpreter/provider identity moved between approval and the entry' }
@@ -2797,11 +2815,15 @@ export function createGovernedLspArm(deps) {
 /** The single B-PTC outer `run_code` arm. `ptcFacts`: () => {interpreter:
  *  {runtimeIdentity, language}, effectiveEnvelope: {mode, enforcement},
  *  timeout, childChannel: {capabilityList, channelDigest,
- *  maxParallelSubCalls, runDispatchBudget}} | null. This is the gap-closure
- *  piece for the run_code ROW (the plane only reserves the name and mounts
- *  the escalation adjudication bridge): CENTER captures the registry-minted
- *  native definition and wires THIS arm; the arm never answers an escalation
- *  and never grants nested calls anything. */
+ *  maxParallelSubCalls?, runDispatchBudget?}} | null — the two budget
+ *  observations are OPTIONAL per the root final limited ruling (supply a
+ *  number only from a real face; absence is honest and carries the
+ *  disclosure leaf; a supplied number must be positive finite). This is
+ *  the gap-closure piece for the run_code ROW: the registry's RESERVED
+ *  native transport stays the sole executor (registration is host-forbidden,
+ *  index.ts:1080-1081); governance rides the PUBLIC `tools/pre-execute`
+ *  seam (see g3-ptc-wiring.mjs buildG3RunCodeGuard) — the arm never
+ *  answers an escalation and never grants nested calls anything. */
 /** The MEASURED host escalation-target enum for the run_code
  *  `sandbox_permissions` CAPTURE pin (A5M2-G3 B-PTC wiring round, root
  *  04:4x card; e78 handoff [B], self-verified at both faces): the REAL
@@ -2818,6 +2840,18 @@ export function createGovernedLspArm(deps) {
  *  args pair-law) stays UNTOUCHED — only the capture pin rides the
  *  measured schema face. */
 export const A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS = Object.freeze(['workspace-write', 'danger-full-access'])
+
+/** THE HONEST DISCLOSURE LEAF (root final LIMITED ruling on run_code): the
+ *  per-run TOTAL dispatch-count cap is NOT IMPLEMENTED — zero face in the
+ *  host 639 tree, no mechanism counts or limits a run's total child
+ *  dispatches; it is not one of the EFFECTIVE M0 B-PTC requirements (lines
+ *  157-160: channel list/budget facts, per-nested independent A, parent
+ *  cancellation, one-consume each). The B-PTC review leaf carries THIS
+ *  constant verbatim: disclosed, and explicitly NOT a self-issued release
+ *  gate. A supplier that one day really observes a total cap replaces it
+ *  with the canonical number string — never a fake number today. */
+export const A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE
+  = 'NOT-IMPLEMENTED: total-dispatch-count cap (zero face in host 639; not an M0 157-160 requirement; disclosed - explicitly not a self-issued release gate)'
 
 export function createGovernedRunCodeArm(deps) {
   if (typeof deps.ptcFacts !== 'function') {

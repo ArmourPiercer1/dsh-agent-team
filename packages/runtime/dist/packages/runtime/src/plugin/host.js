@@ -2108,6 +2108,13 @@ export async function apply(ctx, config) {
             // 639 global-store token; sandboxPolicy is the ctx property beside it).
             sandbox: () => ctx.get('sandbox'),
             sandboxPolicy: () => ctx.sandboxPolicy,
+            // A5M2 G3 B-PTC run_code GUARD (root final limited ruling, the real
+            // supply line — see the type declaration above): the LIVE registered
+            // PTC runtime instance through the SAME 639 global-store token the
+            // host registry reads. An unregistered token throws at ctx.get and
+            // the reader's try/catch answers honest absence — DECLARED-INACTIVE,
+            // zero flip. Never a hard inject.
+            ptcRuntime: () => ctx.get('ptcRuntime'),
             // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
             // DSH public `sessionQuery` service — the registered SessionQueryEngine
             // whose five facets (search / trace / event-read / authorization /
