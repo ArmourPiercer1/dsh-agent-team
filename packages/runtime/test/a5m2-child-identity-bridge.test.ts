@@ -45,7 +45,7 @@ describe('A5M2 child identity bridge: routing facts, install-before-publish, dra
     b.install(binding({ childSessionId: 'c2', generation: 8, admittedCallId: 'orch-1#child-2' }))
     b.install(binding({ childSessionId: 'c9', owningMemberInstanceId: 'inst-other-owner' }))
     const drained = b.drainByOwner('team-root-1', 'inst-owner1', { belowGeneration: 7, reason: 'owner-regenerated' })
-    expect(drained.map((r: Record<string, unknown>) => r.childSessionId)).toEqual(['c1'])
+    expect(drained.map((r) => r.childSessionId)).toEqual(['c1'])
     expect(b.resolve('c1')?.state).toBe(BRIDGE_STATE.DRAINING)
     expect(b.resolve('c2')?.state).toBe(BRIDGE_STATE.ACTIVE)
     expect(b.resolve('c9')?.state).toBe(BRIDGE_STATE.ACTIVE)
