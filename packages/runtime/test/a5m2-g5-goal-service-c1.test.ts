@@ -47,10 +47,10 @@
  */
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { findTestRepoRoot, TEST_USE_BASELINE_SHA, DSH_BASELINE_VERSION } from '../../../tests/paths.mjs'
+import { findTestRepoRoot, testUsePath, TEST_USE_BASELINE_SHA, DSH_BASELINE_VERSION } from '../../../tests/paths.mjs'
 
 /* ── module under test ─────────────────────────────────────────────── */
 const G5 = (await import(new URL('../src/plugin/live/governed-families/g5-goal-service.mjs', import.meta.url).href)) as {
@@ -137,7 +137,9 @@ const PIN_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
 const repoRoot = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
 if (repoRoot === null) throw new Error('no repo root carrying tests/deepseek-harness-test-use — failing closed')
 const pinRead = (rel: string): string => {
-  const p = join(repoRoot, 'tests', 'deepseek-harness-test-use', rel)
+  // root 02:04 handling: the pinned checkout through the unique path source
+  // (canonical location, or the DSH_TEST_USE_ROOT-supplied read-only 639 base)
+  const p = testUsePath(dirname(fileURLToPath(import.meta.url)), rel)
   if (!existsSync(p)) throw new Error(`pristine pinned source absent (${rel}); failing closed`)
   return readFileSync(p, 'utf8')
 }
@@ -155,7 +157,7 @@ const goalSrc = pinRead('packages/goal/goal/src/index.ts')
 const goalTypesSrc = pinRead('packages/goal/goal/src/types.ts')
 
 /* ── the REAL pinned host tool lib (the production compiler/validators) ── */
-const HOST_LIB = join(repoRoot, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+const HOST_LIB = testUsePath(dirname(fileURLToPath(import.meta.url)), 'packages', 'core', 'tools', 'lib', 'index.js')
 if (!existsSync(HOST_LIB)) throw new Error(`pristine host lib absent; failing closed (${HOST_LIB})`)
 const hostTools = () => import(pathToFileURL(HOST_LIB).href) as Promise<{
   assertSupportedJsonSchema: (schema: unknown) => void

@@ -30,10 +30,35 @@
  * instance — read-only probe at most). Unchanged by this move.
  */
 import { existsSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 
-/** Workspace-relative path of the pristine upstream test-use checkout. */
-export const TEST_USE_REL = 'tests/deepseek-harness-test-use'
+/**
+ * Pristine upstream test-use checkout: repo-root-relative by default (the
+ * canonical per-worktree location, gitignored), or the absolute path
+ * `DSH_TEST_USE_ROOT` names.
+ *
+ * ROOT 02:04 HANDLING NOTE (G5 lane, no Host; receipt goes to center, center
+ * forwards to a356): this g5 worktree carries a nested
+ * `tests/deepseek-harness-test-use` created at 01:42 by a `clone --shared`
+ * taken from the INT worktree's tree instead of the read-only shared
+ * baseline, with generated `lib/` outputs rsynced in and an offline install
+ * run against it — a violation of the zero-copy order in force at that
+ * moment, and a PARTIAL restore besides: it has no `node_modules`, so it
+ * resolves no runtime, while the repo-root base already does.
+ *
+ * Per that directive this tree's Host-test-runtime references go back to the
+ * pre-existing, 639-pin-consistent READ-ONLY BASE
+ * `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use`
+ * (measured HEAD `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain 0,
+ * `node_modules` present). THE BASE IS SUPPLIED BY THE RUN, NOT BY A
+ * COMMITTED DEFAULT: this tracked file hardcodes no absolute path, and the
+ * upward walk below keeps its original meaning everywhere else — a worktree
+ * whose nested tree is absent (or whose pin fails) resolves the base through
+ * `DSH_TEST_USE_ROOT`. The nested clone is NOT removed, NOT permission-
+ * changed and NOT tidied: root and a356 rule its scope, this lane does not
+ * delete it.
+ */
+export const TEST_USE_REL = process.env.DSH_TEST_USE_ROOT ?? 'tests/deepseek-harness-test-use'
 
 /** Workspace-relative root of all per-world DSH_HOME dirs. */
 export const TEST_HOME_ROOT_REL = 'tests/homes'
@@ -97,9 +122,16 @@ export function isSanctionedTestPort(port) {
  * purposes). Returns null when no ancestor qualifies.
  */
 export function findTestRepoRoot(start) {
+  // ROOT 02:04 handling, absolute shape: when the ACTIVE checkout is an
+  // absolute base (`DSH_TEST_USE_ROOT`), it lives OUTSIDE the walk; the base
+  // must exist (else fail closed), and the repo-root marker degrades to this
+  // file's own location — the team-repo root the specs read their sources
+  // under — so `testUseTree(root)` and source joins stay correct.
+  const absolute = isAbsolute(TEST_USE_REL)
+  if (absolute && !existsSync(TEST_USE_REL)) return null
   let dir = resolve(start)
   for (let i = 0; i < 12; i += 1) {
-    if (existsSync(join(dir, TEST_USE_REL))) return dir
+    if (existsSync(absolute ? join(dir, 'tests', 'paths.mjs') : join(dir, TEST_USE_REL))) return dir
     const parent = dirname(dir)
     if (parent === dir) return null
     dir = parent
@@ -107,9 +139,30 @@ export function findTestRepoRoot(start) {
   return null
 }
 
-/** Absolute path of the pristine test-use tree for a resolved repo root. */
+/**
+ * Absolute path of the pristine test-use tree for a resolved repo root.
+ * `TEST_USE_REL` may be repo-root-relative (the canonical shape) OR absolute
+ * (the `DSH_TEST_USE_ROOT` shape); `isAbsolute` keeps both correct, where a
+ * bare `join` would corrupt an absolute override.
+ */
 export function testUseTree(repoRoot) {
-  return join(resolve(repoRoot), TEST_USE_REL)
+  return isAbsolute(TEST_USE_REL) ? TEST_USE_REL : join(resolve(repoRoot), TEST_USE_REL)
+}
+
+/**
+ * Resolve one test-use-relative path under the ACTIVE test-use checkout.
+ * `start` is the importer's own directory: the same upward walk
+ * `findTestRepoRoot` performs. Consumers that hold no repo root (a spec
+ * reading a host source or `lib` output) build their host path HERE rather
+ * than joining the constant themselves, so the env-supplied base and the
+ * canonical relative location resolve through one door.
+ */
+export function testUsePath(start, ...segments) {
+  const root = findTestRepoRoot(typeof start === 'string' ? start : resolve(String(start ?? '.')))
+  if (root === null) {
+    throw new Error(`testUsePath: no ancestor of '${String(start)}' carries the test-use checkout at the ${DSH_BASELINE_VERSION} pin — failing closed (point DSH_TEST_USE_ROOT at the read-only ${CLIENT_COMMIT_HASH} base)`)
+  }
+  return join(testUseTree(root), ...segments)
 }
 
 /** Absolute path of the per-world DSH_HOME root for a resolved repo root. */
