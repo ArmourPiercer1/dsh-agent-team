@@ -1,0 +1,110 @@
+{
+  "runner": "05-control-window-runner.mjs",
+  "scenario": "control-slice-83-85-84-identity",
+  "dry": false,
+  "booted": true,
+  "verdict": "FAIL",
+  "scopeNote": "consumption/EDIT leg NOT covered this window (explicitly UNTESTED, root a738 scope) — full C2 is NOT claimed by this receipt",
+  "ports": {
+    "host": 3184,
+    "mock": 3499
+  },
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-59-21-857ZZ",
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T13-59-21-857Z",
+  "checks": [
+    {
+      "criterion": "L1",
+      "name": "team_create_member REAL return harvested and correlated by callId (arrival only, business semantics NOT asserted)",
+      "ok": true,
+      "detail": "gate=proceed-bind isError=false text={\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T13-59-21-857Z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1p541qw1yhzq\",\"templateId\":\"ctl-worker\",\"childSessionId\":\"session-team-child-787e537ed37faae8c125c2c130e9a87a\",\"operationId\":\"op-19ses951uvhmj806qwx0z1fa\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISS"
+    },
+    {
+      "criterion": "E0",
+      "name": "member surface carries team_request_control",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,todo_write,write"
+    },
+    {
+      "criterion": "E0",
+      "name": "member surface carries NO team_resolve_control (no self-approve)",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,todo_write,write"
+    },
+    {
+      "criterion": "L2-83",
+      "name": "team_request_control EXECUTED through the tool registry (harvested tool result, no error flag)",
+      "ok": true,
+      "detail": "isError=false text={\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-09a883g1t7n7rd1vqt30u15v\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T13-59-21-857Z\",\"kind\":\"lead"
+    },
+    {
+      "criterion": "L3-85",
+      "name": "team_list_pending_control EXECUTED through the tool registry",
+      "ok": true,
+      "detail": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T13-59-21-857Z\",\"pending\":[{\"requestId\":\"ctrl-09a883g1t7n7rd1vqt30u15v\",\"rootS"
+    },
+    {
+      "criterion": "L3-85",
+      "name": "85 DISCOVERY answers with the designated request on its page",
+      "ok": true,
+      "detail": "requestId=ctrl-09a883g1t7n7rd1vqt30u15v"
+    },
+    {
+      "criterion": "L3-84",
+      "name": "team_resolve_control EXECUTED through the tool registry (ALLOW, no error flag)",
+      "ok": true,
+      "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-09a883g1t7n7rd1vqt30u15v\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\","
+    },
+    {
+      "criterion": "L3",
+      "name": "the DESIGNATED request r83 was settled by the model-tool decision (durable)",
+      "ok": true,
+      "detail": "requestId=ctrl-09a883g1t7n7rd1vqt30u15v"
+    },
+    {
+      "criterion": "L4",
+      "name": "member resolve attempt refused by an EXPLICIT identity code or explicit not-visible shape (unknown formats / resolved-conflicts never pass)",
+      "ok": false,
+      "detail": "identity=false notVisible=false conflict=false isError=true text=Error: team tool guard: \"team_resolve_control\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    },
+    {
+      "criterion": "L4",
+      "name": "the identity refusal left NO extra durable decision fact",
+      "ok": true,
+      "detail": "decided=1"
+    },
+    {
+      "criterion": "V",
+      "name": "ledger: exactly recorded=1 and decided=1 for the slice (consumption/EDIT NOT covered — explicitly untested, no C2 claim here)",
+      "ok": true,
+      "detail": "recorded=1 decided=1"
+    },
+    {
+      "criterion": "V",
+      "name": "decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)",
+      "ok": true,
+      "detail": "observation-only transcript verified"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "host port 3184 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "mock port 3499 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "host stop completed without error",
+      "ok": true,
+      "detail": "host stopped | mock closed"
+    }
+  ],
+  "stamps": {
+    "nonce": "88grqn",
+    "runStamp": "2026-10-24T13-59-21-857Z"
+  }
+}
