@@ -54,9 +54,20 @@ export interface BUpstreamTeamPlacementEntry {
  * `ctx.agentTeams`); this module implements none of it. `MemberModel` stands for
  * the host's own member model value and is deliberately opaque.
  */
+/** The injected host `ctx.agentTeams` face this family's rows may call. */
 export interface BUpstreamTeamPort {
-  listMembers(callerAgent: string): readonly unknown[] | Promise<readonly unknown[]>
+  listMembers(caller: string): readonly unknown[] | Promise<readonly unknown[]>
+  interrupt(caller: string, target: unknown): unknown
+  sendMessage(caller: string, message: { target: unknown; message: unknown }): unknown
+  createTask(caller: string, task: Record<string, unknown>): unknown
+  getTask(caller: string, taskId: unknown): unknown
+  updateTask(caller: string, patch: Record<string, unknown>): unknown
+  /** The host's own `TeamTaskId` brand, injected rather than reimplemented. */
+  brandTaskId(value: unknown): unknown
 }
+
+/** The model-facing argument bag, trimmed to the frozen face of the name. */
+export type BUpstreamTeamArgs = Readonly<Record<string, unknown>>
 
 /**
  * The plane's OWN PA seat (`paAdmitBody`): the row hands the operation, the
@@ -79,6 +90,7 @@ export interface BUpstreamTeamRowInput {
   readonly port?: BUpstreamTeamPort
   readonly callerAgent?: string
   readonly pa?: BUpstreamTeamPa
+  readonly args?: BUpstreamTeamArgs
 }
 
 /** Typed refusal codes of this family. */
@@ -87,6 +99,7 @@ export interface BUpstreamTeamCodes {
   readonly callerUnresolved: 'P_UPSTREAMTEAM_CALLER_UNRESOLVED'
   readonly mountNotDeclared: 'P_UPSTREAMTEAM_MOUNT_NOT_DECLARED'
   readonly paSeatMissing: 'P_UPSTREAMTEAM_PA_SEAT_MISSING'
+  readonly portMethodMissing: 'P_UPSTREAMTEAM_PORT_METHOD_MISSING'
 }
 
 /** A row that is ready to run (governance already seated) or a typed refusal. */
@@ -99,10 +112,11 @@ export declare const A5_B_UPSTREAMTEAM_ADAPTER_REVISION: 1
 export declare const A5_B_UPSTREAMTEAM_MOUNT_CONDITION: 'declared_mount'
 export declare const A5_B_UPSTREAMTEAM_RECORD_SPECS: Readonly<Record<BUpstreamTeamToolName, BUpstreamTeamRecordSpec>>
 export declare const A5_B_UPSTREAMTEAM_TOOL_NAMES: readonly BUpstreamTeamToolName[]
-export declare const A5_B_UPSTREAMTEAM_SERVICE_METHODS: Readonly<Record<string, Readonly<{ service: string; method: string; arity: number }>>>
-export declare const A5_B_UPSTREAMTEAM_EFFECT_LABELS: Readonly<Record<string, Readonly<{ effect: string; label: string }>>>
+export declare const A5_B_UPSTREAMTEAM_SERVICE_METHODS: Readonly<Partial<Record<BUpstreamTeamToolName, Readonly<{ service: string; method: string; arity: number }>>>>
+export declare const A5_B_UPSTREAMTEAM_PARAM_FACES: Readonly<Partial<Record<BUpstreamTeamToolName, readonly string[]>>>
+export declare const A5_B_UPSTREAMTEAM_EFFECT_LABELS: Readonly<Partial<Record<BUpstreamTeamToolName, Readonly<{ effect: string; label: string }>>>>
 export declare const A5_B_UPSTREAMTEAM_CODES: BUpstreamTeamCodes
-export declare const A5_B_UPSTREAMTEAM_NAMED_GAPS: Readonly<Record<BUpstreamTeamToolName, BUpstreamTeamNamedGap>>
+export declare const A5_B_UPSTREAMTEAM_NAMED_GAPS: Readonly<Partial<Record<BUpstreamTeamToolName, BUpstreamTeamNamedGap>>>
 
 /** Placement entry for a rowed name, or null (gap / unknown name). */
 export declare function upstreamTeamPlacementEntry(name: string): BUpstreamTeamPlacementEntry | null
