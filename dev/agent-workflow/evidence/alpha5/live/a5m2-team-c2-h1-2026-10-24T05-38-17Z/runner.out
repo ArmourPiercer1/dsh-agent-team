@@ -1,0 +1,87 @@
+{
+  "trace": [
+    {
+      "leg": "C-FRESH-HOME",
+      "ok": true,
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T05-38-17Z",
+      "at": "2026-10-24T05:38:17.683Z"
+    },
+    {
+      "leg": "C-MOUNT-CANDIDATE",
+      "ok": true,
+      "detail": "dsh-agent-team@0.1.1-alpha.2 row=…/host.js exports=.,./host,./spill-local,./client,./package.json",
+      "at": "2026-10-24T05:38:17.683Z"
+    },
+    {
+      "leg": "C-PORT-FREE",
+      "ok": true,
+      "detail": "port=3180 probe refused a connect",
+      "at": "2026-10-24T05:38:17.686Z"
+    },
+    {
+      "leg": "C-MOUNT-VALIDATE",
+      "ok": true,
+      "detail": "B-TEAM rev-2 face: no A-TODO gates, no permissionPolicy key, world-scoped fs root",
+      "at": "2026-10-24T05:38:17.688Z"
+    },
+    {
+      "leg": "C-PROFILE-LAYER-WRITTEN",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T05-38-17Z/profiles/web/cordis.patch.yml",
+      "at": "2026-10-24T05:38:17.688Z"
+    },
+    {
+      "leg": "C-MOCK-MODEL",
+      "ok": true,
+      "detail": "127.0.0.1:3497 scripted, exactly-one-call decide",
+      "at": "2026-10-24T05:38:17.697Z"
+    },
+    {
+      "leg": "C-BOOT",
+      "ok": true,
+      "detail": "http://127.0.0.1:3180/?token=REDACTED",
+      "at": "2026-10-24T05:38:19.705Z"
+    },
+    {
+      "leg": "C-PORT-EXPLICIT",
+      "ok": true,
+      "detail": "port=3180",
+      "at": "2026-10-24T05:38:19.705Z"
+    },
+    {
+      "leg": "C-RUNTIME-ABORT",
+      "ok": false,
+      "detail": "PLUGIN_BOOTSTRAP_FAILED: [dsh-agent-team] bootstrap FAILED: TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $",
+      "at": "2026-10-24T05:38:19.965Z"
+    },
+    {
+      "leg": "child-exit",
+      "ok": true,
+      "detail": "exit code=0 signal=null",
+      "at": "2026-10-24T05:38:20.043Z"
+    },
+    {
+      "leg": "port-free-after-stop",
+      "ok": true,
+      "detail": "independent probe of 3180 after the child exit event",
+      "at": "2026-10-24T05:38:20.044Z"
+    },
+    {
+      "leg": "teardown",
+      "ok": true,
+      "detail": "childExit=true portFreeProbe=true worldBytes=7306/67108864 mockFree=true",
+      "at": "2026-10-24T05:38:20.048Z"
+    }
+  ],
+  "ok": false,
+  "error": "PLUGIN_BOOTSTRAP_FAILED: [dsh-agent-team] bootstrap FAILED: TeamContractError: blueprint is missing required field 'permissionMutationEnvelope' at $",
+  "teardown": {
+    "childExit": true,
+    "childExitDetail": "exit code=0 signal=null",
+    "portFreeProbe": true,
+    "mockPort": 3497,
+    "mockFree": true,
+    "worldBytes": 7306,
+    "worldCeilingBytes": 67108864
+  }
+}

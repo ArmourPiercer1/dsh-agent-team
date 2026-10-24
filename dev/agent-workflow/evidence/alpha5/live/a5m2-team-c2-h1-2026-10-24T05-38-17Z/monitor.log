@@ -1,0 +1,7 @@
+2026-10-24T05:38:17.228Z start pid=2 pgid=2 home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T05-38-17Z fixtureLock=dad670ae749c
+2026-10-24T05:38:17.237Z child pid=12 pgid=12 (monitor pgid 2)
+2026-10-24T05:38:18.247Z sample elapsed=1004ms home=5194 df=8454279168
+2026-10-24T05:38:28.334Z sample elapsed=11091ms home=7306 df=8451878912
+2026-10-24T05:38:34.974Z child exit code=1 signal=null
+2026-10-24T05:38:35.410Z end verdict=ok exit={"code":1,"signal":null,"at":"2026-10-24T05:38:34.974Z"} ports={"3180":true,"3497":true,"3498":true} fixtureLockUnchanged=true
+monitor own exit code=1 at 2026-10-24T05:38:35.410Z (child exit event at 2026-10-24T05:38:34.974Z)
