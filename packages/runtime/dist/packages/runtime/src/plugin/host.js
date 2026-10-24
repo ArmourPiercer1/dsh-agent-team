@@ -2143,6 +2143,73 @@ export async function apply(ctx, config) {
                 },
             };
         })();
+        // One-shot binding of the provider surface onto a frozen facade. Generic
+        // enumeration (the real service object's own keys) — a non-object answer
+        // passes through untouched so the consumers' typed shape refusals stand.
+        const bindOnceScheduleFacade = (svc) => {
+            if (svc === null || typeof svc !== 'object')
+                return svc;
+            const source = svc;
+            const facade = {};
+            for (const key of Object.keys(source)) {
+                const value = source[key];
+                facade[key] = typeof value === 'function' ? value.bind(source) : value;
+            }
+            return Object.freeze(facade);
+        };
+        // B-SCHEDULE LIFECYCLE FACE (root 2026-10-24 residual, user-approved
+        // PUBLIC Provider-lifecycle identity): the exact G6-PROVEN shape
+        // (0655a9f4c / sessionQueryLifecycle above) re-targeted to 'schedule'.
+        // WHY: on the pinned Cordis 639, EVERY ctx.get('schedule') above answers a
+        // FRESH tracker proxy and every method getter a fresh method proxy — raw
+        // read-comparison would refuse every governed call as phantom drift. The
+        // stable public fact is the provider GENERATION: the inject callback firing
+        // is the boundary (id++), the facade is child.get bound ONCE, and the
+        // answer stands only while the fiber is ACTIVE (registry.d.ts:111/:185 +
+        // fiber.d.ts:67-70; zero private symbols). Non-ACTIVE or a replacement
+        // generation INVALIDATES the bound capture; nothing here caches an old
+        // object past its generation or unwraps the tracker privately.
+        const scheduleLifecycle = (() => {
+            let generation = 0;
+            let current = null;
+            let fiber = null;
+            let observable = false;
+            if (typeof ctx.inject === 'function') {
+                observable = true;
+                try {
+                    const created = ctx.inject(['schedule'], (child) => {
+                        generation += 1;
+                        // THE STABLE FACADE (the card's 供稳定facade/绑定方法): child.get
+                        // is bound ONCE at the callback (the generation boundary itself)
+                        // and every FUNCTION surface is bound ONCE onto a frozen plain
+                        // facade — so consumers comparing method identities within one
+                        // generation compare the SAME bound handles, while a fresh
+                        // ctx.get read (or a fresh method-getter proxy) never reaches
+                        // them. Disclosed, exactly as G6's i6 law: a same-generation
+                        // in-place method swap under the provider is NOT observed (bound
+                        // handles keep serving) — no arbitrary internal hot-swap promise.
+                        current = { id: generation, service: bindOnceScheduleFacade(child.get('schedule')) };
+                    });
+                    fiber = (created ?? null);
+                }
+                catch {
+                    observable = false;
+                    fiber = null;
+                    current = null;
+                }
+            }
+            return {
+                currentGeneration() {
+                    if (!observable || fiber === null)
+                        return null;
+                    // FiberState.ACTIVE — cordis lib/types/fiber.d.ts:67-70 (public const
+                    // enum; the literal rides the structural independence rule).
+                    if (fiber.state !== 2)
+                        return null;
+                    return current;
+                },
+            };
+        })();
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -2152,23 +2219,28 @@ export async function apply(ctx, config) {
             controlServiceRef,
             ptcEscalationRef,
             now: () => new Date().toISOString(),
-            // B-SCHEDULE PORT BOUNDARY (root 19:17): the REAL published
-            // ScheduleService raw handle / CURRENT FEED — the global service store
-            // read under 'schedule', the SAME name the host's own schedule bodies
-            // resolve `rootCtx.schedule` from at every dispatch. The signed adapter
-            // is fed the raw service (never a wrapper of the native TOOL face — the
-            // tool output is a rendered view set, not the service's record stream),
-            // and the feed is re-read LIVE so a service object or method replaced
-            // underneath the mount is observed as the signed PORT_DRIFT it is.
-            // Absence answers undefined (the glue fail-closes; no stand-in exists).
-            scheduleServiceFeed: () => {
-                try {
-                    return ctx.get?.('schedule');
-                }
-                catch {
-                    return undefined;
-                }
-            },
+            // B-SCHEDULE PORT BOUNDARY (root 19:17, currentness law re-anchored
+            // 2026-10-24): the REAL published ScheduleService CURRENT FEED — the
+            // 'schedule' provider surface the host's own bodies resolve
+            // `rootCtx.schedule` from, answered through the PUBLIC provider
+            // lifecycle below (the signed adapter is still fed the raw SERVICE,
+            // never a wrapper of the native TOOL face — the tool output is a
+            // rendered view set, not the service's record stream). CURRENTNESS
+            // law: within one generation the generation facade answers; a
+            // replacement generation answers the NEW facade and non-ACTIVE answers
+            // undefined — both observed downstream as the typed drift/unobservable
+            // refusals they are. Absence answers undefined (fail-closed; no
+            // stand-in exists).
+            scheduleLifecycle,
+            // THE CURRENT-GENERATION FACADE IS THE FEED (root 2026-10-24 residual):
+            // NOT a raw per-read ctx.get — on the pinned Cordis 639 every such read
+            // is a FRESH tracker proxy (and every method getter a fresh method
+            // proxy), so read-comparison downstream would refuse every REAL call as
+            // phantom drift (正向必拒). The facade is the one object the generation
+            // boundary published; non-ACTIVE or a replacement generation answers
+            // undefined/next-generation — the old capture is INVALIDATED, never
+            // cached forever. Absence stays absence (consumers fail closed).
+            scheduleServiceFeed: () => scheduleLifecycle.currentGeneration()?.service,
             // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
             // blueprint resolver (the glue's dynamic Team authority — the three-
             // case contract in bound-blueprint.ts: a bound ref resolves through

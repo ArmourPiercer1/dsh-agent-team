@@ -141,8 +141,36 @@ export function createScheduleBindAfterDef(deps) {
     if (current.execute !== bindMethods.executes.get(name)) {
       throw breakpoint('native-execute-drift', `the def's execute to still be the bound reference (captured at bind time)`, 'the def object now carries a DIFFERENT execute', `per-dispatch:${name}`)
     }
+    if (bindMethods.generationId !== null) {
+      // THE PUBLIC PROVIDER LIFECYCLE LAW (user-approved; the G6-PROVEN
+      // 0655a9f4c shape): on Cordis 639 EVERY ctx.get answers a fresh
+      // tracker proxy (and every method getter a fresh method proxy), so
+      // OBJECT identity across reads is not a fact this world ever carries
+      // — the stable public fact is the provider GENERATION: the inject
+      // callback firing is the boundary (id++), the facade is child.get
+      // bound ONCE, and the answer stands only while the fiber is ACTIVE
+      // (fiber.d.ts:67-70). Non-ACTIVE or a replacement generation
+      // INVALIDATES the bound capture — that is the drift here; a plain
+      // re-proxy read is NOT. Same-generation in-place method swaps are
+      // NOT promised to be observed (the i6 law G6 measured): the bound
+      // facade keeps serving; nothing here unwraps the proxy privately and
+      // nothing caches an old object past its generation.
+      const genNow = deps.serviceGeneration === undefined ? null : deps.serviceGeneration()
+      if (!isRecord(genNow) || typeof genNow.id !== 'number') {
+        throw breakpoint('service-lifecycle-unobservable', 'the PUBLIC provider lifecycle to still be observable (inject fiber ACTIVE)', 'currentGeneration answered null — teardown/replacement without an observable boundary (never allow-by-default)', 'G6-0655 lifecycle law')
+      }
+      if (genNow.id !== bindMethods.generationId) {
+        throw breakpoint('service-generation-drift', `the bound provider generation #${String(bindMethods.generationId)} to still be CURRENT`, `the lifecycle answered generation #${String(genNow.id)} — the old capture is INVALID, never carried into a new provider`, 'G6-0655 lifecycle law')
+      }
+      if (genNow.service !== bindMethods.service) {
+        throw breakpoint('service-generation-drift', 'the generation facade to be exactly the child.get-bound object captured ONCE in its generation', 'the same generation answered a different facade — a broken lifecycle supply', 'G6-0655 lifecycle law')
+      }
+      return
+    }
     // The feed is re-asked HERE (root ② law: a bind-time constant compared
     // against itself proves nothing) — the CURRENT live object is the answer.
+    // Identity law applies to the NON-proxy world only; on Cordis 639 the
+    // wiring always supplies serviceGeneration and the block above is the law.
     const live = deps.scheduleServiceFeed?.()
     if (live !== bindMethods.service) {
       throw breakpoint('service-identity-drift', 'the SAME live service object as at bind time', 'a different object underneath', 'per-dispatch service')
@@ -153,12 +181,19 @@ export function createScheduleBindAfterDef(deps) {
   }
 
   async function bindExecutions(agent) {
-    const serviceAtBind = deps.scheduleServiceFeed?.()
+    // The lifecycle face is ASKED AT THE BOUND (never assumed): a supplied
+    // face that cannot answer is a refusal, not a silent fallback to raw
+    // reads; no face at all = the non-proxy world keeps the identity law.
+    const genAtBind = deps.serviceGeneration === undefined ? undefined : await Promise.resolve(deps.serviceGeneration())
+    if (deps.serviceGeneration !== undefined && (!isRecord(genAtBind) || typeof genAtBind.id !== 'number' || !isRecord(genAtBind.service))) {
+      throw breakpoint('service-lifecycle-unobservable', 'the PUBLIC provider lifecycle to answer {id, service} at the bind (inject fiber ACTIVE)', 'the wiring supplied the face and it did not answer — fail closed, no raw-feed fallback on the proxy world', 'G6-0655 lifecycle law')
+    }
+    const serviceAtBind = genAtBind !== undefined ? genAtBind.service : deps.scheduleServiceFeed?.()
     if (!isRecord(serviceAtBind)
       || typeof serviceAtBind.list !== 'function' || typeof serviceAtBind.delete !== 'function') {
       throw breakpoint('service-shape', 'full ScheduleService-shaped live handle (list/delete)', String(serviceAtBind), 'execute/live service identity')
     }
-    const bindMethods = Object.freeze({ service: serviceAtBind, list: serviceAtBind.list, delete: serviceAtBind.delete, executes: new Map() })
+    const bindMethods = Object.freeze({ service: serviceAtBind, list: serviceAtBind.list, delete: serviceAtBind.delete, executes: new Map(), generationId: genAtBind?.id ?? null })
     // The bind-time EXECUTE references (root residual 4): current.execute
     // compared against def.execute on the SAME object is a tautology; the
     // comparison runs against these SAVED references instead.
@@ -274,7 +309,10 @@ export function createScheduleBindAfterDef(deps) {
           const result = await next()
           if (disposed) note('post-boundary-pair-closed', { name: exec.name, detail: 'the pair closed while the inner chain ran; the body already ran — the settled result passes through and the fact is OBSERVED' })
           const liveAfter = deps.scheduleServiceFeed?.()
-          if (liveAfter !== bindMethods.service || liveAfter?.list !== bindMethods.list) note('post-boundary-service-drift', { name: exec.name, detail: 'the live service face moved during the inner chain; OBSERVED, the settled result is not retroactively refused' })
+          const driftGen = bindMethods.generationId !== null
+            ? (() => { const g = deps.serviceGeneration === undefined ? null : deps.serviceGeneration(); return !isRecord(g) || g.id !== bindMethods.generationId || g.service !== bindMethods.service })()
+            : (liveAfter !== bindMethods.service || liveAfter?.list !== bindMethods.list)
+          if (driftGen) note('post-boundary-service-drift', { name: exec.name, detail: 'the live service face moved during the inner chain; OBSERVED, the settled result is not retroactively refused' })
           return result
         } finally {
           // ONE settle for the WHOLE governed flight (take→PA→next→finally),
