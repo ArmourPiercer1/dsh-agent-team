@@ -494,6 +494,7 @@ export function createG2WebRowset ({ gatewayResolver, webCenterPorts, member, as
         binding: Object.freeze({ bindingId: String(raw?.binding?.bindingId ?? raw?.bindingId ?? proof.grant.bindingId ?? '') }),
         member: Object.freeze({ teamSessionId: rootSessionId, instanceId: String(member?.instanceId ?? '') }),
         effects: Object.freeze({ effects: Array.isArray(raw?.effects) ? raw.effects : [{ kind: 'connect', resource: { origin: String(envelope?.destinationOrigin ?? raw?.destinationOrigin ?? '') } }], fingerprint: String(exec?.parametersFingerprint ?? '') }),
+        proof,
         placement: Object.freeze({ name: `web_${operation}` }),
         assemblyId: String(assemblyId ?? ''),
       })

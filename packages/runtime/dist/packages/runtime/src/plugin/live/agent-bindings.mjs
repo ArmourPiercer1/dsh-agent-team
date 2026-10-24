@@ -3460,7 +3460,13 @@ export function createAgentBindings(deps) {
                 },
                 search: async (request, signal) => {
                   const fixed = await fixedOrRefuse()
-                  if (fixed !== undefined && typeof fixed.search === 'function') return fixed.search(request, signal)
+                  // ROOT 81e7 ③: a declared fixed face with search=null
+                  // REFUSES search EXPLICITLY — it never falls back to the
+                  // shared seam search behind the fixed mount.
+                  if (fixed !== undefined) {
+                    if (typeof fixed.search === 'function') return fixed.search(request, signal)
+                    throw Object.assign(new Error('G2_WEB_SEARCH_REFUSED: this mount declared a fixed web provider without a search capability; search is refused explicitly, never delegated to the shared seam'), { code: 'G2_WEB_SEARCH_REFUSED' })
+                  }
                   return seam?.search?.(request, signal)
                 },
               }

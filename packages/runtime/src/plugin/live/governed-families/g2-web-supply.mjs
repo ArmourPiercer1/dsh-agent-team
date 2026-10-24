@@ -116,7 +116,7 @@ export function createG2FixedWebFace (provider, { searchProvider } = {}) {
  * undefined and every port refuses TYPED (the kept honest refusal; no
  * effects/grantId constants, no stand-in facts).
  */
-export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, consumeEdge, searchOriginFacts, assemblyId } = {}) {
+export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, searchOriginFacts, assemblyId } = {}) {
   const decline = (code, message) => ({ ok: false, error: { code, message, sideEffectUnknown: false } })
   // ROOT 23bc-CARD ②: a REAL grantId is NOT a callId. The plane context
   // carries grant / call / placement / member / effects / assembly
@@ -174,7 +174,7 @@ export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, con
         callId: String(facts.callId ?? ctx.call?.callId ?? ''),
         bindingRevision: facts.binding?.revision,
         authorityGeneration: facts.authorityGeneration,
-        policyGeneration: facts.overlayGeneration,
+        policyGeneration: facts.policySource?.overlayGeneration,
         effects: facts.effects ?? ctx.effects,
         bindingId: String(ctx.binding?.bindingId ?? facts.binding?.bindingId ?? ''),
       }
@@ -182,39 +182,30 @@ export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, con
       return { ok: true, value: Object.freeze(value) }
     },
   })
+  const relayedOnce = new Set()
   const grantAuthority = Object.freeze({
+    // ROOT 81e7 FINAL RULING — the ONE consume responsibility sits at
+    // the existing B-WEB rowset -> g2RowExecute TRUE final plane edge
+    // (paAdmitEdge, team-tool-plane :1548 single-object call at :1762;
+    // it is NOT re-implemented or re-called here — a second
+    // consumeEdge(grant, options) shape was a double invention). Here
+    // the SAME call's ACTUAL proof is only VERIFIED and RELAYED:
+    // present, grant-identity exact, ONE relay; an independent entry
+    // without the real proof refuses; nothing is forged from model
+    // fields; no second PA deduction ever happens downstream.
     consume: async ({ facts, correlation, isCancelled } = {}) => {
-      // ROOT 23bc-CARD ⑤: THE ONE consumption layer — the injected edge
-      // IS the production plane wrapper around assembly.consumeForExecution
-      // answering the wrapper's REAL shape ({ kind: allow, consumedProof,
-      // cancelled? }). The raw { ok, value } assembly layer is NEVER
-      // called here as a SECOND consumption; one call, one consume.
-      if (typeof consumeEdge !== 'function') return decline('G2_WEB_CONSUME_EDGE_ABSENT', 'no production consume wrapper injected; ONE consume is never simulated')
-      if (typeof isCancelled === 'function' && isCancelled() === true) return decline('G2_WEB_CANCELLED', 'cancelled at the consume boundary — zero consume performed (C3 law)')
+      if (typeof isCancelled === 'function' && isCancelled() === true) return decline('G2_WEB_CANCELLED', 'cancelled at the relay boundary — nothing is relayed after cancel (C3 law)')
       const ctx = resolve(correlation?.grantId)
-      if (ctx === undefined || ctx === null || ctx.grant === undefined) return decline('G2_WEB_CALL_CONTEXT_ABSENT', 'the consume wrapper needs the announced REAL grant; absent, no consume happens')
-      const edge = await consumeEdge(ctx.grant, {
-        ...(typeof isCancelled === 'function' ? { cancelRequested: isCancelled() === true } : {}),
-        currentAuthorityGeneration: facts?.authorityGeneration,
-        member: facts?.member ?? ctx.member,
-        callId: String(ctx.call?.callId ?? ''),
-        realmId: String(ctx.call?.realmId ?? correlation?.realmId ?? ''),
-        bindingId: String(correlation?.bindingId ?? ctx.binding?.bindingId ?? ''),
-        bindingRevision: facts?.bindingRevision,
-        parametersFingerprint: correlation?.payloadFingerprint,
-        requestedEffects: ctx.effects,
-      })
-      if (edge === undefined || edge === null || edge.kind !== 'allow') return decline('G2_WEB_GRANT_NOT_ALLOWED', 'the production wrapper did not answer allow; refusals pass through verbatim, never re-judged open')
-      if (edge.cancelled === true) return decline('G2_WEB_CANCELLED', 'the wrapper answered allow WITH cancellation at the decision point — treated as cancelled, not consumed')
-      const proof = edge.consumedProof
+      if (ctx === undefined || ctx === null) return decline('G2_WEB_CALL_CONTEXT_ABSENT', 'the relay needs the announced live context of THIS call; an independent entry refusing to name its call is refused')
+      const proof = ctx.proof
       if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
-        return decline('G2_WEB_CONSUME_PROOF_MISSING', 'the wrapper answered allow WITHOUT its one-shot consume witness — the row never self-attests; body does not run')
+        return decline('G2_WEB_CONSUME_PROOF_MISSING', 'the call carries NO real consumedProof from the plane edge — no proof, no relay, no second deduction, no fabrication')
       }
-      // ROOT 23bc-CARD ⑥: success IS a WebConsumedGrant — the REAL
-      // grantId (from the announced grant, not the callId) with its
-      // corresponding proof + effects.
+      if (proof.grant.grantId !== String(correlation?.grantId)) return decline('G2_WEB_GRANT_IDENTITY_MISMATCH', 'the relayed proof names a DIFFERENT grant than the presented correlation — identity is exact or it is refused')
+      if (relayedOnce.has(String(correlation?.grantId))) return decline('G2_WEB_PROOF_ALREADY_RELAYED', 'ONE relay per consumed proof — the plane edge consumed exactly once; downstream never re-spends it')
+      relayedOnce.add(String(correlation?.grantId))
       return { ok: true, value: Object.freeze({
-        grantId: String(ctx.grant.grantId),
+        grantId: String(proof.grant.grantId),
         effects: Object.freeze({ effects: [...(facts?.effects?.effects ?? ctx.effects?.effects ?? [])] }),
         consumedProof: proof,
       }) }

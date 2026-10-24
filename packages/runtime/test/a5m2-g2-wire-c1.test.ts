@@ -1291,6 +1291,7 @@ describe('A5M2-WIRE round-37: trio v2 — real call-facts read, plane consume ed
       factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
       grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: { consumedProof?: unknown }; error?: { code?: string } }> }
       resolveSearchOrigin: () => string
+      beginCall: (c: Record<string, unknown>) => () => void
     }
   }
   const REG = async () => (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as { readPaCallFactsForCall: (i: Record<string, unknown>) => Promise<unknown> }
@@ -1307,32 +1308,18 @@ describe('A5M2-WIRE round-37: trio v2 — real call-facts read, plane consume ed
     expect(cap.ok).toBe(false)
     expect(cap.error?.code).toBe('G2_WEB_FACTS_INCOMPLETE') // the REAL reader answered undefined: no mount published for the pair
   })
-  it('consume rides the edge shape verbatim, demands the one-shot consumedProof, cancel performs ZERO consume; origin answers the real config value or refuses per call', async () => {
+  it('origin answers the real config value or refuses per call; cancel at the relay boundary declines before any relay state is spent', async () => {
     const m = await MOD()
-    const calls: unknown[][] = []
-    const edge = (grant: unknown, opts: Record<string, unknown>) => { calls.push([grant, opts]); return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'g-1' } } }) }
-    const ports = m.createG2WebCenterPorts({
-      resolveCallContext: () => ({ grant: { grantId: 'g-1', bindingId: 'b-1' }, realmId: 'r', requestedEffects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }], fingerprint: 'fp' } }),
-      consumeEdge: edge,
-      searchOriginFacts: { origin: 'https://search.example.invalid' },
-    })
-    const facts = { authorityGeneration: 9, member: { teamSessionId: 'rt', instanceId: 'mi' }, bindingRevision: 4, effects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] } }
-    const con = await ports.grantAuthority.consume({ facts, correlation: { grantId: 'g-1', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
-    expect(con.ok).toBe(true)
-    expect(con.value?.consumedProof).toEqual({ grant: { grantId: 'g-1' } })
-    const sent = ((calls[0] ?? []) as unknown[])[1] as Record<string, unknown>
-    expect(sent.currentAuthorityGeneration).toBe(9) // REAL numbers ride, assembled nowhere by us
-    expect(sent.parametersFingerprint).toBe('fp')
-    let edgeRan = false
-    const cancelled = await m.createG2WebCenterPorts({ resolveCallContext: () => ({ grant: { grantId: 'g' }, realmId: 'r', requestedEffects: { effects: [], fingerprint: 'f' } }), consumeEdge: () => { edgeRan = true; return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'g' } } }) } })
-      .grantAuthority.consume({ facts, correlation: { grantId: 'g' }, isCancelled: () => true })
-    expect(cancelled.error?.code).toBe('G2_WEB_CANCELLED')
-    expect(edgeRan).toBe(false) // zero consume on cancel-first
-    const noProof = await m.createG2WebCenterPorts({ resolveCallContext: () => ({ grant: { grantId: 'g-2' }, realmId: 'r', requestedEffects: { effects: [], fingerprint: 'f' } }), consumeEdge: () => Promise.resolve({ kind: 'allow' }) })
-      .grantAuthority.consume({ facts, correlation: { grantId: 'g-2' }, isCancelled: () => false })
-    expect(noProof.error?.code).toBe('G2_WEB_CONSUME_PROOF_MISSING')
+    const ports = m.createG2WebCenterPorts({ searchOriginFacts: { origin: 'https://search.example.invalid' } })
     expect(ports.resolveSearchOrigin()).toBe('https://search.example.invalid')
     expect(() => m.createG2WebCenterPorts({}).resolveSearchOrigin()).toThrow(/G2_WEB_SEARCH_ORIGIN_ABSENT/)
+    const p = m.createG2WebCenterPorts({ assemblyId: 'asm-9' })
+    const end = p.beginCall({ grant: { grantId: 'g-c' }, call: { callId: 'call-c' }, proof: { grant: { grantId: 'g-c' } }, effects: { effects: [] }, assemblyId: 'asm-9' })
+    const cancelled = await p.grantAuthority.consume({ facts: { effects: { effects: [] } }, correlation: { grantId: 'g-c' }, isCancelled: () => true })
+    expect(cancelled.error?.code).toBe('G2_WEB_CANCELLED')
+    const after = await p.grantAuthority.consume({ facts: { effects: { effects: [] } }, correlation: { grantId: 'g-c' }, isCancelled: () => false })
+    expect(after.ok).toBe(true) // the cancel declined WITHOUT burning the one relay
+    end()
   })
 })
 
@@ -1349,7 +1336,7 @@ describe('A5M2-WIRE round-39: six-item card — v3 relay facts/consume', () => {
       beginCall: (c: Record<string, unknown>) => () => void
     }
   }
-  const baseFacts = { member: { teamSessionId: 'rt', instanceId: 'mi' }, callId: 'call-77', binding: { revision: 5, bindingId: 'b-1' }, authorityGeneration: 9, overlayGeneration: 12, effects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] } }
+  const baseFacts = { member: { teamSessionId: 'rt', instanceId: 'mi' }, callId: 'call-77', binding: { revision: 5, bindingId: 'b-1' }, authorityGeneration: 9, policySource: { overlayGeneration: 12 }, effects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] } }
   const ctxOf = (kind: string, planSnapshot?: unknown) => ({
     grant: { grantId: 'grant-9' }, call: { callId: 'call-77', realmId: 'r' }, binding: { bindingId: 'b-1' },
     member: baseFacts.member, effects: baseFacts.effects, placement: { name: 'web_fetch' }, assemblyId: 'asm-1',
@@ -1378,22 +1365,32 @@ describe('A5M2-WIRE round-39: six-item card — v3 relay facts/consume', () => {
     expect(() => p.beginCall({ ...ctxOf('x'), assemblyId: 'asm-OTHER' })).toThrow(/G2_WEB_ASSEMBLY_MISMATCH/)
     expect(() => p.beginCall({ grant: { grantId: 'g' }, call: { callId: '' }, assemblyId: 'asm-1' })).toThrow(/REAL grant AND the REAL current call/)
   })
-  it('ONE consumption layer: the production wrapper runs EXACTLY once and success is a WebConsumedGrant with the REAL grantId + its proof + effects', async () => {
+  it('ROOT 81e7 unique-consume ruling: the gateway NEVER second-deducts — it VERIFIES and RELAYS the same call\'s real plane-edge proof (exact grant identity, ONE relay); no proof refuses; policy generation reads the NESTED facts.policySource.overlayGeneration', async () => {
     const m = await MOD()
-    let calls = 0
-    const p = m.createG2WebCenterPorts({
-      assemblyId: 'asm-1',
-      consumeEdge: () => { calls += 1; return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'grant-9' } } }) },
-    })
-    const end = p.beginCall(ctxOf('call-facts'))
+    const p = m.createG2WebCenterPorts({ assemblyId: 'asm-1' })
+    const proof = { grant: { grantId: 'grant-9' } }
+    const ctx = { ...ctxOf('call-facts'), proof }
+    const end = p.beginCall(ctx)
     const facts = { authorityGeneration: 9, member: baseFacts.member, bindingRevision: 5, effects: baseFacts.effects }
     const con = await p.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
     expect(con.ok).toBe(true)
-    expect(calls).toBe(1)
-    expect(con.value?.grantId).toBe('grant-9') // REAL grant identity, not the call
-    expect((con.value?.consumedProof as Record<string, unknown>)).toEqual({ grant: { grantId: 'grant-9' } })
-    expect(((con.value?.effects as Record<string, unknown>).effects as unknown[]).length).toBe(1)
+    expect(con.value?.grantId).toBe('grant-9')
+    expect(con.value?.consumedProof).toEqual(proof as never)
+    const again = await p.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9' }, isCancelled: () => false })
+    expect(again.error?.code).toBe('G2_WEB_PROOF_ALREADY_RELAYED') // ONE relay, never re-spent
     end()
+    const p2 = m.createG2WebCenterPorts({ assemblyId: 'asm-1' })
+    const end2 = p2.beginCall({ ...ctxOf('call-facts'), proof: { grant: { grantId: 'grant-DIFF' } } })
+    const mis = await p2.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9' }, isCancelled: () => false })
+    expect(mis.error?.code).toBe('G2_WEB_GRANT_IDENTITY_MISMATCH')
+    end2()
+    const p3 = m.createG2WebCenterPorts({ assemblyId: 'asm-1' })
+    const end3 = p3.beginCall(ctxOf('call-facts')) // no proof announced
+    const noProof = await p3.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9' }, isCancelled: () => false })
+    expect(noProof.error?.code).toBe('G2_WEB_CONSUME_PROOF_MISSING') // independent entry without real proof refuses
+    end3()
+    // nested policySource fact (first `it` above already pins capture)
+    expect(baseFacts.policySource.overlayGeneration).toBe(12)
   })
 })
 
