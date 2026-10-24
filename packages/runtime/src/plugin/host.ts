@@ -639,6 +639,20 @@ interface GlueModule {
      * targets keep serving; nothing is fabricated.
      */
     readonly sessionProjections?: () => unknown
+    /**
+     * A5M2-G5 MOUNT-ARM (root 01:34 card, the REAL supply line): the LAZY
+     * DSH public `goals` service accessor — the session-bound GoalService
+     * (api-catalog `goals`: seven agent-first methods backed exclusively by
+     * the owning session log) whose face IS the governed goal port. Additive
+     * optional, never hard-injected: worlds without the service keep the
+     * family UNARMED (honest observation, zero flip, natives untouched).
+     * Execution authority is deliberately NOT supplied anywhere on this
+     * line: the host derives direct-human / goal-round from the session
+     * event log and the live agent graph (tool-goal/src/authority.ts:80-118
+     * @639ed01539) — no public read of those reaches the assembly, and the
+     * rows report the dimension UNOBSERVED rather than claim a check.
+     */
+    readonly goals?: () => unknown
   }): TeamAgentBindings
 }
 
@@ -2441,6 +2455,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // NO_CURRENT_STEP guard when the projection is unavailable — never a
     // fabricated boundary. Additive optional, never a hard inject.
     sessionProjections: () => ctx.get('sessionProjections'),
+    // A5M2-G5 MOUNT-ARM (root 01:34 card): the LAZY public `goals` service
+    // (global-store ctx.get read, the sessionQuery/jobs pattern verbatim) —
+    // the mount arm hands THIS live face to the plane as the governed port;
+    // nothing is mirrored, cached or stand-in'd.
+    goals: () => ctx.get('goals'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
     // wrapper pattern — resolved per member mount, fail-closed when the
     // service is absent). Additive optional dep: never in the hard inject
