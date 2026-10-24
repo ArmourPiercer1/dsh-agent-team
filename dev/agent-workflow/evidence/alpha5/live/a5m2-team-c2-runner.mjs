@@ -58,8 +58,13 @@ const hostTree = () => process.env.A5M2_TEAM_C2_HOST_TREE ?? SHARED_HOST_TREE
 const SHARED_PRODUCT_TREE = '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int'
 const PRODUCT_PIN = 'ced9e7dbb63bcb06e2c93a7cb077b96dfcaedd5d'
 const PRODUCT_TIP = '5062988f0626bff3aea77a2cb98247dd96c0afa4'
+/** Observed by this lane later: the product package advanced; measured here
+ *  read-only — tracked-clean, its mirror answers adapter revision 2, and the
+ *  three B-TEAM product files diff EMPTY against it. The drift=0 attribution
+ *  remains the pin's, not this line's. */
+const PRODUCT_TIP_LATER = '83a2c30c7d6599ef81da14b83527cd0c47f90d5f'
 const productTree = () => process.env.A5M2_TEAM_C2_PRODUCT_TREE ?? SHARED_PRODUCT_TREE
-const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
+const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, PRODUCT_TIP_LATER, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
 /**
@@ -312,6 +317,91 @@ function collectStrings (value, out = []) {
   return out
 }
 
+
+/**
+ * The durable session-event vocabulary, read from the host's OWN extraction
+ * module (`tests/deepseek-harness-test-use/packages/session-query/session-query/
+ * src/extraction.ts:16-28`): `user/message` → `data.content`,
+ * `assistant/message` → `data.message.content`, `tool/call` → `data.name` +
+ * `data.arguments`, `tool/result` → `data.message.content` (+ `data.error`).
+ * So the same-call pairing is: an `assistant/message` carrying a `tool_use`
+ * block (with its `id`) and the `tool/result` whose `message.content` carries a
+ * `tool_result` block with the SAME `tool_use_id`.
+ */
+export function sameCallToolPairs (events, toolName) {
+  const calls = new Map()
+  const results = new Map()
+  for (const { line } of events) {
+    if (line?.type === 'assistant/message') {
+      for (const block of line?.data?.message?.content ?? []) {
+        if (block?.type === 'tool_use' && block.name === toolName) calls.set(block.id, { id: block.id, name: block.name, arguments: block.input ?? block.arguments ?? null })
+      }
+    }
+    if (line?.type === 'tool/result') {
+      for (const block of line?.data?.message?.content ?? []) {
+        if (block?.type === 'tool_result' && calls.has(block.tool_use_id)) results.set(block.tool_use_id, { content: block.content, isError: block.is_error === true, error: line?.data?.error ?? null })
+      }
+    }
+  }
+  return [...calls.values()].map((call) => ({ ...call, result: results.get(call.id) ?? null, paired: results.has(call.id) }))
+}
+
+/** Events of the session log that belongs to this run: the file must carry the
+ *  run's marker, so a foreign session can never answer for the case. */
+export function sessionEventsForRun (home, marker) {
+  const out = []
+  for (const file of listSessionFiles(home)) {
+    const events = readSessionLines(home).filter((entry) => entry.file === file.path)
+    const carriesMarker = events.some((entry) => JSON.stringify(entry.line).includes(marker))
+    if (carriesMarker) out.push(...events)
+  }
+  return out
+}
+
+/**
+ * THE live leader-turn case: ONE prompt turn (unique business requestId) asking
+ * the leader to call `team_list_members`, then the durable log is read
+ * frame-by-frame until the SAME `tool_use_id` pair appears or the budget runs
+ * out. The criterion is the ORIGINAL VALUE: the pair must be same-call,
+ * not `is_error`, and the returned content must contain the expected value
+ * fragments — never merely "a refusal happened". `expectOnce` additionally
+ * demands exactly one call for that tool in this turn.
+ */
+export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, sessionId, expectContains, expectOnce = true, budgetMs = 180_000, pollMs = 2_000 }) {
+  const marker = `A5M2C2-MEMBERS-${runStamp}`
+  const directive = [
+    `Team operation marker: ${marker}`,
+    'Call the team tool `team_list_members` exactly once now and report the member instance ids verbatim.',
+  ].join('\n')
+  const prompt = await apiPrompt(origin, cookie, sessionId, directive, `bteam-members-${runStamp}`)
+  const promptError = resultError(prompt.body)
+  const deadline = Date.now() + budgetMs
+  let pairs = []
+  for (;;) {
+    const events = sessionEventsForRun(home, marker)
+    pairs = sameCallToolPairs(events, 'team_list_members')
+    if (pairs.some((pair) => pair.paired)) break
+    if (Date.now() > deadline) break
+    await new Promise((resolve) => setTimeout(resolve, pollMs))
+  }
+  const paired = pairs.filter((pair) => pair.paired)
+  const rendered = paired.map((pair) => JSON.stringify(pair.result?.content ?? null))
+  const missing = (expectContains ?? []).filter((needle) => !rendered.some((text) => text.includes(needle)))
+  return {
+    ok: promptError === null && paired.length > 0
+      && paired.every((pair) => pair.result.isError !== true && pair.result.error === null)
+      && missing.length === 0
+      && (!expectOnce || pairs.length === 1),
+    marker,
+    sessionId,
+    promptError,
+    calls: pairs.map((pair) => ({ id: pair.id, paired: pair.paired, isError: pair.result?.isError ?? null })),
+    missing,
+    pairCount: paired.length,
+    callCount: pairs.length,
+  }
+}
+
 /** Prechecks only: source-level, no host, no world, no install. */
 export function precheck () {
   const problems = [...validateRow().problems]
@@ -446,7 +536,14 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, g
       if (!root.ok) return { trace, ok: false, root }
       const query = await teamFirstQuery({ origin, cookie, teamSessionId: root.rootSessionId })
       rec('C-TEAM-QUERY', query.ok, `${query.method} fields=${query.closedFields.join(',')} ${query.error === null ? 'answered' : `error=${JSON.stringify(query.error).slice(0, 160)}`}`)
-      return { trace, ok: trace.every((row) => row.ok), root, query }
+      const leaderSession = live.leaderSessionId ?? collectStrings(root.createBody).find((value) => value.startsWith('session-'))
+      if (leaderSession === undefined) {
+        rec('C-LEADER-PROMPT', false, 'no leader session derivable from the create answer and none passed with --leader-session: the members case is NOT attempted (never faked)')
+        return { trace, ok: false, root, query }
+      }
+      const members = await runLeaderMembersCase({ origin, cookie, home: join(REPO, world), runStamp: live.runStamp, sessionId: leaderSession, expectContains: live.expectContains })
+      rec('C-LEADER-MEMBERS', members.ok, `same-call pairs=${String(members.pairCount)} calls=${String(members.callCount)} missing=${members.missing.join(',') || 'none'}`)
+      return { trace, ok: trace.every((row) => row.ok), root, query, members }
     }
     // Team cases run against a NEW unique root created directly through the
     // public Team API (never by hijacking an ordinary session writer).
@@ -466,6 +563,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     // A real round needs the row/blueprint the lane owner owns; nothing is
     // invented here, and the host tree is the reused read-only package.
     const blueprintId = valueOf('--blueprint-id')
+    const expectContains = (valueOf('--expect-contains') ?? '').split(',').map((value) => value.trim()).filter((value) => value.length > 0)
     const runStamp = valueOf('--run-stamp') ?? new Date().toISOString().replace(/[:.]/g, '')
     if (blueprintId === undefined) {
       console.error('--live needs --blueprint-id (and optionally --blueprint-revision, --run-stamp, --initial-work-prompt): no blueprint is invented here')
@@ -475,7 +573,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         port: Number(valueOf('--port') ?? 3188),
         world: ROW_CONFIG.world,
         blueprintSource: valueOf('--blueprint-file') === undefined ? '' : readFileSync(valueOf('--blueprint-file'), 'utf8'),
-        live: { runStamp, blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt') },
+        live: { runStamp, blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt'), leaderSessionId: valueOf('--leader-session'), expectContains },
       })
       console.log(JSON.stringify(outcome, null, 2))
       process.exitCode = outcome.ok ? 0 : 1

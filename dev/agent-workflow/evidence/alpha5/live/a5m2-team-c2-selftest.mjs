@@ -6,7 +6,7 @@
  * do so.
  */
 import { zstdCompressSync, zstdDecompressSync } from 'node:zlib'
-import { decodeSessionLogFrames, resultError, teamCreateParams, createUniqueTeamRoot, teamFirstQuery } from './a5m2-team-c2-runner.mjs'
+import { decodeSessionLogFrames, resultError, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, sameCallToolPairs } from './a5m2-team-c2-runner.mjs'
 
 const first = Buffer.from('{"line":"frame-one"}\n')
 const second = Buffer.from('{"line":"frame-two"}\n')
@@ -56,6 +56,19 @@ const query = await teamFirstQuery({ origin: 'http://127.0.0.1:1', cookie: 'c', 
 contract.firstTeamQueryAddressesTheCreatedRoot = query.ok === true && query.method === 'team.getProjection'
   && query.closedFields.join(',') === 'teamSessionId'
   && query.body.payload.projection.teamSessionId === root.rootSessionId
-result.contract = contract
+/* Same-call pairing and the ORIGINAL-VALUE criterion, exercised over the
+ * durable vocabulary the host's own extraction module defines
+ * (`assistant/message` → data.message.content, `tool/result` →
+ * data.message.content). Canned events — the live body is in the runner and
+ * runs only on a booted round. */
+const CALL_ID = 'call-a5m2c2-1'
+const events = [
+  { file: 'f', line: { type: 'assistant/message', data: { message: { content: [{ type: 'tool_use', id: CALL_ID, name: 'team_list_members', input: {} }] } } } },
+  { file: 'f', line: { type: 'tool/result', data: { message: { content: [{ type: 'tool_result', tool_use_id: CALL_ID, is_error: false, content: [{ type: 'text', text: '{"members":[{"memberInstanceId":"mi-1"}]}' }] }] } } } },
+  { file: 'f', line: { type: 'tool/result', data: { message: { content: [{ type: 'tool_result', tool_use_id: 'other-id', content: [] }] } } } },
+]
+const pairs = sameCallToolPairs(events, 'team_list_members')
+contract.sameCallPairingUsesTheToolUseId = pairs.length === 1 && pairs[0].paired === true && pairs[0].result.isError === false
+contract.foreignToolResultIsNotCounted = pairs[0].result.content.some((block) => block.type === 'text' && block.text.includes('mi-1'))
 console.log(JSON.stringify(result, null, 2))
 process.exitCode = result.frameSegmentedRecoversBoth && Object.values(contract).every(Boolean) ? 0 : 1
