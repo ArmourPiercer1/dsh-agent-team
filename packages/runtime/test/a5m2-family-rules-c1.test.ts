@@ -440,16 +440,18 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(closed)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(closed)
     // Census as of the merged tables: the int-registered families PLUS the
-    // a5m2-wire-g3 B-TERMINAL registration (root 20:38 闭表补齐) — the entry
-    // rides directly after B-INSPECT, the insertion position of the lane's
-    // additive block.
+    // a5m2-wire-g3 B-TERMINAL registration (root 20:38 闭表补齐) and the
+    // a5m2-g3-lsp-wire B-LSP registration (root 2026-10-24 LSP REAL-OWNER
+    // card) — both entries ride directly after B-INSPECT, the insertion
+    // position of the lane's additive blocks.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-LSP', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
-    // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
+    // B-TERMINAL (operation, root 20:38), B-LSP (operation, root 2026-10-24
+    // four-operation fixed scope), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card) and B-SUBAGENT - and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT'
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })

@@ -255,6 +255,17 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
   },
+  // A5M2-G3-LSP-WIRE (root 2026-10-24 LSP REAL-OWNER card): the B-LSP bridge
+  // imports the ALREADY-PLACED adapter (g3-fsproc-adapters.mjs) and the
+  // mirrored domain tool-governance index by RELATIVE specifier — the pair
+  // below keeps the dist copy honest when the mount card wires the plane leg
+  // (an unplaced module is invisible to the drift gate — the todo.mjs lesson;
+  // placement now costs nothing and hides nothing). Byte-identical like every
+  // entry; drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+  },
   // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
   // `agent-bindings.mjs` now imports the G1-WIRE lane's two production
   // modules by RELATIVE specifier STATICALLY (at module load, gate or no
