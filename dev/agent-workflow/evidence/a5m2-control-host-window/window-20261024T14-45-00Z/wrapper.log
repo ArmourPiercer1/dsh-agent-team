@@ -1,0 +1,45 @@
+control window wrapper 20261024T14-45-00Z driver=86d0e00c7094d2a12ce5a0264db6ebe96f682789
+driver law: HEAD carries 86d0e00c7094d2a12ce5a0264db6ebe96f682789; runner file sha256 447fbe2dd70d05ba66928647fc8ca340dab5048dd85f06cd831205eb6a7446b7
+fixture before: lock=5dffdafaebfc691b… pkg=4ef112fb43f058bc…
+df avail: 17250619392 B (min 6442450944)
+ports 3184/3499 free (pre-check)
+[ctlhw] plugin entry resolved from the f86 fixture exports['./host']: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
+spawn receipt written: pid=25 pgid=25 granted=true
+[ctlhw] host booted at http://127.0.0.1:3184
+[ctlhw] remote mount gate PASS (polls=1) [dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[ctlhw] check L1: PASS team_create_member REAL return harvested and correlated by callId (arrival only, business semantics NOT asserted) (gate=proceed-bind isError=false text={"status":"executed","action":"create-member","rootSessionId":"session-a5m2ctlhw-p-2026-10-24T14-45-01-095Z","callerRole":")
+[ctlhw] member instance=inst-1kujsao05bti session=session-team-child-ebbc0e8a10db4ac8c4073d4fa0817106
+[ctlhw] check E0: PASS member surface carries team_request_control (visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,todo_write,)
+[ctlhw] check E0: PASS member surface carries NO team_resolve_control (no self-approve) (visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,todo_write,)
+[ctlhw] check L2-83: PASS team_request_control EXECUTED through the tool registry (harvested tool result, no error flag) (isError=false text={"status":"control-requested","request":{"requestId":"ctrl-01nbp4y0wgig4v1a05o641v5","rootSessionId":"session-a5m2ctlhw-p-2026-10-24T14-45-01)
+[ctlhw] check L3-85: PASS team_list_pending_control EXECUTED through the tool registry ({"status":"pending-control-listed","rootSessionId":"session-a5m2ctlhw-p-2026-10-24T14-45-01-095Z","pending":[{"requestId":"ctrl-01nbp4y0wgig4v1a05o641v5","rootS)
+[ctlhw] check L3-85: PASS 85 DISCOVERY answers with the designated request on its page (requestId=ctrl-01nbp4y0wgig4v1a05o641v5)
+[ctlhw] check L3-84: PASS team_resolve_control EXECUTED through the tool registry (ALLOW, no error flag) ({"status":"control-resolved","decision":{"requestId":"ctrl-01nbp4y0wgig4v1a05o641v5","decision":"allow","decider":{"kind":"instance","instanceId":"inst-leader",)
+[ctlhw] check L3: PASS the DESIGNATED request r83 was settled by the model-tool decision (durable) (requestId=ctrl-01nbp4y0wgig4v1a05o641v5)
+[ctlhw] check L4: PASS member resolve attempt refused by EXPLICIT identity code, explicit not-visible, OR the exact closed-world Binding-denial guard family (native-identity covered by the L5 canary; unknown formats / resolved-conflicts never pass) (identity=false notVisible=false bindingDenied(EXACT family)=true conflict=false isError=true text=Error: team tool guard: "team_resolve_control" has no Team Too)
+[ctlhw] check L4: PASS the identity refusal left NO extra durable decision fact (decided=1)
+[ctlhw] check L5: PASS member2 (ctl-resolver) create REAL return harvested (arrival only, business NOT asserted) (gate=proceed-bind isError=false text={"status":"executed","action":"create-member","rootSessionId":"session-a5m2ctlhw-p-2026-10-24T14-45-01-095Z","callerRole":")
+[ctlhw] member2 instance=inst-1ploqzc1kqx4 session=session-team-child-3a87df39c3fc4f44a38fa1e9f819dffd
+[ctlhw] check L5: PASS member2 surface CARRIES team_resolve_control (op REALLY bound+allowed — binding!=resolver premise PROVEN, not assumed) (visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,team_resolv)
+[ctlhw] FATAL: Error: timeout waiting for durable control-request-recorded for R83B (member2 own, stays PENDING)
+    at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/scripts/05-control-window-runner.mjs:225:39)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/scripts/05-control-window-runner.mjs:893:16)
+[ctlhw] check cleanup: PASS host port 3184 free after stop (free=true)
+[ctlhw] check cleanup: PASS mock port 3499 free after stop (free=true)
+[ctlhw] check cleanup: PASS host stop completed without error (host stopped | mock closed)
+[ctlhw] cleanup: host stopped | mock closed | world retained (root law: NEVER delete HOME/raw)
+{
+  "verdict": "FAIL",
+  "pass": false,
+  "failed": 1,
+  "checks": 16,
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-45-01-095Z"
+}
+runner rc=1 (143/137 = outer 300s/320s bound fired on the OWN group)
+ports 3184/3499 free (post)
+HOME (explicit pointer): /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T14-45-01-095ZZ
+world lock retained: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T14-45-01-095ZZ
+HOME new bytes (nlink==1): 117453 (budget 67108864)
+fixture byte-stable across the window (lock/pkg hashes equal)
+WRAPPER VERDICT: runner non-zero rc=1 — STOP (no second window without a fresh root order)
