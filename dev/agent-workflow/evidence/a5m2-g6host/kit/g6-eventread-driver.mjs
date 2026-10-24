@@ -29,10 +29,17 @@
  *  ⑤ fixture lock/pkg byte-equality recorded pre/post into the receipt;
  *  ⑥ one window one GO (the run gate refuses twice), halt-first.
  *
+ * Borrow law (root 2026-10-24 clarification): NO copies of dirs/deps, NO new
+ * store, NO Host clone, NO long-lived world — but a FRESH stamped small HOME
+ * for THIS window (≤64MiB, asserted post-run from the kit footprint.json) is
+ * the DEFAULT; ports default to the A-slot 3183/3498 and are usable ONLY
+ * while A is not running (the before-probe is the law); an explicit
+ * --world-name must pre-exist EMPTY.
+ *
  * USAGE:
  *   node g6-eventread-driver.mjs preflight [--world-name <basename>] [--port N] [--mock-port M]
  *   node g6-eventread-driver.mjs run --go            # GO-window only: also requires env G6_EVENTREAD_GO=1
- * The run mode spawns: node <derived-kit> --boot --port N --mock-port M --world-name <pre-allocated EMPTY world>
+ * The run mode spawns: node <derived-kit> --boot --port 3183 --mock-port 3498 [fresh HOME this window]
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -61,7 +68,10 @@ const PINS = {
   hostTree: '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use',
   dfFloor: 6_442_450_944,
 }
-const RESERVED_PORTS = new Set([3080, 3180, 3181, 3182, 3183, 3184, 3497, 3498, 3499])
+// 3183/3498 = A槽口，root 2026-10-24 裁定可借——LAW: 仅当 A 未运行（free-probe 即法）；
+// 3184/3499 (B) 与 stable/3182/3497 保持 reserved。
+const RESERVED_PORTS = new Set([3080, 3180, 3181, 3182, 3184, 3497, 3499])
+const A_SLOT_PORTS = new Set([3183, 3498])
 
 const sha256 = (p) => createHash('sha256').update(readFileSync(p)).digest('hex')
 
@@ -81,12 +91,12 @@ const PATCHES = [
     "const WORLD_NAME_CLEAN = String(argValue('--world-name', `.a5m2-g6host-${RUN_STAMP}Z`)).replace(/^\\./, '')"],
   ['law-world-borrow',
     "ck('world-absent', !existsSync(WORLD), WORLD)",
-    "ck('world-borrowed-empty', existsSync(WORLD) && readdirSync(WORLD).length === 0, WORLD)"],
+    "ck('world-law', argValue('--world-name', null) !== null ? (existsSync(WORLD) && readdirSync(WORLD).length === 0) : !existsSync(WORLD), WORLD)"],
   ['law-ports-blacklist',
     'new Set([3080, 3180, 3181, 3182, 3183, 3184, 3497])',
-    'new Set([3080, 3180, 3181, 3182, 3183, 3184, 3497, 3498, 3499])'],
-  ['law-default-port', "'--port', 3186", "'--port', 3196"],
-  ['law-default-mock', "'--mock-port', 3187", "'--mock-port', 3197"],
+    'new Set([3080, 3180, 3181, 3182, 3184, 3497, 3499])'],
+  ['law-default-port', "'--port', 3186", "'--port', 3183"],
+  ['law-default-mock', "'--mock-port', 3187", "'--mock-port', 3498"],
 ]
 
 const arg = (name, dflt) => { const i = process.argv.indexOf(name); return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : dflt }
@@ -172,17 +182,24 @@ async function preflight () {
     ck('blueprint-parser-replay-on-real-source', false, String(e?.message ?? e))
   }
 
-  // 6. borrow-law inputs: pre-allocated EMPTY world + non-reserved FREE ports
+  // 6. HOME law (root 2026-10-24 clarification): a FRESH stamped HOME for THIS
+  // window is legal (≤64MiB — asserted post-run from the kit footprint.json);
+  // an explicitly named world must PRE-EXIST EMPTY (no long-lived world reuse,
+  // no directory/dependency copies either way — the mount is the INSTALL
+  // realpath, never a copy).
   const worldName = arg('world-name', null)
   if (worldName !== null) {
     const w = join(REPO_ROOT, 'tests/homes', worldName)
     ck('world-borrowed-empty', existsSync(w) && readdirSync(w).length === 0, w)
     ck('world-lockfile-absent', !existsSync(join(REPO_ROOT, 'tests/homes', `${worldName.replace(/^\./, '')}.lock`)), `${worldName}.lock`)
   } else {
-    checks.push({ name: 'world-borrowed-empty', verdict: 'NOT_ATTEMPTED', detail: 'no --world-name given (main scheduler allocates EMPTY world + ports; driver never mkdirs a world)' })
+    checks.push({ name: 'home-law', verdict: 'PASS', detail: 'no --world-name: a FRESH stamped HOME this window is the default law (≤64MiB asserted post-run); driver never copies dirs/deps' })
   }
-  for (const p of [Number(arg('port', 3196)), Number(arg('mock-port', 3197))]) {
-    ck(`port-free:${p}`, !RESERVED_PORTS.has(p) && await portFree(p), RESERVED_PORTS.has(p) ? 'RESERVED (A/B or stable)' : 'probe')
+  for (const p of [Number(arg('port', 3183)), Number(arg('mock-port', 3498))]) {
+    const free = await portFree(p)
+    if (RESERVED_PORTS.has(p)) ck(`port-free:${p}`, false, 'RESERVED (B-slot or stable family)')
+    else if (A_SLOT_PORTS.has(p)) ck(`port-A-slot-borrow:${p}`, free, free ? 'A-slot BORROWED-OK — A is not running on this port right now' : 'A IS RUNNING here — refusal (borrow law: only while A idle)')
+    else ck(`port-free:${p}`, free, 'probe')
   }
   const df = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]
   ck('df-floor', Number(df) >= PINS.dfFloor, `avail=${df} floor=${PINS.dfFloor}`)
@@ -202,22 +219,21 @@ async function run () {
     console.error('run REFUSED: no Host GO. Requires --go AND env G6_EVENTREAD_GO=1 issued by the main scheduler for this exact window.')
     process.exit(20)
   }
-  const worldName = arg('world-name', null)
-  if (worldName === null) { console.error('run REFUSED: --world-name (pre-allocated EMPTY world by the main scheduler) is required; the driver never creates worlds.'); process.exit(20) }
+  const worldName = arg('world-name', null) // absent = FRESH stamped HOME this window (root law 2026-10-24; ≤64MiB asserted post-run)
   const { source } = deriveKit()
   const stamp = new Date().toISOString().replace(/[:.]/g, '-')
   const outDir = join(REPO_ROOT, 'dev/agent-workflow/evidence/a5m2-g6host', `driver-run-${stamp}Z`)
   mkdirSync(outDir, { recursive: true })
   const runnerPath = join(outDir, 'g6-er-derived-kit.mjs')
   writeFileSync(runnerPath, source)
-  const ports = { host: Number(arg('port', 3196)), mock: Number(arg('mock-port', 3197)) }
+  const ports = { host: Number(arg('port', 3183)), mock: Number(arg('mock-port', 3498)) }
   const receiptPath = join(outDir, 'spawn-receipt.json')
   // ④ ports before; fixture bytes before (⑤)
   const before = { portsFree: await Promise.all([portFree(ports.host), portFree(ports.mock)]), lockSha: sha256(join(PINS.install, 'pnpm-lock.yaml')), pkgSha: sha256(join(PINS.install, 'package.json')) }
-  if (before.portsFree.includes(false)) { console.error('run REFUSED: a chosen port is not free (before-probe)'); process.exit(20) }
-  writeFileSync(receiptPath, JSON.stringify({ stamped: stamp, runnerPath, ports, world: join(REPO_ROOT, 'tests/homes', worldName), before, note: 'receipt written BEFORE any wait (A/B lesson ④)' }, null, 2))
+  if (before.portsFree.includes(false)) { console.error(`run REFUSED: port not free before-spawn — if ${ports.host}/${ports.mock} is the A-slot, A IS RUNNING; borrow law allows it ONLY while A is idle`); process.exit(20) }
+  writeFileSync(receiptPath, JSON.stringify({ stamped: stamp, runnerPath, ports, aSlotBorrow: A_SLOT_PORTS.has(ports.host) || A_SLOT_PORTS.has(ports.mock), world: worldName === null ? 'FRESH stamped HOME (kit default)' : join(REPO_ROOT, 'tests/homes', worldName), before, note: 'receipt written BEFORE any wait (A/B lesson ④)' }, null, 2))
   const { spawn } = await import('node:child_process')
-  const child = spawn(process.execPath, [runnerPath, '--boot', '--port', String(ports.host), '--mock-port', String(ports.mock), '--world-name', worldName, '--evidence-dir', join(outDir, 'kit')], { detached: true, stdio: ['ignore', 'join', 'join'].map((x) => x === 'join' ? 'inherit' : 'ignore') })
+  const child = spawn(process.execPath, [runnerPath, '--boot', '--port', String(ports.host), '--mock-port', String(ports.mock), ...(worldName === null ? [] : ['--world-name', worldName]), '--evidence-dir', join(outDir, 'kit')], { detached: true, stdio: ['ignore', 'join', 'join'].map((x) => x === 'join' ? 'inherit' : 'ignore') })
   const TERM_AT = 300_000
   const KILL_AT = 320_000
   const t1 = setTimeout(() => { try { process.kill(-child.pid, 'SIGTERM') } catch {} }, TERM_AT)
@@ -225,9 +241,25 @@ async function run () {
   const code = await new Promise((res) => child.once('exit', (c) => res(c)))
   clearTimeout(t1); clearTimeout(t2)
   const after = { portsFree: await Promise.all([portFree(ports.host), portFree(ports.mock)]) }
-  writeFileSync(join(outDir, 'postflight.json'), JSON.stringify({ code, before, after, pgidNote: `cleanup reports ONLY pgid ${child.pid} and ports ${ports.host}/${ports.mock} (A/B lesson ④)` }, null, 2))
-  console.log(`driver run exit=${code}; evidence ${outDir}`)
-  process.exit(code ?? 1)
+  // fresh-HOME ≤64MiB law (root 2026-10-24): read the kit footprint evidence.
+  const findFootprint = (dir, depth = 0) => {
+    if (depth > 3) return null
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name)
+      if (e.isFile() && e.name === 'footprint.json') return p
+      if (e.isDirectory()) { const hit = findFootprint(p, depth + 1); if (hit !== null) return hit }
+    }
+    return null
+  }
+  let homeBytes = null
+  try {
+    const fpPath = findFootprint(join(outDir, 'kit'))
+    if (fpPath !== null) { const fp = JSON.parse(readFileSync(fpPath, 'utf8')); homeBytes = Number(fp.ownExclusiveAllocated ?? 0) + Number(fp.dirBytes ?? 0) }
+  } catch { /* reported as unknown below — never silently green */ }
+  const homeVerdict = homeBytes !== null && homeBytes <= 64 * 1024 * 1024 ? 'PASS' : 'FAIL'
+  writeFileSync(join(outDir, 'postflight.json'), JSON.stringify({ code, before, after, homeBytes, freshHomeCap64MiB: homeVerdict, pgidNote: `cleanup reports ONLY pgid ${child.pid} and ports ${ports.host}/${ports.mock} (A/B lesson ④)` }, null, 2))
+  console.log(`driver run exit=${code}; freshHOME=${String(homeBytes)}B cap64MiB=${homeVerdict}; evidence ${outDir}`)
+  process.exit(homeVerdict === 'FAIL' ? 2 : (code ?? 1))
 }
 
 if (process.argv[2] === 'run') { await run() } else { await preflight() }

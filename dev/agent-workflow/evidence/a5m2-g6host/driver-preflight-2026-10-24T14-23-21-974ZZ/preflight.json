@@ -1,0 +1,132 @@
+{
+  "pins": {
+    "packGit": "2fb129cfa23e138248fecc834a42c92238af95fe",
+    "packTipEquiv": "18c3327e6eb0cbb2b147df32aad2c5653ccb5928 (test-only tip; dist subtree equal — center-verified)",
+    "tgz": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz",
+    "tgzSha": "8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a",
+    "install": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc",
+    "lockSha": "5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088",
+    "pkgSha": "4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722",
+    "hostGit": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "dfFloor": 6442450944
+  },
+  "fiveNames639": [
+    {
+      "name": "session_search",
+      "lib": "lib/index.js:956"
+    },
+    {
+      "name": "session_event_search",
+      "lib": "lib/index.js:965"
+    },
+    {
+      "name": "session_trace",
+      "lib": "lib/index.js:974"
+    },
+    {
+      "name": "session_event_trace",
+      "lib": "lib/index.js:983"
+    },
+    {
+      "name": "session_event_read",
+      "lib": "lib/index.js:999"
+    }
+  ],
+  "takeover": [
+    2391,
+    2403
+  ],
+  "checks": [
+    {
+      "name": "tgz-present-and-sha",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz"
+    },
+    {
+      "name": "install-lock-sha",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/pnpm-lock.yaml"
+    },
+    {
+      "name": "install-fixture-pkg-sha (center pkg pin)",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/package.json"
+    },
+    {
+      "name": "host639-head",
+      "verdict": "PASS",
+      "detail": "HEAD=639ed01539 dirty=clean"
+    },
+    {
+      "name": "639-five-names",
+      "verdict": "PASS",
+      "detail": "[{\"name\":\"session_search\",\"lib\":\"lib/index.js:956\"},{\"name\":\"session_event_search\",\"lib\":\"lib/index.js:965\"},{\"name\":\"session_trace\",\"lib\":\"lib/index.js:974\"},{\"name\":\"session_event_trace\",\"lib\":\"lib/index.js:983\"},{\"name\":\"session_event_read\",\"lib\":\"lib/index.js:999\"}]"
+    },
+    {
+      "name": "2fb-five-names (g6-session-query.mjs A5_G6_TOOL_NAMES)",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs"
+    },
+    {
+      "name": "2fb-takeover-lines (host.js LAZY supply)",
+      "verdict": "PASS",
+      "detail": "host.js:2391,host.js:2403"
+    },
+    {
+      "name": "row-present:row-host.js",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+    },
+    {
+      "name": "row-present:glue-agent-bindings.mjs",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+    },
+    {
+      "name": "row-present:seam.mjs",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs"
+    },
+    {
+      "name": "row-present:blueprint-validate.js",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/dist/packages/domain/blueprint/src/validate.js"
+    },
+    {
+      "name": "pinpatch-all-anchors-exact-once",
+      "verdict": "PASS",
+      "detail": "pin-fixture-install,pin-lock-sha,pin-tgz-path,pin-tgz-sha,law-world-const,law-world-name-clean,law-world-borrow,law-ports-blacklist,law-default-port,law-default-mock"
+    },
+    {
+      "name": "old-kit-unmodified",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs"
+    },
+    {
+      "name": "blueprint-parser-replay-on-real-source",
+      "verdict": "PASS",
+      "detail": "schemaVersion=3 contentHash=sha256:ab1120df0…"
+    },
+    {
+      "name": "home-law",
+      "verdict": "PASS",
+      "detail": "no --world-name: a FRESH stamped HOME this window is the default law (≤64MiB asserted post-run); driver never copies dirs/deps"
+    },
+    {
+      "name": "port-A-slot-borrow:3183",
+      "verdict": "PASS",
+      "detail": "A-slot BORROWED-OK — A is not running on this port right now"
+    },
+    {
+      "name": "port-A-slot-borrow:3498",
+      "verdict": "PASS",
+      "detail": "A-slot BORROWED-OK — A is not running on this port right now"
+    },
+    {
+      "name": "df-floor",
+      "verdict": "PASS",
+      "detail": "avail=17259360256 floor=6442450944"
+    }
+  ]
+}
