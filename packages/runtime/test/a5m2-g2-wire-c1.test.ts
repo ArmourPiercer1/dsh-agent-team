@@ -1396,3 +1396,27 @@ describe('A5M2-WIRE round-39: six-item card — v3 relay facts/consume', () => {
     end()
   })
 })
+
+/* ROOT 00:31 first real caller-supply piece: the lanes the plane's B-WEB
+ * closed face already fail-closes on, supplied over the REAL seam. */
+describe('A5M2-WIRE round-40: fixed web lanes through the REAL createG2WebProviderSeam', () => {
+  it('the web_fetch lane carries a real seam product (brand/id/available/fetch), the registration law equals the provider\'s OWN id, stats reads — the plane-law fields the fail-close point demands', async () => {
+    const mm = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as { createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, { provider: Record<string, unknown> & Record<string, never>; registrationLaw: { configuredProviderIdMustEqual: string }; stats: () => unknown }> }
+    const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown>; G2_SEAM_BRAND: symbol }
+    const provider = { id: 'local-fetch', available: () => true, fetch: async () => ({ ok: true }) }
+    const lanes = mm.createG2WebFixedLanes({
+      fixedProvider: provider,
+      seamMod,
+      declared: { origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-fixed-1' },
+      readMountFacts: () => ({ origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-fixed-1' }),
+    })
+    const lane = lanes.web_fetch
+    if (lane === undefined) throw new Error('web_fetch lane missing')
+    expect((lane.provider as Record<symbol | string, unknown>)[(seamMod as unknown as { G2_SEAM_BRAND: symbol }).G2_SEAM_BRAND]).toBe(true) // the brand the fail-close point reads
+    expect(typeof lane.provider.fetch).toBe('function')
+    expect(typeof lane.provider.available).toBe('function')
+    expect(lane.registrationLaw.configuredProviderIdMustEqual).toBe('local-fetch')
+    expect(typeof lane.stats()).toBe('object')
+    expect(() => mm.createG2WebFixedLanes({ fixedProvider: null, seamMod })).toThrow(/REAL fixed provider object/)
+  })
+})

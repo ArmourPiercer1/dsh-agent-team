@@ -414,3 +414,42 @@ export function createG2ConsumedProofApproval () {
     return 'consumed'
   }
 }
+
+/**
+ * THE first real caller-supply piece (root 00:31 unlock): the Team-only
+ * FIXED web provider LANES for the plane's B-WEB closed injection face.
+ * The lane.provider MUST be a createG2WebProviderSeam product (brand
+ * verified at team-tool-plane.mjs:3477); the seam pins the REAL provider
+ * OBJECT (the host-constructed public HttpFetchProvider — id
+ * LOCAL_FETCH_PROVIDER_ID rides from the provider itself, never a
+ * string pin) with the declared mount envelope + the CURRENT reader.
+ * No global/env provider flip, no per-realm WebRuntime, no composition:
+ * this is the named slot the plane already fail-closes on, supplied
+ * with the fixed face this root's config declared.
+ */
+export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts, observe = () => {}, seamMod } = {}) {
+  if (fixedProvider === null || typeof fixedProvider !== 'object') {
+    throw new Error('G2_SUPPLY_ENTRY_INVALID: createG2WebFixedLanes needs the REAL fixed provider object (the public HttpFetchProvider instance); nothing pins around an absence')
+  }
+  if (typeof fixedProvider.id !== 'string' || fixedProvider.id.length === 0) {
+    throw new Error('G2_SUPPLY_ENTRY_INVALID: the fixed provider carries no own id — the seam pins identity FROM the provider, never invents one')
+  }
+  // The reviewed seam product is { provider(brand-pinned), registrationLaw,
+  // stats, pinnedMethod } — the lane rides ITS law/stats VERBATIM; nothing
+  // is hand-assembled beside the reviewed seam.
+  const wrapped = seamMod.createG2WebProviderSeam({
+    kind: 'fetch',
+    providerId: fixedProvider.id,
+    getRealProvider: () => fixedProvider,
+    declared,
+    readMountFacts,
+    observe,
+  })
+  return Object.freeze({
+    web_fetch: Object.freeze({
+      provider: wrapped.provider,
+      registrationLaw: wrapped.registrationLaw,
+      stats: wrapped.stats,
+    }),
+  })
+}
