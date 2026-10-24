@@ -2525,6 +2525,11 @@ export function createAgentBindings(deps) {
       // the install flow, after this assembly ran. So the closure reads
       // through the LIVE plane value, never a build-time snapshot.
       let a5PlaneValue = null
+      // A5M2 coverage-safety card (root fix round): THE OUTER binding (the
+      // mount branches ASSIGN; the coverage producer reads). A world without
+      // a schedule mount keeps the initial null — the producer's guard is a
+      // plain null test, never a reference into a branch-scoped let.
+      let a5CoverageScheduleFacts = null
       // A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 + 21:01 cards): the built
       // control trio wiring's inject face (null = this world mounts none —
       // the zero-flip law). Declared in the SAME lexical scope as the
@@ -4108,10 +4113,9 @@ export function createAgentBindings(deps) {
           // stays the plane's own governedTokenLedger).
           const a5ScheduleArms = new Map()
           const a5ScheduleBound = new Map() // name -> definitionIdentityOf(ORIGINAL def)
-          // A5M2 coverage-safety card: null OUTSIDE a schedule mount; the
-          // mount branch fills it with the live references below (one view,
-          // never a state copy).
-          let a5CoverageScheduleFacts = null
+          // A5M2 coverage-safety card (root fix round): the OUTER-scope
+          // a5CoverageScheduleFacts (declared with the plane value) receives
+          // the live view below — a schedule mount simply does not assign it.
           const a5ScheduleWrittenKeys = []
           // THE REAL ACTIVE-TUPLE READER (root residual 2): the SAME guard
           // dispatcher surface the pa-mount-registry trust read uses
@@ -7962,7 +7966,25 @@ export function createAgentBindings(deps) {
       // through references that already exist.
       const coveragePlacementGoverned = (name) => {
         const fed = a5PlaneValue?.placementFeed?.(name)
-        return typeof fed?.definitionIdentity === 'string' && fed.definitionIdentity.length > 0
+        const identity = fed?.definitionIdentity
+        if (typeof identity !== 'string' || identity.length === 0) return false
+        // Root fix round: a definition string is NOT governance. The SAME
+        // family/dispatcher law the schedule face applies: the dispatcher
+        // binding must exist, be ACTIVE, and carry the SAME definition
+        // identity — inactive rows (allDefs feeders, G2 DECLARED-INACTIVE
+        // included) never pass an ACTIVE binding check.
+        const surface = a5p1Guard?.dispatcher?.surface
+        if (typeof surface?.entryOf !== 'function') return false
+        let entry
+        try {
+          entry = surface.entryOf(name)
+        } catch {
+          return false
+        }
+        const binding = entry?.binding
+        if (binding === null || typeof binding !== 'object') return false
+        if (binding.status !== 'ACTIVE') return false
+        return binding.definitionIdentity === identity
       }
       const coverageScheduleGoverned = (name) => a5CoverageScheduleFacts !== null
         && a5CoverageScheduleFacts.isBound()
