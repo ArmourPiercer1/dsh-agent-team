@@ -95,3 +95,78 @@ S2 与 S3 的**只读设计**可以平行，但不越过 G2 启动产品/Host �
 ## 6. 本计划 PR 的独立验收边界
 
 本 PR 只应包含三份新增设计/计划文档：不写源码、现行权威、测试/CI 脚本、Host/配置/运行数据，不运行 PoC。不允许将其合并解释为 S1 自动启动许可；用户后续明确同意“启用新执行流程”并授权安全冻结动作时才可单独开始 S1。审查必须检查三份文件互引、阶段 DAG 无循环、每阶段五个维度（PoC/分叉/任务/测试/门禁/停工）完整、权限红线不可降、与 #361/#362 状态无虚假合并、S1 资产不被不当删除。
+
+
+## 7. 独立审查后的强制执行补充
+
+本节补足 G1 闭包、阶段证据依赖、权威迁移事务、阻断传播和中心防耦合规则。若前文存在更宽松或含糊表述，以本节为准。此 PR 仍是计划文件，不授权启动任何阶段。
+
+### 7.1 阶段 DAG、输入快照与证据失效
+
+阶段依赖固定为 S1-A → G1-I；S1-B/H0 → G1-F；G1-I 解锁 S2 的文档/工程治理迁移；G1-F、G2、G3 是 S4 的共同前置；S2 → G2 → S3 → G3 → S4 → G4 → S5 → G5。S2/S3 可以并行做只读设计，但不得并行生成可互相冒充通过的证据，也不得提前启动产品写入。
+
+每个阶段交付必须声明不可变 inputSnapshotDigest，至少覆盖 Team SHA、Host SHA、可信工具来源快照、Profile/config digest、package/build/install digest（未适用时显式 N/A）、TestWorld 身份和版本、相关权威版本、测试 Oracle 版本。RUN 必须记录这些输入和观测结果。
+
+- S1 的 F0 是本轮 G1 的闭包。S1 后新增来源只进入 SOURCE_DELTA / POST-G1 UNKNOWN，不得回溯性扩张本轮 ExpectedToolObligations。
+- S2 authority migration 或回退、E0/E1 合同 ID 状态、Host pin、Profile/config、package/build/install digest 任一变化，均使依赖该输入的 S3 RUN 失效，必须重跑受影响 Oracle；不得仅凭时间相近或测试名称相同复用。
+- G3 必须绑定 G2 最终 merged head 和最终权威快照。若 G2 在 G3 后发生任何语义性变化，须重跑受影响 G3。
+- S4 的证据须证明 Canary 测试插件、Runner、正式安装包与生产 dispatch 路径之间的等价性边界。Canary 仅证明 Oracle 具备检测能力，不证明产品工具通过。
+- G4 和 G5 必须绑定被审查的 merged head；Family 分支的 C2 不替代集成候选上的 C2。
+
+### 7.2 G1 拆分为两个独立判定
+
+| Gate | 证明内容 | 通过后允许 | 不代表 |
+|---|---|---|---|
+| G1-I Inventory | F0 完整且可信；资产与来源差集可审；未知资产受保护；历史 93 条记录可追踪 | S2 文档/工程治理迁移工作 | Host seam 已安全可行 |
+| G1-F Feasibility | H0 完成或有正式阻断；关键普通 Family 接入和授权前拦截有证据；每个必交项有路线或具名 blocker | 作为 G2/G3 后进入 S4 的必要前置之一 | 所有工具已实现或可以发布 |
+
+G1-I PASS 但 G1-F BLOCKED 时，允许独立且不依赖 Host 执行的 S2 纯文档预备；不得切换任何需要未证明安全事实的执行路径。G1-F 的 CORE_SEAM_BLOCKER 阻断依赖该 seam 的 S4 和最终产品发布，但不阻断已隔离、无依赖的资产整理或文档工作。G1-PARTIAL 不是 PASS 的别名。
+
+### 7.3 Gate 状态传播矩阵
+
+| 状态 | 含义 | 可继续的工作 | 禁止动作/下游效果 |
+|---|---|---|---|
+| PASS | 本 Gate 的所有必需证据满足，快照固定 | 仅允许 DAG 明确解锁的工作 | 不自动解锁其他 Gate |
+| PARTIAL | 一部分局部命题成立，仍有未闭项 | 无依赖的只读/文档工作 | 不得作为 PASS 消费 |
+| BLOCKED-LOCAL-OBSERVATION | 缺少真实本地进程、worktree、磁盘或 World 观察能力 | 可继续已隔离的公共仓库文档工作 | 资产/冻结完整性不得宣称通过；不得清理或覆盖受保护资产 |
+| ENV-BLOCKED | 合法环境、Host、凭据或平台条件不可用 | 不依赖该环境的工作 | 不得以 mock、源码推断或其他平台绿替代真实证据 |
+| NEEDS-RULING | 涉及安全合同、范围、威胁模型或架构取舍 | 仅不受该决定影响的独立工作 | 相关路径停工，等待有权主体裁决 |
+| CORE_SEAM_BLOCKER | Host 缺少可信的 Body 前拦截或身份保证 | 允许不依赖该 seam 的 Family/文档工作 | 依赖该 seam 的 S4 和发布阻断 |
+| UNSAFE/BYPASS | 发现未授权 Body/副作用、native fallback 或权限旁路 | 仅安全隔离、取证和经批准的修复准备 | 立即停止受影响执行面；不得把缺陷归入普通旧红容差 |
+| UNKNOWN/INCONCLUSIVE | 达到预算后仍不能判定 | 形成具名 blocker 和裁决材料 | 不得自动追加 PoC wave 或假设可实现 |
+| BRIDGE-BLOCKED | 共同核心已通过，但具名 Bridge 未通过 | 不依赖该 Bridge 的局部 Family 可继续 | CA-03 不算通过；被阻断 Bridge 和全工具发布不得放行 |
+
+所有状态都要带 Owner、输入快照、证据、下一步和重开条件。状态不能只靠自然语言报告；Gate 记录必须在交付索引中机器可解析。
+
+### 7.4 S2 权威迁移必须是有事务边界的独立工作包
+
+S2 第一项交付为 Authority Migration Map，不得先改写入口再补消费者。Map 至少列出旧 current_contract 的全部六个字段、每个消费者、读写方向、权威来源、迁移目标、迁移顺序、回退步骤和负控。
+
+执行顺序固定为：盘点所有消费者 → 冻结新权威 schema 与唯一写入点 → 先部署双读诊断但不双写 → 逐消费者切换到版本化 authority snapshot → 对旧/新冲突、缺字段、未知 ID 和伪造 C1/C2 做真实 CI 负控 → 在单一事务中切换 current 指针 → 验证派生镜像只读且不能反向决定权威 → 演练逆迁移。切换期间所有并行 Agent 必须显式绑定同一 authority digest。
+
+迁移失败时回退至迁移前的已记录权威 SHA 和指针快照；不得从 current-state.json 等派生镜像反向恢复权威。回退也必须通过 CI 负控和独立复审。任一消费者无法确定读写职责、存在双 current 或回退无法证明时，G2 BLOCKED。
+
+### 7.5 G4 与发布的 Bridge blocker 规则
+
+- G4-CORE-PASS / BRIDGE-BLOCKED：ARC-A/B/D 和共同安全原语通过，但某个具名 Bridge 因可定位的 Host seam 缺口被正式记录。只允许不依赖该 Bridge 的工作继续；不代表 CA-03 已完成。
+- 完整 G4-PASS：ARC-A/B/D 通过，且至少一个真实具名 Bridge 正向接入成功，证明特殊机制确实被隔离在边界内。
+- 若 Bridge 缺口只影响局部功能，必须列明被阻断工具、能力、Scope、替代路径和重新开启条件。不能用“用户已知晓”替代证据。
+- 若缺口影响共同身份可信度、授权原语、Body 前拒绝或 Grant 一次性消费，则是 CORE BLOCKER，不能通过 G4-CORE-PASS，也不能靠用户对局部 Bridge 的裁决绕过安全核心证明。
+- G4-CORE-PASS / BRIDGE-BLOCKED 不解锁完整 S5 发布；可以提前实施与该 Bridge 无依赖的 Family，但所有必交 Bridge 未解决或未获明确范围变更前，G5/Alpha.5 release 必须 BLOCKED。
+
+### 7.6 PR #361 开发纪律的阶段性替换
+
+PR #361 中允许 Family Owner 在独立 worktree 并行修改 agent-bindings.mjs、team-tool-plane.mjs，再由 Integrator 合并的旧接线纪律，仅适用于旧中心手工接线方式。它与 CA-01 的普通 Family 零中心源改动目标冲突，必须按以下阶段转换：
+
+| 阶段 | Family Owner 允许范围 |
+|---|---|
+| S1–S3 | 研究分支、独立试验、文档、TestWorld；禁止生产中心接线 |
+| S4 | 独立中心重构 Owner 管理 Kernel/Registry/Host Adapter；Family Owner 通过 Contribution 契约协作 |
+| S5 | 普通 Family Owner 不得修改受保护中心源码；只有单独审查的中心接口变更 PR 可以修改 |
+
+S2 必须把该转换纳入 #361 的适配版规则，不得让旧纪律在新架构落地后继续作为默认流程。
+
+### 7.7 持续性架构适应度测试
+
+G4/S5 必须持续检查受保护中心源码集合的 Family-driven diff、Kernel/Registry/HostSurfaceAdapter 的工具名或 Family-specific 分支、Bridge 中的第二授权账本，以及 Manifest/生成产物的可重复性和来源差异。测试须有可检测的植入反例。LOC 只可作趋势观测，不设置任意行数门槛。ARC-A 除测试 Family 外，至少包含一个受真实原生 Host 行为与输出契约约束的 Family。
+
