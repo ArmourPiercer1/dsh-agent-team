@@ -564,7 +564,7 @@ import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends
 // table, read here ONLY to gate which rows this arm supplies (never a
 // hand-spelled name list — the subset stays derived from the frozen spec table).
 import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'
-import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'
+import { g1PureQuerySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'
 import { createG1TrustedTopologySupply } from './governed-families/g1-trusted-topology-supply.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
@@ -2803,6 +2803,19 @@ export function createAgentBindings(deps) {
       // post-publish fill point live further out in this setup body).
       let a5TeamOpsCfg = undefined
       let a5TeamOpsClaim = Object.freeze({ names: Object.freeze([]), census: Object.freeze([]) })
+      // ROOT 03:05 record-85 CLOSED-KEY HAND-OVER (G1 family; center ruling:
+      // one semantic writer for this change, this lane). The names the G1
+      // claim qualified (empty UNLESS the g1 arm will actually mount AND the
+      // native is legally visible in THIS agent's selection — one eligibility
+      // law, read identically at the arm and here).
+      let a5G1Control85Names = new Set()
+      let a5G1Control85Native = undefined
+      // THE EXACT CAPTURE (root P1): the raw filter below REMOVES this name
+      // from the agent-layer registration, so the scoped read the assembly
+      // performs can no longer see it — and a parent layer carrying a SAME-
+      // NAMED definition would be captured by mistake. The definition this
+      // agent's selection carried is kept HERE, at the moment of the claim,
+      // and it is the ONLY definition the record-85 assembly may capture.
       const a5TeamOpsNativeByName = new Map()
       const a5TeamOpsAllowedNames = new Set()
       // ROOT 19:53 ③: the definitions THIS owner actually placed under the
@@ -2864,9 +2877,34 @@ export function createAgentBindings(deps) {
           observations.push(`a5m2-b-team: family claim for ${sessionId} = ${a5TeamOpsClaim.names.length === 0 ? 'DECLARED-INACTIVE (census below)' : a5TeamOpsClaim.names.join(',')} (census=${a5TeamOpsClaim.census.map((row) => `${row.name}:${row.reason}`).join(',') || 'none'})`)
         }
         const a5TeamOpsClaimedNames = new Set(a5TeamOpsClaim.names)
-        const a5TeamOpsRawSelected = a5TeamOpsClaimedNames.size === 0
+        // ROOT 03:05 record-85 CLOSED-KEY HAND-OVER, at the site the atomic
+        // one-placement law owns. The B-TEAM claim ABOVE is NOT touched (its
+        // census is the ten teamOps keys and does not contain this name —
+        // team-adapters.mjs:213-217 measured). The claim fires only under the
+        // EXACT g1-mount eligibility (`permissionPolicy !== undefined` and a
+        // `teamToolPlane.g1PureQuery` row, :4693/:4876) — a claim without a
+        // placing arm could make the name answer NOTHING, which the 19:53
+        // atomic-handover law forbids. Qualified per the G1 family's own
+        // claim (closed to the record-85 key; capture-absent / face /
+        // identity laws mirrored from claimTeamOpsFamily verbatim).
+        const a5G1PlaneCfgHere = config?.teamToolPlane?.g1PureQuery
+        if (permissionPolicy !== undefined
+          && a5G1PlaneCfgHere !== undefined && a5G1PlaneCfgHere !== null) {
+          const a5G1Claim85 = claimG1Control85Handover({
+            catalog: selected,
+            allowedNames: null,
+            definitionIdentityOf,
+          })
+          a5G1Control85Names = new Set(a5G1Claim85.names)
+          a5G1Control85Native = a5G1Claim85.names.length === 0 ? undefined
+            : selected.find((def) => def?.name === A5_G1_CONTROL85_HANDOVER.name)
+          for (const row of a5G1Claim85.census) {
+            observations.push(`a5m2-g1: record-85 handover census ${row.name}:${String(row.reason)} for ${sessionId}`)
+          }
+        }
+        const a5TeamOpsRawSelected = a5TeamOpsClaimedNames.size === 0 && a5G1Control85Names.size === 0
           ? selected
-          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name))
+          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name) && !a5G1Control85Names.has(def.name))
         selectedTeamToolNames = a5TeamOpsRawSelected.map((def) => def.name)
         for (const def of a5TeamOpsRawSelected) {
           toolDisposers.push(agentCtx.tools.register(def))
@@ -5170,8 +5208,17 @@ export function createAgentBindings(deps) {
           }
           let g1PlacedCount = 0
           for (const entry of g1PureQuerySubset()) {
-            if (entry.familyId !== 'B-INSPECT') {
-              observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only); the raw name stays unregistered and untouched`)
+            // ROOT 03:05 (construction-scope ruling, NOT a native-permission
+            // change): record 85 arms ONLY through its closed-key hand-over
+            // above — family, recordIndex AND the claimed name must ALL match,
+            // and the native stays Leader-only by its OWN pre-read gate. Any
+            // other B-CONTROL row stays exactly as root 17:55 left it.
+            const a5G1Control85Armed = entry.recordIndex === 85
+              && entry.familyId === 'B-CONTROL'
+              && a5G1Control85Names.has(entry.name)
+              && a5G1Control85Native !== undefined
+            if (entry.familyId !== 'B-INSPECT' && !a5G1Control85Armed) {
+              observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only; root 03:05 carve-out: record 85 only via its closed-key hand-over); the raw name stays unregistered and untouched`)
               continue
             }
             const assembly = createG1QueryAssembly({
@@ -5181,7 +5228,13 @@ export function createAgentBindings(deps) {
                 // the other subset names answer nothing through THIS seam (the
                 // per-row split above; each name gets its own assembly and
                 // its own honest row, never another row's facts).
-                get: (name, agent) => (name === entry.name ? agentCtx.tools.get(name, agent) : undefined),
+                // ROOT P1 (record 85): the claimed selection instance, never a
+                // scoped re-read — the raw filter already let this name, and a
+                // parent layer's same-named definition must not be captured.
+                // The B-INSPECT pair keeps the live scoped takeover read.
+                get: (name, agent) => (name !== entry.name ? undefined
+                  : entry.recordIndex === 85 ? a5G1Control85Native
+                    : agentCtx.tools.get(name, agent)),
                 // The owner-held ledger write (root 841 ②): record the
                 // definition the moment the HOST seam accepts the
                 // registration, and retire it only when THIS registration's
