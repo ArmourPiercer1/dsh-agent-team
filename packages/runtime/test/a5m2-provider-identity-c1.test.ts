@@ -690,6 +690,13 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // schedule PAIR :3691/:3725, G2 team mount :3876, G5 goal inject :4265, subagent-
     // controls :4520, B-ORCH arm :4640. The prior RE-ANCHOR-4 line numbers drifted +3 by
     // the arm's own import/gate edits; attributions unchanged.
+    // RE-ANCHOR 6 (B-EDIT mounted via 54181348a cherry-merge, int d355b0dd0; CENTER-verified):
+    // net NINE -> TEN, +1 REAL family addition (the B-EDIT family-registration constant the
+    // vertical mount adds at agent-bindings.mjs:3252, blame = 54181348a itself), zero
+    // retirements. ALL TEN re-measured at their lines: todo :3072, write :3167, EDIT :3252,
+    // subagent-spawn :3552, the schedule PAIR :3807/:3841, G2 team mount :3992, G5 goal
+    // :4381, subagent-controls :4636, B-ORCH arm :4756. Prior line numbers drifted by the
+    // edit block's own insertions; attributions unchanged.
     // RE-ANCHOR 4 (census 6c08 run, NEW RED #2; CENTER-verified enumeration
     // BEFORE re-anchoring): net SIX -> EIGHT, +2 REAL family additions and zero
     // retirements. The two new literals are both attributable to the SIGNED
@@ -710,8 +717,8 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // the real objects, and the plane pin below stays.
     expect(
       matchAll(mount, /providerId: 'a5p5-plane',/g),
-      "todo + write + subagent-spawn + G2 team mount + G5 goal + subagent-controls + the schedule PAIR bind/publish constants (CARD #2), measured NINE on the merged tree (RE-ANCHOR 5 above; every site enumerated with its line)",
-    ).toHaveLength(9)
+      "todo + write + subagent-spawn + G2 team mount + G5 goal + subagent-controls + the schedule PAIR bind/publish constants (CARD #2), measured TEN on the merged tree (RE-ANCHOR 6 above; every site enumerated with its line)",
+    ).toHaveLength(10)
     expect(planeSrc).toContain('providerId: \'a5p5-plane\'') // the rev.0 row-lane tuple, untouched
     // The plane never reads the provider off a MANIFEST or RECEIPT for supply
     // purposes, and the FP-A/FP-D legs above byte-pin every COMPARISON site to
