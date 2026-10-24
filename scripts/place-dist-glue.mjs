@@ -343,6 +343,28 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
   },
+  // A5M2-SCHEDULE-BIND-AFTER-DEF + A5M2-PWSH (this lane; 2026-10-24/25): the
+  // mirrored `agent-bindings.mjs` imports the bind-after-def module and the
+  // mirrored `team-tool-plane.mjs` statically imports the PWSH mount bridge,
+  // which statically imports the PWSH ARM CLASS — three relative specifiers
+  // the strict `files: ["dist"]` install face would otherwise meet at
+  // ERR_MODULE_NOT_FOUND (the todo.mjs lesson; the drift gate is blind to
+  // unplaced modules). Closure legs land inside the mirror: the bind-after-def
+  // module imports nothing but node builtins; pwsh-wiring imports pwsh-arm
+  // (placed here, node:fs only) — byte-identical like every entry; drift
+  // gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-bind-after-def.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-bind-after-def.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/pwsh-arm.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/pwsh-arm.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

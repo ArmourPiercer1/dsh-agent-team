@@ -5224,6 +5224,75 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-g3: inject armed for ${sessionId} (evidence keys=${Object.keys(g3Cfg).sort().join(',')} terminals=${g3Terminals === undefined || g3Terminals === null ? 'ABSENT' : 'present'} subprocess=${g3Subprocess === undefined || g3Subprocess === null ? 'ABSENT' : 'present'} jobs=${g3LiveJobs !== null ? 'live-accessor(probe-present)' : typeof deps.jobs === 'function' ? 'accessor-probe-abstained(no-registry-face-now; bg refuses typed)' : 'no-accessor(bg refuses typed)'})`)
         }
+        // ── A5M2-PWSH GOVERNED MOUNT inject (CENTER pwsh card, root 2026-10-25) ──
+        // The OWNER-PUBLISHED deployment evidence for the win32 shell family,
+        // riding the terminal/subagent capture-arm law VERBATIM: the
+        // member-scoped native capture (agentCtx.tools.get(name, runtimeAgent)
+        // with a per-bind memo — the global face is NOT a fallback) and the
+        // real identity pairing. Config law BOTH directions: the deployment
+        // declares the mount through `config.teamToolPlane.pwsh = { declared:
+        // <explicit boolean> }`; an absent config block deploys NOTHING, a
+        // mis-typed declaration is refused HERE (config is law, not wiring).
+        // On the pinned-639 Linux world the native pwsh is
+        // disabled-unless-win32, the capture answers undefined and the PLANE
+        // lands the honest DECLARED-INACTIVE census — never a fake arm.
+        let a5PwshInject = null
+        const pwshCfg = planeCfg.pwsh
+        if (pwshCfg !== undefined && pwshCfg !== null) {
+          const refusePwsh = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-PWSH mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-pwsh-mount-refused'
+            observations.push(`a5m2-pwsh: inject-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refusePwsh('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const pwshMemberAgentId = typeof runtimeAgent.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const pwshSessionHeaderId = typeof runtimeAgent.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (pwshMemberAgentId === undefined || pwshSessionHeaderId === undefined) {
+            throw refusePwsh('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the row carries no fallback for either')
+          }
+          if (typeof pwshCfg.declared !== 'boolean') {
+            throw refusePwsh('config.teamToolPlane.pwsh.declared must be an EXPLICIT boolean (config law BOTH directions: true arms the family on a captured native, false is the honest DECLARED-INACTIVE census; absence is a config defect, not a default)')
+          }
+          const pwshCaptured = new Map()
+          const pwshReadNative = (name) => {
+            if (pwshCaptured.has(name)) return pwshCaptured.get(name)
+            let captured
+            try {
+              captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+            } catch (error) {
+              throw refusePwsh(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            pwshCaptured.set(name, captured === null ? undefined : captured)
+            return pwshCaptured.get(name)
+          }
+          a5PwshInject = Object.freeze({
+            providerId: typeof pwshCfg.providerId === 'string' && pwshCfg.providerId.length > 0 ? pwshCfg.providerId : 'a5p5-plane',
+            memberAgentId: pwshMemberAgentId,
+            sessionHeaderId: pwshSessionHeaderId,
+            readNative: pwshReadNative,
+            declaredMount: pwshCfg.declared,
+            // THE BACKGROUND CAPABILITY FACE, read off the REAL captured
+            // surface: the native pwsh tool carries `run_in_background` in
+            // its parameter grammar ONLY while the host jobs context is
+            // mounted (tool-pwsh promotion law). No jobs face observable on
+            // the captured def = the arm law keeps run_in_background CLOSED
+            // (fail closed; nothing invented, nothing assumed).
+            jobsMounted: () => {
+              const def = pwshReadNative('pwsh')
+              const params = def?.parameters
+              return params !== null && typeof params === 'object' && !Array.isArray(params)
+                && params.run_in_background !== undefined && params.run_in_background !== null
+            },
+          })
+          observations.push(`a5m2-pwsh: inject assembled for ${sessionId} (declared=${String(pwshCfg.declared)})`)
+        }
         // ── A5M2 G3 B-PTC run_code GUARD inject (root FINAL LIMITED ruling
         // 2026-10-25; the a5G3TerminalInject capture law, the guard-seam
         // shape) ── the Team-plane owner PUBLISHES deployment evidence under
@@ -5441,7 +5510,7 @@ export function createAgentBindings(deps) {
             : undefined,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5PwshInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -5455,6 +5524,11 @@ export function createAgentBindings(deps) {
             // row the plane never receives the deployment evidence and the
             // post-publish registration reads no wiring face -> mount-refused.
             ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
+            // A5M2-PWSH (CENTER pwsh card): the win32 shell family's row in
+            // the shared backends union. The guard above names
+            // a5PwshInject; WITHOUT this row the plane never receives the
+            // deployment evidence and reads no wiring face -> mount-refused.
+            ...(a5PwshInject === null ? {} : { pwsh: a5PwshInject }),
             // A5M2 G3 B-PTC run_code GUARD (root final limited ruling): the
             // audited pair — the guard names a5G3RunCodeGuardInject, THIS row
             // carries it to the plane's CLOSED `backends.runCodeGuard` key
@@ -6651,6 +6725,29 @@ export function createAgentBindings(deps) {
           for (const bOrchRegistration of bOrchRegistrations) {
             registerA5GovernedFamily(bOrchRegistration.definitionIdentity, bOrchRegistration.entry)
             observations.push(`a5m2-b-orchestration: family REGISTERED for ${sessionId} (record=${String(bOrchRegistration.recordIndex)} placement=${String(bOrchRegistration.definitionIdentity).slice(0, 28)})`)
+          }
+        }
+        // ── A5M2-PWSH family registration (CENTER pwsh card) ── THE SAME
+        // mount-writer law as every sibling: read the plane's own face AFTER
+        // publish; the keys are the PLACED definition's identities read
+        // FRESH through the bridge's registration law (its ABSENT/MOVED
+        // throws ride this block — never a guessed key, never a silent
+        // skip); presence of the face is the deployment decision.
+        if (a5PlaneValue?.pwsh !== undefined) {
+          let pwshRegistrations
+          try {
+            pwshRegistrations = a5PlaneValue.pwsh.familyRegistrations()
+          } catch (error) {
+            const refusal = new Error(
+              `agent-bindings: alpha.5 governed B-PWSH family registration refused for '${sessionId}': ${String(error?.message ?? error).slice(0, 220)}`,
+            )
+            refusal.code = 'alpha5-pwsh-mount-refused'
+            observations.push(`a5m2-pwsh: family-registration-REFUSED for ${sessionId} (placement feed silent or key moved)`)
+            throw refusal
+          }
+          for (const pwshRegistration of pwshRegistrations) {
+            registerA5GovernedFamily(pwshRegistration.definitionIdentity, pwshRegistration.entry)
+            observations.push(`a5m2-pwsh: family REGISTERED for ${sessionId} (placement=${String(pwshRegistration.definitionIdentity).slice(0, 32)} row=${String(pwshRegistration.name)} family=${String(pwshRegistration.entry.familyId)})`)
           }
         }
         // A5M2-G6 B-SESSION-QUERY: THE SAME fill point, the SAME law — the
