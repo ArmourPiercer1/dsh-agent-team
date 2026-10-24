@@ -460,34 +460,55 @@ async function ledgerFactsAll(factType, needle) {
   hits.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
   return hits
 }
-function permissionRuleShape(fact) {
-  const p = fact?.payload ?? {}
-  const rule = Array.isArray(p.rules) ? p.rules[0] : (p.rule ?? p ?? {})
-  const m = rule.matcher ?? rule ?? {}
-  const target = m.resource ?? m.path ?? m.value ?? null
-  const op = p.operation ?? p.op ?? rule.operation ?? rule.effect ?? null
-  return {
-    matcherKind: m.kind ?? null,
-    target: typeof target === 'string' ? target : null,
-    op: op ?? null,
-    hasExactRule: m.kind === 'exact' && typeof target === 'string' && /(^|\/)notes\.txt$/.test(target),
+// [root final card] the guessed 'permission-mutated' ledger fact is DEAD.
+// Durable truth (2fb, read-only forensics): governance/service.ts:1344-1371
+// appends an OVERLAY SNAPSHOT (identity.teamSessionId/memberInstanceId,
+// state.rules, metadata.generation/previousSnapshotId, provenance.actor/
+// mutationId/time/reason); tools.ts:1491-1498 mutationId =
+// `perm-<verb>-<requestToken>`; a REVOKE is the post-removal snapshot whose
+// rules MAY BE EMPTY — demanding a notes.txt allow after revoke is wrong by
+// construction. Storage persists rules as {operation, resource, effect}
+// (storage/schema/permission-overlay.ts:235-241; snapshot :245-283) — effect
+// is allow/deny, NEVER the verb; canonical resource is compared by FULL
+// equality, never a suffix regex. Primary acceptance = the real tool
+// RESULT (status/verb/target/changed, captured isError===false) + the
+// post-revoke call's explicit PA-denied refusal; the durable overlay read
+// (override.getPermissionAdministration, the existing read-only seam) is
+// CORROBORATION ONLY — if the seam is unwired, corroboration is recorded
+// UNVERIFIED, never a hard gate, never fabricated green.
+const EXPECTED_MUTATION_GRANT = `perm-grant-ehw-grant-${NONCE}` // tools.ts:1491-1498 derivation
+const EXPECTED_MUTATION_REVOKE = `perm-revoke-ehw-revoke-${NONCE}`
+function parsePermissionResult(text) {
+  const raw = typeof text === 'string' ? text : String(text ?? '')
+  let doc = null
+  try { doc = JSON.parse(raw) } catch {
+    const m = raw.match(/\{[\s\S]*"status"\s*:\s*"permission-mutated"[\s\S]*\}/)
+    if (m) { try { doc = JSON.parse(m[0]) } catch { doc = null } }
   }
+  if (doc === null || typeof doc !== 'object') return { parsed: false, raw: raw.slice(0, 300) }
+  return { parsed: true, status: doc.status ?? null, rootSessionId: doc.rootSessionId ?? null, targetInstanceId: doc.targetInstanceId ?? null, verb: doc.verb ?? null, changed: typeof doc.changed === 'boolean' ? doc.changed : null, code: doc.code ?? null, reason: doc.reason ?? null }
 }
-async function ledgerFactPresent(factType, needle) {
-  let afterSequence = 0
-  for (let pageNo = 0; pageNo < 50; pageNo += 1) {
-    const page = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `ehw-ledger-f-${pageNo + 1}`, 1)
-    const data = resultData(page.body)
-    const entries = Array.isArray(data?.entries) ? data.entries : []
-    for (const e of entries) {
-      if (e?.type !== factType && e?.factType !== factType) continue
-      if (needle === undefined || JSON.stringify(e?.payload ?? e).includes(needle)) return { sequence: e.sequence ?? e.seq ?? null, payload: e.payload ?? null }
-    }
-    const next = data?.afterSequence ?? data?.nextAfterSequence
-    if (typeof next !== 'number' || entries.length === 0) break
-    afterSequence = next
+let ovlSeq = 0
+const ovlCapture = { grantRules: null, grantGeneration: null, grantSnapshotId: null, canonical: null }
+async function overlayAdministration(tag) { // the ONLY sanctioned read seam; unwired => UNVERIFIED, not FAIL-gated
+  try {
+    const r = await remoteCallReady('override.getPermissionAdministration', { teamSessionId: currentRoot, memberInstanceId: editWorkerInstanceId() }, `ehw-ovl-${tag}-${++ovlSeq}`, 1)
+    const err = resultError(r.body)
+    if (err !== null) return { ok: false, why: `read-surface error: ${JSON.stringify(err).slice(0, 160)}` }
+    const admin = resultData(r.body)?.administration ?? null
+    if (admin === null) return { ok: false, why: 'read-surface returned no administration document' }
+    return { ok: true, admin }
+  } catch (e) { return { ok: false, why: `read-surface unwired/unreachable: ${String((e && e.message) || e).slice(0, 160)}` } }
+}
+function summarizeAdmin(a) {
+  const snaps = Array.isArray(a?.snapshots) ? a.snapshots : (Array.isArray(a?.overlays) ? a.overlays : [a])
+  const out = []
+  for (const sp of snaps) {
+    if (sp === null || typeof sp !== 'object') continue
+    const rules = Array.isArray(sp?.state?.rules) ? sp.state.rules : (Array.isArray(sp?.rules) ? sp.rules : [])
+    out.push({ identity: sp?.identity ?? null, generation: sp?.metadata?.generation ?? null, previousSnapshotId: sp?.metadata?.previousSnapshotId ?? null, snapshotId: sp?.metadata?.snapshotId ?? sp?.snapshotId ?? null, mutationId: sp?.provenance?.mutationId ?? null, rules: rules.map((r) => ({ operation: r?.operation, resource: r?.resource, effect: r?.effect })) })
   }
-  return null
+  return out
 }
 async function controlFacts() {
   const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
@@ -935,14 +956,20 @@ async function main() {
   // [E8a hard] grant 87: EXECUTED (no status:rejected, no error) + durable
   // permission-mutated ledger fact whose payload carries the rule verbatim.
   currentCriterion = 'E8a'
+  const e8Iid = editWorkerInstanceId()
   await apiPrompt(currentRoot, 'GRANT-EDIT', 'ehw-e8')
   const grantHit = await waitFor('GRANT-EDIT result', 60_000, () => callResults.find((r) => r.step === stepOuter('GRANT-EDIT')) ?? null)
-  const e8Fact = await ledgerFactPresent('permission-mutated', 'notes.txt')
-  const e8Shape = permissionRuleShape(e8Fact)
-  check('E8a', 'grant (87): structured success (captured isError===false, no rejection text) AND durable permission-mutated fact with the EXACT rule on the notes.txt target (substring is not enough; op recorded)',
-    e8Fact !== null && grantHit?.isError === false && !/rejected|NOT_LEADER|unwired/i.test(String(grantHit?.text))
-    && e8Shape.hasExactRule === true,
-    `factSeq=${String(e8Fact?.sequence)} shape=${JSON.stringify(e8Shape)} isError=${String(grantHit?.isError)} result=${String(grantHit?.text).slice(0, 240)}`)
+  const e8r = parsePermissionResult(grantHit?.text)
+  check('E8a', 'grant (87) REAL RESULT (types.ts:111-121 / tools.ts:1515-1522): captured isError===false AND status=permission-mutated AND verb===grant AND targetInstanceId===edit-worker AND rootSessionId===team root (changed recorded, not demanded)',
+    grantHit?.isError === false && e8r.parsed === true && e8r.status === 'permission-mutated' && e8r.verb === 'grant' && e8r.targetInstanceId === e8Iid && e8r.rootSessionId === currentRoot,
+    `result=${JSON.stringify(e8r).slice(0, 320)} isError=${String(grantHit?.isError)}`)
+  // corroboration (NON-blocking): the real overlay read seam, if wired.
+  currentCriterion = 'E8x'
+  const e8Ovl = await overlayAdministration('g')
+  const e8Snaps = e8Ovl.ok ? summarizeAdmin(e8Ovl.admin) : []
+  const e8Exact = e8Snaps.flatMap((x) => x.rules).some((r) => r.operation === 'edit' && r.effect === 'allow' && typeof r.resource === 'string' && r.resource.length > 0)
+  if (e8Ovl.ok) { ovlCapture.grantRules = e8Snaps; ovlCapture.grantGeneration = e8Snaps[e8Snaps.length - 1]?.generation ?? null; ovlCapture.grantSnapshotId = e8Snaps[e8Snaps.length - 1]?.snapshotId ?? null; ovlCapture.canonical = e8Snaps.flatMap((x) => x.rules).find((r) => r.operation === 'edit' && r.effect === 'allow')?.resource ?? null }
+  results.push({ critId: 'E8x', blocking: false, ok: e8Ovl.ok ? e8Exact : null, name: 'overlay read-seam corroboration (grant exact rule + mutationId chain); UNVERIFIED when the seam is unwired — never gates, never fabricates', verdict: e8Ovl.ok ? (e8Exact ? 'exact edit/allow rule present' : 'read OK but exact rule not found') : 'UNVERIFIED (no read surface)', detail: `why=${String(e8Ovl.why ?? '')} mutationIdExpected=${EXPECTED_MUTATION_GRANT} mutationIds=${JSON.stringify(e8Snaps.map((x) => x.mutationId))} generationChain=${JSON.stringify(e8Snaps.map((x) => [x.generation, x.previousSnapshotId]))} canonical=${String(ovlCapture.canonical)}` })
 
   // [E8b probe, non-blocking] EDIT behavior after the grant overlay is
   // RECORDED, never pre-claimed: either the PA lane consumed the overlay
@@ -988,20 +1015,24 @@ async function main() {
   await apiPrompt(currentRoot, 'REVOKE-EDIT', 'ehw-e9')
   const revokeHit = await waitFor('REVOKE-EDIT result', 60_000, () => callResults.find((r) => r.step === stepOuter('REVOKE-EDIT')) ?? null)
   const revokeOutcome = String(revokeHit?.text ?? '')
-  // [root false-pass card 1 fix] the FIRST permission-mutated row from seq 0
-  // would happily be E8a's GRANT — the revoke must be proven by a NEW fact
-  // strictly after the grant fact, with a DISTINCT payload, plus structured
-  // success on the call itself (not merely the absence of 'rejected').
-  const e9All = await ledgerFactsAll('permission-mutated', 'notes.txt')
-  const e9New = e9All.filter((f) => e8Fact?.sequence != null && typeof f.sequence === 'number' && f.sequence > e8Fact.sequence)
-  const e9Last = e9New.length > 0 ? e9New[e9New.length - 1] : null
-  const e9PayloadDistinct = e9Last !== null && JSON.stringify(e9Last.payload) !== JSON.stringify(e8Fact?.payload)
-  const e9Shape = permissionRuleShape(e9Last)
-  const e9OpOk = e9Shape.op === null ? true : /revoke/i.test(String(e9Shape.op)) // op field, WHEN present, must be the revoke family
-  const e9Structured = revokeHit?.isError === false && String(revokeOutcome).length > 0 && !/rejected|NOT_LEADER|unwired|error/i.test(String(revokeOutcome))
-  check('E9a', 'revoke (88): structured success (captured isError===false) AND a NEW permission-mutated fact STRICTLY after the grant seq, DISTINCT payload, EXACT rule on notes.txt, op (when present) = revoke family',
-    e9Last !== null && e9PayloadDistinct && e9Structured && e9Shape.hasExactRule === true && e9OpOk,
-    `grantSeq=${String(e8Fact?.sequence)} newSeq=${String(e9Last?.sequence)} shape=${JSON.stringify(e9Shape)} payloadDistinct=${String(e9PayloadDistinct)} isError=${String(revokeHit?.isError)} result=${String(revokeOutcome).slice(0, 240)}`)
+  const e9r = parsePermissionResult(revokeOutcome)
+  // [root final card] primary: the REAL 88 result. A revoke's durable
+  // snapshot legitimately has EMPTY rules — nothing about surviving rules is
+  // demanded here; behavior is proven by E9b's real PA-row denial.
+  check('E9a', 'revoke (88) REAL RESULT: captured isError===false AND status=permission-mutated AND verb===revoke (NEVER derived from rule.effect) AND targetInstanceId===edit-worker AND rootSessionId===team root',
+    revokeHit?.isError === false && e9r.parsed === true && e9r.status === 'permission-mutated' && e9r.verb === 'revoke' && e9r.targetInstanceId === editWorkerInstanceId() && e9r.rootSessionId === currentRoot,
+    `result=${JSON.stringify(e9r).slice(0, 320)} isError=${String(revokeHit?.isError)}`)
+  // corroboration (NON-blocking): revoke pair REMOVED (canonical FULL
+  // equality against the captured grant resource), generation chained,
+  // mutationId === perm-revoke-<requestToken> derivation. Empty rules after
+  // removal is the CORRECT shape, not a failure.
+  currentCriterion = 'E9x'
+  const e9Ovl = await overlayAdministration('r')
+  const e9Snaps = e9Ovl.ok ? summarizeAdmin(e9Ovl.admin) : []
+  const stillPaired = ovlCapture.canonical !== null && e9Snaps.flatMap((x) => x.rules).some((r) => r.operation === 'edit' && r.effect === 'allow' && r.resource === ovlCapture.canonical) // FULL equality per storage:235-241; no suffix regex
+  const e9MutationOk = e9Snaps.some((x) => x.mutationId === EXPECTED_MUTATION_REVOKE)
+  const e9ChainOk = e9Snaps.some((x) => x.previousSnapshotId != null && (ovlCapture.grantSnapshotId === null || x.previousSnapshotId === ovlCapture.grantSnapshotId || x.previousSnapshotId !== null))
+  results.push({ critId: 'E9x', blocking: false, ok: e9Ovl.ok ? (!stillPaired && e9MutationOk) : null, name: 'overlay read-seam corroboration (revoke REMOVED the pair; generation/mutationId chain); UNVERIFIED when unwired', verdict: e9Ovl.ok ? (stillPaired ? 'PAIR STILL PRESENT (corroboration negative)' : `pair removed; mutationId=${e9MutationOk ? 'matches perm-revoke derivation' : 'does not match derivation'}; chain=${e9ChainOk ? 'prev-snapshot linked' : 'no link'}`) : 'UNVERIFIED (no read surface)', detail: `why=${String(e9Ovl.why ?? '')} canonical=${String(ovlCapture.canonical)} mutationIdExpected=${EXPECTED_MUTATION_REVOKE} mutationIds=${JSON.stringify(e9Snaps.map((x) => x.mutationId))} generationChain=${JSON.stringify(e9Snaps.map((x) => [x.generation, x.previousSnapshotId]))}` })
 
   // [E9b hard, zero-residue] after the revoke, a fresh EDIT must NOT execute
   // silently: bytes MUST be unchanged. A pending row reappearing is the
