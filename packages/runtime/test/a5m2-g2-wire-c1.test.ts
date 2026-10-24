@@ -1418,4 +1418,29 @@ describe('A5M2-WIRE round-40: fixed web lanes through the REAL createG2WebProvid
   })
 })
 
-
+/* ROOT card cut: the STANDARD g2Web backend face, built from the real
+ * adapters over the real branded seam lanes. */
+describe('A5M2-WIRE round-45: createG2WebBackend — standard face, sync contract, honest throws', () => {
+  it('rows are the standard G2 face (toolName/familyId/adapterRevision/providerId + classify/invoke/drain functions); lanes ride branded; empty-lane/description-less builds THROW (no empty rowset, no placeholder bytes)', async () => {
+    const mm = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>>; descriptions: Record<string, string>; teamFixedWebProviderLanes: Record<string, unknown> }; createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, unknown> }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, unknown> }
+    const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown> }
+    const provider = { id: 'local-fetch', available: () => true, fetch: async () => ({ ok: true }) }
+    const lanes = mm.createG2WebFixedLanes({ fixedProvider: provider, seamMod, declared: { origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-1' }, readMountFacts: () => ({ origin: 'https://target.example.invalid', endpointOrigin: 'https://api.example.invalid', configIdentity: 'cfg-1' }) })
+    const backend = mm.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-1', providerId: 'a5p5-plane',
+      readNative: () => undefined, definitionIdentityOf: () => 'di-web-1',
+      lanes, descriptions: { web_fetch: 'fetch one exact URL under the governed web family law', web_search: 'search closed query sets under the governed web family law' },
+    })
+    const rows = backend.createRowset()
+    expect(rows.map((x) => x.toolName).sort()).toEqual(['web_fetch', 'web_search'])
+    for (const row of rows) {
+      expect(typeof row.classify === 'function' && typeof row.invoke === 'function' && typeof row.drain === 'function').toBe(true)
+      expect(row.providerId).toBe('a5p5-plane')
+      expect(Number.isInteger(row.adapterRevision)).toBe(true)
+    }
+    expect(Object.keys(backend.teamFixedWebProviderLanes)).toEqual(['web_fetch'])
+    expect(() => mm.createG2WebBackend({ webAdaptersMod: adapters, realmId: 'r', providerId: 'a5p5-plane', readNative: () => undefined, definitionIdentityOf: () => 'd', lanes: {}, descriptions: { web_fetch: 'x' } })).toThrow(/seam-branded fixed lanes/)
+    expect(() => mm.createG2WebBackend({ webAdaptersMod: adapters, realmId: 'r', providerId: 'a5p5-plane', readNative: () => undefined, definitionIdentityOf: () => 'd', lanes, descriptions: {} })).toThrow(/captured description BYTES/)
+  })
+})

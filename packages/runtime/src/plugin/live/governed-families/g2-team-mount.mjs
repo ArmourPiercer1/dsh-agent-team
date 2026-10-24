@@ -471,3 +471,34 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
  * edge the call's ACTUAL approved effects / identity / original
  * fingerprint / proof travel to the provider through the internal
  * dispatch context, and the trio relays only that witness (r42). */
+
+/**
+ * THE standard g2Web backend face for the plane's backends injection
+ * (verified shapes: createG2WebAdapters answers { web_fetch, web_search }
+ * rows in the standard G2 face; the plane's row check reads
+ * toolName/familyId/adapterRevision/providerId + classify/invoke/drain
+ * functions + descriptions bytes; teamFixedWebProviderLanes must be the
+ * seam-branded lanes from createG2WebFixedLanes). Synchronous, non-empty
+ * contract: an honest inability to row is a THROW at build, never an
+ * empty rowset.
+ */
+export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions } = {}) {
+  if (lanes === null || typeof lanes !== 'object' || lanes.web_fetch === undefined || lanes.web_fetch.provider === undefined) {
+    throw new Error('G2_SUPPLY_ENTRY_INVALID: the g2Web backend requires the seam-branded fixed lanes (createG2WebFixedLanes product); without them the plane fail-closes by law, so nothing is injected here either')
+  }
+  const build = () => Object.values(webAdaptersMod.createG2WebAdapters({
+    realmId, providerId, readNative,
+    ...(typeof searchOrigin === 'string' && searchOrigin.length > 0 ? { searchOrigin } : {}),
+    readProviderFacts, definitionIdentityOf, ...(typeof observe === 'function' ? { observe } : {}),
+  }))
+  const probe = build()
+  if (probe.length === 0) throw new Error('G2_SUPPLY_ENTRY_INVALID: the web adapters answered an empty rowset — a contract breach, not an honest no-mount')
+  if (descriptions === null || typeof descriptions !== 'object' || typeof descriptions.web_fetch !== 'string' || descriptions.web_fetch.length === 0) {
+    throw new Error('G2_SUPPLY_ENTRY_INVALID: the plane law requires captured description BYTES for web_fetch; the owning assembly must supply the real captured text, never a placeholder')
+  }
+  return Object.freeze({
+    createRowset: build,
+    descriptions: Object.freeze({ ...descriptions }),
+    teamFixedWebProviderLanes: Object.freeze({ ...lanes }),
+  })
+}
