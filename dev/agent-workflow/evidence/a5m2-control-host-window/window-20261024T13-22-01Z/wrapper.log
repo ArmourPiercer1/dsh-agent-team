@@ -1,0 +1,6 @@
+control window wrapper 20261024T13-22-01Z driver=86d0e00c7094d2a12ce5a0264db6ebe96f682789
+driver law: HEAD carries 86d0e00c7094d2a12ce5a0264db6ebe96f682789; runner file sha256 c49b62f19f0a689234b4294c975e51aa15dab8a3de1e85bd0da1bc8dec675a1f
+fixture before: lock=0e8848a555d20c5a… pkg=fb4541bac8e8068d…
+df avail: 17441280000 B (min 6442450944)
+ports 3184/3499 free (pre-check)
+[ctlhw] plugin entry resolved from the f86 fixture exports['./host']: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0d166410/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
