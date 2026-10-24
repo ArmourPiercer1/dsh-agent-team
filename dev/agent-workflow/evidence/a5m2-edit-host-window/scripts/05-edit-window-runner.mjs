@@ -37,7 +37,7 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '694b0c0eb8d38511ba3322e786c4daefcc378628' // SYNC CARD 2026-10-24c (root pin GO): int 694b0c0e (parent a27f1a46, descends 4a26ac9a; release surface = 4 dist .mjs agent-bindings/team-tool-plane/subagent-spawn-adapters/subagent-spawn-wiring); constants-only sync, d66 execution logic untouched
+const COMPOSED_SHA = '2fb129cfa23e138248fecc834a42c92238af95fe' // SYNC CARD 2026-10-25 (root PREP authorize, NOT a Host GO): 2fb129cfa / package sha 8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a / lock 5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088 / INSTALL install-8077defc — the line where 87/88 permission grant/revoke are WIRED (root.js :3014-3040 createTeamTools permission seam; :3034 fail-closed without the fs provider seam). 694b remains the historical evidence base; NO same-SHA claim. Arm blobs RE-MEASURED on install-8077defc via git hash-object: identical. // SYNC CARD 2026-10-24c (root pin GO): int 694b0c0e (parent a27f1a46, descends 4a26ac9a; release surface = 4 dist .mjs agent-bindings/team-tool-plane/subagent-spawn-adapters/subagent-spawn-wiring); constants-only sync, d66 execution logic untouched
 const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // RE-MEASURED (git hash-object) against install-d703affb at this sync: identical (spawn-face changes did not touch the edit arm)
 const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35' // likewise RE-MEASURED against install-d703affb: identical
 const PACK_BYTES_MAX = 8_000_000
@@ -57,7 +57,7 @@ const INSTALL_DIR = process.env.A5M2_EDIT_INSTALL_DIR ?? null // f86's NEW final
 const PACK_COMPOSED = process.env.A5M2_EDIT_COMPOSED_SHA ?? null
 const EXPECTED_PACK_SHA = process.env.A5M2_EDIT_PACK_SHA256 ?? null // REQUIRED: full hash from f86's new receipt (sha256: prefix)
 const EXPECTED_TGZ_NAME = process.env.A5M2_EDIT_TGZ_NAME ?? 'dsh-agent-team-0.1.1-alpha.2.tgz' // same tree -> same name unless the receipt says otherwise
-const EXPECTED_TGZ_DIR_PREFIX = 'out-694b0c0e-' // receipt names out-694b0c0e-20261024T130252Z; the NAME only saves a glob — the fail-closed field check (:225 class) stays the authority
+const EXPECTED_TGZ_DIR_PREFIX = 'out-2fb129cf-' // receipt names out-694b0c0e-20261024T130252Z; the NAME only saves a glob — the fail-closed field check (:225 class) stays the authority
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -82,8 +82,12 @@ const ANCHOR_V3_YAML = [
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 EDIT window A team."',
   'members:', '  - templateId: edit-worker', '    persona: "You are a worker of the A5M2 EDIT window A team."',
   'memberEnvelopes: []', 'requirements: []',
-  'permissionMutationEnvelope:', '  rules: []',
-  'teamHardEnvelope:', '  rules: []',
+  // [E8/E9 carrier per B's 8788 cheat-sheet (d1fd0dbb, read-only reuse)] the
+  // BLUEPRINT carrier syntax is {kind, path} (schema.js:213-216); the WIRE
+  // grant matcher is {kind, value}; the runtime overlay is {kind, resource} —
+  // three closed grammars, never interchanged.
+  'permissionMutationEnvelope:', '  rules:', '    - operationClass: edit', '      matcher:', '        kind: exact', '        path: notes.txt', '      maximumEffect: allow',
+  'teamHardEnvelope:', '  rules:', '    - operationClass: edit', '      matcher:', '        kind: exact', '        path: notes.txt', '      maximumEffect: allow',
   'policyStates: []', 'metadata: {}', '---', '',
 ].join('\n')
 // worker: NO team tools, NO skills/mcp, default deny, ask ONLY on the governed
@@ -137,8 +141,12 @@ const SAVED_BP_V3_YAML = [
   // itself); the Leader + team resolution path is untouched (teamEnvelope above).
   'memberEnvelopes:', '  - templateId: edit-worker', '    envelope:', '      allow:',
   '        - request-control', '      deny: []', 'requirements: []',
-  'permissionMutationEnvelope:', '  rules: []',
-  'teamHardEnvelope:', '  rules: []',
+  // [E8/E9 carrier per B's 8788 cheat-sheet (d1fd0dbb, read-only reuse)] the
+  // BLUEPRINT carrier syntax is {kind, path} (schema.js:213-216); the WIRE
+  // grant matcher is {kind, value}; the runtime overlay is {kind, resource} —
+  // three closed grammars, never interchanged.
+  'permissionMutationEnvelope:', '  rules:', '    - operationClass: edit', '      matcher:', '        kind: exact', '        path: notes.txt', '      maximumEffect: allow',
+  'teamHardEnvelope:', '  rules:', '    - operationClass: edit', '      matcher:', '        kind: exact', '        path: notes.txt', '      maximumEffect: allow',
   'policyStates: []', 'metadata: {}', '---', '',
 ].join('\n')
 
@@ -417,6 +425,39 @@ function safeParse(v) {
   if (typeof v === 'object') return v
   try { return JSON.parse(v) } catch { return { raw: String(v).slice(0, 400) } }
 }
+function editWorkerInstanceId() {
+  const f = join(HOME, 'storages', 'team_domain.json')
+  if (!existsSync(f)) return null
+  const doc = safeParse(readFileSync(f, 'utf8'))
+  const templates = new Map()
+  const byTemplate = new Map()
+  const seen = new Set()
+  const walk = (n) => {
+    if (typeof n === 'string') { if (n.length > 1 && (n.startsWith('{') || n.startsWith('[')) && !seen.has(n)) { seen.add(n); walk(safeParse(n)) } return }
+    if (n === null || typeof n !== 'object') return
+    if (Array.isArray(n)) { n.forEach(walk); return }
+    if (typeof n.templateId === 'string' && typeof n.instanceId === 'string') { templates.set(n.instanceId, n.templateId); byTemplate.set(n.templateId, n.instanceId) }
+    for (const v of Object.values(n)) walk(v)
+  }
+  walk(doc)
+  return byTemplate.get('edit-worker') ?? null
+}
+async function ledgerFactPresent(factType, needle) {
+  let afterSequence = 0
+  for (let pageNo = 0; pageNo < 50; pageNo += 1) {
+    const page = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `ehw-ledger-f-${pageNo + 1}`, 1)
+    const data = resultData(page.body)
+    const entries = Array.isArray(data?.entries) ? data.entries : []
+    for (const e of entries) {
+      if (e?.type !== factType && e?.factType !== factType) continue
+      if (needle === undefined || JSON.stringify(e?.payload ?? e).includes(needle)) return { sequence: e.sequence ?? e.seq ?? null, payload: e.payload ?? null }
+    }
+    const next = data?.afterSequence ?? data?.nextAfterSequence
+    if (typeof next !== 'number' || entries.length === 0) break
+    afterSequence = next
+  }
+  return null
+}
 async function controlFacts() {
   const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
   let afterSequence = 0
@@ -623,6 +664,10 @@ async function main() {
     if (text.startsWith('EDIT-ESCAPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: '../outside-canary.txt', old_string: 'C', new_string: 'X' } })) // E4: lexical '..' escape to the HOME canary
     if (text.startsWith('EDIT-SYMLINK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'link2.txt', old_string: 'T', new_string: 'X' } })) // E6: lexical-passing symlink; refusal is expected POST-CONSUME at the write (O_NOFOLLOW)
     if (text.startsWith('EDIT-XENVELOPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes-b.txt', old_string: 'bravo', new_string: 'BRAVO-B' } })) // E7: lawful in-root path OUTSIDE this member's envelope (envelope-level cross check; NOT a second owner)
+    if (text.startsWith('GRANT-EDIT')) return emitOrClose(text, () => ({ name: 'team_grant_permission', args: { rootSessionId: currentRoot, requestToken: `ehw-grant-${NONCE}`, targetInstanceId: editWorkerInstanceId(), rules: [{ operationClass: 'edit', matcher: { kind: 'exact', value: 'notes.txt' }, effect: 'allow' }] } })) // WIRE matcher = {kind, value} per the cheat-sheet; server-side canonicalization at the target member's durable effective workspace
+    if (text.startsWith('REVOKE-EDIT')) return emitOrClose(text, () => ({ name: 'team_revoke_permission', args: { rootSessionId: currentRoot, requestToken: `ehw-revoke-${NONCE}`, targetInstanceId: editWorkerInstanceId(), rules: [{ operationClass: 'edit', matcher: { kind: 'exact', value: 'notes.txt' }, effect: 'allow' }] } })) // 88 same shape/name-swap per the cheat-sheet; reveal-as-expansion rides the SAME mutation authority
+    if (text.startsWith('EDIT-POSTGRANT')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-GRANTED' } })) // independent marker; behavior AFTER the grant is RECORDED honestly (overlay-consumed vs still-ask), never pre-claimed
+    if (text.startsWith('EDIT-POSTREVOKE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-REVOKED' } })) // zero-residue probe: if this executes without ANY pending row after the revoke, that is a residual-effect FAIL
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
     if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } })) // root ruling: the EDIT row's anchor contract is RELATIVE-to-root (edit.mjs :89-94 path.isAbsolute refuses); workspace/FSROOT stay aligned so the relative spelling resolves to the SAME target via canonicalLocator :233-236
     if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } })) // same single-variable ruling as the allow arm
@@ -855,6 +900,90 @@ async function main() {
   check('E7', "path-not-in-scope (NOT cross-owner, level-1 only): in-root 'notes-b.txt' refused (lane recorded honestly), target-b frozen, no allow-consumed",
     /refused|P_EDIT|ANCHOR|denied|APPROVAL_DENIED/.test(String(xRes)) && sha256(XB) === xbShaBefore && xConsumed === false,
     `lane=${xPath} requestId=${String(xReq)} consumed=${String(xConsumed)} xbSha=${sha256(XB)} xbShaBefore=${xbShaBefore} result=${String(xRes).slice(0, 280)}`)
+
+  // [E8a hard] grant 87: EXECUTED (no status:rejected, no error) + durable
+  // permission-mutated ledger fact whose payload carries the rule verbatim.
+  currentCriterion = 'E8a'
+  await apiPrompt(currentRoot, 'GRANT-EDIT', 'ehw-e8')
+  const grantOutcome = await waitFor('GRANT-EDIT result', 60_000, () => {
+    const hit = callResults.find((r) => r.step === stepOuter('GRANT-EDIT'))
+    return hit ? hit.text : null
+  })
+  const e8Fact = await ledgerFactPresent('permission-mutated', 'notes.txt')
+  check('E8a', 'grant (87): Leader call EXECUTED without rejection AND durable permission-mutated fact carries the exact rule',
+    e8Fact !== null && !/rejected|NOT_LEADER|unwired|"isError":true/i.test(String(grantOutcome)),
+    `fact=${JSON.stringify(e8Fact).slice(0, 220)} result=${String(grantOutcome).slice(0, 260)}`)
+
+  // [E8b probe, non-blocking] EDIT behavior after the grant overlay is
+  // RECORDED, never pre-claimed: either the PA lane consumed the overlay
+  // (no pending, bytes move — overlay-consumed) or it still asks (pending
+  // appears — EDIT lane unaffected). Both outcomes are recorded verbatim;
+  // a pending row is DENIED for cleanup.
+  currentCriterion = 'E8b'
+  const e8bShaBefore = sha256(target)
+  const pendBefore8 = new Set(await pendingRequestIds())
+  await apiPrompt(memberSession, 'EDIT-POSTGRANT', 'ehw-e8b')
+  let e8bReq = null
+  try {
+    e8bReq = await waitFor('post-grant pending?', 8_000, async () => {
+      const fresh = (await pendingRequestIds()).filter((r) => !pendBefore8.has(r))
+      return fresh.length > 0 ? fresh[0] : null
+    })
+  } catch { e8bReq = null }
+  let e8bRes = 'N/A (awaiting result)'
+  if (e8bReq !== null) {
+    await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId: e8bReq, decision: 'deny', note: 'edit-hw e8b cleanup' }, 'ehw-e8bd', 4)
+    e8bRes = await resultFor(stepOuter('EDIT-POSTGRANT'))
+  } else {
+    e8bRes = await resultFor(stepOuter('EDIT-POSTGRANT'))
+  }
+  results.push({
+    critId: 'E8b', blocking: false, ok: null,
+    name: 'post-grant EDIT behavior probe (recorded honestly; consumed-vs-still-ask, NEVER a PASS claim)',
+    verdict: e8bReq === null ? 'no-pending (overlay-consumed shape)' : 'still-ask (pending created; denied for cleanup)',
+    detail: `pending=${String(e8bReq)} shaBefore=${e8bShaBefore} shaNow=${sha256(target)} result=${String(e8bRes).slice(0, 260)}`,
+  })
+  log(`E8b PROBE (non-blocking): pending=${String(e8bReq)} sha ${e8bShaBefore.slice(0, 12)}->${sha256(target).slice(0, 12)}`)
+
+  // [E9a hard] revoke 88: EXECUTED without rejection + a SECOND durable
+  // permission-mutated fact. If 88 answers status:rejected, FAIL as-is
+  // (carrier coverage is part of the fixture; no silent pass).
+  currentCriterion = 'E9a'
+  await apiPrompt(currentRoot, 'REVOKE-EDIT', 'ehw-e9')
+  const revokeOutcome = await waitFor('REVOKE-EDIT result', 60_000, () => {
+    const hit = callResults.find((r) => r.step === stepOuter('REVOKE-EDIT'))
+    return hit ? hit.text : null
+  })
+  const e9Facts = await ledgerFactPresent('permission-mutated', 'notes.txt')
+  check('E9a', 'revoke (88): EXECUTED without rejection AND a durable permission-mutated fact present post-revoke (second mutation)',
+    e9Facts !== null && !/status.*rejected|rejected/.test(String(revokeOutcome)),
+    `fact=${JSON.stringify(e9Facts).slice(0, 220)} result=${String(revokeOutcome).slice(0, 260)}`)
+
+  // [E9b hard, zero-residue] after the revoke, a fresh EDIT must NOT execute
+  // silently: bytes MUST be unchanged. A pending row reappearing is the
+  // expected regression-to-ask shape (DENIED for cleanup, recorded).
+  currentCriterion = 'E9b'
+  const e9bShaBefore = sha256(target)
+  const pendBefore9 = new Set(await pendingRequestIds())
+  await apiPrompt(memberSession, 'EDIT-POSTREVOKE', 'ehw-e9b')
+  let e9bReq = null
+  try {
+    e9bReq = await waitFor('post-revoke pending?', 8_000, async () => {
+      const fresh = (await pendingRequestIds()).filter((r) => !pendBefore9.has(r))
+      return fresh.length > 0 ? fresh[0] : null
+    })
+  } catch { e9bReq = null }
+  let e9bRes = 'N/A'
+  if (e9bReq !== null) {
+    await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId: e9bReq, decision: 'deny', note: 'edit-hw e9b cleanup' }, 'ehw-e9bd', 4)
+    e9bRes = await resultFor(stepOuter('EDIT-POSTREVOKE'))
+  } else {
+    await new Promise((res) => setTimeout(res, 2_000))
+    e9bRes = await resultFor(stepOuter('EDIT-POSTREVOKE'))
+  }
+  check('E9b', 'post-revoke zero residue: bytes MUST be unchanged; regression-to-ask (pending) recorded and denied — silent execution would FAIL',
+    sha256(target) === e9bShaBefore,
+    `pending=${String(e9bReq)} shaBefore=${e9bShaBefore} shaNow=${sha256(target)} result=${String(e9bRes).slice(0, 260)}`)
 
   await cleanup()
   // non-blocking probe rows (ok:null, blocking:false) never decide the rc; real criteria (ok true/false) do.
