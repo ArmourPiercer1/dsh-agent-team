@@ -433,3 +433,9 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 - 8e62 二窗候 df：driver `042d1725a503abdd8d13c8f8e5a27c9d9ab3ea8b`（CFS 全形三向只读复现；HOME 指针交接；上窗 64MiB 检核未运行如实认账不冒称）；09:28:17Z pre-boot df 闸 rc3（avail 17.78GB<18GB，零 spawn 窗口未消耗）；缺口 ~213MiB，只读清理账已呈根（tests/homes 10-23 旧 C2 世界单项 661MB 即可越闸 3×；中心/8e62 零删）。
 - d675 装配批合入（70908b8de/6d182c5d3）：fork 自有 tsconfig+store-provision（合流树需跑 `node forks/dsh-schedule/scripts/provision-store-deps.mjs`，14/14，零安装）；TRIGGER_CONSUMER_CARRIER_BREAKPOINT 具名归根裁。
 - 槽位：A/B＝8722db94（root 直卡，B=3184/mock3499/只读 fixture/不自动 boot，端口与 3183 零重叠）；f86 终态释放无挂起；8e62 纯监护候 df。
+
+## 2026-10-24T09:5xZ wave booking (rides the batch above; append-only)
+- 8e62 窗账终版入册：窗-1 rc2（CFS refusal→全形修生效）、窗-2 rc2（PermissionCoverage 15 名 verbatim；monitor 全实 HOME 首采 72,540B；child 真退 rc2 外层 bound 未触）；口径更正 managed=ownership-not-declaration（过称已纠）；4bb2d9fed＝单 EDIT 隔离配置草稿候根名单核；A 第三窗＝根直 GO 直送，中心不并派。
+- 合流新批：master PR362 merge `2177986a7`（零冲突，docs scripts 与 dsh-sandbox 双区块保，docs 工具 probe RC0/controls 94-failed8 如实）；44ece R22 三点修 `44d91fabc`（effects 收缩+DISCLOSURE 行、registries 完成态+来源标注、双审后最终边界；172/172+35/35）；e78 ORCH 桥 `9a2bc81c8`+`a1a53c6d5`（桥 3/3；provider dist 镜像滞后 4 行由中心修复——镜像漂移类由 checker D 抓，非冷 import）；68701321 verify-surface 三文件 11/11。
+- 容量精确账（a356）：df 17,761,210,368B；新 store＋wire-g1 NM union **648,101,888 allocated**（互链 553,246,720，无第三 partner）；before 无快照净增 UNKNOWN；`.gate/pnpm-store-r22` **非 gitignored**（check-ignore RC1）＝untracked 于父 repo——**纪律：任何提交只精确 stage 列举路径，严禁 git add -A**；不清理/不改权限（候根）。
+- 槽与派工：A/B＝8722 直管（B 沿实测 coverage 隔离面，只去本族不测未接管 native，未 GO）；e78→C 项四件续（送达）；2aeefdeb→B-JOB slice-2（送达，FP-E 先报，镜像同 commit 已写卡）；d675 具名裁点＝callId 三选一（schema 扩/平行账/空置维持）候根。
