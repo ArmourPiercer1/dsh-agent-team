@@ -1704,7 +1704,7 @@ describe('A2C-1 RED probes (plan §5.6 — fail on the base tree)', () => {
 })
 
 describe('A2C-1 GREEN: classification + vocabulary (plan §5.2/§5.5)', () => {
-  it('the shell class: bash+pwsh are tool-level, the shell vocabulary is complete, the domain list has 40 names (root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed + the approved CONTROL four + str_replace_editor, root 2026-10-24)', () => {
+  it('the shell class: bash+pwsh are tool-level, the shell vocabulary is complete, the domain list has 70 names (root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed + the approved CONTROL four + str_replace_editor + the 2026-10-24 registration census 65→70, synced by the real enumeration)', () => {
     const p1 = R['p1'] as Record<string, unknown>
     expect(p1['bashKind']).toBe('tool-level')
     expect(p1['bashTool']).toBe('bash')
@@ -1713,7 +1713,7 @@ describe('A2C-1 GREEN: classification + vocabulary (plan §5.2/§5.5)', () => {
     expect(p1['shellValues']).toEqual(['bash', 'pwsh'])
     expect(p1['shellKeys']).toEqual({ bash: 'bash', pwsh: 'pwsh' })
     expect(p1['singleCanonIsFunction']).toBe(true)
-    expect(p1['permToolNames']).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'edit', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'str_replace_editor', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_grant_permission', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_request_control', 'team_resolve_control', 'team_revoke_permission', 'team_send_message', 'write'])
+    expect(p1['permToolNames']).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'create_goal', 'edit', 'get_goal', 'glob', 'grep', 'interrupt_agent', 'job_kill', 'job_list', 'job_output', 'list_agents', 'list_mcp_resource_templates', 'list_mcp_resources', 'list_subagent_models', 'lsp', 'plugin_manager', 'pwsh', 'read', 'read_image', 'read_mcp_resource', 'run_code', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'stagehand_act', 'stagehand_extract', 'stagehand_navigate', 'stagehand_observe', 'stagehand_screenshot', 'stagehand_tabs', 'str_replace_editor', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_glob', 'team_grant_permission', 'team_grep', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_request_control', 'team_resolve_control', 'team_revoke_permission', 'team_send_message', 'terminal_close', 'terminal_list', 'terminal_open', 'terminal_read', 'terminal_send', 'terminal_signal', 'todo_write', 'update_goal', 'web_fetch', 'web_search', 'write'])
     
     expect(p1['toolValues']).toEqual(p1['permToolNames'])
     expect(p1['fileValues']).toEqual(['edit', 'lsp', 'read', 'read_image', 'write'])
