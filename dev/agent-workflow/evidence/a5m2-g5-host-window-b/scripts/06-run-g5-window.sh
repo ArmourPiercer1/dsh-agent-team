@@ -42,7 +42,8 @@ RUNNER=dev/agent-workflow/evidence/a5m2-g5-host-window-b/scripts/05-g5-window-ru
 TS=$(date -u +%Y%m%dT%H-%M-%SZ)
 OUT=dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-${TS}
 DF_MIN=6442450944   # TEMPORARY: the root ruling shared from the A monitor (g3 38b81fff, root 09:31Z: 18e9 -> 6 GiB); the 18e9 decimal law returns when root says so
-HOME_BUDGET=67108864   # 64 MiB of NEW bytes (nlink==1)
+HOME_BUDGET=67108864   # 64 MiB of NEW bytes (nlink==1) — enforced IN FLIGHT by the watchdog (root budget card), not only post-exit
+SAMPLE_EVERY=10        # watchdog sampling cadence: explicit HOME pointer + df, every 10s
 PIN_TGZ_SHA=8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a
 PIN_LOCK_SHA=5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088
 PIN_PKG_SHA=4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722
@@ -116,18 +117,69 @@ SPAWN_PGID=$(ps -o pgid= -p "$SPAWN_PID" 2>/dev/null | tr -d '[:space:]' || true
 printf '{ "spawnPid": %s, "spawnPgid": "%s", "outerBound": "bash watchdog: TERM own group at 300s, KILL at 320s", "dry": "%s", "startedUtc": "%s" }\n' \
   "$SPAWN_PID" "$SPAWN_PGID" "${A5M2_G5_DRY:-0}" "$(date -u +%FT%TZ)" > "$OUT/spawn-receipt.json"
 echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
+# ONE watchdog, three duties (root budget-enforcement card + watchdog-drain card):
+#   (a) 300s outer bound -> TERM the OWN group;
+#   (b) IN-FLIGHT sampling every ${SAMPLE_EVERY}s on the EXPLICIT HOME pointer
+#       ($OUT/home.txt, no globbing): new HOME bytes (nlink==1) over the 64 MiB
+#       budget, or df below the ${DF_MIN} B bar, or a sampling error => abort the
+#       OWN group immediately (the budget is a HARD in-flight stop, not a
+#       post-mortem; a broken monitor is treated as a breach — fail closed);
+#   (c) once ANY termination is issued, the drain MUST finish: poll the OWN
+#       PGID until the group is empty or 20s elapse, then KILL the group.
+#       The parent never cancels an armed escalation (that is how the follow-up
+#       KILL used to be lost when the runner exited first); an UNARMED watchdog
+#       is cancelled by the parent as soon as the runner returns. Nothing here
+#       touches foreign processes, any other world, or :3080.
 (
-  sleep 300
+  BREACH=""
+  ARMED=0
+  DEADLINE=$(( $(date +%s) + 300 ))
+  while :; do
+    if [ -s "$OUT/home.txt" ]; then
+      W=$(tr -d '\n' < "$OUT/home.txt" 2>/dev/null) || BREACH="home-pointer read failed"
+      if [ -z "$BREACH" ] && [ -n "$W" ] && [ -d "$W" ]; then
+        NB=$(find "$W" -type f -links 1 -printf '%s\n' 2>/dev/null | awk '{t+=$1} END {print t+0}') || BREACH="HOME byte sampling failed"
+        [ -z "$BREACH" ] || BREACH="HOME byte sampling failed"
+        if [ -z "$BREACH" ] && [ "$NB" -gt "$HOME_BUDGET" ]; then BREACH="HOME new bytes ${NB} exceeded budget ${HOME_BUDGET} (in-flight hard stop)"; fi
+      fi
+    fi
+    if [ -z "$BREACH" ]; then
+      AV2=$(df -m "$REPO_WT" 2>/dev/null | awk 'NR==2 {print $4*1048576}')
+      if [ -z "$AV2" ]; then BREACH="df sampling failed (monitor broken => fail closed)"
+      elif [ "$AV2" -lt "$DF_MIN" ]; then BREACH="df avail ${AV2} B fell below the ${DF_MIN} B bar"; fi
+    fi
+    if [ -n "$BREACH" ]; then
+      printf '{ "breachAt": "%s", "reason": "%s" }\n' "$(date -u +%FT%TZ)" "$BREACH" > "$OUT/budget-breach.json"
+      echo "watchdog: BUDGET/CAPACITY BREACH — ${BREACH}; terminating OWN group"
+      kill -TERM -"${SPAWN_PGID}" 2>/dev/null || true
+      ARMED=1
+      break
+    fi
+    NOW=$(date +%s)
+    [ "$NOW" -lt "$DEADLINE" ] || break
+    sleep "$SAMPLE_EVERY"
+  done
   kill -TERM -"${SPAWN_PGID}" 2>/dev/null || true
-  sleep 20
-  kill -KILL -"${SPAWN_PGID}" 2>/dev/null || true
+  ARMED=1
+  DRAIN_END=$(( $(date +%s) + 20 ))
+  while [ "$(date +%s)" -lt "$DRAIN_END" ]; do
+    pgrep -g "${SPAWN_PGID}" >/dev/null 2>&1 || break
+    sleep 1
+  done
+  if pgrep -g "${SPAWN_PGID}" >/dev/null 2>&1; then
+    kill -KILL -"${SPAWN_PGID}" 2>/dev/null || true
+    echo "watchdog: OWN group still present after the 20s drain — KILL sent (foreign processes untouched)"
+  fi
+  [ "$ARMED" = 1 ] && touch "$OUT/watchdog-armed"
 ) &
 WATCHDOG_PID=$!
 RC=0
 wait "$SPAWN_PID" || RC=$?
-kill "$WATCHDOG_PID" 2>/dev/null || true
+if [ ! -e "$OUT/watchdog-armed" ]; then
+  kill "$WATCHDOG_PID" 2>/dev/null || true   # UNARMED only: no escalation was ever issued, nothing is lost
+fi
 wait "$WATCHDOG_PID" 2>/dev/null || true
-echo "runner rc=${RC} (143/137 = outer 300s/320s bound fired on the OWN group)"
+echo "runner rc=${RC} (143/137 = outer 300s bound or an in-flight budget/capacity breach fired on the OWN group)"
 
 # [5] post facts
 sleep 2
@@ -163,6 +215,7 @@ cat > "$OUT/external-receipt.json" <<EOF
 EOF
 
 [ "$NEWB" -le "$HOME_BUDGET" ] || { echo "WRAPPER VERDICT: HOME budget breach (rc 1)"; exit 1; }
+[ ! -e "$OUT/budget-breach.json" ] || { echo "WRAPPER VERDICT: in-flight budget/capacity BREACH recorded — window FAILED (see $OUT/budget-breach.json)"; exit 1; }
 if [ "${A5M2_G5_DRY:-}" = "1" ]; then
   # ROOT ORDER: DRY is NOT_RUN (rc3), never a business PASS. rc3 = the pre-proof did
   # its job; rc0 from a dry runner would be the runner MISREPORTING a PASS => fail.

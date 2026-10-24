@@ -65,12 +65,39 @@ supply authority is the governed rows' live behavior at boot over the public wir
   exit path writes minimal `toolcalls.jsonl` (callId/step/tool/isError/text≤800/args≤800) — a
   mirror/driver-required refusal lands there verbatim if it ever appears.
 
-## Supervision (unchanged laws)
+## Messages tool_result TEXT law (root protocol card; offline-proven)
 
-HOME `tests/homes/a5m2-g5-hw-b-<UTCts>Z` never deleted, explicit pointer hand-off (no globbing),
-64 MiB new-bytes budget; one boot max; TERM@300/KILL@320 OWN group only; cleanup = mock.close +
-instance.stop + waitForPortFree reporting only this PGID's ports (no descendant claims); df bar
-6442450944 B (root ruling, A-monitor precedent); rc 0/1/2/3 = green/CRIT-FAIL/FATAL/NOT_RUN;
+Host639 `serialize.ts` (:64-65/:121) rides tool results as `content=[{type:'text',text:<as-text>}]`
+(+`is_error`). The container array is never business JSON: `lib-tool-result-text.mjs` extracts text
+blocks VERBATIM (foreign residue kept as `rawContainer` evidence; is_error + same-callId pairing
+unchanged) and the criteria PARSE business facts — E1 `goal === null` parsed (not substring),
+lossless `status:"rejected"` parsed-first. `08-messages-text-law.mjs` proves all of this offline on
+the real wire shapes AND pins the root finding: the old whole-array `JSON.stringify` escaped the
+quotes so a successful `get_goal` would have read red and `status:"rejected"` would have hidden
+(9/9, zero Host).
+
+## Path door (root exec card)
+
+The host tree resolves through `tests/paths.mjs`'s OWN door (`testUseTree` + `DSH_TEST_USE_ROOT`,
+pinned pre-import by `lib-pin-test-use-root.mjs`) to the FIXED 639 read-only base
+`/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use` — HEAD re-verified
+`== CLIENT_COMMIT_HASH` per pass. The nested worktree clone is retained pending the root/a356
+ruling (paths.mjs :43-63): never used, never recreated, never deleted by this window.
+
+## Supervision laws (root budget-enforcement card)
+
+
+
+HOME `tests/homes/a5m2-g5-hw-b-<UTCts>Z` never deleted, explicit pointer hand-off (no globbing);
+the 64 MiB new-bytes budget + the 6442450944 B df bar are enforced **IN FLIGHT** by the ONE
+watchdog: every 10s it samples the explicit HOME pointer (nlink==1 bytes) and df; a breach OR a
+sampling error terminates the OWN PGID (`budget-breach.json`, window FAILED regardless of rc) — no
+separate monitoring system. TERM@300 remains; once any termination is ARMED the parent NEVER
+cancels the escalation — the watchdog drains the OWN PGID until the group is empty or 20s elapse,
+then KILL (the old kill-watchdog-on-runner-exit that swallowed the follow-up KILL is gone); an
+UNARMED watchdog is cancelled with nothing lost. Ports unclean post = hard FAIL. Cleanup =
+mock.close + instance.stop + waitForPortFree reporting only this PGID's ports (no descendant
+claims); foreign processes, other worlds and :3080 untouched; rc 0/1/2/3 = green/CRIT-FAIL/FATAL/NOT_RUN;
 **DRY = NOT_RUN rc3 always** (the wrapper FAILS the runner if dry exits 0); runs-*/window-*/HOME
 retained, never committed. One window one GO, first error stops, history never reverse-inferred.
 

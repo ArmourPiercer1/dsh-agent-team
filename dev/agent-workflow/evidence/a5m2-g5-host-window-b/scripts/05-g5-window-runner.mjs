@@ -48,10 +48,26 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../../../tests/paths.mjs'
+// THE PATH DOOR (root exec card 2026-10-24): the side-effect module below pins
+// DSH_TEST_USE_ROOT to the PRE-EXISTING 639-pinned READ-ONLY BASE before
+// tests/paths.mjs is evaluated, and the host tree is then resolved through the
+// lane's OWN door (testUsePath/testUseTree) instead of a hand-joined
+// ROOT_DIR/tests/... path. The nested clone this worktree carries is RETAINED
+// PENDING the root/a356 ruling (tests/paths.mjs :43-63) — this window NEVER uses
+// and NEVER recreates it.
+import './lib-pin-test-use-root.mjs'
+import { CLIENT_COMMIT_HASH, findTestRepoRoot, testUseTree } from '../../../../../tests/paths.mjs'
 import { DshInstance } from '../../../../../tests/characterization/lib/instance.mjs'
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
+// ROOT PROTOCOL CARD 2026-10-24 (Messages tool_result TEXT law): Host639
+// serialize.ts (:64-65 input() text-blocks, :121 tool_result wrapper) puts the
+// wire shape as content=[{type:'text',text:<result-as-text>}]. The container
+// array is NEVER business JSON — text blocks are extracted VERBATIM first
+// (is_error and same-callId pairing stay below), and business facts (goal===null,
+// status:"rejected") are PARSED, never substring-searched on the container
+// (a whole-array JSON.stringify escapes the quotes and blinds every criterion).
+import { toolResultText, isLosslessRejected, goalServedNull } from './lib-tool-result-text.mjs'
 
 const COMPOSED_SHA = '2fb129cfa23e138248fecc834a42c92238af95fe' // the CURRENT standard-supplied product (center delivery 2026-10-24T135732Z; tip-equivalent 18c3327e6, test-only diff, dist subtree identical)
 const G5_BLOB_SERVICE = '8a98ee550cfb21a8cd427be7a73b2f83793f6ffff9a7f36d3def162070a3ab5a' // 2fb dist == this lane's delegate src, byte-identical (this tree measured 2026-10-24)
@@ -108,8 +124,20 @@ if (!EXPECTED_PACK_SHA.startsWith('sha256:')) notRun('A5M2_G5_PACK_SHA256 must c
 
 const ROOT_DIR = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
 if (ROOT_DIR === null) { console.error('findTestRepoRoot returned null'); process.exit(3) }
-const HOST_TREE = join(ROOT_DIR, 'tests', 'deepseek-harness-test-use')
-if (!existsSync(HOST_TREE)) notRun(`639 host checkout absent at ${HOST_TREE}`)
+// Resolved through the lane's door, NOT a hand-joined path: testUseTree honours
+// DSH_TEST_USE_ROOT (absolute base shape) and would otherwise be a silent bypass.
+const PINNED_BASE = '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use' // the fixed 639 READ-ONLY base (same constant the lane entry supplies)
+const HOST_TREE = testUseTree(ROOT_DIR)
+if (HOST_TREE !== PINNED_BASE) notRun(`the resolved host tree must be the FIXED 639 read-only base ${PINNED_BASE} — got ${HOST_TREE} (nested pending-ruling copies are never valid doors; this runner never clones/installs)`)
+{ // the nested clone stays untouched pending the root/a356 ruling: presence is fine,
+  // USE is not — the door above already resolves to the fixed base; record the fact.
+  const nested = join(ROOT_DIR, 'tests', 'deepseek-harness-test-use')
+  if (existsSync(nested)) console.log(`[g5-hw] nested worktree test-use checkout PRESENT at ${nested} — deliberately NOT used (retained pending the root/a356 ruling); active door = ${HOST_TREE}`)
+  const baseHead = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: HOST_TREE, encoding: 'utf8' }).trim()
+  // CLIENT_COMMIT_HASH is paths.mjs' canonical (short) pin form; compare by prefix.
+  if (!baseHead.startsWith(CLIENT_COMMIT_HASH)) { console.error(`the fixed base HEAD ${baseHead} is NOT the pinned 639 ${CLIENT_COMMIT_HASH}`); process.exit(2) }
+  console.log(`[g5-hw] host door: ${HOST_TREE} (testUseTree, DSH_TEST_USE_ROOT honored), HEAD = pinned 639 ${CLIENT_COMMIT_HASH.slice(0, 10)}, read-only reuse`)
+}
 
 // (root FS narrow-audit: the old bf4 fixture/lock/store preconditions are REMOVED;
 // the only install face is the f86 fixture below, read-only.)
@@ -407,7 +435,7 @@ async function driveGoverned(memberSession, marker, decision, tag) {
 // business effect — it fails loudly with the raw text retained and lands in
 // toolcalls.jsonl; it is never laundered into a green criterion, and the wait is
 // terminal (no long wait for a result that can only stay refused).
-const rejectedRaw = (text) => (/"status"\s*:\s*"rejected"/.test(String(text ?? '')) ? String(text).slice(0, 800) : null)
+const rejectedRaw = (text) => (isLosslessRejected(text) ? String(text).slice(0, 800) : null) // parsed business status first, regex only as same-text fallback
 async function resultFor(step) {
   const hit = await waitFor(`${step} tool result`, 90_000, () => {
     const found = callResults.find((r) => r.step === step)
@@ -530,7 +558,8 @@ async function main() {
         if (callId.length > 0) harvestStats.openAiToolMessages += 1
         if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
           const known = steps.get(callId)
-          callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '') })
+          const oai = toolResultText(m?.content) // same TEXT law for the OpenAI role:tool part-array shape
+          callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: oai.text, rawContainer: oai.container })
         }
         continue
       }
@@ -543,8 +572,8 @@ async function main() {
         if (callResults.some((r) => r.callId === callId)) continue
         const known = steps.get(callId)
         if (known === undefined) continue // same-call pairing ONLY: an unissued block id is never harvestable
-        const txt = typeof b.content === 'string' ? b.content : JSON.stringify(b.content ?? '')
-        callResults.push({ callId, step: known.step, toolName: known.tool, text: txt, isError: b.is_error === true })
+        const ext = toolResultText(b.content) // TEXT BLOCKS verbatim — never the container as business JSON
+        callResults.push({ callId, step: known.step, toolName: known.tool, text: ext.text, rawContainer: ext.container, isError: b.is_error === true })
       }
     }
   }
@@ -635,7 +664,7 @@ async function main() {
   // get_goal execute path mirrored through the row; tool-goal/src/index.ts:196-203,
   // :157-173). Both faces, or the criterion is RED.
   check('E1', 'ALLOW -> same-requestId control-allow-consumed fact + served canonical goalValue projection (NOT a refusal)',
-    consumed !== false && String(allowRes).includes('"goal":null'),
+    consumed !== false && goalServedNull(allowRes), // PARSED business goal === null (root protocol card), never a substring on any container
     `requestId=${allowReq} consumed=${JSON.stringify(consumed).slice(0, 200)} result=${String(allowRes).slice(0, 250)}`)
 
   // E2: DENY chain — the same call, decided deny. Zero execution is pinned by
@@ -660,7 +689,7 @@ async function main() {
   // window; wording drift is a finding, never something to widen the regex for.
   check('E2', 'DENY -> zero execution (no allow-consumed fact) + durable decision fact + refusal face EXACTLY APPROVAL_DENIED, NO served projection',
     denyConsumed === false && denyDecision !== false
-    && !String(denyRes).includes('"goal":null') && String(denyRes).includes('APPROVAL_DENIED'),
+    && !goalServedNull(denyRes) && String(denyRes).includes('APPROVAL_DENIED'), // NO parsed goal projection served; refusal face exact
     `requestId=${denyReq} decision=${JSON.stringify(denyDecision).slice(0, 200)} result=${String(denyRes).slice(0, 300)}`)
 
   // LEDGER HYGIENE (root lesson ③: PA 精确判据 — same-requestId consumption / no
