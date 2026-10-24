@@ -90,8 +90,18 @@ export function buildPwshGovernedWiring (input = {}) {
   })
   if (input.declaredMount !== true) return inactive('MOUNT_NOT_DECLARED — the deployment declares no pwsh mount; no rows, native untouched (config law, both directions)')
   const pa = input.pa
-  const hasSeat = isRecord(pa) && typeof pa.open === 'function' && typeof pa.edge === 'function' && typeof pa.closePlan === 'function'
-  if (!hasSeat) return { ok: false, code: A5_PWSH_WIRING_CODES.PA_SEAT_INVALID, detail: 'pa is REQUIRED in its published shape — the plane\'s paAdmit face (a CALLABLE carrying open / edge / closePlan) or an equivalent methods object; with no admission seat no governed call may enter the shell — never a duck' }
+  // THE REAL SEAT (the G6 law as the run_code guard FIXED it — g3-ptc-wiring
+  // :251, the same trap already paid): production `paAdmit` is a CALLABLE
+  // (a FUNCTION) carrying open / edge / closePlan (team-tool-plane:2057/
+  // 2522 define it, :4936 hands it as `pa: paAdmit`). A seat check that
+  // required a plain record would refuse the REAL plane seat itself
+  // (isRecord excludes functions) — PWSH_ARM_REFUSED on BOTH platforms
+  // ahead of any capture (root P1, 2026-10-25). Strictly callable + the
+  // three methods; a plain methods object is NO LONGER accepted (不再plain
+  // object假); isRecord elsewhere in this module is untouched.
+  const paSeatOk = typeof pa === 'function'
+    && typeof pa.open === 'function' && typeof pa.edge === 'function' && typeof pa.closePlan === 'function'
+  if (!paSeatOk) return { ok: false, code: A5_PWSH_WIRING_CODES.PA_SEAT_INVALID, detail: 'pa is REQUIRED in its published shape — the plane\'s paAdmit face: a CALLABLE function carrying open / edge / closePlan (the real contract the run_code guard measured; a plain object never poses as admission); with no admission seat no governed call may enter the shell — never a duck' }
   const native = input.readNative(A5_PWSH_MOUNT_NAME)
   if (!isRecord(native) || typeof native.execute !== 'function' || typeof native.name !== 'string') {
     return inactive('PWSH_NATIVE_UNCAPTURED_ENV — the member-scoped capture answered no native pwsh def (the pinned 639 loader gates the tool disabled-unless-win32; on this host that is ENV-NOT-AVAILABLE, and a governed row never mounts over an absent body)')

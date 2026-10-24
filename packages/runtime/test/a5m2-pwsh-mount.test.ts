@@ -39,16 +39,24 @@ interface SeatOpts {
   edge?: unknown | (() => unknown)
 }
 
+// THE REAL PLANE SEAT SHAPE (root P1 2026-10-25): paAdmit is a FUNCTION
+// carrying open / edge / closePlan (team-tool-plane:2057/2522, handed at
+// :4936 as `pa: paAdmit`) — the harness seat is that shape, never a plain
+// object pose (the plain-object pose is now its own NEGATIVE control leg).
 function seat (opts: SeatOpts = {}) {
   const log: string[] = []
   const answer = (v: unknown): unknown => (typeof v === 'function' ? (v as () => unknown)() : v)
-  return {
-    log,
-    face: {
+  const paAdmit = Object.assign(
+    function paAdmitBody (_walk: unknown): never { throw new Error('the pwsh row walks open/edge; the body funnel is reached only by the native chain') },
+    {
       open: async (walk: Rec) => { log.push(`open:${String(walk.callId)}`); return answer(opts.open ?? { kind: 'approved', grant: { grantId: 'g-1' } }) },
       edge: async (walk: Rec) => { log.push(`edge:${String(walk.callId)}`); return answer(opts.edge ?? { kind: 'allow', consumedProof: { grant: { grantId: 'g-1' } } }) },
       closePlan: (callId: string) => { log.push(`close:${callId}`) },
     },
+  )
+  return {
+    log,
+    face: paAdmit,
   }
 }
 
@@ -173,7 +181,24 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
     expect(() => okW(moved.wiring).familyRegistrations()).toThrow(/does not float|PLACEMENT_KEY_MOVED/)
   })
 
-  it('(f) no seat, no shell: a pa face missing open/edge/closePlan refuses the MOUNT with the typed seat code (never a duck)', () => {
+  it('(f) THE REAL SEAT SHAPE (root P1): the production paAdmit is a CALLABLE FUNCTION carrying open/edge/closePlan — the mount ARMS on that shape end-to-end, while BOTH fakes refuse with the typed seat code: a plain methods object (no longer accepted) and a duck missing methods', () => {
+    // POSITIVE: the callable shape arms (this is the SAME shape plane:4936
+    // hands as `pa: paAdmit`; every leg above already rode it — here the
+    // explicit pin that the arm is the REAL seat, not a widened check).
+    const armed = build()
+    expect(armed.wiring.ok).toBe(true)
+    expect(okW(armed.wiring).definitions).toHaveLength(1)
+    // NEGATIVE 1: the plain methods-object pose (the pre-fix accepted fake)
+    // is now refused — the seat check accepts callable+three methods ONLY.
+    const plainPose = buildPwshGovernedWiring({
+      realmId: REALM, providerId: 'a5p5-plane', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID,
+      readNative: () => nativePwsh(), declaredMount: true,
+      placementFeed: () => ({ definitionIdentity: 'i', realmId: REALM }), identityOf: () => 'i',
+      pa: { open: () => undefined, edge: () => undefined, closePlan: () => undefined } as never,
+    } as never)
+    expect(plainPose.ok).toBe(false)
+    expect((plainPose as { code?: string }).code).toBe('PWSH_WIRE_PA_SEAT_INVALID')
+    // NEGATIVE 2: a duck (callable missing the methods) refuses too.
     const wiring = buildPwshGovernedWiring({
       realmId: REALM,
       providerId: 'a5p5-plane',
@@ -183,7 +208,8 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
       declaredMount: true,
       placementFeed: () => ({ definitionIdentity: 'i', realmId: REALM }),
       identityOf: () => 'i',
-      pa: { open: () => undefined } as never,
+      pa: Object.assign(function paAdmitBody () { /* duck: no methods */ }) as never,
+      // (the duck seat stands in place of the default — assert below)
     } as never)
     expect(wiring.ok).toBe(false)
     expect((wiring as { code?: string }).code).toBe('PWSH_WIRE_PA_SEAT_INVALID')
