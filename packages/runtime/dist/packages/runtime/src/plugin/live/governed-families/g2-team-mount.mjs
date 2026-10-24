@@ -492,7 +492,10 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
       readMountFacts: search.readMountFacts,
       observe,
     })
-    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats })
+    // the derived endpoint origin rides the lane so the backend can hold
+    // the classify searchOrigin to the SAME source (e51-final ②).
+    const declaredSearchObj = search.declared ?? {}
+    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats, ...(typeof declaredSearchObj.endpointOrigin === 'string' ? { endpointOrigin: declaredSearchObj.endpointOrigin } : {}) })
   })()
   return Object.freeze({
     web_fetch: Object.freeze({
@@ -533,6 +536,14 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
  * empty rowset.
  */
 export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions, resolveWebCenterPorts } = {}) {
+  // e51-final ② at the LAST injectable seam: the classify searchOrigin and
+  // the lane's DERIVED endpoint origin must be the SAME fact (one config
+  // produces all targets); a contradicting pair refuses the mount — approval
+  // A can never carry credentials to B, and a declared string never
+  // self-proves a target.
+  if (typeof lanes?.web_search?.endpointOrigin === 'string' && typeof searchOrigin === 'string' && searchOrigin !== lanes.web_search.endpointOrigin) {
+    throw new Error(`G2_WEB_SEARCH_ORIGIN_CONTRADICTION: classify would pin searchOrigin ${JSON.stringify(String(searchOrigin).slice(0, 80))} while the lane dispatches to the endpoint origin ${JSON.stringify(String(lanes.web_search.endpointOrigin).slice(0, 80))} the credentials were built on — one resolved config produces ALL target facts; refusing the mount`)
+  }
   if (lanes === null || typeof lanes !== 'object' || lanes.web_fetch === undefined || lanes.web_fetch.provider === undefined) {
     throw new Error('G2_SUPPLY_ENTRY_INVALID: the g2Web backend requires the seam-branded fixed lanes (createG2WebFixedLanes product); without them the plane fail-closes by law, so nothing is injected here either')
   }
@@ -606,24 +617,35 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
           const url = args?.url
           if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
         }
-        // The provider's PUBLIC request (web/src/types.ts:16-27) carries ONE
-        // query; the closed row args carry queries[] (the gateway merge lane
-        // is the relay's law, not the fixed lane's). Honest fixed-lane
-        // subset (the web_fetch url-only precedent): exactly one query
-        // dispatches verbatim; multi-query is the NAMED gap, refused typed
-        // before the provider — never silently first-picked, never looped
-        // into a second consume-shaped dispatch.
-        let request
+        // e51-review ②: the PUBLIC WebSearchRequest (web/src/types.ts:16-27)
+        // is one-query — queries[] is consumed as a BOUNDED aggregation of
+        // those public single-query calls, NOT refused (multi-query is not
+        // an interface/Core blocker: the bound is the CLOSED approved list
+        // itself — classify already pinned every query and its count; the
+        // body re-checks against that approved shape and never grows it).
+        // Each dispatch rides the SAME branded lane, so the network
+        // boundary, destination facts and current-facts re-verification run
+        // per call; the approved effects and the ONE PA consume are
+        // UNCHANGED (the edge is upstream of this body — several provider
+        // calls inside ONE consumed call is exactly what the gateway relay
+        // does; we reproduce its consumption, not a second consume).
+        let out
         if (row.toolName === 'web_search') {
           const queries = Array.isArray(args?.queries) ? args.queries : []
-          if (queries.length !== 1 || typeof queries[0] !== 'string' || queries[0].length === 0) {
-            throw new Error('G2_WEB_SEARCH_MULTI_QUERY_GAP: the fixed single-provider lane dispatches the public one-query request; a multi-query row belongs to the gateway merge relay — refused typed, zero provider calls (named subset, not a waiver)')
+          if (queries.length === 0 || queries.some((q) => typeof q !== 'string' || q.length === 0)) {
+            throw new Error('G2_WEB_SEARCH_QUERY_ARGS_INVALID: classify pinned a non-empty queries list; the body rides it verbatim and never grows it (empty/shape-broken here is a mount defect, zero dispatches)')
           }
-          request = { query: queries[0] }
+          const signal = (exec?.signal) ?? undefined
+          const merged = []
+          for (const query of queries) {
+            const one = await laneMethod.call(lane.provider, { query }, signal) // the PUBLIC one-query request, verbatim, per query
+            const results = one?.results
+            if (Array.isArray(results)) merged.push(...results)
+          }
+          out = Object.freeze({ results: Object.freeze(merged) })
         } else {
-          request = { url: args?.url }
+          out = await laneMethod.call(lane.provider, { url: args?.url }, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
         }
-        const out = await laneMethod.call(lane.provider, request, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
         // the row-body answer law (measured at the consumption edge): the
         // edge returns the invoke answer and the plane reads ran.value —
         // the same {ok,value} struct the g2Mcp bound body answers with.
