@@ -364,7 +364,6 @@ import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-famil
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { callResourceViaWorkerExecute, createG2ConsumedProofApproval, createG2TeamMount } from './governed-families/g2-team-mount.mjs'
 import { createG2WebCenterPorts } from './governed-families/g2-web-supply.mjs'
-import { createG2WebRowset } from './governed-families/g2-team-mount.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
@@ -908,7 +907,6 @@ export function createAgentBindings(deps) {
   // M2 B-WEB (a5m2w): per-root web connector rows; state-only (no leases, no timers),
   // so close() only clears the table.
   const liveWebGatewayAssemblies = new Map()
-  const liveWebG2Rows = new Map()
   // alpha5 PTC fs half-arm (10:04Z work order): the per-root escalation
   // adjudication assemblies (live/ptc-escalation-row.mjs). Same lifecycle
   // as the jobs-gateway map: created lazily on the first governed mount,
@@ -3419,15 +3417,10 @@ export function createAgentBindings(deps) {
             assemblyId: gatewayRootKey,
             searchOriginFacts: typeof config?.webGateway?.searchOrigin === 'string' ? { origin: config.webGateway.searchOrigin } : undefined,
           })
-          // ROOT 00:53: THE production caller of the trio — the g2Web
-          // rowset wraps beginCall around the gateway call (rows ride
-          // the closed web table + the g2 exec identity; feed below).
-          liveWebG2Rows.set(gatewayRootKey, createG2WebRowset({
-            gatewayResolver: (root) => liveWebGatewayAssemblies.get(root) ?? null,
-            webCenterPorts: g2WebCenterPorts,
-            member: { rootSessionId: gatewayRootKey, instanceId: String(instanceId) },
-            assemblyId: gatewayRootKey,
-          }))
+          // ROOT card: the 00:53 {name,execute} rowset is REMOVED (wrong row
+          // face + raw.effects/fingerprint law breaks). The lawful caller is
+          // createG2WebAdapters' rows on backends.g2Web through g2RowExecute's
+          // ONE final edge; this trio stays the post-edge relay (r42 law).
           liveWebGatewayAssemblies.set(gatewayRootKey, createLiveWebGatewayAssembly({
             webEnabledRaw: config?.webGateway?.enabled,
             grantAuthority: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.grantAuthority,
@@ -3841,7 +3834,7 @@ export function createAgentBindings(deps) {
         // pairing with the landed B-MCP rule map, applying to the whole G2
         // group, not to MCP alone.
         if (a5G2Mount !== null) {
-          const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? []), ...(liveWebG2Rows.get(String(teamRoot)) ?? [])]
+          const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? [])]
           for (const g2Row of g2Rows) {
             const g2Fed = a5PlaneValue?.placementFeed?.(g2Row.toolName)
             if (typeof g2Fed?.definitionIdentity !== 'string' || g2Fed.definitionIdentity.length === 0) {
