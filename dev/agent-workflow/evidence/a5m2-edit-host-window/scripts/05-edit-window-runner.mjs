@@ -495,6 +495,15 @@ function toolResultText(content) {
   }
   return { text: JSON.stringify(content ?? ''), container: null }
 }
+// [root evidence-collection card] the FULL raw hit text (the persisted
+// harvest text = stringified content container) rides in the criteria row
+// detail so a parse summary can never again be the only survivor. Bounded
+// slice + credential redaction (token material is NEVER recorded, never
+// forwarded); no new log files — it lands in the existing results.json rows.
+const redactEvidence = (v) => String(v ?? '')
+  .slice(0, 1600)
+  .replace(/token=[A-Za-z0-9_~+/-]+/gi, 'token=[REDACTED]')
+  .replace(/(authorization|api[_-]?key)\"?\s*[:=]\s*\"[^\"]+/gi, '$1: [REDACTED]')
 function parseBusinessText(text) {
   try { const v = JSON.parse(String(text ?? '')); return v !== null && typeof v === 'object' && !Array.isArray(v) ? v : null } catch { return null }
 }
@@ -981,7 +990,7 @@ async function main() {
   const e8r = parsePermissionResult(grantHit?.text)
   check('E8a', 'grant (87) REAL RESULT (types.ts:111-121 / tools.ts:1515-1522): captured isError===false AND status=permission-mutated AND verb===grant AND targetInstanceId===edit-worker AND rootSessionId===team root (changed recorded, not demanded)',
     grantHit?.isError === false && e8r.parsed === true && e8r.status === 'permission-mutated' && e8r.verb === 'grant' && e8r.targetInstanceId === e8Iid && e8r.rootSessionId === currentRoot,
-    `result=${JSON.stringify(e8r).slice(0, 320)} isError=${String(grantHit?.isError)}`)
+    `result=${JSON.stringify(e8r).slice(0, 320)} isError=${String(grantHit?.isError)} callId=${String(grantHit?.callId)} toolName=${String(grantHit?.toolName)} rawContainer=${redactEvidence(grantHit?.text)}`)
   // corroboration (NON-blocking): the real overlay read seam, if wired.
   currentCriterion = 'E8x'
   const e8Ovl = await overlayAdministration('g')
@@ -1040,7 +1049,7 @@ async function main() {
   // demanded here; behavior is proven by E9b's real PA-row denial.
   check('E9a', 'revoke (88) REAL RESULT: captured isError===false AND status=permission-mutated AND verb===revoke (NEVER derived from rule.effect) AND targetInstanceId===edit-worker AND rootSessionId===team root',
     revokeHit?.isError === false && e9r.parsed === true && e9r.status === 'permission-mutated' && e9r.verb === 'revoke' && e9r.targetInstanceId === editWorkerInstanceId() && e9r.rootSessionId === currentRoot,
-    `result=${JSON.stringify(e9r).slice(0, 320)} isError=${String(revokeHit?.isError)}`)
+    `result=${JSON.stringify(e9r).slice(0, 320)} isError=${String(revokeHit?.isError)} callId=${String(revokeHit?.callId)} toolName=${String(revokeHit?.toolName)} rawContainer=${redactEvidence(revokeHit?.text)}`)
   // corroboration (NON-blocking): revoke pair REMOVED (canonical FULL
   // equality against the captured grant resource), generation chained,
   // mutationId === perm-revoke-<requestToken> derivation. Empty rules after
