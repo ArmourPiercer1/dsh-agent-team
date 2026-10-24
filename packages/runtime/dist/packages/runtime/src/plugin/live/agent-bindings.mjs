@@ -6238,6 +6238,48 @@ export function createAgentBindings(deps) {
           }
         }
 
+        // RESTORED (center integration fix, 2026-10-24): this ENTIRE block was
+        // lost when the schedule lane's merge-of (f24ff4d6005a411b0beb8b69e3157c6a3d6ad0c5)
+        // folded f707d18f4 into 10f69dbea - its merge message declared keeping the
+        // B-PTC block only, and the center merge of that rebase inherited the loss
+        // (bisect: 10f69dbea had 2 hits, f24ff4d60 onward 0; 8e62's family inventory
+        // caught it). Without it the six B-TERMINAL rows mount but NEVER register
+        // their family identity -> admission fail-closes every terminal call
+        // (typed dead path, never a runaway). Block restored VERBATIM from
+        // 10f69dbea (introduced by 8b205c412); zero edits inside.
+        // A5M2 G3 B-TERMINAL registration (root 19:08, the G6 law verbatim):
+        // the keys are the placement feed's RUNTIME definitionIdentity of the
+        // PLACED definitions (read lazily through the wiring face), and a
+        // silent or moved feed THROWS (P_TERM_WIRE_PLACEMENT_KEY_* carried,
+        // never a guessed key, never a silent skip). Rows the bridge never
+        // emitted (DECLARED-INACTIVE census) have no definition, no placement
+        // and no registration — the native stays untouched behind them.
+        if (a5G3TerminalInject !== null) {
+          const g3Plane = a5PlaneValue?.terminal
+          if (g3Plane === undefined || g3Plane === null) {
+            const detail = 'the plane accepted the terminal injection but surfaced no wiring face — the mount is broken and registers nothing'
+            observations.push(`a5m2-g3: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TERMINAL mount refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-terminal-mount-refused' })
+          }
+          let g3Registrations
+          try {
+            g3Registrations = g3Plane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g3: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TERMINAL family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-terminal-mount-refused' })
+          }
+          for (const registration of g3Registrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-g3: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
+        }
+
+
         // ── A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling): the
         // ONE agent-scoped `tools/pre-execute` listener installs on the REAL
         // scoped face (agentCtx — the same surface
