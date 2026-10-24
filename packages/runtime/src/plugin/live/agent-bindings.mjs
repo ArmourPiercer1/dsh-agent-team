@@ -2553,6 +2553,12 @@ export function createAgentBindings(deps) {
       // (the plane carries ZERO run_code definitions) — this is the only
       // truthful post-install channel; null until the guard branch installs.
       let a5CoverageRunCodeFacts = null
+      // A5M2 coverage-safety card (root 705 recheck): THIS mount's real G2
+      // rows (name -> row.active===true) captured at the ONE point the
+      // rowset is legitimately built (family registration below). Null
+      // before that = the row fact is simply not answerable yet (never a
+      // fabricated all-active census); no hardcoded name table.
+      let a5CoverageG2RowActive = null
       // A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 + 21:01 cards): the built
       // control trio wiring's inject face (null = this world mounts none —
       // the zero-flip law). Declared in the SAME lexical scope as the
@@ -8058,11 +8064,16 @@ export function createAgentBindings(deps) {
           }
         }
         if (typeof identity !== 'string' || identity.length === 0) return false
-        // Root fix round: a definition string is NOT governance. The SAME
-        // family/dispatcher law the schedule face applies: the dispatcher
-        // binding must exist, be ACTIVE, and carry the SAME definition
-        // identity — inactive rows (allDefs feeders, G2 DECLARED-INACTIVE
-        // included) never pass an ACTIVE binding check.
+        // Root fix round: a definition string is NOT governance — the
+        // dispatcher binding must exist, be ACTIVE, and carry the SAME
+        // definition identity. Root 705 recheck CORRECTS the earlier note:
+        // ACTIVE alone is NOT enough to exclude a rejected/inactive
+        // definition — an inactive row's definition can still ride an
+        // ACTIVE bindOwnTools binding through the allDefs feed. Hence the
+        // two extra real facts below: the entry's own VERIFIED stamp, and
+        // (for names this mount's G2 rowset carries) the row's REAL
+        // `active` flag from the same rowset the family registration
+        // consumed — never a name table, never an assumed-all-active census.
         const surface = a5p1Guard?.dispatcher?.surface
         if (typeof surface?.entryOf !== 'function') return false
         let entry
@@ -8071,10 +8082,15 @@ export function createAgentBindings(deps) {
         } catch {
           return false
         }
+        if (entry?.verified !== true) return false
         const binding = entry?.binding
         if (binding === null || typeof binding !== 'object') return false
         if (binding.status !== 'ACTIVE') return false
-        return binding.definitionIdentity === identity
+        if (binding.definitionIdentity !== identity) return false
+        if (a5CoverageG2RowActive !== null && a5CoverageG2RowActive.has(name)) {
+          return a5CoverageG2RowActive.get(name) === true
+        }
+        return true
       }
       const coverageScheduleGoverned = (name) => a5CoverageScheduleFacts !== null
         && a5CoverageScheduleFacts.isBound()
@@ -8124,14 +8140,31 @@ export function createAgentBindings(deps) {
           mcpToolNames: mcpIntroduced,
         })
         if (!verdict.ok) {
-          const presets = agentPresets
-          const presetId =
-            presets !== null && presets !== undefined && typeof presets.composedPreset === 'function'
-              ? presets.composedPreset(agentCtx)
-              : undefined
-          throw new PermissionCoverageUnmanagedError(
-            buildPermissionCoverageErrorDetail(verdict, { instanceId, presetId }),
-          )
+          // Barrier-coordinated precheck semantics (root 2026-10-25): while
+          // the setup barrier is ARMED, this early check is a RECORD-ONLY
+          // gap detector — an unmanaged entry here is very often a fact the
+          // LATER installs still owe (bindOwnTools, the family rows, the
+          // schedule pair), and throwing at this point would refuse names
+          // whose governed installs are merely not yet done while the
+          // barrier already refuses every call anyway. The FINAL gate below
+          // — after every install, same producer, barrier still armed until
+          // it PASSES — keeps full enforcement: a real gap ends in a throw
+          // there, with the barrier holding its refusal and the original
+          // rollback. Outside the barrier window (no guard installed), the
+          // original throw semantics stand unchanged.
+          if (a5CoverageBarrierDispose === undefined) {
+            const presets = agentPresets
+            const presetId =
+              presets !== null && presets !== undefined && typeof presets.composedPreset === 'function'
+                ? presets.composedPreset(agentCtx)
+                : undefined
+            throw new PermissionCoverageUnmanagedError(
+              buildPermissionCoverageErrorDetail(verdict, { instanceId, presetId }),
+            )
+          }
+          for (const row of verdict.unmanagedTools) {
+            observations.push(`alpha2-perm: coverage PRECHECK-GAP for ${sessionId} (tool='${row.name}' class=${String(row.classification)}; record-only while the barrier is armed — the FINAL gate enforces)`)
+          }
         }
         for (const safe of verdict.safeUnmanaged) {
           observations.push(
@@ -8744,6 +8777,7 @@ export function createAgentBindings(deps) {
           // root 3-card: B-WEB rides the SAME loop with the SAME law — the
           // g2Web rowset was silently unregistered (two-family drift).
           const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? []), ...(a5G2Mount.backends.g2Web?.createRowset() ?? [])]
+          a5CoverageG2RowActive = new Map(g2Rows.map((g2Row) => [g2Row.toolName, g2Row.active === true]))
           for (const g2Row of g2Rows) {
             const g2Fed = a5PlaneValue?.placementFeed?.(g2Row.toolName)
             if (typeof g2Fed?.definitionIdentity !== 'string' || g2Fed.definitionIdentity.length === 0) {
