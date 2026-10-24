@@ -9,6 +9,14 @@
  */
 import { describe, it, expect } from 'vitest'
 import { createTeamGovernedSubagentProvider, A5_TGP_CODES } from '../src/plugin/live/governed-families/team-governed-provider.mjs'
+import type { G2TgpInput, G2TgpProvider, G2TgpParentContext } from '../src/plugin/live/governed-families/team-governed-provider.d.mts'
+
+// NARROWING HELPER (a branch, never an as-any): the factory answers a union
+// (provider | typed refusal); the harness needs the provider face once.
+const mustProvider = (built: G2TgpProvider & { ok?: undefined } | { ok: false, code: string, message: string }): G2TgpProvider => {
+  if ('ok' in built && built.ok === false) throw new Error(`the factory refused its own harness: ${String(built.code)} ${String(built.message)}`)
+  return built
+}
 
 type Step = string
 const mkHarness = (opts: {
@@ -21,10 +29,10 @@ const mkHarness = (opts: {
   const order: Step[] = []
   const announced = opts.announced ?? { value: false }
   const parent = Object.freeze({ id: 'parent-member', sessionId: 'team-member-sess-7' })
-  const activeCalls = new WeakMap<object, Record<string, unknown>>()
+  const activeCalls = new WeakMap<object, G2TgpParentContext>()
   activeCalls.set(parent, { callId: 'orch-call-9', parametersFingerprint: 'fp-parent-plan', realmId: 'realm-orch', toolName: 'workflow', ordinal: 0, providerIdentity: 'a5p5-plane' })
   const created: Record<string, unknown>[] = []
-  const provider = createTeamGovernedSubagentProvider({
+  const provider = mustProvider(createTeamGovernedSubagentProvider({
     name: 'team-governed-spawn',
     agents: {
       async create(o: Record<string, unknown>) {
@@ -61,12 +69,12 @@ const mkHarness = (opts: {
         order.push(`runOwned:${sessionId.length > 0 ? 'yes' : 'empty'}`)
         return await operation()
       },
-      wrapSetup: (_sid: string, setup: (c: unknown, a: unknown) => unknown) => (c: unknown, a: unknown) => setup(c, a),
+      wrapSetup: (_sid: string, setup: (c: unknown, a: unknown) => unknown) => async (c: unknown, a: unknown): Promise<unknown> => await setup(c, a),
     },
     laneResolver: opts.laneResolver ?? (() => ({ deny: ['bash', 'terminal_open'] })),
     activeCalls,
     ...(opts.laneRecheck === undefined ? {} : { laneRecheck: opts.laneRecheck }),
-  })
+  }))
   const request = { parent, signal: new AbortController().signal, prompt: [{ type: 'text', text: 'go' }] }
   return { provider, order, created, activeCalls, announced, request, parent }
 }
@@ -76,7 +84,7 @@ describe('A5M2 TGP: admission-before-create, restrict-before-publish, throw-publ
     const allow = mkHarness()
     const run = await allow.provider.start(allow.request)
     const admitIdx = allow.order.indexOf('create:enter')
-    expect(admitIdx).toBeGreaterThan(0, 'something ran before create')
+    expect(admitIdx, 'something ran before create').toBeGreaterThan(0)
     // PA is the FIRST thing: no create, no runOwned before admission allowed
     expect(allow.order[0]).toMatch(/^closePlan|^create:enter|^runOwned/) // order[0] never restrict
     expect(allow.order.filter((s) => s.startsWith('restrict'))[0] === undefined || allow.order.indexOf('restrict:bash|terminal_open') > admitIdx, 'restrict rides create, never admission').toBe(true)
@@ -96,8 +104,8 @@ describe('A5M2 TGP: admission-before-create, restrict-before-publish, throw-publ
     await h.provider.start(h.request)
     const rIdx = h.order.findIndex((s) => s.startsWith('restrict:'))
     const aIdx = h.order.indexOf('announce')
-    expect(rIdx).toBeGreaterThan(-1, 'restrict ran')
-    expect(aIdx).toBeGreaterThan(rIdx, 'restrict BEFORE announce')
+    expect(rIdx, 'restrict ran').toBeGreaterThan(-1)
+    expect(aIdx, 'restrict BEFORE announce').toBeGreaterThan(rIdx)
     expect(h.order[rIdx]).toBe('restrict:bash|terminal_open')
     // commit() re-check: a lane that moved at the boundary throws (PIN 3 zero publish)
     const moved = mkHarness({ laneRecheck: () => false })
@@ -123,7 +131,7 @@ describe('A5M2 TGP: admission-before-create, restrict-before-publish, throw-publ
     await h.provider.start(h.request)
     expect(h.order.some((s) => s.startsWith('runOwned:yes')), 'the create rides the EXISTING Team runOwned funnel').toBe(true)
     const o = h.created[0] as Record<string, unknown>
-    expect(o.parentAgent).toBe(h.parent, 'parentAgent is the LIVE member Agent, nothing else')
+    expect(o.parentAgent, 'parentAgent is the LIVE member Agent, nothing else').toBe(h.parent)
     const meta = o.meta as Record<string, unknown>
     expect(meta.origin).toBe('subagent')
     expect(meta.parentSession).toBe('team-member-sess-7')
@@ -143,15 +151,15 @@ describe('A5M2 TGP: admission-before-create, restrict-before-publish, throw-publ
   })
   it('the governed factory refuses stand-ins for its real seams (agents/pa/teamActivation/laneResolver/activeCalls all REQUIRED)', () => {
     for (const key of ['agents', 'pa', 'teamActivation', 'laneResolver', 'activeCalls']) {
-      const base: Record<string, unknown> = {
+      const base: Partial<G2TgpInput> & Record<string, unknown> = {
         agents: { create: async () => ({}) },
         pa: Object.assign(async () => ({ kind: 'allow' }), { closePlan: () => {} }),
-        teamActivation: { runOwned: async (_s: string, op: () => Promise<unknown>) => await op(), wrapSetup: (_s: string, su: unknown) => su },
+        teamActivation: { runOwned: async <T, >(_s: string, op: () => Promise<T>): Promise<T> => await op(), wrapSetup: (_s: string, su: (c: unknown, a: unknown) => unknown) => async (c: unknown, a: unknown): Promise<unknown> => await su(c, a) },
         laneResolver: () => ({ deny: [] }),
         activeCalls: new WeakMap(),
       }
       delete base[key]
-      const built = createTeamGovernedSubagentProvider(base)
+      const built = createTeamGovernedSubagentProvider(base as unknown as G2TgpInput) // INTENTIONALLY incomplete: the factory must typed-refuse the invalid domain
       expect(built.ok, `${key} REQUIRED`).toBe(false)
     }
   })

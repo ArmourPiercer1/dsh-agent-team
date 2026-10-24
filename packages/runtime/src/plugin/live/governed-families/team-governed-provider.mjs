@@ -6,7 +6,7 @@
  * Config.provider/subagentProvider; setup supplies restrict, not the REAL
  * Team setup/Guard/PA/IO/durable ownership (production answers no
  * laneRecheck); parent.sessionId is WRONG (live identity = Agent.id) and
- * AgentHandle carries NO result face (settlement must ride the subagents
+ * AgentHandle carries NO result face and no whenIdle on the handle itself (whenIdle lives on handle.agent — corrected per root; settlement must ride the subagents
  * service run law: followup/whenIdle/stopReason/cancel — never an invented
  * result); the parent WeakMap correlation is unsafe under concurrency and
  * the child fingerprint binds no real request; capabilities overclaim
