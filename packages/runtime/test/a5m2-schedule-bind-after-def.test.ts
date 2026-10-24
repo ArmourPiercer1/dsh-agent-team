@@ -79,6 +79,10 @@ interface HarnessOptions {
   gateDuring?: (self: { handle?: Handle }) => void
   feed?: () => unknown
   serviceGeneration?: () => unknown
+  // ② continuation card: the trigger-governance gate ARMS the create/update
+  // names on the same law (undefined = the frozen list/delete pair only).
+  triggerGate?: { evaluateDispatch: (name: string) => unknown }
+  establishNames?: string[]
 }
 
 function harness (opts: HarnessOptions = {}): Harness {
@@ -126,13 +130,17 @@ function harness (opts: HarnessOptions = {}): Harness {
       return () => { h.guards.splice(h.guards.indexOf(fn), 1); h.disposal.push('guard') }
     },
     scheduleServiceFeed: opts.feed ?? (() => FIXED_SERVICE),
+    ...(opts.triggerGate === undefined ? {} : { triggerGate: opts.triggerGate }),
     ...(opts.serviceGeneration === undefined ? {} : { serviceGeneration: opts.serviceGeneration }),
     establishNative: (entries: Array<{ name: string }>) => {
       h.establishCalls += 1
       // b6: the provisional handover deny must ALREADY stand when ACTIVE is
       // written — the window has no unguarded moment:
       h.guardsAtEstablish.push(h.guards.length)
-      expect(entries.map((e) => e.name).sort()).toEqual(['schedule_delete', 'schedule_list'])
+      // FROZEN pair law (unarmed default) — the ② continuation card EVOLVES
+    // this pin explicitly for the ARMED mode (create/update join on the same
+    // law when the trigger gate is wired); the default stays byte-frozen.
+    expect(entries.map((e) => e.name).sort()).toEqual(opts.establishNames ?? ['schedule_delete', 'schedule_list'])
       if (opts.establish === undefined) return { ok: true }
       return typeof opts.establish === 'function' ? (opts.establish as () => unknown)() : opts.establish
     },
@@ -339,7 +347,9 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     // longer scans the object.
     const here = dirname(fileURLToPath(import.meta.url))
     const host = readFileSync(join(here, '..', 'src', 'plugin', 'host.ts'), 'utf8')
-    expect(host).toContain("SCHEDULE_PUBLIC_SURFACE = ['list', 'delete']")
+    // (l)-pin EVOLUTION (root continuation card 2026-10-26, fork ruling):
+    // the frozen pair stays; create/update JOIN as the armed ② names.
+    expect(host).toContain("SCHEDULE_PUBLIC_SURFACE = ['list', 'delete', 'create', 'update']")
     expect(host).toContain("if (typeof value !== 'function') return null")
     expect(host).not.toContain('for (const key of Object.keys(source))')
   })
@@ -707,5 +717,39 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     const execBody = mod.slice(mod.indexOf("events.on('tools/execute'"), mod.indexOf("events.on('tools/post-execute'"))
     expect(execBody.indexOf('await deps.consumePaAtBody')).toBeLessThan(execBody.indexOf('cancelled-before-body'))
     expect(execBody.match(/await next\(\)/g)).toHaveLength(1)
+  })
+
+  it('(m) ② CONTINUATION CARD (root 2026-10-26 fork ruling): with the trigger gate WIRED the create/update arms bind on the SAME law — four establish names, full service shape — while dispatch REFUSES trigger-governance-open BEFORE any PA consume (no grant spent, native body entered zero times, 必交不删/缺口未闭不可启用); list/delete keep serving untouched on the same armed bind; an armed bind without create/update on the live service refuses service-shape; an ALLOWING gate (the ruled fork mounted) reaches consume+next normally', async () => {
+    const fourDefs = new Map<string, unknown>([
+      ['schedule_list', makeDef('schedule_list')], ['schedule_delete', makeDef('schedule_delete')],
+      ['schedule_create', makeDef('schedule_create')], ['schedule_update', makeDef('schedule_update')],
+    ])
+    const refusing = { evaluateDispatch: (name: string) => ({ enabled: false, code: 'TRIGGER_GOVERNANCE_OPEN', detail: `measured gap stands for ${name}` }) }
+    const { h } = await bindOk({ defs: fourDefs, triggerGate: refusing, establishNames: ['schedule_create', 'schedule_delete', 'schedule_list', 'schedule_update'] })
+    expect(h.establishCalls).toBe(1)
+    let nextRan = 0
+    const exec = listener<ExecHandler>(h, 'tools/execute')
+    const err = await exec({ name: 'schedule_create', agent: AGENT, callId: 'm-1', token: {} }, () => { nextRan += 1; return 'NOPE' }).catch((e: Error) => e)
+    expect((err as Error & { breakpoint?: { kind: string } }).breakpoint?.kind).toBe('trigger-governance-open')
+    expect(nextRan).toBe(0)
+    expect(h.consumeCalls).toBe(0) // refused BEFORE the PA seat — no grant spent
+    expect(h.settles).toHaveLength(1) // the flight token settled on the refusal
+    // list/delete on the SAME armed bind: untouched law, consume+dispatch once.
+    expect(await exec({ name: 'schedule_list', agent: AGENT, callId: 'm-2', token: {} }, async () => 'DISPATCHED')).toBe('DISPATCHED')
+    expect(h.consumeCalls).toBe(1)
+    // armed bind + service WITHOUT create/update = typed service-shape refusal.
+    const hNo = harness({ defs: fourDefs, triggerGate: refusing, establishNames: ['schedule_create', 'schedule_delete', 'schedule_list', 'schedule_update'], feed: () => ({ list: async () => [], delete: async () => ({}) }) })
+    const handleNo = createScheduleBindAfterDef(hNo.deps as never) as unknown as Handle
+    handleNo.start(AGENT)
+    hNo.fireCreated(AGENT)
+    await flush()
+    expect(handleNo.isBound()).toBe(false)
+    expect(hNo.refusals[0]?.breakpoint?.kind).toBe('service-shape')
+    // ALLOWING gate (the ruled fork mounted with its admission consumer):
+    // the arm rides the full governed flight (consume + exactly one next).
+    const allowing = { evaluateDispatch: () => ({ enabled: true }) }
+    const { h: h2 } = await bindOk({ defs: fourDefs, triggerGate: allowing, establishNames: ['schedule_create', 'schedule_delete', 'schedule_list', 'schedule_update'] })
+    expect(await listener<ExecHandler>(h2, 'tools/execute')({ name: 'schedule_update', agent: AGENT, callId: 'm-3', token: {} }, async () => 'ARMED-DISPATCHED')).toBe('ARMED-DISPATCHED')
+    expect(h2.consumeCalls).toBe(1)
   })
 })

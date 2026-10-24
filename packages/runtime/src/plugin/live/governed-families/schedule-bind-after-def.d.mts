@@ -46,6 +46,9 @@ export interface ScheduleBindDeps {
    *  refusal); same-generation in-place method swaps are NOT promised to
    *  be observed (the i6 law — bound handles keep serving). */
   serviceGeneration?: () => { id: number, service: unknown } | null
+  /** ② continuation card: wiring the gate ARMS schedule_create/schedule_update
+   *  on the same law; undefined keeps the frozen list/delete pair alone. */
+  triggerGate?: { evaluateDispatch: (name: string) => { enabled?: boolean, code?: string, detail?: string } }
   /** Root residuals 1/2: the safe point is only complete when this answers
    *  true for BOTH pair names — the wiring reads the REAL Guard dispatcher
    *  surface (entryOf → ACTIVE binding of the bound def identity). */

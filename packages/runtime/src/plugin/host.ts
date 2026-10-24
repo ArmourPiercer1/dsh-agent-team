@@ -2983,9 +2983,12 @@ async function buildG2TeamSupply(
   // enumeration (the real service object's own keys) — a non-object answer
   // passes through untouched so the consumers' typed shape refusals stand.
   // THE PUBLIC SURFACE THE FAMILY CONSUMES (root ca3 final residual,
-  // 2026-10-25): 'schedule_list'/'schedule_delete' are the CLOSED pair
-  // (schedule-bind-after-def.mjs PAIR), so the facade captures EXACTLY
-  // list/delete — the real 639 shape forces this: ScheduleService is a
+  // 2026-10-25; ② CONTINUATION CARD root 2026-10-26 fork ruling: 'create'
+  // and 'update' JOIN the captured surface because the bind module ARMS
+  // the same two governed names under the SAME law — the frozen pair
+  // names list/delete stay byte-identical members; extension is additive
+  // and the armed module never dispatches them while the trigger gate
+  // refuses). The real 639 shape forces this capture style: ScheduleService is a
   // CLASS (packages/schedule/schedule/src/index.ts:100) whose list
   // (:289-295) and delete (:342-356) are PROTOTYPE methods, the Remote
   // variant carries only prototype metadata, and the Cordis tracker
@@ -2997,7 +3000,7 @@ async function buildG2TeamSupply(
   // the surface answers null (the typed service-lifecycle-unobservable /
   // service-shape refusals ride, nothing mounts blind). No private
   // unwrap, no whole-object scan, no global cache.
-  const SCHEDULE_PUBLIC_SURFACE = ['list', 'delete'] as const
+  const SCHEDULE_PUBLIC_SURFACE = ['list', 'delete', 'create', 'update'] as const
   const bindOnceScheduleFacade = (svc: unknown): unknown => {
     if (svc === null || typeof svc !== 'object') return svc
     const source = svc as Record<string, unknown>

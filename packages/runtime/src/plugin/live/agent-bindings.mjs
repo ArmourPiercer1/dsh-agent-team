@@ -390,6 +390,7 @@ import { A5_B_SUBAGENT_RECORD_SPECS } from './governed-families/subagent-adapter
 // — the SAME module the host's registerScheduleTools throws through at
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { createScheduleBindAfterDef } from './governed-families/schedule-bind-after-def.mjs'
+import { createScheduleTriggerGovernance } from './governed-families/schedule-trigger-governance.mjs'
 import { a5G3RouteIdentity } from './governed-families/g3-terminal-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION, A5_B_SCHEDULE_FAMILY_ID } from './governed-families/schedule-adapters.mjs'
 // A5M2 B-SCHEDULE card #2 REAL SUPPLY: the EXISTING family wiring (the
@@ -3807,6 +3808,18 @@ export function createAgentBindings(deps) {
             serviceGeneration: (typeof deps.scheduleLifecycle?.currentGeneration === 'function'
               ? () => deps.scheduleLifecycle.currentGeneration()
               : undefined),
+            // ② CONTINUATION CARD (root 2026-10-26 fork ruling): the
+            // create/update governed ARMS bind under the SAME law; their
+            // gate reads the SAME public generation face (epoch/ACTIVE
+            // first) and while the ruled fork is NOT the mounted provider
+            // answers TRIGGER_GOVERNANCE_OPEN — the native create/update
+            // bodies are then entered ZERO times and no PA grant is spent
+            // (必交不删, 缺口未闭不可启用). No parallel ledger, no new flag.
+            triggerGate: createScheduleTriggerGovernance({
+              lifecycleFace: (typeof deps.scheduleLifecycle?.currentGeneration === 'function'
+                ? () => deps.scheduleLifecycle.currentGeneration()
+                : () => null),
+            }),
             // ROOT b4 终裁: the tuple is ESTABLISHED, never waited for. The
             // safe point runs this ONCE the ORIGINAL defs are visible: the
             // Team Guard assembly's OWN bind/verification (bindOwnTools =
