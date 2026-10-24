@@ -316,6 +316,51 @@ async function teamReadyBarrier(budgetMs = 180_000) {
     await sleep(1500)
   }
 }
+
+// [root minimal driver fix 2026-10-24, reusing the VERIFIED fourth-window
+// barrier] Root's one-point card from A5M2-B-TEAM (commit
+// 7f6bbd46c1ca536cb09feae85f627940f40b7bb4, evidence/alpha5/live/
+// a5m2-team-c2-runner.mjs) ported near-verbatim: the `dsh web:` URL banner
+// does NOT mean the Team route exists — host.js awaits createTeamDomain
+// first and registers the Team Remote later. So before the FIRST team RPC
+// this driver waits for THIS run's host log to carry the registration
+// site's OWN line `[dsh-agent-team] remote mount: MOUNTED channel=/team-
+// remote`; SKIPPED / mount FAILED / bootstrap FAILED stop typed and first,
+// child exit stops as HOST_CHILD_EXITED, timeout stops as
+// REMOTE_MOUNT_NEVER_APPEARED — NOT a generic 405 retry; the post-mount
+// readiness stays the ORIGINAL teamReadyBarrier (unknown answers stop, no
+// retry). Adaptations (disclosed): this driver's HOME-byte budget is
+// monitored by the 06 wrapper, so the C2-local checkWorldBudget call is
+// dropped; the C2 windowDeadlineAt clamp is dropped — the outer 300s own-
+// group watchdog is this driver's bound. Window-6's ordering stays
+// recorded UNKNOWN; this fix only closes the "banner != route" gap that
+// window-6 exposed (root-verified: 05 fired the first RPC right after the
+// banner and NO_RESULT stopped without the MOUNTED gate the fourth
+// successful window had).
+const REMOTE_MOUNT_MARKER = '[dsh-agent-team] remote mount: MOUNTED channel=/team-remote'
+const REMOTE_MOUNT_REFUSALS = Object.freeze([
+  { name: 'REMOTE_MOUNT_SKIPPED', pattern: /\[dsh-agent-team\] remote mount: SKIPPED/ },
+  { name: 'REMOTE_MOUNT_FAILED', pattern: /\[dsh-agent-team\] remote mount: FAILED/ },
+  { name: 'PLUGIN_BOOTSTRAP_FAILED', pattern: /\[dsh-agent-team\] bootstrap FAILED/ },
+])
+async function remoteMountGate({ readLog, childGone = () => false, budgetMs = 120_000, pollMs = 250 }) {
+  const deadline = Date.now() + budgetMs
+  let polls = 0
+  for (;;) {
+    polls += 1
+    if (childGone() === true) throw new Error('HOST_CHILD_EXITED before the Team Remote mounted: no team RPC was attempted')
+    const text = String(readLog() ?? '')
+    const found = REMOTE_MOUNT_REFUSALS.find((entry) => entry.pattern.test(text))
+    if (found !== undefined) {
+      const line = text.split('\n').find((row) => found.pattern.test(row)) ?? found.name
+      throw new Error(`${found.name}: ${line.trim().slice(0, 300)}`)
+    }
+    const mounted = text.split('\n').find((row) => row.includes(REMOTE_MOUNT_MARKER))
+    if (mounted !== undefined) return { mounted: true, polls, line: mounted.trim().slice(0, 200) }
+    if (Date.now() > deadline) throw new Error(`REMOTE_MOUNT_NEVER_APPEARED after ${String(polls)} polls: no '${REMOTE_MOUNT_MARKER}' line in this run's host log (the URL banner is not the route)`)
+    await sleep(pollMs)
+  }
+}
 function safeParse(v) {
   if (v === null || v === undefined) return {}
   if (typeof v === 'object') return v
@@ -517,6 +562,16 @@ async function main() {
   if (auth.status !== 303 || auth.headers.get('set-cookie') === null) throw new Error(`authenticate status=${auth.status}`)
   cookie = auth.headers.get('set-cookie').split(';', 1)[0]
   log(`host booted at ${origin}`)
+
+  // [root fix, 7f6bbd barrier] the URL banner is NOT the route — wait for
+  // the plugin's OWN registration line before ANY team RPC (typed refusals
+  // stop first; no team call happens before it).
+  const mountGate = await remoteMountGate({
+    readLog: () => String(readFileSync(instance.logPath, 'utf8')),
+    childGone: () => instance.child === undefined || instance.child.exitCode !== null || instance.child.signalCode !== null,
+    budgetMs: 120_000,
+  })
+  log(`remote mount gate PASS (polls=${mountGate.polls}) ${mountGate.line}`)
 
   currentCriterion = 'setup'
   currentRoot = `session-a5m2edithw-p-${RUN_STAMP}`
