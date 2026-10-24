@@ -58,10 +58,19 @@ HOME 世界与 raw 永不删除；证据归档 = 窗口后 `cp -a` 相关世界�
   toolcall→同 call 结果后 `TURN-DONE` 闭合（pending 不重发）/ `role:tool` +
   原生 `tool_result` 双形同-call 配对 / 公开 ledger 分页 + canonical JSON
   string safeParse + factType 精确 + `payload.requestId` 严等 / 429 有界重试 /
-  fixture lock 钉 + 最小 lock 更新 + `--offline --ignore-scripts` 暖 store 安装
-  + `chmod a-w` / exports['./host'] 解析入口 + **pack 内 dist edit 臂存在性**
-  硬检（发布同 blob 律的窗口内再验）。不 import c1-leader-approval-smoke
-  （其 boot/remoteCall 不 export 且底部 main 跑整套）。
+  安装面 = **f86 fixture 只读复用**（根 FS 窄审定令，2026-10-28）：显式
+  `A5M2_EDIT_INSTALL_DIR`（默认
+  `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2/`）
+  → 验 fixture manifest 的 plugin `file:` **确指**
+  `out-5c313418-20261024T082308Z/dsh-agent-team-0.1.1-alpha.2.tgz` → 真实解析
+  其 `exports['./host']` 与 dist edit 臂（实路径存在性，非拼串） → 核 tgz
+  sha256 == 钉值 `sha256:0a3f11b2c07178cd5377debb11c221fac23d963c666a7a2688ba446168d50b6b`。
+  runner **永不** install / lock-only / chmod（递归 a-w 会经共享 store 硬链
+  污染——旧 bf4 fixture/lock/store 前置已全部删除）。fixture 缺失 =
+  fail-closed rc3（不代建）。Host 启动形不改（DshInstance，
+  `tests/deepseek-harness-test-use/apps/cli/lib/bin.js` ls 亲验在场）。
+  不 import c1-leader-approval-smoke（其 boot/remoteCall 不 export 且底部
+  main 跑整套）。
 - profile：`teamToolPlane: { editEnabled: true, fsInstance: { rootDir } }`
   （闭合门键 + 同一受治理 fs 实例根 = 新世界）；blueprint v3：worker
   default-deny + ask 仅 `edit`（kind any），teamTools/skills/mcp deny，
