@@ -46,6 +46,15 @@ interface Supply {
   }
   realmIdOf: (generation: string) => string
   syncGeneration: (generation: string) => Promise<{ ok: boolean, status: string, instance?: Record<string, unknown>, result?: Record<string, unknown> }>
+  ensureLive: () => Promise<unknown>
+  query: (request: Record<string, unknown>) => Promise<Record<string, unknown>>
+  controlPort: {
+    prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>>
+    drift: (canonical: Record<string, unknown>) => (handle: Record<string, unknown>) => { ok: false, code: string, detail: string } | null
+    handleStatus: (handle: Record<string, unknown>) => Record<string, unknown>
+    cancelCleanup: (live: Record<string, unknown>, context: Record<string, unknown>) => Promise<Record<string, unknown>>
+    liveHandles: (member: string) => readonly Record<string, unknown>[]
+  }
   drainAll: () => Promise<{ ok: boolean }>
 }
 const WIRING = (await import(new URL('../src/plugin/live/governed-families/g3-lsp-wiring.mjs', import.meta.url).href)) as {
@@ -64,6 +73,14 @@ const MEMBER = 'agent-member-1'
 // ---------------------------------------------------------------------------
 // CANNED transport (the a5lsp2-streaming precedent): the launcher fake
 // answers the fd-3 handshake with a payload pid; no real process exists.
+// Since the root LSP-review ruling (2026-10-25) the canned payload speaks
+// the STANDARD protocol over real Content-Length framing (initialize
+// handshake, the four textDocument operations, notifications accepted,
+// $/cancelRequest recorded) — the transport stays CANNED (author-side,
+// non-Host: canned is never promoted to C2), but the PROTOCOL the supply
+// and the assembly are tested against is the real one. `hang` models a
+// server that never answers (the reclaim leg), `cancels` records what the
+// wire was told.
 // ---------------------------------------------------------------------------
 let pidSeq = 41000
 function fakeProcess (payloadPid: number) {
@@ -74,17 +91,29 @@ function fakeProcess (payloadPid: number) {
   const exit = new Promise<{ code: number | null, signal: string | null }>((r) => { resolveExit = r })
   const signals: string[] = []
   const stdout = new Readable({ read() {} })
-  const stdin = new Writable({
-    write(_chunk, _enc, cb) { cb() }, // assembled with a ready override below; the DEFAULT-ready ping variant lives in the defaultReady leg
-  })
-  const empty = (): Readable => Readable.from((async function* () { /* canned: no payload bytes */ })())
-  const proc = {
+  const proc: {
+    pid: number
+    stdin: Writable
+    stdout: Readable
+    stderr: Readable
+    handshake: Readable
+    signals: string[]
+    cancels: number[]
+    requests: string[]
+    hang: boolean
+    dead: boolean
+    kill: (signal?: string | number) => boolean
+    exit: Promise<{ code: number | null, signal: string | null }>
+  } = {
     pid: payloadPid - 1, // the launcher supervisor pid (the payload pid rides the handshake)
-    stdin,
     stdout,
-    stderr: empty(),
+    stdin: new Writable({ write() { /* replaced below (the responder needs proc) */ } }),
+    stderr: Readable.from((async function* () { /* canned: no payload bytes */ })()),
     handshake,
     signals,
+    cancels: [],
+    requests: [],
+    hang: false,
     dead: false,
     kill(signal?: string | number): boolean {
       const s = String(signal ?? 'SIGTERM')
@@ -100,6 +129,65 @@ function fakeProcess (payloadPid: number) {
     },
     exit,
   }
+  const frame = (obj: unknown): void => {
+    const body = JSON.stringify(obj)
+    stdout.push(Buffer.from(`Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`, 'utf8'))
+  }
+  const respond = (msg: Record<string, unknown>): void => {
+    const method = String(msg.method ?? '')
+    const id = msg.id as number | undefined
+    proc.requests.push(method)
+    if (method === '$/cancelRequest') {
+      proc.cancels.push(Number((msg.params as { id?: number } | undefined)?.id))
+      return
+    }
+    if (method === 'initialize') {
+      frame({ jsonrpc: '2.0', id, result: { capabilities: { hoverProvider: true, definitionProvider: true, referencesProvider: true, implementationProvider: true }, serverInfo: { name: 'canned-lsp', pid: payloadPid } } })
+      return
+    }
+    if (method === 'shutdown') { frame({ jsonrpc: '2.0', id, result: null }); return }
+    if (id === undefined) return // notifications (initialized/didOpen/didClose) are accepted silently
+    if (proc.hang) return // the never-answer model (reclaim/timeout legs)
+    const uri = String((msg.params as { textDocument?: { uri?: string } } | undefined)?.textDocument?.uri ?? 'file:///unknown')
+    if (method === 'textDocument/hover') {
+      const pos = (msg.params as { position?: { line?: number, character?: number } } | undefined)?.position
+      frame({ jsonrpc: '2.0', id, result: { contents: { kind: 'markdown', value: `HOVER canned pid=${String(payloadPid)} ${uri} at ${String(pos?.line)},${String(pos?.character)}` } } })
+      return
+    }
+    if (method === 'textDocument/definition' || method === 'textDocument/implementation') {
+      frame({ jsonrpc: '2.0', id, result: [{ uri, range: { start: { line: 0, character: 6 }, end: { line: 0, character: 7 } } }] })
+      return
+    }
+    if (method === 'textDocument/references') {
+      frame({ jsonrpc: '2.0', id, result: [
+        { uri, range: { start: { line: 0, character: 6 }, end: { line: 0, character: 7 } } },
+        { uri, range: { start: { line: 3, character: 2 }, end: { line: 3, character: 3 } } },
+      ] })
+      return
+    }
+    frame({ jsonrpc: '2.0', id, error: { code: -32601, message: `canned: unsupported ${method}` } })
+  }
+  let inbuf = ''
+  proc.stdin = new Writable({
+    write(chunk, _enc, cb) {
+      inbuf += String(chunk)
+      for (;;) {
+        const headerEnd = inbuf.indexOf('\r\n\r\n')
+        if (headerEnd < 0) break
+        const m = /content-length:\s*(\d+)/i.exec(inbuf.slice(0, headerEnd))
+        const start = headerEnd + 4
+        if (m === null) { inbuf = inbuf.slice(start); continue }
+        const length = Number(m[1])
+        if (inbuf.length < start + length) break
+        const body = inbuf.slice(start, start + length)
+        inbuf = inbuf.slice(start + length)
+        let msg: Record<string, unknown>
+        try { msg = JSON.parse(body) } catch { continue }
+        respond(msg)
+      }
+      cb()
+    },
+  })
   return proc
 }
 
@@ -176,13 +264,14 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
     expect(SUPPLY.createA5LspRealmSupply({ memberId: MEMBER, serverIdentityOf: () => 'x' } as never).code).toBe(SUPPLY.A5_LSP_SUPPLY_CODES.INPUT_INVALID)
     const world: WorldOut = { events: [], spawned: [] }
     const { assembly } = makeAssembly(world)
-    expect(SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER } as never).code).toBe(SUPPLY.A5_LSP_SUPPLY_CODES.INPUT_INVALID)
+    expect(SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER } as never).code, 'generation is REQUIRED (the execution face of the approved tuple)').toBe(SUPPLY.A5_LSP_SUPPLY_CODES.INPUT_INVALID)
+    expect(SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: '', serverIdentityOf: () => 'x' } as never).code).toBe(SUPPLY.A5_LSP_SUPPLY_CODES.INPUT_INVALID)
   })
 
   it('(2) the supply rides the assembly discipline: assemble -> HOT reuse -> generation-mismatch REFUSE -> policyChange destroy/rebuild (journal ordered) -> net-zero', async () => {
     const world: WorldOut = { events: [], spawned: [] }
     const { assembly, policyFor } = makeAssembly(world)
-    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, serverIdentityOf: (m, g) => policyFor(m, g).argv[0] })
+    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: 'g1', serverIdentityOf: (m: string, g: string) => policyFor(m, g).argv[0] })
     expect(supply.memberId).toBe(MEMBER)
     const first = await supply.syncGeneration('g1')
     expect(first.status).toBe('assembled')
@@ -201,7 +290,7 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
     const disposed = world.events.find((e) => e.kind === 'realm-disposed')
     const assembledFirst = world.events.find((e) => e.kind === 'realm-assembled')
     expect(disposed).toMatchObject({ memberId: MEMBER, generation: 'g1', lastPid: assembledFirst?.pid })
-    expect(world.spawned[0].signals).toContain('SIGTERM')
+    expect(world.spawned[0]?.signals).toContain('SIGTERM')
     const torn = await supply.drainAll()
     expect(torn.ok).toBe(true)
     expect((assembly as unknown as { size: () => number }).size()).toBe(0)
@@ -211,7 +300,7 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
   it('(3) the four §5.2 facts: live-only server (policy identity), canonical locator + REAL stat revision (drift moves it), realm mapping MOVES with the generation, scope inside/outside both ways', async () => {
     const world: WorldOut = { events: [], spawned: [] }
     const { assembly, policyFor } = makeAssembly(world)
-    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, serverIdentityOf: (m, g) => policyFor(m, g).argv[0] })
+    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: 'g1', serverIdentityOf: (m: string, g: string) => policyFor(m, g).argv[0] })
     // no realm yet: server refuses, nothing substitutes
     expect(supply.facts.server()).toBeNull()
     expect(supply.facts.documentRealm('src/a.ts', ws)).toBeNull()
@@ -221,7 +310,7 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
     expect(doc?.kind).toBe('workspace')
     expect(doc?.canonicalLocator).toBe('src/a.ts')
     expect(String(doc?.revision)).toMatch(/^stat:v1:\d+:\d+$/)
-    expect(supply.facts.document('src/a.ts', ws)?.revision).toBe(doc?.revision, 'same bytes -> same revision (reproducible fact)')
+    expect(supply.facts.document('src/a.ts', ws)?.revision, 'same bytes -> same revision (reproducible fact)').toBe(doc?.revision)
     expect(supply.facts.document('src/missing.ts', ws), 'a missing file is UNRESOLVABLE, never guessed').toBeNull()
     expect(supply.facts.document('../escape/a.ts', ws), 'a ..-escape is unresolvable before it resolves').toBeNull()
     const absInside = supply.facts.document(join(ws, 'src', 'a.ts'), ws)
@@ -245,7 +334,7 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
     expect(supply.facts.documentRealm('src/a.ts', ws)).toBe(SUPPLY.a5LspRealmId(MEMBER, 'g2'))
     expect(supply.facts.server()).toEqual({ binaryIdentity: '/srv/fake-langserver-g2', generation: 'g2' })
     // a serverIdentityOf that refuses to answer = no server fact, never an inferred one
-    const silent = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, serverIdentityOf: () => null })
+    const silent = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: 'g1', serverIdentityOf: () => null })
     expect(silent.facts.server()).toBeNull()
     await supply.drainAll()
   })
@@ -253,7 +342,7 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
   it('(4) INTEGRATION: the REAL wiring + REAL delegate arm eat this REAL supply — four operations WALK TO SERVED; realm-moved / document-edited / realm-disposed each refuse with ZERO body', async () => {
     const world: WorldOut = { events: [], spawned: [] }
     const { assembly, policyFor } = makeAssembly(world)
-    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, serverIdentityOf: (m, g) => policyFor(m, g).argv[0] })
+    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: 'g1', serverIdentityOf: (m: string, g: string) => policyFor(m, g).argv[0] })
     await supply.syncGeneration('g1')
 
     const HEADER = 's-header-1'
@@ -357,19 +446,107 @@ describe('A5M2-G3-LSP-REALM-SUPPLY C1 — the supply over the REAL realm assembl
         closePlan: pa.closePlan,
       },
     }) as Built
-    const drifted = await remounted.definitions?.[0].execute({ operation: 'goToDefinition', file_path: 'src/a.ts', line: 7, character: 3 }, execFor('call-drift')).catch((error: { code?: string }) => error)
+    const drifted = await remounted.definitions?.[0]?.execute({ operation: 'goToDefinition', file_path: 'src/a.ts', line: 7, character: 3 }, execFor('call-drift')).catch((error: { code?: string }) => error)
     expect((drifted as { code?: string }).code, 'the entry recheck re-reads the REAL revision fact').toBe('P_LSP_TARGET_DRIFT')
     expect(bodyRuns, 'the edit refused BEFORE the body').toBe(4)
 
     // NEGATIVE 3 — realm disposed: nothing answers the server fact; the arm
     // refuses UNRESOLVED, a bare-process reach never substitutes.
     await supply.drainAll()
-    const dead = await remounted.definitions?.[0].execute({ operation: 'hover', file_path: 'src/a.ts', line: 7, character: 3 }, execFor('call-dead')).catch((error: { code?: string }) => error)
+    const dead = await remounted.definitions?.[0]?.execute({ operation: 'hover', file_path: 'src/a.ts', line: 7, character: 3 }, execFor('call-dead')).catch((error: { code?: string }) => error)
     expect((dead as { code?: string }).code).toBe('P_LSP_TARGET_UNRESOLVED')
     expect(bodyRuns).toBe(4)
     // closePlan law: it rides every OPEN walk (4 served + the drift refusal,
     // which dies AFTER the edge); a CLASSIFICATION refusal never opened a
     // plan, so it has nothing to close — the bridge closes only what it opened.
     expect(closePlans.length).toBe(5)
+  })
+
+  it('(6) THE QUERY BACKEND (root ruling P1-a/P1-b): the FIRST CALL assembles the APPROVED generation (the real lifecycle trigger — zero manual sync), speaks STANDARD LSP over the confined pipes, and answers the 639 closed union', async () => {
+    const world: WorldOut = { events: [], spawned: [] }
+    const { assembly, policyFor } = makeAssembly(world)
+    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: 'g1', serverIdentityOf: (m: string, g: string) => policyFor(m, g).argv[0] })
+    expect(world.spawned.length, 'zero process before the first governed work (the lazy law stands)').toBe(0)
+    const hover = await supply.query({ operation: 'hover', file_path: 'src/a.ts', workspaceRoot: ws, line: 7, character: 3 })
+    expect(hover.kind).toBe('hover')
+    const contents = ((hover as { hover?: { contents?: string } | null }).hover ?? {})?.contents ?? ''
+    expect(contents, 'the ONE-BASED grammar maps onto the zero-based protocol').toContain('at 6,2')
+    expect(contents).toContain('HOVER canned')
+    expect(world.spawned.length, 'THE FIRST CALL DROVE THE REAL LIFECYCLE (the trigger the review found missing)').toBe(1)
+    expect([...(world.spawned[0]?.requests ?? [])].slice(0, 5)).toEqual(['initialize', 'initialized', 'textDocument/didOpen', 'textDocument/hover', 'textDocument/didClose'])
+    const def = await supply.query({ operation: 'goToDefinition', file_path: 'src/a.ts', workspaceRoot: ws, line: 1, character: 1 })
+    expect(def.kind).toBe('locations')
+    expect((def as { locations: unknown[] }).locations.length).toBe(1)
+    const refs = await supply.query({ operation: 'findReferences', file_path: 'src/a.ts', workspaceRoot: ws, line: 1, character: 1 })
+    expect((refs as { locations: unknown[] }).locations.length).toBe(2)
+    const impl = await supply.query({ operation: 'goToImplementation', file_path: 'src/a.ts', workspaceRoot: ws, line: 1, character: 1 })
+    expect(impl.kind, 'LocationLink/Location answers normalize onto the closed union').toBe('locations')
+    expect(world.spawned.length, 'hot reuse across calls (one realm per member x generation)').toBe(1)
+    expect(supply.facts.server()?.generation, 'the approved generation is the ensured one').toBe('g1')
+    const torn = await supply.drainAll()
+    expect(torn.ok).toBe(true)
+    await expect(supply.query({ operation: 'hover', file_path: 'src/a.ts', workspaceRoot: ws, line: 1, character: 1 })).rejects.toThrow(/DRAINED/)
+  })
+
+  it('(7) THE DELEGATE PORT: prepare is the effect entry AND the lifecycle; drift/handleStatus/liveHandles ride the LIVE instance; cancelCleanup RECLAIMS the in-flight wire request; drainAll REJECTS what is pending', async () => {
+    const world: WorldOut = { events: [], spawned: [] }
+    const { assembly, policyFor } = makeAssembly(world)
+    const supply = SUPPLY.createA5LspRealmSupply({ assembly, memberId: MEMBER, generation: 'g1', serverIdentityOf: (m: string, g: string) => policyFor(m, g).argv[0] })
+    const port = supply.controlPort
+    const started: Array<Record<string, unknown>> = []
+    const startedRow = (): Record<string, unknown> => {
+      const row = started[0]
+      if (row === undefined) throw new Error('recordStarted never answered the realm resource')
+      return row
+    }
+    const execOf = { agent: { session: { header: { cwd: ws } } } }
+    // pre-effect cancel: the honest zero-effect word, nothing entered
+    const cancelled = await port.prepare({ canonical: { operation: 'hover', file_path: 'src/a.ts', line: 1, character: 1 }, exec: execOf, isCancelled: () => true, recordStarted: (r: Record<string, unknown>) => { started.push(r) } })
+    expect((cancelled as { zeroEffects?: boolean }).zeroEffects).toBe(true)
+    expect((cancelled as { code?: string }).code).toBe(SUPPLY.A5_LSP_SUPPLY_CODES.CANCELLED_BEFORE_EFFECT)
+    expect(world.spawned.length).toBe(0)
+    // the real prepare: the lifecycle runs HERE (P1-b, the port path)
+    const prepared = await port.prepare({
+      canonical: { operation: 'hover', file_path: 'src/a.ts', line: 2, character: 4 },
+      exec: execOf,
+      isCancelled: () => false,
+      recheckFacts: () => null,
+      recordStarted: (r: Record<string, unknown>) => { started.push(r) },
+    }) as { ok: boolean, handle?: { identity?: Record<string, unknown>, invoke?: () => Promise<unknown> } }
+    expect(prepared.ok).toBe(true)
+    expect(world.spawned.length).toBe(1)
+    expect(started[0]).toMatchObject({ __kind: 'lsp-realm-instance', generation: 'g1' })
+    // the live seams read the REAL instance
+    const handle = prepared.handle as { identity: Record<string, unknown>, invoke: () => Promise<unknown> }
+    expect(port.handleStatus(handle as unknown as Record<string, unknown>).live).toBe(true)
+    expect(port.drift({})(handle as unknown as Record<string, unknown>), 'no move -> null').toBeNull()
+    expect(port.liveHandles(MEMBER).length).toBe(1)
+    // the reclaim: a server that never answers; cancelCleanup RECLAIMS the
+    // wire request ($/cancelRequest on the pipe, typed reject into the call)
+    const proc = world.spawned[0] as { hang: boolean, cancels: number[] } | undefined
+    if (proc === undefined) throw new Error('the prepared call answered no realm process')
+    proc.hang = true
+    const inFlight = handle.invoke()
+    const inFlightSettled = inFlight.catch((error: unknown) => error) // handler attached AT creation (no unhandled-rejection window)
+    const refused = await Promise.race([
+      inFlightSettled.then(() => null),
+      new Promise((r) => setTimeout(() => r('PENDING-AS-EXPECTED'), 30)),
+    ])
+    expect(refused, 'a hanging server keeps the call pending (no premature settle)').toBe('PENDING-AS-EXPECTED')
+    const cleaned = await port.cancelCleanup(startedRow(), { exec: execOf, reason: 'spec cancel' })
+    expect((cleaned as { cleaned?: boolean }).cleaned).toBe(true)
+    const edge = await inFlightSettled
+    expect((edge as { code?: string }).code).toBe(SUPPLY.A5_LSP_SUPPLY_CODES.CANCELLED)
+    expect(proc.cancels.length, 'the wire was TOLD about the cancellation').toBeGreaterThanOrEqual(1)
+    // drain REJECTS what is still pending (the real backend is net-zero too)
+    proc.hang = true
+    const second = await Promise.all([
+      handle.invoke().catch((error: unknown) => error), // handler attached AT creation
+      (async () => await supply.drainAll())(),
+    ])
+    expect(second[1]).toMatchObject({ ok: true })
+    const edge2 = second[0]
+    expect((edge2 as { code?: string }).code).toBe(SUPPLY.A5_LSP_SUPPLY_CODES.DRAINED)
+    expect((assembly as unknown as { size: () => number }).size()).toBe(0)
   })
 })

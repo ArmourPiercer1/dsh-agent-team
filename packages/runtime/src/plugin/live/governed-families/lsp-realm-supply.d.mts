@@ -31,14 +31,39 @@ export interface LspSupplyFacts {
 export interface LspRealmSupplyInput {
   assembly: LspRealmAssemblyFace
   memberId: string
+  /** THE APPROVED GENERATION (root LSP-review ruling 2026-10-25, P1-b): the
+   *  query backend ensures/syncs exactly this (member x generation) tuple. */
+  generation: string
   serverIdentityOf: (memberId: string, generation: string) => string | null
+  extensionToLanguage?: Readonly<Record<string, string>>
+}
+
+/** The 639 public closed-union query answer (packages/lsp/lsp/src/types.ts:
+ *  85-87): navigation lands `locations`, hover lands `hover` (or null). */
+export type LspSupplyQueryResult =
+  | { readonly kind: 'locations'; readonly locations: readonly { readonly uri: string; readonly range: unknown }[]; readonly resolvedWorkspaceUri: string }
+  | { readonly kind: 'hover'; readonly hover: { readonly contents: string; readonly range?: unknown } | null }
+
+/** THE delegate-port face (the adapter's own prepare/drift/handleStatus/
+ *  cancelCleanup/liveHandles law — the createHostTerminalControlPort shape
+ *  precedent). prepare is the effect entry AND the REAL lifecycle trigger;
+ *  the handle invokes the approved realm's governed round-trip. */
+export interface LspSupplyControlPort {
+  prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>>
+  drift: (canonical: Record<string, unknown>) => (handle: Record<string, unknown>) => { ok: false, code: string, detail: string } | null
+  handleStatus: (handle: Record<string, unknown>) => Record<string, unknown>
+  cancelCleanup: (live: Record<string, unknown> | null, context: Record<string, unknown>) => Promise<Record<string, unknown>>
+  liveHandles: (memberId: string) => readonly Record<string, unknown>[]
 }
 
 export interface LspRealmSupply {
   ok: true
   revision: number
   memberId: string
+  generation: string
   facts: LspSupplyFacts
+  controlPort: LspSupplyControlPort
+  query: (request: { operation: string, file_path: string, workspaceRoot: string, line: number, character: number, callId?: string }) => Promise<LspSupplyQueryResult>
   realmIdOf: (generation: string) => string
   ensure: (generation: string) => Promise<{ ok: boolean, value?: unknown, error?: { code?: string, message?: string } }>
   policyChange: (generation: string) => Promise<{ ok: boolean, value?: unknown, error?: { code?: string, message?: string } }>

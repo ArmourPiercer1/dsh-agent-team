@@ -193,6 +193,14 @@ function makeWorld (opts: WorldOpts = {}) {
   }
 }
 
+/** THE single governed row (narrowed, CI TS2532 class): the legs all
+ *  expect the mount to have placed EXACTLY the one B-LSP definition; an
+ *  absent row is a hard author-side failure, never a silent undefined. */
+const firstRow = (asm: { definitions?: Definition[] }): Definition => {
+  const row = asm.definitions?.[0]
+  if (row === undefined) throw new Error('THE MOUNT PLACED NO ROW — the legs expect the single governed definition')
+  return row
+}
 const refusalOf = async (promise: Promise<unknown>) => {
   try { await promise; return null } catch (error) { return error as { code?: string, message?: string } }
 }
@@ -230,11 +238,11 @@ describe('A5M2-G3-LSP-WIRE C1 — the B-LSP wiring bridge on the REAL adapter by
     const asm = w.build()
     expect(asm.ok).toBe(true)
     expect(asm.definitions?.length).toBe(1)
-    expect(asm.definitions?.[0].name).toBe(WIRING.A5_G3_LSP_TOOL_NAME)
+    expect(asm.definitions?.[0]?.name).toBe(WIRING.A5_G3_LSP_TOOL_NAME)
     const bound = definitionIdentityOf(w.placed.get('lsp'))
-    expect(asm.familyRegistrations?.()[0].definitionIdentity).toBe(bound)
+    expect(asm.familyRegistrations?.()[0]?.definitionIdentity).toBe(bound)
     const broken = makeWorld({ identityUnbound: true })
-    expect(() => broken.build()).toThrow(new RegExp(CODES.IDENTITY_UNBOUND))
+    expect(() => broken.build()).toThrow(new RegExp(String(CODES.IDENTITY_UNBOUND)))
   })
 
   it('(d) FULL WALK, NO port: classify -> open -> edge -> consumedProof DEMAND -> prepare -> the captured-body delegate answer VERBATIM; the walk carries the B-LSP closed-table FLAT view and the REAL table ACCEPTS it', async () => {
@@ -244,7 +252,7 @@ describe('A5M2-G3-LSP-WIRE C1 — the B-LSP wiring bridge on the REAL adapter by
     const asm = w.build()
     const row = asm.definitions?.[0]
     const answer = await row?.execute(ARGS, w.execFor('call-d1'))
-    expect(answer).toBe(sentinel, 'the delegate answer is the captured body VERBATIM (root 19:25 — never re-shaped)')
+    expect(answer, 'the delegate answer is the captured body VERBATIM (root 19:25 — never re-shaped)').toBe(sentinel)
     expect(w.native.bodyRuns()).toBe(1)
     expect(w.walks.length).toBe(1)
     expect(w.closePlans).toEqual(['call-d1'])
@@ -273,7 +281,7 @@ describe('A5M2-G3-LSP-WIRE C1 — the B-LSP wiring bridge on the REAL adapter by
     // THE REAL PUBLISHED CHECKER accepts the minted flat for EVERY operation.
     for (const operation of LSP_OP) {
       const perOp = { ...flat, operation }
-      expect(validatePaFamilyTarget('B-LSP' as never, perOp as never)).toBeUndefined(operation)
+      expect(validatePaFamilyTarget('B-LSP' as never, perOp as never), operation).toBeUndefined()
     }
   })
 
@@ -290,7 +298,7 @@ describe('A5M2-G3-LSP-WIRE C1 — the B-LSP wiring bridge on the REAL adapter by
     const w = makeWorld({ port })
     w.setBody(async () => { throw new Error('THE CAPTURED BODY MUST NOT RUN BEHIND A PORT') })
     const asm = w.build()
-    const answer = await asm.definitions?.[0].execute(ARGS, w.execFor('call-e1'))
+    const answer = await firstRow(asm).execute(ARGS, w.execFor('call-e1'))
     expect(answer).toEqual({ hoverAnswer: 'port-verbatim' })
     expect(w.native.bodyRuns()).toBe(0)
     expect(seen).toEqual(['prepare:lsp', 'manifest:real', 'recheck:function'])
@@ -303,19 +311,19 @@ describe('A5M2-G3-LSP-WIRE C1 — the B-LSP wiring bridge on the REAL adapter by
     w.setBody(async () => { bodyRan += 1; return {} })
     const asm = w.build()
     w.setDropProof(true)
-    const noProof = await refusalOf(asm.definitions?.[0].execute(ARGS, w.execFor('call-f1')))
+    const noProof = await refusalOf(firstRow(asm).execute(ARGS, w.execFor('call-f1')))
     expect(noProof?.code).toBe(CODES.CONSUME_PROOF_MISSING)
     w.setDropProof(false)
     w.setDenyOpen(true)
-    const denied = await refusalOf(asm.definitions?.[0].execute(ARGS, w.execFor('call-f2')))
-    expect(denied?.code).toBe('ADMISSION_REFUSED', 'the kernel deny word travels verbatim')
+    const denied = await refusalOf(firstRow(asm).execute(ARGS, w.execFor('call-f2')))
+    expect(denied?.code, 'the kernel deny word travels verbatim').toBe('ADMISSION_REFUSED')
     w.setDenyOpen(false)
     w.setAbortDuringEdge(true)
-    const raced = await refusalOf(asm.definitions?.[0].execute(ARGS, w.execFor('call-f3', true)))
+    const raced = await refusalOf(firstRow(asm).execute(ARGS, w.execFor('call-f3', true)))
     expect(String(raced?.message)).toContain('cancelled — the call was aborted after the execution edge consumed the grant')
     expect(String(raced?.message)).toContain('zero port entries')
     expect(bodyRan, 'no refusal path entered the body').toBe(0)
-    expect(w.closePlans).toEqual(['call-f1', 'call-f2', 'call-f3'], 'closePlan on EVERY path')
+    expect(w.closePlans, 'closePlan on EVERY path').toEqual(['call-f1', 'call-f2', 'call-f3'])
   })
 
   it('(g) the B-LSP table grammar fail-closed on the REAL published checker: fifth spelling / missing leaf / extra leaf pin their measured refusal bytes', () => {
@@ -349,9 +357,9 @@ describe('A5M2-G3-LSP-WIRE C1 — the B-LSP wiring bridge on the REAL adapter by
     expect(typeof entry?.entry.adapterRevision).toBe('number')
     const moved = makeWorld({ movedFeed: true })
     const movedAsm = moved.build()
-    expect(() => movedAsm.familyRegistrations?.()).toThrow(new RegExp(CODES.PLACEMENT_KEY_MOVED))
+    expect(() => movedAsm.familyRegistrations?.()).toThrow(new RegExp(String(CODES.PLACEMENT_KEY_MOVED)))
     const noFeed = makeWorld({ noFeed: true })
     const noFeedAsm = noFeed.build()
-    expect(() => noFeedAsm.familyRegistrations?.()).toThrow(new RegExp(CODES.PLACEMENT_KEY_ABSENT))
+    expect(() => noFeedAsm.familyRegistrations?.()).toThrow(new RegExp(String(CODES.PLACEMENT_KEY_ABSENT)))
   })
 })

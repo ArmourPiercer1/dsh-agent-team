@@ -3601,7 +3601,13 @@ export function createAgentBindings(deps) {
           bypassError.code = 'alpha5-spawn-wiring-mount-refused'
           throw bypassError
         }
-        if (planeCfg.spawnGoverned === true) {
+        // C3 (root ruling 2026-10-25): inside the Team-enabled governance
+        // scope an OMITTED spawnGoverned no longer falls through to native —
+        // the masked, fail-closed rows mount whenever the real scoped
+        // surface actually carries a spawn face (the execute-side signed
+        // block still refuses FIRST; this is the assembly side of the same
+        // law). 'false' stays a pre-refused bypass attempt above.
+        if (planeCfg.spawnGoverned === true || planeCfg.spawnGoverned === undefined) {
           const refuseSpawn = (why) => {
             const error = new Error(
               `agent-bindings: alpha.5 governed spawn mount refused for '${sessionId}': ${why}`,
@@ -3669,7 +3675,16 @@ export function createAgentBindings(deps) {
             spawnNativeBodies[spawnName] = spawnNative.execute
           }
           if (Object.keys(spawnCaptured).length === 0) {
-            throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring')
+            if (planeCfg.spawnGoverned === undefined) {
+              // C3: an OMITTED key against a member whose REAL scoped
+              // surface answers NONE of the spawn family is the honest
+              // FACELESS fact (agentCtx.tools.get — the surface itself, not
+              // a deny string). No native exists to fall back to; record it
+              // and govern only what actually exists.
+              observations.push(`a5m2-spawn: FACELESS-ABSENT for ${sessionId} (the real scoped surface answers none of the spawn family — nothing to mask, nothing outside the surface to govern)`)
+            } else {
+              throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring')
+            }
           }
           // THE ONE bound container (root 20:41 fix 1): the adapter compares
           // the CONTAINER object identity (assembly gate + per-dispatch edge
@@ -5816,6 +5831,12 @@ export function createAgentBindings(deps) {
             lspSupply = createA5LspRealmSupply({
               assembly: lspAssembly,
               memberId: lspMemberAgentId,
+              // THE APPROVED GENERATION (root ruling 2026-10-25, P1-b): the
+              // supply is the execution face of exactly this
+              // (member x generation) tuple — its query backend ensures/
+              // syncs it on the FIRST GOVERNED CALL (the real lifecycle
+              // trigger; the mount itself stays zero-process).
+              generation: lPol.generation,
               serverIdentityOf: (memberId, generation) => (memberId === lspMemberAgentId && generation === lPol.generation) ? lspServerIdentity : null,
             })
           } catch (error) {
@@ -5832,12 +5853,21 @@ export function createAgentBindings(deps) {
             readNative: lspReadNative,
             bindingFacts: lspBindingFacts,
             lspFacts: lspSupply.facts,
+            // THE EXECUTION PORT (root ruling P1-a): the supply's delegate
+            // port rides into the plane (and through it into the arm), so
+            // the four operations EXECUTE on the approved realm — NOT via
+            // the native body's ctx.lsp.query extension route.
+            controlPort: lspSupply.controlPort,
             lifecycle: Object.freeze({
               syncGeneration: (generation) => lspSupply.syncGeneration(generation),
+              // THE ensure-on-call trigger (root ruling P1-b): the wiring
+              // drives THIS at every governed call's entry — the assembly's
+              // own net answers the approved (member x generation) live.
+              ensureLive: async () => await lspSupply.ensureLive(),
               drainAll: () => lspSupply.drainAll(),
             }),
           })
-          observations.push(`a5m2-g3-lsp: inject armed for ${sessionId} (realm=${a5LspInject.realmId} server=${lspServerIdentity}) — assembly LAZY (no process at mount; facts answer TARGET_UNRESOLVED until a policy round ensures the realm)`)
+          observations.push(`a5m2-g3-lsp: inject armed for ${sessionId} (realm=${a5LspInject.realmId} server=${lspServerIdentity} generation=${lPol.generation}) — execution on the supply PORT (zero process at mount; the first governed call drives the real lifecycle through prepare)`)
         }
         // ── A5M2 G3 B-PTC run_code GUARD inject (root FINAL LIMITED ruling
         // 2026-10-25; the a5G3TerminalInject capture law, the guard-seam
@@ -6161,6 +6191,32 @@ export function createAgentBindings(deps) {
           error.code = 'alpha5-team-tool-plane-placement-refused'
           observations.push(`a5-plane: placement-REFUSED for ${sessionId} (${placed.code} name=${placed.name})`)
           throw error
+        }
+        // C3 REAL-ASSEMBLY READBACK (root 2026-10-25): a claimed governed
+        // mount must be what the member-scoped surface ACTUALLY answers.
+        // For every spawn row this wiring placed, the live scoped face
+        // (agentCtx.tools.get — the real surface, never a deny string) MUST
+        // be the governed definition; a foreign/native face behind a
+        // claimed mount is the config-omission fallback this gate exists to
+        // kill: typed refusal, never a silent unmask.
+        if (a5SpawnWiring !== null) {
+          for (const spawnRegDef of a5SpawnWiring.definitions) {
+            let liveFace
+            try {
+              liveFace = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnRegDef.name, runtimeAgent) : undefined
+            } catch (error) {
+              liveFace = undefined
+              observations.push(`a5m2-spawn: assembly-readback READ-FAULT for ${sessionId} ${String(spawnRegDef.name)} ${String(error?.message ?? error).slice(0, 100)}`)
+            }
+            if (liveFace !== spawnRegDef) {
+              const error = new Error(
+                `agent-bindings: alpha.5 spawn ASSEMBLY READBACK refused for '${sessionId}': the member-scoped surface does not answer the GOVERNED row for '${spawnRegDef.name}' — governance claimed while another face is reachable is exactly the native-fallback omission the C3 gate forbids (typed refusal, never an unmask)`,
+              )
+              error.code = 'alpha5-spawn-assembly-readback-refused'
+              observations.push(`a5m2-spawn: assembly-READBACK-REFUSED for ${sessionId} (${String(spawnRegDef.name)})`)
+              throw error
+            }
+          }
         }
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)

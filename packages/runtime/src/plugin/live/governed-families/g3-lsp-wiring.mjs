@@ -77,6 +77,11 @@ export const A5_G3_LSP_WIRING_CODES = Object.freeze({
   IDENTITY_UNBOUND: 'P_LSP_WIRE_IDENTITY_UNBOUND',
   PLACEMENT_KEY_ABSENT: 'P_LSP_WIRE_PLACEMENT_KEY_ABSENT',
   PLACEMENT_KEY_MOVED: 'P_LSP_WIRE_PLACEMENT_KEY_MOVED',
+  // THE SAME word the drained ADAPTER arm answers (its :1607 law) — the
+  // row surfaces it at the ENTRY, BEFORE any lifecycle effect, so a
+  // post-drain call never reaches the realm-ensure hook (no process
+  // spawns behind a torn-down mount).
+  DRAINING: 'P_LSP_DRAINING',
 })
 
 const deepFreeze = (value) => {
@@ -179,8 +184,8 @@ export function a5LspPaTargetFlat(manifest) {
 export function buildG3LspWiring (input = {}) {
   const knownInput = new Set([
     'realmId', 'providerId', 'memberAgentId', 'sessionHeaderId', 'readNative',
-    'lspFacts', 'controlPort', 'bindingFacts', 'correlationOf', 'placementFeed',
-    'identityOf', 'pa', 'observe',
+    'lspFacts', 'controlPort', 'realmEnsure', 'bindingFacts', 'correlationOf',
+    'placementFeed', 'identityOf', 'pa', 'observe',
   ])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
@@ -211,6 +216,18 @@ export function buildG3LspWiring (input = {}) {
     : typeof input.correlationOf === 'function' ? input.correlationOf : null
   if (correlationOf === null) {
     return wiringRefuse(A5_G3_LSP_WIRING_CODES.INPUT_INVALID, 'correlationOf, when supplied, must be (exec, toolName) => string | null — the ISSUED call identity seam; a non-function never substitutes')
+  }
+  // THE LIFECYCLE TRIGGER (root LSP-review ruling 2026-10-25, P1-b): the
+  // mount round may hand the wiring the owner's ensure-on-call hook — the
+  // REALM ASSEMBLY's own discipline (hot reuse / first assembly / the R-2
+  // destroy-rebuild when the live generation moved) runs at the ENTRY of
+  // every governed call, so the facts classify reads are LIVE FACTS, not a
+  // manual-sync pose. OPTIONAL by law: absent, the rows still mount and the
+  // facts answer exactly as the live realm answers (never a silent fake).
+  const realmEnsure = input.realmEnsure === undefined ? null
+    : typeof input.realmEnsure === 'function' ? input.realmEnsure : undefined
+  if (realmEnsure === undefined) {
+    return wiringRefuse(A5_G3_LSP_WIRING_CODES.INPUT_INVALID, 'realmEnsure, when supplied, must be an async () => unknown hook (the owner\'s realm-lifecycle entry; a non-function never substitutes)')
   }
   // THE §5.2 FACT SURFACE: the arm's OWN contract (its constructor hard-
   // visits the same four functions); checking it HERE too keeps a defective
@@ -244,6 +261,11 @@ export function buildG3LspWiring (input = {}) {
   const definitions = []
   const boundIdentities = new Map()
   const armHolder = { arm: null }
+  // THE ROW-LEVEL DRAIN FLAG: set by this wiring's drain() word; execute
+  // answers the DRAINING law at the ENTRY — the lifecycle ensure hook never
+  // runs behind a drained mount (zero effects, the same word the adapter
+  // would answer at classify, surfaced one seam earlier where it belongs).
+  let mountDrained = false
 
   const toolName = A5_G3_LSP_TOOL_NAME
   const native = readNativeOnce()
@@ -262,6 +284,9 @@ export function buildG3LspWiring (input = {}) {
   } else {
     // root 8b4: the captured native travels COMPLETE; ONLY execute is replaced.
     const execute = async (args, exec) => {
+      if (mountDrained) {
+        throw refusalToThrow(wiringRefuse(A5_G3_LSP_WIRING_CODES.DRAINING, `${toolName}: this mount has drained — the row answers the DRAINING law at the ENTRY (zero lifecycle effect, no realm work behind a torn-down mount)`))
+      }
       const arm = armHolder.arm
       if (arm === null) {
         throw new Error(`refused-lsp arm-unavailable — no governed B-LSP arm is placed on this mount (or it was torn down); there is no native fallback and no degraded lane`)
@@ -269,6 +294,19 @@ export function buildG3LspWiring (input = {}) {
       const callId = correlationOf(exec, toolName)
       if (typeof callId !== 'string' || callId.length === 0) {
         throw refusalToThrow(wiringRefuse(A5_G3_LSP_WIRING_CODES.CALL_ID_ABSENT, `${toolName}: the execution answered no ISSUED call identity — the PA walk has no single-flight key; a guessed correlation is forbidden (zero port entry)`))
+      }
+      // THE REAL LIFECYCLE TRIGGER runs HERE (root ruling P1-b): the owner's
+      // realm discipline (the assembly's ensure/policyChange net) answers the
+      // approved (member x generation) BEFORE the facts are read, so the
+      // first governed call assembles the realm and a moved generation
+      // rebuilds it. A refusal below is the ASSEMBLY's own truth surfacing
+      // through the facts (TARGET_UNRESOLVED/SCOPE_ESCAPED), never a pose.
+      if (realmEnsure !== null) {
+        try {
+          await realmEnsure()
+        } catch (error) {
+          observe({ event: 'g3-lsp-wire:realm-ensure-REFUSED', name: toolName, detail: String(error?.message ?? error).slice(0, 200) })
+        }
       }
       const classified = arm.classify(args, exec, callId)
       if (classified.ok !== true) {
@@ -429,6 +467,7 @@ export function buildG3LspWiring (input = {}) {
     /** L9 new-call prohibition ONLY — the adapter's own drain law; settles
      *  nothing, rolls nothing back. */
     drain: () => {
+      mountDrained = true
       if (armHolder.arm !== null) armHolder.arm.drain()
       return deepFreeze({ event: 'g3-lsp-wire:drain', semantics: 'new-call prohibition only — no resource is settled by this word' })
     },
