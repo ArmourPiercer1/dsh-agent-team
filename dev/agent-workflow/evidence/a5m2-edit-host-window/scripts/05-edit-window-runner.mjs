@@ -478,14 +478,33 @@ async function ledgerFactsAll(factType, needle) {
 // UNVERIFIED, never a hard gate, never fabricated green.
 const EXPECTED_MUTATION_GRANT = `perm-grant-ehw-grant-${NONCE}` // tools.ts:1491-1498 derivation
 const EXPECTED_MUTATION_REVOKE = `perm-revoke-ehw-revoke-${NONCE}`
-function parsePermissionResult(text) {
-  const raw = typeof text === 'string' ? text : String(text ?? '')
-  let doc = null
-  try { doc = JSON.parse(raw) } catch {
-    const m = raw.match(/\{[\s\S]*"status"\s*:\s*"permission-mutated"[\s\S]*\}/)
-    if (m) { try { doc = JSON.parse(m[0]) } catch { doc = null } }
+// [G5 law, 99d7fa0c scripts/lib-tool-result-text.mjs — the verified single
+// helper pattern, inlined verbatim in semantics] tool results ride Messages
+// as content: [{type:'text', text:<result-as-text>}]; the CONTAINER array is
+// NEVER the business JSON — extract TEXT blocks (type==='text' &&
+// typeof text==='string') joined by newline; foreign blocks stay evidence and
+// can never satisfy a business parse; parseBusiness requires a non-null object
+// and rejects arrays. is_error and same-callId pairing stay caller-owned;
+// harvest text and isError are UNCHANGED (raw preserved).
+function toolResultText(content) {
+  if (typeof content === 'string') return { text: content, container: null }
+  if (Array.isArray(content)) {
+    const texts = content.filter((p) => p?.type === 'text' && typeof p.text === 'string').map((p) => p.text)
+    const foreign = content.filter((p) => p?.type !== 'text')
+    return { text: texts.join('\n'), container: foreign.length > 0 ? JSON.stringify(foreign).slice(0, 800) : null }
   }
-  if (doc === null || typeof doc !== 'object') return { parsed: false, raw: raw.slice(0, 300) }
+  return { text: JSON.stringify(content ?? ''), container: null }
+}
+function parseBusinessText(text) {
+  try { const v = JSON.parse(String(text ?? '')); return v !== null && typeof v === 'object' && !Array.isArray(v) ? v : null } catch { return null }
+}
+function parsePermissionResult(rawText) {
+  // the harvest persisted text = JSON.stringify(content); recover content first
+  let content = rawText
+  if (typeof rawText === 'string') { try { const j = JSON.parse(rawText); if (Array.isArray(j)) content = j } catch { /* keep string */ } }
+  const rec = toolResultText(content)
+  const doc = parseBusinessText(rec.text)
+  if (doc === null) return { parsed: false, rawHead: rec.text.slice(0, 300), container: rec.container }
   return { parsed: true, status: doc.status ?? null, rootSessionId: doc.rootSessionId ?? null, targetInstanceId: doc.targetInstanceId ?? null, verb: doc.verb ?? null, changed: typeof doc.changed === 'boolean' ? doc.changed : null, code: doc.code ?? null, reason: doc.reason ?? null }
 }
 let ovlSeq = 0
