@@ -2874,6 +2874,15 @@ export function createAgentBindings(deps) {
       // law, read identically at the arm and here).
       let a5G1Control85Names = new Set()
       let a5G1Control85Native = undefined
+      // ROOT 13:2x CONTROL hand-over (same-layer duplicate fix, 2026-10-24):
+      // the four B-CONTROL supply rows 83/84/87/88 exit RAW registration
+      // only when their own placing arm is armed (governed plane + g1PureQuery
+      // record + control === true), exactly mirroring the record-85 atomic
+      // hand-over law. Only names ACTUALLY VISIBLE in this agent's selected
+      // catalog claim; the captured selected instance is the ONLY instance
+      // the assembly may capture (no scoped re-read, no ancestor mis-capture).
+      let a5G1ControlSupplyNames = new Set()
+      const a5G1ControlSupplyNatives = new Map()
       // THE EXACT CAPTURE (root P1): the raw filter below REMOVES this name
       // from the agent-layer registration, so the scoped read the assembly
       // performs can no longer see it — and a parent layer carrying a SAME-
@@ -2965,10 +2974,30 @@ export function createAgentBindings(deps) {
           for (const row of a5G1Claim85.census) {
             observations.push(`a5m2-g1: record-85 handover census ${row.name}:${String(row.reason)} for ${sessionId}`)
           }
+          // The CONTROL supply hand-over (root 13:2x): armed ONLY under the
+          // same mount eligibility AND the closed `control === true` key —
+          // the exact condition under which the B-CONTROL loop below places
+          // the governed defs. Names absent from selected stay untouched: no
+          // fabrication, no hiding; a control-flagged world whose mount then
+          // fails still fails CLOSED as a setup refusal.
+          if (a5G1PlaneCfgHere.control === true) {
+            for (const row of g1ControlSupplySubset()) {
+              const exact = selected.find((def) => def?.name === row.name)
+              if (exact === undefined) {
+                observations.push(`a5m2-g1: control-supply handover census ${row.name}:ABSENT for ${sessionId}`)
+                continue
+              }
+              a5G1ControlSupplyNames.add(row.name)
+              a5G1ControlSupplyNatives.set(row.name, exact)
+              observations.push(`a5m2-g1: control-supply handover census ${row.name}:VISIBLE for ${sessionId}`)
+            }
+          }
         }
         const a5TeamOpsRawSelected = a5TeamOpsClaimedNames.size === 0 && a5G1Control85Names.size === 0
+          && a5G1ControlSupplyNames.size === 0
           ? selected
-          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name) && !a5G1Control85Names.has(def.name))
+          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name) && !a5G1Control85Names.has(def.name)
+            && !a5G1ControlSupplyNames.has(def.name))
         selectedTeamToolNames = a5TeamOpsRawSelected.map((def) => def.name)
         for (const def of a5TeamOpsRawSelected) {
           toolDisposers.push(agentCtx.tools.register(def))
@@ -7245,13 +7274,18 @@ export function createAgentBindings(deps) {
                 // arms it through the pure-query loop only).
                 subset: g1ControlSupplySubset(),
                 registry: {
-                  // LIVE scoped takeover read (the B-INSPECT pair's law): a
-                  // name the scoped registry does not answer for THIS agent
-                  // (a Leader-only native on a member plane) captures
-                  // ABSENT — the module's own honest census row, zero def,
-                  // zero placement, zero registration: visibility never
-                  // widens past what the native already had.
-                  get: (name, agent) => (name !== entry.name ? undefined : agentCtx.tools.get(name, agent)),
+                  // ROOT 13:2x: a CLAIMED hand-over name captures the exact
+                  // selected instance the raw filter let go of — NEVER a
+                  // scoped re-read (a parent layer's same-named definition
+                  // must not be captured; the record-85 law mirrored). An
+                  // unclaimed name keeps the LIVE scoped takeover read (the
+                  // B-INSPECT pair's law): a name the scoped registry does
+                  // not answer for THIS agent captures ABSENT — the module's
+                  // own honest census row, zero def, zero placement, zero
+                  // registration: visibility never widens past what the
+                  // native already had.
+                  get: (name, agent) => (name !== entry.name ? undefined
+                    : a5G1ControlSupplyNatives.get(name) ?? agentCtx.tools.get(name, agent)),
                   register: (definition) => {
                     const dispose = agentCtx.tools.register(definition)
                     a5G1PlacedByName.set(definition.name, definition)

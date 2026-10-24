@@ -3310,6 +3310,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // own targeted regression spec for the bind-after-def hook route.
       'packages/runtime/test/a5m2-edit-sre-handoff-c1.test.ts',
       'packages/runtime/test/a5m2-spawn-bind-after-def-c1.test.ts',
+    // CONTROL same-layer duplicate card (root limited ruling 2026-10-24):
+    // the exact-selected atomic hand-over narrow-core spec.
+      'packages/runtime/test/a5m2-g1-control-handover-c1.test.ts',
     ]
     // alpha5-int-r3 (rehearsal branch, replayed onto merged master 1962f879 after #330
     // landed): the integration round's own leg file — the two integration conditions of
