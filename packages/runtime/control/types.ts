@@ -1453,6 +1453,59 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
   }),
+  // A5M2 B-SEARCH (CENTER M0 无主行分配 card, 2026-10-25): the two team names
+  // team_grep (M0-B record 7) and team_glob (record 8) - scope=alias, the
+  // names EXIST nowhere on the pinned host face (measured read-only at
+  // 639ed01539: the published tools are tool-fs-search grep.ts:285-340
+  // {pattern required, path?, include?} and glob.ts:296-353 {pattern
+  // required, path?}); they are the governed plane's OWN mount names
+  // (team-tool-plane.mjs DEFAULT_PLANE_NAMES). This entry types the
+  // DURABLE claim of the B-SEARCH arm
+  // (src/plugin/live/governed-families/search.mjs, adapterRevision 1), which
+  // mints these leaves one-for-one at classify - the REQUIRED new-mint to
+  // same-validator pairing legs ride the arm's own author spec
+  // (test/a5m2-bsearch-team-c1.test.ts). The face leaves are the measured
+  // 639 parameter face transcribed with the signed three-state discipline
+  // (a missing optional parameter is minted as null; '' and absent stay
+  // distinct claims); canonicalTarget is the search root anchored by the
+  // pure-lexical law imported from plane-effect-backends (lexicalAnchor -
+  // zero disk at classify); the caller leaves are the team-family caller
+  // law (exec.agent identity paired against the bind-time facts - the row
+  // is mounted per governed Agent closure, the plane's per-scope
+  // judgement); effectLaw states the M0 read-subtree delta CLOSED as
+  // I:tool-invoke + F(read on the anchored search root). The ONLY shape
+  // delta between the two published faces is grep's `include` filter, and
+  // that is exactly the variant split: the glob claim carrying `include`
+  // answers 'include: not part of the B-SEARCH typed plan'.
+  'B-SEARCH': Object.freeze({
+    required: Object.freeze({
+      familyId: 'string',
+      adapterRevision: 'nonNegativeInt',
+      operation: 'string',
+      realmId: 'string',
+      pattern: 'string',
+      path: 'nullableString',
+      canonicalTarget: 'string',
+      anchorLaw: 'string',
+      effectLaw: 'string',
+      callerMemberAgentId: 'string',
+      callerSessionHeaderId: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'team-grep-content-search': Object.freeze({
+          adds: Object.freeze({ include: 'nullableString' }),
+          binds: Object.freeze({}),
+        }),
+        'team-glob-path-match': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'callerMemberAgentId', 'callerSessionHeaderId']),
+  }),
   // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten; the lane
   // module that produces this claim is
   // src/plugin/live/governed-families/g1-surface-adapters.mjs, records
