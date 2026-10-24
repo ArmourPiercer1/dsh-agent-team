@@ -442,7 +442,6 @@ function currentPluginFacts(ports, spec, providerId) {
   const ok = isRecord(facts)
     && typeof facts.profileConfigLocator === 'string' && facts.profileConfigLocator.length > 0
     && typeof facts.installRootLocator === 'string' && facts.installRootLocator.length > 0
-    && typeof facts.cacheRootLocator === 'string' && facts.cacheRootLocator.length > 0
     && typeof facts.exemptionsLocator === 'string' && facts.exemptionsLocator.length > 0
     && Array.isArray(facts.allowedRegistries) && Array.isArray(facts.fallbackRegistries)
   if (!ok) {
@@ -579,14 +578,15 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         if (parsedSpec === null) {
           return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: install target must parse as an npm name (incl. @scope/pkg[@version]) or a path RELATIVE to the invocation directory; absolute and drive paths ride outside the manager envelope`) }
         }
-        const destinations = claimedRegistry !== null
-          ? [claimedRegistry, ...facts.fallbackRegistries.map((entry) => parseRegistry(entry)?.canonical ?? entry)]
-          : [...facts.allowedRegistries, ...facts.fallbackRegistries].map((entry) => parseRegistry(entry)?.canonical ?? entry)
-        for (const registry of destinations) {
-          effects.push({ kind: 'connect', resource: { realmId, kind: 'network-destination', canonicalLocator: registry, rights: ['connect'] } })
-        }
+        /* REAL-ACTION EFFECTS ONLY (user phase ruling 2026-10-25, root R22
+         * review ①): this ONE action keeps the real action's target/params,
+         * the PA and the Host approval; the manager's internal pnpm IO
+         * (registry connect, npm cache writes) runs in the HOST domain and
+         * is DISCLOSED below — never projected as Team-PA effects (a PA
+         * default-deny has no connect projection; enumerating one would
+         * IO_UNSUPPORTED the action forever without governing anything).
+         * Every other plugin action keeps its enumeration byte-for-byte. */
         effects.push(
-          { kind: 'write', resource: pathRes(realmId, facts.cacheRootLocator, ['write', 'meta']) },
           { kind: 'write', resource: dirRes(realmId, facts.installRootLocator, ['write', 'list', 'meta']) },
           { kind: 'write', resource: pathRes(realmId, facts.profileConfigLocator, ['read', 'write', 'meta']) },
         )
@@ -596,6 +596,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
           { target: 'profile-package-manager-channel', operation: 'pnpm-run-under-profile-env', right: 'write', note: 'the pnpm run executes as a child process under the profile package-manager env (the script-process envelope); the resolved build-scripts set is only known AFTER the run — targets beyond this envelope stale the plan, never ride silently' },
           { target: 'host-approvedBuilds-channel', operation: 'build-script-runner-permission', right: 'write', note: 'approvedBuilds is a PERSISTENT permission write into the profile pnpm settings gated by the user\'s explicit conversation approval of the pendingBuilds names — recorded, never re-decided here' },
           { target: 'trusted-profile', operation: 'configure-activation', right: 'write', note: 'install writes the profile config and may activate or restart the live profile (scopeImpact: every session of the profile)' },
+          { target: 'internal-pnpm-installer-io', operation: 'registry-connect+npm-cache-write', right: 'connect', note: 'DISCLOSURE, NOT AN EFFECT (user phase ruling 2026-10-25: 只管理安装动作即可): the internal installer connects to the enumerated registries and writes the npm cache through pnpm, in the HOST domain outside any Team sandbox; the entry PA governs the Agent install action only and never claims internal isolation — the matrix says so, this row repeats it at the plan' },
         ]
         // FLAT full-value leaves (the durable grammar walks scalars only):
         // the parsed spec rides as its canonical JSON - the FULL value, never
@@ -609,7 +610,6 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
           fallbackRegistries: [...facts.fallbackRegistries],
           profileConfigLocator: facts.profileConfigLocator,
           installRootLocator: facts.installRootLocator,
-          cacheRootLocator: facts.cacheRootLocator,
           versionExemptionDerived: false,
         }
         break
@@ -965,7 +965,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         // classify is stale, never re-approvable).
         if (typeof stored.profileConfigLocator === 'string' && stored.profileConfigLocator !== facts.profileConfigLocator) return stale('the profile config path moved after classify')
         if (typeof stored.installRootLocator === 'string' && stored.installRootLocator !== facts.installRootLocator) return stale('the install root moved after classify')
-        if (typeof stored.cacheRootLocator === 'string' && stored.cacheRootLocator !== facts.cacheRootLocator) return stale('the npm cache moved after classify')
         if (stored.exemptionLocator !== undefined && stored.exemptionLocator !== facts.exemptionsLocator) return stale('the exemptions file moved after classify')
         if (stored.allowedRegistries !== undefined
           && (canonical(stored.allowedRegistries) !== canonical(facts.allowedRegistries)
@@ -1185,6 +1184,23 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
           return classifyRefuse(String(consumed?.code ?? 'P_G1_INSTALL_CONSUME_REFUSED'), `${spec.recordIndex}·B-PLUGIN·${providerId}: the PLANE's own admission refused at the post-grant consume boundary (${String(consumed?.detail ?? consumed?.code ?? 'refused')}) — the answer is the plane's, the row never fakes an approval; zero manager entry happened`)
         }
         entry.facts.consumedAfterGrant = { at: 'post-host-approval', generations: nowGenerations }
+        /* FINAL BOUNDARY AFTER BOTH APPROVALS (root R22 review ③): the
+         * Team-PA admit may itself have awaited a human decision, so the
+         * moment before entering the manager re-checks — on the SAME PA
+         * ledger (no second account): the caller's SIGNAL (cancelled during
+         * either wait = zero manager entry), the LIVE service-definition
+         * faces (adjudicator/manager identity, the drift law again), and
+         * the ACTUAL target via the CURRENT-facts re-verify. */
+        if (typeof exec.signal?.aborted === 'boolean' && exec.signal.aborted) {
+          entry.state = 'REFUSED-ABORTED-AFTER-CONSUME'
+          return classifyRefuse(CODES.ABORTED_AFTER_GATE, `${spec.recordIndex}·B-PLUGIN·${providerId}: the signal aborted during the awaited Host gate or the awaited Team-PA consumption — zero manager entry happened`)
+        }
+        if (!isRecord(installFace) || installFace.installBundle !== bindInstall || !isRecord(escalation) || escalation.approveEscalation !== bindEscalate) {
+          entry.state = 'REFUSED-DEFINITION-MOVED-AFTER-CONSUME'
+          return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the manager/adjudicator definition face moved during the two awaited approvals — this plan was approved against a different service definition; zero manager entry happened`)
+        }
+        const postConsumeStale = reVerifyAtEdge(plan)
+        if (postConsumeStale !== null) return postConsumeStale
       }
       const requestId = `g1-install-${randomUUID()}`
       const options = {
