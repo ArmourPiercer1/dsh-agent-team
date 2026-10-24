@@ -76,3 +76,36 @@
 
 不 boot、不安装、不改 mount/adapter/bridge 产品文件、不新增 Host getter/账本、
 不写矩阵（中心职责）、不声称任何 Host 级结论。
+
+## 6. 共享可恢复安装 供给单（**只准备，不实装**；根 00:47「零新建/零安装」冻结内，须根对 pack 单独放行）
+
+**本 lane 不执行下列任何命令。** 本节是钉在 kit 文档里的恢复程序，供 pack 放行后
+由窗口执行；执行前后各留一行证据于 `dev/agent-workflow/evidence/a5m2-team-c2/`。
+
+**基线事实（本 tree 实测名，不复制 SHA 副本作权威）：** 只读共享 baseline
+`/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`（分支 `stable-3-0.2.0-rc.2`），
+宿主版本/基线 pin 唯一来源 = `tests/paths.mjs`
+（`DSH_BASELINE_VERSION` / `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`），
+当前实印 `0.2.0-rc.2`。共享 baseline **从不被写入**。
+
+**精确命令序列（REUSE-TREE：落在本 tree 的 gitignored 路径，无新树）：**
+```bash
+REUSE_TREE=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team
+BASE=/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness
+test -d "$BASE" && git -C "$BASE" status --porcelain            # 必须为空（pristine）
+git clone --local --no-hardlinks "$BASE" "$REUSE_TREE/tests/deepseek-harness-test-use"
+git -C "$REUSE_TREE/tests/deepseek-harness-test-use" checkout --detach "$(node -e 'import("'"$REUSE_TREE"'/tests/paths.mjs").then(m=>process.stdout.write(m.TEST_USE_BASELINE_SHA))')"
+pnpm -C "$REUSE_TREE" install --frozen-lockfile            # 共享 store，零下载
+node "$REUSE_TREE/dev/agent-workflow/evidence/alpha5/live/a5m2-team-c2-runner.mjs"   # precheck 应从 ok:false(唯一红=host tree missing) 转为全绿
+```
+
+**回滚 = 整目录删除（唯一回滚形，无部分清理）：**
+```bash
+rm -rf /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/deepseek-harness-test-use
+```
+回滚后 precheck 必回到「host tree missing」唯一红 —— 即本 lane 当前已推送状态。
+`tests/homes/**` 与 `dev/agent-workflow/evidence/a5m2-team-c2/runs/**` 若未创建则无需清理
+（本 lane 从未创建 world，precheck 断言 world 必须不存在）。
+
+**纪律：** 不 `git apply`、不 patch upstream、不 vendored 修改副本、不写共享 baseline；
+`--frozen-lockfile` 保证零下载；node_modules 复用本 tree 现树。
