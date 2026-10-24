@@ -104,6 +104,13 @@ const PR1_CONSUMERS = Object.freeze([
   // effects are never hand-validated against a private grammar. Shipped
   // UNWIRED; zero lane edits; census rides SCANNED_PATHS_A5M2J (no new file).
   'runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+  // A5M2 (census run 40014719612 red, booked by the center): the G6 row pair and
+  // the B-TEAM control wiring - each consumes ONLY parseRequestedEffectSet, the
+  // closed requested-effects grammar at the row, the g2-connector / ptc pattern;
+  // effects fail closed through the real parser, zero lane edits.
+  'runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  'runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/team-wiring.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.

@@ -74,7 +74,30 @@
  *
  * @module @dsh-agent-team/tools/tools
  */
-import type { TeamToolDefinition, TeamToolsOptions } from './types.js';
+import type { TeamToolDefinition, TeamToolExecContext, TeamToolsOptions, TeamToolsResult } from './types.js';
+import type { ActionCaller } from '../../runtime/admission/index.js';
+type CallerResolution = {
+    readonly ok: true;
+    readonly caller: ActionCaller;
+    /** The owning team root of the calling session (P0: the root
+     *  equality gate compares it against the requested root). */
+    readonly rootSessionId: string;
+} | {
+    readonly ok: false;
+    readonly result: TeamToolsResult;
+};
+/**
+ * ④ (root 23:2x): THE SHARED CALLER/ROOT GATE. This is the SAME mechanical
+ * code the common entry ran inline: `resolveToolCaller` (SD-CALLER) and the
+ * P0 caller-root binding, with the SAME typed `rejected` VALUES, codes and
+ * `details`. It is exported so a GOVERNED entry that must answer the caller
+ * BEFORE it composes a durable claim runs the identical rule instead of a
+ * second identity rule — the identity source stays the injected
+ * `options.resolveCaller` (the runtime's own caller resolution), never a new
+ * one. Failure returns the native rejected result verbatim; success hands
+ * back the caller and the owning root, with NO downstream effect run.
+ */
+export declare function resolveTeamToolCallerRootGate(options: TeamToolsOptions, exec: TeamToolExecContext, requestedRootSessionId: string): Promise<CallerResolution>;
 /** The registered team tool set. */
 export interface TeamToolSet {
     /** The closed tool definitions (registration order; the set has GROWN
@@ -92,4 +115,5 @@ export interface TeamToolSet {
  *   owns the effect lifetime).
  */
 export declare function createTeamTools(options: TeamToolsOptions): TeamToolSet;
+export {};
 //# sourceMappingURL=tools.d.ts.map
