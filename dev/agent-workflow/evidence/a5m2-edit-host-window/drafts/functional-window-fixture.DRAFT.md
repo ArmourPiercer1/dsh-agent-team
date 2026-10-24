@@ -20,6 +20,33 @@ only — applying anything below still awaits the root's window GO)
 - INSTALL_DIR `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-e3e845f0`
   (frozen offline RC0; live mount 55/55 incl. edit/write all-0)
 - fixture pkg-lock hash for THIS pack: `d23fe07ca7d7935562083dee5c7bb255afd4517199f0033021c9646fda67d9c0`
+## STAGED next-receipt (694b0c0e; CENTER 2026-10-24 — documentation ONLY;
+product identity STAYS 4a26ac9a/tgz e3e845f0 in the live runner until the
+root's release ruling + GO; no host/window started on this note)
+
+- source SHA `694b0c0eb8d38511ba3322e786c4daefcc378628` (int branch, parent
+  a27f1a46, descendant of 4a26ac9a; the two original termination cards
+  independently re-reviewed and CLOSED)
+- tgz `.worktrees/pack-int/out-694b0c0e-20261024T130252Z/dsh-agent-team-0.1.1-alpha.2.tgz`
+  sha256 `sha256:d703affb60f4945373ca9a2a2605bf646e3989375a3eb28b5cb16976157832e7`
+  (4,346,804 B / 1,866 entries — entries ±0, content-only change; release
+  surface = exactly 4 dist .mjs: agent-bindings / team-tool-plane /
+  subagent-spawn-adapters / subagent-spawn-wiring)
+- INSTALL_DIR `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-d703affb`
+- final lock `b76e19639f3f9d39a031502c14e80dc47240dd6db95445a9c84427e1f5529c25`
+  (lock diff 16 lines, all plugin locator/integrity; NON_LOCATOR_CHANGED=0;
+  integrity MATCHES the new tgz)
+- fixture pkg `38a5d47d01a7b67f53273286f503f12ae987530b3089d7185debcbdd20a989bd`
+- cold import: core 8/8 RC0 (incl. glue/identity), FS/Control family +
+  changed files 12/12 RC0, post-install bytes 7/7 MATCH; logs
+  `logs-694b0c0e-20261024T130252Z/` (00-22)
+- at ruling+GO the constants sync becomes: COMPOSED_SHA -> 694b0c0e…;
+  PREFIX -> 'out-694b0c0e-'; env INSTALL_DIR -> …/install-d703affb; env
+  PACK_SHA256 -> sha256:d703affb…; tgz NAME unchanged; arm blobs RE-MEASURED
+  against install-d703affb at application (subagent-spawn-* changed, the
+  edit/sre ARM blobs must be re-measured, not assumed); fixture before-hash
+  expectation = lock b76e1963… / pkg 38a5d47d….
+
 - out-dir (receipt supplement): `out-4a26ac9a-20261024T120122Z` — absolute
   `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-4a26ac9a-20261024T120122Z/`,
   containing `dsh-agent-team-0.1.1-alpha.2.tgz`; log dir
