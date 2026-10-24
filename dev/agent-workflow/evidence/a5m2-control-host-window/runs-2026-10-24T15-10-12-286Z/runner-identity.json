@@ -1,0 +1,12 @@
+{
+  "runnerFullSha": "7e53da47fb27a6c5f51c9a54b7fd86cc10a23415",
+  "runnerFileSha256": "sha256:b34c85c251a448cd26cf47ef74785f5611f7e223c0c4db9a203adccaeabf1ce7",
+  "composedSha": "2fb129cfa23e138248fecc834a42c92238af95fe",
+  "packTgz": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz",
+  "packSha256": "sha256:8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a",
+  "installDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc",
+  "ports": {
+    "host": 3184,
+    "mock": 3499
+  }
+}

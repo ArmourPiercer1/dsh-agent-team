@@ -1,0 +1,176 @@
+{
+  "runner": "05-control-window-runner.mjs",
+  "scenario": "control-slice-83-85-84-identity",
+  "dry": false,
+  "booted": true,
+  "verdict": "FAIL",
+  "scopeNote": "consumption/EDIT leg NOT covered this window (explicitly UNTESTED, root a738 scope) — full C2 is NOT claimed by this receipt",
+  "ports": {
+    "host": 3184,
+    "mock": 3499
+  },
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T15-10-12-286ZZ",
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T15-10-12-286Z",
+  "checks": [
+    {
+      "criterion": "L1",
+      "name": "team_create_member REAL return harvested and correlated by callId (arrival only, business semantics NOT asserted)",
+      "ok": true,
+      "detail": "gate=proceed-bind isError=false text={\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T15-10-12-286Z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-14qmx4v11z7x\",\"templateId\":\"ctl-worker\",\"childSessionId\":\"session-team-child-e0b06d5da1486332e82107abd95486f2\",\"operationId\":\"op-1nx3kf615vtz131gjdmow1yb\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISS"
+    },
+    {
+      "criterion": "E0",
+      "name": "member surface carries team_request_control",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,todo_write,write"
+    },
+    {
+      "criterion": "E0",
+      "name": "member surface carries NO team_resolve_control (no self-approve)",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,todo_write,write"
+    },
+    {
+      "criterion": "L2-83",
+      "name": "team_request_control EXECUTED through the tool registry (harvested tool result, no error flag)",
+      "ok": true,
+      "detail": "isError=false text={\"status\":\"control-requested\",\"request\":{\"requestId\":\"ctrl-10m8y570lpo2920jq9exl0ll\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T15-10-12-286Z\",\"kind\":\"lead"
+    },
+    {
+      "criterion": "L3-85",
+      "name": "team_list_pending_control EXECUTED through the tool registry",
+      "ok": true,
+      "detail": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T15-10-12-286Z\",\"pending\":[{\"requestId\":\"ctrl-10m8y570lpo2920jq9exl0ll\",\"rootS"
+    },
+    {
+      "criterion": "L3-85",
+      "name": "85 DISCOVERY answers with the designated request on its page",
+      "ok": true,
+      "detail": "requestId=ctrl-10m8y570lpo2920jq9exl0ll"
+    },
+    {
+      "criterion": "L3-84",
+      "name": "team_resolve_control EXECUTED through the tool registry (ALLOW, no error flag)",
+      "ok": true,
+      "detail": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-10m8y570lpo2920jq9exl0ll\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\","
+    },
+    {
+      "criterion": "L3",
+      "name": "the DESIGNATED request r83 was settled by the model-tool decision (durable)",
+      "ok": true,
+      "detail": "requestId=ctrl-10m8y570lpo2920jq9exl0ll"
+    },
+    {
+      "criterion": "L4",
+      "name": "member resolve attempt refused by EXPLICIT identity code, explicit not-visible, OR the exact closed-world Binding-denial guard family (native-identity covered by the L5 canary; unknown formats / resolved-conflicts never pass)",
+      "ok": true,
+      "detail": "identity=false notVisible=false bindingDenied(EXACT family)=true conflict=false isError=true text=Error: team tool guard: \"team_resolve_control\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    },
+    {
+      "criterion": "L4",
+      "name": "the identity refusal left NO extra durable decision fact",
+      "ok": true,
+      "detail": "decided=1"
+    },
+    {
+      "criterion": "L5",
+      "name": "member2 (ctl-resolver) create REAL return harvested (arrival only, business NOT asserted)",
+      "ok": true,
+      "detail": "gate=proceed-bind isError=false text={\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T15-10-12-286Z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-006a4fx08kib\",\"templateId\":\"ctl-resolver\",\"childSessionId\":\"session-team-child-3ec1fef63b4307896546036e881e2918\",\"operationId\":\"op-1bnbt8d1fjoei801ckbvj07y\",\"replayed\":false,\"ledgerSequence\":4,\"admissionCode\":\"ADMI"
+    },
+    {
+      "criterion": "L5",
+      "name": "member2 surface CARRIES team_resolve_control (op REALLY bound+allowed — binding!=resolver premise PROVEN, not assumed)",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_glob,team_grep,team_request_control,team_resolve_control,todo_write,write"
+    },
+    {
+      "criterion": "L5",
+      "name": "NATIVE IDENTITY: BOUND member resolve attempt refused with the EXACT CONTROL_RESOLVER_NOT_AUTHORIZED code (not binding-denial, not conflict, not unknown)",
+      "ok": true,
+      "detail": "isError=false text={\"status\":\"rejected\",\"code\":\"CONTROL_RESOLVER_NOT_AUTHORIZED\",\"message\":\"ControlService: role 'member' is not a resolver for kind 'leader-approval' (allowed: [leader, human])\",\"details\":{\"rootSessionId\":\"session-a5m2ctlhw-p-2026-10-24T15-10-12-286Z\",\"requestId\":\"ctrl-02twzxp1oz3uly1a70c8v148\",\"kind\":\"leader-approval\",\"role\":\"member\",\"allowedRoles\":[\"leader\",\"human\"]}}"
+    },
+    {
+      "criterion": "L5",
+      "name": "native-identity refusal added NO decision fact (R83B stays pending): recorded=2 decided=1",
+      "ok": true,
+      "detail": "recorded=2 decided=1"
+    },
+    {
+      "criterion": "L6-87",
+      "name": "LEADER surface REALLY exposes team_grant_permission (TOOLS-CHECK-L real-request witness; delta #1/#2 landed)",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_create_member,team_glob,team_grant_permission,team_grep,team_list_pending_control,team_resolve_control,team_revoke_permission,todo_write,write"
+    },
+    {
+      "criterion": "L6-87",
+      "name": "LEADER surface REALLY exposes team_revoke_permission",
+      "ok": true,
+      "detail": "visible=bash,edit,interrupt_agent,list_agents,read,read_image,send_message,subagent,subagent_fork,team_bash,team_create_member,team_glob,team_grant_permission,team_grep,team_list_pending_control,team_resolve_control,team_revoke_permission,todo_write,write"
+    },
+    {
+      "criterion": "L6-87",
+      "name": "baseline: member read of the FIXTURE file BEFORE the grant is EXPLICITLY REFUSED (typed code/status or explicit error + ZERO probe leak; default:deny holds)",
+      "ok": true,
+      "detail": "isError=true text=Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T15-10-12-286ZZ/read-fixture/package.json]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match"
+    },
+    {
+      "criterion": "L6-87",
+      "name": "grant REAL return = the REAL 2fb result family: structured {status:\"permission-mutated\",verb:\"grant\",changed} AND isError===false (no invented ledger-fact gate — root ruling)",
+      "ok": false,
+      "detail": "isError=false text={\"status\":\"rejected\",\"code\":\"PERMISSION_EFFECT_CONTEXT_UNAVAILABLE\",\"message\":\"team-tools: team_grant_permission refused typed (the effective before/after of at least one affected region cannot be decided without the missing context (1 region(s)) — zero write (problem: effect-context-unavailable)) — zero write\"}"
+    },
+    {
+      "criterion": "L6-consume",
+      "name": "BUSINESS CONSUMPTION: SAME-CALL structured success AND result CONTAINS this window’s unique probe content (READ via the granted overlay; name-only would NOT pass)",
+      "ok": false,
+      "detail": "isError=true text=Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T15-10-12-286ZZ/read-fixture/package.json]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match"
+    },
+    {
+      "criterion": "L7-88",
+      "name": "revoke REAL return = structured {status:\"permission-mutated\",verb:\"revoke\",changed} AND isError===false",
+      "ok": false,
+      "detail": "isError=true text=Error: refused-g1 TOOL_BINDING_UNVERIFIED — the live dispatcher binding behind this call (team_revoke_permission) could not be answered by the call-level facts entry: identity-gap=no-answer-object (the call-level facts entry returned NO answer object at all (undefined)) entry-cause=unhealthy-call-facts — no admission, no grant, and no Control row is opened on an identity that was never read (never"
+    },
+    {
+      "criterion": "L7-88",
+      "name": "chain back with NO RESIDUE: post-revoke read EXPLICITLY REFUSED (typed code/status + zero probe leak) — no leftover allow answers",
+      "ok": true,
+      "detail": "isError=true text=Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T15-10-12-286ZZ/read-fixture/package.json]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match"
+    },
+    {
+      "criterion": "V",
+      "name": "ledger: recorded=2 decided=1 (REAL control-ledger constraint KEPT per root; NO mutated=2 hard gate — that fact never existed; 87/88 evidence = REAL permission-mutated returns + behavioral read + read-only overlay attachment or disclosed NOT_VERIFIED)",
+      "ok": true,
+      "detail": "recorded=2 decided=1"
+    },
+    {
+      "criterion": "V",
+      "name": "decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)",
+      "ok": true,
+      "detail": "observation-only transcript verified"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "host port 3184 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "mock port 3499 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "host stop completed without error",
+      "ok": true,
+      "detail": "host stopped | mock closed"
+    }
+  ],
+  "stamps": {
+    "nonce": "uvs6fr",
+    "runStamp": "2026-10-24T15-10-12-286Z"
+  }
+}
