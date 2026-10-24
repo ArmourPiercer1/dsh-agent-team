@@ -120,8 +120,8 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
 # ONE watchdog, three duties (root budget-enforcement card + watchdog-drain card):
 #   (a) 300s outer bound -> TERM the OWN group;
 #   (b) IN-FLIGHT sampling every ${SAMPLE_EVERY}s on the EXPLICIT HOME pointer
-#       ($OUT/home.txt, no globbing): new HOME bytes (nlink==1) over the 64 MiB
-#       budget, or df below the ${DF_MIN} B bar, or a sampling error => abort the
+#       ($OUT/home.txt, no globbing): HOME bytes (unique dev:inode, no
+#       symlink-deref) over the 64 MiB budget, or df below the ${DF_MIN} B bar, or a sampling error => abort the
 #       OWN group immediately (the budget is a HARD in-flight stop, not a
 #       post-mortem; a broken monitor is treated as a breach — fail closed);
 #   (c) once ANY termination is issued, the drain MUST finish: poll the OWN
