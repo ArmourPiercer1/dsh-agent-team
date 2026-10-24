@@ -128,8 +128,30 @@ export const A5_B_SUBAGENT_SPAWN_EFFECT_LABELS = Object.freeze({
 })
 
 /** Typed refusal codes OWNED by this module (closed set). */
+/**
+ * FAIL-CLOSED SAFETY BLOCK (urgent center card 2026-10-25, root source audit
+ * of records 39/40, M0-B121 through M0-B123): the child-bearing spawn rows
+ * subagent / subagent_fork consume the outer PA approval and then enter the
+ * native body with NO child closed-world proof — children escape this
+ * member's shadow/guard/deny layer. The Team-governed provider pairing can
+ * only EVER cover workflow/one-shot: the continuable path goes
+ * prepareContinuable(seed) -> the continuation manager's OWN create/resume
+ * and never calls provider.start, so no provider-naming opens these rows.
+ * The row-level refusal is the ONE seam every path shares — foreground,
+ * one-shot background, continuable, and fork all execute through it. It
+ * fires BEFORE the PA walk (zero approval consumed — the root correction
+ * stands: the block must not burn an approval and then refuse) and before
+ * the native body (zero child created). NO FLIP SURFACE: a module constant,
+ * never a config value; removed only by the full pairing commit. Records
+ * 41/42 (external providers) and 43 (list — no child) are OUT of this
+ * scope by the center card and stay byte-identical.
+ */
+const SPAWN_CHILD_GOVERNANCE_FAIL_CLOSED = true
+const A5_B_SPAWN_CHILD_BEARING_REFUSED = new Set(['subagent', 'subagent_fork'])
+
 export const A5_B_SUBAGENT_SPAWN_CODES = Object.freeze({
   INPUT_INVALID: 'P_B_SUBAGENT_SPAWN_INPUT_INVALID',
+  CHILD_GOVERNANCE_UNGOVERNED: 'P_B_SPAWN_CHILD_GOVERNANCE_UNGOVERNED',
   CAPTURE_ABSENT: 'P_B_SUBAGENT_SPAWN_CAPTURE_ABSENT',
   CAPTURE_INCOMPLETE: 'P_B_SUBAGENT_SPAWN_CAPTURE_INCOMPLETE',
   NON_FAMILY_CAPTURE: 'P_B_SUBAGENT_SPAWN_NON_FAMILY_CAPTURE',
@@ -483,6 +505,13 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
     // THE CAPTURED DEFINITION TRAVELS COMPLETE (root 8b4 law): every face
     // rides verbatim BY REFERENCE; ONLY `execute` is replaced.
     const definition = Object.freeze({ ...capture.native, execute: async (args, exec) => {
+      if (SPAWN_CHILD_GOVERNANCE_FAIL_CLOSED && A5_B_SPAWN_CHILD_BEARING_REFUSED.has(name)) {
+        // URGENT SAFETY BLOCK (2026-10-25): BEFORE the PA walk (zero
+        // approval consumed - the root correction) and before the native
+        // body (zero child created). Every path shares this seam:
+        // foreground, one-shot background, continuable, and fork.
+        throw refusalToThrow(refuse(CODES.CHILD_GOVERNANCE_UNGOVERNED, 'records 39/40 are FAIL-CLOSED pending child-governance proof (root source audit 2026-10-25; M0-B121 through M0-B123 require the CENTER closed-world proof BEFORE child creation): with only the outer PA consumed this native body would establish children that escape the member\'s shadow/guard/deny layer. The refusal sits BEFORE the PA walk (zero approval consumed) and before any child exists. Provider-pairing CANNOT open this row: provider.start covers only workflow/one-shot - the continuable path goes prepareContinuable(seed) -> the continuation manager\'s own create/resume and never calls provider.start - so the row-level refusal is the one seam foreground, one-shot background, continuable, and fork all share. The shadow/Guard masking stays exactly as armed; this constant is removed only by the full TeamDomain pre-publication pairing (no fake member UUIDs, no new ledger). Records 41/42 (external providers) and 43 (list, no child) are outside this card and byte-identical.'))
+      }
       const classified = row.classify(args)
       if (classified.ok !== true) throw refusalToThrow(classified)
       const admitted = await input.admit(Object.freeze({ name, recordIndex: row.recordIndex, familyId: A5_B_SUBAGENT_SPAWN_FAMILY_ID, classified, exec }))
