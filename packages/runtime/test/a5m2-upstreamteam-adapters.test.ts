@@ -27,7 +27,15 @@ import {
   A5_B_UPSTREAMTEAM_TOOL_NAMES,
   createUpstreamTeamRow,
   upstreamTeamPlacementEntry,
+  type BUpstreamTeamPa,
+  type BUpstreamTeamPort,
+  type BUpstreamTeamRow,
 } from '../src/plugin/live/governed-families/upstreamteam.mjs'
+
+/** Narrow a row result to its typed refusal code (no casts, no ts-ignore). */
+function refusalCode(row: BUpstreamTeamRow): string | null {
+  return row.ok === false ? row.code : null
+}
 
 describe('A5-M2 B-UPSTREAMTEAM adapter rows', () => {
   it('carries the nine frozen records in index order', () => {
@@ -56,26 +64,24 @@ describe('A5-M2 B-UPSTREAMTEAM adapter rows', () => {
     expect(Object.keys(A5_B_UPSTREAMTEAM_NAMED_GAPS)).toHaveLength(8)
     expect(upstreamTeamPlacementEntry('wait_agent')).toBeNull()
     expect(upstreamTeamPlacementEntry('team_task_get')).toBeNull()
-    expect(createUpstreamTeamRow('wait_agent', {}).code).toBe(A5_B_UPSTREAMTEAM_CODES.rowNotRowed)
-    expect(createUpstreamTeamRow('no_such_tool', {}).code).toBe(A5_B_UPSTREAMTEAM_CODES.rowNotRowed)
+    expect(refusalCode(createUpstreamTeamRow('wait_agent', {}))).toBe(A5_B_UPSTREAMTEAM_CODES.rowNotRowed)
+    expect(refusalCode(createUpstreamTeamRow('no_such_tool', {}))).toBe(A5_B_UPSTREAMTEAM_CODES.rowNotRowed)
   })
 
   it('rides the plane PA funnel and derives the roster from the caller', async () => {
     const admitted: string[] = []
-    const port = { listMembers: (caller: string) => [`teammate-of:${caller}`] }
-    const row = createUpstreamTeamRow('list_agents', {
-      port,
-      callerAgent: 'agent-7',
-      pa: async (request: { operation: string; run: () => string[] }) => {
-        admitted.push(request.operation)
-        return request.run()
-      },
-    })
+    const port: BUpstreamTeamPort = { listMembers: (caller: string) => [`teammate-of:${caller}`] }
+    const pa: BUpstreamTeamPa = async (request) => {
+      admitted.push(request.operation)
+      return request.run()
+    }
+    const row = createUpstreamTeamRow('list_agents', { port, callerAgent: 'agent-7', pa })
     expect(row.ok).toBe(true)
-    expect(await row.invoke()).toEqual(['teammate-of:agent-7'])
+    expect(row.ok === true ? await row.invoke() : null).toEqual(['teammate-of:agent-7'])
     expect(admitted).toEqual(['upstreamteam-list'])
-    expect(createUpstreamTeamRow('list_agents', { port, callerAgent: 'a' }).code).toBe(A5_B_UPSTREAMTEAM_CODES.paSeatMissing)
-    expect(createUpstreamTeamRow('list_agents', { port, pa: async (r: { run: () => never[] }) => r.run() }).code)
+    expect(refusalCode(createUpstreamTeamRow('list_agents', { port, callerAgent: 'a' })))
+      .toBe(A5_B_UPSTREAMTEAM_CODES.paSeatMissing)
+    expect(refusalCode(createUpstreamTeamRow('list_agents', { port, pa })))
       .toBe(A5_B_UPSTREAMTEAM_CODES.callerUnresolved)
   })
 })
