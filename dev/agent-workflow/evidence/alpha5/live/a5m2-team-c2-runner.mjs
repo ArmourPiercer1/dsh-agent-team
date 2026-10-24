@@ -42,6 +42,9 @@ import {
 
 const REPO = resolve(import.meta.dirname, '../../../../..')
 const LIST_ROOTS_CONTRACT_VERSION = 3
+/** `packages/core/session/src/repair.ts:18` — a tool outcome the host itself
+ *  records as neither success nor failure. */
+const TOOL_OUTCOME_UNKNOWN = 'TOOL_OUTCOME_UNKNOWN'
 /** The main tree's already-verified pristine runtime (root 01:01: reuse in
  *  place, zero copy). Overridable by parameter, never cloned or installed. */
 const SHARED_HOST_TREE = '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use'
@@ -328,6 +331,27 @@ function collectStrings (value, out = []) {
  * block (with its `id`) and the `tool/result` whose `message.content` carries a
  * `tool_result` block with the SAME `tool_use_id`.
  */
+export function toolOutcomeOf (block, message, eventError) {
+  if (eventError?.code === TOOL_OUTCOME_UNKNOWN) return 'unknown'
+  if (block?.is_error === true || message?.isError === true || eventError !== undefined && eventError !== null) return 'error'
+  if (block?.is_error === false || message?.isError === false) return 'ok'
+  return 'unknown'
+}
+
+/**
+ * Pair an `assistant/message` `tool_use` block with the `tool/result` carrying
+ * the SAME `tool_use_id`, and resolve the outcome in THREE states. The
+ * distinction is required by the host's own conversion:
+ * `packages/llm/llm-deepseek/src/serialize.ts:121` emits
+ * `is_error: message.isError` ONLY when `message.isError !== undefined` (and
+ * `wire-types.ts:15` types it optional), so an ABSENT `is_error` means "not
+ * stated", not "succeeded"; and `packages/core/session/src/repair.ts:18` defines
+ * `TOOL_OUTCOME_UNKNOWN`, which `packages/interaction/user-questions/src/
+ * projection.ts:262` reads off `event.data.error?.code` as its own non-success
+ * state. So: explicit `false` → ok, explicit `true` or any other `data.error` →
+ * error, missing flag or `TOOL_OUTCOME_UNKNOWN` → unknown (never counted as a
+ * pass).
+ */
 export function sameCallToolPairs (events, toolName) {
   const calls = new Map()
   const results = new Map()
@@ -338,12 +362,19 @@ export function sameCallToolPairs (events, toolName) {
       }
     }
     if (line?.type === 'tool/result') {
-      for (const block of line?.data?.message?.content ?? []) {
-        if (block?.type === 'tool_result' && calls.has(block.tool_use_id)) results.set(block.tool_use_id, { content: block.content, isError: block.is_error === true, error: line?.data?.error ?? null })
+      const message = line?.data?.message
+      for (const block of message?.content ?? []) {
+        if (block?.type === 'tool_result' && calls.has(block.tool_use_id)) {
+          const error = line?.data?.error ?? null
+          results.set(block.tool_use_id, { content: block.content, isErrorWire: block.is_error, isErrorMessage: message?.isError ?? null, error, outcome: toolOutcomeOf(block, message, error) })
+        }
       }
     }
   }
-  return [...calls.values()].map((call) => ({ ...call, result: results.get(call.id) ?? null, paired: results.has(call.id) }))
+  return [...calls.values()].map((call) => {
+    const result = results.get(call.id) ?? null
+    return { ...call, result, paired: result !== null, outcome: result?.outcome ?? 'unknown' }
+  })
 }
 
 /** Events of the session log that belongs to this run: the file must carry the
@@ -387,15 +418,18 @@ export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, se
   const paired = pairs.filter((pair) => pair.paired)
   const rendered = paired.map((pair) => JSON.stringify(pair.result?.content ?? null))
   const missing = (expectContains ?? []).filter((needle) => !rendered.some((text) => text.includes(needle)))
+  const outcomes = pairs.map((pair) => pair.outcome)
+  const count = (state) => outcomes.filter((value) => value === state).length
   return {
     ok: promptError === null && paired.length > 0
-      && paired.every((pair) => pair.result.isError !== true && pair.result.error === null)
+      && count('ok') === pairs.length && pairs.length > 0
       && missing.length === 0
       && (!expectOnce || pairs.length === 1),
     marker,
     sessionId,
     promptError,
-    calls: pairs.map((pair) => ({ id: pair.id, paired: pair.paired, isError: pair.result?.isError ?? null })),
+    calls: pairs.map((pair) => ({ id: pair.id, paired: pair.paired, outcome: pair.outcome, isErrorWire: pair.result?.isErrorWire ?? null, isErrorMessage: pair.result?.isErrorMessage ?? null })),
+    outcomeCounts: { ok: count('ok'), error: count('error'), unknown: count('unknown') },
     missing,
     pairCount: paired.length,
     callCount: pairs.length,

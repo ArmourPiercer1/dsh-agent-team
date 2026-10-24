@@ -6,7 +6,7 @@
  * do so.
  */
 import { zstdCompressSync, zstdDecompressSync } from 'node:zlib'
-import { decodeSessionLogFrames, resultError, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, sameCallToolPairs } from './a5m2-team-c2-runner.mjs'
+import { decodeSessionLogFrames, resultError, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, sameCallToolPairs, toolOutcomeOf } from './a5m2-team-c2-runner.mjs'
 
 const first = Buffer.from('{"line":"frame-one"}\n')
 const second = Buffer.from('{"line":"frame-two"}\n')
@@ -67,8 +67,21 @@ const events = [
   { file: 'f', line: { type: 'tool/result', data: { message: { content: [{ type: 'tool_result', tool_use_id: CALL_ID, is_error: false, content: [{ type: 'text', text: '{"members":[{"memberInstanceId":"mi-1"}]}' }] }] } } } },
   { file: 'f', line: { type: 'tool/result', data: { message: { content: [{ type: 'tool_result', tool_use_id: 'other-id', content: [] }] } } } },
 ]
+/* The three-state outcome, over the host's own conversion law:
+ * serialize.ts:121 emits `is_error` only when `isError !== undefined`, so a
+ * missing flag is NOT a pass; repair.ts:18 / projection.ts:262 make
+ * TOOL_OUTCOME_UNKNOWN its own non-success state. */
+const wire = (isErrorWire) => ({ is_error: isErrorWire })
+contract.outcomeExplicitFalseIsOk = toolOutcomeOf(wire(false), {}, null) === 'ok'
+contract.outcomeMissingFlagIsUnknown = toolOutcomeOf({}, {}, null) === 'unknown'
+contract.outcomeExplicitTrueIsError = toolOutcomeOf(wire(true), {}, null) === 'error'
+contract.outcomeInternalIsErrorFalseIsOk = toolOutcomeOf({}, { isError: false }, null) === 'ok'
+contract.outcomeUnknownErrorCodeStaysUnknown = toolOutcomeOf(wire(false), {}, { code: 'TOOL_OUTCOME_UNKNOWN' }) === 'unknown'
+contract.outcomeOtherErrorIsError = toolOutcomeOf(wire(false), {}, { code: 'TOOL_FAILED' }) === 'error'
 const pairs = sameCallToolPairs(events, 'team_list_members')
-contract.sameCallPairingUsesTheToolUseId = pairs.length === 1 && pairs[0].paired === true && pairs[0].result.isError === false
+contract.sameCallPairingUsesTheToolUseId = pairs.length === 1 && pairs[0].paired === true && pairs[0].outcome === 'ok' && pairs[0].result.isErrorWire === false
 contract.foreignToolResultIsNotCounted = pairs[0].result.content.some((block) => block.type === 'text' && block.text.includes('mi-1'))
 console.log(JSON.stringify(result, null, 2))
+result.contract = contract
+console.log(JSON.stringify({ contractTrueCount: Object.values(contract).filter(Boolean).length, contractFalse: Object.entries(contract).filter(([, v]) => !v).map(([k]) => k) }))
 process.exitCode = result.frameSegmentedRecoversBoth && Object.values(contract).every(Boolean) ? 0 : 1
