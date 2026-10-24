@@ -166,3 +166,14 @@ R1 g6-plane-mount (a2) session_*投影拒针：expected built.ok=false，actual 
 E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch origin <sha>，对象级，不建树）；Team-C2 prep → a5m2-wire-team（9c resume）；G2 Web rowset → a5m2-wire-g2（e78）；G6 → a5m2-wire-g6/g6fix（00270f41）；schedule → a5m2-wire-schedule（d675）；G1841修卡（源签后）→ a5m2-wire-g1（44ece持bindings）。零 install：以上树均自带 node_modules；无依赖任务的树不补依赖。
 
 **给 a356 的回收候选清单（中心不删，仅提名；每棵 ~0.6–1.3GB，任务已闭合、成果全在远端SHA）**：joint-cand、joint-cand-probe、joint-cand2、checkinstall、wire-merge、family-rules、newfam、imgverify、pinbuild、ref-ro、subagent-fix、eb-e0-e1、auth-vocab、wire-g5（G5已并入int）。G1 merge 后 g1asm、G3A merge 后 g3a 亦入候选。
+
+## 00:53–01:2x 批次入账（根00:53卡执行）
+
+- **E2 定性+修法落 int `a23ad83e3`**（test-only）：e2 leg = a5m2-team-plane-mount-c1 describe (e2)，与里程碑 E2 无关。证据包全文已随中心回根（含 resolve-实测这一执行层决定性证据）。红针旧预期为前词表世界产物；修法按现行为重写并保 (d) fail-closed 腿。若根裁定应为 mount 拒（否决词表卡定性），中心一行可回退+projection 加闸——裁决权在根。
+- **G1-WIRE 合流入 int `3fca1df4f`**（lane tip `f28c0273f` = 根841 两 BLOCK 修，一线族携带 841833258 mount-arm + cf5317506 assembly/a3ba11651）：唯一 hoist-site 冲突 keep-both；dist 机械重生成（glue RC0 31 placements + build RC0）；int 实测 wire 23 + assembly 12 + wiring 18 + surface-adapters/mount-c1 112 全绿；p4t6 1318/1298 为 merged-face 既有差（headproof 在案，census 账 int-time 项仍挂）。**a067 类型修 cherry-pick `-x` 落 `dbbd85f65`**（第10错不可复现照实）。G1 家族 int 状态：接线未测（trustedTopology 生产未供 = a067 供给在途；根正核 snapshot-digest 契约，无 Core 改动/无假常量方向）。
+- **e78/G2**：r41 `a7862b587`（beginCall 生产 caller 挂载，plane 未动）+ r42 `7d8a5305e`（根81e7 终三项：policySource.overlayGeneration 嵌套真字段 / consumeEdge 双造清除=唯一消费 B-WEB rowset→g2RowExecute 最终 plane edge / search=null 显式 G2_WEB_SEARCH_REFUSED 不退共享；下游仅验证/转交同 call 真 proof，一次性）。下一片 web_fetch 单调用正向纵切（复用真实 FileStorage/TeamDomain/realPA 合同）。合入口径：生产 caller 就位、端到端正向未测。
+- **9c/Team-C2**：`36e58e3d2`（Remote 契约按源核实 + envelopeCheck 真检，precheck 诚实红=缺 pristine 树）+ `572bf8e2f`（供给单 §6：只读 baseline clone --local + 共享 store install + 回滚=整目录删；**9c 一条未执行**，待根对 pack 单独放行）。主链 GAP-FRAME-READER→用例正文→C-DUR-1 待其 compact 后续做。
+- **8722/G5**：int 实况 23/23 EXIT0，四类负控腿实测不缺（MOVED/INACTIVE×2/post-grant EDGE_CANCELLED）；B-SESSION 签名表 goal 变体字段缺口直读 types.ts:1238 确认仍真实存在——规则表 lane 所有，如实携带不绕过。
+- **8722 卡③完成，无剩余**。cf8=cf8e0202-…（id 已纠）收根 17:59 卡 + 中心 G3A 候选提交卡（e2 leg 文本 int 侧胜出已注明）。
+- **E1**：四镜精确修 `b644a28f8459204a2c0d220ffc10faa0e305471f` 入账，原交付不重开。
+- **电池快照（非分派前置，根令）**：int@a23ad83e3 全 runtime 13F/5927P（a3p3/a5g6-render/a5p4/a5p7/a5w/alpha5-search-M4/p6t3×7）——preexisting-candidate，未逐条定性，E2 类红针不得再凭快照扩案。
