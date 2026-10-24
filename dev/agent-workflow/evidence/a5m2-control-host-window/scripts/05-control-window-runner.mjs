@@ -151,8 +151,16 @@ const SAVED_BP_V3_YAML = [
   // resolve, NO self-approve — L4 proves the refusal.
   'memberEnvelopes:', '  - templateId: ctl-worker', '    envelope:', '      allow:',
   '        - request-control', '      deny: []', 'requirements: []',
-  'permissionMutationEnvelope:', '  rules: []',
-  'teamHardEnvelope:', '  rules: []',
+  'permissionMutationEnvelope:', '  rules:', // L6/L7 CARRIER — ORIGINAL-SOURCE GRAMMAR PAIR (reported, not guessed): the
+  '    - operationClass: read', // blueprint carrier matcher is {kind, resource} (permission-mutation.js validateMatcher)
+  '      matcher:', '        kind: exact', // while the WIRE grant rule matcher is {kind, value} (tools.js parsePermissionRules).
+  '        path: package.json', // blueprint FILE matcher = {kind, path} (schema.js:213-216) — THIRD grammar of the trio // Same fs-exact fact, two closed grammars — both spelled per their own source.
+  '      maximumEffect: allow',
+  'teamHardEnvelope:', '  rules:', // schemaVersion-3 CEILING-2 (never merged with the carrier; both must cover).
+  '    - operationClass: read',
+  '      matcher:', '        kind: exact',
+  '        path: package.json', // blueprint FILE matcher = {kind, path} (schema.js:213-216) — THIRD grammar of the trio
+  '      maximumEffect: allow',
   'policyStates: []', 'metadata: {}', '---', '',
 ].join('\n')
 
@@ -363,7 +371,7 @@ function safeParse(v) {
   try { return JSON.parse(v) } catch { return { raw: String(v).slice(0, 400) } }
 }
 async function controlFacts() { // durable double-check, product wire, OBSERVATION
-  const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
+  const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [], 'permission-mutated': [] }
   let afterSequence = 0
   for (let pageNo = 0; pageNo < 50; pageNo += 1) {
     const page = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `ctlhw-ledger-${pageNo + 1}`, 1)
@@ -590,6 +598,35 @@ function decide({ req }) {
     }
     return { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
+  if (text.startsWith(`A5M2-CTLHW-GRANT87 ${NONCE} tinst=`)) { // 87 LEADER-only grant: fs-class READ allow on package.json (EXPANSION over default:deny — gated by carrier+both ceilings)
+    const inst = /tinst=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
+    if (inst === null) return { kind: 'text', content: `CTLHW_NO_TINST ${NONCE}` }
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-GRANT87 ${NONCE}`) === 0
+      ? mk('leader:grant87', 'team_grant_permission', { rootSessionId: currentRoot, requestToken: `ctlhw-grant-${NONCE}`, targetInstanceId: inst, rules: [{ operationClass: 'read', matcher: { kind: 'exact', value: 'package.json' }, effect: 'allow' }] })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-REVOKE88 ${NONCE} tinst=`)) { // 88 revoke the allow — where nothing looser remains to answer this is TIGHTENING (tools.js:1177 semantics), applies immediately
+    const inst = /tinst=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
+    if (inst === null) return { kind: 'text', content: `CTLHW_NO_TINST ${NONCE}` }
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-REVOKE88 ${NONCE}`) === 0
+      ? mk('leader:revoke88', 'team_revoke_permission', { rootSessionId: currentRoot, requestToken: `ctlhw-revoke-${NONCE}`, targetInstanceId: inst, rules: [{ operationClass: 'read', matcher: { kind: 'exact', value: 'package.json' }, effect: 'allow' }] })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-MEMBER-READ1 ${NONCE}`)) { // baseline consumption witness BEFORE the grant (deny side)
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-READ1 ${NONCE}`) === 0
+      ? mk('member:readProbe1', 'read', { file_path: 'package.json' })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-MEMBER-READ2 ${NONCE}`)) { // business consumption UNDER the granted allow (executes)
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-READ2 ${NONCE}`) === 0
+      ? mk('member:readProbe2', 'read', { file_path: 'package.json' })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-MEMBER-READ3 ${NONCE}`)) { // chain-back witness AFTER the revoke (deny side again)
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-READ3 ${NONCE}`) === 0
+      ? mk('member:readProbe3', 'read', { file_path: 'package.json' })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
   if (text.startsWith(`A5M2-CTLHW-LEADER-CREATE2 ${NONCE}`)) { // second member from ctl-resolver (L5 native-identity canary)
     return toolsAfterMarker(msgs, `A5M2-CTLHW-LEADER-CREATE2 ${NONCE}`) === 0
       ? mk('leader:create2', 'team_create_member', { rootSessionId: currentRoot, requestToken: `ctlhw-create2-${NONCE}`, delegationTemplateId: 'ctl-resolver', label: 'ctl2' })
@@ -794,7 +831,49 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   const factsL5 = await controlFacts()
   check('L5', 'native-identity refusal added NO decision fact (R83B stays pending): recorded=2 decided=1', factsL5['control-request-recorded'].length === 2 && factsL5['control-decision-recorded'].length === 1, `recorded=${String(factsL5['control-request-recorded'].length)} decided=${String(factsL5['control-decision-recorded'].length)}`)
 
-  check('V', 'ledger: recorded=2 decided=1 for slice+native-identity canary (R83 leader-decided; R83B PENDING after bound-member refusal; 87/88/consumption NOT yet covered — no C2 claim here)', factsL5['control-request-recorded'].length === 2 && factsL5['control-decision-recorded'].length === 1, `recorded=${String(factsL5['control-request-recorded'].length)} decided=${String(factsL5['control-decision-recorded'].length)}`)
+  // ── L6/L7: 87 grant(read allow, fs exact package.json) -> rule change (LEDGER
+  // fact + payload dual proof) -> BUSINESS CONSUMPTION (real read executes) ->
+  // 88 revoke -> chain back BEHAVIOURALLY (read denied again, no residue).
+  // Grammar is reported from ORIGINAL SOURCES: wire matcher {kind,value}
+  // (tools.js parsePermissionRules) vs carrier matcher {kind,resource}
+  // (permission-mutation.js validateMatcher). PREPARED — first fires in a GO window. ──
+  currentCriterion = 'L6-grant87'
+  const READ_OK = (t) => t.includes('"name"')
+  const DENY_SHAPED = (t) => /denied|deny|not authorized|blocked|permission/i.test(t)
+  await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ1 ${NONCE}`, 'ctlhw-read-base')
+  const read1 = await waitFor('baseline read result (pre-grant deny side expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe1') ?? null)
+  const read1Text = String(read1?.text ?? '')
+  check('L6-87', 'baseline: member read BEFORE the grant does NOT execute (member lane default:deny holds; success here would mean the overlay was never needed)', !READ_OK(read1Text), `isError=${String(read1?.isError)} text=${read1Text.slice(0, 240)}`)
+  check('L6-87', 'baseline refusal carries an explicit deny/permission-shaped text (unknown shape FAILS, never dressed)', DENY_SHAPED(read1Text), `text=${read1Text.slice(0, 240)}`)
+  await apiPrompt(currentRoot, `A5M2-CTLHW-GRANT87 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-grant87')
+  const grantRes = await waitFor('team_grant_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:grant87') ?? null)
+  const grantText = String(grantRes?.text ?? '')
+  check('L6-87', 'grant REAL return harvested and it EXECUTED (expansion PASSED carrier+both ceilings; typed business rejection FAILS with verbatim raw — never dressed)', grantRes !== null && grantRes.isError !== true && !/"status"\s*:\s*"rejected"/.test(grantText), `isError=${String(grantRes?.isError)} text=${grantText.slice(0, 400)}`)
+  const mut1 = await waitFor('grant LEDGER proof: permission-mutated fact whose payload carries the rule', 60_000, async () => {
+    const bt = await controlFacts()
+    return bt['permission-mutated'].find((e) => JSON.stringify(e.payload ?? '').includes('package.json')) ?? null
+  })
+  check('L6-87', 'member-side rule change PROVEN durably: permission-mutated ledger fact carries the package.json rule', mut1 !== null, `fact seq=${String(mut1?.sequence)}`)
+  await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ2 ${NONCE}`, 'ctlhw-consume')
+  const read2 = await waitFor('consumption read result (executes under the granted allow)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe2') ?? null)
+  const read2Text = String(read2?.text ?? '')
+  check('L6-consume', 'BUSINESS CONSUMPTION: read EXECUTES under the granted overlay — REAL file content returned through the governed pre-execute path', read2 !== null && read2.isError !== true && READ_OK(read2Text), `isError=${String(read2?.isError)} text=${read2Text.slice(0, 240)}`)
+  currentCriterion = 'L7-revoke88'
+  await apiPrompt(currentRoot, `A5M2-CTLHW-REVOKE88 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-revoke88')
+  const revokeRes = await waitFor('team_revoke_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:revoke88') ?? null)
+  const revokeText = String(revokeRes?.text ?? '')
+  check('L7-88', 'revoke REAL return harvested and it EXECUTED (rule-set-different mutation; typed refusal or rule-set-equal no-op FAILS verbatim)', revokeRes !== null && revokeRes.isError !== true && !/"status"\s*:\s*"rejected"/.test(revokeText), `isError=${String(revokeRes?.isError)} text=${revokeText.slice(0, 400)}`)
+  const factsMut = await waitFor('revoke LEDGER proof: second permission-mutated fact', 60_000, async () => {
+    const bt = await controlFacts()
+    return bt['permission-mutated'].length >= 2 ? bt : null
+  })
+  check('L7-88', 'revoke left its own durable mutation fact (mutated=2)', factsMut !== null && factsMut['permission-mutated'].length === 2, `mutated=${String(factsMut['permission-mutated'].length)}`)
+  await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ3 ${NONCE}`, 'ctlhw-read-back')
+  const read3 = await waitFor('chain-back read result (denied again expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe3') ?? null)
+  const read3Text = String(read3?.text ?? '')
+  check('L7-88', 'chain back with NO RESIDUE: post-revoke read is DENIED again (behavioral proof no leftover allow answers)', !READ_OK(read3Text) && DENY_SHAPED(read3Text), `isError=${String(read3?.isError)} text=${read3Text.slice(0, 240)}`)
+  const factsEnd = await controlFacts()
+  check('V', 'ledger: recorded=2 decided=1 permission-mutated=2 for slice+canary+87/88 chain (NO C2 claim: five-tool C2 needs the full M0-B171-173 matrix incl. cross-root/partial per source ruling)', factsEnd['control-request-recorded'].length === 2 && factsEnd['control-decision-recorded'].length === 1 && factsEnd['permission-mutated'].length === 2, `recorded=${String(factsEnd['control-request-recorded'].length)} decided=${String(factsEnd['control-decision-recorded'].length)} mutated=${String(factsEnd['permission-mutated'].length)}`)
   check('V', 'decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)', !TRANSCRIPT.some((t) => t.channel === 'team-remote' && t.method === 'team.resolveControl'), 'observation-only transcript verified')
 
   await cleanup()
