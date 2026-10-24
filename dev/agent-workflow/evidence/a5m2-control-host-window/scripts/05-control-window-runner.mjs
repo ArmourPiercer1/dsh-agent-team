@@ -129,6 +129,20 @@ const SAVED_BP_V3_YAML = [
   '        default: deny', '        allow:', // exact kind:any SINGLE-TOOL rule for 83 (projects exact realm|tool:name,
   '          - tool: team_request_control', '            resource:', '              kind: any', // NOT alltools); everything else stays deny. Envelope + native identity stand.
   '        ask: []', '        deny: []', // closed permissions shape stays complete (validator requires ask/deny).
+  '  - templateId: ctl-resolver', // L5 NATIVE-IDENTITY canary (root batch card): the resolve op IS BOUND
+  '    persona: "You are the resolver-canary worker. Follow the marker instructions literally and only."', // to a member — service.js:2004-2010 (invariant 37: a member is NEVER a resolver,
+  '    capabilities:', '      teamTools:', '        kind: allow', '        items:', // EVEN WITH the resolve-control op) must still refuse CONTROL_RESOLVER_NOT_AUTHORIZED.
+  '          - team_request_control', '          - team_resolve_control', // the BOUND op (binding != resolver premise)
+  '      builtinToolDeny:', // A's isolation list verbatim (identical exposure to ctl-worker plus the bound op)
+  '        - ask_user_question', '        - create_goal', '        - exit_plan_mode',
+  '        - get_goal', '        - glob', '        - grep', '        - job_kill',
+  '        - job_list', '        - job_output', '        - present', '        - skill',
+  '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
+  '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
+  '      permissions:', '        default: deny', '        allow:', // exact kind:any SINGLE-TOOL rules for BOTH bound ops (same closed vocabulary law).
+  '          - tool: team_request_control', '            resource:', '              kind: any',
+  '          - tool: team_resolve_control', '            resource:', '              kind: any',
+  '        ask: []', '        deny: []',
   'teamEnvelope:', '  allow:',
   '    - assign-task', '    - create-member', '    - send-message',
   '    - report-progress', '    - request-control', '    - resolve-control',
@@ -151,6 +165,7 @@ const checks = []
 const steps = new Map()      // callId -> {step, tool} — callIds UNIQUE per emission (root a738: no dedupe/mixing)
 const callResults = []       // harvested tool results (THE registry-execution witness)
 const memberToolsSeen = []   // filled ONLY from the member's real TOOLS-CHECK request (root a738 ②)
+const member2ToolsSeen = []  // L5 canary: the ctl-resolver member's OWN surface (TOOLS-CHECK2)
 let callSeq = 0
 let currentCriterion = 'setup'
 let mock = null
@@ -379,8 +394,12 @@ function domainFacts() { // read-only durable scan (A's two-map law verbatim)
     for (const v of Object.values(n)) walk(v)
   }
   walk(doc)
-  const hits = [...memberBindings.entries()].filter(([i]) => templates.get(i) === 'ctl-worker')
-  return hits.length === 1 ? { instanceId: hits[0][0], sessionId: hits[0][1] } : null
+  return [...memberBindings.entries()].map(([instanceId, sessionId]) => ({ instanceId, sessionId, template: templates.get(instanceId) ?? null }))
+}
+function pickBound(list, template, n) { // exact-n bindings of ONE template (A's two-map law kept)
+  if (list === null) return null
+  const hits = list.filter((h) => h.template === template)
+  return hits.length === n ? hits : null
 }
 
 async function cleanup() { // root a738 ⑤: cleanup failures mark the window NON-GREEN
@@ -539,6 +558,16 @@ function decide({ req }) {
     memberToolsSeen.push(...seen)
     return { kind: 'text', content: `ACK-C0 ${NONCE}` }
   }
+  if (text.startsWith(`TOOLS-CHECK2 ${NONCE}`)) { // L5 witness: member2's REAL surface proves the op IS bound
+    const seen2 = new Set(member2ToolsSeen)
+    for (const t of body.tools ?? []) {
+      const name = t?.function?.name ?? t?.name ?? (typeof t === 'string' ? t : null)
+      if (typeof name === 'string' && name.length > 0) seen2.add(name)
+    }
+    member2ToolsSeen.length = 0
+    member2ToolsSeen.push(...seen2)
+    return { kind: 'text', content: `ACK-C0B ${NONCE}` }
+  }
   if (text.startsWith(`A5M2-CTLHW-LEADER-CREATE ${NONCE}`)) {
     return toolsAfterMarker(msgs, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`) === 0
       ? mk('leader:create', 'team_create_member', { rootSessionId: currentRoot, requestToken: `ctlhw-create-${NONCE}`, delegationTemplateId: 'ctl-worker', label: 'ctl1' })
@@ -560,6 +589,25 @@ function decide({ req }) {
       return mk('leader:res84', 'team_resolve_control', { rootSessionId: currentRoot, requestToken: `ctlhw-res-${requestId}`, requestId, decision: 'allow', note: 'a5m2-ctlhw model-tool allow' })
     }
     return { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-LEADER-CREATE2 ${NONCE}`)) { // second member from ctl-resolver (L5 native-identity canary)
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-LEADER-CREATE2 ${NONCE}`) === 0
+      ? mk('leader:create2', 'team_create_member', { rootSessionId: currentRoot, requestToken: `ctlhw-create2-${NONCE}`, delegationTemplateId: 'ctl-resolver', label: 'ctl2' })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-MEMBER2-REQ ${NONCE} inst=`)) { // member2 requests control on ITSELF -> R83B stays PENDING (never leader-resolved)
+    const inst = /inst=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
+    if (inst === null) return { kind: 'text', content: `CTLHW_NO_INST2 ${NONCE}` }
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER2-REQ ${NONCE}`) === 0
+      ? mk('member2:req83b', 'team_request_control', { rootSessionId: currentRoot, requestToken: `ctlhw-req2b-${NONCE}`, kind: 'leader-approval', targetInstanceId: inst, actionName: 'ctl-canary-probe', toolName: 'team_resolve_control', summary: `A5M2-CTLHW-R83B ${NONCE}` })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
+  }
+  if (text.startsWith(`A5M2-CTLHW-MEMBER2-RESOLVE ${NONCE} rid=`)) { // BOUND member resolving its OWN pending request -> native role gate must refuse
+    const rid = /rid=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
+    if (rid === null) return { kind: 'text', content: `CTLHW_NO_RID2 ${NONCE}` }
+    return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER2-RESOLVE ${NONCE}`) === 0
+      ? mk('member2:resolveAttempt', 'team_resolve_control', { rootSessionId: currentRoot, requestToken: `ctlhw-res2-${rid}`, requestId: rid, decision: 'allow', note: 'a5m2-ctlhw BOUND-member attempt (L5 native identity)' })
+      : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-MEMBER-RESOLVE-ATTEMPT ${NONCE}`)) { // IDENTITY REFUSAL leg: the requesting member must never resolve
     const rid = /rid=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
@@ -653,7 +701,7 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   if (gate.action === 'abort-refusal') { // FAIL FAST: the real refusal is recorded; NO 120s bind wait
     throw new Error(`team_create_member REAL refusal (fail-fast, bind never awaited): ${String(createRes.text)}`)
   }
-  const member = await waitFor('member binding in team_domain', 120_000, () => domainFacts())
+  const member = await waitFor('first member binding in team_domain', 120_000, () => pickBound(domainFacts(), 'ctl-worker', 1)?.[0] ?? null)
   log(`member instance=${member.instanceId} session=${member.sessionId}`)
 
   await apiPrompt(member.sessionId, `TOOLS-CHECK ${NONCE}`, 'ctlhw-c0')
@@ -712,11 +760,41 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   // NEVER a blanket "any isError/any error". Already-decided conflicts still FAIL.
   const EXPLICIT_BINDING_DENIED = /team tool guard: "team_resolve_control" has no Team Tool Binding on this Agent \(closed world:/i.test(selfText)
   const refused = !ALREADY_DECIDED_CONFLICT && (EXPLICIT_IDENTITY || EXPLICIT_NOT_VISIBLE || EXPLICIT_BINDING_DENIED)
-  check('L4', 'member resolve attempt refused by EXPLICIT identity code, explicit not-visible, OR the exact closed-world Binding-denial guard family (native-identity STILL untested; unknown formats / resolved-conflicts never pass)', refused === true, `identity=${String(EXPLICIT_IDENTITY)} notVisible=${String(EXPLICIT_NOT_VISIBLE)} bindingDenied(EXACT family)=${String(EXPLICIT_BINDING_DENIED)} conflict=${String(ALREADY_DECIDED_CONFLICT)} isError=${String(selfRes?.isError)} text=${selfText.slice(0, 160)}`)
+  check('L4', 'member resolve attempt refused by EXPLICIT identity code, explicit not-visible, OR the exact closed-world Binding-denial guard family (native-identity covered by the L5 canary; unknown formats / resolved-conflicts never pass)', refused === true, `identity=${String(EXPLICIT_IDENTITY)} notVisible=${String(EXPLICIT_NOT_VISIBLE)} bindingDenied(EXACT family)=${String(EXPLICIT_BINDING_DENIED)} conflict=${String(ALREADY_DECIDED_CONFLICT)} isError=${String(selfRes?.isError)} text=${selfText.slice(0, 160)}`)
   const factsFinal = await controlFacts()
   check('L4', 'the identity refusal left NO extra durable decision fact', factsFinal['control-decision-recorded'].length === 1, `decided=${String(factsFinal['control-decision-recorded'].length)}`)
 
-  check('V', 'ledger: exactly recorded=1 and decided=1 for the slice (consumption/EDIT NOT covered — explicitly untested, no C2 claim here)', factsFinal['control-request-recorded'].length === 1 && factsDecided['control-decision-recorded'].length === 1, `recorded=${String(factsFinal['control-request-recorded'].length)} decided=${String(factsDecided['control-decision-recorded'].length)}`)
+  // ── L5: NATIVE IDENTITY negative control (root 2026-10-24 batch card; PREP —
+  // untested until a GO window runs it). types.js:151 leader-approval resolvers
+  // = [leader,human]; service.js:2004-2010 role closure (invariant 37: a member
+  // is NEVER a resolver, EVEN WITH the resolve-control op). The op IS BOUND to
+  // member2 (ctl-resolver), so this is NOT the L4 closed-world binding-denial —
+  // it is the CONTROL_RESOLVER_NOT_AUTHORIZED native role-gate path. ──
+  currentCriterion = 'L5-native-identity'
+  await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-CREATE2 ${NONCE}`, 'ctlhw-leader-create2')
+  const create2 = await waitFor('2nd team_create_member REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:create2') ?? null)
+  const gate2 = createGate(create2)
+  check('L5', 'member2 (ctl-resolver) create REAL return harvested (arrival only, business NOT asserted)', gate2.action !== 'fail-timeout', `gate=${gate2.action} isError=${String(create2?.isError)} text=${String(create2?.text).slice(0, 400)}`)
+  if (gate2.action === 'abort-refusal') throw new Error(`member2 create REAL refusal (fail-fast, no bind wait): ${String(create2?.text)}`)
+  const member2 = await waitFor('second member (ctl-resolver) binding', 120_000, () => pickBound(domainFacts(), 'ctl-resolver', 1)?.[0] ?? null)
+  log(`member2 instance=${member2.instanceId} session=${member2.sessionId}`)
+  await apiPrompt(member2.sessionId, `TOOLS-CHECK2 ${NONCE}`, 'ctlhw-c0b')
+  await waitFor('member2 tool surface (real request tools)', 60_000, () => (member2ToolsSeen.length > 0 ? true : null))
+  check('L5', 'member2 surface CARRIES team_resolve_control (op REALLY bound+allowed — binding!=resolver premise PROVEN, not assumed)', member2ToolsSeen.includes('team_resolve_control'), `visible=${member2ToolsSeen.join(',')}`)
+  await apiPrompt(member2.sessionId, `A5M2-CTLHW-MEMBER2-REQ ${NONCE} inst=${member2.instanceId}`, 'ctlhw-req2b')
+  const r83b = await waitFor('durable control-request-recorded for R83B (member2 own, stays PENDING)', 60_000, async () => {
+    const bt = await controlFacts()
+    const hit = bt['control-request-recorded'].find((e) => String(e.payload?.summary ?? '').includes(`A5M2-CTLHW-R83B ${NONCE}`))
+    return hit === undefined ? null : hit.payload.requestId
+  })
+  await apiPrompt(member2.sessionId, `A5M2-CTLHW-MEMBER2-RESOLVE ${NONCE} rid=${r83b}`, 'ctlhw-selfres2')
+  const res2 = await waitFor('member2 resolve-attempt tool result (NATIVE identity refusal expected)', 120_000, () => callResults.find((r) => r.step === 'member2:resolveAttempt') ?? null)
+  const res2Text = String(res2?.text ?? '')
+  check('L5', 'NATIVE IDENTITY: BOUND member resolve attempt refused with the EXACT CONTROL_RESOLVER_NOT_AUTHORIZED code (not binding-denial, not conflict, not unknown)', res2Text.includes('CONTROL_RESOLVER_NOT_AUTHORIZED'), `isError=${String(res2?.isError)} text=${res2Text.slice(0, 400)}`)
+  const factsL5 = await controlFacts()
+  check('L5', 'native-identity refusal added NO decision fact (R83B stays pending): recorded=2 decided=1', factsL5['control-request-recorded'].length === 2 && factsL5['control-decision-recorded'].length === 1, `recorded=${String(factsL5['control-request-recorded'].length)} decided=${String(factsL5['control-decision-recorded'].length)}`)
+
+  check('V', 'ledger: recorded=2 decided=1 for slice+native-identity canary (R83 leader-decided; R83B PENDING after bound-member refusal; 87/88/consumption NOT yet covered — no C2 claim here)', factsL5['control-request-recorded'].length === 2 && factsL5['control-decision-recorded'].length === 1, `recorded=${String(factsL5['control-request-recorded'].length)} decided=${String(factsL5['control-decision-recorded'].length)}`)
   check('V', 'decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)', !TRANSCRIPT.some((t) => t.channel === 'team-remote' && t.method === 'team.resolveControl'), 'observation-only transcript verified')
 
   await cleanup()
