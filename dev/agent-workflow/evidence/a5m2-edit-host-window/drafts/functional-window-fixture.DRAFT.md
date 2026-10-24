@@ -20,13 +20,17 @@ only — applying anything below still awaits the root's window GO)
 - INSTALL_DIR `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-e3e845f0`
   (frozen offline RC0; live mount 55/55 incl. edit/write all-0)
 - fixture pkg-lock hash for THIS pack: `d23fe07ca7d7935562083dee5c7bb255afd4517199f0033021c9646fda67d9c0`
+- out-dir (receipt supplement): `out-4a26ac9a-20261024T120122Z` — absolute
+  `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-4a26ac9a-20261024T120122Z/`,
+  containing `dsh-agent-team-0.1.1-alpha.2.tgz`; log dir
+  `logs-4a26ac9a-20261024T120122Z/` (00–21).
 - constants-sync items at GO time (runner :40-:60, constants ONLY):
   `COMPOSED_SHA -> 4a26ac9a…`; `A5M2_EDIT_PACK_SHA256 -> sha256:e3e845f0…`;
   `A5M2_EDIT_INSTALL_DIR -> …/install-e3e845f0`; tgz NAME unchanged
-  (`dsh-agent-team-0.1.1-alpha.2.tgz`); `EXPECTED_TGZ_DIR_PREFIX` — the
-  receipt names no `out-<sha>-` dir; resolve the pack's actual
-  `out-…-*/` directory in the field AT APPLICATION and confirm the prefix
-  there (the fail-closed check :225 stays authoritative — never relax it);
+  (`dsh-agent-team-0.1.1-alpha.2.tgz`); `EXPECTED_TGZ_DIR_PREFIX ->
+  'out-4a26ac9a-'` (receipt names the dir; the NAME only saves one glob —
+  the fail-closed field resolution at application is KEPT: dir present +
+  tgz sha256 recompute remain the authority, check :225 never relaxed);
   EDIT/SRE arm blob expectations re-measured against the new dist (if the
   handoff touched arm blobs, the identity.json expectation updates from the
   MEASURED bytes, never guessed).
