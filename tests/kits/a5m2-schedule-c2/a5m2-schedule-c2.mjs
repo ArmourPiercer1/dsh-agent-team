@@ -694,6 +694,11 @@ async function main() {
   currentCriterion = 'boot'
   mock = await startMockModel({ port: MOCK_PORT, decide, log: (l) => TRANSCRIPT.push({ channel: 'mock', line: String(l).slice(0, 200) }) })
   process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${MOCK_PORT}`
+  // Center card 00:4x (aligns proven image b811 :1413 shape): the Host child
+  // (inherits this env) needs a credential present for the mock route. This
+  // is an EXPLICIT NON-SECRET dummy (world-NONCE scoped), valid ONLY against
+  // the 127.0.0.1 mock. No real key, no global config, no account touched.
+  process.env.DEEPSEEK_API_KEY = `c2-mock-${NONCE}`
   const instLogDir = join(RUN_DIR, 'instance')
   mkdirSync(instLogDir, { recursive: true })
   instance = new DshInstance({ hostTree: HOST_TREE, dshHome: HOME, port: HOST_PORT, clientCommitHash: CLIENT_COMMIT_HASH, logDir: instLogDir }) // ⑩ before start
