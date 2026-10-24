@@ -164,3 +164,7 @@ per-path and not df-based.
   → `sha512-Te3Wu7CmzPMYPA0a9V287uYV37WJ/S8wgFBTk2UWsk8xLOAiuPLbkNjtAxekmnCYSLGpct557unOIQlBByL3wg==`;
 * the remaining hunks are peer-context string rewrites of snapshots that reference our package, caused by that
   peer-set change — no other package version moved, and `resolution` entries for all peers are byte-identical.
+
+## CORRECTION (root, folded in per root instruction - no doc round)
+
+The deployment-cap-obligation-open wording above predates 699cc: as of product 699cc4fb7a the lane cap IS supplied explicitly (Config.searchMaxResults with exported default 8 at the lane face). Corrected standing: supplied-but-not-auto-inherited - deployments must mirror teamToolPlane.g2Mount.webSearchFixed.searchMaxResults per deployment; the lane does not read other plugins configs and does not silently inherit. External search acceptance remains separate.
