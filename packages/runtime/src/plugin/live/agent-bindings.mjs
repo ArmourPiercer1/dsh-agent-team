@@ -410,6 +410,10 @@ import { createBOrchestrationExecutionWiring } from './governed-families/workflo
 import { createTeamGovernedSubagentProvider } from './governed-families/team-governed-provider.mjs'
 import { createChildIdentityBridge } from './governed-families/child-identity-bridge.mjs'
 import { A5_B_ORCHESTRATION_TOOL_NAMES } from './governed-families/workflow-adapters.mjs'
+// A5M2 coverage-safety card (root ruling): the ONE stage-1 managed
+// projection law — production and the directed a2c2 suite call this SAME
+// pure function (a filter law with zero copies, no new framework).
+import { projectManagedToolNames } from './coverage-managed-projection.mjs'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
 // top-level imports. A top-level `@deepseek-ai/*` import loads on EVERY
@@ -545,6 +549,10 @@ import {
   // tool surface + the deterministic typed error the strict setup fails
   // with when an unmanaged (known-sensitive or unknown) tool is on it.
   buildPermissionCoverageErrorDetail,
+  // A5M2 coverage-safety card: the SAME class function the pre-execute
+  // ladder uses — the coverage producer's stage-1 classifier (the one
+  // operation-permission export, no local re-derivation).
+  classifyPermissionTool,
   evaluatePermissionCoverage,
   mcpIntroducedToolNames,
   PermissionCoverageUnmanagedError,
@@ -2530,6 +2538,21 @@ export function createAgentBindings(deps) {
       // a schedule mount keeps the initial null — the producer's guard is a
       // plain null test, never a reference into a branch-scoped let.
       let a5CoverageScheduleFacts = null
+      // A5M2 coverage-safety card (root ruling 2026-10-25, option B): the
+      // SAME-SCOPE setup barrier — installed at the Guard-install success
+      // below (before ANY publish), released ONLY at the FINAL same-producer
+      // coverage PASS. NEVER pushed into toolDisposers: a FIFO drain that
+      // released on failure would open the exact door the barrier closes;
+      // on a mid-setup throw the refusal outlives the unwind. Not an
+      // authorization source — the FINAL producer still verifies ACTIVE
+      // bindings / verified placements / G2 active rows / the run_code pair.
+      let a5CoverageBarrierDispose = undefined
+      // A5M2 coverage-safety card (root ruling): the run_code governance
+      // FACTS (armed face + BOTH listener seats installed + the REAL native
+      // family registrations landed). A placed row can never prove run_code
+      // (the plane carries ZERO run_code definitions) — this is the only
+      // truthful post-install channel; null until the guard branch installs.
+      let a5CoverageRunCodeFacts = null
       // A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 + 21:01 cards): the built
       // control trio wiring's inject face (null = this world mounts none —
       // the zero-flip law). Declared in the SAME lexical scope as the
@@ -2827,6 +2850,58 @@ export function createAgentBindings(deps) {
               )
             }
           })
+          // A5M2 coverage-safety card (root ruling 2026-10-25, option B —
+          // THE MINIMAL SAME-SCOPE BARRIER, installed at the ONE real fact
+          // that this scope will publish at all: the scoped Guard install
+          // SUCCESS, strictly before any publish). publish() below flips the
+          // scoped dispatcher ACTIVE while the post-install coverage truth
+          // only closes at the FINAL verification; between the two, an
+          // externally-triggered exec must meet a REAL refusal, not a verbal
+          // one. The barrier rides the SAME public seam every setup-time
+          // refusal lane uses (ctx.tools.guard — the closed-world Guard's
+          // own registration at install.ts :492, the deferred-spawn lane,
+          // the Schedule provisional-deny lane): a denial STRING for every
+          // exec of THIS canonical Agent (exec.agent === the :2305 resolved
+          // identity — other agents answer undefined, the pass-through the
+          // same-scope law demands; this seam never out-ranks another
+          // agent's owner). A missing seam, a throwing seam, or a seam that
+          // answers no valid disposer REFUSES THE SETUP NOW — an uninstalled
+          // barrier is exactly the unmanaged window it exists to close.
+          // Release happens at exactly ONE place: the FINAL same-producer
+          // coverage PASS. No finally, no drain, no early lift.
+          if (permissionPolicy !== undefined) {
+            if (typeof agentCtx?.tools?.guard !== 'function') {
+              observations.push(`alpha2-perm: coverage-barrier-UNAVAILABLE for ${sessionId} (strict policy without the public ctx.tools.guard seam) — setup fails closed`)
+              const barrierError = new Error(
+                `agent-bindings: alpha.5 permission coverage barrier unavailable for '${sessionId}': the public ctx.tools.guard seam is missing while a strict permission policy is active (code: alpha2-permission-coverage-surface-unavailable)`,
+              )
+              barrierError.code = 'alpha2-permission-coverage-surface-unavailable'
+              throw barrierError
+            }
+            let coverageBarrierDisposer
+            try {
+              coverageBarrierDisposer = agentCtx.tools.guard((exec) => (exec?.agent === runtimeAgent
+                ? `alpha2-permission-coverage-final-verification-pending: setup-time refusal for '${String(exec?.name)}' — the FINAL post-install coverage truth of this Agent is not verified yet`
+                : undefined))
+            } catch (error) {
+              observations.push(`alpha2-perm: coverage-barrier-UNAVAILABLE for ${sessionId} (the guard seam threw: ${String(error?.message ?? error).slice(0, 160)}) — setup fails closed`)
+              const barrierError = new Error(
+                `agent-bindings: alpha.5 permission coverage barrier could not install for '${sessionId}': ${String(error?.message ?? error)} (code: alpha2-permission-coverage-surface-unavailable)`,
+              )
+              barrierError.code = 'alpha2-permission-coverage-surface-unavailable'
+              throw barrierError
+            }
+            if (typeof coverageBarrierDisposer !== 'function') {
+              observations.push(`alpha2-perm: coverage-barrier-UNAVAILABLE for ${sessionId} (the guard seam answered no valid disposer) — setup fails closed`)
+              const barrierError = new Error(
+                `agent-bindings: alpha.5 permission coverage barrier could not install for '${sessionId}': the ctx.tools.guard seam answered no valid disposer (code: alpha2-permission-coverage-surface-unavailable)`,
+              )
+              barrierError.code = 'alpha2-permission-coverage-surface-unavailable'
+              throw barrierError
+            }
+            a5CoverageBarrierDispose = coverageBarrierDisposer
+            observations.push(`alpha2-perm: coverage-barrier ARMED for ${sessionId} (public guard seam, canonical-agent scoped; released only at the FINAL same-producer coverage PASS)`)
+          }
         } else {
           // FAIL CLOSED, the AgentSetup contract: an agent whose Tool Guard
           // cannot be armed is not published (the typed rejection rolls the
@@ -7965,8 +8040,23 @@ export function createAgentBindings(deps) {
       // facts. No second ledger, no state copy: every source is read live
       // through references that already exist.
       const coveragePlacementGoverned = (name) => {
-        const fed = a5PlaneValue?.placementFeed?.(name)
-        const identity = fed?.definitionIdentity
+        // The SAME owner-ledger identity law the Guard's bindingFeed applies
+        // at bind time (GLUE-7, byte-for-byte the source order): the B-TEAM
+        // ledger first, then the G1 arm ledger, then the plane's own
+        // placement feed — the identity THIS owner's ledger carries for the
+        // name, never a look-alike read off a different channel.
+        let identity
+        const placedTeamOps = a5TeamOpsPlacedByName.get(name)
+        if (placedTeamOps !== undefined) {
+          identity = definitionIdentityOf(placedTeamOps)
+        } else {
+          const placedG1 = a5G1PlacedByName.get(name)
+          if (placedG1 !== undefined) {
+            identity = definitionIdentityOf(placedG1)
+          } else {
+            identity = a5PlaneValue?.placementFeed?.(name)?.definitionIdentity
+          }
+        }
         if (typeof identity !== 'string' || identity.length === 0) return false
         // Root fix round: a definition string is NOT governance. The SAME
         // family/dispatcher law the schedule face applies: the dispatcher
@@ -7990,11 +8080,38 @@ export function createAgentBindings(deps) {
         && a5CoverageScheduleFacts.isBound()
         && typeof a5CoverageScheduleFacts.identityOf(name) === 'string'
         && a5CoverageScheduleFacts.surfaceEntry(name) !== undefined
-      const coverageManagedGroundTruth = () => PERMISSION_TOOL_NAMES.filter(
-        (name) => classifyPermissionTool(name).kind !== 'unsupported'
-          || (a5PlaneOwnNames.includes(name) && coveragePlacementGoverned(name))
-          || coverageScheduleGoverned(name),
-      )
+      const coverageRunCodeGoverned = (name) => {
+        if (name !== 'run_code') return false
+        const facts = a5CoverageRunCodeFacts
+        if (facts !== null) {
+          // Post-install truth: armed + BOTH listener seats installed + the
+          // REAL native family registrations landed (a placed row can never
+          // prove run_code — the plane carries ZERO run_code definitions).
+          return facts.hooksInstalled === true && facts.familyIdentities.length > 0
+        }
+        // The precheck window only: the guard branch installs BELOW the
+        // early check, so the early read may refuse on 确定缺口 only — this
+        // live read is the honest pending fact (inject row present, the
+        // plane surfaced the wiring face, armed === true, BOTH listener
+        // callables there). A missing face / unarmed / half face stays NOT
+        // governed (the DECLARED-INACTIVE refusal is the truth there), and
+        // the FINAL check judges the installed facts above, never this one.
+        const face = a5PlaneValue?.runCodeGuard
+        return a5G3RunCodeGuardInject !== null
+          && face !== undefined && face !== null
+          && face.armed === true
+          && typeof face.onPreExecute === 'function'
+          && typeof face.onExecute === 'function'
+      }
+      // ONE projection law, ZERO copies (root ruling): the shared pure
+      // module below — the directed a2c2 suite calls the SAME function, no
+      // test-local reimplementation of this filter.
+      const coverageManagedGroundTruth = () => projectManagedToolNames(PERMISSION_TOOL_NAMES, {
+        classOf: classifyPermissionTool,
+        placementGoverned: coveragePlacementGoverned,
+        scheduleGoverned: coverageScheduleGoverned,
+        runCodeGoverned: coverageRunCodeGoverned,
+      })
       if (permissionPolicy !== undefined) {
         const finalSurfaceNames = coverageSurfaceNames(agentCtx, sessionId, runtimeAgent)
         const mcpIntroduced = mcpIntroducedToolNames(
@@ -8498,6 +8615,18 @@ export function createAgentBindings(deps) {
           for (const registration of rcGuardRegistrations) {
             registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
             observations.push(`a5m2-g3-ptc: family REGISTERED for ${sessionId} (native=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
+          if (rcPlane.armed === true) {
+            // A5M2 coverage-safety card: the run_code governance FACTS for
+            // the coverage producer — armed face, BOTH listener seats
+            // installed above (any install failure threw before this line),
+            // and the REAL native family registrations landed with their
+            // runtime identities. Zero registrations keeps the facts
+            // honest-empty: nothing governed, the probe refuses.
+            a5CoverageRunCodeFacts = Object.freeze({
+              hooksInstalled: true,
+              familyIdentities: Object.freeze(rcGuardRegistrations.map((registration) => registration.definitionIdentity)),
+            })
           }
         }
 
@@ -9235,6 +9364,17 @@ export function createAgentBindings(deps) {
           )
         }
         observations.push(`alpha2-perm: coverage FINAL-PASS for ${sessionId} (post-install truth)`)
+        // THE barrier release (root option B — the ONE legal lift point):
+        // the FINAL verification just passed on the same producer's truth
+        // with every install complete; from here the scoped closed-world
+        // Guard owns enforcement alone. Any exit above (any throw) left the
+        // barrier armed — the refusal persists through the original unwind,
+        // no finally / drain / FIFO cleanup lifts it on a failed setup.
+        if (a5CoverageBarrierDispose !== undefined) {
+          a5CoverageBarrierDispose()
+          a5CoverageBarrierDispose = undefined
+          observations.push(`alpha2-perm: coverage-barrier RELEASED for ${sessionId} (FINAL-PASS; scoped guard-owned)`)
+        }
       }
       }
     }

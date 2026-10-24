@@ -68,6 +68,14 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
   },
+  {
+    // A5M2 coverage-safety card: the ONE stage-1 managed projection law —
+    // a static production import edge of agent-bindings AND of the directed
+    // a2c2 suite, so the installed dist must carry it byte-for-byte (the
+    // .d.mts type surface stays source-side per the mirror law below).
+    src: 'packages/runtime/src/plugin/live/coverage-managed-projection.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/coverage-managed-projection.mjs',
+  },
   // GLUE-7 production backend assembly row (byte-copied: tsc never emits
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).

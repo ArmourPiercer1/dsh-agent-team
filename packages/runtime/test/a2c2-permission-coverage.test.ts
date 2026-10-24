@@ -64,6 +64,9 @@ import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { SessionId } from '@deepseek-ai/dsh-session'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import * as op from '../operation-permission/index.js'
+// A5M2 coverage-safety card: the SAME stage-1 projection production calls
+// (zero copies of the filter law — this suite pins the shared function).
+import { projectManagedToolNames } from '../src/plugin/live/coverage-managed-projection.mjs'
 import { PERMISSION_TOOL_NAMES } from '../../domain/blueprint/src/index.js'
 import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
 import { applyBuiltInToolDeny } from '../../tools/src/index.js'
@@ -165,15 +168,18 @@ interface A2C2Api {
 /** The post-fix API surface (undefined members on the base tree). */
 const a2c2 = op as unknown as A2C2Api
 
-/** A5M2 coverage-safety card (root ruling 2026-10-24): the GLUE feeds stage 1
- * only what THIS scope really governs — the adapter-supported classes
- * (classifyPermissionTool, the same function the pre-execute ladder routes
- * on). The fixtures MIRROR that producer (a faithful copy of the feed, NOT
- * a hand-filled word list); a harness-extracted single-source producer is
- * the disclosed follow-up. */
-const MANAGED_GROUND_TRUTH = PERMISSION_TOOL_NAMES.filter(
-  (name) => op.classifyPermissionTool(name).kind !== 'unsupported',
-)
+/** A5M2 coverage-safety card (root ruling 2026-10-25): the fixture calls
+ * the SAME shared projection the production glue calls — the pure module
+ * `projectManagedToolNames` with the class channel live and the three
+ * mount probes (placement / schedule / run_code) answered FALSE, because
+ * this vocabulary-only world has no mount. No test-local copy of the
+ * filter law exists anymore (the old mirrored filter is deleted). */
+const MANAGED_GROUND_TRUTH = projectManagedToolNames(PERMISSION_TOOL_NAMES, {
+  classOf: op.classifyPermissionTool,
+  placementGoverned: () => false,
+  scheduleGoverned: () => false,
+  runCodeGoverned: () => false,
+})
 
 /** The empty ownership facts (no team / no mcp — the pure registries). */
 const EMPTY_FACTS: A2C2Facts = { managedToolNames: MANAGED_GROUND_TRUTH, teamToolNames: [], mcpToolNames: [] }
@@ -1377,5 +1383,48 @@ describe('a2c2 S · the real-seam legs (MCP delta, legacy enablement, lifecycle)
     expect(s3.fatalVerdictsIdentical).toBe(true)
     expect(s3.fatalVerdict?.ok).toBe(false)
     expect(s3.fatalVerdict?.unmanagedTools.map((e: any) => e.name)).toEqual(['foo_magic', 'grep'])
+  })
+})
+
+// ===========================================================================
+// A5M2 coverage-safety card (root ruling 2026-10-25): the SHARED projection
+// law — production glue and this suite import the SAME pure function (the
+// old mirrored filter is deleted). These legs pin the law directly: the
+// real three input channels, the fail-closed refusal on missing / throwing
+// facts, and the untouched safe/unknown/MCP obligations of the evaluator.
+// ===========================================================================
+describe('coverage-managed-projection · the one shared producer law', () => {
+  const classOnly = {
+    classOf: op.classifyPermissionTool,
+    placementGoverned: () => false,
+    scheduleGoverned: () => false,
+    runCodeGoverned: () => false,
+  }
+  it('class channel: adapter-supported classes project, unsupported vocabulary names do not', () => {
+    const projected = projectManagedToolNames(['bash', 'write', 'grep', 'todo_write'], classOnly)
+    expect(projected).toEqual(['bash', 'write'])
+  })
+  it('mount channels: a TRUE governed fact admits the name; absent / throwing probes never do (fail-closed, no label drift)', () => {
+    expect(projectManagedToolNames(['run_code'], { ...classOnly, runCodeGoverned: (n) => n === 'run_code' })).toEqual(['run_code'])
+    expect(projectManagedToolNames(['team_delegate'], { ...classOnly, placementGoverned: (n) => n === 'team_delegate' })).toEqual(['team_delegate'])
+    // synthetic probe name on purpose: the law is name-blind, the FACT is the gate.
+    expect(projectManagedToolNames(['x_scheduled_pair'], { ...classOnly, scheduleGoverned: (n) => n === 'x_scheduled_pair' })).toEqual(['x_scheduled_pair'])
+    expect(projectManagedToolNames(['run_code'], classOnly)).toEqual([])
+    expect(projectManagedToolNames(['run_code'], { ...classOnly, runCodeGoverned: () => { throw new Error('fact unreadable') } })).toEqual([])
+    expect(projectManagedToolNames(['bash'], { ...classOnly, classOf: () => { throw new Error('class unreadable') } })).toEqual([])
+  })
+  it('the projection keeps the evaluator obligations: unprojected sensitive/unknown names still FAIL the gate', () => {
+    expect(typeof a2c2.evaluatePermissionCoverage).toBe('function')
+    const facts: A2C2Facts = {
+      managedToolNames: MANAGED_GROUND_TRUTH,
+      teamToolNames: [],
+      mcpToolNames: [],
+    }
+    const v = a2c2.evaluatePermissionCoverage!(
+      [...MANAGED_GROUND_TRUTH, 'grep', 'foo_magic'],
+      facts,
+    ) as unknown as { ok: boolean; unmanagedTools: { name: string }[] }
+    expect(v.ok).toBe(false)
+    expect(v.unmanagedTools.map((e) => e.name)).toEqual(['foo_magic', 'grep'])
   })
 })
