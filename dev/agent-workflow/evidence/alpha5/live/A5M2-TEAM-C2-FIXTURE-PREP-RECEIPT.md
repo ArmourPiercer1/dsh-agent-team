@@ -165,6 +165,25 @@ per-path and not df-based.
 * the remaining hunks are peer-context string rewrites of snapshots that reference our package, caused by that
   peer-set change — no other package version moved, and `resolution` entries for all peers are byte-identical.
 
+## ADDENDUM 2 — registry-call facts (root: the count is not a new blocker)
+
+From the log lines I hold, nothing added:
+* **Registry**: `https://registry.npmjs.org` only. **Call type**: package **metadata** requests issued by pnpm
+  11.7.0's supply-chain-policy verification leg, printed as
+  `[WARN] Request took <27,8xx–28,5xx>ms: https://registry.npmjs.org/@deepseek-ai%2F<package>` — 48–50 distinct
+  `@deepseek-ai/dsh-*` package names (`dsh-session-persistence … dsh-permission-presets`), all inside step 12.
+* **No package bodies fetched**: the exception run printed `reused 1, downloaded 0`; b2 printed
+  `Packages: +532 … reused 532, downloaded 0`. Everything materialised came from the local store via hardlinks.
+* **No outbound secrets**: the held lines carry only host + package name + duration. The repo `.npmrc` face is
+  `auto-install-peers=false` and nothing else (no auth/registry-token keys measured), and no token, cookie or
+  integrity value appears in any captured output line.
+* **No writes elsewhere**: per-path table in ADDENDUM §(2) (repo tracked 0; root / both package / test-use
+  `node_modules` 0 newer files); the only store growth is our own `file:` import of the candidate tgz
+  (+3,366,905 B); the pnpm metadata cache under `$HOME` is not writable from my sandbox (`touch` →
+  `Read-only file system`), so nothing there came from my side.
+
+---
+
 ## CORRECTION (root, folded in per root instruction - no doc round)
 
 The deployment-cap-obligation-open wording above predates 699cc: as of product 699cc4fb7a the lane cap IS supplied explicitly (Config.searchMaxResults with exported default 8 at the lane face). Corrected standing: supplied-but-not-auto-inherited - deployments must mirror teamToolPlane.g2Mount.webSearchFixed.searchMaxResults per deployment; the lane does not read other plugins configs and does not silently inherit. External search acceptance remains separate.

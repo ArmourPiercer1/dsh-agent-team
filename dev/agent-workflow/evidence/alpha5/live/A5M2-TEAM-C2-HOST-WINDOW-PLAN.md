@@ -1,100 +1,65 @@
-# A5M2-B-TEAM C2 — shortest real-Host window plan (first real tool leg). PREPARATION ONLY: nothing here is executed.
+# A5M2-B-TEAM C2 — Host window **v2**: ONE public-path reachability proof (REVISED per root; PREPARATION ONLY, NO boot)
 
-**Family choice, on facts:** this lane's **B-TEAM C2 driver** is the first candidate — it is the only family here
-with a completed driver (`dev/agent-workflow/evidence/alpha5/live/a5m2-team-c2-runner.mjs`, live legs
-`C-READINESS / C-BLUEPRINT-SOURCE-GATE / C-READINESS-BARRIER / C-CREATE-ONCE / C-ROOT-LIVE / C-READ-STATE /
-C-TEAM-QUERY / C-LEDGER-PAGE / C-LEADER-MEMBERS`), an acceptance row (`…/a5m2-team-c2-kit.mjs`), and now a
-**prepared, pinned install face** (`install-c8dd3f07b`, receipt
-`…/A5M2-TEAM-C2-FIXTURE-PREP-RECEIPT.md`). G5 ships a test trio without a Host driver, so it cannot take a
-Host window first. **No new harness is built**: the driver already exists and currently runs `--precheck`; the
-window only flips its gated `--live` path on root's boot GO.
+Window-1 proves **public path reachability only**. It is deliberately one call, not the Team C2 family matrix.
+Nothing here runs until root issues the boot GO for exactly these identities.
 
----
+## 1) THE ONE CALL — named by driver code evidence (no overselling)
 
-## 1) FIXED identities (all re-verified read-only this round)
+| what | evidence |
+|---|---|
+| The query | **`team_list_members`** — a read on the real Leader surface, exactly once. |
+| Driver leg | `C-LEADER-MEMBERS`, wired at `a5m2-team-c2-runner.mjs:772-773` (`rec('C-LEADER-MEMBERS', members.ok, … same-call pairs=… calls=…)`), implemented by `runLeaderMembersCase` at **`:497`**. |
+| Entry point (real, public) | a **real Leader session** driven over `POST /api/session/prompt` with RPC body `method: 'session/prompt'` (`:222-229` `apiPrompt`), carrying a marker directive: *"Call the team tool `team_list_members` exactly once now and report the member instance ids verbatim."* Team remote reads go over `POST /team-remote/<method>`. **No internal module call is used as a tool entry.** |
+| What is asserted | the durable session log under the window HOME is parsed (`sessionEventsForRun` + `durableToolPairs(events, 'team_list_members')`); the leg is green only on `pairCount === 1` (`expectOnce`), **every** pair outcome `ok` (`outcomeCounts {ok,error,unknown}`), and the expected needles present in the paired result content. Three-state: an unreadable answer is `unknown`, never green. |
+| **What this call does NOT prove (stated, not hidden)** | it is a **read**: it exercises no PA/approval consumption. The driver today asserts **no** PA/consumption fact (grep over `a5m2-team-c2-runner.mjs`: no `consume`/PA assertions — the only related lines are the plane-drift note at `:76` and the named `GAP-DURABLE-REPLAY` at `:191`). The consume law lives on the **guarded mutation** path (`live/governed-families/team-wiring.mjs:385` closed B-TEAM input set incl. `callerGate`/`pa`, `:641` settled emission; `team-adapters.mjs:835` settled return) — and every such leg is **out of window-1** by root's item (4). So: `PA-SAME-CALL-CONSUMPTION = NOT_RUN pre-run → NOT_VERIFIED post-run if the same-run logs hold no PA/one-consume evidence`. |
+
+## 2) ALLOW / DENY LANE + THE ONE LAW OBSERVABLE IN THIS WINDOW
+
+* **Allow lane**: the public RPC success law is asserted exactly as the kit law — `res.status === 200 && res.body?.result?.ok === true`, payload read from `body.result.value` (`remoteOutcome` three-state: `ok` / `error` / `unknown`).
+* **The one law observable in this window = the SAME-CALL law**, proven from the durable log: one `assistant/message` tool-call event pairs to exactly one `tool/result` event by call id (`toolCallId` / `source.callId`), one outcome, `pairCount === 1`. Nothing is inferred from a count alone.
+* **Deny lane (in-window, zero side effect)**: the same endpoint called (a) with **no auth cookie** and (b) against a **foreign/absent `sessionId`** ⇒ expect a typed gateway/RPC refusal (not a 200-ok), recorded with its code. A refusal here is a **pass** of the deny lane; an unparseable answer stays `unknown`.
+* **PA discipline, verbatim per root**: proving the PUBLIC call-chain smoke is allowed **without** PA assertions,
+  but (a) it must **not** be called full C2; (b) a read call is **not** exempt from PA by "reads need no PA"
+  reasoning; (c) the same-run logs get a **POST-HOC PA check**, and if they contain no PA / one-consume evidence,
+  the record says **`PA-SAME-CALL = NOT_VERIFIED`** (the pre-run `NOT_RUN` wording upgrades to `NOT_VERIFIED`
+  after the run when the logs lack it).
+
+## 3) `team.create` — initialization only
+
+`team.create` is invoked **only** to bring the isolated Team/root into existence for this window
+(driver `createUniqueTeamRoot`, closed create params, revision converted to a positive safe integer per the
+contract), from the lane artifact `dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml`
+(2,279 B, `schemaVersion: 3`, `blueprintId: team.a5nx-main`, `revision: "1"`). All durable rows land **strictly
+inside this window's HOME**. It creates no members and admits no work.
+
+## 4) EXPLICITLY OUT OF WINDOW-1
+
+`team_create_member`, `team_delegate`, `team_collect`, `team_follow_up`, `team_send_message`,
+`team_archive_member`, any approval/mutation, any side-effect chain, and the rest of the C matrix
+(`C-ROOT-LIVE / C-READ-STATE / C-TEAM-QUERY / C-LEDGER-PAGE` stay for a later window). No negative-control
+chain beyond the two zero-side-effect deny-lane reads above.
+
+## 5) FIXED identities, surfaces, budget, timeout, cleanup
 
 | item | value |
 |---|---|
 | product commit | `699cc4fb7a27941b19c1550c42d45d45520535da` |
-| product package | `dsh-agent-team-0.1.1-alpha.2.tgz`, sha256 `c8dd3f07b940efec03ec69173a3f98a9ded6106ccf725e0bda88efa74c754b0e`, 4,107,270 B, 1,837 entries |
-| driver 40-SHA at submission | `a8e7c32539d2a18d3246d7dca0915aaf68e4c650` (branch `feat/a5m2-wire-team`; the driver + kit + this plan are at or below this commit) |
-| Host runtime | `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84` — measured this round: `git rev-parse HEAD` = that SHA, `--abbrev-ref` = `HEAD` (detached), `git status --porcelain` = 0 lines |
-| blueprint source (live create) | `dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml` on the driver lane, 2,279 B, `schemaVersion: 3`, `blueprintId: team.a5nx-main`, `revision: "1"` (the driver converts the string revision to the positive safe integer the contract requires) |
+| product package | `dsh-agent-team-0.1.1-alpha.2.tgz` sha256 `c8dd3f07b940efec03ec69173a3f98a9ded6106ccf725e0bda88efa74c754b0e` (4,107,270 B, 1,837 entries) |
+| driver code identity | blob `3a1eae2e76f6ae632be807d6d93d0259b4f9f81c` (`a5m2-team-c2-runner.mjs`, unchanged since lane commit `43ebd01c1cad8670539b1e6e975d04aaf34e7ca7`); **the 40-SHA carrying this revised plan is the lane tip reported in the push receipt** (a commit cannot contain its own SHA) |
+| kit | `dev/agent-workflow/evidence/alpha5/live/a5m2-team-c2-kit.mjs` (lane), blob `80b303eaf2b3879f0da714e78d89405c3044e0b6`; runner blob `3a1eae2e76f6ae632be807d6d93d0259b4f9f81c` — both verified by center at carrier `295908b59618756a9601196462a952bfad551401` |
+| Host runtime | `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (detached, porcelain 0 — measured) |
+| boot face | `…/install-c8dd3f07b` — read-only module resolution root; its parent dry world is **not** the DSH_HOME and stays untouched |
+| DSH_HOME | new independent temp world `tests/homes/a5m2-team-c2-h1-<YYYYMMDD>T<HH-MM-SS>Z` (`mkdir`, exists⇒throw), naming per `docs/TEST_METHODS.md:84-91` |
+| port | **3180**; freedom check that must print nothing: `ss -ltn \| grep -E ':318[0-6]\b'` (measured EMPTY this arc; only `127.0.0.1:3080` listens — stable instance and its home stay untouched) |
+| budget | world-increment ceiling **64 MiB** (root's boundary; precedent ≈117 KB/round is the expectation, 64 MiB is the ceiling — exceeding the ceiling stops the window, it is not a target); disk rule **keep `df` ≥ 6 GiB** (measured 8,867,430,400 B) |
+| hard timeout | **max 300 s wall** on the window (`timeout 300` on the driver process; root: the earlier 900 s/2 MiB pair would manufacture false failures); per-RPC leg timeout stays 60 s; durable pairing poll budget 90 s |
+| first-error-stop | first non-green leg ends the window; no leg skipping, no retry-to-green, no second attempt on a failed leg; an *expected* typed refusal on the deny probes is a pass, not an error |
+| cleanup / exit proof (**my process and port, mine to clean**) | kill **my** process tree on 3180 (`pkill -P`/`kill` on the recorded PIDs only, never another lane's pid), release **the `<home>.lock` I created**, §7 keeps the world; Host down ⇒ `ss -ltn \| grep -E ':3180\b'` empty; `tests/homes/a5m2-team-c2-h1-<stamp>.lock` released/absent (`:89` lock law); world retained as evidence per §7 (never committed, deletion = separate ordered impact op); post read-backs: repo `git status --porcelain -uno` = 0, install face lock still `dad670ae749c2da364b42d19aa3eacc0ec0f01b60d1c1009bff5ef37fb35217a`, old face lock still `7faee42f88306edb43888cbd3d822a45596d6a05d0641e32457cbcd553568cfe`; zero writes outside the new world (+ lock) and this lane's evidence dir |
 
-## 2) SURFACES
+## 6) NOT IN THE WINDOW
 
-* **Boot face**: the prepared installed face
-  `/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-c8dd3f07b`
-  (450,547,174 B nominal; `dsh-agent-team 0.1.1-alpha.2` resolved from the `file:` tgz; adapter marker
-  `A5_B_TEAM_ADAPTER_REVISION = 2` count 1 inside it). Read-only use: it is the module resolution root only —
-  nothing is written into it during the window, and its lock/modes stay as left.
-* **DSH_HOME = a NEW independent small HOME**, fresh temp world per `docs/TEST_METHODS.md:84-91`
-  (`<line>-<UTC timestamp>`): `tests/homes/a5m2-team-c2-h1-<YYYYMMDD>T<HH-MM-SSZ>` created `mkdir`-only at window
-  start (exists-⇒-throw, never a reused world). The install face's **parent dry world is NOT the DSH_HOME** and is
-  not touched; the world's `profiles/ blueprints/ sessions/ storages/` are the only new state.
-* **Never** the stable instance: `:3080` and its `DSH_HOME` stay out of reach
-  (`docs/TEST_METHODS.md:14`). Measured now: the only listener in the range is `127.0.0.1:3080`.
-* **PORT = 3180** (3180-family, free now). Exact check at window start, must print nothing:
-  `ss -ltn | grep -E ':318[0-6]\b'` → this round: **EMPTY ⇒ 3180 free**.
+No installs, no pack/re-pack, no clone, no new worktree, no repo writes, no second Host, no other family
+(G5/G6/Schedule/search out), no matrix sweep. `GAP-INITIAL-WORK-TOKEN` and `GAP-DURABLE-REPLAY` stay
+named-open and unclaimed by any leg here.
 
-## 3) BUDGET / TIMEOUT
-
-* Fresh-HOME increment precedent: **≈117 KB/round** (`profiles` 3,483 + `blueprints` 3,185 + `sessions` 68,428 +
-  `storages` 41,666 on `a5m2-c2-r17-20261023T15-03-57Z`).
-* **This window's ceiling**: world increment **≤ 4 MiB** (`du -sb` of the new world at exit, 35× headroom over the
-  precedent); no install, no pack, so no other new bytes are expected except launcher logs inside the world.
-  Disk headroom measured `df -B1 --output=avail /` = 8,867,430,400 B; rule **keep ≥ 6 GiB**.
-* **Hard wall-clock timeout for the window: 20 minutes** (`timeout 1200 …` on the driver process; the driver's
-  per-RPC leg timeout stays 60 s).
-* **One-window FIRST-ERROR-STOP discipline**: the first non-green leg ends the window — no leg skipping, no
-  retry-to-green, no second attempt at a failed leg, and no proceeding past a leg whose answer was not read.
-  Refusals that are the *expected* typed outcome of a negative control do not count as errors.
-
-## 4) MINIMAL POSITIVE / NEGATIVE CONTROLS (real leader-tool surface)
-
-Entry points are the **real leader tool surface** invoked over the authenticated RPC of the booted Host
-(`team_*` as the Leader of the created team root), **explicitly not** any `p6t6`-internal module call used as a
-tool entry — internal calls may only be read as assertions, never as the entry.
-
-**Positives (shortest real chain, in order, each with a fresh `requestToken`):**
-1. `team_list_templates` — the bound blueprint's templates (read, zero side effects).
-2. `team_list_members` — the roster before any create (also the source of real `inst-…` instance ids).
-3. `team_delegate` (create form: `delegationTemplateId` + `label` + self-contained `prompt`), **async default
-   kept** (no `async` argument) — admits one work unit.
-4. `team_collect` with the **same** request token — read-back to a terminal `succeeded` / `failed` /
-   `unavailable` (a `running` answer is re-read, not re-delegated).
-5. `team_archive_member` (`targetInstanceId` from step 2/3 real ids) — the durable archive commit.
-
-Assertions per leg are on the returned result object: `status ∈ {executed, delivered, progress-recorded, …}`
-with `requestToken` echoed; envelope law `status === 200 && body.result.ok === true`, payload at
-`body.result.value`; three-state (ok / error / **unknown**) — an unreadable answer is `unknown`, never green.
-
-**Negatives (typed refusals expected):**
-* **N1 guard-blocked**: `team_archive_member` on an instance that carries a pending `leader-approval` control
-  request → expect `status: "blocked"` with a closed `reason` and a `requestId`, and **zero side effects**
-  (member state unchanged on re-read).
-* **N2 bad addressing / token discipline**: `team_delegate` addressed by **template id/label in the instance
-  slot** → expect `status: "rejected"` with the addressing `code`; and a `requestToken` reused for a *different*
-  logical operation must not silently admit a second unit (`team_collect` on that token still reports one unit).
-  Expected refusals are asserted on the returned typed value, never by catching.
-
-## 5) CLEANUP + EXIT PROOF
-
-* Host stopped by the driver's own teardown; **port proof**: `ss -ltn | grep -E ':3180\b'` prints nothing.
-* **Lock release proof**: `tests/homes/a5m2-team-c2-h1-<stamp>.lock` removed/absent (world lock law
-  `docs/TEST_METHODS.md:89`, content `{world,pid,kit,runStamp,at}`).
-* World state per §7: temp world **retained as evidence** (never committed — homes carry launch tokens), deletion
-  is an impact op needing a separate order; the install face and all `out-*`/`snap-*`/`install-*` surfaces left
-  byte-as-left; `<home>.lock` of other worlds untouched.
-* Zero writes outside: the new world (+ its `.lock`) and the driver's own evidence directory on the lane.
-  Post-window read-backs: repo `git status --porcelain -uno` = 0 lines; the install face's `pnpm-lock.yaml`
-  sha still `dad670ae…`; old face lock still `7faee42f…`.
-
-## 6) NOT IN THIS WINDOW
-
-No installs (the face is already prepared and pinned), no pack / re-pack, no clone, no new worktree, no repo
-writes, no Host other than the one 3180 instance, no other family (G5/G6/Schedule/search stay out), no
-full-matrix sweep — one chain of 5 positives + 2 negatives. `GAP-INITIAL-WORK-TOKEN` and `GAP-DURABLE-REPLAY`
-stay named-open: their preimages are not produced by this window, so no leg claims them.
-
-**Gate:** nothing above runs until root issues the boot GO for this exact identity set.
+**Gate:** root's boot GO, per identity set above.

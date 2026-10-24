@@ -271,3 +271,23 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 - **9c 双交付并入（tip `43ebd01c1cad8670539b1e6e975d04aaf34e7ca7`；收据 `a8e7c325…`）**：fixture `install-c8dd3f07b` **完成**（b2 frozen/offline RC0、532 reused/0 downloaded；终 lock `dad670ae749c2da364b42d19aa3eacc0ec0f01b60d1c1009bff5ef37fb35217a`；完整差 +42/−41/21hunk：两 SDK 直依、旧面独有 cordis/dsh-spill/dsh-system-prompt 移出直依且 **cordis@4.0.4 由 lock/realpath 证 transitive**、file: 874f3ae0d→699cc4fb7a entry+integrity 双 hash；解析实面 12 peers 0.2.0-rc.2+yaml 2.9.0+zod 4.4.3）；失败 b1 越界核=**五面逐路径 0 行**（repo tracked/根/runtime/client/test-use node_modules）+旧面三态未变；网络照录（~50 WARN 属 RC1 的 --offline 尝试、策略腿 2.6/2.8s passes、无逐行时间戳不回填）；字节=store +3.37MB（file: 入库）+**df 实增 78MiB**（名义 du 450MB 系硬链）⇒ **256MiB 口径候根裁（实际字节=PASS/名义 du=超）**。**Host 窗计划就绪未 boot**：Team C2 driver 四元组（driver 40-SHA `a8e7c325…`）+新世界+3180（空检过/3080 禁触）+≤4MiB/1200s/首错停+正 5 负 2 真 RPC+finally 证明；boot GO 候根。
 - **Team 首窗收敛为可达性单证（根 11:0x）**：窗 1=真实 leader session→**team_list_members 单项**（或 driver 实完支持之单项，按码证命名不虚报）+其 allow/deny+same-call/PA 一消费证据；**create-member/delegate/collect/archive 整族副作用链出局**；team.create 仅限隔离 Team/root 必要初始化、数据仅本 HOME；**先证公开路径可达，非 Team 全 C2**。9c 按此出修订版（重述提交时点 driver 40-SHA/kit/端口/预算/超时/首错停/finally 证明，零新审计门、真实 RC）；**boot 仍候根 GO**。~50 条 registry 定性=原批准 registry metadata（列 registry/类型/无包体，核无外发 secret/无他处写），**次数不另造阻断**。
 - **口径双修+冷 import（根 11:5x）**：①df ~78MiB=**共享盘窗口值，不证独占预算**（inode 级预算未做=如实挂账）；②`Scope:` 行**从未打印**⇒**不得称 scope=1**（操作性证明=lock 差仅落新目录+tracked 0）。③**现 fixture 一次真实打包入口 cold import/no-boot**（先读 exports 再按 specifier import，非 exists 扫描）：**NODE_RC=0**，`dsh-agent-team/host` 解析=`<install>/node_modules/.pnpm/dsh-agent-team@file+..+out-699cc4fb7a…3cfcbe1f7…/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js`（打包 dist 非 owner 源码），exports 前 8=apply/buildGovernanceWarning×2/defaultGlueUrl/defaultSeamUrlCandidates/degradedAnchorLine/g2ApprovedTargetMismatches/inject，VERSION=0.1.1-alpha.2；终端输出即报不另立报告。④9c 收据尾旧 cap-obligation-open 随手更正=699cc 显式 cap 已供但**非自动继承别插件配置**（部署须逐次 mirror；不重开文档轮）。窗 1 v2（单项 team_list_members/timeout 900/驱动 blob 3a1eae2e…/承载 SHA 295908b5…+PA-SAME-CALL=NOT_RUN 自纠）入册；**仍无 Host GO**。
+- **295 集中卡四项（9c 执行中，Host 仍禁）**：①入口实参数（fresh HOME 带 stamp/显式 3180/整体 300s+每步首错停/只跑初始化+目标 query，废 3188 默认+失败续跑）；②boot 面真实性（现 DshInstance.start 仅 host 树默认 CLI、从未从 install-c8dd3f07b 起、无候选 profile/catalog 装配、productTree 仅 precheck——复用本轮已验证 boot/profile 挂载法**真实指向新安装包**，fixed-SHA/包 sha256/precheck 于 live 前实执行 fail-closed）；③`--blueprint-artifact` gate 只认 ok/valid 字符串→按 artifactSupply 实际合法返回形（report.status==='ok'）修，不放宽；④teardown 真实性（finally 未查 portFree 即 teardown=true=不实；只治自己 child+精确端口，wait close+**portFree 实检**通过才 teardown 真、否则非零退出；禁泛 PID/3080）。冷导入 NODE_RC=0 已充分收（不重测/重装）。一笔四项→复审；计划文字不再计账；闭合后根给单一显式窗。边界行（300s/64MiB 上限/df≥6GiB/PA-NOT_VERIFIED 律）已由 9e13afa4 入案。
+- **推送纪律更新（根 12:4x）**：官方 @447e14ac2d93797086cddc5b48090f90ec6d2cb8 gate 40063499711+protection **绿**（b165→8d4c→447e 连续替代、census 40063499790 在跑）⇒ **暂停纯收据/状态类推送**（每次推头会取消在跑 census）；**至少保当前 head 一轮完整 census**；矩阵记账本地累积、**随关键产品修复合批再推**；源 driver/run_code 在各自分支照跑不等 census；**699cc 包身份独立不变**；非冻结开发、非等 census 才写码。
+## 四档总账（根 12:5x 点名口径：工具名→四档→现 owner→实际缺项；源自本矩阵既有事实，无新审计体系；本地不推）
+
+**纠正入册**：旧口径"除四用户裁决外无整块未开发"**被 run_code 事实否定**——run_code 曾以半接线冒充供给，现态=未接线+功能缺；凡"合并了源码"≠已接线，凡"有测试"≠已测试。
+
+| 工具/家族 | 四档 | 现 owner | 实际缺项 | 下一实际命令（非 Host 者可直接跑） |
+|---|---|---|---|---|
+| run_code (B-PTC) | **未接线**（撤注册后）+总次数cap=**未开发**(639零面,披露制) | 44ece | 公开 seam 接线 commit；真实 Host 验收 | 接线卡 A/B 收尾→本地合，不推 |
+| search 供给 (G2-web) | 接线未测 | e78 | 外部验收=用户 key+三选一；部署 cap 逐次 mirror | e78：用已验证 boot 公共函数做 C2 场景准备（只 import，不 fork 生命周期） |
+| terminal (G3-term) | 接线未测 | 8e62e20c | Host 窗验收 | 同上口径的 terminal 场景准备腿 |
+| goal-service/session (G5) | 接线未测（88/88 测面） | 8722db94 关卡/00270f41 | Host 窗；G6 生命周期=**裁决未落**（未开发段） | G6 生命周期仅出方案纸，不写挂载 |
+| team (B-TEAM) | 接线未测；窗1备而不启 | **9c 独占入口**（禁并写） | 集中卡四项闭合+根窗 GO+PA=NOT_VERIFIED 待窗内日志定 | 9c 四项一笔 commit（在途） |
+| schedule (B-SCHEDULE) | 接线未测 | d675792d | Schedule 接管=**裁决未落**；Host | 场景准备腿（复用公共 boot 函数）；接管仅方案 |
+| subagent 适配器 | 接线未测 | 2aeefdeb | Host 窗 | 场景准备腿 |
+| image | 接线未测 | 5a473417 | r18 Host 复验 kit 未跑 | kit 准备收尾（原卡在案） |
+| spill-local | 接线未测（lint 外文件链接根错在案） | cf8e0202 | Host 窗 | 场景准备腿 |
+| provider-id | 接线未测 | eb4d6466/d51973541 关卡 | Host 窗 | 无冲突则并入他窗场景准备，不单开 |
+
+**吞吐纪律**：每行只列一条下一实际命令；派工≠启动；任何新 Host=原窗口 GO；9c driver 入口禁并写；无 clone/install。
