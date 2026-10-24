@@ -151,15 +151,16 @@ const SAVED_BP_V3_YAML = [
   // resolve, NO self-approve — L4 proves the refusal.
   'memberEnvelopes:', '  - templateId: ctl-worker', '    envelope:', '      allow:',
   '        - request-control', '      deny: []', 'requirements: []',
-  'permissionMutationEnvelope:', '  rules:', // L6/L7 CARRIER — ORIGINAL-SOURCE GRAMMAR PAIR (reported, not guessed): the
-  '    - operationClass: read', // blueprint carrier matcher is {kind, resource} (permission-mutation.js validateMatcher)
-  '      matcher:', '        kind: exact', // while the WIRE grant rule matcher is {kind, value} (tools.js parsePermissionRules).
-  '        path: package.json', // blueprint FILE matcher = {kind, path} (schema.js:213-216) — THIRD grammar of the trio // Same fs-exact fact, two closed grammars — both spelled per their own source.
+  'permissionMutationEnvelope:', '  rules:', // L6/L7 CARRIER — the GRAMMAR TRIO, each spelled per its ORIGINAL SOURCE:
+  '    - operationClass: read', // (1) BLUEPRINT carrier matcher = {kind, path} (schema.js:213-216 FILE_MATCHER_FIELDS) —
+  '      matcher:', '        kind: exact', //     what THIS block below uses, validated by parseBlueprint OFFLINE.
+  '        path: package.json', // (2) WIRE grant rule matcher = {kind, value} (tools.js parsePermissionRules, value<=4096).
+  // (3) RUNTIME overlay matcher = {kind, resource} (permission-mutation.js validateMatcher).
   '      maximumEffect: allow',
   'teamHardEnvelope:', '  rules:', // schemaVersion-3 CEILING-2 (never merged with the carrier; both must cover).
   '    - operationClass: read',
   '      matcher:', '        kind: exact',
-  '        path: package.json', // blueprint FILE matcher = {kind, path} (schema.js:213-216) — THIRD grammar of the trio
+  '        path: package.json',
   '      maximumEffect: allow',
   'policyStates: []', 'metadata: {}', '---', '',
 ].join('\n')
