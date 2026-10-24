@@ -67,8 +67,16 @@ const PRODUCT_TIP = '5062988f0626bff3aea77a2cb98247dd96c0afa4'
  *  three B-TEAM product files diff EMPTY against it. The drift=0 attribution
  *  remains the pin's, not this line's. */
 const PRODUCT_TIP_LATER = '83a2c30c7d6599ef81da14b83527cd0c47f90d5f'
+/** Accepted by THIS lane's own law after a fresh read-only measurement: HEAD
+ *  `d6af4715c…`, `status --porcelain --untracked-files=no` empty AND no
+ *  untracked entries, the built mirror answers adapter revision 2, and the
+ *  B-TEAM block of `team-tool-plane.mjs` plus the two family files diff EMPTY
+ *  against this lane (the plane's remaining line drift is other lanes' block,
+ *  verified to touch no `teamOps`/`callerGate`/`queryFacts`/`registrationOf`
+ *  line). The drift=0 artifact attribution still belongs to the pin. */
+const PRODUCT_TIP_CURRENT = 'd6af4715cfbe3c24c5b1fc432d71e454f7a33fdf'
 const productTree = () => process.env.A5M2_TEAM_C2_PRODUCT_TREE ?? SHARED_PRODUCT_TREE
-const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, PRODUCT_TIP_LATER, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
+const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, PRODUCT_TIP_LATER, PRODUCT_TIP_CURRENT, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
 /**
@@ -165,6 +173,7 @@ export function runProvenReader (script, ...args) {
  *  guessing the protocol. */
 export const GAPS = Object.freeze({
   'GAP-BLUEPRINT-IDENTITY': 'a `team.create` case needs a real `blueprintId` + `blueprintRevision` (v3 blueprint generation). The param shape is verified and built below, and the source is gated by the production `inspectBlueprintSource`, but no blueprint is minted here — the create call is therefore not issued yet.',
+  'GAP-INITIAL-WORK-TOKEN': '`team.admitInitialWork` is a v2-only WRITE method whose CLOSED params are `rootSessionId, requestToken, prompt, attachedContext` (contracts/params.ts:578-592) and whose handler (`packages/remote/src/handlers/team.ts:760-776`) forwards `requestToken` straight to the port. A leg here would need a token minted by a prior landed initial-work flow this driver chain never runs, so the call is NOT issued and the leg stays NOT_RUN with that named precondition.',
   'GAP-DURABLE-REPLAY': 'C-DUR-1 needs a durable approval composed under the PREVIOUS adapter revision; without such a row the leg is not attempted (and never "proved" by a file revision or by two refusals).',
 })
 
