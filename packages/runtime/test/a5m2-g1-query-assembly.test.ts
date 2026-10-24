@@ -66,6 +66,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { findTestRepoRoot } from '../../../tests/paths.mjs'
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
 import { parseRequestedEffectSet } from '../../domain/tool-governance/src/index.js'
+// Type-only: the REAL exported code shapes of the two modules under test —
+// the spec's earlier local `Record<string, string>` restatement widened every
+// lookup to `string | undefined` under noUncheckedIndexedAccess and lost the
+// literals. `typeof` of the d.mts declares keeps the spec pinned to the
+// shipped shapes (an export rename or code drift fails HERE, at compile time).
+import type { A5_G1_QUERY_ASSEMBLY_CODES } from '../src/plugin/live/governed-families/g1-query-assembly.d.mts'
+import type { A5_G1_QUERY_WIRING_CODES } from '../src/plugin/live/governed-families/g1-query-wiring.d.mts'
 
 type Walk = { realmId: string; callId: string; parametersFingerprint: unknown; requestedEffects: unknown; toolName: string; family: Record<string, unknown>; signal: AbortSignal | undefined }
 type AssemblyValue = {
@@ -85,12 +92,12 @@ type AssemblyValue = {
 type AssemblyResult = AssemblyValue | { ok: false; code: string; message: string }
 type AssemblyModule = {
   A5_G1_QUERY_ASSEMBLY_REVISION: number
-  A5_G1_QUERY_ASSEMBLY_CODES: Record<string, string>
+  A5_G1_QUERY_ASSEMBLY_CODES: typeof A5_G1_QUERY_ASSEMBLY_CODES
   createG1QueryAssembly: (mount?: Record<string, unknown>) => AssemblyResult
 }
 
 const ASM = (await import(new URL('../src/plugin/live/governed-families/g1-query-assembly.mjs', import.meta.url).href)) as AssemblyModule
-const WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as { A5_G1_QUERY_WIRING_CODES: Record<string, string> }
+const WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as { A5_G1_QUERY_WIRING_CODES: typeof A5_G1_QUERY_WIRING_CODES }
 const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as { A5_G1_ADAPTER_REVISION: number }
 const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
   a5GovernedFamilyFor: (key: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
@@ -310,7 +317,9 @@ describe('a5m2-g1-query-assembly: the mount-side PA production line over the wir
       expect(Object.keys(assembly.captures).sort()).toEqual([...SUBSET].sort())
       for (const name of SUBSET) {
         const capture = assembly.captures[name]
-        expect(capture).toBeDefined()
+        // honest narrowing (and a sharper fact than toBeDefined): the fixture
+        // registered this name, so a missing capture is a broken world.
+        if (capture === undefined) throw new Error(`the live registry must have answered '${name}' — the fixture registered it`)
         expect(capture.status).toBe('CAPTURED')
         // the mint is NAMESPACED apart from the placement keys
         expect(capture.definitionIdentity.startsWith(`g1-capture@${world.providerId}@${name}#`)).toBe(true)
@@ -496,7 +505,7 @@ describe('a5m2-g1-query-assembly: the mount-side PA production line over the wir
   })
 
   describe('(G) import closure asserted from the SOURCE TEXT', () => {
-    const source = readFileSync(new URL('../src/plugin/live/governed-families/g1-query-assembly.mjs', import.meta.url), 'utf8')
+    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../src/plugin/live/governed-families/g1-query-assembly.mjs'), 'utf8')
     it('the static closure is exactly [wiring, production registry, domain parser] — no adapter edge, no node:, no dynamic import', () => {
       const statics = [...source.matchAll(/^\s*import\s+(?:[\s\S]*?)\s*from\s*'([^']+)'/gm)].map((m) => String(m[1]))
       expect([...new Set(statics)].sort()).toEqual([
