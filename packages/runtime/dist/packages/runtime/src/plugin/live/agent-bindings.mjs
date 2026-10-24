@@ -3088,6 +3088,12 @@ export function createAgentBindings(deps) {
               entries: g2Supply.browserEntries ?? g2Supply.entries,
               consumeApproval: g2Supply.consumeBrowserApproval, callResource: g2Supply.callResource,
             } } : {}),
+            ...(planeCfg.g2WebEnabled === true && g2Supply.webFixedLanes !== null && typeof g2Supply.webFixedLanes === 'object'
+              ? { webMount: {
+                lanes: g2Supply.webFixedLanes,
+                ...(typeof planeCfg.g2Web?.searchOrigin === 'string' ? { searchOrigin: planeCfg.g2Web.searchOrigin } : {}),
+              } }
+              : {}),
             observe: (event) => observations.push(`a5m2-g2: ${String(event?.lane ?? '?')} ${String(event?.event ?? '')}`),
           })
           if (g2Built.ok !== true) {

@@ -39,7 +39,7 @@
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g2-team-mount
  */
 import { A5_G2_WEB_ROUTE_GAP, createG2TeamBrowserPort, createG2TeamMcpPort, A5_G2_ASSEMBLY_CODES, loadG2TeamAssemblyEntries } from './g2-team-assembly.mjs'
-import { createG2McpResourceAdapters, createG2BrowserAdapters } from './g2-connector-adapters.mjs'
+import { createG2McpResourceAdapters, createG2BrowserAdapters, createG2WebAdapters } from './g2-connector-adapters.mjs'
 
 const refuse = (code, message) => Object.freeze({ ok: false, code, message })
 
@@ -72,7 +72,7 @@ const BROWSER_METHODS = Object.freeze({
  * }}
  */
 export async function createG2TeamMount(input = {}) {
-  const { realmId, providerId, readNative, definitionIdentityOf, scopeFaces, mcpMount, browserMount } = input
+  const { realmId, providerId, readNative, definitionIdentityOf, scopeFaces, mcpMount, browserMount, webMount } = input
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
   if (typeof realmId !== 'string' || realmId.length === 0 || typeof providerId !== 'string' || providerId.length === 0) {
     return refuse(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, 'realmId/providerId are REQUIRED — the mount speaks for ONE realm under ONE provider identity')
@@ -267,6 +267,32 @@ export async function createG2TeamMount(input = {}) {
     ports.browser = port
   }
 
+  // ROOT Web wiring card: the g2Web backend rides the SAME backends face
+  // the plane injects (backends literal at agent-bindings :3248+:3256).
+  // Lanes arrive from the host supply (r44 out.webFixedLanes pass-through);
+  // rows are the CLOSED createG2WebAdapters face; descriptions are the
+  // REAL captured native bytes via readNative. A broken/missing piece
+  // refuses the mount typed — the plane's fail-close law is never papered
+  // with an empty rowset or placeholder bytes.
+  if (webMount !== null && typeof webMount === 'object') {
+    try {
+      backends.g2Web = createG2WebBackend({
+        webAdaptersMod: { createG2WebAdapters },
+        realmId, providerId, readNative, definitionIdentityOf, observe,
+        ...(typeof webMount.searchOrigin === 'string' && webMount.searchOrigin.length > 0 ? { searchOrigin: webMount.searchOrigin } : {}),
+        ...(typeof webMount.readProviderFacts === 'function' ? { readProviderFacts: webMount.readProviderFacts } : {}),
+        lanes: webMount.lanes,
+        descriptions: Object.freeze({
+          web_fetch: String(readNative('web_fetch')?.description ?? ''),
+          web_search: String(readNative('web_search')?.description ?? ''),
+        }),
+      })
+    } catch (error) {
+      const cleanup = await disposeBuilt()
+      return refuse(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, withCleanup(`g2Web backend refused at mount: ${String(error?.message ?? error)}`, cleanup))
+    }
+  }
+
   return Object.freeze({
     ok: true,
     backends: Object.freeze(backends),
@@ -315,7 +341,7 @@ export async function createG2TeamAssemblySupply(input = {}) {
   if (typeof makeTransport !== 'function') {
     return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'makeTransport is REQUIRED — the transport factory\'s real producer is the host mcp connection layer over the APPROVED config (stdio/http); minting one here would copy host transport internals into this lane')
   }
-  const supply = { ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
+  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
   // browser supply is ALL-OR-NOTHING (the loader always carries the two
   // public entry functions; arming them WITHOUT the Team PA approval face +
   // the stagehand method mapping would arm a row whose door nobody opened):
