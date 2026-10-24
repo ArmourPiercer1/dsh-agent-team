@@ -2802,11 +2802,28 @@ export function createGovernedLspArm(deps) {
  *  the escalation adjudication bridge): CENTER captures the registry-minted
  *  native definition and wires THIS arm; the arm never answers an escalation
  *  and never grants nested calls anything. */
+/** The MEASURED host escalation-target enum for the run_code
+ *  `sandbox_permissions` CAPTURE pin (A5M2-G3 B-PTC wiring round, root
+ *  04:4x card; e78 handoff [B], self-verified at both faces): the REAL
+ *  registry-minted schema enum is the ESCALATION-TARGET set —
+ *  tests/deepseek-harness-test-use packages/sandbox/sandbox/src/
+ *  escalation.ts:41 `ESCALATION_TARGETS = ['workspace-write',
+ *  'danger-full-access']`, fed into the minted definition verbatim by
+ *  packages/core/tools/src/ptc.ts:110 (`RUN_CODE_CONTROLS`
+ *  `enum: [...ESCALATION_TARGETS]`). Pinning the 3-member BRIDGE
+ *  vocabulary here made capture THROW on the real definition (an
+ *  escalation TARGET list is not the SandboxMode ask vocabulary): the
+ *  bridge vocabulary `PTC_ESCALATION_MODES` (ptc-escalation-row.mjs:80,
+ *  the escalation row's adjudication face and this adapter's
+ *  args pair-law) stays UNTOUCHED — only the capture pin rides the
+ *  measured schema face. */
+export const A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS = Object.freeze(['workspace-write', 'danger-full-access'])
+
 export function createGovernedRunCodeArm(deps) {
   if (typeof deps.ptcFacts !== 'function') {
     throw new TypeError('g3-fsproc-adapters/run_code: ptcFacts is required — interpreter identity, the EFFECTIVE envelope, and the child-channel facts are the target; without them every run is an unattributed interpreter')
   }
-  assertCapturedEnum('run_code', 'sandbox_permissions', deps.nativeDefinition?.parameters?.sandbox_permissions?.enum, PTC_ESCALATION_MODES)
+  assertCapturedEnum('run_code', 'sandbox_permissions', deps.nativeDefinition?.parameters?.sandbox_permissions?.enum, A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS)
   return createDelegateArm({
     familyId: A5_G3_FAMILIES.PTC,
     toolName: 'run_code',

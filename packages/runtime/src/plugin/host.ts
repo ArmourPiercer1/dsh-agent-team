@@ -2851,6 +2851,14 @@ async function buildG2TeamSupply(
     // 639 global-store token; sandboxPolicy is the ctx property beside it).
     sandbox: () => ctx.get('sandbox'),
     sandboxPolicy: () => ctx.sandboxPolicy,
+    // A5M2 G3 B-PTC (root 04:4x card, the same lazy pattern): the LIVE
+    // registered PTC runtime instance — the SAME 639 global-store token the
+    // host tool registry itself reads (core/tools/src/index.ts:956/1046
+    // `ctx.get('ptcRuntime')`). Additive optional, never a hard inject: an
+    // unregistered token THROWS at ctx.get and the CALLER's guard answers
+    // honest absence — the run_code arm then refuses every run typed
+    // (P_PTC_TARGET_UNRESOLVED), worlds without PTC mode stay byte-identical.
+    ptcRuntime: () => ctx.get('ptcRuntime'),
     // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
     // DSH public `sessionQuery` service — the registered SessionQueryEngine
     // whose five facets (search / trace / event-read / authorization /

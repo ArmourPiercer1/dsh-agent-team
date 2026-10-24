@@ -94,6 +94,7 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // same bridge law as G6 — the committed G3 adapter is reached THROUGH the
 // wiring module only (the adapter itself is never imported or edited here).
 import { buildG3TerminalWiring, A5_G3_TERMINAL_TOOL_NAMES } from './governed-families/g3-terminal-wiring.mjs'
+import { buildG3RunCodeWiring, A5_G3_RUN_CODE_TOOL_NAME } from './governed-families/g3-ptc-wiring.mjs'
 // A5M2-G5 B-SESSION GOAL SERVICE (this lane's additive import rows under
 // the G6 pair): the goal wiring bridge and the adapter's OWN census face —
 // imported VERBATIM, no law restated here.
@@ -1452,6 +1453,42 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }
     }
     terminalInject = Object.freeze({ ...terminalInjectRaw })
+  }
+
+  // ── A5M2 G3 B-PTC `run_code` injection law (root 04:4x card, this lane) ──
+  // The single governed run_code row arrives as the CENTER's captured-evidence
+  // inject (the a5G3TerminalInject pattern, same law): REAL identity pair,
+  // the member-scoped capture seam, the LIVE ptcFacts supplier, and the
+  // CURRENT binding-facts reader. The plane's shape check refuses
+  // structurally-broken evidence only — the adapter's own budget/envelope
+  // laws decide the deep semantics (the G6 division verbatim). 'run_code' is
+  // PLANE_RESERVED_NATIVE (C-16): this closed key is the ONLY authorized
+  // governed mount for that spelling, and the escalation adjudication row
+  // (ptc-escalation-row) stays untouched — this row never answers an
+  // escalation and never grants nested calls anything (the adapter's word).
+  const runCodeInjectRaw = input.backends?.runCode
+  const runCodeInjectInvalid = (why) => ({ ok: false, code: 'RUN_CODE_ARM_INJECT_INVALID', message: `backends.runCode: ${why}` })
+  let runCodeInject = null
+  if (runCodeInjectRaw !== undefined) {
+    const bad = typeof runCodeInjectRaw.providerId !== 'string' || runCodeInjectRaw.providerId.length === 0
+      ? 'providerId is required (the family registration carries the provider identity verbatim)'
+      : typeof runCodeInjectRaw.readNative !== 'function'
+        ? 'readNative (name) => definition | undefined is required — the member-scoped capture seam (the 85 exact-capture law; no global/parent fallback), `undefined` legally landing the DECLARED-INACTIVE census'
+        : typeof runCodeInjectRaw.memberAgentId !== 'string' || runCodeInjectRaw.memberAgentId.length === 0
+          ? 'memberAgentId is required (the REAL member Agent id, exec.agent.id — never a name lookup)'
+          : typeof runCodeInjectRaw.sessionHeaderId !== 'string' || runCodeInjectRaw.sessionHeaderId.length === 0
+            ? 'sessionHeaderId is required (the durable session header, exec.agent.session.header.id)'
+            : typeof runCodeInjectRaw.ptcFacts !== 'function'
+              ? 'ptcFacts () => facts | null is required — the LIVE supplier of interpreter/effectiveEnvelope/timeout/childChannel; an absent supply face answers null and the arm refuses every run TYPED (never an invented face)'
+              : typeof runCodeInjectRaw.bindingFacts !== 'function'
+                ? 'bindingFacts (toolName) => {bindingId, bindingRevision, policyGeneration, authorityGeneration} is required — the CURRENT dispatcher binding of THAT tool\'s entry, read LIVE (the todo/write arm reader law)'
+                : undefined
+    if (bad !== undefined) return runCodeInjectInvalid(bad)
+    if (A5_G3_RUN_CODE_TOOL_NAME === readName || A5_G3_RUN_CODE_TOOL_NAME === A5_TODO_MOUNT_NAME
+      || A5_G3_RUN_CODE_TOOL_NAME === A5_WRITE_MOUNT_NAME || A5_G3_RUN_CODE_TOOL_NAME === A5_IMAGE_MOUNT_NAME) {
+      return runCodeInjectInvalid(`'${A5_G3_RUN_CODE_TOOL_NAME}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the B-PTC block)`)
+    }
+    runCodeInject = Object.freeze({ ...runCodeInjectRaw })
   }
 
   // ── A5-M2 B-SUBAGENT CONTROL injection law (this lane's block, root 21:01 card) ──
@@ -4803,7 +4840,69 @@ export function createTeamToolPlaneAssembly(input = {}) {
       return { ok: false, code: 'TERMINAL_ARM_REFUSED', message: `backends.terminal: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
     }
   }
+  // A5M2 G3 B-PTC (root 04:4x card): the single governed run_code row, the
+  // a5G3TerminalInject pattern verbatim — its OWN mount nonce and token
+  // single-flight ledger (one governed call per execution token, the same
+  // law as the terminal block; separate mount state), the SAME lazy
+  // placement feed and identity seam, the REAL seat paAdmit.
+  let runCodeWiring = null
+  const runCodeTokenLedger = new Map()
+  if (runCodeInject !== null) {
+    let rcCallSeq = 0
+    const rcMountNonce = String(globalThis.crypto?.randomUUID?.()
+      ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`)
+    const rcPrefix = `team-${String(input.instanceId ?? templateId ?? 'unknown')}-g3ptc`
+    const rcTokenLedger = runCodeTokenLedger
+    const rcCorrelationOf = (exec) => {
+      const raw = exec !== null && typeof exec === 'object' ? exec.token : undefined
+      const tokenKey = (typeof raw === 'object' && raw !== null) ? raw : typeof raw === 'symbol' ? raw : undefined
+      if (tokenKey !== undefined) {
+        if (rcTokenLedger.has(tokenKey)) {
+          observe(`a5m2-g3-ptc: token-replay REFUSED name=${A5_G3_RUN_CODE_TOOL_NAME} — one governed call per execution token`)
+          return null
+        }
+      }
+      rcCallSeq += 1
+      const callId = `${rcPrefix}-run_code:${tokenKey !== undefined ? 'hexec' : 'mount'}:${rcMountNonce}-${String(rcCallSeq)}`
+      if (tokenKey !== undefined) rcTokenLedger.set(tokenKey, callId)
+      return callId
+    }
+    try {
+      const builtRc = buildG3RunCodeWiring({
+        realmId,
+        providerId: runCodeInject.providerId,
+        memberAgentId: runCodeInject.memberAgentId,
+        sessionHeaderId: runCodeInject.sessionHeaderId,
+        readNative: runCodeInject.readNative,
+        ptcFacts: runCodeInject.ptcFacts,
+        bindingFacts: runCodeInject.bindingFacts,
+        correlationOf: rcCorrelationOf,
+        // THE LAZY FEED (pb §6, the placedByName law): lookup-time reads,
+        // never an eager snapshot (the terminal bridge's word, verbatim).
+        placementFeed: (name) => {
+          const d = placedByName.get(name)
+          if (d === undefined) return undefined
+          const identity = definitionIdentityOf(d)
+          return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
+        },
+        identityOf: (def) => definitionIdentityOf(def),
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-g3-ptc: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtRc.ok !== true) {
+        return { ok: false, code: 'RUN_CODE_ARM_REFUSED', message: `backends.runCode: the wiring bridge refused the mount (${String(builtRc.code)} — ${String(builtRc.detail)})` }
+      }
+      runCodeWiring = builtRc
+      for (const declaredRow of runCodeWiring.declared) {
+        observe(`a5m2-g3-ptc: DECLARED-INACTIVE ${String(declaredRow.name)} (${String(declaredRow.reason)}) — native untouched, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'RUN_CODE_ARM_REFUSED', message: `backends.runCode: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
   const g3Defs = g3Wiring === null ? [] : g3Wiring.definitions
+  const runCodeDefs = runCodeWiring === null ? [] : runCodeWiring.definitions
+
   const g5Defs = g5Wiring === null ? [] : g5Wiring.definitions
   // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the trio definitions the
   // control WIRING built (captured native faces, ONLY execute replaced; each
@@ -5058,9 +5157,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && g3Defs.length === 0 && g2Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && g3Defs.length === 0 && runCodeDefs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...g3Defs, ...g2Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...g3Defs, ...runCodeDefs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -5117,7 +5216,17 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         declared: g3Wiring.declared,
         familyRegistrations: g3Wiring.familyRegistrations,
       }) }),
-
+      /** A5M2 G3 B-PTC (root 04:4x card): the run_code wiring face for THIS
+       *  mount — the same presence-decision law as the terminal face. The
+       *  mount writer reads `familyRegistrations()` AFTER publish and pairs
+       *  the entry with `registerA5GovernedFamily`; the drain rides this
+       *  mount's dispose, never the writer's. */
+      ...(runCodeWiring === null ? {} : { runCode: Object.freeze({
+        familyId: runCodeWiring.familyId,
+        placementNames: runCodeWiring.placementNames,
+        declared: runCodeWiring.declared,
+        familyRegistrations: runCodeWiring.familyRegistrations,
+      }) }),
       /** A5M2-G5 B-SESSION GOAL SERVICE (this lane's block): the goal wiring
        *  face for THIS mount (omitted, NOT set to `undefined`, when the
        *  family is not deployed — the presence-decision law the hand-off
@@ -5386,6 +5495,11 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // token-ledger release below.
             if (g3Wiring !== null) g3Wiring.drain()
             g3TokenLedger.clear()
+            // A5M2 G3 B-PTC (root 04:4x card): the SAME teardown law for the
+            // single run_code row (new-call prohibition only; the drain
+            // settles nothing) and its issued-identity ledger.
+            if (runCodeWiring !== null) runCodeWiring.drain()
+            runCodeTokenLedger.clear()
             // A5M2-G5 B-SESSION GOAL SERVICE: the SAME teardown law —
             // DRAINING is the wiring's new-call prohibition (committed
             // session appends stay durable; the adapter owns no cancellable

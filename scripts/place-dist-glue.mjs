@@ -292,6 +292,15 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
   },
+  // A5M2-G3-PTC (root 04:4x throughput card): the B-PTC run_code wiring
+  // bridge — imported by the mirrored plane by RELATIVE specifier, exactly
+  // the terminal-wiring class. Its closure legs are the same measured ones
+  // (the domain tool-governance tsc emit inside the mirror + the adapter
+  // above); byte-identical like every entry; drift gate D compares.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
+  },
   // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
   // `agent-bindings.mjs` now imports the G1-WIRE lane's two production
   // modules by RELATIVE specifier STATICALLY (at module load, gate or no
