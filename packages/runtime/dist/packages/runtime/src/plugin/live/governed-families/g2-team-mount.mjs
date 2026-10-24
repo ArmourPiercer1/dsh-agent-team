@@ -453,3 +453,55 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
     }),
   })
 }
+
+/**
+ * THE g2Web rowset (root 00:53: the PRODUCTION CALLER of the trio —
+ * beginCall is wrapped HERE, not left a helper). Rows run inside the
+ * plane's g2 execution surface, so every call arrives on the REAL g2
+ * exec identity: `exec.g2ApprovedCallId` (the approved call identity,
+ * team-tool-plane :3597) and `exec.g2ConsumedProof` (the one-shot
+ * approval witness whose `grant` IS the real grant — the same
+ * leg.grant grammar the plane consumes at :1534-1537). The row:
+ *   1. resolves the ONE web gateway assembly for its root;
+ *   2. announces beginCall with grant/call/placement/member/effects/
+ *      assembly SEPARATELY (all from the live call, zero constants);
+ *   3. runs the call through the gateway's lane-typed callWeb with the
+ *      exec signal threaded (GROUP 5 cancellation law);
+ *   4. clears the announce in finally (transient, no ledger).
+ */
+export function createG2WebRowset ({ gatewayResolver, webCenterPorts, member, assemblyId, operations = ['fetch', 'search'] } = {}) { // the CLOSED web table: A5_G2_WEB_MOUNT_NAMES = ['web_search','web_fetch'] (team-tool-plane :112)
+  if (typeof gatewayResolver !== 'function' || webCenterPorts === null || typeof webCenterPorts !== 'object' || typeof webCenterPorts.beginCall !== 'function') {
+    throw new TypeError('G2_SUPPLY_ENTRY_INVALID: the web rowset needs the gateway resolver and the center ports (beginCall law); nothing rows without them')
+  }
+  return operations.map((operation) => Object.freeze({
+    name: `web_${operation}`,
+    execute: async (raw, exec) => {
+      const rootSessionId = String(member?.rootSessionId ?? '')
+      const assembly = gatewayResolver(rootSessionId)
+      if (assembly === null || assembly === undefined || assembly.active !== true) {
+        return { ok: false, error: { code: 'G2_WEB_ROW_INACTIVE', message: 'no ACTIVE live web gateway assembly for this root: the row refuses, nothing runs outside the gateway', sideEffectUnknown: false } }
+      }
+      const callId = typeof exec?.g2ApprovedCallId === 'string' && exec.g2ApprovedCallId.length > 0 ? exec.g2ApprovedCallId : null
+      const proof = exec?.g2ConsumedProof
+      const grant = proof !== null && typeof proof === 'object' && proof.grant !== null && typeof proof.grant === 'object' && typeof proof.grant.grantId === 'string' ? proof.grant : null
+      if (callId === null || grant === null) {
+        return { ok: false, error: { code: 'G2_WEB_CALL_IDENTITY_INCOMPLETE', message: 'the web row rides the g2 exec identity: g2ApprovedCallId + consumedProof.grant must BOTH stand (all-allow legs carry the leg grant; nothing announces a grant it did not read)', sideEffectUnknown: false } }
+      }
+      const envelope = raw?.envelope
+      const end = webCenterPorts.beginCall({
+        grant,
+        call: Object.freeze({ callId, realmId: String(exec?.realmId ?? raw?.realmId ?? '') }),
+        binding: Object.freeze({ bindingId: String(raw?.binding?.bindingId ?? raw?.bindingId ?? proof.grant.bindingId ?? '') }),
+        member: Object.freeze({ teamSessionId: rootSessionId, instanceId: String(member?.instanceId ?? '') }),
+        effects: Object.freeze({ effects: Array.isArray(raw?.effects) ? raw.effects : [{ kind: 'connect', resource: { origin: String(envelope?.destinationOrigin ?? raw?.destinationOrigin ?? '') } }], fingerprint: String(exec?.parametersFingerprint ?? '') }),
+        placement: Object.freeze({ name: `web_${operation}` }),
+        assemblyId: String(assemblyId ?? ''),
+      })
+      try {
+        return await assembly.callWeb(Object.freeze({ ...(raw ?? {}), operation }), { ...(exec?.signal === undefined ? {} : { signal: exec.signal }) })
+      } finally {
+        end()
+      }
+    },
+  }))
+}

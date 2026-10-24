@@ -1420,3 +1420,40 @@ describe('A5M2-WIRE round-40: fixed web lanes through the REAL createG2WebProvid
     expect(() => mm.createG2WebFixedLanes({ fixedProvider: null, seamMod })).toThrow(/REAL fixed provider object/)
   })
 })
+
+/* ROOT 00:53 — the rowset IS the production caller: beginCall wrapped
+ * around the gateway call, real g2 exec identity, finally-clear. */
+describe('A5M2-WIRE round-41: g2Web rowset — beginCall wrapped at the real caller', () => {
+  it('web_fetch/web_search rows exist (closed table); a row announces grant/call separately from the g2 exec identity, runs callWeb with the signal, and clears in finally (even on throw); identity-incomplete and inactive assemblies refuse typed', async () => {
+    const mm = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as { createG2WebRowset: (i: Record<string, unknown>) => Array<{ name: string; execute: (raw: Record<string, unknown>, exec: Record<string, unknown>) => Promise<{ ok: boolean; error?: { code?: string } }> }> }
+    const announced: Record<string, unknown>[] = []
+    let cleared = 0
+    const ports = {
+      beginCall: (ctx: Record<string, unknown>) => { announced.push(ctx); return () => { cleared += 1 } },
+    }
+    const calls: unknown[][] = []
+    const assembly = { active: true, callWeb: async (req: unknown, opts: unknown) => { calls.push([req, opts]); return { ok: true, receipt: 'rcpt-1' } } }
+    const rows = mm.createG2WebRowset({
+      gatewayResolver: (root: string) => (root === 'rt' ? assembly : null),
+      webCenterPorts: ports,
+      member: { rootSessionId: 'rt', instanceId: 'mi-1' },
+      assemblyId: 'asm-x',
+    })
+    expect(rows.map((r) => r.name).sort()).toEqual(['web_fetch', 'web_search'])
+    const must = <T,>(v: T | undefined): T => { if (v === undefined) throw new Error('row missing'); return v }
+    const rowFetch = must(rows[0])
+    const exec = { g2ApprovedCallId: 'call-55', g2ConsumedProof: { grant: { grantId: 'grant-9' } }, realmId: 'r', signal: { aborted: false } }
+    const out = await rowFetch.execute({ destinationOrigin: 'https://t.example.invalid', effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] }, exec)
+    expect(out.ok).toBe(true)
+    expect(((announced[0] ?? {}).grant as Record<string, unknown>).grantId).toBe('grant-9')
+    expect(((announced[0] ?? {}).call as Record<string, unknown>).callId).toBe('call-55') // grant != call, BOTH real
+    expect(cleared).toBe(1)
+    const throwing = { active: true, callWeb: async () => { throw new Error('gateway blew up') } }
+    await expect(must(mm.createG2WebRowset({ gatewayResolver: () => throwing, webCenterPorts: ports, member: { rootSessionId: 'rt', instanceId: 'mi' }, assemblyId: 'asm-x' })[0]).execute({}, exec)).rejects.toThrow(/gateway blew up/)
+    expect(cleared).toBe(2) // finally cleared even through the throw
+    const noGrant = await rowFetch.execute({}, { g2ApprovedCallId: 'call-1' })
+    expect(noGrant.error?.code).toBe('G2_WEB_CALL_IDENTITY_INCOMPLETE')
+    const inactive = await must(mm.createG2WebRowset({ gatewayResolver: () => null, webCenterPorts: ports, member: { rootSessionId: 'other', instanceId: 'mi' }, assemblyId: 'a' })[0]).execute({}, exec)
+    expect(inactive.error?.code).toBe('G2_WEB_ROW_INACTIVE')
+  })
+})
