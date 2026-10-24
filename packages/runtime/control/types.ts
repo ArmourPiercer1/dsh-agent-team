@@ -2460,6 +2460,72 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'action']),
   }),
+  /* A5-M2 B-JOB (root M0 unowned-row assignment, CENTER whole-family order;
+   * whole-family continuous ownership per the root's five-point discipline —
+   * this lane owns the FC-JOB mint AND this row). ONE operation-discriminated
+   * entry over the THREE real operations of the FC-JOB census (frozen dispatch
+   * index M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json: recordIndex 18 job_output /
+   * 19 job_list / 20 job_kill; contract M0-B-FAMILY-TARGET-CONTRACTS.md#B-JOB:
+   * "目标S(真实job owner+jobId+producer incarnation, read/list/cancel)，read
+   * 位置/limit入manifest"; no new kind, no `any`, no ledger). Measured read-only
+   * at the REAL faces: host tool surface packages/jobs/tool-jobs/src/index.ts
+   * @639ed01539 (:311-414 — job_output{job_id! string, wait? boolean,
+   * timeout_ms? number}, job_list{}, job_kill{job_id! string, reason? string};
+   * validateJobId :170-175 refuses an empty id BEFORE any registry entry) and
+   * the landed takeover row (plane-effect-backends.mjs createGovernedJobsBridge
+   * — the two-fence order: gateway member-scope fence answers FIRST, an
+   * un-attributed jobId passes corded:false with the host caller fence
+   * authoritative, kill answers 'requested' | 'already-finished' — kill is a
+   * REQUEST, settlement belongs to the producer (C3 restart-recovery-OPEN)).
+   * The shared required spine mirrors the signed B-SUBAGENT face (the plane
+   * mints one walk shape); argsCanonical/namedGapsCanonical are the mint's OWN
+   * sorted-key canonicalJson (the :234-238 law carried from this lane) —
+   * COMPLETE reversible JSON, never a digest. jobIdClaim is 'string' on the
+   * two job-id rows (a missing/empty job_id is refused BEFORE the walk — a
+   * minted walk always carries the claim) and 'nullableString' on job-list with
+   * the mint value NULL: a list claims NO job address (the list_agents
+   * never-claim law, root 21:37 family law). ownerRelation/ownerAdjudication
+   * carry the TWO-FENCE answer of the pure gateway probe (each layer answers
+   * only for itself — pc-CONTRACT two-fence law). producerIncarnation carries
+   * the JobRegistry's own projection face (kind + startedAt from the pure
+   * svc.get read — the honest incarnation seat; the contract names NO owner()/
+   * done() method and none is claimed). budget carries the wait/timeout claim
+   * and the registry-owned output-limit law (the contract's read 位置/limit:
+   * position is the registry-owned since-last-read cursor — never
+   * caller-declared; the limit is the producer-set outputLimitBytes ceiling —
+   * both recorded as LAW, neither invented here). recordIndex rides the
+   * existing nonNegativeInt kind. currentFields ['operation','action']: the
+   * mint-side row-identity constants. No Host, no registration, no C2/C3 claim
+   * from table passage. */
+  'B-JOB': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      contract: 'string',
+      revision: 'string',
+      effect: 'string',
+      depth: 'string',
+      argsCanonical: 'string',
+      namedGapsCanonical: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'job-output': Object.freeze({
+          adds: Object.freeze({ action: 'string', caller: 'string', jobIdClaim: 'string', ownerRelation: 'string', ownerAdjudication: 'string', producerIncarnation: 'string', budget: 'string', effectDelta: 'string', recordIndex: 'nonNegativeInt' }),
+          binds: Object.freeze({ action: 'job-output' }),
+        }),
+        'job-list': Object.freeze({
+          adds: Object.freeze({ action: 'string', caller: 'string', jobIdClaim: 'nullableString', ownerRelation: 'string', ownerAdjudication: 'string', producerIncarnation: 'string', budget: 'string', effectDelta: 'string', recordIndex: 'nonNegativeInt' }),
+          binds: Object.freeze({ action: 'job-list' }),
+        }),
+        'job-kill': Object.freeze({
+          adds: Object.freeze({ action: 'string', caller: 'string', jobIdClaim: 'string', ownerRelation: 'string', ownerAdjudication: 'string', producerIncarnation: 'string', budget: 'string', effectDelta: 'string', recordIndex: 'nonNegativeInt' }),
+          binds: Object.freeze({ action: 'job-kill' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'action']),
+  }),
 } as const)
 
 /* The SIGNED closed kind list - the single source the module-load legality

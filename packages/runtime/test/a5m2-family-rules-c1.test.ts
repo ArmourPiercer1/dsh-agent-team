@@ -481,13 +481,14 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // with a command-keyed closed map) rides directly after B-EDIT, the lane
     // block's own insertion position — SEVENTEEN… sixteen→seventeen with the
     // root's own count of the table; the enumeration below is the authority.
-    // A5M2 G1-WIRE (center 14575 advance order, M0 1-record B-DEPENDENCY): the
-    // record-25 `load_workspace_dependencies` rule rides directly after
-    // B-INSPECT, the G1 lane block's own insertion position — eighteen. It does
-    // NOT carry the discriminated grammar (ONE minted claim shape; the
-    // single-flow law needs no variant group — no speculative widening).
+    // CENTER union re-anchor at the merged tree (visible, authority: this
+    // spec's fixed-point enumeration): B-PLUGIN after B-CONTROL (44ece R20,
+    // record 52), B-DEPENDENCY after B-INSPECT (a0670fa8, record 25) and
+    // B-JOB after B-SUBAGENT (2aeefdeb, FC-JOB trio records 18/19/20, one
+    // operation-discriminated entry, its lane's own insertion slot) - each
+    // rider at the ADDING block's position, TWENTY families.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-PLUGIN', 'B-INSPECT', 'B-DEPENDENCY', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-PLUGIN', 'B-INSPECT', 'B-DEPENDENCY', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT', 'B-JOB'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
@@ -501,7 +502,7 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
       // signed entries — added to the carrier set; nothing else moved.
       // B-CONTROL joins the carrier set (root 2026-10-25 LIMITED BUILD ORDER:
       // the §5 full-pairing change uses the existing closed variant grammar).
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL' || familyId === 'B-SRE' || familyId === 'B-PLUGIN'
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL' || familyId === 'B-SRE' || familyId === 'B-PLUGIN' || familyId === 'B-JOB'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
