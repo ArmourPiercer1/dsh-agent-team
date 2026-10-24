@@ -1299,7 +1299,8 @@ interface ArmWorld {
   publish: () => ArmRegistration[]
   entryOf: (name: string) => ArmEntry | undefined
   revise: (name: string, change: Record<string, unknown>) => boolean
-  scopeSources: { configured: string[]; templateAllow: string[]; facet: Record<string, boolean> }
+  inspectListCalls: () => number
+  dropDirectoryProvider: (id: string) => void
   topologyNow: () => { topologyRevision: number; topologyDigest: string; allowed: unknown[] } | undefined
 }
 const ARM_TUPLE = Object.freeze({
@@ -1311,7 +1312,21 @@ const ARM_TUPLE = Object.freeze({
   providerVersion: PROVIDER_ID,
 })
 let armSeq = 0
-async function mountArmWorld(opts: { supply?: false; armRow?: boolean } = {}): Promise<ArmWorld> {
+type ArmScope = ReadonlyArray<{ platform: string; provider: string; method: string }>
+// the DEPLOYER-configured hard boundary the positive legs run on (the block
+// default OFF ships NOTHING; these triples are explicit cfg, EXPERIMENTAL —
+// 接线未测, the identity-domain ruling says this path stays experimental
+// until the Host 接线 window).
+const SCOPE_OK: ArmScope = [
+  { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+  { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
+]
+async function mountArmWorld(opts: {
+  scope?: ArmScope
+  injectCurrent?: () => unknown
+  noFace?: boolean
+  armRow?: boolean
+} = {}): Promise<ArmWorld> {
   const label = `arm-${String(++armSeq)}`
   const realmId = `a5m2-g1-arm-${label}`
   const topology = { current: structuredClone(TOPOLOGY_BASE) }
@@ -1325,38 +1340,22 @@ async function mountArmWorld(opts: { supply?: false; armRow?: boolean } = {}): P
   const ownedNames: string[] = []
   const observations: string[] = []
   const legInputs: Record<string, unknown>[] = []
-  // ── ROOT 01:01 SUPPLY WIRING, mirrored: the PUBLIC inspect directory face
-  //    and the owner-held authorized scope, whose THREE sources are read
-  //    LIVE per call — configured servers, template capabilities.mcp allow,
-  //    the durable facet's allowed bit (the world's doubles of the mount's
-  //    three real sources; the production block wires the real
-  //    configuredMcpServers/filterMcpServers/mcpViews reads, pinned at
-  //    source level below). The supply itself is the PRODUCTION factory.
-  const inspectDir = [
+  // ── THE BLOCK'S TOPOLOGY CFG MIRROR, mirrored 1:1 (root G1 final ruling:
+  //    ① signed { current } injection wins; ② `topologyScope` deployer hard
+  //    boundary x live public directory (a067 factory, fresh intersection);
+  //    ③ ABSENT = default OFF, NOTHING constructed, the face not even read.
+  //    The MCP three-source matcher is WITHDRAWN (identity domains have no
+  //    crosswalk) — no half of it stands here either.
+  const inspectDir: Array<{ platform: string; id: string; purpose: string; methods: Array<{ name: string }> }> = [
     { platform: 'host', id: 'dsh_compute', purpose: 'compute', methods: [{ name: 'compute_health' }, { name: 'compute_list_jobs' }] },
     { platform: 'host', id: 'rogue-provider', purpose: 'unauthorized', methods: [{ name: 'anything' }] },
   ]
-  const inspectFace = { list: () => inspectDir.map((v) => ({ ...v, methods: v.methods.map((m) => ({ ...m })) })) }
-  const scopeSources = {
-    configured: ['dsh_compute', 'rogue-provider'],
-    templateAllow: ['dsh_compute'],
-    facet: { dsh_compute: true, 'rogue-provider': false },
-  } as { configured: string[]; templateAllow: string[]; facet: Record<string, boolean> }
-  const g1AuthorizedScope = (): unknown => {
-    const directory = inspectFace.list()
-    const permitted = new Set(scopeSources.configured
-      .filter((name) => scopeSources.templateAllow.includes(name))
-      .filter((name) => scopeSources.facet[name] === true))
-    const triples: Array<{ platform: string; provider: string; method: string }> = []
-    for (const view of directory) {
-      if (typeof view.platform !== 'string' || typeof view.id !== 'string' || !Array.isArray(view.methods)) return undefined
-      if (!permitted.has(view.id)) continue
-      for (const method of view.methods) {
-        if (typeof method.name !== 'string') return undefined
-        triples.push(Object.freeze({ platform: view.platform, provider: view.id, method: method.name }))
-      }
-    }
-    return triples
+  let inspectListCalls = 0
+  const inspectFace = {
+    list: () => {
+      inspectListCalls += 1
+      return inspectDir.map((v) => ({ ...v, methods: v.methods.map((m) => ({ ...m })) }))
+    },
   }
   // The Guard-installable ctx (the provider-identity makeCtx shape): one
   // name, one placement; reads resolve the scoped layer first, then the
@@ -1382,23 +1381,59 @@ async function mountArmWorld(opts: { supply?: false; armRow?: boolean } = {}): P
       },
     },
     on: () => () => {},
-    cordisInspect: opts.supply === false ? undefined : inspectFace,
+    cordisInspect: opts.noFace === true ? undefined : inspectFace,
   }
+  // ── the block's topology cfg resolution mirrored (grammar, refusal code,
+  //    default OFF, injection-wins INERT law; EXPERIMENTAL 接线未测).
   let armTopology: { current: () => { topologyRevision: number; topologyDigest: string; allowed: unknown[] } } | undefined
-  if (opts.supply !== false) {
-    const supplied = ARM_TOPO.createG1TrustedTopologySupply({
-      inspect: Object.freeze({ list: () => inspectFace.list() }),
-      authorized: g1AuthorizedScope,
-      observe: (row: unknown) => { observations.push(`a5m2-g1: topo ${String((row as Record<string, unknown> | undefined)?.event ?? 'observe')}`) },
-    })
-    if (supplied.ok === true) {
-      armTopology = Object.freeze({ current: () => supplied.supply.current() as { topologyRevision: number; topologyDigest: string; allowed: unknown[] } })
-      observations.push(`a5m2-g1: topology-SUPPLIED for ${label} (public ctx.cordisInspect face x live configured/capabilities/facet scope — fresh per read, no constants)`)
+  if (opts.injectCurrent !== undefined) {
+    armTopology = Object.freeze({ current: () => opts.injectCurrent!() as { topologyRevision: number; topologyDigest: string; allowed: unknown[] } })
+    if (opts.scope !== undefined) observations.push(`a5m2-g1: topologyScope-INERT for ${label} (the signed trustedTopology injection is the ONE face; the deployer scope is never consulted beside it)`)
+  } else if (opts.scope !== undefined) {
+    const triples: Array<{ platform: string; provider: string; method: string }> = []
+    let scopeBad: string | null = null
+    if (!Array.isArray(opts.scope)) {
+      scopeBad = 'must be an array of closed { platform, provider, method } triples'
     } else {
-      observations.push(`a5m2-g1: topology-supply-REFUSED for ${label} (${String(supplied.code)})`)
+      for (const entry of opts.scope) {
+        const keys = entry !== null && typeof entry === 'object' && !Array.isArray(entry) ? Object.keys(entry) : null
+        if (keys === null || keys.length !== 3 || !(keys.includes('platform') && keys.includes('provider') && keys.includes('method'))) {
+          scopeBad = 'every entry carries EXACTLY platform/provider/method (closed grammar, no extras, no model-shaped fields)'
+          break
+        }
+        if (typeof entry.platform !== 'string' || (entry.platform !== 'host' && entry.platform !== 'client')) {
+          scopeBad = 'platform is the closed Host/Client plane, never a wildcard'
+          break
+        }
+        if (typeof entry.provider !== 'string' || entry.provider.length === 0 || entry.provider === '*'
+          || typeof entry.method !== 'string' || entry.method.length === 0 || entry.method === '*') {
+          scopeBad = 'provider/method are exact non-empty ids — there is NO allow-all state'
+          break
+        }
+        triples.push(Object.freeze({ platform: entry.platform, provider: entry.provider, method: entry.method }))
+      }
+    }
+    if (scopeBad !== null) {
+      throw Object.assign(new Error(`alpha5-g1-arm-mount-refused: topologyScope ${scopeBad}`), { code: 'alpha5-g1-arm-mount-refused' })
+    }
+    const frozenScope = Object.freeze(triples)
+    if (opts.noFace === true) {
+      observations.push(`a5m2-g1: topology-supply-ABSENT for ${label} (no public ctx.cordisInspect face on this mount — rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
+    } else {
+      const supplied = ARM_TOPO.createG1TrustedTopologySupply({
+        inspect: Object.freeze({ list: () => inspectFace.list() }),
+        authorized: () => Object.freeze(frozenScope.map((triple) => Object.freeze({ ...triple }))),
+        observe: (row: unknown) => { observations.push(`a5m2-g1: topo ${String((row as Record<string, unknown> | undefined)?.event ?? 'observe')}`) },
+      })
+      if (supplied.ok === true) {
+        armTopology = Object.freeze({ current: () => supplied.supply.current() as { topologyRevision: number; topologyDigest: string; allowed: unknown[] } })
+        observations.push(`a5m2-g1: topology-SUPPLIED for ${label} (EXPERIMENTAL deployer-configured hard boundary x live public directory — fresh per read, never allow-all)`)
+      } else {
+        observations.push(`a5m2-g1: topology-supply-REFUSED for ${label} (${String(supplied.code)})`)
+      }
     }
   } else {
-    observations.push(`a5m2-g1: topology-supply-ABSENT for ${label} (no public ctx.cordisInspect face on this mount — rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
+    observations.push(`a5m2-g1: topology-supply-ABSENT for ${label} (no trustedTopology/topologyScope configured — default OFF per root topology14575, allow-all is never the default; rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
   }
   // ── the REAL plane: no g1 rows on this route (one placement, one ledger),
   //    plus the arm's placement-attribution row (root ①) — the owner's live
@@ -1567,7 +1602,11 @@ async function mountArmWorld(opts: { supply?: false; armRow?: boolean } = {}): P
     plane, nativeCalls, topology, observations, legInputs, assemblies, ledger, scopeLayer, keys, publish,
     entryOf: (name: string) => guard.dispatcher.surface.entryOf(name) as ArmEntry | undefined,
     revise: (name: string, change: Record<string, unknown>) => guard.dispatcher.revise(name, change as never).ok === true,
-    scopeSources,
+    inspectListCalls: () => inspectListCalls,
+    dropDirectoryProvider: (id: string) => {
+      const i = inspectDir.findIndex((v) => v.id === id)
+      if (i >= 0) inspectDir.splice(i, 1)
+    },
     topologyNow: () => armTopology?.current(),
   }
 }
@@ -1630,7 +1669,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('the wired def walks the SAME real chain through the PRODUCTION reader: durable row carries the rev-7 family block at FULL VALUE, the row binding IS the live Guard entry (provider authority evidence recorded, never aliased), leader allow, ONE consumption, the captured native entered ONCE', async () => {
-    const arm = await mountArmWorld()
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     const def = arm.scopeLayer.get('cordis_inspect_list')
     expect(def).toBeDefined()
@@ -1650,10 +1689,11 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
       trustedOwner: P6T4_ROOT,
       trustedProfileId: 'profile-a5m2-g1',
     })
-    // ROOT 01:01 supply wiring (E1-type positive): the face the row carries
-    // is the PRODUCTION supply's answer over the fake inspect directory and
-    // the live three-source scope — the real wiring walks one walk, one
-    // native run, and the durable row carries the supply's own digest pair.
+    // ROOT G1 FINAL RULING opt-in positive (EXPERIMENTAL 接线未测): the face
+    // the row carries is the PRODUCTION supply's answer over the fake public
+    // directory INTERSECTED with the deployer's explicit hard-boundary
+    // scope — one walk, one native run, the durable row carries the supply's
+    // own digest pair. No MCP-name intersection anywhere.
     expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(true)
     const face = arm.topologyNow()
     expect(face).toBeDefined()
@@ -1682,7 +1722,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('the query row on the arm: an authorized triple answers through the consumed plan; an unauthorized triple refuses at classify with zero row and zero native entry', async () => {
-    const arm = await mountArmWorld()
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     const def = arm.scopeLayer.get('cordis_inspect_query')
     const before = (await stateNow()).requests.length
@@ -1707,7 +1747,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('root ① RED control (no attribution row): the same place/bind/register lands, but with no g1Arm row the production reader answers NO placementName — every call fails closed with zero row and zero native entry', async () => {
-    const arm = await mountArmWorld({ armRow: false })
+    const arm = await mountArmWorld({ scope: SCOPE_OK, armRow: false })
     const registrations = arm.publish()
     expect(registrations).toHaveLength(2)
     const def = arm.scopeLayer.get('cordis_inspect_list')
@@ -1720,7 +1760,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('root ③ directed verification: a REAL dispatcher revise (verified=false) breaks the live binding-facts law mid-flight — the row refuses with the block fail-closed wording, zero row, zero native entry', async () => {
-    const arm = await mountArmWorld()
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     expect(arm.revise('cordis_inspect_list', { verified: false })).toBe(true)
     const def = arm.scopeLayer.get('cordis_inspect_list')
@@ -1732,25 +1772,28 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
   })
 
-  it('root supply card — supply ABSENT (no public ctx.cordisInspect face): the existing red control does NOT flip; the rows still mount, place and register, but every call refuses the module\u2019s OWN P_G1_TRUSTED_TOPOLOGY_ABSENT posture before admission — zero native entry, zero row', async () => {
-    const arm = await mountArmWorld({ supply: false })
-    expect(arm.observations.some((o) => o.includes('topology-supply-ABSENT'))).toBe(true)
+  it('root G1 FINAL RULING — DEFAULT OFF: with no trustedTopology/topologyScope nothing is constructed and the inspect face is never read; the existing red control does NOT flip — the rows still mount, place and register, but every call refuses the module\u2019s OWN P_G1_TRUSTED_TOPOLOGY_ABSENT posture before admission — zero native entry, zero row', async () => {
+    const arm = await mountArmWorld()
+    expect(arm.observations.some((o) => o.includes('topology-supply-ABSENT') && o.includes('default OFF'))).toBe(true)
     expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(false)
+    // zero construct means zero directory read: the face is not even touched.
+    expect(arm.inspectListCalls()).toBe(0)
     const registrations = arm.publish()
     expect(registrations).toHaveLength(2)
     const def = arm.scopeLayer.get('cordis_inspect_list')
     const before = (await stateNow()).requests.length
     const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-notopo'), callId: 'toolu-call-arm-notopo' })
-      .then(() => undefined, (error: unknown) => String((error as Error).message))
+      .then(() => undefined, (error: unknown) => String((error as Error).message ?? error))
     expect(String(refusal)).toMatch(/TRUSTED_TOPOLOGY/)
     expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
     expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.inspectListCalls()).toBe(0)
   })
 
-  it('root supply card — supply present, scope EMPTY (facet off): the query row refuses P_G1_INSPECT_TARGET_NOT_AUTHORIZED with zero row and zero native entry, and the list row answers the ZERO-constrained face through one full walk (providers empty, the unauthorized directory excluded)', async () => {
-    const arm = await mountArmWorld()
+  it('root G1 FINAL RULING — explicit topologyScope = [] is a legal ZERO AUTHORIZATION face (distinguishable from absence, never widened); probed per-row, not generalized: the query row refuses ONE probed triple P_G1_INSPECT_TARGET_NOT_AUTHORIZED at zero row and zero native entry, while the list row still WALKS and answers the empty-constrained providers answer (providers empty, whole directory excluded)', async () => {
+    const arm = await mountArmWorld({ scope: [] })
     arm.publish()
-    arm.scopeSources.facet.dsh_compute = false
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(true)
     expect((arm.topologyNow()?.allowed ?? ['gone'])).toHaveLength(0)
     const query = arm.scopeLayer.get('cordis_inspect_query')
     const before = (await stateNow()).requests.length
@@ -1773,8 +1816,8 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(1)
   })
 
-  it('root supply card — the scope is read LIVE per call (no cache, no constant): a facet turned OFF between calls makes the SAME previously-authorized triple refuse at classify — zero new row, zero new native entry', async () => {
-    const arm = await mountArmWorld()
+  it('root G1 FINAL RULING — the directory is intersected FRESH per call (a067 law): a provider disappearing from the public directory between calls makes the SAME deployer-configured triple refuse at classify — zero new row, zero new native entry (deployer scope is the boundary; visibility still never authorizes, and losing visibility revokes)', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     const query = arm.scopeLayer.get('cordis_inspect_query')
     const callId = 'toolu-call-arm-live1'
@@ -1786,9 +1829,9 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     await running
     expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(1)
-    // the durable facet moves: the scope reader re-reads it, the face moves,
-    // the next call's triple is no longer in the CURRENT authorized set.
-    arm.scopeSources.facet.dsh_compute = false
+    // the PUBLIC directory moves: the supply re-intersects per read, the
+    // face loses the triple, the next call refuses at classify.
+    arm.dropDirectoryProvider('dsh_compute')
     const before = (await stateNow()).requests.length
     const refused = await query!.execute(
       { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
@@ -1797,6 +1840,50 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(String(refused)).toContain('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
     expect((await stateNow()).requests.length).toBe(before)
     expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(1)
+  })
+
+  it('root G1 FINAL RULING — scope configured but NO public inspect face: supply cannot intersect, NOTHING is supplied; the module\u2019s OWN fail-closed stands (the deployer scope alone never becomes a topology)', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK, noFace: true })
+    expect(arm.observations.some((o) => o.includes('topology-supply-ABSENT') && o.includes('ctx.cordisInspect face'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(false)
+    const def = arm.scopeLayer.get('cordis_inspect_list')
+    const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-noface'), callId: 'toolu-call-arm-noface' })
+      .then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refusal)).toMatch(/TRUSTED_TOPOLOGY/)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
+  })
+
+  it('root G1 FINAL RULING — the signed trustedTopology={current} injection WINS beside a configured scope (highest priority, law unchanged) and the scope stays INERT', async () => {
+    const injected = { topologyRevision: 7, topologyDigest: 'sha256:injected-signed-face', allowed: [] }
+    const arm = await mountArmWorld({ injectCurrent: () => structuredClone(injected), scope: SCOPE_OK })
+    expect(arm.observations.some((o) => o.includes('topologyScope-INERT'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(false)
+    expect(arm.topologyNow()?.topologyDigest).toBe('sha256:injected-signed-face')
+    // the supply (and with it the directory read) was never constructed.
+    expect(arm.inspectListCalls()).toBe(0)
+  })
+
+  it('root G1 FINAL RULING — malformed topologyScope is a MOUNT refusal, never a degraded or widened scope (closed grammar: exact keys, closed platform, no wildcard, no empty, array only)', async () => {
+    const bad: Array<[string, unknown]> = [
+      ['non-array value', 'all'],
+      ['missing method key', [{ platform: 'host', provider: 'p' }]],
+      ['extra key', [{ platform: 'host', provider: 'p', method: 'm', note: 'x' }]],
+      ['wildcard platform', [{ platform: '*', provider: 'p', method: 'm' }]],
+      ['platform outside host|client', [{ platform: 'worker', provider: 'p', method: 'm' }]],
+      ['wildcard provider (allow-all state)', [{ platform: 'host', provider: '*', method: 'm' }]],
+      ['wildcard method', [{ platform: 'host', provider: 'p', method: '*' }]],
+      ['empty provider id', [{ platform: 'host', provider: '', method: 'm' }]],
+      ['non-string method', [{ platform: 'host', provider: 'p', method: 7 }]],
+      ['entry not an object', ['host/p/m']],
+    ]
+    for (const [why, scope] of bad) {
+      let code: string | undefined
+      await mountArmWorld({ scope: scope as ArmScope }).then(() => undefined, (error: unknown) => { code = String((error as { code?: string })?.code) })
+      expect(code, `expected mount refusal for ${why}`).toBe('alpha5-g1-arm-mount-refused')
+    }
+    // and the block itself carries the SAME refusal code for the same grammar.
+    const src = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+    expect(src).toContain("topologyScope ${g1ScopeBad}")
   })
 
   it('the block at source level: closed gate and refusal code, B-INSPECT-only supply, the ONE owner-held ledger feeding Guard/registration/attribution, place before the Guard bind, registration after publish, no plane g1 injection, no fabricated topology', () => {
@@ -1863,23 +1950,35 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     // never reached directly from this file.
     expect(src).toContain("import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'")
     expect(src).toContain("import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'")
-    // ROOT 01:01 SUPPLY WIRING: the production factory is imported and
-    // wired over the faces THIS mount holds — the PUBLIC ctx.cordisInspect
-    // face and the owner-held scope read as the THREE real sources
-    // (configured servers, template capabilities.mcp allow, durable facet
-    // allowed bit), fresh per call. No constant triples: no provider/method
-    // literal anywhere in the block.
+    // ROOT G1 FINAL LIMITED RULING: the production factory is imported and
+    // reachable ONLY through the explicit deployer cfg — `topologyScope`
+    // (closed-grammar triples handed over as the hard boundary, fresh-
+    // intersected with the PUBLIC ctx.cordisInspect directory by the supply
+    // itself) or the signed `trustedTopology = { current }` injection.
+    // DEFAULT OFF: nothing constructed without cfg. The withdrawn MCP
+    // three-source matcher is GONE at code level (identity domains have no
+    // proven crosswalk); no provider/method literal anywhere in the block.
     expect(src).toContain("import { createG1TrustedTopologySupply } from './governed-families/g1-trusted-topology-supply.mjs'")
     expect(block).toContain('createG1TrustedTopologySupply({')
     expect(block).toContain('agentCtx?.cordisInspect')
-    expect(block).toContain('configuredMcpServers(config)')
-    expect(block).toContain('filterMcpServers(configuredNames, capabilities.mcp)')
-    expect(block).toContain("mcpViews[name]?.allowed === true")
     expect(block).toContain('topology-SUPPLIED')
     expect(block).toContain('topology-supply-ABSENT')
-    // the signed integrator seam is kept and wins when supplied (explicit
-    // config over derived supply, never the reverse).
+    // ② the deployer hard boundary: closed cfg entry, refusal-code grammar,
+    // boundary handed over per read WITHOUT any MCP-name/caps/facet
+    // intersection (the withdrawn matcher stays withdrawn, no half of it).
+    expect(block).toContain('g1Cfg.topologyScope')
+    expect(block).toContain("(entry.platform !== 'host' && entry.platform !== 'client')")
+    expect(block).toContain("entry.provider === '*'")
+    expect(block).toContain('authorized: () => Object.freeze(g1ScopeFrozen.map((triple) => Object.freeze({ ...triple })))')
+    expect(block).not.toContain('configuredMcpServers(config)')
+    expect(block).not.toContain('filterMcpServers(configuredNames')
+    expect(block).not.toMatch(/mcpViews\[/)
+    // ③ default OFF: the no-cfg arm neither constructs nor reads the face.
+    expect(block).toContain('default OFF per root topology14575')
+    // ① the signed integrator seam is kept, unchanged, and WINS (the scope
+    // beside it stays INERT — explicit trusted injection over derived).
     expect(block).toContain('g1Cfg.trustedTopology')
+    expect(block).toContain('topologyScope-INERT')
     expect(block).not.toContain('dsh_compute')
     expect(block).not.toContain('compute_health')
     expect(src).not.toContain("from './governed-families/g1-surface-adapters.mjs'")
