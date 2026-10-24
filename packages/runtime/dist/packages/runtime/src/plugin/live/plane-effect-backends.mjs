@@ -1106,7 +1106,7 @@ export function parseCanonicalHandoffContext(value) {
   })
 }
 
-export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, pa, subtreeContains, overlayDecision, observe = () => {} }) {
+export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, pa, subtreeContains, resolveAuthorityKey, overlayDecision, observe = () => {} }) {
   let executed = 0
   let paSeq = 0
   const ruleCovers = (rules, locator) => rules.some((rule) => {
@@ -1335,6 +1335,36 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
     // fix-5: pre-gate shape carries the LEXICAL path only; the resolver's
     // `rootReal`/real identity fields attach after the PA consumption.
     let parsed = { ok: true, path: lex.path }
+    // A5M2 slice-2 root card ③: a canonical call's trusted `resourceKey` is
+    // the provider's OPAQUE authority key — `String(resolve().targetKey)`,
+    // which the pinned fs law derives from REALPATH (the 639 fs-local law:
+    // realpath for existing targets, real-ancestor + unresolved segments for
+    // missing ones), NEVER from a lexical path. So the key is compared to
+    // NOTHING lexical: no `== parsed.path`, no prefix stripping, no sibling
+    // guessing, no new matcher. When the mount carries the SAME provider's
+    // re-derivation seam, the armed target is resolved through that provider
+    // and the two opaque keys are compared key-to-key. A mismatch, a fault,
+    // or an unanswerable provider REFUSES right here — BEFORE the overlay
+    // consult and before the first admitCall (zero seam question, zero
+    // admit, zero Control row) — and the token settles terminal like every
+    // canonical refusal. A mount without the seam keeps the pre-check lane
+    // byte-for-byte (zero flip: the check exists only where the provider
+    // authority is mounted).
+    if (canonicalOperation !== undefined && typeof resolveAuthorityKey === 'function') {
+      let armKey
+      try {
+        armKey = String(await resolveAuthorityKey(parsed.path))
+      } catch (error) {
+        observe(`governed-read overlay-strict-b target-unanswerable cause=${String(error?.message ?? error).slice(0, 160)}`)
+        settleCanonicalOpenToken()
+        return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_TARGET_UNANSWERABLE', detail: 'the mount could not re-derive the armed target through its own fs provider, so a canonical operation is never authorized against a target whose authority cannot be answered' }
+      }
+      if (armKey !== canonicalOperation.resourceKey) {
+        observe('governed-read overlay-strict-b target-mismatch')
+        settleCanonicalOpenToken()
+        return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_TARGET_MISMATCH', detail: "the canonical resourceKey does not name the target this row is armed to read (both sides are the SAME provider's opaque authority keys — never lexical-string equality)" }
+      }
+    }
     const effects = [
       { kind: 'tool-invoke', toolName: 'read', resource: null },
       // The frozen resource vocabulary (parseRequestedEffectSet closed set):
@@ -1396,6 +1426,19 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       if (tokenKey !== undefined) {
         const prior = readTokenLedger.get(tokenKey)
         if (prior !== undefined && prior.settled) {
+          if (prior.correlation === undefined) {
+            // A5M2 slice-2 root card: a CANONICAL early refusal terminalises
+            // this token with NO correlation (settleCanonicalOpenToken — the
+            // only writer of this shape). The 9e-1 replay law binds a replay
+            // to the ORIGINAL id; with no original id there is nothing to
+            // replay, so the terminal fact is answered HERE — before any PA
+            // call is built (zero admitCall, zero Control row, never a callId
+            // fabricated from an undefined correlation) — in the SAME
+            // `cancelled` form the pre-aborted edge used to answer, with the
+            // ledger entry untouched (already terminal; nothing to clean).
+            observe('governed-read cancelled-terminal-no-correlation')
+            return { kind: 'cancelled' }
+          }
           ledgerCorrelation = prior.correlation
           replaySettled = true
         } else if (prior !== undefined && prior.handedOff === true && mode !== 'open') {

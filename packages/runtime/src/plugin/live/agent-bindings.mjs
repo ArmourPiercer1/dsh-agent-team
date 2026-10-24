@@ -4771,6 +4771,26 @@ export function createAgentBindings(deps) {
             return anchored.ok === true ? anchored.path : null
           }
           return Object.freeze({
+            // A5M2 slice-2 root card ③: the governed read row's authority-key
+            // re-derivation over the SAME live fs provider and the SAME law as
+            // the adapter's resolveTarget closure further below — LAZY per call
+            // (`fsBackend(agentCtx)` is the host row's strict ctx.get('fs')
+            // read, the runtime Agent's live `session.header.cwd`, never
+            // captured at install), answering the provider's OPAQUE targetKey
+            // as a string. The row compares a canonical call's resourceKey
+            // key-to-key against it — never a lexical path equality, no prefix
+            // stripping, no sibling guessing, no new matcher. A missing or
+            // faulting provider THROWS here and the row fails the canonical
+            // leg closed (PA_HANDOFF_TARGET_UNANSWERABLE, before the overlay
+            // consult and the first admitCall); plain non-canonical legs never
+            // call this seam (zero flip). Other seam consumers (kernel rule
+            // canonicalization, the adapter) read only their own fields.
+            resolveAuthorityKey: async (targetPath) => String((await fsBackend(agentCtx).resolve(
+              targetPath,
+              typeof runtimeAgent?.session?.header?.cwd === 'string' && runtimeAgent.session.header.cwd !== ''
+                ? { cwd: runtimeAgent.session.header.cwd }
+                : {},
+            )).targetKey),
             canonicalizeResource: (declaredPath) => seamLocate(declaredPath),
             subtreeContains: (rulePath, locator) => {
               const rule = seamLocate(rulePath)

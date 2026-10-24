@@ -31,8 +31,8 @@
 import { untestedAssurance } from '../tool-dispatch/index.js'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
@@ -70,6 +70,26 @@ const confinedProvider = () => ({
   assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
 })
 const subtreeContains = (parent: string, child: string) => child === parent || child.startsWith(parent + '/')
+// The 639 fs-local TARGET-KEY law mirrored for the mount's authority seam:
+// realpath for existing targets, real-ancestor + unresolved segments for
+// missing ones (packages/fs/fs-local/lib/types/fsio.js:96/:132/:144). The
+// row's ③ check and canonicalFor ride this SAME key law — opaque key to
+// opaque key, never a lexical path comparison.
+const authorityKey = (p: string) => {
+  const missing: string[] = []
+  let cur = p
+  for (;;) {
+    try {
+      let out = realpathSync(cur)
+      for (const seg of missing) out = join(out, seg)
+      return out
+    } catch {
+      const i = cur.lastIndexOf('/')
+      missing.unshift(cur.slice(i + 1))
+      cur = i > 0 ? cur.slice(0, i) : '/'
+    }
+  }
+}
 const joined = (body: ReadOk) => body.lines.map((l) => l.text).join('\n')
 const refusalText = (value: unknown) => JSON.stringify(value ?? '')
 
@@ -99,7 +119,7 @@ function mount(policy: unknown, extra: Record<string, unknown> = {}, observe: st
     role: 'member',
     instanceId: 'a5m2-strictb-instance',
     onObserve: (r: unknown) => observe.push(String(r)),
-    fs: { subtreeContains },
+    fs: { subtreeContains, resolveAuthorityKey: authorityKey },
     plane: { fsInstance: { fs: 'strictb-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' }, confinedProvider: confinedProvider() },
     ...extra,
   })
@@ -168,7 +188,7 @@ const strictbMount = (opts: {
 const canonicalFor = (file: string) => Object.freeze({
   tool: 'read',
   resourceKind: 'file',
-  resourceKey: file,
+  resourceKey: authorityKey(file),
   fingerprint: 'opfp-strictb-0001',
 })
 
@@ -203,7 +223,7 @@ describe('a5m2-overlay-strict-b — the governed read hand-off consumes the live
 
   it('OB-1b the merged overlay DENY over a template ALLOW refuses at the open leg with ZERO admitCall', async () => {
     const seam: SeamWorld = { effect: 'deny', calls: [] }
-    const { read, handoff, asked } = strictbMount({ policy: POLICY_ALLOW, seam })
+    const { read, handoff, asked, observe } = strictbMount({ policy: POLICY_ALLOW, seam })
     const file = join(ROOT_DIR, 'target.txt')
     const execLike = { name: 'read', token: Symbol('strictb-ob1b'), arguments: { file_path: file } }
     const opened = await handoff.open(execLike, canonicalFor(file))
@@ -218,6 +238,14 @@ describe('a5m2-overlay-strict-b — the governed read hand-off consumes the live
       late = String((error as Error)?.message ?? error)
     }
     expect(late + refusalText(opened)).not.toContain('strictb-line-1')
+    // Root card ①: the late leg of a canonically refused token is refused AT
+    // THE TOKEN ENTRY — the settled entry carries NO correlation, there is
+    // nothing to replay, so the leg never fabricates a callId, never runs
+    // Part A / admitCall / a Control row, and never even reaches the
+    // edge-cancel path. Zero RE-ADMIT, not merely zero bytes.
+    expect(asked.length, 'the terminal-entry refusal never re-walks Part A: zero admitCall, zero Control row').toBe(0)
+    expect(observe.some((l) => l.includes('cancelled-terminal-no-correlation')), 'the refusal is observed at the token entry').toBe(true)
+    expect(observe.some((l) => l.includes('cancelled-at-pa-edge')), 'nothing reaches the execution edge').toBe(false)
   })
 
   it('OB-2a cross-leg REVOCATION consumes nothing: overlay allow→deny between the open and the body delivers zero bytes, zero edge', async () => {
@@ -279,7 +307,7 @@ describe('a5m2-overlay-strict-b — the governed read hand-off consumes the live
 
   it('OB-3b a PARTIAL trusted tuple is refused whole-tuple law: zero seam call, zero admitCall, zero walk', async () => {
     const seam: SeamWorld = { effect: 'allow', calls: [] }
-    const { read, handoff, asked } = strictbMount({ policy: POLICY_ALLOW, seam })
+    const { read, handoff, asked, observe } = strictbMount({ policy: POLICY_ALLOW, seam })
     const file = join(ROOT_DIR, 'target.txt')
     const execLike = { name: 'read', token: Symbol('strictb-ob3b'), arguments: { file_path: file } }
     const opened = await handoff.open(execLike, { tool: 'read', resourceKind: 'file' } as unknown as object)
@@ -294,11 +322,16 @@ describe('a5m2-overlay-strict-b — the governed read hand-off consumes the live
       late = String((error as Error)?.message ?? error)
     }
     expect(late + JSON.stringify(opened)).not.toContain('strictb-line-1')
+    // Root card ① at the MALFORMED refuse point: same terminal-entry law —
+    // the late leg re-admits nothing (zero Part A, zero Control, no edge).
+    expect(asked.length, 'the terminal-entry refusal never re-walks Part A: zero admitCall, zero Control row').toBe(0)
+    expect(observe.some((l) => l.includes('cancelled-terminal-no-correlation')), 'the refusal is observed at the token entry').toBe(true)
+    expect(observe.some((l) => l.includes('cancelled-at-pa-edge')), 'nothing reaches the execution edge').toBe(false)
   })
 
   it('OB-3c a FAULTING durable read is never laundered into the static lane (fail closed at the open leg)', async () => {
     const seam: SeamWorld = { effect: 'allow', calls: [], throwNext: true }
-    const { read, handoff, asked } = strictbMount({ policy: POLICY_ALLOW, seam })
+    const { handoff, asked } = strictbMount({ policy: POLICY_ALLOW, seam })
     const file = join(ROOT_DIR, 'target.txt')
     const execLike = { name: 'read', token: Symbol('strictb-ob3c'), arguments: { file_path: file } }
     const opened = await handoff.open(execLike, canonicalFor(file))
@@ -321,7 +354,7 @@ describe('a5m2-overlay-strict-b — the governed read hand-off consumes the live
 
   it('OB-4b ZERO FLIP: a canonical context on a mount WITHOUT the seam keeps the old closed template refusal (and says so)', async () => {
     const observe: string[] = []
-    const { read, handoff } = strictbMount({ policy: POLICY_CLOSED, seam: null, observe })
+    const { handoff } = strictbMount({ policy: POLICY_CLOSED, seam: null, observe })
     const file = join(ROOT_DIR, 'target.txt')
     const execLike = { name: 'read', token: Symbol('strictb-ob4b'), arguments: { file_path: file } }
     const opened = await handoff.open(execLike, canonicalFor(file))
@@ -332,12 +365,63 @@ describe('a5m2-overlay-strict-b — the governed read hand-off consumes the live
 
   it('OB-4c an overlay ALLOW never opens what a HARD law refuses: the traversal target still discloses ZERO', async () => {
     const seam: SeamWorld = { effect: 'allow', calls: [] }
-    const { read, handoff, observe } = strictbMount({ policy: POLICY_ALLOW, seam })
+    const { handoff, observe } = strictbMount({ policy: POLICY_ALLOW, seam })
     const file = join(ROOT_DIR, '..', 'outside-strictb', 'secret.txt')
     const execLike = { name: 'read', token: Symbol('strictb-ob4c'), arguments: { file_path: file } }
     const opened = await handoff.open(execLike, canonicalFor(file))
     expect(opened.kind, 'the lexical anchor refuses before any durable read is even asked').toBe('refused')
     expect(seam.calls, 'no overlay verdict is spent on a target the hard law already refuses').toHaveLength(0)
     expect(observe.join('\n')).not.toContain('strictb-line')
+  })
+
+  it('OB-5 a canonical open whose opaque resourceKey names ANOTHER target than the armed arm is refused key-to-key BEFORE the overlay consult and the first admitCall (root card ③)', async () => {
+    const seam: SeamWorld = { effect: 'allow', calls: [] }
+    const { read, handoff, asked, observe } = strictbMount({ policy: POLICY_ALLOW, seam })
+    const armed = join(ROOT_DIR, 'target.txt')
+    const other = join(ROOT_DIR, 'other.txt')
+    writeFileSync(other, 'strictb-other-secret\n')
+    const execLike = { name: 'read', token: Symbol('strictb-ob5'), arguments: { file_path: armed } }
+    const opened = await handoff.open(execLike, canonicalFor(other))
+    expect(opened.kind).toBe('refused')
+    expect(opened.code).toBe('PA_HANDOFF_TARGET_MISMATCH')
+    expect(seam.calls, 'the durable authority is never consulted for a target that does not name the arm').toHaveLength(0)
+    expect(asked.length, 'zero admitCall, zero Control row behind a wrong-target canonical open').toBe(0)
+    expect(observe.some((l) => l.includes('target-mismatch')), 'the key-to-key mismatch is observed').toBe(true)
+    // terminal for the token: the late leg re-walks nothing, discloses nothing
+    let late = ''
+    try {
+      late = refusalText(await read.execute({ file_path: armed }, execLike))
+    } catch (error) {
+      late = String((error as Error)?.message ?? error)
+    }
+    expect(late + refusalText(opened)).not.toContain('strictb-line-1')
+    expect(late).not.toContain('strictb-other-secret')
+    expect(asked.length, 'the refused token re-admits nothing on the late leg').toBe(0)
+  })
+
+  it('OB-6 an all-allow hand-off redeems ONLY the context its Part A issued: a body leg presenting a different effect context is refused with zero bytes (root card ②)', async () => {
+    const seam: SeamWorld = { effect: 'allow', calls: [] }
+    const { read, handoff } = strictbMount({ policy: POLICY_ALLOW, seam })
+    const fileA = join(ROOT_DIR, 'target.txt')
+    const fileB = join(ROOT_DIR, 'other.txt')
+    writeFileSync(fileB, 'strictb-other-secret\n')
+    const token = Symbol('strictb-ob6')
+    const opened = await handoff.open({ name: 'read', token, arguments: { file_path: fileA } }, canonicalFor(fileA))
+    expect(opened.kind).toBe('authorized')
+    // The redemption leg swaps its armed file (same token → the SAME issued
+    // callId and grant stand behind a DIFFERENT effect context). The issued
+    // binding — the frozen pair Part A minted before the first admitCall —
+    // is the only thing an edge may pair against: the parameters/effect-set
+    // fingerprint of the new context does not match the ISSUED record, so
+    // the redemption is refused before any byte, and the issued grant is
+    // never consumed for a context Part A never admitted.
+    let out = ''
+    try {
+      out = refusalText(await read.execute({ file_path: fileB }, { name: 'read', token, arguments: { file_path: fileB } }))
+    } catch (error) {
+      out = String((error as Error)?.message ?? error)
+    }
+    expect(out).not.toContain('strictb-other-secret')
+    expect(out).not.toContain('strictb-line-1')
   })
 })

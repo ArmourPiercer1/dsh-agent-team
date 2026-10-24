@@ -2560,6 +2560,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // `planSnapshot` + `effects` source for the call-level facts adapter —
   // the SAME canonical identity the approval walked, never a re-parse.
   const livePaPlan = new Map()
+  // A5M2 slice-2 root card ②: the frozen canonical binding the OWNER holds
+  // for the lifetime of the call that minted it — written by Part A BEFORE
+  // the first admitCall, read by EVERY execution edge (the all-allow lane
+  // included, which never had a cross-check: its pairing was edge-input
+  // against edge-input), and cleared by the same close/terminal paths that
+  // end the plan fact. An in-memory call-lifetime record, never a durable
+  // authority ledger.
+  const issuedCanonicalPair = new Map()
   // A5-M2 fix-1 (root ruling 09:19): the governed todo row's OWN token→
   // correlation ledger — the SAME single-flight law the read row carries
   // (plane-effect-backends `readTokenLedger`): ONE correlation per registry
@@ -2595,6 +2603,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // the plan fact ends with the call (the settled row's re-verification
       // is answered by its TERMINAL Control state, not by facts carried on)
       livePaPlan.delete(String(callId))
+      issuedCanonicalPair.delete(String(callId))
     }
   }
   // A5-M2: ONE PA walk, split at its natural seam so the pre-execute leg can
@@ -2613,12 +2622,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // where it PAIRS (never substitutes) against every re-read fact of the
     // same exec/call/member/realm/params-fingerprint identity.
     let canonicalOperationFingerprint
+    let boundCanonicalTuple
     if (canonicalOperation !== undefined) {
       const parsedCanonical = parseCanonicalHandoffContext(canonicalOperation)
       if (parsedCanonical.ok !== true) {
         return { kind: 'deny', code: 'PA_CANONICAL_MALFORMED', detail: `the canonical hand-off context is not a complete {tool,resourceKind,resourceKey,fingerprint} tuple (${parsedCanonical.cause}) — no admitCall, no grant and no Control row open on a partial trusted identity` }
       }
       canonicalOperationFingerprint = parsedCanonical.value.fingerprint
+      boundCanonicalTuple = parsedCanonical.value
     }
     // 9e-3: THIS call's durable mint (row id + the exact manifest bytes the
     // row carries, handed back by the AUTH leg). Per-call by construction:
@@ -2776,6 +2787,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
       parametersFingerprint,
       requestedEffects,
     })
+    // A5M2 slice-2 root card ②: the frozen pair exists BEFORE the first
+    // admitCall can succeed — callId, member, realm, the WHOLE canonical
+    // tuple (its operation fingerprint PAIRS to, never substitutes for, the
+    // parameters/effect-set fingerprint below) and the parameters/effect-set
+    // fingerprint itself (row mints both from the ONE parsed effect set, so
+    // one stored value is both legs of the pair). Member is compared through
+    // the request/binding identity Part A already enforces here.
+    if (boundCanonicalTuple !== undefined) {
+      issuedCanonicalPair.set(String(callId), Object.freeze({
+        callId: String(callId),
+        member: paMember,
+        realmId: callRealm,
+        tuple: boundCanonicalTuple,
+        parametersFingerprint: String(parametersFingerprint),
+      }))
+      if (issuedCanonicalPair.size > 2000) issuedCanonicalPair.delete(issuedCanonicalPair.keys().next().value)
+    }
     const admitted = await assembly.admitCall(request)
     if (admitted.ok !== true) {
       return { kind: 'deny', code: String(admitted.error?.code ?? 'ADMISSION_CALL_REFUSED'), detail: String(admitted.error?.message ?? 'admitCall refused') }
@@ -2892,11 +2920,28 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // that carries no binding keeps this block inert byte-for-byte (the
     // zero-flip law for every pre-slice-2 caller).
     if (canonicalOperationFingerprint !== undefined || canonicalOperation !== undefined) {
+      // A5M2 slice-2 root card ②: the pairing is against the ISSUED record,
+      // never against this edge's own inputs (the pre-fix block paired the
+      // edge's tuple against the edge's fingerprint — a self-pair any
+      // self-consistent forged context passed). No issued record means no
+      // admitted binding to stand on — Part A never minted one, or the
+      // call already reached close/terminal and the record died with it.
+      const issued = issuedCanonicalPair.get(String(callId))
+      if (issued === undefined) {
+        return stale('this edge carries canonical-operation facts for a call whose issued binding record does not exist (Part A never minted one before an admitCall, or the call already closed) — an edge never executes an identity it carries for itself')
+      }
       const parsedCanonical = canonicalOperation === undefined
         ? { ok: false, cause: 'field-tool-absent' }
         : parseCanonicalHandoffContext(canonicalOperation)
-      if (parsedCanonical.ok !== true || parsedCanonical.value.fingerprint !== canonicalOperationFingerprint) {
-        return stale('the canonical operation this edge carries does not pair with the fingerprint Part A bound before the first admitCall — a leg cannot execute an operation identity nobody admitted it for')
+      if (parsedCanonical.ok !== true
+        || parsedCanonical.value.tool !== issued.tuple.tool
+        || parsedCanonical.value.resourceKind !== issued.tuple.resourceKind
+        || parsedCanonical.value.resourceKey !== issued.tuple.resourceKey
+        || parsedCanonical.value.fingerprint !== issued.tuple.fingerprint
+        || canonicalOperationFingerprint !== issued.tuple.fingerprint
+        || String(parametersFingerprint) !== issued.parametersFingerprint
+        || callRealm !== issued.realmId) {
+        return stale('the canonical operation this edge carries does not match the frozen binding Part A minted before the first admitCall — whole tuple, operation fingerprint, parameters/effect-set fingerprint and realm are compared against the ISSUED record, never against this edge\'s own inputs; a cross-call or cross-context substitution is refused')
       }
     }
     const paFactsSeamMounted = typeof paReadCallFacts === 'function'
@@ -3118,6 +3163,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // finally here, so a throw used to leave the fact in `livePaPlan` while
       // the mount kept serving calls.
       livePaPlan.delete(String(input.callId))
+      issuedCanonicalPair.delete(String(input.callId))
       throw error
     }
     if (opened.ok !== true) {
@@ -3125,6 +3171,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // exactly as `paAdmit`'s own finally ends the plan fact of a completed
       // call. An APPROVED leg must keep it — the execution edge re-reads it.
       livePaPlan.delete(String(input.callId))
+      issuedCanonicalPair.delete(String(input.callId))
       return opened
     }
     // 'approved' says ONLY: the full PA effect-set question was answered and a
@@ -3143,7 +3190,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // ② the redemption leg's own close handle: the row holds the correlation
   // after it takes the flight, and ends this call's plan fact from its own
   // finally (idempotent with the wrapper above).
-  paAdmit.closePlan = (callId) => { livePaPlan.delete(String(callId)) }
+  paAdmit.closePlan = (callId) => { livePaPlan.delete(String(callId)); issuedCanonicalPair.delete(String(callId)) }
   paAdmit.edge = async (state) => {
     try {
       return await paAdmitEdge({
@@ -3156,6 +3203,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // the redemption is the end of this call's plan fact (the same law
       // `paAdmit`'s finally carries for the un-split path)
       livePaPlan.delete(String(state.callId))
+      issuedCanonicalPair.delete(String(state.callId))
     }
   }
 
@@ -3360,6 +3408,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
           }),
         }),
       ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
+      // A5M2 slice-2 root card ③: the same provider's authority-key
+      // re-derivation seam (the host wires it to the SAME fs backend the
+      // adapter canonicalizes through). Absent = the row's pre-check lane
+      // stays byte-for-byte; present = a canonical open is verified
+      // key-to-key before the overlay consult and the first admitCall.
+      ...(input.fs?.resolveAuthorityKey === undefined ? {} : { resolveAuthorityKey: input.fs.resolveAuthorityKey }),
       observe: logBackend('a5g7-read'),
     })
     : null
@@ -7331,7 +7385,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         },
         close: (exec) => {
           const correlation = readExecutor.paHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
-          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+          if (typeof correlation === 'string') { livePaPlan.delete(correlation); issuedCanonicalPair.delete(correlation) }
         },
       }) }),
       /** A5-M2: the governed-WRITE hand-off face for THIS mount — the SAME
@@ -7348,7 +7402,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         open: (exec) => writeHandoffOpen(exec),
         close: (exec) => {
           const correlation = writeHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
-          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+          if (typeof correlation === 'string') { livePaPlan.delete(correlation); issuedCanonicalPair.delete(correlation) }
         },
       }) }),
       /** A5-M2 (root 14:44): the governed-IMAGE hand-off face for THIS mount —
@@ -7360,7 +7414,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         open: (exec) => imageHandoffOpen(exec),
         close: (exec) => {
           const correlation = imageHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
-          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+          if (typeof correlation === 'string') { livePaPlan.delete(correlation); issuedCanonicalPair.delete(correlation) }
         },
       }) }),
       /** A5-M2 EDIT/SRE HAND-OFF (root 2026-10-24, the SECOND existing
@@ -7377,14 +7431,14 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         open: (exec) => editHandoffOpen(exec),
         close: (exec) => {
           const correlation = editHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
-          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+          if (typeof correlation === 'string') { livePaPlan.delete(correlation); issuedCanonicalPair.delete(correlation) }
         },
       }) }),
       ...(sreInject === null ? {} : { paSreHandoff: Object.freeze({
         open: (exec) => sreHandoffOpen(exec),
         close: (exec) => {
           const correlation = sreHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
-          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+          if (typeof correlation === 'string') { livePaPlan.delete(correlation); issuedCanonicalPair.delete(correlation) }
         },
       }) }),
       /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
