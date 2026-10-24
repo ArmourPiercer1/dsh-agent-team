@@ -231,6 +231,20 @@ function writePatch(patchPath, hostEntryHref) {
     `            rootDir: ${JSON.stringify(FSROOT)}`,
     "            realmId: 'a5m2-edit-hw-realm'",
     "            kind: 'absolute-path'", '',
+    // Root diagnostic GO prep (2026-10-24): a SECOND row in THIS test
+    // composition = the read-only teamRoot.live.observations consumer
+    // (08-pa-observation-consumer.mjs; public seam host.ts :4100-4107/:4144 +
+    // agent-bindings :1049/:10444, inject pattern host.ts :2959-2967). Product
+    // bytes/permissions/approval timing UNTOUCHED; no new package/RPC; the
+    // consumer mutates nothing and writes only $DSH_HOME/pa-observations.log.
+    // The RELATIVE-path fixture input is DELIBERATELY RETAINED this run (root
+    // convergence: reproduce, only ADD observation to capture leg.detail); the
+    // absolute-path fixture fix stays a separate unexecuted draft
+    // (../drafts/absolute-path-fixture.DRAFT.md).
+    `- insert:`,
+    '    - id: a5m2-pa-observer',
+    `      name: ${JSON.stringify(pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), '08-pa-observation-consumer.mjs')).href)}`,
+    '      config: {}', '',
   ].join('\n'))
 }
 
