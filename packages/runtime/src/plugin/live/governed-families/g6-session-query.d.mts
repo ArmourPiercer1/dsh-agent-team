@@ -189,6 +189,15 @@ export interface G6AdapterDeps {
    *  snapshot is ever trusted. */
   teamCeiling: (targetSessionId: string, caller: G6Caller) => boolean
   declaredMount: { searchBackend: G6SearchBackendEvidence }
+  /** Root ruling 3 (lane increment 1): the PUBLIC Provider lifecycle
+   *  observer — the ONLY currentness source. Required: an assembly that
+   *  cannot observe the lifecycle cannot construct governed rows
+   *  (fail-closed). The removed per-read identity laws (facet-object /
+   *  function-object continuity) stay removed — anti-reintroduction. */
+  lifecycle: { currentGeneration(): { id: number; service: unknown } | null }
+  /** The Provider generation pinned at placement; every lifecycle refusal
+   *  quotes pinned-vs-live ids (INVALIDATION provable — precision 2). */
+  generation: number
   maxSearchResults?: number
   definitionIdentityOf?: (definition: G6NativeDefinition) => string
   observe?: (event: Record<string, unknown>) => void

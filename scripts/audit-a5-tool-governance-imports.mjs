@@ -120,6 +120,14 @@ const PR1_CONSUMERS = Object.freeze([
   // effects fail closed through the real parser, zero lane edits, zero new faces.
   'runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
   'runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  // A5M2 census run 40063499790 (head 447e14ac2) NEW-RED attribution, booked
+  // by the CENTER integrator 2026-10-24: the B-PTC run_code GUARD wiring module
+  // merged through the root narrow-signed FINAL timing card (93e4a7a64, int
+  // merge 861b8465b; D1-D4 root-narrow-signed at 10f69dbea). It consumes ONLY
+  // parseRequestedEffectSet (g3-ptc-wiring.mjs:78) - the SAME reviewed
+  // canonical requested-effects grammar at the row (the g3-terminal-wiring
+  // pattern), effects fail closed through the real parser, zero lane edits.
+  'runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
   'runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
   'runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
   'runtime/src/plugin/live/governed-families/subagent-wiring.mjs',

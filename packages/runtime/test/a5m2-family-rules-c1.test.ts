@@ -531,8 +531,8 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
       .toBe('contentFingerprint: required by the B-WRITE typed plan, absent')
     expect(validatePaFamilyTarget('B-WRITE', { ...B_WRITE_REAL, trusted: TRUSTED }))
       .toBe('trusted: not part of the B-WRITE typed plan')
-    expect(validatePaFamilyTarget('B-WRITE', { ...B_WRITE_REAL, existingFileOnly: 'true' }))
-      .toBe('existingFileOnly: not a boolean')
+    expect(validatePaFamilyTarget('B-WRITE', { ...B_WRITE_REAL, directoryCreation: 'false' }))
+      .toBe('directoryCreation: not a boolean')
   })
 
   it('REGRESSION B-IMAGE (image.mjs:249-268 real shape): validates; missing/foreign/wrong-type deny with the closed codes', () => {
@@ -559,15 +559,19 @@ const B_SESSION_REAL = {
   paramFingerprint: '0'.repeat(64),
 }
 
-/** write.mjs:246-258 (A5_WRITE_FAMILY_ID 'B-WRITE', operation 'write-existing-file'). */
+/** write.mjs (A5_WRITE_FAMILY_ID 'B-WRITE', operation 'write-file'; the
+ *  existence-honest law fields replaced the r16 existingFileOnly promise on
+ *  the REAL-GAP card 2026-10-25 — the grammar leaf rides control/types.ts). */
 const B_WRITE_REAL = {
   familyId: 'B-WRITE',
   adapterRevision: 1,
-  operation: 'write-existing-file',
+  operation: 'write-file',
   realmId: 'realm-a5m2',
   canonicalTarget: '/srv/mcp/state.json',
   contentFingerprint: `sha256:${'1'.repeat(64)}`,
-  existingFileOnly: true,
+  existingFileLaw: 'verify-before-truncate (the reviewed r16 closure; no O_CREAT)',
+  newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW on an FD-BOUND parent chain (symlinked parents refuse, EEXIST races lose with zero bytes)',
+  directoryCreation: false,
 }
 
 /** image.mjs:249-268 (A5_IMAGE_ADAPTER_REVISION 2, operation 'read-exact-file'). */

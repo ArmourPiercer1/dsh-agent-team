@@ -1,0 +1,160 @@
+{
+  "port": 3186,
+  "mockPort": 3187,
+  "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "freeBytes": 10551984128,
+  "minFreeBytes": 5368709120,
+  "sceneLedger": [
+    {
+      "name": "frozen-512-scene-dev-pnp-store",
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/.pnp-store",
+      "allocatedApprox": 529764352
+    },
+    {
+      "name": "frozen-512-scene-plugin-install",
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/plugin-install",
+      "allocatedApprox": 518516736
+    },
+    {
+      "name": "approved-install-874-fixture",
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install",
+      "allocatedApprox": 297189376
+    },
+    {
+      "name": "r18-store(protected)",
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.pnpmm-r18-store",
+      "allocatedApprox": 512561152
+    }
+  ],
+  "checks": [
+    {
+      "name": "host-tree-porcelain-empty",
+      "ok": true,
+      "detail": "{\"head\":\"639ed015397290b3745d163aafe02ffee4aa3f84\",\"headSource\":\"git\",\"status\":\"\",\"statusEmpty\":true,\"diff\":\"\",\"diffEmpty\":true,\"errors\":[]}"
+    },
+    {
+      "name": "host-tree-baseline-sha",
+      "ok": true,
+      "detail": "head=639ed015397290b3745d163aafe02ffee4aa3f84 pinned=639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    {
+      "name": "lane-head-recorded",
+      "ok": true,
+      "detail": "head=fd5af0ff0e0bc506ca9d53b1114cdf9ad296621d"
+    },
+    {
+      "name": "install-lock-26bf7",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "pack-tgz-eda06b4a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "installed-host-present",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packa"
+    },
+    {
+      "name": "installed-glue-present",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packa"
+    },
+    {
+      "name": "installed-seam-present",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packa"
+    },
+    {
+      "name": "row-validator-replay-on-real-row",
+      "ok": true,
+      "detail": "validated-OK"
+    },
+    {
+      "name": "world-absent",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6host-2026-10-23T23-48-56-198ZZ"
+    },
+    {
+      "name": "world-lockfile-absent",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/a5m2-g6host-2026-10-23T23-48-56-198ZZ.lock"
+    },
+    {
+      "name": "disk-free-floor",
+      "ok": true,
+      "detail": "free=10551984128 floor=5368709120"
+    },
+    {
+      "name": "scene-ledger-recorded",
+      "ok": true,
+      "detail": "[\"frozen-512-scene-dev-pnp-store=529764352B\",\"frozen-512-scene-plugin-install=518516736B\",\"approved-install-874-fixture=297189376B\",\"r18-store(protected)=512561152B\"]"
+    }
+  ],
+  "row": {
+    "name": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+    "glue": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "seam": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+..+pack-int+out-874f3ae0d-20261023T213601Z+dsh-agent-te_c7ca039a86e08f66e0c311f85e8923de/node_modules/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs"
+  },
+  "rootSessionId": "session-team-g6-2026-10-23T23-4",
+  "cases": [
+    {
+      "id": "C1",
+      "tool": "session_trace",
+      "expect": "ok"
+    },
+    {
+      "id": "C3",
+      "tool": "session_event_search",
+      "expect": "ok"
+    },
+    {
+      "id": "C2",
+      "tool": "session_event_trace",
+      "expect": "ok"
+    },
+    {
+      "id": "C2b",
+      "tool": "session_event_read",
+      "expect": "ok"
+    },
+    {
+      "id": "C4",
+      "tool": "session_event_search",
+      "expect": "ok"
+    },
+    {
+      "id": "C5",
+      "tool": "session_trace",
+      "expect": "ok"
+    },
+    {
+      "id": "C6",
+      "tool": "session_trace",
+      "expect": "deny"
+    },
+    {
+      "id": "C7",
+      "tool": "session_trace",
+      "expect": "deny"
+    },
+    {
+      "id": "C8",
+      "tool": "session_event_search",
+      "expect": "shape"
+    },
+    {
+      "id": "C10",
+      "tool": "session_trace",
+      "expect": "deny"
+    },
+    {
+      "id": "C11",
+      "tool": "session_search",
+      "expect": "ok"
+    }
+  ],
+  "boot": true
+}

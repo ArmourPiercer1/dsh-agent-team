@@ -1,0 +1,253 @@
+/**
+ * A5-M2 REAL-GAP card (2026-10-25) — C1 for the post-consume CREATE closure
+ * (`packages/runtime/controlled-fs/src/post-consume-create.ts`): the
+ * backlog row `write（新建文件） 未开发 … 待派` closes here with the law the
+ * HELD branch NAMED (the parent stays FD-bound across the creation; the
+ * exclusive create answers the race honestly).
+ *
+ * What each leg proves against a REAL filesystem (worlds under
+ * `tests/homes/`, TEST_METHODS §7, torn down; no Host, no ports):
+ *   C1  create-if-absent is REAL: the bytes land, the receipt is the D-C2-1
+ *       pair, the fresh object is a regular single-link file;
+ *   C2  a nested contained parent binds through the /proc/self/fd chain and
+ *       creates there (not at the lexical name's new target);
+ *   C3  an EEXIST race LOSES with ZERO bytes: existing content is asserted
+ *       byte-intact by re-read (no truncate window — this is the defect the
+ *       root's 07:13Z ruling listed, pinned here);
+ *   C4  an absent parent is a TYPED refusal with the CONTRACT REASON
+ *       (directory creation lives outside the `I + F(write exact file)`
+ *       closed effect set — the disclosed deviation from the native
+ *       mkdir-recursive spelling); nothing is created anywhere;
+ *   C5  a parent swapped to a symlink BEFORE the run refuses `symlink-alias`
+ *       and the outside directory stays EMPTY (zero creation is asserted,
+ *       not claimed);
+ *   C6  a symlink sitting at the final name refuses `symlink-alias` at the
+ *       exclusive create; the outside file it points at is byte-intact;
+ *   C7  single flight (P3): the second call refuses `grant-consumed`; the
+ *       bytes exist exactly once, the first landing unchanged;
+ *   C8  cancellation before the claim produces no effect: zero creation;
+ *   C9  the root swapped to an outside symlink AFTER the plan froze refuses
+ *       at the ANCHOR law before any open; the outside dir stays EMPTY;
+ *   C10 the closure is a PRIVATE executor: it rides no public barrel
+ *       (the sibling write closure's guard, mirrored).
+ *
+ * Disclosed NOT_VERIFIED: a mid-write chunk failure (no fault-injection
+ * seam at this level; the loop law is the reviewed r16 closure's verbatim);
+ * hardlink-at-fresh-name (needs an inotify race; the nlink law is code-
+ * reviewed only).
+ *
+ * @module packages/runtime/test/a5m2-write-newfile-c1
+ */
+
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import {
+  existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync,
+  rmSync, symlinkSync, writeFileSync,
+} from 'node:fs'
+import { createHash } from 'node:crypto'
+import path from 'node:path'
+
+import { createPostConsumeCreateClosure } from '../controlled-fs/src/post-consume-create.js'
+import type { PostConsumeWritePlan } from '../controlled-fs/src/post-consume-write.js'
+import * as laneBarrel from '../controlled-fs/src/index.js'
+
+const repoRoot = path.resolve(__dirname, '..', '..', '..')
+const runId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+let worldRoot = ''
+
+function mkWorld(name: string): { root: string; outside: string } {
+  const root = mkdtempSync(path.join(worldRoot, `${name}-`))
+  const outside = path.join(worldRoot, `${name}-outside`)
+  mkdirSync(outside, { recursive: true })
+  return { root, outside }
+}
+
+function sha(text: string): string {
+  return `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`
+}
+
+function mkPlan(root: string, rel: string, content: string): PostConsumeWritePlan {
+  return Object.freeze({
+    approvedRootLexical: root,
+    approvedRootReal: realpathSync(root),
+    approvedLocator: path.join(root, rel),
+    content,
+    planFingerprint: 'fp-create-plan-1',
+  })
+}
+
+beforeAll(() => {
+  worldRoot = path.join(repoRoot, 'tests', 'homes', `m2pcc-${runId}`)
+  mkdirSync(worldRoot, { recursive: true })
+})
+
+afterAll(() => {
+  rmSync(worldRoot, { recursive: true, force: true })
+})
+
+describe('a5m2 post-consume CREATE closure — the new-file law is REAL', () => {
+  it('C1 an absent target CREATES: bytes land, the D-C2-1 pair rides the receipt, the fresh object is a regular single-link file', async () => {
+    const w = mkWorld('c1')
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'fresh.txt', 'HELLO NEW FILE\n'),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok, JSON.stringify(r)).toBe(true)
+    if (!r.ok) throw new Error('unreachable')
+    expect(r.value).toEqual({ canonicalLocator: path.join(w.root, 'fresh.txt'), writtenFingerprint: sha('HELLO NEW FILE\n') })
+    expect(readFileSync(path.join(w.root, 'fresh.txt'), 'utf8')).toBe('HELLO NEW FILE\n')
+    const st = lstatSync(path.join(w.root, 'fresh.txt'))
+    expect(st.isFile()).toBe(true)
+    expect(st.nlink).toBe(1)
+  })
+
+  it('C2 a NESTED contained parent binds through the fd chain: the file lands inside the ROOT, not wherever the name may later point', async () => {
+    const w = mkWorld('c2')
+    mkdirSync(path.join(w.root, 'a', 'b'), { recursive: true })
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'a/b/deep.txt', 'nested lands\n'),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok, JSON.stringify(r)).toBe(true)
+    expect(readFileSync(path.join(w.root, 'a', 'b', 'deep.txt'), 'utf8')).toBe('nested lands\n')
+    expect(existsSync(path.join(w.outside, 'deep.txt'))).toBe(false)
+  })
+
+  it('C3 an existing target races LOST: EEXIST refuses with ZERO bytes and the existing content is BYTE-INTACT (no truncate window)', async () => {
+    const w = mkWorld('c3')
+    const target = path.join(w.root, 'keep.txt')
+    writeFileSync(target, 'KEEP-ME UNTOUCHED\n')
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'keep.txt', 'OVERWRITE ATTEMPT\n'),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfClass']).toBe('denied')
+    expect(r.error.message).toContain('ZERO bytes')
+    expect(readFileSync(target, 'utf8')).toBe('KEEP-ME UNTOUCHED\n')
+  })
+
+  it('C4 an absent parent is a typed refusal with the CONTRACT REASON (mkdir is outside the closed effect set); nothing is created', async () => {
+    const w = mkWorld('c4')
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'missing/deep/new.txt', 'never lands\n'),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('not-a-directory')
+    expect(r.error.message).toContain('NEVER creates directories')
+    expect(r.error.message).toContain('mkdir-recursive')
+    expect(existsSync(path.join(w.root, 'missing'))).toBe(false)
+  })
+
+  it('C5 a parent swapped to an outside symlink BEFORE the run refuses symlink-alias; the OUTSIDE dir stays EMPTY (zero creation asserted)', async () => {
+    const w = mkWorld('c5')
+    symlinkSync(w.outside, path.join(w.root, 'notes'))
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'notes/hijack.txt', 'HIJACK\n'),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('symlink-alias')
+    expect(r.error.message).toContain('before creation')
+    expect(existsSync(path.join(w.outside, 'hijack.txt'))).toBe(false)
+  })
+
+  it('C6 a symlink AT THE FINAL NAME refuses symlink-alias at the exclusive create; the file it points at is byte-intact', async () => {
+    const w = mkWorld('c6')
+    const victim = path.join(w.outside, 'victim.txt')
+    writeFileSync(victim, 'ORIGINAL OUTSIDE BYTES\n')
+    symlinkSync(victim, path.join(w.root, 'alias.txt'))
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'alias.txt', 'SWAP ATTACK\n'),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('symlink-alias')
+    expect(readFileSync(victim, 'utf8')).toBe('ORIGINAL OUTSIDE BYTES\n')
+  })
+
+  it('C7 single flight (P3): the second call refuses grant-consumed; the bytes exist ONCE, unchanged from the first landing', async () => {
+    const w = mkWorld('c7')
+    const plan = mkPlan(w.root, 'once.txt', 'exactly once\n')
+    const closure = createPostConsumeCreateClosure(
+      plan,
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const first = await closure.write()
+    expect(first.ok, JSON.stringify(first)).toBe(true)
+    const second = await closure.write()
+    expect(second.ok).toBe(false)
+    if (second.ok) throw new Error('unreachable')
+    expect(second.error.details?.['cfReason']).toBe('grant-consumed')
+    expect(readFileSync(path.join(w.root, 'once.txt'), 'utf8')).toBe('exactly once\n')
+  })
+
+  it('C8 cancellation before the claim produces no effect: zero creation', async () => {
+    const w = mkWorld('c8')
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'cancelled.txt', 'never\n'),
+      { parametersFingerprint: 'fp-create-plan-1', signal: { aborted: true } },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('effect-outside-grant')
+    expect(existsSync(path.join(w.root, 'cancelled.txt'))).toBe(false)
+  })
+
+  it('C9 the root swapped to an outside symlink AFTER the plan froze refuses at the ANCHOR law BEFORE any open; the outside dir stays EMPTY', async () => {
+    const w = mkWorld('c9')
+    const plan = mkPlan(w.root, 'ghost.txt', 'never lands\n')
+    // after approval the attacker replaces the whole root with a link out
+    rmSync(w.root, { recursive: true })
+    symlinkSync(w.outside, w.root)
+    const closure = createPostConsumeCreateClosure(
+      plan,
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok).toBe(false)
+    if (r.ok) throw new Error('unreachable')
+    expect(r.error.details?.['cfReason']).toBe('outside-anchor')
+    expect(existsSync(path.join(w.outside, 'ghost.txt'))).toBe(false)
+  })
+
+  it('C10 the create closure is a PRIVATE executor: it rides no public barrel (mirrors the write closure guard)', () => {
+    expect(laneBarrel).not.toHaveProperty('createPostConsumeCreateClosure')
+    expect(laneBarrel).not.toHaveProperty('PostConsumeCreatePlan')
+  })
+
+  it('C11 the empty string is a legal create: zero-byte file lands with the empty-content fingerprint', async () => {
+    const w = mkWorld('c11')
+    const closure = createPostConsumeCreateClosure(
+      mkPlan(w.root, 'empty.txt', ''),
+      { parametersFingerprint: 'fp-create-plan-1' },
+      { instanceRootDir: w.root },
+    )
+    const r = await closure.write()
+    expect(r.ok, JSON.stringify(r)).toBe(true)
+    if (!r.ok) throw new Error('unreachable')
+    expect(lstatSync(path.join(w.root, 'empty.txt')).size).toBe(0)
+    expect(r.value.writtenFingerprint).toBe(sha(''))
+  })
+})

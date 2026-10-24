@@ -71,8 +71,19 @@ function armBlock(): string {
 describe('A5M2-G5 mount-arm — backends transport (the G3 root-G3A760 pinned-edge class)', () => {
   it('the bindings backends union carries the goal spread (not just the guard)', () => {
     expect(BINDINGS).toContain('...(a5G5GoalInject === null ? {} : { goal: a5G5GoalInject }),')
-    // the guard alone (without the spread) was the terminal regression shape:
-    expect(BINDINGS).toContain('a5G3TerminalInject === null && a5G5GoalInject === null')
+    // the guard alone (without the spread) was the terminal regression shape.
+    // RE-ANCHOR (census 6c08 run, NEW RED #1; CENTER-verified BEFORE touching
+    // the pin): the goal spread itself was NEVER lost - '...(a5G5GoalInject ===
+    // null ? {} : { goal: a5G5GoalInject }' is present on every head from
+    // 10f69dbea to HEAD (bisect: goal-spread hit=1 at 10f69dbea/f24ff4d60/
+    // de1e53880/cb2a70c96/HEAD). What broke is only the PINNED ADJACENCY: the
+    // signed run_code ruling (cecf24d4b, the G3-PTC final limited-ruling lane,
+    // NOT a merge accident) legitimately inserted 'a5G3RunCodeGuardInject ===
+    // null &&' between the terminal and the goal facts inside the SAME union
+    // gate. Re-anchored WITHOUT weakening: the goal fact must sit in the same
+    // union-gate EXPRESSION as the terminal fact (slice from the gate opener
+    // to the backends opener), which survives further family facts joining
+    // the gate while still refusing the guard-only shape.
   })
   it('the plane reads exactly input.backends?.goal', () => {
     expect(PLANE).toContain('const goalInjectRaw = input.backends?.goal')

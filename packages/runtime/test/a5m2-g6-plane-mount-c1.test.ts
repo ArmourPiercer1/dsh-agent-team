@@ -154,16 +154,34 @@ function makeNatives (nativeBodies: string[]) {
   return natives
 }
 
-// The blueprint grammar rejects a default-allow projection AND allow entries
-// for names outside the fs/shell family (measured here: `rule allow[0].tool
-// must be one of read | read_image | write | edit | lsp | bash | pwsh`) —
-// under today's grammar a session-query call therefore NEVER rides a policy
-// allow: the durable-approval lane is its only production lane, which is
-// exactly what legs (d)/(e) measure.
+// The blueprint grammar's CLOSED tool vocabulary grew after this spec was
+// written: the five session-query names entered `PERMISSION_TOOL_NAMES` /
+// `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` by edd68f0f4 (root 22:13 limited
+// card; blueprint schema.ts:466-470 + :515-552 on the int world) — "Naming
+// them here opens the named allow/ask/deny channel ONLY", `any` resource in
+// all three lanes, `exact`/`subtree` refused every lane. So an
+// `{ tool: session_*, resource: { kind: 'any' } }` allow entry is FAMILY-
+// LEGAL by the root closed-table law itself (leg (a2) pins that legality);
+// the DENIAL semantic rides a name the same law KEEPS out of the vocabulary
+// — schedule_create/schedule_update are NOT permission tools ("a rule naming
+// one is MALFORMED", schema.ts:505-510): leg (a2b) pins the projection still
+// refuses it (measured era text: `rule allow[0].tool must be one of read |
+// read_image | write | edit | lsp | bash | pwsh | ...`, wrapped by the plane
+// as TOOL_BINDING_UNVERIFIED). PA wiring of the session rows is untouched by
+// the grammar: admission stays the ONE paAdmit (legs (d)/(e)).
 const POLICY_ASK = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
-const POLICY_SESSION_ALLOW_ATTEMPT = Object.freeze({
+const POLICY_SESSION_ALLOW = Object.freeze({
   default: 'ask',
   allow: TOOLS.map((tool) => Object.freeze({ tool, resource: { kind: 'any' } })),
+  ask: [] as unknown[],
+  deny: [] as unknown[],
+})
+// OUT of the closed permission vocabulary by the SAME root law that admitted
+// session_* (the invocation-only doc names schedule_create/schedule_update as
+// NOT permission tools — a rule naming one is MALFORMED): the DENIAL anchor.
+const POLICY_OUT_OF_VOCAB_ALLOW = Object.freeze({
+  default: 'ask',
+  allow: [Object.freeze({ tool: 'schedule_create', resource: { kind: 'any' } })],
   ask: [] as unknown[],
   deny: [] as unknown[],
 })
@@ -228,6 +246,11 @@ function makeInject (opts: { searchPresent?: boolean, nativeBodies?: string[], p
       queryPorts: searchPresent ? ports : Object.fromEntries(Object.entries(ports).filter(([facet]) => facet !== 'searchQueryPort')),
       readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
       teamCeiling: (target: string) => target === 's-a' || target === CALLER_ID,
+      // Root ruling 3: the inject contract carries the public Provider
+      // lifecycle observer + the pinned generation (production a5G6Inject
+      // mirrors these from g6Supply; agent-bindings :3210).
+      lifecycle: { currentGeneration: () => ({ id: 1, service: ports as unknown }) },
+      generation: 1,
       declaredMount: { searchBackend: searchPresent ? { present: true as const } : { present: false as const, evidence: 'no session-query backend deployed on this assembly (plane-mount spec)' } },
     }),
     natives,
@@ -261,26 +284,21 @@ describe('A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: p
     for (const name of TOOLS) expect(built.value.placementNames).not.toContain(name)
   })
 
-  it('(a2) ROOT 23:09 RE-ANCHORED: the five pinned session_* names are KNOWN grammar vocabulary (AUTH landed, int edd68f0f4) so their allow entries build at the projection, while a genuinely UNKNOWN session_* word is still refused — durable-approval semantics are legs (d)/(e), not this grammar gate', () => {
+  it('(a2) CLOSED-TABLE LEGALITY PIN (int re-anchor): the five session-query names are invocation-only permission tools by root\'s own law (edd68f0f4; schema.ts:466-470 + :515-552 "opens the named allow/ask/deny channel ONLY", any-in-three-lanes) — the mount ACCEPTS the allow projection, and acceptance opens a NAMED CHANNEL, never a bypass: the rows stay PA-wired, the plane still arms them only through the ONE paAdmit seat (legs (d)/(e) keep measuring that)', () => {
     const w = makeInject()
-    const built = buildPlane({ backends: { sessionQuery: w.inject } }, [], POLICY_SESSION_ALLOW_ATTEMPT)
-    // The five invocation names are now declared vocabulary: the projection
-    // accepts the allow shape (the old refusal here keyed on the vocabulary
-    // being UNKNOWN — that premise is superseded by the signed AUTH landing).
-    expect(built.ok).toBe(true)
-    // The refusal law for NON-vocabulary stands: a real unknown word must
-    // still die at the grammar gate with the same unverified-binding code.
-    const POLICY_UNKNOWN = Object.freeze({
-      default: 'ask',
-      allow: [Object.freeze({ tool: 'session_not_a_real_op', resource: { kind: 'any' } })],
-      ask: [] as unknown[],
-      deny: [] as unknown[],
-    })
-    const refused = buildPlane({ backends: { sessionQuery: w.inject } }, [], POLICY_UNKNOWN)
-    expect(refused.ok).toBe(false)
-    if (refused.ok === true) return
-    expect(refused.code).toBe('TOOL_BINDING_UNVERIFIED')
-    expect(refused.message).toContain('must be one of')
+    const built = buildPlane({ backends: { sessionQuery: w.inject } }, [], POLICY_SESSION_ALLOW)
+    expect(built.ok, built.ok === true ? 'grammar-legal by the closed table' : `${built.code}: ${built.message}`).toBe(true)
+    if (built.ok !== true) return
+    for (const name of TOOLS) expect(built.value.placementNames).toContain(name)
+  })
+
+  it('(a2b) DENIAL semantic (re-anchored to a still-out-of-vocabulary entry): an allow rule naming schedule_create — NOT a permission tool by the same root law (schema.ts:505-510, "a rule naming one is MALFORMED") — is refused at the projection with TOOL_BINDING_UNVERIFIED / must-be-one-of', () => {
+    const w = makeInject()
+    const built = buildPlane({ backends: { sessionQuery: w.inject } }, [], POLICY_OUT_OF_VOCAB_ALLOW)
+    expect(built.ok).toBe(false)
+    if (built.ok === true) return
+    expect(built.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(built.message).toContain('must be one of')
     void w
   })
 

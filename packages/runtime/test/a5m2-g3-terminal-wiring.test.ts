@@ -75,6 +75,7 @@ type Definition = {
 const WIRING = (await import(new URL('../src/plugin/live/governed-families/g3-terminal-wiring.mjs', import.meta.url).href)) as {
   buildG3TerminalWiring: (input: Record<string, unknown>) => Built
   a5G3PaTargetFlat: (manifest: Record<string, unknown>) => Record<string, unknown>
+  a5G3RouteIdentity: (input: Record<string, unknown>) => Readonly<{ registrationId: string, incarnation: string }> | null
   A5_G3_TERMINAL_TOOL_NAMES: readonly string[]
   A5_G3_TERMINAL_WIRING_CODES: Record<string, string>
 }
@@ -553,6 +554,39 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
     // the six-verb leaf sets are CLOSED: a smuggled leaf denies with its own name:
     expect(validatePaFamilyTarget('B-TERMINAL', { ...common('output-read', 'terminal_read'), ptySessionId: 'pty-1', ptyIncarnation: 'pid:4242', offsetJson: 'absent', countJson: 'absent', smuggled: 'x' }))
       .toBe('smuggled: not part of the B-TERMINAL typed plan')
+  })
+
+  it('the ROUTE IDENTITY law (ruling 2 + consolidated card 1b/2): declared ∩ live ∩ COVERED, alive generation, and the CURRENT-publication pairing — every other answer is nothing', () => {
+    const base = {
+      declared: ['shell', 'docker'],
+      live: ['shell', 'docker'],
+      covered: ['shell'],
+      generation: { value: 'mount-gen-1', revoked: false },
+      capturedIdentity: 'pub-A',
+      currentIdentity: 'pub-A',
+    }
+    const ok = WIRING.a5G3RouteIdentity({ ...base, type: 'shell' })
+    expect(ok).toEqual({ registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-1' })
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'shell' }), 'same mount, same answer (construction pairs the entry recheck)').toEqual(ok)
+    // fail-closed matrix — each leg answers NOTHING (→ P_TERM_TARGET_UNRESOLVED):
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'node' }), 'undeclared type').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'docker', live: ['shell'] }), 'declared but the service no longer registers it').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: '' }), 'empty type').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, generation: { value: 'mount-gen-1', revoked: true } }), 'REVOKED (unmounted/dropped-residency) generation').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, generation: null }), 'no generation at all').toBeNull()
+    // ITEM 2: declared AND live, but this assembly does not REALLY
+    // implement it — the label must never impersonate an implementation:
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'docker' }), 'declared+live but NOT covered by this assembly').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'shell', covered: [] }), 'a failed base Config covers NOTHING').toBeNull()
+    // ITEM 1b: the pairing authority is the CURRENTLY published identity —
+    // a superseded publication answers nothing even with a live generation:
+    expect(WIRING.a5G3RouteIdentity({ ...base, currentIdentity: 'pub-B' }), 'a NEWER publication replaced this mount').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, capturedIdentity: undefined }), 'not yet published answers nothing').toBeNull()
+    // (a) a replaced generation answers a DIFFERENT incarnation — the exact
+    // difference the adapter entry recheck names and refuses:
+    const after = WIRING.a5G3RouteIdentity({ ...base, type: 'shell', generation: { value: 'mount-gen-2', revoked: false } })
+    expect(after).toEqual({ registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-2' })
+    expect(after?.incarnation === ok?.incarnation, 'a replaced generation can never pair an approval made under the old one').toBe(false)
   })
 })
 

@@ -284,10 +284,13 @@ export const PLACEMENTS = [
   // law) and on the adapter below; the adapter's only cross-module leg is
   // `../ptc-escalation-row.mjs` (already placed above); everything else is
   // node builtins. Byte-identical like every entry; drift gate D compares.
-  {
-    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
-  },
+
+  // A5M2-G6 WIRE LANE closure completion (root ruling 3 increment): the G6
+  // mirror's OWN static import (g6-session-query.mjs:212 -> the canonical
+  // registration face) had no placement row — on the strict install face
+  // the G6 modules died ERR_MODULE_NOT_FOUND at load. One placement,
+  // byte-identical like every other row; the file's own imports are
+  // node builtins + ./ptc-escalation-row.mjs (already placed above).
   {
     src: 'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',

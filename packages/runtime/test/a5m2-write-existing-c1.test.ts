@@ -19,11 +19,12 @@
  *    closure over a REAL workspace-internal root: the bytes land through
  *    verify-before-truncate, and the durable manifest carries the B-WRITE
  *    target manifest field-for-field (canonicalTarget / contentFingerprint /
- *    existingFileOnly HELD fact included);
- *  - the NEW-FILE path stays HELD: a not-yet-existing target refuses at the
- *    closure AFTER the consumption stands (a settled fact is never rolled
- *    back) and creates ZERO bytes — the absence is asserted by re-stat, not
- *    claimed;
+ *    the existence-honest LAW facts included);
+ *  - the NEW-FILE path is REAL (backlog `write（新建文件） 未开发 … 待派`,
+ *    REAL-GAP card 2026-10-25): an absent target is CREATED through the
+ *    reviewed post-consume CREATE closure (FD-bound parent chain, O_EXCL)
+ *    under the same PA seat; an EEXIST race refuses with ZERO bytes; the
+ *    effect is asserted by re-stat/read-back, never claimed;
  *  - identity law verbatim from the todo round: the REAL 639 exec shape
  *    (`token` symbol, no tokenKey), the shared token ledger's allocation
  *    (`plane-write:<realm>-N`), front refusal for an unbound exec, settled
@@ -277,7 +278,7 @@ const WRITE = (await import(new URL('../src/plugin/live/governed-families/write.
     providerId: string
     classify: (args: unknown, exec: Record<string, unknown>, callId: string) => { ok: boolean; code?: string; detail?: string; plan?: unknown; effects?: unknown; parametersFingerprint?: string; reviewPayload?: { familyId: string; adapterRevision: number; providerIdentity: string; definitionIdentity: string; targetManifest: Record<string, unknown> } }
     prepare: (plan: unknown, grant: Record<string, unknown>) => { ok: boolean; code?: string; detail?: string }
-    execute: (plan: unknown, proof: { consumed: boolean; grant: Record<string, unknown>; signal?: { aborted?: boolean } }) => Promise<{ ok: boolean; code?: string; detail?: string; value?: { canonicalLocator: string; writtenFingerprint: string; existingFileOnly: boolean } }>
+    execute: (plan: unknown, proof: { consumed: boolean; grant: Record<string, unknown>; signal?: { aborted?: boolean } }) => Promise<{ ok: boolean; code?: string; detail?: string; value?: { canonicalLocator: string; writtenFingerprint: string; existingFileOnly?: boolean; createdNew?: boolean } }>
     cancel: (plan: unknown) => { settled?: string; writeOutcome?: string; code?: string }
     drain: () => void
   }
@@ -553,12 +554,14 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     expect(manifest?.adapterRevision).toBe(A5_WRITE_ADAPTER_REVISION)
     expect(manifest?.providerIdentity).toBe(ARM_PROVIDER)
     expect(manifest?.targetManifest).toMatchObject({
-      operation: 'write-existing-file',
+      operation: 'write-file',
       realmId: world.plane.realmId,
       canonicalTarget: target,
       contentFingerprint: sha256Hex(content),
-      existingFileOnly: true,
+      directoryCreation: false,
     })
+    expect(String(manifest?.targetManifest?.existingFileLaw)).toMatch(/verify-before-truncate/)
+    expect(String(manifest?.targetManifest?.newFileLaw)).toMatch(/O_EXCL/)
     // identity end-to-end: leg input, request and durable row speak the ONE
     // ledger allocation; the fingerprint is the row's OWN classify answer.
     expect(world.legInputs.length).toBe(1)
@@ -577,6 +580,8 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const value = await running
     expect(value).toEqual({ canonicalLocator: target, writtenFingerprint: sha256Hex(content), existingFileOnly: true })
+    // the outcome flag says WHICH reviewed law ran: the target existed,
+    // so the existing-file closure ran (createdNew never rides here).
     // THE real effect: the bytes on disk are the approved bytes, read back
     // through the real filesystem (never the receipt's word).
     expect(readFileSync(target, 'utf8')).toBe(content)
@@ -586,18 +591,23 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     expect(consumed.length).toBe(1)
   })
 
-  it('THE HELD NEW-FILE PATH: an absent target refuses AFTER the consumption stands (never rolled back) and creates ZERO bytes', async () => {
-    const world = await mountWorld('held')
+  it('THE NEW-FILE PATH (REAL, was HELD): an absent target is CREATED through the reviewed create closure under the SAME PA seat; the consumption stands and the bytes land for real', async () => {
+    const world = await mountWorld('new-file')
     const events: Array<{ type: string; data: unknown }> = []
     const rowCallId = `plane-write:${world.plane.realmId}-1`
-    const ghost = join(world.fsRoot, 'ghost.txt')
-    const running = world.writeDef.execute({ file_path: 'ghost.txt', content: 'never lands\n' }, execFor('call-held', events))
+    const fresh = join(world.fsRoot, 'brand-new.txt')
+    expect(() => statSync(fresh)).toThrow()
+    const running = world.writeDef.execute({ file_path: 'brand-new.txt', content: 'lands for real\n' }, execFor('call-new', events))
     const row = await waitRowForCall(rowCallId)
+    // the approval the human reads states the LAW, not an existence promise.
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(String(manifest?.targetManifest?.newFileLaw)).toMatch(/O_EXCL/)
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
-    await expect(running).rejects.toThrow(/P_WRITE_CLOSURE_REFUSED/)
-    // ZERO CREATION is asserted by re-stat (the absence is a fact, not a
-    // claim): the no-O_CREAT open could not have made the file.
-    expect(() => statSync(ghost)).toThrow()
+    const value = await running
+    expect(value).toEqual({ canonicalLocator: fresh, writtenFingerprint: sha256Hex('lands for real\n'), createdNew: true })
+    // THE real effect: the created bytes are read back through the REAL
+    // filesystem (never the receipt's word).
+    expect(readFileSync(fresh, 'utf8')).toBe('lands for real\n')
     // the consumption is ledger truth: it STANDS, un-rolled-back.
     const consumed = (await stateNow()).consumptions.filter((c) => String(c.requestId) === String(row.requestId))
     expect(consumed.length).toBe(1)
@@ -795,7 +805,9 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
       assertSupportedJsonSchema: (schema: unknown) => void
     }
     expect(() => host.assertSupportedJsonSchema(schema)).not.toThrow()
-    expect(schema.required).toEqual(['canonicalLocator', 'writtenFingerprint', 'existingFileOnly'])
+    // the outcome-flag XOR lives in the ARM (exactly one flag lands); the
+    // canonical registration face requires only the D-C2-1 pair.
+    expect(schema.required).toEqual(['canonicalLocator', 'writtenFingerprint'])
     expect(Object.values(schema.properties as Record<string, Record<string, unknown>>).some((p) => Object.hasOwn(p, 'required'))).toBe(false)
   })
 })

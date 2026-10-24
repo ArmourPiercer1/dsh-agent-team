@@ -68,8 +68,12 @@ export const ROW_CONFIG = Object.freeze({
   productionReadPath: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
   providerIdentity: null,
   reuseInstall: REUSE_INSTALL,
-  world: `${TEST_HOME_ROOT_REL}/a5m2-team-c2`,
-  port: null,
+  // Root's concentrated card [1]: a stamped FRESH home per window, and the
+  // EXPLICIT 3180-family port (no 3188 default drifting from the plan).
+  world: `${TEST_HOME_ROOT_REL}/a5m2-team-c2-h1-<stamp>`,
+  worldPrefix: `${TEST_HOME_ROOT_REL}/a5m2-team-c2-h1`,
+  port: 3180,
+  window: Object.freeze({ wallMs: 300_000, worldCeilingBytes: 64 * 1024 * 1024, keepFreeBytes: 6 * 1024 * 1024 * 1024 }),
   portDiscipline: Object.freeze({ family: TEST_PORT_RANGES, neverTouch: STABLE_INSTANCE_PORT }),
   readiness: Object.freeze({ probe: 'team.listRoots', version: 'v3', access: 'read-only', gatesAllLegs: true }),
   criteria: CRITERIA_IDS,
@@ -87,6 +91,9 @@ export function validateRow (row = ROW_CONFIG) {
   if (row.criteria[0] !== 'C-READINESS') problems.push('the readiness barrier must be the first traced leg')
   if (!row.criteria.includes('C-DUR-1')) problems.push('C-DUR-1 is the leg that closes durable-approval consumption; a kit without it cannot claim that closure')
   if (!row.world.startsWith(`${TEST_HOME_ROOT_REL}/`)) problems.push('the world must live under tests/homes (workspace-write sandbox discipline)')
+  if (!row.world.includes('<stamp>')) problems.push('the world must be a FRESH stamped path (root card [1]): a fixed name is reusable, not fresh')
+  if (row.port !== 3180) problems.push(`window-1 pins port 3180 (TEST_METHODS:14 family), found ${String(row.port)}`)
+  if (row.window?.wallMs !== 300_000 || row.window?.worldCeilingBytes !== 64 * 1024 * 1024) problems.push('window ceilings must be the root pair: 300 s wall and 64 MiB world increment')
   if (row.port === STABLE_INSTANCE_PORT) problems.push(`the stable development instance on port ${String(STABLE_INSTANCE_PORT)} is never in scope`)
   if (row.budget.newInstalls !== 0 || row.budget.deletes !== 0) problems.push('no new installs and no deletes are authorized in this preparation')
   return Object.freeze({ ok: problems.length === 0, problems, criteria: CRITERIA_IDS.length })

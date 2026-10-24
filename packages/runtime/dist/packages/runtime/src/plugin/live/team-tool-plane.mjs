@@ -1288,7 +1288,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'teamCeiling is required — the Team-plane ceiling decision port is the owner-side injection; no permissive stand-in exists here (fail closed)'
               : !g6IsRec(sessionQueryInjectRaw.declaredMount) || !g6IsRec(sessionQueryInjectRaw.declaredMount.searchBackend)
                 ? 'declaredMount.searchBackend {present:true} | {present:false, evidence} is required — the search rows ride the deployment\'s real evidence either way'
-                : undefined
+                // Root ruling 3 (lane increment 1): currentness rides the
+                // PUBLIC Provider lifecycle — an arm WITHOUT the observer
+                // cannot be built at all (fail closed; no per-read identity
+                // law exists any more to fall back to).
+                : !g6IsRec(sessionQueryInjectRaw.lifecycle) || typeof sessionQueryInjectRaw.lifecycle.currentGeneration !== 'function'
+                  ? 'lifecycle { currentGeneration() } is required — the PUBLIC Provider lifecycle observer (the host-side ctx.inject([\'sessionQuery\']) fiber); currentness unknowable must never become allow-by-default'
+                  : !Number.isInteger(sessionQueryInjectRaw.generation)
+                    ? 'generation (a non-negative integer) is required — the ACTIVE Provider generation the mount pins; every lifecycle refusal quotes it against the live one'
+                    : undefined
     if (g6Bad !== undefined) return sessionQueryInjectInvalid(g6Bad)
     for (const g6Name of A5_G6_TOOL_NAMES) {
       if (g6Name === readName || g6Name === A5_TODO_MOUNT_NAME || g6Name === A5_WRITE_MOUNT_NAME || g6Name === A5_IMAGE_MOUNT_NAME) {
@@ -1302,6 +1310,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
       readCaller: sessionQueryInjectRaw.readCaller,
       teamCeiling: sessionQueryInjectRaw.teamCeiling,
       declaredMount: sessionQueryInjectRaw.declaredMount,
+      lifecycle: sessionQueryInjectRaw.lifecycle,
+      generation: sessionQueryInjectRaw.generation,
       ...(sessionQueryInjectRaw.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInjectRaw.maxSearchResults }),
     })
   }
@@ -1862,6 +1872,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // edge refuses (see the execution edge below); it never falls back to a
   // scalar getter or a constant.
   const paReadCallFacts = input.readCallFacts
+  // A5M2 B-SCHEDULE bind-after-def (root 00:3x, zero-registration law): the
+  // names the bind-after-def mount GOVERNS this mount declared (scheduleEnabled
+  // only; absent/undefined = an unmounted world answers undefined below — the
+  // zero flip). The pair is NEVER placed by this plane; the list exists so
+  // the trust read of the native pair's dispatch resolves through THIS
+  // ORIGINAL placement-name source (no parallel placement source).
+  const scheduleGovernedNames = Array.isArray(input.scheduleGovernedNames) ? input.scheduleGovernedNames : null
   // THE plane's own row-name mapping point (the same native-class ↔ mounted-
   // name law `createLaneDecide` documents at the lane face): a call's
   // tool-invoke name resolves to the row THIS plane placed, so a backend
@@ -1919,6 +1936,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // live tuple, and the edge refuses `TOOL_BINDING_UNVERIFIED` when the
     // entry cannot answer; no fake binding path exists on this family).
     if (teamOpsWiring !== null && teamOpsWiring.placementNames.includes(spelling)) return spelling
+    // A5M2 B-SCHEDULE bind-after-def: the governed native pair resolves to its
+    // OWN native spelling — ONLY when this mount declared the pair governed;
+    // an unmounted world answers undefined (zero flip). No row is placed and
+    // no definition is registered here (zero-registration law): the resolution
+    // exists so the REAL call-level binding behind the native definitions is
+    // what the downstream trust read reaches, never a `plane-row:` stand-in.
+    if (scheduleGovernedNames !== null && scheduleGovernedNames.includes(spelling)) return spelling
     // A5-M2 B-SUBAGENT CONTROL (root 21:01 card, this lane's block): the
     // control trio mounts at its OWN native spellings — placed by THIS plane
     // through the shared machinery — ONLY while this mount actually wired it
@@ -3471,13 +3495,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
         properties: {
           canonicalLocator: Object.freeze({ type: 'string' }),
           writtenFingerprint: Object.freeze({ type: 'string' }),
+          // EXACTLY ONE outcome flag is present on every receipt (the ARM
+          // guarantees it: existing path lands existingFileOnly:true, the
+          // create path lands createdNew:true — never both, never neither).
+          // The parent-level canonical form cannot express the XOR, so the
+          // pair is declared here and the producer keeps the stronger law.
           existingFileOnly: Object.freeze({ type: 'boolean' }),
+          createdNew: Object.freeze({ type: 'boolean' }),
         },
         // r9 canonical law (same-source scan of the write face): property-level
         // `required: true` is the host's authored DSL, not a registration
-        // face; every property of this receipt is REQUIRED, said once at the
-        // parent exactly like the host's compiled output form.
-        required: Object.freeze(['canonicalLocator', 'writtenFingerprint', 'existingFileOnly']),
+        // face; the D-C2-1 pair is REQUIRED at the parent exactly like the
+        // host's compiled output form; the outcome flag's exactly-one law
+        // is the arm's (see above), not something this grammar can overclaim.
+        required: Object.freeze(['canonicalLocator', 'writtenFingerprint']),
       }),
       // r12 ROOT MIN FIX (13:10): `render` lives INSIDE `output` — the real
       // tools.register contract (index.ts:1063 throws unless output.render is
@@ -3487,7 +3518,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // one validated canonical value (the image row's structure reused).
       render: (_args, value) => [{
         type: 'text',
-        text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (existing-file governed write, ${String(value?.writtenFingerprint ?? '')}).`,
+        text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (${value?.createdNew === true ? 'new-file governed write, created' : 'existing-file governed write'}, ${String(value?.writtenFingerprint ?? '')}).`,
       }],
     }),
     // presentCall stays at the definition's TOP level — its real Host contract
@@ -4580,6 +4611,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
         readCaller: sessionQueryInject.readCaller,
         teamCeiling: sessionQueryInject.teamCeiling,
         declaredMount: sessionQueryInject.declaredMount,
+        lifecycle: sessionQueryInject.lifecycle,
+        generation: sessionQueryInject.generation,
         ...(sessionQueryInject.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInject.maxSearchResults }),
         correlationOf: g6CorrelationOf,
         // THE LAZY FEED (pb §6, the placedByName law right below): the
@@ -5176,6 +5209,35 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
+      /** A5M2 B-SCHEDULE bind-after-def (root residual 3): a NARROW face over
+       *  the mount's ONE existing `governedTokenLedger` — the SAME Map the
+       *  todo/write/image/read/G1 rows share, under the SAME laws this file's
+       *  G1 rows state verbatim: a registry token (object|symbol only, never
+       *  a composed identity) spans exactly ONE governed flight; a taken
+       *  token is refused as a replay while in-flight AND after settled
+       *  (never re-armed); settle marks the flight terminal. NOT a new
+       *  ledger: no second Map, no durable state, mount-lifetime like every
+       *  row's use of it. Hook-route consumers (the bind-after-def wiring)
+       *  take BEFORE any PA entry and settle in the flight's finally — the
+       *  same take→PA→next→finally discipline the rows run inline. */
+      paTokenLedger: Object.freeze({
+        take: (token, correlation) => {
+          const tokenLike = (typeof token === 'object' && token !== null) || typeof token === 'symbol'
+          if (!tokenLike) return false
+          if (governedTokenLedger.has(token)) return false
+          governedTokenLedger.set(token, { correlation: String(correlation ?? 'hook-flight'), settled: false })
+          return true
+        },
+        settle: (token) => {
+          const tokenLike = (typeof token === 'object' && token !== null) || typeof token === 'symbol'
+          if (!tokenLike) return false
+          const prior = governedTokenLedger.get(token)
+          if (prior === undefined) return false
+          if (!prior.settled) governedTokenLedger.set(token, { correlation: prior.correlation, settled: true })
+          return true
+        },
+        peek: (token) => governedTokenLedger.get(token),
+      }),
       /** A5M2-G6 B-SESSION-QUERY: the session-query wiring face for THIS
        *  mount (omitted, NOT set to `undefined`, when the family is not
        *  deployed — the presence-decision law the hand-off faces obey). The

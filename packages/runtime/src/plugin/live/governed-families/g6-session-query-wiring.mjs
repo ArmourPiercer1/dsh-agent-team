@@ -128,6 +128,9 @@ export const A5_G6_QUERY_WIRING_REVISION = 1
 /** Typed codes OWNED by this wiring layer (P_G6_WIRE_*). Adapter refusals
  *  keep the row's own A5_G6_* codes verbatim — never rewritten here. */
 export const A5_G6_QUERY_WIRING_CODES = Object.freeze({
+  // Root ruling 3 (lane increment 1): typed fail-closed — governed
+  // currentness is unknowable without the public Provider lifecycle observer.
+  PORT_LIFECYCLE_UNOBSERVABLE: 'P_G6_WIRE_PORT_LIFECYCLE_UNOBSERVABLE',
   INPUT_INVALID: 'P_G6_WIRE_INPUT_INVALID',
   CALL_ID_ABSENT: 'P_G6_WIRE_CALL_ID_ABSENT',
   EFFECTS_UNPARSABLE: 'P_G6_WIRE_EFFECTS_UNPARSABLE',
@@ -222,13 +225,13 @@ const registrationFaceComplete = (native) => {
  */
 export function buildG6SessionQueryWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'wiring input must be one object')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'queryPorts', 'readCaller', 'teamCeiling', 'declaredMount', 'maxSearchResults', 'definitionIdentityOf', 'correlationOf', 'placementFeed', 'pa', 'observe'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'queryPorts', 'readCaller', 'teamCeiling', 'declaredMount', 'maxSearchResults', 'definitionIdentityOf', 'correlationOf', 'placementFeed', 'pa', 'observe', 'lifecycle', 'generation'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
-      return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, maxSearchResults, definitionIdentityOf, correlationOf, placementFeed, pa, observe}`)
+      return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, maxSearchResults, definitionIdentityOf, correlationOf, placementFeed, pa, observe, lifecycle, generation}`)
     }
   }
-  const { realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, placementFeed, pa, observe = () => {} } = input
+  const { realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, placementFeed, pa, observe = () => {}, lifecycle, generation } = input
   if (typeof realmId !== 'string' || realmId.length === 0) return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'realmId is required (non-empty string)')
   if (typeof providerId !== 'string' || providerId.length === 0) return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'providerId is required (non-empty string)')
   if (typeof readNative !== 'function') return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'readNative (name) => definition | undefined is REQUIRED — the same bind-time capture seam the adapter itself reads')
@@ -286,6 +289,9 @@ export function buildG6SessionQueryWiring (input = {}) {
     providerId,
     readNative: readNativeOnce,
     queryPorts,
+    // Root ruling 3: currentness rides the public Provider lifecycle.
+    lifecycle,
+    generation,
     readCaller,
     teamCeiling,
     declaredMount,
@@ -529,19 +535,40 @@ export function buildG6SessionQueryWiring (input = {}) {
  * lands as the declared-mount-absent census (the two search names keep
  * their natives). Externally injected facet objects are NOT supply: the
  * glue REFUSES a config that carries them.
- * @param {unknown} service - the live `ctx.get('sessionQuery')` answer
- *  observed AT THE MOUNT MOMENT: the APPROVED receiver identity.
- * @param {(() => unknown)=} observeCurrent - the SAME Host public lazy
- *  accessor (`() => ctx.get('sessionQuery')`, root 19:29): consulted on
- *  EVERY adapter guard read so a WHOLE-SERVICE replacement (a new
- *  instance under the token — possibly even carrying the very same
- *  method objects) becomes visible to the row's existing receiver guard.
- *  Production supply MUST pass it (the glue does); when absent the
- *  identity stays pinned to the approved instance (pure/test use only —
- *  a stale constant never masquerades as `current`).
- * @returns {{ ok: true, providerId: string, queryPorts: Record<string, unknown>, declaredMount: Record<string, unknown> } | { ok: false, code: string, detail: string }}
+ * @param {unknown} service - the sessionQuery service handle OF THE PINNED
+ *  GENERATION (the observer's ACTIVE-generation read taken once at bind
+ *  time). It is NOT re-observed per call: public reads answer a fresh proxy
+ *  each time (root-verified Cordis fact), so no law here may treat read
+ *  identity as a lifecycle signal.
+ * @param {{ currentGeneration(): { id: number, service: unknown } | null }=} lifecycle -
+ *  the PUBLIC Provider lifecycle observer (root ruling 3, lane increment 1;
+ *  host-side optional child fiber over `ctx.inject(['sessionQuery'])`).
+ *  REMOVED LAWS (anti-reintroduction pins — do NOT reinstate): (i) the old
+ *  `observeCurrent` accessor + `receiverMoved` sentinel compared per-read
+ *  `ctx.get` identity against the build-time instance — under fresh-proxy
+ *  reads it false-tripped on EVERY placement (the real-host 405-adjacent
+ *  SESSION_QUERY_ARM_REFUSED mechanism); (ii) any per-method function-object
+ *  continuity expectation (ruling (c): no same-fiber hot-swap promise; a
+ *  `ctx.set` same-fiber value swap and same-object method edits do NOT
+ *  notify and are NOT detectable here — by design). Currentness rides the
+ *  PUBLIC lifecycle ONLY: bind once per generation; the generation must be
+ *  ACTIVE at bind time; a lifecycle replacement invalidates earlier
+ *  generations (the adapter refuses their rows with typed, log-observable
+ *  refusals). An absent observer or a non-ACTIVE/pre-activation fiber
+ *  answers NO generation: the supply fail-closes TYPED — unknowable never
+ *  becomes allow-by-default (center precision 1).
+ * @returns {{ ok: true, providerId: string, queryPorts: Record<string, unknown>, generation: number, lifecycle: object, declaredMount: Record<string, unknown> } | { ok: false, code: string, detail: string }}
  */
-export function buildG6QuerySupplyFromService (service, observeCurrent) {
+export function buildG6QuerySupplyFromService (service, lifecycle) {
+  // CURRENTNESS: the lifecycle observer is mandatory supply (see REMOVED
+  // LAWS above — the per-read identity stand-in is NOT reinstated).
+  if (lifecycle === null || typeof lifecycle !== 'object' || typeof lifecycle.currentGeneration !== 'function') {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.PORT_LIFECYCLE_UNOBSERVABLE, 'no public Provider lifecycle observer was supplied — governed query currentness is unknowable at this assembly and the family fail-closes (typed census, zero flip; never allow-by-default, never a per-read identity stand-in)')
+  }
+  const generation = lifecycle.currentGeneration()
+  if (generation === null || generation === undefined || typeof generation.id !== 'number' || generation.service !== service) {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.PORT_LIFECYCLE_UNOBSERVABLE, `the lifecycle observer answers no ACTIVE generation bound to THIS service (observer=${generation === null || generation === undefined ? 'no-active-generation' : 'generation-' + String(generation.id)}) — provider absent, reloading, or non-ACTIVE; the mount fail-closes typed and the family stays DECLARED-INACTIVE for this mount`)
+  }
   if (service === null || typeof service !== 'object') {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_ABSENT, 'the DSH public sessionQuery service is not registered in this process — the B-SESSION-QUERY family is not deployed here (honest DECLARED-INACTIVE census, zero flip; never a fake stand-in, never a config substitute)')
   }
@@ -550,91 +577,20 @@ export function buildG6QuerySupplyFromService (service, observeCurrent) {
   if (missing.length > 0) {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_INCOMPLETE, `the registered sessionQuery service implements no ${missing.join(', ')} — the family mounts no partial supply (fail-closed; the natives stay untouched)`)
   }
-  // THE LIVE VALUE MAPPED INTO THE ROW'S EXISTENT IDENTITY GUARDS (root
-  // 19:17): the row pins the facet OBJECT + bound FUNCTION at placement
-  // and RE-READS `facet[method]` per dispatch — at entry
-  // (g6-session-query.mjs:1391-1399), after every await and before serving
-  // (guardFacts :1425-1436) — refusing PORT_RECEIVER_MOVED /
-  // PORT_METHOD_MOVED on any mismatch. A build-time-frozen wrapper made
-  // those guards structurally blind to a real generational change (the
-  // OLD handle kept serving — i6's behavior, refused by root 19:17: the
-  // established drift-refusal law demands the CALL REFUSES). So each
-  // supplied facet property is a GETTER that maps the CURRENT live method
-  // into every guard read, STABLE PER GENERATION (the same source method
-  // always answers the same bound face — a steady service never trips the
-  // guards; bind(thisArg) preserves the method's own `length`, so the
-  // adapter's signature law still measures the REAL face, and `this` stays
-  // the service receiver the guards pin). The moment service[name] is a
-  // DIFFERENT function, the next guard read answers a different object
-  // and the row's OWN PORT_METHOD_MOVED law refuses — entry, mid-walk and
-  // final serve alike, zero forwarding; a vanished (non-function) current
-  // value reads as undefined ≠ the pinned ref and fails closed the same
-  // way. No new guard, no adapter edit: the live value rides the guard the
-  // row already runs.
-  const liveFacet = (names) => {
-    const facet = {}
-    for (const name of names) {
-      const perGeneration = new WeakMap()
-      Object.defineProperty(facet, name, {
-        enumerable: true,
-        get () {
-          const current = service[name]
-          if (typeof current !== 'function') return undefined
-          let face = perGeneration.get(current)
-          if (face === undefined) {
-            face = current.bind(service)
-            perGeneration.set(current, face)
-          }
-          return face
-        },
-      })
-    }
-    return Object.freeze(facet)
-  }
+  // BIND ONCE PER GENERATION (the approved shape): every supplied facet
+  // method is the bound handle taken ONCE from this generation at bind
+  // time. No getters, no per-read re-observation, no sentinel object.
+  const bindFacet = (names) => Object.freeze(Object.fromEntries(names.map((name) => [name, service[name].bind(service)])))
   const searchPresent = typeof service.searchSessions === 'function' && typeof service.searchEvents === 'function'
-  const facetObjects = {
+  const queryPorts = Object.freeze({
     ...(searchPresent
-      ? { searchQueryPort: liveFacet(['searchSessions', 'searchEvents']) }
+      ? { searchQueryPort: bindFacet(['searchSessions', 'searchEvents']) }
       : {}),
-    traceQueryPort: liveFacet(['traceSession', 'traceEvent']),
-    eventReadQueryPort: liveFacet(['readEvent']),
-    authorizationQueryPort: liveFacet(['filterSessions']),
-    titlesQueryPort: liveFacet(['readTitleSnapshots']),
-  }
-  // THE CURRENT SERVICE IDENTITY RIDES THE ROW'S EXISTENT RECEIVER GUARD
-  // (root 19:29 — the one true receiver-wide change left open): the row
-  // checks `queryPorts[facet] !== ref.object` at entry (:1391-1399) and in
-  // guardFacts after every await / before final serve (:1425-1436),
-  // refusing PORT_RECEIVER_MOVED. A mount-time snapshot alone made a
-  // WHOLE-SERVICE replacement invisible — the getters would keep observing
-  // the OLD instance (and its possibly identical method objects) forever.
-  // So each queryPorts facet property is itself a GETTER consulting the
-  // Host lazy accessor NOW: while `ctx.get('sessionQuery')` still answers
-  // the APPROVED service the guard read answers the approved facet object
-  // (steady state never trips anything, and execution keeps riding the
-  // approved real receiver/method handles — they never switch); the
-  // moment the accessor answers a DIFFERENT instance, the very next guard
-  // read answers a foreign object and the row's OWN PORT_RECEIVER_MOVED
-  // law refuses, zero forwarding. An observer that throws (the identity
-  // unobservable right now) fails closed the same way. No new guard, no
-  // service framework: the live identity rides the guard the row runs.
-  const observe = typeof observeCurrent === 'function' ? observeCurrent : () => service
-  const receiverMoved = Object.freeze({ a5m2G6: 'receiver-identity-moved-sentinel' })
-  const queryPorts = {}
-  for (const [facetName, facetObject] of Object.entries(facetObjects)) {
-    Object.defineProperty(queryPorts, facetName, {
-      enumerable: true,
-      get () {
-        let current
-        try {
-          current = observe()
-        } catch {
-          return receiverMoved
-        }
-        return current === service ? facetObject : receiverMoved
-      },
-    })
-  }
+    traceQueryPort: bindFacet(['traceSession', 'traceEvent']),
+    eventReadQueryPort: bindFacet(['readEvent']),
+    authorizationQueryPort: bindFacet(['filterSessions']),
+    titlesQueryPort: bindFacet(['readTitleSnapshots']),
+  })
   return deepFreeze({
     ok: true,
     // Provider identity = the service's OWN registration name (the Service
@@ -643,6 +599,12 @@ export function buildG6QuerySupplyFromService (service, observeCurrent) {
     // string.
     providerId: typeof service.name === 'string' && service.name !== '' ? String(service.name) : 'sessionQuery',
     queryPorts: Object.freeze(queryPorts),
+    // The generation marker rides the supply into the adapter: every
+    // lifecycle refusal quotes pinned-vs-live generation ids — INVALIDATION
+    // through a public replacement is provable from the log (center
+    // precision 2).
+    generation: generation.id,
+    lifecycle,
     // Declared-mount = the OBSERVED evidence of THIS process's registration
     // (the trusted publisher): search facets callable → present; not
     // implemented → honestly absent with the observation as the evidence

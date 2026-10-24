@@ -1,0 +1,24 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ✓ test/alpha5-g6b-rc-first.test.ts (15 tests) 1331ms
+     ✓ probe6b-form 500 consecutive: the silent rc=2 partial-results form is refused 500/500 — zero quiet judgements, zero lists, zero spills  620ms
+ ❯ test/a5g6-install-face-render.test.ts (5 tests | 1 failed) 659ms
+     ✓ every runtime .mjs dependency is present INSIDE the published dist face 2ms
+     ✓ each mirror is BYTE-IDENTICAL to its tracked source (placement law) 2ms
+     ✓ the entry resolves its storage seam INSIDE the face (candidate 0, on disk) 0ms
+     ✓ the entry registers the resolve hook from a file it SHIPS 0ms
+     × the trio definitions all carry a render that returns an array of typed text blocks 654ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the trio definitions all carry a render that returns an array of typed text blocks
+Error: Cannot find module './g3-fsproc-adapters.mjs' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 19 passed (20)
+   Start at  05:05:24
+   Duration  3.20s (transform 2.55s, setup 0ms, import 2.47s, tests 1.99s, environment 0ms)
+

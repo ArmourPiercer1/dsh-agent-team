@@ -229,6 +229,20 @@ export interface TeamPluginHostContext {
    */
   readonly sandboxPolicy?: unknown
   /**
+   * A5M2-G6 lifecycle observer (root ruling 3, lane increment 1): the PUBLIC
+   * Cordis child-fiber face — `ctx.inject(deps, callback)` (cordis
+   * lib/types/registry.d.ts:111; mixed onto the context per context.d.ts:30).
+   * The child fiber loads ONLY while every injected service is available
+   * (Base.inject semantics, registry.d.ts:58) and RE-RUNS its callback per
+   * public Provider generation (mount/unload/replacement/reload). Structural
+   * projection (the entry keeps Cordis-type independence); OPTIONAL — an
+   * absent face makes governed currentness unknowable, which fail-closes.
+   */
+  inject?(
+    deps: readonly string[],
+    callback: (child: { get(name: string): unknown }, config?: unknown) => void,
+  ): { state: number } | PromiseLike<{ state: number }> | null
+  /**
    * Cordis event registration: the listener is owned by this row's fiber
    * and disposed with the row. Optional in this structural projection —
    * the entry keeps Cordis-type independence (plan §19.2) and minimal
@@ -641,6 +655,21 @@ interface GlueModule {
      * service keep the family DECLARED-INACTIVE (honest census, zero flip).
      */
     readonly sessionQuery?: () => unknown
+    /**
+     * A5M2-G6 (root ruling 3, lane increment 1): the PUBLIC Provider
+     * lifecycle observer for `sessionQuery`. The governed arm's ONLY
+     * currentness source: `currentGeneration()` answers the ACTIVE
+     * generation `{ id, service }` whose methods bind ONCE per generation,
+     * or null when the observer fiber is absent/non-ACTIVE (fail-closed —
+     * unknowable never becomes allow-by-default). NO per-read identity
+     * (ctx.get answers a fresh proxy per read — root-verified), NO ctx.set
+     * hot-swap promise (ruling (c)); a lifecycle replacement INVALIDATES the
+     * previous generation's pinned approvals with typed, log-observable
+     * refusals carrying both generation markers.
+     */
+    readonly sessionQueryLifecycle?: {
+      currentGeneration(): { id: number; service: unknown } | null
+    }
     /**
      * A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1, the step-boundary
      * line): the LAZY DSH public `sessionProjections` accessor — the
@@ -1271,6 +1300,61 @@ export const name = 'dsh-agent-team'
  * a TypeError.
  */
 export const inject = ['agents', 'storageDomain', 'sessions', 'sessionPersistence', 'workspaceRegistry']
+
+/**
+ * ROOT round-75 (real producer, not a map): resolve the BROWSER PUBLIC
+ * entry pair from the fixed-639 public './src/*' subpaths — the SAME two
+ * faces the host plugin itself uses (launchChromium src/launch.ts:24;
+ * openBrowserWorker src/worker-client.ts:15 @639ed01539). Importing these
+ * modules LOADS EXPORTS ONLY: nothing is launched, no server starts, no
+ * worker spawns — acquisition lives exclusively in the governed port's
+ * lease (createG2TeamBrowserPort), never here.
+ * The stagehand package is USER-CHOICE plugin supply exactly like the
+ * PUBLIC web-search roots: its specifiers ride TYPED VARIABLES (the
+ * publicRoots discipline above) — the packages resolve through the live
+ * source-639 install's own module graph (public './src/*' export map),
+ * never through absolute private lib paths. An approved entryPaths pair
+ * (source-checkout worlds, same law as transportEntry) wins; otherwise
+ * the bare PUBLIC specifiers.
+ */
+export async function g2ResolveBrowserPublicEntries(
+  entryPaths?: { launchEntry?: string; workerEntry?: string },
+): Promise<{ ok: true; entries: Record<string, unknown>; provenance: Record<string, unknown> } | { ok: false; code: string; message: string }> {
+  const launchSpecifier: string = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/launch.ts'
+  const workerSpecifier: string = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/worker-client.ts'
+  const launchTarget = typeof entryPaths?.launchEntry === 'string' && entryPaths.launchEntry.length > 0 ? entryPaths.launchEntry : launchSpecifier
+  const workerTarget = typeof entryPaths?.workerEntry === 'string' && entryPaths.workerEntry.length > 0 ? entryPaths.workerEntry : workerSpecifier
+  try {
+    const launchMod = (await import(launchTarget)) as { launchChromium?: unknown }
+    const workerMod = (await import(workerTarget)) as { openBrowserWorker?: unknown }
+    if (typeof launchMod.launchChromium !== 'function' || typeof workerMod.openBrowserWorker !== 'function') {
+      return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry modules resolved but answered no launchChromium/openBrowserWorker function (${launchTarget} / ${workerTarget}) — the public faces at this pin are missing; minting nothing, invoking nothing` }
+    }
+    // DEPLOYMENT-FACT DISCIPLINE (c): the record names the ACTUAL source
+    // the pair came from — the targets used AND, when the runtime answers
+    // it, the resolved URL import.meta.resolve gives FOR THIS INSTALL
+    // GRAPH (a bare specifier resolves in the ACTUAL host.ts install
+    // graph, NOT automatically at the fixed-639 root — (a): the Host-root
+    // probe evidenced only that environment). Recorded, never asserted.
+    const resolveOf = (t: string): string => {
+      try { return import.meta.resolve(t) } catch { return '<unresolved-by-import.meta.resolve>' }
+    }
+    return {
+      ok: true,
+      entries: Object.freeze({ launchChromium: launchMod.launchChromium, openBrowserWorker: workerMod.openBrowserWorker }),
+      provenance: Object.freeze({
+        launchTarget,
+        workerTarget,
+        launchResolved: resolveOf(launchTarget),
+        workerResolved: resolveOf(workerTarget),
+        via: launchTarget === launchSpecifier && workerTarget === workerSpecifier ? 'public-subpath-specifiers' : 'approved-entryPaths',
+        note: 'RECORDED actual source for this pair; shape is NOT 639 identity verification — downstream acceptance reads this record, never re-guesses',
+      }),
+    }
+  } catch (error) {
+    return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry pair (${launchTarget} / ${workerTarget}) is unresolvable here: ${String((error as { message?: unknown })?.message ?? error).slice(0, 180)} — USER-CHOICE plugin supply absent (source-639 public './src/*' route expected); typed refusal, no fallback, nothing launched` }
+  }
+}
 
 /**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
@@ -2827,8 +2911,67 @@ async function buildG2TeamSupply(
       return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` }
     }
   }
+  // ROOT round-75: the BROWSER public-entry producer, REAL. Arming is a
+  // pure config read (g2Mount.browser — the approved ask); resolution below
+  // LOADS EXPORTS ONLY (no boot, no launch, no worker). When armed and
+  // unresolvable the whole supply refuses NAMED — a browser row must never
+  // mount on a half face (the port's ENTRY_INCOMPLETE law stays the
+  // backstop, the producer refuses first). When armed and resolved the
+  // pair rides out.entries, which the loader hands to the browser
+  // all-or-nothing pairing verbatim.
+  const browserAsk = (g2Mount as { browser?: unknown }).browser
+  if (browserAsk !== undefined && browserAsk !== null) {
+    const built = await g2ResolveBrowserPublicEntries(
+      typeof browserAsk === 'object' ? (browserAsk as { entryPaths?: { launchEntry?: string; workerEntry?: string } }).entryPaths : undefined,
+    )
+    if (built.ok === false) {
+      return { ok: false, code: built.code, message: built.message }
+    }
+    out.entries = { ...(out.entries as Record<string, unknown> | undefined), ...built.entries }
+    // SINGLE SOURCE (root final card): the producer-resolved pair + its
+    // RECORDED provenance are the ONLY browser pair the assembly may
+    // carry; the loader consumes input.entries verbatim and never lets a
+    // loader-pinned pair out-vote it.
+    out.entriesProvenance = built.provenance
+  }
   return await mountMod.createG2TeamAssemblySupply(out)
 }
+
+  // A5M2-G6 lifecycle observer (root ruling 3, lane increment 1): one
+  // optional child fiber on the PUBLIC ctx.inject face; its callback firing
+  // IS the generation boundary. Methods bind once per generation downstream;
+  // the fiber's public `state` (cordis lib/types/fiber.d.ts:109-110;
+  // FiberState.ACTIVE = 2, fiber.d.ts:67-70) answers liveness. Absent face /
+  // non-ACTIVE / pre-activation fiber => null => the arm fail-closes.
+  const sessionQueryLifecycle = (() => {
+    let generation = 0
+    let current: { id: number; service: unknown } | null = null
+    let fiber: { state: number } | null = null
+    let observable = false
+    if (typeof ctx.inject === 'function') {
+      observable = true
+      try {
+        const created = ctx.inject(['sessionQuery'], (child) => {
+          generation += 1
+          current = { id: generation, service: child.get('sessionQuery') }
+        })
+        fiber = (created ?? null) as { state: number } | null
+      } catch {
+        observable = false
+        fiber = null
+        current = null
+      }
+    }
+    return {
+      currentGeneration(): { id: number; service: unknown } | null {
+        if (!observable || fiber === null) return null
+        // FiberState.ACTIVE — cordis lib/types/fiber.d.ts:67-70 (public const
+        // enum; the literal rides the structural independence rule).
+        if ((fiber as { state: number }).state !== 2) return null
+        return current
+      },
+    }
+  })()
 
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
@@ -2926,6 +3069,9 @@ async function buildG2TeamSupply(
     // injected through config — the glue maps them off THIS service
     // (buildG6QuerySupplyFromService).
     sessionQuery: () => ctx.get('sessionQuery'),
+    // Root ruling 3: the governed supply binds to a generation of THIS
+    // observer, never to a per-read ctx.get identity.
+    sessionQueryLifecycle,
     // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
     // `sessionProjections` accessor — the caller law reads the actual exec
     // owner's own turnBoundary projection (stateOf(agent.session,

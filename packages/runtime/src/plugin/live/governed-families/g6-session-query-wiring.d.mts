@@ -176,6 +176,11 @@ export type G6QuerySupplyResult =
       ok: true
       providerId: string
       queryPorts: Readonly<Record<string, Readonly<Record<string, (first: unknown, signal: unknown) => unknown>>>>
+      /** Root ruling 3 (lane increment 1): the PUBLIC Provider generation
+       *  pinned at bind time; lifecycle refusals quote it (INVALIDATION is
+       *  provable from the log — center precision 2). */
+      generation: number
+      lifecycle: G6ProviderLifecycleObserver
       declaredMount: Readonly<{
         searchBackend: Readonly<{ present: true }> | Readonly<{ present: false; evidence: string }>
       }>
@@ -186,7 +191,15 @@ export declare function buildG6SessionQueryWiring (
   input?: G6SessionQueryWiringInput,
 ): G6SessionQueryWiringAssembly | G6SessionQueryWiringRefusal
 
+/** The public Provider lifecycle observer (host-side optional child fiber
+ *  over `ctx.inject(['sessionQuery'])`): answers the ACTIVE generation
+ *  `{ id, service }`, or null when absent/non-ACTIVE (fail-closed). The
+ *  removed per-read identity observer (observeCurrent) must NOT return. */
+export type G6ProviderLifecycleObserver = Readonly<{
+  currentGeneration(): Readonly<{ id: number; service: unknown }> | null
+}>
+
 export declare function buildG6QuerySupplyFromService (
   service: unknown,
-  observeCurrent?: () => unknown,
+  lifecycle?: G6ProviderLifecycleObserver,
 ): G6QuerySupplyResult
