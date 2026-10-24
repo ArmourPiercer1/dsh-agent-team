@@ -1531,7 +1531,12 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
       },
     }
     const declared = { origin: 'https://target.example.invalid', endpointOrigin: 'https://target.example.invalid', configIdentity: 'vertical-cfg-1' }
-    const face = WS.createG2FixedWebFace(fixedProvider)
+    // ROOT 3-card ③: NO fixed-face dispatch input anymore — the row
+    // dispatches through the VERIFIED seam-branded lane (built over the
+    // SAME real provider), so provider/config/current-facts re-verification
+    // runs on the real call; the recorder provider below is what the seam
+    // pins, so every lane dispatch lands there.
+    const verticalLanes = MOUNT.createG2WebFixedLanes({ fixedProvider, seamMod, declared, readMountFacts: () => declared })
     const trio = WS.createG2WebCenterPorts({ assemblyId: 'a5m2-g2-wire-web-vertical' }) as unknown as { beginCall: (c: Record<string, unknown>) => () => void }
     const world = await mountWorld('web-vertical', {
       surface: 'web',
@@ -1543,8 +1548,7 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
         readNative,
         definitionIdentityOf,
         webMount: {
-          lanes: MOUNT.createG2WebFixedLanes({ fixedProvider, seamMod, declared, readMountFacts: () => declared }),
-          face: { fetch: async (r: Record<string, unknown>, s?: unknown) => await face.fetch(r, s) },
+          lanes: verticalLanes,
           // ROOT 23bc-CARD ② in production: the row body announces the call
           // in the REAL supply ledger — here the REAL trio for THIS team
           // root (same assembly id as the mount's announce pairing).
@@ -1594,26 +1598,33 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
  * governed web call. The legs run the REAL trio (g2-web-supply) through
  * the REAL backend invoke (g2-team-mount) — neither is stubbed. */
 describe('A5M2-WIRE round-51: beginCall wired on the real web row body', () => {
-  interface Venue { row: { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }; fetches: string[]; trio: { beginCall: (c: Record<string, unknown>) => () => void }; release: () => void }
+  interface Venue { row: { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }; fetches: string[]; trio: { beginCall: (c: Record<string, unknown>) => () => void }; release: () => void; lane: { stats: () => Record<string, number>; lastDispatch: () => Record<string, unknown> | null }; driftTo: (c: string) => void }
   const makeVenue = async (opts: { assemblyId: string; announcedAssemblyId?: string; withPorts?: boolean }): Promise<Venue> => {
     const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
     const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, unknown> }
     const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
     const trio = WS.createG2WebCenterPorts({ assemblyId: opts.assemblyId }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number>; lastDispatch: () => Record<string, unknown> | null } }
     const fetches: string[] = []
     let settleGate: () => void = () => {}
     const gate = new Promise<void>((res) => { settleGate = res })
+    // ROOT 3-card ③ at the row body: the ONLY dispatch route is the REAL
+    // seam-branded lane over the real provider — its config/identity law is
+    // live on every call; the venue flips readMountFacts to prove it runs.
+    const declared51 = { endpointOrigin: 'https://lane.invalid', configIdentity: 'cfg-51' }
+    let liveCfg = declared51.configIdentity
+    const realProvider = { id: 'lane-prov-51', available: () => true, fetch: async (r: Record<string, unknown>) => { fetches.push(String(r?.url)); await gate; return { ok: true } } }
+    const lane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'lane-prov-51', getRealProvider: () => realProvider, declared: declared51, readMountFacts: () => ({ endpointOrigin: declared51.endpointOrigin, configIdentity: liveCfg }) })
     const backend = MOUNT.createG2WebBackend({
       webAdaptersMod: adapters, realmId: 'r-51', providerId: 'a5p5-plane',
       readNative: (name: string) => ({ name, definitionIdentity: 'di-51-' + name, execute: async () => ({ ok: true }) }),
       definitionIdentityOf: (name: string) => 'di-51-' + name,
-      lanes: { web_fetch: { provider: { id: 'p', available: () => true }, registrationLaw: { configuredProviderIdMustEqual: 'a5p5-plane' }, stats: () => ({}) } },
+      lanes: { web_fetch: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats } },
       descriptions: { web_fetch: 'governed fetch row' },
-      fixedFace: { fetch: async (r: Record<string, unknown>) => { fetches.push(String(r?.url)); await gate; return { ok: true } } },
       ...(opts.withPorts === false ? { resolveWebCenterPorts: () => null } : { resolveWebCenterPorts: () => ({ ports: trio, assemblyId: opts.announcedAssemblyId ?? opts.assemblyId }) }),
     })
     const row = (backend.createRowset()[0] ?? {}) as Venue['row']
-    return { row, fetches, trio, release: () => settleGate() }
+    return { row, fetches, trio, release: () => settleGate(), lane, driftTo: (c: string) => { liveCfg = c } }
   }
   const EXEC_OK = { g2ApprovedCallId: 'call-1', g2ConsumedProof: { grant: { grantId: 'grant-1' } } }
   it('the gate refuses BEFORE the provider: missing callId is the non-conflation TypeError; wrong assembly is G2_WEB_ASSEMBLY_MISMATCH; no trio entry is G2_WEB_CENTER_PORTS_ABSENT — zero fetches on all three', async () => {
@@ -1633,6 +1644,7 @@ describe('A5M2-WIRE round-51: beginCall wired on the real web row body', () => {
     expect(v.fetches).toEqual(['https://hold.invalid/']) // the refused twin never reached the provider
     v.release()
     await expect(first).resolves.toBeDefined()
+    expect(v.lane.stats().dispatchCount).toBe(1) // the ONE dispatch rode the VERIFIED lane
     const closer = v.trio.beginCall({ grant: { grantId: 'grant-SAME' }, call: { callId: 'call-reuse' }, assemblyId: 'asm-51b' }) // EMPTY ledger: re-announce succeeds
     closer()
   })
@@ -1641,5 +1653,23 @@ describe('A5M2-WIRE round-51: beginCall wired on the real web row body', () => {
     await expect(v.row.invoke({ notTheUrl: true } as Record<string, unknown>, EXEC_OK)).rejects.toThrow(/G2_WEB_FETCH_URL_INVALID/)
     const closer = v.trio.beginCall({ grant: { grantId: 'grant-1' }, call: { callId: 'call-2' }, assemblyId: 'asm-51d' })
     closer()
+  })
+  it('the lane keeps its current-facts law INSIDE the production body: config-identity drift is refused by the seam before the provider sees the request, the closer still runs (ledger empty), and a clean call carries seam-measured trusted facts', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51e' })
+    v.driftTo('cfg-MOVED')
+    await expect(v.row.invoke({ url: 'https://x.invalid/' }, EXEC_OK)).rejects.toThrow(/CONFIG_DRIFT|identity moved/)
+    expect(v.fetches.length).toBe(0) // zero forwarding: the provider never saw the request
+    const closer = v.trio.beginCall({ grant: { grantId: 'grant-1' }, call: { callId: 'call-3' }, assemblyId: 'asm-51e' }) // refusal closed the ledger too (finally law)
+    closer()
+    v.driftTo('cfg-51')
+    const p = v.row.invoke({ url: 'https://ok.invalid/' }, { g2ApprovedCallId: 'call-4', g2ConsumedProof: { grant: { grantId: 'grant-4' } } })
+    await new Promise((r) => setTimeout(r, 5))
+    v.release()
+    await p
+    expect(v.lane.stats().dispatchCount).toBe(1)
+    const facts = v.lane.lastDispatch() as Record<string, unknown>
+    expect(facts.providerId).toBe('lane-prov-51') // the pinned provider
+    expect(facts.destinationOrigin).toBe('https://ok.invalid') // measured FROM the real request path
+    expect(facts.configIdentity).toBe('cfg-51') // live-verified current fact
   })
 })
