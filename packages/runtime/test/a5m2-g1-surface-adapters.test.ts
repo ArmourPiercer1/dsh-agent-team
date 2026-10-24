@@ -774,16 +774,31 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     expect(abortRefusal.detail).toContain('zero manager entry happened')
     expect(mdA.installCalls.length).toBe(0)
 
+    // the bag-identity comparison is SELF-PROVING for frozen faces (final
+    // review ②) — the terminal boundary instead RE-READS the authorized
+    // binding: a generation that moved during the awaited Team-PA admission
+    // stales the plan with zero manager entry.
+    let flip = false
+    const bindingFacts = () => (flip ? { ...BINDINGS(), authorityGeneration: 3 } : BINDINGS())
+    const double = makeNativeDouble('plugin_manager', byName('plugin_manager'))
     const mdB = makeManagerDouble()
-    const face: Record<string, unknown> = { ...mdB.face }
-    const bMount = mountRecord('plugin_manager', { installFace: face, escalation: makeGate({ mode: 'danger-full-access' }).port })
-    const bPlan = (bMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-pc2') as Success).plan
-    const driftRefusal = await bMount.row.delegate(bPlan, {
+    const bRow = G1.mountG1SurfaceAdapter('plugin_manager', {
+      native: double.native,
+      providerId: 'g1-spec',
+      definitionIdentity: 'def-pm',
+      trusted: TRUSTED,
+      bindingFacts,
+      ports: { ...PORTS },
+      installFace: mdB.face,
+      hostEscalation: makeGate({ mode: 'danger-full-access' }).port,
+    })
+    const bPlan = (bRow.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-pc2') as Success).plan
+    const driftRefusal = await bRow.delegate(bPlan, {
       exec: { agent: AGENT },
-      consumeAfterGrant: async () => { face.installBundle = async () => ({ changed: false }); return { ok: true } },
+      consumeAfterGrant: async () => { flip = true; return { ok: true } },
     }) as unknown as Refusal
     expect(driftRefusal.code).toBe('P_G1_DEFINITION_DRIFT')
-    expect(driftRefusal.detail).toContain('approved against a different service definition')
+    expect(driftRefusal.detail).toContain('moved during the awaited Team-PA admission')
     expect(mdB.installCalls.length).toBe(0)
   })
 
@@ -975,7 +990,7 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const install = classify({ action: 'install_bundle', target: 'some-bundle@1.0.0', approvedBuilds: ['native-addon'] })
     expect(install.ok).toBe(true)
     if (!install.ok) return
-    expect(kindsOf(install.effects)).toEqual(['tool-invoke', 'write', 'write']) // ruling 2026-10-25: real-action effects only — internal connect/cache IO is disclosure, not a projected effect
+    expect(kindsOf(install.effects)).toEqual(['tool-invoke']) // root final review ①: ACTION AUTHORIZATION ONLY — the install action's PA effect is the tool-invoke; every internal write/connect (bundles dir, profile config, registries, cache) is DISCLOSURE, never a projected effect
     const installJson = JSON.stringify(install.effects)
     // the registries left the EFFECTS (no connect projection under a default-deny
     // PA — internal installer IO is disclosure); they STAY on the real-action
@@ -984,9 +999,13 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     expect(installJson).not.toContain('https://registry-fallback.example')
     expect(JSON.stringify(install.targetManifest)).toContain('https://registry-primary.example')
     expect(JSON.stringify(install.targetManifest)).toContain('https://registry-fallback.example')
-    expect(installJson).toContain(PLUGIN_FACTS.installRootLocator)
     expect(installJson).not.toContain(PLUGIN_FACTS.cacheRootLocator) // the cache left the target too (internal installer domain)
-    expect(installJson).toContain(PLUGIN_FACTS.profileConfigLocator)
+    expect(installJson).not.toContain(PLUGIN_FACTS.installRootLocator) // final review ①: writes left the EFFECTS (manager-internal)
+    expect(installJson).not.toContain(PLUGIN_FACTS.profileConfigLocator)
+    expect(JSON.stringify(install.targetManifest)).toContain(PLUGIN_FACTS.installRootLocator) // identity rides the TARGET (real-action witness)
+    expect(JSON.stringify(install.targetManifest)).toContain(PLUGIN_FACTS.profileConfigLocator)
+    expect(install.targetManifest.enabledClaim).toBe('absent')
+    expect(install.targetManifest.approvedBuildsClaim).toEqual(['native-addon']) // the real full value rides the target (this classify carried it)
     expect(installJson).not.toContain(PLUGIN_FACTS.exemptionsLocator)
     expect(install.targetManifest.versionExemptionDerived).toBe(false)
     expect(JSON.parse(String(install.targetManifest.installSpecClaim))).toEqual({ kind: 'npm-name', name: 'some-bundle', version: '1.0.0' })

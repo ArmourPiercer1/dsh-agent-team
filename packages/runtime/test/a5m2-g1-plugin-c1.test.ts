@@ -154,6 +154,8 @@ describe('A5M2-G1-PLUGIN-C1 — the 639 face, the closed table, and the mint at 
     expect(t?.profileConfigLocator).toBe(FACTS.profileConfigLocator)
     expect(t?.installRootLocator).toBe(FACTS.installRootLocator)
     expect(t?.cacheRootLocator).toBeUndefined() // internal installer domain — never a PA leaf (ruling 2026-10-25)
+    expect(t?.enabledClaim).toBe('absent')
+    expect(t?.approvedBuildsClaim).toEqual([])
     expect(t?.versionExemptionDerived).toBe(false)
     expect(validatePaFamilyTarget('B-PLUGIN', t)).toBeUndefined()
     // the claimed registry outside the trusted envelope refuses BEFORE any plan
@@ -296,8 +298,7 @@ describe('A5M2-G1-PLUGIN-C1 — the armed install lane on the real wiring module
     }
     const install = rowNoCache.classify({ action: 'install_bundle', target: 'pkg-a@1.0.0' }, 'call-nocache-eff')
     const kinds = JSON.stringify((install.plan as { effects: Array<{ kind: string }> }).effects.map((effect) => effect.kind))
-    expect(kinds).not.toContain('connect')
-    expect(kinds).not.toContain('cache')
+    expect(kinds).toEqual('["tool-invoke"]') // root final review ①: action authorization ONLY — no write/connect effect at all
     expect(JSON.stringify((install.plan as { serviceObligations: unknown[] }).serviceObligations)).toContain('DISCLOSURE, NOT AN EFFECT')
   })
 
@@ -446,12 +447,13 @@ describe('A5M2-G1-PLUGIN-C1 — the armed install lane on the real wiring module
     expect(adapters).toContain('the row never fakes an approval; zero manager entry happened')
     const bindings = read('../src/plugin/live/agent-bindings.mjs')
     expect(bindings).toContain('DISAGREES with the live profile context')
-    expect(bindings).toContain('installBundle: (spec, options) => g1PluginManager.installBundle(spec, options)')
+    expect(bindings).toContain('installBundle: g1PluginManager.installBundle.bind(g1PluginManager)') // captured real public methods, no self-proving wrapper
     expect(bindings).toContain('the row never substitutes its own adjudicator')
-    expect(bindings).toContain("'live-manager-settled'")
+    expect(bindings).toContain("'settled-mount-observation'") // a mount-moment observation, never advertised as live
     expect(bindings).toContain("'deployment-closure-after-refresh-failure'")
     expect(adapters).toContain("entry.state = 'REFUSED-ABORTED-AFTER-CONSUME'")
-    expect(adapters).toContain('approved against a different service definition')
+    expect(adapters).toContain("entry.state = 'REFUSED-GENERATION-MOVED-AFTER-CONSUME'")
+    expect(adapters).toContain('moved during the awaited Team-PA admission')
     expect(adapters).toContain('DISCLOSURE, NOT AN EFFECT')
     const host = read('../src/plugin/host.ts')
     expect(host).toContain("try { return ctx.get('pluginManager') } catch { return undefined }")

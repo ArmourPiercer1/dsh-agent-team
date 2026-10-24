@@ -5940,7 +5940,7 @@ export function createAgentBindings(deps) {
                   fallbackRegistries: Array.isArray(face.fallbackRegistries) ? face.fallbackRegistries.filter((entry) => typeof entry === 'string') : [],
                 }
                 g1RegistriesFacts.resolved = typeof face.resolved === 'string' ? face.resolved : null
-                g1RegistriesFacts.source = 'live-manager-settled'
+                g1RegistriesFacts.source = 'settled-mount-observation' // a mount-moment observation, never advertised as live
               },
               (error) => {
                 g1RegistriesFacts.error = String(error)
@@ -5982,9 +5982,15 @@ export function createAgentBindings(deps) {
             && typeof g1PluginManager.waitForInstall === 'function'
             && typeof g1PluginManager.cancelInstall === 'function'
             ? Object.freeze({
-              installBundle: (spec, options) => g1PluginManager.installBundle(spec, options),
-              waitForInstall: (requestId) => g1PluginManager.waitForInstall(requestId),
-              cancelInstall: (requestId) => g1PluginManager.cancelInstall(requestId),
+              // CAPTURED REAL PUBLIC METHODS + receiver (root final review ②):
+              // bound at mount — NO self-delegating wrapper (wrappers made the
+              // identity checks self-proving). The receiver is the live manager
+              // the row was armed against; profile identity rides the facts
+              // port, authorization rides the binding generations the adapter
+              // re-reads at the terminal boundary.
+              installBundle: g1PluginManager.installBundle.bind(g1PluginManager),
+              waitForInstall: g1PluginManager.waitForInstall.bind(g1PluginManager),
+              cancelInstall: g1PluginManager.cancelInstall.bind(g1PluginManager),
             })
             : null
           const g1HostSandboxPolicy = typeof deps.sandboxPolicy === 'function' ? deps.sandboxPolicy() : undefined
