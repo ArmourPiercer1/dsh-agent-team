@@ -192,6 +192,7 @@ function finish(code) {
     mkdirSync(RUN_DIR, { recursive: true })
     writeFileSync(join(RUN_DIR, 'summary.json'), JSON.stringify(summary, null, 2))
     writeFileSync(join(RUN_DIR, 'transcript.jsonl'), TRANSCRIPT.map((t) => JSON.stringify(t)).join('\n'))
+    writeFileSync(join(RUN_DIR, 'toolcalls.jsonl'), toolCallLog.map((t) => JSON.stringify(t)).join('\n')) // MINIMAL: callId/step/tool/isError/text<=800/args<=800 only
   } catch { /* evidence best-effort; verdict unchanged */ }
   console.log(JSON.stringify({ verdict, pass, failed: checks.filter((c) => !c.ok).length, checks: checks.length, runDir: RUN_DIR }, null, 2))
   process.exit(DRY ? 3 : (pass ? 0 : (code === 0 ? 2 : code)))
@@ -417,8 +418,37 @@ function lastUserText(req) {
   }
   return ''
 }
+const toolCallLog = [] // MINIMAL emit/result fields only (root 2026-10-24: no full-payload logging)
 function harvest(req) {
   const msgs = bodyOf(req).messages ?? []
+  // ── protocol-aware tool results (root 2026-10-24 blind-spot fix): the host
+  // may speak OpenAI (role:'tool') OR Anthropic /v1/messages (user.content[]
+  // tool_result{tool_use_id,is_error,content}). BOTH map onto ONE callResults
+  // lane keyed by the SAME callId we emitted — never mix, never dedupe across.
+  for (const m of msgs) {
+    if (m?.role === 'user' && Array.isArray(m?.content)) {
+      for (const b of m.content) {
+        if (b?.type !== 'tool_result') continue
+        const callId = typeof b?.tool_use_id === 'string' ? b.tool_use_id : ''
+        if (callId.length === 0 || callResults.some((r) => r.callId === callId)) continue
+        const known = steps.get(callId)
+        const text = typeof b?.content === 'string' ? b.content
+          : Array.isArray(b?.content) ? b.content.map((c) => c?.text ?? JSON.stringify(c ?? '')).join('\n')
+          : JSON.stringify(b?.content ?? '')
+        const isError = b?.is_error === true
+        callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text, isError })
+        toolCallLog.push({ kind: 'result', callId, step: known?.step ?? null, tool: known?.tool ?? 'unknown', isError, text: text.slice(0, 800) })
+      }
+      continue
+    }
+    if (m?.role === 'assistant') { // emit-side witness (minimal fields)
+      const blocks = Array.isArray(m?.content) ? m.content.filter((b) => b?.type === 'tool_use') : []
+      for (const b of blocks) {
+        const known = steps.get(b?.id)
+        toolCallLog.push({ kind: 'call', callId: b?.id ?? null, step: known?.step ?? null, tool: b?.name ?? known?.tool ?? 'unknown', args: JSON.stringify(b?.input ?? {}).slice(0, 800) })
+      }
+    }
+  }
   for (const m of msgs) {
     if (m?.role !== 'tool') continue
     const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
@@ -430,6 +460,7 @@ function harvest(req) {
     const isError = m?.isError === true || m?.is_error === true
       || (typeof m?.content === 'object' && m?.content !== null && (m.content.isError === true || m.content.is_error === true))
     callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text, isError })
+    toolCallLog.push({ kind: 'result', callId, step: known?.step ?? null, tool: known?.tool ?? 'unknown', isError, text: text.slice(0, 800) })
   }
 }
 function markerIndex(msgs, markerPrefix) {
@@ -446,12 +477,25 @@ function toolsAfterMarker(msgs, markerPrefix) {
   const idx = markerIndex(msgs, markerPrefix)
   if (idx === -1) return 0
   let n = 0
-  for (let i = idx + 1; i < msgs.length; i += 1) if (msgs[i]?.role === 'tool') n += 1
+  for (let i = idx + 1; i < msgs.length; i += 1) {
+    const m = msgs[i]
+    if (m?.role === 'tool') n += 1
+    else if (m?.role === 'user' && Array.isArray(m?.content)) n += m.content.filter((b) => b?.type === 'tool_result').length
+  }
   return n
 }
 function toolMsgsAfter(msgs, markerPrefix) {
   const idx = markerIndex(msgs, markerPrefix)
-  return msgs.slice(idx + 1).filter((m) => m?.role === 'tool')
+  const out = []
+  for (const m of msgs.slice(idx + 1)) {
+    if (m?.role === 'tool') out.push(m)
+    else if (m?.role === 'user' && Array.isArray(m?.content)) {
+      for (const b of m.content) if (b?.type === 'tool_result') {
+        out.push({ content: typeof b.content === 'string' ? b.content : Array.isArray(b.content) ? b.content.map((c) => c?.text ?? '').join('\n') : JSON.stringify(b.content ?? '') })
+      }
+    }
+  }
+  return out
 }
 function extractListedRequestId(content) {
   const m = /"requestId"\s*:\s*"([^"]+)"/.exec(String(content))
@@ -582,6 +626,11 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'ctlhw-create', 1)
   if (resultError(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultError(team.body))}`) // full typed error, uncut
   await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`, 'ctlhw-leader-create')
+  // root 2026-10-24: CHECK THE REAL RETURN FIRST — the create's tool_result
+  // (whichever protocol carries it) BEFORE waiting on the bind; a refused/
+  // errored create must surface its typed error immediately, not silently.
+  const createRes = await waitFor('team_create_member tool result (protocol-aware harvest)', 60_000, () => callResults.find((r) => r.step === 'leader:create') ?? null)
+  check('L1', 'team_create_member REAL return harvested and correlated by callId', createRes !== null, `isError=${String(createRes?.isError)} text=${String(createRes?.text).slice(0, 400)}`)
   const member = await waitFor('member binding in team_domain', 120_000, () => domainFacts())
   log(`member instance=${member.instanceId} session=${member.sessionId}`)
 
