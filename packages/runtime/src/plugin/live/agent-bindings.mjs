@@ -3592,6 +3592,13 @@ export function createAgentBindings(deps) {
               if (outcome === null || typeof outcome !== 'object' || outcome.ok !== true) {
                 return { ok: false, detail: `bindOwnTools answered ${String(outcome?.error?.code ?? 'refused').slice(0, 140)}` }
               }
+              // Audit origin, stated accurately (root b6): this is a TEAM
+              // GOVERNANCE BINDING — the definitions and implementation stay
+              // registered by the ORIGINAL Schedule plugin; the Team Guard
+              // bind only verifies and pins the live body. Never a native
+              // provider impersonation, never a Team physical-registration
+              // claim.
+              observations.push(`a5m2-schedule: TEAM GOVERNANCE BINDING established over ${entries.map((entry) => entry.name).join('+')} for ${sessionId} — implementation registered by the ORIGINAL Schedule plugin; the Team bind verifies + pins it at the public seam (audit origin: Team governance binding over native Schedule implementation)`)
               return { ok: true }
             },
             // Root residual 1/2: the tuple check reads the live dispatcher
