@@ -1673,3 +1673,100 @@ describe('A5M2-WIRE round-51: beginCall wired on the real web row body', () => {
     expect(facts.configIdentity).toBe('cfg-51') // live-verified current fact
   })
 })
+
+/* ROOT round-55 CARD (search 必交 → exact external gap): the CONSUMER chain
+ * user-config -> PUBLIC provider ctor -> governed lane is now REAL. These
+ * legs run the REAL seam + REAL backend over a CONTRACT-LEVEL provider
+ * double (tier named honestly: the mock stands where the user's credential
+ * would resolve; real external-network acceptance waits on USER config —
+ * recorded tier, never a waiver). */
+describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)', () => {
+  it('createG2WebFixedLanes mints the web_search lane ONLY with the search half: branded, kind-search law; fetch-only worlds stay fetch-only (row-pairing law intact)', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, Record<string, unknown>> }
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const exa = { id: 'exa', available: () => true, search: async () => ({ ok: true }) }
+    const declared = { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-s' }
+    const plain = MOUNT.createG2WebFixedLanes({ fixedProvider: { id: 'fetchp', available: () => true, fetch: async () => ({}) }, declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'c' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'c' }), seamMod: seams })
+    expect(plain.web_search).toBeUndefined() // NOT-READY world: NO lane, row stays unmounted
+    const withSearch = MOUNT.createG2WebFixedLanes({ fixedProvider: { id: 'fetchp', available: () => true, fetch: async () => ({}) }, declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'c' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'c' }), seamMod: seams, search: { fixedSearchProvider: exa, declared, readMountFacts: () => declared } })
+    expect(withSearch.web_search).toBeDefined()
+    expect(String((withSearch.web_search?.registrationLaw as { registerVia?: string })?.registerVia ?? '')).toMatch(/registerSearchProvider/)
+    expect(withSearch.web_search?.provider).not.toBe(exa) // the lane is the SEAM product, never the raw provider
+  })
+  it('END-TO-END row body on the SEARCH lane: classify pins the search facts, invoke dispatches the public one-query request through the branded lane with the beginCall gate, closer settles; multi-query rows hit the NAMED gap with ZERO dispatches', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-r55' }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    const seen: Array<Record<string, unknown>> = []
+    const declared = { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-s55' }
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); return { results: [{ title: 't', url: 'https://r.invalid/1', snippet: 's' }] } } }
+    const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared, readMountFacts: () => declared })
+    const fetchLane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-55', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-' + name, description: 'd-' + name, execute: async () => ({ ok: true }) }),
+      definitionIdentityOf: (name: string) => 'di-' + name,
+      searchOrigin: 'https://search.example.invalid',
+      lanes: { web_fetch: { provider: fetchLane.provider, registrationLaw: fetchLane.registrationLaw, stats: fetchLane.stats }, web_search: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats } },
+      descriptions: { web_fetch: 'fw', web_search: 'sw' },
+      resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'asm-r55' }),
+    })
+    const rows = backend.createRowset()
+    const search = rows.find((r) => r.toolName === 'web_search') as Record<string, unknown> & { classify: (a: Record<string, unknown>) => Promise<Record<string, unknown>>, invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<Record<string, unknown>> }
+    expect(search).toBeDefined() // the row mounts ONLY because its lane exists (pairing law)
+    const cls = await search.classify({ queries: ['governed one query'] }) as Record<string, unknown>
+    expect(cls.ok === true || cls.canonical !== undefined || cls.targetManifest !== undefined, JSON.stringify(Object.keys(cls))).toBe(true)
+    const EXEC = { g2ApprovedCallId: 'c55', g2ConsumedProof: { grant: { grantId: 'g55' } } }
+    const out = await search.invoke({ queries: ['governed one query'] }, EXEC)
+    expect(out).toMatchObject({ ok: true })
+    expect(seen).toEqual([{ query: 'governed one query' }]) // the PUBLIC one-query request, verbatim
+    expect(lane.stats().dispatchCount).toBe(1)
+    // multi-query: named gap, ZERO provider dispatches
+    await expect(search.invoke({ queries: ['a', 'b'] }, { g2ApprovedCallId: 'c56', g2ConsumedProof: { grant: { grantId: 'g56' } } })).rejects.toThrow(/G2_WEB_SEARCH_MULTI_QUERY_GAP/)
+    expect(seen.length).toBe(1)
+    // the refused multi-query closed its announce too (finally law): re-announce same grant works
+    const closer = trio.beginCall({ grant: { grantId: 'g56' }, call: { callId: 'c57' }, assemblyId: 'asm-r55' })
+    closer()
+  })
+  it('the search lane keeps its own current-facts law: config drift is refused by the seam before the provider, the closer still runs', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-r55c' }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    let live = 'cfg-live'
+    const seen: Array<Record<string, unknown>> = []
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); return { results: [] } } }
+    const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared: { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-live' }, readMountFacts: () => ({ endpointOrigin: 'https://api.exa.ai', configIdentity: live }) })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-55c', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-' + name, description: 'd-' + name, execute: async () => ({ ok: true }) }),
+      definitionIdentityOf: (name: string) => 'di-' + name,
+      searchOrigin: 'https://search.example.invalid',
+      lanes: {
+        web_fetch: (() => { const f = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) }); return { provider: f.provider, registrationLaw: f.registrationLaw, stats: f.stats } })(),
+        web_search: { provider: lane.provider, registrationLaw: lane.registrationLaw, stats: lane.stats },
+      },
+      descriptions: { web_fetch: 'fw', web_search: 'sw' },
+      resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'asm-r55c' }),
+    })
+    const search = (backend.createRowset().find((r) => r.toolName === 'web_search') ?? {}) as { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    live = 'cfg-MOVED'
+    await expect(search.invoke({ queries: ['x'] }, { g2ApprovedCallId: 'cA', g2ConsumedProof: { grant: { grantId: 'gA' } } })).rejects.toThrow(/CONFIG_DRIFT|identity moved/)
+    expect(seen.length).toBe(0)
+    live = 'cfg-live'
+    const closer = trio.beginCall({ grant: { grantId: 'gA' }, call: { callId: 'cB' }, assemblyId: 'asm-r55c' }) // closed on refusal too
+    closer()
+  })
+  it('supply passthrough: webSearchNotReady (the NAMED external gap) rides the supply verbatim; absent stays absent (no invented readiness)', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2TeamAssemblySupply: (i: Record<string, unknown>) => Promise<{ ok: boolean; supply?: Record<string, unknown> }> }
+    const LAUNCH = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/src/launch.ts', import.meta.url).href
+    const WORKER = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/src/worker-client.ts', import.meta.url).href
+    const made = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}), webSearchNotReady: 'G2_WEB_SEARCH_NOT_READY: provider "exa" selected — $EXA_API_KEY unset' })
+    expect((made.supply as Record<string, unknown>).webSearchNotReady).toBe('G2_WEB_SEARCH_NOT_READY: provider "exa" selected — $EXA_API_KEY unset')
+    const clean = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}) })
+    expect('webSearchNotReady' in (clean.supply as Record<string, unknown>)).toBe(false)
+  })
+})
