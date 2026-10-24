@@ -1820,12 +1820,10 @@ export async function apply(ctx, config) {
                 // supply is built inside apply() where ctx lives. No new credential
                 // service, no key copies: snapshot get(name) reads only, nothing
                 // stored or logged.
-                // HOST-GRAPH-ONLY module (the 15-peer set does not carry it): the
-                // specifier rides a TYPED VARIABLE - the same discipline the PUBLIC
-                // web-search roots above use - so tsc compiles honestly while the
-                // installed host resolves the module at runtime. No ts-ignore, no any.
-                const launchEnvSpecifier = '@deepseek-ai/dsh-launch-environment';
-                const launchEnvMod = (await import(launchEnvSpecifier));
+                // The lock now RESOLVES this public package (root/runtime declare it at
+                // 0.2.0-rc.2; the const:string non-solution placeholder is retired): plain
+                // specifier, typed through the module's audited public face only.
+                const launchEnvMod = (await import('@deepseek-ai/dsh-launch-environment'));
                 const launchEnvSnapshot = launchEnvMod.launchEnvironmentOf(hostCtx);
                 const launchEnv = { get: (name) => launchEnvSnapshot.get(name)?.value ?? '' };
                 const choice = webSearchCfg.provider;
@@ -1944,8 +1942,8 @@ export async function apply(ctx, config) {
                         // root), validated by the gateway's own positive-integer law
                         // (index.ts:67-70). Nothing new is invented; absence takes the
                         // deployment DEFAULT, never "uncapped".
-                        const toolWebSpecifier = '@deepseek-ai/dsh-tool-web'; // same host-graph-only typing discipline
-                        const capMod = (await import(toolWebSpecifier));
+                        // same law: declared + lock-resolved -> plain specifier.
+                        const capMod = (await import('@deepseek-ai/dsh-tool-web'));
                         const laneCap = webSearchCfg.searchMaxResults ?? capMod.WEB_SEARCH_MAX_RESULTS;
                         if (!Number.isInteger(laneCap) || laneCap < 1) {
                             return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed.searchMaxResults must be a positive integer (the gateway's own law, tool-web/src/index.ts:67-70) — got ${JSON.stringify(laneCap)}` };
@@ -2110,6 +2108,14 @@ export async function apply(ctx, config) {
             // 639 global-store token; sandboxPolicy is the ctx property beside it).
             sandbox: () => ctx.get('sandbox'),
             sandboxPolicy: () => ctx.sandboxPolicy,
+            // A5M2 G3 B-PTC (root 04:4x card, the same lazy pattern): the LIVE
+            // registered PTC runtime instance — the SAME 639 global-store token the
+            // host tool registry itself reads (core/tools/src/index.ts:956/1046
+            // `ctx.get('ptcRuntime')`). Additive optional, never a hard inject: an
+            // unregistered token THROWS at ctx.get and the CALLER's guard answers
+            // honest absence — the run_code arm then refuses every run typed
+            // (P_PTC_TARGET_UNRESOLVED), worlds without PTC mode stay byte-identical.
+            ptcRuntime: () => ctx.get('ptcRuntime'),
             // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
             // DSH public `sessionQuery` service — the registered SessionQueryEngine
             // whose five facets (search / trace / event-read / authorization /
