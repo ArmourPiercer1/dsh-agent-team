@@ -431,6 +431,22 @@ export const PLACEMENTS = [
     src: 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
     dist: 'packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
   },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/workflow-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/workflow-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/search.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/search.mjs',
+  },
 ]
 
 // Direct-invocation guard: the placement runs only when this file IS the

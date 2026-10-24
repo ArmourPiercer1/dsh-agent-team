@@ -79,6 +79,10 @@ import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/
 import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
+// A5M2 B-SEARCH (CENTER M0 无主行分配 card): the frozen census law of the
+// two durable team rows (names, family, adapter revision, minted operation
+// constants) is IMPORTED from the arm module — the plane restates none of it.
+import { A5_B_SEARCH_ADAPTER_REVISION, A5_B_SEARCH_CENSUS_NAMES, A5_B_SEARCH_FAMILY_ID, A5_B_SEARCH_OPERATIONS } from './governed-families/search.mjs'
 // A5-M2 G1 (root ruling 15:28, wiring no longer waits for the center): the
 // closed G1 record law lives in the committed module ITSELF — this plane
 // imports the frozen dispatch-index table instead of restating it, so a
@@ -688,6 +692,19 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // substitute. The plane re-implements no host law and holds no authority
   // below this line.
   lsp: Object.freeze(['lsp']),
+  // A5M2 B-SEARCH (CENTER M0 无主行分配): the two durable census rows mount
+  // at their FIXED census spellings behind the closed `searchEnabled` key
+  // plus the injected arm rows (never the configurable `names` map — the
+  // todo/write/read law; when a durable row equals an alias spelling the
+  // alias row yields the slot, one name one placement). The same-name,
+  // same-meaning implementation this ledger records: the row classifies
+  // through the COMMITTED B-SEARCH arm (closed 639 face + team-family
+  // caller law + imported anchor law), walks THIS plane's ONE PA admission
+  // (family block at full value), and the BODY is the SIGNED confined
+  // backend reached through the a5p5 pipeline (the handle answers, the arm
+  // routes). Whichever subset of the two the mount injects is what gets
+  // placed; the un-injected census name stays the honest declared posture.
+  search: Object.freeze(['team_grep', 'team_glob']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -1367,6 +1384,86 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }))
     }
     g1Inject = Object.freeze({ rows: Object.freeze(g1Entries) })
+  }
+
+  // A5M2 B-SEARCH (CENTER M0 无主行分配 card, 2026-10-25): the two durable
+  // team_grep / team_glob rows mount behind a CLOSED boolean key plus the
+  // PAIRED inject (the todo/write/image/g1 law: pairing BOTH directions,
+  // config law not wiring, no half mount, no silent disable, ABSENT =
+  // byte-for-byte zero flip). `backends.searchGoverned` carries the output
+  // of the COMMITTED arm module (`governed-families/search.mjs`,
+  // `createBSearchArm(...)`): { rows, familyId, providerId, adapterRevision,
+  // dispose }. Each row is validated against the FROZEN CENSUS (M0-B records
+  // 7/8 — name, family, adapter revision, minted operation constant; the law
+  // is IMPORTED from the arm module, never restated here) and against
+  // ONE NAME, ONE PLACEMENT: a durable name already claimed by a mounted
+  // fixed-spelling row refuses. A durable name that EQUALS a lane alias
+  // placement (`names.grep`/`names.glob`) takes the slot: the alias row of
+  // that class is EXCLUDED from the placement below (the durable row is the
+  // same-name, same-meaning carrier of the family claim; the alias row
+  // yields to it — disclosed at the defs site, not hidden). An alias renamed
+  // off the durable spelling keeps both rows in distinct slots.
+  const searchEnabledRaw = input.plane?.searchEnabled
+  if (searchEnabledRaw !== undefined && typeof searchEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CFG_INVALID',
+      message: `planeCfg.searchEnabled must be a boolean when present — got ${JSON.stringify(searchEnabledRaw) ?? String(searchEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const searchEnabled = searchEnabledRaw === true
+  const searchInjectRaw = input.backends?.searchGoverned
+  const searchInjectInvalid = (why) => ({ ok: false, code: 'SEARCH_ROW_INJECT_INVALID', message: `backends.searchGoverned: ${why}` })
+  if (searchEnabled && searchInjectRaw === undefined) {
+    return searchInjectInvalid('searchEnabled is true but no governed B-SEARCH rows are injected - the mount would mask the slot with nothing behind it; there is no fallback row and no silent disable')
+  }
+  if (!searchEnabled && searchInjectRaw !== undefined) {
+    return searchInjectInvalid('rows are injected while searchEnabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let searchInject = null
+  if (searchInjectRaw !== undefined) {
+    if (!Array.isArray(searchInjectRaw.rows) || searchInjectRaw.rows.length === 0) {
+      return searchInjectInvalid('rows must be a NON-EMPTY array of the COMMITTED arm rows (createBSearchArm output) - one row per mounted name; both names is two rows, each in its own slot')
+    }
+    const searchInjectBad = searchInjectRaw.familyId !== A5_B_SEARCH_FAMILY_ID
+      ? `the inject claims familyId '${String(searchInjectRaw.familyId)}' - the frozen family of the two census rows is ${A5_B_SEARCH_FAMILY_ID}`
+      : searchInjectRaw.adapterRevision !== A5_B_SEARCH_ADAPTER_REVISION
+        ? `the inject claims adapterRevision ${String(searchInjectRaw.adapterRevision)} - the released arm revision is ${String(A5_B_SEARCH_ADAPTER_REVISION)} (a retired revision drifts the durable row; it is refused, never silently translated)`
+        : typeof searchInjectRaw.providerId !== 'string' || searchInjectRaw.providerId.length === 0
+          ? 'the inject carries no non-empty providerId'
+          : typeof searchInjectRaw.dispose !== 'function'
+            ? 'the inject carries no dispose() - the arm drain rides THIS mount\'s teardown law (the subagent-control face\'s discipline), an undisposable arm cannot mount'
+            : undefined
+    if (searchInjectBad !== undefined) return searchInjectInvalid(searchInjectBad)
+    const searchTaken = new Set([readName, A5_TODO_MOUNT_NAME, A5_WRITE_MOUNT_NAME, A5_IMAGE_MOUNT_NAME])
+    if (g1Inject !== null) {
+      for (const entry of g1Inject.rows) searchTaken.add(entry.row.name)
+    }
+    const searchRows = []
+    for (const rowRaw of searchInjectRaw.rows) {
+      const name = typeof rowRaw?.name === 'string' ? rowRaw.name : ''
+      const op = A5_B_SEARCH_OPERATIONS[name]
+      const why = op === undefined
+        ? `'${name === '' ? String(rowRaw) : name}' is not a B-SEARCH census name — M0-B records 7/8 close the set to {${A5_B_SEARCH_CENSUS_NAMES.join(', ')}} (a guessed name has no row to answer)`
+        : (typeof rowRaw.classify !== 'function' || typeof rowRaw.delegate !== 'function')
+          ? `census '${name}' answers no classify/delegate face — the row cannot mount`
+          : (rowRaw.familyId !== A5_B_SEARCH_FAMILY_ID || rowRaw.adapterRevision !== A5_B_SEARCH_ADAPTER_REVISION || rowRaw.operation !== op)
+            ? `census '${name}' carries family/revision/operation '${String(rowRaw.familyId)}'/${String(rowRaw.adapterRevision)}/${String(rowRaw.operation)} — the row must MATCH the frozen census entry it names (a mismatched row is a config defect, never a re-mount to paper over)`
+            : (typeof rowRaw.description !== 'string' || rowRaw.description.length === 0
+                || rowRaw.parameters === null || typeof rowRaw.parameters !== 'object')
+              ? `census '${name}' carries no captured native description/parameters bytes (the row mounts the HOST face bytes — the todo/g1 captured-face law)`
+              : searchTaken.has(name)
+                ? `'${name}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the durable census rows)`
+                : undefined
+      if (why !== undefined) return searchInjectInvalid(why)
+      searchTaken.add(name)
+      searchRows.push(rowRaw)
+    }
+    searchInject = Object.freeze({
+      rows: Object.freeze([...searchRows]),
+      providerId: searchInjectRaw.providerId,
+      dispose: searchInjectRaw.dispose,
+    })
   }
 
   // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the arm route places the
@@ -3026,6 +3123,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
     names,
     callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
   }).map((def) => Object.freeze({ ...def, output: PLANE_PRESENTATION_FACE })))
+  // A5M2 B-SEARCH slot takeover (the gate validated above): a durable
+  // census row whose mounted name EQUALS a lane alias placement takes the
+  // slot, and the lane alias row of that class is EXCLUDED here — one name,
+  // one placement (the same-layer duplicate would fail the whole assembly
+  // at register; refusing to place BOTH is the disclosed takeover, the
+  // todo/write/read native-spelling precedent applied to the plane's own
+  // alias names). No durable mount, or an alias renamed off the durable
+  // spelling: zero filtering, every existing world byte-identical.
+  const searchTakenNames = searchInject === null
+    ? null
+    : new Set(searchInject.rows.map((row) => row.name))
+  const laneDefs = searchTakenNames === null || searchTakenNames.size === 0
+    ? defs
+    : Object.freeze(defs.filter((def) => searchTakenNames.has(def.name) !== true))
 
   // GLUE-7 fs-class row: the governed `read` over the SAME controlled-fs
   // instance root (no second fs algebra). PLACED ONLY when the row declares
@@ -4281,7 +4392,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     },
   })]
 
-  const baseDefs = readExecutor === null ? defs : Object.freeze([
+  const baseDefs = readExecutor === null ? laneDefs : Object.freeze([
     ...defs,
     Object.freeze({
       name: readName,
@@ -5314,6 +5425,150 @@ export function createTeamToolPlaneAssembly(input = {}) {
     output,
     presentCall: (args) => ({ ...g1RowPresentFace, rawInput: args }),
   }))
+  // A5M2 B-SEARCH durable rows (CENTER M0 无主行分配 card): ONE row per
+  // mounted census name, riding the SHARED vertical the g1 rows ride — the
+  // clone is disclosed hunk-by-hunk, not smuggled: REAL registry token +
+  // shared governedTokenLedger (fix-1), OWNER-CURRENT before the freeze
+  // (fix-4), the arm's OWN classify over the CLOSED measured 639 face +
+  // the team-family caller law (the arm's classify takes the ledger
+  // correlation AND the exec — the caller pairing is classify-time law),
+  // THIS plane's ONE PA walk (open/edge/consumedProof — the family block
+  // rides at FULL VALUE always, the todo carrier law; the g1 body's
+  // B-INSPECT-only conditionality is that round's enablement scope, not a
+  // grammar limit), then the arm's delegate — which routes the body to the
+  // SIGNED confined backends through the a5p5 pipeline (the handle answers,
+  // the arm routes; no native fallback anywhere below, every refusal path
+  // ends in a typed throw). The presentation face is the SAME
+  // PLANE_PRESENTATION_FACE the lane rows carry ({text} envelope, lane law).
+  let searchCorrSeq = 0
+  const searchDefs = searchInject === null ? [] : searchInject.rows.map((row) => Object.freeze({
+    name: row.name,
+    description: row.description,
+    parameters: row.parameters,
+    execute: async (raw, exec) => {
+      const execToken = exec?.token
+      const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol'
+        ? execToken
+        : undefined
+      if (tokenKey === undefined) {
+        throw new Error(`refused-bsearch exec-token-unbound — '${row.name}' carries no registry token (fix-1 front refusal: zero classify, zero walk, zero row, zero body)`)
+      }
+      const priorFlight = governedTokenLedger.get(tokenKey)
+      if (priorFlight !== undefined) {
+        throw new Error(`refused-bsearch exec-token-replay — this execution token already ${priorFlight.settled === true ? 'settled a governed flight' : 'owns an in-flight governed call'} (one flight, one identity)`)
+      }
+      searchCorrSeq += 1
+      const correlation = `plane-bsearch:${realmId}-${row.name}-${String(searchCorrSeq)}`
+      governedTokenLedger.set(tokenKey, { correlation, settled: false })
+      const signal = exec?.signal
+      try {
+        // OWNER-CURRENT BEFORE THE FREEZE (fix-4 law, the same authority leg
+        // the todo/write/image/g1 rows and paAdmitPartA run): the arm freezes
+        // nothing at classify (it is stateless pre-edge — the image law), but
+        // the walk still answers the CURRENT generation, so the owner leg is
+        // asked here exactly as everywhere else. A faulting leg is OBSERVED,
+        // never absorbed.
+        if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+          const freshAuthority = await paReadGenerationFresh()
+          if (freshAuthority.ok === true) {
+            try {
+              await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? templateId))
+            } catch (error) {
+              observe(`a5m2-bsearch-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error)})`)
+            }
+          }
+        }
+        let classified
+        try {
+          classified = row.classify(raw, correlation, exec)
+        } catch (error) {
+          throw new Error(`refused-bsearch row-unavailable — the committed B-SEARCH arm could not classify this call (${String(error)})`)
+        }
+        if (classified.ok !== true || classified.reviewPayload === undefined) {
+          // Pure-lexical refusals (closed face, caller pairing, anchor law)
+          // land HERE with zero admission: there is no plan to cancel — the
+          // arm is stateless pre-edge by design (the image row's law).
+          throw new Error(`refused-bsearch ${classified.code ?? 'P_BSEARCH_CLASSIFY_INVALID_ARGUMENTS'} — ${String(classified.detail ?? '')}`)
+        }
+        observe(`a5m2-bsearch-row: review call=${correlation} row=${row.name} family=${classified.reviewPayload.familyId} op=${String(row.operation)}`)
+        const parsedEffects = parseRequestedEffectSet(classified.effects)
+        if (parsedEffects.ok !== true) {
+          throw new Error('refused-bsearch effects-unparsable — the arm\'s effect set is not the frozen closed shape (I:tool-invoke + F(read absolute-path))')
+        }
+        const walk = {
+          realmId,
+          callId: correlation,
+          parametersFingerprint: classified.parametersFingerprint,
+          requestedEffects: parsedEffects.value,
+          toolName: row.name,
+          // The family block: the arm's review payload's four P-adds at
+          // FULL VALUE, ALWAYS present for this family (the durable claim
+          // IS the point of the row; the bridge compares it against the
+          // CURRENT registration — an unregistered family refuses before
+          // the durable row).
+          family: Object.freeze({
+            familyId: classified.reviewPayload.familyId,
+            adapterRevision: classified.reviewPayload.adapterRevision,
+            providerIdentity: classified.reviewPayload.providerIdentity,
+            targetManifest: classified.reviewPayload.targetManifest,
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        }
+        const opened = await paAdmit.open(walk)
+        if (opened.kind === 'deny') {
+          throw new Error(`refused-bsearch ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission denied before any body'}`)
+        }
+        if (opened.cancelled === true) {
+          throw new Error(`${row.name} · cancelled — the call was cancelled at the PA edge before any effect`)
+        }
+        if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+          paAdmit.closePlan(walk.callId)
+          throw new Error(`refused-bsearch APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind)} without a grant`)
+        }
+        const edge = await paAdmit.edge({
+          ...walk,
+          grant: opened.grant,
+          paDurableMint: opened.paDurableMint,
+          request: opened.request,
+          placementName: opened.placementName,
+          paConstructionBinding: opened.paConstructionBinding,
+        })
+        if (edge.kind === 'deny') {
+          throw new Error(`refused-bsearch ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused the grant'}`)
+        }
+        if (edge.cancelled === true) {
+          throw new Error(`${row.name} · cancelled — the call was cancelled at the execution edge (zero backend, zero consumption)`)
+        }
+        const proof = edge.consumedProof
+        if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null) {
+          throw new Error('refused-bsearch CONSUME_PROOF_MISSING — the execution edge answered allow without the one-shot consume witness (the row never self-attests)')
+        }
+        let ran
+        try {
+          // THE BODY: the committed arm's delegate — it re-ties the plan to
+          // THIS arm (its own plan table), re-checks the caller pairing,
+          // maps the face values to the lane's OWN parser, and runs the
+          // SIGNED confined backend through the a5p5 pipeline. Nothing
+          // below this line re-implements a search law.
+          ran = await row.delegate(classified.plan, { exec })
+        } catch (error) {
+          throw new Error(`refused-bsearch delegate-unavailable — the committed B-SEARCH arm could not run this call (${String(error)})`)
+        }
+        if (ran === undefined || ran === null || ran.ok !== true) {
+          throw new Error(`refused-bsearch ${String(ran?.code ?? 'P_BSEARCH_DELEGATE_INVALID')} — ${String(ran?.detail ?? '')}`)
+        }
+        observe(`a5m2-bsearch-row: settled call=${correlation} row=${row.name} settled=${String(ran.settled === true)}`)
+        return ran.value
+      } finally {
+        const now = governedTokenLedger.get(tokenKey)
+        if (now !== undefined && now.correlation === correlation) {
+          governedTokenLedger.set(tokenKey, { correlation, settled: true })
+        }
+      }
+    },
+    output: PLANE_PRESENTATION_FACE,
+  }))
+
   // A5M2-G6 B-SESSION-QUERY (root 18:2x): the wiring bridge over the
   // released G6 adapter (rev.4, owner-released, imported VERBATIM — no row
   // law restated, no gate added) assembled on THIS mount: the mount realm,
@@ -6055,9 +6310,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && editDefs.length === 0 && sreDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && lspDefs.length === 0 && pwshDefs.length === 0 && g2Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && searchDefs.length === 0 && editDefs.length === 0 && sreDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && lspDefs.length === 0 && pwshDefs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...editDefs, ...sreDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...lspDefs, ...pwshDefs, ...g2Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...searchDefs, ...editDefs, ...sreDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...lspDefs, ...pwshDefs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -6506,6 +6761,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // A5M2-WIRE-G2: the B-ORCHESTRATION drain rides THIS mount's teardown
             // law too — new-call prohibition FIRST, placed rows never re-run.
             if (bOrchestrationInject !== null) bOrchestrationInject.dispose()
+            if (searchInject !== null) searchInject.dispose()
             // A5M2-B-TEAM-WIRE (this lane's block): the same drain semantics
             // the G6 row obeys — a NEW-CALL PROHIBITION only (the adapter's
             // own DRAIN_SEMANTICS: durable lane commits stay durable, no
