@@ -133,6 +133,10 @@ A('verdict: post-reauth typed starting returns to the bounded barrier', boot.aut
 A('verdict: NO_RESULT on a NON-401 transport is NOT auth — never reauth-swallowed', boot.authRecoveryVerdict(500, w4b, false) === 'stop-other' && boot.authRecoveryVerdict(200, w4b, false) === 'stop-other')
 A('verdict: typed non-starting rejection never reauths', boot.authRecoveryVerdict(200, { code: 'PERMISSION_MUTATION_FAILED' }, false) === 'stop-other')
 A('verdict: clean result returns ready', boot.authRecoveryVerdict(200, null, false) === 'ready')
+A('57ff review: 401 PRIORITIZED — a 401 carrying a starting-shaped body is STILL AUTH_REJECTED (recover-once, not retry)', boot.authRecoveryVerdict(401, { code: 'internal-error', message: 'not ready (state: starting)', details: { reason: 'runtime-not-ready' } }, false) === 'recover-once')
+A('57ff review: runtime-not-ready with state: FAILED never retries (exact original shape restored)', boot.authRecoveryVerdict(200, { code: 'internal-error', message: 'team runtime is not ready (state: failed)', details: { reason: 'runtime-not-ready' } }, false) === 'stop-other')
+A('57ff review: runtime-not-ready with state: STOPPED never retries', boot.authRecoveryVerdict(200, { code: 'internal-error', message: 'team runtime is not ready (state: stopped)', details: { reason: 'runtime-not-ready' } }, false) === 'stop-other')
+A('57ff review: ready/starting require successful HTTP — 500 with clean body is not ready', boot.authRecoveryVerdict(500, null, false) === 'stop-other')
 
 const failed = results.filter((r) => !r.ok).length
 console.log(JSON.stringify({ verdict: failed === 0 ? 'OFFLINE-DECODER-OK' : 'OFFLINE-DECODER-FAIL', checks: results.length, failed }))

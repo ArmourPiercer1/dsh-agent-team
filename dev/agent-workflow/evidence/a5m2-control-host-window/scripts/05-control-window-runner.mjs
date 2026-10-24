@@ -418,11 +418,12 @@ async function remoteMountGate({ readLog, childGone = () => false, budgetMs = 12
  * missing cookie, a SECOND 401 or any NO_RESULT -> immediate STOP. Loop reauth FORBIDDEN.
  * Only a genuine typed starting re-enters the original bounded barrier. */
 function authRecoveryVerdict(status, err, reauthUsed) {
+  if (status === 401) return reauthUsed ? 'stop-second-auth-rejection' : 'recover-once' // 401 PRIORITY (root 57ff review): a 401 WITH any body is still AUTH_REJECTED — never routed by its body first
+  if (status !== 200) return 'stop-other' // ready/starting require SUCCESSFUL HTTP; other transports never retry
   if (err === null) return 'ready'
   const starting = err.code === 'internal-error' && err.details?.reason === 'runtime-not-ready'
-  if (starting) return 'retry-starting'
-  if (status === 401) return reauthUsed ? 'stop-second-auth-rejection' : 'recover-once'
-  return 'stop-other' // typed rejections, NO_RESULT on non-401 transports — never swallowed, never reauth'd
+    && String(err.message).includes('state: starting') // EXACT original shape restored: failed/stopped runtime-not-ready NEVER retries
+  return starting ? 'retry-starting' : 'stop-other'
 }
 async function teamReadyBarrier(budgetMs = 180_000) {
   const deadline = Date.now() + budgetMs
