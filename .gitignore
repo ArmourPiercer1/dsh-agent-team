@@ -114,4 +114,4 @@ agent-sandbox-hotfix-*.sh
 tests/checks/.nc-runs/
 
 # transient Playwright-style unpack dirs under packages-pins (canonical pin form = the .tgz + MANIFEST files); untracked 2026-10-24, was accidentally committed in 2985fab0c
-packages-pins/.pw-new.*/
+packages-pins/.pw-new.*/packages-pins/.pw-old.*/

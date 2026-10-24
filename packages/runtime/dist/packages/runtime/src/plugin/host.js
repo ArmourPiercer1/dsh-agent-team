@@ -1780,6 +1780,171 @@ export async function apply(ctx, config) {
             // provider id or env, and noTeam never reads this path (row-scoped
             // config + per-instance plugin, cited law). Transport resolution stays
             // the constructor's public default (publicHttpNetwork.resolve).
+            // ROOT 03:5x + e51 + e51-final 3-card (ONE round, no repeats):
+            // (1) construction follows the 639 OFFICIAL apply VERBATIM — schema
+            //     defaults (deepseek fills model/apiVersion/maxTokens/maxUses via
+            //     .default() at parse), the roots' own exported constants, the
+            //     deepseek LIVE reader re-resolves per search (the Volatile.get
+            //     equivalent for our row-config), resolveApiKey wraps the launch
+            //     environment exactly as the official closure does WITHOUT a
+            //     credentials seam; ?? semantics kept EXACT (an explicitly empty
+            //     apiKey is '' — never env-fallbacked by ||: `x ?? y` fires only on
+            //     undefined, our reads test undefined, never truthiness).
+            // (2) ONE resolved config produces ALL target facts: the provider's
+            //     endpoint origin, the seam's declared envelope AND the classify
+            //     searchOrigin derive from the SAME parse — no declared string can
+            //     self-prove; a separately declared searchOrigin that CONTRADICTS
+            //     the derived origin refuses at the mount (approval A can never
+            //     carry credentials to B).
+            // (3) multi-query is consumed by BOUNDED per-query single dispatches
+            //     inside the ONE already-consumed call (see the row body).
+            // Credential unresolvable = the NAMED NOT-READY: no lane minted,
+            // web_search honestly unmounted; real external acceptance waits on the
+            // USER's configuration — recorded tier, never a waiver.
+            const webSearchCfg = g2Mount?.webSearchFixed;
+            let buildSearchLane = () => null;
+            if (webSearchCfg?.enabled === true) {
+                const publicRoots = {
+                    exa: { specifier: '@deepseek-ai/dsh-web-search-exa', env: 'EXA_API_KEY' },
+                    perplexity: { specifier: '@deepseek-ai/dsh-web-search-perplexity', env: 'PERPLEXITY_API_KEY' },
+                    'deepseek-official': { specifier: '@deepseek-ai/dsh-web-search-deepseek', env: 'DEEPSEEK_API_KEY' },
+                };
+                // Credential/env reads are LIMITED to the PROCESS layer, named as
+                // such. launchEnvironmentOf(ctx) composes a multi-LAYER snapshot on
+                // the cordis ctx store (process + project/user .env) — NOT reachable
+                // at this boot-supply layer, and we do NOT claim equivalence; keys
+                // carried only on higher layers surface as NOT-READY, with config
+                // apiKey as the supported alternative. READ ONLY, nothing stored.
+                const launchEnv = globalThis.process?.env ?? {};
+                const choice = webSearchCfg.provider;
+                if (typeof choice !== 'string' || publicRoots[choice] === undefined) {
+                    return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webSearchFixed.provider must name ONE of exa|perplexity|deepseek-official — the user selects; nothing is auto-selected, nothing is invented' };
+                }
+                try {
+                    const mod = (await import(publicRoots[choice].specifier));
+                    const cfgIn = webSearchCfg.config ?? {};
+                    const parse = mod.Config.parse(cfgIn);
+                    const undef = (k) => parse[k] === undefined;
+                    let fixedSearch = null;
+                    let resolvedBaseURL = '';
+                    // e51-review residual ②: the seam's CURRENT facts must LIVE-READ the
+                    // same resolution the provider's own options use — never the first
+                    // frame re-asserted (that would let an endpoint that moves after
+                    // assembly slip past the same-origin law; the deepseek provider
+                    // resolves its baseURL per search, so a snapshot would self-prove).
+                    let liveBaseURL = () => resolvedBaseURL;
+                    let readyDetail = '';
+                    if (choice === 'exa') {
+                        // index.ts:58-66 VERBATIM: config.apiKey ?? $EXA_API_KEY ?? '';
+                        // baseURL/searchType/highlightsPerResult via ?? with the ROOT's
+                        // exported defaults; numResults rides only when configured.
+                        const m = mod;
+                        const apiKey = undef('apiKey') ? (launchEnv[publicRoots[choice].env] ?? '') : parse.apiKey;
+                        const options = {
+                            apiKey,
+                            baseURL: undef('baseURL') ? m.EXA_DEFAULT_BASE_URL : parse.baseURL,
+                            searchType: undef('searchType') ? m.EXA_DEFAULT_SEARCH_TYPE : parse.searchType,
+                            highlightsPerResult: undef('highlightsPerResult') ? m.EXA_DEFAULT_HIGHLIGHTS_PER_RESULT : parse.highlightsPerResult,
+                            ...(undef('numResults') ? {} : { numResults: parse.numResults }),
+                        };
+                        resolvedBaseURL = String(options.baseURL);
+                        if (String(apiKey).length > 0)
+                            fixedSearch = new m.ExaSearchProvider(options);
+                        else
+                            readyDetail = 'the resolved apiKey is empty (config apiKey explicitly empty, or unset with $EXA_API_KEY absent) — official ?? semantics kept: an explicit empty string does NOT fall back to the environment';
+                    }
+                    else if (choice === 'perplexity') {
+                        // index.ts:52-61 VERBATIM (same ?? law; model/maxTokens defaults
+                        // from the root's constants; searchRecency only when configured).
+                        const m = mod;
+                        const apiKey = undef('apiKey') ? (launchEnv[publicRoots[choice].env] ?? '') : parse.apiKey;
+                        const options = {
+                            apiKey,
+                            baseURL: undef('baseURL') ? m.PERPLEXITY_DEFAULT_BASE_URL : parse.baseURL,
+                            model: undef('model') ? m.PERPLEXITY_DEFAULT_MODEL : parse.model,
+                            maxTokens: undef('maxTokens') ? m.PERPLEXITY_DEFAULT_MAX_TOKENS : parse.maxTokens,
+                            ...(undef('searchRecency') ? {} : { searchRecency: parse.searchRecency }),
+                        };
+                        resolvedBaseURL = String(options.baseURL);
+                        if (String(apiKey).length > 0)
+                            fixedSearch = new m.PerplexitySearchProvider(options);
+                        else
+                            readyDetail = 'the resolved apiKey is empty (explicit empty stays empty under official ?? semantics)';
+                    }
+                    else {
+                        // deepseek-official — ROOT 04:3x SNAPSHOT LAW: this mount resolves
+                        // the OFFICIAL resolveOptions layers (index.ts:99-137) ONCE and
+                        // hands the provider a CONSTANT resolved snapshot. No dynamic
+                        // reader is combined with constant seam facts (that pairing let an
+                        // endpoint move after assembly past a first-frame seam). The
+                        // launch-environment SNAPSHOT of launchEnvironmentOf(ctx) lives on
+                        // the cordis ctx store and is NOT reachable at this boot-supply
+                        // layer — we do NOT claim process.env equals those layered reads:
+                        // the supported credential sources here are the config apiKey and
+                        // the PROCESS layer, named exactly; a key carried only on a higher
+                        // launch-snapshot layer reads NOT-READY here, and config apiKey is
+                        // the supported alternative. Key resolution NEVER creates a new
+                        // credential service. The ctx-only planes (deepseekAccount token,
+                        // per-session recordRequest) have no counterpart at row supply and
+                        // are OMITTED — session planes, not construction defaults.
+                        const m = mod;
+                        const snap = mod.Config.parse(cfgIn);
+                        const apiKeyEnv = snap.apiKeyEnv !== undefined ? String(snap.apiKeyEnv) : 'DEEPSEEK_API_KEY';
+                        const literal = typeof snap.apiKey === 'string' && snap.apiKey.length > 0 ? snap.apiKey : undefined;
+                        const envKey = launchEnv[apiKeyEnv];
+                        const resolvedKey = literal ?? ((envKey ?? '').length > 0 ? envKey : undefined);
+                        const snapshot = {
+                            ...(resolvedKey !== undefined ? { apiKey: resolvedKey } : {}),
+                            apiKeyEnv,
+                            baseURL: snap.baseURL !== undefined ? String(snap.baseURL) : (launchEnv.DEEPSEEK_SEARCH_BASE_URL ?? m.DEEPSEEK_DEFAULT_BASE_URL),
+                            model: snap.model, apiVersion: snap.apiVersion, maxTokens: snap.maxTokens, maxUses: snap.maxUses,
+                        };
+                        resolvedBaseURL = String(snapshot.baseURL);
+                        liveBaseURL = () => String(snapshot.baseURL); // CONSTANT by the snapshot law: seam facts and provider options read the SAME frozen frame — drift is unbuildable at this layer, not re-blessed per call
+                        if (resolvedKey !== undefined)
+                            fixedSearch = new m.DeepSeekSearchProvider(() => snapshot);
+                        else
+                            readyDetail = `neither a config apiKey nor the PROCESS-layer $${apiKeyEnv} resolves (supported sources at this layer, named; higher launch-snapshot layers are not reachable here — not an equivalence claim)`;
+                    }
+                    if (fixedSearch !== null) {
+                        // ONE config -> ALL facts: the seam envelope AND the classify
+                        // searchOrigin derive from this SAME resolved endpoint origin.
+                        let parsed;
+                        try {
+                            parsed = new URL(resolvedBaseURL);
+                        }
+                        catch {
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the resolved endpoint URL (${JSON.stringify(resolvedBaseURL.slice(0, 80))}) does not parse — refusing rather than shipping an unverifiable target` };
+                        }
+                        if (parsed.protocol !== 'https:') {
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'the resolved search endpoint must be https (credentials ride this origin — plaintext is refused, no exception)' };
+                        }
+                        const origin = parsed.origin;
+                        const identity = `g2-web-search:${choice}|${origin}`;
+                        // declared = the FIRST resolved frame (the pin); facts = LIVE
+                        // re-resolution through the SAME code path per dispatch — endpoint
+                        // movement since assembly is CONFIG_DRIFT refusal inside the seam,
+                        // not a second same-origin blessing.
+                        buildSearchLane = () => ({ fixedSearchProvider: fixedSearch, declared: { endpointOrigin: origin, configIdentity: identity }, readMountFacts: () => {
+                                const liveOrigin = (() => { try {
+                                    const u = new URL(liveBaseURL());
+                                    return u.origin;
+                                }
+                                catch {
+                                    return `UNPARSEABLE:${liveBaseURL().slice(0, 60)}`;
+                                } })();
+                                return { endpointOrigin: liveOrigin, configIdentity: `g2-web-search:${choice}|${liveOrigin}` };
+                            } });
+                        out.webSearchEndpointOrigin = origin;
+                    }
+                    else {
+                        out.webSearchNotReady = `G2_WEB_SEARCH_NOT_READY: provider "${choice}" selected but the credential is unresolvable (${readyDetail}) — no lane minted; web_search stays unmounted (fail-closed law); awaiting the USER's configuration (exact external gap, not waived)`;
+                    }
+                }
+                catch (error) {
+                    return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed declared but the PUBLIC search root (${String(choice)}) refused: ${String(error?.message ?? error).slice(0, 200)} — typed refusal, no stand-in provider, no credential invented` };
+                }
+            }
             const webFixedCfg = g2Mount?.webFixedProvider;
             if (webFixedCfg?.enabled === true) {
                 const webFetchSpecifier = '@deepseek-ai/dsh-web-fetch-http';
@@ -1829,6 +1994,7 @@ export async function apply(ctx, config) {
                         seamMod: webSeamMod,
                         declared: webFixedCfg.declared ?? {},
                         readMountFacts: () => webFixedCfg.declared ?? {},
+                        ...(buildSearchLane() !== null ? { search: buildSearchLane() } : {}),
                     });
                 }
                 catch (error) {

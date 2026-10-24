@@ -3712,7 +3712,22 @@ export function createAgentBindings(deps) {
                   const ports = liveWebG2CenterPortsByRoot.get(String(teamRoot))
                   return ports === undefined ? null : { ports, assemblyId: String(teamRoot) }
                 },
-                ...(typeof planeCfg.g2Web?.searchOrigin === 'string' ? { searchOrigin: planeCfg.g2Web.searchOrigin } : {}),
+                // e51-final ② (ONE config, all facts; a separate declaration
+                // can never self-prove): when a REAL search lane exists, the
+                // classify searchOrigin is the endpoint origin DERIVED from
+                // the same resolved config the credentials were built on; a
+                // separately declared searchOrigin that contradicts it is a
+                // MOUNT refusal — approval A can never carry credentials to
+                // B. No search lane: the declaration is inert (row unmounted).
+                ...((() => {
+                  const laneOrigin = typeof g2Supply.webSearchEndpointOrigin === 'string' ? g2Supply.webSearchEndpointOrigin : undefined
+                  const declaredOrigin = typeof planeCfg.g2Web?.searchOrigin === 'string' ? planeCfg.g2Web.searchOrigin : undefined
+                  if (laneOrigin !== undefined && declaredOrigin !== undefined && declaredOrigin !== laneOrigin) {
+                    throw refuseG2(`G2_WEB_SEARCH_ORIGIN_CONTRADICTION for ${sessionId}: the declared searchOrigin ${JSON.stringify(declaredOrigin.slice(0, 80))} does not match the provider endpoint origin ${JSON.stringify(laneOrigin.slice(0, 80))} derived from the SAME resolved config the credentials ride — one config produces all target facts; a declared string never self-proves a target`)
+                  }
+                  const origin = laneOrigin ?? declaredOrigin
+                  return origin !== undefined ? { searchOrigin: origin } : {}
+                })()),
               } }
               : {}),
             observe: (event) => observations.push(`a5m2-g2: ${String(event?.lane ?? '?')} ${String(event?.event ?? '')}`),

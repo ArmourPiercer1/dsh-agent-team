@@ -342,7 +342,7 @@ export async function createG2TeamAssemblySupply(input = {}) {
   if (typeof makeTransport !== 'function') {
     return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'makeTransport is REQUIRED — the transport factory\'s real producer is the host mcp connection layer over the APPROVED config (stdio/http); minting one here would copy host transport internals into this lane')
   }
-  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(typeof input?.webSearchNotReady === 'string' ? { webSearchNotReady: input.webSearchNotReady } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
+  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(typeof input?.webSearchNotReady === 'string' ? { webSearchNotReady: input.webSearchNotReady } : {}), ...(typeof input?.webSearchEndpointOrigin === 'string' ? { webSearchEndpointOrigin: input.webSearchEndpointOrigin } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
   // browser supply is ALL-OR-NOTHING (the loader always carries the two
   // public entry functions; arming them WITHOUT the Team PA approval face +
   // the stagehand method mapping would arm a row whose door nobody opened):
@@ -480,6 +480,9 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
   // named NOT-READY gap, never a stand-in — and the lane-pairing law then
   // keeps the web_search row honestly unmounted.
   const webSearchLane = search === null || typeof search !== 'object' ? null : (() => {
+    if (!Number.isInteger(search.searchMaxResults) || search.searchMaxResults < 1) {
+      throw new Error('G2_SUPPLY_ENTRY_INVALID: the search half needs the REAL deployment cap searchMaxResults (positive integer — the tool-web Config face searchMaxResults, default WEB_SEARCH_MAX_RESULTS=8 at tool-web/src/search.ts:19; the lane cannot cancel the cap by absence)')
+    }
     const sp = search.fixedSearchProvider
     if (sp === null || typeof sp !== 'object' || typeof sp.id !== 'string' || sp.id.length === 0) {
       throw new Error('G2_SUPPLY_ENTRY_INVALID: the search half needs the REAL selected provider object with its own public id (exa|perplexity|deepseek-official); nothing pins around an absence or a stand-in')
@@ -492,7 +495,10 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
       readMountFacts: search.readMountFacts,
       observe,
     })
-    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats })
+    // the derived endpoint origin rides the lane so the backend can hold
+    // the classify searchOrigin to the SAME source (e51-final ②).
+    const declaredSearchObj = search.declared ?? {}
+    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats, searchMaxResults: search.searchMaxResults, ...(typeof declaredSearchObj.endpointOrigin === 'string' ? { endpointOrigin: declaredSearchObj.endpointOrigin } : {}) })
   })()
   return Object.freeze({
     web_fetch: Object.freeze({
@@ -533,6 +539,14 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
  * empty rowset.
  */
 export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions, resolveWebCenterPorts } = {}) {
+  // e51-final ② at the LAST injectable seam: the classify searchOrigin and
+  // the lane's DERIVED endpoint origin must be the SAME fact (one config
+  // produces all targets); a contradicting pair refuses the mount — approval
+  // A can never carry credentials to B, and a declared string never
+  // self-proves a target.
+  if (typeof lanes?.web_search?.endpointOrigin === 'string' && typeof searchOrigin === 'string' && searchOrigin !== lanes.web_search.endpointOrigin) {
+    throw new Error(`G2_WEB_SEARCH_ORIGIN_CONTRADICTION: classify would pin searchOrigin ${JSON.stringify(String(searchOrigin).slice(0, 80))} while the lane dispatches to the endpoint origin ${JSON.stringify(String(lanes.web_search.endpointOrigin).slice(0, 80))} the credentials were built on — one resolved config produces ALL target facts; refusing the mount`)
+  }
   if (lanes === null || typeof lanes !== 'object' || lanes.web_fetch === undefined || lanes.web_fetch.provider === undefined) {
     throw new Error('G2_SUPPLY_ENTRY_INVALID: the g2Web backend requires the seam-branded fixed lanes (createG2WebFixedLanes product); without them the plane fail-closes by law, so nothing is injected here either')
   }
@@ -606,24 +620,88 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
           const url = args?.url
           if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
         }
-        // The provider's PUBLIC request (web/src/types.ts:16-27) carries ONE
-        // query; the closed row args carry queries[] (the gateway merge lane
-        // is the relay's law, not the fixed lane's). Honest fixed-lane
-        // subset (the web_fetch url-only precedent): exactly one query
-        // dispatches verbatim; multi-query is the NAMED gap, refused typed
-        // before the provider — never silently first-picked, never looped
-        // into a second consume-shaped dispatch.
-        let request
+        // e51-review ②: the PUBLIC WebSearchRequest (web/src/types.ts:16-27)
+        // is one-query — queries[] is consumed as a BOUNDED aggregation of
+        // those public single-query calls, NOT refused (multi-query is not
+        // an interface/Core blocker: the bound is the CLOSED approved list
+        // itself — classify already pinned every query and its count; the
+        // body re-checks against that approved shape and never grows it).
+        // Each dispatch rides the SAME branded lane, so the network
+        // boundary, destination facts and current-facts re-verification run
+        // per call; the approved effects and the ONE PA consume are
+        // UNCHANGED (the edge is upstream of this body — several provider
+        // calls inside ONE consumed call is exactly what the gateway relay
+        // does; we reproduce its consumption, not a second consume).
+        let out
         if (row.toolName === 'web_search') {
           const queries = Array.isArray(args?.queries) ? args.queries : []
-          if (queries.length !== 1 || typeof queries[0] !== 'string' || queries[0].length === 0) {
-            throw new Error('G2_WEB_SEARCH_MULTI_QUERY_GAP: the fixed single-provider lane dispatches the public one-query request; a multi-query row belongs to the gateway merge relay — refused typed, zero provider calls (named subset, not a waiver)')
+          if (queries.length === 0 || queries.some((q) => typeof q !== 'string' || q.length === 0)) {
+            throw new Error('G2_WEB_SEARCH_QUERY_ARGS_INVALID: classify pinned a non-empty queries list; the body rides it verbatim and never grows it (empty/shape-broken here is a mount defect, zero dispatches)')
           }
-          request = { query: queries[0] }
+          const signal = (exec?.signal) ?? undefined
+          // gateway law (search.ts:237-238): ONE query rides the provider's
+          // PUBLIC answer VERBATIM — no re-shaping; the merge below is the
+          // multi-query law only.
+          // THE DEPLOYMENT CAP (root 05:0x): searchMaxResults is SUPPLIED
+          // (the tool-web Config face, default WEB_SEARCH_MAX_RESULTS=8,
+          // tool-web/src/search.ts:19 — the lane never cancels it by
+          // absence; the mount law above refuses such a lane). Single
+          // requests ride the PUBLIC maxResults field (types.ts:25) and
+          // the WebRuntime enforcement law VERBATIM (capSources,
+          // web/src/index.ts:196-199): over-return truncates sources and
+          // flags truncated; the merge then re-applies the TOTAL cap with
+          // droppedSource (search.ts:270-279).
+          const maxResults = lane.searchMaxResults
+          if (queries.length === 1) {
+            const one = await laneMethod.call(lane.provider, { query: queries[0], maxResults }, signal)
+            out = Object.freeze(typeof one?.sources?.length === 'number' && one.sources.length > maxResults
+              ? { ...one, sources: one.sources.slice(0, maxResults), truncated: true }
+              : one)
+          } else {
+          const per = []
+          for (const query of queries) {
+            // the PUBLIC one-query request (maxResults = cost/latency
+            // optimization at the provider, enforced regardless after).
+            const raw = await laneMethod.call(lane.provider, { query, maxResults }, signal)
+            per.push({ query, res: typeof raw?.sources?.length === 'number' && raw.sources.length > maxResults
+              ? { ...raw, sources: raw.sources.slice(0, maxResults), truncated: true }
+              : raw })
+          }
+          // mergeSearchResults (tool-web/src/search.ts:258-292) VERBATIM:
+          // dedupe by url, round-robin by rank across the per-query results,
+          // content joined under '### <query>' headers, truncated = OR of the
+          // per-query answers (plus dropped-at-cap; the CLOSED row schema
+          // carries no maxResults so the lane caps nothing — the deployment
+          // cap is the relay's config face, disclosed, never invented here).
+          const seen = new Set()
+          const sources = []
+          let sourceRanks = 0
+          for (const entry of per) {
+            if (Array.isArray(entry.res?.sources)) sourceRanks = Math.max(sourceRanks, entry.res.sources.length)
+          }
+          let droppedSource = false
+          merge: for (let rank = 0; rank < sourceRanks; rank++) {
+            for (const entry of per) {
+              const source = Array.isArray(entry.res?.sources) ? entry.res.sources[rank] : undefined
+              if (source !== undefined && !seen.has(source.url)) {
+                seen.add(source.url)
+                if (sources.length === maxResults) { droppedSource = true; break merge }
+                sources.push(source)
+              }
+            }
+          }
+          const contents = per.flatMap((entry) => typeof entry.res?.content === 'string' && entry.res.content.length > 0
+            ? [`### ${entry.query}\n\n${entry.res.content}`]
+            : [])
+          out = Object.freeze({
+            ...(contents.length > 0 ? { content: contents.join('\n\n') } : {}),
+            sources: Object.freeze(sources),
+            truncated: per.some((entry) => entry.res?.truncated === true) || droppedSource,
+          })
+          }
         } else {
-          request = { url: args?.url }
+          out = await laneMethod.call(lane.provider, { url: args?.url }, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
         }
-        const out = await laneMethod.call(lane.provider, request, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
         // the row-body answer law (measured at the consumption edge): the
         // edge returns the invoke answer and the plane reads ran.value —
         // the same {ok,value} struct the g2Mcp bound body answers with.
