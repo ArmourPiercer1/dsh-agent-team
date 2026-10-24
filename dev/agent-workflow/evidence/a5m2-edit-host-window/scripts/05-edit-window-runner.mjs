@@ -29,7 +29,7 @@
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { appendFileSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../../../tests/paths.mjs'
@@ -458,7 +458,7 @@ function domainFacts() {
   const hits = [...new Set([...memberBindings.entries()].filter(([i]) => templates.get(i) === 'edit-worker').map(([, s]) => s))]
   return hits.length === 1 ? hits[0] : null
 }
-async function driveGoverned(memberSession, marker, decision, tag) {
+async function driveGoverned(memberSession, marker, decision, tag, trackTarget = null) {
   const before = new Set(await pendingRequestIds())
   await apiPrompt(memberSession, marker, tag)
   const requestId = await waitFor(`new pending control request (${tag})`, 120_000, async () => {
@@ -467,9 +467,13 @@ async function driveGoverned(memberSession, marker, decision, tag) {
     if (fresh.length > 1) throw new Error(`${tag}: expected exactly ONE new pending request, saw ${fresh.length}`)
     return fresh[0]
   })
+  // pending-state effect probe (root work-card): the target's sha/mtime are
+  // measured AFTER the pending row exists and BEFORE resolve — no effect may
+  // have happened while only a request was pending.
+  const atPending = trackTarget !== null ? { sha: sha256(trackTarget), mtimeMs: statSync(trackTarget).mtimeMs } : null
   const res = await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId, decision, note: `edit-hw ${tag}` }, tag, 4)
   if (resultError(res.body) !== null) throw new Error(`resolveControl ${decision} ${tag}: ${JSON.stringify(resultError(res.body)).slice(0, 300)}`)
-  return requestId
+  return { requestId, atPending }
 }
 const resultFor = (step) => waitFor(`${step} tool result`, 90_000, () => {
   const hit = callResults.find((r) => r.step === step)
@@ -493,11 +497,15 @@ async function main() {
   } catch { /* identity best-effort; window verdict never depends on it */ }
   // the governed target file, under the fsInstance rootDir = THIS world
   writeFileSync(join(FSROOT, 'notes.txt'), 'alpha\nbeta\ngamma\n', 'utf8')
-  // [batch E4] alias/symlink leg: a relative spelling that ESCAPES via symlink to a file outside the instance root; the anchor/classify law must refuse it and the external target must stay byte-frozen.
-  const SYMLINK = join(FSROOT, 'link.txt')
-  const SYM_TARGET = '/etc/hostname'
-  try { symlinkSync(SYM_TARGET, SYMLINK) } catch { /* existing evidence world */ }
-  const symTargetShaBefore = sha256(SYM_TARGET)
+  // [batch E4 per work-card] LEXICAL escape only this window: a relative
+  // '..' spelling pointing at a canary in THIS window's own HOME (outside
+  // FSROOT). NOT a symlink test (real symlink + exact link target via PA,
+  // O_NOFOLLOW refusing post-consume at edit:250/260, stays a later leg —
+  // this window must not demand zero pending/consume there).
+  const CANARY = join(HOME, 'outside-canary.txt')
+  writeFileSync(CANARY, 'CANARY-SENTINEL\n', 'utf8')
+  const canaryShaBefore = sha256(CANARY)
+  const canaryMtimeBeforeMs = statSync(CANARY).mtimeMs
 
   // ── ②③ REAL entry resolution from the f86 fixture (READ-ONLY: no install,
   // no lockfile-only, no chmod — root FS narrow-audit order) ──────────────
@@ -589,7 +597,8 @@ async function main() {
           return mk(stepFor(marker), spec.name, spec.args)
         })()))
     if (text.startsWith('A5M2-EDITHW-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `ehw-create-${NONCE}`, delegationTemplateId: 'edit-worker', label: 'edit1' } }))
-    if (text.startsWith('EDIT-SYMLINK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'link.txt', old_string: 'x', new_string: 'y' } })) // batch E4: alias escape attempt via the symlink (relative spelling, law must refuse)
+    if (text.startsWith('EDIT-REASK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-REASKED' } })) // E3: INDEPENDENT marker/callId — proves a new call does NOT inherit the old allow; NOT a same-token replay claim
+    if (text.startsWith('EDIT-ESCAPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: '../outside-canary.txt', old_string: 'C', new_string: 'X' } })) // E4: lexical '..' escape to the HOME canary
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
     if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } })) // root ruling: the EDIT row's anchor contract is RELATIVE-to-root (edit.mjs :89-94 path.isAbsolute refuses); workspace/FSROOT stay aligned so the relative spelling resolves to the SAME target via canonicalLocator :233-236
     if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } })) // same single-variable ruling as the allow arm
@@ -643,29 +652,29 @@ async function main() {
   const stepOuter = (marker) => `member:${marker}`
 
   // E1: ALLOW chain — real PA consumption, real bytes, real facts
-  // [batch E-pending0] the M0-B index pending-0 law: a clean slate before the
-  // first governed call (the "new pending" diff-set logic alone only proved
-  // freshness of the new row, not global emptiness).
+  // [E-pending0] HEALTH CHECK per work-card: the slate is empty before the
+  // first governed call (the pending-state EFFECT probe lives inside
+  // driveGoverned: sha/mtime measured after pending, before resolve).
   currentCriterion = 'E-pending0'
   const pend0 = await pendingRequestIds()
   check('E-pending0', 'no pending control requests before the first governed call', pend0.length === 0, `pending=${JSON.stringify(pend0)}`)
 
-  // [batch E0-schema] public-schema correctness of the governed edit row: the
-  // CLOSED six-property schema + the closed three required fields (the row's
-  // own input_schema object as carried on the model request face).
+  // [E0-schema] SCHEMA SHAPE ONLY (property NAMES + required SET) per work-
+  // card — not a full public-schema behaviour claim.
   currentCriterion = 'E0-schema'
   const editDef = memberToolDefs.find((t) => (typeof t === 'string' ? t : t?.function?.name ?? t?.name) === 'edit') ?? null
   const editParams = editDef?.function?.parameters ?? editDef?.parameters ?? null
   const propKeys = editParams && typeof editParams.properties === 'object' ? Object.keys(editParams.properties).sort().join(',') : 'ABSENT'
   const reqKeys = Array.isArray(editParams?.required) ? [...editParams.required].sort().join(',') : 'ABSENT'
-  check('E0-schema', 'edit row carries the CLOSED public schema (six properties, three required)',
+  check('E0-schema', 'edit row schema SHAPE: closed six property names + closed three required (shape only, not full schema behaviour)',
     propKeys === 'file_path,justification,new_string,old_string,replace_all,sandbox_permissions' && reqKeys === 'file_path,new_string,old_string',
     `props=${propKeys} required=${reqKeys}`)
 
   currentCriterion = 'E1'
   const shaBefore = sha256(target)
   const stBefore = statSync(target)
-  const allowReq = await driveGoverned(memberSession, 'EDIT-ALLOW', 'allow', 'ehw-e1')
+  const dr1 = await driveGoverned(memberSession, 'EDIT-ALLOW', 'allow', 'ehw-e1', target)
+  const allowReq = dr1.requestId
   const allowRes = await resultFor(stepOuter('EDIT-ALLOW'))
   const shaAfter = sha256(target)
   const stAfter = statSync(target)
@@ -680,7 +689,8 @@ async function main() {
   const denyShaBefore = sha256(target)
   const denyStBefore = statSync(target)
   utimesSync(target, denyStBefore.atime, denyStBefore.mtime) // freeze clocks: a touch-open would still show
-  const denyReq = await driveGoverned(memberSession, 'EDIT-DENY', 'deny', 'ehw-e2')
+  const dr2 = await driveGoverned(memberSession, 'EDIT-DENY', 'deny', 'ehw-e2', target)
+  const denyReq = dr2.requestId
   const denyRes = await resultFor(stepOuter('EDIT-DENY'))
   const denyConsumed = await hasFact(denyReq, 'control-allow-consumed')
   // [oracle fix per root ruling 2026-10-24] the deny leg is judged SEMANTIC and
@@ -702,39 +712,37 @@ async function main() {
     && String(denyRes).includes('APPROVAL_DENIED')
     && String(denyRes).includes(`durable Control request ${denyReq} answered deny`)
     && denyDecision !== false && denyConsumed === false,
-    `requestId=${denyReq} consumed=${JSON.stringify(denyConsumed)} decisionFact=${denyDecision === false ? 'ABSENT' : JSON.stringify({ sequence: denyDecision.sequence, keys: Object.keys(denyDecision.payload ?? {}).slice(0, 10) })} shaBefore=${denyShaBefore} shaAfter=${denyShaAfter} mtimeBeforeMs=${denyStBefore.mtimeMs} mtimeAfterMs=${denyMtimeAfterMs} result=${String(denyRes).slice(0, 300)}`)
+    `requestId=${denyReq} consumed=${JSON.stringify(denyConsumed)} decisionFact=${denyDecision === false ? 'ABSENT' : JSON.stringify({ sequence: denyDecision.sequence, keys: Object.keys(denyDecision.payload ?? {}).slice(0, 10) })} shaBefore=${denyShaBefore} shaAfter=${denyShaAfter} mtimeBeforeMs=${denyStBefore.mtimeMs} mtimeAfterMs=${denyMtimeAfterMs} shaAtPending=${String(dr2.atPending?.sha)} shaAtPendingEqualsBefore=${String(dr2.atPending?.sha === denyShaBefore)} result=${String(denyRes).slice(0, 300)}`)
 
-  // [batch E3 one-shot] the allow grant is CONSUMED and never reusable:
-  // re-emitting the same EDIT-ALLOW must ask a FRESH approval (a NEW pending
-  // row with a DIFFERENT requestId) — if the grant leaked, the row would
-  // execute WITHOUT any new pending. The fresh row is then denied (cleanup)
-  // and the target bytes must still equal the post-E2 state.
+  // [E3 per work-card] one-shot re-ask with an INDEPENDENT marker/callId/result
+  // ('EDIT-REASK' — the old EDIT-ALLOW reuse would hit TURN-DONE and read the
+  // stale result). Proves a NEW call does NOT inherit the old allow (a fresh
+  // pending row with a different requestId must appear); it is NOT a
+  // same-token replay claim. The fresh row is denied; bytes stay frozen.
   currentCriterion = 'E3'
-  const pendBefore3 = new Set(await pendingRequestIds())
-  const replayReq = await driveGoverned(memberSession, 'EDIT-ALLOW', 'deny', 'ehw-e3')
-  const replayRes = await resultFor(stepOuter('EDIT-ALLOW'))
-  const e3BytesOk = sha256(target) === denyShaAfter
-  const e3NoConsume = (await hasFact(replayReq, 'control-allow-consumed')) === false
-  check('E3', 'allow grant is one-shot: re-run asks a NEW pending (different requestId), stays unconsumed after deny, bytes frozen',
-    replayReq !== allowReq && replayReq !== denyReq && e3BytesOk && e3NoConsume
-    && String(replayRes).includes('APPROVAL_DENIED'),
-    `newRequestId=${replayReq} allowReq=${allowReq} denyReq=${denyReq} shaNow=${sha256(target)} expectSha=${denyShaAfter} consumed=${JSON.stringify(e3NoConsume)} result=${String(replayRes).slice(0, 250)}`)
+  const dr3 = await driveGoverned(memberSession, 'EDIT-REASK', 'deny', 'ehw-e3', target)
+  const reaskReq = dr3.requestId
+  const reaskRes = await resultFor(stepOuter('EDIT-REASK'))
+  check('E3', 'one-shot: independent EDIT-REASK call asks a NEW pending (different requestId), is unconsumed after deny, bytes frozen — not a same-token replay claim',
+    reaskReq !== allowReq && reaskReq !== denyReq
+    && sha256(target) === denyShaAfter && dr3.atPending?.sha === denyShaAfter
+    && (await hasFact(reaskReq, 'control-allow-consumed')) === false
+    && String(reaskRes).includes('APPROVAL_DENIED'),
+    `newRequestId=${reaskReq} allowReq=${allowReq} denyReq=${denyReq} shaNow=${sha256(target)} expectSha=${denyShaAfter} shaAtPending=${String(dr3.atPending?.sha)} result=${String(reaskRes).slice(0, 250)}`)
 
-  // [batch E4 alias/symlink] a relative spelling resolving through a symlink
-  // to OUTSIDE the instance root must refuse typed at the anchor/classify law
-  // (pre-dispatch: NO new pending row), the symlink must remain a symlink,
-  // the external target must be byte-frozen, and NO native fallback may have
-  // touched anything.
+  // [E4 per work-card] lexical '..' escape to THIS window's OWN HOME canary
+  // (no symlink this window; no permission extension). Real prompt, typed
+  // refusal expected at the anchor law; the canary must be byte-frozen and
+  // still a regular file. No zero-pending/zero-consume requirement here
+  // (those belong to the later real-symlink/PA leg).
   currentCriterion = 'E4'
-  const pendBefore4 = new Set(await pendingRequestIds())
-  const symRes = await resultFor(stepOuter('EDIT-SYMLINK'))
-  const pendAfter4 = (await pendingRequestIds()).filter((r) => !pendBefore4.has(r))
-  const symStillLink = (() => { try { return lstatSync(SYMLINK).isSymbolicLink() } catch { return false } })()
-  const symTargetFrozen = sha256(SYM_TARGET) === symTargetShaBefore
-  check('E4', 'symlink/alias escape refuses typed pre-dispatch (no pending row created), link stays a link, external target byte-frozen, no fallback effect',
-    /refused-edit|APPROVAL_DENIED|P_EDIT_ANCHOR_ESCAPE|ANCHOR/.test(String(symRes))
-    && pendAfter4.length === 0 && symStillLink && symTargetFrozen,
-    `result=${String(symRes).slice(0, 280)} newPending=${JSON.stringify(pendAfter4)} stillLink=${String(symStillLink)} targetFrozen=${String(symTargetFrozen)}`)
+  await apiPrompt(memberSession, `EDIT-ESCAPE ${NONCE}`, 'ehw-e4')
+  const escapeRes = await resultFor(stepOuter('EDIT-ESCAPE'))
+  const canaryFrozen = sha256(CANARY) === canaryShaBefore && Math.abs(statSync(CANARY).mtimeMs - canaryMtimeBeforeMs) < 1
+  const canaryStillRegular = (() => { try { return lstatSync(CANARY).isFile() && !lstatSync(CANARY).isSymbolicLink() } catch { return false } })()
+  check('E4', "lexical '../outside-canary.txt' escape refuses typed at the anchor law; HOME canary byte-frozen (sha + <1ms mtime tolerance) and still a regular file",
+    /ANCHOR|P_EDIT|refused-edit|APPROVAL_DENIED/.test(String(escapeRes)) && canaryFrozen && canaryStillRegular,
+    `result=${String(escapeRes).slice(0, 280)} canarySha=${sha256(CANARY)} canaryShaBefore=${canaryShaBefore} canaryMtimeMs=${statSync(CANARY).mtimeMs}/${canaryMtimeBeforeMs} stillRegular=${String(canaryStillRegular)}`)
 
   await cleanup()
   finish(results.every((r) => r.ok) && cleanupOk ? 0 : 1)
