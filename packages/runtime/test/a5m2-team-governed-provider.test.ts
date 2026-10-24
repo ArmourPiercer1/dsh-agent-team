@@ -115,6 +115,7 @@ describe('A5M2 TGP real-chain: PA before the durable chain, derived legal instan
     expect(e.templateId).toBe('tpl-worker-1')
     expect(e.parentAgent === undefined, 'the REAL chain request carries NO parentAgent (attribution waits for root\'s identity contract — no drop-pretense)').toBe(true)
     expect(e.agentOptions === undefined && e.signal === undefined, 'no dropped fields ride the chain request either').toBe(true)
+    expect(e.admittedCallId, 'the routing/lifecycle install identity rides (a reversible audit id, not a grant)').toBe('orch-call-1#child-1')
     expect(String(e.instanceId)).toMatch(INSTANCE_ID_PATTERN)
     expect(String(e.instanceId), 'the parent instance is NEVER reused as the child').not.toBe('member-inst-1')
     expect(String(e.instanceId), 'deterministic from the ADMITTED identity, no UUID').toBe(childInstanceIdForAdmittedCall('team-root-1', 'orch-call-1#child-1'))
