@@ -8100,10 +8100,20 @@ export function createAgentBindings(deps) {
         if (name !== 'run_code') return false
         const facts = a5CoverageRunCodeFacts
         if (facts !== null) {
-          // Post-install truth: armed + BOTH listener seats installed + the
-          // REAL native family registrations landed (a placed row can never
-          // prove run_code — the plane carries ZERO run_code definitions).
-          return facts.hooksInstalled === true && facts.familyIdentities.length > 0
+          // Post-install truth (root 705 final recheck): hooksInstalled is
+          // only ever set when BOTH seats returned REAL disposers (the
+          // install refuses otherwise) — and the length alone proves
+          // nothing: EVERY recorded native identity must answer a live
+          // governed-family entry (the same ledger the registration wrote
+          // and the family claim reads), never a records-length proxy.
+          if (facts.hooksInstalled !== true || facts.familyIdentities.length === 0) return false
+          return facts.familyIdentities.every((nativeIdentity) => {
+            try {
+              return a5GovernedFamilyFor(nativeIdentity) !== undefined && a5GovernedFamilyFor(nativeIdentity) !== null
+            } catch {
+              return false
+            }
+          })
         }
         // The precheck window only: the guard branch installs BELOW the
         // early check, so the early read may refuse on 确定缺口 only — this
@@ -8624,13 +8634,26 @@ export function createAgentBindings(deps) {
               ), { code: 'alpha5-g3-runcode-mount-refused' })
             }
             const disposeRunCodeGuardPre = agentCtx.on('tools/pre-execute', rcPlane.onPreExecute)
-            toolDisposers.push(typeof disposeRunCodeGuardPre === 'function'
-              ? disposeRunCodeGuardPre
-              : () => { /* the face answered no disposer — the plane drain still refuses new walks */ })
+            // Root 705 final recheck: a seat that answers no VALID disposer
+            // is NOT installed — a fake no-op placeholder would let
+            // hooksInstalled claim a drain that cannot drain. Both real
+            // disposers or the mount refuses (the barrier keeps refusing,
+            // the already-registered seat rides the original unwind).
+            if (typeof disposeRunCodeGuardPre !== 'function') {
+              observations.push(`a5m2-g3-ptc: guard-REFUSED for ${sessionId} (pre-execute seat answered no valid disposer)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed B-PTC run_code guard refused for '${sessionId}': the tools/pre-execute seat answered no valid disposer — an undisposable listener is not a guard`,
+              ), { code: 'alpha5-g3-runcode-mount-refused' })
+            }
+            toolDisposers.push(disposeRunCodeGuardPre)
             const disposeRunCodeGuardBoundary = agentCtx.on('tools/execute', rcPlane.onExecute)
-            toolDisposers.push(typeof disposeRunCodeGuardBoundary === 'function'
-              ? disposeRunCodeGuardBoundary
-              : () => { /* the face answered no disposer — the plane drain still refuses new walks */ })
+            if (typeof disposeRunCodeGuardBoundary !== 'function') {
+              observations.push(`a5m2-g3-ptc: guard-REFUSED for ${sessionId} (execute-boundary seat answered no valid disposer)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed B-PTC run_code guard refused for '${sessionId}': the tools/execute seat answered no valid disposer — an undisposable listener is not a guard`,
+              ), { code: 'alpha5-g3-runcode-mount-refused' })
+            }
+            toolDisposers.push(disposeRunCodeGuardBoundary)
             observations.push(`a5m2-g3-ptc: guard LISTENERS installed for ${sessionId} (tools/pre-execute admission + tools/execute body boundary, both agent-scoped; reserved native untouched)`)
           } else {
             observations.push(`a5m2-g3-ptc: guard DECLARED-INACTIVE for ${sessionId} (capture census above — no listener, no registration, the reserved native stays untouched)`)
