@@ -36,6 +36,7 @@ import {
 } from '../../../../../packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs'
 
 const REPO = resolve(import.meta.dirname, '../../../../..')
+const LIST_ROOTS_CONTRACT_VERSION = 3
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
 /** Legs whose exact wire shape is NOT yet verified against a proven source. A
@@ -43,6 +44,16 @@ const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-
 export const GAPS = Object.freeze({
   'GAP-FRAME-READER': 'the multi-frame session-log reader (zstd per-frame decode) is proven only inside the Schedule kit script, which exports nothing; its frame order/decode call is unread here, so log-frame assertions stay unattempted.',
 })
+
+/** The closed Remote v1 envelope, verified against the built contract source. */
+const ENVELOPE_TOP_LEVEL = Object.freeze(['type', 'rpcId', 'method', 'payload'])
+function envelopeCheck () {
+  const problems = []
+  const sample = JSON.stringify({ type: 'client-request', rpcId: 'x', method: 'team.listRoots', payload: { version: LIST_ROOTS_CONTRACT_VERSION, params: {} } })
+  const parsed = Object.keys(JSON.parse(sample))
+  if (parsed.join(',') !== ENVELOPE_TOP_LEVEL.join(',')) problems.push('driver envelope drifted from the closed four fields')
+  return { ok: problems.length === 0, problems }
+}
 
 const jsonFetch = async (url, init, timeoutMs = 240_000) => {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
@@ -103,6 +114,12 @@ export function precheck () {
     if (!CRITERIA.some((c) => c.id === 'C-SET' || c.id === 'C-LEAF')) problems.push('the closed set has no covering criterion')
     if (!readFileSync(join(REPO, 'packages/runtime/src/plugin/live/governed-families/team-adapters.mjs'), 'utf8').includes(`'${name}'`)) problems.push(`signed adapter no longer names ${name}`)
   }
+  // The Remote envelope contract is read from the CURRENT built source, never
+  // from a remembered smoke call: `team.listRoots` is a contract-v3 method with
+  // a CLOSED EMPTY param set, and the envelope itself is closed (exactly
+  // type/rpcId/method/payload, `payload` = { version, params }).
+  const envelope = envelopeCheck()
+  if (!envelope.ok) problems.push(...envelope.problems)
   const hostTree = join(REPO, TEST_USE_REL)
   if (!existsSync(hostTree)) problems.push(`host tree missing: ${hostTree} (pristine baseline ${DSH_BASELINE_VERSION})`)
   const bp = spawnSync('git', ['-C', REPO, 'status', '--porcelain', '--', 'tests/kits/a5m2-schedule-c2'], { encoding: 'utf8' })
