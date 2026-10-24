@@ -275,6 +275,14 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
   },
+  // center 01:3x (44ece trustedTopology-wiring batch): the supply is
+  // statically imported by the binding's mount-arm block — the same
+  // RELATIVE-specifier class as the two rows above (tsc never emits .mjs;
+  // an unplaced module is invisible to the drift gate until placed).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative
