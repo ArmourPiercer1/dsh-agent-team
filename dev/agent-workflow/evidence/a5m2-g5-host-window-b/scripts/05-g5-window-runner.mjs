@@ -11,9 +11,10 @@
  * The public chain is the A-window's REAL launched runner (8e62 g3 lane, cited
  * line by line there); only the G5 family surface differs: the mount intent is
  * the closed `teamToolPlane.g5Goal` bit (the mount arm in the pack's
- * agent-bindings, blob cd9df2f3…), the PA lane is the SAME plane paAdmit seat
+ * agent-bindings, 2fb blob 18da53ba…), the PA lane is the SAME plane paAdmit seat
  * (the G5 bridge composes {open, edge, closePlan} onto it), and the goal names
- * are NOT in the 37646 blueprint PERMISSION_TOOL_NAMES vocabulary — the ask is
+ * are NOT in the blueprint PERMISSION_TOOL_NAMES vocabulary (schema.js :419-463,
+ * re-read on the 2fb pack) — the ask is
  * FAMILY-STRUCTURAL (tool-admission approval case -> durable Control request),
  * no blueprint rule is possible or needed. fsInstance is ABSENT BY DESIGN: the
  * G5 family mounts no fs family; the A-window's COMPLETE four-field
@@ -22,9 +23,10 @@
  *
  * BOOT remains behind the root's ruling: A5M2_G5_WINDOW=GRANTED. Without it
  * the runner prints a NOT_RUN receipt and exits NON-ZERO (rc 3) — NOT_RUN is
- * never a green line. A no-boot dry path (A5M2_G5_DRY=1) runs the REAL
- * pre-flight to the boot boundary (install -> entry resolution -> patch) and
- * stops BEFORE any spawn; dry proves only up-to-boundary facts.
+ * never a green line. The no-boot dry path (A5M2_G5_DRY=1) runs the REAL
+ * pre-flight to the boot boundary (pins -> entry + G5 SUPPLY gate -> REAL
+ * blueprint validation -> patch) and stops BEFORE any spawn; by root order the
+ * DRY path ALSO exits rc3 NOT_RUN — a dry pass is never a business PASS.
  *
  * PRODUCT is an EXPLICIT INPUT, never an old pin (root: no 161e4/699cc/874f
  * masquerading as the new pack):
@@ -51,29 +53,30 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // fixed product (root B-slot dispatch)
-const G5_BLOB_SERVICE = '8a98ee550cfb21a8cd427be7a73b2f83793f6ffff9a7f36d3def162070a3ab5a' // pack dist == lane delegate src, byte-identical (this tree measured)
+const COMPOSED_SHA = '2fb129cfa23e138248fecc834a42c92238af95fe' // the CURRENT standard-supplied product (center delivery 2026-10-24T135732Z; tip-equivalent 18c3327e6, test-only diff, dist subtree identical)
+const G5_BLOB_SERVICE = '8a98ee550cfb21a8cd427be7a73b2f83793f6ffff9a7f36d3def162070a3ab5a' // 2fb dist == this lane's delegate src, byte-identical (this tree measured 2026-10-24)
 const G5_BLOB_WIRING = 'c87f3db5aef3b2064fe16b18c516758d66dddca7683aec07fdf0351134b8c2e7'
-const G5_BLOB_BINDINGS = 'cd9df2f3e610c41b2dbe5330189cbc24251379b4eb1f04aa97bf1ae5bb280435' // the mount-arm carrier
-const LOCK_SHA256 = '7685317ff1ba675f6d3f6b012907360579c3c85bd1bc3319d0248483bde3c659' // the installed fixture's pnpm-lock (read-only reuse; absent/drift => fail closed, NEVER re-installed)
+const G5_BLOB_BINDINGS = '18da53bac214c25a40098a624185148e0ea1f8a3eb4f7e86b0192e68c5c196f6' // the mount-arm carrier (2fb dist)
+const G5_BLOB_PLANE = 'da97e8a45cf0c4ecece893e2c8c7ad8f58efc501ec4c014203620e5f96f602f1' // the paAdmit-seat carrier (2fb dist; G5 wiring call site :6363)
+const LOCK_SHA256 = '5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088' // the installed fixture's pnpm-lock (read-only reuse; absent/drift => fail closed, NEVER re-installed)
+const FIX_PKG_SHA = '4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722' // the fixture manifest (center-measured; re-verified read-only here)
 const PACK_BYTES_MAX = 8_000_000
-const HOST_PORT = 3184 // B window; A owns 3183/3498, 3080 stable, 3180/3181 durable — disjoint by construction
-const MOCK_PORT = 3499
+const HOST_PORT = 3185 // G5-family port自理 (root order): A owns 3183/3498, B-Control owns 3184/3499 — BOTH untouched; 3080 stable, 3180/3181 durable never touched
+const MOCK_PORT = 3500
 const WORLD_PREFIX = 'a5m2-g5-hw-b'
 const BP_ID = 'team.a5m2-g5-hw'
 const WINDOW_GO = process.env.A5M2_G5_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_G5_DRY === '1'
-// SYNC CARD 2026-10-28 (root order): ONLY these parameter/expectation
-// constants moved with the product 5c313418 -> 37646ac2; d66's execution
-// logic is untouched. The old pack hash 0a3f11b2... MUST NOT be inherited —
-// the NEW tgz hash arrives as an explicit receipt input, no default.
-// driver SHA (the d66 signed logic, carried by HEAD) and product SHA (below)
-// are separate facts and stay recorded separately in runner-identity.json.
+// SYNC CARD (root order): the product moved 37646ac2 -> 2fb129cf; ONLY these
+// parameter/expectation constants move with it. The old tgz hash 3652b2ce… is
+// RETIRED — never inherited: the current tgz hash arrives as an explicit
+// receipt input (no default). driver SHA (this file, carried by HEAD) and
+// product SHA stay recorded separately in runner-identity.json.
 const INSTALL_DIR = process.env.A5M2_G5_INSTALL_DIR ?? null // f86's NEW final full path, REQUIRED (locator swapped with the repack)
 const PACK_COMPOSED = process.env.A5M2_G5_COMPOSED_SHA ?? null
 const EXPECTED_PACK_SHA = process.env.A5M2_G5_PACK_SHA256 ?? null // REQUIRED: full hash from f86's new receipt (sha256: prefix)
 const EXPECTED_TGZ_NAME = process.env.A5M2_G5_TGZ_NAME ?? 'dsh-agent-team-0.1.1-alpha.2.tgz' // same tree -> same name unless the receipt says otherwise
-const EXPECTED_TGZ_DIR_PREFIX = 'out-37646ac2-' // full dir arrives in the receipt; the segment must carry the new product prefix
+const EXPECTED_TGZ_DIR_PREFIX = 'out-2fb129cf-' // the receipt dir segment carries the current product prefix
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -82,7 +85,7 @@ function notRun(reason) {
 if (!WINDOW_GO && !DRY) notRun('window env A5M2_G5_WINDOW not GRANTED (root A/B-no-conflict GO pending) — nothing booted')
 if (PACK_COMPOSED !== null && PACK_COMPOSED !== COMPOSED_SHA) notRun(`A5M2_G5_COMPOSED_SHA ${PACK_COMPOSED} is not the pinned product ${COMPOSED_SHA}`)
 if (INSTALL_DIR === null) notRun('A5M2_G5_INSTALL_DIR is REQUIRED: f86\'s new final full fixture path from the new receipt (locator swapped with the repack)')
-if (EXPECTED_PACK_SHA === null) notRun('A5M2_G5_PACK_SHA256 is REQUIRED: the NEW tgz full hash from f86\'s receipt — the old 0a3f11b2 hash is retired and must not be inherited')
+if (EXPECTED_PACK_SHA === null) notRun('A5M2_G5_PACK_SHA256 is REQUIRED: the current tgz full hash from the 2fb receipt — no inherited default')
 if (!EXPECTED_PACK_SHA.startsWith('sha256:')) notRun('A5M2_G5_PACK_SHA256 must carry the sha256: prefix')
 
 const ROOT_DIR = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
@@ -117,7 +120,7 @@ const SAVED_BP_V3_YAML = [
   '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
   '      permissions:', '        default: deny', '        allow: []', '        ask: []', '        deny: []',
-  '        # NO goal rule is possible at 37646: the goal names are outside the closed',
+  '        # NO goal rule is nameable in this product: the goal names sit outside the closed',
   '        # PERMISSION_TOOL_NAMES vocabulary; the G5 PA ask is family-STRUCTURAL via',
   '        # the plane paAdmit seat (tool-admission approval case), never a lane rule.',
   'teamEnvelope:', '  allow:',
@@ -140,6 +143,15 @@ const results = []
 const steps = new Map()
 const callResults = []
 const memberToolsSeen = []
+// ROOT LESSON ① (A/B common chain): tool_result collection is DUAL-PROTOCOL and
+// both counters must agree at every governed close — anthropicToolResults counts
+// user.content[].tool_result blocks correlated to callIds WE issued;
+// openAiToolMessages counts role:'tool' messages. A TURN-DONE on a continuation
+// round is only ever emitted once that round's own callId is in callResults
+// (emitOrClose law); harvest() runs on EVERY request BEFORE decide(), and the
+// request tool-array count is recorded so continuation rounds provably carry the
+// SAME surface (toolsAfterMarker same-count evidence).
+const harvestStats = { anthropicToolResults: 0, openAiToolMessages: 0, requestsSeen: 0, toolsCounts: [] }
 let currentCriterion = 'setup'
 let mock = null
 let instance = null // registered BEFORE start (fourth-window ⑩)
@@ -164,7 +176,14 @@ async function waitFor(label, timeoutMs, pred) {
 function finish(rc) {
   try {
     mkdirSync(RUN_DIR, { recursive: true })
-    writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, dry: DRY, rc, composedSha: COMPOSED_SHA, results, transcript: TRANSCRIPT.slice(-400) }, null, 2))
+    writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, dry: DRY, rc, composedSha: COMPOSED_SHA, results, harvest: harvestStats, transcript: TRANSCRIPT.slice(-400) }, null, 2))
+    // ROOT LESSON ①: minimal per-call record — callId/step/tool/isError/text<=800/
+    // args<=800 — written on EVERY exit path (the negative-control face: any
+    // mirror/driver-required refusal text lands here VERBATIM).
+    writeFileSync(join(RUN_DIR, 'toolcalls.jsonl'), callResults.map((r) => JSON.stringify({
+      callId: r.callId, step: r.step, tool: r.toolName, isError: r.isError === true,
+      text: String(r.text ?? '').slice(0, 800), args: JSON.stringify(steps.get(r.callId)?.args ?? null).slice(0, 800),
+    })).join('\n') + (callResults.length > 0 ? '\n' : ''))
   } finally { process.exit(rc) }
 }
 async function cleanup() {
@@ -185,7 +204,7 @@ async function cleanup() {
 // ── explicit product pin (fail closed) ─────────────────────────────────────
 // ── ② explicit fixture reuse (READ-ONLY; absent => fail-closed rc3) ───────
 if (INSTALL_DIR === null) notRun('A5M2_G5_INSTALL_DIR is REQUIRED (the pinned read-only fixture path; this runner never installs)')
-if (!existsSync(INSTALL_DIR)) notRun(`pinned fixture install dir absent (read-only reuse of the 37646ac2 fixture; this runner does NOT create or install it): ${INSTALL_DIR}`)
+if (!existsSync(INSTALL_DIR)) notRun(`pinned fixture install dir absent (read-only reuse of the 2fb129cf fixture; this runner does NOT create or install it): ${INSTALL_DIR}`)
 {
   const fixManifestPath = join(INSTALL_DIR, 'package.json')
   if (!existsSync(fixManifestPath)) { console.error(`fixture manifest absent: ${fixManifestPath}`); process.exit(3) }
@@ -194,13 +213,14 @@ if (!existsSync(INSTALL_DIR)) notRun(`pinned fixture install dir absent (read-on
   const fileTarget = fixDeps.slice('file:'.length)
   const resolvedTgz = fileTarget.startsWith('/') ? fileTarget : resolve(INSTALL_DIR, fileTarget)
   if (basename(resolvedTgz) !== EXPECTED_TGZ_NAME || !basename(dirname(resolvedTgz)).startsWith(EXPECTED_TGZ_DIR_PREFIX)) { console.error(`fixture file: target is NOT the new pack (want ${EXPECTED_TGZ_DIR_PREFIX}*/${EXPECTED_TGZ_NAME}): ${resolvedTgz}`); process.exit(3) }
-  if (!existsSync(resolvedTgz)) { console.error(`new pack tgz absent behind the fixture pointer: ${resolvedTgz}`); process.exit(3) }
+  if (!existsSync(resolvedTgz)) { console.error(`current pack tgz absent behind the fixture pointer: ${resolvedTgz}`); process.exit(3) }
+  if (sha256(fixManifestPath) !== FIX_PKG_SHA) { console.error(`fixture manifest drifted from the pinned ${FIX_PKG_SHA}`); process.exit(2) }
   if (statSync(resolvedTgz).size > PACK_BYTES_MAX) { console.error('pack bytes exceed the bound'); process.exit(3) }
   if (`sha256:${sha256(resolvedTgz)}` !== EXPECTED_PACK_SHA) { console.error(`pack sha256 drifted from the pinned ${EXPECTED_PACK_SHA}`); process.exit(2) }
   var tgzPath = resolvedTgz
 }
 const PKG_DIR_READ = join(INSTALL_DIR, 'node_modules', 'dsh-agent-team')
-if (!existsSync(PKG_DIR_READ)) notRun(`f86 fixture not yet installed (node_modules/dsh-agent-team absent): ${PKG_DIR_READ}`)
+if (!existsSync(PKG_DIR_READ)) notRun(`pinned fixture not installed (node_modules/dsh-agent-team absent): ${PKG_DIR_READ}`)
 
 function writePatch(patchPath, hostEntryHref) {
   mkdirSync(dirname(patchPath), { recursive: true })
@@ -364,16 +384,27 @@ async function driveGoverned(memberSession, marker, decision, tag) {
   if (resultError(res.body) !== null) throw new Error(`resolveControl ${decision} ${tag}: ${JSON.stringify(resultError(res.body)).slice(0, 300)}`)
   return requestId
 }
-const resultFor = (step) => waitFor(`${step} tool result`, 90_000, () => {
-  const hit = callResults.find((r) => r.step === step)
-  return hit ? hit.text : null
-})
+// ROOT LESSON ②: isError=false is NOT business success. A lossless
+// status:"rejected" on the model-facing result means the call never reached any
+// business effect — it fails loudly with the raw text retained and lands in
+// toolcalls.jsonl; it is never laundered into a green criterion, and the wait is
+// terminal (no long wait for a result that can only stay refused).
+const rejectedRaw = (text) => (/"status"\s*:\s*"rejected"/.test(String(text ?? '')) ? String(text).slice(0, 800) : null)
+async function resultFor(step) {
+  const hit = await waitFor(`${step} tool result`, 90_000, () => {
+    const found = callResults.find((r) => r.step === step)
+    return found ? found : null
+  })
+  const rejected = rejectedRaw(hit.text)
+  if (rejected !== null) throw new Error(`LOSSLESS-REJECTED ${step}: status:"rejected" on the result (isError=${hit.isError === true}) — zero business effect; raw: ${rejected}`)
+  return hit.text
+}
 
 async function main() {
   currentCriterion = 'preflight'
   const hostBusy = await portInUse(HOST_PORT)
   const mockBusy = await portInUse(MOCK_PORT)
-  if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (plan: 3184/3499 (A owns 3183/3498); 3080 stable, 3180/3181 durable never touched)`)
+  if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (plan: 3185/3500; A owns 3183/3498, B-Control 3184/3499; 3080 stable, 3180/3181 durable never touched)`)
   if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
   for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), FSROOT, RUN_DIR]) mkdirSync(p, { recursive: true })
   if (process.env.A5M2_G5_HOME_POINTER) { // explicit HOME hand-off to the monitor (no globbing; written BEFORE boot so a boot failure is still auditable)
@@ -382,7 +413,7 @@ async function main() {
   writeFileSync(join(HOME, 'a5m2-g5-hw-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, runner: '05-g5-window-runner.mjs', composedSha: COMPOSED_SHA, packSha256: EXPECTED_PACK_SHA, stamp: RUN_STAMP }, null, 2))
   try {
     const selfSha = execFileSync('git', ['-C', ROOT_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-    writeFileSync(join(RUN_DIR, 'runner-identity.json'), JSON.stringify({ runnerFullSha: selfSha, runnerFileSha256: sha256(fileURLToPath(import.meta.url)), composedSha: COMPOSED_SHA, packTgz: tgzPath, packSha256: EXPECTED_PACK_SHA, installDir: INSTALL_DIR, armBlobExpectations: { g5GoalService: G5_BLOB_SERVICE, g5GoalWiring: G5_BLOB_WIRING, agentBindings: G5_BLOB_BINDINGS, fixtureLock: LOCK_SHA256 } }, null, 2))
+    writeFileSync(join(RUN_DIR, 'runner-identity.json'), JSON.stringify({ runnerFullSha: selfSha, runnerFileSha256: sha256(fileURLToPath(import.meta.url)), composedSha: COMPOSED_SHA, packTgz: tgzPath, packSha256: EXPECTED_PACK_SHA, installDir: INSTALL_DIR, armBlobExpectations: { g5GoalService: G5_BLOB_SERVICE, g5GoalWiring: G5_BLOB_WIRING, agentBindings: G5_BLOB_BINDINGS, teamToolPlane: G5_BLOB_PLANE, fixtureLock: LOCK_SHA256, fixturePkg: FIX_PKG_SHA } }, null, 2))
   } catch { /* identity best-effort; window verdict never depends on it */ }
   // NO fs target: the G5 family governs no fs. The fsroot dir stays (world
   // layout habit); teamToolPlane carries NO fsInstance, so no governed-fs
@@ -399,13 +430,27 @@ async function main() {
     var distArm = join(PKG_DIR_READ, 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-service.mjs')
     const distWiring = join(PKG_DIR_READ, 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs')
     const distBindings = join(PKG_DIR_READ, 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs')
-    for (const [f, blob, label] of [[distArm, G5_BLOB_SERVICE, 'g5-goal-service'], [distWiring, G5_BLOB_WIRING, 'g5-goal-wiring'], [distBindings, G5_BLOB_BINDINGS, 'agent-bindings (mount arm)']]) {
+    const distPlane = join(PKG_DIR_READ, 'packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs')
+    for (const [f, blob, label] of [[distArm, G5_BLOB_SERVICE, 'g5-goal-service'], [distWiring, G5_BLOB_WIRING, 'g5-goal-wiring'], [distBindings, G5_BLOB_BINDINGS, 'agent-bindings (mount arm)'], [distPlane, G5_BLOB_PLANE, 'team-tool-plane (paAdmit seat)']]) {
       if (!existsSync(f)) throw new Error(`the pinned fixture carries NO dist ${label}: ${f}`)
       if (sha256(f) !== blob) throw new Error(`dist ${label} blob drifted from the pinned product ${blob}`)
     }
-    const lockPath = join(INSTALL_DIR, 'pnpm-lock.yaml')
-    if (!existsSync(lockPath) || sha256(lockPath) !== LOCK_SHA256) throw new Error(`the read-only fixture lock is absent or drifted (pinned ${LOCK_SHA256}) — NEVER re-install here`)
-    log(`plugin entry resolved from the pinned fixture exports['./host']: ${HOST_ENTRY}; G5 dist trio byte-identical to the pinned blobs; fixture lock verified read-only`)
+    // THE G5 SUPPLY GATE (root order: the OLD full-tree static audit is GONE;
+    // the cold-import authority is the product receipt logs-2fb129cf-20261024T135732Z
+    // 19-cold-* + 20-cold-necessary RC=0 — read-only, never rerun here). The
+    // center-delivered 2fb G5装配供给, read off the SAME quartet of blobs pinned
+    // above: durable family registration + provider rows + driver-required
+    // mirror + port-authentication law (mirror of 639 authority.ts:33-118).
+    const supply = [
+      [distBindings, 'g5GoalsService', 'g5GoalsService provider row'],
+      [distBindings, 'familyRegistrations', 'durable familyRegistrations registration'],
+      [distArm, 'GOAL_TOOL_DRIVER_REQUIRED', 'driver-required mirror (the negative-control refusal face)'],
+      [distWiring, 'goalToolExecution', 'port-authentication law (639 authority.ts:33-118 mirror)'],
+    ]
+    for (const [f, needle, label] of supply) {
+      if (!readFileSync(f, 'utf8').includes(needle)) throw new Error(`G5 SUPPLY absent in the pinned dist: ${label} (needle '${needle}' in ${basename(f)})`)
+    }
+    log(`plugin entry resolved from the pinned fixture exports['./host']: ${HOST_ENTRY}; G5 dist quartet byte-identical; supply gate present (familyRegistrations/g5GoalsService/GOAL_TOOL_DRIVER_REQUIRED/goalToolExecution); fixture lock+pkg verified read-only`)
   }
   // REAL blueprint validation (root order 2026-10-28: 用真实validateBlueprintDocument，
   // 不只syntax): the packed parseBlueprint IS the production gate — frontmatter
@@ -430,12 +475,14 @@ async function main() {
     const dryPatch = join(HOME, 'dry-patch.yml')
     writePatch(dryPatch, pathToFileURL(HOST_ENTRY).href)
     writeFileSync(join(RUN_DIR, 'dry-receipts.json'), JSON.stringify({
-      dry: true, reachedBootBoundary: true, booted: false,
+      dry: true, verdict: 'NOT_RUN', reachedBootBoundary: true, booted: false,
+      law: 'root order 2026-10-24: DRY is NOT_RUN (rc3), never a business PASS — it proves pin/supply/validator/patch facts up to the boot boundary and nothing beyond it',
       portsAwaited: { host: HOST_PORT, hostIdle: !(await portInUse(HOST_PORT)), mock: MOCK_PORT, mockIdle: !(await portInUse(MOCK_PORT)) },
       manifestEntry: HOST_ENTRY, fsRoot: FSROOT, patchWritten: dryPatch,
     }, null, 2))
     await cleanup()
-    finish(cleanupOk ? 0 : 1)
+    log('DRY ends as NOT_RUN (rc3) by root order — cleanupOk is reported inside results.json, never as a business PASS')
+    finish(cleanupOk ? 3 : 1)
     return
   }
 
@@ -454,6 +501,8 @@ async function main() {
   function harvest(req) {
     const text = lastUserText(req)
     const tools = req?.tools ?? req?.body?.tools ?? null
+    harvestStats.requestsSeen += 1
+    if (Array.isArray(tools)) harvestStats.toolsCounts.push(tools.length)
     if (text.startsWith('TOOLS-CHECK') && Array.isArray(tools) && memberToolsSeen.length === 0) {
       for (const t of tools) {
         const n = typeof t === 'string' ? t : t?.function?.name ?? t?.name ?? t?.id
@@ -464,6 +513,7 @@ async function main() {
     for (const m of req?.messages ?? req?.body?.messages ?? []) {
       if (m?.role === 'tool') {
         const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
+        if (callId.length > 0) harvestStats.openAiToolMessages += 1
         if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
           const known = steps.get(callId)
           callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '') })
@@ -474,9 +524,11 @@ async function main() {
       for (const b of m.content) {
         if (b?.type !== 'tool_result') continue
         const callId = typeof b.tool_use_id === 'string' ? b.tool_use_id : ''
-        if (callId.length === 0 || callResults.some((r) => r.callId === callId)) continue
+        if (callId.length === 0) continue
+        harvestStats.anthropicToolResults += 1
+        if (callResults.some((r) => r.callId === callId)) continue
         const known = steps.get(callId)
-        if (known === undefined) continue // same-call pairing only
+        if (known === undefined) continue // same-call pairing ONLY: an unissued block id is never harvestable
         const txt = typeof b.content === 'string' ? b.content : JSON.stringify(b.content ?? '')
         callResults.push({ callId, step: known.step, toolName: known.tool, text: txt, isError: b.is_error === true })
       }
@@ -487,7 +539,7 @@ async function main() {
     const text = lastUserText(req)
     const mk = (step, name, args) => {
       const callId = `call-ghw-${NONCE}-${step}`
-      steps.set(callId, { step, tool: name })
+      steps.set(callId, { step, tool: name, args }) // args kept for the minimal toolcalls.jsonl record (lesson ①)
       return { kind: 'tool-call', toolCalls: [{ id: callId, name, arguments: args }] }
     }
     const stepFor = (marker) => `member:${marker}`
@@ -533,8 +585,16 @@ async function main() {
   const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'ghw-create', 1)
   if (resultError(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultError(team.body)).slice(0, 400)}`)
   await apiPrompt(currentRoot, `A5M2-G5HW-LEADER ${NONCE}`, 'ghw-leader')
-  const memberSession = await waitFor('member session in team_domain', 120_000, () => domainFacts())
-  log(`member session ${memberSession}`)
+  // MOUNTED barrier (root lesson ③: barrier WITH polls recorded): the member is
+  // accepted only when its durable binding appears in the team domain — polls are
+  // evidence, not decoration (the A-chain measured activation racing the runner).
+  let mountedPolls = 0
+  const memberSession = await waitFor('member session in team_domain (MOUNTED barrier)', 120_000, () => {
+    mountedPolls += 1
+    return domainFacts()
+  })
+  TRANSCRIPT.push({ channel: 'receipt', kind: 'mounted-barrier', polls: mountedPolls })
+  log(`member session ${memberSession} (MOUNTED barrier polls=${mountedPolls})`)
 
   // E0: the G5 family is REALLY mounted over this member — all three governed
   // rows on the member's model face (the arm replaced the natives).
@@ -555,7 +615,12 @@ async function main() {
   const allowReq = await driveGoverned(memberSession, 'G5-ALLOW', 'allow', 'ghw-e1')
   const allowRes = await resultFor(stepOuter('G5-ALLOW'))
   const consumed = await hasFact(allowReq, 'control-allow-consumed')
-  check('E1', 'ALLOW -> control-allow-consumed fact + served canonical goalValue projection (NOT a refusal)',
+  // POSITIVE CONTROL (center 2026-10-24): the governed row's REAL effect is the
+  // observation point — the same-requestId durable consumption fact AND the
+  // served canonical projection (goalValue(undefined) = {"goal":null}, the native
+  // get_goal execute path mirrored through the row; tool-goal/src/index.ts:196-203,
+  // :157-173). Both faces, or the criterion is RED.
+  check('E1', 'ALLOW -> same-requestId control-allow-consumed fact + served canonical goalValue projection (NOT a refusal)',
     consumed !== false && String(allowRes).includes('"goal":null'),
     `requestId=${allowReq} consumed=${JSON.stringify(consumed).slice(0, 200)} result=${String(allowRes).slice(0, 250)}`)
 
@@ -572,10 +637,32 @@ async function main() {
   const denyRes = await resultFor(stepOuter('G5-DENY'))
   const denyConsumed = await hasFact(denyReq, 'control-allow-consumed')
   const denyDecision = await hasFact(denyReq, 'control-decision-recorded')
-  check('E2', 'DENY -> zero execution (no allow-consumed fact) + durable decision fact + in-band refusal, NO served projection',
+  // NEGATIVE CONTROL / refusal face is PINNED, not approximated (root lesson ③:
+  // 未知拒文格式按 FAIL 不自放宽). The pinned product answers a durable deny with
+  // the plane-edge refusal code APPROVAL_DENIED (2fb team-tool-plane :2777 shape
+  // `APPROVAL_DENIED — durable Control request <id> answered deny`), re-thrown
+  // VERBATIM by the G5 bridge (g5-goal-wiring refusalToThrow: `code — detail`).
+  // Anything else on the wire — even a plausible-looking refusal — FAILS the
+  // window; wording drift is a finding, never something to widen the regex for.
+  check('E2', 'DENY -> zero execution (no allow-consumed fact) + durable decision fact + refusal face EXACTLY APPROVAL_DENIED, NO served projection',
     denyConsumed === false && denyDecision !== false
-    && !String(denyRes).includes('"goal":null') && /denied|refus|P_G5|pa-/i.test(String(denyRes)),
+    && !String(denyRes).includes('"goal":null') && String(denyRes).includes('APPROVAL_DENIED'),
     `requestId=${denyReq} decision=${JSON.stringify(denyDecision).slice(0, 200)} result=${String(denyRes).slice(0, 300)}`)
+
+  // LEDGER HYGIENE (root lesson ③: PA 精确判据 — same-requestId consumption / no
+  // consumption / NO EXTRA decision facts): across the whole window the durable
+  // control ledger must hold EXACTLY the two requests this runner drove, each
+  // decided once, one consumption (the allow leg), zero abandons.
+  currentCriterion = 'E3'
+  const byType = await controlFacts()
+  const ids = (list) => list.map((e) => e.payload?.requestId).filter((r) => typeof r === 'string').sort()
+  const want = [allowReq, denyReq].sort()
+  check('E3', 'ledger hygiene -> exactly 2 requests, exactly 2 decisions (the driven pair), exactly 1 consumed (allow leg), 0 abandoned',
+    JSON.stringify(ids(byType['control-request-recorded'])) === JSON.stringify(want)
+    && JSON.stringify(ids(byType['control-decision-recorded'])) === JSON.stringify(want)
+    && JSON.stringify(ids(byType['control-allow-consumed'])) === JSON.stringify([allowReq])
+    && byType['control-request-abandoned'].length === 0,
+    `requests=${JSON.stringify(ids(byType['control-request-recorded']))} decisions=${JSON.stringify(ids(byType['control-decision-recorded']))} consumed=${JSON.stringify(ids(byType['control-allow-consumed']))} abandoned=${byType['control-request-abandoned'].length}`)
 
   await cleanup()
   finish(results.every((r) => r.ok) && cleanupOk ? 0 : 1)
