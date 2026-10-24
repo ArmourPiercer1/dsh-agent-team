@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-c5a36a6a/node_modules/.pnpm/dsh-agent-team@file+..+out-f923bba2-20261024T133347Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_ba039ff510f6a2cce59dedbd2adb54dd/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3184/?token=j7rLNWanpGij9XBGwu2PaOyTRTbQDo0l3DDE0FbxrmA
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash] realm=a5m2-ctl-hw-realm
+[dsh-agent-team] a5ptc: census-boot root=session-a5m2ctlhw-p-2026-10-24T13-47-42-999Z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash] realm=a5m2-ctl-hw-realm

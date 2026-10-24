@@ -1,0 +1,10 @@
+{
+  "stamp": "20261024T13-47-42Z", "driverSha": "86d0e00c7094d2a12ce5a0264db6ebe96f682789", "headAtRun": "631f00cb4fc49ff12a4ffaed4cf23ce72e046486",
+  "runnerFileSha256": "5dffc4d98d9c556d07f0d34835064d7fc4df7695c3f70b8e588d2c045b923df0",
+  "installDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-c5a36a6a",
+  "fixtureLockSha256Before": "a35cba756621c50eb9c882fa2ae4f2adf629151149d6e8c1dbe1f858f9e8cb25", "fixtureLockSha256After": "a35cba756621c50eb9c882fa2ae4f2adf629151149d6e8c1dbe1f858f9e8cb25",
+  "fixturePkgSha256Before": "9e538135c92a4459815746e62ba9d850410e0a6c958847d826738de17e9eca68", "fixturePkgSha256After": "9e538135c92a4459815746e62ba9d850410e0a6c958847d826738de17e9eca68",
+  "dfAvailBytes": 17354018816, "runnerRc": 1,
+  "portsFreePost": true, "worldRetained": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-47-42-999ZZ", "homeNewBytes": 43190,
+  "homeBudget": 67108864
+}

@@ -1,0 +1,31 @@
+control window wrapper 20261024T13-47-42Z driver=86d0e00c7094d2a12ce5a0264db6ebe96f682789
+driver law: HEAD carries 86d0e00c7094d2a12ce5a0264db6ebe96f682789; runner file sha256 5dffc4d98d9c556d07f0d34835064d7fc4df7695c3f70b8e588d2c045b923df0
+fixture before: lock=a35cba756621c50e… pkg=9e538135c92a4459…
+df avail: 17354018816 B (min 6442450944)
+ports 3184/3499 free (pre-check)
+[ctlhw] plugin entry resolved from the f86 fixture exports['./host']: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-c5a36a6a/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
+spawn receipt written: pid=25 pgid=25 granted=true
+[ctlhw] host booted at http://127.0.0.1:3184
+[ctlhw] remote mount gate PASS (polls=1) [dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[ctlhw] check L1: PASS team_create_member REAL return harvested and correlated by callId (arrival only, business semantics NOT asserted) (gate=proceed-bind isError=false text={"status":"rejected","code":"TEAM_RUNTIME_DURABLE_WRITE_FAILED","message":"activation: child-session creation failed for me)
+[ctlhw] FATAL: Error: timeout waiting for member binding in team_domain
+    at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/scripts/05-control-window-runner.mjs:174:39)
+    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/scripts/05-control-window-runner.mjs:652:18)
+[ctlhw] check cleanup: PASS host port 3184 free after stop (free=true)
+[ctlhw] check cleanup: PASS mock port 3499 free after stop (free=true)
+[ctlhw] check cleanup: PASS host stop completed without error (host stopped | mock closed)
+[ctlhw] cleanup: host stopped | mock closed | world retained (root law: NEVER delete HOME/raw)
+{
+  "verdict": "FAIL",
+  "pass": false,
+  "failed": 1,
+  "checks": 5,
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T13-47-42-999Z"
+}
+runner rc=1 (143/137 = outer 300s/320s bound fired on the OWN group)
+ports 3184/3499 free (post)
+HOME (explicit pointer): /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-47-42-999ZZ
+world lock retained: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-47-42-999ZZ
+HOME new bytes (nlink==1): 43190 (budget 67108864)
+fixture byte-stable across the window (lock/pkg hashes equal)
+WRAPPER VERDICT: runner non-zero rc=1 — STOP (no second window without a fresh root order)
