@@ -697,6 +697,14 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // subagent-spawn :3552, the schedule PAIR :3807/:3841, G2 team mount :3992, G5 goal
     // :4381, subagent-controls :4636, B-ORCH arm :4756. Prior line numbers drifted by the
     // edit block's own insertions; attributions unchanged.
+    // RE-ANCHOR 7 (B-SRE mounted via 7cdbf494de9797707dfdb7769f23d6bf7bac244b, int 226f8825b; CENTER-
+    // verified - the lane's receipt said FP-E not-triggered, the merged tree measured otherwise:
+    // registration-block constants are exactly what this census counts): TEN -> ELEVEN, +1 REAL
+    // family addition (the B-SRE family-registration constant at agent-bindings.mjs:3341, blame =
+    // 7cdbf494d itself), zero retirements. ALL ELEVEN re-measured: todo :3074, write :3169, EDIT
+    // :3254, SRE :3341, subagent-spawn :3641, schedule PAIR :3896/:3930, G2 team :4081, G5 goal
+    // :4470, subagent-controls :4725, B-ORCH :4845. Lines drifted by the SRE block's own
+    // insertions; attributions unchanged.
     // RE-ANCHOR 4 (census 6c08 run, NEW RED #2; CENTER-verified enumeration
     // BEFORE re-anchoring): net SIX -> EIGHT, +2 REAL family additions and zero
     // retirements. The two new literals are both attributable to the SIGNED
@@ -717,8 +725,8 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // the real objects, and the plane pin below stays.
     expect(
       matchAll(mount, /providerId: 'a5p5-plane',/g),
-      "todo + write + subagent-spawn + G2 team mount + G5 goal + subagent-controls + the schedule PAIR bind/publish constants (CARD #2), measured TEN on the merged tree (RE-ANCHOR 6 above; every site enumerated with its line)",
-    ).toHaveLength(10)
+      "todo + write + subagent-spawn + G2 team mount + G5 goal + subagent-controls + the schedule PAIR bind/publish constants (CARD #2), measured ELEVEN on the merged tree (RE-ANCHOR 7 above; every site enumerated with its line)",
+    ).toHaveLength(11)
     expect(planeSrc).toContain('providerId: \'a5p5-plane\'') // the rev.0 row-lane tuple, untouched
     // The plane never reads the provider off a MANIFEST or RECEIPT for supply
     // purposes, and the FP-A/FP-D legs above byte-pin every COMPARISON site to
