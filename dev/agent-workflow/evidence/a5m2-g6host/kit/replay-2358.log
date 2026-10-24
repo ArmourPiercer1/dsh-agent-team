@@ -1,0 +1,24 @@
+[g6-kit 23:33:11] replay OK   R1-list-first — {"kind":"tool-call","toolCalls":[{"id":"call-g6-7zmez4tc","n
+[g6-kit 23:33:11] replay OK   R1-resolve-second — {"kind":"tool-call","toolCalls":[{"id":"call-g6-roiatecb","n
+[g6-kit 23:33:11] replay OK   R1-completion-reachable — {"kind":"text","content":"G6_DONE_PAIR_RESOLVED_1dx8zuwc :: {\"status\":\"contro
+[g6-kit 23:33:11] replay OK   R1-fail-terminal — {"kind":"text","content":"G6_PAIR_RESOLVE_FAIL :: boom-not-resolved"}
+[g6-kit 23:33:11] replay OK   R2-session-search-restored — tools=5
+[g6-kit 23:33:11] replay OK   R2-runtime-seq-not-frozen — null-stage=[] seven=["7"]
+[g6-kit 23:33:11] replay OK   R3-emitted-set-positive — ids=emit-A
+[g6-kit 23:33:11] replay OK   R3-history-id-rejected — staleFace=call-old-1 emitted=0
+[g6-kit 23:33:11] replay OK   R1-order-schedule-includes-session_search — C3,C2,C2b,C4,C11,C5,C6,C10
+[g6-kit 23:33:11] replay OK   R4-branch-positive
+[g6-kit 23:33:12] replay OK   R4-branch-existence-leak-fails
+[g6-kit 23:33:12] replay OK   R4-branch-shape-nostep-legal
+[g6-kit 23:33:12] replay OK   R4-branch-faceless-fails
+[g6-kit 23:33:12] host stopped (killed=false portFree=false started=false)
+[g6-kit 23:33:12] NOTE: stop.killed=false with no started Host (no child expected) — noted, not a failure
+[g6-kit 23:33:42] CLEANUP FAILURES: instance.stop returned portFree=false | port 3999 not free 30s after cleanup (waitForPortFree=false)
+[g6-kit 23:33:42] replay OK   R4-cleanup-records-false-returns — ["instance.stop returned portFree=false","port 3999 not free 30s after cleanup (waitForPortFree=false)"]
+[g6-kit 23:33:42] host stopped (killed=false portFree=true started=true)
+[g6-kit 23:33:42] CLEANUP FAILURES: instance.stop returned killed=false after a real start (child may survive)
+[g6-kit 23:33:42] host stopped (killed=false portFree=true started=false)
+[g6-kit 23:33:42] NOTE: stop.killed=false with no started Host (no child expected) — noted, not a failure
+[g6-kit 23:33:42] replay OK   R5-started-killed-false-fails — ["instance.stop returned killed=false after a real start (child may survive)"]
+[g6-kit 23:33:42] replay OK   R5-idle-killed-false-not-rejected — []
+[g6-kit 23:33:42] replay ALL PASS (REPLAY.json)

@@ -1,0 +1,344 @@
+diff --git a/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs b/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs
+index e9d2a9929..5b39b6548 100644
+--- a/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs
++++ b/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs
+@@ -47,6 +47,12 @@
+  *          NOT-ATTEMPTED-with-reason; NO hook forged (root law)
+  *   C10 N unknown target -> the TEAM CEILING denies FIRST (root 23:08:
+  *          expecting SESSION_QUERY_SESSION_NOT_FOUND would leak existence)
++ *   C11 P session_search (the FIFTH tool): cross-session workspace lane
++ *          (:1047, cwd pinned via defaultWorkspace) — not the event clamp
++ *   Pairing PRODUCTION ORDER (root 23:3x): decision durable BEFORE
++ *   continuation; control-allow-consumed appears ONLY once the gated call
++ *   actually RERUNS — the kit triggers continuation first, then proves
++ *   exactly-one consume; an unconsumed gated request is FATAL, never skipped.
+  *   Positive verdicts (root 23:08): the result FACE must correlate to the
+  *   case's tool_use_id + tool name with is_error=false, and the payload must
+  *   echo REAL seeded content (unique marker) / concrete seq — never mere
+@@ -59,8 +65,11 @@
+  * the separate recovery-increment account. Budget: teardown = st_blocks×512 deduped by (dev,ino),
+  * own-exclusive = nlink <= in-world refs, dirs separate; FAIL above 200MB.
+  *
+- * USAGE: `node g6-host-kit.mjs [--boot] [--port 3186]` — WITHOUT --boot the
+- * kit runs pre-flight + case-table validation only (exit 0 = ready-to-boot).
++ * USAGE: `node g6-host-kit.mjs [--boot|--replay] [--port 3186]` — WITHOUT
++ * --boot: pre-flight + case-table validation only (exit 0 = ready-to-boot);
++ * --replay: offline residual-behavior replay through the REAL functions
++ * (decide state machine / runtime seq / tool_use_id lock / verdict table /
++ * cleanup false-recording), no Host, one ephemeral localhost listener.
+  * EXIT: 0 all pass; 2 a case failed / budget; 1 fatal.
+  */
+ 
+@@ -159,13 +168,19 @@ async function cleanup() {
+   cleanupDone = true
+   const failures = []
+   if (liveRef.instance !== null) {
+-    try { const st = await liveRef.instance.stop({ timeoutMs: 30_000 }); log(`host stopped (killed=${st.killed} portFree=${st.portFree})`) } catch (e) { failures.push(`instance.stop: ${String(e).slice(0, 120)}`) }
++    try {
++      const st = await liveRef.instance.stop({ timeoutMs: 30_000 })
++      log(`host stopped (killed=${st?.killed} portFree=${st?.portFree})`)
++      if (st?.portFree !== true) failures.push(`instance.stop returned portFree=${String(st?.portFree)}`) // a false return IS a cleanup failure
++    } catch (e) { failures.push(`instance.stop: ${String(e).slice(0, 120)}`) }
+   }
+   if (liveRef.mock !== null) {
+     try { await liveRef.mock.close() } catch (e) { failures.push(`mock.close: ${String(e).slice(0, 120)}`) }
+   }
+   for (const p of liveRef.ports) {
+-    try { await waitForPortFree(p, 30_000) } catch { failures.push(`port ${p} not free 30s after stop`) }
++    let free = false
++    try { free = await waitForPortFree(p, 30_000) } catch { free = false } // util waitForPortFree RESOLVES false on timeout — the false path must be recorded
++    if (free !== true) failures.push(`port ${p} not free 30s after cleanup (waitForPortFree=${String(free)})`)
+   }
+   if (failures.length > 0) log(`CLEANUP FAILURES: ${failures.join(' | ')}`)
+   return failures
+@@ -391,6 +406,13 @@ function decide({ req }) {
+     return { kind: 'text', content: doneTag('ARCHIVE_W1') }
+   }
+   if (userText.includes(MK.PAIR_RESOLVE)) {
++    // COMPLETION CHECK FIRST (root 23:3x ①): once the resolve call went out,
++    // its OWN result decides the terminal state — this branch was previously
++    // unreachable behind the unconditional resolve return.
++    if ((toolSeq.get('pair_resolved') ?? 0) > 0) {
++      if (lastResultText.includes('control-resolved')) return { kind: 'text', content: `${doneTag('PAIR_RESOLVED')} :: ${lastResultText.slice(0, 300)}` }
++      return { kind: 'text', content: `G6_PAIR_RESOLVE_FAIL :: ${lastResultText.slice(0, 300)}` }
++    }
+     if ((toolSeq.get('pair') ?? 0) === 0) {
+       bump('pair')
+       return toolCall('team_list_pending_control', { rootSessionId: ROOT_G6, requestToken: `g6-pending-${NONCE}` })
+@@ -400,12 +422,6 @@ function decide({ req }) {
+     bump('pair_resolved')
+     return toolCall('team_resolve_control', { rootSessionId: ROOT_G6, requestToken: `g6-resolve-${NONCE}`, requestId: reqId, decision: 'allow' })
+   }
+-  if (userText.includes(MK.PAIR_RESOLVE) && (toolSeq.get('pair_resolved') ?? 0) > 0) {
+-    // REAL completion branch: the resolve tool's OWN result must say
+-    // control-resolved; anything else is a named failure, never silence.
+-    if (lastResultText.includes('control-resolved')) return { kind: 'text', content: `${doneTag('PAIR_RESOLVED')} :: ${lastResultText.slice(0, 300)}` }
+-    return { kind: 'text', content: `G6_PAIR_RESOLVE_FAIL :: ${lastResultText.slice(0, 300)}` }
+-  }
+   if (userText.includes('G6_CASE ')) {
+     const caseId = /G6_CASE (C\d+[a-z]?)/.exec(userText)?.[1] ?? 'C?'
+     const spec = CASES.find((c) => c.id === caseId)
+@@ -427,14 +443,15 @@ function decide({ req }) {
+ const CASES = [
+   { id: 'C1', tool: 'session_trace', input: () => ({ session_id: ROOT_G6 }), expect: 'ok', mustInclude: [ROOT_G6] },
+   { id: 'C3', tool: 'session_event_search', input: () => ({ session_id: ROOT_G6, query: `G6_MARKER_${NONCE}` }), expect: 'ok', mustInclude: [`G6_MARKER_${NONCE}`] },
+-  { id: 'C2', tool: 'session_event_trace', input: () => ({ session_id: ROOT_G6, seq: S.eventSeq }), expect: 'ok', mustInclude: [String(S.eventSeq)] },
+-  { id: 'C2b', tool: 'session_event_read', input: () => ({ session_id: ROOT_G6, seq: S.eventSeq }), expect: 'ok', mustInclude: [String(S.eventSeq)] },
++  { id: 'C2', tool: 'session_event_trace', input: () => ({ session_id: ROOT_G6, seq: S.eventSeq }), expect: 'ok', mustInclude: () => [String(S.eventSeq)] }, // FUNCTION: real seq at RUNTIME, never a frozen 'null'
++  { id: 'C2b', tool: 'session_event_read', input: () => ({ session_id: ROOT_G6, seq: S.eventSeq }), expect: 'ok', mustInclude: () => [String(S.eventSeq)] },
+   { id: 'C4', tool: 'session_event_search', input: () => ({ query: `G6_MARKER_${NONCE}` }), expect: 'ok', mustInclude: [`G6_MARKER_${NONCE}`] }, // NO session_id = the caller-clamp lane (:1601-1608); the leader HAS an active step
+   { id: 'C5', tool: 'session_trace', input: () => ({ session_id: S.w1Child }), expect: 'ok', mustInclude: [MK.WORKER_SEED] }, // REAL seeded content of w1's session
+   { id: 'C6', tool: 'session_trace', input: () => ({ session_id: 'session-foreign-not-in-team-9f3c' }), expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] },
+   { id: 'C7', tool: 'session_trace', input: () => ({ session_id: S.w1Child }), expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] },
+   { id: 'C8', tool: 'session_event_search', input: () => ({ query: MK.WORKER_SEED }), expect: 'shape', shapeOk: [G6.NO_STEP] }, // fresh w2 first turn; NO_STEP allowed, not forced (root 23:08)
+   { id: 'C10', tool: 'session_trace', input: () => ({ session_id: 'session-does-not-exist-000000' }), expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] }, // ceiling FIRST; NOT_FOUND here = existence leak
++  { id: 'C11', tool: 'session_search', input: () => ({ query: `G6_MARKER_${NONCE}` }), expect: 'ok', mustInclude: [`G6_MARKER_${NONCE}`] }, // the FIFTH tool: CROSS-SESSION workspace lane (:1047), cwd pinned via defaultWorkspace — NOT the current-event clamp
+ ]
+ // C9 = caller drift: verified at source level that NO public surface flips the
+ // exec-owner/caller snapshot (host.ts :2349-2357 lazy public accessors; the
+@@ -555,10 +572,105 @@ function allocatedFootprint(root) {
+   return { files: seen.size, totalAllocated: total, ownExclusiveAllocated: own, externallySharedAllocated: shared, dirs: dirs.size, dirBytes }
+ }
+ 
++// ── verdict branch table (TOP LEVEL: replay exercises the REAL branches) ───
++
++function verdictOf(r) {
++  if (r.status === 'NOT_ATTEMPTED') return { id: r.id, verdict: 'NOT_ATTEMPTED', reason: r.reason }
++  if (r.status !== 'DONE') return { id: r.id, verdict: 'FAIL', why: r.status, raw: r.raw ?? '' }
++  const text = r.toolResult ?? ''
++  if (r.faceFound !== true) return { id: r.id, verdict: 'FAIL', why: 'no tool_result face correlated to the case tool_use_id' }
++  const codes = [G6.CEILING, G6.UNAUTHORIZED, G6.NOT_FOUND, G6.NO_STEP, G6.DRIFT].filter((d) => text.includes(d))
++  const wireCodes = ['P_G6_WIRE_', 'SESSION_QUERY_INVALID_', 'SESSION_QUERY_MISSING', 'SESSION_QUERY_UNKNOWN', 'SESSION_QUERY_TOOL_FAILED', 'SESSION_QUERY_CORRUPT', 'SESSION_QUERY_PERSISTENCE', 'SESSION_QUERY_SEARCH_DISABLED', 'SESSION_QUERY_ABORTED', 'SESSION_QUERY_INDEX_FAILED', 'SESSION_QUERY_STALE', 'SESSION_QUERY_RESULT_INTEGRITY'].filter((d) => text.includes(d))
++  if (r.expect === 'deny') {
++    const hits = (r.anyOf ?? DENY_TOKENS).filter((d) => text.includes(d))
++    const pass = r.isError !== true && hits.length > 0
++    return { id: r.id, verdict: pass ? 'PASS' : 'FAIL', expect: 'deny', observedCodes: codes, observed: text.slice(0, 240) }
++  }
++  if (r.expect === 'shape') {
++    // fresh-turn shape: clamp-executed OR NO_CURRENT_STEP both legal (root
++    // 23:08: a new turn normally HAS an active step); wire/schema/PA codes
++    // or a missing/erroring face FAIL.
++    const pass = r.isError !== true && wireCodes.length === 0 && codes.filter((c) => c !== G6.NO_STEP).length === 0
++    return { id: r.id, verdict: pass ? 'PASS' : 'FAIL', expect: 'shape', observedCodes: codes, observed: text.slice(0, 240) }
++  }
++  const missing = (r.mustInclude ?? []).filter((needle) => !text.includes(needle))
++  const pass = r.isError !== true && codes.length === 0 && wireCodes.length === 0 && missing.length === 0 && text.length > 0
++  return { id: r.id, verdict: pass ? 'PASS' : 'FAIL', expect: 'ok', missingContent: missing, observedCodes: codes, observed: text.slice(0, 240) }
++}
++
++// ── replay (root 23:3x): the four residual behaviors exercised through the
++// REAL functions — decide()'s state machine (no unreachable completion),
++// runtime-seq mustInclude (no frozen 'null'), THIS-call tool_use_id lock,
++// verdict branch table, and cleanup's false-recording — NO Host, NO boot,
++// one ephemeral localhost listener only. ────────────────────────────────────
++
++async function runReplay() {
++  const checks = []
++  const ok = (name, cond, extra = '') => { checks.push({ name, pass: cond === true, extra: String(extra).slice(0, 160) }); log(`replay ${cond === true ? 'OK  ' : 'FAIL'} ${name}${extra !== '' ? ` — ${String(extra).slice(0, 140)}` : ''}`) }
++  const msgs = (list) => [{ role: 'user', content: [{ type: 'text', text: 'G6_REPLAY' }], ...list }]
++  void msgs
++  const reqOf = (messages) => ({ body: { messages } })
++  const userT = (t) => ({ role: 'user', content: [{ type: 'text', text: t }] })
++  const asstUse = (id, name) => ({ role: 'assistant', content: [{ type: 'tool_use', id, name, input: {} }] })
++  const userRes = (id, text) => ({ role: 'user', content: [{ type: 'tool_result', tool_use_id: id, content: text }] })
++
++  // R1 — the REAL decide() state machine: completion branch REACHABLE first
++  toolSeq.clear()
++  const base = [userT(`${MK.PAIR_RESOLVE} resolve it`)]
++  const d1 = decide({ req: reqOf(base) })
++  ok('R1-list-first', d1.kind === 'tool-call' && d1.toolCalls[0].name === 'team_list_pending_control', JSON.stringify(d1).slice(0, 60))
++  const h2 = [...base, asstUse('call-list-1', 'team_list_pending_control'), userRes('call-list-1', '{"ok":true,"requestId":"req-replay-1"}')]
++  const d2 = decide({ req: reqOf(h2) })
++  ok('R1-resolve-second', d2.kind === 'tool-call' && d2.toolCalls[0].name === 'team_resolve_control', JSON.stringify(d2).slice(0, 60))
++  const h3 = [...h2, asstUse('call-res-1', 'team_resolve_control'), userRes('call-res-1', '{"status":"control-resolved"}')]
++  const d3 = decide({ req: reqOf(h3) })
++  ok('R1-completion-reachable', d3.kind === 'text' && String(d3.content).startsWith(doneTag('PAIR_RESOLVED')), JSON.stringify(d3).slice(0, 80))
++  toolSeq.clear()
++  bump('pair'); bump('pair_resolved')
++  const d3b = decide({ req: reqOf([...base, asstUse('call-res-9', 'team_resolve_control'), userRes('call-res-9', 'boom-not-resolved')]) })
++  ok('R1-fail-terminal', d3b.kind === 'text' && String(d3b.content).startsWith('G6_PAIR_RESOLVE_FAIL'), JSON.stringify(d3b).slice(0, 80))
++
++  // R2 — fifth tool restored + mustInclude built at RUNTIME (no frozen 'null')
++  ok('R2-session-search-restored', CASES.some((c) => c.tool === 'session_search'), `tools=${new Set(CASES.map((c) => c.tool)).size}`)
++  const c2 = CASES.find((c) => c.id === 'C2')
++  S.eventSeq = null
++  const frozenProbe = (c2.mustInclude() ?? []).filter((v) => typeof v === 'string' && v !== '' && v !== 'null')
++  S.eventSeq = 7
++  const runtimeProbe = (c2.mustInclude() ?? []).filter((v) => typeof v === 'string' && v !== '' && v !== 'null')
++  ok('R2-runtime-seq-not-frozen', typeof c2.mustInclude === 'function' && JSON.stringify(frozenProbe) === '[]' && JSON.stringify(runtimeProbe) === '["7"]', `null-stage=${JSON.stringify(frozenProbe)} seven=${JSON.stringify(runtimeProbe)}`)
++
++  // R3 — REAL toolResultFaces tool_use_id lock: a same-named face from an
++  // EARLIER call (id not in this turn) must NOT satisfy this turn
++  const faces = toolResultFaces([asstUse('call-old-1', 'session_trace'), userRes('call-old-1', 'OLD-RESULT-TEXT')])
++  const useIds = new Set(['call-new-9'])
++  const locked = [...faces].reverse().find((f) => useIds.has(f.tool_use_id)) ?? null
++  ok('R3-old-call-face-rejected', faces.length === 1 && locked === null, `faces=${faces.length} id=${faces[0]?.tool_use_id}`)
++
++  // R4 — verdict branch table + cleanup false-recording (real functions)
++  ok('R4-branch-positive', verdictOf({ id: 'X', status: 'DONE', faceFound: true, isError: false, toolResult: 'marker-abc', mustInclude: ['marker-abc'] }).verdict === 'PASS')
++  ok('R4-branch-existence-leak-fails', verdictOf({ id: 'X', status: 'DONE', faceFound: true, isError: false, toolResult: G6.NOT_FOUND, expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] }).verdict === 'FAIL')
++  ok('R4-branch-shape-nostep-legal', verdictOf({ id: 'X', status: 'DONE', faceFound: true, isError: false, toolResult: G6.NO_STEP, expect: 'shape' }).verdict === 'PASS')
++  ok('R4-branch-faceless-fails', verdictOf({ id: 'X', status: 'DONE', faceFound: false, toolResult: 'x' }).verdict === 'FAIL')
++  cleanupDone = false
++  const { createServer } = await import('node:net')
++  const busy = createServer()
++  await new Promise((res, rej) => { busy.once('error', rej); busy.listen(3999, '127.0.0.1', res) })
++  liveRef.instance = { stop: async () => ({ killed: false, portFree: false }) }
++  liveRef.mock = { close: async () => {} }
++  liveRef.ports = [3999]
++  const failures = await cleanup()
++  busy.close()
++  ok('R4-cleanup-records-false-returns', failures.length === 2 && failures.some((x) => x.includes('portFree=false')) && failures.some((x) => x.includes('port 3999')), JSON.stringify(failures).slice(0, 220))
++  void userT
++  writeFileSync(join(RUN_DIR, 'REPLAY.json'), JSON.stringify({ at: new Date().toISOString(), checks, allPass: checks.every((c) => c.pass) }, null, 2))
++  return checks.every((c) => c.pass)
++}
++
+ // ── main ────────────────────────────────────────────────────────────────────
+ 
+ async function main() {
+   mkdirSync(RUN_DIR, { recursive: true })
++  if (process.argv.includes('--replay')) { const pass = await runReplay(); log(`replay ${pass ? 'ALL PASS' : 'FAILURES'} (REPLAY.json)`); process.exit(pass ? 0 : 2) }
+   const pre = await runPrechecks()
+   writeFileSync(join(RUN_DIR, 'prechecks.json'), JSON.stringify({ ...pre, cases: CASES.map((c) => ({ id: c.id, tool: c.tool, expect: c.expect })), boot: DO_BOOT }, null, 2))
+   log(`pre-checks PASS (web ${pre.port}, mock ${pre.mockPort}); production row = installed 874 pack`)
+@@ -581,11 +693,11 @@ async function main() {
+   liveRef.ports = [pre.port, pre.mockPort]
+ 
+   const instance = new DshInstance({ hostTree: HOST_TREE, dshHome: WORLD, port: pre.port, clientCommitHash: CLIENT_COMMIT_HASH, logDir: join(RUN_DIR, 'instances') })
++  liveRef.instance = instance // registered BEFORE start: a failed start still cleans
+   mkdirSync(WORLD, { recursive: true })
+   const rowConfig = writeG6PatchFile(instance.patchFile)
+   writeFileSync(join(RUN_DIR, 'row-config.json'), JSON.stringify({ ...rowConfig, blueprintSource: '<inline BLUEPRINT_YAML>' }, null, 2))
+   const started = await instance.start({ timeoutMs: 240_000 })
+-  liveRef.instance = instance
+   const m = /^http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)$/.exec(started.url)
+   if (m === null) await dieFatal('unexpected boot url shape')
+   const origin = `http://127.0.0.1:${m[1]}`
+@@ -644,15 +756,23 @@ async function main() {
+     if (!(t.status === 200 && t.body?.result?.ok === true)) return { status: 'TURN_NOT_ADMITTED', raw: JSON.stringify(t.body).slice(0, 300) }
+     const done = await waitForMock(mock, (r) => r.reply?.kind === 'text' && String(r.reply?.content ?? '').startsWith(doneTag(c.id)), 240_000, `${c.id} done`, before)
+     if (done === null) return { status: 'TURN_TIMEOUT' }
+-    const faces = mock.requests.slice(before).flatMap((r) => toolResultFaces(messagesOf(r)))
+-    const face = [...faces].reverse().find((f) => f.name === c.tool) ?? null
++    const turnReqs = mock.requests.slice(before)
++    const faces = turnReqs.flatMap((r) => toolResultFaces(messagesOf(r)))
++    const useIds = new Set()
++    for (const r of turnReqs) for (const msg of messagesOf(r)) {
++      const cc = msg?.content
++      if (!Array.isArray(cc)) continue
++      for (const b of cc) if (b?.type === 'tool_use' && b.name === c.tool) useIds.add(b.id) // THIS turn's ids only
++    }
++    const face = [...faces].reverse().find((f) => useIds.has(f.tool_use_id)) ?? null
+     return {
+       status: 'DONE',
+       faceFound: face !== null,
++      toolUseId: face?.tool_use_id ?? null,
+       isError: face?.is_error === true,
+       toolResult: face?.text ?? '',
+       toolResults: faces.length,
+-      mustInclude: typeof c.mustInclude === 'function' ? c.mustInclude() : (c.mustInclude ?? []),
++      mustInclude: (typeof c.mustInclude === 'function' ? c.mustInclude() : (c.mustInclude ?? [])).filter((v) => typeof v === 'string' && v !== '' && v !== 'null'),
+     }
+   }
+   // PA law (root 23:08 card 2 + 307c reuse points): durable facts ONLY,
+@@ -675,22 +795,36 @@ async function main() {
+     const startsFrom = mock.requests.length
+     const t = await apiPrompt(origin, cookie, ROOT_G6, `${MK.PAIR_RESOLVE} List pending control requests and resolve the pairing request with allow.`, 'g6-pair')
+     if (!(t.status === 200 && t.body?.result?.ok === true)) await dieFatal('pairing resolve turn not admitted')
+-    const fail = await waitForMock(mock, (r) => r.reply?.kind === 'text' && String(r.reply?.content ?? '').startsWith('G6_PAIR_RESOLVE_FAIL'), 240_000, 'pair FAIL', startsFrom)
+-    if (fail !== null) await dieFatal(`pairing resolve NOT completed: ${String(fail.reply?.content).slice(0, 300)}`)
+-    const ok = await waitForMock(mock, (r) => r.reply?.kind === 'text' && String(r.reply?.content ?? '').startsWith(doneTag('PAIR_RESOLVED')), 240_000, 'pair settle', startsFrom)
+-    if (ok === null) await dieFatal('pairing resolve chain did not reach the control-resolved completion branch')
++    const settled = await waitForMock(mock, (r) => r.reply?.kind === 'text' && (String(r.reply?.content ?? '').startsWith(doneTag('PAIR_RESOLVED')) || String(r.reply?.content ?? '').startsWith('G6_PAIR_RESOLVE_FAIL')), 240_000, 'pair settle', startsFrom)
++    if (settled === null) await dieFatal('pairing resolve reached NO terminal state (resolved or FAIL) within 240s')
++    if (String(settled.reply?.content ?? '').startsWith('G6_PAIR_RESOLVE_FAIL')) await dieFatal(`pairing resolve NOT completed: ${String(settled.reply?.content).slice(0, 300)}`)
+     const decided = await waitForLedgerFact(`${tag}-decided`, 'control-decision-recorded', reqId)
+     if (decided === null) await dieFatal(`pairing: no durable control-decision-recorded for ${reqId}`)
+-    const consumed = await waitForLedgerFact(`${tag}-consumed`, 'control-allow-consumed', reqId)
+     const after = await ledgerEntries(`${tag}-after-pair`)
+     const decision = paFacts(after, 'control-decision-recorded', reqId)
+-    const consumedFacts = paFacts(after, 'control-allow-consumed', reqId)
+-    PAIR_AUDIT.push({ reqId, decisionFacts: decision.length, consumedFacts: consumedFacts.length })
++    if (decision.length !== 1) await dieFatal(`pairing audit: request ${reqId} decision=${decision.length} (exactly-one law)`)
++    // consume is recorded ONLY when the GATED CALL ACTUALLY RERUNS (production
++    // order, root 23:3x ③): queue it; it must NOT be waited for here and can
++    // NEVER be skipped — flushConsumeProof proves or fatals later.
++    PENDING_CONSUME.push({ reqId, since: tag })
+     writeFileSync(join(RUN_DIR, 'pairing-audit.json'), JSON.stringify(PAIR_AUDIT, null, 2))
+-    if (decision.length !== 1 || consumedFacts.length !== 1) await dieFatal(`pairing audit: request ${reqId} decision=${decision.length} consume=${consumedFacts.length} (exactly-one law)`)
+-    void consumed
+     return 'resolved-via-leader-model-tools'
+   }
++  const PENDING_CONSUME = []
++  const flushConsumeProof = async (tag) => {
++    for (const pc of [...PENDING_CONSUME]) {
++      const hit = await waitForLedgerFact(`${tag}-consume`, 'control-allow-consumed', pc.reqId, 120_000)
++      if (hit === null) continue // continuation may still be in flight; re-proved at later phases
++      const after = await ledgerEntries(`${tag}-consume-audit`)
++      const decision = paFacts(after, 'control-decision-recorded', pc.reqId)
++      const consumed = paFacts(after, 'control-allow-consumed', pc.reqId)
++      PAIR_AUDIT.push({ reqId: pc.reqId, decisionFacts: decision.length, consumedFacts: consumed.length })
++      writeFileSync(join(RUN_DIR, 'pairing-audit.json'), JSON.stringify(PAIR_AUDIT, null, 2))
++      if (decision.length !== 1 || consumed.length !== 1) await dieFatal(`pairing audit: ${pc.reqId} decision=${decision.length} consume=${consumed.length} (exactly-one law)`)
++      PENDING_CONSUME.splice(PENDING_CONSUME.indexOf(pc), 1)
++      log(`pairing ${pc.reqId}: decision=1 consume=1 PROVEN after continuation (${tag})`)
++    }
++  }
+ 
+   // ── world build (real session/member activity only) ──────────────────────
+   for (const [marker, done, tag] of [[MK.CREATE_W1, doneTag('CREATE_W1'), 'g6-seed'], [MK.WORK_W1, doneTag('WORK_W1'), 'g6-work'], [MK.CREATE_W2, doneTag('CREATE_W2'), 'g6-seed2']]) {
+@@ -721,8 +855,9 @@ async function main() {
+   if (pairState === 'resolved-via-leader-model-tools' && c1.status === 'DONE' && (!c1.faceFound || c1.isError)) {
+     log('C1 gated (open durable request) -> resolved; retrying (allowance 2)')
+     caseAllowance.set('C1', 2)
+-    c1 = await runCaseTurn(CASES[0], ROOT_G6)
++    c1 = await runCaseTurn(CASES[0], ROOT_G6) // TRIGGER continuation first (production order)
+     c1.paired = pairState
++    await flushConsumeProof('g6-pair')        // THEN prove consume == 1
+   } else if (pairState !== 'none-open' && pairState !== 'resolved-via-leader-model-tools') {
+     await dieFatal(`unexpected pairing state: ${pairState}`)
+   }
+@@ -732,6 +867,7 @@ async function main() {
+     await resolvePairingIfNeeded(`g6-ledger-${id}`) // NEW target realms gate per durable pending approval
+     const r = await runCaseTurn(c, ROOT_G6)
+     results.push({ id, ...r, expect: c.expect, anyOf: c.anyOf, shapeOk: c.shapeOk })
++    await flushConsumeProof(`g6-${id}`) // any pairing resolved earlier proves consume here, after the call RAN
+     if (id === 'C3') {
+       // seq comes ONLY from a REAL public event surfaced by the search result
+       // (0 is a legal seq); no fabricated fallback (root 23:08 card 3).
+@@ -764,32 +900,11 @@ async function main() {
+ 
+   // ── durable cross-check + verdicts ───────────────────────────────────────
+   writeFileSync(join(RUN_DIR, 'ledger-final.json'), JSON.stringify(await ledgerEntries('g6-ledger-final'), null, 2))
+-  const verdicts = results.map((r) => {
+-    if (r.status === 'NOT_ATTEMPTED') return { id: r.id, verdict: 'NOT_ATTEMPTED', reason: r.reason }
+-    if (r.status !== 'DONE') return { id: r.id, verdict: 'FAIL', why: r.status, raw: r.raw ?? '' }
+-    const text = r.toolResult ?? ''
+-    if (r.faceFound !== true) return { id: r.id, verdict: 'FAIL', why: 'no tool_result face correlated to the case tool_use_id' }
+-    const codes = [G6.CEILING, G6.UNAUTHORIZED, G6.NOT_FOUND, G6.NO_STEP, G6.DRIFT].filter((d) => text.includes(d))
+-    const wireCodes = ['P_G6_WIRE_', 'SESSION_QUERY_INVALID_', 'SESSION_QUERY_MISSING', 'SESSION_QUERY_UNKNOWN', 'SESSION_QUERY_TOOL_FAILED', 'SESSION_QUERY_CORRUPT', 'SESSION_QUERY_PERSISTENCE', 'SESSION_QUERY_SEARCH_DISABLED', 'SESSION_QUERY_ABORTED', 'SESSION_QUERY_INDEX_FAILED', 'SESSION_QUERY_STALE', 'SESSION_QUERY_RESULT_INTEGRITY'].filter((d) => text.includes(d))
+-    if (r.expect === 'deny') {
+-      const hits = (r.anyOf ?? DENY_TOKENS).filter((d) => text.includes(d))
+-      const pass = r.isError !== true && hits.length > 0
+-      return { id: r.id, verdict: pass ? 'PASS' : 'FAIL', expect: 'deny', observedCodes: codes, observed: text.slice(0, 240) }
+-    }
+-    if (r.expect === 'shape') {
+-      // fresh-turn shape: clamp-executed OR NO_CURRENT_STEP both legal (root
+-      // 23:08: a new turn normally HAS an active step); wire/schema/PA codes
+-      // or a missing/erroring face FAIL.
+-      const pass = r.isError !== true && wireCodes.length === 0 && codes.filter((c) => c !== G6.NO_STEP).length === 0
+-      return { id: r.id, verdict: pass ? 'PASS' : 'FAIL', expect: 'shape', observedCodes: codes, observed: text.slice(0, 240) }
+-    }
+-    const missing = (r.mustInclude ?? []).filter((needle) => !text.includes(needle))
+-    const pass = r.isError !== true && codes.length === 0 && wireCodes.length === 0 && missing.length === 0 && text.length > 0
+-    return { id: r.id, verdict: pass ? 'PASS' : 'FAIL', expect: 'ok', missingContent: missing, observedCodes: codes, observed: text.slice(0, 240) }
+-  })
++  const verdicts = results.map((r) => verdictOf(r))
+   writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ results, verdicts, transcript: transcript.slice(-150) }, null, 2))
+ 
+   // ── teardown + budget ────────────────────────────────────────────────────
++  if (PENDING_CONSUME.length > 0) await dieFatal(`pairing law violated: gated request(s) NEVER consumed: ${PENDING_CONSUME.map((x) => x.reqId).join(',')} (decision/consume proof can never be skipped)`)
+   const fp = allocatedFootprint(WORLD)
+   const cleanupFailures = await cleanup()
+   writeFileSync(join(RUN_DIR, 'footprint.json'), JSON.stringify({ world: WORLD, ...fp, recoveryIncrementCap: BUDGET_CAP_BYTES, recoveryUsedBytes: RECOVERY_RECORD_BYTES + taskNewAllocated(), taskNewAllocatedBytes: taskNewAllocated(), taskWorldCapBytes: TASK_WORLD_CAP_BYTES, budgetHalt, cleanupFailures }, null, 2))

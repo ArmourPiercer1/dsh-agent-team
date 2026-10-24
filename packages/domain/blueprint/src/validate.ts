@@ -75,6 +75,7 @@ import {
   BLUEPRINT_AUTHORITY_ENVELOPE_FILE_MATCHER_FIELDS,
   BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS,
   BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS,
+  BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES,
   BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS,
   BLUEPRINT_CAPABILITIES_FIELDS,
   BLUEPRINT_ENVELOPE_FIELDS,
@@ -103,6 +104,7 @@ import {
   MODEL_PREFERENCE_MAX_LENGTH,
   PERSONA_MAX_LENGTH,
   PERMISSION_FINGERPRINT_MAX_LENGTH,
+  PERMISSION_INVOCATION_ONLY_TOOL_NAMES,
   PERMISSION_PATH_MAX_LENGTH,
   PERMISSION_POLICY_DEFAULTS,
   PERMISSION_POLICY_FIELDS,
@@ -736,10 +738,16 @@ function validateAuthorityEnvelope(
     assertNoUnknownFields(rule, BLUEPRINT_AUTHORITY_ENVELOPE_RULE_FIELDS, rulePath)
 
     const operationClass = requireField(rule, 'operationClass', rulePath)
-    if (typeof operationClass !== 'string' || !PERMISSION_TOOL_NAMES.includes(operationClass)) {
+    // Alpha.5 M2 (root 20:05): the carrier keeps the FROZEN seven-name
+    // closed set — this grammar has no `any` matcher, so the invocation-
+    // only schedule names (resource `any` ONLY) can never carry a legal
+    // envelope rule and are refused HERE, exactly like a typo'd class.
+    // Widening the template permission vocabulary never widens this
+    // carrier (the set above is a separate closed constant).
+    if (typeof operationClass !== 'string' || !BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES.includes(operationClass)) {
       throw teamContractError(
         'MALFORMED_DTO',
-        `field ${rulePath}.operationClass must be one of ${PERMISSION_TOOL_NAMES.join(' | ')} (the closed permission vocabulary), got ${JSON.stringify(operationClass)}`,
+        `field ${rulePath}.operationClass must be one of ${BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES.join(' | ')} (the closed permission vocabulary), got ${JSON.stringify(operationClass)}`,
         { path: `${rulePath}.operationClass` },
       )
     }
@@ -1198,6 +1206,26 @@ function validatePermissionRule(
     throw teamContractError(
       'MALFORMED_DTO',
       `permission rule ${path} (lane 'allow') is rejected: alpha.2 grants no positive whole-tool permission for ${tool} — the allow lane must not carry a ${tool} rule (no parameter-level allow for shell commands; use the ask or deny lane for { tool: ${tool}, resource: { kind: 'any' } })`,
+      { path: `${path}.resource.kind`, lane },
+    )
+  }
+  // INVOCATION-ONLY class (Alpha.5 M2, root 20:05 limited card): the two
+  // schedule tools carry NO matchable resource space (native interface:
+  // `schedule_list` has an empty parameter face, `schedule_delete` takes
+  // only an opaque record id — never a workspace path, never a command),
+  // so `exact` and `subtree` are rejected in EVERY lane of EVERY role;
+  // the whole-tool `any` rule is their only legal shape and it is legal
+  // in ALL THREE lanes (the rule IS the invocation authority — no
+  // shell-class dual gate applies, and no implicit default: an absent
+  // rule still resolves to `policy.default`). Membership is the schema's
+  // closed set (never a copied literal); `schedule_create` /
+  // `schedule_update` are not permission tools at all and the tool
+  // membership check above already refuses them. A rule for one of the
+  // two never gates the other.
+  if ((PERMISSION_INVOCATION_ONLY_TOOL_NAMES as readonly string[]).includes(tool) && resource.kind !== 'any') {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      `permission rule ${path} (lane '${lane}') is rejected: the ${tool} tool does not accept a '${resource.kind}' resource in any lane — the invocation-only class carries no matchable resource space (an exact/subtree root is a file target and a fingerprint belongs to the shell class), so the whole-tool 'any' rule is its only legal shape, in the allow, ask and deny lanes alike`,
       { path: `${path}.resource.kind`, lane },
     )
   }

@@ -104,6 +104,33 @@ const PR1_CONSUMERS = Object.freeze([
   // effects are never hand-validated against a private grammar. Shipped
   // UNWIRED; zero lane edits; census rides SCANNED_PATHS_A5M2J (no new file).
   'runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+  // A5M2 (census run 40014719612 red, booked by the center): the G6 row pair and
+  // the B-TEAM control wiring - each consumes ONLY parseRequestedEffectSet, the
+  // closed requested-effects grammar at the row, the g2-connector / ptc pattern;
+  // effects fail closed through the real parser, zero lane edits.
+  'runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  'runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/team-wiring.mjs',
+  // A5M2 census run 40056814591 (head 5a8c6d052) NEW-RED attribution, booked
+  // by the CENTER integrator 2026-10-24: the five governed-family wiring/assembly
+  // modules merged through their signed lane batches (root narrow signs; center
+  // re-verified on int at f48218bf8/dc02689b6 gates) each consume ONLY
+  // parseRequestedEffectSet — the SAME reviewed canonical requested-effects
+  // grammar at the row (the g2-connector-adapters / ptc-escalation-row pattern),
+  // effects fail closed through the real parser, zero lane edits, zero new faces.
+  'runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+  'runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  // A5M2 census run 40063499790 (head 447e14ac2) NEW-RED attribution, booked
+  // by the CENTER integrator 2026-10-24: the B-PTC run_code GUARD wiring module
+  // merged through the root narrow-signed FINAL timing card (93e4a7a64, int
+  // merge 861b8465b; D1-D4 root-narrow-signed at 10f69dbea). It consumes ONLY
+  // parseRequestedEffectSet (g3-ptc-wiring.mjs:78) - the SAME reviewed
+  // canonical requested-effects grammar at the row (the g3-terminal-wiring
+  // pattern), effects fail closed through the real parser, zero lane edits.
+  'runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.

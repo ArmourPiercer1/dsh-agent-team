@@ -171,20 +171,10 @@ export declare const A5_B_SCHEDULE_WIRING_SUBSET: readonly BScheduleWiringSubset
 /** The assembly-time controlled wiring factory — semantics in the `.mjs`. */
 export declare function createScheduleWiring(input?: BScheduleWiringInput): BScheduleWiringResult
 
-/* ── PRODUCTION ARM SURFACE (root 18:11 continuation) ─────────────────────
- * Types for the production-reachability exports; the semantics (native-body
- * law, inert-port law, real-error-class mirror) live in the `.mjs`. */
-
-/** The production-legal inert port: shape-legal for the adapter factory,
- *  every call REFUSES loudly (production dispatches NATIVE, never a port). */
-export declare function createScheduleInertPort(): Readonly<{
-  create: (...args: never[]) => Promise<never>
-  list: (...args: never[]) => Promise<never>
-  catalog: (...args: never[]) => Promise<never>
-  history: (...args: never[]) => Promise<never>
-  delete: (...args: never[]) => Promise<never>
-  update: (...args: never[]) => Promise<never>
-}>
+/* ── PRODUCTION ARM SURFACE (root 18:11 + 18:52) ─────────────────────────
+ * Types for the production-reachability exports; the semantics (delegate-
+ * boundary law, RAW-SERVICE current-feed port law (root 19:17), real-
+ * error-class mirror) live in the `.mjs`. */
 
 /** The ONE production claim face: the 11-leaf measured projection (taskId
  *  rides null-or-exact as measured; the nullable kind is root's column). */
@@ -204,9 +194,15 @@ export type BScheduleArmClassifyResult =
     }
   | { readonly ok: false; readonly code: string; readonly detail: string }
 
+/** The adapter delegate's own answer shapes (the arm IS the delegate):
+ *  'service' = frozen port call settled; 'tool-law-value' = a host tool-law
+ *  VALUE (id law / owner-refusal / abort); 'service-error-value' = the L6
+ *  mirror against the injected published class identity. Refusals are the
+ *  adapter's typed codes (DRAINING / DEFINITION_DRIFT / PORT_DRIFT /
+ *  PLAN_STALE / ALREADY_DISPATCHED / NOT_OWN_PLAN / …). */
 export type BScheduleArmExecuteResult =
-  | { readonly ok: true; readonly value: unknown; readonly settled?: string }
-  | { readonly ok: false; readonly code: string; readonly detail: string; readonly sideEffectPossible?: boolean }
+  | { readonly ok: true; readonly settled: 'service' | 'tool-law-value' | 'service-error-value'; readonly value: unknown }
+  | { readonly ok: false; readonly code: string; readonly detail: string }
 
 export interface BScheduleProductionArm {
   readonly name: string

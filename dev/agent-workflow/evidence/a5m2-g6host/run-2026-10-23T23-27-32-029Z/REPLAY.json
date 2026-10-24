@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-23T23:28:02.077Z",
+  "checks": [
+    {
+      "name": "R1-list-first",
+      "pass": true,
+      "extra": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-g6-4om1jtcr\",\"n"
+    },
+    {
+      "name": "R1-resolve-second",
+      "pass": true,
+      "extra": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-g6-18a8cvtv\",\"n"
+    },
+    {
+      "name": "R1-completion-reachable",
+      "pass": true,
+      "extra": "{\"kind\":\"text\",\"content\":\"G6_DONE_PAIR_RESOLVED_15kc39t1 :: {\\\"status\\\":\\\"contro"
+    },
+    {
+      "name": "R1-fail-terminal",
+      "pass": true,
+      "extra": "{\"kind\":\"text\",\"content\":\"G6_PAIR_RESOLVE_FAIL :: boom-not-resolved\"}"
+    },
+    {
+      "name": "R2-session-search-restored",
+      "pass": true,
+      "extra": "tools=5"
+    },
+    {
+      "name": "R2-runtime-seq-not-frozen",
+      "pass": true,
+      "extra": "null-stage=[] seven=[\"7\"]"
+    },
+    {
+      "name": "R3-old-call-face-rejected",
+      "pass": true,
+      "extra": "faces=1 id=call-old-1"
+    },
+    {
+      "name": "R4-branch-positive",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-branch-existence-leak-fails",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-branch-shape-nostep-legal",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-branch-faceless-fails",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-cleanup-records-false-returns",
+      "pass": true,
+      "extra": "[\"instance.stop returned portFree=false\",\"port 3999 not free 30s after cleanup (waitForPortFree=false)\"]"
+    }
+  ],
+  "allPass": true
+}

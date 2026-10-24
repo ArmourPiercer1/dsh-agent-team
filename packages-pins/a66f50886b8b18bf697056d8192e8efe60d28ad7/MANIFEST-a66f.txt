@@ -1,0 +1,13 @@
+# MANIFEST-a66f — frozen provenance for the schedule C2 kit (PACKAGED at center instruction 21:2x; SIZE OVER BOUND — STOP pending ruling)
+generated: 2026-10-23T21:29:02Z
+commit: a66f50886b8b18bf697056d8192e8efe60d28ad7
+porcelain-lines: 0
+version: 0.1.1-alpha.2 KEPT per center (pin dir keyed by source SHA is the disambiguator)
+tgz: dsh-agent-team-runtime-0.1.1-alpha.2.tgz sha256=9715af0d690aebae5078c071775c63e04040174a001987c49b74f6296da758aa BYTES=3469873 (kit hard bound 3,400,000 — EXCEEDED by 69873; no content shaved; STOP reported)
+plugin.mjs (git show a66f5:packages/tools/harness/plugin.mjs) sha256=471475b96e70f05a178f6006cf7b256765533313092b7c4689553c7c8d0ee784
+tgz entries: 1794 (1793 package/dist/** files + package/package.json)
+per-file sha256 (extracted tgz package/dist): manifest-tgz-dist-hashes.txt (1793 lines)
+per-file sha256 (a66f5 tracked packages/runtime/dist install surface): manifest-installsurface-hashes.txt (1793 lines)
+three-way list+digits equality (diff of the two hash lists): EQUAL rc0
+base comparison: prior pin 34c6680d tgz 3,202,703B (1777 dist files); growth = +16 dist files (+267,170B) = B-TEAM/G6/AUTH/schedule dist landed on the merged base
+note: int untouched; bf4 pin dir untouched; nothing repacked beyond this source SHA

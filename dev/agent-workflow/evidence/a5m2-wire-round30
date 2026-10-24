@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/packages/runtime
+
+ ❯ test/a5m2-g2-wire-c1.test.ts (21 tests | 2 failed) 516ms
+     ✓ zero-flip law: no key and explicit-false are byte-identical worlds; none of the eleven G2 spellings mounts 6ms
+     ✓ closed-key pairing BOTH directions on every surface + a non-boolean gate is a config defect on the existing refusal grammar 1ms
+     ✓ WEB is a fail-closed TYPED injection point, not a route: the named Team-only FIXED provider blocker and the seam-brand law refuse every web mount this world can supply 1ms
+     ✓ rowset contract refusals: the factory throw rides VERBATIM; empty/async rowsets, cross-family or non-closed names, a foreign providerIdentity and missing captured descriptions all refuse the mount 2ms
+     ✓ BROWSER surface: PINNED BLOCKED — the root lifecycle-gap note rides this spec verbatim; only the module’s own honest declared_mount INACTIVE six mount, every call refuses typed, zero native entry 7ms
+     ✓ MCP declared_mount ABSENT: the trio mounts at the native spellings as honest INACTIVE rows; classify refuses P_G2_DECLARED_MOUNT_ABSENT with the module wording VERBATIM; zero rows, zero native entry 2ms
+     ✓ MCP ACTIVE trio: the row walks the ONE PA path carrying its B-MCP family block at FULL value and lands at the named CENTER blocker (no PA_FAMILY_TARGET_RULES entry) BEFORE any durable row, grant, consume or native entry; single-flight law rides the shared ledger 34ms
+     ✓ the server-identity law survives the wiring: an undeclared server swap refuses INSIDE the row before the walk (zero leg, zero row, zero native entry) 2ms
+     ✓ drain law through the mounted def: after the row drains, a fresh token’s call refuses P_G2_DRAINING with zero walk, zero row and zero native entry (an entered body is never rewound) 2ms
+     ✓ the absent world stays honest: no mounts, and WEB answers the SIGNED route gap verbatim (no global/env route rides) 1ms
+     ✓ refusal laws AWAIT their cleanup: no PASSED scope face means NO registration (never a global lookup) and the half-built port is really closed; attach without cdpEndpoint and a browser mount without the REQUIRED callResource mapping refuse CONFIG_INCOMPLETE 1ms
+     ✓ MCP mount, REAL dispatch: the Team-scoped register binds the PASSED face; the FIRST generation is up BEFORE placement (gen-1 rides the approved question); an approved call DISPATCHES on the mount generation client (uri verbatim, the approved 1234ms timeout in options, ZERO captured-native entry); the flat rev-2 target carries mcpVariant/spawn/cursor/connection at FULL value with no fingerprint; a rotation to gen-2 REFUSES consume on the generation tie; dispose closes for real 87ms
+     ✓ BROWSER mount supply leg: the row actuates through the SIGNED port lease (consumeApproval -> worker -> callResource mapping), never through the captured native; the PLANE leg stays fail-closed at the still-unregistered B-BROWSER target rule (a different lane — no fake green) 255ms
+     ✓ positive: the real stdio target (argv0, EVERY arg, RAW empty cwd) and the real http FULL URL (origin+path+query) bind clean 0ms
+     ✓ negative: SAME arg COUNT different args and SAME origin different path/query both mismatch BEFORE construction 0ms
+     ✓ the SAME call's decided allow relays to consumed; deny/stale-denied/abandoned/pending-timeout/absent-correlation all refuse fail-closed 103ms
+     ✓ the kernel one-shot witness ({grant:{grantId}}) answers consumed; anything else refuses fail-closed (no correlation substitute, no Control read) 1ms
+     ✓ the REAL launch:navigate and attach:observe manifests validate against the entry (full targets IN the approval manifest); module-load legality holds 1ms
+     ✓ lossless negatives: dropping url/pageId-null/domainAuthorityId-null refuses; a bare digest without modelDestinationOrigin refuses; launch mode with an attach variant refuses (bound literal) 0ms
+     × launch: the factory OWN navigate/act/screenshot/tabs manifests validate; the injected generation fact rides verbatim (no unobserved in the real-binding leg) 6ms
+     × attach + negatives: the attach-mode navigate/observe manifests validate with the real endpoint target; a REAL manifest stripped of url / generation reason-as-fact still refuses at the table 1ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  23:12:29
+   Duration  3.46s (transform 2.18s, setup 0ms, import 2.80s, tests 516ms, environment 0ms)
+

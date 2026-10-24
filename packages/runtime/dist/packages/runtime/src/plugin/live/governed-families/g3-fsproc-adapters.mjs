@@ -34,7 +34,7 @@
  *    F(read project-scope) rides as a grammar-valid `read` effect on the
  *    resolved document resource. The closed operation set is exactly the four
  *    navigation ops — no diagnostics/executeCommand/generic fallback. The
- *    per(member×generation) realm assembly stays in sandbox-provider/
+ *    per(member×generation) realm assembly stays in sandbox provider lane 
  *    lsp-assembly.ts (§5.2), untouched.
  *  - B-PTC (`run_code`): the outer arm over the captured native definition
  *    the registry mints via createRunCodeTool (@deepseek-ai/dsh-tools ptc.ts:
@@ -106,7 +106,7 @@
  * NOT in this file: registration/placement/mask (CENTER), the admission
  * kernel (A owns Control/PA consumption; the arm only consumes ITS
  * consumed-proof at the edge), the jobs bridge, the PTC escalation
- * adjudication bridge, the LSP realm assembly (§5.2, sandbox-provider), and
+ * adjudication bridge, the LSP realm assembly (§5.2, sandbox provider lane), and
  * the §5.1 per-open backend provider itself.
  *
  * DELIVERABLE BOUNDARY for the REAL handles (root boundary ruling, @639ed01539
@@ -138,7 +138,7 @@
  *    revision + server identity/generation), enforced HERE at classify AND
  *    at the entry. The named MISSING capability (@639ed01539): a
  *    realm-scoped document-target resolver — ctx.lsp answers no realm/scope/
- *    revision, and this tree's sandbox-provider/lsp-assembly.ts owns the
+ *    revision, and this tree's sandbox provider lane lsp-assembly.ts owns the
  *    per-realm confined instances + generation discipline but answers none
  *    of the per-document obligations either.
  *  - B-PTC: the real executor is the HOST's run_code transport (createRunCode
@@ -164,6 +164,20 @@ import { PTC_ESCALATION_MODES } from '../ptc-escalation-row.mjs'
 
 /** Adapter generation for the whole G3 module (all three families move as one). */
 export const A5_G3_ADAPTER_REVISION = 3
+
+/** A5M2-G3-PTC format identity (root D4 card 2026-10-25; record64 pairing
+ *  obligation): the B-PTC WIRE FORMAT moved — the two childChannel budget
+ *  leaves went nonNegativeInt -> nullableString (ACTUAL mapping, root final
+ *  limited ruling). What pairs now: descriptor (the reviewPayload the PA
+ *  family claim carries), registration (the pa-mount-registry family entry)
+ *  and claim (the arm's own face the walk reads) ALL answer the SAME value
+ *  for what this row defines — the B-PTC row rides 4 on all three faces
+ *  while every OTHER G3 definition keeps A5_G3_ADAPTER_REVISION 3 (NO
+ *  forced unification). OLD APPROVALS ARE NOT TRANSLATED: an r3-era claim
+ *  never pairs against an r4 family and the kernel's own comparison refuses
+ *  it. This is the FORMAT-IDENTITY PAIRING obligation, not a claimed
+ *  replay-vulnerability fix. */
+export const A5_G3_PTC_ADAPTER_REVISION = 4
 
 export const A5_G3_FAMILIES = Object.freeze({
   TERMINAL: 'B-TERMINAL',
@@ -536,7 +550,7 @@ function deepJsonEqual(a, b) {
  *  B-LSP — NO public LSP entry EXISTS at the pin: no host LSP service (the
  *  pinned tree has none; the model-facing tool's server is the plugin's own),
  *  and this module's tree owns the assembly seam only
- *  (packages/runtime/sandbox-provider/lsp-assembly.ts: per-realm confined
+ *  (packages/runtime/sandbox provider lane lsp-assembly.ts: per-realm confined
  *  streaming instances, launcher sha gate, per-member generation). The REAL
  *  handle therefore can only come from an INTEGRATOR assembly adapter over
  *  that seam — and §5.1/§5.2 make that adapter's answers INTERFACE
@@ -1451,7 +1465,7 @@ function faithfulExecSnapshot(exec) {
  *   between approval and body entry.
  * @param deps.observe - the minimal backend log.
  */
-function createDelegateArm({ familyId, toolName, codes, nativeDefinition, definitionIdentity, liveDispatcher, providerId, memberAgentId, sessionHeaderId, realmId, bindingFacts, serviceFacts, controlPort = null, validate, observe = () => {} }) {
+function createDelegateArm({ familyId, toolName, codes, nativeDefinition, definitionIdentity, liveDispatcher, providerId, memberAgentId, sessionHeaderId, realmId, bindingFacts, serviceFacts, controlPort = null, familyAdapterRevision = null, validate, observe = () => {} }) {
   const declaredAbsent = nativeDefinition === null || nativeDefinition === undefined
   if (!declaredAbsent && typeof nativeDefinition?.execute !== 'function') {
     throw new TypeError(`g3-fsproc-adapters/${toolName}: nativeDefinition must be the captured definition object with an execute function, or null for the declared-absent shape`)
@@ -1528,6 +1542,13 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     target.cancelPending = false
     target.cancelPendingSettled = evidence
   }
+
+  // The FAMILY format version this row carries (D4 pairing): defaults to the
+  // shared adapter revision; the B-PTC row passes its own (4) because its
+  // wire format moved. Other families answer the shared value unchanged.
+  const familyFormatRevision = Number.isInteger(familyAdapterRevision) && familyAdapterRevision >= 1
+    ? familyAdapterRevision
+    : A5_G3_ADAPTER_REVISION
 
   /**
    * THE live-source fact re-verification (no closure self-attestation, no
@@ -1627,7 +1648,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     })
     const reviewPayload = deepFreeze({
       familyId,
-      adapterRevision: A5_G3_ADAPTER_REVISION,
+      adapterRevision: familyFormatRevision,
       providerIdentity: providerId,
       definitionIdentity,
       targetManifest,
@@ -1644,7 +1665,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     }))}`
     const plan = deepFreeze({
       familyId,
-      adapterRevision: A5_G3_ADAPTER_REVISION,
+      adapterRevision: familyFormatRevision,
       toolName,
       definitionIdentity,
       providerId,
@@ -2098,6 +2119,74 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
    * answer rides the drain word verbatim. The return value states exactly
    * what this word controls.
    */
+  /** THE GUARD-SEAM ENTRY (root FINAL TIMING ruling 2026-10-25: pre-execute
+   *  is NOT the body boundary — the public `tools/execute` waterfall is).
+   *  The guard-seam row (run_code) consumes its A grant and traverses the
+   *  EXACT liveVerdict law HERE — the SAME function execute runs at its
+   *  real entry (fail-fast pass, then the authoritative pass after one
+   *  microtask, same cancel/drain edges, same CURRENT-binding /
+   *  live-dispatcher / function-value / recheckTarget traversals) — but the
+   *  BODY is not entered by this arm: the host transport's `next()`
+   *  dispatches the reserved native with the ORIGINAL exec and every
+   *  native guarantee. The plan advances PREPARED -> EXECUTING (the body
+   *  entered, through the transport); `settleEntry` closes the account
+   *  with the transport's word. Every REFUSAL path settles the entry
+   *  REFUSED with zero body, so no PREPARED entry ever dangles. */
+  function recheckAtEntry (plan, consumed) {
+    const entry = plans.get(plan)
+    if (entry === undefined) return Promise.resolve(refuse(codes.NOT_ADMITTED, 'unknown plan: recheckAtEntry answers only to a plan this arm classified'))
+    if (entry.state === 'CANCELLED') return Promise.resolve(refuse(codes.CANCELLED, 'the plan was cancelled before the body boundary: zero body is the truth, not a race'))
+    if (entry.state !== 'PREPARED') {
+      const spent = entry.state === 'CLAIMED' || entry.state === 'EXECUTING' || entry.state === 'COMMITTED' || entry.state === 'REFUSED'
+      return Promise.resolve(refuse(spent ? codes.ALREADY_CONSUMED : codes.NOT_ADMITTED, `plan is ${entry.state}, not admitted-and-awaiting-entry`))
+    }
+    const grant = consumed?.grant
+    if (consumed?.consumed !== true || grant === null || typeof grant !== 'object' || typeof grant.grantId !== 'string') {
+      return Promise.resolve(refuse(codes.NOT_ADMITTED, 'recheckAtEntry takes the REAL consumed-proof of the A execution edge ({grant, consumed:true}) — the same witness execute verifies; internal state never substitutes for it'))
+    }
+    const failFast = liveVerdict(plan, grant, entry)
+    if (failFast !== null) {
+      entry.state = 'REFUSED'
+      settlePendingCancel(entry, 'refused at the body-boundary fail-fast pass (zero body)')
+      return Promise.resolve(failFast)
+    }
+    return Promise.resolve()
+      .then(() => {
+        // THE REAL ENTRY for the guard-seam row: the word is the one the
+        // transport's next() will carry — cancel/drain first, then the
+        // authoritative re-verification against the LIVE sources.
+        if (entry.state === 'CANCELLED') {
+          return refuse(codes.CANCELLED, 'cancelled at the body boundary before the transport ran')
+        }
+        if (draining) {
+          return refuse(codes.DRAINING, 'drained at the body boundary before the transport ran')
+        }
+        const atEntry = liveVerdict(plan, grant, entry)
+        if (atEntry !== null) {
+          entry.state = 'REFUSED'
+          settlePendingCancel(entry, 'refused at the authoritative body-boundary pass (zero body)')
+          return atEntry
+        }
+        entry.state = 'EXECUTING'
+        observe({ event: 'backend-start', correlation: entry.correlation, detail: plan.definitionIdentity })
+        return { ok: true, correlation: entry.correlation }
+      })
+  }
+
+  /** The companion settlement: the transport answered — success or failure,
+   *  the NATIVE's word is the body's fate, exactly as execute commits the
+   *  delegate body's word. This closes the arm's account and settles any
+   *  pending cancellation with the outcome evidence. */
+  function settleEntry (plan, ok, evidence) {
+    const entry = plans.get(plan)
+    if (entry === undefined) return Object.freeze({ ok: false, code: codes.NOT_ADMITTED })
+    if (entry.state !== 'EXECUTING') return Object.freeze({ ok: false, code: codes.ALREADY_CONSUMED, detail: `plan is ${entry.state}, not executing` })
+    entry.state = ok === true ? 'COMMITTED' : 'REFUSED'
+    settlePendingCancel(entry, `settled with the transport outcome (${String(evidence ?? 'no evidence')})`)
+    observe({ event: 'backend-end', correlation: entry.correlation, detail: ok === true ? 'ok' : 'error' })
+    return Object.freeze({ ok: true })
+  }
+
   function drain() {
     draining = true
     const facts = inFlight()
@@ -2115,7 +2204,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
 
   return {
     familyId,
-    adapterRevision: A5_G3_ADAPTER_REVISION,
+    adapterRevision: familyFormatRevision,
     toolName,
     definitionIdentity,
     providerId,
@@ -2124,6 +2213,8 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     classify,
     prepare,
     execute,
+    recheckAtEntry,
+    settleEntry,
     cancel,
     inFlight,
     drain,
@@ -2450,7 +2541,7 @@ function validateLsp(args, h) {
   // realm/scope moves between approval and the entry refuses with zero
   // body). NO public controlled entry produces these answers at
   // 639ed01539: the host has no LSP service (checked), and this tree's
-  // sandbox-provider/lsp-assembly.ts owns per-realm confined instances +
+  // sandbox provider lane lsp-assembly.ts owns per-realm confined instances +
   // generation without ever answering a document's realm/scope — the
   // MISSING capability is a realm-scoped document-target resolver over that
   // seam (integrator adapter); until then this arm is control-plane-only.
@@ -2518,23 +2609,37 @@ function validateRunCode(args, h) {
   if (typeof args.code !== 'string' || args.code.length === 0) {
     return refuse('P_PTC_CLASSIFY_INVALID_ARGUMENTS', 'code must be a non-empty string')
   }
-  // THE REAL BUDGET/ENVELOPE LAW (root final ruling): a null/empty envelope
-  // answer is NOT an implementation. The EFFECTIVE mode (host
-  // resolveSandboxPolicy/exec-agent face), the ENFORCEMENT ANSWER (host
-  // SandboxEnforcement — 'full' | 'partial' — or an explicit non-empty
-  // string; null/empty never passes), and the REAL dispatch budget
-  // (maxParallelSubCalls: the registry's validated concurrency cap, host
-  // tools index.ts:693 default 10; runDispatchBudget: this tree's
-  // child-channel bound — POSITIVE FINITE NUMBERS, never null) are
-  // mandatory facts: an unevidenced envelope refuses TYPED and the run
-  // never proceeds behind a bare claim.
+  // THE REAL ENVELOPE LAW + THE ACTUAL BUDGET MAPPING (root FINAL LIMITED
+  // RULING on run_code; the old adapter-side text that demanded "positive
+  // finite runDispatchBudget EVERY RUN" was OVER-SPECIFICATION, not user
+  // evidence — WITHDRAWN, and its refusal retired: neither a permanent
+  // all-refusal nor a fake number). The EFFECTIVE M0 B-PTC requirements
+  // (lines 157-160) are exactly: the sub-call CHANNEL list/budget facts,
+  // per-nested independent A, parent cancellation, one-consume each —
+  // NONE is a per-run TOTAL dispatch finite positive cap. Mandatory still,
+  // every run, honestly: the EFFECTIVE mode + the ENFORCEMENT ANSWER
+  // (null/empty is not an implementation) and the PRESENCE of the
+  // child-channel answer (M0's channel list/digest facts). A budget
+  // NUMBER that a supplier really observes must be a positive finite
+  // number — garbage never passes. What is NOT claimed, with the honest
+  // label: the TOTAL-count cap is NOT IMPLEMENTED (zero face in the host
+  // 639 tree; no mechanism counts or limits a run's total child
+  // dispatches); it is DISCLOSED through the manifest leaf (constant
+  // below) and explicitly NOT a self-issued release gate.
+  // maxParallelSubCalls is the CONCURRENCY-overlap cap — a different
+  // quantity, never equated with the total count — and no "observed"
+  // number is ever faked for the unobservable private registry field
+  // (host index.ts:839; the old ':693 default 10' cite was a stale
+  // host-era line reference, corrected by measurement).
   const budgetProblem = (channel) => {
     if (channel === null || typeof channel !== 'object') return 'the child-channel answer is absent'
-    if (!Number.isFinite(channel.maxParallelSubCalls) || channel.maxParallelSubCalls <= 0) {
-      return `maxParallelSubCalls is not a positive finite number (${JSON.stringify(channel.maxParallelSubCalls ?? null)})`
+    if (channel.maxParallelSubCalls !== undefined && channel.maxParallelSubCalls !== null
+      && (!Number.isFinite(channel.maxParallelSubCalls) || channel.maxParallelSubCalls <= 0)) {
+      return `the supplied maxParallelSubCalls observation is not a positive finite number (${JSON.stringify(channel.maxParallelSubCalls)})`
     }
-    if (!Number.isFinite(channel.runDispatchBudget) || channel.runDispatchBudget <= 0) {
-      return `runDispatchBudget is not a positive finite number (${JSON.stringify(channel.runDispatchBudget ?? null)})`
+    if (channel.runDispatchBudget !== undefined && channel.runDispatchBudget !== null
+      && (!Number.isFinite(channel.runDispatchBudget) || channel.runDispatchBudget <= 0)) {
+      return `the supplied runDispatchBudget observation is not a positive finite number (${JSON.stringify(channel.runDispatchBudget)})`
     }
     return null
   }
@@ -2577,7 +2682,7 @@ function validateRunCode(args, h) {
   }
   const budgetIssue = budgetProblem(channel)
   if (budgetIssue !== null) {
-    return refuse('P_PTC_ENVELOPE_UNEVIDENCED', `the REAL dispatch budget is not evidenced (${budgetIssue}): null/absent budget does not count — the host registry answers a validated positive cap (index.ts:693)`)
+    return refuse('P_PTC_ENVELOPE_UNEVIDENCED', `the dispatch-budget answer is malformed (${budgetIssue}): a SUPPLIED budget observation must be a positive finite number — while the NOT-IMPLEMENTED total-count cap is disclosed through the manifest leaf, never refused here (root final limited ruling: M0 lines 157-160 require the channel facts, per-nested A, parent cancellation and one-consume each — NOT a per-run total dispatch cap)`)
   }
   const canonical = {
     code: args.code,
@@ -2602,8 +2707,12 @@ function validateRunCode(args, h) {
         capabilityList: Object.freeze(channel.capabilityList.slice().sort()),
         capabilityCount: channel.capabilityList.length,
         channelDigest: channel.channelDigest,
-        maxParallelSubCalls: channel.maxParallelSubCalls,
-        runDispatchBudget: channel.runDispatchBudget,
+        // ACTUAL mapping (root final limited ruling): budget numbers ride
+        // the manifest ONLY as real supplier observations (null when the
+        // face is unobservable — never a fake); the total-count cap leaf
+        // carries the honest disclosure constant verbatim.
+        maxParallelSubCalls: Number.isFinite(channel.maxParallelSubCalls) ? channel.maxParallelSubCalls : null,
+        runDispatchBudget: A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE,
         lineageFacts: 'sub-dispatch parents ride exec.token and share exec.rootCallId (faithful exec forward)',
       }),
       codeDigest: `sha256:${sha256(args.code)}`,
@@ -2628,7 +2737,7 @@ function validateRunCode(args, h) {
       }
       const nowBudgetProblem = budgetProblem(nowChannel)
       if (nowBudgetProblem !== null) {
-        return { ok: false, code: 'P_PTC_ENVELOPE_UNEVIDENCED', detail: `the REAL dispatch budget stopped being evidenced between approval and the entry (${nowBudgetProblem})` }
+        return { ok: false, code: 'P_PTC_ENVELOPE_UNEVIDENCED', detail: `the dispatch-budget answer went malformed between approval and the entry (${nowBudgetProblem}): a supplied budget observation must stay a positive finite number` }
       }
       if (nowInterp === null || nowInterp.runtimeIdentity !== interp.runtimeIdentity) {
         return { ok: false, code: 'P_PTC_TARGET_DRIFT', detail: 'the interpreter/provider identity moved between approval and the entry' }
@@ -2797,17 +2906,51 @@ export function createGovernedLspArm(deps) {
 /** The single B-PTC outer `run_code` arm. `ptcFacts`: () => {interpreter:
  *  {runtimeIdentity, language}, effectiveEnvelope: {mode, enforcement},
  *  timeout, childChannel: {capabilityList, channelDigest,
- *  maxParallelSubCalls, runDispatchBudget}} | null. This is the gap-closure
- *  piece for the run_code ROW (the plane only reserves the name and mounts
- *  the escalation adjudication bridge): CENTER captures the registry-minted
- *  native definition and wires THIS arm; the arm never answers an escalation
- *  and never grants nested calls anything. */
+ *  maxParallelSubCalls?, runDispatchBudget?}} | null — the two budget
+ *  observations are OPTIONAL per the root final limited ruling (supply a
+ *  number only from a real face; absence is honest and carries the
+ *  disclosure leaf; a supplied number must be positive finite). This is
+ *  the gap-closure piece for the run_code ROW: the registry's RESERVED
+ *  native transport stays the sole executor (registration is host-forbidden,
+ *  index.ts:1080-1081); governance rides the PUBLIC `tools/pre-execute`
+ *  seam (see g3-ptc-wiring.mjs buildG3RunCodeGuard) — the arm never
+ *  answers an escalation and never grants nested calls anything. */
+/** The MEASURED host escalation-target enum for the run_code
+ *  `sandbox_permissions` CAPTURE pin (A5M2-G3 B-PTC wiring round, root
+ *  04:4x card; e78 handoff [B], self-verified at both faces): the REAL
+ *  registry-minted schema enum is the ESCALATION-TARGET set —
+ *  tests/deepseek-harness-test-use packages/sandbox/sandbox/src/
+ *  escalation.ts:41 `ESCALATION_TARGETS = ['workspace-write',
+ *  'danger-full-access']`, fed into the minted definition verbatim by
+ *  packages/core/tools/src/ptc.ts:110 (`RUN_CODE_CONTROLS`
+ *  `enum: [...ESCALATION_TARGETS]`). Pinning the 3-member BRIDGE
+ *  vocabulary here made capture THROW on the real definition (an
+ *  escalation TARGET list is not the SandboxMode ask vocabulary): the
+ *  bridge vocabulary `PTC_ESCALATION_MODES` (ptc-escalation-row.mjs:80,
+ *  the escalation row's adjudication face and this adapter's
+ *  args pair-law) stays UNTOUCHED — only the capture pin rides the
+ *  measured schema face. */
+export const A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS = Object.freeze(['workspace-write', 'danger-full-access'])
+
+/** THE HONEST DISCLOSURE LEAF (root final LIMITED ruling on run_code): the
+ *  per-run TOTAL dispatch-count cap is NOT IMPLEMENTED — zero face in the
+ *  host 639 tree, no mechanism counts or limits a run's total child
+ *  dispatches; it is not one of the EFFECTIVE M0 B-PTC requirements (lines
+ *  157-160: channel list/budget facts, per-nested independent A, parent
+ *  cancellation, one-consume each). The B-PTC review leaf carries THIS
+ *  constant verbatim: disclosed, and explicitly NOT a self-issued release
+ *  gate. A supplier that one day really observes a total cap replaces it
+ *  with the canonical number string — never a fake number today. */
+export const A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE
+  = 'NOT-IMPLEMENTED: total-dispatch-count cap (zero face in host 639; not an M0 157-160 requirement; disclosed - explicitly not a self-issued release gate)'
+
 export function createGovernedRunCodeArm(deps) {
   if (typeof deps.ptcFacts !== 'function') {
     throw new TypeError('g3-fsproc-adapters/run_code: ptcFacts is required — interpreter identity, the EFFECTIVE envelope, and the child-channel facts are the target; without them every run is an unattributed interpreter')
   }
-  assertCapturedEnum('run_code', 'sandbox_permissions', deps.nativeDefinition?.parameters?.sandbox_permissions?.enum, PTC_ESCALATION_MODES)
+  assertCapturedEnum('run_code', 'sandbox_permissions', deps.nativeDefinition?.parameters?.sandbox_permissions?.enum, A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS)
   return createDelegateArm({
+    familyAdapterRevision: A5_G3_PTC_ADAPTER_REVISION,
     familyId: A5_G3_FAMILIES.PTC,
     toolName: 'run_code',
     codes: A5_G3_PTC_TYPED_CODES,

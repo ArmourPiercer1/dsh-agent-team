@@ -10,9 +10,12 @@
 //     way a computed site does not fail is a structure-matched audited-site handler
 //     (exact relative module path + function/binding shape + unique-site count, per
 //     ROOT's reviewed list) whose enumerated literal targets are then enqueued and
-//     scanned. There are no name-only or variable-name whitelists and no broad
-//     exemptions; custom row-injected glueUrl/seamUrl values are explicitly outside
-//     this package's static guarantee (only the shipped defaults are verified).
+//     scanned. The two ROOT-audited computed-URL pure-DATA parse sites (root 20:46
+//     ruling: registry href + destination envelope input) additionally pin the full
+//     sha256 of the checked file bytes and enqueue nothing. There are no name-only or
+//     variable-name whitelists and no broad exemptions; custom row-injected glueUrl/
+//     seamUrl values are explicitly outside this package's static guarantee (only the
+//     shipped defaults are verified).
 //   * Files with parser syntax diagnostics are errors (fail-closed).
 //   * A pass on a scanned root never proves content of a tar that was not unpacked
 //     and scanned, and never proves the running Host supplies peer identity.
@@ -38,6 +41,7 @@
 // Usage: node scripts/check-install-manifest.mjs [rootDir] [manifestOverride]
 'use strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, dirname, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 
@@ -143,6 +147,17 @@ if (pkg.dsh?.bundle?.patch && !existsSync(resolve(ROOT, pkg.dsh.bundle.patch))) 
 const HOST_REL = 'packages/runtime/dist/packages/runtime/src/plugin/host.js';
 const BUNDLE_REL = 'packages/client/composition-shim/client-bundle.js';
 const SKILLS_REL = 'packages/runtime/dist/packages/runtime/src/plugin/team-skills.js';
+// ROOT-audited computed-URL pure-DATA parse sites (root 20:46 ruling — EXACTLY TWO points
+// approved, both pure data parsing; every other computed new URL() still rejects). Each entry
+// pins: exact relative module path + full sha256 of the checked file bytes (blobs verified
+// byte-identical at bf4e89e10 and at integration base 53ee0f28c) + unique enclosing function
+// + verbatim single-argument `new URL(<expr>)` expression + exactly-one computed URL site in
+// that function. Any hash drift, usage change (e.g. two-arg new URL), path move, or added
+// second site => no match => RED again (fail-closed, same as every unaudited computed site).
+const AUDITED_URL_PARSE_SITES = [
+  { id: 'S7', rel: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs', sha256: '43f7fbd2cf8cb6d02207a66c4df6f3c09f19ec8f4951067b4e1390b5173c8d69', fn: 'parseRegistry', expr: 'new URL(href)' },
+  { id: 'S8', rel: 'packages/runtime/dist/packages/runtime/web-gateway/src/destination-envelope.js', sha256: 'ce2387c3193d057531b1d679125e26a9931a4efecd3aeb22d5bb78630e34681e', fn: 'parseHttpUrl', expr: 'new URL(input)' },
+];
 const EXTERNALS_EXACT = new Set(['react', 'react/jsx-runtime', '@deepseek-ai/dsh-client-store', '@deepseek-ai/dsh-client-ui-primitives']);
 const extOverrideChecked = { done: false };
 
@@ -154,6 +169,9 @@ function enclosingFnName(node) {
   return null;
 }
 function walkNodes(root, fn) { (function w(n) { fn(n); ts.forEachChild(n, w); })(root); }
+function sha256File(abs) {
+  try { return createHash('sha256').update(readFileSync(abs)).digest('hex'); } catch { return null; }
+}
 function fnNamed(sf, name) {
   let found = null; let count = 0;
   walkNodes(sf, (n) => { if ((ts.isFunctionDeclaration(n) || ts.isMethodDeclaration(n)) && (n.name?.getText(sf) === name)) { count += 1; found = n; } });
@@ -273,6 +291,21 @@ function applyHandlers(relFile, graph, sf, pending, visit, at) {
       && urls.map((u) => u.spec).join('\u0000') === SKILL_SPECS.join('\u0000')) {
       if (assetSkillsCheck(sf)) { for (const u of urls) u.consumed = true; notes.push('audited sites S5/S6 consumed: resolveTeamSkillsDir asset dirs (first .agents/skills shipped with SKILL.md; dist fallback may be absent)'); }
     }
+  }
+  for (const site of AUDITED_URL_PARSE_SITES) {
+    if (relFile !== site.rel || graph !== 'host') continue;
+    const urls = pending.filter((p) => p.kind === 'url');
+    if (urls.length !== 1) continue;
+    const h = urls[0];
+    if (sha256File(join(ROOT, relFile)) !== site.sha256) continue;
+    const fn = fnNamed(sf, site.fn);
+    if (!fn || enclosingFnName(h.node) !== site.fn) continue;
+    if (!ts.isNewExpression(h.node) || h.node.getText(sf) !== site.expr) continue;
+    let urlSites = 0;
+    walkNodes(fn, (n) => { if (ts.isNewExpression(n) && n.expression.getText(sf) === 'URL') urlSites += 1; });
+    if (urlSites !== 1) continue;
+    h.consumed = true;
+    notes.push(`audited site ${site.id} consumed: ${relFile} (${site.fn} pure-data parse, verbatim ${JSON.stringify(site.expr)}, file sha256 ${site.sha256.slice(0, 16)}…, exactly-one computed URL site in that fn; hash drift / usage change / path move / second site => no match => REJECTED)`);
   }
   for (const p of pending) {
     if (p.consumed || p.kind !== 'literal-url') continue;

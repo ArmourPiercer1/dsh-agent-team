@@ -189,6 +189,61 @@ function registerUpstreamResolverOnce() {
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
+/**
+ * ROOT 21:14 — the same-source target-vs-record comparison over the REAL
+ * assembly transportTarget shape (exported for the exact-shape positive/
+ * negative legs; the producer below and nothing else consumes it).
+ */
+export function g2ApprovedTargetMismatches(target, rec) {
+    const mismatches = [];
+    if (target?.transport === 'stdio') {
+        const spawn = target.spawn;
+        if (spawn?.argv0 !== rec.command)
+            mismatches.push(`spawn.argv0 '${String(spawn?.argv0)}' vs approved command '${String(rec.command)}'`);
+        const targetArgs = Array.isArray(spawn?.args) ? spawn.args : [];
+        const recArgs = Array.isArray(rec.args) ? rec.args : [];
+        if (targetArgs.length !== recArgs.length)
+            mismatches.push(`spawn.args length ${String(targetArgs.length)} vs approved args length ${String(recArgs.length)}`);
+        else
+            for (let i = 0; i < targetArgs.length; i++)
+                if (targetArgs[i] !== recArgs[i])
+                    mismatches.push(`spawn.args[${i}] '${String(targetArgs[i])}' vs approved args[${i}] '${String(recArgs[i])}'`);
+        if (spawn?.cwd !== (typeof rec.cwd === 'string' ? rec.cwd : ''))
+            mismatches.push(`spawn.cwd ${String(spawn?.cwd)} vs approved cwd ${String(rec.cwd)} (RAW law: '' stays '')`);
+    }
+    else if (target?.transport === 'streamable-http') {
+        let tUrl;
+        let rUrl;
+        try {
+            const u = new URL(String(target.endpointUrl));
+            tUrl = { origin: u.origin, pathname: u.pathname, search: u.search };
+        }
+        catch {
+            tUrl = undefined;
+        }
+        try {
+            const u = new URL(String(rec.url));
+            rUrl = { origin: u.origin, pathname: u.pathname, search: u.search };
+        }
+        catch {
+            rUrl = undefined;
+        }
+        if (tUrl === undefined || rUrl === undefined)
+            mismatches.push('endpointUrl/approved url not a parseable URL');
+        else {
+            if (tUrl.origin !== rUrl.origin)
+                mismatches.push(`endpointUrl origin '${tUrl.origin}' vs approved origin '${rUrl.origin}'`);
+            if (tUrl.pathname !== rUrl.pathname)
+                mismatches.push(`endpointUrl path '${tUrl.pathname}' vs approved path '${rUrl.pathname}'`);
+            if (tUrl.search !== rUrl.search)
+                mismatches.push(`endpointUrl query '${tUrl.search}' vs approved query '${rUrl.search}'`);
+        }
+    }
+    else {
+        mismatches.push(`unknown transport axis '${String(target?.transport)}'`);
+    }
+    return mismatches;
+}
 export function validateTeamPluginConfig(raw) {
     // NB: function declaration, not a const arrow — TypeScript 6.0.3 control
     // flow only treats a never-returning call as an abrupt completion when the
@@ -573,6 +628,64 @@ export const name = 'dsh-agent-team';
  * a TypeError.
  */
 export const inject = ['agents', 'storageDomain', 'sessions', 'sessionPersistence', 'workspaceRegistry'];
+/**
+ * ROOT round-75 (real producer, not a map): resolve the BROWSER PUBLIC
+ * entry pair from the fixed-639 public './src/*' subpaths — the SAME two
+ * faces the host plugin itself uses (launchChromium src/launch.ts:24;
+ * openBrowserWorker src/worker-client.ts:15 @639ed01539). Importing these
+ * modules LOADS EXPORTS ONLY: nothing is launched, no server starts, no
+ * worker spawns — acquisition lives exclusively in the governed port's
+ * lease (createG2TeamBrowserPort), never here.
+ * The stagehand package is USER-CHOICE plugin supply exactly like the
+ * PUBLIC web-search roots: its specifiers ride TYPED VARIABLES (the
+ * publicRoots discipline above) — the packages resolve through the live
+ * source-639 install's own module graph (public './src/*' export map),
+ * never through absolute private lib paths. An approved entryPaths pair
+ * (source-checkout worlds, same law as transportEntry) wins; otherwise
+ * the bare PUBLIC specifiers.
+ */
+export async function g2ResolveBrowserPublicEntries(entryPaths) {
+    const launchSpecifier = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/launch.ts';
+    const workerSpecifier = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/worker-client.ts';
+    const launchTarget = typeof entryPaths?.launchEntry === 'string' && entryPaths.launchEntry.length > 0 ? entryPaths.launchEntry : launchSpecifier;
+    const workerTarget = typeof entryPaths?.workerEntry === 'string' && entryPaths.workerEntry.length > 0 ? entryPaths.workerEntry : workerSpecifier;
+    try {
+        const launchMod = (await import(launchTarget));
+        const workerMod = (await import(workerTarget));
+        if (typeof launchMod.launchChromium !== 'function' || typeof workerMod.openBrowserWorker !== 'function') {
+            return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry modules resolved but answered no launchChromium/openBrowserWorker function (${launchTarget} / ${workerTarget}) — the public faces at this pin are missing; minting nothing, invoking nothing` };
+        }
+        // DEPLOYMENT-FACT DISCIPLINE (c): the record names the ACTUAL source
+        // the pair came from — the targets used AND, when the runtime answers
+        // it, the resolved URL import.meta.resolve gives FOR THIS INSTALL
+        // GRAPH (a bare specifier resolves in the ACTUAL host.ts install
+        // graph, NOT automatically at the fixed-639 root — (a): the Host-root
+        // probe evidenced only that environment). Recorded, never asserted.
+        const resolveOf = (t) => {
+            try {
+                return import.meta.resolve(t);
+            }
+            catch {
+                return '<unresolved-by-import.meta.resolve>';
+            }
+        };
+        return {
+            ok: true,
+            entries: Object.freeze({ launchChromium: launchMod.launchChromium, openBrowserWorker: workerMod.openBrowserWorker }),
+            provenance: Object.freeze({
+                launchTarget,
+                workerTarget,
+                launchResolved: resolveOf(launchTarget),
+                workerResolved: resolveOf(workerTarget),
+                via: launchTarget === launchSpecifier && workerTarget === workerSpecifier ? 'public-subpath-specifiers' : 'approved-entryPaths',
+                note: 'RECORDED actual source for this pair; shape is NOT 639 identity verification — downstream acceptance reads this record, never re-guesses',
+            }),
+        };
+    }
+    catch (error) {
+        return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry pair (${launchTarget} / ${workerTarget}) is unresolvable here: ${String(error?.message ?? error).slice(0, 180)} — USER-CHOICE plugin supply absent (source-639 public './src/*' route expected); typed refusal, no fallback, nothing launched` };
+    }
+}
 /**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
  * apply fiber). The apply body itself never rejects: it provides the
@@ -1560,6 +1673,476 @@ export async function apply(ctx, config) {
                 ptcRouter.onAgentDisposed(payload.agent);
             }, { global: true });
         }
+        /**
+         * A5-M2 G2 supply producer (round-19, root 20:24: 真实供给不以传参冒充).
+         * Builds the face the bindings' `deps.g2TeamAssembly()` accessor answers,
+         * from the APPROVED plugin config alone. What is REAL here (public ports
+         * verified at the pinned host @639ed01539):
+         * - entries: the pinned PUBLIC entry files load through the SIGNED owner
+         *   loader (createG2TeamAssemblySupply -> loadG2TeamAssemblyEntries);
+         * - transport: `createTransport` at mcp-client/src/transport.ts:31, PUBLIC
+         *   over the package `./src/*` exports map — the closure binds each
+         *   approved per-server connection record (the SAME record the config
+         *   validation ran), so the transport is built from approved config only,
+         *   never from row-side re-derivation (fail-closed on an unknown server);
+         * - the browser worker mapping: the PUBLIC worker face answers
+         *   `execute(method, args, signal)` (worker-client.ts:70-71, used exactly
+         *   so by the host plugin itself at index.ts:187).
+         * What stays a TYPED REFUSAL (public port genuinely absent — enumerated in
+         * dev/agent-workflow/evidence/a5m2-g2-wire/g2-supply-public-gap-639.md, NOT
+         * papered over with getters or a global provider swap): the TEAM-scoped
+         * `mcpResources` face (the public retrieval `ctx.inject(['mcpResources'],
+         * cb)` is a composition-fiber API — server-context.ts:29 is the ONLY host
+         * usage; no per-Team scoped retrieval exists from plugin-assembly code),
+         * and the per-SESSION `consumeBrowserApproval` (the Team PA plane edge —
+         * bindings-owned, built after the mount; the lazy-bind increment is named
+         * in the gap doc, with the callResource mapping above already real).
+         * Absent `teamToolPlane.g2Mount` config answers `undefined` (the bindings
+         * then refuse typed exactly as before — no behavior change for worlds
+         * without the block).
+         */
+        async function buildG2TeamSupply(cfg, 
+        // root 05:0x: the supply runs INSIDE the plugin's apply(), so the REAL
+        // cordis ctx is in scope — the launch-environment layering is reached
+        // through its OWN public read-only face (see the block below).
+        hostCtx) {
+            const g2Mount = cfg.teamToolPlane?.g2Mount;
+            if (g2Mount === null || typeof g2Mount !== 'object')
+                return undefined;
+            // specifier via URL (the glueUrl pattern at :1932/:1945 — same module,
+            // same typing discipline: the cast below is the module's only type face).
+            const g2MountModuleUrl = new URL('./live/governed-families/g2-team-mount.mjs', import.meta.url).href;
+            const mountMod = (await import(g2MountModuleUrl));
+            const webSupplyMod = (await import(new URL('./live/governed-families/g2-web-supply.mjs', import.meta.url).href));
+            const webSeamMod = (await import(new URL('./live/governed-families/g2-provider-seams.mjs', import.meta.url).href));
+            const entryPaths = g2Mount.entryPaths;
+            const transportEntry = g2Mount.transportEntry;
+            const serverConfigs = g2Mount.serverConfigs;
+            const out = { entryPaths };
+            // ROOT 21:30: the apply-ctx inject was the WRONG scope (apply ctx !=
+            // the Host's opaque per-Agent scopeOf(this.ctx); per-rootSessionId does
+            // not equal a scope key — registering there would be GLOBAL). The real
+            // member/Team scope ctx ALREADY EXISTS in the glue (bindings
+            // state.mcpMountCtx :2262-2268, `createScope(agentCtx, runtimeAgent)` —
+            // the same context the mini-MCP fibers mount on, "NEVER the shared row
+            // ctx"), and the bindings read the face there and augment the supply
+            // pre-call. The host producer therefore stops minting/passing any face.
+            // ROOT 21:02: the factory is Team-owned and REAL over PUBLIC pieces —
+            // StdioClientTransport / StreamableHTTPClientTransport (@modelcontextprotocol
+            // /client + /client/stdio, the SDK public face transport.ts itself imports)
+            // + the Host PUBLIC scrubbedParentEnv (@deepseek-ai/dsh-subprocess). The
+            // construction mirrors the host's own createTransport (transport.ts:31-49:
+            // command/args/scrubbed+config env/cwd; URL + requestInit.headers) — the
+            // transport.ts UNDERLAY, not its governance. A configured transportEntry
+            // (source-checkout worlds) still wins; otherwise the PUBLIC bare specifiers
+            // resolve through the live install's own module tree (root-21:02 补核).
+            let buildTransport;
+            if (Array.isArray(serverConfigs)) {
+                if (typeof transportEntry === 'string' && transportEntry.length > 0) {
+                    const tMod = (await import(transportEntry));
+                    if (typeof tMod.createTransport !== 'function') {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the approved transport entry (${transportEntry}) answered no createTransport — minting nothing over a defective entry` };
+                    }
+                    buildTransport = (rec) => tMod.createTransport(rec);
+                }
+                else {
+                    try {
+                        const sdkRootSpecifier = '@modelcontextprotocol/client';
+                        const sdkStdioSpecifier = '@modelcontextprotocol/client/stdio';
+                        const subprocessSpecifier = '@deepseek-ai/dsh-subprocess';
+                        const sdkRoot = (await import(sdkRootSpecifier));
+                        const sdkStdio = (await import(sdkStdioSpecifier));
+                        const subprocess = (await import(subprocessSpecifier));
+                        if (typeof sdkStdio.StdioClientTransport !== 'function' || typeof sdkRoot.StreamableHTTPClientTransport !== 'function' || typeof subprocess.scrubbedParentEnv !== 'function') {
+                            throw new Error('the PUBLIC trio resolved but answered no StdioClientTransport/StreamableHTTPClientTransport/scrubbedParentEnv');
+                        }
+                        buildTransport = (rec) => rec.transport === 'stdio'
+                            ? new sdkStdio.StdioClientTransport({
+                                command: rec.command,
+                                args: Array.isArray(rec.args) ? rec.args : [],
+                                env: { ...subprocess.scrubbedParentEnv(), ...(rec.env ?? {}) },
+                                cwd: typeof rec.cwd === 'string' ? rec.cwd : '',
+                            })
+                            : new sdkRoot.StreamableHTTPClientTransport(new URL(String(rec.url)), { requestInit: { headers: (rec.headers ?? {}) } });
+                    }
+                    catch (error) {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `no transport producer resolved: neither an approved transportEntry nor the PUBLIC bare trio (@modelcontextprotocol/client, /stdio, @deepseek-ai/dsh-subprocess — the pieces transport.ts:9-12 itself imports): ${String(error?.message ?? error).slice(0, 200)}` };
+                    }
+                }
+            }
+            if (buildTransport !== undefined && Array.isArray(serverConfigs)) {
+                const byServer = new Map();
+                for (const rec of serverConfigs) {
+                    if (typeof rec?.serverName === 'string')
+                        byServer.set(rec.serverName, rec);
+                }
+                // SYNC factory (the port calls makeTransport(target) synchronously and
+                // requires a Transport {start,send/close} back — g2-team-assembly
+                // :331-333). The approved record is the ONLY source; an unknown server
+                // name refuses, the row facts never re-derive a connection.
+                out.makeTransport = (target) => {
+                    const rec = byServer.get(String(target?.server));
+                    if (rec === undefined || rec.transport !== target?.transport) {
+                        throw new Error(`g2TeamAssembly: no approved ${String(target?.transport)} connection record for server '${String(target?.server)}' — the transport is fixed by approved config, never by row-side facts`);
+                    }
+                    // ROOT 21:14 (one narrow fix, assembly interface UNTOUCHED): the
+                    // factory consumes the REAL transportTarget the assembly hands it
+                    // (g2-team-assembly :273-278: { server, transport, endpointUrl? FULL
+                    // URL, spawn? { argv0, args[], cwd RAW } }) — the 21:01 read of the
+                    // summary fields (spawnArgv0/... /endpointOrigin) refused even valid
+                    // configs. Full compare now: argv0, EVERY args element (not just the
+                    // count), RAW cwd, and the FULL URL (origin + path + query) vs the
+                    // actual approved record — divergence throws BEFORE construction.
+                    const mismatches = g2ApprovedTargetMismatches(target, rec);
+                    if (mismatches.length > 0) {
+                        throw new Error(`g2TeamAssembly: the transport target and the approved ${String(target?.transport)} record for server '${String(target?.server)}' are NOT same-source (${mismatches.join('; ')}) — refusing before construction; no transport object exists`);
+                    }
+                    return buildTransport(rec);
+                };
+            }
+            // The PUBLIC stagehand worker mapping stays REAL and in place for the
+            // browser half (evidence cited above) — but it may only ride a supply
+            // that ALSO carries the Team PA approval face (the producer's
+            // all-or-nothing pairing): a mapping without its approval edge is a
+            // half-supply, and the per-session consumeApproval is bindings-owned.
+            // The host has no session edge to pass YET, so the mapping is passed
+            // through ONLY when a consumeBrowserApproval arrives on g2Mount's
+            // producer input (test/verification worlds); otherwise browser stays
+            // the typed pairing refusal, unchanged.
+            const g2CallResource = async (resource, method, args, signal) => {
+                // ROOT 21:01: the port hands the LEASE-OWNED resource ({ value, close }
+                // — the lease's law at g2-team-assembly :331 shape contract); the
+                // runtime is resource.value; execute binds THAT value, never a swapped
+                // runtime, and the close owner stays the lease.
+                const runtime = resource?.value;
+                const execute = runtime?.execute;
+                if (typeof execute !== 'function')
+                    throw new Error('g2TeamAssembly.callResource: the lease-owned resource.value answers no execute(method, args, signal) (worker-client.ts:70-71 public face on the leased runtime) — refusing, no fallback, no runtime swap');
+                return await execute.call(runtime, method, args, signal);
+            };
+            const g2ConsumeBrowserApproval = g2Mount.consumeBrowserApproval;
+            if (typeof g2ConsumeBrowserApproval === 'function') {
+                out.consumeBrowserApproval = g2ConsumeBrowserApproval;
+                out.callResource = g2CallResource;
+            }
+            // The two faces the host genuinely cannot mint TODAY (gap doc, fork
+            // options enumerated): passed ABSENT so the producer's own typed refusal
+            // names them at supply time, config-armed world or not.
+            // ROOT 01:0x CORRECTED ROUTE (not a new WebRuntime, not a composition,
+            // no register-equals-scope claim): the ORIGINAL authorized tool-level
+            // Team-only fork — when this Team's row config declares
+            // g2Mount.webFixedProvider, we build the SAME fixed provider through
+            // the PUBLIC root of @deepseek-ai/dsh-web-fetch-http (lib/index.js is
+            // shipped and resolvable; Config + HttpFetchProvider are exported) and
+            // hand the INSTANCE to the tool gateway directly. The valid config has
+            // ONE source: the host's own exported schemastery `Config` schema —
+            // parse(rowDeclared) fills exactly the defaulted fields the host's own
+            // apply() resolves, then the SAME mapping (index.ts:86-92 verbatim);
+            // this producer never invents a default, never touches a global
+            // provider id or env, and noTeam never reads this path (row-scoped
+            // config + per-instance plugin, cited law). Transport resolution stays
+            // the constructor's public default (publicHttpNetwork.resolve).
+            // ROOT 03:5x + e51 + e51-final 3-card (ONE round, no repeats):
+            // (1) construction follows the 639 OFFICIAL apply VERBATIM — schema
+            //     defaults (deepseek fills model/apiVersion/maxTokens/maxUses via
+            //     .default() at parse), the roots' own exported constants, the
+            //     deepseek LIVE reader re-resolves per search (the Volatile.get
+            //     equivalent for our row-config), resolveApiKey wraps the launch
+            //     environment exactly as the official closure does WITHOUT a
+            //     credentials seam; ?? semantics kept EXACT (an explicitly empty
+            //     apiKey is '' — never env-fallbacked by ||: `x ?? y` fires only on
+            //     undefined, our reads test undefined, never truthiness).
+            // (2) ONE resolved config produces ALL target facts: the provider's
+            //     endpoint origin, the seam's declared envelope AND the classify
+            //     searchOrigin derive from the SAME parse — no declared string can
+            //     self-prove; a separately declared searchOrigin that CONTRADICTS
+            //     the derived origin refuses at the mount (approval A can never
+            //     carry credentials to B).
+            // (3) multi-query is consumed by BOUNDED per-query single dispatches
+            //     inside the ONE already-consumed call (see the row body).
+            // Credential unresolvable = the NAMED NOT-READY: no lane minted,
+            // web_search honestly unmounted; real external acceptance waits on the
+            // USER's configuration — recorded tier, never a waiver.
+            const webSearchCfg = g2Mount?.webSearchFixed;
+            let buildSearchLane = () => null;
+            if (webSearchCfg?.enabled === true) {
+                const publicRoots = {
+                    exa: { specifier: '@deepseek-ai/dsh-web-search-exa', env: 'EXA_API_KEY' },
+                    perplexity: { specifier: '@deepseek-ai/dsh-web-search-perplexity', env: 'PERPLEXITY_API_KEY' },
+                    'deepseek-official': { specifier: '@deepseek-ai/dsh-web-search-deepseek', env: 'DEEPSEEK_API_KEY' },
+                };
+                // ROOT 05:0x CLOSURE OF THE SUBSET LIMIT: the credential/env reads
+                // ride the PUBLIC launch-environment layering itself —
+                // launchEnvironmentOf(ctx) is the SAME read-only face the official
+                // plugin applies use (exa index.ts:61), reachable here because the
+                // supply is built inside apply() where ctx lives. No new credential
+                // service, no key copies: snapshot get(name) reads only, nothing
+                // stored or logged.
+                // The lock now RESOLVES this public package (root/runtime declare it at
+                // 0.2.0-rc.2; the const:string non-solution placeholder is retired): plain
+                // specifier, typed through the module's audited public face only.
+                const launchEnvMod = (await import('@deepseek-ai/dsh-launch-environment'));
+                const launchEnvSnapshot = launchEnvMod.launchEnvironmentOf(hostCtx);
+                const launchEnv = { get: (name) => launchEnvSnapshot.get(name)?.value ?? '' };
+                const choice = webSearchCfg.provider;
+                if (typeof choice !== 'string' || publicRoots[choice] === undefined) {
+                    return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webSearchFixed.provider must name ONE of exa|perplexity|deepseek-official — the user selects; nothing is auto-selected, nothing is invented' };
+                }
+                try {
+                    const mod = (await import(publicRoots[choice].specifier));
+                    const cfgIn = webSearchCfg.config ?? {};
+                    const parse = mod.Config.parse(cfgIn);
+                    const undef = (k) => parse[k] === undefined;
+                    let fixedSearch = null;
+                    let resolvedBaseURL = '';
+                    // e51-review residual ②: the seam's CURRENT facts must LIVE-READ the
+                    // same resolution the provider's own options use — never the first
+                    // frame re-asserted (that would let an endpoint that moves after
+                    // assembly slip past the same-origin law; the deepseek provider
+                    // resolves its baseURL per search, so a snapshot would self-prove).
+                    let liveBaseURL = () => resolvedBaseURL;
+                    let readyDetail = '';
+                    if (choice === 'exa') {
+                        // index.ts:58-66 VERBATIM: config.apiKey ?? $EXA_API_KEY ?? '';
+                        // baseURL/searchType/highlightsPerResult via ?? with the ROOT's
+                        // exported defaults; numResults rides only when configured.
+                        const m = mod;
+                        const apiKey = undef('apiKey') ? (launchEnv.get(publicRoots[choice].env)) : parse.apiKey;
+                        const options = {
+                            apiKey,
+                            baseURL: undef('baseURL') ? m.EXA_DEFAULT_BASE_URL : parse.baseURL,
+                            searchType: undef('searchType') ? m.EXA_DEFAULT_SEARCH_TYPE : parse.searchType,
+                            highlightsPerResult: undef('highlightsPerResult') ? m.EXA_DEFAULT_HIGHLIGHTS_PER_RESULT : parse.highlightsPerResult,
+                            ...(undef('numResults') ? {} : { numResults: parse.numResults }),
+                        };
+                        resolvedBaseURL = String(options.baseURL);
+                        if (String(apiKey).length > 0)
+                            fixedSearch = new m.ExaSearchProvider(options);
+                        else
+                            readyDetail = 'the resolved apiKey is empty (config apiKey explicitly empty, or unset with $EXA_API_KEY absent) — official ?? semantics kept: an explicit empty string does NOT fall back to the environment';
+                    }
+                    else if (choice === 'perplexity') {
+                        // index.ts:52-61 VERBATIM (same ?? law; model/maxTokens defaults
+                        // from the root's constants; searchRecency only when configured).
+                        const m = mod;
+                        const apiKey = undef('apiKey') ? (launchEnv.get(publicRoots[choice].env)) : parse.apiKey;
+                        const options = {
+                            apiKey,
+                            baseURL: undef('baseURL') ? m.PERPLEXITY_DEFAULT_BASE_URL : parse.baseURL,
+                            model: undef('model') ? m.PERPLEXITY_DEFAULT_MODEL : parse.model,
+                            maxTokens: undef('maxTokens') ? m.PERPLEXITY_DEFAULT_MAX_TOKENS : parse.maxTokens,
+                            ...(undef('searchRecency') ? {} : { searchRecency: parse.searchRecency }),
+                        };
+                        resolvedBaseURL = String(options.baseURL);
+                        if (String(apiKey).length > 0)
+                            fixedSearch = new m.PerplexitySearchProvider(options);
+                        else
+                            readyDetail = 'the resolved apiKey is empty (explicit empty stays empty under official ?? semantics)';
+                    }
+                    else {
+                        // deepseek-official — ROOT 04:3x SNAPSHOT LAW: this mount resolves
+                        // the OFFICIAL resolveOptions layers (index.ts:99-137) ONCE and
+                        // hands the provider a CONSTANT resolved snapshot. No dynamic
+                        // reader is combined with constant seam facts (that pairing let an
+                        // endpoint move after assembly past a first-frame seam). The
+                        // launch-environment SNAPSHOT of launchEnvironmentOf(ctx) lives on
+                        // the cordis ctx store and is NOT reachable at this boot-supply
+                        // layer — we do NOT claim process.env equals those layered reads:
+                        // the supported credential sources here are the config apiKey and
+                        // the PROCESS layer, named exactly; a key carried only on a higher
+                        // launch-snapshot layer reads NOT-READY here, and config apiKey is
+                        // the supported alternative. Key resolution NEVER creates a new
+                        // credential service. The ctx-only planes (deepseekAccount token,
+                        // per-session recordRequest) have no counterpart at row supply and
+                        // are OMITTED — session planes, not construction defaults.
+                        const m = mod;
+                        const snap = mod.Config.parse(cfgIn);
+                        const apiKeyEnv = snap.apiKeyEnv !== undefined ? String(snap.apiKeyEnv) : 'DEEPSEEK_API_KEY';
+                        const literal = typeof snap.apiKey === 'string' && snap.apiKey.length > 0 ? snap.apiKey : undefined;
+                        const envKey = launchEnv.get(apiKeyEnv);
+                        const resolvedKey = literal ?? (envKey.length > 0 ? envKey : undefined);
+                        const snapshot = {
+                            ...(resolvedKey !== undefined ? { apiKey: resolvedKey } : {}),
+                            apiKeyEnv,
+                            baseURL: snap.baseURL !== undefined ? String(snap.baseURL) : (launchEnv.get('DEEPSEEK_SEARCH_BASE_URL') || m.DEEPSEEK_DEFAULT_BASE_URL),
+                            model: snap.model, apiVersion: snap.apiVersion, maxTokens: snap.maxTokens, maxUses: snap.maxUses,
+                        };
+                        resolvedBaseURL = String(snapshot.baseURL);
+                        liveBaseURL = () => String(snapshot.baseURL); // CONSTANT by the snapshot law: seam facts and provider options read the SAME frozen frame — drift is unbuildable at this layer, not re-blessed per call
+                        if (resolvedKey !== undefined)
+                            fixedSearch = new m.DeepSeekSearchProvider(() => snapshot);
+                        else
+                            readyDetail = `neither a config apiKey nor $${apiKeyEnv} resolves through the public launch-environment layering (the same read-only face the official applies use)`;
+                    }
+                    if (fixedSearch !== null) {
+                        // ONE config -> ALL facts: the seam envelope AND the classify
+                        // searchOrigin derive from this SAME resolved endpoint origin.
+                        let parsed;
+                        try {
+                            parsed = new URL(resolvedBaseURL);
+                        }
+                        catch {
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the resolved endpoint URL (${JSON.stringify(resolvedBaseURL.slice(0, 80))}) does not parse — refusing rather than shipping an unverifiable target` };
+                        }
+                        if (parsed.protocol !== 'https:') {
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'the resolved search endpoint must be https (credentials ride this origin — plaintext is refused, no exception)' };
+                        }
+                        const origin = parsed.origin;
+                        const identity = `g2-web-search:${choice}|${origin}`;
+                        // declared = the FIRST resolved frame (the pin); facts = LIVE
+                        // re-resolution through the SAME code path per dispatch — endpoint
+                        // movement since assembly is CONFIG_DRIFT refusal inside the seam,
+                        // not a second same-origin blessing.
+                        // THE DEPLOYMENT CAP (root 05:0x): searchMaxResults is SUPPLIED on
+                        // every lane — the value comes from the SAME config face the tool-web
+                        // gateway reads (its public Config field searchMaxResults, default
+                        // the EXPORTED WEB_SEARCH_MAX_RESULTS constant from the tool-web
+                        // root), validated by the gateway's own positive-integer law
+                        // (index.ts:67-70). Nothing new is invented; absence takes the
+                        // deployment DEFAULT, never "uncapped".
+                        // same law: declared + lock-resolved -> plain specifier.
+                        const capMod = (await import('@deepseek-ai/dsh-tool-web'));
+                        const laneCap = webSearchCfg.searchMaxResults ?? capMod.WEB_SEARCH_MAX_RESULTS;
+                        if (!Number.isInteger(laneCap) || laneCap < 1) {
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed.searchMaxResults must be a positive integer (the gateway's own law, tool-web/src/index.ts:67-70) — got ${JSON.stringify(laneCap)}` };
+                        }
+                        buildSearchLane = () => ({ fixedSearchProvider: fixedSearch, searchMaxResults: laneCap, declared: { endpointOrigin: origin, configIdentity: identity }, readMountFacts: () => {
+                                const liveOrigin = (() => { try {
+                                    const u = new URL(liveBaseURL());
+                                    return u.origin;
+                                }
+                                catch {
+                                    return `UNPARSEABLE:${liveBaseURL().slice(0, 60)}`;
+                                } })();
+                                return { endpointOrigin: liveOrigin, configIdentity: `g2-web-search:${choice}|${liveOrigin}` };
+                            } });
+                        out.webSearchEndpointOrigin = origin;
+                    }
+                    else {
+                        out.webSearchNotReady = `G2_WEB_SEARCH_NOT_READY: provider "${choice}" selected but the credential is unresolvable (${readyDetail}) — no lane minted; web_search stays unmounted (fail-closed law); awaiting the USER's configuration (exact external gap, not waived)`;
+                    }
+                }
+                catch (error) {
+                    return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed declared but the PUBLIC search root (${String(choice)}) refused: ${String(error?.message ?? error).slice(0, 200)} — typed refusal, no stand-in provider, no credential invented` };
+                }
+            }
+            const webFixedCfg = g2Mount?.webFixedProvider;
+            if (webFixedCfg?.enabled === true) {
+                const webFetchSpecifier = '@deepseek-ai/dsh-web-fetch-http';
+                try {
+                    const webMod = (await import(webFetchSpecifier));
+                    const resolved = webMod.Config.parse(webFixedCfg.config ?? {});
+                    // root f792-review ①: the exported Config carries types/defaults
+                    // ONLY — the POSITIVE-FINITE / timer-range / NON-NEGATIVE-INTEGER
+                    // laws live in the host's apply() asserts (:82-85), NOT in the
+                    // schema. Equivalent checks run HERE before construction (never
+                    // claimed otherwise):
+                    const posFin = (k) => { const v = resolved[k]; if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0)
+                        return `webFixedProvider.config.${k} must be a positive finite number (the host's apply-law)`; return null; };
+                    for (const k of ['maxResponseBytes', 'maxBodyChars', 'timeoutMs']) {
+                        const bad = posFin(k);
+                        if (bad !== null)
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: bad };
+                    }
+                    if (typeof resolved.timeoutMs === 'number' && resolved.timeoutMs > 2_147_483_647) {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webFixedProvider.config.timeoutMs exceeds the Node timer range (the host assertTimeoutMs law)' };
+                    }
+                    const mr = resolved.maxRedirects;
+                    if (typeof mr !== 'number' || !Number.isInteger(mr) || mr < 0) {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webFixedProvider.config.maxRedirects must be a non-negative integer (the host assertNonNegativeInteger law)' };
+                    }
+                    // mapping verbatim (index.ts:86-92):
+                    const limits = {
+                        maxResponseBytes: resolved.maxResponseBytes,
+                        maxBodyChars: resolved.maxBodyChars,
+                        timeoutMs: resolved.timeoutMs,
+                        maxRedirects: resolved.maxRedirects,
+                        userAgent: resolved.userAgent,
+                    };
+                    // root 01:2x: the gateway receives a FIXED capture+bind face over
+                    // the constructed provider (AbortSignal passes verbatim; NO dynamic
+                    // re-fetch; search stays null — HttpFetchProvider does not search
+                    // and fetch never impersonates it).
+                    const fixedProvider = new webMod.HttpFetchProvider(limits);
+                    out.webFixedTransport = webSupplyMod.createG2FixedWebFace(fixedProvider);
+                    // ROOT card pairing: the Team-only FIXED lane for the plane's B-WEB
+                    // closed face is supplied HERE over the SAME real provider (the
+                    // reviewed seam pins it; declared envelope + current reader ride the
+                    // row-declared config — nothing constant, lane THROW = typed refusal
+                    // through the catch below).
+                    out.webFixedLanes = mountMod.createG2WebFixedLanes({
+                        fixedProvider: fixedProvider,
+                        seamMod: webSeamMod,
+                        declared: webFixedCfg.declared ?? {},
+                        readMountFacts: () => webFixedCfg.declared ?? {},
+                        ...(buildSearchLane() !== null ? { search: buildSearchLane() } : {}),
+                    });
+                }
+                catch (error) {
+                    return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String(error?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` };
+                }
+            }
+            // ROOT round-75: the BROWSER public-entry producer, REAL. Arming is a
+            // pure config read (g2Mount.browser — the approved ask); resolution below
+            // LOADS EXPORTS ONLY (no boot, no launch, no worker). When armed and
+            // unresolvable the whole supply refuses NAMED — a browser row must never
+            // mount on a half face (the port's ENTRY_INCOMPLETE law stays the
+            // backstop, the producer refuses first). When armed and resolved the
+            // pair rides out.entries, which the loader hands to the browser
+            // all-or-nothing pairing verbatim.
+            const browserAsk = g2Mount.browser;
+            if (browserAsk !== undefined && browserAsk !== null) {
+                const built = await g2ResolveBrowserPublicEntries(typeof browserAsk === 'object' ? browserAsk.entryPaths : undefined);
+                if (built.ok === false) {
+                    return { ok: false, code: built.code, message: built.message };
+                }
+                out.entries = { ...out.entries, ...built.entries };
+                // SINGLE SOURCE (root final card): the producer-resolved pair + its
+                // RECORDED provenance are the ONLY browser pair the assembly may
+                // carry; the loader consumes input.entries verbatim and never lets a
+                // loader-pinned pair out-vote it.
+                out.entriesProvenance = built.provenance;
+            }
+            return await mountMod.createG2TeamAssemblySupply(out);
+        }
+        // A5M2-G6 lifecycle observer (root ruling 3, lane increment 1): one
+        // optional child fiber on the PUBLIC ctx.inject face; its callback firing
+        // IS the generation boundary. Methods bind once per generation downstream;
+        // the fiber's public `state` (cordis lib/types/fiber.d.ts:109-110;
+        // FiberState.ACTIVE = 2, fiber.d.ts:67-70) answers liveness. Absent face /
+        // non-ACTIVE / pre-activation fiber => null => the arm fail-closes.
+        const sessionQueryLifecycle = (() => {
+            let generation = 0;
+            let current = null;
+            let fiber = null;
+            let observable = false;
+            if (typeof ctx.inject === 'function') {
+                observable = true;
+                try {
+                    const created = ctx.inject(['sessionQuery'], (child) => {
+                        generation += 1;
+                        current = { id: generation, service: child.get('sessionQuery') };
+                    });
+                    fiber = (created ?? null);
+                }
+                catch {
+                    observable = false;
+                    fiber = null;
+                    current = null;
+                }
+            }
+            return {
+                currentGeneration() {
+                    if (!observable || fiber === null)
+                        return null;
+                    // FiberState.ACTIVE — cordis lib/types/fiber.d.ts:67-70 (public const
+                    // enum; the literal rides the structural independence rule).
+                    if (fiber.state !== 2)
+                        return null;
+                    return current;
+                },
+            };
+        })();
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1569,6 +2152,23 @@ export async function apply(ctx, config) {
             controlServiceRef,
             ptcEscalationRef,
             now: () => new Date().toISOString(),
+            // B-SCHEDULE PORT BOUNDARY (root 19:17): the REAL published
+            // ScheduleService raw handle / CURRENT FEED — the global service store
+            // read under 'schedule', the SAME name the host's own schedule bodies
+            // resolve `rootCtx.schedule` from at every dispatch. The signed adapter
+            // is fed the raw service (never a wrapper of the native TOOL face — the
+            // tool output is a rendered view set, not the service's record stream),
+            // and the feed is re-read LIVE so a service object or method replaced
+            // underneath the mount is observed as the signed PORT_DRIFT it is.
+            // Absence answers undefined (the glue fail-closes; no stand-in exists).
+            scheduleServiceFeed: () => {
+                try {
+                    return ctx.get?.('schedule');
+                }
+                catch {
+                    return undefined;
+                }
+            },
             // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
             // blueprint resolver (the glue's dynamic Team authority — the three-
             // case contract in bound-blueprint.ts: a bound ref resolves through
@@ -1585,11 +2185,23 @@ export async function apply(ctx, config) {
             jobs: () => ctx.get('jobs'),
             // M2 B-WEB (a5m2w): the same lazy global-store read as jobs, resolved at call time.
             web: () => ctx.get('web'),
+            webFixed: async () => {
+                const g2Cfg = resolvedRowConfig.teamToolPlane?.g2Mount;
+                if (typeof g2Cfg !== 'object' || g2Cfg === null)
+                    return undefined;
+                const built = await buildG2TeamSupply(resolvedRowConfig, ctx);
+                return built?.supply?.webFixedTransport;
+            },
             // A5-M2 B-IMAGE: the same lazy shape for the 639 public `attachments` service
             // (the store hand-face of the governed read_image triple). Additive optional,
             // never in a hard inject: worlds without the service answer the assembly's
             // observed store-absent lane, the gate-on mount refuses at the plane.
             attachments: () => ctx.get('attachments'),
+            // A5-M2 G2 (round-19): the lazy per-Team G2 supply accessor (see
+            // buildG2TeamSupply). Absent `teamToolPlane.g2Mount` config answers
+            // undefined — the bindings then refuse typed; NOTHING changes for
+            // worlds without the block (additive optional, never a hard inject).
+            g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig, ctx)),
             // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
             // `llm` service — the SAME token native read-image.ts:119-130 answers
             // `resolveModelInfo` through for its image-capability route gate. Resolved
@@ -1613,6 +2225,38 @@ export async function apply(ctx, config) {
             // 639 global-store token; sandboxPolicy is the ctx property beside it).
             sandbox: () => ctx.get('sandbox'),
             sandboxPolicy: () => ctx.sandboxPolicy,
+            // A5M2 G3 B-PTC run_code GUARD (root final limited ruling, the real
+            // supply line — see the type declaration above): the LIVE registered
+            // PTC runtime instance through the SAME 639 global-store token the
+            // host registry reads. An unregistered token throws at ctx.get and
+            // the reader's try/catch answers honest absence — DECLARED-INACTIVE,
+            // zero flip. Never a hard inject.
+            ptcRuntime: () => ctx.get('ptcRuntime'),
+            // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
+            // DSH public `sessionQuery` service — the registered SessionQueryEngine
+            // whose five facets (search / trace / event-read / authorization /
+            // titles) ARE the governed supply. Resolved AT MOUNT TIME (additive
+            // optional, never a hard inject): worlds without the service keep the
+            // family DECLARED-INACTIVE (honest census, zero flip). Facets are never
+            // injected through config — the glue maps them off THIS service
+            // (buildG6QuerySupplyFromService).
+            sessionQuery: () => ctx.get('sessionQuery'),
+            // Root ruling 3: the governed supply binds to a generation of THIS
+            // observer, never to a per-read ctx.get identity.
+            sessionQueryLifecycle,
+            // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
+            // `sessionProjections` accessor — the caller law reads the actual exec
+            // owner's own turnBoundary projection (stateOf(agent.session,
+            // 'turnBoundary'), workspace-access.ts:56-69 @639ed01539); the
+            // current-session default rides it and refuses with the row's own
+            // NO_CURRENT_STEP guard when the projection is unavailable — never a
+            // fabricated boundary. Additive optional, never a hard inject.
+            sessionProjections: () => ctx.get('sessionProjections'),
+            // A5M2-G5 MOUNT-ARM (root 01:34 card): the LAZY public `goals` service
+            // (global-store ctx.get read, the sessionQuery/jobs pattern verbatim) —
+            // the mount arm hands THIS live face to the plane as the governed port;
+            // nothing is mirrored, cached or stand-in'd.
+            goals: () => ctx.get('goals'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

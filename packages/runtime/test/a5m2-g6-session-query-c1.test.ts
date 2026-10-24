@@ -28,7 +28,10 @@
  *      search methods needed to construct without a backend; INACTIVE carries
  *      the verbatim evidence; contradictions throw at placement).
  *  (6) RECEIVER-PINNED DISPATCH (item 5): receiver-object and function-
- *      object identity per dispatch (PORT_RECEIVER_MOVED / PORT_METHOD_MOVED,
+ *      PUBLIC Provider generation identity per dispatch (root ruling 3, lane
+ *      increment 1: replacement INVALIDATES via PORT_RECEIVER_MOVED quoting
+ *      both markers; non-ACTIVE answers typed PORT_LIFECYCLE_UNOBSERVABLE;
+ *      the removed per-read facet/method identity laws stay removed,
  *      zero forwarding), cursor paging riding the pinned receiver, the native
  *      repeated-cursor law riding SESSION_QUERY_INVALID_CURSOR, drift, drain.
  *
@@ -59,7 +62,7 @@ const S = (await import(new URL('../src/plugin/live/governed-families/g6-session
   A5_G6_FAMILY: string
   A5_G6_TOOL_NAMES: readonly ToolName[]
   A5_G6_PORT_FAMILIES: { search: PortFamilyFace, trace: PortFamilyFace, eventRead: PortFamilyFace, authorization: PortFamilyFace, titles: PortFamilyFace }
-  A5_G6_TYPED_CODES: Record<'DECLARED_MOUNT_ABSENT' | 'NATIVE_FACE_ABSENT' | 'INVALID_ARGUMENTS' | 'UNKNOWN_PARAMETER' | 'MISSING_PARAMETER' | 'INVALID_QUERY' | 'INVALID_FILTER' | 'CALLER_UNAVAILABLE' | 'CALLER_DRIFT' | 'PORT_RECEIVER_MOVED' | 'PORT_METHOD_MOVED' | 'PRE_ABORTED' | 'RESULT_INTEGRITY_INVALID' | 'TEAM_CEILING_DENY' | 'DRAINING', string>
+  A5_G6_TYPED_CODES: Record<'DECLARED_MOUNT_ABSENT' | 'NATIVE_FACE_ABSENT' | 'INVALID_ARGUMENTS' | 'UNKNOWN_PARAMETER' | 'MISSING_PARAMETER' | 'INVALID_QUERY' | 'INVALID_FILTER' | 'CALLER_UNAVAILABLE' | 'CALLER_DRIFT' | 'PORT_RECEIVER_MOVED' | 'PORT_METHOD_MOVED' | 'PORT_LIFECYCLE_UNOBSERVABLE' | 'PRE_ABORTED' | 'RESULT_INTEGRITY_INVALID' | 'TEAM_CEILING_DENY' | 'DRAINING', string>
   A5_G6_SAFE_SERVICE_FAILURES: Record<string, { code: string, message: string }>
   A5_G6_NAMED_BLOCKERS: { SEARCH_BACKEND: string, SESSION_HISTORY_RESOURCE_KIND: string }
   A5_G6_DRAIN_SEMANTICS: string
@@ -237,6 +240,8 @@ function defaultSessions (): SeedSession[] {
 
 interface World {
   svc: Record<string, unknown>
+  advanceGeneration(): void
+  setObserverActive(on: boolean): void
   qp: Record<string, unknown>
   captured: Map<string, NativeFace>
   calls: Tuple[]
@@ -493,6 +498,13 @@ async function makeWorld (opts: WorldOpts = {}): Promise<World> {
     titlesQueryPort: svc,
     ...(provideSearch ? { searchQueryPort: svc } : {}),
   }
+  // Root ruling 3 (lane increment 1): the ONLY currentness source — a
+  // PUBLIC lifecycle observer with a mutable ACTIVE generation.
+  let observerActive = true
+  let observerId = 1
+  const lifecycle = {
+    currentGeneration: () => (observerActive ? { id: observerId, service: svc as unknown } : null),
+  }
   const adapter = S.createG6SessionQueryAdapter({
     realmId: 'realm-g6',
     providerId: 'plugin-team-g6',
@@ -501,12 +513,16 @@ async function makeWorld (opts: WorldOpts = {}): Promise<World> {
     readCaller: opts.readCallerOverride ?? (() => ({ ...caller })),
     teamCeiling: opts.teamCeilingFn ?? ((targetSessionId: string) => ceiling === 'all' || ceiling.includes(targetSessionId)),
     declaredMount: { searchBackend: backend },
+    lifecycle,
+    generation: 1,
     ...(opts.maxSearchResults === undefined ? {} : { maxSearchResults: opts.maxSearchResults }),
   })
 
   const world: World = {
     svc,
     qp,
+    advanceGeneration: () => { observerId += 1 },
+    setObserverActive: (on: boolean) => { observerActive = on },
     captured,
     calls,
     boundary,
@@ -1081,7 +1097,17 @@ describe('a5m2-g6 parent/root lane and evidence-backed mount law', () => {
       queryPorts: {},
       readCaller: () => undefined,
       teamCeiling: () => true,
+      lifecycle: { currentGeneration: () => ({ id: 1, service: {} }) },
+      generation: 1,
     })).toThrow(/REAL deployment evidence/u)
+    // Root ruling 3: WITHOUT the public lifecycle observer the factory
+    // refuses to construct at all — currentness unknowable fails closed at
+    // the assembly boundary (the observer-vs-service leg is the WIRING's).
+    expect(() => S.createG6SessionQueryAdapter({
+      realmId: 'r', providerId: 'p', readNative: () => undefined, queryPorts: {},
+      readCaller: () => undefined, teamCeiling: () => true,
+      declaredMount: { searchBackend: { present: false, evidence: 'e' } },
+    })).toThrow(/lifecycle/u)
     const w = await makeWorld({ searchBackend: { present: false, evidence }, provideSearchFacet: false })
     expect(w.adapter.rows['session_search'].active).toBe(false)
     expect(w.adapter.rows['session_event_search'].active).toBe(false)
@@ -1105,6 +1131,8 @@ describe('a5m2-g6 parent/root lane and evidence-backed mount law', () => {
       readNative: (name: string) => w.captured.get(name),
       readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
       teamCeiling: () => true,
+      lifecycle: { currentGeneration: () => ({ id: 1, service: w.svc as unknown }) },
+      generation: 1,
     }
     expect(() => S.createG6SessionQueryAdapter({
       ...base,
@@ -1160,22 +1188,41 @@ describe('a5m2-g6 receiver-pinned dispatch and pinned-receiver paging', () => {
     expect(second['sessionFilters']).toEqual([{ kind: 'cwd', values: [CWD] }])
   })
 
-  it('the RECEIVER OBJECT moving (same functions, swapped instance) refuses PORT_RECEIVER_MOVED with zero forwarding', async () => {
+  it('REMOVED-LAW PIN (root ruling 3, ruling (c)): a same-instance facet/method rebind inside the SAME generation is NOT observed and never promised — the bound generation-1 handles keep serving; PORT_METHOD_MOVED no longer exists as a runtime law', async () => {
     const w = await makeWorld()
-    const mark = w.calls.length
+    const native = await w.nativeCall('session_event_read', { session_id: 's-a', seq: 5 })
+    // Same-object method edit + swapped facet identity: neither is a public
+    // lifecycle transition; nothing may be detected here (by design).
     w.qp['authorizationQueryPort'] = { ...w.svc }
+    ;(w.svc as Record<string, unknown>)['readEvent'] = async function rebound () { throw new Error('MUST-NOT-RUN') }
+    const out = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
+    expect(String(out.value)).toContain('"seq": 5')
+    expect(String(out.value)).toBe(String(native.value))
+  })
+
+  it('a PUBLIC generation replacement INVALIDATES the row: PORT_RECEIVER_MOVED quoting pinned-vs-live markers, zero forwarding — old approvals never ride across generations (precision 2)', async () => {
+    const w = await makeWorld()
+    const served = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
+    expect(String(served.value)).toContain('"seq": 5')
+    const mark = w.calls.length
+    w.advanceGeneration()
     const out = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
     expect(out.refusal?.['code']).toBe(SC.PORT_RECEIVER_MOVED)
+    expect(String(out.refusal?.['detail'])).toContain('generation 1 is INVALIDATED')
+    expect(String(out.refusal?.['detail'])).toContain('live generation 2')
     expect(w.callsSince(mark).length).toBe(0)
   })
 
-  it('a rebound METHOD FUNCTION on the pinned receiver refuses PORT_METHOD_MOVED with zero forwarding', async () => {
+  it('observer non-ACTIVE (no generation answerable) fail-closes typed PORT_LIFECYCLE_UNOBSERVABLE with zero forwarding; a restored ACTIVE generation serves again (precision 1; never latched)', async () => {
     const w = await makeWorld()
-    const mark = w.calls.length;
-    (w.svc as Record<string, unknown>)['readEvent'] = async function (request: unknown, signal?: unknown) { return { request, signal } }
+    w.setObserverActive(false)
+    const mark = w.calls.length
     const out = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
-    expect(out.refusal?.['code']).toBe(SC.PORT_METHOD_MOVED)
+    expect(out.refusal?.['code']).toBe(SC.PORT_LIFECYCLE_UNOBSERVABLE)
     expect(w.callsSince(mark).length).toBe(0)
+    w.setObserverActive(true)
+    const served = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
+    expect(String(served.value)).toContain('"seq": 5')
   })
 
   it('caller drift (workspace move between classify and entry) refuses CALLER_DRIFT with zero forwarding', async () => {
@@ -1264,6 +1311,8 @@ describe('a5m2-g6 row facts — five typed rows, captured bytes, evidence mount'
       readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
       teamCeiling: () => true,
       declaredMount: { searchBackend: { present: true } },
+      lifecycle: { currentGeneration: () => ({ id: 1, service: w.svc as unknown }) },
+      generation: 1,
     })
     const out = naked.rows['session_trace'].classify({})
     expect(out['code']).toBe(SC.NATIVE_FACE_ABSENT)
@@ -1279,6 +1328,8 @@ describe('a5m2-g6 row facts — five typed rows, captured bytes, evidence mount'
       queryPorts: { ...w.qp },
       readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
       teamCeiling: () => true,
+      lifecycle: { currentGeneration: () => ({ id: 1, service: w.svc as unknown }) },
+      generation: 1,
       declaredMount: { searchBackend: { present: true } },
     }
     expect(() => S.createG6SessionQueryAdapter({ ...base, realmId: '' })).toThrow(TypeError)
@@ -1453,5 +1504,40 @@ describe('a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and 
     expect(out.error?.code).toBe(SC.TEAM_CEILING_DENY)
     expect(String(out.error?.message)).toContain("set member 'p-root'")
     expect(out.value).toBeUndefined()
+  })
+})
+
+/* ══ 10. MINT OMISSION LAW (root 19:25) — key GONE on non-search, kept on search ══ */
+describe('a5m2-g6 mint omission law — non-search targetManifests OMIT maxSearchResults; search rows byte-unchanged', () => {
+  it('non-search rows: the KEY IS ABSENT AT ALL (hasOwnProperty false + ownKeys exclude it) — never a present-and-undefined member', async () => {
+    const w = await makeWorld()
+    const probes: Array<[ToolName, Record<string, unknown>]> = [
+      ['session_trace', { session_id: 's-a' }],
+      ['session_event_trace', { session_id: 's-a', seq: 5 }],
+      ['session_event_read', { session_id: 's-a', seq: 5 }],
+    ]
+    for (const [name, args] of probes) {
+      const plan = w.adapter.rows[name].classify(args)
+      expect(plan['ok'], `${name} classify`).toBe(true)
+      const manifest = plan['targetManifest'] as Record<string, unknown>
+      expect(Object.prototype.hasOwnProperty.call(manifest, 'maxSearchResults'), `${name} key presence`).toBe(false)
+      expect(Object.keys(manifest), `${name} ownKeys`).not.toContain('maxSearchResults')
+      expect('maxSearchResults' in manifest, `${name} in-probe (what validatePaFamilyTarget checks)`).toBe(false)
+    }
+  })
+
+  it('search rows stay UNCHANGED: the key is PRESENT carrying the effective cap (default 100; configured 1 stays 1) on BOTH search-family rows', async () => {
+    const w = await makeWorld()
+    const plan = w.adapter.rows['session_search'].classify({ query: 'needle' })
+    const manifest = plan['targetManifest'] as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(manifest, 'maxSearchResults')).toBe(true)
+    expect(manifest['maxSearchResults']).toBe(100)
+    const evs = w.adapter.rows['session_event_search'].classify({ session_id: 's-a', query: 'needle' })['targetManifest'] as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(evs, 'maxSearchResults')).toBe(true)
+    expect(evs['maxSearchResults']).toBe(100)
+    const w1 = await makeWorld({ maxSearchResults: 1 })
+    const m1 = w1.adapter.rows['session_search'].classify({ query: 'needle' })['targetManifest'] as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(m1, 'maxSearchResults')).toBe(true)
+    expect(m1['maxSearchResults']).toBe(1)
   })
 })

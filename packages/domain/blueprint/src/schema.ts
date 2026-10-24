@@ -252,6 +252,30 @@ export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS: readonly string
 ]
 
 /**
+ * The closed `operationClass` vocabulary of the Alpha.3 PR4 / Alpha.4
+ * `permissionMutationEnvelope` carrier — the FROZEN ORIGINAL SEVEN-NAME
+ * permission vocabulary. The envelope grammar (design §5) pairs every
+ * operation class with a real resource matcher (file → exact/subtree,
+ * shell → fingerprint; NO `any` in this grammar); the invocation-only
+ * schedule names have no matcher this carrier can express, so they are
+ * deliberately ABSENT here even though the template permission lane
+ * accepts them (root 20:05: the envelope lane keeps the old seven-tool
+ * closed set isolated — widening the template vocabulary never widens
+ * this carrier). This list is a separate closed constant on purpose: it
+ * never reads `PERMISSION_TOOL_NAMES`, so the two sets cannot drift
+ * together.
+ */
+export const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES: readonly string[] = [
+  'read',
+  'read_image',
+  'write',
+  'edit',
+  'lsp',
+  'bash',
+  'pwsh',
+]
+
+/**
  * The TWO v3 authority documents are ONE grammar (ADR A3-9, spec §3.3): the
  * Leader expansion ceiling (`permissionMutationEnvelope`, optional through the
  * PR1-PR6 bridge) and the Human User hard ceiling (`teamHardEnvelope`,
@@ -276,6 +300,12 @@ export const BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS = BLUEPRINT_PERMIS
 export const BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS
 /** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — the closed ceiling ladder. */
 export const BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS
+/**
+ * @see {@link BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES} —
+ * the FROZEN seven-name `operationClass` closed set (the invocation-only
+ * schedule names are never envelope operation classes).
+ */
+export const BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES = BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES
 
 /** Max length of one exec fingerprint in the carrier (structural bound). */
 export const PERMISSION_FINGERPRINT_MAX_LENGTH = 256
@@ -398,8 +428,13 @@ export const BLUEPRINT_POLICY_REFERENCEABLE_FIELDS: readonly string[] = [
 export const CAPABILITY_POLICY_DECISIONS: readonly string[] = ['allow', 'deny']
 
 /**
- * The seven tool names a permission rule may gate (alpha.2 plan §4/§6.2 +
- * A2C-1, closed vocabulary). The shell class (`bash`, `pwsh`) allows
+ * The tool names a permission rule may gate (alpha.2 plan §4/§6.2 +
+ * A2C-1, closed vocabulary; Alpha.5 M2 root 20:05: extended by the
+ * invocation-only pair {@link PERMISSION_INVOCATION_ONLY_TOOL_NAMES} —
+ * the ORIGINAL seven-name classes below are UNCHANGED, and the envelope
+ * carrier keeps the seven-name closed set at
+ * {@link BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES}).
+ * The shell class (`bash`, `pwsh`) allows
  * tool-level ask/deny via `resource: { kind: 'any' }` only — no positive
  * parameter-level allow. Enforced in validation: a shell-class rule in
  * the `allow` lane is rejected on MEMBER templates, and an `exact`
@@ -426,6 +461,150 @@ export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'lsp',
   'bash',
   'pwsh',
+  'schedule_list',
+  'schedule_delete',
+  'session_search',
+  'session_event_search',
+  'session_trace',
+  'session_event_trace',
+  'session_event_read',
+  'team_list_members',
+  'team_list_templates',
+  'team_inspect_config',
+  'team_create_member',
+  'team_delegate',
+  'team_follow_up',
+  'team_collect',
+  'team_send_message',
+  'team_report_progress',
+  'team_archive_member',
+  'cordis_inspect_list',
+  'cordis_inspect_query',
+  'team_list_pending_control',
+  'interrupt_agent',
+  'list_agents',
+  'send_message',
+  // B-SUBAGENT SPAWN side (root 22:32 fact-supply, joint candidate
+  // feat/a5m2-joint-cand2 @ 9b5c9f4b2: A5_B_SUBAGENT_SPAWN_TOOL_NAMES,
+  // records 39-43 — subagent/subagent_fork mount always, the external-
+  // provider faces and the model-route read mount declared_mount; the
+  // closed effect envelope is `tool-invoke` ONLY, resource null. NOT in
+  // int yet — root review in flight; naming pre-wires the channel only).
+  // Invocation identity is the whole rule: the provider declaration
+  // (codex/claude), model-selection, maxDepth and every I/O/provider/
+  // domain constraint stay SERVICE-SIDE — an invocation `any` rule
+  // exempts NONE of them.
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
+]
+
+/**
+ * The INVOCATION-ONLY class of the permission vocabulary (Alpha.5 M2,
+ * root 20:05 limited card): `schedule_list` / `schedule_delete` are named
+ * by this CLOSED TWO-NAME SET ONLY — `schedule_create` / `schedule_update`
+ * exist on the native B-SCHEDULE family but are NOT permission tools here
+ * (enablement refused by card; a rule naming one is MALFORMED). These
+ * tools carry NO matchable resource space (native interface: `schedule_list`
+ * has an EMPTY parameter face — host tools.ts:454; `schedule_delete`
+ * carries only an opaque record `id` returned by `schedule_list` — host
+ * tools.ts:470-479 — never a workspace path, never a shell command), so a
+ * rule for them accepts the whole-tool `resource: { kind: 'any' }` in ALL
+ * THREE lanes (allow/ask/deny — the rule IS the invocation authority; no
+ * shell-class dual gate, no implicit default: an absent rule still
+ * resolves to `policy.default`) and rejects `exact` / `subtree` in every
+ * lane of every role. They are NEVER file tools and NEVER shell tools:
+ * no file matcher, no fingerprint, no canonical operation — their
+ * authority rides the admission projection's `tool-invoke` arm only, and
+ * a rule for one never gates the other.
+ *
+ * Alpha.5 M2 continuation (root 22:13 limited card): the class widens by
+ * the five G6 SESSION-QUERY names — `session_search` / `session_event_search`
+ * / `session_trace` / `session_event_trace` / `session_event_read` — named
+ * by the host CLOSED FIVE-NAME SET (`tool-session-query/src/index.ts`
+ * @639ed01539 :66/:76/:86/:96/:109, defineTool verbatim). Their parameter
+ * faces are structured session/sequence queries (session id, event `seq`,
+ * `before`/`after` counts, search text) — NEVER a workspace path, NEVER a
+ * shell command — so the SAME invocation-only law holds: `any` in all
+ * three lanes, `exact`/`subtree` refused every lane of every role, no file
+ * matcher, no fingerprint, no envelope carrier (the seven-name
+ * operationClass set stays frozen). Naming them here opens the named
+ * allow/ask/deny channel ONLY: the rows are PA-WIRED in the current
+ * integration production (center landing 874f3ae0d: adapter
+ * g6-session-query.mjs + wiring + the REAL bindings supply-close block +
+ * host lazy accessors; capture → PA open/edge/consume source-signed) —
+ * Host ACCEPTANCE is still pending, and the old M0-B frozen table
+ * (`host-unmounted-optin-package`, PROPOSED) is a historical record, NOT
+ * the current implementation fact. An invocation permission grants NO
+ * I/O exemption — these tools read only through their own authorized-
+ * session seam, and every resource-scoped effect still resolves to
+ * no-authority ⇒ Ask.
+ */
+export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES: readonly string[] = [
+  'schedule_list',
+  'schedule_delete',
+  'session_search',
+  'session_event_search',
+  'session_trace',
+  'session_event_trace',
+  'session_event_read',
+  // B-TEAM (root 22:4x continuation card; names verbatim from the CURRENT
+  // integration production — team-adapters.mjs A5_B_TEAM_TOOL_NAMES, PA
+  // lane via the plane's ONE paAdmit, bindings actualservice 85ccbf9e3,
+  // dist mirrors 1cc605549). Durable writes ride the DELEGATED chain
+  // (SERVICE_ENTRY_DELEGATION: the adapter OBSERVES none of it) — no
+  // matchable file/shell resource exists for the template lane, so the
+  // rule IS the invocation authority on the `tool-invoke` arm. The four
+  // self-governance controls (team_request_control / team_resolve_control
+  // / team_grant_permission / team_revoke_permission) stay OUT: declared
+  // INACTIVE, Gate 0f refuses their mount.
+  'team_list_members',
+  'team_list_templates',
+  'team_inspect_config',
+  'team_create_member',
+  'team_delegate',
+  'team_follow_up',
+  'team_collect',
+  'team_send_message',
+  'team_report_progress',
+  'team_archive_member',
+  // G1 PURE-QUERY (mount names fixed at team-tool-plane.mjs
+  // A5_G1_PURE_QUERY_MOUNT_NAMES; the rows "walk THIS plane's ONE PA
+  // admission (same token ledger, same open/edge, same durable row)" —
+  // measured at the int tip). Read-side rows: 53/54 classify + delegate
+  // over the injected TRUSTED inspect-registry port; 85 is the pure read
+  // of the Team pending-control queue.
+  'cordis_inspect_list',
+  'cordis_inspect_query',
+  'team_list_pending_control',
+  // B-SUBAGENT controls trio (A5_B_SUBAGENT_TOOL_NAMES at the root-named
+  // source-signed production branch 7c6869879 — family landing pending;
+  // listing them pre-wires the NAMED channel only). Adjacency/ancestor
+  // authority is adjudicated INSIDE the service (exact live caller vs the
+  // recorded lineage); the tool adds no authority of its own and carries
+  // no path/command resource. `subagent` / `subagent_fork` /
+  // `list_subagent_models` are NOT PA rows and stay out — the spawn-side
+  // branch commits are mint/address encoding, not named invocations.
+  'interrupt_agent',
+  'list_agents',
+  'send_message',
+  // B-SUBAGENT SPAWN side (root 22:32 fact-supply, joint candidate
+  // feat/a5m2-joint-cand2 @ 9b5c9f4b2: A5_B_SUBAGENT_SPAWN_TOOL_NAMES,
+  // records 39-43 — subagent/subagent_fork mount always, the external-
+  // provider faces and the model-route read mount declared_mount; the
+  // closed effect envelope is `tool-invoke` ONLY, resource null. NOT in
+  // int yet — root review in flight; naming pre-wires the channel only).
+  // Invocation identity is the whole rule: the provider declaration
+  // (codex/claude), model-selection, maxDepth and every I/O/provider/
+  // domain constraint stay SERVICE-SIDE — an invocation `any` rule
+  // exempts NONE of them.
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**

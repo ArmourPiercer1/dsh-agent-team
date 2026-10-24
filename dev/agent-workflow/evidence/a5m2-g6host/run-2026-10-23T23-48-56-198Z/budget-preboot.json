@@ -1,0 +1,10 @@
+{
+  "taskNewAllocatedBytes": 49152,
+  "taskWorldCapBytes": 209715200,
+  "remainingBytes": 209666048,
+  "recoveryAccount": {
+    "capBytes": 209715200,
+    "recordedNewAllocatedBytes": 68464640,
+    "status": "under-cap (recorded at root 23:2x)"
+  }
+}

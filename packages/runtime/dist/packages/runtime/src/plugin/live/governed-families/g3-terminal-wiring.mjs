@@ -368,6 +368,27 @@ export function buildG3TerminalWiring (input = {}) {
         throw refusalToThrow(wiringRefuse(A5_G3_TERMINAL_WIRING_CODES.EFFECTS_UNPARSABLE, `${toolName}: the arm's effect set is not the frozen closed vocabulary (${String(parsedEffects.problems?.[0]?.detail ?? 'parse refused')}) (zero port entry)`))
       }
       const signal = isRecord(exec) ? exec.signal : undefined
+      // THE REAL CANCEL SUPPLY (root 01:1x, Jobs/cancel production half):
+      // a host interrupt lands on the exec signal at ANY point of the walk —
+      // the synchronous race check below only covers one instant of it.
+      // The listener routes EVERY abort through the arm's OWN signed cancel
+      // law (arm.cancel(plan)) — no new seam, no ledger: the signal already
+      // arrives on exec, cancel is the arm's published face. Per the state:
+      // CLASSIFIED/PREPARED/CLAIMED → the zero-effect CANCELLED word;
+      // EXECUTING with nothing answered → the pending registration the
+      // port's post-effect recheck HONOURS once a resource is answered
+      // (root 580f① — now production-reachable, not only spec-reachable);
+      // EXECUTING with a started resource → the cleanup route through the
+      // right face (operation.cancel / service kill / owner-checked jobs
+      // kill); COMMITTED → the honest ALREADY-COMMITTED word that never
+      // retracts a committed body (a LIVE background job survives — only
+      // job_kill or its own settlement owns it). Detached in the finally:
+      // the listener never outlives this call.
+      const signalTarget = isRecord(signal)
+        && typeof signal.addEventListener === 'function'
+        && typeof signal.removeEventListener === 'function' ? signal : null
+      const routeAbort = () => { arm.cancel(classified.plan) }
+      if (signalTarget !== null) signalTarget.addEventListener('abort', routeAbort)
       const payload = classified.reviewPayload
       const walk = Object.freeze({
         realmId,
@@ -456,6 +477,10 @@ export function buildG3TerminalWiring (input = {}) {
         // native/port output as anything else (root 19:25).
         return ran.value
       } finally {
+        // the cancel listener dies WITH this call (a post-return abort can
+        // no longer reach this plan's cancel law — the row is served or
+        // refused; the COMMITTED word already owns the after-life truth).
+        if (signalTarget !== null) signalTarget.removeEventListener('abort', routeAbort)
         // The redemption leg's own close handle (idempotent with the edge's
         // own plan-fact close): every path that never reached the edge still
         // ends this call's plan fact here.

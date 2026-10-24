@@ -115,10 +115,19 @@ interface Assembly {
   familyRegistrations: () => Registration[]
 }
 
+// Root ruling 3 (lane increment 1): the PUBLIC Provider lifecycle observer
+// is the ONLY currentness source. lifecycleOf answers a stable ACTIVE
+// generation; NO_GEN models an absent/non-ACTIVE observer fiber (fail-closed).
+const lifecycleOf = (service: unknown, id = 1): { currentGeneration(): { id: number, service: unknown } | null } => ({ currentGeneration: () => ({ id, service }) })
+const NO_GEN: { currentGeneration(): { id: number, service: unknown } | null } = { currentGeneration: () => null }
+
 const WIRE = (await import(new URL('../src/plugin/live/governed-families/g6-session-query-wiring.mjs', import.meta.url).href)) as {
   A5_G6_QUERY_WIRING_REVISION: number
   A5_G6_QUERY_WIRING_CODES: Record<string, string>
   buildG6SessionQueryWiring: (input?: Record<string, unknown>) => Assembly
+  buildG6QuerySupplyFromService: (service?: unknown, lifecycle?: { currentGeneration(): { id: number, service: unknown } | null }) =>
+    | { ok: true, providerId: string, queryPorts: Record<string, unknown>, generation: number, lifecycle: { currentGeneration(): { id: number, service: unknown } | null }, declaredMount: Record<string, unknown> }
+    | { ok: false, code: string, detail: string }
 }
 const ADAPTER = (await import(new URL('../src/plugin/live/governed-families/g6-session-query.mjs', import.meta.url).href)) as {
   A5_G6_FAMILY: string
@@ -285,7 +294,8 @@ function makeWorld (opts: WorldOpts) {
 
   const readNative = (name: string) => (hidden.has(name) ? undefined : natives.get(name))
   let callerNow = CALLER_ID
-  const readCaller = () => ({ id: callerNow, ...(cwd === undefined ? {} : { cwd }) })
+  let boundaryNow: Record<string, unknown> | undefined
+  const readCaller = () => ({ id: callerNow, ...(cwd === undefined ? {} : { cwd }), ...(boundaryNow === undefined ? {} : { boundary: boundaryNow }) })
   const teamCeiling = (target: string) => ceiling.has(target)
   const declaredMount = { searchBackend: opts.searchBackend ?? { present: true as const } }
 
@@ -315,6 +325,9 @@ function makeWorld (opts: WorldOpts) {
     providerId: PROVIDER,
     readNative,
     queryPorts: qp,
+    // Root ruling 3: stable generation-1 observer for the hand-built facets.
+    lifecycle: lifecycleOf(qp, 1),
+    generation: 1,
     readCaller,
     teamCeiling,
     declaredMount,
@@ -329,6 +342,7 @@ function makeWorld (opts: WorldOpts) {
     /** The caller face is swappable so the drift legs can move the caller
      *  A→B inside the PA-await window (root 18:2x TOCTOU legs). */
     setCaller: (id: string) => { callerNow = id },
+    setCallerBoundary: (boundary: Record<string, unknown> | undefined) => { boundaryNow = boundary },
     portCalls: () => calls.length,
     build (over: Record<string, unknown> = {}) {
       // the adapter's own contradiction law: evidence of NO backend with a
@@ -403,6 +417,9 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
         queryPorts: w.qp, readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
         teamCeiling: (t: string) => w.ceiling.has(t),
         declaredMount: { searchBackend: { present: true } },
+        // Root ruling 3: the reference adapter needs the public lifecycle too.
+        lifecycle: lifecycleOf(w.qp, 1),
+        generation: 1,
       })
       expect(asm.rows.session_event_read!.row.classify({ seq: 5 })).toEqual(reference.rows.session_event_read!.classify({ seq: 5 }))
     })
@@ -653,38 +670,55 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
   })
 
   describe('(f) NAMED GAPS pinned at their measured bytes through the REAL published checkers — never worded closed', () => {
-    it('PA_CONSUMPTION_BRIDGE_COMPLETION (1): the three always-mount rows’ targetManifest FAILS the bridge’s lossless walk (maxSearchResults is an always-present member that is undefined off the search family)', () => {
+    it('PA_CONSUMPTION_BRIDGE_COMPLETION (1): the three always-mount rows ACCEPT on the SIGNED closed maps (两表已签 19:28; lane at 5a16c4aa) — key OMITTED (mintfix), lossless TRUE, validatePaFamilyTarget UNDEFINED; the pairing flip end to end', () => {
       const w = makeWorld({ tag: 'f1' })
       const asm = w.build()
       for (const toolName of ['session_trace', 'session_event_trace', 'session_event_read']) {
         const plan = asm.rowOf(toolName).classify(toolName === 'session_trace' ? TRACE_ARGS : { session_id: 's-a', seq: 5 })
         expect(plan.ok).toBe(true)
         const manifest = plan.reviewPayload!.targetManifest as Record<string, unknown>
-        expect('maxSearchResults' in manifest).toBe(true)
-        expect(manifest.maxSearchResults).toBe(undefined)
-        expect(isLosslessJsonValue(manifest)).toBe(false)
+        // BEFORE the mintfix this was key-PRESENT-with-undefined
+        // ('maxSearchResults' in manifest TRUE, isLosslessJsonValue FALSE);
+        // BEFORE the signed table the rules-gate claim was the
+        // unregistered-family denial. BOTH pins retired at the combined
+        // SHA — the REAL mint now validates against the REAL published
+        // checker (root 19:40: the real claim against the real table):
+        expect('maxSearchResults' in manifest).toBe(false)
+        expect(isLosslessJsonValue(manifest)).toBe(true)
+        expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest), `${toolName} ACCEPTS on the closed map`).toBeUndefined()
+        // the FORBID law keeps its teeth: the SAME manifest with the key
+        // carried back (present-with-undefined, the old mint shape) is
+        // still REFUSED — the mint must OMIT, never translate.
+        const withKey = { ...manifest, maxSearchResults: undefined }
+        expect(typeof validatePaFamilyTarget('B-SESSION-QUERY', withKey), `${toolName} key-present stays denied`).toBe('string')
       }
     })
 
-    it('PA_CONSUMPTION_BRIDGE_COMPLETION (2): even the lossless search-row manifest meets NO registered structure — the wire-pinned unregistered-family denial of the rules gate', () => {
+    it('PA_CONSUMPTION_BRIDGE_COMPLETION (2): the search rows ACCEPT too — maxSearchResults validates as the REQUIRED nonNegativeInt; the rev-4-era unregistered-denial pin RETIRES at the combined SHA (no residual inexpressibility on these manifests)', () => {
       const w = makeWorld({ tag: 'f2' })
       const asm = w.build()
       const plan = asm.rowOf('session_search').classify({ query: 'needle' })
       expect(plan.ok).toBe(true)
       const manifest = plan.reviewPayload!.targetManifest as Record<string, unknown>
-      expect(isLosslessJsonValue(manifest)).toBe(true) // search rows carry the number
-      expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest)).toBe(
-        "familyId: no target structure is registered for 'B-SESSION-QUERY'",
-      )
-      // the measured inexpressibility the delta must close: nullable string,
-      // string array — NO current kind admits either, and the closed key-set
-      // law refuses both including and omitting the keys.
-      expect(manifest.callerWorkspaceCwd).toBe(CWD)
-      expect(Array.isArray(manifest.disclosures)).toBe(true)
+      expect(isLosslessJsonValue(manifest)).toBe(true)
+      // THE RETIRED PIN (verbatim, kept for the record): at afd89fd61 this
+      // leg asserted validatePaFamilyTarget('B-SESSION-QUERY', manifest)
+      // === "familyId: no target structure is registered for
+      // 'B-SESSION-QUERY'". With the SIGNED table in the combined tree the
+      // REAL checker answers UNDEFINED — accepted:
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest)).toBeUndefined()
+      expect(manifest.maxSearchResults).toBe(100)
+      // the disclosure LAW stays mint-side (the table types it, never
+      // enforces it): every row carries the blocker sentence verbatim.
+      expect(manifest.disclosures).toEqual([ADAPTER.A5_G6_NAMED_BLOCKERS.SESSION_HISTORY_RESOURCE_KIND])
+      // nullableString admits the MEASURED null-cwd shape (the old
+      // "nullable kind missing" residual is GONE at the signed table):
       const noCwd = makeWorld({ tag: 'f2b', cwd: undefined })
       const asmNoCwd = noCwd.build()
       const planNoCwd = asmNoCwd.rowOf('session_trace').classify(TRACE_ARGS)
-      expect((planNoCwd.reviewPayload!.targetManifest as Record<string, unknown>).callerWorkspaceCwd).toBe(null)
+      const mNoCwd = planNoCwd.reviewPayload!.targetManifest as Record<string, unknown>
+      expect(mNoCwd.callerWorkspaceCwd).toBe(null)
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', mNoCwd)).toBeUndefined()
     })
 
     it('BACKEND DEPLOYMENT stays named: with absent evidence the census row refuses with the assembly’s evidence string verbatim and NO registration exists', () => {
@@ -809,6 +843,341 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       expect(w.paCalls.length).toBe(0)
       expect(w.calls.length).toBe(0)
       expect(w.closePlanCalls()).toBe(0)
+    })
+  })
+
+  describe('(h) approved callerSnapshot FULL-VALUE binding (root 992: the fingerprint does not cover the caller id or the step boundary)', () => {
+    it('h1: explicit-target same-cwd caller A→B during the PA wait — the fingerprint does NOT move, yet the full callerSnapshot refuses (this is the leak the fingerprint re-compare alone missed)', async () => {
+      const w = makeWorld({ tag: 'h1' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const obs: Array<Record<string, unknown>> = []
+      const driftingPa = Object.freeze({
+        ...methods,
+        open: async (walk: Record<string, unknown>) => {
+          const answered = await (methods.open as (x: Record<string, unknown>) => Promise<unknown>)(walk)
+          // SAME workspace cwd (the world's cwd face is caller-independent),
+          // EXPLICIT target in the args: the targetManifest — and with it
+          // the parametersFingerprint — is byte-identical under caller B.
+          w.setCaller('caller-B-same-cwd')
+          return answered
+        },
+      })
+      const asm = w.build({ pa: driftingPa, observe: (e: Record<string, unknown>) => { obs.push(e) } })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_event_trace')!
+      const refusal = await asRefusal(def.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-caller-swap' }))
+      expect(refusal.code).toBe(CODES.PLAN_DRIFT)
+      // the DRIFT detail pins WHY: not the fingerprint (it did not move) —
+      // the approved callerSnapshot's own value.
+      expect(obs.some((e) => e.event === 'g6-wire:plan-DRIFT' && e.code === 'caller-snapshot-moved'), 'the drift line names the caller snapshot').toBe(true)
+      expect(obs.some((e) => e.code === 'fingerprint-moved'), 'the fingerprint itself did not move').toBe(false)
+      expect(w.calls.length, 'zero port entry').toBe(0)
+      expect(w.nativeBodies.length).toBe(0)
+      expect(w.closePlanCalls()).toBe(1)
+    })
+
+    it('h2: step-boundary tick during the PA wait (id and cwd unchanged) — the readable window never widens through the old grant', async () => {
+      const w = makeWorld({ tag: 'h2' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const obs: Array<Record<string, unknown>> = []
+      w.setCallerBoundary({ visibleThrough: 10 })
+      const tickingPa = Object.freeze({
+        ...methods,
+        open: async (walk: Record<string, unknown>) => {
+          const answered = await (methods.open as (x: Record<string, unknown>) => Promise<unknown>)(walk)
+          // the boundary tick 10→20 widens what the body WOULD read; the
+          // fingerprint does not contain the boundary and does not move.
+          w.setCallerBoundary({ visibleThrough: 20 })
+          return answered
+        },
+      })
+      const asm = w.build({ pa: tickingPa, observe: (e: Record<string, unknown>) => { obs.push(e) } })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_event_read')!
+      const refusal = await asRefusal(def.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-boundary-tick' }))
+      expect(refusal.code).toBe(CODES.PLAN_DRIFT)
+      expect(obs.some((e) => e.event === 'g6-wire:plan-DRIFT' && e.code === 'caller-snapshot-moved')).toBe(true)
+      expect(w.calls.length, 'the widened window never reached the ports').toBe(0)
+      expect(w.closePlanCalls()).toBe(1)
+      // the same call under a STEADY caller serves normally (the leg proves
+      // the refusal is the tick, not the tool) — on a CLEAN seat (the
+      // ticking pa would of course tick again):
+      w.setCallerBoundary({ visibleThrough: 10 })
+      const steadyAsm = w.build()
+      expect(steadyAsm.ok).toBe(true)
+      const plain = steadyAsm.definitions.find((d) => d.name === 'session_event_read')!
+      const served = String(await plain.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-steady' }))
+      expect(served).toContain('s-a')
+    })
+
+    it('h3: the REAL supply-shape acceptance — current-session event_search rides the turnBoundary state lastStepStartSeq (workspace-access.ts:56-69 @639ed01539), never a silent whole-corpus read', async () => {
+      const w = makeWorld({ tag: 'h3' })
+      const reqs: Array<Record<string, unknown>> = []
+      const base = w.qp as unknown as { searchQueryPort: { searchEvents: (a: unknown, b: unknown) => Promise<unknown>, searchSessions: (a: unknown, b: unknown) => Promise<unknown> } }
+      const wrappedQp = {
+        ...w.qp,
+        searchQueryPort: Object.freeze({
+          searchSessions: base.searchQueryPort.searchSessions,
+          // TWO named formals (the placement arity law).
+          searchEvents: async function spy (a: unknown, b: unknown): Promise<unknown> {
+            reqs.push(a as Record<string, unknown>)
+            return await base.searchQueryPort.searchEvents(a, b)
+          },
+        }),
+      }
+      // (a) NO boundary → the ROW'S OWN guard refuses the current-session
+      // default (root 18:58: a production current-session event_search
+      // without the projection answers NO_CURRENT_STEP) — the searchEvents
+      // port is NEVER entered.
+      const noBoundaryAsm = w.build({ queryPorts: wrappedQp })
+      expect(noBoundaryAsm.ok).toBe(true)
+      const searchDef = noBoundaryAsm.definitions.find((d) => d.name === 'session_event_search')!
+      const refusal = await asRefusal(searchDef.execute({ query: 'alpha needle' }, { callId: 'exec-current-nostep' }))
+      expect(refusal.code).toBe('SESSION_QUERY_TOOL_NO_CURRENT_STEP')
+      expect(reqs.length, 'the unbounded current-session read never reached searchEvents').toBe(0)
+      // (b) the actual projection STATE (lastStepStartSeq — the same field
+      // the host caller law carries, core/agent/src/types.ts:82) → served,
+      // with the readable window CLAMPED to the step start.
+      w.setCallerBoundary({ lastStepStartSeq: 6 })
+      const steppedAsm = w.build({ queryPorts: wrappedQp })
+      expect(steppedAsm.ok).toBe(true)
+      const searchDef2 = steppedAsm.definitions.find((d) => d.name === 'session_event_search')!
+      const served = String(await searchDef2.execute({ query: 'alpha needle' }, { callId: 'exec-current-step' }))
+      expect(typeof served).toBe('string')
+      expect(reqs.length).toBe(1)
+      // the clamp rides the REAL filter face (buildEventFilters — a
+      // {kind:'seq', from?, to?} entry, adapter :593-607): seq.to is capped
+      // at lastStepStartSeq - 1 — the loop never reads outside the step.
+      const filters = reqs[0]!.filters as Array<{ kind: string, to?: number }>
+      expect(filters.find((f) => f.kind === 'seq')?.to, 'the window clamps to lastStepStartSeq - 1').toBe(5)
+    })
+  })
+
+  describe('(i) REAL SUPPLY (root 992 ②): the facets map OFF the live sessionQuery service — absent/incomplete are honest census, never fake supply', () => {
+    const engineFace = (over: Record<string, unknown> = {}) => Object.assign({
+      name: 'sessionQuery',
+      searchSessions: async () => 'E:searchSessions',
+      searchEvents: async () => 'E:searchEvents',
+      traceSession: async () => 'E:traceSession',
+      traceEvent: async () => 'E:traceEvent',
+      readEvent: async () => 'E:readEvent',
+      filterSessions: async () => 'E:filterSessions',
+      readTitleSnapshots: async () => 'E:readTitleSnapshots',
+    }, over)
+
+    it('i1: no service registered — SUPPLY_ABSENT typed census (never a fake stand-in)', () => {
+      const supply = WIRE.buildG6QuerySupplyFromService(undefined, lifecycleOf(undefined))
+      expect(supply.ok).toBe(false)
+      if (supply.ok === true) return
+      expect(supply.code).toBe(CODES.SUPPLY_ABSENT)
+    })
+
+    it('i1b: NO ACTIVE generation (observer absent, or the ctx.inject child fiber non-ACTIVE because the provider is not deployed) — PORT_LIFECYCLE_UNOBSERVABLE typed fail-closed; unknowable never becomes allow-by-default (root ruling 3, center precision 1)', () => {
+      const noObserver = WIRE.buildG6QuerySupplyFromService({}, undefined)
+      expect(noObserver.ok).toBe(false)
+      if (noObserver.ok === true) return
+      expect(noObserver.code).toBe(CODES.PORT_LIFECYCLE_UNOBSERVABLE)
+      const noGeneration = WIRE.buildG6QuerySupplyFromService({}, NO_GEN)
+      expect(noGeneration.ok).toBe(false)
+      if (noGeneration.ok === true) return
+      expect(noGeneration.code).toBe(CODES.PORT_LIFECYCLE_UNOBSERVABLE)
+    })
+
+    it('i2: core facet missing — SUPPLY_INCOMPLETE naming the facet, no partial supply', () => {
+      const engine = engineFace({ readEvent: undefined })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine, lifecycleOf(engine))
+      expect(supply.ok).toBe(false)
+      if (supply.ok === true) return
+      expect(supply.code).toBe(CODES.SUPPLY_INCOMPLETE)
+      expect(supply.detail).toContain('readEvent')
+    })
+
+    it('i3: live service — provider identity off the registration, facets bound to the SAME live methods, search evidence present', async () => {
+      const seen: Array<{ name: string, call: unknown[] }> = []
+      const engine = engineFace({
+        traceSession: async (...call: unknown[]) => { seen.push({ name: 'traceSession', call }); return 'E:live-trace' },
+      })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine, lifecycleOf(engine))
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      expect(supply.providerId).toBe('sessionQuery')
+      const tracePort = supply.queryPorts.traceQueryPort as { traceSession: (a: unknown, b: unknown) => Promise<unknown> }
+      expect(await tracePort.traceSession('s-a', 'signal-x')).toBe('E:live-trace')
+      expect(seen[0]!.call).toEqual(['s-a', 'signal-x'])
+      expect(supply.declaredMount.searchBackend).toEqual({ present: true })
+    })
+
+    it('i4: service WITHOUT search facets — ok supply, no searchQueryPort, honest present:false evidence (the two search names keep their natives)', () => {
+      const engine = engineFace({ searchSessions: undefined, searchEvents: undefined })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine, lifecycleOf(engine))
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      expect(Object.keys(supply.queryPorts)).not.toContain('searchQueryPort')
+      expect((supply.declaredMount.searchBackend as { present?: unknown }).present).toBe(false)
+      expect(String((supply.declaredMount.searchBackend as { evidence?: string }).evidence ?? '')).toContain('observed at mount')
+    })
+
+    it('i5: service→supply→wiring→serve end to end with NOTHING injected from config', async () => {
+      const w = makeWorld({ tag: 'i5' })
+      const ports = w.qp as unknown as {
+        searchQueryPort: { searchSessions: (a: unknown, b: unknown) => Promise<unknown>, searchEvents: (a: unknown, b: unknown) => Promise<unknown> }
+        traceQueryPort: { traceSession: (a: unknown, b: unknown) => Promise<unknown>, traceEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        eventReadQueryPort: { readEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        authorizationQueryPort: { filterSessions: (a: unknown, b: unknown) => Promise<unknown> }
+        titlesQueryPort: { readTitleSnapshots: (a: unknown, b: unknown) => Promise<unknown> }
+      }
+      const engine = {
+        name: 'sessionQuery',
+        searchSessions: ports.searchQueryPort.searchSessions,
+        searchEvents: ports.searchQueryPort.searchEvents,
+        traceSession: ports.traceQueryPort.traceSession,
+        traceEvent: ports.traceQueryPort.traceEvent,
+        readEvent: ports.eventReadQueryPort.readEvent,
+        filterSessions: ports.authorizationQueryPort.filterSessions,
+        readTitleSnapshots: ports.titlesQueryPort.readTitleSnapshots,
+      }
+      const supply = WIRE.buildG6QuerySupplyFromService(engine, lifecycleOf(engine))
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount, lifecycle: supply.lifecycle, generation: supply.generation })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      const served = String(await def.execute(TRACE_ARGS, { callId: 'exec-real-supply' }))
+      expect(served).toContain('s-a')
+      expect(w.nativeBodies.length).toBe(0)
+    })
+
+    it('i6: REMOVED-LAW PIN + generation INVALIDATION (root ruling 3): an in-place method rebind inside the SAME generation is NEITHER observed NOR promised (ruling (c): ctx.set same-fiber swaps do not notify; the removed PORT_METHOD_MOVED law stays removed — anti-reintroduction); a PUBLIC generation replacement INVALIDATES the row — typed PORT_RECEIVER_MOVED quoting BOTH markers, zero forwarding', async () => {
+      const w = makeWorld({ tag: 'i6' })
+      const ports = w.qp as unknown as {
+        searchQueryPort: { searchSessions: (a: unknown, b: unknown) => Promise<unknown>, searchEvents: (a: unknown, b: unknown) => Promise<unknown> }
+        traceQueryPort: { traceSession: (a: unknown, b: unknown) => Promise<unknown>, traceEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        eventReadQueryPort: { readEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        authorizationQueryPort: { filterSessions: (a: unknown, b: unknown) => Promise<unknown> }
+        titlesQueryPort: { readTitleSnapshots: (a: unknown, b: unknown) => Promise<unknown> }
+      }
+      const engine: Record<string, unknown> = {
+        name: 'sessionQuery',
+        searchSessions: ports.searchQueryPort.searchSessions,
+        searchEvents: ports.searchQueryPort.searchEvents,
+        traceSession: ports.traceQueryPort.traceSession,
+        traceEvent: ports.traceQueryPort.traceEvent,
+        readEvent: ports.eventReadQueryPort.readEvent,
+        filterSessions: ports.authorizationQueryPort.filterSessions,
+        readTitleSnapshots: ports.titlesQueryPort.readTitleSnapshots,
+      }
+      let liveId = 1
+      const observer = { currentGeneration: () => ({ id: liveId, service: engine }) }
+      const supply = WIRE.buildG6QuerySupplyFromService(engine, observer)
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount, lifecycle: supply.lifecycle, generation: supply.generation })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-i6-steady' }))).toContain('s-a')
+      // ANTI-REINTRODUCTION PIN (ruling (c)): swapping the method ON THE
+      // SERVICE OBJECT inside the same generation changes nothing the row
+      // can see — the generation-1 bound handles serve. No PORT_METHOD_MOVED
+      // law exists any more and none may be reinstated.
+      engine.traceSession = async function swappedB (_a: unknown, _b: unknown): Promise<string> { return 'E:B' }
+      const stillServed = String(await def.execute(TRACE_ARGS, { callId: 'exec-i6-same-generation' }))
+      expect(stillServed, 'the bound generation-1 handle serves — no same-fiber hot-swap is promised or detected').toContain('s-a')
+      // THE PUBLIC LIFECYCLE TRANSITION: a NEW ACTIVE generation invalidates
+      // the placement generation — typed, log-observable, both markers.
+      liveId = 2
+      const callsBefore = w.calls.length
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { callId: 'exec-i6-replaced' }))
+      expect(refusal.code).toBe(SC.PORT_RECEIVER_MOVED)
+      expect(refusal.message).toContain('generation 1 is INVALIDATED')
+      expect(refusal.message).toContain('live generation 2')
+      expect(w.calls.length, 'zero forwarding past the generation replacement').toBe(callsBefore)
+    })
+  })
+
+  describe('(j) PUBLIC PROVIDER LIFECYCLE CURRENTNESS (root ruling 3, lane increment 1): a generation replacement INVALIDATES the row typed with both markers; a non-ACTIVE/unobservable observer fail-closes; the removed per-read identity law stays removed (anti-reintroduction)', () => {
+    const engineOver = (qp: Record<string, unknown>) => {
+      const p = qp as unknown as {
+        searchQueryPort: { searchSessions: (a: unknown, b: unknown) => Promise<unknown>, searchEvents: (a: unknown, b: unknown) => Promise<unknown> }
+        traceQueryPort: { traceSession: (a: unknown, b: unknown) => Promise<unknown>, traceEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        eventReadQueryPort: { readEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        authorizationQueryPort: { filterSessions: (a: unknown, b: unknown) => Promise<unknown> }
+        titlesQueryPort: { readTitleSnapshots: (a: unknown, b: unknown) => Promise<unknown> }
+      }
+      return {
+        name: 'sessionQuery',
+        searchSessions: p.searchQueryPort.searchSessions,
+        searchEvents: p.searchQueryPort.searchEvents,
+        traceSession: p.traceQueryPort.traceSession,
+        traceEvent: p.traceQueryPort.traceEvent,
+        readEvent: p.eventReadQueryPort.readEvent,
+        filterSessions: p.authorizationQueryPort.filterSessions,
+        readTitleSnapshots: p.titlesQueryPort.readTitleSnapshots,
+      }
+    }
+
+    it('j1: a generation replacement — even carrying the VERY SAME service face — refuses PORT_RECEIVER_MOVED quoting pinned-vs-live markers with zero forwarding (old approvals never ride; the same-face case is exactly what the removed per-read identity law could never see — the lifecycle can)', async () => {
+      const w = makeWorld({ tag: 'j1' })
+      const approved = engineOver(w.qp)
+      let gen: { id: number, service: unknown } = { id: 1, service: approved }
+      const supply = WIRE.buildG6QuerySupplyFromService(approved, { currentGeneration: () => gen })
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount, lifecycle: supply.lifecycle, generation: supply.generation })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-j1-steady' }))).toContain('s-a')
+      const callsBefore = w.calls.length
+      // PUBLIC LIFECYCLE TRANSITION: the child fiber reloaded (provider
+      // replaced) — a NEW ACTIVE generation, possibly the SAME face.
+      gen = { id: 2, service: { ...approved } }
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { callId: 'exec-j1-replaced' }))
+      expect(refusal.code).toBe(SC.PORT_RECEIVER_MOVED)
+      expect(refusal.message).toContain('generation 1 is INVALIDATED')
+      expect(refusal.message).toContain('live generation 2')
+      expect(w.calls.length, 'zero forwarding past the generation replacement').toBe(callsBefore)
+    })
+
+    it('j2: the observer answers NO ACTIVE generation (fiber non-ACTIVE / identity unobservable right now) — typed PORT_LIFECYCLE_UNOBSERVABLE fail-closed; a restored ACTIVE generation serves again — the check rides every dispatch, never latched', async () => {
+      const w = makeWorld({ tag: 'j2' })
+      const approved = engineOver(w.qp)
+      const holder: { active: boolean } = { active: true }
+      const supply = WIRE.buildG6QuerySupplyFromService(approved, { currentGeneration: () => holder.active ? { id: 1, service: approved } : null })
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount, lifecycle: supply.lifecycle, generation: supply.generation })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-j2-steady' }))).toContain('s-a')
+      holder.active = false
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { callId: 'exec-j2-unobservable' }))
+      expect(refusal.code).toBe(SC.PORT_LIFECYCLE_UNOBSERVABLE)
+      holder.active = true
+      expect(String(await def.execute(TRACE_ARGS, { callId: 'exec-j2-restored' }))).toContain('s-a')
+    })
+
+    it('j3: ANTI-REINTRODUCTION byte law (center precision 3): the removed per-read identity laws stay removed — observeCurrent/receiverMoved exist ONLY in law-documentation comment lines (never executable), PORT_METHOD_MOVED is never refused/thrown anywhere, and the stable codes ride verbatim', () => {
+      const HERE = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'plugin', 'live')
+      const files = [
+        join(HERE, 'governed-families', 'g6-session-query-wiring.mjs'),
+        join(HERE, 'governed-families', 'g6-session-query.mjs'),
+        join(HERE, 'agent-bindings.mjs'),
+        join(HERE, 'team-tool-plane.mjs'),
+      ]
+      for (const file of files) {
+        const bytes = readFileSync(file, 'utf8')
+        for (const line of bytes.split('\n')) {
+          if (!/observeCurrent|receiverMoved/.test(line)) continue
+          const trimmed = line.trim()
+          expect(trimmed, `removed-law identifier must live only in comments (${file}): ${trimmed}`).toMatch(/^(\/\/|\*|\/\*)/u)
+        }
+        expect(bytes, `no PORT_METHOD_MOVED refusal site may exist: ${file}`).not.toMatch(/refuse\([^)]*PORT_METHOD_MOVED/u)
+        expect(bytes, `no PORT_METHOD_MOVED throw site may exist: ${file}`).not.toMatch(/throw[^\n]*PORT_METHOD_MOVED/u)
+      }
+      // the frozen vocabulary keeps the code (census stability) and the new
+      // lifecycle codes ride their stable strings.
+      expect(SC.PORT_METHOD_MOVED).toBe('P_G6_PORT_METHOD_MOVED')
+      expect(SC.PORT_LIFECYCLE_UNOBSERVABLE).toBe('P_G6_PORT_LIFECYCLE_UNOBSERVABLE')
+      expect(CODES.PORT_LIFECYCLE_UNOBSERVABLE).toBe('P_G6_WIRE_PORT_LIFECYCLE_UNOBSERVABLE')
     })
   })
 })

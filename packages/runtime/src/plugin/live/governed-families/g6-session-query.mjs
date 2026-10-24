@@ -39,10 +39,14 @@
  *     is the row's output type. (TITLES_PRESENTATION residual CLOSED.)
  *  5. RECEIVER PINNED PAGINATION — every port call (including every page of
  *     collectPages) goes to the function object AND the receiver object
- *     captured at placement (this stays bound to the same service instance);
- *     per-dispatch re-verify checks facet-object identity (PORT_RECEIVER_MOVED)
- *     and function-object identity (PORT_METHOD_MOVED) plus caller
- *     id/cwd/boundary (CALLER_DRIFT) — not method-name equality.
+ *     captured at placement (the bind-time handles are the generation's
+ *     own); per-dispatch re-verify checks the PUBLIC Provider generation
+ *     (root ruling 3, lane increment 1): no answerable ACTIVE generation
+ *     fail-closes PORT_LIFECYCLE_UNOBSERVABLE and a generation replacement
+ *     INVALIDATES the placement (PORT_RECEIVER_MOVED quoting pinned-vs-live
+ *     ids); caller id/cwd/boundary still ride CALLER_DRIFT. The per-read
+ *     facet-object/function-object identity laws (PORT_METHOD_MOVED) are
+ *     REMOVED and anti-pinned — ctx.set same-fiber swaps do not notify.
  *  6. REAL PARENT/ROOT LANE + EVIDENCE-BACKED MOUNT —
  *     parent_session_ids / include_root_sessions ride the REAL
  *     authorizeSessionIds law (workspace-access.ts:111-135 via filterSessions)
@@ -280,7 +284,13 @@ export const A5_G6_TYPED_CODES = Object.freeze({
   CALLER_UNAVAILABLE: 'P_G6_CALLER_UNAVAILABLE',
   CALLER_DRIFT: 'P_G6_CALLER_DRIFT',
   PORT_RECEIVER_MOVED: 'P_G6_PORT_RECEIVER_MOVED',
+  // Root ruling 3: the vocabulary entry survives (frozen envelope set); the
+  // RUNTIME law behind it is REMOVED (same-fiber method hot-swap is neither
+  // promised nor observable — ruling (c)); suites pin it as never-thrown.
   PORT_METHOD_MOVED: 'P_G6_PORT_METHOD_MOVED',
+  // Public Provider lifecycle unreadable/non-ACTIVE at a dispatch — typed
+  // fail-closed (center precision 1), never allow-by-default.
+  PORT_LIFECYCLE_UNOBSERVABLE: 'P_G6_PORT_LIFECYCLE_UNOBSERVABLE',
   PRE_ABORTED: 'P_G6_PRE_ABORTED',
   RESULT_INTEGRITY_INVALID: 'P_G6_RESULT_INTEGRITY_INVALID',
   TEAM_CEILING_DENY: 'P_G6_TEAM_CEILING_DENY',
@@ -1141,7 +1151,18 @@ function requireCaller (readCaller, label) {
  * @returns {{ rows: Record<string, object>, portFamilies, safeServiceFailures, namedBlockers, typedCodes }}
  */
 export function createG6SessionQueryAdapter (deps = {}) {
-  const { realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, definitionIdentityOf, observe = () => {} } = deps
+  const { realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, definitionIdentityOf, observe = () => {}, lifecycle, generation } = deps
+  // CURRENTNESS DEPENDENCY (root ruling 3, lane increment 1): the PUBLIC
+  // Provider lifecycle observer + the placement-pinned generation id are
+  // REQUIRED supply. The removed per-read identity laws (facet-object /
+  // function-object continuity) stay removed — anti-reintroduction pins;
+  // the suites prove the adapter never reads them again.
+  if (lifecycle === null || typeof lifecycle !== 'object' || typeof lifecycle.currentGeneration !== 'function') {
+    throw new TypeError('g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)')
+  }
+  if (!Number.isInteger(generation) || generation < 1) {
+    throw new TypeError('g6-session-query: generation (positive integer — the Provider generation pinned at placement) is required; INVALIDATION refusals carry it as the observable marker (center precision 2)')
+  }
   if (typeof realmId !== 'string' || realmId.length === 0) throw new TypeError('g6-session-query: realmId is required')
   if (typeof providerId !== 'string' || providerId.length === 0) throw new TypeError('g6-session-query: providerId is required (the placing assembly identifies itself)')
   if (typeof readNative !== 'function') throw new TypeError('g6-session-query: readNative(name) is required — the tools.get(name, scope) capture seam; the rows carry CAPTURED native description bytes, never re-authored text')
@@ -1211,6 +1232,9 @@ export function createG6SessionQueryAdapter (deps = {}) {
       maxSearchResults,
       searchDeclared,
       searchBlockDetail,
+      // Root ruling 3: the row's currentness rides the public lifecycle.
+      lifecycle,
+      generation,
     })
   }
   return Object.freeze({
@@ -1224,7 +1248,7 @@ export function createG6SessionQueryAdapter (deps = {}) {
   })
 }
 
-function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, definitionIdentityOf, observe, maxSearchResults, searchDeclared, searchBlockDetail }) {
+function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, definitionIdentityOf, observe, maxSearchResults, searchDeclared, searchBlockDetail, lifecycle, generation }) {
   const declaredActive = spec.mountCondition === 'declared_mount' ? searchDeclared : true
   const declaredDetail = spec.mountCondition === 'declared_mount' ? searchBlockDetail : ''
 
@@ -1350,7 +1374,13 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         portMethod: spec.portMethod,
         effectiveTargetSessionId: typeof effectiveTarget === 'string' ? effectiveTarget : null,
         callerWorkspaceCwd: typeof caller.caller.cwd === 'string' ? caller.caller.cwd : null,
-        maxSearchResults: spec.portFamily === 'search' ? maxSearchResults : undefined,
+        // APPROVED OMISSION LAW (root 19:25, wiring-owner measurement
+        // g6-session-query-wiring.mjs:92-96): the family-rules table denies
+        // key-with-undefined by design and the lossless walk kills it too —
+        // so the MINT must not emit it: non-search rows OMIT the key
+        // entirely (hasOwnProperty false), search rows keep the effective
+        // cap value byte-unchanged.
+        ...(spec.portFamily === 'search' ? { maxSearchResults } : {}),
         disclosures: [A5_G6_NAMED_BLOCKERS.SESSION_HISTORY_RESOURCE_KIND],
       })
       const reviewPayload = deepFreeze({
@@ -1384,17 +1414,24 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
     async invoke (args, exec = {}) {
       const plan = row.classify(args)
       if (plan.ok !== true) return plan
-      // PER-DISPATCH RECEIVER + IDENTITY RE-VERIFY (fix 5): the facet OBJECT
-      // (the service instance `this` is bound to) and each bound FUNCTION must
-      // still BE the placement-time refs. Zero forwarding on any drift.
-      for (const [facetName, method] of spec.facetsUsed) {
-        const ref = facetRefs[facetName]
-        if (ref === undefined || queryPorts[facetName] !== ref.object) {
-          return refuse(A5_G6_TYPED_CODES.PORT_RECEIVER_MOVED, `the live ${facetName} is no longer the RECEIVER OBJECT pinned at placement — the service instance moved underneath the row; zero forwarding`)
-        }
-        if (ref.object[method] !== ref.methods[method]) {
-          return refuse(A5_G6_TYPED_CODES.PORT_METHOD_MOVED, `the live ${facetName}.${method} is no longer the function OBJECT pinned at placement — the port generation moved underneath the row; zero forwarding`)
-        }
+      // CURRENTNESS LAW (root ruling 3, lane increment 1 — REMOVED LAWS,
+      // anti-reintroduction pins): the per-dispatch facet-OBJECT identity and
+      // per-METHOD function-object continuity checks are REMOVED. Public
+      // reads answer a FRESH proxy per read (root-verified Cordis fact), so
+      // comparing them against placement-time refs is not a lifecycle signal
+      // — it false-trips every call. Currentness rides the PUBLIC Provider
+      // lifecycle ONLY: the generation pinned at placement must still be the
+      // ACTIVE generation (methods were bound ONCE at bind time inside that
+      // generation). A lifecycle REPLACEMENT invalidates this row's pinned
+      // approvals — typed, log-observable, BOTH generation markers present
+      // (center precision 2); an unobservable lifecycle fail-closes (center
+      // precision 1).
+      const lifecycleNow = lifecycle.currentGeneration()
+      if (lifecycleNow === null || lifecycleNow === undefined) {
+        return refuse(A5_G6_TYPED_CODES.PORT_LIFECYCLE_UNOBSERVABLE, `the sessionQuery Provider lifecycle answers no ACTIVE generation — the placement generation ${generation} cannot be confirmed live; fail-closed, zero forwarding`)
+      }
+      if (lifecycleNow.id !== generation) {
+        return refuse(A5_G6_TYPED_CODES.PORT_RECEIVER_MOVED, `sessionQuery Provider lifecycle REPLACED the placement generation — pinned generation ${generation} is INVALIDATED (live generation ${lifecycleNow.id}); old approvals never ride across generations, zero forwarding`)
       }
       const callerNow = requireCaller(readCaller, toolName)
       if (callerNow.refusal !== undefined) return callerNow.refusal
@@ -1412,10 +1449,12 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
       if (spec.hasTarget && teamCeiling(effectiveTarget, caller) !== true) {
         return refuse(A5_G6_TYPED_CODES.TEAM_CEILING_DENY, teamCeilingDetail(effectiveTarget))
       }
-      // REVOCATION LAW (root-1eea delta ③): from entry admission on, EVERY
-      // service dispatch — every page, every title read — AND the final serve
-      // re-verify the CURRENT caller id/cwd/step-boundary, the pinned
-      // receiver objects + method objects, and the Team ceiling decision. A
+      // REVOCATION LAW (root-1eea delta ③; currentness leg re-anchored by
+      // root ruling 3): from entry admission on, EVERY service dispatch —
+      // every page, every title read — AND the final serve re-verify the
+      // CURRENT caller id/cwd/step-boundary, the PUBLIC Provider generation
+      // (pinned == live ACTIVE, else typed INVALIDATION/unobservable
+      // refusal), and the Team ceiling decision. A
       // revocation landing across an await is NEVER served on the stale
       // authorization: the row throws the SAME governance codes through
       // G6SessionQueryRefusal (the entry envelope shape only fronts failures
@@ -1425,14 +1464,12 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
       // revision snapshot is trusted.
       const planCallerSnapshot = plan.plan.callerSnapshot
       const guardFacts = (stage) => {
-        for (const [guardFacet, guardMethod] of spec.facetsUsed) {
-          const ref = facetRefs[guardFacet]
-          if (ref === undefined || queryPorts[guardFacet] !== ref.object) {
-            throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.PORT_RECEIVER_MOVED, `${stage}: the live ${guardFacet} is no longer the RECEIVER OBJECT pinned at placement — zero further forwarding`)
-          }
-          if (ref.object[guardMethod] !== ref.methods[guardMethod]) {
-            throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.PORT_METHOD_MOVED, `${stage}: the live ${guardFacet}.${guardMethod} is no longer the function OBJECT pinned at placement — zero further forwarding`)
-          }
+        const nowGen = lifecycle.currentGeneration()
+        if (nowGen === null || nowGen === undefined) {
+          throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.PORT_LIFECYCLE_UNOBSERVABLE, `${stage}: the sessionQuery Provider lifecycle answers no ACTIVE generation — placement generation ${generation} unconfirmable; zero further forwarding`)
+        }
+        if (nowGen.id !== generation) {
+          throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.PORT_RECEIVER_MOVED, `${stage}: sessionQuery Provider generation ${generation} INVALIDATED by lifecycle replacement (live generation ${nowGen.id}); zero further forwarding`)
         }
         const now = requireCaller(readCaller, toolName)
         if (now.refusal !== undefined) throw new G6SessionQueryRefusal(now.refusal.code, `${stage}: ${now.refusal.detail}`)

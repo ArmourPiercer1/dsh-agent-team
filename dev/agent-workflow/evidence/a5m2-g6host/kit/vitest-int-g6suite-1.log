@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ✓ test/a5m2-g6-session-query-wiring.test.ts (42 tests) 68ms
+ ✓ test/a5m2-g6-session-query-c1.test.ts (55 tests) 367ms
+ ✓ test/a5m2-g6-plane-mount-c1.test.ts (9 tests) 30ms
+ ✓ test/alpha5-g6b-rc-first.test.ts (15 tests) 1258ms
+     ✓ probe6b-form 500 consecutive: the silent rc=2 partial-results form is refused 500/500 — zero quiet judgements, zero lists, zero spills  605ms
+ ✓ test/a5g6-install-face-render.test.ts (5 tests) 811ms
+     ✓ the trio definitions all carry a render that returns an array of typed text blocks  806ms
+
+ Test Files  5 passed (5)
+      Tests  126 passed (126)
+   Start at  05:21:36
+   Duration  3.40s (transform 4.98s, setup 0ms, import 5.46s, tests 2.53s, environment 1ms)
+
