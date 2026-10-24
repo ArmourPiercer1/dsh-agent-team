@@ -2460,6 +2460,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // worlds answer undefined exactly as before (zero flip; no whole-family
     // whitelist, no fake binding, never a guessed mapping).
     if (g3Wiring !== null && g3Wiring.placementNames.includes(spelling)) return spelling
+    // A5M2-G5 (root card 2026-10-24, the placement-identity gap the 14:48
+    // window proved live): the goal rows are mounted on THIS face, yet the
+    // resolver never named them, so a real get_goal call died at the binding
+    // identity gate (no-placement-name) BEFORE PA ever saw it. THE REUSED
+    // SOURCE IS THE WIRING'S OWN PLACEMENT LIST (g5-goal-wiring :478, the
+    // Team85/G3 pattern): a spelling resolves iff THIS mount's G5 wiring
+    // actually placed it — census rows and unmounted worlds answer undefined
+    // exactly as before (zero flip; no hardcoded roster, no new authority).
+    if (g5Wiring !== null && g5Wiring.placementNames.includes(spelling)) return spelling
     // A5M2-PWSH: the governed pwsh row mounts at its FIXED native spelling,
     // resolved ONLY while THIS mount's wiring actually placed it (the reused
     // source is the wiring's own placement list; zero flip otherwise).
