@@ -78,7 +78,22 @@ HOME 世界与 raw 永不删除；证据归档 = 窗口后 `cp -a` 相关世界�
 - `02/03` = 断言库（保留），**只喂 05 跑出的实际证据**（callResults/ledger/
   盘上实测），非独立入口；头部 NOT-RUN 标注保留。
 
-## 5. 就绪判据（一行）
+## 5. 条件 GO 执行法（root 2026-10-28 正式一次条件 GO）
 
-f86 对 `5c313418…` 的 pack tgz + 其 sha256 作为显式输入交入 + 3183/3498 实测
-空闲 + `a5m2-edit-hw-a-*` 世界可新鲜新建——三者同时满足且窗口 GO 到即跑。
+**执行入口 = `scripts/06-run-window.sh`**（有界包装；已备妥，未跑）。触发条件 =
+f86 本次 fixture 准备成功（真实冷 import + 新 hash/lock/path 收据成立）——
+当前 f86 仍在 metadata-only 锁准备，**无可用 fixture 前不得 boot、不得自装**。
+固定钉：driver `d66e225bec6a77b2bb586eeca99e1d60d38c9850`（runner 文件对签名面
+字节不变 + HEAD 承载该 commit）、产品
+`5c31341803318ab35465908bf93b1f77f5cad16a`、tgz
+`sha256:0a3f11b2c07178cd5377debb11c221fac23d963c666a7a2688ba446168d50b6b`、
+Host 639；`A5M2_EDIT_INSTALL_DIR` 显式传 f86 最终完整路径。
+包装界：外层 300s（`timeout --group --kill-after=20s`，TERM/必要 KILL **只及
+本自有组**，wait 收尸；他 world/3080 不触）、df avail ≥ 18,000,000,000B、
+HOME 新字节（nlink==1）≤ 64 MiB、3183/3498 预检空闲（占用即拒，**绝不杀
+外来占用**）。留痕：wrapper log + `window-<ts>/external-receipt.json`
+（前后 fixture lock/pkg sha256、runner 真实 RC、df、HOME 新字节、端口
+前/后）；runner 自身 RUN_DIR raw 与 HOME 永不删。失败/NOT_RUN 真实非零即停
+——禁自动二窗、禁临时 install/chmod、禁换候选。一 boot 仅 EDIT allow/deny
+两调用。实测（本准备轮）：`bash -n` OK；缺 env 拒（rc1）；缺 fixture rc3；
+零 boot。
