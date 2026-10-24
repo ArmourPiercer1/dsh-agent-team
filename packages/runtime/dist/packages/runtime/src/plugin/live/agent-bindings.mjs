@@ -8107,13 +8107,42 @@ export function createAgentBindings(deps) {
           // governed-family entry (the same ledger the registration wrote
           // and the family claim reads), never a records-length proxy.
           if (facts.hooksInstalled !== true || facts.familyIdentities.length === 0) return false
-          return facts.familyIdentities.every((nativeIdentity) => {
-            try {
-              return a5GovernedFamilyFor(nativeIdentity) !== undefined && a5GovernedFamilyFor(nativeIdentity) !== null
-            } catch {
-              return false
-            }
-          })
+          try {
+            // Root 705 single-point ruling: an old Map holding values is
+            // NOT alive. The CURRENT run_code truth is read on every call:
+            // (1) the plane face re-derives the CURRENT family
+            // registrations (identity of the native capture as it stands),
+            // (2) the dispatcher's LIVE entry for 'run_code' — VERIFIED
+            // stamp, ACTIVE binding, and the binding's own definition
+            // identity, (3) the original governed-family ledger per
+            // identity. Every RECORDED id must equal a CURRENT id, the
+            // current ids must ALL be ledger-governed, and the entry's
+            // binding identity must be one of the current ids.
+            const currentRegistrations = a5PlaneValue?.runCodeGuard?.familyRegistrations?.()
+            if (!Array.isArray(currentRegistrations) || currentRegistrations.length === 0) return false
+            const currentIds = currentRegistrations.map((registration) => registration?.definitionIdentity)
+            if (currentIds.some((id) => typeof id !== 'string' || id.length === 0)) return false
+            if (!currentIds.every((id) => a5GovernedFamilyFor(id) !== undefined && a5GovernedFamilyFor(id) !== null)) return false
+            if (!facts.familyIdentities.every((id) => currentIds.includes(id))) return false
+            // Root's exact existing entrances (no new mapping, no guessed
+            // "current" field): the inject's OWN readNative re-reads the
+            // native definition right now, familyRegistrations() itself
+            // re-reads the native per registration, and the dispatcher
+            // answers the live entry. THREE equalities: current native
+            // identity === every registered family identity === the
+            // VERIFIED ACTIVE binding's definitionIdentity.
+            const nativeNow = definitionIdentityOf(a5G3RunCodeGuardInject.readNative?.('run_code'))
+            if (typeof nativeNow !== 'string' || nativeNow.length === 0) return false
+            if (currentIds.some((id) => id !== nativeNow)) return false
+            const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.('run_code')
+            if (entry?.verified !== true) return false
+            const binding = entry?.binding
+            if (binding === null || typeof binding !== 'object') return false
+            if (binding.status !== 'ACTIVE') return false
+            return binding.definitionIdentity === nativeNow
+          } catch {
+            return false
+          }
         }
         // The precheck window only: the guard branch installs BELOW the
         // early check, so the early read may refuse on 确定缺口 only — this

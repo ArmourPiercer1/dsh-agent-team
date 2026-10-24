@@ -583,7 +583,10 @@ const R: Record<string, unknown> = await (async () => {
   // one job-family tool FAILS with exactly those two entries.
   {
     const good = [
-      ...PERMISSION_TOOL_NAMES,
+      ...MANAGED_GROUND_TRUTH,
+      'team_delegate',
+      'team_follow_up',
+      'team_request_control',
       MCP_TOOL,
       'todo_write',
     ]
@@ -950,95 +953,32 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
 })
 
 describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
-  it('G1 · the forty-name managed vocabulary (root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed classes) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
+  it('G1 · the REALLY-GOVERNED projection classifies MANAGED; unowned vocabulary names stay legitimately FATAL (705 split: vocab = legal naming, not governance)', () => {
     const g1 = R['g1'] as Record<string, any>
     expect(g1.present).toBe(true)
-    expect(g1.ok).toBe(true)
-    expect(g1.tools).toEqual([
-      { name: 'bash', classification: 'managed-operation-permission' },
-      { name: 'cordis_inspect_list', classification: 'managed-operation-permission' },
-      { name: 'cordis_inspect_query', classification: 'managed-operation-permission' },
-      { name: 'create_goal', classification: 'managed-operation-permission' },
-      { name: 'edit', classification: 'managed-operation-permission' },
-      { name: 'get_goal', classification: 'managed-operation-permission' },
-      { name: 'glob', classification: 'managed-operation-permission' },
-      { name: 'grep', classification: 'managed-operation-permission' },
-      { name: 'interrupt_agent', classification: 'managed-operation-permission' },
-      { name: 'job_kill', classification: 'managed-operation-permission' },
-      { name: 'job_list', classification: 'managed-operation-permission' },
-      { name: 'job_output', classification: 'managed-operation-permission' },
-      { name: 'list_agents', classification: 'managed-operation-permission' },
-      { name: 'list_mcp_resource_templates', classification: 'managed-operation-permission' },
-      { name: 'list_mcp_resources', classification: 'managed-operation-permission' },
-      { name: 'list_subagent_models', classification: 'managed-operation-permission' },
-      { name: 'lsp', classification: 'managed-operation-permission' },
-      { name: 'plugin_manager', classification: 'managed-operation-permission' },
-      { name: 'pwsh', classification: 'managed-operation-permission' },
-      { name: 'read', classification: 'managed-operation-permission' },
-      { name: 'read_image', classification: 'managed-operation-permission' },
-      { name: 'read_mcp_resource', classification: 'managed-operation-permission' },
-      { name: 'run_code', classification: 'managed-operation-permission' },
-      { name: 'schedule_delete', classification: 'managed-operation-permission' },
-      { name: 'schedule_list', classification: 'managed-operation-permission' },
-      { name: 'send_message', classification: 'managed-operation-permission' },
-      { name: 'session_event_read', classification: 'managed-operation-permission' },
-      { name: 'session_event_search', classification: 'managed-operation-permission' },
-      { name: 'session_event_trace', classification: 'managed-operation-permission' },
-      { name: 'session_search', classification: 'managed-operation-permission' },
-      { name: 'session_trace', classification: 'managed-operation-permission' },
-      { name: 'stagehand_act', classification: 'managed-operation-permission' },
-      { name: 'stagehand_extract', classification: 'managed-operation-permission' },
-      { name: 'stagehand_navigate', classification: 'managed-operation-permission' },
-      { name: 'stagehand_observe', classification: 'managed-operation-permission' },
-      { name: 'stagehand_screenshot', classification: 'managed-operation-permission' },
-      { name: 'stagehand_tabs', classification: 'managed-operation-permission' },
-      { name: 'str_replace_editor', classification: 'managed-operation-permission' },
-      { name: 'subagent', classification: 'managed-operation-permission' },
-      { name: 'subagent_claude_code', classification: 'managed-operation-permission' },
-      { name: 'subagent_codex', classification: 'managed-operation-permission' },
-      { name: 'subagent_fork', classification: 'managed-operation-permission' },
-      { name: 'team_archive_member', classification: 'managed-operation-permission' },
-      { name: 'team_collect', classification: 'managed-operation-permission' },
-      { name: 'team_create_member', classification: 'managed-operation-permission' },
-      { name: 'team_delegate', classification: 'managed-operation-permission' },
-      { name: 'team_follow_up', classification: 'managed-operation-permission' },
-      { name: 'team_glob', classification: 'managed-operation-permission' },
-      { name: 'team_grant_permission', classification: 'managed-operation-permission' },
-      { name: 'team_grep', classification: 'managed-operation-permission' },
-      { name: 'team_inspect_config', classification: 'managed-operation-permission' },
-      { name: 'team_list_members', classification: 'managed-operation-permission' },
-      { name: 'team_list_pending_control', classification: 'managed-operation-permission' },
-      { name: 'team_list_templates', classification: 'managed-operation-permission' },
-      { name: 'team_report_progress', classification: 'managed-operation-permission' },
-      { name: 'team_request_control', classification: 'managed-operation-permission' },
-      { name: 'team_resolve_control', classification: 'managed-operation-permission' },
-      { name: 'team_revoke_permission', classification: 'managed-operation-permission' },
-      { name: 'team_send_message', classification: 'managed-operation-permission' },
-      { name: 'terminal_close', classification: 'managed-operation-permission' },
-      { name: 'terminal_list', classification: 'managed-operation-permission' },
-      { name: 'terminal_open', classification: 'managed-operation-permission' },
-      { name: 'terminal_read', classification: 'managed-operation-permission' },
-      { name: 'terminal_send', classification: 'managed-operation-permission' },
-      { name: 'terminal_signal', classification: 'managed-operation-permission' },
-      { name: 'todo_write', classification: 'managed-operation-permission' },
-      { name: 'update_goal', classification: 'managed-operation-permission' },
-      { name: 'web_fetch', classification: 'managed-operation-permission' },
-      { name: 'web_search', classification: 'managed-operation-permission' },
-      { name: 'write', classification: 'managed-operation-permission' },
-    ])
-    expect(g1.unmanaged).toEqual([])
-    expect(g1.safe).toEqual([])
+    const managedSet = new Set<string>(MANAGED_GROUND_TRUTH)
+    const managedRows = (g1.tools as { name: string; classification: string }[]).filter((t) => managedSet.has(t.name))
+    expect(managedRows.length).toBe(MANAGED_GROUND_TRUTH.length)
+    expect(managedRows.every((t) => t.classification === 'managed-operation-permission')).toBe(true)
+    for (const n of ['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'write']) expect(managedSet.has(n)).toBe(true)
+    expect(g1.ok).toBe(false)
+    const unowned = (g1.unmanaged as { name: string; classification: string }[])
+    for (const n of ['grep', 'send_message', 'web_fetch']) {
+      expect(unowned.some((e) => e.name === n && e.classification === 'known-sensitive-unmanaged')).toBe(true)
+    }
+    expect(unowned.some((e) => e.name === 'team_delegate' || e.name === 'run_code')).toBe(true)
+    expect(g1.safe).toContain('todo_write')
   })
 
-  it('G2 · vocabulary-welded Team names take MANAGED (precedence #1) while a non-vocabulary control name keeps OTHER_MANAGED_TEAM_TOOL — both PASS (root 22:4x)', () => {
+  it('G2 · Team-owner names classify OTHER_MANAGED_TEAM_TOOL — vocab membership alone no longer welds MANAGED (705 owner-label) — both PASS', () => {
     const g2 = R['g2'] as Record<string, any>
     expect(g2.present).toBe(true)
     expect(g2.ok).toBe(true)
     expect(g2.tools).toEqual([
-      { name: 'team_delegate', classification: 'managed-operation-permission' },
-      { name: 'team_follow_up', classification: 'managed-operation-permission' },
+      { name: 'team_delegate', classification: 'other-managed-team-tool' },
+      { name: 'team_follow_up', classification: 'other-managed-team-tool' },
       { name: 'team_future_control', classification: 'other-managed-team-tool' },
-      { name: 'team_inspect_config', classification: 'managed-operation-permission' },
+      { name: 'team_inspect_config', classification: 'other-managed-team-tool' },
     ])
     expect(g2.unmanaged).toEqual([])
   })
@@ -1052,7 +992,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'bash', classification: 'managed-operation-permission' },
       { name: 'mcp_weather', classification: 'other-managed-mcp' },
       { name: 'read', classification: 'managed-operation-permission' },
-      { name: 'team_delegate', classification: 'managed-operation-permission' },
+      { name: 'team_delegate', classification: 'other-managed-team-tool' },
     ])
     expect(g3.unmanaged).toEqual([])
   })
@@ -1066,7 +1006,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g4.safe).toEqual(['todo_write'])
   })
 
-  it('G5 · closed known-sensitive entries classify KNOWN_SENSITIVE_UNMANAGED and FAIL — EXCEPT the five wired subagent-family names (root 22:4x + 22:32), whose vocabulary membership resolves MANAGED at precedence #1', () => {
+  it('G5 · closed known-sensitive entries classify KNOWN_SENSITIVE_UNMANAGED and FAIL — ALL of them in this mount-less world: vocabulary membership is legal naming, not governance (705 recheck)', () => {
     const g5 = R['g5'] as Record<string, any>
     expect(g5.present).toBe(true)
     expect(g5.registry).toEqual([
@@ -1092,22 +1032,22 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     // leg classify sensitive; the FIVE wired subagent-family names (the trio
     // send_message / interrupt_agent / list_agents, root 22:4x, plus the
     // spawn rows subagent / subagent_fork, joint-cand2 9b5c9f4b2, root
-    // 22:32) joined the MANAGED vocabulary and precedence #1 resolves them MANAGED — the
+    // 22:32) were only EVER vocabulary-legal; with no governance fact in this world they stay unmanaged — the
     // name-based suspicion is SUPERSEDED, never silent: each is now gated
     // by its own named allow/ask/deny rule.
     expect(g5.classifications).toEqual([
       'known-sensitive-unmanaged', // glob
       'known-sensitive-unmanaged', // grep
-      'managed-operation-permission', // interrupt_agent — wired control, precedence #1
+      'known-sensitive-unmanaged', // interrupt_agent — no governance fact here (705)
       'known-sensitive-unmanaged', // job_kill
       'known-sensitive-unmanaged', // job_list
       'known-sensitive-unmanaged', // job_output
       'known-sensitive-unmanaged', // synthetic job_ family leg
-      'managed-operation-permission', // list_agents — wired control, precedence #1
+      'known-sensitive-unmanaged', // list_agents — no governance fact here (705)
       'known-sensitive-unmanaged', // ralph
-      'managed-operation-permission', // send_message — wired control, precedence #1
-      'managed-operation-permission', // subagent — wired spawn row (joint-cand2), precedence #1
-      'managed-operation-permission', // subagent_fork — wired spawn row (joint-cand2), precedence #1
+      'known-sensitive-unmanaged', // send_message — no governance fact here (705)
+      'known-sensitive-unmanaged', // subagent — no governance fact here (705)
+      'known-sensitive-unmanaged', // subagent_fork — no governance fact here (705)
       'known-sensitive-unmanaged', // web_fetch
       'known-sensitive-unmanaged', // web_search
       'known-sensitive-unmanaged', // workflow
@@ -1123,7 +1063,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
         'remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)',
     })
     expect(g5.unmanaged.map((e: any) => e.name)).toEqual(
-      g5.registry.filter((n: string) => !['send_message', 'interrupt_agent', 'list_agents', 'subagent', 'subagent_fork'].includes(n)).concat(JOB_FAMILY_TOOL).sort(),
+      [...(g5.registry as string[])].concat(JOB_FAMILY_TOOL).sort(), // 705: the whole closed set is unmanaged with no governance facts
     )
   })
 
@@ -1153,7 +1093,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     ])
   })
 
-  it('G7 · the fixed precedence — a proven owner beats a name-based suspicion; registries disjoint EXCEPT the five wired subagent-family names, resolved MANAGED at precedence #1 (root 22:4x + 22:32)', () => {
+  it('G7 · the fixed precedence — a proven owner beats a name-based suspicion; the vocab∩sensitive overlap snapshot synced to the closed registries (705); precedence #1 still beats name-suspicion for GOVERNED names, MCP beats sensitive', () => {
     const g7 = R['g7'] as Record<string, any>
     expect(g7.present).toBe(true)
     expect(g7.managedBeatsTeam).toBe('managed-operation-permission')
@@ -1165,7 +1105,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     // names (trio root 22:4x + spawn rows root 22:32): membership is
     // intentional and the precedence order decides — MANAGED (#1) beats the
     // name-based suspicion (#5). Any NEW overlap is this pin's red light.
-    expect(g7.registryOverlapManagedSensitive).toEqual(['interrupt_agent', 'list_agents', 'send_message', 'subagent', 'subagent_fork'])
+    expect(g7.registryOverlapManagedSensitive).toEqual(['grep', 'glob', 'job_output', 'job_list', 'job_kill', 'web_search', 'web_fetch', 'interrupt_agent', 'list_agents', 'send_message', 'subagent', 'subagent_fork'])
   })
 
   it('G8 · determinism — three input orders of the same surface give byte-identical verdicts', () => {
@@ -1182,49 +1122,16 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g9.goodSafe).toEqual(['todo_write'])
     expect(g9.goodTools).toEqual([
       { name: 'bash', classification: 'managed-operation-permission' },
-      { name: 'cordis_inspect_list', classification: 'managed-operation-permission' },
-      { name: 'cordis_inspect_query', classification: 'managed-operation-permission' },
-      { name: 'create_goal', classification: 'managed-operation-permission' },
       { name: 'edit', classification: 'managed-operation-permission' },
-      { name: 'get_goal', classification: 'managed-operation-permission' },
-      { name: 'interrupt_agent', classification: 'managed-operation-permission' },
-      { name: 'list_agents', classification: 'managed-operation-permission' },
-      { name: 'list_subagent_models', classification: 'managed-operation-permission' },
       { name: 'lsp', classification: 'managed-operation-permission' },
       { name: 'mcp_weather', classification: 'other-managed-mcp' },
       { name: 'pwsh', classification: 'managed-operation-permission' },
       { name: 'read', classification: 'managed-operation-permission' },
       { name: 'read_image', classification: 'managed-operation-permission' },
-      { name: 'schedule_delete', classification: 'managed-operation-permission' },
-      { name: 'schedule_list', classification: 'managed-operation-permission' },
-      { name: 'send_message', classification: 'managed-operation-permission' },
-      { name: 'session_event_read', classification: 'managed-operation-permission' },
-      { name: 'session_event_search', classification: 'managed-operation-permission' },
-      { name: 'session_event_trace', classification: 'managed-operation-permission' },
-      { name: 'session_search', classification: 'managed-operation-permission' },
-      { name: 'session_trace', classification: 'managed-operation-permission' },
-      { name: 'str_replace_editor', classification: 'managed-operation-permission' },
-      { name: 'subagent', classification: 'managed-operation-permission' },
-      { name: 'subagent_claude_code', classification: 'managed-operation-permission' },
-      { name: 'subagent_codex', classification: 'managed-operation-permission' },
-      { name: 'subagent_fork', classification: 'managed-operation-permission' },
-      { name: 'team_archive_member', classification: 'managed-operation-permission' },
-      { name: 'team_collect', classification: 'managed-operation-permission' },
-      { name: 'team_create_member', classification: 'managed-operation-permission' },
-      { name: 'team_delegate', classification: 'managed-operation-permission' },
-      { name: 'team_follow_up', classification: 'managed-operation-permission' },
-      { name: 'team_grant_permission', classification: 'managed-operation-permission' },
-      { name: 'team_inspect_config', classification: 'managed-operation-permission' },
-      { name: 'team_list_members', classification: 'managed-operation-permission' },
-      { name: 'team_list_pending_control', classification: 'managed-operation-permission' },
-      { name: 'team_list_templates', classification: 'managed-operation-permission' },
-      { name: 'team_report_progress', classification: 'managed-operation-permission' },
-      { name: 'team_request_control', classification: 'managed-operation-permission' },
-      { name: 'team_resolve_control', classification: 'managed-operation-permission' },
-      { name: 'team_revoke_permission', classification: 'managed-operation-permission' },
-      { name: 'team_send_message', classification: 'managed-operation-permission' },
+      { name: 'team_delegate', classification: 'other-managed-team-tool' },
+      { name: 'team_follow_up', classification: 'other-managed-team-tool' },
+      { name: 'team_request_control', classification: 'other-managed-team-tool' },
       { name: 'todo_write', classification: 'safe-unmanaged' },
-      { name: 'update_goal', classification: 'managed-operation-permission' },
       { name: 'write', classification: 'managed-operation-permission' },
     ])
     expect(g9.badOk).toBe(false)
@@ -1370,7 +1277,7 @@ describe('a2c2 S · the real-seam legs (MCP delta, legacy enablement, lifecycle)
     expect(s3.passVerdict?.ok).toBe(true)
     expect(s3.passVerdict?.tools).toEqual([
       { name: 'read', classification: 'managed-operation-permission' },
-      { name: 'team_delegate', classification: 'managed-operation-permission' },
+      { name: 'team_delegate', classification: 'other-managed-team-tool' },
     ])
     // the FATAL variant (sensitive + unknown added to every scope)
     // fails identically across all four scopes.
@@ -1412,6 +1319,8 @@ describe('coverage-managed-projection · the one shared producer law', () => {
     expect(projectManagedToolNames(['run_code'], classOnly)).toEqual([])
     expect(projectManagedToolNames(['run_code'], { ...classOnly, runCodeGoverned: () => { throw new Error('fact unreadable') } })).toEqual([])
     expect(projectManagedToolNames(['bash'], { ...classOnly, classOf: () => { throw new Error('class unreadable') } })).toEqual([])
+    // boolean probes never manufacture a name the vocabulary does not carry.
+    expect(projectManagedToolNames([], { ...classOnly, placementGoverned: () => true, scheduleGoverned: () => true, runCodeGoverned: () => true })).toEqual([])
   })
   it('the projection keeps the evaluator obligations: unprojected sensitive/unknown names still FAIL the gate', () => {
     expect(typeof a2c2.evaluatePermissionCoverage).toBe('function')
