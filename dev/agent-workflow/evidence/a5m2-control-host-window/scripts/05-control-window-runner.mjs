@@ -163,7 +163,7 @@ function log(msg) { console.log(`[ctlhw] ${msg}`) }
 function sha256(file) { return `sha256:${createHash('sha256').update(readFileSync(file)).digest('hex')}` }
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)) }
 function check(criterion, name, ok, detail) {
-  checks.push({ criterion, name, ok: ok === true, detail: detail === undefined ? null : String(detail).slice(0, 400) })
+  checks.push({ criterion, name, ok: ok === true, detail: detail === undefined ? null : String(detail) }) // receipt-preservation: summary detail NEVER truncated (694b/e583 raws proved the truncation eats typed details at the exact breakpoint the root needs)
   log(`check ${criterion}: ${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` (${String(detail).slice(0, 160)})` : ''}`)
 }
 async function waitFor(label, budgetMs, fn) {
@@ -580,7 +580,7 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   currentRoot = `session-a5m2ctlhw-p-${RUN_STAMP}`
   await teamReadyBarrier()
   const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'ctlhw-create', 1)
-  if (resultError(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultError(team.body)).slice(0, 400)}`)
+  if (resultError(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultError(team.body))}`) // full typed error, uncut
   await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`, 'ctlhw-leader-create')
   const member = await waitFor('member binding in team_domain', 120_000, () => domainFacts())
   log(`member instance=${member.instanceId} session=${member.sessionId}`)
@@ -645,8 +645,8 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
 }
 
 main().then(() => { /* finish() exits */ }, async (err) => {
-  log(`FATAL: ${String(err?.stack ?? err).slice(0, 600)}`)
+  log(`FATAL: ${String(err?.stack ?? err)}`) // receipt-preservation: FULL stack/message, never truncated
   try { await cleanup() } catch { /* keep evidence */ }
-  checks.push({ criterion: 'fatal', name: 'runner completed', ok: false, detail: String(err?.message ?? err).slice(0, 400) })
+  checks.push({ criterion: 'fatal', name: 'runner completed', ok: false, detail: String(err?.message ?? err) }) // receipt-preservation: full raw error into summary.json
   finish(1)
 })
