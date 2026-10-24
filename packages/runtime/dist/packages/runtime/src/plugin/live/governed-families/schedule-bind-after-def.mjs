@@ -91,6 +91,7 @@ export function createScheduleBindAfterDef(deps) {
   const originalDefs = new Map() // name -> the ORIGINAL definition object (never copied, never replaced)
   let bound = false
   let bindStarted = false
+  let establishAttempted = false
   let disposed = false
   let gateOpenedBy = null // the gate's {ok:true} proof while the pair is closing (audit line)
   const note = (event, extra) => deps.observe?.({ event, ...(extra ?? {}) })
@@ -173,6 +174,16 @@ export function createScheduleBindAfterDef(deps) {
     if (!isRecord(gate) || gate.ok !== true) {
       throw breakpoint('canonical-bind-refused', 'the canonical gate to answer {ok:true} (family SUCCESS + real arms)', gate === null || gate === undefined ? String(gate) : `answer ${JSON.stringify(Object.keys(gate)).slice(0, 120)}`, 'onBinded gate')
     }
+    // ROOT b4 addendum: the gate AWAIT is a real await — if the pair was
+    // disposed while it ran, the keys the gate just wrote must NOT stand
+    // unowned: close them through the SAME pair-close path, refuse, open no
+    // faces.
+    if (disposed) {
+      try {
+        deps.onBindClose?.({ reason: 'disposed-during-gate' })
+      } catch { /* the close is the obligation; a faulting closer cannot strand faces that never opened */ }
+      throw breakpoint('disposed-during-gate', 'the pair to still stand after the canonical gate await', 'the bind was disposed during the gate await — the keys the gate wrote were closed, no faces opened', 'onBinded gate / law A')
+    }
     gateOpenedBy = gate
     // (2) open the governed faces; if ANY registration faults, CLOSE the pair
     // — the keys the gate just wrote are deleted via deps.onBindClose (law A).
@@ -250,14 +261,13 @@ export function createScheduleBindAfterDef(deps) {
           // exists (the bind-moment), so every already-registered downstream
           // hook has already run its pre-await before the checks above — the
           // verification above IS the last moment before the true native for
-          // that chain. A hook registering AFTER this bind would run INSIDE —
-          // honestly disclosed as the ordering bound of any hook route; it is
-          // OBSERVED below at result settlement, never papered over by
-          // refusing an already-executed body (zero side effects were never a
-          // post-next claim). The flight's finally settles the token either
-          // way.
+          // that chain. Under this stable, verified hook composition the
+          // boundary IS the pre-next verification — NO promise is made about
+          // arbitrary future inner hooks: anything subscribing after the bind
+          // runs INSIDE, and the facts below OBSERVE that honestly at result
+          // settlement. The flight's finally settles the token either way.
           const result = await next()
-          if (disposed) note('post-boundary-pair-closed', { name: exec.name, detail: 'the pair closed while the inner chain ran; the body already ran — the settled result passes through, the fact is OBSERVED (post-next refusal was never a zero-side-effect boundary)' })
+          if (disposed) note('post-boundary-pair-closed', { name: exec.name, detail: 'the pair closed while the inner chain ran; the body already ran — the settled result passes through and the fact is OBSERVED' })
           const liveAfter = deps.scheduleServiceFeed?.()
           if (liveAfter !== bindMethods.service || liveAfter?.list !== bindMethods.list) note('post-boundary-service-drift', { name: exec.name, detail: 'the live service face moved during the inner chain; OBSERVED, the settled result is not retroactively refused' })
           return result
@@ -300,24 +310,39 @@ export function createScheduleBindAfterDef(deps) {
     for (let attempt = 0; attempt < attempts; attempt += 1) {
       if (disposed || bound) return
       originalDefs.clear()
-      let ready = false
       try {
         captureOriginalDefs(agent)
-        // The def face alone is NOT the tuple: readiness is the REAL Guard
-        // dispatcher-surface entry answering ACTIVE for THIS def identity
-        // (the same fields pa-mount-registry.mjs:430-441 reads). Absent =
-        // keep the pair closed and keep waiting (root residual 2).
-        ready = !([...originalDefs.entries()].some(([name, def]) => deps.nativeReady?.(name, def) !== true))
       } catch (error) {
         if (error?.breakpoint?.kind !== 'def-absent-post-created') throw error
+        await wait(tickMs)
+        continue
       }
-      if (ready) {
+      // ROOT b4 终裁: def visible is NEVER a tuple. The assembly establishes
+      // the tuple ONCE, explicitly, through its ORIGINAL dispatcher bind /
+      // verification (bindOwnTools — the documented pin-live-definition
+      // flow, an establishment, never a claim of Team physical
+      // registration), and the tuple check right after is IMMEDIATE — the
+      // poll stays only for def visibility and is never stretched here.
+      if (!establishAttempted) {
+        establishAttempted = true
+        const entries = [...originalDefs.entries()].map(([name, definition]) => ({ name, definition }))
+        const answer = await Promise.resolve(deps.establishNative
+          ? deps.establishNative(entries)
+          : { ok: true })
+        if (!isRecord(answer) || answer.ok !== true) {
+          throw breakpoint('native-bind-refused', 'the assembly to ESTABLISH the tuple for the ORIGINAL pair through the ORIGINAL dispatcher bind/verification (bindOwnTools pin-law) before any hook opens', answer === null || answer === undefined ? String(answer) : String(answer.detail ?? 'establishment refused'), 'install.ts bindAll:1067-1170 / scoped-dispatcher bind:619-628')
+        }
+        for (const { name, definition } of entries) {
+          if (deps.nativeReady?.(name, definition) !== true) {
+            throw breakpoint('native-tuple-not-active', 'the just-established REAL Guard-surface entry to answer ACTIVE for exactly the bound def identity (the same fields pa-mount-registry reads)', `entry did not answer for ${name}`, 'pa-mount-registry.mjs bindingFamilyOf/entryOf law')
+          }
+        }
         await bindExecutions(agent)
         return
       }
       await wait(tickMs)
     }
-    throw breakpoint('native-never-active', `the ORIGINAL pair to reach the REAL Guard surface as an ACTIVE binding for the bound def identity within ${String(attempts)}×${String(tickMs)}ms (published def + real tuple)`, 'def face and/or ACTIVE tuple never answered (pair stayed closed)', 'pa-mount-registry.mjs:451-459 bindingFamilyOf/entryOf law')
+    throw breakpoint('def-never-appeared', `the ORIGINAL pair to become publicly visible within ${String(attempts)}×${String(tickMs)}ms (the published-def safe point; establishment runs only once the defs exist)`, 'no def at the end of the bounded window', SCHEDULE_AFTER_DEF_BIND_POINTS.upstreamDefFirstAppears)
   }
 
   /** Start: NO capture at setup; the first read happens only post-created. */

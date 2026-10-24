@@ -59,9 +59,11 @@ interface Harness {
   closeCalls: unknown[]
   takes: number
   settles: unknown[]
+  establishCalls: number
   waits: number
   defs: Map<string, unknown>
   fireCreated: (agent: unknown) => void
+  gateSelf: { handle?: Handle }
   deps: Record<string, unknown>
   setHandlerFault: (event: string) => void
 }
@@ -72,11 +74,15 @@ interface HarnessOptions {
   gate?: (input: unknown) => unknown
   ready?: boolean | (() => boolean)
   take?: boolean
+  establish?: unknown | (() => unknown)
+  gateDuring?: (self: { handle?: Handle }) => void
 }
 
 function harness (opts: HarnessOptions = {}): Harness {
   const faulted = new Set<string>()
+  const gateSelf: { handle?: Handle } = {}
   const h: Harness = {
+    gateSelf,
     events: new Map(),
     guards: [],
     disposal: [],
@@ -87,6 +93,7 @@ function harness (opts: HarnessOptions = {}): Harness {
     closeCalls: [],
     takes: 0,
     settles: [],
+    establishCalls: 0,
     waits: 0,
     defs: opts.defs ?? new Map<string, unknown>([['schedule_list', makeDef('schedule_list')], ['schedule_delete', makeDef('schedule_delete')]]),
     fireCreated: () => {},
@@ -115,11 +122,18 @@ function harness (opts: HarnessOptions = {}): Harness {
       return () => { h.guards.splice(h.guards.indexOf(fn), 1); h.disposal.push('guard') }
     },
     scheduleServiceFeed: () => FIXED_SERVICE,
+    establishNative: (entries: Array<{ name: string }>) => {
+      h.establishCalls += 1
+      expect(entries.map((e) => e.name).sort()).toEqual(['schedule_delete', 'schedule_list'])
+      if (opts.establish === undefined) return { ok: true }
+      return typeof opts.establish === 'function' ? (opts.establish as () => unknown)() : opts.establish
+    },
     nativeReady: () => (opts.ready === undefined ? true : typeof opts.ready === 'function' ? opts.ready() : opts.ready),
     takePaToken: () => { h.takes += 1; return opts.take !== false },
     settlePaToken: (exec: unknown) => { h.settles.push(exec) },
     onBinded: (input: unknown) => {
       h.gateCalls.push(input)
+      opts.gateDuring?.(gateSelf)
       if (opts.gate === undefined) return { ok: true }
       const answer = opts.gate(input)
       if (answer === 'throw') throw new Error('gate exploded')
@@ -175,7 +189,8 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(h.events.size).toBe(0)
     expect(h.waits).toBe(3) // bounded attempts, all spent
     expect(h.refusals).toHaveLength(1)
-    expect(h.refusals[0]?.breakpoint?.kind).toBe('native-never-active')
+    expect(h.refusals[0]?.breakpoint?.kind).toBe('def-never-appeared')
+    expect(h.establishCalls).toBe(0) // establishment waits for the def face, never before
     expect(h.gateCalls).toHaveLength(0)
   })
 
@@ -352,6 +367,27 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(h.events.get('tools/pre-execute') ?? []).toHaveLength(0)
     expect(h.disposal).toContain('event:tools/pre-execute')
     expect(h.disposal).toContain('event:tools/execute')
+    // b4 addendum: disposed WHILE the gate await runs — the keys the gate
+    // just wrote are closed through the same pair-close path; no faces open.
+    const mid = harness()
+    const gateClose = (): void => { handleM.dispose() }
+    mid.deps.onBinded = async (input: unknown) => {
+      mid.gateCalls.push(input)
+      // the pair is disposed WHILE this await runs — after the gate wrote
+      // its keys, before the module could open any face:
+      gateClose()
+      await new Promise((resolve) => { setTimeout(resolve, 5) })
+      return { ok: true }
+    }
+    const handleM = createScheduleBindAfterDef(mid.deps as never) as unknown as Handle
+    handleM.start(AGENT)
+    mid.fireCreated(AGENT)
+    await flush()
+    expect(handleM.isBound()).toBe(false)
+    expect(mid.refusals[0]?.breakpoint?.kind).toBe('disposed-during-gate')
+    expect(mid.closeCalls).toHaveLength(1)
+    expect((mid.closeCalls[0] as { reason?: string })?.reason).toBe('disposed-during-gate')
+    expect(mid.events.size).toBe(0)
   })
 
   it('(g) created is an EVENT: the detached safe point binds when the def appears AND the real ACTIVE tuple answers; def visible but NO tuple keeps the pair CLOSED (residual 2)', async () => {
@@ -366,7 +402,8 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(handle.isBound()).toBe(true)
     expect(h.waits).toBeGreaterThanOrEqual(1)
     expect(h.gateCalls).toHaveLength(1)
-    // def visible immediately but the ACTIVE tuple NEVER answers → closed pair
+    // def visible, establishment ran ONCE, but the ACTIVE tuple does not
+    // answer → IMMEDIATE typed refusal (no stretched poll: zero waits)
     const closed = harness({ ready: false })
     const handle2 = createScheduleBindAfterDef(closed.deps as never)
     handle2.start(AGENT)
@@ -375,7 +412,22 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(handle2.isBound()).toBe(false)
     expect(closed.events.size).toBe(0)
     expect(closed.gateCalls).toHaveLength(0)
-    expect(closed.refusals[0]?.breakpoint?.kind).toBe('native-never-active')
+    expect(closed.establishCalls).toBe(1) // ONCE — the b4 establishment law
+    expect(closed.waits).toBe(0) // IMMEDIATE: the poll never stretches for the tuple
+    expect(closed.refusals[0]?.breakpoint?.kind).toBe('native-tuple-not-active')
+    // establishment REFUSED = typed refusal, once, no poll, no gate, no faces
+    const refused = harness({ establish: () => ({ ok: false, detail: 'definition unreadable at the public seam' }) })
+    const handle3 = createScheduleBindAfterDef(refused.deps as never)
+    handle3.start(AGENT)
+    refused.fireCreated(AGENT)
+    await flush()
+    expect(handle3.isBound()).toBe(false)
+    expect(refused.establishCalls).toBe(1)
+    expect(refused.waits).toBe(0)
+    expect(refused.events.size).toBe(0)
+    expect(refused.gateCalls).toHaveLength(0)
+    expect(refused.refusals[0]?.breakpoint?.kind).toBe('native-bind-refused')
+    expect(refused.refusals[0]?.message).toContain('unreadable at the public seam')
   })
 
   it('(h) ordering law (residual 5): with a later-closing pair, the SETTLED result passes through and the fact is OBSERVED — no post-next refusal pretending to undo a run body', async () => {
@@ -420,10 +472,19 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     // residual 4: saved bind-time execute reference
     expect(mod).toContain('bindMethods.executes.set(name, def.execute)')
     expect(mod).toContain("current.execute !== bindMethods.executes.get(name)")
-    // residual 5: post-chain is OBSERVED, not refused
+    // residual 5: post-chain is OBSERVED, not refused; the OLD wording is gone
     expect(mod).toContain("note('post-boundary-pair-closed'")
     expect(mod).not.toContain('disposed-around-chain')
     expect(mod).not.toContain('service-identity-drift-post-body')
+    expect(mod).not.toContain('zero-side-effect')
+    expect(mod).not.toContain('native-never-active')
+    // b4: explicit ONE establishment via the assembly's ORIGINAL bind/
+    // verification, immediate tuple check, gate-await dispose closes the keys
+    expect(ab).toContain('a5p1Guard.bindOwnTools(entries.map((entry) => entry.name))')
+    expect(mod).toContain("throw breakpoint('native-bind-refused'")
+    expect(mod).toContain("throw breakpoint('native-tuple-not-active'")
+    expect(mod).toContain("deps.onBindClose?.({ reason: 'disposed-during-gate' })")
+    expect(mod).toContain("throw breakpoint('disposed-during-gate'")
     // earlier laws still stand:
     expect(ab).toContain('pa.paAdmit.open(walk)')
     expect(ab).toContain('pa.paAdmit.edge(Object.freeze(')
