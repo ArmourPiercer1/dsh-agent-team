@@ -165,6 +165,20 @@ import { PTC_ESCALATION_MODES } from '../ptc-escalation-row.mjs'
 /** Adapter generation for the whole G3 module (all three families move as one). */
 export const A5_G3_ADAPTER_REVISION = 3
 
+/** A5M2-G3-PTC format identity (root D4 card 2026-10-25; record64 pairing
+ *  obligation): the B-PTC WIRE FORMAT moved — the two childChannel budget
+ *  leaves went nonNegativeInt -> nullableString (ACTUAL mapping, root final
+ *  limited ruling). What pairs now: descriptor (the reviewPayload the PA
+ *  family claim carries), registration (the pa-mount-registry family entry)
+ *  and claim (the arm's own face the walk reads) ALL answer the SAME value
+ *  for what this row defines — the B-PTC row rides 4 on all three faces
+ *  while every OTHER G3 definition keeps A5_G3_ADAPTER_REVISION 3 (NO
+ *  forced unification). OLD APPROVALS ARE NOT TRANSLATED: an r3-era claim
+ *  never pairs against an r4 family and the kernel's own comparison refuses
+ *  it. This is the FORMAT-IDENTITY PAIRING obligation, not a claimed
+ *  replay-vulnerability fix. */
+export const A5_G3_PTC_ADAPTER_REVISION = 4
+
 export const A5_G3_FAMILIES = Object.freeze({
   TERMINAL: 'B-TERMINAL',
   LSP: 'B-LSP',
@@ -1451,7 +1465,7 @@ function faithfulExecSnapshot(exec) {
  *   between approval and body entry.
  * @param deps.observe - the minimal backend log.
  */
-function createDelegateArm({ familyId, toolName, codes, nativeDefinition, definitionIdentity, liveDispatcher, providerId, memberAgentId, sessionHeaderId, realmId, bindingFacts, serviceFacts, controlPort = null, validate, observe = () => {} }) {
+function createDelegateArm({ familyId, toolName, codes, nativeDefinition, definitionIdentity, liveDispatcher, providerId, memberAgentId, sessionHeaderId, realmId, bindingFacts, serviceFacts, controlPort = null, familyAdapterRevision = null, validate, observe = () => {} }) {
   const declaredAbsent = nativeDefinition === null || nativeDefinition === undefined
   if (!declaredAbsent && typeof nativeDefinition?.execute !== 'function') {
     throw new TypeError(`g3-fsproc-adapters/${toolName}: nativeDefinition must be the captured definition object with an execute function, or null for the declared-absent shape`)
@@ -1528,6 +1542,13 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     target.cancelPending = false
     target.cancelPendingSettled = evidence
   }
+
+  // The FAMILY format version this row carries (D4 pairing): defaults to the
+  // shared adapter revision; the B-PTC row passes its own (4) because its
+  // wire format moved. Other families answer the shared value unchanged.
+  const familyFormatRevision = Number.isInteger(familyAdapterRevision) && familyAdapterRevision >= 1
+    ? familyAdapterRevision
+    : A5_G3_ADAPTER_REVISION
 
   /**
    * THE live-source fact re-verification (no closure self-attestation, no
@@ -1627,7 +1648,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     })
     const reviewPayload = deepFreeze({
       familyId,
-      adapterRevision: A5_G3_ADAPTER_REVISION,
+      adapterRevision: familyFormatRevision,
       providerIdentity: providerId,
       definitionIdentity,
       targetManifest,
@@ -1644,7 +1665,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     }))}`
     const plan = deepFreeze({
       familyId,
-      adapterRevision: A5_G3_ADAPTER_REVISION,
+      adapterRevision: familyFormatRevision,
       toolName,
       definitionIdentity,
       providerId,
@@ -2098,6 +2119,74 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
    * answer rides the drain word verbatim. The return value states exactly
    * what this word controls.
    */
+  /** THE GUARD-SEAM ENTRY (root FINAL TIMING ruling 2026-10-25: pre-execute
+   *  is NOT the body boundary — the public `tools/execute` waterfall is).
+   *  The guard-seam row (run_code) consumes its A grant and traverses the
+   *  EXACT liveVerdict law HERE — the SAME function execute runs at its
+   *  real entry (fail-fast pass, then the authoritative pass after one
+   *  microtask, same cancel/drain edges, same CURRENT-binding /
+   *  live-dispatcher / function-value / recheckTarget traversals) — but the
+   *  BODY is not entered by this arm: the host transport's `next()`
+   *  dispatches the reserved native with the ORIGINAL exec and every
+   *  native guarantee. The plan advances PREPARED -> EXECUTING (the body
+   *  entered, through the transport); `settleEntry` closes the account
+   *  with the transport's word. Every REFUSAL path settles the entry
+   *  REFUSED with zero body, so no PREPARED entry ever dangles. */
+  function recheckAtEntry (plan, consumed) {
+    const entry = plans.get(plan)
+    if (entry === undefined) return Promise.resolve(refuse(codes.NOT_ADMITTED, 'unknown plan: recheckAtEntry answers only to a plan this arm classified'))
+    if (entry.state === 'CANCELLED') return Promise.resolve(refuse(codes.CANCELLED, 'the plan was cancelled before the body boundary: zero body is the truth, not a race'))
+    if (entry.state !== 'PREPARED') {
+      const spent = entry.state === 'CLAIMED' || entry.state === 'EXECUTING' || entry.state === 'COMMITTED' || entry.state === 'REFUSED'
+      return Promise.resolve(refuse(spent ? codes.ALREADY_CONSUMED : codes.NOT_ADMITTED, `plan is ${entry.state}, not admitted-and-awaiting-entry`))
+    }
+    const grant = consumed?.grant
+    if (consumed?.consumed !== true || grant === null || typeof grant !== 'object' || typeof grant.grantId !== 'string') {
+      return Promise.resolve(refuse(codes.NOT_ADMITTED, 'recheckAtEntry takes the REAL consumed-proof of the A execution edge ({grant, consumed:true}) — the same witness execute verifies; internal state never substitutes for it'))
+    }
+    const failFast = liveVerdict(plan, grant, entry)
+    if (failFast !== null) {
+      entry.state = 'REFUSED'
+      settlePendingCancel(entry, 'refused at the body-boundary fail-fast pass (zero body)')
+      return Promise.resolve(failFast)
+    }
+    return Promise.resolve()
+      .then(() => {
+        // THE REAL ENTRY for the guard-seam row: the word is the one the
+        // transport's next() will carry — cancel/drain first, then the
+        // authoritative re-verification against the LIVE sources.
+        if (entry.state === 'CANCELLED') {
+          return refuse(codes.CANCELLED, 'cancelled at the body boundary before the transport ran')
+        }
+        if (draining) {
+          return refuse(codes.DRAINING, 'drained at the body boundary before the transport ran')
+        }
+        const atEntry = liveVerdict(plan, grant, entry)
+        if (atEntry !== null) {
+          entry.state = 'REFUSED'
+          settlePendingCancel(entry, 'refused at the authoritative body-boundary pass (zero body)')
+          return atEntry
+        }
+        entry.state = 'EXECUTING'
+        observe({ event: 'backend-start', correlation: entry.correlation, detail: plan.definitionIdentity })
+        return { ok: true, correlation: entry.correlation }
+      })
+  }
+
+  /** The companion settlement: the transport answered — success or failure,
+   *  the NATIVE's word is the body's fate, exactly as execute commits the
+   *  delegate body's word. This closes the arm's account and settles any
+   *  pending cancellation with the outcome evidence. */
+  function settleEntry (plan, ok, evidence) {
+    const entry = plans.get(plan)
+    if (entry === undefined) return Object.freeze({ ok: false, code: codes.NOT_ADMITTED })
+    if (entry.state !== 'EXECUTING') return Object.freeze({ ok: false, code: codes.ALREADY_CONSUMED, detail: `plan is ${entry.state}, not executing` })
+    entry.state = ok === true ? 'COMMITTED' : 'REFUSED'
+    settlePendingCancel(entry, `settled with the transport outcome (${String(evidence ?? 'no evidence')})`)
+    observe({ event: 'backend-end', correlation: entry.correlation, detail: ok === true ? 'ok' : 'error' })
+    return Object.freeze({ ok: true })
+  }
+
   function drain() {
     draining = true
     const facts = inFlight()
@@ -2115,7 +2204,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
 
   return {
     familyId,
-    adapterRevision: A5_G3_ADAPTER_REVISION,
+    adapterRevision: familyFormatRevision,
     toolName,
     definitionIdentity,
     providerId,
@@ -2124,6 +2213,8 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     classify,
     prepare,
     execute,
+    recheckAtEntry,
+    settleEntry,
     cancel,
     inFlight,
     drain,
@@ -2859,6 +2950,7 @@ export function createGovernedRunCodeArm(deps) {
   }
   assertCapturedEnum('run_code', 'sandbox_permissions', deps.nativeDefinition?.parameters?.sandbox_permissions?.enum, A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS)
   return createDelegateArm({
+    familyAdapterRevision: A5_G3_PTC_ADAPTER_REVISION,
     familyId: A5_G3_FAMILIES.PTC,
     toolName: 'run_code',
     codes: A5_G3_PTC_TYPED_CODES,

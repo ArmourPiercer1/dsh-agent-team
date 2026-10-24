@@ -100,7 +100,7 @@ import { buildG3TerminalWiring, A5_G3_TERMINAL_TOOL_NAMES } from './governed-fam
 // the guard builder, and exposes the wiring face. The reserved native
 // 'run_code' is NEVER placed, registered, or shadowed here (P1 law:
 // core/tools/src/index.ts:1080-1081 — absolute).
-import { buildG3RunCodeGuard } from './governed-families/g3-ptc-wiring.mjs'
+import { buildG3RunCodeGuard, A5_G3_RUN_CODE_TOOL_NAME } from './governed-families/g3-ptc-wiring.mjs'
 // A5M2-G5 B-SESSION GOAL SERVICE (this lane's additive import rows under
 // the G6 pair): the goal wiring bridge and the adapter's OWN census face —
 // imported VERBATIM, no law restated here.
@@ -1927,6 +1927,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // (zero flip otherwise); the trust read downstream is then the REAL
     // call-level binding behind the placed row, never a stand-in.
     if (subagentControlInject !== null && Object.keys(A5_B_SUBAGENT_RECORD_SPECS).includes(spelling)) return spelling
+    // A5M2-G3-PTC GUARD (root D3 card 2026-10-25): run_code is placed by the
+    // NATIVE OWNER — the host registry's reserved row — never by this plane
+    // (the registration ban index.ts:1080-1081 is ABSOLUTE; the guard places
+    // ZERO definitions, correctly). The name resolves HERE, through the
+    // ORIGINAL PA mapping, ONLY while this mount armed the guard over the
+    // reserved native: the placement identity is the native's own real
+    // spelling and the trust read downstream is the REAL dispatcher-surface
+    // binding behind it (the same entry the guard's bindingFacts reader
+    // reads) — no fake name, no readfacts skip, no stand-in. An unarmed or
+    // absent guard answers undefined exactly as before (zero flip); before
+    // this branch the production reader arrived with NO placementName and
+    // the registry's no-placement-name law refused EVERY run_code call.
+    if (runCodeGuardWiring !== null && runCodeGuardWiring.armed === true
+      && spelling === A5_G3_RUN_CODE_TOOL_NAME) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -5204,6 +5218,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         armed: runCodeGuardWiring.armed,
         declared: runCodeGuardWiring.declared,
         onPreExecute: runCodeGuardWiring.onPreExecute,
+        onExecute: runCodeGuardWiring.onExecute,
         familyRegistrations: runCodeGuardWiring.familyRegistrations,
       }) }),
 
