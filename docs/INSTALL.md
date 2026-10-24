@@ -450,17 +450,19 @@ config:
       providerId: "my-team-provider"          # 行 provider 身份（durable family gate 比对键）
       declaredBackends: ["shell"]             # §5.1 declared_mount：公开的 DECLARED backend 类型集（非空字符串数组）
       sessionConfig:                          # 装配内 REAL producer 的 base Config
-        rows: 24                              #   （发布 law 原样物化：resolveConfig+validateConfig
-        cols: 80                              #     先行，zod 默认由发布 schema 填——backendType/
-                                              #     disposeGraceMs 等不手抄；Config 读失败 = 记诊断，
-                                              #     不吞 null）
+        rows: 24                              #   （发布 law 原样物化：主入口可调用 Schemastery
+        cols: 80                              #     schema Config(raw) 先物化默认——backendType/
+                                              #     disposeGraceMs 等不手抄——resolveConfig 补
+                                              #     dialect shell 默认，validateConfig 断言不变量；
+                                              #     组合失败 = 记诊断，不吞 null）
 ```
 
 **ptyService 三事实无外注列，open plan 走真实 confine 通道（root 20:38 producer
 令 + 21:03/21:07 更正）**：`session` 只解析本 member 自己的 live
 `terminals.list(owner)` 快照（pid 派生 incarnation，status 逐字携带；他主/未知
 sid 答 nothing）。`approvedOpenPlan` 答的是**真实受限计划**：base Config 经
-发布的 resolveConfig/validateConfig 物化出原始 argv 后，由公开
+发布的 `Config(raw)`→`resolveConfig`→`validateConfig` 组合（root 21:27：
+主入口可调用 Schemastery schema 物化默认）得出原始 argv 后，由公开
 `SandboxProvider.confine(argv, policy)` 在 `policy =
 sandboxPolicy.resolve({session})` 下**包裹成受限 argv**（terminal-bash 自家
 spawnArgv 同一律：argv := confined.argv，cwd := policy.workspaceRoot——
