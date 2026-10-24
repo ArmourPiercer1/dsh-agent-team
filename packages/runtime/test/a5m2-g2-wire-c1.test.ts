@@ -1932,4 +1932,50 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     expect(supply.ok).toBe(false)
     expect(supply.code).toBe('P_G2_ASM_ENTRY_INCOMPLETE')
   })
+  // ROOT 05:27 residual: armed must NEVER run the old browser loader; the
+  // old launchEntry/workerEntry are not preconditions of the producer pair
+  // nor of the SDK Client. Real supply-branch control below.
+  it('armed FULL pair + STALE BROKEN browser entryPaths: old loader never runs, the pair still supplies', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const root = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/', import.meta.url).href
+    const built = await g2ResolveBrowserPublicEntries({ launchEntry: root + 'src/launch.ts', workerEntry: root + 'src/worker-client.ts' })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      entries: built.entries,
+      entriesProvenance: built.provenance,
+      // approval-era stale paths pointing at NOTHING — pre-fix these threw
+      // ENTRY_INCOMPLETE through loadG2TeamAssemblyEntries and blocked the
+      // complete pair; post-fix armed they are simply not consulted.
+      entryPaths: { launchEntry: '/nonexistent/stale-generation/launch.ts', workerEntry: '/nonexistent/stale-generation/worker.ts' },
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+      consumeBrowserApproval: async () => ({ ok: true }),
+      callResource: async () => ({ ok: true }),
+    })
+    expect(supply.ok).toBe(true)
+    if (supply.ok !== true) return
+    const s = supply.supply as { browserEntries: { launchChromium: unknown } }
+    expect(s.browserEntries.launchChromium).toBe((built.entries as { launchChromium: unknown }).launchChromium)
+  })
+  it('armed pair + SDK-ONLY entryPaths: the SDK Client loads INDEPENDENTLY (old browser entries are not its precondition)', async () => {
+    const mountMod = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const root = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/', import.meta.url).href
+    const built = await g2ResolveBrowserPublicEntries({ launchEntry: root + 'src/launch.ts', workerEntry: root + 'src/worker-client.ts' })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const sdkClientEntry = new URL('../../../tests/deepseek-harness-test-use/packages/mcp/mcp-client/node_modules/@modelcontextprotocol/client/dist/index.mjs', import.meta.url).href
+    const supply = await mountMod.createG2TeamAssemblySupply({
+      entries: built.entries,
+      entriesProvenance: built.provenance,
+      entryPaths: { sdkClientEntry },
+      makeTransport: () => ({ start: () => {}, send: () => {}, close: () => {} }),
+      consumeBrowserApproval: async () => ({ ok: true }),
+      callResource: async () => ({ ok: true }),
+    })
+    expect(supply.ok).toBe(true)
+    if (supply.ok !== true) return
+    const s = supply.supply as { entries?: { Client?: unknown }; browserEntries: { launchChromium: unknown } }
+    expect(typeof s.entries?.Client).toBe('function') // the REAL venue SDK class, independently loaded
+    expect(s.browserEntries.launchChromium).toBe((built.entries as { launchChromium: unknown }).launchChromium)
+  })
 })
