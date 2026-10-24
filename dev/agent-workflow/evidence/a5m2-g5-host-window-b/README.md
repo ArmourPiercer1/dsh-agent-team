@@ -13,9 +13,12 @@ Host (both local passes were DRY, which is NOT_RUN by law).
       bash dev/agent-workflow/evidence/a5m2-g5-host-window-b/scripts/06-run-g5-window.sh
     # pre-proof (zero spawns, exits NOT_RUN rc3): A5M2_G5_DRY=1 replaces GRANTED
 
-Ports: **3185 host / 3500 mock** — G5-family自理 pair (root order). A owns 3183/3498, B-Control owns
-3184/3499: both untouched here; 3080 stable, 3180/3181 durable never touched. Pre-check only;
-occupied => refuse rc3; foreign occupants never killed.
+Ports: **borrowed B slot 3184 host / 3499 mock** (`A5M2_G5_SLOT`, default B — root FINAL scheduling
+2026-10-24: G6 borrows A 3183/3498; G5 borrows B; B-Control's own batches take priority, this
+window queues after them). The borrow is exclusive and valid only while the slot owner runs no
+Host: pre-check only, occupied => refuse rc3, occupant NEVER killed (collision reported to the
+scheduler). Four drivers may prepare in parallel; the two slots are strictly exclusive at run time.
+3080 stable, 3180/3181 durable never touched.
 
 ## Fixed inputs (center 2fb delivery, read-only re-verified per pass)
 
@@ -29,14 +32,18 @@ occupied => refuse rc3; foreign occupants never killed.
 | blueprints | REAL `parseBlueprint`/`validateBlueprintDocument` from the pack pre-boot (anchor + saved `team.a5m2-g5-hw`) — not just syntax |
 | driver | runner file sha256 recorded in the receipt; the commit carrying it is the lane tip |
 
-## G5 assembly supply (this gate REPLACES the OLD full-tree static audit, removed per root order)
+## Pre-boot identity law (root review ruling: the keyword "supply" gate is REMOVED)
 
-Read off the SAME quartet of pinned blobs before any boot: durable `familyRegistrations` +
-`g5GoalsService`/`readNative` provider rows (agent-bindings), `GOAL_TOOL_DRIVER_REQUIRED` mirror
-(g5-goal-service), `goalToolExecution` port-authentication law mirroring 639
-`packages/goal/tool-goal/src/authority.ts:33-118` (g5-goal-wiring). `get_goal` native face
-re-verified at 639 tool-goal/src/index.ts:196 (`parameters: {}` — the mock sends exactly `{}`);
-execute → `goalToolExecution` → `goalValue(goals.get(agent))`.
+The runner does NOT keyword-grep product sources for supply claims: the earlier
+`GOAL_TOOL_DRIVER_REQUIRED`/`goalToolExecution` `includes()` checks matched COMMENT-ONLY occurrences
+(service :835, wiring :56) and proved nothing — removed per root review (the old full-tree static
+audit stays removed; necessary product tests are untouched). What remains is identity: the EXACT
+dist quartet blob hashes (a byte identity of the pinned product, not a keyword census), the
+fixture lock/pkg pins, and the REAL `parseBlueprint`/`validateBlueprintDocument` pass. The sole
+supply authority is the governed rows' live behavior at boot over the public wire. Context facts
+(read-only, non-gating): `get_goal` native face at 639 tool-goal/src/index.ts:196
+(`parameters: {}` — the mock sends exactly `{}`); execute → `goalToolExecution` →
+`goalValue(goals.get(agent))`; mirror law mirrors 639 `packages/goal/tool-goal/src/authority.ts:33-118`.
 
 ## Criteria (positive/negative controls + ledger hygiene)
 

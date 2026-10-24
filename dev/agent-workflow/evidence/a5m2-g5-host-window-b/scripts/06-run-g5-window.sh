@@ -15,16 +15,24 @@
 #              5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088;
 #              pkg 4ef112fb43f058bc…; cold-import authority = product receipts
 #              logs-2fb129cf-20261024T135732Z 19-cold-* + 20-cold-necessary RC=0 —
-#              read-only, NEVER rerun here; the OLD full-tree static audit is GONE,
-#              replaced by the runner's G5 SUPPLY gate (quartet blobs +
-#              familyRegistrations/g5GoalsService/GOAL_TOOL_DRIVER_REQUIRED/goalToolExecution))
+#              read-only, NEVER rerun here. Pre-boot gates are IDENTITY-ONLY: the
+#              exact dist quartet blob hashes + lock/pkg pins + REAL blueprint
+#              parse (root review ruling: the source-keyword supply gate was
+#              COMMENT-ONLY matching and is REMOVED; live behavior at boot is the
+#              sole supply authority))
 #   host     = 639ed01539 checkout (tests/deepseek-harness-test-use) — REUSED,
 #              never cloned/installed/copied for this window
 #   HOME     = tests/homes/a5m2-g5-hw-b-<UTCts>Z  budget 64 MiB (new bytes, links==1)
-#   ports    = 3185 host + 3500 mock — G5-family自理 pair (root order): A owns
-#              3183/3498, B-Control owns 3184/3499, BOTH untouched here; 3080
-#              stable, 3180/3181 durable NEVER touched; PRE-CHECK ONLY, occupied
-#              => refuse (never kill)
+#   ports    = BORROWED SLOT (root FINAL scheduling 2026-10-24, supersedes both
+#              the 3185/3500 pair and the earlier A-borrow): G5 borrows the B
+#              slot (A5M2_G5_SLOT default B -> 3184/3499); G6 borrows A. B-Control's
+#              own batches take PRIORITY — this window queues AFTER them. The
+#              borrow is EXCLUSIVE and only valid while the slot owner runs no
+#              Host: pre-check ONLY, occupied => refuse rc3 (occupant NEVER
+#              killed — report the collision to the scheduler). Four drivers may
+#              PREPARE in parallel; the two slots stay strictly exclusive at run
+#              time. 3080 stable, 3180/3181 durable NEVER touched. Fresh small
+#              HOME per window allowed; NO new host copies/deps/durable worlds.
 #   outer    = 300s hard watchdog on the OWN process group; df bar: root-ruling
 #              temporary 6442450944 B (6 GiB), mirroring the A monitor (38b81fff)
 set -euo pipefail
@@ -41,6 +49,13 @@ PIN_PKG_SHA=4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722
 PIN_COMPOSED=2fb129cfa23e138248fecc834a42c92238af95fe
 
 cd "$REPO_WT"
+G5_SLOT=${A5M2_G5_SLOT:-B}   # root final scheduling: G5 = B slot (3184/3499); G6 holds A
+case "$G5_SLOT" in
+  A) G5_PORT_HOST=3183; G5_PORT_MOCK=3498 ;;
+  B) G5_PORT_HOST=3184; G5_PORT_MOCK=3499 ;;
+  *) echo "WRAPPER VERDICT: A5M2_G5_SLOT must be B (3184/3499, G5 default) or A (3183/3498) — an exclusive borrow of an IDLE slot serialized by the main scheduler; no third pair (rc 3)"; exit 3 ;;
+esac
+echo "borrowed slot: ${G5_SLOT} (host ${G5_PORT_HOST} / mock ${G5_PORT_MOCK}) — owner must run no Host; B-Control batches take priority, this window queues after"
 mkdir -p "$OUT"
 exec > >(tee -a "$OUT/wrapper.log") 2>&1
 echo "g5 window B wrapper ${TS}"
@@ -69,9 +84,10 @@ FIX_TGZ_SHA=$(sha256sum "$FIX_TARGET" | cut -d' ' -f1)
 echo "fixture before: lock=${FIX_LOCK_BEFORE:0:16}… pkg=${FIX_PKG_BEFORE:0:16}… tgz=${FIX_TGZ_SHA:0:16}… target=${FIX_TARGET}"
 
 # [1.5] the OLD full-tree static audit is REMOVED (root order); the cold-import
-#       authority is the product receipt (logs-2fb129cf-20261024T135732Z), and the
-#       NEW gate is the runner's G5 SUPPLY gate inside [4] (dist quartet blobs +
-#       supply needles), fail-closed before any boot.
+#       authority is the product receipt (logs-2fb129cf-20261024T135732Z). The
+#       runner's pre-boot gates are IDENTITY-ONLY (exact quartet hashes + lock/pkg
+#       + REAL parse); the keyword "supply" gate was removed per root review —
+#       comment-only needles proved nothing.
 
 # [2] capacity
 AVAIL=$(df -B1 --output=avail /srv/workspace/dsh-plugins/dsh-agent-team | tail -1 | tr -d ' ')
@@ -79,20 +95,20 @@ echo "df avail: ${AVAIL} B (min ${DF_MIN})"
 [ "$AVAIL" -ge "$DF_MIN" ] || fail "capacity below the root-ruled bar ${DF_MIN} B — no boot" 3
 
 # [3] port pre-check: probe only; occupied refuses (foreign occupants NEVER killed)
-for P in 3185 3500; do
+for P in "$G5_PORT_HOST" "$G5_PORT_MOCK"; do
   if ss -ltn "sport = :${P}" | grep -q LISTEN; then fail "port ${P} occupied by a foreign occupant — refuse, never kill" 3; fi
 done
-echo "ports 3185/3500 free (pre-check)"
+echo "borrowed slot ${G5_SLOT} ports ${G5_PORT_HOST}/${G5_PORT_MOCK} free (pre-check)"
 
 # [4] ONE bounded run: own process group; 300s TERM to the OWN group, 20s
 #     grace, then KILL the OWN group only. The GO env is forwarded ONLY if the
 #     operator exported it (root's separate A/B-no-conflict GO); absent => the
 #     runner itself prints NOT_RUN and exits rc3 (window not spent).
 if [ "${A5M2_G5_DRY:-}" = "1" ]; then
-  setsid -w env A5M2_G5_DRY=1 A5M2_G5_INSTALL_DIR="$A5M2_G5_INSTALL_DIR" A5M2_G5_PACK_SHA256="sha256:${PIN_TGZ_SHA}" A5M2_G5_COMPOSED_SHA="$PIN_COMPOSED" A5M2_G5_HOME_POINTER="$OUT/home.txt" node "$RUNNER" &
+  setsid -w env A5M2_G5_DRY=1 A5M2_G5_SLOT="$G5_SLOT" A5M2_G5_INSTALL_DIR="$A5M2_G5_INSTALL_DIR" A5M2_G5_PACK_SHA256="sha256:${PIN_TGZ_SHA}" A5M2_G5_COMPOSED_SHA="$PIN_COMPOSED" A5M2_G5_HOME_POINTER="$OUT/home.txt" node "$RUNNER" &
 else
   [ "${A5M2_G5_WINDOW:-}" = "GRANTED" ] || fail "A5M2_G5_WINDOW is not GRANTED — root GO pending; NOT booting (dry path: A5M2_G5_DRY=1)" 3
-  setsid -w env A5M2_G5_WINDOW=GRANTED A5M2_G5_INSTALL_DIR="$A5M2_G5_INSTALL_DIR" A5M2_G5_PACK_SHA256="sha256:${PIN_TGZ_SHA}" A5M2_G5_COMPOSED_SHA="$PIN_COMPOSED" A5M2_G5_HOME_POINTER="$OUT/home.txt" node "$RUNNER" &
+  setsid -w env A5M2_G5_WINDOW=GRANTED A5M2_G5_SLOT="$G5_SLOT" A5M2_G5_INSTALL_DIR="$A5M2_G5_INSTALL_DIR" A5M2_G5_PACK_SHA256="sha256:${PIN_TGZ_SHA}" A5M2_G5_COMPOSED_SHA="$PIN_COMPOSED" A5M2_G5_HOME_POINTER="$OUT/home.txt" node "$RUNNER" &
 fi
 SPAWN_PID=$!
 sleep 1
@@ -115,10 +131,10 @@ echo "runner rc=${RC} (143/137 = outer 300s/320s bound fired on the OWN group)"
 
 # [5] post facts
 sleep 2
-for P in 3185 3500; do
+for P in "$G5_PORT_HOST" "$G5_PORT_MOCK"; do
   ss -ltn "sport = :${P}" | grep -q LISTEN && fail "port ${P} still occupied after exit — runner cleanup fact FALSE" 1
 done
-echo "ports 3185/3500 free (post)"
+echo "borrowed slot ${G5_SLOT} ports ${G5_PORT_HOST}/${G5_PORT_MOCK} free (post)"
 if [ -s "$OUT/home.txt" ]; then WORLD=$(tr -d '\n' < "$OUT/home.txt"); else fail "no explicit HOME pointer from this run ($OUT/home.txt absent); nothing deleted, scene retained" 1; fi
 [ -d "$WORLD" ] || fail "pointed HOME absent at ${WORLD} — raw retention law broken?" 1
 echo "HOME (explicit pointer): ${WORLD}"
@@ -139,6 +155,7 @@ cat > "$OUT/external-receipt.json" <<EOF
   "fixtureLockSha256Before": "${FIX_LOCK_BEFORE}", "fixtureLockSha256After": "${FIX_LOCK_AFTER}",
   "fixturePkgSha256Before": "${FIX_PKG_BEFORE}", "fixturePkgSha256After": "${FIX_PKG_AFTER}",
   "dfAvailBytes": ${AVAIL}, "dfMin": ${DF_MIN}, "runnerRc": ${RC}, "dry": "${A5M2_G5_DRY:-0}",
+  "borrowedSlot": "${G5_SLOT}", "slotPorts": [${G5_PORT_HOST}, ${G5_PORT_MOCK}],
   "fixturePkgShaPin": "${PIN_PKG_SHA}", "coldImportAuthority": "logs-2fb129cf-20261024T135732Z (19-cold-* + 20-cold-necessary RC=0; read-only)",
   "portsFreePost": true, "worldRetained": "${WORLD}", "homeNewBytes": ${NEWB},
   "homeBudget": ${HOME_BUDGET}
@@ -150,7 +167,7 @@ if [ "${A5M2_G5_DRY:-}" = "1" ]; then
   # ROOT ORDER: DRY is NOT_RUN (rc3), never a business PASS. rc3 = the pre-proof did
   # its job; rc0 from a dry runner would be the runner MISREPORTING a PASS => fail.
   [ "$RC" -eq 3 ] || { echo "WRAPPER VERDICT: dry path exited rc=${RC}, expected NOT_RUN rc3 — runner law broken, treat as FAILURE"; exit 1; }
-  echo "WRAPPER VERDICT: NOT_RUN (dry pre-proof rc3: pins/supply/validator/patch to the boot boundary; NO boot, NO business claim) — raw + HOME retained at ${OUT} and ${WORLD}"
+  echo "WRAPPER VERDICT: NOT_RUN (dry pre-proof rc3: pins/identity/validator/patch to the boot boundary; NO boot, NO business claim) — raw + HOME retained at ${OUT} and ${WORLD}"
   exit 3
 fi
 [ "$RC" -eq 0 ] || { echo "WRAPPER VERDICT: runner non-zero rc=${RC} — STOP (no second window without a fresh root order)"; exit "$RC"; }

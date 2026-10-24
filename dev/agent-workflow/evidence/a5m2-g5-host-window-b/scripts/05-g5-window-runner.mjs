@@ -24,7 +24,7 @@
  * BOOT remains behind the root's ruling: A5M2_G5_WINDOW=GRANTED. Without it
  * the runner prints a NOT_RUN receipt and exits NON-ZERO (rc 3) — NOT_RUN is
  * never a green line. The no-boot dry path (A5M2_G5_DRY=1) runs the REAL
- * pre-flight to the boot boundary (pins -> entry + G5 SUPPLY gate -> REAL
+ * pre-flight to the boot boundary (pins -> entry + EXACT blob identity -> REAL
  * blueprint validation -> patch) and stops BEFORE any spawn; by root order the
  * DRY path ALSO exits rc3 NOT_RUN — a dry pass is never a business PASS.
  *
@@ -61,8 +61,26 @@ const G5_BLOB_PLANE = 'da97e8a45cf0c4ecece893e2c8c7ad8f58efc501ec4c014203620e5f9
 const LOCK_SHA256 = '5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088' // the installed fixture's pnpm-lock (read-only reuse; absent/drift => fail closed, NEVER re-installed)
 const FIX_PKG_SHA = '4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722' // the fixture manifest (center-measured; re-verified read-only here)
 const PACK_BYTES_MAX = 8_000_000
-const HOST_PORT = 3185 // G5-family port自理 (root order): A owns 3183/3498, B-Control owns 3184/3499 — BOTH untouched; 3080 stable, 3180/3181 durable never touched
-const MOCK_PORT = 3500
+// ROOT ORDER 2026-10-24 (supersedes the 3185/3500自理 pair): there is NO third
+// port pair. A window BORROWS an existing slot — A (3183/3498) or B (3184/3499) —
+// EXCLUSIVELY while that slot's owner is not running; the main scheduler grants
+// the borrow and guarantees A/G6/G5 never hold the slot at once. The slot arrives
+// as an explicit env choice; the DEFAULT is the B slot per root's FINAL slot
+// scheduling (2026-10-24): G6 borrows A (3183/3498), G5 borrows B (3184/3499),
+// with B-Control's own batches taking PRIORITY and this window queued AFTER
+// them. The borrow is only real while the original owner runs no Host — the
+// pre-boot idle check is the local proof; the four drivers may PREPARE in
+// parallel but the two slots stay strictly exclusive at run time. Occupants are
+// NEVER killed: occupied => refuse rc3 and report the collision to the
+// scheduler. 3080 stable, 3180/3181 durable are never touched by any slot.
+const SLOT_PRESETS = { A: [3183, 3498], B: [3184, 3499] }
+const SLOT = process.env.A5M2_G5_SLOT ?? 'B' // root final scheduling: G5 = B slot
+// (env read directly here: WINDOW_GO/DRY consts are declared below — no TDZ)
+if (process.env.A5M2_G5_WINDOW === 'GRANTED' || process.env.A5M2_G5_DRY === '1') {
+  if (SLOT !== 'A' && SLOT !== 'B') notRun('A5M2_G5_SLOT must be B (3184/3499, the G5 default) or A (3183/3498) — an exclusive borrow of an IDLE slot serialized by the main scheduler; no third pair exists')
+}
+const [HOST_PORT, MOCK_PORT] = SLOT_PRESETS[SLOT] ?? SLOT_PRESETS.A
+const SLOT_OWNER = SLOT === 'A' ? 'the g3/A-edit line (G6 currently borrows it)' : 'the B-Control line (their batches take priority; this window is queued after them)'
 const WORLD_PREFIX = 'a5m2-g5-hw-b'
 const BP_ID = 'team.a5m2-g5-hw'
 const WINDOW_GO = process.env.A5M2_G5_WINDOW === 'GRANTED'
@@ -176,7 +194,7 @@ async function waitFor(label, timeoutMs, pred) {
 function finish(rc) {
   try {
     mkdirSync(RUN_DIR, { recursive: true })
-    writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, dry: DRY, rc, composedSha: COMPOSED_SHA, results, harvest: harvestStats, transcript: TRANSCRIPT.slice(-400) }, null, 2))
+    writeFileSync(join(RUN_DIR, 'results.json'), JSON.stringify({ stamp: RUN_STAMP, dry: DRY, rc, composedSha: COMPOSED_SHA, slot: SLOT, results, harvest: harvestStats, transcript: TRANSCRIPT.slice(-400) }, null, 2))
     // ROOT LESSON ①: minimal per-call record — callId/step/tool/isError/text<=800/
     // args<=800 — written on EVERY exit path (the negative-control face: any
     // mirror/driver-required refusal text lands here VERBATIM).
@@ -404,7 +422,8 @@ async function main() {
   currentCriterion = 'preflight'
   const hostBusy = await portInUse(HOST_PORT)
   const mockBusy = await portInUse(MOCK_PORT)
-  if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (plan: 3185/3500; A owns 3183/3498, B-Control 3184/3499; 3080 stable, 3180/3181 durable never touched)`)
+  if (hostBusy || mockBusy) throw new Error(`BORROWED SLOT ${SLOT} NOT IDLE — refusing (never kill the occupant; report the collision to the main scheduler): host=${hostBusy} mock=${mockBusy} owner=${SLOT_OWNER}`)
+  log(`borrowed slot ${SLOT} verified idle pre-boot (host=${HOST_PORT} mock=${MOCK_PORT}); exclusivity is the main scheduler's grant, this check is the local proof`)
   if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
   for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), FSROOT, RUN_DIR]) mkdirSync(p, { recursive: true })
   if (process.env.A5M2_G5_HOME_POINTER) { // explicit HOME hand-off to the monitor (no globbing; written BEFORE boot so a boot failure is still auditable)
@@ -435,22 +454,17 @@ async function main() {
       if (!existsSync(f)) throw new Error(`the pinned fixture carries NO dist ${label}: ${f}`)
       if (sha256(f) !== blob) throw new Error(`dist ${label} blob drifted from the pinned product ${blob}`)
     }
-    // THE G5 SUPPLY GATE (root order: the OLD full-tree static audit is GONE;
-    // the cold-import authority is the product receipt logs-2fb129cf-20261024T135732Z
-    // 19-cold-* + 20-cold-necessary RC=0 — read-only, never rerun here). The
-    // center-delivered 2fb G5装配供给, read off the SAME quartet of blobs pinned
-    // above: durable family registration + provider rows + driver-required
-    // mirror + port-authentication law (mirror of 639 authority.ts:33-118).
-    const supply = [
-      [distBindings, 'g5GoalsService', 'g5GoalsService provider row'],
-      [distBindings, 'familyRegistrations', 'durable familyRegistrations registration'],
-      [distArm, 'GOAL_TOOL_DRIVER_REQUIRED', 'driver-required mirror (the negative-control refusal face)'],
-      [distWiring, 'goalToolExecution', 'port-authentication law (639 authority.ts:33-118 mirror)'],
-    ]
-    for (const [f, needle, label] of supply) {
-      if (!readFileSync(f, 'utf8').includes(needle)) throw new Error(`G5 SUPPLY absent in the pinned dist: ${label} (needle '${needle}' in ${basename(f)})`)
-    }
-    log(`plugin entry resolved from the pinned fixture exports['./host']: ${HOST_ENTRY}; G5 dist quartet byte-identical; supply gate present (familyRegistrations/g5GoalsService/GOAL_TOOL_DRIVER_REQUIRED/goalToolExecution); fixture lock+pkg verified read-only`)
+    // IDENTITY LAW ONLY (root review ruling): the source-keyword "supply" gate was
+    // REMOVED — the GOAL_TOOL_DRIVER_REQUIRED / goalToolExecution hits were
+    // COMMENT-ONLY occurrences (service :835, wiring :56), so an includes() match
+    // proved nothing about production supply. What stays is the real identity
+    // proof: the EXACT dist quartet hashes above (a byte-level identity of the
+    // pinned product, not a keyword census), the fixture lock+pkg pins, the REAL
+    // blueprint parse below, and — at boot time only — the governed rows' live
+    // behavior over the public wire, which is the sole supply authority.
+    // (Old full-tree static audit stays removed; cold-import authority = product
+    // receipts logs-2fb129cf-20261024T135732Z, read-only, never rerun here.)
+    log(`plugin entry resolved from the pinned fixture exports['./host']: ${HOST_ENTRY}; G5 dist quartet byte-identical (identity by EXACT blob hashes — no keyword-supply gate per root review); fixture lock+pkg verified read-only`)
   }
   // REAL blueprint validation (root order 2026-10-28: 用真实validateBlueprintDocument，
   // 不只syntax): the packed parseBlueprint IS the production gate — frontmatter
@@ -476,8 +490,8 @@ async function main() {
     writePatch(dryPatch, pathToFileURL(HOST_ENTRY).href)
     writeFileSync(join(RUN_DIR, 'dry-receipts.json'), JSON.stringify({
       dry: true, verdict: 'NOT_RUN', reachedBootBoundary: true, booted: false,
-      law: 'root order 2026-10-24: DRY is NOT_RUN (rc3), never a business PASS — it proves pin/supply/validator/patch facts up to the boot boundary and nothing beyond it',
-      portsAwaited: { host: HOST_PORT, hostIdle: !(await portInUse(HOST_PORT)), mock: MOCK_PORT, mockIdle: !(await portInUse(MOCK_PORT)) },
+      law: 'root order 2026-10-24: DRY is NOT_RUN (rc3), never a business PASS — it proves pin/identity/validator/patch facts up to the boot boundary and nothing beyond it',
+      slot: SLOT, portsAwaited: { host: HOST_PORT, hostIdle: !(await portInUse(HOST_PORT)), mock: MOCK_PORT, mockIdle: !(await portInUse(MOCK_PORT)) },
       manifestEntry: HOST_ENTRY, fsRoot: FSROOT, patchWritten: dryPatch,
     }, null, 2))
     await cleanup()
