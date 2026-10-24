@@ -253,9 +253,23 @@ export function createWorkflowAdapterAssembly(input = {}) {
     if (typeof delegatesIn[key] !== 'function') {
       return refuseAssembly(CODES.DELEGATE_METHOD_ABSENT, `workflowDelegates has no function for captured '${key}' — a partial delegation set is a config defect, never a degraded row`)
     }
-    if (delegatesIn[key] !== native.execute) {
-      return refuseAssembly(CODES.DELEGATE_SET_SPLIT, `workflowDelegates.${key} is NOT the captured native execute — delegating to a rebuilt set behind a stale capture is exactly the split the family gate measures (L3)`)
-    }
+    // DELEGATE IDENTITY (root ruling 2026-10-25, C2): captured-native-only
+    // is NO LONGER required. The delegate is EITHER the captured native
+    // execute (the original pairing) OR a GOVERNED RUNNER ADAPTER that
+    // takes over the PUBLIC engine-consumer call — ctx.workflowEngine.start
+    // with the per-run WorkflowStartRequest.subagentProvider override
+    // (workflow-ptc/index.ts:136), the activation-committed settlement
+    // binding and the settle-point reclaim (WorkflowRun dispose law
+    // runtime-types.ts:40-48; background rides the jobs registry's
+    // run.result.then(->dispose) — NEVER the outer tool return). What
+    // REMAINS law and is enforced HERE and in edgeIntegrity: a function
+    // per captured name at bind time, THE FROZEN CONTAINER and method
+    // identities re-verified per dispatch (a rebound/rebuilt delegation is
+    // fatal drift), and the native definition bytes unchanged. The
+    // adapter NEVER falls back to native on a missing engine/jobs face —
+    // typed refusal (no config-omission native path in governed scope,
+    // root C3).
+
   }
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
 
