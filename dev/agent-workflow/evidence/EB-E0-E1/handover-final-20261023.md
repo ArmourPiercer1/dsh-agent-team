@@ -163,15 +163,27 @@ live CI leg.
 Scope deliberately small, reversible in one commit, and it does not touch `AGENTS.md`, `graph.yaml`
 or the gate's semantics:
 
-1. **Prep (one generator commit, still read-only):** mirror the two missing required fields
-   (`backlog`, `matrix`) and `baseline_collected` into `legacy_authority`. No authority moves;
-   `ci-pr-gate` stays green because it never reads the view.
+1. ~~Prep~~ **DONE at root's instruction (this round)**: `legacy_authority` now carries all six
+   fields, `registry.schema.json` documents the list under `x-generated-view-mirror`, and
+   `checkLegacyMirror()` (run by every `docs:sync --check`) enforces the mirror contract —
+   `LEGACY_MIRROR_INCOMPLETE` / `LEGACY_MIRROR_VALUE` / `LEGACY_MIRROR_SCHEMA_MISMATCH`, with the
+   mutation control in `mutation-control-2-legacy-mirror.log`. The `MIRROR_VALUE` leg is the code
+   form of the semantic rule: the mirror copies the graph, it does not resolve it, so the frozen
+   `baseline` can never be quietly replaced by the live HEAD and `matrix` never becomes a live tool
+   table. No authority moved; `ci-pr-gate` is untouched and never reads the view.
+   Reconciliation at pinned `01640829ec8e4765fa3b9d1d0c8e6a554de75171`: **6 equal, 0 mismatch**
+   (`legacy-mirror-reconciliation-01640829.md`).
 2. **Reconcile once at a pinned SHA:** re-run the field table above on that SHA and commit the output
    as evidence. Acceptance: all six fields equal, plus the two derived proofs true.
-3. **Move one narrative consumer, not the store:** have `docs/STATUS.md`'s "current" line generated
-   from `legacy_authority` instead of hand-written, keeping the `phase-baseline-ref` marker pointed at
-   `graph.yaml#current_contract`. One consumer, non-authoritative, and if it misbehaves the rollback
-   is that one commit.
+3. **Move one narrative consumer, not the store — prepared, NOT applied.**
+   `adoption-diff-status-generated-line.patch` adds exactly one derived read-only line to
+   `docs/STATUS.md` under the update-discipline line, carrying the six mirrored values and naming
+   `current-state.json#legacy_authority` as its source and `graph.yaml#current_contract` as the
+   authority and sole write point. `docs/STATUS.md` is **not** this line's file, so the diff was
+   built against a copy and verified with `git apply --check` (**RC 0**, STATUS still unmodified);
+   the pre-apply content hashes `02000a2ca40e…`. Main applies it when it wants the consumer, runs
+   `pnpm docs:sync --check`, and rolls back by reverting that one commit — the line is explicitly
+   annotated as removable without losing state.
 4. **Only after 1–3 sit for a phase** does a real question arise about the gate and the testkit test
    reading the new relation -- and that is a Workflow/Doc owner decision with a shared-file change,
    i.e. not something a docs branch proposes in advance.

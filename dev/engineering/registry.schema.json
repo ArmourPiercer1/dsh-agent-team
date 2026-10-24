@@ -2,6 +2,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "dev/engineering/registry.yaml (strict subset)",
   "description": "Descriptive schema for the hand-maintained registry. Enforcement is hand-rolled inside scripts/gen-current-state.mjs so that it runs with no node_modules; that code is authoritative and this file is kept aligned with it field by field. Where the two disagree the validator wins, and the disagreement is a defect in this file. Three things are enforced that a draft-07 reader cannot see: a repeated key inside one mapping, a repeated TOP-LEVEL key (including a second entries:), and this closed field set itself (REGISTRY_UNKNOWN_FIELD). Claim binding rules (CLAIM_TIER_*, MERGED_CLAIM_*, RELEASE_CLAIM_*) are cross-field and live only in the validator.",
+  "x-generated-view-mirror": {
+    "_note": "Not part of the registry document: this file is also where the generated view's read-only mirror of graph.yaml#current_contract is documented, because that mirror is emitted by the same validator and has to be pinned against it. Enforcement lives in scripts/gen-current-state.mjs (LEGACY_MIRROR_KEYS + checkLegacyMirror): the list below and that constant must name the same fields in the same order, and a disagreement is a finding, not a documentation nit. Values are copied verbatim from the graph block -- the mirror never resolves them, so `baseline` stays the frozen recorded SHA and `matrix` stays a path rather than becoming a live tool table.",
+    "emitted_into": "current-state.json -> legacy_authority",
+    "legacy_authority": ["phase_id", "active_plan", "backlog", "matrix", "baseline", "baseline_collected"]
+  },
   "type": "object",
   "required": [
     "schema_version",

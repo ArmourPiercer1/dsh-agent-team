@@ -37,6 +37,17 @@ const ID_RE = /^EB[0-9]-[A-Z0-9-]+$/;
 // validator and the schema cross-check below read the same list.
 const TIERS = ['C1', 'C2', 'C3'];
 const SCHEMA_PATH = 'dev/engineering/registry.schema.json';
+// The mirror is the whole point of running this relation beside the old pointer: a field the
+// view cannot answer is a field the two can never be compared on, and "the parallel run agrees"
+// would silently mean "agrees wherever we bothered to look". LEGACY_MIRROR_KEYS is therefore
+// every field of `graph.yaml#current_contract`, mirrored as the RECORDED STRING and nothing more:
+// the view must not quietly turn the frozen `baseline` into the current HEAD, nor expand
+// `matrix` into a live tool table -- mirroring the path is not the same act as resolving it, and
+// only the first is a mirror. registry.schema.json documents the same list under
+// x-generated-view-mirror; checkLegacyMirror() pins the annotation, the emitter and the value
+// together so none of the three can drift alone.
+export const LEGACY_MIRROR_KEYS = ['phase_id', 'active_plan', 'backlog', 'matrix', 'baseline', 'baseline_collected'];
+const MIRROR_ANNOTATION = 'x-generated-view-mirror';
 // A claim commit has to name a commit object, so abbreviated hex is not enough here;
 // 40 hex is what the checks below enforce. COMMIT_REX is used by those checks and
 // COMMIT_RE is the same rule as a source string for the schema comparison, so there
@@ -285,16 +296,58 @@ function readLegacyAuthority(root) {
     return m ? m[1].replace(/^"|"$/g, '') : null;
   };
   const baseline = pick('baseline');
+  const mirrored = {};
+  for (const key of LEGACY_MIRROR_KEYS) mirrored[key] = pick(key);
   return {
     present: true,
     file: relative(root, file),
-    phase_id: pick('phase_id'),
-    active_plan: pick('active_plan'),
+    ...mirrored,
     baseline,
     baseline_exists: baseline ? git(root, ['cat-file', '-t', baseline]) === 'commit' : false,
     baseline_is_ancestor_of_head: baseline ? git(root, ['merge-base', '--is-ancestor', baseline, 'HEAD']) !== null : false,
     note: 'read-only mirror; this generator never writes graph.yaml and does not become an execution authority',
   };
+}
+
+/** The mirror contract, enforced rather than hoped for. Three ways this can rot, three findings:
+ *  a key that stopped being emitted (LEGACY_MIRROR_INCOMPLETE -- e.g. someone edits the emitter
+ *  and drops `matrix`, after which a reconciliation silently has one fewer field to disagree on);
+ *  a value the graph does not actually record (LEGACY_MIRROR_VALUE, which is what would be raised
+ *  if a mirror ever invented a baseline instead of copying one); and a schema annotation that no
+ *  longer names the same list (LEGACY_MIRROR_SCHEMA_MISMATCH). A block that is absent entirely is
+ *  NOT this check's business: the old pointer's own grammar belongs to `scripts/ci-pr-gate.mjs`,
+ *  and duplicating it here would create a second authority over the same rule.
+ */
+export function checkLegacyMirror(legacy, root) {
+  const out = [];
+  if (!legacy || !legacy.present) return out;
+  for (const key of LEGACY_MIRROR_KEYS) {
+    const v = legacy[key];
+    if (v === undefined) out.push({ code: 'LEGACY_MIRROR_INCOMPLETE', detail: `${key} is not emitted into legacy_authority` });
+    else if (v === null || v === '') out.push({ code: 'LEGACY_MIRROR_INCOMPLETE', detail: `${key} is emitted but empty — the graph records it, so the mirror dropped it` });
+  }
+  const schemaFile = join(root, SCHEMA_PATH);
+  if (existsSync(schemaFile)) {
+    try {
+      const listed = JSON.parse(readFileSync(schemaFile, 'utf8'))?.[MIRROR_ANNOTATION]?.legacy_authority;
+      if (!Array.isArray(listed)) {
+        out.push({ code: 'LEGACY_MIRROR_SCHEMA_MISMATCH', detail: `${SCHEMA_PATH}: ${MIRROR_ANNOTATION}.legacy_authority is missing` });
+      } else if (listed.join(',') !== LEGACY_MIRROR_KEYS.join(',')) {
+        out.push({ code: 'LEGACY_MIRROR_SCHEMA_MISMATCH', detail: `${SCHEMA_PATH} documents [${listed.join(',')}] but the emitter writes [${LEGACY_MIRROR_KEYS.join(',')}]` });
+      }
+    } catch { /* SCHEMA_UNPARSEABLE is reported by checkSchemaAgreement, not twice here */ }
+  }
+  const graph = join(root, 'dev/agent-workflow/graph.yaml');
+  if (existsSync(graph)) {
+    const text = readFileSync(graph, 'utf8');
+    const block = text.match(/\ncurrent_contract:\n((?:[ ]{2}\w+:.*\n?)+)/);
+    if (block) for (const key of LEGACY_MIRROR_KEYS) {
+      const m = block[1].match(new RegExp(`^  ${key}:\\s*(\\S+)`, 'm'));
+      const recorded = m ? m[1].replace(/^"|"$/g, '') : null;
+      if (recorded && legacy[key] !== recorded) out.push({ code: 'LEGACY_MIRROR_VALUE', detail: `${key}: mirror=${legacy[key]} graph=${recorded}` });
+    }
+  }
+  return out;
 }
 
 /** Compare the descriptive schema against the rules this file enforces. Only the
@@ -393,6 +446,8 @@ export function build(root) {
   findings.push(...validateRegistry(doc, root));
   findings.push(...checkSchemaAgreement(root));
   findings.push(...checkContractIndex(root));
+  const legacyAuthority = readLegacyAuthority(root);
+  findings.push(...checkLegacyMirror(legacyAuthority, root));
 
   const dirty = (git(root, ['status', '--porcelain']) || '').split('\n').filter(Boolean);
   // The persisted view carries ONLY facts that are stable between commits. Live
@@ -412,7 +467,7 @@ export function build(root) {
     source_catalog: 'docs/contracts/engineering-baseline/ids.yaml',
     source_catalog_sha: git(root, ['hash-object', 'docs/contracts/engineering-baseline/ids.yaml']),
     axes_legend: ENUMS,
-    legacy_authority: readLegacyAuthority(root),
+    legacy_authority: legacyAuthority,
     entries: doc.entries.map((e) => {
       const artifacts = Array.isArray(e.verification_artifacts) ? e.verification_artifacts : [];
       return {

@@ -1,4 +1,10 @@
-# EB0-1 … EB0-5 — baseline completed from receipts that already exist
+# EB0-1 … EB0-5 — receipts assembled from what already exists (**not** an EB0 exit)
+
+> **Read this before using any number here.** "Assembled from receipts" is not "EB0 complete".
+> EB0-5 still needs a **same-platform selector p50/p95** study: nearly every value below is
+> **n = 1**, on a shared host, against a scripted mock, and the accurate name for this file is
+> *an inventory with samples*, not a performance baseline. What is missing is listed at the end of
+> EB0-5 and stays open.
 
 Authored in the EB E0–E1 line (`.worktrees/eb-e0-e1`, branch
 `task/eb-e0-e1-doc-baseline-20261029`, HEAD at authoring time `9d8e24f9d233b7582449439be8e919dc05a6b748`).
@@ -18,7 +24,10 @@ measured on, and "this tree" is never "the project".
 ## EB0-1 — authority entry points (old store vs new candidate)
 
 Measured read-only at `9d8e24f9d` on 2026-10-24 by parsing `dev/agent-workflow/graph.yaml`
-(`current_contract` block) against the generated view's `legacy_authority` object:
+(`current_contract` block) against the generated view's `legacy_authority` object. **This table is
+the state at authoring time and it was an incomplete picture: three of six fields were not
+mirrored at all, so what it could certify was agreement on three fields, not a complete
+reconciliation.** The gap was closed later the same day -- see "closed later" below.
 
 | field | OLD `graph.yaml#current_contract` | NEW `current-state.json → legacy_authority` | reconciliation | who requires it |
 | --- | --- | --- | --- | --- |
@@ -29,8 +38,25 @@ Measured read-only at `9d8e24f9d` on 2026-10-24 by parsing `dev/agent-workflow/g
 | `baseline` | `9b2ee57bc5afd30e89855e09d1769d2e5ec83912` | same | **equal** | Q4 (40 hex, ancestor) + Q6 + testkit |
 | `baseline_collected` | `2026-10-22T07:20:56Z` | **not mirrored** | absent in view | Q3 requires it to **exist exactly once** in the block; its value reaches `info.contract` but no verdict depends on it |
 
-The view additionally carries two derived proofs the old block does not: `baseline_exists=true` and
-`baseline_is_ancestor_of_head=true`. `current_phase` is **not** in the view at all.
+**Closed later the same day, at root's instruction.** `scripts/gen-current-state.mjs` now mirrors all
+six fields, `registry.schema.json` documents that list under `x-generated-view-mirror`, and
+`checkLegacyMirror()` (exported, and run by every `docs:sync --check`) refuses three ways this can
+rot: a key that stops being emitted (`LEGACY_MIRROR_INCOMPLETE`), a value the graph does not record
+(`LEGACY_MIRROR_VALUE`), and a schema annotation that no longer names the same list
+(`LEGACY_MIRROR_SCHEMA_MISMATCH`). The `MIRROR_VALUE` leg is what enforces root's semantic
+constraint in code rather than in prose: **the mirror copies, it does not resolve** — `baseline`
+stays the frozen recorded SHA (never the live HEAD) and `matrix` stays a path (no tool table is
+read). Mutation control `mutation-control-2-legacy-mirror.log`: unmutated mirror → 0 findings;
+drop `matrix` → INCOMPLETE+VALUE; empty `baseline_collected` → INCOMPLETE+VALUE; substitute a
+different baseline → exactly 1 VALUE; absent block → silent, because pointer grammar belongs to
+`ci-pr-gate`, and re-implementing it here would create a second authority over one rule.
+
+Re-run against the **pinned** SHA `01640829ec8e4765fa3b9d1d0c8e6a554de75171` (old values read with
+`git show <SHA>:…`, never from the working tree): **six fields equal, zero mismatch**, plus
+`baseline_exists=true` / `baseline_is_ancestor_of_head=true` —
+[`legacy-mirror-reconciliation-01640829.md`](legacy-mirror-reconciliation-01640829.md).
+`current_phase` is still **not** in the view, and that is now a documented absence rather than an
+accident of wording.
 `view.migration.migration_of_legacy_consumers = "not_started_requires_coordination"`.
 
 **Retracted on contact.** `dev/engineering/README.md` said the bridge mirrors "`current_phase` plus
@@ -96,23 +122,30 @@ n = 1 realm, one window, one exercised tool name. Host identity `639` (baseline 
 ## EB0-4 — capacity, install and cleanup receipts
 
 Capacity at the E0 census (unchanged, `live`, 2026-10-23): 46 worktrees, tracked evidence 21 097
-files / 509.5 MiB, 525 test worlds, disk 107 G total / 12 G avail (90 % used), and a
-reference-protection gap (5.1 G `evidence/retired-trees-2026-10-23/`, 3.5 G `recovery/`, 38 M
-incident — zero tracked references).
+files / 509.5 MiB, 525 test worlds, disk 107 G total / 12 G avail (90 % used). It also noted a
+reference-protection observation **as of that census**: 5.1 G under `evidence/retired-trees-2026-10-23/`,
+3.5 G under `recovery/`, a 38 M incident, each with zero tracked references at that moment.
+
+**That observation is time-stamped and does not describe now.** The trees named there have since been
+cleaned or protected by the capacity line, and "zero tracked references" was a count taken at one
+instant — it was never evidence about whether the content was wanted, and reading it as "still
+abandoned today" would be inventing a current fact out of an old snapshot. The numbers stay here
+because EB0-4 is a record of what the census saw, not a live capacity report.
 
 New, read off committed receipts:
 
 | receipt | what it proves | boundary |
 | --- | --- | --- |
 | `install-c8dd3f07b` (booked `8d4c56125`, 2026-10-24T04:40:53Z) | frozen/offline install RC 0, **532 reused / 0 downloaded**, final lock `dad670ae749c…`, +42/−41 lock diff | accounting basis disputed: nominal `du` 450 MB vs real `df` delta 78 MiB — escalated, not resolved |
-| G6 re-anchor install forensics (`b1475871b`, 05:27:53Z) | three attempts, one no-tty abort, final success **reusing 483 from store but downloading ~330 tarballs from the registry online**; lock bytes never drifted | the "offline store" claim is **only partially true**; install freeze now in force chain-wide |
+| G6 re-anchor install forensics (booked `b1475871b`, 05:27:53Z; **latest verified count: 4 commands / 332 downloads**, per root's re-verification — the booking commit's own wording of 3 attempts / "~330" predates the last command being accounted for and is not used here) | final success **reused 483 from the store while downloading 332 tarballs from the registry online**; lock bytes never drifted | the "offline store" claim is **only partially true**; install freeze now in force chain-wide |
 | packaged-entry cold import (`447e14ac2`, 04:43:51Z) | one cold import through the exports map of the packed `699cc` package, `NODE_RC=0`, `VERSION 0.1.1-alpha.2` | `df 78 MiB` is a **shared-volume window, explicitly not an exclusive-budget proof**; inode-level budget not done |
 | window-4 monitor (below) | 22 samples, **0 breaches**, world `5 095 → 41 327 B` against a 64 MiB ceiling; `dfAvail 7 372 623 872 → 7 372 517 376` (Δ 106 496 B) | `dfAvail` is the shared volume — **cannot be attributed to this run alone**; fixture lock `dad670ae749c…` byte-identical before/after the window |
 
 Cleanup: window-4 teardown is a real cleanup receipt — `childExit=true`, independent port-free probe
 after the child-exit event, `mockFree=true` (mock port 3497), `groupMembers: []` (no leftover
-processes), monitor exit planned and 0. That is the only cleanup measurement I have; the 5.1 G /
-3.5 G orphan trees above remain **uncleaned and unreferenced**.
+processes), monitor exit planned and 0. That is the only cleanup measurement this line has first-hand; the larger
+capacity clean-up belongs to the capacity line, whose more recent cleaning/protection work this file
+does not re-measure and therefore does not restate as a number.
 
 ---
 
@@ -166,6 +199,17 @@ Derived, with the honest limits:
   active, the warm-up line says its facts are unhealthy — the pair is exactly why "active" cannot be
   read as "consumed");
 - C2 coverage: this window is one public positive pair; **it is not C2**.
+
+**Still open for EB0-5 (do not close these by re-reading this file):**
+
+- **no p50/p95, and no same-platform selector study.** A performance baseline needs repeated runs on
+  one platform with a stated selector; what exists is single samples. Producing the distribution
+  needs worlds and load, which root has not ordered and this line will not manufacture to fill a row;
+- n = 1 for boot, the public chain leg, the install receipts and the capacity samples;
+- the ~14.9 s unattributed tail above;
+- no warm/hot pair: there is no second run on the same fixture to compare against, so even "cold vs
+  warm" is not established, only "one window";
+- shared-host noise is unquantified (`dfAvail` moves with other tenants).
 
 `UNKNOWN` rows deliberately left un-filled rather than estimated: repeated-run variance, teardown
 tail attribution, per-tool coverage beyond `team_list_members`, PA/durable consumption, real-host

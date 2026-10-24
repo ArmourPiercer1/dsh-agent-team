@@ -30,15 +30,18 @@ is a delivered negative control, exercised by
 ## What this does not replace
 
 `dev/agent-workflow/graph.yaml#current_contract` remains the current execution
-authority. This bridge **reads** it and mirrors three of its fields -- `phase_id`,
-`active_plan`, `baseline`, plus two derived proofs (`baseline_exists`,
-`baseline_is_ancestor_of_head`) -- into `current-state.json` under `legacy_authority`,
-read-only. It does **not** mirror `backlog`, `matrix` or `baseline_collected`, and
-`current_phase` never lands in the view at all (an earlier sentence here claimed it did;
-the code does not, and the field-level map is in
-`dev/agent-workflow/evidence/EB-E0-E1/eb0-baseline-from-receipts-20261024.md`). That
-gap is not cosmetic: `scripts/ci-pr-gate.mjs` Q2 requires `backlog` and `matrix` targets
-to exist, so the view cannot answer what the gate answers today. There is
+authority. This bridge **reads** it and mirrors **all six** of its fields -- `phase_id`,
+`active_plan`, `backlog`, `matrix`, `baseline`, `baseline_collected` -- plus two derived proofs
+(`baseline_exists`, `baseline_is_ancestor_of_head`) into `current-state.json` under
+`legacy_authority`, read-only. Two things about that are load-bearing. The mirror **copies, it does
+not resolve**: `baseline` stays the frozen recorded SHA rather than becoming the live HEAD, and
+`matrix` stays a path rather than becoming a tool table -- which is enforced by
+`checkLegacyMirror()` (`LEGACY_MIRROR_VALUE`) on every `docs:sync --check`, not just asserted here.
+And the list itself is pinned against `registry.schema.json`'s `x-generated-view-mirror`, so the
+emitter and the schema cannot drift apart silently. `current_phase` is deliberately **not** in the
+view: its grammar is `scripts/ci-pr-gate.mjs`'s business, and re-checking it here would put a second
+authority over one rule. The field-level reconciliation against a pinned SHA is in
+`dev/agent-workflow/evidence/EB-E0-E1/legacy-mirror-reconciliation-01640829.md`. There is
 no path by which this generator writes `graph.yaml`, and switching the old
 consumers is a separate, coordinated migration (E1 exit condition), not a
 consequence of these files existing.

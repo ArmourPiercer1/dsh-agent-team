@@ -36,7 +36,10 @@
     "file": "dev/agent-workflow/graph.yaml",
     "phase_id": "alpha5-tool-io-governance",
     "active_plan": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
+    "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+    "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
     "baseline": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
+    "baseline_collected": "2026-10-22T07:20:56Z",
     "baseline_exists": true,
     "baseline_is_ancestor_of_head": true,
     "note": "read-only mirror; this generator never writes graph.yaml and does not become an execution authority"
