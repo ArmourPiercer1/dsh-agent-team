@@ -361,7 +361,7 @@ describe('a5m2 governed pwsh mount (bridge law)', () => {
     expect(plane).toContain('PWSH_ARM_INJECT_INVALID')
     expect(plane).toContain('PWSH_ARM_REFUSED')
     expect(plane).toContain('if (pwshWiring !== null && pwshWiring.placementNames.includes(spelling)) return spelling')
-    expect(plane).toContain('...g3Defs, ...pwshDefs, ...g2Defs]')
+    expect(plane).toContain('...g3Defs, ...lspDefs, ...pwshDefs, ...g2Defs]') // CENTER census-sync: LSP mount (d5ecdb219) inserted lspDefs at its lane slot between g3 and pwsh; the pwsh row itself is byte-present, only the neighbor list moved
     expect(plane).toContain('if (pwshWiring !== null) pwshWiring.drain()')
     const bindings = read('agent-bindings.mjs')
     expect(bindings).toContain("const pwshCfg = planeCfg.pwsh")

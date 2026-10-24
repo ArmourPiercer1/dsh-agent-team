@@ -630,8 +630,12 @@ describe('A5-M2 WRITE PA HAND-OFF — the pre-dispatch open asks the full questi
     expect(manifest?.targetManifest).toMatchObject({
       canonicalTarget: target,
       contentFingerprint: sha256Hex(content),
-      existingFileOnly: true,
+      // existence-honest law facts (REAL-GAP card 2026-10-25): the approved
+      // block states BOTH outcome laws; existence is not knowable at PA.
+      directoryCreation: false,
     })
+    expect(String(manifest?.targetManifest?.existingFileLaw)).toMatch(/verify-before-truncate/)
+    expect(String(manifest?.targetManifest?.newFileLaw)).toMatch(/O_EXCL/)
     expect(readFileSync(target, 'utf8'), 'while the row PENDINGs the open has written nothing').toBe('old bytes\n')
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const opened = await leg

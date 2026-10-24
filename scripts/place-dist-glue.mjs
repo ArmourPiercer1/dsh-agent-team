@@ -143,6 +143,22 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/write.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/write.mjs',
   },
+  // A5M2 FS-EDIT card (root 2026-10-25): the B-EDIT and B-SRE arms are
+  // STATICALLY imported by the live agent-bindings glue (same closure law
+  // as write/image above): a dist agent-bindings.mjs that imports
+  // ./governed-families/edit.mjs without an entry placing it dies at
+  // ERR_MODULE_NOT_FOUND — the todo.mjs lesson, re-earned. edit.mjs and
+  // sre.mjs land on tsc's OWN emits of the controlled-fs ports
+  // (post-consume-edit.js / post-consume-create.js / post-consume-sre.js),
+  // all already inside the mirror.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/edit.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/edit.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/sre.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/sre.mjs',
+  },
   // A5-M2 B-IMAGE (root-authorized 实际接线): the live glue now imports the
   // image arm family by relative specifier too — same closure law as the two
   // entries above. `image-attachment.mjs` imports NOTHING but node builtins;
@@ -303,6 +319,26 @@ export const PLACEMENTS = [
   {
     src: 'packages/runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
+  },
+  // A5M2-G3-LSP-WIRE (root 2026-10-24 LSP REAL-OWNER card): the B-LSP bridge
+  // imports the ALREADY-PLACED adapter (g3-fsproc-adapters.mjs) and the
+  // mirrored domain tool-governance index by RELATIVE specifier — the pair
+  // below keeps the dist copy honest when the mount card wires the plane leg
+  // (an unplaced module is invisible to the drift gate — the todo.mjs lesson;
+  // placement now costs nothing and hides nothing). Byte-identical like every
+  // entry; drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+  },
+  // A5M2-G3-LSP-SUPPLY (center CONTINUATION 1; root 限施工裁决): the realm
+  // supply takes the REAL LspRealmAssembly through its PUBLISHED face (no
+  // import of sandbox-provider at all — the mount round builds the assembly
+  // itself), so its only closure legs are node builtins. Placed for the
+  // same invisible-absence lesson; drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
   },
   // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
   // `agent-bindings.mjs` now imports the G1-WIRE lane's two production

@@ -88,6 +88,7 @@ type AdapterRow = {
 type AdapterModule = {
   A5_G1_FAMILY_GROUP: string
   A5_G1_ADAPTER_REVISION: number
+  A5_G1_CONTROL_ADAPTER_REVISION: number
   A5_G1_RECORD_SPECS: Record<string, { recordIndex: number; family: string; capture: string; nativeFaceRef: string; obligations?: Array<{ right: string }> }>
   g1SurfaceAdapterNames: () => string[]
   mountG1SurfaceAdapter: (name: string, deps?: Record<string, unknown>) => AdapterRow
@@ -502,7 +503,10 @@ describe('a5m2-g1-query-wiring: the pure-query G1 wiring candidate over the VERB
         expect(registration.definitionIdentity).not.toBe(`capture-side-id-${registration.name}`)
         expect(registration.entry).toEqual({
           familyId: registration.name === 'team_list_pending_control' ? 'B-CONTROL' : 'B-INSPECT',
-          adapterRevision: G1.A5_G1_ADAPTER_REVISION,
+          // FAMILY revision (root LIMITED BUILD ORDER 2026-10-25): the
+          // B-CONTROL wire format moved with the full pairing — the record-
+          // 85 row's registration answers 8 beside its mint; B-INSPECT stays 7.
+          adapterRevision: registration.name === 'team_list_pending_control' ? G1.A5_G1_CONTROL_ADAPTER_REVISION : G1.A5_G1_ADAPTER_REVISION,
           providerIdentity: PROVIDER,
         })
         // the PRODUCTION registry accepts the entry AS-IS (its own shape law)

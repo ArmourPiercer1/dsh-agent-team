@@ -150,6 +150,7 @@ interface G1Row {
 interface G1Module {
   mountG1SurfaceAdapter: (recordName: string, deps: Record<string, unknown>) => G1Row
   A5_G1_ADAPTER_REVISION: number
+  A5_G1_CONTROL_ADAPTER_REVISION: number
 }
 const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as unknown as G1Module
 
@@ -270,25 +271,47 @@ const B_MCP_HTTP_DOMAIN = Object.freeze({
 })
 
 describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated target IMPLEMENTED (required ∪ selected variant exactly closed, own-key discriminant, bound pairings); signed floors untouched; B-MCP stays the named gap', () => {
-  it('B-CONTROL ACCEPT (SIGNED, unchanged): the REAL classify output of records 85 and 83 validates, field-for-field against the five trusted scalar leaves', () => {
+  it('B-CONTROL FULL PAIRING (root LIMITED BUILD ORDER 2026-10-25 closes the §5 gap): the REAL classify output of records 85/83/84/87 validates against the five trusted leaves ∪ the selected controlRecord variant at FULL VALUES (reviewed encoding for optional lanes; no dropped keys, no digest); the family claim stamps revision 8, every other family keeps 7', () => {
     expect(PA_FAMILY_TARGET_RULES['B-CONTROL']).toBeDefined()
+    expect(G1.A5_G1_CONTROL_ADAPTER_REVISION, 'the B-CONTROL wire format moved with the full pairing -> explicit invalidation of earlier B-CONTROL-era approvals; nothing translates').toBe(8)
+    expect(PA_FAMILY_TARGET_RULES['B-CONTROL']?.variant?.leaf).toBe('controlRecord')
     const list = mountRow('team_list_pending_control', () => undefined)
     const c85 = list.classify({ rootSessionId: 'root-1', requestToken: 'tok-1' }, 'call-85')
     expect(c85.ok, `${c85.code} ${c85.detail}`).toBe(true)
-    expect(c85.targetManifest).toEqual({ ...TRUSTED_LEAVES })
-    expect(keysOf(c85.targetManifest)).toEqual(requiredKeysOf('B-CONTROL'))
+    expect(c85.targetManifest).toEqual({ ...TRUSTED_LEAVES, controlRecord: 'list-pending', requestRootSessionId: 'root-1', requestToken: 'tok-1', requestLimit: 'absent' })
+    expect(keysOf(c85.targetManifest)).toEqual(sorted([...requiredKeysOf('B-CONTROL'), ...groupKeysOf('B-CONTROL', 'list-pending')]))
     expect(validatePaFamilyTarget('B-CONTROL', c85.targetManifest)).toBeUndefined()
+    expect(c85.reviewPayload?.adapterRevision).toBe(8)
     const req = mountRow('team_request_control', () => undefined)
     const c83 = req.classify({ rootSessionId: 'root-1', requestToken: 'tok-1', kind: 'approval', targetInstanceId: 'inst-1', actionName: 'a' }, 'call-83')
     expect(c83.ok, `${c83.code} ${c83.detail}`).toBe(true)
-    expect(c83.targetManifest).toEqual({ ...TRUSTED_LEAVES })
+    // the §5 closing change, at FULL VALUE: request identity + action facts
+    // INTO the target; the OPTIONAL toolName/summary lanes ride 'absent'
+    // when omitted (never a removed key).
+    expect(c83.targetManifest).toEqual({ ...TRUSTED_LEAVES, controlRecord: 'request-control', requestRootSessionId: 'root-1', requestToken: 'tok-1', requestKind: 'approval', requestTargetInstanceId: 'inst-1', requestActionName: 'a', requestToolName: 'absent', requestSummary: 'absent' })
     expect(validatePaFamilyTarget('B-CONTROL', c83.targetManifest)).toBeUndefined()
-    // trusted ACCEPT is NOT full-family closure (request/case/subject/
-    // revision/action facts stay the original gap — evidence doc §5).
-    expect(requiredKeysOf('B-CONTROL')).toEqual(sorted([
-      'trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId', 'trustedOwner', 'trustedProfileId',
-    ]))
-    expect(PA_FAMILY_TARGET_RULES['B-CONTROL']?.variant).toBeUndefined()
+    const c83f = req.classify({ rootSessionId: 'root-1', requestToken: 'tok-2', kind: 'approval', targetInstanceId: 'inst-1', actionName: 'a', toolName: 'bash', summary: 'run it' }, 'call-83f')
+    expect(c83f.ok, `${c83f.code} ${c83f.detail}`).toBe(true)
+    expect(String(c83f.targetManifest?.requestToolName)).toBe('bash')
+    expect(String(c83f.targetManifest?.requestSummary), 'full value, not a digest').toBe('run it')
+    const res = mountRow('team_resolve_control', () => undefined)
+    const c84 = res.classify({ rootSessionId: 'root-1', requestToken: 'tok-1', requestId: 'case-9', decision: 'allow' }, 'call-84')
+    expect(c84.ok, `${c84.code} ${c84.detail}`).toBe(true)
+    expect(String(c84.targetManifest?.requestCaseId)).toBe('case-9')
+    expect(String(c84.targetManifest?.requestDecision)).toBe('allow')
+    expect(String(c84.targetManifest?.requestNote)).toBe('absent')
+    expect(validatePaFamilyTarget('B-CONTROL', c84.targetManifest)).toBeUndefined()
+    const grant = mountRow('team_grant_permission', () => undefined)
+    const c87 = grant.classify({ rootSessionId: 'root-1', requestToken: 'tok-1', targetInstanceId: 'inst-2', rules: [{ toolName: 'bash', kind: 'subtree', resource: '/w' }] }, 'call-87')
+    expect(c87.ok, `${c87.code} ${c87.detail}`).toBe(true)
+    expect(String(c87.targetManifest?.permissionRules), 'the rules structure rides its full value under the sanctioned reviewed encoding (canonical JSON), never a digest').toBe(JSON.stringify([{ kind: 'subtree', resource: '/w', toolName: 'bash' }], (_key, item) => (item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.keys(item).sort().map((k) => [k, item[k]])) : item)))
+    expect(validatePaFamilyTarget('B-CONTROL', c87.targetManifest)).toBeUndefined()
+    // the five-trusted-leaf FLOOR (7529218e5) is intact inside the pairing:
+    expect(requiredKeysOf('B-CONTROL')).toContain('controlRecord')
+    for (const leaf of ['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId', 'trustedOwner', 'trustedProfileId']) expect(requiredKeysOf('B-CONTROL')).toContain(leaf)
+    // the other families did NOT move: B-INSPECT still stamps 7
+    const insp = mountRow('cordis_inspect_list', QUERY_TOPOLOGY)
+    expect(insp.classify({}, 'call-53x').reviewPayload?.adapterRevision).toBe(7)
   })
 
   it('B-INSPECT POSITIVE: all THREE REAL classify outputs (records 53 / 54-host / 54-client) validate; key set = required ∪ selected group exactly; reviewPayload carries the revision-7 encoding stamp', () => {
@@ -370,7 +393,10 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
   })
 
   it('the signed rules enforce the plain closed law too: foreign key, absent leaf and wrong kind deny with the closed codes', () => {
-    const flatControl = { ...TRUSTED_LEAVES }
+    // (root 2026-10-25 build order): B-CONTROL is now on the discriminated
+    // grammar - the plain-law checks run over the FULL-PAIRING base
+    // (required ∪ the selected variant group), where they still deny.
+    const flatControl = { ...TRUSTED_LEAVES, controlRecord: 'list-pending', requestRootSessionId: 'root-1', requestToken: 'tok-1', requestLimit: 'absent' }
     expect(validatePaFamilyTarget('B-CONTROL', { ...flatControl, surface: { transport: 'stdio' } }))
       .toBe('surface: not part of the B-CONTROL typed plan')
     expect(validatePaFamilyTarget('B-CONTROL', without(flatControl, 'trustedOwner')))
@@ -445,11 +471,19 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // additive block. CENTER refresh 2026-10-24 (e78 re-anchor merge): the
     // G2 lane's B-BROWSER/B-WEB entries (root 21:57 table round + B-WEB
     // closed table) insert before B-WRITE, the lane block's own position —
-    // fourteen families now (A5M2-G3-PTC root 04:4x card: B-PTC 闭表补齐
+    // fifteen families now (root 2026-10-24 LSP REAL-OWNER card: B-LSP rides directly after B-TERMINAL, the lane block's own position); (A5M2-G3-PTC root 04:4x card: B-PTC 闭表补齐
     // rides directly after B-TERMINAL, the lane block's own position); nothing
     // else about the census law changed.
+    // A5M2-G3 FS-EDIT card 2026-10-25 (this lane): B-EDIT (the write leaf's
+    // sibling, M-02 pre-booked paired-read shape) rides directly after
+    // B-WRITE, the lane block's own insertion position — fifteen families.
+    // A5M2 FS-EDIT card PART D (root continuation card 2026-10-25): B-SRE
+    // (the str_replace_editor four-branch family, B-INSPECT variants template
+    // with a command-keyed closed map) rides directly after B-EDIT, the lane
+    // block's own insertion position — SEVENTEEN… sixteen→seventeen with the
+    // root's own count of the table; the enumeration below is the authority.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
@@ -461,7 +495,9 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
       // 21:57 table round, browserVariant leaf) and B-WEB (closed table,
       // operation leaf) carry the discriminated grammar on their own
       // signed entries — added to the carrier set; nothing else moved.
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB'
+      // B-CONTROL joins the carrier set (root 2026-10-25 LIMITED BUILD ORDER:
+      // the §5 full-pairing change uses the existing closed variant grammar).
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL' || familyId === 'B-SRE'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
@@ -503,8 +539,8 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
       .toBe('contentFingerprint: required by the B-WRITE typed plan, absent')
     expect(validatePaFamilyTarget('B-WRITE', { ...B_WRITE_REAL, trusted: TRUSTED }))
       .toBe('trusted: not part of the B-WRITE typed plan')
-    expect(validatePaFamilyTarget('B-WRITE', { ...B_WRITE_REAL, existingFileOnly: 'true' }))
-      .toBe('existingFileOnly: not a boolean')
+    expect(validatePaFamilyTarget('B-WRITE', { ...B_WRITE_REAL, directoryCreation: 'false' }))
+      .toBe('directoryCreation: not a boolean')
   })
 
   it('REGRESSION B-IMAGE (image.mjs:249-268 real shape): validates; missing/foreign/wrong-type deny with the closed codes', () => {
@@ -531,15 +567,19 @@ const B_SESSION_REAL = {
   paramFingerprint: '0'.repeat(64),
 }
 
-/** write.mjs:246-258 (A5_WRITE_FAMILY_ID 'B-WRITE', operation 'write-existing-file'). */
+/** write.mjs (A5_WRITE_FAMILY_ID 'B-WRITE', operation 'write-file'; the
+ *  existence-honest law fields replaced the r16 existingFileOnly promise on
+ *  the REAL-GAP card 2026-10-25 — the grammar leaf rides control/types.ts). */
 const B_WRITE_REAL = {
   familyId: 'B-WRITE',
   adapterRevision: 1,
-  operation: 'write-existing-file',
+  operation: 'write-file',
   realmId: 'realm-a5m2',
   canonicalTarget: '/srv/mcp/state.json',
   contentFingerprint: `sha256:${'1'.repeat(64)}`,
-  existingFileOnly: true,
+  existingFileLaw: 'verify-before-truncate (the reviewed r16 closure; no O_CREAT)',
+  newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW issued through the verified final-parent fd (/proc/self/fd bind: a parent swap after the bind cannot steer the create; EEXIST races lose with ZERO bytes)',
+  directoryCreation: false,
 }
 
 /** image.mjs:249-268 (A5_IMAGE_ADAPTER_REVISION 2, operation 'read-exact-file'). */
@@ -777,7 +817,13 @@ describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArra
     expect(validatePaFamilyTarget('B-INSPECT', LIST_CLAIM)).toBeUndefined()
     expect(validatePaFamilyTarget('B-INSPECT', HOST_CLAIM)).toBeUndefined()
     expect(validatePaFamilyTarget('B-INSPECT', CLIENT_CLAIM)).toBeUndefined()
-    expect(validatePaFamilyTarget('B-CONTROL', { ...TRUSTED_LEAVES })).toBeUndefined()
+    // B-CONTROL's encoding MOVED with the full pairing (root 2026-10-25):
+    // the admitted claim is the pairing claim at family revision 8; the flat
+    // five-leaf shape is now the retired encoding - it denies, translated
+    // by nothing.
+    expect(validatePaFamilyTarget('B-CONTROL', { ...TRUSTED_LEAVES, controlRecord: 'list-pending', requestRootSessionId: 'root-1', requestToken: 'tok-1', requestLimit: 'absent' })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-CONTROL', { ...TRUSTED_LEAVES })).toContain('controlRecord')
+    expect(G1.A5_G1_CONTROL_ADAPTER_REVISION, 'the moved family carries 8; nothing translates').toBe(8)
     // no rule's leaf set moved (no encoding digest change): the revision this
     // grammar admits is the one the lane already carries; older approvals keep
     // their explicit-stale status; validation is a pure check with no

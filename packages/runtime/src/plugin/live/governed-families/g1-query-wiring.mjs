@@ -88,6 +88,7 @@
  */
 import {
   A5_G1_ADAPTER_REVISION,
+  A5_G1_CONTROL_ADAPTER_REVISION,
   A5_G1_FAMILY_GROUP,
   A5_G1_RECORD_SPECS,
   mountG1SurfaceAdapter,
@@ -144,6 +145,26 @@ export function g1PureQuerySubset() {
     .sort((a, b) => a.recordIndex - b.recordIndex))
 }
 
+/** THE B-CONTROL SUPPLY SET (root LIMITED BUILD ORDER 2026-10-25: the four
+ *  self-governance records proceed under the authorized Alpha5 tool scope -
+ *  the root 17:55 development HOLD on 83/84/87/88 is WITHDRAWN by that
+ *  ruling, which is a phase-construction release, NOT a safety downgrade or
+ *  a self-granted permission). DERIVED from the frozen spec table, never
+ *  hand-listed: capture 'tool' AND family 'B-CONTROL', EXCLUDING the
+ *  record-85 hand-over row - 85 stays armed solely by its own closed-key
+ *  hand-over through the pure-query loop (root 03:05 law intact, untouched).
+ *  Supply remains OPT-IN at the mount (the deployer's g1PureQuery.control
+ *  key): the ruling authorizes the wiring, it does NOT auto-enable the
+ *  tools or widen member visibility. */
+export function g1ControlSupplySubset() {
+  return Object.freeze(Object.entries(A5_G1_RECORD_SPECS)
+    .filter(([, spec]) => spec.capture === 'tool'
+      && spec.family === 'B-CONTROL'
+      && spec.recordIndex !== A5_G1_CONTROL85_HANDOVER.recordIndex)
+    .map(([name, spec]) => Object.freeze({ name, recordIndex: spec.recordIndex, familyId: spec.family }))
+    .sort((a, b) => a.recordIndex - b.recordIndex))
+}
+
 const refuseAssembly = (code, message) => Object.freeze({ ok: false, code, message })
 
 const refusalToThrow = (refusal) => {
@@ -172,6 +193,31 @@ const refusalToThrow = (refusal) => {
  *          familyRegistrations + rows/declared reporting) or a frozen
  *          `{ ok: false, code, message }` assembly refusal.
  */
+/** THE CLOSED SUBSET LAW for an assembled supply: a caller may hand the
+ *  assembly a row set OTHER than the pure-query default (the CONTROL supply
+ *  per the root 2026-10-25 limited build order), but only when EVERY row
+ *  answers the FROZEN dispatch table exactly — name, recordIndex and family
+ *  all three. A hand-edited or guessed row set is refused at the door; the
+ *  table stays the single source of the supply vocabulary. Returns undefined
+ *  when the set is legal, else the violation. */
+export function g1ValidateSupplySubset(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return 'subset must be a non-empty array of frozen-table rows'
+  const seen = new Set()
+  for (const row of rows) {
+    if (!isRecord(row) || typeof row.name !== 'string' || !Number.isInteger(row.recordIndex) || typeof row.familyId !== 'string') {
+      return 'every subset row must be {name, recordIndex, familyId}'
+    }
+    if (seen.has(row.name)) return `duplicate subset row '${row.name}'`
+    seen.add(row.name)
+    const spec = A5_G1_RECORD_SPECS[row.name]
+    if (spec === undefined) return `subset row '${row.name}' is not in the frozen dispatch table`
+    if (spec.recordIndex !== row.recordIndex || spec.family !== row.familyId) {
+      return `subset row '${row.name}' disagrees with the frozen table (record ${String(spec.recordIndex)}, ${String(spec.family)})`
+    }
+  }
+  return undefined
+}
+
 export function createG1QueryWiring(input = {}) {
   if (!isRecord(input)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'the wiring factory takes one input record')
   // The arm gate runs FIRST and over the raw key set: a dependency or plugin
@@ -183,10 +229,10 @@ export function createG1QueryWiring(input = {}) {
       return refuseAssembly(A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED, `'${arm}' is a dependency/plugin resource arm: the pure-query wiring candidate accepts NO such arm (card ruling — no immature-arm completion claims); the adapter module keeps that seam for its own record, this module never mounts it`)
     }
   }
-  const knownInput = new Set(['providerId', 'captured', 'placementFeed', 'trusted', 'bindingFacts', 'ports', 'admit', 'observe'])
+  const knownInput = new Set(['providerId', 'subset', 'captured', 'placementFeed', 'trusted', 'bindingFacts', 'ports', 'admit', 'observe'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the candidate takes exactly {providerId, captured, placementFeed, trusted, bindingFacts, ports, admit, observe}`)
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the candidate takes exactly {providerId, subset?, captured, placementFeed, trusted, bindingFacts, ports, admit, observe}`)
     }
   }
   if (typeof input.placementFeed !== 'function') {
@@ -214,13 +260,26 @@ export function createG1QueryWiring(input = {}) {
 
   const capturedIn = input.captured ?? {}
   if (!isRecord(capturedIn)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'captured must be a record (name -> {native, definitionIdentity}) or absent')
-  const subset = g1PureQuerySubset()
+  // The row set this wiring emits/captures/registers: the mounted DERIVED
+  // subset, defaulting to the pure-query line. The CLOSED subset law
+  // (g1ValidateSupplySubset) ran at the assembly door AND runs here — every
+  // row answers the frozen dispatch table name/recordIndex/family exactly,
+  // so no hand-edited row set reaches emission (root 2026-10-25 authorized
+  // exactly one other derived set: the B-CONTROL supply rows).
+  let subset = g1PureQuerySubset()
+  if (input.subset !== undefined) {
+    const subsetViolation = g1ValidateSupplySubset(input.subset)
+    if (subsetViolation !== undefined) {
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `mounted subset is not a frozen-table row set: ${subsetViolation}`)
+    }
+    subset = Object.freeze([...input.subset].map((row) => Object.freeze({ name: row.name, recordIndex: row.recordIndex, familyId: row.familyId })))
+  }
   const subsetNames = new Set(subset.map((entry) => entry.name))
   // A capture presented for a NON-subset record is an attempt to wire a
   // non-query row through the pure-query candidate: a config defect, refused.
   for (const key of Object.keys(capturedIn)) {
     if (!subsetNames.has(key)) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.NON_SUBSET_CAPTURE, `'${key}' is not a pure-query G1 record (derived subset: ${subset.map((entry) => entry.name).join(', ')}); non-query rows are not emitted, captured-wired, or registered by this module`)
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.NON_SUBSET_CAPTURE, `'${key}' is not in the mounted G1 subset (mounted: ${subset.map((entry) => entry.name).join(', ')}); rows outside the mounted subset are not emitted, captured-wired, or registered by this module`)
     }
   }
   // A PRESENT-but-malformed capture is a config defect too — half a capture
@@ -341,7 +400,12 @@ export function createG1QueryWiring(input = {}) {
       definitionIdentity: key,
       entry: Object.freeze({
         familyId: rowEntry.row.familyId,
-        adapterRevision: A5_G1_ADAPTER_REVISION,
+        // FAMILY revision (root 2026-10-25 full pairing): B-CONTROL's wire
+        // format moved to 8; every other G1 family keeps 7. The registration
+        // and the claim (the reviewPayload the adapter mints) answer the SAME
+        // value - the format-identity pairing obligation; old approvals are
+        // explicitly stale, never translated.
+        adapterRevision: rowEntry.row.familyId === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION,
         providerIdentity: providerId,
       }),
     })

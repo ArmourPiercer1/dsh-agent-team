@@ -87,6 +87,11 @@ describe('the tool-governance lane audit', () => {
       'runtime/src/plugin/live/governed-families/g1-query-assembly.mjs', // A5M2 census-40056814591 attribution (CENTER 2026-10-24; parseRequestedEffectSet-only, see the audit script)
       'runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
       'runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+      // A5M2 census-40063499790: the B-PTC run_code guard wiring (merged via
+      // the root narrow-signed FINAL timing card 93e4a7a64 at int 861b8465b);
+      // consumes ONLY parseRequestedEffectSet at g3-ptc-wiring.mjs:78 - the
+      // same thin reviewed face as g3-terminal-wiring next to it.
+      'runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
       'runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs', // A5M2 census-40056814591 attribution (CENTER 2026-10-24; same reviewed grammar pattern)
       'runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs', // A5M2 census-40056814591 attribution (CENTER 2026-10-24)
       'runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
