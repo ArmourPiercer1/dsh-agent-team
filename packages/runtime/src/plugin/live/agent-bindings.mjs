@@ -395,6 +395,7 @@ import { createScheduleBindAfterDef } from './governed-families/schedule-bind-af
 import { createScheduleTriggerGovernance } from './governed-families/schedule-trigger-governance.mjs'
 import { a5G3RouteIdentity } from './governed-families/g3-terminal-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION, A5_B_SCHEDULE_FAMILY_ID } from './governed-families/schedule-adapters.mjs'
+import { createScheduleTriggerCarrier } from './governed-families/schedule-carrier.mjs'
 // A5M2 B-SCHEDULE card #2 REAL SUPPLY: the EXISTING family wiring (the
 // 11-leaf claim: classify → mintTargetManifest → closed effects → payload)
 // and the REAL published Host error-class identity it validates against —
@@ -4079,20 +4080,57 @@ export function createAgentBindings(deps) {
           const scheduleMount = probeScheduleMount()
           observations.push(`a5m2-schedule: mount-probe mount=${scheduleMount} law: one provider slot schedule = one timer owner (original XOR fork, never both; replacement is the assembly decision)`)
           if (scheduleMount === 'fork-mounted') {
-            // NAMED CONSUMER-CARRIER BREAKPOINT (root: 遇具体安全接口断点源证
-            // 升级): the fork's admission consumer must be a REAL governed
-            // non-tool consumption on the EXISTING plane, but every PA walk
-            // here is keyed by an ISSUED tool-call identity + a registered
-            // arm (consumePaAtBody above refuses without exec.callId and
-            // without a5ScheduleArms.get(name)); a firing reminder has
-            // neither, and synthesizing one would extend the persisted row
-            // schema / mint a parallel ledger — forbidden without a root
-            // ruling. Until that ruling, NO consumer is registered: the
-            // fork stays fail-closed (never wakes on absence), the ② arms
-            // keep refusing (TRIGGER_GOVERNANCE_OPEN), and the fact is
-            // audited through the EXISTING carrier below — not a silent
-            // allow, not a fake consumer.
-            observations.push(`a5m2-schedule: TRIGGER_CONSUMER_CARRIER_BREAKPOINT mount=${scheduleMount} detail: PA consumption is keyed by ISSUED callId + registered arm name (agent-bindings consumePaAtBody law); a schedule firing has no tool-exec — governed non-tool consumption needs a root ruling on the row schema; fork fail-closed stays in force meanwhile`)
+            // SHARED TRIGGER CARRIER (root ruling 2026-10-24, the breakpoint
+            // CLOSED by the contract owner): the fork's admission consumer is
+            // the plane's OWN PA/Guard reached through an INTERNAL binding
+            // issued HERE — trusted non-model source (this mount line), the
+            // SAME paAdmit open→edge and the SAME paTokenLedger (root source
+            // note: open is not ToolExecution-restricted; the ledger takes
+            // object/symbol tokens; no new model tool, no second ledger).
+            // One token spans both phases; the final edge lands immediately
+            // before the actual followup; a firing never consumes twice; a
+            // dead open flight is reclaimed. The consumer/generation and the
+            // owner are bound to REAL facts (facade identity + durable-row
+            // owner), never to a model string. Facts this carrier demands:
+            // the fork card's full-group carrierFingerprint + real occurrence
+            // (first taskId+groupSize+revision:null+scheduledAt is NOT an
+            // occurrence — until the fork emits them every firing refuses
+            // typed, zero wake — fail closed, not a silent allow).
+            const carrierFacade = deps.scheduleServiceFeed?.()
+            const carrierGeneration = `${String(carrierFacade?.constructor?.name ?? 'schedule-service')}:${String(typeof carrierFacade?.registerTriggerAdmission === 'function')}`
+            const a5ScheduleCarrier = createScheduleTriggerCarrier({
+              plane: a5PlaneValue,
+              realmId: a5PlaneRealmId,
+              familyFacts: Object.freeze({
+                familyId: A5_B_SCHEDULE_FAMILY_ID,
+                adapterRevision: A5_B_SCHEDULE_ADAPTER_REVISION,
+                providerIdentity: 'a5p5-plane',
+              }),
+              consumerProbe: () => {
+                try {
+                  const live = deps.scheduleServiceFeed?.()
+                  const mounted = live !== null && live !== undefined && typeof live === 'object'
+                    && typeof live.registerTriggerAdmission === 'function'
+                    && live === carrierFacade
+                  return { mounted, generation: mounted ? carrierGeneration : '' }
+                } catch {
+                  return { mounted: false, generation: '' }
+                }
+              },
+              observations: (line) => observations.push(line),
+            })
+            try {
+              carrierFacade.registerTriggerAdmission(a5ScheduleCarrier.admit)
+              observations.push(`a5m2-schedule: TRIGGER_CARRIER_REGISTERED generation=${carrierGeneration} law: internal PA/Guard binding on the ONE paTokenLedger; pre-resolve admits MAINTENANCE resolve only, final edge rides before the followup; one consume per occurrence; full-group fingerprint REQUIRED`)
+            } catch (registerError) {
+              observations.push(`a5m2-schedule: TRIGGER_CARRIER_REGISTER_FAILED (${String(registerError?.message ?? registerError).slice(0, 120)}) — the fork stays fail-closed on absence`)
+            }
+            const a5ScheduleCarrierDispose = agentCtx.on('agent/disposed', (payload) => {
+              if (payload?.agent === runtimeAgent) a5ScheduleCarrier.dispose()
+            }, { global: true })
+            if (typeof a5ScheduleCarrierDispose !== 'function') {
+              observations.push(`a5m2-schedule: the carrier dispose listener answered no disposer for ${sessionId}`)
+            }
           }
           a5ScheduleBind.start(runtimeAgent)
           const a5ScheduleBindDispose = agentCtx.on('agent/disposed', (payload) => {

@@ -456,6 +456,10 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/search.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/search.mjs',
   },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-carrier.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-carrier.mjs',
+  },
 ]
 
 // Direct-invocation guard: the placement runs only when this file IS the
