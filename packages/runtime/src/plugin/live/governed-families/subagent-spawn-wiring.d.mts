@@ -42,6 +42,7 @@ export type SpawnWiringValue = Readonly<{
   definitions: readonly Readonly<Record<string, unknown>>[]
   declared: readonly Readonly<{ name: string; recordIndex: number; status: string; reason: string }>[]
   rowOf: (name: string) => unknown
+  admitOnly: (name: string, exec: Readonly<Record<string, unknown>> | undefined) => Promise<Readonly<{ ok: true; name: string }>>
   drain: () => Readonly<{ event: string }>
   inFlight: () => Readonly<{ dispatches: number; refuses: number }>
   familyRegistrations: () => readonly Readonly<{

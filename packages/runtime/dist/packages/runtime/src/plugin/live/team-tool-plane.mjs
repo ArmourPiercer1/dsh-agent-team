@@ -1320,12 +1320,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     spawnPendingNames = Object.freeze([...pendingNames])
   }
-  // Late-attach state: ONE attach, only after the mount placed; the attached
-  // defs' disposers ride spawnMountDisposers so plane teardown disposes them.
+  // Late-attach state: ONE attach, only after the mount placed. The
+  // bind-after-def HOOK ROUTE (root final ruling 2026-10-24) registers
+  // NOTHING — attach records the governed wiring and flips the face; the
+  // owner executes the real original def through the public tools/execute
+  // around-waterfall, and the identity that rides family/Guard is the REAL
+  // NATIVE def's.
   let spawnAttachedWiring = null
-  let spawnMountCtx = null
-  let spawnMountDisposers = null
+  let spawnMountMounted = false
   let spawnMountAttachSpent = false
+  // TERMINAL law (root narrow review 2026-10-24): a FAILED placement and a
+  // DISPOSED mount both end the mount's life — a pending arm may never
+  // register against a rolled-back or dead mount, and late attachSpawn is
+  // refused BEFORE anything else a terminal mount answers.
+  let spawnMountTerminal = false
   // ── GATE 0f (A5-M2 G1, root ruling 15:28: 工具适配不等待中心接线) ──────
   // `planeCfg.g1Enabled` is the SAME-shaped CLOSED CONSUMPTION KEY. ABSENT =
   // FALSE (zero-flip law by absence: every shipped world keeps the pre-G1
@@ -7359,81 +7367,42 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       // arm rides the seat too (root option-A: the seat can be supplied early;
       // binding is what gates execution, and nothing is bound before attach).
       ...(spawnInject === null && spawnPendingNames === null ? {} : { spawnPaSeat: paAdmit }),
-      /**
-       * A5M2 B-SPAWN LATE-ATTACH (root option-A ruling 2026-10-24): the ONE
-       * public completion of a pending spawn arm. Callable ONLY after this
-       * mount placed (it registers through the same agentCtx and the mount's
-       * own disposer list) and ONLY successfully ONCE (a failed attempt is
-       * typed and stays spent once defs landed). Validation is the SAME
-       * build-time predicate; the definition NAMES must equal the pending
-       * set exactly (a foreign or partial wiring refuses). It never lifts
-       * the owner's deny guard — the caller removes it only after bind and
-       * readback complete.
-       */
       attachSpawn: (wiring) => {
         if (spawnPendingNames === null) {
           return { ok: false, code: 'SPAWN_ATTACH_NOT_PENDING', detail: 'this mount carries no pending spawn arm' }
         }
+        if (spawnMountTerminal) {
+          return { ok: false, code: 'SPAWN_ATTACH_MOUNT_TERMINAL', detail: 'the mount was rolled back or disposed — attach has no live placement surface' }
+        }
         if (spawnAttachedWiring !== null || spawnMountAttachSpent) {
           return { ok: false, code: 'SPAWN_ATTACH_DONE', detail: 'the one-shot attach is spent' }
         }
-        if (spawnMountCtx === null || spawnMountDisposers === null) {
-          return { ok: false, code: 'SPAWN_ATTACH_NOT_MOUNTED', detail: 'placement face absent — attach is legal only after mount()' }
+        if (!spawnMountMounted) {
+          return { ok: false, code: 'SPAWN_ATTACH_NOT_MOUNTED', detail: 'attach is legal only after mount()' }
         }
         const fault = spawnWiringFault(wiring)
         if (fault !== undefined) return { ok: false, code: 'SPAWN_WIRING_INJECT_INVALID', detail: fault }
         const attachNames = wiring.definitions.map((d) => d.name)
         if (attachNames.length !== spawnPendingNames.length
-          || !attachNames.every((n, i) => spawnPendingNames.includes(n))
+          || !attachNames.every((n) => spawnPendingNames.includes(n))
           || new Set(attachNames).size !== attachNames.length) {
           return { ok: false, code: 'SPAWN_ATTACH_NAMES_MISMATCH', detail: `pending [${spawnPendingNames.join(',')}] vs wiring [${attachNames.join(',')}]` }
         }
-        // ONE attempt lands: the arm is spent BEFORE the first register, so
-        // a synchronous re-entry inside the register's own notify can never
-        // start a second placement (and any partial landing stays spent).
+        // ZERO REGISTRATION (root final ruling 2026-10-24): the Host REFUSES a
+        // same-layer duplicate name (the natives already occupy this agent's
+        // layer under the modelSelectionSettings:true preset), so attach
+        // registers NOTHING. It records the ONE governed wiring, flips the
+        // face (the accessor) and spends the arm; the owner executes the real
+        // original def exactly once through the public tools/execute
+        // around-waterfall hook (schedule bind-after-def law: sameAgent, one
+        // plane token, last-moment identity, the row's REAL PA walk, and
+        // delegate XOR next — never a double body). The identity that rides
+        // the family/Guard tables is the REAL NATIVE def's (the owner's feed
+        // answers it), never a stand-in.
         spawnMountAttachSpent = true
-        const attachDisposers = []
-        for (const def of wiring.definitions) {
-          try {
-            const disposer = spawnMountCtx.tools.register(def)
-            attachDisposers.push(disposer)
-          } catch (error) {
-            for (const d of attachDisposers.reverse()) {
-              try {
-                if (typeof d === 'function') d()
-                else if (typeof d?.dispose === 'function') d.dispose()
-              } catch { /* rollback best-effort; the refusal stands */ }
-            }
-            // defs partially landed and rolled back: the attempt was ALREADY
-            // spent at entry — a pending arm gets ONE real attach, never a
-            // retry ladder (and a re-entry inside the notify saw `spent`).
-            observe(`a5m2-spawn: attach-placement-REFUSED name=${def.name}`)
-            return { ok: false, code: 'PLANE_PLACEMENT_CONFLICT', name: def.name, message: String(error?.message ?? error) }
-          }
-        }
         spawnAttachedWiring = wiring
-        spawnMountDisposers.push(...attachDisposers)
-        // THE PLACEMENT RECORD rides the same lazy map mount() feeds the
-        // Guard's bindingFeed and the family placementFeed — identity is
-        // resolved at LOOKUP time (def#N mints after registration), so the
-        // attached defs join the SAME record with no eager snapshot.
-        for (const def of wiring.definitions) placedByName.set(def.name, def)
-        observe(`a5m2-spawn: ATTACHED [${attachNames.join(',')}]`)
-        return {
-          ok: true,
-          // Unwind for the caller when the LATER halves (Guard bind, readback)
-          // refuse: dispose the landed defs and stay spent (never re-attach).
-          disposeAttached: () => {
-            for (const d of attachDisposers) {
-              try {
-                if (typeof d === 'function') d()
-                else if (typeof d?.dispose === 'function') d.dispose()
-              } catch { /* idempotent best-effort */ }
-            }
-            spawnAttachedWiring = null
-            observe(`a5m2-spawn: ATTACH-UNWOUND [${attachNames.join(',')}]`)
-          },
-        }
+        observe(`a5m2-spawn: ATTACHED [${attachNames.join(',')}] (hook-route — no registration; the originals stay the registered face)`)
+        return { ok: true }
       },
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
@@ -7444,9 +7413,8 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         const disposers = []
         // LATE-ATTACH legality starts at the FIRST placement: every register
         // fires tools/change synchronously, so a pending arm may complete
-        // DURING this loop — the ctx and the disposer list are legal at once.
-        spawnMountCtx = agentCtx
-        spawnMountDisposers = disposers
+        // DURING this loop — legality is instant, attach registers nothing.
+        spawnMountMounted = true
         for (const def of allDefs) {
           try {
             const disposer = agentCtx.tools.register(def)
@@ -7461,6 +7429,10 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
               }
             }
             observe(`a5-plane: placement-REFUSED name=${def.name} (${String(error?.message ?? error).slice(0, 160)}) — unknown attribution fails closed`)
+            // the mount is DEAD: no late attach may arm against a
+            // rolled-back placement surface (root narrow review).
+            spawnMountTerminal = true
+            spawnMountMounted = false
             return { ok: false, code: 'PLANE_PLACEMENT_CONFLICT', name: def.name, message: String(error?.message ?? error) }
           }
         }
@@ -7468,6 +7440,11 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         return {
           ok: true,
           dispose: () => {
+            // TERMINAL FIRST (root narrow review): the attach face dies with
+            // the mount — a pending arm that wakes after this point gets a
+            // typed refusal, never a governance arming against a dead mount.
+            spawnMountTerminal = true
+            spawnMountMounted = false
             // A5-M2: no hand-off survives its mount — claimed or not, the
             // flight, the unspent grant and the plan fact die with the
             // placement (teardown law, independent of the terminal observer).

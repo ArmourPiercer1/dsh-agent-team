@@ -147,6 +147,9 @@ export interface BSubagentSpawnAssembly {
     readonly captureReportedIgnored: boolean
   }[]
   readonly rowOf: (name: string) => BSubagentSpawnRow | undefined
+  /** A5M2 bind-after-def hook route: admit via the row's own admission
+   *  segment (safety block + classify + PA admit), entering NO body. */
+  readonly admitOnly: (name: string, exec: Readonly<Record<string, unknown>> | undefined) => Promise<Readonly<{ ok: true; name: string }>>
   readonly drain: () => { readonly event: string; readonly semantics: string }
   readonly inFlight: () => { readonly dispatches: number; readonly refuses: number }
   readonly familyRegistrations: () => readonly BSubagentSpawnFamilyRegistration[]

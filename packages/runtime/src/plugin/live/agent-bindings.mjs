@@ -3780,7 +3780,26 @@ export function createAgentBindings(deps) {
               // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
               // plane construction; consulting before the plane answers
               // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
-              placementFeed: (spawnName) => a5PlaneValue?.placementFeed?.(spawnName),
+              placementFeed: (spawnName) => {
+                // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
+                // plane construction; consulting before the plane answers
+                // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
+                // THE HOOK ROUTE (root final ruling 2026-10-24): the deferred
+                // arm places NO def of ours — there the feed's truth is the
+                // REAL NATIVE def's identity (真实native identity登记原family/
+                // Guard), read through the same member scope at lookup time;
+                // never a guessed key. The fast path never reaches the
+                // fallback: its placements answer first, always.
+                const planeFed = a5PlaneValue?.placementFeed?.(spawnName)
+                if (planeFed !== undefined) return planeFed
+                const spawnFaceDef = readSpawnFace(spawnName)
+                const faceIdentity = spawnFaceDef === undefined || spawnFaceDef === null || typeof spawnFaceDef !== 'object'
+                  ? null
+                  : definitionIdentityOf(spawnFaceDef)
+                return typeof faceIdentity === 'string' && faceIdentity.length > 0
+                  ? Object.freeze({ definitionIdentity: faceIdentity, realmId: a5PlaneRealmId })
+                  : undefined
+              },
               // THE PLANE'S ONE PA WALK, LAZILY (rows only run placed): a
               // throw from the walk is the CALL's throw (the adapter catches
               // nothing).
@@ -3809,21 +3828,24 @@ export function createAgentBindings(deps) {
               observations.push(`a5m2-spawn: WIRED for ${sessionId} (rows=${Object.keys(spawnCaptured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
             }
           } else {
-            // THE DEFERRED LANE (root option-A 2026-10-24): a census-'always'
-            // face was ABSENT at setup. The mount keeps its governance
-            // intent: the plane holds a PENDING spawn arm (the PA seat is
-            // supplied early; face and defs are NOT — unbound is never
-            // executable), and a sameAgent DENY GUARD covers the whole
-            // family from here on — before any call can happen — until
-            // attach + bind + family-claim + real readback ALL complete.
-            // Refusal, fault or cancellation keeps deny: never an unmanaged
-            // executable window, never a silent unmask.
+            // THE DEFERRED LANE (root option-A 2026-10-24; HOOK ROUTE per the
+            // root final ruling 2026-10-24): a census-'always' face was
+            // ABSENT at setup. The mount keeps its governance intent: the
+            // plane holds a PENDING spawn arm (the PA seat is supplied
+            // early; nothing is bound before attach), and a sameAgent DENY
+            // GUARD covers the whole family from here on — before any call
+            // can happen — until attach, the tools/execute governance hook,
+            // the family claim under the REAL NATIVE identities and the
+            // readback ALL complete. Refusal, fault or cancellation keeps
+            // deny: never an unmanaged executable window, never a silent
+            // unmask, and NEVER a same-name re-registration (the Host
+            // refuses same-layer duplicates).
             const spawnDeferNames = A5_B_SUBAGENT_SPAWN_TOOL_NAMES.filter((spawnName) => A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always')
             if (typeof runtimeAgent?.ctx?.tools?.guard !== 'function') {
               throw refuseSpawn('the public guard seam (ctx.tools.guard) is unavailable for the deferred window — a pending arm without deny is an unmanaged native execution waiting to happen', 'guard-seam-unavailable')
             }
             const spawnDeferDenied = new Set(spawnDeferNames)
-            a5SpawnDefer = { closed: false, inFlight: false, landed: null, guardDispose: null, changeDispose: null, disposedDispose: null, pendingNames: Object.freeze(spawnDeferNames) }
+            a5SpawnDefer = { closed: false, inFlight: false, landed: null, governed: false, guardDispose: null, changeDispose: null, disposedDispose: null, executeDispose: null, pendingNames: Object.freeze(spawnDeferNames) }
             try {
               const guardDisposer = runtimeAgent.ctx.tools.guard((exec) => (exec?.agent === runtimeAgent && spawnDeferDenied.has(exec?.name))
                 ? `a5m2-spawn: '${String(exec?.name)}' bind-after-def is PENDING for ${sessionId} — governed deny (the native row stays unmanaged until this mount governs it)`
@@ -3837,6 +3859,15 @@ export function createAgentBindings(deps) {
             }
             const spawnDeferClose = () => {
               a5SpawnDefer.closed = true
+              if (a5SpawnDefer.governed !== true) {
+                // a lane that never reached governance leaves NO hook
+                // behind: the deny guard is its only face. A governed lane
+                // keeps its hook — it rides the agent-ctx cleanup (root
+                // event-law material), the plane terminal refuses late
+                // attach, and every refusal path drains before closing.
+                try { if (typeof a5SpawnDefer.executeDispose === 'function') a5SpawnDefer.executeDispose() } catch { /* idempotent */ }
+                a5SpawnDefer.executeDispose = null
+              }
               for (const disposeRow of [a5SpawnDefer.changeDispose, a5SpawnDefer.disposedDispose]) {
                 try { if (typeof disposeRow === 'function') disposeRow() } catch { /* idempotent */ }
               }
@@ -3846,7 +3877,9 @@ export function createAgentBindings(deps) {
             const spawnDeferRefuse = (reason) => {
               // DENY STAYS: the guard is only ever lifted by the full path below.
               if (a5SpawnDefer.landed !== null) {
-                try { a5SpawnDefer.landed.disposeAttached() } catch { /* best-effort; refusal stands */ }
+                // the attached wiring never executed on this path: drain it
+                // (new-call prohibition) and drop it. The DENY stays armed.
+                try { a5SpawnDefer.landed.drain() } catch { /* best-effort; refusal stands */ }
                 a5SpawnDefer.landed = null
               }
               spawnDeferClose()
@@ -3875,28 +3908,90 @@ export function createAgentBindings(deps) {
                   spawnDeferRefuse(`attach-refused:${String(attached?.code ?? 'unknown')}`)
                   return
                 }
-                a5SpawnDefer.landed = attached
-                const ownBound = typeof a5p1Guard?.bindOwnTools === 'function'
-                  ? a5p1Guard.bindOwnTools(wiring.definitions.map((spawnDef) => spawnDef.name))
-                  : { ok: false, error: { code: 'guard-face-unavailable' } }
-                if (ownBound?.ok !== true) { spawnDeferRefuse(`own-bind-refused:${String(ownBound?.error?.code ?? 'unknown')}`); return }
-                // THE FAMILY CLAIM rides the ONE registration table (same
-                // single-fill law as the fast path — keys come from the
-                // PLANE'S OWN placementFeed, now including the attached defs).
+                a5SpawnDefer.landed = wiring
+                // THE HOOK ROUTE (root final ruling 2026-10-24): the ORIGINAL
+                // definitions stay the registered face — governance registers
+                // NOTHING (the Host refuses same-layer duplicates). It rides
+                // the public `tools/execute` around-waterfall (core/tools
+                // index.ts :164, :1601-1609; its terminal step :1578-1582
+                // runs the resolved ORIGINAL def with the fused abort
+                // signal, the bodyInvoked bookkeeping and the canonical
+                // result normalization — the HOST itself). PATTERN REUSED
+                // VERBATIM IN LAW = the production schedule bind-after-def
+                // (:244-356): sameAgent gate, the SAME one-flight plane
+                // token ledger, last-moment live identity, the row's OWN
+                // admission through `wiring.admitOnly` (safety block →
+                // classify → PA open→edge → consumedProof, never a boolean;
+                // it enters no body), the post-await rechecks, and EXACTLY
+                // ONE next(). The row's DELEGATE is never called on this
+                // path — delegate XOR next: a double body is structurally
+                // impossible, and the exact original-def execute (args,
+                // exec by reference, receiver, abort, result wrap) is the
+                // host's own, not a re-creation.
+                if (typeof wiring.admitOnly !== 'function') { spawnDeferRefuse('admit-seam-absent'); return }
+                if (typeof runtimeAgent?.ctx?.on !== 'function') { spawnDeferRefuse('execute-hook-seam-unavailable'); return }
+                const spawnGovernedNames = new Set(wiring.definitions.map((spawnDef) => spawnDef.name))
+                a5SpawnDefer.executeDispose = runtimeAgent.ctx.on('tools/execute', async (exec, next) => {
+                  if (a5SpawnDefer === null || exec?.agent !== runtimeAgent || spawnGovernedNames.has(exec?.name) !== true) return next()
+                  if (a5SpawnDefer.governed !== true) {
+                    throw new Error(`a5m2-spawn: '${String(exec?.name)}' is governed-PENDING/CLOSED for ${sessionId} — the native body does not execute unmanaged`)
+                  }
+                  const ledger = (a5PlaneValue ?? spawnDeferPlane)?.paTokenLedger
+                  const flightKey = `plane-spawn:${a5PlaneRealmId}:${String(exec?.name)}`
+                  if (typeof ledger?.take !== 'function' || ledger.take(exec?.token, flightKey) !== true) {
+                    throw new Error(`a5m2-spawn: '${String(exec?.name)}' could not take the one-flight plane token (ledger absent or token replayed) — this execution owns no governed flight`)
+                  }
+                  try {
+                    const liveFace = readSpawnFace(String(exec?.name))
+                    if (liveFace === undefined || liveFace !== spawnCaptured[exec?.name]?.native) {
+                      throw new Error(`a5m2-spawn: the live '${String(exec?.name)}' face is not the captured ORIGINAL — DRIFT refuses before the body`)
+                    }
+                    await wiring.admitOnly(exec?.name, exec)
+                    // POST-AWAIT rechecks (the schedule law): the lane still
+                    // governs, the caller never aborted, the face stands. A
+                    // consumed grant is ledger truth — never rolled back;
+                    // the body is entered ZERO times on any of these.
+                    if (a5SpawnDefer === null || a5SpawnDefer.governed !== true) {
+                      throw new Error(`a5m2-spawn: the ${sessionId} lane closed during the PA walk — the body is not entered`)
+                    }
+                    if (exec?.signal?.aborted === true) {
+                      throw new Error(`a5m2-spawn: '${String(exec?.name)}' aborted after the PA walk — the consumption stands as ledger truth, the body is entered zero times`)
+                    }
+                    const faceAfter = readSpawnFace(String(exec?.name))
+                    if (faceAfter === undefined || faceAfter !== spawnCaptured[exec?.name]?.native) {
+                      throw new Error(`a5m2-spawn: the live '${String(exec?.name)}' face moved during the PA walk — the body is entered zero times`)
+                    }
+                    // EXACTLY ONE next(): the host runs the ORIGINAL def —
+                    // exact signature, fused abort signal, canonical
+                    // result. No delegate was entered; no second body exists.
+                    return await next()
+                  } finally {
+                    try { ledger?.settle?.(exec?.token) } catch { /* the ledger close is best-effort; the plane entry stands */ }
+                  }
+                })
+                // THE FAMILY CLAIM rides the ONE registration table (the same
+                // single-fill law — the setup-side fill skips this mount),
+                // under the REAL NATIVE def identities (root: 真实native
+                // identity登记原family/Guard; the deferred feed answers them).
                 for (const spawnReg of wiring.familyRegistrations()) registerA5GovernedFamily(spawnReg.definitionIdentity, spawnReg.entry)
-                for (const spawnRegDef of wiring.definitions) {
+                // READBACK (hook route): the REGISTERED face is the ORIGINAL
+                // def the governance wraps — identity-bound through the same
+                // member scope, or the whole takeover refuses (deny stays).
+                for (const spawnName of spawnGovernedNames) {
                   let liveFace
-                  try { liveFace = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnRegDef.name, runtimeAgent) : undefined } catch { liveFace = undefined }
-                  if (liveFace !== spawnRegDef) { spawnDeferRefuse(`assembly-readback-refused:${String(spawnRegDef.name)}`); return }
+                  try { liveFace = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined } catch { liveFace = undefined }
+                  if (liveFace !== spawnCaptured[spawnName]?.native) { spawnDeferRefuse(`readback-refused:${String(spawnName)}`); return }
                 }
                 a5SpawnWiring = wiring
-                // ONLY NOW may the deny lift: attach, bind, family claim and
-                // the real readback all completed. A lift FAULT keeps the
-                // guard armed (over-deny is safe; under-deny never is).
+                a5SpawnDefer.governed = true
+                // ONLY NOW may the deny lift: attach, the governance hook,
+                // the family claim and the readback all completed. A lift
+                // FAULT keeps the guard armed (over-deny is safe; under-deny
+                // never is).
                 try { a5SpawnDefer.guardDispose?.() } catch (error) { observations.push(`a5m2-spawn: DEFER-GUARD-LIFT-FAULT for ${sessionId} (${error instanceof Error ? error.name : 'non-error'}) — deny stays armed`) }
                 a5SpawnDefer.guardDispose = null
                 spawnDeferClose()
-                observations.push(`a5m2-spawn: WIRED-DEFERRED for ${sessionId} (rows=${Object.keys(attempt.captured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
+                observations.push(`a5m2-spawn: WIRED-DEFERRED(HOOK) for ${sessionId} (rows=${Object.keys(attempt.captured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
               } catch (error) {
                 spawnDeferRefuse(`bind-fault:${error instanceof Error ? `${error.name}:${String(error.message ?? '').slice(0, 120)}` : 'non-error'}`)
               } finally {

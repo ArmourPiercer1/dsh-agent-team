@@ -492,6 +492,7 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
     })
   }
 
+  const admitSegments = new Map()
   for (const name of A5_B_SUBAGENT_SPAWN_TOOL_NAMES) {
     const capture = capturedIn[name]
     if (capture === undefined) {
@@ -504,7 +505,13 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
     const row = buildActiveRow(name, capture)
     // THE CAPTURED DEFINITION TRAVELS COMPLETE (root 8b4 law): every face
     // rides verbatim BY REFERENCE; ONLY `execute` is replaced.
-    const definition = Object.freeze({ ...capture.native, execute: async (args, exec) => {
+    // THE ADMISSION SEGMENT (A5M2 bind-after-def hook route, root final
+    // ruling 2026-10-24): the row's OWN safety block, classify and injected
+    // PA admit — ONE code path shared by the registered row (execute) and
+    // the around-waterfall admitOnly. NOTHING is copied; the body (delegate
+    // on this row, the host's own dispatch on the hook path) lives OUTSIDE
+    // this segment on both paths. Statement order is byte-identical.
+    const admitSegment = async (args, exec) => {
       if (SPAWN_CHILD_GOVERNANCE_FAIL_CLOSED && A5_B_SPAWN_CHILD_BEARING_REFUSED.has(name)) {
         // URGENT SAFETY BLOCK (2026-10-25): BEFORE the PA walk (zero
         // approval consumed - the root correction) and before the native
@@ -518,6 +525,11 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
       if (admitted?.ok !== true) {
         throw refusalToThrow(admitted ?? { code: CODES.ADMISSION_ABSENT, detail: 'the admission seam refused this call' })
       }
+      return classified
+    }
+    admitSegments.set(name, admitSegment)
+    const definition = Object.freeze({ ...capture.native, execute: async (args, exec) => {
+      const classified = await admitSegment(args, exec)
       const settled = await row.delegate(classified.plan, { exec })
       if (settled?.ok !== true) throw refusalToThrow(settled)
       return settled.value
@@ -554,6 +566,23 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
     })
   }))
 
+  /**
+   * A5M2 BIND-AFTER-DEF ADMIT (root final ruling 2026-10-24): admit ONE
+   * call through the row's OWN admission segment — the same safety block,
+   * the same classify, the same injected PA admit — and enter NO body. The
+   * bind-after-def around-waterfall admits here, then lets the HOST run the
+   * ORIGINAL def exactly once through its own dispatch (next): delegate and
+   * next are structurally exclusive, a double body is impossible.
+   */
+  const admitOnly = async (name, exec) => {
+    const segment = typeof name === 'string' ? admitSegments.get(name) : undefined
+    if (segment === undefined) {
+      throw refusalToThrow(refuse(CODES.INPUT_INVALID, `no ACTIVE row '${String(name)}' carries an admission segment`))
+    }
+    await segment(exec?.arguments, exec)
+    return Object.freeze({ ok: true, name: String(name) })
+  }
+
   const rowsView = Object.freeze(Object.fromEntries([...rows.entries()]))
   const assembly = Object.freeze({
     ok: true,
@@ -566,6 +595,7 @@ export function createSubagentSpawnAdapterAssembly(input = {}) {
     rows: rowsView,
     declared: Object.freeze(declared),
     rowOf: (name) => rows.get(name)?.row,
+    admitOnly,
     /** L9: new-call prohibition ONLY. */
     drain: () => {
       state.draining = true

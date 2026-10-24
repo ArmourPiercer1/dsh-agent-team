@@ -288,6 +288,9 @@ export function createSubagentSpawnWiring(input = {}) {
       rowOf: assembly.rowOf,
       drain: assembly.drain,
       inFlight: assembly.inFlight,
+      // A5M2 bind-after-def: the row's OWN admission segment, body-free
+      // (root final ruling 2026-10-24; see the adapter's admitOnly).
+      admitOnly: assembly.admitOnly,
       familyRegistrations: () => assembly.familyRegistrations().map((reg) => Object.freeze({ ...reg, entry: Object.freeze({ ...reg.entry, adapterRevision: A5_B_SPAWN_WIRING_REVISION }) })), // same generation law as the PA block (root 22:02): the adapter's frozen family facts ride untouched, the GENERATION stamp is the mount's own — registration and walk answer with equal bytes or the gate refuses
       wiringCodes: A5_B_SPAWN_WIRING_CODES,
       namedGaps: assembly.namedGaps,

@@ -3304,6 +3304,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // verify-surface family pair (verify lane 68701321 batch):
       'packages/runtime/test/a5m2-verify-surface-domain-family.test.ts',
       'packages/runtime/test/a5m2-verify-surface-neg4-preset-selfregister.test.ts',
+    // spawn bind-after-def card (root option-A + final hook-route ruling 2026-10-24):
+    // the SRE hand-off leg file carried 4ab→8deb (its ONLY added path; the scanner
+    // blob 64c4da0712d8e3e44dd022a4ca9b3286b919d992 unchanged) and this candidate's
+    // own targeted regression spec for the bind-after-def hook route.
+      'packages/runtime/test/a5m2-edit-sre-handoff-c1.test.ts',
+      'packages/runtime/test/a5m2-spawn-bind-after-def-c1.test.ts',
     ]
     // alpha5-int-r3 (rehearsal branch, replayed onto merged master 1962f879 after #330
     // landed): the integration round's own leg file — the two integration conditions of
