@@ -1341,6 +1341,95 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
   // stays HELD pending the root ruling. Resource-derived truth (the file's
   // bytes, the target's real identity) belongs to the post-approval closure
   // edge, never to this table (rule doc above).
+  'B-BROWSER': Object.freeze({
+    required: Object.freeze({
+      browserVariant: 'string',
+      connectionIncarnation: 'string',
+      providerReSelectionLaw: 'string',
+      connectionIncarnationReason: 'nullableString',
+      domainAuthorityId: 'nullableString',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'browserVariant',
+      by: Object.freeze({
+        'launch:navigate': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', url: 'string', destinationOrigin: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-navigate', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:act': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-act', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:observe': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-observe', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:extract': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:navigate': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', url: 'string', destinationOrigin: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-navigate', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:act': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-act', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:observe': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-observe', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:extract': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'launch:screenshot': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', fullPage: 'boolean', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-screenshot', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:screenshot': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', fullPage: 'boolean', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-screenshot', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'launch:tabs': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', branch: 'string', url: 'nullableString', destinationOrigin: 'nullableString', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-tabs', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:tabs': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', branch: 'string', url: 'nullableString', destinationOrigin: 'nullableString', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-tabs', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['browserVariant', 'operation', 'record', 'mode']),
+  }),
+  'B-WEB': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      // ROOT 02:17: same-named required 'string' — the mint carries the
+      // snapshot losslessly via the existing canonicalJsonStringify (observed
+      // branches, every ID/null, searchOrigin key-absence all preserved byte-
+      // exact). Not a new object kind; nothing moved out of the plan.
+      providerIdentityAtClassify: 'string',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'fetch-exact-url': Object.freeze({
+          adds: Object.freeze({ url: 'string', destinationOrigin: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'search-queries': Object.freeze({
+          adds: Object.freeze({ queriesSummary: 'stringArray', queryCount: 'nonNegativeInt', destinationOrigin: 'string', providerOriginSource: 'string' }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'providerIdentityAtClassify']),
+  }),
   'B-WRITE': Object.freeze({
     required: Object.freeze({
       familyId: 'string',

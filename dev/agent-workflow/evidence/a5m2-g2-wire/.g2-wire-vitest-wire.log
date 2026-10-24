@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/packages/runtime
+
+ ✓ test/a5m2-g2-wire-c1.test.ts (9 tests) 29ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  15:56:30
+   Duration  2.14s (transform 1.55s, setup 0ms, import 1.98s, tests 29ms, environment 0ms)
+

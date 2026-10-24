@@ -205,6 +205,31 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
   },
+  // A5M2 G2 RE-ANCHOR (center, this merge): the lane's own glue rows carried
+  // FOUR g2 modules but MISSED g2-web-supply.mjs, which the merged bindings
+  // imports statically (:453 createG2WebCenterPorts) - the documented
+  // dangling-import class (the static placement list never scans closures).
+  // All FIVE join here; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-web-supply.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-web-supply.mjs',
+  },
   // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
   // production blocks added STATIC relative imports that no placement
   // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict

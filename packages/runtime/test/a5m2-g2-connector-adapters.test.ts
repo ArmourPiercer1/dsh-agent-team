@@ -294,14 +294,14 @@ describe('a5m2-g2 B-WEB', () => {
     releaseGate?.()
     const plan = okOutcome(await running)
     expect(reads).toBe(1) // ONE read per classify
-    expect((plan.targetManifest['providerIdentityAtClassify'] as Record<string, unknown>)['searchProviderId']).toBe('deepseek-v1') // plan froze CLASSIFY-TIME identity
+    expect((JSON.parse(String(plan.targetManifest['providerIdentityAtClassify'])) as Record<string, unknown>)['searchProviderId']).toBe('deepseek-v1') // plan froze CLASSIFY-TIME identity (ROOT 02:17: canonical-JSON-string leaf, parsed back losslessly)
     expect(plan.targetManifest['destinationOrigin']).toBe('https://search.deepseek.example') // destination from the CURRENT reader fact, never invented
     expect(String(plan.targetManifest['providerOriginSource'])).toMatch(/readProviderFacts/)
     expect(searchDef.calls[0]).toMatchObject({ servedBy: 'exa-v2' }) // the body rode the EXECUTE-TIME provider — the row never claims otherwise
     // no trusted reader ⇒ honest `observed:false` + the named blocker verbatim:
     const bare = A.createG2WebAdapters({ realmId: 'realm-g2', providerId: 'test-assembly', readNative: readNativeFrom({ web_search: nativeDouble('web_search') }), searchOrigin: 'https://s.example' })
     const res = await bare.web_search.classify({ queries: ['q'] })
-    const facts = res.targetManifest?.['providerIdentityAtClassify'] as Record<string, unknown>
+    const facts = JSON.parse(String(res.targetManifest?.['providerIdentityAtClassify'])) as Record<string, unknown>
     expect(facts['observed']).toBe(false)
     expect(facts['reason']).toBe(A.A5_G2_NAMED_BLOCKERS.WEB)
   })

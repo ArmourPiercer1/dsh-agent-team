@@ -447,6 +447,8 @@ import { createImageAttachmentAdapter } from './governed-families/image-attachme
 // governed facets/provider/declared-mount are mapped OFF the live DSH public
 // sessionQuery service here, never injected through config.
 import { buildG6QuerySupplyFromService } from './governed-families/g6-session-query-wiring.mjs'
+import { callResourceViaWorkerExecute, createG2ConsumedProofApproval, createG2TeamMount } from './governed-families/g2-team-mount.mjs'
+import { createG2WebCenterPorts } from './governed-families/g2-web-supply.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 // A5M2-B-TEAM-WIRE (this lane's additive import row under the family rows):
 // the B-TEAM member-operation family CLAIM, computed by the wiring bridge's
@@ -2506,6 +2508,7 @@ export function createAgentBindings(deps) {
       // closure for the ONE-table family registration below.
       let a5ImageInject = null
       let a5ScheduleInject = null
+      let a5G2Mount = null
       let a5ImagePlacedArm = null
       let a5SpawnWiring = null
       // A5M2 PROVIDER-IDENTITY SUPPLY (site 4, the ONE reader of record): same
@@ -3563,6 +3566,116 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-schedule: arm FACTORY wired for ${sessionId} (list+delete enabled; create/update NOT enabled — TRIGGER_GOVERNANCE gap open)`)
         }
+        // A5-M2 G2 WIRING (root 19:31 item 1, live as of this round): the
+        // SIGNED Team assembly mount is CALLED here — the closed gate keys
+        // planeCfg.g2McpEnabled / g2BrowserEnabled arm it, the approval facts
+        // ride planeCfg.g2Mcp / planeCfg.g2Browser (approved config), and the
+        // NON-serializable supply (the scope mcpResources face, the pinned
+        // SDK client entries, the transport factory, the stagehand resource
+        // mapping) arrives through the ADDITIVE optional lazy deps accessor
+        // deps.g2TeamAssembly() (the deps.attachments law: optional, lazy,
+        // never a hard inject). Gate ON with no supply face is a typed
+        // REFUSAL, never a silent skip and never a fake service: the public
+        // per-Team supply face does not exist in the host deps today — that
+        // is the named gap, stated with the deps token list as source
+        // evidence inside the refusal itself.
+        if (planeCfg.g2McpEnabled === true || planeCfg.g2BrowserEnabled === true) {
+          const refuseG2 = (why) => {
+            const error = new Error(`agent-bindings: alpha.5 G2 Team mount refused for '${sessionId}': ${why}`)
+            error.code = 'alpha5-g2-mount-refused'
+            observations.push(`a5m2-g2: mount-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseG2('the member Agent object is unreadable — the native capture has no scope key and the global face is NOT a fallback')
+          }
+          let g2Supply
+          try {
+            // The host producer answers ASYNC (it loads the pinned PUBLIC
+            // entry files through the SIGNED loader); a plain object answer
+            // (test worlds) still rides unchanged; an {ok:false} producer
+            // refusal names its own code; {ok:true, supply} unwraps.
+            const answered = typeof deps.g2TeamAssembly === 'function' ? await deps.g2TeamAssembly() : undefined
+            if (answered !== null && typeof answered === 'object' && answered.ok === false) {
+              throw refuseG2(`the host g2TeamAssembly supply producer refused (${String(answered.code)}): ${String(answered.message ?? '').slice(0, 280)}`)
+            }
+            g2Supply = answered !== null && typeof answered === 'object' && answered.ok === true && answered.supply !== undefined ? answered.supply : answered
+          } catch (error) {
+            if (error !== null && typeof error === 'object' && error.code === 'alpha5-g2-mount-refused') throw error
+            throw refuseG2(`the deps.g2TeamAssembly supply accessor threw (${String(error?.message ?? error).slice(0, 140)})`)
+          }
+          if (g2Supply === null || typeof g2Supply !== 'object') {
+            throw refuseG2('the deps face carries NO g2TeamAssembly supply accessor — the per-Team supply (scope mcpResources face, pinned SDK client entries, transport factory, stagehand resource mapping) has NO public producer in the host deps face (tokens present: agents/attachments/capabilityTelemetry/config/domain/jobs/llm/resolvePersonaSubstrate/sessionPersistence/subagents/teamToolsRef/web/writerHandoffTimeoutMs @this file); naming the gate without the face is a config defect, not a fallback')
+          }
+          // ROOT 21:24 wiring (additive prelude, zero-touch on the reviewed
+          // call-site lines): when the host supply armed BROWSER entries but
+          // the session pairing cannot ride serialized config, the bindings
+          // pair the REAL halves the family owns — the public worker mapping
+          // + the consumed RELAY (the walk's same-call decision, relayed
+          // verbatim; NOT a PA proof, NOT a second grant). All-or-nothing
+          // holds: pairing appears ONLY when browserEntries are armed.
+          // ROOT 21:30 finite fix: the scoped mcpResources face rides the
+          // REAL per-member scope — state.mcpMountCtx (:2262-2268,
+          // createScope(agentCtx, runtimeAgent), the SAME context the
+          // mini-MCP fibers mount on, "NEVER the shared row ctx"; Agent-
+          // keyed layering: no other Agent sees it, noTeam agents share no
+          // layer with it, agent disposal unwinds it (host layering law,
+          // cited not re-proved). The host apply-ctx read was REMOVED —
+          // apply ctx is no scope key; registering there would be global.
+          if (typeof g2Supply.mcpResources?.register !== 'function'
+            && state.mcpMountCtx !== null && state.mcpMountCtx !== undefined
+            && typeof state.mcpMountCtx.inject === 'function') {
+            try {
+              state.mcpMountCtx.inject(['mcpResources'], (inner) => {
+                if (typeof inner?.mcpResources?.register === 'function') Object.assign(g2Supply, { mcpResources: inner.mcpResources })
+              })
+            } catch { /* mcp-resources absent here — the mount-arm check refuses typed */ }
+          }
+          if (Array.isArray(g2Supply.browserEntries) === false && g2Supply.browserEntries !== null && typeof g2Supply.browserEntries === 'object') {
+            if (typeof g2Supply.consumeBrowserApproval !== 'function' || typeof g2Supply.callResource !== 'function') {
+              Object.assign(g2Supply, {
+                // ROOT 21:34: the boundary is the kernel's ONE-SHOT
+                // consumedProof of THIS call (relayed through exec by the
+                // walk's REAL final edge), verified by shape — NOT the
+                // correlation, NOT a Control-state read. The relay helper
+                // stays exported as a passthrough utility only.
+                consumeBrowserApproval: createG2ConsumedProofApproval(),
+                callResource: callResourceViaWorkerExecute,
+              })
+            }
+          }
+          const readG2Native = (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined)
+          const g2Built = await createG2TeamMount({
+            realmId: String(sessionId), providerId: 'a5p5-plane',
+            readNative: readG2Native, definitionIdentityOf,
+            scopeFaces: { mcpResources: g2Supply.mcpResources },
+            ...(planeCfg.g2McpEnabled === true && planeCfg.g2Mcp !== null && typeof planeCfg.g2Mcp === 'object' ? { mcpMount: {
+              declaredSurfaceConfig: planeCfg.g2Mcp.declaredSurfaceConfig ?? planeCfg.g2Mcp,
+              resourceServerName: planeCfg.g2Mcp.resourceServerName,
+              toolCallTimeoutMs: planeCfg.g2Mcp.toolCallTimeoutMs,
+              entries: g2Supply.entries, makeTransport: g2Supply.makeTransport,
+            } } : {}),
+            ...(planeCfg.g2BrowserEnabled === true && planeCfg.g2Browser !== null && typeof planeCfg.g2Browser === 'object' ? { browserMount: {
+              mode: planeCfg.g2Browser.mode, nativeConfig: planeCfg.g2Browser.nativeConfig ?? {},
+              ...(planeCfg.g2Browser.launchEnvelope === undefined ? {} : { launchEnvelope: planeCfg.g2Browser.launchEnvelope }),
+              ...(planeCfg.g2Browser.declaredServiceFacts === undefined ? {} : { declaredServiceFacts: planeCfg.g2Browser.declaredServiceFacts }),
+              entries: g2Supply.browserEntries ?? g2Supply.entries,
+              consumeApproval: g2Supply.consumeBrowserApproval, callResource: g2Supply.callResource,
+            } } : {}),
+            ...(planeCfg.g2WebEnabled === true && g2Supply.webFixedLanes !== null && typeof g2Supply.webFixedLanes === 'object'
+              ? { webMount: {
+                lanes: g2Supply.webFixedLanes,
+                ...(typeof planeCfg.g2Web?.searchOrigin === 'string' ? { searchOrigin: planeCfg.g2Web.searchOrigin } : {}),
+              } }
+              : {}),
+            observe: (event) => observations.push(`a5m2-g2: ${String(event?.lane ?? '?')} ${String(event?.event ?? '')}`),
+          })
+          if (g2Built.ok !== true) {
+            throw refuseG2(`createG2TeamMount: ${String(g2Built.message)} (code ${String(g2Built.code)})`)
+          }
+          a5G2Mount = g2Built
+          observations.push(`a5m2-g2: TEAM MOUNT assembled for ${sessionId} (lanes: ${Object.keys(g2Built.backends).join('+') || 'none'}; WEB: ${String(g2Built.webRouteGap.code)})`)
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -4545,7 +4658,7 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G5GoalInject === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -4580,12 +4693,31 @@ export function createAgentBindings(deps) {
             ...(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null
               ? { g1Arm: { isPlaced: (name) => a5G1PlacedByName.has(name) } }
               : {}),
+            // G2 lanes ride the SAME backends face (root 19:31 item 1): the
+            // mount's g2Mcp/g2Browser backends are what the plane's G2
+            // injection points pair against; WEB never rides (route gap).
+            ...(a5G2Mount === null ? {} : a5G2Mount.backends),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
         if (built.ok !== true) {
+          // ROOT 20:04 window 1: the mount was ALUILT between the G2 block and
+          // this refusal — a plane-build refusal thrown over it would leak the
+          // live ports. Close it AWAITED first; the close failure rides the
+          // observations AND the thrown message; the refusal stays the CAUSE.
+          let g2LeakNote = ''
+          if (a5G2Mount !== null) {
+            const g2Closed = await a5G2Mount.dispose()
+            if (g2Closed.ok !== true) {
+              g2LeakNote = ` (plus the G2 Team mount close FAILED: ${g2Closed.failures.join(' | ')})`
+              observations.push(`a5m2-g2: plane-refusal cleanup FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
+            } else {
+              observations.push(`a5m2-g2: TEAM MOUNT closed on plane-refusal for ${sessionId}`)
+            }
+            a5G2Mount = null
+          }
           const error = new Error(
-            `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': ${built.message} (code: ${built.code})`,
+            `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': ${built.message} (code: ${built.code})${g2LeakNote}`,
           )
           error.code = `alpha5-team-tool-plane-${String(built.code).toLowerCase()}`
           observations.push(`a5-plane: mount-REFUSED for ${sessionId} (${built.code})`)
@@ -4593,6 +4725,16 @@ export function createAgentBindings(deps) {
         }
         const placed = built.value.mount(agentCtx)
         if (placed.ok !== true) {
+          // ROOT 20:04 window 2: the same leak law at the placement throw.
+          if (a5G2Mount !== null) {
+            const g2Closed = await a5G2Mount.dispose()
+            if (g2Closed.ok !== true) {
+              observations.push(`a5m2-g2: placement-refusal cleanup FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
+            } else {
+              observations.push(`a5m2-g2: TEAM MOUNT closed on placement-refusal for ${sessionId}`)
+            }
+            a5G2Mount = null
+          }
           const error = new Error(
             `agent-bindings: alpha.5 Team tool plane placement refused for '${sessionId}' ('${placed.name}'): ${placed.message} (code: ${placed.code})`,
           )
@@ -4655,7 +4797,47 @@ export function createAgentBindings(deps) {
           // still the one this setup published; a stale disposer clears
           // nothing (the newer mount stays published).
           revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
-          return placed.dispose()
+          // The plane release + the G2 mount close ride ONE awaited chain (the
+          // drain invokes disposers synchronously — the chain SELF-CATCHES
+          // every failure into the observation channel: nothing is awaited-
+          // and-swallowed, nothing survives un-handled). Root 19:31 item 4:
+          // close failures are REPORTED facts, never swallowed.
+          return Promise.resolve().then(async () => {
+            // ROOT 20:04 window 3: a REJECTED plane dispose must NOT skip the
+            // G2 close — the mount owns ports the plane release never covers.
+            // Both failures are preserved: the plane rejection is the primary
+            // error thrown, the G2 failure rides the observation channel in
+            // FULL and joins the thrown message.
+            let planeError = null
+            let planeDisposed
+            try {
+              planeDisposed = await placed.dispose()
+            } catch (error) {
+              planeError = error
+            }
+            let g2Message = null
+            if (a5G2Mount !== null) {
+              try {
+                const g2Closed = await a5G2Mount.dispose()
+                if (g2Closed.ok !== true) {
+                  g2Message = g2Closed.failures.join(' | ')
+                } else {
+                  observations.push(`a5m2-g2: TEAM MOUNT closed for ${sessionId}`)
+                }
+              } catch (error) {
+                g2Message = String(error?.message ?? error).slice(0, 200)
+              }
+            }
+            if (g2Message !== null) {
+              observations.push(`a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Message}`)
+              globalThis.console?.error(`[dsh-agent-team] a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Message}`)
+            }
+            if (planeError !== null) {
+              throw new Error(`agent-bindings: alpha.5 plane dispose failed for '${sessionId}'${g2Message !== null ? ` — AND the G2 Team mount close failed: ${g2Message}` : ''}`, { cause: planeError })
+            }
+            if (g2Message !== null) throw new Error(`agent-bindings: alpha.5 G2 Team mount close failed for '${sessionId}': ${g2Message}`)
+            return planeDisposed
+          })
         })
         // ── A5M2-G1-WIRE MOUNT-ARM (this lane's block; center 01:1x
         // continuation, split 01:4x): the production supply for the pure-query
@@ -5025,14 +5207,73 @@ export function createAgentBindings(deps) {
         // installed after this mount still reaches the row; no agentCtx property proxy
         // is read here (the V1 live matrix topology lesson).
         if (!liveWebGatewayAssemblies.has(gatewayRootKey)) {
+          // ROOT 03:0x production ports: the center-edge trio rides the
+          // EXISTING real faces — the durable ControlService via
+          // controlServiceRef (call-time lazy), the plane overlay
+          // generation reader (readAuthorityGeneration, the same live
+          // reader the Guard awaits — never a constant), and the search
+          // origin ONLY from the row-declared fixed web config (fetch
+          // mounts carry no search origin => typed refusal per call).
+          // ROOT 06:0x REAL-SEAM trio: the ONE lawful read is the plane's
+          // public call-level entry (readPaCallFactsForCall — REAL import,
+          // no durable-row assembly); consume rides the SAME plane's
+          // consumeForExecution edge. The live call context (walked
+          // effects/grant) is fed by the web row's own plane walk via
+          // resolveCallContext — until that feeds, every port refuses
+          // TYPED (kept honest refusal; zero constants, zero Control
+          // assembly).
+          const g2WebCenterPorts = createG2WebCenterPorts({
+            readCallFacts: readPaCallFactsForCall,
+            assemblyId: gatewayRootKey,
+            searchOriginFacts: typeof config?.webGateway?.searchOrigin === 'string' ? { origin: config.webGateway.searchOrigin } : undefined,
+          })
+          // ROOT card: the 00:53 {name,execute} rowset is REMOVED (wrong row
+          // face + raw.effects/fingerprint law breaks). The lawful caller is
+          // createG2WebAdapters' rows on backends.g2Web through g2RowExecute's
+          // ONE final edge; this trio stays the post-edge relay (r42 law).
           liveWebGatewayAssemblies.set(gatewayRootKey, createLiveWebGatewayAssembly({
             webEnabledRaw: config?.webGateway?.enabled,
-            ctxWeb: typeof deps.web === 'function'
-              ? {
-                fetch: (request) => { const seam = deps.web(); return seam?.fetch?.(request) },
-                search: (request) => { const seam = deps.web(); return seam?.search?.(request) },
+            grantAuthority: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.grantAuthority,
+            factsSource: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.factsSource,
+            resolveSearchOrigin: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.resolveSearchOrigin,
+            // ROOT 23bc-CARD ①: the fixed face is ASYNC (deps.webFixed);
+            // it is awaited and FIXED-held for this root's lifetime (one
+            // hold, not a re-read per call). A DECLARED webFixedProvider
+            // whose supply failed REFUSES the call — the row NEVER falls
+            // back to the shared deps.web seam behind a declared fixed.
+            // With no fixed declared the seam path stands. search is
+            // independently disclosed (absent origin refuses per call).
+            ctxWeb: (() => {
+              const declaredFixed = config?.teamToolPlane?.g2Mount?.webFixedProvider?.enabled === true
+              const fixedHold = typeof deps.webFixed === 'function' ? deps.webFixed() : undefined
+              const fixedOrRefuse = async () => {
+                const fixed = fixedHold === undefined ? undefined : await fixedHold
+                if (fixed !== null && typeof fixed === 'object' && typeof fixed.fetch === 'function') return fixed
+                if (declaredFixed) {
+                  throw Object.assign(new Error('G2_WEB_FIXED_SUPPLY_FAILED: webFixedProvider is DECLARED for this root but the fixed face did not resolve; the row refuses — it never degrades to the shared web seam'), { code: 'G2_WEB_FIXED_SUPPLY_FAILED' })
+                }
+                return undefined
               }
-              : undefined,
+              const seam = typeof deps.web === 'function' ? deps.web() : undefined
+              return {
+                fetch: async (request, signal) => {
+                  const fixed = await fixedOrRefuse()
+                  if (fixed !== undefined) return fixed.fetch(request, signal)
+                  return seam?.fetch?.(request, signal)
+                },
+                search: async (request, signal) => {
+                  const fixed = await fixedOrRefuse()
+                  // ROOT 81e7 ③: a declared fixed face with search=null
+                  // REFUSES search EXPLICITLY — it never falls back to the
+                  // shared seam search behind the fixed mount.
+                  if (fixed !== undefined) {
+                    if (typeof fixed.search === 'function') return fixed.search(request, signal)
+                    throw Object.assign(new Error('G2_WEB_SEARCH_REFUSED: this mount declared a fixed web provider without a search capability; search is refused explicitly, never delegated to the shared seam'), { code: 'G2_WEB_SEARCH_REFUSED' })
+                  }
+                  return seam?.search?.(request, signal)
+                },
+              }
+            })(),
             // NO search-origin resolver is passed here (root product-closure
             // ruling): the group-4 law needs the provider's OWN three
             // real-plane readers injected by the entry, which this entry does
@@ -5680,6 +5921,32 @@ export function createAgentBindings(deps) {
             const g1LiveProviderId = g1LiveEntry?.binding?.providerId
             observations.push(`a5m2-g1: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} rev=${String(registration.entry.adapterRevision)} record=${String(registration.recordIndex)} bindingProvider=${typeof g1LiveProviderId === 'string' && g1LiveProviderId.length > 0 ? g1LiveProviderId : 'none'}${g1LiveEntry?.verified === true && g1LiveEntry?.binding?.status === 'ACTIVE' ? '' : ' binding-NOT-ACTIVE'})`)
           }
+        }
+        // A5-M2 G2 family registrations: same law as todo/write/image — the
+        // trusted key is the plane's OWN placement feed; the mount rows are
+        // metadata-only here. The adapter revision is the SHARED G2 face
+        // (A5_G2_ADAPTER_REVISION, now 2): EVERY G2 family's r1 approvals are
+        // stale at the edge and refuse consume — a deliberate, disclosed
+        // pairing with the landed B-MCP rule map, applying to the whole G2
+        // group, not to MCP alone.
+        if (a5G2Mount !== null) {
+          const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? [])]
+          for (const g2Row of g2Rows) {
+            const g2Fed = a5PlaneValue?.placementFeed?.(g2Row.toolName)
+            if (typeof g2Fed?.definitionIdentity !== 'string' || g2Fed.definitionIdentity.length === 0) {
+              const error = new Error(
+                `agent-bindings: alpha.5 G2 family registration refused for '${sessionId}': the placed row '${g2Row.toolName}' answered no definition identity through the placement feed — the family registration has no trusted key`,
+              )
+              error.code = 'alpha5-g2-mount-refused'
+              throw error
+            }
+            registerA5GovernedFamily(g2Fed.definitionIdentity, {
+              familyId: g2Row.familyId,
+              adapterRevision: g2Row.adapterRevision,
+              providerIdentity: g2Row.providerId,
+            })
+          }
+          observations.push(`a5m2-g2: ${String(g2Rows.length)} family row(s) REGISTERED for ${sessionId} (shared G2 revision ${String(g2Rows[0]?.adapterRevision ?? '?')})`)
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
@@ -8338,9 +8605,18 @@ export function createAgentBindings(deps) {
     // (and the deny scope) unwound-never on close.
     for (const d of toolDisposers.splice(0)) {
       try {
-        if (typeof d === 'function') d()
-        else if (d !== null && typeof d === 'object' && typeof d.dispose === 'function') d.dispose()
-      } catch { /* the scope unwind covers it */ }
+        // ROOT 20:04 window 3 (chain half): a disposer that answers a Promise
+        // is now AWAITED on this real async close chain (the G2 Team mount's
+        // plane-release + port-close rides it) — a returned Promise was
+        // previously DROPPED, so its failures could only ever be logged by
+        // the disposer itself. Rejections land here with their message in the
+        // observation channel (recorded, not silenced); the synchronous
+        // law of every other disposer is UNCHANGED (no lifecycle rework).
+        const out = typeof d === 'function' ? d() : (d !== null && typeof d === 'object' && typeof d.dispose === 'function' ? d.dispose() : undefined)
+        if (out !== null && typeof out === 'object' && typeof out.then === 'function') await out
+      } catch (error) {
+        observations.push(`p6t6: close: disposer rejected: ${error instanceof Error ? error.message : String(error)}`)
+      }
     }
     // GLUE-5: the PR7 live assemblies close with the row (pc-CONTRACT §3
     // checklist 4 — the ASSEMBLY lifecycle owns the lease window, and

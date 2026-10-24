@@ -442,9 +442,12 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // Census as of the merged tables: the int-registered families PLUS the
     // a5m2-wire-g3 B-TERMINAL registration (root 20:38 闭表补齐) — the entry
     // rides directly after B-INSPECT, the insertion position of the lane's
-    // additive block.
+    // additive block. CENTER refresh 2026-10-24 (e78 re-anchor merge): the
+    // G2 lane's B-BROWSER/B-WEB entries (root 21:57 table round + B-WEB
+    // closed table) insert before B-WRITE, the lane block's own position —
+    // thirteen families now; nothing else about the census law changed.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
@@ -452,7 +455,11 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // entry, todo `replace-list` preserved byte-for-byte beside the three
     // census goal groups) - and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION'
+      // CENTER refresh 2026-10-24 (e78 re-anchor merge): B-BROWSER (root
+      // 21:57 table round, browserVariant leaf) and B-WEB (closed table,
+      // operation leaf) carry the discriminated grammar on their own
+      // signed entries — added to the carrier set; nothing else moved.
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })

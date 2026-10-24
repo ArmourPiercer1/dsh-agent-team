@@ -9,7 +9,7 @@
 | 目标 | 将唯一消费入口移至生成视图 `current-state.json`（生成后**只读**；生成器 `scripts/doc-checks.mjs` 含 specificity-based owner map，`doc-ownership.yaml` 为源） |
 | 切换条文 | PR #361 execution-plan :56；**切换 commit 必须引用其候选 SHA** |
 | owner/窗口 | 共享消费入口=**root 协调窗口专属**（root 已承诺不打扰 Alpha.5 的窗口）+ Workflow/Doc owner 对"切什么"的决定；中心**只备清单不抢跑** |
-| 前置（可观测） | 并行运行已证等价（handover §The old entry, the parallel run, and the one-time switch）——切换 precondition 已满足，唯窗口未开 |
+| 前置（可观测） | **未验证（root 01:56 纠正，撤销此前"已证等价"表述）**：handover 实测原文=并行相 `not_started_requires_coordination`；其"两态不可能观测性分歧"论据的根据是"生成视图**按设计无消费者**"（handover :86）——这是**非消费性论证，不是对账运行**；无 sourceSHA/run/比较结果类工件可引。Plan :53 要求并行相先行且以"旧/current 对账"为验收——**对账未做，清单不据以允许切换**；本清单只备方案。图 `current_contract` 仍为唯一权威、生成视图语义边界（derived view 只读镜像）按 handover 原文核。 |
 
 ## 2) EB0 实际基线（仅用已有日志，unknowns 显式）
 - CI 基线：PR362 `9d8e24f9` 官方三 workflow 全 success；census **40048544434**（root 01:52 实报）。
