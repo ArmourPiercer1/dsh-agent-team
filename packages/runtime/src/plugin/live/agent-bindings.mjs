@@ -915,7 +915,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, sessionQuery: sessionQueryBackend, sessionProjections: sessionProjectionsBackend, goals: goalServiceBackend } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, sessionQueryLifecycle, sessionQuery: sessionQueryBackend, sessionProjections: sessionProjectionsBackend, goals: goalServiceBackend } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -3870,17 +3870,20 @@ export function createAgentBindings(deps) {
           if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
             throw refuseG6('the member Agent object is unreadable — the scope-aware native capture has no scope key and the actual-exec-owner caller law has no session header; the global face is NOT a fallback')
           }
+          // Root ruling 3 (lane increment 1): the supply binds to ONE
+          // generation of the PUBLIC Provider lifecycle observer (host-side
+          // optional child fiber over ctx.inject(['sessionQuery']); the
+          // removed per-read identity observer is documented in the wiring
+          // module and pinned by suites). An absent face or a
+          // non-ACTIVE/pre-activation fiber yields an ok:false TYPED answer
+          // (PORT_LIFECYCLE_UNOBSERVABLE) → the honest DECLARED-INACTIVE
+          // census below (fail-closed, zero flip — never allow-by-default).
+          const g6Lifecycle = typeof sessionQueryLifecycle?.currentGeneration === 'function'
+            ? sessionQueryLifecycle
+            : undefined
           const g6Supply = buildG6QuerySupplyFromService(
-            typeof sessionQueryBackend === 'function' ? sessionQueryBackend() : undefined,
-            // Root 19:29 — the SAME Host public lazy accessor rides the
-            // supply: every adapter guard read re-observes the CURRENT
-            // `ctx.get('sessionQuery')` identity, so a whole-service
-            // replacement refuses through the row's own PORT_RECEIVER_MOVED
-            // law (the approved receiver/method handles keep executing
-            // while the identity matches and NEVER switch to the new
-            // instance's). The real accessor — no stale constant
-            // masquerading as current.
-            typeof sessionQueryBackend === 'function' ? sessionQueryBackend : undefined,
+            g6Lifecycle === undefined ? undefined : g6Lifecycle.currentGeneration()?.service,
+            g6Lifecycle,
           )
           if (g6Supply.ok !== true) {
             // An absent/incomplete service is a DEPLOYMENT census fact for
@@ -3963,6 +3966,8 @@ export function createAgentBindings(deps) {
               providerId: g6Supply.providerId,
               readNative: g6ReadNative,
               queryPorts: g6Supply.queryPorts,
+              lifecycle: g6Supply.lifecycle,
+              generation: g6Supply.generation,
               readCaller: g6ReadCaller,
               teamCeiling: g6TeamCeiling,
               declaredMount: g6Supply.declaredMount,

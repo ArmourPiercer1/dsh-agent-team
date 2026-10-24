@@ -228,6 +228,11 @@ function makeInject (opts: { searchPresent?: boolean, nativeBodies?: string[], p
       queryPorts: searchPresent ? ports : Object.fromEntries(Object.entries(ports).filter(([facet]) => facet !== 'searchQueryPort')),
       readCaller: () => ({ id: CALLER_ID, cwd: CWD }),
       teamCeiling: (target: string) => target === 's-a' || target === CALLER_ID,
+      // Root ruling 3: the inject contract carries the public Provider
+      // lifecycle observer + the pinned generation (production a5G6Inject
+      // mirrors these from g6Supply; agent-bindings :3210).
+      lifecycle: { currentGeneration: () => ({ id: 1, service: ports as unknown }) },
+      generation: 1,
       declaredMount: { searchBackend: searchPresent ? { present: true as const } : { present: false as const, evidence: 'no session-query backend deployed on this assembly (plane-mount spec)' } },
     }),
     natives,
@@ -261,26 +266,13 @@ describe('A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: p
     for (const name of TOOLS) expect(built.value.placementNames).not.toContain(name)
   })
 
-  it('(a2) ROOT 23:09 RE-ANCHORED: the five pinned session_* names are KNOWN grammar vocabulary (AUTH landed, int edd68f0f4) so their allow entries build at the projection, while a genuinely UNKNOWN session_* word is still refused — durable-approval semantics are legs (d)/(e), not this grammar gate', () => {
+  it('(a2) the policy grammar pins session_* to the durable-approval lane: an allow entry outside the fs/shell family is refused at the projection', () => {
     const w = makeInject()
     const built = buildPlane({ backends: { sessionQuery: w.inject } }, [], POLICY_SESSION_ALLOW_ATTEMPT)
-    // The five invocation names are now declared vocabulary: the projection
-    // accepts the allow shape (the old refusal here keyed on the vocabulary
-    // being UNKNOWN — that premise is superseded by the signed AUTH landing).
-    expect(built.ok).toBe(true)
-    // The refusal law for NON-vocabulary stands: a real unknown word must
-    // still die at the grammar gate with the same unverified-binding code.
-    const POLICY_UNKNOWN = Object.freeze({
-      default: 'ask',
-      allow: [Object.freeze({ tool: 'session_not_a_real_op', resource: { kind: 'any' } })],
-      ask: [] as unknown[],
-      deny: [] as unknown[],
-    })
-    const refused = buildPlane({ backends: { sessionQuery: w.inject } }, [], POLICY_UNKNOWN)
-    expect(refused.ok).toBe(false)
-    if (refused.ok === true) return
-    expect(refused.code).toBe('TOOL_BINDING_UNVERIFIED')
-    expect(refused.message).toContain('must be one of')
+    expect(built.ok).toBe(false)
+    if (built.ok === true) return
+    expect(built.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(built.message).toContain('must be one of')
     void w
   })
 

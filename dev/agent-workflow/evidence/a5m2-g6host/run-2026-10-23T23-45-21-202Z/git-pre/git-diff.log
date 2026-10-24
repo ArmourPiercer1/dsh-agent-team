@@ -1,0 +1,62 @@
+diff --git a/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs b/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs
+index 7aeefbb96..350580874 100644
+--- a/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs
++++ b/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs
+@@ -473,9 +473,11 @@ if (CASE_RUN_ORDER.filter((id) => (CASES.find((c) => c.id === id) ?? {}).tool ==
+ // ── profile patch (ONE production row through the public seam) ─────────────
+ 
+ const yamlScalar = (v) => (typeof v === 'string' && /^[\w./:@+-]+$/.test(v) ? v : JSON.stringify(v))
+-function writeG6PatchFile(patchPath) {
+-  mkdirSync(dirname(patchPath), { recursive: true })
+-  const rowConfig = {
++/** THE single source of the row config (root card): preflight validates the
++ *  SAME object that lands in the patch layer — via the installed pack's REAL
++ *  exported validateTeamPluginConfig, never a YAML parse stand-in. */
++function rowConfigFields() {
++  return {
+     bootPhase: 'create',
+     rootSessionId: ROOT_G6,
+     blueprintSource: BLUEPRINT_YAML,
+@@ -490,7 +492,21 @@ function writeG6PatchFile(patchPath) {
+     // AND config.teamToolPlane; sessionQuery accepts ONLY the literal true
+     // (supply rides the live public service, never a config value).
+     teamToolPlane: { sessionQuery: true },
++    // Root-ruled minimal LEGAL shapes (874 validateTeamPluginConfig fails
++    // closed on ABSENT keys; the first boot died exactly here): null/empty
++    // means NO static declaration — it asserts nothing about capabilities
++    // and no fact is fabricated to please the validator (real authority is a
++    // later, separate verification).
++    deniedSelection: null,
++    mcpServer: null,
++    environmentFacts: [],
++    externalPolicyFacts: { hard: {}, capabilityExists: {} },
+   }
++}
++
++function writeG6PatchFile(patchPath) {
++  mkdirSync(dirname(patchPath), { recursive: true })
++  const rowConfig = rowConfigFields()
+   const lines = [
+     '# A5M2-G6 kit patch layer: the production dsh-agent-team row (APPROVED INSTALLED 874 pack) mounted ONLY through the public profile-patch seam.',
+     '- insert:',
+@@ -522,6 +538,20 @@ async function runPrechecks() {
+   ck('installed-host-present', existsSync(INSTALLED_HOST_JS), INSTALLED_HOST_JS)
+   ck('installed-glue-present', existsSync(INSTALLED_GLUE), INSTALLED_GLUE)
+   ck('installed-seam-present', existsSync(INSTALLED_SEAM), INSTALLED_SEAM)
++  // The row's REAL validator replay, BEFORE any spawn: the installed pack's
++  // own EXPORTED validateTeamPluginConfig answers on the FINAL row object
++  // (this same object is what lands in the patch layer). No YAML stand-in.
++  let rowValidator = 'validator-export-unavailable'
++  try {
++    const hostMod = await import(pathToFileURL(INSTALLED_HOST_JS).href)
++    if (typeof hostMod.validateTeamPluginConfig === 'function') {
++      hostMod.validateTeamPluginConfig(rowConfigFields())
++      rowValidator = 'validated-OK'
++    }
++  } catch (e) {
++    rowValidator = `REJECTED: ${String(e?.message ?? e).slice(0, 180)}`
++  }
++  ck('row-validator-replay-on-real-row', rowValidator === 'validated-OK', rowValidator)
+   ck('world-absent', !existsSync(WORLD), WORLD)
+   const lockf = join(REPO_ROOT, 'tests/homes', `${WORLD_NAME_CLEAN}.lock`)
+   ck('world-lockfile-absent', !existsSync(lockf), lockf)

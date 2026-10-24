@@ -28,6 +28,23 @@ export interface TeamPluginHostContext {
      */
     readonly sandboxPolicy?: unknown;
     /**
+     * A5M2-G6 lifecycle observer (root ruling 3, lane increment 1): the PUBLIC
+     * Cordis child-fiber face — `ctx.inject(deps, callback)` (cordis
+     * lib/types/registry.d.ts:111; mixed onto the context per context.d.ts:30).
+     * The child fiber loads ONLY while every injected service is available
+     * (Base.inject semantics, registry.d.ts:58) and RE-RUNS its callback per
+     * public Provider generation (mount/unload/replacement/reload). Structural
+     * projection (the entry keeps Cordis-type independence); OPTIONAL — an
+     * absent face makes governed currentness unknowable, which fail-closes.
+     */
+    inject?(deps: readonly string[], callback: (child: {
+        get(name: string): unknown;
+    }, config?: unknown) => void): {
+        state: number;
+    } | PromiseLike<{
+        state: number;
+    }> | null;
+    /**
      * Cordis event registration: the listener is owned by this row's fiber
      * and disposed with the row. Optional in this structural projection —
      * the entry keeps Cordis-type independence (plan §19.2) and minimal
