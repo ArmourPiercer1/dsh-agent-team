@@ -376,3 +376,79 @@ export function createG1QueryWiring(input = {}) {
   })
   return wiring
 }
+
+// ── ROOT 03:05 record-85 CLOSED-KEY HAND-OVER CLAIM (G1 family) ───────────
+// The law this mirrors VERBATIM is the B-TEAM atomic hand-off
+// (`claimTeamOpsFamily`, team-wiring.mjs:329-359, and its face law :176-186):
+// claim only what is CAPTURED, face-COMPLETE and identity-MINTED, so the raw
+// registration can LET the name and exactly ONE governed definition takes
+// its place at the plane mount (one name, one placement). That site function
+// is STRUCTURALLY closed to the ten B-TEAM keys (`A5_B_TEAM_TOOL_NAMES`,
+// team-adapters.mjs:213-217 — measured NOT to contain 'team_list_pending_
+// control'), so per the center ruling it is NEITHER force-fitted nor widened;
+// the G1 family owns its OWN claim here, with EXACTLY ONE closed key and
+// zero widening:
+//   record 85 — `team_list_pending_control` (B-CONTROL, own-layer).
+// The claim changes NO native permission: the descriptor, the caller/root
+// binding (live resolveCaller single chain), the requestToken discipline and
+// the PRE-READ Leader gate (tools.ts:1174, refusal TEAM_TOOL_PENDING_LIST_
+// NOT_LEADER before any ledger read) all stay the NATIVE's own — the governed
+// def spreads the captured native verbatim and replaces only `execute`
+// (the 53/54 law), and a member caller is still refused exactly by that
+// native gate, so a member gains ZERO new exposure: the name is visible
+// where and only where the template already made the native legal.
+export const A5_G1_CONTROL85_HANDOVER = Object.freeze({
+  name: 'team_list_pending_control',
+  recordIndex: 85,
+})
+
+const g1NonEmptyString = (value) => typeof value === 'string' && value.length > 0
+
+// The B-TEAM face law (team-wiring.mjs:176-186) mirrored verbatim into the
+// G1 family's own module — one qualification, one shape, no drift.
+const g1RegistrationFaceComplete = (native) => {
+  const output = isRecord(native) ? native.output : undefined
+  return isRecord(native)
+    && native.name !== undefined && typeof native.name === 'string' && native.name.length > 0
+    && typeof native.description === 'string'
+    && typeof native.execute === 'function'
+    && isRecord(output) && output.schema !== undefined
+    && typeof output.render === 'function'
+    && (output.presentationMeta === undefined || typeof output.presentationMeta === 'function')
+    && (native.timeoutMs === undefined || (Number.isFinite(native.timeoutMs) && native.timeoutMs > 0))
+}
+
+/**
+ * Qualify the ONE record-85 hand-over against THIS agent's already-legal
+ * team-tool selection (the selection IS the legal-visibility boundary: the
+ * blueprint allowlist was applied upstream). Never claims a name that is not
+ * captured here — an un-captured name keeps its raw registration byte-for-
+ * byte (or stays absent for this agent), so the claim can never EXPOSE
+ * anything.
+ * @param input {{
+ *   catalog: unknown,                      // THIS agent's selected team-tool defs
+ *   allowedNames?: unknown,                // optional further closed restriction (null/absent = the catalog is the restriction)
+ *   definitionIdentityOf?: unknown,        // the ONE real minter (definitionIdentityOf)
+ * }} input
+ * @returns a frozen `{ names, census }` in the claimTeamOpsFamily shape.
+ */
+export function claimG1Control85Handover (input = {}) {
+  const { name, recordIndex } = A5_G1_CONTROL85_HANDOVER
+  const catalog = isRecord(input) && Array.isArray(input.catalog) ? input.catalog : []
+  const allowed = isRecord(input) && Array.isArray(input.allowedNames) ? new Set(input.allowedNames) : null
+  const identityOf = isRecord(input) && typeof input.definitionIdentityOf === 'function' ? input.definitionIdentityOf : () => null
+  if (allowed !== null && !allowed.has(name)) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'not-allowed-for-this-member' })]) })
+  }
+  const native = catalog.find((def) => isRecord(def) && def.name === name)
+  if (native === undefined) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'capture-absent' })]) })
+  }
+  if (!g1RegistrationFaceComplete(native) || native.name !== name) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'registration-face-incomplete' })]) })
+  }
+  if (!g1NonEmptyString(identityOf(native))) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'capture-identity-unminted' })]) })
+  }
+  return Object.freeze({ names: Object.freeze([name]), census: Object.freeze([]) })
+}

@@ -1946,7 +1946,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     // the assembly module is imported, never restated; the adapter module is
     // never reached directly from this file.
     expect(src).toContain("import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'")
-    expect(src).toContain("import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'")
+    expect(src).toContain("import { g1PureQuerySubset, claimG1Control85Handover } from './governed-families/g1-query-wiring.mjs'")
     // ROOT G1 FINAL LIMITED RULING: the production factory is imported and
     // reachable ONLY through the explicit deployer cfg — `topologyScope`
     // (closed-grammar triples handed over as the hard boundary, fresh-
