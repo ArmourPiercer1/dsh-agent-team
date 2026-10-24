@@ -399,6 +399,24 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
   },
+  // A5M2 B-JOB slice-2 (this lane; CENTER whole-family card): the mirrored
+  // `agent-bindings.mjs` statically imports the job-control wiring, which
+  // statically imports the job adapters — two relative specifiers the strict
+  // `files: ["dist"]` install face would otherwise meet at
+  // ERR_MODULE_NOT_FOUND (the todo.mjs lesson; the drift gate is blind to
+  // unplaced modules). The job-wiring imports the domain tool-governance face
+  // by the same deep relative specifier the placed subagent-wiring obeys —
+  // that resolution is already proven in the mirror. `.d.mts` sidecars are
+  // NOT placed (the pwsh/schedule/subagent precedent: dist carries the
+  // runtime `.mjs` face only — types erase).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/job-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/job-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/job-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/job-wiring.mjs',
+  },
   // A5M2-SCHEDULE TRIGGER-GOVERNANCE (this lane, 2026-10-26): the create/
   // update semantics block lands next to its siblings; the future pair
   // mount (bindings) will statically import it by RELATIVE specifier — the

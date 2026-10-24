@@ -1903,6 +1903,61 @@ export function createTeamToolPlaneAssembly(input = {}) {
     })
   }
 
+  // A5M2 B-JOB CONTROL inject (slice-2; CENTER whole-family card): the FC-JOB
+  // trio's PA-walked dispatch face. The gate is the SAME closed `jobsEnabled`
+  // key the jobs rows already ride — a jobControl inject while jobsEnabled is
+  // OFF would walk three rows that were never mounted (refused: the gate is
+  // config law, not wiring); an inject is OPTIONAL (jobsEnabled ON with no
+  // jobControl keeps today's honest non-governed rows byte-for-byte — the
+  // zero-flip deployment choice the whole fleet obeys). The inject carries the
+  // closed key set {dispatch, familyId, providerId, placementNames,
+  // familyRegistrations, dispose} and NOTHING else; familyId must be the frozen
+  // B-JOB census id; the three placementNames must be the fixed row spellings
+  // (job_output/job_list/job_kill). The dispatch legs land only when BOTH the
+  // gate is on AND a jobs bridge is behind the rows (no bridge = shut face,
+  // nothing to govern).
+  const jobControlInjectRaw = input.backends?.jobControl
+  const jobControlInjectInvalid = (why) => ({ ok: false, code: 'JOB_CONTROL_INJECT_INVALID', message: `backends.jobControl: ${why}` })
+  let jobControlInject = null
+  if (jobControlInjectRaw !== undefined && jobControlInjectRaw !== null) {
+    if (jobsEnabledRaw !== true) {
+      return jobControlInjectInvalid('a job-control wiring is injected while jobsEnabled is off/absent - the gate is config law: there are no job_* rows to dispatch, refuse the mount rather than walk unmounted rows')
+    }
+    if (!isRecord(jobControlInjectRaw)) {
+      return jobControlInjectInvalid('the inject must be a record with exactly the closed keys {dispatch, familyId, providerId, placementNames, familyRegistrations, dispose}')
+    }
+    const jobInjectKeys = Object.keys(jobControlInjectRaw).slice().sort()
+    const jobWantKeys = ['dispatch', 'dispose', 'familyId', 'familyRegistrations', 'placementNames', 'providerId']
+    if (jobInjectKeys.join(',') !== jobWantKeys.join(',')) {
+      return jobControlInjectInvalid(`the inject carries the closed key set {${jobWantKeys.join(', ')}} and NOTHING else - answered [${Object.keys(jobControlInjectRaw).join(', ')}]`)
+    }
+    if (jobControlInjectRaw.familyId !== 'B-JOB') {
+      return jobControlInjectInvalid(`the inject claims familyId '${String(jobControlInjectRaw.familyId)}' - the FC-JOB trio's frozen family is B-JOB`)
+    }
+    if (typeof jobControlInjectRaw.providerId !== 'string' || jobControlInjectRaw.providerId.length === 0) {
+      return jobControlInjectInvalid('the inject needs the wiring providerId (the trusted owner fact rides the family registrations)')
+    }
+    if (typeof jobControlInjectRaw.dispatch !== 'function') {
+      return jobControlInjectInvalid('dispatch must be the wiring face (the one PA-walked management call; refusals answer the row\'s closed { text } envelope)')
+    }
+    const jobRowNames = ['job_kill', 'job_list', 'job_output']
+    const jobPlacementNames = jobControlInjectRaw.placementNames
+    if (!Array.isArray(jobPlacementNames) || jobPlacementNames.slice().sort().join(',') !== jobRowNames.join(',')) {
+      return jobControlInjectInvalid(`placementNames are the three fixed row spellings [${jobRowNames.join(', ')}] and NOTHING else - answered [${Array.isArray(jobPlacementNames) ? jobPlacementNames.join(', ') : 'no array'}]`)
+    }
+    if (typeof jobControlInjectRaw.familyRegistrations !== 'function' || typeof jobControlInjectRaw.dispose !== 'function') {
+      return jobControlInjectInvalid('familyRegistrations and dispose must be the wiring faces (the mount writer registers AFTER publish; the drain rides THIS mount\'s teardown law)')
+    }
+    jobControlInject = Object.freeze({
+      dispatch: jobControlInjectRaw.dispatch,
+      familyId: jobControlInjectRaw.familyId,
+      providerId: jobControlInjectRaw.providerId,
+      placementNames: Object.freeze(jobPlacementNames.slice()),
+      familyRegistrations: jobControlInjectRaw.familyRegistrations,
+      dispose: jobControlInjectRaw.dispose,
+    })
+  }
+
   // A5M2-WIRE-G2 B-ORCHESTRATION execution arms (records 47 workflow ALWAYS
   // / 48 ralph conditional): the gate is config law exactly like the control
   // trio's — enabled WITHOUT the wiring inject would mask the reserved native
@@ -3172,6 +3227,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // exactly what the host tool passes) never gets invented: an unnamed
   // caller is refused by the bridge, never queried unfiltered.
   const jobsBridge = input.backends?.jobs ?? null
+  // B-JOB governed dispatch leg (slice-2): with the wiring face present, the
+  // row's call enters ONLY through jobControlInject.dispatch — one PA walk,
+  // then the VERIFIED bridge handle inside the wiring (the two-fence order
+  // stays enforced inside the bridge; the row never bypasses it and there is
+  // no second body path). Without the face the rows answer exactly as before
+  // (bridge / honest shut face — zero flip).
+  const jobsGoverned = jobControlInject !== null && jobsBridge !== null
   const jobsShut = createShutBackend('a5-jobs-bridge-pending')
   const shutJobsText = async () => {
     const r = await jobsShut.run({})
@@ -3190,14 +3252,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
         },
         required: ['job_id'],
       },
-      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobOutput(args ?? {}, exec?.agent?.id, exec?.signal) : await shutJobsText()),
+      execute: async (args, exec) => (jobsGoverned ? jobControlInject.dispatch('job_output', args ?? {}, exec) : jobsBridge !== null ? jobsBridge.jobOutput(args ?? {}, exec?.agent?.id, exec?.signal) : await shutJobsText()),
       output: PLANE_PRESENTATION_FACE,
     }),
     Object.freeze({
       name: 'job_list',
       description: 'List your background jobs (running and finished) with their ids, kinds, and statuses.',
       parameters: { type: 'object', properties: {} },
-      execute: async (_args, exec) => (jobsBridge !== null ? jobsBridge.jobList(exec?.agent?.id) : await shutJobsText()),
+      execute: async (_args, exec) => (jobsGoverned ? jobControlInject.dispatch('job_list', _args ?? {}, exec) : jobsBridge !== null ? jobsBridge.jobList(exec?.agent?.id) : await shutJobsText()),
       output: PLANE_PRESENTATION_FACE,
     }),
     Object.freeze({
@@ -3211,7 +3273,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         },
         required: ['job_id'],
       },
-      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobKill(args ?? {}, exec?.agent?.id) : await shutJobsText()),
+      execute: async (args, exec) => (jobsGoverned ? jobControlInject.dispatch('job_kill', args ?? {}, exec) : jobsBridge !== null ? jobsBridge.jobKill(args ?? {}, exec?.agent?.id) : await shutJobsText()),
       output: PLANE_PRESENTATION_FACE,
     }),
   ] : []
@@ -6473,6 +6535,17 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         placementNames: subagentControlInject.placementNames,
         familyRegistrations: subagentControlInject.familyRegistrations,
       }) }),
+      // A5M2 B-JOB (slice-2): the FC-JOB claim face — same shape, same law
+      // (omitted, NOT set to undefined, when the family is not deployed; the
+      // post-publish writer in agent-bindings hands each entry to
+      // registerA5GovernedFamily at the shared fill point; nothing on the
+      // plane registers anything).
+      ...(jobControlInject === null ? {} : { jobControl: Object.freeze({
+        familyId: jobControlInject.familyId,
+        providerId: jobControlInject.providerId,
+        placementNames: jobControlInject.placementNames,
+        familyRegistrations: jobControlInject.familyRegistrations,
+      }) }),
       // A5M2-WIRE-G2 — the B-ORCHESTRATION claim face: same shape, same law
       // (the post-publish writer in agent-bindings hands each entry to
       // registerA5GovernedFamily AT THE SHARED FILL POINT; nothing on the
@@ -6758,6 +6831,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // DISPOSED after); the placed defs' own disposers run with the
             // mount like every other row. Idempotent (the wiring's law).
             if (subagentControlInject !== null) subagentControlInject.dispose()
+            if (jobControlInject !== null) jobControlInject.dispose()
             // A5M2-WIRE-G2: the B-ORCHESTRATION drain rides THIS mount's teardown
             // law too — new-call prohibition FIRST, placed rows never re-run.
             if (bOrchestrationInject !== null) bOrchestrationInject.dispose()
