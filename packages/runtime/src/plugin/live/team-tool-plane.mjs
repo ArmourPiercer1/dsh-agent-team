@@ -77,7 +77,7 @@ import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '.
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
+import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, parseCanonicalHandoffContext, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 // A5M2 B-SEARCH (CENTER M0 无主行分配 card): the frozen census law of the
 // two durable team rows (names, family, adapter revision, minted operation
@@ -2603,7 +2603,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // plan and the DURABLE Control leg whose guard consumption mints the grant);
   // `paAdmitEdge` is the execution edge that used to follow it inline, line
   // for line. `paAdmitBody` runs the two in sequence, exactly as before.
-  const paAdmitPartA = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal, family }) => {
+  const paAdmitPartA = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal, family, canonicalOperation }) => {
+    // A5M2 (overlay strict-b, slice 2): the trusted operation is READABLE
+    // and bound BEFORE the first admitCall. The tuple must be whole (the
+    // shared parse law with the row — a partial identity is refused with
+    // zero admitCall, zero grant, zero Control row), and the operation
+    // fingerprint becomes this call's binding material: recorded beside
+    // the effect-set fingerprint on the ask lane and carried to the edge,
+    // where it PAIRS (never substitutes) against every re-read fact of the
+    // same exec/call/member/realm/params-fingerprint identity.
+    let canonicalOperationFingerprint
+    if (canonicalOperation !== undefined) {
+      const parsedCanonical = parseCanonicalHandoffContext(canonicalOperation)
+      if (parsedCanonical.ok !== true) {
+        return { kind: 'deny', code: 'PA_CANONICAL_MALFORMED', detail: `the canonical hand-off context is not a complete {tool,resourceKind,resourceKey,fingerprint} tuple (${parsedCanonical.cause}) — no admitCall, no grant and no Control row open on a partial trusted identity` }
+      }
+      canonicalOperationFingerprint = parsedCanonical.value.fingerprint
+    }
     // 9e-3: THIS call's durable mint (row id + the exact manifest bytes the
     // row carries, handed back by the AUTH leg). Per-call by construction:
     // concurrent calls never see each other's mint.
@@ -2782,6 +2798,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
         effectSetFingerprint: String(planned.value.effectSetFingerprint),
         perEffectRequired: planned.value.perEffectRequired,
         requestedEffects,
+        // A5M2 slice 2: the operation fingerprint is recorded ALONGSIDE
+        // (never in place of) the effect-set fingerprint — the two answer
+        // different questions (WHICH canonical operation versus WHICH
+        // effect-set question) and the edge pairs both.
+        ...(canonicalOperationFingerprint === undefined ? {} : { canonicalOperationFingerprint }),
       }))
       if (livePaPlan.size > 2000) livePaPlan.delete(livePaPlan.keys().next().value)
       if (controlLeg === null) {
@@ -2820,10 +2841,21 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // Part A is complete: a grant exists and (on the ask lane) a real Control
     // guard consumed the approval that minted it. Nothing past this line runs
     // on a pre-execute leg — the hand-off stops here with the grant in hand.
-    return { ok: true, grant, paDurableMint, request, placementName, paConstructionBinding }
+    return {
+      ok: true,
+      grant,
+      paDurableMint,
+      request,
+      placementName,
+      paConstructionBinding,
+      // A5M2 slice 2: the bound operation fingerprint rides Part A's own
+      // answer — it is the binding this leg minted BEFORE the first
+      // admitCall, and the execution edge pairs against exactly this.
+      ...(canonicalOperationFingerprint === undefined ? {} : { canonicalOperationFingerprint }),
+    }
   }
 
-  const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, signal }) => {
+  const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, signal, canonicalOperation, canonicalOperationFingerprint }) => {
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
     if (signal?.aborted === true) {
@@ -2851,6 +2883,22 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // ever answers (M1-A deleted the self-attesting getters, M1-D deleted
     // the single-name entry lookup).
     const stale = (detail) => ({ kind: 'deny', code: 'GRANT_STALE', detail })
+    // A5M2 (overlay strict-b, slice 2): the canonical binding PAIRING. The
+    // edge may only stand on the SAME trusted operation Part A bound before
+    // the first admitCall: the tuple carried to this leg must be whole AND
+    // carry exactly the fingerprint that binding minted (an operation
+    // fingerprint is a PAIR to the parameters/effect-set fingerprint, never
+    // a substitute — both are compared here and every fact below). A leg
+    // that carries no binding keeps this block inert byte-for-byte (the
+    // zero-flip law for every pre-slice-2 caller).
+    if (canonicalOperationFingerprint !== undefined || canonicalOperation !== undefined) {
+      const parsedCanonical = canonicalOperation === undefined
+        ? { ok: false, cause: 'field-tool-absent' }
+        : parseCanonicalHandoffContext(canonicalOperation)
+      if (parsedCanonical.ok !== true || parsedCanonical.value.fingerprint !== canonicalOperationFingerprint) {
+        return stale('the canonical operation this edge carries does not pair with the fingerprint Part A bound before the first admitCall — a leg cannot execute an operation identity nobody admitted it for')
+      }
+    }
     const paFactsSeamMounted = typeof paReadCallFacts === 'function'
     const paEpochSeamMounted = paCurrentFacts.getRollbackEpoch !== undefined
     if (paFactsSeamMounted || paEpochSeamMounted) {
@@ -2956,6 +3004,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
         if (walked === undefined) {
           return stale('the approval this call waited on has no live plan any more — the question it answered is gone, and its grant is not spendable')
         }
+        // A5M2 slice 2: the plan fact was written over this call's canonical
+        // binding; an approval covers the operation it was planned for. Both
+        // sides absent (every pre-slice-2 leg) compares equal — zero flip.
+        if (walked.canonicalOperationFingerprint !== canonicalOperationFingerprint) {
+          return stale(`the live plan fact carries canonical binding ${walked.canonicalOperationFingerprint === undefined ? 'none' : 'one operation'} while this edge carries ${canonicalOperationFingerprint === undefined ? 'none' : 'another'} — the standing approval is not this leg's`)
+        }
         const snap = facts.planSnapshot
         if (snap === undefined || snap.approvalCaseId !== walked.approvalCaseId || snap.effectSetFingerprint !== walked.effectSetFingerprint) {
           return stale(`the approved question moved between the approval and this edge (approved ${String(walked.approvalCaseId)}/${String(walked.effectSetFingerprint)}, the plane now answers ${String(snap?.approvalCaseId)}/${String(snap?.effectSetFingerprint)}) — an approval covers the question AS APPROVED`)
@@ -3044,6 +3098,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       request: opened.request,
       placementName: opened.placementName,
       paConstructionBinding: opened.paConstructionBinding,
+      ...(opened.canonicalOperationFingerprint === undefined ? {} : { canonicalOperationFingerprint: opened.canonicalOperationFingerprint }),
     })
   }
   // A5-M2 lifecycle halves of the SAME walk, for the governed-read row's
@@ -3082,6 +3137,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       request: opened.request,
       placementName: opened.placementName,
       paConstructionBinding: opened.paConstructionBinding,
+      ...(opened.canonicalOperationFingerprint === undefined ? {} : { canonicalOperationFingerprint: opened.canonicalOperationFingerprint }),
     }
   }
   // ② the redemption leg's own close handle: the row holds the correlation
@@ -3286,6 +3342,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
       policy: permissionPolicy,
       decide,
       pa: paAdmit,
+      // A5M2 (overlay strict-b, slice 2): the read row's live overlay seam.
+      // The row module stays what it always was — a reader of the injected
+      // face, never a reader of any authority store: this closure forwards
+      // ONE question (the trusted canonical operation the adapter handed to
+      // this leg) plus THIS mount's template identity and policy, and the
+      // GLUE answers through the ONE existing assembler
+      // (`permissionPlane.decisions.decide`), fresh per call. ABSENT seam =
+      // the row keeps its old closed template lane byte-for-byte (and says
+      // so in every observation that carries a canonical context).
+      ...(input.overlayReadDecision === undefined
+        ? {}
+        : {
+          overlayDecision: (operation) => input.overlayReadDecision({
+            operation,
+            template: { label: templateId, policy: permissionPolicy },
+          }),
+        }),
       ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
       observe: logBackend('a5g7-read'),
     })
@@ -7233,7 +7306,7 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
        *  the adapter and a broken one refuses the install. Every other world
        *  and every other name keeps the old path. */
       ...(readExecutor === null ? {} : { paReadHandoff: Object.freeze({
-        open: async (exec) => {
+        open: async (exec, canonical) => {
           if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
           if (exec.name !== readName) return { kind: 'no-match' }
           const token = exec.token
@@ -7243,9 +7316,17 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // never falls back to the pre-hand-off lane.
             return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNBOUND', detail: 'this governed read carries no execution token, so no PA hand-off can be opened or redeemed for it' }
           }
+          // A5M2 (overlay strict-b, slice 2): the adapter's TRUSTED canonical
+          // operation context — `PaReadHandoffPorts.open`'s second parameter,
+          // forwarded here UNBOUND through the glue. This face passes it on
+          // VERBATIM: the row parses it whole (a partial tuple refuses),
+          // Part A binds it before any admitCall, and the execution edge
+          // pairs against that binding. A caller that passes no second
+          // argument keeps the pre-slice-2 walk byte-for-byte.
           return await readExecutor.paHandoffOpen(exec.arguments, {
             token,
             ...(exec.signal === undefined ? {} : { signal: exec.signal }),
+            ...(canonical === undefined ? {} : { canonical }),
           })
         },
         close: (exec) => {

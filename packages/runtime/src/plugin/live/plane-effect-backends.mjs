@@ -1071,7 +1071,42 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
  * own granularity — under `deny` an effect the policy never names never
  * touches the fs (no lane-widening anywhere in this file).
  */
-export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, pa, subtreeContains, observe = () => {} }) {
+/**
+ * A5M2 (overlay strict-b, slice 2): the ONE parse of a canonical hand-off
+ * context — the minimal TRUSTED tuple the pre-execute adapter threads on the
+ * canonical path only (pre-execute-adapter.ts `PaCanonicalHandoffContext`:
+ * the operation's own tool / resource kind / resource key / fingerprint).
+ * Every field must be a non-empty string: a partial tuple is a contract
+ * violation and is REFUSED by both consumers (Part A before any admitCall,
+ * the execution edge as a pairing breach) — the trusted identity is never
+ * consumed half-read, and the walk never falls back silently to a state
+ * where the durable authority was not consulted at all.
+ * Absence is NOT malformation: a caller that passes no context keeps the
+ * pre-slice-2 path byte-for-byte (the old closed template lane).
+ */
+export function parseCanonicalHandoffContext(value) {
+  if (value === null || typeof value !== 'object') return { ok: false, cause: 'not-an-object' }
+  const fields = [
+    ['tool', value.tool],
+    ['resourceKind', value.resourceKind],
+    ['resourceKey', value.resourceKey],
+    ['fingerprint', value.fingerprint],
+  ]
+  for (const [name, raw] of fields) {
+    if (typeof raw !== 'string' || raw === '') return { ok: false, cause: `field-${name}-${raw === undefined ? 'absent' : 'not-a-non-empty-string'}` }
+  }
+  return Object.freeze({
+    ok: true,
+    value: Object.freeze({
+      tool: fields[0][1],
+      resourceKind: fields[1][1],
+      resourceKey: fields[2][1],
+      fingerprint: fields[3][1],
+    }),
+  })
+}
+
+export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, pa, subtreeContains, overlayDecision, observe = () => {} }) {
   let executed = 0
   let paSeq = 0
   const ruleCovers = (rules, locator) => rules.some((rule) => {
@@ -1210,6 +1245,67 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
     }
     const execCorrelation = corr && typeof corr.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : undefined
     const execSignal = corr && corr.signal ? corr.signal : undefined
+    // A5M2 slice 2: a CANONICAL open leg that refuses is TERMINAL for its
+    // execution token. These canonical-path refusures (malformed context, a
+    // faulting/refused durable read, a merged DENY) fire BEFORE the ledger
+    // registers the leg's correlation, so the outer finally's terminalise
+    // (which only settles an EXISTING entry) cannot see them. Without this
+    // the execution token would stay unclaimed and a later body on the same
+    // token would start a fresh context-free walk that drops the very
+    // canonical identity the authority refused — a leak. Settling the token
+    // here makes the body answer the terminal law (cancelled, zero byte).
+    // NON-canonical legs never call this and keep their old shape byte-
+    // identically (zero flip).
+    const settleCanonicalOpenToken = () => {
+      if (mode === 'open' && tokenKey !== undefined) readTokenLedger.set(tokenKey, { correlation: undefined, settled: true })
+    }
+    // A5M2 (overlay strict-b, slice 2): the canonical hand-off context the
+    // adapter threads on the canonical path only. It is the TRUSTED identity
+    // of THIS open leg — parsed whole or refused, and it rides the leg's own
+    // correlation, callId, token and effect-set below (same exec/call/
+    // realm/params-fingerprint pairing; the operation fingerprint is a PAIR
+    // to the parameters/effect-set fingerprint, never a substitute). The
+    // redemption leg reads it back from the flight, never from a fresh arg.
+    const canonicalParsed = mode === 'open' && corr?.canonical !== undefined
+      ? parseCanonicalHandoffContext(corr.canonical)
+      : undefined
+    if (canonicalParsed !== undefined && canonicalParsed.ok !== true) {
+      settleCanonicalOpenToken()
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_CANONICAL_MALFORMED', detail: `the canonical hand-off context is not a complete {tool,resourceKind,resourceKey,fingerprint} tuple (${canonicalParsed.cause}); a trusted operation is never consumed on a partial identity and the walk never falls back silently` }
+    }
+    const canonicalOperation = canonicalParsed?.value
+    // A5M2 slice 2: the fresh merged verdict of the durable authority over
+    // the canonical operation (the plane wires `overlayDecision` onto the
+    // ONE existing assembler, `permissionPlane.decisions.decide` — latest
+    // overlay per call, never a cached answer). Its SELECTED-LAYER verdict
+    // replaces the ordinary TEMPLATE verdict for this canonical call only;
+    // every hard law (window, lexical, schema, R/W/N, identity/binding,
+    // generation, Control) keeps its frozen position. A fault, a refusal or
+    // a malformed answer REFUSES: the static lane is never the fallback for
+    // a durable read that could not be answered. Absent seam = transparent
+    // old path, OBSERVED (this world never claims overlay governance).
+    const overlayVerdictFor = async (canonical) => {
+      let live
+      try {
+        live = await overlayDecision(Object.freeze({
+          tool: canonical.tool,
+          resource: Object.freeze({ kind: canonical.resourceKind, key: canonical.resourceKey }),
+          fingerprint: canonical.fingerprint,
+        }))
+      } catch (error) {
+        return { refusal: refused('admission', 'PA_OVERLAY_DECISION_FAULT', `the overlay decision seam faulted on the canonical operation (${String(error?.message ?? error).slice(0, 160)}); a faulting durable read is never laundered into the static lane`) }
+      }
+      if (live === null || typeof live !== 'object') {
+        return { refusal: refused('admission', 'PA_OVERLAY_DECISION_MALFORMED', 'the overlay decision seam answered without a typed outcome; no verdict is inferred from a malformed answer') }
+      }
+      if (live.refused === true) {
+        return { refusal: refused('admission', 'PA_OVERLAY_DECISION_REFUSED', `the durable authority refused this canonical decision (${String(live.code ?? 'unspecified')}): ${String(live.reason ?? '')} — the static lane is not a fallback for a refused durable read`) }
+      }
+      if (live.effect !== 'allow' && live.effect !== 'ask' && live.effect !== 'deny') {
+        return { refusal: refused('admission', 'PA_OVERLAY_DECISION_MALFORMED', `the overlay decision seam answered effect ${JSON.stringify(live.effect) ?? String(live.effect)} — outside the closed allow/ask/deny vocabulary`) }
+      }
+      return { effect: live.effect, ...(live.winningLayer === undefined ? {} : { winningLayer: live.winningLayer }), ...(live.overlayGeneration === undefined ? {} : { overlayGeneration: live.overlayGeneration }) }
+    }
     const record = (raw !== null && typeof raw === 'object') ? raw : {}
     // file_path = the canonical spelling the frozen operation-permission
     // layer resolves for `read`; `path` stays accepted for placement-direct
@@ -1245,9 +1341,40 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       // the anchored root is an ABSOLUTE governed root → 'absolute-path'.
       { kind: 'read', resource: { realmId, kind: 'absolute-path', canonicalLocator: parsed.path, rights: ['read'] } },
     ]
+    // A5M2 slice 2: for a canonical call on a mount WITH the overlay seam,
+    // the selected-layer (overlay > template > blueprint) verdict of the
+    // durable authority answers the ORDINARY question for this call — the
+    // template lane's own deny/default-deny verdict is REPLACED (not
+    // intersected: an overlay allow over a replaced template ask stays an
+    // allow; an overlay deny over a template allow refuses). A DENY refuses
+    // here with zero walk; ASK never becomes an allow — the call continues
+    // to the PA edge, where approval is owned by the kernel + the durable
+    // Control leg exactly as before (pending never runs). Without the
+    // context or without the seam, the two template gates below run
+    // byte-identically (the zero-flip law).
+    let overlayOrdinary
+    if (canonicalOperation !== undefined) {
+      if (typeof overlayDecision !== 'function') {
+        observe('governed-read canonical-context-unconsumed — this mount wires no overlay decision seam, so the static template lane answers this call and its answer says NOTHING about the durable authority')
+      } else {
+        const live = await overlayVerdictFor(canonicalOperation)
+        if (live.refusal !== undefined) {
+          settleCanonicalOpenToken()
+          observe('governed-read overlay-strict-b refused-at-open')
+          return live.refusal
+        }
+        if (live.effect === 'deny') {
+          settleCanonicalOpenToken()
+          observe(`governed-read overlay-strict-b deny layer=${String(live.winningLayer ?? 'null')} gen=${String(live.overlayGeneration ?? 'null')} path=${parsed.path}`)
+          return refused('admission', 'OVERLAY_DENY_LANE', 'the durable authority answers this canonical operation DENY (the selected layer of overlay > template > blueprint); the replaced template lane cannot launder it')
+        }
+        overlayOrdinary = live.effect
+        observe(`governed-read overlay-strict-b open effect=${live.effect} layer=${String(live.winningLayer ?? 'null')} gen=${String(live.overlayGeneration ?? 'null')}`)
+      }
+    }
     const verdict = decide({ effects })
-    if (verdict.kind === 'deny') return refused('admission', verdict.code, 'the template lane denies this read effect')
-    if (policy?.default === 'deny' && !ruleCovers([...(policy?.allow ?? []), ...(policy?.ask ?? [])], parsed.path)) {
+    if (verdict.kind === 'deny' && overlayOrdinary === undefined) return refused('admission', verdict.code, 'the template lane denies this read effect')
+    if (overlayOrdinary === undefined && policy?.default === 'deny' && !ruleCovers([...(policy?.allow ?? []), ...(policy?.ask ?? [])], parsed.path)) {
       observe(`governed-read default-deny refusal call path=${parsed.path}`)
       return refused('admission', 'template-default-deny', 'the policy defaults to DENY and no rule covers this read effect')
     }
@@ -1288,6 +1415,11 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         ...(readSignal === undefined ? {} : { signal: readSignal }),
         parametersFingerprint: set.value.fingerprint,
         requestedEffects: set.value,
+        // A5M2 slice 2: the trusted operation rides the leg's OWN call —
+        // Part A binds it (before any admitCall) into the same
+        // exec/call/realm/member/params-fingerprint identity, and the
+        // execution edge pairs against that binding.
+        ...(canonicalOperation === undefined ? {} : { canonicalOperation }),
       }
       let gate
       if (mode === 'open') {
@@ -1349,6 +1481,27 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
           // edge; this compares the identity of the call itself.
           return refused('admission', 'PA_HANDOFF_MISMATCH', 'the redemption does not ask the question the pre-dispatch PA walk was approved for; nothing runs')
         }
+        // A5M2 slice 2: the durable answer is read FRESH at this leg too —
+        // an overlay revocation that lands between the pre-dispatch walk and
+        // the body consumes NOTHING (no cached allow crosses the split).
+        // ASK at the edge is only survivable when a durable Control approval
+        // stands for this very call (`paDurableMint`); pending never runs.
+        if (handoffClaim.canonicalOperation !== undefined && typeof overlayDecision === 'function') {
+          const live = await overlayVerdictFor(handoffClaim.canonicalOperation)
+          if (live.refusal !== undefined) {
+            observe('governed-read overlay-strict-b refused-at-edge')
+            return live.refusal
+          }
+          if (live.effect === 'deny') {
+            observe(`governed-read overlay-strict-b edge-deny layer=${String(live.winningLayer ?? 'null')} gen=${String(live.overlayGeneration ?? 'null')}`)
+            return refused('admission', 'OVERLAY_DENY_LANE', 'the durable authority answers this canonical operation DENY at the execution edge; a revocation between Part A and this edge consumes nothing')
+          }
+          if (live.effect === 'ask' && (handoffClaim.paDurableMint === undefined || handoffClaim.paDurableMint === null || typeof handoffClaim.paDurableMint.requestId !== 'string')) {
+            observe('governed-read overlay-strict-b edge-ask-without-durable-approval')
+            return refused('admission', 'OVERLAY_ASK_UNAPPROVED_AT_EDGE', 'the durable authority moved this canonical operation to ASK between Part A and the execution edge and no Control approval stands for it; pending never runs')
+          }
+          observe(`governed-read overlay-strict-b edge effect=${live.effect} layer=${String(live.winningLayer ?? 'null')} gen=${String(live.overlayGeneration ?? 'null')}`)
+        }
         gate = await pa.edge({
           ...paCall,
           grant: handoffClaim.grant,
@@ -1356,6 +1509,11 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
           request: handoffClaim.request,
           placementName: handoffClaim.placementName,
           paConstructionBinding: handoffClaim.paConstructionBinding,
+          // A5M2 slice 2: the pairing material Part A bound — carried
+          // VERBATIM so the edge can pair the live plan fact's
+          // canonicalOperationFingerprint against this exact call.
+          ...(handoffClaim.canonicalOperation === undefined ? {} : { canonicalOperation: handoffClaim.canonicalOperation }),
+          ...(handoffClaim.canonicalOperationFingerprint === undefined ? {} : { canonicalOperationFingerprint: handoffClaim.canonicalOperationFingerprint }),
         })
       } else {
         gate = await pa(paCall)
@@ -1378,6 +1536,12 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
             // check: the edge re-reads fresh and DRIFTS against this tuple).
             placementName: gate.placementName,
             paConstructionBinding: gate.paConstructionBinding,
+            // A5M2 slice 2: the trusted operation AND the fingerprint Part A
+            // bound against it — the edge pairs against what was bound
+            // BEFORE the first admitCall, never re-derives it from the
+            // redemption's own arguments.
+            ...(canonicalOperation === undefined ? {} : { canonicalOperation }),
+            ...(gate.canonicalOperationFingerprint === undefined ? {} : { canonicalOperationFingerprint: gate.canonicalOperationFingerprint }),
           }))
           readTokenLedger.set(tokenKey, { correlation: ledgerCorrelation, settled: false, handedOff: true })
           holdOpen = true

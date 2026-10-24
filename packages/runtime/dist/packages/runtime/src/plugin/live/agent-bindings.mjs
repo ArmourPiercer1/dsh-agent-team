@@ -2347,6 +2347,17 @@ export function createAgentBindings(deps) {
       // path.
       const capabilities = staticCapabilitiesOf(getBoundBlueprint(teamRoot), boundTemplate)
       const permissionPolicy = boundTemplate.capabilities?.permissions
+      // A5M2 (overlay strict-b, slice 2): the LATE slot of the plane-side
+      // overlay decision seam. The tool plane is assembled before the fs /
+      // authority closures it consumes exist in this install flow, so the
+      // plane receives only a call-time wrapper of this slot, and the seam
+      // itself is filled where `resolveTarget`/`containsTargets`/
+      // `containOverlayKeys` are defined — the ONE seam family, never a
+      // second source. ABSENT slot (a world that never promised the durable
+      // authority, or an install that did not reach the mount) = the row's
+      // old closed template lane, byte-for-byte (the dynamic seam below
+      // keeps the same presence law).
+      let planeOverlayReadDecisionLate
       const ref = { current: modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection, assembled: undefined }
       const state = {
         instanceId,
@@ -6674,6 +6685,25 @@ export function createAgentBindings(deps) {
         }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
+          // A5M2 (overlay strict-b, slice 2): the plane-side overlay decision
+          // seam (see the slot above). PRESENCE LAW: an absent
+          // `permissionPlaneRef` — a world that never promised the durable
+          // authority — wires NO seam and the governed-read row keeps its
+          // old closed template lane byte-for-byte (the same presence law
+          // as the dynamic seam at the parameter-permission listener).
+          // Present ref = this root promised the authority: the wrapper
+          // resolves the late slot AT CALL TIME (the seam needs the fs /
+          // authority closures defined later in this flow) and an
+          // unmounted slot FAILS CLOSED — a promised authority that cannot
+          // answer is never laundered into the static lane.
+          ...(permissionPlaneRef === undefined || permissionPlaneRef === null ? {} : {
+            overlayReadDecision: async (args) => {
+              if (typeof planeOverlayReadDecisionLate !== 'function') {
+                return { refused: true, code: 'OVERLAY_SEAM_UNMOUNTED', reason: 'this root declared a permission authority plane but the read-decision seam was never mounted; the canonical operation is never answered from the static lane alone' }
+              }
+              return planeOverlayReadDecisionLate(args)
+            },
+          }),
           // PR358 fix-2: the DURABLE attribution the Control rows live under
           // is the real TeamSession root — never a `plane:<template>`
           // fallback. Missing teamSessionId is a wiring bug the plane now
@@ -9115,6 +9145,110 @@ export function createAgentBindings(deps) {
             throw new Error('the fs provider does not expose a public contains() seam (overlay subtree containment undeterminable)')
           }
           return backend.contains({ targetKey: subtreeRootKey }, { targetKey: childKey }) === true
+        }
+        // A5M2 (overlay strict-b, slice 2): fill the plane-side slot (see the
+        // declaration beside `permissionPolicy`). The governed-read row asks
+        // its ONE question — the TRUSTED canonical operation the adapter
+        // threaded on the canonical path — and this closure answers with the
+        // merged verdict of the ONE existing assembler
+        // (`permissionPlane.decisions.decide`, the LATEST durable overlay per
+        // call — no cached allow, no second authority). The template lanes
+        // are canonicalized HERE, fresh, on the SAME pinned fs seams the
+        // pre-execute adapter canonicalizes them with, the frozen lane
+        // asymmetry carried verbatim: an unresolvable or uncontainable
+        // same-tool DENY-lane rule REFUSES the decision (a failed static deny
+        // must never downgrade), while allow/ask failures keep non-match
+        // semantics (no positive grant is minted from a failure). The
+        // canonical operation rides UNTOUCHED: the seam answers exactly the
+        // operation it was handed, never an effect-set sibling, and
+        // re-derives nothing about its target except through this call's own
+        // fresh resolutions (H4). The decision lane's OWN refusals
+        // (lifecycle gate, undecodable overlay, ambiguous assembly) pass
+        // through as refusals — the row fail-closes, never falling back to
+        // the static lane.
+        planeOverlayReadDecisionLate = async ({ operation, template }) => {
+          const authority = permissionPlaneRef !== undefined && permissionPlaneRef !== null
+            ? permissionPlaneRef.current
+            : undefined
+          if (authority === undefined || authority === null
+            || typeof authority.decisions?.decide !== 'function') {
+            return { refused: true, code: 'OVERLAY_PLANE_UNAVAILABLE', reason: 'this root declared a permission authority plane but published no decision lane; the canonical operation is never answered from the static lane alone' }
+          }
+          const templatePolicy = template?.policy
+          const rules = { allow: [], ask: [], deny: [] }
+          let operationHandle
+          for (const laneName of ['allow', 'ask', 'deny']) {
+            for (const rule of Array.isArray(templatePolicy?.[laneName]) ? templatePolicy[laneName] : []) {
+              if (typeof rule?.tool !== 'string' || rule.tool !== operation.tool) continue // a different tool can never match
+              const ruleResource = rule.resource
+              if (ruleResource === undefined || ruleResource === null || ruleResource.kind === 'any') {
+                rules[laneName].push({ tool: rule.tool, resource: { kind: 'any' } })
+                continue
+              }
+              let ruleTarget
+              try {
+                ruleTarget = await resolveTarget(String(ruleResource.path ?? ''))
+              } catch {
+                ruleTarget = undefined
+              }
+              if (ruleTarget === undefined) {
+                if (laneName === 'deny') {
+                  return { refused: true, code: 'OVERLAY_STATIC_DENY_UNCANONICALIZABLE', reason: `a template DENY-lane rule for ${rule.tool} at ${String(ruleResource.path)} could not be canonicalized — a failed static deny is never dropped into the decision` }
+                }
+                continue
+              }
+              if (ruleResource.kind === 'subtree') {
+                if (operationHandle === undefined) {
+                  try {
+                    operationHandle = (await resolveTarget(operation.resource.key)).handle
+                  } catch {
+                    operationHandle = null
+                  }
+                }
+                let containsOperation
+                if (operationHandle === null) {
+                  if (laneName === 'deny') {
+                    return { refused: true, code: 'OVERLAY_STATIC_DENY_UNCONTAINABLE', reason: `subtree containment against ${operation.resource.key} is undeterminable — a failed static deny is never dropped into the decision` }
+                  }
+                  continue
+                }
+                try {
+                  containsOperation = (await Promise.resolve(containsTargets(ruleTarget.handle, operationHandle))) === true
+                } catch {
+                  if (laneName === 'deny') {
+                    return { refused: true, code: 'OVERLAY_STATIC_DENY_UNCONTAINABLE', reason: `the pinned containment seam faulted for ${String(ruleResource.path)} — a failed static deny is never dropped into the decision` }
+                  }
+                  continue
+                }
+                rules[laneName].push({ tool: rule.tool, resource: { kind: 'subtree', rootKey: ruleTarget.key, containsOperation } })
+                continue
+              }
+              rules[laneName].push({ tool: rule.tool, resource: { kind: 'exact', key: ruleTarget.key } })
+            }
+          }
+          const outcome = await authority.decisions.decide({
+            teamSessionId: teamRoot,
+            memberInstanceId: instanceId,
+            operation,
+            // The mount's own template facts, vocabulary verbatim (the
+            // domain's `TemplatePermissionPolicy.default` IS the assembler's
+            // `ask` | `deny` slot vocabulary — no mapping is invented), the
+            // rules canonicalized FRESH above.
+            staticFacts: {
+              template: {
+                label: String(template?.label ?? 'template'),
+                default: templatePolicy?.default,
+                rules,
+              },
+            },
+            containment: (subtreeRootKey, target) => containOverlayKeys(subtreeRootKey, target.key),
+          })
+          if (outcome.kind === 'refused') return { refused: true, code: outcome.code, reason: outcome.reason }
+          return {
+            effect: outcome.effect,
+            ...(outcome.winningLayer === undefined ? {} : { winningLayer: outcome.winningLayer }),
+            ...(outcome.overlayGeneration === undefined ? {} : { overlayGeneration: outcome.overlayGeneration }),
+          }
         }
         const operationApprovalFacts =
           permissionPlane === undefined || permissionPlane === null
