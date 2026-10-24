@@ -1,6 +1,19 @@
 # DRAFT — EDIT/SRE execute-body PA-handoff redemption legs (G3 body block, per CENTER's single-writer split)
 
-**Status: PREPARED, NOT APPLIED.** Applies to
+**Status: ARCHIVED — REVIEW-ONLY.** Per CENTER (root anti-duplication
+ruling) the main personally landed the plane-body redemption in the int
+tree; this draft was used as the comparison-review material and the int
+version passed every point (verified read-only in the int tree's
+`packages/runtime/src/plugin/live/team-tool-plane.mjs`):
+synchronous single take (edit :4344-4352, sre :4813-4820); ORIGINAL
+correlation via `priorFlight.correlation` both rows; `PA_HANDOFF_LOST`
+fails closed ("nothing is asked again and no byte is written", no
+fallback); typed `exec-token-replay` otherwise; `PA_HANDOFF_MISMATCH`
+pair assertions (:4416/:4878, symmetric with write :3902/image :5184);
+teardown `editHandoffCloseAll`/`sreHandoffCloseAll` (:4121/:4598); export
+faces `paEditHandoff`/`paSreHandoff` (:7194/:7201 conditional-mount
+mirror); `handedOff: true` pre-marked in the open path (:4294). NO
+OBJECTIONS. Nothing from this draft is applied by the lane. Applies to
 `packages/runtime/src/plugin/live/team-tool-plane.mjs` IN THE LANE TREE ONLY,
 and ONLY after the main's int-tree side lands the pre-dispatch open ports
 (`editHandoffOpen`/`sreHandoffOpen` mirroring `writeHandoffOpen`, the two
