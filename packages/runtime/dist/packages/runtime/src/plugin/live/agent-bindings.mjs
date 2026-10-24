@@ -4897,9 +4897,6 @@ export function createAgentBindings(deps) {
             throw refuseBOrch('planeCfg.bOrchestrationRouting is absent — the deployment must declare which provider name the engines route to (the seat drift-gates on it; a silent default would be a mis-deployed world executing)')
           }
           const bOrchActiveCalls = new WeakMap()
-          const bOrchLaneDenies = Object.freeze([...new Set((Array.isArray(permissionPolicy?.deny) ? permissionPolicy.deny : [])
-            .map((row) => (typeof row === 'string' ? row : row?.tool ?? row?.toolName ?? row?.name))
-            .filter((n) => typeof n === 'string' && n.length > 0))])
           const bOrchPa = Object.assign(
             (walk) => {
               if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
@@ -4913,13 +4910,19 @@ export function createAgentBindings(deps) {
               },
             },
           )
+          // The STATIC routed-name holder: its only jobs are holding the
+          // deployment-declared routed name against collisions and
+          // answering the wiring's drift gate. It can NEVER establish a
+          // child: no admitted call context exists behind it (children
+          // are established only under the PER-RUN closures the runner
+          // registers) — its chain face refuses by construction.
           const bOrchTgp = createTeamGovernedSubagentProvider({
             name: bOrchRoutedName,
-            agents,
             pa: bOrchPa,
-            teamActivation: { runOwned: runOwnedActivation, wrapSetup: teamOwnedSetup },
-            laneResolver: () => ({ deny: [...bOrchLaneDenies] }),
-            activeCalls: bOrchActiveCalls,
+            runContext: { callId: 'static-routed-name-holder', parametersFingerprint: 'no-admitted-call', realmId: 'realm-b-orch-static', toolName: 'workflow' },
+            childChain: { async ensureChild () { throw new Error('the static routed-name holder establishes nothing — children ride per-run governed closures only') } },
+            templateId: 'static-routed-name-holder',
+            settlement: { rootSessionId: rootSid, workDelivery },
             observe: (row) => observations.push(`a5m2-b-orchestration-tgp: ${String(row?.event ?? 'event')} ${String(row?.callId ?? '')}`),
           })
           if (bOrchTgp.name !== bOrchRoutedName) {
@@ -4972,6 +4975,23 @@ export function createAgentBindings(deps) {
               default: return { status: 'failed', detail: typeof result?.error === 'string' ? result.error : 'unknown error' }
             }
           }
+          // The arm's wrapper over the EXISTING durable fresh-member chain
+          // (childFactory.createChildSession -> agentSetup 'fresh-member'
+          // commits the durable MemberInstance row through the activation
+          // funnel; ensureLiveAgent + ensureMaterialized complete it — the
+          // same chain boot seeds and delegation ride; nothing invented).
+          const bOrchChildChain = {
+            async ensureChild (args) {
+              const created = await childFactory.createChildSession({
+                rootSessionId: args.rootSessionId,
+                instanceId: args.instanceId,
+                ...(typeof args.templateId === 'string' && args.templateId.length > 0 ? { templateId: args.templateId } : {}),
+              })
+              const handle = await ensureLiveAgent(String(created.childSessionId))
+              await sessionPersistence.ensureMaterialized(handle.agent.session)
+              return { childSessionId: String(created.childSessionId), handle }
+            },
+          }
           const bOrchRunDelegate = async (args, exec) => {
             const parent = exec?.agent
             if (typeof parent !== 'object' || parent === null) {
@@ -4987,14 +5007,37 @@ export function createAgentBindings(deps) {
               throw new Error(`P_B_ORCH_NOT_TEAM_MEMBER: the running agent '${sid.slice(0, 24)}' holds no durable member instance — the settlement binding is not committable by activation, so the governed run is refused (children would be ungoverned; no native fallback)`)
             }
             const runName = `${bOrchRoutedName}#r${(bOrchRunSerial.n += 1)}`
+            // The ACTIVATED template the run may spawn under: the running
+            // member's OWN template, located through the existing
+            // fresh-create-window face (locateTemplate — the same
+            // templateId semantics boot seeds pass). Not answerable = the
+            // run establishes nothing (typed, no native fallback).
+            let templateId = null
+            try {
+              const located = locateTemplate(sid, instanceId, undefined, undefined, undefined)
+              if (typeof located?.id === 'string' && located.id.length > 0) templateId = located.id
+            } catch { /* unresolved below, typed */ }
+            if (templateId === null) {
+              throw new Error(`P_B_ORCH_TEMPLATE_UNRESOLVED: the activated template of member '${instanceId.slice(0, 24)}' is unanswerable — governed children never spawn under an unlocated template (no native fallback)`)
+            }
+            // The per-run correlation CONTEXT is THE ADMITTED CALL itself
+            // (exec.callId + a fingerprint of the real parameters); the
+            // closure IS the correlation — no WeakMap, no ALS.
+            const runFingerprint = createHash('sha256').update(JSON.stringify(args ?? null), 'utf8').digest('hex').slice(0, 32)
+            const runFeed = a5PlaneValue?.placementFeed?.('workflow')
             const runProvider = createTeamGovernedSubagentProvider({
               name: runName,
-              agents,
               pa: bOrchPa,
-              teamActivation: { runOwned: runOwnedActivation, wrapSetup: teamOwnedSetup },
-              laneResolver: () => ({ deny: [...bOrchLaneDenies] }),
-              activeCalls: bOrchActiveCalls,
-              settlement: { rootSessionId: rootSid, instanceId, workDelivery },
+              runContext: {
+                callId: String(exec?.callId ?? runName),
+                parametersFingerprint: runFingerprint,
+                realmId: typeof runFeed?.realmId === 'string' && runFeed.realmId.length > 0 ? runFeed.realmId : 'realm-b-orch',
+                toolName: 'workflow',
+                providerIdentity: 'a5p5-plane',
+              },
+              childChain: bOrchChildChain,
+              templateId,
+              settlement: { rootSessionId: rootSid, workDelivery },
               observe: (row) => observations.push(`a5m2-b-orchestration-run: ${String(row?.event ?? 'event')}`),
             })
             if (runProvider.ok === false) {
