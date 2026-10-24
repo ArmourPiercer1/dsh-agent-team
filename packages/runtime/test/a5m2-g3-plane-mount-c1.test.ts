@@ -117,6 +117,12 @@ const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs
 const createTeamToolPlaneAssembly = PLANE_ROW.createTeamToolPlaneAssembly
 const { registerA5GovernedFamily, a5GovernedFamilyFor } = REGISTRY
 
+// THE PRODUCTION ROUTE-IDENTITY LAW (user ruling 2): the spec world answers
+// backend() with the SAME helper the live capture calls verbatim.
+const G3W = (await import(new URL('../src/plugin/live/governed-families/g3-terminal-wiring.mjs', import.meta.url).href)) as {
+  a5G3RouteIdentity: (input: Record<string, unknown>) => Readonly<{ registrationId: string, incarnation: string }> | null
+}
+
 const PARAMS: Record<string, Record<string, unknown>> = {
   terminal_open: { type: 'object', properties: { type: { type: 'string' }, name: { type: 'string' }, cwd: { type: 'string' } }, required: ['type'], additionalProperties: false },
   // REAL-SHAPE fidelity (root 01:1x, @639 tool-terminal src/index.ts:199-208):
@@ -184,9 +190,14 @@ function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | unde
   }
 }
 
-function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown> } = {}) {
+function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown>; route?: { reads: number, revokeAfter: number, generation: { value: string, revoked: boolean } } } = {}) {
   const portCalls = opts.portCalls ?? []
   const absent = new Set(opts.absent ?? [])
+  // THE MOUNT GENERATION (ruling 2 (a)) in spec shape: one value per
+  // mount-world; `route.revokeAfter` arms a revoke that flips the generation
+  // on the read AFTER the Nth - the classify-vs-entry window the adapter's
+  // entry recheck polices.
+  const route = opts.route ?? { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-spec-1', revoked: false } }
   // THE LIVE SNAPSHOT SOURCE (root 21:36: the CONTROL/QUERY rows ride live
   // facts): one mutable snapshot list feeds BOTH the terminals face's list()
   // and the producer-shaped session() resolution (pid-derived incarnation,
@@ -223,7 +234,17 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
     sessionHeaderId: HEADER,
     declaredBackends: ['shell'],
     ptyService: {
-      backend: (type: string) => (type === 'shell' ? { registrationId: 'reg-shell-1', incarnation: 'inc-1', processEnvelope: { sandbox: 'landlock' } } : null),
+      backend: (type: string) => {
+        // ROUTE-LEG MODE (ruling 2 (k)-route): when a mount-generation route is
+        // supplied, backend() answers through the PRODUCTION helper exactly as
+        // agent-bindings does; otherwise the legacy spec stub stays byte-kept.
+        if (opts.route !== undefined) {
+          route.reads += 1
+          if (route.reads > route.revokeAfter) route.generation.revoked = true
+          return G3W.a5G3RouteIdentity({ type, declared: ['shell'], live: ['shell'], generation: route.generation })
+        }
+        return type === 'shell' ? { registrationId: 'reg-shell-1', incarnation: 'inc-1', processEnvelope: { sandbox: 'landlock' } } : null
+      },
       session: (ownerAgentId: string, sessionId: string) => {
         if (ownerAgentId !== MEMBER || sessionId !== 'pty-1') return null
         // producer-shaped derivation from the LIVE snapshot (pid-derived
@@ -808,6 +829,90 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
       expect(portCalls.filter((c) => c === 'kill'), 'cancel is not close — the PTY stayed untouched').toEqual([])
       expect(opCancelled, 'the post-commit abort did NOT retract the accepted job').toBe(0)
       await hooks!.done
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(k) the ROUTE IDENTITY + MOUNT GENERATION law (user ruling 2): backend() answers THIS mount\'s controlled route, the generation pairs construction and entry, and a generation revoked inside that window refuses at the entry with ZERO effects — an approval under a dead generation never replays', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const portCalls: string[] = []
+    const route = { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-k', revoked: false } }
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const w = makeInject({ portCalls, route })
+    // (c) THE ANSWER IS THE ROUTE, NOT A PUBLIC BACKEND: the stable id is
+    // this mount's per-open one-shot family (the adapter's own id space);
+    // (a) the incarnation is the MOUNT GENERATION — stable across reads.
+    const pty = w.inject.ptyService as { backend: (t: string) => unknown }
+    const first = pty.backend('shell')
+    const second = pty.backend('shell')
+    expect(first).toEqual({ registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-k' })
+    expect(second, 'the same living generation answers identically (construction pairs the entry recheck)').toEqual(first)
+    expect(pty.backend('docker'), 'an undeclared type answers nothing').toBeNull()
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const open = built.value.definitions.find((d) => d.name === 'terminal_open') as Definition
+      // ARM THE WINDOW: the NEXT backend read (approval-time) still answers
+      // the living generation; the read AFTER it (the adapter's entry
+      // recheckTarget) flips the generation to REVOKED — exactly what a
+      // replaced/unmounted generation does to an in-flight call. The entry
+      // refuses with its own word, naming the loss, BEFORE any port entry.
+      route.revokeAfter = route.reads + 1
+      await expect(open.execute({ type: 'shell', name: 'k-run' }, { token: { k: 'g3-k-open' }, agent: AGENT }))
+        .rejects.toThrow(/P_TERM_TARGET_DRIFT[\s\S]*dsh-g3-po:shell@mount-gen-k -> unresolvable/)
+      expect(portCalls.filter((c) => ['startSend', 'read', 'signal', 'kill', 'list'].includes(c)), 'refused at the entry — ZERO service effects').toEqual([])
+      // NO STALE REPLAY (a): with the generation dead, every later read —
+      // including a fresh call's approval-time read — answers NOTHING, so
+      // the row fails closed at TARGET_UNRESOLVED before any admission walk.
+      const walksBefore = seen.length
+      await expect(open.execute({ type: 'shell', name: 'k-replay' }, { token: { k: 'g3-k-replay' }, agent: AGENT }))
+        .rejects.toThrow(/P_TERM_TARGET_UNRESOLVED/)
+      expect(seen.length, 'the dead-generation refusal happens before the PA walk — no approval is minted, spent, or replayed').toBe(walksBefore)
     } finally {
       registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
     }
