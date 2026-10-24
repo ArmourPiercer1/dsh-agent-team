@@ -137,15 +137,28 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
     if [ -s "$OUT/home.txt" ]; then
       W=$(tr -d '\n' < "$OUT/home.txt" 2>/dev/null) || BREACH="home-pointer read failed"
       if [ -z "$BREACH" ] && [ -n "$W" ] && [ -d "$W" ]; then
-        NB=$(find "$W" -type f -links 1 -printf '%s\n' 2>/dev/null | awk '{t+=$1} END {print t+0}') || BREACH="HOME byte sampling failed"
-        [ -z "$BREACH" ] || BREACH="HOME byte sampling failed"
-        if [ -z "$BREACH" ] && [ "$NB" -gt "$HOME_BUDGET" ]; then BREACH="HOME new bytes ${NB} exceeded budget ${HOME_BUDGET} (in-flight hard stop)"; fi
+        # BUDGET ACCOUNTING LAW (root final口径): walk THIS HOME only, never
+        # following symlinks (find does not dereference by default) — read-only
+        # shared dependency targets (node_modules etc.) are never pulled in;
+        # every real file counts ONCE BY UNIQUE dev:inode (plain du-style, no
+        # deref), so links>1 files this run creates are NOT silently dropped the
+        # way an nlink==1 filter dropped them. Shared links stay read-only;
+        # runtime writes are real files inside HOME.
+        # '|| BREACH=' is load-bearing: under set -e + pipefail an UNGUARDED
+        # sampler that fails would KILL this subshell — no breach, no TERM, and
+        # the parent's 'wait || true' swallows the death (root reliability card).
+        NB=$(find "$W" -xdev -type f -printf '%d:%i %s\n' 2>/dev/null | sort -u -k1,1 | awk '{t+=$2} END {printf "%.0f\n", t}') || BREACH="HOME byte sampling failed"
+        case "$NB" in ''|*[!0-9]*) if [ -z "$BREACH" ]; then BREACH="HOME sample not decimal: '${NB}'"; fi ;; esac
+        if [ -z "$BREACH" ] && [ "$NB" -gt "$HOME_BUDGET" ]; then BREACH="HOME bytes (unique inodes) ${NB} exceeded budget ${HOME_BUDGET} (in-flight hard stop)"; fi
       fi
     fi
     if [ -z "$BREACH" ]; then
-      AV2=$(df -m "$REPO_WT" 2>/dev/null | awk 'NR==2 {print $4*1048576}')
-      if [ -z "$AV2" ]; then BREACH="df sampling failed (monitor broken => fail closed)"
-      elif [ "$AV2" -lt "$DF_MIN" ]; then BREACH="df avail ${AV2} B fell below the ${DF_MIN} B bar"; fi
+      # SAME decimal sampler as the pre-check (df -B1 --output=avail, plain
+      # decimal bytes — never an awk product fed to -lt); guarded so failure is
+      # a RECORDED breach flowing the recorded OWN-PGID finalization.
+      AV2=$(df -B1 --output=avail "$REPO_WT" 2>/dev/null | tail -1 | tr -d ' ') || BREACH="df sampling failed (monitor broken => fail closed)"
+      case "$AV2" in ''|*[!0-9]*) if [ -z "$BREACH" ]; then BREACH="df sample not decimal: '${AV2}'"; fi ;; esac
+      if [ -z "$BREACH" ] && [ "$AV2" -lt "$DF_MIN" ]; then BREACH="df avail ${AV2} B fell below the ${DF_MIN} B bar"; fi
     fi
     if [ -n "$BREACH" ]; then
       printf '{ "breachAt": "%s", "reason": "%s" }\n' "$(date -u +%FT%TZ)" "$BREACH" > "$OUT/budget-breach.json"
@@ -192,8 +205,9 @@ if [ -s "$OUT/home.txt" ]; then WORLD=$(tr -d '\n' < "$OUT/home.txt"); else fail
 [ -d "$WORLD" ] || fail "pointed HOME absent at ${WORLD} — raw retention law broken?" 1
 echo "HOME (explicit pointer): ${WORLD}"
 [ -f "$WORLD/a5m2-g5-hw-lock.json" ] && echo "world lock retained: $WORLD"
-NEWB=$(find "$WORLD" -type f -links 1 -printf '%s\n' 2>/dev/null | awk '{t+=$1} END {print t+0}')
-echo "HOME new bytes (nlink==1): ${NEWB} (budget ${HOME_BUDGET})"
+NEWB=$(find "$WORLD" -xdev -type f -printf '%d:%i %s\n' 2>/dev/null | sort -u -k1,1 | awk '{t+=$2} END {printf "%.0f\n", t}') || NEWB="sampling-failed"
+case "$NEWB" in ''|*[!0-9]*) fail "HOME byte accounting failed ('${NEWB}') — cannot certify the budget law" 1 ;; esac
+echo "HOME bytes (unique dev:inode, no symlink-deref): ${NEWB} (budget ${HOME_BUDGET})"
 FIX_LOCK_AFTER=$(sha256sum "$A5M2_G5_INSTALL_DIR/pnpm-lock.yaml" | cut -d' ' -f1)
 FIX_PKG_AFTER=$(sha256sum "$A5M2_G5_INSTALL_DIR/package.json" | cut -d' ' -f1)
 { [ "$FIX_LOCK_BEFORE" = "$FIX_LOCK_AFTER" ] && [ "$FIX_PKG_BEFORE" = "$FIX_PKG_AFTER" ]; } \
