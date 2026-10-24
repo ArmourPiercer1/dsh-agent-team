@@ -638,10 +638,25 @@ describe('a5m2-g1-query-wiring: the pure-query G1 wiring candidate over the VERB
         bindingFacts: BINDINGS,
         admit: async () => ({ ok: true }),
       }
-      for (const arm of ['controlledInstall', 'installFace', 'hostEscalation']) {
+      // CONSOLIDATED CARD 2026-10-25 (user 09:03:32: 只管理安装动作即可):
+      // 'controlledInstall' (B-DEPENDENCY) stays refused everywhere, by the
+      // top-level byte law UNTOUCHED. installFace/hostEscalation became a
+      // named arms bag: the top-level spellings are unknown inputs (the
+      // candidate takes no resource key at the top), and the bag itself is
+      // ARM_NOT_ACCEPTED unless the mounted row set is exactly B-PLUGIN.
+      {
+        const refused = WIRE.createG1QueryWiring({ ...base, controlledInstall: { present: true } })
+        expect(refused.ok).toBe(false)
+        expect(refused.ok === false && refused.code).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED)
+      }
+      for (const arm of ['installFace', 'hostEscalation']) {
         const refused = WIRE.createG1QueryWiring({ ...base, [arm]: { present: true } })
         expect(refused.ok, arm).toBe(false)
-        expect(refused.ok === false && refused.code, arm).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED)
+        expect(refused.ok === false && refused.code, arm).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.INPUT_INVALID)
+        const armed = WIRE.createG1QueryWiring({ ...base, arms: { [arm]: { present: true } } })
+        expect(armed.ok, arm).toBe(false)
+        expect(armed.ok === false && armed.code, arm).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED)
+        expect(armed.ok === false && armed.message, arm).toContain('exactly the B-PLUGIN supply')
       }
       for (const port of ['pluginFacts', 'dependencyFacts', 'trustedCatalog', 'domainPortRegistry']) {
         const refused = WIRE.createG1QueryWiring({ ...base, ports: { trustedTopology: TOPOLOGY, [port]: { current: () => ({}) } } })

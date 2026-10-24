@@ -2225,6 +2225,36 @@ export async function apply(ctx, config) {
             // 639 global-store token; sandboxPolicy is the ctx property beside it).
             sandbox: () => ctx.get('sandbox'),
             sandboxPolicy: () => ctx.sandboxPolicy,
+            // A5M2-G1-WIRE B-PLUGIN install seams — call-time reads, honest absence
+            // (an unregistered token throws at ctx.get; the reader answers undefined
+            // and the plugin install lane keeps its adapter-edge fail-closed posture).
+            pluginManager: () => { try {
+                return ctx.get('pluginManager');
+            }
+            catch {
+                return undefined;
+            } },
+            profileContext: () => { try {
+                return ctx.get('profileContext');
+            }
+            catch {
+                return undefined;
+            } },
+            pluginApproval: () => { try {
+                return ctx.get('approval');
+            }
+            catch {
+                return undefined;
+            } },
+            pluginApproveEscalation: async () => {
+                try {
+                    const mod = (await import('@deepseek-ai/dsh-sandbox'));
+                    return typeof mod.approveEscalation === 'function' ? mod.approveEscalation : undefined;
+                }
+                catch {
+                    return undefined;
+                }
+            },
             // A5M2 G3 B-PTC run_code GUARD (root final limited ruling, the real
             // supply line — see the type declaration above): the LIVE registered
             // PTC runtime instance through the SAME 639 global-store token the

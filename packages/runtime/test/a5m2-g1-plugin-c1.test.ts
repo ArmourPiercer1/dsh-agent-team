@@ -13,9 +13,12 @@
  * Governance semantics mirror the signed Control-family law: the closed
  * table is an approval FLOOR (never an enablement), the captured native
  * keeps its own caller/leader/escalation ceiling (bindBody), and the
- * install_bundle manager entry stays refused with zero manager entry until
- * a deployer mounts the Host gate seams (the wiring refuses those arms in
- * EVERY world).
+ * install_bundle manager entry rode, since the consolidated card of
+ * 2026-10-25 (user 09:03:32: 只管理安装动作即可), the REAL public chain: the
+ * wiring accepts installFace/hostEscalation ONLY for the exactly-B-PLUGIN
+ * row set — every other world keeps the byte-stable refusal — the formal
+ * Team-PA consumption runs AFTER the Host grant with a fresh binding/policy/
+ * authority re-read, and an INSTALL-PENDING is never returned as settled.
  */
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -227,7 +230,8 @@ describe('A5M2-G1-PLUGIN-C1 — the 639 face, the closed table, and the mint at 
     expect(src).toContain("plugin supply DARK for ${sessionId}")
     expect(src).toContain('plugin supply ARMED')
     expect(src).toContain('subset: g1PluginSupplySubset(),')
-    expect(src).toContain('pluginFacts: { current: () => g1PluginFactsCfg },')
+    expect(src).toContain('pluginFacts: g1PluginFactsLive,')
+    expect(src).toContain('DISAGREES with the live profile context')
     expect(src).toContain('governed B-PLUGIN row PLACED')
     // the attribution hoist answers the UNION of armed derived names, null dark
     expect(src).toContain('if (g1SupplyCfg.plugin === true) armedNames.push(...g1PluginSupplySubset().map((row) => row.name))')
@@ -236,8 +240,196 @@ describe('A5M2-G1-PLUGIN-C1 — the 639 face, the closed table, and the mint at 
     expect(wiring).toContain("subsetIsPluginOnly ? [...ALLOWED_PORTS, 'pluginFacts'] : ALLOWED_PORTS")
     // the three resource arms stay refused in EVERY world — install enters
     // only through the adapter L5 edge, which today refuses zero-manager-entry
-    expect(wiring).toContain("FORBIDDEN_ARMS = Object.freeze(['controlledInstall', 'installFace', 'hostEscalation'])")
+    // CONSOLIDATED CARD 2026-10-25: installFace/hostEscalation are no
+    // longer top-level forbidden arms; the arm law is the named bag plus the
+    // exactly-B-PLUGIN gate, and controlledInstall stays byte-refused.
+    expect(wiring).toContain("const FORBIDDEN_ALWAYS_ARMS = Object.freeze(['controlledInstall'])")
+    expect(wiring).toContain("for (const key of Object.keys(armsIn)) {")
     const plane = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../src/plugin/live/team-tool-plane.mjs'), 'utf8')
     expect(plane).toContain('(g1ArmInject.names !== undefined && g1ArmInject.names.includes(spelling))')
+  })
+})
+
+// ── CONSOLIDATED CARD 2026-10-25 (user 09:03:32): install_bundle rides the
+//    REAL public chain. The wiring accepts installFace/hostEscalation ONLY
+//    for the exact B-PLUGIN row set (controlledInstall stays refused in
+//    every world); the formal Team-PA consumption runs AFTER the Host grant
+//    with a fresh binding/policy/authority re-read; an INSTALL-PENDING is
+//    never handed back as a settled answer — the call rides to the observed
+//    ChangeResult or throws. Tier stays 接线未测: these legs pin the REAL
+//    wiring module and the manager CONTRACT face, not a live Host. ─────────
+interface G1WiringModule {
+  createG1QueryWiring: (input: Record<string, unknown>) => {
+    ok?: boolean
+    code?: string
+    detail?: string
+    definitions?: Array<{ name?: string; execute?: (args: unknown, exec: unknown) => Promise<string> }>
+  }
+  g1PureQuerySubset: () => unknown[]
+  g1PluginSupplySubset: () => unknown[]
+}
+const W = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as unknown as G1WiringModule
+
+describe('A5M2-G1-PLUGIN-C1 — the armed install lane on the real wiring module (consolidated card 2026-10-25; tier 接线未测)', () => {
+  const PLUGIN_NATIVE = {
+    name: 'plugin_manager',
+    description: 'wire double of the 639 face',
+    parameters: { type: 'object', properties: {} },
+    output: { schema: { type: 'string' }, render: (value: unknown) => String(value) },
+    execute: async () => ('{"installed":false,"note":"the captured native is never entered on the install lane"}'),
+  }
+
+  it('arms are accepted ONLY for the exactly-B-PLUGIN row set — a pure-query subset carrying them answers the byte-stable ARM_NOT_ACCEPTED (controlledInstall stays refused everywhere)', () => {
+    const order: string[] = []
+    const installFace = { installBundle: async () => ({}), waitForInstall: async () => null, cancelInstall: async () => ({ status: 'not-running' }) }
+    const hostEscalation = { sandboxPolicy: { resolve: () => ({ mode: 'workspace-write' }) }, approver: undefined, approveEscalation: async () => 'danger-full-access' }
+    const refused = W.createG1QueryWiring({
+      providerId: 'a5p5-plane',
+      subset: W.g1PureQuerySubset(),
+      captured: {},
+      placementFeed: () => undefined,
+      trusted: TRUSTED,
+      bindingFacts: () => ({}),
+      arms: { installFace, hostEscalation },
+      admit: async () => ({ ok: true }),
+      observe: () => {},
+    })
+    expect(refused.ok).not.toBe(true)
+    expect(refused.code).toContain('ARM_NOT_ACCEPTED')
+    expect(refused.message).toContain('exactly the B-PLUGIN supply')
+    void order
+  })
+
+  it('arms.installFace missing the lifecycle face is refused AT ASSEMBLY (never discovered at the edge): waitForInstall/cancelInstall are part of the @Remote contract', () => {
+    const refused = W.createG1QueryWiring({
+      providerId: 'a5p5-plane',
+      subset: W.g1PluginSupplySubset(),
+      captured: { plugin_manager: { native: PLUGIN_NATIVE, definitionIdentity: 'provider@sha#entry#hash' } },
+      placementFeed: () => ({ definitionIdentity: 'provider@sha#entry#hash', realmId: TRUSTED.realmId }),
+      trusted: TRUSTED,
+      bindingFacts: () => ({ bindingId: 'b1', bindingRevision: 1, policyGeneration: 1, authorityGeneration: 1 }),
+      ports: { pluginFacts: { current: () => FACTS } },
+      arms: { installFace: { installBundle: async () => ({}) } },
+      admit: async () => ({ ok: true }),
+      observe: () => {},
+    })
+    expect(refused.ok).not.toBe(true)
+    expect(refused.message).toContain('installBundle, waitForInstall, cancelInstall')
+  })
+
+  it('install rides to its observed end: grant BEFORE admit BEFORE enter (fresh consumption after the Host approval); the value is the OBSERVED ChangeResult — INSTALL-PENDING is never the answer', async () => {
+    const order: string[] = []
+    const installs: unknown[] = []
+    let settleInstall: (value: unknown) => void = () => {}
+    const wiring = W.createG1QueryWiring({
+      providerId: 'a5p5-plane',
+      subset: W.g1PluginSupplySubset(),
+      captured: { plugin_manager: { native: PLUGIN_NATIVE, definitionIdentity: 'provider@sha#entry#hash' } },
+      placementFeed: () => ({ definitionIdentity: 'provider@sha#entry#hash', realmId: TRUSTED.realmId }),
+      trusted: TRUSTED,
+      bindingFacts: () => ({ bindingId: 'b1', bindingRevision: 1, policyGeneration: 1, authorityGeneration: 1 }),
+      ports: { pluginFacts: { current: () => FACTS } },
+      arms: {
+        installFace: {
+          installBundle: (spec: unknown, options: unknown) => {
+            order.push('enter')
+            installs.push({ spec, options })
+            return new Promise((resolve) => { settleInstall = resolve })
+          },
+          waitForInstall: async () => null,
+          cancelInstall: async () => ({ status: 'not-running', completionImplied: false }),
+        },
+        hostEscalation: {
+          sandboxPolicy: { resolve: () => ({ mode: 'workspace-write' }) },
+          approver: { request: async () => 'allowed-once' },
+          approveEscalation: async () => {
+            await Promise.resolve()
+            order.push('grant')
+            return 'danger-full-access'
+          },
+        },
+      },
+      admit: async () => {
+        order.push('admit')
+        return { ok: true }
+      },
+      observe: () => {},
+    })
+    expect(wiring.ok).toBe(true)
+    const definition = wiring.definitions?.find((d) => d.name === 'plugin_manager')
+    expect(typeof definition?.execute).toBe('function')
+    const changed = { changed: true, application: 'applied', stage: 'install', target: './local-bundle' }
+    setTimeout(() => settleInstall(changed), 0)
+    const value = await definition!.execute!({ action: 'install_bundle', target: './local-bundle' }, {
+      callId: 'call-w1',
+      agent: { id: 'agent-a5m2' },
+      signal: new AbortController().signal,
+    })
+    expect(order).toEqual(['grant', 'admit', 'enter'])
+    expect(installs.length).toBe(1)
+    expect(JSON.parse(String(value))).toMatchObject(changed)
+  })
+
+  it('a plane refusal at the post-grant consume boundary throws typed with ZERO manager entry — the answer is the plane verdict, the granted escalation is consumed by nothing', async () => {
+    const order: string[] = []
+    const installs: unknown[] = []
+    const wiring = W.createG1QueryWiring({
+      providerId: 'a5p5-plane',
+      subset: W.g1PluginSupplySubset(),
+      captured: { plugin_manager: { native: PLUGIN_NATIVE, definitionIdentity: 'provider@sha#entry#hash' } },
+      placementFeed: () => ({ definitionIdentity: 'provider@sha#entry#hash', realmId: TRUSTED.realmId }),
+      trusted: TRUSTED,
+      bindingFacts: () => ({ bindingId: 'b1', bindingRevision: 1, policyGeneration: 1, authorityGeneration: 1 }),
+      ports: { pluginFacts: { current: () => FACTS } },
+      arms: {
+        installFace: {
+          installBundle: () => { installs.push(1); return new Promise(() => {}) },
+          waitForInstall: async () => null,
+          cancelInstall: async () => ({ status: 'not-running', completionImplied: false }),
+        },
+        hostEscalation: {
+          sandboxPolicy: { resolve: () => ({ mode: 'workspace-write' }) },
+          approver: { request: async () => 'allowed-once' },
+          approveEscalation: async () => 'danger-full-access',
+        },
+      },
+      admit: async () => {
+        order.push('admit')
+        return { ok: false, code: 'P_TEAM_LEDGER_FULL', detail: 'seat ledger refused' }
+      },
+      observe: () => {},
+    })
+    const definition = wiring.definitions?.find((d) => d.name === 'plugin_manager')
+    await expect(definition!.execute!({ action: 'install_bundle', target: './local-bundle' }, {
+      callId: 'call-w2',
+      agent: { id: 'agent-a5m2' },
+      signal: new AbortController().signal,
+    })).rejects.toThrow(/seat ledger refused/)
+    expect(order).toEqual(['admit']) // the plane was asked at the post-grant boundary; nothing entered
+    expect(installs.length).toBe(0)
+  })
+
+  it('source pins — the card law is written into the shipped bytes (arm split, deferred admit, lifecycle closure, fresh consume, aligned facts, host seams)', () => {
+    const read = (rel: string) => readFileSync(join(dirname(fileURLToPath(import.meta.url)), rel), 'utf8')
+    const wiring = read('../src/plugin/live/governed-families/g1-query-wiring.mjs')
+    expect(wiring).toContain("const FORBIDDEN_ALWAYS_ARMS = Object.freeze(['controlledInstall'])")
+    expect(wiring).toContain('const FORBIDDEN_ALWAYS_ARMS')
+    expect(wiring).toContain('accepts installFace/hostEscalation ONLY for a mounted row set that is exactly the B-PLUGIN supply')
+    expect(wiring).toContain("const isPluginInstall = entry.familyId === 'B-PLUGIN'")
+    expect(wiring).toContain('g1-wire:install-SETTLED-OBSERVED')
+    expect(wiring).toContain('the row never claims an unobserved completion')
+    const adapters = read('../src/plugin/live/governed-families/g1-surface-adapters.mjs')
+    expect(adapters).toContain("if (typeof ctx.consumeAfterGrant === 'function') {")
+    expect(adapters).toContain('moved during the awaited Host gate')
+    expect(adapters).toContain('the row never fakes an approval; zero manager entry happened')
+    const bindings = read('../src/plugin/live/agent-bindings.mjs')
+    expect(bindings).toContain('DISAGREES with the live profile context')
+    expect(bindings).toContain('installBundle: (spec, options) => g1PluginManager.installBundle(spec, options)')
+    expect(bindings).toContain('the row never substitutes its own adjudicator')
+    const host = read('../src/plugin/host.ts')
+    expect(host).toContain("try { return ctx.get('pluginManager') } catch { return undefined }")
+    expect(host).toContain("@deepseek-ai/dsh-sandbox")
+    const assembly = read('../src/plugin/live/governed-families/g1-query-assembly.mjs')
+    expect(assembly).toContain('installFace must be a record (the LIVE manager lifecycle face')
   })
 })

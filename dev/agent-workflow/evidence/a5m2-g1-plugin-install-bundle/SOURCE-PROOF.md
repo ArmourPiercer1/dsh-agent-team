@@ -80,3 +80,30 @@ Every assertion = raw RC + log path; tier stays 接线未测 until this plan has
   closed table/registration path, zero live-Host evidence. NEVER call this 已测试.
 - install_bundle: TARGET pairing complete; ENTRY mount NOT supplied (L5 refuses fail-closed, zero manager entry).
   The only new knowledge this round is the public-chain proof above; NO behavior change.
+
+## 7. ADDENDUM — the card landed (user 09:03:32: 只管理安装动作即可) — SHIPPED this round
+- The pure-query construction HOLD is withdrawn FOR THE PLUGIN INSTALL SUPPLY ONLY: the wiring now
+  accepts a named `arms` bag {installFace?, hostEscalation?} ONLY when the mounted row set is exactly
+  the B-PLUGIN supply; `controlledInstall` (B-DEPENDENCY) stays refused in every world (B-DEPENDENCY
+  禁臂保); every other subset keeps the byte-stable refusal. FORBIDDEN top-level spellings became
+  INPUT_INVALID unknown-inputs (named-bag law).
+- installFace = the LIVE manager face via host.ts `pluginManager: () => ctx.get('pluginManager')`
+  (same service as tool + Web controls — no fork); hostEscalation = exported approveEscalation (lazy
+  dynamic import per the dsh-launch-environment precedent) + tool-ctx sandboxPolicy + ctx.get('approval').
+- TIMING: the formal Team-PA consumption (admit) for install_bundle runs AFTER the Host grant, behind
+  the adapter's fresh binding/policy/authority re-read (moved tuple → DEFINITION_DRIFT, zero manager
+  entry); the thunk answers with the PLANE's real admit verdict — a callback faking approved is
+  impossible by construction. All 7 shipped actions keep classify→admit→delegate byte-for-byte.
+- LIFECYCLE: an INSTALL-PENDING is never returned as settled; execute() rides wait() to the observed
+  ChangeResult (listener-recorded + waitForInstall-confirmed) or throws typed.
+- pluginFacts ALIGNMENT: locators derive from the live profileContext.dir (package.json RESTORED_FILES
+  :78-79; compatibility.json PROFILE_COMPATIBILITY_FILENAME :10; bundles join(dir,name) :701); the
+  deployer's static closure may only fill gaps and a DISAGREEMENT refuses the mount; registries
+  re-read live from the manager's @Remote registries() (@:324-331) snapshot over the config pair.
+- Matrix honesty: the internal installer's pnpm/IO stays the HOST's sandbox domain — the entry PA
+  governs the Agent install ACTION only and never claims internal isolation.
+- Dependency DECLARATION (minimal actual plan, NOT installed — 勿自行安装): add
+  `"@deepseek-ai/dsh-sandbox": "0.2.0-rc.2"` to packages/runtime/package.json dependencies + pnpm
+  install (lock churn). Until then the dynamic import resolves inside the live Host (same precedent
+  class as the existing dsh-launch-environment/dsh-tool-web TS2307 lines) and answers undefined in
+  the workspace test world, where install stays fail-closed at the adapter edge.

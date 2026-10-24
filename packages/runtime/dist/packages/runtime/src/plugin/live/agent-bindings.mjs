@@ -5877,14 +5877,105 @@ export function createAgentBindings(deps) {
               `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': g1PureQuery.plugin must be exactly true when present (found ${JSON.stringify(g1Cfg.plugin) ?? String(g1Cfg.plugin)}) — the B-PLUGIN supply is a CLOSED grammar`,
             ), { code: 'alpha5-g1-arm-mount-refused' })
           }
+          // pluginFacts ALIGNMENT (card 2026-10-25: 部署静态闭包需对齐真实
+          // Host profile/registry). The profile locators ride the LIVE
+          // profileContext.dir — the SAME service the manager itself hangs
+          // its facts off (639 index.ts:177/:209; package.json at
+          // RESTORED_FILES :78-79, compatibility.json at app-boot
+          // PROFILE_COMPATIBILITY_FILENAME :10, bundles land at
+          // join(dir, name) @index.ts:701). The deployer's static closure
+          // may only FILL what the live seam cannot answer; when both speak
+          // and disagree, the mount refuses (alignment, never silent). The
+          // registries are re-read live from the manager's own @Remote
+          // registries() face (@:324-331) into a snapshot that OVERWRITES
+          // the config pair at read time; the cache locator has no public
+          // derivation and stays a deployer fact.
           const g1PluginFactsCfg = g1IsRecord && g1Cfg.plugin === true ? g1Cfg.pluginFacts : undefined
-          if (g1IsRecord && g1Cfg.plugin === true && !(typeof g1PluginFactsCfg === 'object' && g1PluginFactsCfg !== null && !Array.isArray(g1PluginFactsCfg)
-            && ['profileConfigLocator', 'installRootLocator', 'cacheRootLocator', 'exemptionsLocator'].every((key) => typeof g1PluginFactsCfg[key] === 'string' && g1PluginFactsCfg[key].length > 0)
-            && Array.isArray(g1PluginFactsCfg.allowedRegistries) && Array.isArray(g1PluginFactsCfg.fallbackRegistries))) {
+          if (g1IsRecord && g1Cfg.plugin === true && g1PluginFactsCfg !== undefined
+            && !(typeof g1PluginFactsCfg === 'object' && g1PluginFactsCfg !== null && !Array.isArray(g1PluginFactsCfg)
+              && Array.isArray(g1PluginFactsCfg.allowedRegistries) && Array.isArray(g1PluginFactsCfg.fallbackRegistries)
+              && (g1PluginFactsCfg.cacheRootLocator === undefined || (typeof g1PluginFactsCfg.cacheRootLocator === 'string' && g1PluginFactsCfg.cacheRootLocator.length > 0)))) {
             throw Object.assign(new Error(
-              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': g1PureQuery.plugin=true needs pluginFacts — { profileConfigLocator, installRootLocator, cacheRootLocator, exemptionsLocator: non-empty strings; allowedRegistries, fallbackRegistries: arrays } (the trusted profile facts the write envelope is enumerated from; a plugin row without them refuses every call and must not be armed)`,
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': g1PureQuery.pluginFacts must answer { allowedRegistries, fallbackRegistries: arrays; cacheRootLocator?: non-empty string (no public derivation — deployer fact); optional locator overrides only if they AGREE with the live profile context }`,
             ), { code: 'alpha5-g1-arm-mount-refused' })
           }
+          const g1ProfileCtxSeam = typeof deps.profileContext === 'function' ? deps.profileContext() : undefined
+          const g1ProfileDir = typeof g1ProfileCtxSeam?.dir === 'string' && g1ProfileCtxSeam.dir.length > 0 ? g1ProfileCtxSeam.dir : null
+          const g1PluginManager = typeof deps.pluginManager === 'function' ? deps.pluginManager() : undefined
+          if (g1IsRecord && g1Cfg.plugin === true && g1ProfileDir === null
+            && !(g1PluginFactsCfg !== undefined && ['profileConfigLocator', 'installRootLocator', 'exemptionsLocator'].every((key) => typeof g1PluginFactsCfg[key] === 'string' && g1PluginFactsCfg[key].length > 0))) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': g1PureQuery.plugin=true needs the live profileContext seam OR a pluginFacts closure spelling profileConfigLocator/installRootLocator/exemptionsLocator — the write envelope must be enumerated from real profile facts, never guessed`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          if (g1IsRecord && g1Cfg.plugin === true && g1ProfileDir !== null && g1PluginFactsCfg !== undefined) {
+            const g1Derived = { profileConfigLocator: `${g1ProfileDir}/package.json`, installRootLocator: g1ProfileDir, exemptionsLocator: `${g1ProfileDir}/compatibility.json` }
+            for (const [key, liveValue] of Object.entries(g1Derived)) {
+              const claimed = g1PluginFactsCfg[key]
+              if (claimed !== undefined && claimed !== liveValue) {
+                throw Object.assign(new Error(
+                  `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': pluginFacts.${key} '${String(claimed)}' DISAGREES with the live profile context ('${liveValue}') — the static closure aligns to the real Host or the mount refuses; two truths about one profile are the drift this family exists to refuse`,
+                ), { code: 'alpha5-g1-arm-mount-refused' })
+              }
+            }
+          }
+          let g1LiveRegistries = null
+          let g1RegistriesFlight = null
+          const g1RefreshRegistries = () => {
+            if (g1RegistriesFlight !== null || typeof g1PluginManager?.registries !== 'function') return
+            g1RegistriesFlight = Promise.resolve(g1PluginManager.registries()).then(
+              (face) => {
+                if (typeof face?.registry === 'string' && Array.isArray(face?.fallbackRegistries)) {
+                  g1LiveRegistries = { allowedRegistries: [face.registry], fallbackRegistries: [...face.fallbackRegistries] }
+                }
+              },
+              () => {},
+            ).finally(() => { g1RegistriesFlight = null })
+          }
+          const g1PluginFactsLive = {
+            current: () => {
+              g1RefreshRegistries()
+              const base = typeof g1ProfileDir === 'string'
+                ? { profileConfigLocator: `${g1ProfileDir}/package.json`, installRootLocator: g1ProfileDir, exemptionsLocator: `${g1ProfileDir}/compatibility.json` }
+                : { profileConfigLocator: g1PluginFactsCfg?.profileConfigLocator, installRootLocator: g1PluginFactsCfg?.installRootLocator, exemptionsLocator: g1PluginFactsCfg?.exemptionsLocator }
+              const registries = g1LiveRegistries ?? (Array.isArray(g1PluginFactsCfg?.allowedRegistries) && Array.isArray(g1PluginFactsCfg?.fallbackRegistries)
+                ? { allowedRegistries: [...g1PluginFactsCfg.allowedRegistries], fallbackRegistries: [...g1PluginFactsCfg.fallbackRegistries] }
+                : null)
+              if (registries === null || typeof g1PluginFactsCfg?.cacheRootLocator !== 'string') return undefined
+              return { ...base, cacheRootLocator: g1PluginFactsCfg.cacheRootLocator, ...registries }
+            },
+          }
+          // THE INSTALL ARMS (user ruling 09:03:32): the LIVE manager
+          // lifecycle face (the SAME service the tool and the Web controls
+          // share — no fork) and the Host gate ingredients (the EXPORTED
+          // adjudicator, the tool-ctx sandboxPolicy, the approval channel).
+          // Built ONCE (stable identities — the adapter's drift law compares
+          // by reference). Absent seams stay absent: install_bundle then
+          // refuses at the adapter L5 edge with zero manager entry. These
+          // seams serve the install action ONLY — nothing else reads them.
+          const g1InstallFace = typeof g1PluginManager?.installBundle === 'function'
+            && typeof g1PluginManager.waitForInstall === 'function'
+            && typeof g1PluginManager.cancelInstall === 'function'
+            ? Object.freeze({
+              installBundle: (spec, options) => g1PluginManager.installBundle(spec, options),
+              waitForInstall: (requestId) => g1PluginManager.waitForInstall(requestId),
+              cancelInstall: (requestId) => g1PluginManager.cancelInstall(requestId),
+            })
+            : null
+          const g1HostSandboxPolicy = typeof deps.sandboxPolicy === 'function' ? deps.sandboxPolicy() : undefined
+          const g1HostEscalation = typeof deps.pluginApproveEscalation === 'function'
+            ? Object.freeze({
+              sandboxPolicy: g1HostSandboxPolicy,
+              approver: typeof deps.pluginApproval === 'function' ? deps.pluginApproval() : undefined,
+              approveEscalation: async (request, approval) => {
+                const adjudicator = await deps.pluginApproveEscalation()
+                if (typeof adjudicator !== 'function') {
+                  throw new Error('the public @deepseek-ai/dsh-sandbox approveEscalation export did not resolve in this world; the row never substitutes its own adjudicator — zero manager entry')
+                }
+                return adjudicator(request, approval)
+              },
+            })
+            : null
           if (g1IsRecord && g1Cfg.plugin === true) {
             let g1PluginPlacedCount = 0
             for (const entry of g1PluginSupplySubset()) {
@@ -5892,7 +5983,9 @@ export function createAgentBindings(deps) {
                 providerId: g1ProviderId,
                 // the CLOSED B-PLUGIN row set, derived from the frozen table.
                 subset: g1PluginSupplySubset(),
-                pluginFacts: { current: () => g1PluginFactsCfg },
+                pluginFacts: g1PluginFactsLive,
+                ...(g1InstallFace === null ? {} : { installFace: g1InstallFace }),
+                ...(g1HostEscalation === null ? {} : { hostEscalation: g1HostEscalation }),
                 registry: {
                   // LIVE scoped takeover read — same law as the control
                   // lane: no scoped answer for THIS agent means capture

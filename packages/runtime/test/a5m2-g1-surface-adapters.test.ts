@@ -679,6 +679,84 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     mdD.settle(dResult.lifecycle?.requestId as string, { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0' })
   })
 
+  // ── CONSOLIDATED CARD 2026-10-25 (user 09:03:32): the FRESH CONSUMPTION
+  //    boundary sits AFTER the Host approval, re-reading the real binding/
+  //    policy/authority generations; the plane's own admit answers there —
+  //    a callback faking approval is impossible by construction. ──────────
+  it('post-grant fresh consumption: a plane refusal at consumeAfterGrant keeps manager entry at ZERO — the gate ran FIRST (order witness), the answer is the plane verdict, never a faked approval', async () => {
+    const gate = makeGate()
+    const md = makeManagerDouble()
+    const mounted = mountRecord('plugin_manager', { installFace: md.face, escalation: gate.port })
+    const plan = (mounted.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-fc1') as Success).plan
+    const order: string[] = []
+    const refusal = await mounted.row.delegate(plan, {
+      exec: { agent: AGENT },
+      consumeAfterGrant: async () => {
+        order.push(`admit:approverRequests=${String(gate.approverRequests.length)}`)
+        return { ok: false, code: 'P_TEAM_LEDGER_FULL', detail: 'seat ledger refused' }
+      },
+    }) as unknown as Refusal
+    expect(order).toEqual(['admit:approverRequests=1']) // the Host gate ran BEFORE the plane consumption
+    expect(refusal.code).toBe('P_TEAM_LEDGER_FULL')
+    expect(refusal.detail).toContain('zero manager entry happened')
+    expect(md.installCalls.length).toBe(0)
+  })
+
+  it('generation tuple moved DURING the awaited Host gate: the consume boundary STALES the plan (P_G1_DEFINITION_DRIFT, zero manager entry) — a moved tuple is never re-run on a granted approval', async () => {
+    let flip = false
+    const bindingFacts = () => (flip ? { ...BINDINGS(), bindingRevision: 8 } : BINDINGS())
+    const double = makeNativeDouble('plugin_manager', byName('plugin_manager'))
+    const gate = makeGate({ duringGate: () => { flip = true } })
+    const md = makeManagerDouble()
+    const row = G1.mountG1SurfaceAdapter('plugin_manager', {
+      native: double.native,
+      providerId: 'g1-spec',
+      definitionIdentity: 'def-pm',
+      trusted: TRUSTED,
+      bindingFacts,
+      ports: { ...PORTS },
+      installFace: md.face,
+      hostEscalation: gate.port,
+    })
+    const plan = (row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-fc2') as Success).plan
+    let consumeRan = false
+    const refusal = await row.delegate(plan, {
+      exec: { agent: AGENT },
+      consumeAfterGrant: async () => { consumeRan = true; return { ok: true } },
+    }) as unknown as Refusal
+    expect(refusal.code).toBe('P_G1_DEFINITION_DRIFT')
+    expect(refusal.detail).toContain('moved during the awaited Host gate')
+    expect(consumeRan).toBe(false) // the generation re-read refuses BEFORE the plane is even asked
+    expect(md.installCalls.length).toBe(0)
+  })
+
+  it('consume-then-enter: the manager entry runs only AFTER the plane admits (order witness admit<enter); the invocation-owned requestId rides; wait() answers only the observed settle', async () => {
+    const gate = makeGate({ mode: 'danger-full-access' })
+    const md = makeManagerDouble()
+    const order: string[] = []
+    const face = {
+      installBundle: (spec: unknown, options: unknown) => {
+        order.push('enter')
+        return md.face.installBundle(spec, options)
+      },
+      waitForInstall: (requestId: string) => md.face.waitForInstall(requestId),
+      cancelInstall: (requestId: string) => md.face.cancelInstall(requestId),
+    }
+    const mounted = mountRecord('plugin_manager', { installFace: face, escalation: gate.port })
+    const plan = (mounted.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-fc3') as Success).plan
+    const result = await mounted.row.delegate(plan, {
+      exec: { agent: AGENT },
+      consumeAfterGrant: async () => { order.push('admit'); return { ok: true } },
+    })
+    expect(result.settled).toBe('INSTALL-PENDING')
+    expect(order).toEqual(['admit', 'enter'])
+    expect(String(result.lifecycle?.requestId)).toMatch(/^g1-install-/)
+    const changed = { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0' }
+    md.settle(result.lifecycle?.requestId as string, changed)
+    const outcome = await result.lifecycle?.wait()
+    expect(outcome).toMatchObject({ outcome: 'SETTLED-OBSERVED', changeResult: changed })
+  })
+
   // ── P1 (89a9): host-verbatim scope pass-through, real Session shape ─────
   it('P1 89a9: sandboxPolicy.resolve receives EXACTLY the host scope — the Session OBJECT by reference for agent calls (a narrower session configuration resolves only when the object survives), { session: undefined } for a session-less agent, {} only when exec.agent is absent', async () => {
     // session override drives the effective mode: composition default
