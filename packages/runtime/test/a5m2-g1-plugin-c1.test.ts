@@ -32,6 +32,7 @@ interface G1Row {
     ok?: boolean
     code?: string
     detail?: string
+    plan?: unknown // the REAL success shape carries the frozen plan (adapter contract)
     targetManifest?: Record<string, unknown>
     reviewPayload?: { familyId?: string; adapterRevision?: number }
   }
@@ -262,6 +263,8 @@ interface G1WiringModule {
   createG1QueryWiring: (input: Record<string, unknown>) => {
     ok?: boolean
     code?: string
+    // REAL refusal shape: refuseAssembly answers { ok: false, code, message }
+    message?: string
     detail?: string
     definitions?: Array<{ name?: string; execute?: (args: unknown, exec: unknown) => Promise<string> }>
   }
