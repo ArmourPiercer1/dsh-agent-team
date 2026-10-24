@@ -190,3 +190,47 @@ S1 的 H0 必须优先验证这一风险：固定 Host + 真实公共注册/disp
 Family/Bridge 是受审第一方代码，不是同进程沙箱。若允许运行不受信任的动态代码，须另行设计进程、OS 沙箱或远端隔离；TS interface、闭包或 capability 类型本身不构成恶意代码隔离。
 
 对于无法预先完整枚举的 PTC/动态 I/O 等效果，必须在每个真实效果边界重新授权，或由可信 Provider 对已批准的完整范围实施强制约束。只接受 Family 自报 effectSet 不足以签发实际执行能力。
+
+
+### 10.3 Contribution schema、版本协商与失败隔离
+
+Contribution 必须携带显式 schema/contract version、family ID/version、source digest、Provider identity/digest、Host/Profile 范围、native names/aliases、required/optional capabilities、closed input/output contract、规范化 EffectRequest、生命周期/清理/取消边界和证据引用。
+
+- 每个 schema 版本采用 closed-world 校验。未知字段、重复 ID、无效 digest、未知 required capability、类型不符或不支持的版本均 fail-closed；不得忽略未知字段后继续执行。
+- major 变更须显式迁移/适配；minor 仅允许显式 optional 能力，仍需版本与 capability 协商；patch 不得改变安全语义。兼容性通过受测试的显式 adapter 完成，不靠宽松解析。
+- Kernel/Provider 发布版本化能力清单。缺少 required capability 时拒绝该 Contribution；optional capability 只能在其声明允许且不改变安全保证时省略。
+- 普通 Family 的单项 schema/初始化失败默认隔离该 Family 并给出可审计原因；同名、Scope 或 Provider 冲突时隔离全部冲突候选，不任选一个。若问题影响 Host 身份可信度、共享授权不变量或不能限定到局部项，升级为 HOST/GLOBAL BLOCKER 并阻断相应 Gate。不得 native fallback。
+- Registry 仅产出只读候选贡献视图，不授权、不 mint Grant、不将来源升级为 ACTIVE。Kernel 不得依据工具名、Family ID 或 Bridge 名改变安全算法。
+
+稳定安全原语仅包括可信身份/generation、授权状态转换、一次性消费、受限 capability、生命周期和审计关联。原生参数语义、领域 effect 语义、结果 shape、特殊 transport、远端不确定终态及 Family-specific cleanup 留在 Family/Provider/Bridge。禁止把旧中心分支迁入 Registry、HostSurfaceAdapter 或生成器形成隐性中心。
+
+### 10.4 动态来源的唯一晋级、失效与撤销路径
+
+动态来源被发现时一律为 UNKNOWN/NOT_VERIFIED，不得执行。只有现有授权配置权威（不是 Family、Registry 或 Kernel）才能签发不可变 DynamicSourceAdmissionRecord。它是来源准入证据，不替代每次调用的 PA/Control/Grant。
+
+Record 至少绑定 source ID/digest、服务器/端点或包身份、Provider digest、native names、Scope/Profile、contract version、允许的 capability 集合、审批主体/时间、依据的 RUN/evidence digest、有效期/策略代际、记录版本与撤销状态。不得在其中写入明文凭据。
+
+晋级顺序：发现并隔离 → 核验来源/契约/Provider/Host seam → 由现有授权配置权威审阅并签发 record（改变信任边界或 Scope 时取得相应明确批准）→ Registry 校验 digest 并产出候选视图 → 每次执行仍经过原授权链。来源、Provider、Scope、Profile、contract 或 Host pin 变化时，旧 record 不自动沿用，必须使缓存/Registry 视图失效并重新验证。
+
+撤销顺序：先阻断新 dispatch 并标记来源撤销 → 递增相关 generation/revocation epoch → 使旧缓存、Binding 和未消费 Grant 失效 → 按 Provider 能力 drain/cancel 在途调用 → 确认真实终态或记录 UNCERTAIN。重新启用必须有新版本 record。Family 不得自行提升、延期、复制或撤销 admission；不得由 Registry/Kernel 另造审批账本。
+
+### 10.5 持续性架构适应度测试与中心变更纪律
+
+G4、S5 必须持续运行 architecture fitness tests，而非只在 ARC-A 做一次演示：
+
+1. 记录并保护中心源码集合：Host/Root/Adapter/Registry/Kernel/生成器及其边界文件。每个新普通 Family 的 PR 必须证明这些受保护产品源文件零 Family-driven diff；若有变化，必须由独立中心接口变更 PR 解释，不可混入 Family PR。
+2. 静态检查 Kernel/Registry/HostSurfaceAdapter 对具体工具名、Family ID、Provider 名的分支和直接依赖；发现新增特判即失败，除非它属于单独审查的稳定协议实现且有明确理由。
+3. 检查具名 Bridge 是否新增独立授权、Grant 消费或审批状态；Bridge 只能转换机制，不能成为第二套 Kernel。
+4. 对 Manifest/生成产物做确定性重建与 source-digest 差异检查；禁止手工维护的中心工具名单作为运行授权来源。
+5. ARC-A 除测试 Family 外，至少纳入一个受真实原生 Host 行为/输出契约约束的 Family，避免仅证明玩具插件可插拔。
+6. 测试失败必须提供一个可检测的植入反例；仅检查目录结构或 LOC 不足以证明架构边界。LOC 可作趋势指标，不作为任意硬阈值。
+
+Family Owner 的允许修改范围按阶段固定：S1–S3 只做研究分支、独立试验、文档和 TestWorld，不进行生产中心接线；S4 由独立中心重构 Owner 修改 Kernel/Registry/Host Adapter，Family Owner 通过 Contribution 契约协作；S5 普通 Family Owner 不得修改受保护中心源文件，只有单独审查的中心接口变更 PR 可以申请修改。
+
+### 10.6 Bridge 阻断的准确含义
+
+- G4-CORE-PASS / BRIDGE-BLOCKED：ARC-A、ARC-B 与共同安全原语已通过；某个具名 Bridge 因明确 Host seam 缺口被正式阻断。它只允许不依赖该 Bridge 的 Family 在受限范围内继续，不代表 CA-03 已通过。
+- 完整 G4-PASS：ARC-A/B/D 通过，且至少一个真实具名 Bridge 正向接入成功，证明特殊机制确实被隔离在边界内。
+- 若 Bridge 缺口只影响局部功能，必须列明被阻断工具、能力、Scope、替代路径和重新开启条件。不能用“用户已知晓”替代证据。
+- 若缺口影响共同身份可信度、授权原语、Body 前拒绝或 Grant 一次性消费，则是 CORE BLOCKER，不能通过 G4-CORE-PASS，也不能靠用户对局部 Bridge 的裁决绕过安全核心证明。
+- G4-CORE-PASS / BRIDGE-BLOCKED 不解锁完整 S5 发布；可以提前实施与该 Bridge 无依赖的 Family，但所有必交 Bridge 未解决或未获明确范围变更前，G5/Alpha.5 release 必须 BLOCKED。
