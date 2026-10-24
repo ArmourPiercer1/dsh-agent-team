@@ -3622,16 +3622,22 @@ export function createAgentBindings(deps) {
         // block still refuses FIRST; this is the assembly side of the same
         // law). 'false' stays a pre-refused bypass attempt above.
         if (planeCfg.spawnGoverned === true || planeCfg.spawnGoverned === undefined) {
-          const refuseSpawn = (why) => {
+          // THE SANITIZED-WHY OBSERVATION (root 2026-10-24, diagnostic): the
+          // existing wiring-REFUSED line carries the EXISTING reason as fixed
+          // tokens only — branch identity, tool name, JS error type name,
+          // wiring code — never a user payload, never a credential, never raw
+          // error message text. No new observation channel; the prefix stands
+          // byte-identical for every existing reader.
+          const refuseSpawn = (why, reason) => {
             const error = new Error(
               `agent-bindings: alpha.5 governed spawn mount refused for '${sessionId}': ${why}`,
             )
             error.code = 'alpha5-spawn-wiring-mount-refused'
-            observations.push(`a5m2-spawn: wiring-REFUSED for ${sessionId}`)
+            observations.push(`a5m2-spawn: wiring-REFUSED for ${sessionId} — reason=${String(reason ?? 'unclassified')}`)
             return error
           }
           if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
-            throw refuseSpawn('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+            throw refuseSpawn('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback', 'agent-unreadable')
           }
           const spawnCaptured = {}
           const spawnNativeBodies = {}
@@ -3673,17 +3679,17 @@ export function createAgentBindings(deps) {
             try {
               spawnNative = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
             } catch (error) {
-              throw refuseSpawn(`the member-scoped tool face could not be read for '${spawnName}' (${String(error?.message ?? error).slice(0, 140)})`)
+              throw refuseSpawn(`the member-scoped tool face could not be read for '${spawnName}' (${String(error?.message ?? error).slice(0, 140)})`, `face-read-threw:${spawnName}:${error instanceof Error ? error.name : 'non-error'}`)
             }
             if (spawnNative === null || typeof spawnNative !== 'object' || typeof spawnNative.execute !== 'function') {
               if (A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always') {
-                throw refuseSpawn(`no native '${spawnName}' definition with an execute body is visible to this member scope — census 'always' records are never masked by a row with nothing behind it`)
+                throw refuseSpawn(`no native '${spawnName}' definition with an execute body is visible to this member scope — census 'always' records are never masked by a row with nothing behind it`, `no-native-execute:${spawnName}:census-always`)
               }
               continue
             }
             const spawnIdentity = definitionIdentityOf(spawnNative)
             if (typeof spawnIdentity !== 'string' || spawnIdentity.length === 0) {
-              throw refuseSpawn(`the captured native '${spawnName}' answers no definitionIdentityOf identity`)
+              throw refuseSpawn(`the captured native '${spawnName}' answers no definitionIdentityOf identity`, `no-definition-identity:${spawnName}`)
             }
             spawnCaptured[spawnName] = Object.freeze({ native: spawnNative, definitionIdentity: spawnIdentity })
             spawnNativeBodies[spawnName] = spawnNative.execute
@@ -3697,7 +3703,7 @@ export function createAgentBindings(deps) {
               // and govern only what actually exists.
               observations.push(`a5m2-spawn: FACELESS-ABSENT for ${sessionId} (the real scoped surface answers none of the spawn family — nothing to mask, nothing outside the surface to govern)`)
             } else {
-              throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring')
+              throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring', 'all-absent:explicit-true')
             }
           }
           // THE ONE bound container (root 20:41 fix 1): the adapter compares
@@ -3747,7 +3753,7 @@ export function createAgentBindings(deps) {
             observe: (row) => observations.push(`a5m2-spawn: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
           })
           if (spawnWiringBuilt?.ok !== true) {
-            throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`)
+            throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`, `wiring-module-refused:${String(spawnWiringBuilt?.code ?? 'unknown')}`)
           }
           a5SpawnWiring = spawnWiringBuilt.wiring
           for (const spawnPlacedDef of a5SpawnWiring.definitions) spawnPlacedByName.set(spawnPlacedDef.name, spawnPlacedDef)
