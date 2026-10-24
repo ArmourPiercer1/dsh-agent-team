@@ -184,6 +184,13 @@ const memberToolsSeen = []   // filled ONLY from the member's real TOOLS-CHECK r
 const leaderToolsSeen = []  // filled ONLY from the LEADER's real TOOLS-CHECK-L request — parse pass is NOT visibility (root)
 const readOkWitness = (res, nonce) => res !== null && res.isError !== true
   && String(res?.text ?? '').includes(`A5M2-CTLHW-PROBE-${nonce}`) // SAME-call structured success AND window-unique probe content (name-only NOT enough)
+const permissionMutatedWitness = (res) => { // REAL 2fb 87/88 result (tools.js): {status:'permission-mutated',rootSessionId,targetInstanceId,verb,changed}
+  if (res === null || res.isError !== false) return false // root ruling: acceptance = structured parse AND isError===false
+  try {
+    const j = JSON.parse(String(res.text ?? ''))
+    return j?.status === 'permission-mutated' && (j.verb === 'grant' || j.verb === 'revoke') && typeof j.changed === 'boolean'
+  } catch { return false }
+}
 const explicitRefusalWitness = (res, nonce) => {
   const t = String(res?.text ?? '')
   if (t.includes(`A5M2-CTLHW-PROBE-${nonce}`)) return false // ANY leak of the expected read result means this was not a refusal
@@ -318,6 +325,21 @@ async function remoteCallReady(method, params, tag, version = 1, retries = 20) {
   }
   return last
 }
+/** READ-ONLY durable attachment (root card; NEVER writes): team_domain.json carries the tenth
+ * store `permission_overlays` (storage/schema/stores.js; schema/permission-overlay.js:8-26,106-123:
+ * identity{teamSessionId,memberInstanceId}, metadata{generation,previousSnapshotId},
+ * provenance{mutationId,...}, state.rules[] = {operation,resource,effect}, effect allow|ask|deny). */
+function overlaySnapshotFacts() {
+  try {
+    const doc = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
+    const table = doc?.tables?.permission_overlays ?? doc?.permission_overlays ?? null
+    if (table === null || table === undefined) return { status: 'NOT_VERIFIED', reason: 'no permission_overlays table readable in team_domain.json this world' }
+    const rows = Array.isArray(table) ? table : Object.values(table ?? {})
+    return rows.length === 0 ? { status: 'NOT_VERIFIED', reason: 'permission_overlays table present but zero rows readable' } : { status: 'FOUND', rows }
+  } catch (e) {
+    return { status: 'NOT_VERIFIED', reason: `overlay store not readable read-only: ${String(e).slice(0, 120)}` }
+  }
+}
 async function workspaceRpc(method, request, tag) { // PUBLIC Host face: ctx.remote.workspace.create over the client channel
   const res = await fetchJson(`${origin}/api/workspace/${method}`, {
     method: 'POST',
@@ -397,7 +419,7 @@ function safeParse(v) {
   try { return JSON.parse(v) } catch { return { raw: String(v).slice(0, 400) } }
 }
 async function controlFacts() { // durable double-check, product wire, OBSERVATION
-  const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [], 'permission-mutated': [] }
+  const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
   let afterSequence = 0
   for (let pageNo = 0; pageNo < 50; pageNo += 1) {
     const page = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `ctlhw-ledger-${pageNo + 1}`, 1)
@@ -582,15 +604,15 @@ function decide({ req }) {
     steps.set(callId, { step, tool: name })
     return { kind: 'tool-call', toolCalls: [{ id: callId, name, arguments: args }] }
   }
-  if (text.startsWith('TOOLS-CHECK')) { // E0 witness: the member's REAL request surface, filled HERE only
-    const seen = new Set(memberToolsSeen)
+  if (text.startsWith(`TOOLS-CHECK2 ${NONCE}`)) { // L5 witness: member2's REAL surface proves the op IS bound
+    const seen2 = new Set(member2ToolsSeen)
     for (const t of body.tools ?? []) {
       const name = t?.function?.name ?? t?.name ?? (typeof t === 'string' ? t : null)
-      if (typeof name === 'string' && name.length > 0) seen.add(name)
+      if (typeof name === 'string' && name.length > 0) seen2.add(name)
     }
-    memberToolsSeen.length = 0
-    memberToolsSeen.push(...seen)
-    return { kind: 'text', content: `ACK-C0 ${NONCE}` }
+    member2ToolsSeen.length = 0
+    member2ToolsSeen.push(...seen2)
+    return { kind: 'text', content: `ACK-C0B ${NONCE}` }
   }
   if (text.startsWith(`TOOLS-CHECK-L ${NONCE}`)) { // L6 witness: the LEADER's REAL request surface (87/88 exposure before any grant)
     const seen = new Set(leaderToolsSeen)
@@ -602,15 +624,15 @@ function decide({ req }) {
     leaderToolsSeen.push(...seen)
     return { kind: 'text', content: `ACK-C0L ${NONCE}` }
   }
-  if (text.startsWith(`TOOLS-CHECK2 ${NONCE}`)) { // L5 witness: member2's REAL surface proves the op IS bound
-    const seen2 = new Set(member2ToolsSeen)
+  if (text.startsWith('TOOLS-CHECK')) { // E0 witness: the member's REAL request surface, filled HERE only
+    const seen = new Set(memberToolsSeen)
     for (const t of body.tools ?? []) {
       const name = t?.function?.name ?? t?.name ?? (typeof t === 'string' ? t : null)
-      if (typeof name === 'string' && name.length > 0) seen2.add(name)
+      if (typeof name === 'string' && name.length > 0) seen.add(name)
     }
-    member2ToolsSeen.length = 0
-    member2ToolsSeen.push(...seen2)
-    return { kind: 'text', content: `ACK-C0B ${NONCE}` }
+    memberToolsSeen.length = 0
+    memberToolsSeen.push(...seen)
+    return { kind: 'text', content: `ACK-C0 ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-LEADER-CREATE ${NONCE}`)) {
     return toolsAfterMarker(msgs, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`) === 0
@@ -893,12 +915,22 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   await apiPrompt(currentRoot, `A5M2-CTLHW-GRANT87 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-grant87')
   const grantRes = await waitFor('team_grant_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:grant87') ?? null)
   const grantText = String(grantRes?.text ?? '')
-  check('L6-87', 'grant REAL return harvested and it EXECUTED (expansion PASSED carrier+both ceilings; typed business rejection FAILS with verbatim raw — never dressed)', grantRes !== null && grantRes.isError !== true && !/"status"\s*:\s*"rejected"/.test(grantText), `isError=${String(grantRes?.isError)} text=${grantText.slice(0, 400)}`)
-  const mut1 = await waitFor('grant LEDGER proof: permission-mutated fact whose payload carries the FIXTURE rule', 60_000, async () => {
-    const bt = await controlFacts()
-    return bt['permission-mutated'].find((e) => JSON.stringify(e.payload ?? '').includes(FIXTURE_FILE)) ?? null
+  check('L6-87', 'grant REAL return = the REAL 2fb result family: structured {status:"permission-mutated",verb:"grant",changed} AND isError===false (no invented ledger-fact gate — root ruling)', permissionMutatedWitness(grantRes), `isError=${String(grantRes?.isError)} text=${grantText.slice(0, 400)}`)
+  const grantGrantId = `perm-grant-ctlhw-grant-${NONCE}` // provenance.mutationId template per source (tools.js:1266): perm-<verb>-<requestToken>
+  const ovG = await waitFor('durable overlay snapshot carrying the grant mutation (read-only attachment)', 60_000, () => {
+    const f = overlaySnapshotFacts()
+    if (f.status === 'NOT_VERIFIED') return f
+    return f.rows.some((r) => r?.provenance?.mutationId === grantGrantId) ? f : null
   })
-  check('L6-87', 'member-side rule change PROVEN durably: permission-mutated ledger fact carries the fixture-absolute rule', mut1 !== null, `fact seq=${String(mut1?.sequence)}`)
+  if (ovG.status === 'NOT_VERIFIED') console.log(`[ctlhw] durable overlay attachment: NOT_VERIFIED — ${ovG.reason} (disclosed, NOT dressed as proof; behavioral read below stays the hard gate)`)
+  else {
+    const snap = overlaySnapshotFacts().rows.filter((r) => r?.provenance?.mutationId === grantGrantId).pop()
+    const rules = snap?.state?.rules ?? []
+    check('L6-87', 'durable overlay snapshot (READ-ONLY): grant mutation row + identity pair + PERSISTED rule shape {operation,resource,effect} carrying the fixture resource (NOT the input {operationClass,matcher} spelling)',
+      snap?.identity?.memberInstanceId === member.instanceId && typeof snap?.identity?.teamSessionId === 'string'
+      && rules.some((r) => JSON.stringify(r).includes('package.json') && r?.effect === 'allow' && 'operation' in r && 'resource' in r && !('operationClass' in r) && !('matcher' in r))
+      && typeof snap?.metadata?.generation === 'number', `gen=${String(snap?.metadata?.generation)} rules=${JSON.stringify(rules).slice(0, 300)}`)
+  }
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ2 ${NONCE}`, 'ctlhw-consume')
   const read2 = await waitFor('consumption read result (same-call structured success + window-unique probe expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe2') ?? null)
   check('L6-consume', 'BUSINESS CONSUMPTION: SAME-CALL structured success AND result CONTAINS this window’s unique probe content (READ via the granted overlay; name-only would NOT pass)', readOkWitness(read2, NONCE), `isError=${String(read2?.isError)} text=${String(read2?.text ?? '').slice(0, 300)}`)
@@ -906,17 +938,28 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   await apiPrompt(currentRoot, `A5M2-CTLHW-REVOKE88 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-revoke88')
   const revokeRes = await waitFor('team_revoke_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:revoke88') ?? null)
   const revokeText = String(revokeRes?.text ?? '')
-  check('L7-88', 'revoke REAL return harvested and it EXECUTED (rule-set-different mutation; typed refusal or rule-set-equal no-op FAILS verbatim)', revokeRes !== null && revokeRes.isError !== true && !/"status"\s*:\s*"rejected"/.test(revokeText), `isError=${String(revokeRes?.isError)} text=${revokeText.slice(0, 400)}`)
-  const factsMut = await waitFor('revoke LEDGER proof: second permission-mutated fact', 60_000, async () => {
-    const bt = await controlFacts()
-    return bt['permission-mutated'].length >= 2 ? bt : null
+  check('L7-88', 'revoke REAL return = structured {status:"permission-mutated",verb:"revoke",changed} AND isError===false', permissionMutatedWitness(revokeRes), `isError=${String(revokeRes?.isError)} text=${revokeText.slice(0, 400)}`)
+  const revokeMutId = `perm-revoke-ctlhw-revoke-${NONCE}`
+  const ovR = await waitFor('durable overlay snapshot carrying the revoke mutation (read-only attachment)', 60_000, () => {
+    const f = overlaySnapshotFacts()
+    if (f.status === 'NOT_VERIFIED') return f
+    return f.rows.some((r) => r?.provenance?.mutationId === revokeMutId) ? f : null
   })
-  check('L7-88', 'revoke left its own durable mutation fact (mutated=2)', factsMut !== null && factsMut['permission-mutated'].length === 2, `mutated=${String(factsMut['permission-mutated'].length)}`)
+  if (ovR.status === 'NOT_VERIFIED') console.log(`[ctlhw] durable overlay attachment (revoke): NOT_VERIFIED — ${ovR.reason} (disclosed; behavioral chain-back below stays the hard gate)`)
+  else {
+    const rowsR = overlaySnapshotFacts().rows.filter((r) => r?.identity?.memberInstanceId === member.instanceId)
+    const latest = rowsR.slice().sort((a, b) => (a?.metadata?.generation ?? 0) - (b?.metadata?.generation ?? 0)).pop()
+    const revSnap = rowsR.filter((r) => r?.provenance?.mutationId === revokeMutId).pop()
+    check('L7-88', 'durable overlay chain (READ-ONLY): revoke mutation row with generation/previousSnapshotId chain AND the LATEST snapshot for this member no longer carries the allow rule pair',
+      typeof revSnap?.metadata?.previousSnapshotId === 'string' && typeof latest?.metadata?.generation === 'number'
+      && latest?.provenance?.mutationId === revokeMutId
+      && !(latest?.state?.rules ?? []).some((r) => JSON.stringify(r).includes('package.json') && r?.effect === 'allow'), `chain=${JSON.stringify((rowsR).map((r) => [r?.metadata?.generation, r?.provenance?.mutationId]))}`.slice(0, 300))
+  }
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ3 ${NONCE}`, 'ctlhw-read-back')
   const read3 = await waitFor('chain-back read result (explicit refusal again expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe3') ?? null)
   check('L7-88', 'chain back with NO RESIDUE: post-revoke read EXPLICITLY REFUSED (typed code/status + zero probe leak) — no leftover allow answers', explicitRefusalWitness(read3, NONCE), `isError=${String(read3?.isError)} text=${String(read3?.text ?? '').slice(0, 300)}`)
   const factsEnd = await controlFacts()
-  check('V', 'ledger: recorded=2 decided=1 permission-mutated=2 for slice+canary+87/88 chain (NO C2 claim: five-tool C2 needs the full M0-B171-173 matrix incl. cross-root/partial per source ruling)', factsEnd['control-request-recorded'].length === 2 && factsEnd['control-decision-recorded'].length === 1 && factsEnd['permission-mutated'].length === 2, `recorded=${String(factsEnd['control-request-recorded'].length)} decided=${String(factsEnd['control-decision-recorded'].length)} mutated=${String(factsEnd['permission-mutated'].length)}`)
+  check('V', 'ledger: recorded=2 decided=1 (REAL control-ledger constraint KEPT per root; NO mutated=2 hard gate — that fact never existed; 87/88 evidence = REAL permission-mutated returns + behavioral read + read-only overlay attachment or disclosed NOT_VERIFIED)', factsEnd['control-request-recorded'].length === 2 && factsEnd['control-decision-recorded'].length === 1, `recorded=${String(factsEnd['control-request-recorded'].length)} decided=${String(factsEnd['control-decision-recorded'].length)}`)
   check('V', 'decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)', !TRANSCRIPT.some((t) => t.channel === 'team-remote' && t.method === 'team.resolveControl'), 'observation-only transcript verified')
 
   await cleanup()

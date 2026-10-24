@@ -28,7 +28,7 @@ const boot = new Function(...mods.keys(), '__SELF_URL__', `
   const window = { location: { origin: 'http://127.0.0.1:0' } };
   ${region}
   currentRoot = 'session-offline-root'
-  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, readOkWitness, explicitRefusalWitness, NONCE }
+  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, readOkWitness, explicitRefusalWitness, permissionMutatedWitness, memberToolsSeen, member2ToolsSeen, leaderToolsSeen, NONCE }
 `)(...mods.values(), new URL('./05-control-window-runner.mjs', import.meta.url).href)
 const results = []
 const A = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`) }
@@ -95,6 +95,27 @@ A('GRANT87 marker emits team_grant_permission with required closed set + WIRE {k
   && tG?.arguments?.targetInstanceId === 'inst-offline-1' && Array.isArray(tG?.arguments?.rules)
   && tG?.arguments?.rules?.[0]?.matcher?.kind === 'exact' && typeof tG?.arguments?.rules?.[0]?.matcher?.value === 'string'
   && tG?.arguments?.rules?.[0]?.matcher?.value.endsWith('/read-fixture/package.json'), `emitted=${tG?.name ?? 'none'} value=${String(tG?.arguments?.rules?.[0]?.matcher?.value ?? '')}`)
+
+// (8) the THREE marker families through the REAL decide(): prefix shadowing
+// regression (window 20261024T14-34-03Z raw proved TOOLS-CHECK2 swallowed by
+// the generic TOOLS-CHECK branch). Each marker must ACK on ITS OWN branch and
+// fill ITS OWN capture — verified on the real function, no stand-ins.
+const mkReq = (text, tools) => ({ body: { messages: [{ role: 'user', content: [{ type: 'text', text }] }], tools } })
+const t2 = boot.decide({ req: mkReq(`TOOLS-CHECK2 ${N}`, [{ name: 'team_resolve_control' }, { name: 'read' }]) })
+A('TOOLS-CHECK2 reaches its OWN branch (ACK-C0B, not the generic ACK-C0) and fills member2ToolsSeen',
+  String(t2?.content) === `ACK-C0B ${N}` && boot.member2ToolsSeen.includes('team_resolve_control'), `ack=${String(t2?.content)} seen2=${boot.member2ToolsSeen.join(', ')}`)
+const tL = boot.decide({ req: mkReq(`TOOLS-CHECK-L ${N}`, [{ name: 'team_grant_permission' }, { name: 'team_revoke_permission' }]) })
+A('TOOLS-CHECK-L reaches its OWN branch (ACK-C0L) and fills leaderToolsSeen',
+  String(tL?.content) === `ACK-C0L ${N}` && boot.leaderToolsSeen.includes('team_grant_permission'), `ack=${String(tL?.content)} seenL=${boot.leaderToolsSeen.join(', ')}`)
+const t0 = boot.decide({ req: mkReq(`TOOLS-CHECK ${N}`, [{ name: 'team_request_control' }]) })
+A('generic TOOLS-CHECK still ACKs on its own branch and fills memberToolsSeen ONLY',
+  String(t0?.content) === `ACK-C0 ${N}` && boot.memberToolsSeen.includes('team_request_control'), `ack=${String(t0?.content)}`)
+
+// (9) permissionMutatedWitness on the REAL 2fb result family (root shape card)
+A('witness: structured permission-mutated grant + isError=false passes', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'grant', changed: true }) }) === true)
+A('witness: revoke verb + changed=false (rule-set-equal no-op) still a REAL structured return', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'revoke', changed: false }) }) === true)
+A('witness: status:rejected never passes', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'rejected', code: 'X', message: 'm' }) }) === false)
+A('witness: isError=true never passes; unstructured never passes', boot.permissionMutatedWitness({ isError: true, text: '{"status":"permission-mutated","verb":"grant","changed":true}' }) === false && boot.permissionMutatedWitness({ isError: false, text: 'mutated ok' }) === false)
 
 const failed = results.filter((r) => !r.ok).length
 console.log(JSON.stringify({ verdict: failed === 0 ? 'OFFLINE-DECODER-OK' : 'OFFLINE-DECODER-FAIL', checks: results.length, failed }))
