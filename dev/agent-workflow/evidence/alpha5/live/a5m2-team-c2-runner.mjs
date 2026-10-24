@@ -18,9 +18,10 @@
  * every unverified leg is listed in `GAPS` and hard-fails if reached.
  */
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { zstdDecompressSync } from 'node:zlib'
 
 import { DshInstance, redactLaunchToken } from '../../../../../tests/characterization/lib/instance.mjs'
 import {
@@ -39,13 +40,97 @@ const REPO = resolve(import.meta.dirname, '../../../../..')
 const LIST_ROOTS_CONTRACT_VERSION = 3
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
-/** Legs whose exact wire shape is NOT yet verified against a proven source. A
- *  case touching one stops with this id instead of guessing the protocol. */
+/**
+ * Session-log reading — the proven multi-frame shape, reused rather than
+ * re-derived: `tests/mock/scripts/tool-lines.mjs` carries the frame law this
+ * driver follows (the matrix lesson is recorded there — a SINGLE
+ * `zstdDecompressSync` of a log file yields only the FIRST frame, so a
+ * restarted session silently loses every later frame). Frames are therefore
+ * segmented on the zstd magic `28 B5 2F FD` and each segment is decompressed
+ * with any undecodable tail carried into the next, so a frame that spans two
+ * appends still decodes. The file law (`session(.vN)?.jsonl(.zstd)?` under
+ * `<DSH_HOME>/sessions`, walked recursively) is the proven one from
+ * `model-preference-routing-smoke`.
+ */
+
+const ZSTD_MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd])
+
+/** Every session log under `<home>/sessions`, newest-name included verbatim. */
+export function listSessionFiles (home) {
+  const out = []
+  const stack = [join(home, 'sessions')]
+  while (stack.length > 0) {
+    const dir = stack.pop()
+    let entries
+    try { entries = readdirSync(dir, { withFileTypes: true }) } catch { continue }
+    for (const entry of entries) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) stack.push(full)
+      else if (entry.isFile() && /session(\.v\d+)?\.jsonl(\.zstd)?$/.test(entry.name)) {
+        try { out.push({ path: full, size: statSync(full).size }) } catch { /* unreadable: skipped, never fatal */ }
+      }
+    }
+  }
+  return out
+}
+
+/** Frame-by-frame zstd decode: magic segmentation + carried tail (never a
+ *  single whole-file decompress, which reads only the first frame). */
+export function decodeSessionLogFrames (buf) {
+  const starts = []
+  let offset = 0
+  for (;;) {
+    const at = buf.indexOf(ZSTD_MAGIC, offset)
+    if (at === -1) break
+    starts.push(at)
+    offset = at + 4
+  }
+  const bounds = [...starts, buf.length]
+  const parts = []
+  let pending
+  for (let k = 0; k < bounds.length - 1; k += 1) {
+    const chunk = buf.subarray(bounds[k], bounds[k + 1])
+    const candidate = pending === undefined ? chunk : Buffer.concat([pending, chunk])
+    try { parts.push(zstdDecompressSync(candidate)); pending = undefined } catch { pending = candidate }
+  }
+  if (pending !== undefined) parts.push(zstdDecompressSync(pending))
+  return Buffer.concat(parts)
+}
+
+/** Decoded JSONL lines of every session log, tagged with their file. */
+export function readSessionLines (home) {
+  const lines = []
+  for (const file of listSessionFiles(home)) {
+    let text
+    try { text = decodeSessionLogFrames(readFileSync(file.path)).toString('utf8') }
+    catch { continue }
+    for (const raw of text.split('\n')) {
+      const trimmed = raw.trim()
+      if (trimmed.length === 0) continue
+      try { lines.push({ file: file.path, line: JSON.parse(trimmed) }) } catch { /* partial tail line */ }
+    }
+  }
+  return lines
+}
+
+/** The proven CLI readers run as-is over one session file (`tool-lines.mjs`
+ *  with an optional method filter, `call-result.mjs` for one call), so the
+ *  harness never re-implements their extraction rules. */
+export function runProvenReader (script, ...args) {
+  const res = spawnSync(process.execPath, [join(REPO, 'tests/mock/scripts', script), ...args], { encoding: 'utf8', timeout: 60_000 })
+  return { ok: res.status === 0, stdout: res.stdout ?? '', stderr: res.stderr ?? '' }
+}
+
+/** Unverified wire shapes. A case touching one stops with this id instead of
+ *  guessing the protocol. */
 export const GAPS = Object.freeze({
-  'GAP-FRAME-READER': 'the multi-frame session-log reader (zstd per-frame decode) is proven only inside the Schedule kit script, which exports nothing; its frame order/decode call is unread here, so log-frame assertions stay unattempted.',
+  'GAP-TEAM-CREATE-PARAMS': 'the version-aware closed param set of `team.create` (params.ts, v1 and v2 differ) is unread here, so the Team case bodies do not mint a create request yet — this is the next slice, not a silent skip.',
+  'GAP-DURABLE-REPLAY': 'C-DUR-1 needs a durable approval composed under the PREVIOUS adapter revision; without such a row the leg is not attempted (and never "proved" by a file revision or by two refusals).',
 })
 
-/** The closed Remote v1 envelope, verified against the built contract source. */
+/** The closed Remote v1 envelope, verified against the built contract source
+ *  (`packages/remote/src/contracts/request.ts`: exactly
+ *  type/rpcId/method/payload, `payload` = { version, params }). */
 const ENVELOPE_TOP_LEVEL = Object.freeze(['type', 'rpcId', 'method', 'payload'])
 function envelopeCheck () {
   const problems = []
