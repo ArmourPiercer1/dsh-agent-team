@@ -11,7 +11,7 @@
  * The public chain is the A-window's REAL launched runner (8e62 g3 lane, cited
  * line by line there); only the G5 family surface differs: the mount intent is
  * the closed `teamToolPlane.g5Goal` bit (the mount arm in the pack's
- * agent-bindings, 2fb blob 18da53ba…), the PA lane is the SAME plane paAdmit seat
+ * agent-bindings etc.; exact current blobs pinned below at 7feb6a5e), the PA lane is the SAME plane paAdmit seat
  * (the G5 bridge composes {open, edge, closePlan} onto it), and the goal names
  * are NOT in the blueprint PERMISSION_TOOL_NAMES vocabulary (schema.js :419-463,
  * re-read on the 2fb pack) — the ask is
@@ -69,13 +69,13 @@ import { startMockModel } from '../../../../../packages/tools/harness/mock-deeps
 // (a whole-array JSON.stringify escapes the quotes and blinds every criterion).
 import { toolResultText, isLosslessRejected, goalServedNull } from './lib-tool-result-text.mjs'
 
-const COMPOSED_SHA = '71f03119136c286aa2cd01aef6629ecd2906b8d3' // the CURRENT standard-supplied product (center delivery 2026-10-24T145829Z; the signed placement fix — full form 71f03119 confirmed via center's correction)
-const G5_BLOB_SERVICE = '8a98ee550cfb21a8cd427be7a73b2f83793f6ffff9a7f36d3def162070a3ab5a' // 71f dist == this lane's delegate src, byte-identical (re-measured in install-0c71c8f9)
+const COMPOSED_SHA = '7feb6a5e22bf7c531c1d679c786618b826b6ccdd' // the CURRENT standard-supplied product (center delivery 2026-10-24T163712Z; vocab card 48bdce5f closed — goal trio measured IN both closed sets here: TOOL len 70 all-true, INVOCATION_ONLY len 63 all-true)
+const G5_BLOB_SERVICE = '8a98ee550cfb21a8cd427be7a73b2f83793f6ffff9a7f36d3def162070a3ab5a' // 7feb6a5e dist == this lane's delegate src, byte-identical (re-measured in install-8e1eb730)
 const G5_BLOB_WIRING = 'c87f3db5aef3b2064fe16b18c516758d66dddca7683aec07fdf0351134b8c2e7'
-const G5_BLOB_BINDINGS = '18da53bac214c25a40098a624185148e0ea1f8a3eb4f7e86b0192e68c5c196f6' // the mount-arm carrier (71f dist — byte-identical to 2fb, re-measured)
-const G5_BLOB_PLANE = 'bfdf7a475ea582725ba8afbe8aea7dd46e732b72662de70cffc9bd4e09ae8230' // the paAdmit-seat carrier AND the placement-name resolver: 71f adds the G5 branch at :2471 (g5Wiring.placementNames.includes(spelling)) — exactly the no-placement-name gap first-window E1 measured (2fb plane had NO g5 branch among g3/pwsh/teamOps/schedule/subagent). Changed-file git blob 3d75d1a6d2c234cb798a87f5a36a53cb5fc61c7e, src=dist identical; PACKED_BLOB_MATCH in center receipt 11; this install tree hash-object-verified (2fb plane was blob 333e95e8). G5 wiring call site now :6363->shifted by the branch.
-const LOCK_SHA256 = 'd68e374b7bb5e4468293e57416155dc63bc54594e232534eb55a949d242cf5b4' // the installed fixture's pnpm-lock (read-only reuse; absent/drift => fail closed, NEVER re-installed)
-const FIX_PKG_SHA = '56e7e1ccd86bc95a7a55f902bfee5683a00d5db721e5d7da15f88e67e960bf99' // the fixture manifest (center-measured; re-verified read-only here)
+const G5_BLOB_BINDINGS = '9990c14f6de85c6bdd3aa4bdc2fa286fc33f2c5e225c80422e2606ed354d663e' // the mount-arm carrier (7feb6a5e dist; coverage-card line — MOVED from 18da53ba, re-measured in install-8e1eb730)
+const G5_BLOB_PLANE = '22644981606fba06e276932587ee4b45df232d051830a520b59b352a1ea1e207' // the paAdmit-seat carrier incl. the G5 resolver branch (7feb6a5e dist; MOVED from bfdf7a47 by the coverage line — re-measured) // the paAdmit-seat carrier AND the placement-name resolver: 71f adds the G5 branch at :2471 (g5Wiring.placementNames.includes(spelling)) — exactly the no-placement-name gap first-window E1 measured (2fb plane had NO g5 branch among g3/pwsh/teamOps/schedule/subagent). Changed-file git blob 3d75d1a6d2c234cb798a87f5a36a53cb5fc61c7e, src=dist identical; PACKED_BLOB_MATCH in center receipt 11; this install tree hash-object-verified (2fb plane was blob 333e95e8). G5 wiring call site now :6363->shifted by the branch.
+const LOCK_SHA256 = '08fd5788e9b80432f30d2649ea473b2d8bf55003556188152eba2bb5b800e9de' // the installed fixture's pnpm-lock (read-only reuse; absent/drift => fail closed, NEVER re-installed)
+const FIX_PKG_SHA = '3b3319b5c38d567e807d6b74b69be71a3e0dfa14773c4cba0e0ea84b035ca3b7' // the fixture manifest (center-measured; re-verified read-only here)
 const PACK_BYTES_MAX = 8_000_000
 // ROOT ORDER 2026-10-24 (supersedes the 3185/3500自理 pair): there is NO third
 // port pair. A window BORROWS an existing slot — A (3183/3498) or B (3184/3499) —
@@ -101,7 +101,7 @@ const WORLD_PREFIX = 'a5m2-g5-hw-b'
 const BP_ID = 'team.a5m2-g5-hw'
 const WINDOW_GO = process.env.A5M2_G5_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_G5_DRY === '1'
-// SYNC CARD (root order): the product moved 37646ac2 -> 2fb129cf -> 71f03119 (placement fix); ONLY these
+// SYNC CARD (root order): the product moved 37646ac2 -> 2fb129cf -> 71f03119 -> 7feb6a5e (vocab+coverage); ONLY these
 // parameter/expectation constants move with it. The old tgz hash 3652b2ce… is
 // RETIRED — never inherited: the current tgz hash arrives as an explicit
 // receipt input (no default). driver SHA (this file, carried by HEAD) and
@@ -110,7 +110,7 @@ const INSTALL_DIR = process.env.A5M2_G5_INSTALL_DIR ?? null // f86's NEW final f
 const PACK_COMPOSED = process.env.A5M2_G5_COMPOSED_SHA ?? null
 const EXPECTED_PACK_SHA = process.env.A5M2_G5_PACK_SHA256 ?? null // REQUIRED: full hash from f86's new receipt (sha256: prefix)
 const EXPECTED_TGZ_NAME = process.env.A5M2_G5_TGZ_NAME ?? 'dsh-agent-team-0.1.1-alpha.2.tgz' // same tree -> same name unless the receipt says otherwise
-const EXPECTED_TGZ_DIR_PREFIX = 'out-71f03119-' // the receipt dir segment carries the current product prefix
+const EXPECTED_TGZ_DIR_PREFIX = 'out-7feb6a5e-' // the receipt dir segment carries the current product prefix
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -264,7 +264,7 @@ async function cleanup() {
 // ── explicit product pin (fail closed) ─────────────────────────────────────
 // ── ② explicit fixture reuse (READ-ONLY; absent => fail-closed rc3) ───────
 if (INSTALL_DIR === null) notRun('A5M2_G5_INSTALL_DIR is REQUIRED (the pinned read-only fixture path; this runner never installs)')
-if (!existsSync(INSTALL_DIR)) notRun(`pinned fixture install dir absent (read-only reuse of the 71f03119 fixture; this runner does NOT create or install it): ${INSTALL_DIR}`)
+if (!existsSync(INSTALL_DIR)) notRun(`pinned fixture install dir absent (read-only reuse of the 7feb6a5e fixture; this runner does NOT create or install it): ${INSTALL_DIR}`)
 {
   const fixManifestPath = join(INSTALL_DIR, 'package.json')
   if (!existsSync(fixManifestPath)) { console.error(`fixture manifest absent: ${fixManifestPath}`); process.exit(3) }
@@ -505,7 +505,7 @@ async function main() {
     // blueprint parse below, and — at boot time only — the governed rows' live
     // behavior over the public wire, which is the sole supply authority.
     // (Old full-tree static audit stays removed; cold-import authority = product
-    // receipts logs-71f03119-20261024T145829Z, read-only, never rerun here.)
+    // receipts logs-7feb6a5e-20261024T163712Z, read-only, never rerun here.)
     log(`plugin entry resolved from the pinned fixture exports['./host']: ${HOST_ENTRY}; G5 dist quartet byte-identical (identity by EXACT blob hashes — no keyword-supply gate per root review); fixture lock+pkg verified read-only`)
   }
   // REAL blueprint validation (root order 2026-10-28: 用真实validateBlueprintDocument，
