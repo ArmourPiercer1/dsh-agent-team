@@ -159,7 +159,12 @@ const buildSavedBp = () => [ // MATERIALIZE AT WRITE TIME (after registration) �
   // member mutation envelope: request-control ONLY (verified M1 shape). NO
   // resolve, NO self-approve — L4 proves the refusal.
   'memberEnvelopes:', '  - templateId: ctl-worker', '    envelope:', '      allow:',
-  '        - request-control', '      deny: []', 'requirements: []',
+  '        - request-control', '      deny: []', // ctl-worker envelope UNCHANGED (root's bounded approval)
+  '  - templateId: ctl-resolver', // window-3 raw: inBounds=[] — the canary member had NO envelope entry,
+  '    envelope:', '      allow:', // its own request died at the envelope layer (TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS,
+  '        - request-control', '        - resolve-control', // fail-closed, correctly). Root bounded approval: ONLY the two ops this leg
+  '      deny: []', // needs — request-control to produce a REAL pending; resolve-control to reach the NATIVE
+  'requirements: []', // reviewer-closure code. Envelope allowance != native identity passing (L5 oracle unchanged).
   'permissionMutationEnvelope:', '  rules:', // L6/L7 CARRIER — the GRAMMAR TRIO, each spelled per its ORIGINAL SOURCE:
   '    - operationClass: read', // (1) BLUEPRINT carrier matcher = {kind, path} (schema.js:213-216 FILE_MATCHER_FIELDS) —
   '      matcher:', '        kind: exact', //     what THIS block below uses, validated by parseBlueprint OFFLINE.
@@ -890,6 +895,8 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   await waitFor('member2 tool surface (real request tools)', 60_000, () => (member2ToolsSeen.length > 0 ? true : null))
   check('L5', 'member2 surface CARRIES team_resolve_control (op REALLY bound+allowed — binding!=resolver premise PROVEN, not assumed)', member2ToolsSeen.includes('team_resolve_control'), `visible=${member2ToolsSeen.join(',')}`)
   await apiPrompt(member2.sessionId, `A5M2-CTLHW-MEMBER2-REQ ${NONCE} inst=${member2.instanceId}`, 'ctlhw-req2b')
+  const r83bFast = await waitFor('member2 req83b REAL return (typed business rejection FAILS FAST, raw kept — root card)', 60_000, () => callResults.find((r) => r.step === 'member2:req83b') ?? null)
+  if (r83bFast !== null && (r83bFast.isError === true || /"status"\s*:\s*"rejected"/.test(String(r83bFast.text ?? '')))) throw new Error(`R83B REAL business rejection (fail-fast; durable NEVER awaited on a refused canary): ${String(r83bFast.text)}`)
   const r83b = await waitFor('durable control-request-recorded for R83B (member2 own, stays PENDING)', 60_000, async () => {
     const bt = await controlFacts()
     const hit = bt['control-request-recorded'].find((e) => String(e.payload?.summary ?? '').includes(`A5M2-CTLHW-R83B ${NONCE}`))
