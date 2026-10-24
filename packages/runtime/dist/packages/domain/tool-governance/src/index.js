@@ -3,10 +3,23 @@
  * pure contracts and the immutable authorization algebra (implementation
  * plan §3; design §2.1/§4.1/§4.2/§4.3/§5).
  *
- * DORMANT BY CONTRACT: no shipped source anywhere in `packages` imports this
- * barrel — the lane is wired by PR1+ as a reviewed change (the
- * `a5p0-layer-audit` test fails the moment production touches it). It is also
- * PURE: no `node:*`, no
+ * WIRED, NOT DORMANT (corrected 2026-10-23: the sentence here had aged past
+ * the code). PR0 froze this lane DORMANT with zero production consumers; PR1
+ * and PR2 (plan §4/§5), PR3 (`controlled-fs`), PR5 (the tools lane) and A5-M1
+ * (PR358) replaced that freeze with a NAMED CONSUMER SET, booked file-by-file
+ * by `scripts/audit-a5-tool-governance-imports.mjs` and pinned by
+ * `packages/domain/test/a5p0-layer-audit.test.ts` — a consumer that appears is a design change
+ * that must be booked there, and one that disappears is a broken wire. In this
+ * checkout the ledger books 26 consumers, 25 of which import this lane directly
+ * (from `packages/runtime/control`, `packages/runtime/tool-dispatch`, `packages/runtime/tool-admission`,
+ * `packages/runtime/operation-permission`, `packages/runtime/controlled-fs/src`,
+ * `packages/runtime/src/plugin/live`, and the reviewed PR5 tools lane named in that ledger);
+ * the 26th,
+ * `packages/runtime/src/plugin/live/agent-bindings.mjs`, is booked for its
+ * `tool-dispatch` edge, which Law 3 counts on purpose — "the assembly point
+ * imports only the latter, and it is the caller that matters". Any number in
+ * this comment is a snapshot: THE LEDGER IS THE AUTHORITY, not this prose.
+ * This lane remains PURE: no `node:*`, no
  * DSH imports, no I/O, no clock (the clock arrives per call), no persistence
  * (consumption reaches `validateGrantForCall` as an injected view). Blueprint
  * v3 remains CLOSED: nothing here is a v3 field (design §8: PR8 owns vNext).

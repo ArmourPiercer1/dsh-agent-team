@@ -1,0 +1,66 @@
+doc-consistency controls   fixture=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/eb-e0-e1/.worktrees/eb1-controls-scratch
+PASS  POS-0 write authority allow-list
+      only the generated view is writable
+PASS  POS-1 clean fixture passes the complete check
+      sync --check: clean, observed findings=0
+PASS  POS-2 probe covers untracked and committed changes
+      worktree scope: clean, observed LIMIT T0 only; committed scope: clean, observed changed=1
+PASS  POS-3 Idea and Proposed text needs no runtime evidence
+      proposal exemption: clean, observed findings=0
+PASS  POS-4 --write regenerates the view only
+      --write: clean, observed regenerated; check after write: clean, observed findings=0; normative file byte-identical
+PASS  NEG-1 note status does not match its directory
+      sync: refused with NOTE_note-status-dir-mismatch
+PASS  NEG-2 duplicate note id
+      sync: refused with NOTE_note-id-duplicate
+PASS  NEG-3 implemented note whose evidence artifact is gone
+      sync: refused with NOTE_note-verified-by-missing
+PASS  NEG-4 proposal carrying a delivery claim
+      sync: refused with NOTE_note-false-delivery-claim
+PASS  NEG-5 duplicate stable id in the contract index
+      sync: refused with ID_DUPLICATE
+PASS  NEG-6 contract anchor pointing at a removed file
+      sync: refused with CONTRACT_ANCHOR_MISSING
+PASS  NEG-7 registry claims verification with no artifact
+      check: refused with FAKE_VERIFICATION; --write refuses: refused with REFUSED write
+PASS  NEG-8 registry names an artifact that does not exist
+      check: refused with ARTIFACT_MISSING
+PASS  NEG-9 derived view left stale after a registry edit
+      check: refused with STALE_GENERATED_VIEW
+PASS  NEG-10 deprecated synonym in a current-state document
+      sync: refused with TERMINOLOGY_DEPRECATED
+PASS  NEG-11 dangling relative link in a changed document
+      probe: refused with LINK_DANGLING
+PASS  NEG-12 current-behaviour claim with no citable artifact
+      sync: refused with CLAIM_WITHOUT_EVIDENCE
+PASS  NEG-13 probe refuses an unresolvable base instead of going green
+      bogus base: refused with REFUSED BASE_UNRESOLVABLE
+PASS  NEG-14 probe refuses a missing base rather than assuming no changes
+      no base: refused with REFUSED BASE_REQUIRED
+PASS  NEG-15 docs:sync requires an explicit mode
+      no mode: refused with usage
+PASS  NEG-16 probe catches an uncommitted broken note
+      probe: refused with NOTE_note-archived-needs-successor
+PASS  POS-6 plan declaring a valid citation block passes
+      sync: clean, observed findings=0
+PASS  NEG-17 plan citation pointing at a path that is not there
+      sync: refused with PLAN_CITATION_MISSING
+PASS  NEG-18 plan phase_id contradicting the graph mirror
+      sync: refused with PLAN_CITATION_CONFLICT
+PASS  NEG-19 id ratified without naming a decision
+      sync: refused with ID_RATIFIED_WITHOUT_DECISION
+PASS  NEG-20 ratification citing a note that does not exist
+      sync: refused with ID_RATIFIED_BY_UNKNOWN_NOTE
+PASS  NEG-21 plan without a citation block is not a finding
+      sync: clean, observed plans=1(0 declaring) findings=0
+PASS  NEG-22 probe survives a contract-index change without crashing
+      probe: clean, observed rules=
+PASS  NEG-23 probe enforces ratification on a changed contract index
+      probe: refused with ID_RATIFIED_WITHOUT_DECISION
+PASS  POS-7 changed source resolves to its declared owner document
+      probe: clean, observed DOC_IMPACT_OWNED
+PASS  NEG-24 owner map naming a document that does not exist
+      probe: refused with DOC_OWNER_DOC_MISSING
+PASS  NEG-25 source with no owner rule is reported as unowned coverage
+      probe: clean, observed DOC_IMPACT_UNOWNED
+controls=32 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)

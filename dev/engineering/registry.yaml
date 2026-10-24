@@ -1,0 +1,153 @@
+# dev/engineering/registry.yaml — hand-maintained decisions only.
+# Generated view: current-state.json (do not edit that file here or anywhere).
+# Statuses describe THIS branch's facts as of 2026-10-23. Nothing here claims
+# product delivery: nothing in this set is merged to master or released.
+
+schema_version: 1
+generated_view: dev/engineering/current-state.json
+legacy_execution_authority: dev/agent-workflow/graph.yaml#current_contract
+migration_of_legacy_consumers: not_started_requires_coordination
+
+entries:
+  - id: EB0-1
+    kind: work-package
+    title: Source and document authority audit (read-only)
+    decision_status: accepted
+    implementation_status: in_progress
+    verification_status: not_verified
+    release_status: not_released
+    owners: [Audit/Contract Reader]
+    refs: [docs/plans/memo/post-alpha4-debt-register.md]
+    verification_artifacts: []
+  - id: EB0-2
+    kind: work-package
+    title: Test and CI audit, red-set separation (read-only)
+    decision_status: accepted
+    implementation_status: in_progress
+    verification_status: not_verified
+    release_status: not_released
+    owners: [Test Maintainer]
+    refs: [docs/plans/memo/post-alpha4-debt-register.md]
+    verification_artifacts: []
+  - id: EB0-3
+    kind: work-package
+    title: Tool source and registration audit (read-only)
+    decision_status: accepted
+    implementation_status: in_progress
+    verification_status: not_verified
+    release_status: not_released
+    owners: [Tool Inventory Owner]
+    refs: [REQ-EB-0004, docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-FAMILY-TARGET-CONTRACTS.md]
+    verification_artifacts: []
+  - id: EB0-4
+    kind: work-package
+    title: Evidence and resource census (read-only)
+    decision_status: accepted
+    implementation_status: in_progress
+    verification_status: not_verified
+    release_status: not_released
+    owners: [Evidence Owner]
+    refs: [INV-EB-0010, docs/TEST_METHODS.md]
+    verification_artifacts: []
+  - id: EB0-5
+    kind: work-package
+    title: Performance baseline harvested from existing real data only
+    decision_status: accepted
+    implementation_status: in_progress
+    verification_status: not_verified
+    release_status: not_released
+    owners: [Test Maintainer]
+    refs: [docs/plans/memo/post-alpha4-debt-register.md]
+    verification_artifacts: []
+  - id: EB1-A
+    kind: implementation-pr
+    title: Agent Notes directory, format checks, ideas inbox
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    owners: [Doc Owner]
+    refs: [EB-ADR-0001, AC-EB-0002, .agents/notes/README.md]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
+  - id: EB1-B
+    kind: implementation-pr
+    title: Glossary, terminology, stable REQ/INV/AC id index
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    owners: [Doc/Contract Owner]
+    refs: [INV-EB-0009, AC-EB-0004, docs/glossary.md, docs/terminology.md, docs/contracts/engineering-baseline/ids.yaml]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
+  - id: EB1-C
+    kind: implementation-pr
+    title: Registry plus derived read-only current-state view
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    owners: [Tooling Owner]
+    refs: [REQ-EB-0003, AC-EB-0003, dev/engineering/README.md]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log]
+    # Sub-items bound here, not the whole card: the schema/validator cross-check gained
+    # `type` and `minItems` (run-10), and the generator's CLI was made to honour `--root`
+    # instead of accepting and ignoring it (run-11). C1 here is the Adapter-local level
+    # (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree): static/contract-level checks on this surface. No C2 real-Host
+    # integration verification and no C3 candidate verification is claimed or implied.
+    # Narrow review pending as of the 2026-10-23 21:38 instruction.
+    verified_tier: C1
+    verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
+  - id: EB1-D
+    kind: implementation-pr
+    title: Phase-plan citation interface and Idea-to-Contract rules
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    owners: [Workflow Owner]
+    refs: [IDEA-EB-0001]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
+  - id: EB1-E
+    kind: implementation-pr
+    title: docs:probe fast document probe with negative controls
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    owners: [Doc/Tooling Owner]
+    refs: [REQ-EB-0001, AC-EB-0001, AC-EB-0002]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
+  - id: EB1-F
+    kind: implementation-pr
+    title: docs:sync complete check and explicit write
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    owners: [Doc/Contract Owner]
+    refs: [REQ-EB-0002, AC-EB-0003]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log]
+    # Sub-item bound here: the write surface now carries a second derivative
+    # (docs/contracts/engineering-baseline/INDEX.md) through the same boundary helper,
+    # with the exact-file rule ahead of the area rule and a hard-link target refused
+    # (run-9). C1 = Adapter-local level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree), no C2/C3 claimed; not merged, not released.
+    # Narrow review pending as of the 2026-10-23 21:38 instruction.
+    verified_tier: C1
+    verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
+  - id: EB1-G
+    kind: implementation-pr
+    title: Contracts shape vs runtime field-set agreement check (read-only)
+    decision_status: proposed
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
+    release_status: not_released
+    # No catalog REQ covers this card; refs cite the code and its matrix instead of
+    # borrowing a requirement that does not say this. Unpaired declarations stay
+    # NOT_CHECKED and are counted, not counted as passing: 20 of 34 compared.
+    # Narrow review pending as of the 2026-10-23 21:38 instruction. C1 = Adapter-local
+    # level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree); no C2/C3 claimed.
+    owners: [Tooling Owner]
+    refs: [scripts/contracts-field-agreement.mjs, tests/doc-consistency/README.md]
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log]
+    verified_tier: C1
+    verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4

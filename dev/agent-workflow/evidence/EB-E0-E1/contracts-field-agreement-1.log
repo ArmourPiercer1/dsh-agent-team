@@ -1,0 +1,5 @@
+contracts field agreement: ts_files=32 interfaces=34 field_arrays=27 pairs_compared=20/21 findings=0
+NOT_CHECKED (1): EffectiveConfigDto in packages/contracts/src/projection/effective-config.ts: L387: index signature: readonly permissions: { readonly [permissionName: string]: EffectiveConf
+unpaired interfaces=13 unpaired field arrays=3
+equality_pairs=20 v1_subset_checks=2
+LIMIT: field NAMES only. No type comparison, no minItems/length/uniqueness, no cross-field rule: those live in the parse functions and are not derivable from a declaration. Not wired into any gate.

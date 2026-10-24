@@ -1,0 +1,126 @@
+# Source-to-owning-document map (EB1-E support, v0)
+#
+# Why this file exists: `docs:probe` reports which documents a source change
+# should be read against. Without a map the answer is "some docs somewhere", which
+# is not actionable, and the honest alternative — failing every product PR that
+# forgot a sentence — would train people to ignore the check. So the map declares
+# owners where an owner is actually known, and says "unowned" everywhere else.
+#
+# Semantics (scripts/docs-probe.mjs):
+#   * a changed source path is matched by the MOST SPECIFIC rule that matches: fewest
+#     actual `*` characters wins, then the longest static prefix before the first `*`,
+#     and a tie keeps declaration order (scripts/doc-checks.mjs, `selectOwningDocs`).
+#     First-match-wins was the earlier behaviour and it silently disabled every rule
+#     written below a broader one; declaration order is not a specificity claim;
+#   * matching an entry turns the advisory into a named document list;
+#   * matching nothing yields `DOC_IMPACT_UNOWNED` — a coverage measurement, not a
+#     failure;
+#   * an entry may carry `enforce: true`. That makes *this* rule self-imposed:
+#     changing a matching source file while **none** of its declared owner documents
+#     changed in the same change set is a blocking `DOC_OWNER_UPDATE_MISSING`.
+#     Precisely what that does and does not prove: the rule is satisfied when at least
+#     one declared owner document also changed. It does not check that the right one
+#     changed, that all of them did, or that the new text has anything to do with the
+#     diff — semantic equivalence stays with the Contract Owner. It is set only on the
+#     tooling this line owns. Everything else stays advisory, because turning it on
+#     for someone else's package would be putting this line's preference on their
+#     changes.
+#   * nothing here is wired into CI. Self-imposed enforcement is a discipline inside
+#     this line, not a gate on others; CI wiring remains EB3-B, a coordination
+#     decision that has not been taken.
+#
+# Entries must name documents that exist. That is checked (`CONTRACT_ANCHOR_MISSING`
+# style refusal happens in docs:sync via the anchor rule for contract files; here a
+# missing owner doc is reported as `DOC_OWNER_DOC_MISSING`).
+
+schema_version: 1
+owners:
+  # The rules below that carry `enforce: true` name the tooling this line writes. They are
+  # self-imposed:
+  # change the tool, change the document that describes it.
+  - glob: scripts/docs-*.mjs
+    docs:
+      - tests/doc-consistency/README.md
+      - docs/contracts/engineering-baseline/README.md
+    enforce: true
+  - glob: scripts/doc-checks.mjs
+    docs:
+      - tests/doc-consistency/README.md
+      - docs/terminology.md
+    enforce: true
+  - glob: scripts/gen-current-state.mjs
+    docs:
+      - dev/engineering/README.md
+    enforce: true
+  - glob: scripts/verify-agent-notes.mjs
+    docs:
+      - .agents/notes/README.md
+    enforce: true
+  - glob: scripts/doc-consistency-controls.mjs
+    docs:
+      - tests/doc-consistency/README.md
+    enforce: true
+  # Without this rule the write-boundary helper fell through to the catch-all
+  # scripts/** entry, whose owner is docs/STATUS.md — a document this line must not
+  # edit. A rule that points at a document you cannot touch is not an owner.
+  - glob: scripts/contracts-field-agreement.mjs
+    docs:
+      - tests/doc-consistency/README.md
+    enforce: true
+  - glob: scripts/generated-write.mjs
+    docs:
+      - tests/doc-consistency/README.md
+    enforce: true
+  - glob: packages/contracts/**
+    docs:
+      - packages/contracts/README.md
+  - glob: packages/testkit/**
+    docs:
+      - packages/testkit/README.md
+  - glob: packages/domain/**
+    docs:
+      - packages/domain/README.md
+      # Effect and permission law physically lives in the domain lanes, so the rule that
+      # points there has to name the semantic documents too; without them a one-shot probe
+      # on `tool-governance/src/effects.ts` would name no permission contract at all.
+      - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+      - docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
+  - glob: packages/storage/**
+    docs:
+      - packages/storage/README.md
+  - glob: packages/remote/**
+    docs:
+      - packages/remote/README.md
+      - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+  - glob: packages/client/**
+    docs:
+      - packages/client/README.md
+  - glob: packages/legacy/**
+    docs:
+      - packages/legacy/README.md
+  - glob: packages/**
+    docs:
+      - docs/STATUS.md
+  # Permission and tool-governance code has no package README at this base, and the exit
+  # criteria name package documentation as a reading surface. Pointing at the authoritative
+  # M0 contracts is a pointer, not an edit of them. Advisory on purpose: this line does not
+  # gate the product tree, so a missing reading here is an advisory, not a refusal.
+  - glob: packages/runtime/**
+    docs:
+      - packages/runtime/README.md
+      - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+      - docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
+  - glob: packages/tools/**
+    docs:
+      - packages/tools/README.md
+      - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+      - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+  - glob: scripts/**
+    docs:
+      - docs/STATUS.md
+  - glob: docs/contracts/engineering-baseline/**
+    docs:
+      - docs/contracts/engineering-baseline/README.md
+  - glob: dev/engineering/**
+    docs:
+      - dev/engineering/README.md
