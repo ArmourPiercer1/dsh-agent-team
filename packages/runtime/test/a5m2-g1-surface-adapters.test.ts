@@ -757,6 +757,33 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     expect(outcome).toMatchObject({ outcome: 'SETTLED-OBSERVED', changeResult: changed })
   })
 
+  it('post-consume final boundary: a cancel that lands DURING the awaited Team-PA admission refuses before the manager (zero entry); the same for a manager/adjudicator definition that moved during the two waits (root R22 review ③)', async () => {
+    const controller = new AbortController()
+    const gate = makeGate({ mode: 'danger-full-access' })
+    const mdA = makeManagerDouble()
+    const aMount = mountRecord('plugin_manager', { installFace: mdA.face, escalation: gate.port })
+    const aPlan = (aMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-pc1') as Success).plan
+    const abortRefusal = await aMount.row.delegate(aPlan, {
+      exec: { agent: AGENT, signal: controller.signal },
+      consumeAfterGrant: async () => { controller.abort(); return { ok: true } },
+    }) as unknown as Refusal
+    expect(abortRefusal.code).toContain('ABORTED_AFTER')
+    expect(abortRefusal.detail).toContain('zero manager entry happened')
+    expect(mdA.installCalls.length).toBe(0)
+
+    const mdB = makeManagerDouble()
+    const face: Record<string, unknown> = { ...mdB.face }
+    const bMount = mountRecord('plugin_manager', { installFace: face, escalation: makeGate({ mode: 'danger-full-access' }).port })
+    const bPlan = (bMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-pc2') as Success).plan
+    const driftRefusal = await bMount.row.delegate(bPlan, {
+      exec: { agent: AGENT },
+      consumeAfterGrant: async () => { face.installBundle = async () => ({ changed: false }); return { ok: true } },
+    }) as unknown as Refusal
+    expect(driftRefusal.code).toBe('P_G1_DEFINITION_DRIFT')
+    expect(driftRefusal.detail).toContain('approved against a different service definition')
+    expect(mdB.installCalls.length).toBe(0)
+  })
+
   // ── P1 (89a9): host-verbatim scope pass-through, real Session shape ─────
   it('P1 89a9: sandboxPolicy.resolve receives EXACTLY the host scope — the Session OBJECT by reference for agent calls (a narrower session configuration resolves only when the object survives), { session: undefined } for a session-less agent, {} only when exec.agent is absent', async () => {
     // session override drives the effective mode: composition default
@@ -945,12 +972,17 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const install = classify({ action: 'install_bundle', target: 'some-bundle@1.0.0', approvedBuilds: ['native-addon'] })
     expect(install.ok).toBe(true)
     if (!install.ok) return
-    expect(kindsOf(install.effects)).toEqual(['connect', 'connect', 'tool-invoke', 'write', 'write', 'write'])
+    expect(kindsOf(install.effects)).toEqual(['tool-invoke', 'write', 'write']) // ruling 2026-10-25: real-action effects only — internal connect/cache IO is disclosure, not a projected effect
     const installJson = JSON.stringify(install.effects)
-    expect(installJson).toContain('https://registry-primary.example')
-    expect(installJson).toContain('https://registry-fallback.example')
+    // the registries left the EFFECTS (no connect projection under a default-deny
+    // PA — internal installer IO is disclosure); they STAY on the real-action
+    // target as full-value leaves (the plan still says where the install goes).
+    expect(installJson).not.toContain('https://registry-primary.example')
+    expect(installJson).not.toContain('https://registry-fallback.example')
+    expect(JSON.stringify(install.targetManifest)).toContain('https://registry-primary.example')
+    expect(JSON.stringify(install.targetManifest)).toContain('https://registry-fallback.example')
     expect(installJson).toContain(PLUGIN_FACTS.installRootLocator)
-    expect(installJson).toContain(PLUGIN_FACTS.cacheRootLocator)
+    expect(installJson).not.toContain(PLUGIN_FACTS.cacheRootLocator) // the cache left the target too (internal installer domain)
     expect(installJson).toContain(PLUGIN_FACTS.profileConfigLocator)
     expect(installJson).not.toContain(PLUGIN_FACTS.exemptionsLocator)
     expect(install.targetManifest.versionExemptionDerived).toBe(false)
@@ -1008,7 +1040,7 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     expect(slash.ok).toBe(true)
     if (slash.ok) {
       expect(slash.targetManifest.claimedRegistryCanonical).toBe('https://registry-primary.example')
-      expect(JSON.stringify(slash.effects)).toContain('"https://registry-primary.example"')
+      expect(JSON.stringify(slash.targetManifest)).toContain('"https://registry-primary.example"') // the registry rides the TARGET (real-action params), never a projected connect effect
     }
     expect((classify({ action: 'install_bundle', target: '/abs/path/bundle.tgz' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')
     expect((classify({ action: 'install_bundle', target: 'C:\\pkgs\\bundle' }) as Refusal).code).toBe('P_G1_PLUGIN_TARGET_NOT_ENVELOPED')

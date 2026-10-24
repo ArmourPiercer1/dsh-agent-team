@@ -1624,7 +1624,6 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
             fallbackRegistries: 'stringArray',
             profileConfigLocator: 'string',
             installRootLocator: 'string',
-            cacheRootLocator: 'string',
             versionExemptionDerived: 'boolean',
           }),
           binds: Object.freeze({}),

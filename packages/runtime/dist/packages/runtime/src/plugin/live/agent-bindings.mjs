@@ -5919,30 +5919,55 @@ export function createAgentBindings(deps) {
               }
             }
           }
-          let g1LiveRegistries = null
-          let g1RegistriesFlight = null
+          /* REGISTRY FACTS (root R22 review ②): only COMPLETED facts, and
+           * failures VISIBLE. One mount-moment refresh of the manager's own
+           * @Remote registries(); while it has not settled — or if it failed
+           * — current() serves the deployment closure and SAYS SO via
+           * registriesSource; a stale closure is never labelled live. The
+           * real face allows registry=null and carries resolved (recorded
+           * when settled, never demanded). cacheRootLocator is OPTIONAL
+           * everywhere: the npm cache is internal installer domain (user
+           * ruling 09:03:32), its absence must not gate the 7 actions nor
+           * the install enablement. */
+          const g1RegistriesFacts = { snapshot: null, source: 'deployment-closure', error: null, resolved: null, flight: null }
           const g1RefreshRegistries = () => {
-            if (g1RegistriesFlight !== null || typeof g1PluginManager?.registries !== 'function') return
-            g1RegistriesFlight = Promise.resolve(g1PluginManager.registries()).then(
+            if (g1RegistriesFacts.flight !== null || typeof g1PluginManager?.registries !== 'function') return
+            g1RegistriesFacts.flight = Promise.resolve().then(() => g1PluginManager.registries()).then(
               (face) => {
-                if (typeof face?.registry === 'string' && Array.isArray(face?.fallbackRegistries)) {
-                  g1LiveRegistries = { allowedRegistries: [face.registry], fallbackRegistries: [...face.fallbackRegistries] }
+                if (typeof face !== 'object' || face === null) throw new Error('registries() answered no record')
+                g1RegistriesFacts.snapshot = {
+                  allowedRegistries: typeof face.registry === 'string' && face.registry.length > 0 ? [face.registry] : [],
+                  fallbackRegistries: Array.isArray(face.fallbackRegistries) ? face.fallbackRegistries.filter((entry) => typeof entry === 'string') : [],
                 }
+                g1RegistriesFacts.resolved = typeof face.resolved === 'string' ? face.resolved : null
+                g1RegistriesFacts.source = 'live-manager-settled'
               },
-              () => {},
-            ).finally(() => { g1RegistriesFlight = null })
+              (error) => {
+                g1RegistriesFacts.error = String(error)
+                console.log(`a5m2-g1: pluginFacts registries refresh FAILED (${g1RegistriesFacts.error}); the plugin rows keep the deployment-closure registries and say so — a stale closure is never labelled live`)
+              },
+            ).finally(() => { g1RegistriesFacts.flight = null })
           }
+          g1RefreshRegistries()
           const g1PluginFactsLive = {
             current: () => {
-              g1RefreshRegistries()
               const base = typeof g1ProfileDir === 'string'
                 ? { profileConfigLocator: `${g1ProfileDir}/package.json`, installRootLocator: g1ProfileDir, exemptionsLocator: `${g1ProfileDir}/compatibility.json` }
                 : { profileConfigLocator: g1PluginFactsCfg?.profileConfigLocator, installRootLocator: g1PluginFactsCfg?.installRootLocator, exemptionsLocator: g1PluginFactsCfg?.exemptionsLocator }
-              const registries = g1LiveRegistries ?? (Array.isArray(g1PluginFactsCfg?.allowedRegistries) && Array.isArray(g1PluginFactsCfg?.fallbackRegistries)
-                ? { allowedRegistries: [...g1PluginFactsCfg.allowedRegistries], fallbackRegistries: [...g1PluginFactsCfg.fallbackRegistries] }
-                : null)
-              if (registries === null || typeof g1PluginFactsCfg?.cacheRootLocator !== 'string') return undefined
-              return { ...base, cacheRootLocator: g1PluginFactsCfg.cacheRootLocator, ...registries }
+              const registries = g1RegistriesFacts.snapshot !== null
+                ? { ...g1RegistriesFacts.snapshot, registriesSource: g1RegistriesFacts.source, registriesResolved: g1RegistriesFacts.resolved }
+                : (Array.isArray(g1PluginFactsCfg?.allowedRegistries) && Array.isArray(g1PluginFactsCfg?.fallbackRegistries)
+                  ? {
+                    allowedRegistries: [...g1PluginFactsCfg.allowedRegistries],
+                    fallbackRegistries: [...g1PluginFactsCfg.fallbackRegistries],
+                    registriesSource: g1RegistriesFacts.error === null ? g1RegistriesFacts.source : 'deployment-closure-after-refresh-failure',
+                    ...(g1RegistriesFacts.error === null ? {} : { registriesRefreshError: g1RegistriesFacts.error }),
+                  }
+                  : null)
+              if (registries === null) return undefined
+              return typeof g1PluginFactsCfg?.cacheRootLocator === 'string' && g1PluginFactsCfg.cacheRootLocator.length > 0
+                ? { ...base, cacheRootLocator: g1PluginFactsCfg.cacheRootLocator, ...registries }
+                : { ...base, ...registries }
             },
           }
           // THE INSTALL ARMS (user ruling 09:03:32): the LIVE manager

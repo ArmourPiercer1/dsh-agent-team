@@ -152,7 +152,7 @@ describe('A5M2-G1-PLUGIN-C1 — the 639 face, the closed table, and the mint at 
     expect(t?.fallbackRegistries).toEqual(FACTS.fallbackRegistries)
     expect(t?.profileConfigLocator).toBe(FACTS.profileConfigLocator)
     expect(t?.installRootLocator).toBe(FACTS.installRootLocator)
-    expect(t?.cacheRootLocator).toBe(FACTS.cacheRootLocator)
+    expect(t?.cacheRootLocator).toBeUndefined() // internal installer domain — never a PA leaf (ruling 2026-10-25)
     expect(t?.versionExemptionDerived).toBe(false)
     expect(validatePaFamilyTarget('B-PLUGIN', t)).toBeUndefined()
     // the claimed registry outside the trusted envelope refuses BEFORE any plan
@@ -278,6 +278,25 @@ describe('A5M2-G1-PLUGIN-C1 — the armed install lane on the real wiring module
     output: { schema: { type: 'string' }, render: (value: unknown) => String(value) },
     execute: async () => ('{"installed":false,"note":"the captured native is never entered on the install lane"}'),
   }
+
+  it('cache facts are OPTIONAL end to end (root R22 review ②: the 误伤 fix) — a facts bag without cacheRootLocator still passes the facts gate, still mints the install target, and NEVER lists the cache or a connect as a projected effect', () => {
+    const rowNoCache = G1.mountG1SurfaceAdapter('plugin_manager', {
+      native: { name: 'plugin_manager', description: 'captured 639 face', execute: async () => ('{}') },
+      definitionIdentity: 'provider@sha#entry#hash',
+      trusted: TRUSTED,
+      ports: { pluginFacts: { current: () => ({ ...FACTS, cacheRootLocator: undefined }) } },
+      bindingFacts: () => ({ bindingId: 'b1', bindingRevision: 1, policyGeneration: 1, authorityGeneration: 1 }),
+    })
+    for (const [action, args] of [['list_plugins', { action: 'list_plugins' }], ['install_bundle', { action: 'install_bundle', target: 'pkg-a@1.0.0' }]] as Array<[string, Record<string, unknown>]>) {
+      const r = rowNoCache.classify(args, `call-nocache-${action}`)
+      expect(r.ok, action).toBe(true)
+    }
+    const install = rowNoCache.classify({ action: 'install_bundle', target: 'pkg-a@1.0.0' }, 'call-nocache-eff')
+    const kinds = JSON.stringify((install.plan as { effects: Array<{ kind: string }> }).effects.map((effect) => effect.kind))
+    expect(kinds).not.toContain('connect')
+    expect(kinds).not.toContain('cache')
+    expect(JSON.stringify((install.plan as { serviceObligations: unknown[] }).serviceObligations)).toContain('DISCLOSURE, NOT AN EFFECT')
+  })
 
   it('arms are accepted ONLY for the exactly-B-PLUGIN row set — a pure-query subset carrying them answers the byte-stable ARM_NOT_ACCEPTED (controlledInstall stays refused everywhere)', () => {
     const order: string[] = []
@@ -426,6 +445,11 @@ describe('A5M2-G1-PLUGIN-C1 — the armed install lane on the real wiring module
     expect(bindings).toContain('DISAGREES with the live profile context')
     expect(bindings).toContain('installBundle: (spec, options) => g1PluginManager.installBundle(spec, options)')
     expect(bindings).toContain('the row never substitutes its own adjudicator')
+    expect(bindings).toContain("'live-manager-settled'")
+    expect(bindings).toContain("'deployment-closure-after-refresh-failure'")
+    expect(adapters).toContain("entry.state = 'REFUSED-ABORTED-AFTER-CONSUME'")
+    expect(adapters).toContain('approved against a different service definition')
+    expect(adapters).toContain('DISCLOSURE, NOT AN EFFECT')
     const host = read('../src/plugin/host.ts')
     expect(host).toContain("try { return ctx.get('pluginManager') } catch { return undefined }")
     expect(host).toContain("@deepseek-ai/dsh-sandbox")

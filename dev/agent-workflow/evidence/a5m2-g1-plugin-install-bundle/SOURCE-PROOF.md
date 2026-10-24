@@ -118,3 +118,23 @@ Every assertion = raw RC + log path; tier stays 接线未测 until this plan has
   the a5m2-schedule-production spec (needs @deepseek-ai/dsh-schedule, declared all along) now runs:
   battery 56/56 files 1095/1095. NO dynamic-string trick: host.ts keeps the literal-specifier
   dynamic import, and its types resolve for real.
+
+## 8. ROOT R22 INDEPENDENT REVIEW — the three finite fixes (this commit)
+- ① install_bundle effects = REAL-ACTION resources only (bundles-dir write + profile-config write +
+  tool-invoke). The registry-connect fan-out and the npm-cache write are NO LONGER projected (a
+  default-deny PA has no connect projection — enumerating one would IO_UNSUPPORTED the action forever
+  while governing nothing); they became an explicit obligation row 'internal-pnpm-installer-io' —
+  DISCLOSURE, NOT AN EFFECT (user phase ruling: 只管理安装动作即可; the matrix says internal installer
+  IO is the Host's domain). The other 7 actions keep their enumerations byte-for-byte; the cache leaf
+  left the install TARGET too (real-action params stay: spec, registries, locators).
+- ② bindings facts are COMPLETED facts with VISIBLE failure: one mount-moment refresh of the manager's
+  @Remote registries(); current() serves the deployment closure UNTIL settled and labels every answer
+  (registriesSource: 'deployment-closure' | 'live-manager-settled' |
+  'deployment-closure-after-refresh-failure' + registriesRefreshError) — a stale closure is never
+  called live. registry=null is legal (empty allowed-set + resolved recorded). cacheRootLocator is
+  OPTIONAL at every layer: its absence gates NOTHING (the 误伤 on the 7 actions is fixed).
+- ③ FINAL boundary AFTER BOTH approvals, same PA ledger (no second account): after consumeAfterGrant
+  returns, the row re-checks the SIGNAL (cancelled during either wait → zero manager entry), the LIVE
+  service-definition faces (manager/adjudicator identity — moved → DEFINITION_DRIFT, zero entry), and
+  the ACTUAL target via the CURRENT-facts reVerifyAtEdge before entering the manager.
+- Tier: 接线未测 stands (targeted specs are contract-face evidence, not live-Host).
