@@ -94,7 +94,7 @@ const SAVED_BP_V3_YAML = [
   'members:', '  - templateId: edit-worker',
   '    persona: "You are the edit worker. Follow the marker instructions literally and only."',
   '    capabilities:', '      teamTools:', '        kind: deny',
-  '      builtinToolDeny:', // coverage gate law (permission-coverage.js:200-202): these host builtins are NOT in the closed PERMISSION_TOOL_NAMES vocabulary — permissions CANNOT manage them; the reviewed remediation is capability-layer REMOVAL. Window-2's refusal named exactly these 15 (code alpha2-permission-coverage-unmanaged-tools). 'edit' is vocabulary-managed via the ask lane below and stays.
+  '      builtinToolDeny:', // isolation config for THIS EDIT window only (root conditional GO 09:38Z): deny removes these 15 natives from the worker's final surface — they carry NO ownership record on this instance (window-2 refusal named exactly them; coverage managed = ownership-not-declaration per root correction, so this is exposure-shrink, NOT a claim they are unmanageable, and it exempts NO tool from delivery). Window-2's refusal = code alpha2-permission-coverage-unmanaged-tools. 'edit' (the tested resource) stays via the ask lane below.
   '        - ask_user_question', '        - create_goal', '        - exit_plan_mode',
   '        - get_goal', '        - glob', '        - grep', '        - job_kill',
   '        - job_list', '        - job_output', '        - present', '        - skill',
