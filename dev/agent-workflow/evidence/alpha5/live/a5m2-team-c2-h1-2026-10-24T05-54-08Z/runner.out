@@ -1,0 +1,224 @@
+{
+  "trace": [
+    {
+      "leg": "C-FRESH-HOME",
+      "ok": true,
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T05-54-08Z",
+      "at": "2026-10-24T05:54:09.294Z"
+    },
+    {
+      "leg": "C-MOUNT-CANDIDATE",
+      "ok": true,
+      "detail": "dsh-agent-team@0.1.1-alpha.2 row=…/host.js exports=.,./host,./spill-local,./client,./package.json",
+      "at": "2026-10-24T05:54:09.295Z"
+    },
+    {
+      "leg": "C-PORT-FREE",
+      "ok": true,
+      "detail": "port=3180 probe refused a connect",
+      "at": "2026-10-24T05:54:09.298Z"
+    },
+    {
+      "leg": "C-MOUNT-VALIDATE",
+      "ok": true,
+      "detail": "B-TEAM rev-2 face: no A-TODO gates, no permissionPolicy key, world-scoped fs root",
+      "at": "2026-10-24T05:54:09.298Z"
+    },
+    {
+      "leg": "C-PROFILE-LAYER-WRITTEN",
+      "ok": true,
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T05-54-08Z/profiles/web/cordis.patch.yml",
+      "at": "2026-10-24T05:54:09.299Z"
+    },
+    {
+      "leg": "C-MOCK-MODEL",
+      "ok": true,
+      "detail": "127.0.0.1:3497 scripted, exactly-one-call decide",
+      "at": "2026-10-24T05:54:09.308Z"
+    },
+    {
+      "leg": "C-BOOT",
+      "ok": true,
+      "detail": "http://127.0.0.1:3180/?token=REDACTED",
+      "at": "2026-10-24T05:54:11.316Z"
+    },
+    {
+      "leg": "C-PORT-EXPLICIT",
+      "ok": true,
+      "detail": "port=3180",
+      "at": "2026-10-24T05:54:11.316Z"
+    },
+    {
+      "leg": "C-REMOTE-MOUNT-MARKER",
+      "ok": true,
+      "detail": "polls=2 [dsh-agent-team] remote mount: MOUNTED channel=/team-remote",
+      "at": "2026-10-24T05:54:11.574Z"
+    },
+    {
+      "leg": "C-BLUEPRINT-SOURCE-GATE",
+      "ok": true,
+      "detail": "production gate status=ok id=team.a5q-queryonly",
+      "at": "2026-10-24T05:54:11.638Z"
+    },
+    {
+      "leg": "C-READINESS-BARRIER",
+      "ok": true,
+      "detail": "polls=2",
+      "at": "2026-10-24T05:54:13.172Z"
+    },
+    {
+      "leg": "C-CREATE-ONCE",
+      "ok": true,
+      "detail": "initialize-only readback root=session-a5m2c2-p-2026-10-24T05-54-08Z",
+      "at": "2026-10-24T05:54:13.237Z"
+    },
+    {
+      "leg": "C-OPTIONAL-PROBES",
+      "ok": true,
+      "detail": "NOT RUN by window-1 scope (root card [1]): initialize + the target query only",
+      "at": "2026-10-24T05:54:13.241Z"
+    },
+    {
+      "leg": "C-LEADER-MEMBERS",
+      "ok": true,
+      "detail": "same-call pairs=1 outcomes={\"ok\":1,\"error\":0,\"unknown\":0} missing=none",
+      "at": "2026-10-24T05:54:15.274Z"
+    },
+    {
+      "leg": "child-exit",
+      "ok": true,
+      "detail": "exit code=0 signal=null",
+      "at": "2026-10-24T05:54:15.406Z"
+    },
+    {
+      "leg": "port-free-after-stop",
+      "ok": true,
+      "detail": "independent probe of 3180 after the child exit event",
+      "at": "2026-10-24T05:54:15.407Z"
+    },
+    {
+      "leg": "teardown",
+      "ok": true,
+      "detail": "childExit=true portFreeProbe=true worldBytes=41327/67108864 mockFree=true",
+      "at": "2026-10-24T05:54:15.411Z"
+    }
+  ],
+  "ok": true,
+  "root": {
+    "ok": true,
+    "rootSessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z",
+    "params": {
+      "blueprintId": "team.a5q-queryonly",
+      "rootSessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z"
+    },
+    "stage": "readback",
+    "createValue": {
+      "data": {
+        "path": "fresh-root",
+        "durable": {
+          "teamSession": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z",
+            "blueprint": {
+              "blueprintId": "team.a5q-queryonly",
+              "revision": "1",
+              "contentHash": "sha256:3113d53cc5b0db531d5561d0988924d8f7ffa9f4198dd11e9e92cf7c25e31cee"
+            },
+            "createdAt": "2026-10-24T05:54:13.182Z",
+            "generation": 1,
+            "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+          },
+          "binding": {
+            "schemaVersion": 1,
+            "kind": "team-root",
+            "sessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z"
+          },
+          "wrote": true,
+          "leaderRow": {
+            "schemaVersion": 2,
+            "rootSessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z",
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "createdAt": "2026-10-24T05:54:13.188Z",
+            "activityVersion": 1
+          }
+        },
+        "bind": {
+          "requested": "fresh-root",
+          "bound": true,
+          "installed": true,
+          "identity": {
+            "kind": "root",
+            "sessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z",
+            "rootSessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z"
+          },
+          "admitted": true,
+          "admissionCode": "ADMISSION_OPEN",
+          "emittedEvents": [
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "persona"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "model"
+            },
+            {
+              "name": "agent-setup/overlay-installed",
+              "detail": "capability"
+            },
+            {
+              "name": "agent-setup/admission-decided",
+              "detail": "ADMISSION_OPEN"
+            }
+          ]
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    },
+    "readbackListed": true
+  },
+  "members": {
+    "ok": true,
+    "marker": "A5M2C2-MEMBERS-2026-10-24T05-54-08Z",
+    "sessionId": "session-a5m2c2-p-2026-10-24T05-54-08Z",
+    "promptState": "ok",
+    "promptError": null,
+    "calls": [
+      {
+        "id": "call-c2h1-coztilw4",
+        "paired": true,
+        "invoked": true,
+        "outcome": "ok",
+        "isError": false
+      }
+    ],
+    "outcomeCounts": {
+      "ok": 1,
+      "error": 0,
+      "unknown": 0
+    },
+    "missing": [],
+    "pairCount": 1,
+    "callCount": 1
+  },
+  "probes": {},
+  "teardown": {
+    "childExit": true,
+    "childExitDetail": "exit code=0 signal=null",
+    "portFreeProbe": true,
+    "mockPort": 3497,
+    "mockFree": true,
+    "worldBytes": 41327,
+    "worldCeilingBytes": 67108864
+  }
+}

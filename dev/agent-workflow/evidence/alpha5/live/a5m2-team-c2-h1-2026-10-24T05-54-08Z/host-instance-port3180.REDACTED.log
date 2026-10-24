@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-c8dd3f07b/node_modules/.pnpm/dsh-agent-team@file+..+..+..+..+.worktrees+pack-int+out-699cc4fb7a27941b19c1550c42d45d4_3cfcbe1f772c5998b332e4dd8c9559a2/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3180/?token=REDACTED
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5m2-team-c2-h1--24T05-54-08Z
+[dsh-agent-team] a5ptc: census-boot root=session-a5m2team-c2h1-boot-2026-10-24T05-54-08Z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] the permission authority facts warm-up FAULTED (a provider read abstained for at least one warm target) — Leader permission EXPANSIONS refuse typed (EFFECT_CONTEXT_UNAVAILABLE / zero envelope authority) until an addressed read rebuilds the facts (bounded recovery); decisions and execution are unaffected
+[dsh-agent-team] durable permission authority ACTIVE for row session-a5m2team-c2h1-boot-2026-10-24T05-54-08Z: anchor templates declaring capabilities.permissions = ["leader","wa","wd"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor team.a5q-queryonly@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5m2-team-c2-h1--24T05-54-08Z
+[dsh-agent-team] a5ptc: census-boot root=session-a5m2c2-p-2026-10-24T05-54-08Z selectedRunner=none enforcement=confine-unset (host sandbox default)
