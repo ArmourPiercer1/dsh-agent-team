@@ -78,7 +78,21 @@ HOME 世界与 raw 永不删除；证据归档 = 窗口后 `cp -a` 相关世界�
 - `02/03` = 断言库（保留），**只喂 05 跑出的实际证据**（callResults/ledger/
   盘上实测），非独立入口；头部 NOT-RUN 标注保留。
 
-## 5. 条件 GO 执行法（root 2026-10-28 正式一次条件 GO）
+## 5b. 同步卡（2026-10-28，root 令：只动参数/预期常量）
+
+固定产品改钉 **`37646ac288dbd0ee3c998343dc91fd1a8da7a2d5`**（5c313418 直接子，
+只 3 dist + placement；arm 两 blob 实测不变 `5a6db608a4…`/`6a1ec67f06…`）。
+**旧 pack hash `0a3f11b2…` 退役不得沿用**——runner 现要求
+`A5M2_EDIT_PACK_SHA256`（新 tgz 全 hash，来自 f86 新收据）与
+`A5M2_EDIT_INSTALL_DIR`（新最终完整路径）为必选显式输入（缺失 rc3 点名新
+纪律）；tgz 目录段前缀预期 `out-37646ac2-`。d66 执行逻辑零重写；driver SHA
+（d66 逻辑，由 HEAD 承载）与 product SHA 分离记录。07 静态审计降级为
+**信息性留痕**（root 令：扫描器无关项不得变额外发布门；真门 = f86 对实际打包
+入口的 coldimport RC0 + lock 事实）。boot 额外前置：f86 新 lock 与 coldimport
+RC0 收据到场。实测 fail-closed：无 env rc3；缺 INSTALL_DIR rc3；缺 PACK_SHA256
+rc3；假目录 rc3 点名"awaiting NEW receipt"。
+
+## 5. 条件 GO 执行法（root 2026-10-28 正式一次条件 GO，顺延至 37646ac2）
 
 **执行入口 = `scripts/06-run-window.sh`**（有界包装；已备妥，未跑）。触发条件 =
 f86 本次 fixture 准备成功（真实冷 import + 新 hash/lock/path 收据成立）——
