@@ -73,6 +73,33 @@ export type PermissionTool =
   | 'create_goal'
   | 'get_goal'
   | 'update_goal'
+  | 'todo_write'
+  | 'terminal_open'
+  | 'terminal_send'
+  | 'terminal_read'
+  | 'terminal_signal'
+  | 'terminal_close'
+  | 'terminal_list'
+  | 'run_code'
+  | 'plugin_manager'
+  | 'grep'
+  | 'glob'
+  | 'team_grep'
+  | 'team_glob'
+  | 'job_output'
+  | 'job_list'
+  | 'job_kill'
+  | 'stagehand_act'
+  | 'stagehand_extract'
+  | 'stagehand_navigate'
+  | 'stagehand_observe'
+  | 'stagehand_screenshot'
+  | 'stagehand_tabs'
+  | 'list_mcp_resource_templates'
+  | 'list_mcp_resources'
+  | 'read_mcp_resource'
+  | 'web_search'
+  | 'web_fetch'
   | 'team_list_members'
   | 'team_list_templates'
   | 'team_inspect_config'
@@ -119,6 +146,33 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'create_goal',
   'get_goal',
   'update_goal',
+  'todo_write',
+  'terminal_open',
+  'terminal_send',
+  'terminal_read',
+  'terminal_signal',
+  'terminal_close',
+  'terminal_list',
+  'run_code',
+  'plugin_manager',
+  'grep',
+  'glob',
+  'team_grep',
+  'team_glob',
+  'job_output',
+  'job_list',
+  'job_kill',
+  'stagehand_act',
+  'stagehand_extract',
+  'stagehand_navigate',
+  'stagehand_observe',
+  'stagehand_screenshot',
+  'stagehand_tabs',
+  'list_mcp_resource_templates',
+  'list_mcp_resources',
+  'read_mcp_resource',
+  'web_search',
+  'web_fetch',
   'team_list_members',
   'team_list_templates',
   'team_inspect_config',
@@ -241,6 +295,33 @@ export type InvocationOnlyPermissionTool =
   | 'create_goal'
   | 'get_goal'
   | 'update_goal'
+  | 'todo_write'
+  | 'terminal_open'
+  | 'terminal_send'
+  | 'terminal_read'
+  | 'terminal_signal'
+  | 'terminal_close'
+  | 'terminal_list'
+  | 'run_code'
+  | 'plugin_manager'
+  | 'grep'
+  | 'glob'
+  | 'team_grep'
+  | 'team_glob'
+  | 'job_output'
+  | 'job_list'
+  | 'job_kill'
+  | 'stagehand_act'
+  | 'stagehand_extract'
+  | 'stagehand_navigate'
+  | 'stagehand_observe'
+  | 'stagehand_screenshot'
+  | 'stagehand_tabs'
+  | 'list_mcp_resource_templates'
+  | 'list_mcp_resources'
+  | 'read_mcp_resource'
+  | 'web_search'
+  | 'web_fetch'
   | 'team_list_members'
   | 'team_list_templates'
   | 'team_inspect_config'
@@ -285,6 +366,33 @@ export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPerm
   'create_goal',
   'get_goal',
   'update_goal',
+  'todo_write',
+  'terminal_open',
+  'terminal_send',
+  'terminal_read',
+  'terminal_signal',
+  'terminal_close',
+  'terminal_list',
+  'run_code',
+  'plugin_manager',
+  'grep',
+  'glob',
+  'team_grep',
+  'team_glob',
+  'job_output',
+  'job_list',
+  'job_kill',
+  'stagehand_act',
+  'stagehand_extract',
+  'stagehand_navigate',
+  'stagehand_observe',
+  'stagehand_screenshot',
+  'stagehand_tabs',
+  'list_mcp_resource_templates',
+  'list_mcp_resources',
+  'read_mcp_resource',
+  'web_search',
+  'web_fetch',
   'team_list_members',
   'team_list_templates',
   'team_inspect_config',

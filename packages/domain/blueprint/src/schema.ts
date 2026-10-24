@@ -475,6 +475,45 @@ export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'create_goal',
   'get_goal',
   'update_goal',
+  // A5M2 registration card (root 16:0x, same-kind wiring for EXISTING
+  // tools; nothing here enables a row or grants an effect): sixteen names
+  // that already exist on governed paths, plus eleven CONDITIONALLY
+  // wired names that become EXPRESSIBLE ONLY (the card's words — not
+  // "ready"): the six-file stagehand rowset stays conditioned on its
+  // rowset, the MCP resource trio on its provider, the web pair on the
+  // network lane's own approval law. Every name rides the invocation-only
+  // class (exact realm|tool:name tool-invoke arm, the B-SESSION precedent):
+  // NO file/shell dimension is added, default-deny, approval, network and
+  // install-IO special laws are untouched, and workflow / ralph / the
+  // subagent safety block / human-pending tools / Schedule create+update
+  // are deliberately NOT registered on this card.
+  'todo_write',
+  'terminal_open',
+  'terminal_send',
+  'terminal_read',
+  'terminal_signal',
+  'terminal_close',
+  'terminal_list',
+  'run_code',
+  'plugin_manager',
+  'grep',
+  'glob',
+  'team_grep',
+  'team_glob',
+  'job_output',
+  'job_list',
+  'job_kill',
+  'stagehand_act',
+  'stagehand_extract',
+  'stagehand_navigate',
+  'stagehand_observe',
+  'stagehand_screenshot',
+  'stagehand_tabs',
+  'list_mcp_resource_templates',
+  'list_mcp_resources',
+  'read_mcp_resource',
+  'web_search',
+  'web_fetch',
   'team_list_members',
   'team_list_templates',
   'team_inspect_config',
@@ -581,6 +620,36 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES: readonly string[] = [
   'create_goal',
   'get_goal',
   'update_goal',
+  // The registration card's 27 names (see PERMISSION_TOOL_NAMES): ALL are
+  // invocation-only — their declared authority is the tool-invoke arm
+  // alone; nothing here projects a file/shell effect.
+  'todo_write',
+  'terminal_open',
+  'terminal_send',
+  'terminal_read',
+  'terminal_signal',
+  'terminal_close',
+  'terminal_list',
+  'run_code',
+  'plugin_manager',
+  'grep',
+  'glob',
+  'team_grep',
+  'team_glob',
+  'job_output',
+  'job_list',
+  'job_kill',
+  'stagehand_act',
+  'stagehand_extract',
+  'stagehand_navigate',
+  'stagehand_observe',
+  'stagehand_screenshot',
+  'stagehand_tabs',
+  'list_mcp_resource_templates',
+  'list_mcp_resources',
+  'read_mcp_resource',
+  'web_search',
+  'web_fetch',
   // B-TEAM (root 22:4x continuation card; names verbatim from the CURRENT
   // integration production — team-adapters.mjs A5_B_TEAM_TOOL_NAMES, PA
   // lane via the plane's ONE paAdmit, bindings actualservice 85ccbf9e3,

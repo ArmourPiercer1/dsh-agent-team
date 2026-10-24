@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (43 = 38 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five + goal trio; root 20:05/22:13/22:4x/22:32/15:2x) + Team self-governance four + B-SRE one; root 2026-10-24 registration)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (70 = 65 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five + goal trio + same-kind registration 27 (16 existing + 11 conditional-expressible); root 20:05/22:13/22:4x/22:32/15:2x) + Team self-governance four + B-SRE one; root 2026-10-24 registration)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -959,6 +959,33 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'create_goal',
       'get_goal',
       'update_goal',
+      'todo_write',
+      'terminal_open',
+      'terminal_send',
+      'terminal_read',
+      'terminal_signal',
+      'terminal_close',
+      'terminal_list',
+      'run_code',
+      'plugin_manager',
+      'grep',
+      'glob',
+      'team_grep',
+      'team_glob',
+      'job_output',
+      'job_list',
+      'job_kill',
+      'stagehand_act',
+      'stagehand_extract',
+      'stagehand_navigate',
+      'stagehand_observe',
+      'stagehand_screenshot',
+      'stagehand_tabs',
+      'list_mcp_resource_templates',
+      'list_mcp_resources',
+      'read_mcp_resource',
+      'web_search',
+      'web_fetch',
       'team_list_members',
       'team_list_templates',
       'team_inspect_config',
@@ -1435,8 +1462,18 @@ describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:
 
   it('membership: all twenty-six confirmed names are in (the four controls + B-SRE REGISTERED 2026-10-24); the un-adjudicated orchestration names stay OUT', () => {
     for (const name of CONFIRMED_SETS_26) expect(PERMISSION_TOOL_NAMES).toContain(name)
-    for (const out of ['workflow', 'ralph', 'web_fetch', 'todo_write']) {
+    // A5M2 registration card (root 16:0x): 'web_fetch' and 'todo_write' were
+    // the card's own moves — they LEFT this OUT list and JOINED the
+    // vocabulary (asserted moved-in below). workflow/ralph are the card's
+    // still-unadjudicated names with spellings verifiable at HEAD; the rest
+    // of the not-enabled families (subagent safety block, human-pending,
+    // schedule create/update) stay OUT per the card but are not asserted on
+    // spellings this repo cannot verify — the closed set enforces absence.
+    for (const out of ['workflow', 'ralph']) {
       expect(PERMISSION_TOOL_NAMES.includes(out)).toBe(false)
+    }
+    for (const moved of ['web_fetch', 'todo_write']) {
+      expect(PERMISSION_TOOL_NAMES.includes(moved), moved).toBe(true)
     }
   })
 
