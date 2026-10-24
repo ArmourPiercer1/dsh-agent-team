@@ -2553,6 +2553,13 @@ export function createAgentBindings(deps) {
       let a5G2Mount = null
       let a5ImagePlacedArm = null
       let a5SpawnWiring = null
+      // A5M2 B-SPAWN LATE-ATTACH (root option-A ruling 2026-10-24): the
+      // deferred-bind state for a census-'always' face that had not published
+      // at setup; `spawnDeferPlane` is THIS mount's attach face (set right
+      // before mount() below), `spawnDeferRecheckFn` the event-driven re-read.
+      let a5SpawnDefer = null
+      let spawnDeferPlane = null
+      let spawnDeferRecheckFn = null
       // A5M2 PROVIDER-IDENTITY SUPPLY (site 4, the ONE reader of record): same
       // outer-scope discipline as the inject above — it is WIRED ONCE in the
       // mount assembly (where the plane injection is armed) and READ at two
@@ -3674,27 +3681,60 @@ export function createAgentBindings(deps) {
             const bodies = spawnCurrentBodies()
             return Object.keys(spawnNativeBodies).every((spawnName) => bodies[spawnName] === spawnNativeBodies[spawnName])
           }
-          for (const spawnName of A5_B_SUBAGENT_SPAWN_TOOL_NAMES) {
-            let spawnNative
-            try {
-              spawnNative = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
-            } catch (error) {
-              throw refuseSpawn(`the member-scoped tool face could not be read for '${spawnName}' (${String(error?.message ?? error).slice(0, 140)})`, `face-read-threw:${spawnName}:${error instanceof Error ? error.name : 'non-error'}`)
-            }
-            if (spawnNative === null || typeof spawnNative !== 'object' || typeof spawnNative.execute !== 'function') {
-              if (A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always') {
-                throw refuseSpawn(`no native '${spawnName}' definition with an execute body is visible to this member scope — census 'always' records are never masked by a row with nothing behind it`, `no-native-execute:${spawnName}:census-always`)
+          // A5M2 B-SPAWN LATE-ATTACH (root option-A ruling 2026-10-24): the
+          // capture became a PURE ATTEMPT — same reads, same laws — but the
+          // census-'always' ABSENCE is now CLASSIFIED, not thrown: the host
+          // registers these definitions at agent/created, announced only
+          // AFTER this setup resolves (core lifecycle setup → publish →
+          // announce; the upstream auto-registrar binds the def to the
+          // created event, lib/index.js:2660→2116). Setup may not await the
+          // event its own failure blocks, and bounded polling was refused.
+          // The public `tools/change` fires on EVERY tools.register AFTER
+          // the store inserted (host core/tools ScopedLayers onChange; store
+          // notify-after law) — an event-driven SAME-SCOPE re-read, never a
+          // settled-proof assumption. Read faults and identity faults still
+          // refuse exactly as before; only 'always' ABSENCE takes the lane.
+          const spawnCaptureAttempt = (alwaysOnly) => {
+            const captured = {}
+            const bodies = {}
+            const missing = []
+            let readFault = null
+            let identityFault = null
+            for (const spawnName of A5_B_SUBAGENT_SPAWN_TOOL_NAMES) {
+              if (alwaysOnly === true && A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition !== 'always') continue
+              let spawnNative
+              try {
+                spawnNative = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
+              } catch (error) {
+                readFault = { spawnName, error }
+                break
               }
-              continue
+              if (spawnNative === null || typeof spawnNative !== 'object' || typeof spawnNative.execute !== 'function') {
+                if (A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always') missing.push(spawnName)
+                continue
+              }
+              const spawnIdentity = definitionIdentityOf(spawnNative)
+              if (typeof spawnIdentity !== 'string' || spawnIdentity.length === 0) {
+                identityFault = { spawnName }
+                break
+              }
+              captured[spawnName] = Object.freeze({ native: spawnNative, definitionIdentity: spawnIdentity })
+              bodies[spawnName] = spawnNative.execute
             }
-            const spawnIdentity = definitionIdentityOf(spawnNative)
-            if (typeof spawnIdentity !== 'string' || spawnIdentity.length === 0) {
-              throw refuseSpawn(`the captured native '${spawnName}' answers no definitionIdentityOf identity`, `no-definition-identity:${spawnName}`)
-            }
-            spawnCaptured[spawnName] = Object.freeze({ native: spawnNative, definitionIdentity: spawnIdentity })
-            spawnNativeBodies[spawnName] = spawnNative.execute
+            return { captured, bodies, missing, readFault, identityFault }
           }
-          if (Object.keys(spawnCaptured).length === 0) {
+          const spawnAttempt = spawnCaptureAttempt(false)
+          if (spawnAttempt.readFault !== null) {
+            throw refuseSpawn(`the member-scoped tool face could not be read for '${spawnAttempt.readFault.spawnName}' (${String(spawnAttempt.readFault.error?.message ?? spawnAttempt.readFault.error).slice(0, 140)})`, `face-read-threw:${spawnAttempt.readFault.spawnName}:${spawnAttempt.readFault.error instanceof Error ? spawnAttempt.readFault.error.name : 'non-error'}`)
+          }
+          if (spawnAttempt.identityFault !== null) {
+            throw refuseSpawn(`the captured native '${spawnAttempt.identityFault.spawnName}' answers no definitionIdentityOf identity`, `no-definition-identity:${spawnAttempt.identityFault.spawnName}`)
+          }
+          for (const [spawnName, spawnEntry] of Object.entries(spawnAttempt.captured)) {
+            spawnCaptured[spawnName] = spawnEntry
+            spawnNativeBodies[spawnName] = spawnAttempt.bodies[spawnName]
+          }
+          if (Object.keys(spawnCaptured).length === 0 && spawnAttempt.missing.length === 0) {
             if (planeCfg.spawnGoverned === undefined) {
               // C3: an OMITTED key against a member whose REAL scoped
               // surface answers NONE of the spawn family is the honest
@@ -3706,58 +3746,189 @@ export function createAgentBindings(deps) {
               throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring', 'all-absent:explicit-true')
             }
           }
-          // THE ONE bound container (root 20:41 fix 1): the adapter compares
-          // the CONTAINER object identity (assembly gate + per-dispatch edge
-          // re-read), so a stable generation must answer THIS object — built
-          // once, after the capture, from the real captured bodies.
-          const spawnNativeDelegates = Object.freeze({ ...spawnNativeBodies })
-          const spawnWiringBuilt = createSubagentSpawnWiring({
-            providerId: 'a5p5-plane',
-            realmId: a5PlaneRealmId,
-            captured: spawnCaptured,
-            // THE DRIFT LAW, PRODUCTION SOURCE: the CURRENT member-scoped
-            // read answers per dispatch — a preset generation that moved
-            // swaps the object and the row refuses DRIFT. The self-placement
-            // shadow maps back to the captured object (read-back law above);
-            // a FOREIGN object on the face answers itself and refuses.
-            liveNative: (spawnName) => {
-              const current = readSpawnFace(spawnName)
-              const placed = spawnPlacedByName.get(spawnName)
-              if (placed !== undefined && current === placed) return spawnCaptured[spawnName].native
-              return current
-            },
-            spawnDelegates: spawnNativeDelegates,
-            // THE VERIFIED-HANDLE LAW (root 20:41 fix 1): the SAME real-
-            // generation container while every bound handle still answers
-            // the face (own placement included); a NEW container carrying
-            // the moved/foreign handles the moment it does not — the
-            // adapter's own DELEGATE_DRIFT refuses then, at the edge.
-            liveSpawnDelegates: () => (spawnStableGeneration() ? spawnNativeDelegates : Object.freeze(spawnCurrentBodies())),
-            // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
-            // plane construction; consulting before the plane answers
-            // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
-            placementFeed: (spawnName) => a5PlaneValue?.placementFeed?.(spawnName),
-            // THE PLANE'S ONE PA WALK, LAZILY (rows only run placed): a
-            // throw from the walk is the CALL's throw (the adapter catches
-            // nothing).
-            paAdmit: (request) => {
-              // THE REAL SEAT rides the mount as `spawnPaSeat` (the plane's
-              // out-hand for owner-built wiring — production-leg law, found
-              // by the spawn plane-mount spec: the value carries NO top-level
-              // paAdmit; the other lanes get the seat IN at assembly).
-              if (typeof a5PlaneValue?.spawnPaSeat !== 'function') {
-                throw new Error('the plane PA walk is not mounted on this assembly — the spawn rows have no admission path and enter nothing')
-              }
-              return a5PlaneValue.spawnPaSeat(request)
-            },
-            observe: (row) => observations.push(`a5m2-spawn: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
-          })
-          if (spawnWiringBuilt?.ok !== true) {
-            throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`, `wiring-module-refused:${String(spawnWiringBuilt?.code ?? 'unknown')}`)
+          // THE ONE bound container per wiring build (root 20:41 fix 1): the
+          // adapter compares the CONTAINER object identity (assembly gate +
+          // per-dispatch edge re-read), so a stable generation must answer
+          // THIS object — built once, after the capture, from the real
+          // captured bodies. THE SHARED BUILDER: the fast path calls it
+          // inline below exactly as before; a deferred arm calls the SAME
+          // builder when its re-read proves every 'always' face present.
+          const spawnWire = () => {
+            const spawnNativeDelegates = Object.freeze({ ...spawnNativeBodies })
+            const spawnWiringBuilt = createSubagentSpawnWiring({
+              providerId: 'a5p5-plane',
+              realmId: a5PlaneRealmId,
+              captured: spawnCaptured,
+              // THE DRIFT LAW, PRODUCTION SOURCE: the CURRENT member-scoped
+              // read answers per dispatch — a preset generation that moved
+              // swaps the object and the row refuses DRIFT. The self-placement
+              // shadow maps back to the captured object (read-back law above);
+              // a FOREIGN object on the face answers itself and refuses.
+              liveNative: (spawnName) => {
+                const current = readSpawnFace(spawnName)
+                const placed = spawnPlacedByName.get(spawnName)
+                if (placed !== undefined && current === placed) return spawnCaptured[spawnName].native
+                return current
+              },
+              spawnDelegates: spawnNativeDelegates,
+              // THE VERIFIED-HANDLE LAW (root 20:41 fix 1): the SAME real-
+              // generation container while every bound handle still answers
+              // the face (own placement included); a NEW container carrying
+              // the moved/foreign handles the moment it does not — the
+              // adapter's own DELEGATE_DRIFT refuses then, at the edge.
+              liveSpawnDelegates: () => (spawnStableGeneration() ? spawnNativeDelegates : Object.freeze(spawnCurrentBodies())),
+              // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
+              // plane construction; consulting before the plane answers
+              // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
+              placementFeed: (spawnName) => a5PlaneValue?.placementFeed?.(spawnName),
+              // THE PLANE'S ONE PA WALK, LAZILY (rows only run placed): a
+              // throw from the walk is the CALL's throw (the adapter catches
+              // nothing).
+              paAdmit: (request) => {
+                // THE REAL SEAT rides the mount as `spawnPaSeat` (the plane's
+                // out-hand for owner-built wiring — production-leg law, found
+                // by the spawn plane-mount spec: the value carries NO top-level
+                // paAdmit; the other lanes get the seat IN at assembly).
+                if (typeof a5PlaneValue?.spawnPaSeat !== 'function') {
+                  throw new Error('the plane PA walk is not mounted on this assembly — the spawn rows have no admission path and enter nothing')
+                }
+                return a5PlaneValue.spawnPaSeat(request)
+              },
+              observe: (row) => observations.push(`a5m2-spawn: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
+            })
+            if (spawnWiringBuilt?.ok !== true) {
+              throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`, `wiring-module-refused:${String(spawnWiringBuilt?.code ?? 'unknown')}`)
+            }
+          const spawnWiring = spawnWiringBuilt.wiring
+          for (const spawnPlacedDef of spawnWiring.definitions) spawnPlacedByName.set(spawnPlacedDef.name, spawnPlacedDef)
+          return spawnWiring
           }
-          a5SpawnWiring = spawnWiringBuilt.wiring
-          for (const spawnPlacedDef of a5SpawnWiring.definitions) spawnPlacedByName.set(spawnPlacedDef.name, spawnPlacedDef)
-          observations.push(`a5m2-spawn: WIRED for ${sessionId} (rows=${Object.keys(spawnCaptured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
+          if (spawnAttempt.missing.length === 0) {
+            if (Object.keys(spawnCaptured).length > 0) {
+              a5SpawnWiring = spawnWire()
+              observations.push(`a5m2-spawn: WIRED for ${sessionId} (rows=${Object.keys(spawnCaptured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
+            }
+          } else {
+            // THE DEFERRED LANE (root option-A 2026-10-24): a census-'always'
+            // face was ABSENT at setup. The mount keeps its governance
+            // intent: the plane holds a PENDING spawn arm (the PA seat is
+            // supplied early; face and defs are NOT — unbound is never
+            // executable), and a sameAgent DENY GUARD covers the whole
+            // family from here on — before any call can happen — until
+            // attach + bind + family-claim + real readback ALL complete.
+            // Refusal, fault or cancellation keeps deny: never an unmanaged
+            // executable window, never a silent unmask.
+            const spawnDeferNames = A5_B_SUBAGENT_SPAWN_TOOL_NAMES.filter((spawnName) => A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always')
+            if (typeof runtimeAgent?.ctx?.tools?.guard !== 'function') {
+              throw refuseSpawn('the public guard seam (ctx.tools.guard) is unavailable for the deferred window — a pending arm without deny is an unmanaged native execution waiting to happen', 'guard-seam-unavailable')
+            }
+            const spawnDeferDenied = new Set(spawnDeferNames)
+            a5SpawnDefer = { closed: false, inFlight: false, landed: null, guardDispose: null, changeDispose: null, disposedDispose: null, pendingNames: Object.freeze(spawnDeferNames) }
+            try {
+              const guardDisposer = runtimeAgent.ctx.tools.guard((exec) => (exec?.agent === runtimeAgent && spawnDeferDenied.has(exec?.name))
+                ? `a5m2-spawn: '${String(exec?.name)}' bind-after-def is PENDING for ${sessionId} — governed deny (the native row stays unmanaged until this mount governs it)`
+                : undefined)
+              a5SpawnDefer.guardDispose = typeof guardDisposer === 'function'
+                ? guardDisposer
+                : (() => { if (typeof guardDisposer?.dispose === 'function') guardDisposer.dispose() })
+            } catch (error) {
+              a5SpawnDefer = null
+              throw refuseSpawn(`the deferred deny guard could not be armed (${String(error?.message ?? error).slice(0, 140)})`, 'guard-arm-threw')
+            }
+            const spawnDeferClose = () => {
+              a5SpawnDefer.closed = true
+              for (const disposeRow of [a5SpawnDefer.changeDispose, a5SpawnDefer.disposedDispose]) {
+                try { if (typeof disposeRow === 'function') disposeRow() } catch { /* idempotent */ }
+              }
+              a5SpawnDefer.changeDispose = null
+              a5SpawnDefer.disposedDispose = null
+            }
+            const spawnDeferRefuse = (reason) => {
+              // DENY STAYS: the guard is only ever lifted by the full path below.
+              if (a5SpawnDefer.landed !== null) {
+                try { a5SpawnDefer.landed.disposeAttached() } catch { /* best-effort; refusal stands */ }
+                a5SpawnDefer.landed = null
+              }
+              spawnDeferClose()
+              observations.push(`a5m2-spawn: DEFER-REFUSED for ${sessionId} — reason=${String(reason)}`)
+            }
+            const spawnDeferRecheck = () => {
+              if (a5SpawnDefer === null || a5SpawnDefer.closed === true || a5SpawnDefer.inFlight === true) return
+              a5SpawnDefer.inFlight = true
+              try {
+                const attempt = spawnCaptureAttempt(true)
+                if (attempt.readFault !== null) { spawnDeferRefuse(`face-read-threw:${attempt.readFault.spawnName}:${attempt.readFault.error instanceof Error ? attempt.readFault.error.name : 'non-error'}`); return }
+                if (attempt.identityFault !== null) { spawnDeferRefuse(`no-definition-identity:${attempt.identityFault.spawnName}`); return }
+                if (attempt.missing.length > 0) return // still pending — deny holds; the next event re-reads
+                for (const [spawnName, spawnEntry] of Object.entries(attempt.captured)) {
+                  spawnCaptured[spawnName] = spawnEntry
+                  spawnNativeBodies[spawnName] = attempt.bodies[spawnName]
+                }
+                const wiring = spawnWire()
+                const attached = typeof spawnDeferPlane?.attachSpawn === 'function'
+                  ? spawnDeferPlane.attachSpawn(wiring)
+                  : { ok: false, code: 'SPAWN_ATTACH_NOT_MOUNTED' }
+                if (attached?.ok !== true) {
+                  // The mount has not placed yet: STAY pending — its own
+                  // registers fire the same event again (no wait, no retry).
+                  if (String(attached?.code ?? '') === 'SPAWN_ATTACH_NOT_MOUNTED') return
+                  spawnDeferRefuse(`attach-refused:${String(attached?.code ?? 'unknown')}`)
+                  return
+                }
+                a5SpawnDefer.landed = attached
+                const ownBound = typeof a5p1Guard?.bindOwnTools === 'function'
+                  ? a5p1Guard.bindOwnTools(wiring.definitions.map((spawnDef) => spawnDef.name))
+                  : { ok: false, error: { code: 'guard-face-unavailable' } }
+                if (ownBound?.ok !== true) { spawnDeferRefuse(`own-bind-refused:${String(ownBound?.error?.code ?? 'unknown')}`); return }
+                // THE FAMILY CLAIM rides the ONE registration table (same
+                // single-fill law as the fast path — keys come from the
+                // PLANE'S OWN placementFeed, now including the attached defs).
+                for (const spawnReg of wiring.familyRegistrations()) registerA5GovernedFamily(spawnReg.definitionIdentity, spawnReg.entry)
+                for (const spawnRegDef of wiring.definitions) {
+                  let liveFace
+                  try { liveFace = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnRegDef.name, runtimeAgent) : undefined } catch { liveFace = undefined }
+                  if (liveFace !== spawnRegDef) { spawnDeferRefuse(`assembly-readback-refused:${String(spawnRegDef.name)}`); return }
+                }
+                a5SpawnWiring = wiring
+                // ONLY NOW may the deny lift: attach, bind, family claim and
+                // the real readback all completed. A lift FAULT keeps the
+                // guard armed (over-deny is safe; under-deny never is).
+                try { a5SpawnDefer.guardDispose?.() } catch (error) { observations.push(`a5m2-spawn: DEFER-GUARD-LIFT-FAULT for ${sessionId} (${error instanceof Error ? error.name : 'non-error'}) — deny stays armed`) }
+                a5SpawnDefer.guardDispose = null
+                spawnDeferClose()
+                observations.push(`a5m2-spawn: WIRED-DEFERRED for ${sessionId} (rows=${Object.keys(attempt.captured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
+              } catch (error) {
+                spawnDeferRefuse(`bind-fault:${error instanceof Error ? `${error.name}:${String(error.message ?? '').slice(0, 120)}` : 'non-error'}`)
+              } finally {
+                if (a5SpawnDefer !== null) a5SpawnDefer.inFlight = false
+              }
+            }
+            // SUBSCRIBE FIRST, re-read ON THE SPOT (root 2026-10-24): covers
+            // a face that landed between the attempt above and this
+            // subscription. The event only TRIGGERS the same-scope re-read —
+            // the re-read itself is the proof; tools/change is NOT scope-
+            // filtered, so every wake re-reads through tools.get(name,
+            // runtimeAgent). Synchronous re-entry inside a register is
+            // covered by the in-flight gate.
+            try {
+              a5SpawnDefer.changeDispose = agentCtx.on('tools/change', () => { try { spawnDeferRecheck() } catch { /* never break the emitter */ } })
+              a5SpawnDefer.disposedDispose = agentCtx.on('agent/disposed', (payload) => {
+                if (payload?.agent === runtimeAgent && a5SpawnDefer !== null && a5SpawnDefer.closed !== true) {
+                  // CANCELLATION: pending dies WITH THE DENY (the ctx goes
+                  // with the agent; never a re-arm, never a re-bind).
+                  spawnDeferClose()
+                  observations.push(`a5m2-spawn: DEFER-CANCELLED for ${sessionId} (the agent disposed before takeover — deny was never lifted)`)
+                }
+              })
+            } catch (error) {
+              try { a5SpawnDefer.guardDispose?.() } catch { /* best-effort */ }
+              a5SpawnDefer = null
+              throw refuseSpawn(`the tools/change subscription is unavailable (${String(error?.message ?? error).slice(0, 140)})`, 'event-seam-unavailable')
+            }
+            observations.push(`a5m2-spawn: DEFER-ARMED for ${sessionId} (pending=${spawnDeferNames.join(',')} reason=def-not-published-at-setup)`)
+            spawnDeferRecheckFn = spawnDeferRecheck
+            spawnDeferRecheck()
+          }
         }
         // ── A5M2 B-SCHEDULE (root 17:38 + 18:11; re-routed by the CENTER
         // bind-after-def law): HOOK-ROUTE governance with ZERO own
@@ -6345,7 +6516,7 @@ export function createAgentBindings(deps) {
             : undefined,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5SreInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5LspInject === null && a5PwshInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5SreInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5SpawnDefer === null && a5G3TerminalInject === null && a5LspInject === null && a5PwshInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5JobControlInject === null ? {} : { jobControl: a5JobControlInject }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
@@ -6354,6 +6525,7 @@ export function createAgentBindings(deps) {
             ...(a5SreInject === null ? {} : { sre: a5SreInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
             ...(a5SpawnWiring === null ? {} : { spawn: a5SpawnWiring }),
+            ...(a5SpawnDefer === null ? {} : { spawnPending: { names: a5SpawnDefer.pendingNames } }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
             // A5M2 G3 B-TERMINAL (root 19:08; the narrow-audit fix on the
             // merge): the terminal family's row in the shared backends union.
@@ -6433,6 +6605,9 @@ export function createAgentBindings(deps) {
           observations.push(`a5-plane: mount-REFUSED for ${sessionId} (${built.code})`)
           throw error
         }
+        // LATE-ATTACH: the attach face of THIS mount, legal from the
+        // first placement inside mount() onward (attachSpawn enforces the rest).
+        spawnDeferPlane = built.value
         const placed = built.value.mount(agentCtx)
         if (placed.ok !== true) {
           // ROOT 20:04 window 2: the same leak law at the placement throw.
@@ -6478,6 +6653,11 @@ export function createAgentBindings(deps) {
             }
           }
         }
+        // LATE-ATTACH re-read (root 2026-10-24): if a pending arm exists,
+        // the mount just placed and every register fired `tools/change`
+        // synchronously — re-read the SAME scope once here (the fast ring
+        // above already ran for a fast wiring; a pending arm never had one).
+        if (a5SpawnDefer !== null && typeof spawnDeferRecheckFn === 'function') spawnDeferRecheckFn()
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
         // ── A5M2-B-TEAM-WIRE (this lane's block): THE PLACEMENT of the
@@ -7787,7 +7967,11 @@ export function createAgentBindings(deps) {
         // carries the mount's ACTUAL mint generation (the wiring's registration
         // path, root 22:02) — the same number every PA block of this mount
         // presents, so the bridge family gate answers on equal bytes.
-        if (a5SpawnWiring !== null) {
+        // THE DEFERRED LANE owns its family claim (the recheck fills it at
+        // ATTACH time — before the deny ever lifts); this single setup-side
+        // fill point therefore skips a deferred mount: ONE fill, never two
+        // (the registry throws on a second claim of one identity).
+        if (a5SpawnWiring !== null && a5SpawnDefer === null) {
           for (const spawnReg of a5SpawnWiring.familyRegistrations()) {
             registerA5GovernedFamily(spawnReg.definitionIdentity, spawnReg.entry)
             observations.push(`a5m2-spawn: family REGISTERED for ${sessionId} (placement=${String(spawnReg.definitionIdentity).slice(0, 32)} row=${spawnReg.name} family=${spawnReg.entry.familyId})`)
