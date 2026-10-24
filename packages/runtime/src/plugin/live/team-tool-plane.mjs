@@ -2481,6 +2481,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // flip; no hardcoded roster, no new authority, no kernel fallback).
     if (g6Wiring !== null && g6Wiring.placementNames.includes(spelling)) return spelling
     if (lspWiring !== null && lspWiring.placementNames.includes(spelling)) return spelling
+    // A5M2 job/G2 (root precise card 2026-10-24, the same producer gap's last
+    // two families): the job trio resolves ONLY through the inject's own
+    // validated frozen copy (job-wiring :230 -> bindings :5340-45/:6658 ->
+    // THIS plane's closed-shape check at :1984-95; a non-empty array of the
+    // three fixed spellings or the inject was refused at mount). G2 resolves
+    // through THIS mount's ACTIVE rows alone — g2Rows, never g2Defs, which
+    // also carries the DECLARED-INACTIVE refusal rows the adapter stamps
+    // `active: false` (adapter :517; refused before PA at :6823-35). No new
+    // name list, no new authority, no inactive row enabled.
+    if (jobControlInject !== null && jobControlInject.placementNames.length > 0
+      && jobControlInject.placementNames.includes(spelling)) return spelling
+    if (g2Rows.some((row) => row.active === true && row.toolName === spelling)) return spelling
     // A5M2-PWSH: the governed pwsh row mounts at its FIXED native spelling,
     // resolved ONLY while THIS mount's wiring actually placed it (the reused
     // source is the wiring's own placement list; zero flip otherwise).
