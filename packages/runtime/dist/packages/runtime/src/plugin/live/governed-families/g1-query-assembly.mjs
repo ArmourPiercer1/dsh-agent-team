@@ -139,6 +139,7 @@ const mintCaptureIdentity = (providerId, entry, face) => `g1-capture@${providerI
  *   trusted: { realmId: string, ... },                    // the adapter's TARGETS CONFIG face (realmId also feeds the PA walk)
  *   bindingFacts: () => object,                           // live binding-revision reader
  *   topology?: { current: () => unknown },                // trustedTopology supply (B-INSPECT rows; absence keeps the module's own call-time refusal)
+ *   pluginFacts?: { current: () => unknown },             // pluginFacts supply (B-PLUGIN rows only; the wiring whitelist refuses it for any other row set)
  *   observe?: (row: object) => void,
  * }} mount
  * @returns frozen `{ ok: true, assembly }` or a frozen `{ ok: false, code, message }`
@@ -166,6 +167,9 @@ export function createG1QueryAssembly(mount = {}) {
   }
   if (typeof mount.bindingFacts !== 'function') {
     return refuseAssembly(CODES.EVIDENCE_ABSENT, 'bindingFacts() must be mounted — the adapter answers the binding revision the PA edge consults')
+  }
+  if (mount.pluginFacts !== undefined && (!isRecord(mount.pluginFacts) || typeof mount.pluginFacts.current !== 'function')) {
+    return refuseAssembly(CODES.EVIDENCE_ABSENT, 'mount.pluginFacts must be { current: () => the CURRENT profile facts } — a live CURRENT-facts source or nothing (the B-PLUGIN rows\' classify law reads it per call; a frozen snapshot is not a CURRENT-facts source)')
   }
   if (mount.topology !== undefined && (!isRecord(mount.topology) || typeof mount.topology.current !== 'function')) {
     return refuseAssembly(CODES.EVIDENCE_ABSENT, 'topology, when supplied, must be { current: () => unknown } — a CURRENT-facts reader, never a frozen snapshot')
@@ -265,7 +269,16 @@ export function createG1QueryAssembly(mount = {}) {
     placementFeed,
     trusted: mount.trusted,
     bindingFacts: mount.bindingFacts,
-    ...(mount.topology === undefined ? {} : { ports: Object.freeze({ trustedTopology: mount.topology }) }),
+    ...((mount.topology === undefined && mount.pluginFacts === undefined) ? {} : {
+      ports: Object.freeze({
+        ...(mount.topology === undefined ? {} : { trustedTopology: mount.topology }),
+        // CURRENT-facts source for the B-PLUGIN rows (CENTER order
+        // 2026-10-25). The WIRING whitelist is the authority: a pure-query
+        // row set presenting pluginFacts is refused ARM_NOT_ACCEPTED —
+        // this layer only threads what the mount supplied.
+        ...(mount.pluginFacts === undefined ? {} : { pluginFacts: mount.pluginFacts }),
+      }),
+    }),
     admit,
     observe,
   })

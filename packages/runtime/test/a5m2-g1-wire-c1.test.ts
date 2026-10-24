@@ -2235,12 +2235,12 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(feedAt).toBeLessThan(src.indexOf('return a5PlaneValue === null'))
     // root 841 ①: the plane's attribution row for the arm route, fed by the
     // SAME ledger, forwarded at the shared backends union.
-    expect(src).toContain('g1Arm: a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames }')
+    expect(src).toContain('g1Arm: a5G1SupplyArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1SupplyArmNames }')
     expect(src).toContain('isPlaced: (name) => a5G1PlacedByName.has(name),')
     // CONTROL attribution (root 2026-10-25): the plane learns the DERIVED
     // CONTROL names ONLY beside an armed deployer key — never a wildcard.
-    expect(src).toContain('a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames }')
-    expect(src).toContain('? g1ControlSupplySubset().map((row) => row.name)')
+    expect(src).toContain('a5G1SupplyArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1SupplyArmNames }')
+    expect(src).toContain('if (g1SupplyCfg.control === true) armedNames.push(...g1ControlSupplySubset().map((row) => row.name))')
     // no plane g1 row injection in this block; the plane's own route untouched
     // (code-level law: the block's prose may NAME the plane's own seam, it
     // never FORWARDS it).
@@ -2270,7 +2270,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     // the assembly module is imported, never restated; the adapter module is
     // never reached directly from this file.
     expect(src).toContain("import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'")
-    expect(src).toContain("import { g1PureQuerySubset, g1ControlSupplySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'")
+    expect(src).toContain("import { g1PureQuerySubset, g1ControlSupplySubset, g1PluginSupplySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'")
     // ROOT G1 FINAL LIMITED RULING: the production factory is imported and
     // reachable ONLY through the explicit deployer cfg — `topologyScope`
     // (closed-grammar triples handed over as the hard boundary, fresh-

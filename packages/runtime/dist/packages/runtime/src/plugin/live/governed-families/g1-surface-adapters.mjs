@@ -117,6 +117,17 @@ export const A5_G1_CONTROL_ADAPTER_REVISION = 8
 // pair's bytes did not move); earlier B-CONTROL-era approvals are NOT
 // translated - the kernel's own comparison refuses a stale pair.
 
+export const A5_G1_PLUGIN_ADAPTER_REVISION = 8
+// The B-PLUGIN family's OWN revision (CENTER whole-family order 2026-10-25:
+// the old "zero-code closed" reading of record 52 is WITHDRAWN - the 639
+// face and the consumer chain were re-read from source and the family takes
+// REAL wiring). The durable targetManifest moved to FLAT full-value leaves
+// (the validatePaFamilyTarget grammar admits only scalar/stringArray leaves
+// - a nested surface cannot be walked), so descriptor, registration and
+// claim ALL answer 8; no B-PLUGIN-era approval predates the family's first
+// armed mount, and nothing translates a stale pair. Every OTHER family keeps
+// its own revision constant.
+
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
   CLASSIFY_INVALID_ARGUMENTS: 'P_G1_CLASSIFY_INVALID_ARGUMENTS',
@@ -500,6 +511,12 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       break
     }
     case 'B-PLUGIN': {
+      // the sanctioned REVIEWED ENCODING (same law as B-CONTROL): a string
+      // rides verbatim, any other value its canonical JSON, an omitted
+      // optional the literal 'absent' - the key is NEVER dropped.
+      const pluginReviewed = (value) => (value === undefined || value === null
+        ? 'absent'
+        : typeof value === 'string' ? value : canonical(value))
       const { refusal, facts } = currentPluginFacts(ports, spec, providerId)
       if (refusal !== undefined) return { refusal }
       const action = rawArgs.action
@@ -555,15 +572,19 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
           { target: 'host-approvedBuilds-channel', operation: 'build-script-runner-permission', right: 'write', note: 'approvedBuilds is a PERSISTENT permission write into the profile pnpm settings gated by the user\'s explicit conversation approval of the pendingBuilds names — recorded, never re-decided here' },
           { target: 'trusted-profile', operation: 'configure-activation', right: 'write', note: 'install writes the profile config and may activate or restart the live profile (scopeImpact: every session of the profile)' },
         ]
+        // FLAT full-value leaves (the durable grammar walks scalars only):
+        // the parsed spec rides as its canonical JSON - the FULL value, never
+        // a digest; the registry plan rides as its three real arrays plus the
+        // canonical claimed href (null when the caller claimed none).
         built.target = {
           action,
-          specFacts: parsedSpec,
-          installFacts: {
-            profileConfigLocator: facts.profileConfigLocator,
-            installRootLocator: facts.installRootLocator,
-            cacheRootLocator: facts.cacheRootLocator,
-          },
-          registryPlan: { claimedRegistry, allowedRegistries: [...facts.allowedRegistries], fallbackRegistries: [...facts.fallbackRegistries] },
+          installSpecClaim: canonical(parsedSpec),
+          claimedRegistryCanonical: claimedRegistry,
+          allowedRegistries: [...facts.allowedRegistries],
+          fallbackRegistries: [...facts.fallbackRegistries],
+          profileConfigLocator: facts.profileConfigLocator,
+          installRootLocator: facts.installRootLocator,
+          cacheRootLocator: facts.cacheRootLocator,
           versionExemptionDerived: false,
         }
         break
@@ -584,7 +605,10 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         built.target = {
           action,
           exemptionLocator: facts.exemptionsLocator,
-          exactPairClaim: { target: targetClaim, parsedName: parsedTarget.name, parsedVersion: parsedTarget.version, runtimeVersionClaim: rawArgs.runtimeVersion },
+          targetClaim,
+          exemptionTargetName: parsedTarget.name,
+          exemptionTargetVersion: parsedTarget.version,
+          runtimeVersionClaim: rawArgs.runtimeVersion,
           acceptRiskClaim: rawArgs.acceptRisk === true,
           derivableFromInstall: false,
         }
@@ -599,7 +623,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
           TOOL_NAME_OBLIGATION,
           { target: 'trusted-profile', operation: 'remove-bundle', right: 'write', note: 'profile config + install-root writes; live removal additionally needs the topology reconcile-or-restart step (scopeImpact: every session)' },
         ]
-        built.target = { action, targetClaim, installFacts: { profileConfigLocator: facts.profileConfigLocator, installRootLocator: facts.installRootLocator }, versionExemptionDerived: false }
+        built.target = { action, targetClaim, profileConfigLocator: facts.profileConfigLocator, installRootLocator: facts.installRootLocator, versionExemptionDerived: false }
         break
       }
       if (action === 'set_plugin' || action === 'set_bundle') {
@@ -608,7 +632,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
           TOOL_NAME_OBLIGATION,
           { target: 'trusted-profile', operation: action === 'set_plugin' ? 'set-plugin-enabled' : 'set-bundle-active', right: 'write', note: 'profile config write; live effect needs the topology reconcile-or-restart step (scopeImpact: every session of the profile)' },
         ]
-        built.target = { action, targetClaim, enabledClaim: rawArgs.enabled, installFacts: { profileConfigLocator: facts.profileConfigLocator } }
+        built.target = { action, targetClaim, enabledClaim: pluginReviewed(rawArgs.enabled), profileConfigLocator: facts.profileConfigLocator }
         break
       }
       built.obligations = [{ target: 'trusted-profile', operation: action, right: 'read', note: 'read-only enumeration of the trusted profile state' }]
@@ -794,13 +818,14 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     if (built.refusal !== undefined) return built.refusal
     const facts = bindingFacts()
     const classifiedArgs = deepFreeze(jsonClone(args ?? {}))
-    /* A5-M2 (root ruling): the two families whose PA target rule has LANDED
-     * (PA_FAMILY_TARGET_RULES['B-CONTROL'] / ['B-INSPECT']) carry the trusted
+    /* A5-M2 (root ruling): the families whose PA target rule has LANDED
+     * (PA_FAMILY_TARGET_RULES['B-CONTROL'] / ['B-INSPECT'] / ['B-PLUGIN'])
+     * carry the trusted
      * TARGETS envelope as FLAT LEAVES — the same five CONFIG facts, one leaf
      * each, the pairing law's mint side. Every other family keeps the nested
      * `trusted` envelope BYTE-IDENTICAL (its rule has not landed; its claim
      * still fails closed at the table — no drift either way). */
-    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT'
+    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT' || spec.family === 'B-PLUGIN'
     const targetManifest = deepFreeze(flatTrustedLeaves
       ? {
           ...built.target,
@@ -838,7 +863,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       effects,
       serviceObligations,
       targetManifest,
-      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
+      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : spec.family === 'B-PLUGIN' ? A5_G1_PLUGIN_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
       generations,
       parametersFingerprint: `sha256:${sha256(canonical(args ?? {}))}`,
     })
@@ -910,16 +935,16 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       case 'B-PLUGIN': {
         const { refusal, facts } = currentPluginFacts(ports, spec, providerId)
         if (refusal !== undefined) return stale('the trusted profile facts source is gone')
-        if (stored.installFacts !== undefined) {
-          const now = { ...stored.installFacts }
-          if (now.profileConfigLocator !== undefined && now.profileConfigLocator !== facts.profileConfigLocator) return stale('the profile config path moved after classify')
-          if (now.installRootLocator !== undefined && now.installRootLocator !== facts.installRootLocator) return stale('the install root moved after classify')
-          if (now.cacheRootLocator !== undefined && now.cacheRootLocator !== facts.cacheRootLocator) return stale('the npm cache moved after classify')
-        }
+        // FLAT leaves (revision 8): each locator rides the stored target at
+        // its own key; the law per locator is UNMOVED (a moved path after
+        // classify is stale, never re-approvable).
+        if (typeof stored.profileConfigLocator === 'string' && stored.profileConfigLocator !== facts.profileConfigLocator) return stale('the profile config path moved after classify')
+        if (typeof stored.installRootLocator === 'string' && stored.installRootLocator !== facts.installRootLocator) return stale('the install root moved after classify')
+        if (typeof stored.cacheRootLocator === 'string' && stored.cacheRootLocator !== facts.cacheRootLocator) return stale('the npm cache moved after classify')
         if (stored.exemptionLocator !== undefined && stored.exemptionLocator !== facts.exemptionsLocator) return stale('the exemptions file moved after classify')
-        if (stored.registryPlan !== undefined
-          && (canonical(stored.registryPlan.allowedRegistries) !== canonical(facts.allowedRegistries)
-            || canonical(stored.registryPlan.fallbackRegistries) !== canonical(facts.fallbackRegistries))) {
+        if (stored.allowedRegistries !== undefined
+          && (canonical(stored.allowedRegistries) !== canonical(facts.allowedRegistries)
+            || canonical(stored.fallbackRegistries) !== canonical(facts.fallbackRegistries))) {
           return stale('the registry allow-list moved after classify')
         }
         return null

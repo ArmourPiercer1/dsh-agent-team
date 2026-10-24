@@ -967,6 +967,111 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
     }),
+    // A5M2-G1-WIRE B-PLUGIN (record 52 plugin_manager; CENTER whole-family
+    // order 2026-10-25: the old "zero-code closed" reading of this row is
+    // WITHDRAWN - the 639 face was re-read from source
+    // (tests/deepseek-harness-test-use @ 639ed01539,
+    // packages/boot/plugin-manager/src/tools.ts: the closed 8-action enum at
+    // :41, the params at :42-50, the HOST gate chain at :38-44) and the family
+    // takes its durable table NOW. The action leaf is the minted discriminant
+    // (the native's own switch, tools.ts:47-92); every variant carries its
+    // FULL-VALUE facts - the parsed install spec as its canonical JSON, the
+    // registry plan as the REAL three-way arrays, the exact exemption pair as
+    // its own leaves - the reviewed encoding law, never a dropped key or a
+    // digest. install_bundle's TARGET pairing is complete here; its manager
+    // ENTRY stays fail-closed until the deployer mounts the Host gate seams
+    // (the adapter L5 edge refuses with zero manager entry - the closed table
+    // is an approval floor, never an enablement). Revision 8 pairs with
+    // A5_G1_PLUGIN_ADAPTER_REVISION (flat scalar leaves; the nested surface
+    // this table replaces was never walkable). currentFields trio: the
+    // current-facts law rides the trusted envelope as everywhere.
+    'B-PLUGIN': Object.freeze({
+        required: Object.freeze({
+            action: 'string',
+            trustedMemberAgentId: 'string',
+            trustedSessionHeaderId: 'string',
+            trustedRealmId: 'string',
+            trustedOwner: 'string',
+            trustedProfileId: 'string',
+        }),
+        variant: Object.freeze({
+            leaf: 'action',
+            by: Object.freeze({
+                // the three READ enumerations: the native defaults them (tools.ts:64-65
+                // offset 0 / limit 25) and validates them (tools.ts:66-69) - the mint
+                // answers post-default integers, so the claim carries the REAL page.
+                list_plugins: Object.freeze({
+                    adds: Object.freeze({ offsetClaim: 'nonNegativeInt', limitClaim: 'nonNegativeInt' }),
+                    binds: Object.freeze({}),
+                }),
+                list_bundles: Object.freeze({
+                    adds: Object.freeze({ offsetClaim: 'nonNegativeInt', limitClaim: 'nonNegativeInt' }),
+                    binds: Object.freeze({}),
+                }),
+                list_version_exemptions: Object.freeze({
+                    adds: Object.freeze({ offsetClaim: 'nonNegativeInt', limitClaim: 'nonNegativeInt' }),
+                    binds: Object.freeze({}),
+                }),
+                // the two enable lanes (tools.ts:76-81): entry NAME target (the
+                // '@scope/pkg' shape legal, version-qualified refused by the mint) +
+                // the enabled claim (reviewed encoding: the face allows an omitted
+                // boolean; the native then refuses the call - the claim records it
+                // honestly as 'absent') + the profile config write locator.
+                set_plugin: Object.freeze({
+                    adds: Object.freeze({ targetClaim: 'string', enabledClaim: 'string', profileConfigLocator: 'string' }),
+                    binds: Object.freeze({}),
+                }),
+                set_bundle: Object.freeze({
+                    adds: Object.freeze({ targetClaim: 'string', enabledClaim: 'string', profileConfigLocator: 'string' }),
+                    binds: Object.freeze({}),
+                }),
+                // install (tools.ts:83-89 + index.ts installBundle contract): the
+                // parsed spec canonical JSON AT FULL VALUE, the claimed registry
+                // canonical href (null = none claimed), the REAL allowed/fallback
+                // arrays from the trusted profile facts, the three write locators.
+                install_bundle: Object.freeze({
+                    adds: Object.freeze({
+                        installSpecClaim: 'string',
+                        claimedRegistryCanonical: 'nullableString',
+                        allowedRegistries: 'stringArray',
+                        fallbackRegistries: 'stringArray',
+                        profileConfigLocator: 'string',
+                        installRootLocator: 'string',
+                        cacheRootLocator: 'string',
+                        versionExemptionDerived: 'boolean',
+                    }),
+                    binds: Object.freeze({}),
+                }),
+                remove_bundle: Object.freeze({
+                    adds: Object.freeze({
+                        targetClaim: 'string',
+                        profileConfigLocator: 'string',
+                        installRootLocator: 'string',
+                        versionExemptionDerived: 'boolean',
+                    }),
+                    binds: Object.freeze({}),
+                }),
+                // the SEPARATE risk lane (tools.ts:49-52,57-62): the exact manifest
+                // package-name@version pair + the exact runtime version + the
+                // informed acceptRisk claim - NEVER derivable from an install (the
+                // mint stamps derivableFromInstall false and the table never lets an
+                // install row borrow this variant).
+                set_version_exemption: Object.freeze({
+                    adds: Object.freeze({
+                        exemptionLocator: 'string',
+                        targetClaim: 'string',
+                        exemptionTargetName: 'string',
+                        exemptionTargetVersion: 'string',
+                        runtimeVersionClaim: 'string',
+                        acceptRiskClaim: 'boolean',
+                        derivableFromInstall: 'boolean',
+                    }),
+                    binds: Object.freeze({}),
+                }),
+            }),
+        }),
+        currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
+    }),
     // A5-M2 B-INSPECT (root 957 SIGNED the trusted/topology scalar flatten; root
     // 17:40 SIGNED the minimal strict DISCRIMINATED TARGET for THIS family only
     // - a technical encoding ruling, not a security-semantics change). The
