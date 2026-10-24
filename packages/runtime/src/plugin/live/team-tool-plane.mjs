@@ -1538,6 +1538,21 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: false, code: 'B_ORCHESTRATION_INJECT_INVALID', message: `planeCfg.bOrchestrationEnabled must be a boolean when present - got ${JSON.stringify(bOrchestrationEnabledRaw) ?? String(bOrchestrationEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)` }
   }
   const bOrchestrationEnabled = bOrchestrationEnabledRaw === true
+  // ROUTING EVIDENCE (pairing C, center card): the deployment declares
+  // WHICH provider name the engines route to (workflow-ptc
+  // Config.provider / ralph Config.subagentProvider ride that exact name);
+  // the arm registers its Team-governed provider under THAT name and the
+  // seat's drift gate answers active only when registration and declared
+  // routing are one name. A missing/mismatched declaration keeps the seat
+  // fail-closed — an error deployment stays shut, never silently spawns
+  // global. (G3's planeCfg deployment-evidence precedent, verbatim law.)
+  const bOrchestrationRoutingRaw = input.plane?.bOrchestrationRouting
+  if (bOrchestrationEnabled && (typeof bOrchestrationRoutingRaw !== 'string' || bOrchestrationRoutingRaw.length === 0)) {
+    return { ok: false, code: 'B_ORCHESTRATION_INJECT_INVALID', message: 'bOrchestrationEnabled is true but planeCfg.bOrchestrationRouting answers no provider name — the execution arms must know which provider name the engines route to (workflow-ptc Config.provider / ralph Config.subagentProvider); an unrouted mount stays fail-closed by refusal, so the config demands the evidence' }
+  }
+  if (bOrchestrationRoutingRaw !== undefined && typeof bOrchestrationRoutingRaw !== 'string') {
+    return { ok: false, code: 'B_ORCHESTRATION_INJECT_INVALID', message: 'planeCfg.bOrchestrationRouting must be a non-empty string when present (the routed provider name)' }
+  }
   const bOrchestrationInjectRaw = input.backends?.bOrchestration
   const bOrchestrationInjectInvalid = (why) => ({ ok: false, code: 'B_ORCHESTRATION_INJECT_INVALID', message: `backends.bOrchestration: ${why}` })
   if (bOrchestrationEnabled && bOrchestrationInjectRaw === undefined) {

@@ -58,25 +58,15 @@ export const A5_B_ORCH_WIRING_CODES = Object.freeze({
 
 const CODES = A5_B_ORCH_WIRING_CODES
 
-/** FAIL-CLOSED SAFETY BLOCK (root independent source audit of 07bb0c95 —
- *  URGENT, not a design): the child governance bypass is PROVEN
- *  REACHABLE. Engine children inherit the PARENT'S PRESET GENERATION,
- *  NOT the member's private shadow/guard/deny layer: the Team
- *  activationFence recognizes ONLY root/durable-member childSessionIds —
- *  a fresh child UUID has no row and passes directly, agentSetup is
- *  NEVER called, and the child's policy natively answers never. So until
- *  the arms are paired with a REAL Team-governed SubagentProvider
- *  (workflow-ptc Config.provider / ralph Config.subagentProvider point at
- *  it; admission BEFORE provider.start creation; the real restricted
- *  surface/PA/IO + explicit attribution installed BEFORE publish through
- *  the public agents.create({parentAgent, setup}); retrofitting after
- *  the original spawn.start returns is TOO LATE), this seat refuses EVERY
- *  call: the masked row refuses typed, the shadowed native stays
- *  unreachable to this member, and the PA funnel is never consumed for a
- *  call that cannot legitimately execute. This is a STATE, not an
- *  interface — removed BY THE PROVIDER PAIRING commit, never flipped by
- *  config (no flip surface ships). */
-const CHILD_GOVERNANCE_FAIL_CLOSED = true
+// THE CHILD-GOVERNANCE STATE is a RUNTIME FACT now, not a constant: the
+// seat reads the governed-provider face (input.governedProvider) at every
+// admit — a missing or inactive provider (an unpaired world, or a
+// mis-deployed one where the engines still route global spawn) keeps EVERY
+// call fail-closed with P_B_ORCH_WIRE_CHILD_GOVERNANCE_UNGOVERNED: the
+// safety posture of c6a50abfa outlives the constant — it moved into the
+// drift gate. The provider pairing (team-governed-provider.mjs) opens the
+// seat ONLY for worlds whose engines route to it (the arm registers the
+// provider and isActive answers its registered+ routed state).
 
 const refuse = (code, detail) => ({ ok: false, code, detail })
 const refuseAssembly = (code, message) => Object.freeze({ ok: false, code, message })
@@ -154,10 +144,19 @@ function buildWiring (input, assembly, seat) {
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
   const state = { disposed: false, mountDisposers: null, walks: 0 }
   const closePlan = (callId) => { try { pa.closePlan?.(callId) } catch { /* funnel best-effort, sibling law */ } }
+  const gp = isRecord(input.governedProvider) ? input.governedProvider : null
+  const governedProviderLive = () => gp !== null
+    && typeof gp.isActive === 'function' && gp.isActive() === true
+    && gp.activeCalls instanceof WeakMap
 
   seat.admit = async (envelope) => {
-    if (CHILD_GOVERNANCE_FAIL_CLOSED) {
-      return refuse(CODES.CHILD_GOVERNANCE_UNGOVERNED, 'the execution arm is FAIL-CLOSED pending the Team-governed SubagentProvider pairing (root audit of 07bb0c95): children ride the parent preset generation, NOT this member\'s shadow/guard/deny layer (activationFence knows only root/durable-member childSessionIds; a fresh UUID has no row and passes; agentSetup never runs; child policy natively answers never) — dispatching fan-out through this row would admit a call whose children escape Team governance, so ZERO calls enter, ZERO PA is consumed, and the masked native stays unreachable')
+    if (!governedProviderLive()) {
+      // DRIFT GATE (pairing C, center card): the seat opens ONLY when the
+      // Team-governed provider is REGISTERED and ROUTED (isActive is the
+      // arm's real readback). An unpaired or mis-deployed world — engines
+      // still resolving the global spawn name — stays exactly as the
+      // c6a50abfa block left it: zero PA, zero body, masked and unreachable.
+      return refuse(CODES.CHILD_GOVERNANCE_UNGOVERNED, 'the execution arm is FAIL-CLOSED: the Team-governed SubagentProvider is not registered-and-routed on this mount (root audit of 07bb0c95) — children would ride the parent preset generation WITHOUT this member\'s shadow/guard/deny layer (activationFence knows only root/durable-member childSessionIds; a fresh UUID has no row and passes; agentSetup never runs; child policy natively answers never), so ZERO calls enter, ZERO PA is consumed, and the masked native stays unreachable')
     }
     if (state.disposed) return refuse(CODES.DISPOSED, 'the wiring is disposed — no PA walk opens, no body entry, committed runs stay committed')
     const { name, recordIndex, familyId, classified, exec } = envelope
@@ -211,6 +210,12 @@ function buildWiring (input, assembly, seat) {
     if (opened?.kind !== 'allow') {
       // the funnel's OWN bytes ride VERBATIM — nothing appended, no recode
       return refuse(CODES.DENIED, String(opened?.detail ?? opened?.reason ?? `the PA walk did not answer allow for call ${callId}`))
+    }
+    // THE PAIRED HAND-OFF (provider PIN 1's source of truth): the admitted
+    // call becomes the GOVERNED CONTEXT for children of THIS parent Agent —
+    // the provider refuses any child whose parent carries no entry here.
+    if (gp !== null && isRecord(exec.agent)) {
+      gp.activeCalls.set(exec.agent, { callId, parametersFingerprint: plan.parametersFingerprint, realmId, toolName: name, ordinal: 0, providerIdentity: assembly.providerId })
     }
     return Object.freeze({ ok: true })
   }
