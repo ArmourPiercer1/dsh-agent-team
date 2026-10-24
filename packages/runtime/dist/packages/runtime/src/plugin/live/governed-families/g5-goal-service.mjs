@@ -141,6 +141,13 @@
  */
 import { createHash } from 'node:crypto'
 
+// THE WRAP-UP'S TWO PUBLIC PIECES (root 02:51 ③): the native body builds its
+// goal-round wrap-up from exactly these public exports
+// (tool-goal/src/index.ts:11 `import { boundContextSummary, createUserMessage,
+// HarnessError } from '@deepseek-ai/dsh-llm'` @639ed01539). The row mirrors
+// the SAME construction — never a parallel renderer, never a private import.
+import { boundContextSummary, createUserMessage } from '@deepseek-ai/dsh-llm'
+
 /** Census family (M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX records 27/28/29). */
 export const A5_G5_FAMILY_ID = 'B-SESSION'
 export const A5_G5_ADAPTER_REVISION = 1
@@ -486,6 +493,47 @@ function staticParameterLaw(toolName, args) {
  * @returns {{ get_goal: object, create_goal: object, update_goal: object,
  *   adapterLaw: object }} the three rows keyed by tool name + the shared law.
  */
+/**
+ * MIRROR of the host's `renderWrapupContext` (tool-goal/src/wrapup.ts:17-41
+ * @639ed01539) — the model-visible closing instruction a goal-round terminal
+ * update defers. Byte-identical BY DESIGN: the service spec pins every long
+ * sentence against the pristine 639 source, so a host edit that moves this
+ * text fails the pin (and the next host bump must re-copy it verbatim, same
+ * law as the census bytes). The renderer is the host's TEXT; the deferral is
+ * the exec's OWN public face (ToolRunContext.deferContext, api-catalog) —
+ * this row adds no authority, no ledger, no second system.
+ * @param {string} objective - the terminal goal's objective, echoed for grounding.
+ * @param {string} [blockedReason] - the validated report for 'blocked'; omitted for 'complete'.
+ * @returns {Array<{type: 'text', text: string}>} one fresh context block.
+ */
+const G5_WRAPUP_GROUNDING = 'Report only what earlier rounds and tool results in this session actually establish; '
+  + 'when a detail is not in the session, say so instead of inventing it. '
+function renderG5WrapupContext(objective, blockedReason) {
+  const heading = `Objective: ${JSON.stringify(objective)}\n`
+  const text = blockedReason === undefined
+    ? '<goal_complete>\n'
+      + heading
+      + 'The goal is marked complete and this autonomous run is ending. Write the closing '
+      + 'message to the user now: state the outcome, summarize what was done and how it was '
+      + 'verified, and point to the concrete results (files, commits, or other artifacts). '
+      + G5_WRAPUP_GROUNDING
+      + 'Note anything the user should review or do next. Address the user directly. Do not '
+      + "call any more tools in this run; further work waits for the user's next instruction.\n"
+      + '</goal_complete>'
+    : '<goal_blocked>\n'
+      + heading
+      + `Blocked: ${JSON.stringify(blockedReason)}\n`
+      + 'The goal is marked blocked and this autonomous run is ending. Write the closing '
+      + 'message to the user now: state what has been completed so far, describe the concrete '
+      + 'blocking condition and what you tried, and say exactly what you need from the user to '
+      + 'continue. '
+      + G5_WRAPUP_GROUNDING
+      + 'Address the user directly. Do not call any more tools in this run; further work '
+      + "waits for the user's next instruction.\n"
+      + '</goal_blocked>'
+  return [{ type: 'text', text }]
+}
+
 export function createG5GoalServiceAdapter({
   realmId,
   providerId,
@@ -747,6 +795,41 @@ export function createG5GoalServiceAdapter({
       const finalView = results[results.length - 1]
       stats.dispatches += 1
       observe({ event: 'port-commit', toolName, correlation: fresh.correlation, detail: fresh.parametersFingerprint })
+      // THE WRAP-UP MIRROR (root 02:51 ③; native tool-goal/src/index.ts:319-329
+      // @639ed01539): a goal-round COMPLETE/BLOCKED that actually landed defers
+      // the model-visible closing context through the DISPATCH'S OWN public
+      // exec.deferContext — the host body's exact construction
+      // (createUserMessage + renderWrapupContext mirror + the notice source
+      // `{kind:'tool-goal', form:'notice', summary: boundContextSummary(...)}`).
+      // This is context parity, NOT authority: the authority checks ran above
+      // and the host re-checks on the port. Only an OBSERVED goal-round
+      // completes here (direct-human closes need no wrap-up — the host's own
+      // `authority.kind === 'goal-round'` condition); a dispatch whose exec
+      // carries no deferContext face is OBSERVED, never faked (the WRAPUP
+      // named gap stays TRUE of the port: no GoalService method serves it).
+      if (toolName === 'update_goal'
+        && fresh.targetManifest.executionAuthority.observed === true
+        && fresh.targetManifest.executionAuthority.kind === 'goal-round') {
+        const g5Action = fresh.actualArgs?.action
+        if (g5Action === 'complete' || g5Action === 'blocked') {
+          const g5Objective = String(finalView?.objective ?? '')
+          if (typeof exec?.deferContext === 'function') {
+            exec.deferContext(createUserMessage({
+              content: renderG5WrapupContext(
+                g5Objective,
+                g5Action === 'blocked' ? String(fresh.actualArgs?.blocked_reason ?? '') : undefined,
+              ),
+              source: {
+                kind: 'tool-goal',
+                form: 'notice',
+                summary: boundContextSummary(`${g5Action}: ${g5Objective}`),
+              },
+            }))
+          } else {
+            observe({ event: 'wrapup-defer-UNAVAILABLE', toolName, detail: `the ${g5Action} landed goal-round but the dispatch exec carries no public deferContext face — the wrap-up is NOT fabricated` })
+          }
+        }
+      }
       return deepFreeze({
         ok: true,
         // Canonical result: the host goalValue projection over the FINAL

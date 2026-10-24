@@ -3946,6 +3946,71 @@ export function createAgentBindings(deps) {
               g5Captured.set(name, captured === null ? undefined : captured)
               return g5Captured.get(name)
             }
+            // The producer (root 03:2x card, mirror-verbatim shape — see the
+            // inject key below for the law): the SAME derivations as
+            // authority.ts:33-118. Driver gate first (a driver-less read is
+            // NO fact); then the OPEN-TURN window (turnBoundary projection —
+            // the host's own boundary read); direct-human (roots ∋ member ∧ a
+            // 'user/message' whose source.kind='user' in the window) beats
+            // goal-round (goals.get(member) with the exact admitted-round
+            // source event); window-without-either answers the adapter's
+            // honest UNOBSERVED path. `events[seq]` indexing mirrors the
+            // host's own `snapshotEvents()` array read (authority.ts:65-70) —
+            // the same snapshot, the same window.
+            const g5ReadExecutionFacts = () => {
+              // driver gate (authority.ts:48-58 GOAL_TOOL_DRIVER_REQUIRED):
+              // the member must be THE live agent inside its own active
+              // driver — ambient presence is never authority (api-catalog
+              // law on the initiator methods).
+              if (runtimeAgent.status !== 'running'
+                || typeof agents?.get !== 'function' || agents.get(runtimeAgent.id) !== runtimeAgent
+                || typeof agents?.currentInitiator !== 'function' || agents.currentInitiator() !== runtimeAgent) {
+                throw new Error('GOAL_TOOL_DRIVER_REQUIRED mirror: the member is not the live agent inside its own active driver (authority.ts:48-58)')
+              }
+              // the open-turn boundary (authority.ts:33-41): the host reads
+              // the 'turnBoundary' projection; no open turn = no fact.
+              const g5Projections = typeof sessionProjectionsBackend === 'function' ? sessionProjectionsBackend() : undefined
+              let g5Boundary
+              try {
+                g5Boundary = typeof g5Projections?.stateOf === 'function'
+                  ? g5Projections.stateOf(runtimeAgent.session, 'turnBoundary')
+                  : undefined
+              } catch {
+                g5Boundary = undefined
+              }
+              if (g5Boundary === undefined || g5Boundary === null || g5Boundary.openTurnStartSeq === null || g5Boundary.openTurnStartSeq === undefined) {
+                throw new Error('GOAL_TOOL_DRIVER_REQUIRED mirror: goal tools require an open model turn (authority.ts:37-40)')
+              }
+              const g5Events = runtimeAgent.session.snapshotEvents()
+              const g5SomeOpenTurnEvent = (predicate) => {
+                for (let seq = g5Boundary.openTurnStartSeq + 1; seq < g5Events.length; seq += 1) {
+                  const event = g5Events[seq]
+                  if (event !== undefined && predicate(event)) return true
+                }
+                return false
+              }
+              // direct human (authority.ts:80-86): root membership AND a
+              // host-attested human message inside the open turn.
+              if (typeof agents?.roots === 'function'
+                && Array.isArray(agents.roots()) && agents.roots().includes(runtimeAgent)
+                && g5SomeOpenTurnEvent((event) => event.type === 'user/message' && event.data?.source?.kind === 'user')) {
+                return { kind: 'direct-human' }
+              }
+              // matching goal round (authority.ts:89-97 + 111-117): the
+              // CURRENT goal view read from the member's OWN service, matched
+              // exactly (id/revision/round === roundsStarted).
+              const g5Goal = typeof g5GoalsService?.get === 'function' ? g5GoalsService.get(runtimeAgent) : undefined
+              if (g5Goal !== undefined && g5Goal !== null
+                && g5SomeOpenTurnEvent((event) => event.type === 'user/message' && event.data?.source?.kind === 'goal'
+                  && event.data.source.goalId === g5Goal.id
+                  && event.data.source.revision === g5Goal.revision
+                  && event.data.source.round === g5Goal.roundsStarted)) {
+                return { kind: 'goal-round' }
+              }
+              // WINDOW-WITHOUT-EITHER answers no closed kind: the adapter
+              // lands UNOBSERVED with its own reason (never a silent pass).
+              return {}
+            }
             a5G5GoalInject = Object.freeze({
               // The provider identity the durable family registration carries
               // on this route — the same bytes every sibling arm registers
@@ -3968,15 +4033,28 @@ export function createAgentBindings(deps) {
                 }
                 return undefined
               },
-              // readExecutionFacts is DELIBERATELY absent: the host derives
-              // direct-human / goal-round authority from the SESSION EVENT
-              // LOG and the live agent graph (tool-goal/src/authority.ts:80-118
-              // @639ed01539), and neither face is reachable through any
-              // binding dependency here. Absent ≠ false: the rows report the
-              // dimension UNOBSERVED with the adapter's named gap, and never
-              // claim they checked.
+              // THE TRUSTED EXECUTION-FACTS PRODUCER (root 02:51 P2 delivery;
+              // supersedes the 01:34 'deliberately absent' state): a per-member
+              // MIRROR of the host's OWN authority derivation
+              // (tool-goal/src/authority.ts:33-118 @639ed01539), read through
+              // the SAME public faces the host law reads — api-catalog
+              // `agents` get/currentInitiator/roots, sessionProjections
+              // stateOf(session,'turnBoundary'), Agent.status, the public
+              // Session.snapshotEvents(), and the goals service's own get.
+              // No parallel authority system: this mint answers ONLY the
+              // adapter's closed question ({kind:'direct-human'} |
+              // {kind:'goal-round'}), and every unreadable face lands as the
+              // adapter's honest UNOBSERVED (never a guessed kind). The
+              // PORT-side law (goalToolExecution authentication, the native
+              // requireDirectHuman/completionAuthority re-checks, the
+              // deferContext wrap-up) stays the host's: PA and this pre-check
+              // never REPLACE a native check: an approval whose dispatch the
+              // native lane would refuse (a goal-round dispatch on an action
+              // that requires a direct human turn — authority.ts:100-103) is
+              // refused HERE too, off the same fact the native check reads.
+              readExecutionFacts: g5ReadExecutionFacts,
             })
-            observations.push(`a5m2-g5: inject armed for ${sessionId} (goals=live public service; natives=member-scoped capture; provider=durable registration identity; pairing=durable registry read post-publish; executionAuthority=UNOBSERVED, no supply line here)`)
+            observations.push(`a5m2-g5: inject armed for ${sessionId} (goals=live public service; natives=member-scoped capture; provider=durable registration identity; pairing=durable registry read post-publish; executionAuthority=live host-law mirror per call (driver/window/faces; window-without-fact = UNOBSERVED never a pass); port law untouched)`)
           }
         }
         // ── A5M2-B-TEAM-WIRE (this lane's block): the B-TEAM member-operation
