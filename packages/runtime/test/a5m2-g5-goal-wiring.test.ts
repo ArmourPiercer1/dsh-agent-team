@@ -563,6 +563,10 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
     await expect(defs.update_goal!.execute({ goal_id: 'goal-w1', revision: 1, action: 'edit' }, execWithCall('c2'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
     await expect(defs.update_goal!.execute({ goal_id: 'goal-w1', revision: 1, action: 'complete' }, execWithCall('c3'))).rejects.toThrow('P_G5_GOAL_COMPLETION_AUTHORITY_REQUIRED')
     expect(w.nativeEntered()).toBe(0) // every refusal settles BEFORE the native/port
+    // P2 companion (root 05:5x): the goal-round blocked leg (THRESHOLD TRUST,
+    // no trusted config supply closes that arm alone) is pinned VERBATIM in
+    // the service spec — it needs the port's goal facts; this bridge layer
+    // pins the authority-gated refusals, which sit BEFORE the threshold leg.
     const served = await defs.get_goal!.execute({}, execWithCall('c4')) // the READ arm is unchanged
     expect((served as { goal?: { id?: string } }).goal?.id).toBeDefined()
   })

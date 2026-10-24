@@ -486,7 +486,7 @@ function staticParameterLaw(toolName, args) {
  *   readNative: (name: string) => object | undefined,   // capture seam
  *   goals: object,   // the GoalService-shaped port: the seven methods of
  *                    // A5_G5_GOAL_SERVICE_METHODS (extra methods may ride)
- *   blockedAfterConsecutiveRounds?: number,   // tool Config mirror, default 3
+ *   blockedAfterConsecutiveRounds?: number,   // host tool Config VALUE — trusted ONLY when supplied; absent = the goal-round blocked arm alone closes (root 05:5x; NEVER defaulted here)
  *   readExecutionFacts?: () => { kind: 'direct-human' } | { kind: 'goal-round' },
  *   observe?: (event) => void
  * }}
@@ -539,7 +539,7 @@ export function createG5GoalServiceAdapter({
   providerId,
   readNative,
   goals,
-  blockedAfterConsecutiveRounds = 3,
+  blockedAfterConsecutiveRounds,
   readExecutionFacts,
   observe = () => {},
 } = {}) {
@@ -547,7 +547,8 @@ export function createG5GoalServiceAdapter({
   if (typeof providerId !== 'string' || providerId.length === 0) throw assemblyDefect('providerId is required (the placing assembly identifies itself)')
   if (typeof readNative !== 'function') throw assemblyDefect('readNative is required — the tools.get(name, scope) capture seam; a row that cannot capture mounts INACTIVE (declared_mount), it never invents a body')
   if (!isRecord(goals)) throw assemblyDefect('goals is required — the injected GoalService-shaped port (production: the live ctx.goals); this adapter holds no goal implementation')
-  if (!Number.isSafeInteger(blockedAfterConsecutiveRounds) || blockedAfterConsecutiveRounds < 1) {
+  const thresholdTrusted = blockedAfterConsecutiveRounds !== undefined
+  if (thresholdTrusted && (!Number.isSafeInteger(blockedAfterConsecutiveRounds) || blockedAfterConsecutiveRounds < 1)) {
     // Verbatim mirror of the host tool's config law (tool-goal/src/index.ts:126-132).
     throw assemblyDefect('blockedAfterConsecutiveRounds must be a positive safe integer')
   }
@@ -746,6 +747,19 @@ export function createG5GoalServiceAdapter({
         && plan.targetManifest.executionAuthority.kind === 'goal-round'
       if (goalRoundCompletion) {
         const getCall = { method: 'get', source: 'tool-goal/src/authority.ts:113 ctx.goals.get(execution.agent) inside completionAuthority' }
+        // P2 THRESHOLD TRUST (root 05:5x ruling; 639 tool-goal Config :32-40/:126-131):
+        // the threshold is a HOST CONFIG VALUE (default 3 is the tool's own
+        // fallback, NOT a fact this row may assume — a host configured 5
+        // would see a too-early blocked under a guessed 3, a host configured
+        // 1 an over-refusal). With NO trusted supply the goal-round BLOCKED
+        // arm alone stays closed (this refusal; zero port entry); every other
+        // arm — direct-human completions, goal-round completes, edit/pause/
+        // resume under direct human, get_goal reads — keeps serving exactly
+        // as repaired. Trusted supply (assembly passes the real config value)
+        // runs the verbatim native check below.
+        if (action === 'blocked' && !thresholdTrusted) {
+          return { refusal: refuseWith(CODES.BLOCK_THRESHOLD, `${toolName}: the goal-round blocked floor is the tool's CONFIG VALUE (tool-goal/src/index.ts:305-312 reads the resolved Config, default 3 at :126-132 — a host value this assembly never read); the row NEVER defaults it, so the goal-round blocked arm stays closed until a trusted threshold rides the supply (or the check delegates to the native tool) — zero port entry; other arms unaffected`) }
+        }
         const current = goals.get(ctx.agent)
         if (action === 'blocked' && current !== undefined && current.roundsStarted < blockedAfterConsecutiveRounds) {
           // Verbatim host message shape (tool-goal/src/index.ts:307-311).
