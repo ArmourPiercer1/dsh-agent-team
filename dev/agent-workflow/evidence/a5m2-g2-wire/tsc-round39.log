@@ -1,0 +1,83 @@
+src/plugin/team-spill-local.ts(46,30): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(47,33): error TS2307: Cannot find module '@deepseek-ai/dsh-spill-local' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(48,29): error TS2307: Cannot find module '@deepseek-ai/dsh-spill-local' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(49,46): error TS2307: Cannot find module '@deepseek-ai/dsh-spill' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(83,13): error TS2322: Type 'SaveTextSpill' is not assignable to type 'never'.
+src/plugin/team-spill-local.ts(116,18): error TS4112: This member cannot have an 'override' modifier because its containing class 'TeamAwareLocalSpillStore' does not extend another class.
+src/plugin/team-spill-local.ts(118,25): error TS2339: Property 'ctx' does not exist on type 'TeamAwareLocalSpillStore'.
+test/a2c1-pwsh-permission.test.ts(100,25): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/a2c1-pwsh-permission.test.ts(103,26): error TS2307: Cannot find module '@deepseek-ai/dsh-system-prompt' or its corresponding type declarations.
+test/a2c1-pwsh-permission.test.ts(104,25): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/a2c1-pwsh-permission.test.ts(105,74): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/a2c1-pwsh-permission.test.ts(770,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/a2c1-pwsh-permission.test.ts(770,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+test/a2c1-pwsh-permission.test.ts(772,15): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/a2c1-pwsh-permission.test.ts(772,22): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+test/a2c1-pwsh-permission.test.ts(1315,64): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/a2c1-pwsh-permission.test.ts(1348,64): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/a2c2-permission-coverage.test.ts(57,25): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/a2c2-permission-coverage.test.ts(60,26): error TS2307: Cannot find module '@deepseek-ai/dsh-system-prompt' or its corresponding type declarations.
+test/a2c2-permission-coverage.test.ts(61,25): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/a2c2-permission-coverage.test.ts(62,74): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/a2c2-permission-coverage.test.ts(202,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/a2c2-permission-coverage.test.ts(202,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+test/a2c2-permission-coverage.test.ts(204,15): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/a2c2-permission-coverage.test.ts(204,22): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+test/a2c2-permission-coverage.test.ts(222,52): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/a5m2-g2-wire-c1.test.ts(1368,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-g2-wire-c1.test.ts(1369,12): error TS2532: Object is possibly 'undefined'.
+test/alpha2-explicit-agent-setup.test.ts(54,30): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/f1-webserver-shim-isolation.test.ts(58,34): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/f1-webserver-shim-isolation.test.ts(87,24): error TS2339: Property 'ctx' does not exist on type 'F1ConnectionService'.
+test/h1a-pre-execute-endcap.test.ts(126,25): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/h1a-pre-execute-endcap.test.ts(129,26): error TS2307: Cannot find module '@deepseek-ai/dsh-system-prompt' or its corresponding type declarations.
+test/h1a-pre-execute-endcap.test.ts(130,25): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/h1a-pre-execute-endcap.test.ts(131,74): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/h1a-pre-execute-endcap.test.ts(244,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/h1a-pre-execute-endcap.test.ts(244,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+test/h1a-pre-execute-endcap.test.ts(246,15): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/h1a-pre-execute-endcap.test.ts(246,22): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+test/h1a-pre-execute-endcap.test.ts(265,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/h1a-pre-execute-endcap.test.ts(265,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+test/h1a-pre-execute-endcap.test.ts(267,21): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(76,25): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/issue2-capability-permission-precedence.test.ts(79,26): error TS2307: Cannot find module '@deepseek-ai/dsh-system-prompt' or its corresponding type declarations.
+test/issue2-capability-permission-precedence.test.ts(80,25): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/issue2-capability-permission-precedence.test.ts(81,74): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/issue2-capability-permission-precedence.test.ts(171,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(171,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(173,15): error TS7006: Parameter '_args' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(173,22): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(351,60): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(374,60): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(422,60): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/issue2-capability-permission-precedence.test.ts(445,60): error TS7006: Parameter 's' implicitly has an 'any' type.
+test/issue2-real-preset-restriction.test.ts(66,25): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(67,20): error TS2307: Cannot find module '@deepseek-ai/cordis-plugin-loader' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(68,21): error TS2307: Cannot find module '@deepseek-ai/cordis-plugin-include' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(69,19): error TS2307: Cannot find module '@deepseek-ai/cordis-plugin-group' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(72,26): error TS2307: Cannot find module '@deepseek-ai/dsh-system-prompt' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(73,25): error TS2307: Cannot find module '@deepseek-ai/dsh-tools' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(74,39): error TS2307: Cannot find module '@deepseek-ai/dsh-session-projection' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(76,23): error TS2307: Cannot find module '@deepseek-ai/dsh-agent-loop' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(77,33): error TS2307: Cannot find module '@deepseek-ai/dsh-agent-preset-registry' or its corresponding type declarations.
+test/issue2-real-preset-restriction.test.ts(138,49): error TS7006: Parameter 'schema' implicitly has an 'any' type.
+test/rc2-persona-probe.test.ts(24,64): error TS2307: Cannot find module '@deepseek-ai/dsh-system-prompt' or its corresponding type declarations.
+test/team-skills.test.ts(35,25): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+test/team-skills.test.ts(36,27): error TS2307: Cannot find module '@deepseek-ai/dsh-skill' or its corresponding type declarations.
+test/team-spill-local-composition.test.ts(46,54): error TS2307: Cannot find module '@deepseek-ai/cordis-plugin-include' or its corresponding type declarations.
+test/team-spill-local-composition.test.ts(47,35): error TS2307: Cannot find module '@deepseek-ai/cordis-plugin-loader' or its corresponding type declarations.
+test/team-spill-local.test.ts(55,36): error TS2307: Cannot find module '@deepseek-ai/dsh-spill' or its corresponding type declarations.
+test/team-spill-local.test.ts(229,62): error TS2339: Property 'root' does not exist on type 'TeamAwareLocalSpillStore'.
+test/team-spill-local.test.ts(446,18): error TS2339: Property 'root' does not exist on type 'TeamAwareLocalSpillStore'.
+test/team-spill-local.test.ts(447,27): error TS2339: Property 'root' does not exist on type 'TeamAwareLocalSpillStore'.
+test/team-spill-local.test.ts(449,41): error TS2339: Property 'root' does not exist on type 'TeamAwareLocalSpillStore'.
+test/team-spill-local.test.ts(480,22): error TS4113: This member cannot have an 'override' modifier because it is not declared in the base class 'TeamAwareLocalSpillStore'.
+test/team-spill-local.test.ts(484,30): error TS2339: Property 'root' does not exist on type 'IsolatedSpillStore'.
+test/team-spill-local.test.ts(497,18): error TS2339: Property 'config' does not exist on type 'IsolatedSpillStore'.
+test/team-spill-local.test.ts(498,18): error TS2339: Property 'root' does not exist on type 'IsolatedSpillStore'.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

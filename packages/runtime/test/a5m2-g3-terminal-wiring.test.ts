@@ -43,6 +43,8 @@
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g3-terminal-wiring
  */
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
@@ -73,6 +75,7 @@ type Definition = {
 const WIRING = (await import(new URL('../src/plugin/live/governed-families/g3-terminal-wiring.mjs', import.meta.url).href)) as {
   buildG3TerminalWiring: (input: Record<string, unknown>) => Built
   a5G3PaTargetFlat: (manifest: Record<string, unknown>) => Record<string, unknown>
+  a5G3RouteIdentity: (input: Record<string, unknown>) => Readonly<{ registrationId: string, incarnation: string }> | null
   A5_G3_TERMINAL_TOOL_NAMES: readonly string[]
   A5_G3_TERMINAL_WIRING_CODES: Record<string, string>
 }
@@ -551,5 +554,62 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
     // the six-verb leaf sets are CLOSED: a smuggled leaf denies with its own name:
     expect(validatePaFamilyTarget('B-TERMINAL', { ...common('output-read', 'terminal_read'), ptySessionId: 'pty-1', ptyIncarnation: 'pid:4242', offsetJson: 'absent', countJson: 'absent', smuggled: 'x' }))
       .toBe('smuggled: not part of the B-TERMINAL typed plan')
+  })
+
+  it('the ROUTE IDENTITY law (ruling 2 + consolidated card 1b/2): declared ∩ live ∩ COVERED, alive generation, and the CURRENT-publication pairing — every other answer is nothing', () => {
+    const base = {
+      declared: ['shell', 'docker'],
+      live: ['shell', 'docker'],
+      covered: ['shell'],
+      generation: { value: 'mount-gen-1', revoked: false },
+      capturedIdentity: 'pub-A',
+      currentIdentity: 'pub-A',
+    }
+    const ok = WIRING.a5G3RouteIdentity({ ...base, type: 'shell' })
+    expect(ok).toEqual({ registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-1' })
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'shell' }), 'same mount, same answer (construction pairs the entry recheck)').toEqual(ok)
+    // fail-closed matrix — each leg answers NOTHING (→ P_TERM_TARGET_UNRESOLVED):
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'node' }), 'undeclared type').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'docker', live: ['shell'] }), 'declared but the service no longer registers it').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: '' }), 'empty type').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, generation: { value: 'mount-gen-1', revoked: true } }), 'REVOKED (unmounted/dropped-residency) generation').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, generation: null }), 'no generation at all').toBeNull()
+    // ITEM 2: declared AND live, but this assembly does not REALLY
+    // implement it — the label must never impersonate an implementation:
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'docker' }), 'declared+live but NOT covered by this assembly').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, type: 'shell', covered: [] }), 'a failed base Config covers NOTHING').toBeNull()
+    // ITEM 1b: the pairing authority is the CURRENTLY published identity —
+    // a superseded publication answers nothing even with a live generation:
+    expect(WIRING.a5G3RouteIdentity({ ...base, currentIdentity: 'pub-B' }), 'a NEWER publication replaced this mount').toBeNull()
+    expect(WIRING.a5G3RouteIdentity({ ...base, capturedIdentity: undefined }), 'not yet published answers nothing').toBeNull()
+    // (a) a replaced generation answers a DIFFERENT incarnation — the exact
+    // difference the adapter entry recheck names and refuses:
+    const after = WIRING.a5G3RouteIdentity({ ...base, type: 'shell', generation: { value: 'mount-gen-2', revoked: false } })
+    expect(after).toEqual({ registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-2' })
+    expect(after?.incarnation === ok?.incarnation, 'a replaced generation can never pair an approval made under the old one').toBe(false)
+  })
+})
+
+// center (root G3A760 narrow review): REGRESSION PINS for the backends
+// transport. The merge that landed B-TERMINAL carried the a5G3TerminalInject
+// GUARD condition but dropped the conditional SPREAD from the backends
+// literal, so plane:1402 read `input.backends?.terminal === undefined` and
+// the post-mount wiring-face check (:5421 region) refused EVERY terminal
+// session (alpha5-g3-terminal-mount-refused). createAgentBindings needs a
+// live Host agent ctx (a5m2-g1-wire-c1 header, same disclosure), so the
+// in-repo guard is the pinned-edge class (a5p7 precedent): the binding must
+// carry the EXACT transport line, and the plane must keep reading EXACTLY
+// that key. A true end-to-end enablement leg rides the live kit — this pin
+// is not a substitute for it and nothing here claims 已测试.
+describe('B-TERMINAL backends transport — regression pins (root G3A760)', () => {
+  it('the bindings backends union carries the terminal spread (not just the guard)', () => {
+    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href), 'utf8')
+    expect(src).toContain('...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),')
+    // the guard alone (without the spread) was the regression shape:
+    expect(src).toContain('a5SpawnWiring === null && a5G3TerminalInject === null')
+  })
+  it('the plane reads exactly input.backends?.terminal', () => {
+    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href), 'utf8')
+    expect(src).toContain('const terminalInjectRaw = input.backends?.terminal')
   })
 })

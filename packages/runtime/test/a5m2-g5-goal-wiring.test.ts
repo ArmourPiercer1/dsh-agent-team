@@ -27,28 +27,32 @@
  * stands in its seat.
  *
  * STATUS tier: wiring-bridge in-process proof (接线未测 boundary — no Host
- * acceptance). Named gaps carried, measured, never worded closed:
- * AUTHORITY UNOBSERVED rides the durable targetManifest unless
- * readExecutionFacts is injected; the SIGNED B-SESSION rules table carries
- * ONLY the todo variant, so production paAdmit's family-target check
- * REFUSES these goal manifests today — the spec pins that refusal through
- * the REAL published validator as the expected production behavior of this
- * wiring until the rules lane extends the table.
+ * acceptance). Named gaps carried, measured, never worded closed: AUTHORITY
+ * UNOBSERVED rides the durable target projection unless readExecutionFacts
+ * is injected. The SIGNED B-SESSION rules table now CARRIES the goal leaves
+ * (root 01:01 card: one signed entry, discriminated by the lane-minted
+ * `operation` leaf, already-approved kinds only) — the spec pins the
+ * REAL published validator ACCEPTING every minted projection, mint
+ * reproduction, and that a missing leaf STILL denies; the todo variant's
+ * claim verdicts are pinned preserved byte-for-byte.
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g5-goal-wiring
  */
 import { describe, expect, it } from 'vitest'
 import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { findTestRepoRoot } from '../../../tests/paths.mjs'
+import { findTestRepoRoot, testUsePath } from '../../../tests/paths.mjs'
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
 import { isLosslessJsonValue, validatePaFamilyTarget } from '../control/types.js'
 
 const repoRoot = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
 if (repoRoot === null) throw new Error('no repo root carrying tests/deepseek-harness-test-use — failing closed')
-const HOST_LIB = join(repoRoot, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+// the pinned checkout resolves through tests/paths.mjs (the unique path
+// source): the canonical repo-relative location, or the read-only 639 base
+// when the run supplies DSH_TEST_USE_ROOT (root 02:04 handling).
+const HOST_LIB = testUsePath(dirname(fileURLToPath(import.meta.url)), 'packages', 'core', 'tools', 'lib', 'index.js')
 if (!existsSync(HOST_LIB)) throw new Error(`pristine host lib absent; failing closed (${HOST_LIB})`)
 const hostTools = () => import(pathToFileURL(HOST_LIB).href) as Promise<{
   defineTool: (options: Record<string, unknown>) => Record<string, unknown>
@@ -166,7 +170,7 @@ const OUTPUT_SCHEMA = { oneOf: [
 ] }
 
 interface CapturedNative { def: Record<string, unknown>; entered: () => number }
-async function captureNative(name: string): Promise<CapturedNative> {
+async function captureNative(name: string, executeOverride?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown): Promise<CapturedNative> {
   const host = await hostTools()
   let entered = 0
   const def = host.defineTool({
@@ -177,10 +181,18 @@ async function captureNative(name: string): Promise<CapturedNative> {
       schema: JSON.parse(JSON.stringify(OUTPUT_SCHEMA)) as Record<string, unknown>,
       render: (_args: unknown, value: unknown) => [{ type: 'text', text: JSON.stringify(value ?? null) }],
     },
-    execute: async () => {
-      entered += 1
-      throw new Error('NATIVE BODY MUST NOT BE ENTERED by a governed G5 row')
-    },
+    execute: executeOverride === undefined
+      ? async () => {
+        entered += 1
+        throw new Error('NATIVE BODY MUST NOT BE ENTERED by a governed G5 row')
+      }
+      // THE BRIDGE-LEVEL DELEGATE DOUBLE (root 06:5x): entered ONLY by the
+      // goal-round-blocked-under-untrusted-threshold arm; records the args
+      // and the exec identity the walk handed through.
+      : async (args: Record<string, unknown>, exec: Record<string, unknown>) => {
+        entered += 1
+        return executeOverride(args, exec)
+      },
   })
   return { def: def as Record<string, unknown>, entered: () => entered }
 }
@@ -188,6 +200,9 @@ async function captureNative(name: string): Promise<CapturedNative> {
 /* ── recording goal-service port (synchronous, pinned seven-method shape) ── */
 interface PortCall { method: string, args: unknown[] }
 const callAt = (calls: PortCall[], i: number): PortCall => calls[i] as unknown as PortCall
+// Checked first-entry read (the length pins above make a missing entry a
+// hard failure, not an undefined comparing equal).
+const first = <T>(xs: T[]): T => xs[0] as T
 interface FakePort { port: Record<string, unknown>, calls: PortCall[] }
 function fakeGoals(current: Record<string, unknown> | undefined, nextViews: Record<string, Record<string, unknown>> = {}, omit: readonly string[] = []): FakePort {
   const calls: PortCall[] = []
@@ -267,6 +282,7 @@ interface WorldOpts {
   current?: Record<string, unknown> | undefined
   nextViews?: Record<string, Record<string, unknown>>
   placementFeedAbsent?: boolean
+  nativeExecute?: Partial<Record<string, (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown>>
 }
 async function world(opts: WorldOpts = {}): Promise<{
   asm: Assembly
@@ -279,7 +295,7 @@ async function world(opts: WorldOpts = {}): Promise<{
 }> {
   const natives = {} as Record<string, CapturedNative>
   const seamReads: Record<string, number> = { get_goal: 0, create_goal: 0, update_goal: 0 }
-  for (const name of ADAPTER.A5_G5_GOAL_TOOL_NAMES) natives[name] = await captureNative(name)
+  for (const name of ADAPTER.A5_G5_GOAL_TOOL_NAMES) natives[name] = await captureNative(name, opts.nativeExecute?.[name])
   const port = fakeGoals(opts.current ?? VIEW(), opts.nextViews ?? {}, opts.portOmit ?? [])
   const seat = opts.seat === undefined ? makeSeat() : makeSeat(opts.seat)
   let drifted = false
@@ -411,7 +427,7 @@ describe('a5m2-g5 wiring — placement and census', () => {
 describe('a5m2-g5 wiring — the full walk through the published split-path seat (real mint/edge legs)', () => {
   it('success: classify -> open(approved+grant) -> edge(consumedProof) -> row.runPlan -> the canonical goalValue served VERBATIM -> closePlan exactly once', async () => {
     const CREATED = VIEW({ id: 'goal-new', objective: 'wire the goal service', revision: 1 })
-    const w = await world({ current: VIEW(), nextViews: { create: CREATED } })
+    const w = await world({ current: VIEW(), nextViews: { create: CREATED }, readExecutionFacts: () => ({ kind: 'direct-human' }) }) // P1 2026-10-24: a trusted per-call reader is now REQUIRED for a write arm to run
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'create_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<Record<string, unknown>> }
     const served = await def.execute({ objective: 'wire the goal service' }, execWithCall('call-g5-create'))
     // goalValue's projection (timestamps dropped), asserted against the
@@ -542,10 +558,29 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
   it('AUTHORITY named gap: without readExecutionFacts the durable targetManifest carries the UNOBSERVED fact verbatim — never a pass', async () => {
     const w = await world({ nextViews: { create: VIEW({ id: 'goal-auth' }) } })
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'create_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
-    await def.execute({ objective: 'o' }, execWithCall('call-auth'))
-    const walk = w.seat.openWalks()[0] as { family: { targetManifest: { executionAuthority: { observed: boolean, reason?: string } } } }
-    expect(walk.family.targetManifest.executionAuthority.observed).toBe(false)
-    expect(String(walk.family.targetManifest.executionAuthority.reason)).toContain('AUTHORITY UNOBSERVED')
+    // CENTER P1 SAFE BLOCK 2026-10-24 (root-confirmed): the durable row STILL
+    // says UNOBSERVED verbatim AND the mutation now REFUSES before the port -
+    // the old pass-through was the authority bypass (host would refuse @224).
+    await expect(def.execute({ objective: 'o' }, execWithCall('call-auth'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
+    const target = (w.seat.openWalks()[0] as { family: { targetManifest: Record<string, unknown> } }).family.targetManifest
+    expect(target.authorityObserved).toBe(false)
+    expect(String(target.authorityReason)).toContain('AUTHORITY UNOBSERVED')
+    expect(target.authorityKind).toBeNull() // missing ≠ null ≠ '': UNOBSERVED is SAYABLE, never a silent pass
+  })
+
+  it('CENTER P1 2026-10-24 safe block: UNOBSERVED authority refuses every gated write before the port; the get_goal READ arm stays open', async () => {
+    const w = await world({ current: VIEW(), nextViews: { create: VIEW({ id: 'goal-x' }), pause: VIEW({ phase: 'paused', revision: 2 }) } })
+    const defs = Object.fromEntries((w.asm.definitions ?? []).map((d) => [d.name, d as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }]))
+    await expect(defs.create_goal!.execute({ objective: 'o' }, execWithCall('c1'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
+    await expect(defs.update_goal!.execute({ goal_id: 'goal-w1', revision: 1, action: 'edit' }, execWithCall('c2'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
+    await expect(defs.update_goal!.execute({ goal_id: 'goal-w1', revision: 1, action: 'complete' }, execWithCall('c3'))).rejects.toThrow('P_G5_GOAL_COMPLETION_AUTHORITY_REQUIRED')
+    expect(w.nativeEntered()).toBe(0) // every refusal settles BEFORE the native/port
+    // P2 companion (root 05:5x): the goal-round blocked leg (THRESHOLD TRUST,
+    // no trusted config supply closes that arm alone) is pinned VERBATIM in
+    // the service spec — it needs the port's goal facts; this bridge layer
+    // pins the authority-gated refusals, which sit BEFORE the threshold leg.
+    const served = await defs.get_goal!.execute({}, execWithCall('c4')) // the READ arm is unchanged
+    expect((served as { goal?: { id?: string } }).goal?.id).toBeDefined()
   })
 
   it('with the authority seam injected the row ENFORCES its own laws through the bridge (goal-round completion needs the round fact)', async () => {
@@ -557,6 +592,31 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
     await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'complete' }, execWithCall('call-complete'))
     expect(callAt(w.port.calls, 0).method).toBe('complete')
+  })
+
+  it('THE DELEGATE THROUGH THE BRIDGE (root 06:5x): goal-round blocked under NO trusted threshold — one PA admission, the walk executes the captured native body ONCE with the exec verbatim, zero port, serves the native value; the walk still closes exactly once', async () => {
+    const seen: Array<{ args: Record<string, unknown>, exec: Record<string, unknown> }> = []
+    const nativeView = { goal: { id: 'goal-w1', revision: 2, objective: 'govern the goal tools', phase: 'blocked', roundsStarted: 3, maxGoalRounds: 4, blockedReason: { code: 'model-reported', message: 'x' } }, activation: 'disarmed' }
+    const w = await world({
+      readExecutionFacts: () => ({ kind: 'goal-round' }),
+      current: VIEW({ roundsStarted: 3 }),
+      nativeExecute: {
+        update_goal: (args, exec) => {
+          seen.push({ args, exec })
+          return nativeView
+        },
+      },
+    })
+    const def = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    const exec = execWithCall('call-delegate')
+    const served = await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'blocked', blocked_reason: 'x' }, exec)
+    expect(served).toEqual(nativeView) // the native body's projection rides the walk verbatim
+    expect(seen.length).toBe(1) // ONE body, entered exactly once per ONE admission
+    expect(first(seen).exec).toBe(exec) // the dispatch exec VERBATIM through the bridge
+    expect(w.port.calls.length).toBe(0) // zero port entry for the delegate arm
+    expect(w.nativeEntered()).toBe(1)
+    const walks = w.seat.openWalks()
+    expect(walks.length).toBe(1) // one PA admission serves the delegated call (no second walk, no second consume)
   })
 
   it('drain is the row law verbatim: new calls refuse P_G5_DRAINING, committed state untouched', async () => {
@@ -572,24 +632,71 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
 
 describe('a5m2-g5 wiring — the NAMED GAP at its measured bytes: the signed B-SESSION table carries only the todo variant', () => {
   it('the goal targetManifest is LOSSLESS JSON (passes the real published losslessness checker)', async () => {
-    const w = await world({ nextViews: { pause: VIEW({ phase: 'paused', revision: 2 }) } })
+    const w = await world({ nextViews: { pause: VIEW({ phase: 'paused', revision: 2 }) }, readExecutionFacts: () => ({ kind: 'direct-human' }) }) // P1 2026-10-24
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
     await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'pause' }, execWithCall('call-lossless'))
     const walk = w.seat.openWalks()[0] as { family: { targetManifest: unknown } }
     expect(isLosslessJsonValue(walk.family.targetManifest)).toBe(true)
   })
 
-  it('the SIGNED table refuses these goal manifests (todo-variant structure) through the REAL published validator — disclosed, expected production behavior until the rules lane extends the table; never bypassed here', async () => {
+  it('the REAL signed table ACCEPTS every minted goal projection (all three census variants, binds honored)', async () => {
+    const w = await world({ nextViews: { create: VIEW({ id: 'goal-a' }), pause: VIEW({ phase: 'paused' }) }, readExecutionFacts: () => ({ kind: 'direct-human' }) }) // P1 2026-10-24
+    const targets: Record<string, unknown> = {}
+    const get = (w.asm.definitions ?? []).find((d) => d.name === 'get_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    await get.execute({}, execWithCall('call-tbl-get'))
+    const create = (w.asm.definitions ?? []).find((d) => d.name === 'create_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    await create.execute({ objective: 'o' }, execWithCall('call-tbl-create'))
+    const upd = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    await upd.execute({ goal_id: 'goal-w1', revision: 1, action: 'pause' }, execWithCall('call-tbl-pause'))
+    for (const call of w.seat.openWalks()) {
+      const family = call.family as { targetManifest: Record<string, unknown> }
+      targets[String(family.targetManifest.operation)] = family.targetManifest
+    }
+    expect(Object.keys(targets).sort()).toEqual(['goal-action-dispatch', 'goal-create', 'goal-read'])
+    for (const target of Object.values(targets)) {
+      expect(validatePaFamilyTarget(ADAPTER.A5_G5_FAMILY_ID, target), JSON.stringify(target)).toBeUndefined()
+    }
+    expect(targets['goal-read']).toMatchObject({ toolName: 'get_goal', recordIndex: 28 })
+    expect(targets['goal-create']).toMatchObject({ toolName: 'create_goal', recordIndex: 27 })
+    expect(targets['goal-action-dispatch']).toMatchObject({ toolName: 'update_goal', recordIndex: 29 })
+  })
+
+  it('the mint REPRODUCES: the same measured facts project deep-equal leaves (a stable grammar face, not a per-call sketch)', async () => {
     const w = await world()
-    const def = (w.asm.definitions ?? []).find((d) => d.name === 'get_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
-    await def.execute({}, execWithCall('call-table'))
-    const walk = w.seat.openWalks()[0] as { family: { targetManifest: unknown } }
-    const refusal = validatePaFamilyTarget(ADAPTER.A5_G5_FAMILY_ID, walk.family.targetManifest)
-    expect(refusal).toBeDefined()
-    expect(String(refusal)).toContain('required by the B-SESSION typed plan')
-    // The refusal is the TABLE's fact (the todo variant's required fields);
-    // the bridge adds no bypass: the named-gap text rides the module header
-    // verbatim, and the adapter's own gap bytes stay carried on every row.
+    const get = (w.asm.definitions ?? []).find((d) => d.name === 'get_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    await get.execute({}, execWithCall('call-repro-1'))
+    await get.execute({}, execWithCall('call-repro-2'))
+    const walks = w.seat.openWalks()
+    const first = (walks[0] as { family: { targetManifest: unknown } }).family.targetManifest
+    const second = (walks[1] as { family: { targetManifest: unknown } }).family.targetManifest
+    expect(second).toEqual(first)
+  })
+
+  it('ABSENCE still denies through the REAL validator: stripped leaf, moved bind, foreign key, unknown operation — and the todo claim verdicts ride the SAME bytes', async () => {
+    const w = await world()
+    const get = (w.asm.definitions ?? []).find((d) => d.name === 'get_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    await get.execute({}, execWithCall('call-neg'))
+    const minted = (w.seat.openWalks()[0] as { family: { targetManifest: Record<string, unknown> } }).family.targetManifest
+    expect(minted).toBeDefined()
+    const { authorityReason: _gone, ...stripped } = minted
+    expect(validatePaFamilyTarget(ADAPTER.A5_G5_FAMILY_ID, stripped))
+      .toBe('authorityReason: required by the B-SESSION typed plan, absent')
+    expect(validatePaFamilyTarget(ADAPTER.A5_G5_FAMILY_ID, { ...minted, toolName: 'create_goal' }))
+      .toBe("toolName: not the 'goal-read' variant constant of the B-SESSION typed plan")
+    expect(validatePaFamilyTarget(ADAPTER.A5_G5_FAMILY_ID, { ...minted, extra: 1 }))
+      .toBe('extra: not part of the B-SESSION typed plan')
+    expect(validatePaFamilyTarget(ADAPTER.A5_G5_FAMILY_ID, { ...minted, operation: 'goal-bogus' }))
+      .toBe("operation: 'goal-bogus' selects no B-SESSION variant group")
+    // The todo `replace-list` claim verdicts are PRESERVED through the group
+    // law (the real todo.mjs:234-246 shape; same bytes, pinned here for the
+    // G5-side supply — the rules lane's own spec owns the full regression).
+    const todoClaim = { operation: 'replace-list', agentId: 'a1', sessionHeaderId: 'h1', todosDigest: 'd', counts: { pending: 1, inProgress: 0, completed: 0 }, allowParallelPolicy: false, paramFingerprint: 'd' }
+    expect(validatePaFamilyTarget('B-SESSION', todoClaim)).toBeUndefined()
+    const { paramFingerprint: _fp, ...todoStripped } = todoClaim
+    expect(validatePaFamilyTarget('B-SESSION', todoStripped))
+      .toBe('paramFingerprint: required by the B-SESSION typed plan, absent')
+    expect(validatePaFamilyTarget('B-SESSION', { ...todoClaim, lane: 'extra' }))
+      .toBe('lane: not part of the B-SESSION typed plan')
     expect(ADAPTER.A5_G5_GOAL_NAMED_GAPS.AUTHORITY).toContain('authority.ts:80-118')
   })
 })

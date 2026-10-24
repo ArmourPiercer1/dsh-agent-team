@@ -103,6 +103,13 @@ interface PlaneValue {
     declared: ReadonlyArray<{ name: string, status: string, reason: string }>
     familyRegistrations: () => Array<{ name: string, definitionIdentity: string, entry: { familyId: string, adapterRevision: number, providerIdentity: string } }>
   }
+  runCodeGuard?: {
+    armed: boolean
+    onPreExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>) | null
+    onExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>) | null
+    declared: ReadonlyArray<Record<string, unknown>>
+    familyRegistrations: () => Array<{ name: string, definitionIdentity: string, entry: { familyId: string, adapterRevision: number, providerIdentity: string } }>
+  }
   mount: (agentCtx: unknown) => { ok: boolean, code?: string, dispose?: () => void }
 }
 type Built = { ok: true, value: PlaneValue } | { ok: false, code: string, message: string }
@@ -116,6 +123,12 @@ const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs
 }
 const createTeamToolPlaneAssembly = PLANE_ROW.createTeamToolPlaneAssembly
 const { registerA5GovernedFamily, a5GovernedFamilyFor } = REGISTRY
+
+// THE PRODUCTION ROUTE-IDENTITY LAW (user ruling 2): the spec world answers
+// backend() with the SAME helper the live capture calls verbatim.
+const G3W = (await import(new URL('../src/plugin/live/governed-families/g3-terminal-wiring.mjs', import.meta.url).href)) as {
+  a5G3RouteIdentity: (input: Record<string, unknown>) => Readonly<{ registrationId: string, incarnation: string }> | null
+}
 
 const PARAMS: Record<string, Record<string, unknown>> = {
   terminal_open: { type: 'object', properties: { type: { type: 'string' }, name: { type: 'string' }, cwd: { type: 'string' } }, required: ['type'], additionalProperties: false },
@@ -184,9 +197,25 @@ function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | unde
   }
 }
 
-function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown> } = {}) {
+function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown>; route?: { reads: number, revokeAfter: number, generation: { value: string, revoked: boolean } }; mount?: { box: { captured: unknown }, current: () => unknown }; effect?: (disposer: () => void, name: string) => void } = {}) {
   const portCalls = opts.portCalls ?? []
   const absent = new Set(opts.absent ?? [])
+  // THE MOUNT GENERATION (ruling 2 (a)) in spec shape: one value per
+  // mount-world; `route.revokeAfter` arms a revoke that flips the generation
+  // on the read AFTER the Nth - the classify-vs-entry window the adapter's
+  // entry recheck polices.
+  const route = opts.route ?? { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-spec-1', revoked: false } }
+  // THE PUBLICATION PAIRING (consolidated card 1b): the spec-mount box pairs
+  // trivially by default; a test can drive the REAL registry through it
+  // (captured = the identity publishPaMount returned; current = a fresh
+  // resolvePaMount read at every answer).
+  const mount = opts.mount ?? { box: { captured: 'spec-mount' as unknown }, current: () => 'spec-mount' as unknown }
+  // THE DISPOSE-ORDERING SEAM (root residue card): the SAME closure the
+  // live capture registers through agentCtx.effect is registered here
+  // through the spec-supplied effect face — the leg drives the REGISTERED
+  // disposer, never a hand-flipped boolean.
+  const g3RevokeGeneration = () => { route.generation.revoked = true }
+  if (opts.effect !== undefined) opts.effect(g3RevokeGeneration, 'dsh-agent-team/g3-mount-generation')
   // THE LIVE SNAPSHOT SOURCE (root 21:36: the CONTROL/QUERY rows ride live
   // facts): one mutable snapshot list feeds BOTH the terminals face's list()
   // and the producer-shaped session() resolution (pid-derived incarnation,
@@ -223,7 +252,27 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
     sessionHeaderId: HEADER,
     declaredBackends: ['shell'],
     ptyService: {
-      backend: (type: string) => (type === 'shell' ? { registrationId: 'reg-shell-1', incarnation: 'inc-1', processEnvelope: { sandbox: 'landlock' } } : null),
+      backend: (type: string) => {
+        // ROUTE-LEG MODE (ruling 2 (k)-route): when a mount-generation route is
+        // supplied, backend() answers through the PRODUCTION helper exactly as
+        // agent-bindings does (consolidated card 1b/2: the covered leg + the
+        // CAPTURED-vs-CURRENT publication pairing ride the real call);
+        // otherwise the legacy spec stub stays byte-kept.
+        if (opts.route !== undefined) {
+          route.reads += 1
+          if (route.reads > route.revokeAfter) route.generation.revoked = true
+          return G3W.a5G3RouteIdentity({
+            type,
+            declared: ['shell'],
+            live: ['shell'],
+            covered: ['shell'],
+            generation: route.generation,
+            capturedIdentity: mount.box.captured,
+            currentIdentity: mount.current(),
+          })
+        }
+        return type === 'shell' ? { registrationId: 'reg-shell-1', incarnation: 'inc-1', processEnvelope: { sandbox: 'landlock' } } : null
+      },
       session: (ownerAgentId: string, sessionId: string) => {
         if (ownerAgentId !== MEMBER || sessionId !== 'pty-1') return null
         // producer-shaped derivation from the LIVE snapshot (pid-derived
@@ -813,6 +862,90 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     }
   })
 
+  it('(k) the ROUTE IDENTITY + MOUNT GENERATION law (user ruling 2): backend() answers THIS mount\'s controlled route, the generation pairs construction and entry, and a generation revoked inside that window refuses at the entry with ZERO effects — an approval under a dead generation never replays', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const portCalls: string[] = []
+    const route = { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-k', revoked: false } }
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const w = makeInject({ portCalls, route })
+    // (c) THE ANSWER IS THE ROUTE, NOT A PUBLIC BACKEND: the stable id is
+    // this mount's per-open one-shot family (the adapter's own id space);
+    // (a) the incarnation is the MOUNT GENERATION — stable across reads.
+    const pty = w.inject.ptyService as { backend: (t: string) => unknown }
+    const first = pty.backend('shell')
+    const second = pty.backend('shell')
+    expect(first).toEqual({ registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-k' })
+    expect(second, 'the same living generation answers identically (construction pairs the entry recheck)').toEqual(first)
+    expect(pty.backend('docker'), 'an undeclared type answers nothing').toBeNull()
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const open = built.value.definitions.find((d) => d.name === 'terminal_open') as Definition
+      // ARM THE WINDOW: the NEXT backend read (approval-time) still answers
+      // the living generation; the read AFTER it (the adapter's entry
+      // recheckTarget) flips the generation to REVOKED — exactly what a
+      // replaced/unmounted generation does to an in-flight call. The entry
+      // refuses with its own word, naming the loss, BEFORE any port entry.
+      route.revokeAfter = route.reads + 1
+      await expect(open.execute({ type: 'shell', name: 'k-run' }, { token: { k: 'g3-k-open' }, agent: AGENT }))
+        .rejects.toThrow(/P_TERM_TARGET_DRIFT[\s\S]*dsh-g3-po:shell@mount-gen-k -> unresolvable/)
+      expect(portCalls.filter((c) => ['startSend', 'read', 'signal', 'kill', 'list'].includes(c)), 'refused at the entry — ZERO service effects').toEqual([])
+      // NO STALE REPLAY (a): with the generation dead, every later read —
+      // including a fresh call's approval-time read — answers NOTHING, so
+      // the row fails closed at TARGET_UNRESOLVED before any admission walk.
+      const walksBefore = seen.length
+      await expect(open.execute({ type: 'shell', name: 'k-replay' }, { token: { k: 'g3-k-replay' }, agent: AGENT }))
+        .rejects.toThrow(/P_TERM_TARGET_UNRESOLVED/)
+      expect(seen.length, 'the dead-generation refusal happens before the PA walk — no approval is minted, spent, or replayed').toBe(walksBefore)
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
   it('(l) REAL abort MID-EXECUTION is HONOURED (root 01:1x cancel supply + 580f①): the interrupt landing while jobs.start runs registers the intent (zero speculative kill), and the ANSWERED job is owner-checked killed — the success commit REFUSED with the cleanup truth', async () => {
     const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
       publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
@@ -981,5 +1114,311 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     } finally {
       registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
     }
+  })
+})
+
+// ── A5M2-G3-PTC GUARD (root D3 card 2026-10-25): the run_code placement
+// flows through the ORIGINAL PA mapping and the REAL shipped reader —
+// open -> registry(bindingFamilyOf :192) -> plane resolves the native
+// owner's true placement, and ONLY then admit -> (D1) recheck -> native.
+// The seat, the kernel mint and the reader are REAL; only the transport's
+// body-next double stands where the host dispatch would run. ─────────────
+const PTC_PARAMS = {
+  type: 'object',
+  properties: {
+    code: { type: 'string' },
+    description: { type: 'string' },
+    timeoutMs: { type: 'number' },
+    sandbox_permissions: { type: 'string', enum: ['workspace-write', 'danger-full-access'] },
+    justification: { type: 'string' },
+  },
+  required: ['code', 'description'],
+  additionalProperties: false,
+}
+
+function makeGuardInject (opts: { captureAbsent?: boolean } = {}) {
+  const natives = new Map<string, Definition>()
+  if (opts.captureAbsent !== true) {
+    natives.set('run_code', {
+      name: 'run_code',
+      description: 'native run_code production description',
+      parameters: PTC_PARAMS,
+      execute: async () => { throw new Error('NATIVE BODY NEVER RUNS THROUGH THE GUARD') },
+      output: { schema: { type: 'object' }, render: (value: unknown) => JSON.stringify(value) },
+    })
+  }
+  return Object.freeze({
+    providerId: PROVIDER,
+    memberAgentId: MEMBER,
+    sessionHeaderId: HEADER,
+    readNative: (name: string) => natives.get(name),
+    ptcFacts: () => ({
+      interpreter: { runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' },
+      effectiveEnvelope: { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
+      timeout: { defaultMs: 30000, maxMs: 120000 },
+      childChannel: { capabilityList: ['read', 'write'], channelDigest: 'sha256:chan-plane', maxParallelSubCalls: 8, runDispatchBudget: 64 },
+    }),
+    // the ONE live source: the SAME rev-0 tuple the published dispatcher
+    // answers through entryOf('run_code') (the reader's seed).
+    bindingFacts: (toolName: string) => ({
+      bindingId: `plane-row:${TEMPLATE}:${toolName}`,
+      bindingRevision: 1,
+      policyGeneration: 0,
+      authorityGeneration: 0,
+    }),
+  })
+}
+
+describe('A5M2-G3-PTC-GUARD-PLANE — run_code placement through the ORIGINAL PA mapping and the REAL reader (D3)', () => {
+  it('(w) the REAL shipped reader resolves the native owner placement: two reads (construction + edge) both named run_code, the kernel minted the grant, the boundary consumed once and the body-next ran EXACTLY once', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => ['run_code'], entryOf: (name: string) => (name === 'run_code' ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined) } } }
+    const w = makeGuardInject()
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const reads: Array<Record<string, unknown>> = []
+    const built = buildPlane({
+      backends: { runCodeGuard: w },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => {
+        reads.push(input)
+        return registry.readPaCallFactsForCall(input)
+      },
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const rcFace = built.value.runCodeGuard as { armed: boolean, onPreExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>), onExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>), familyRegistrations: () => Array<{ definitionIdentity: string, entry: Record<string, unknown> }> } | undefined
+    expect(rcFace).toBeDefined()
+    const face = rcFace as NonNullable<typeof rcFace>
+    expect(face.armed).toBe(true)
+    // the production fill point: the family registers under the RESERVED
+    // NATIVE's own definition identity, riding the paired r4 family bytes.
+    for (const reg of face.familyRegistrations()) {
+      registerA5GovernedFamily(reg.definitionIdentity, reg.entry as { familyId: string, adapterRevision: number, providerIdentity: string })
+      expect(reg.entry).toMatchObject({ familyId: 'B-PTC', adapterRevision: 4, providerIdentity: PROVIDER })
+    }
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const exec = Object.freeze({
+        name: 'run_code',
+        callId: 'g3-ptc-real-call',
+        arguments: { code: 'return 1', description: 'real-reader leg' },
+        agent: AGENT,
+      })
+      let preNextCalls = 0
+      const admit = await face.onPreExecute(exec, async () => {
+        preNextCalls += 1
+        return { kind: 'allow' }
+      })
+      expect(admit).toEqual({ kind: 'allow' })
+      expect(preNextCalls).toBe(1)
+      // THE D3 POINT: the production read reached the REAL reader WITH the
+      // native owner's true placement — before the plane branch this read
+      // arrived with NO placementName and bindingFamilyOf :193 refused.
+      expect(reads.length, 'the construction read ran through the real reader').toBeGreaterThanOrEqual(1)
+      expect([...new Set(reads.map((r) => String(r.placementName ?? '')))], 'paPlacementNameOf named the reserved native').toEqual(['run_code'])
+      expect(seen.length).toBe(1)
+      expect(seen[0]?.family).toMatchObject({ familyId: 'B-PTC', adapterRevision: 4, providerIdentity: PROVIDER })
+      let bodyRuns = 0
+      const served = await face.onExecute(exec, async () => {
+        bodyRuns += 1
+        return { isError: false, value: 1, content: [] }
+      })
+      expect(served).toEqual({ isError: false, value: 1, content: [] })
+      expect(bodyRuns, 'the reserved native rides the transport exactly once').toBe(1)
+      // the measured double-read law: construction + EDGE, both WITH placement
+      // (the edge re-read is where :2290 compares the forwarded tuple).
+      expect(reads.length, 'construction + edge reads both ran for the placed row').toBe(2)
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(x) the FORWARDED construction tuple is LIVE at the edge (D2 through the real PA): a moved dispatcher binding between admission and the boundary refuses with the own-drift word of the plane — zero body', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const revision = { now: 1 }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: revision.now,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => ['run_code'], entryOf: (name: string) => (name === 'run_code' ? { verified: true, revision: revision.now, binding: tupleFor(name) } : undefined) } } }
+    const w = makeGuardInject()
+    const built = buildPlane({
+      backends: { runCodeGuard: w },
+      controlLeg: mintingControlLeg([]),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const face = built.value.runCodeGuard as NonNullable<typeof built.value.runCodeGuard>
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    const onPre = face.onPreExecute
+    const onExec = face.onExecute
+    if (onPre === null || onExec === null) throw new Error('spec world: the armed guard answered no listener face')
+    try {
+      const exec = Object.freeze({
+        name: 'run_code',
+        callId: 'g3-ptc-drift-call',
+        arguments: { code: 'return 1', description: 'drift leg' },
+        agent: AGENT,
+      })
+      expect((await onPre(exec, async () => ({ kind: 'allow' }))).kind).toBe('allow')
+      // the dispatcher binding the transport WOULD stand on moves mid-walk
+      revision.now = 2
+      let bodyRuns = 0
+      const result = await onExec(exec, async () => {
+        bodyRuns += 1
+        return { isError: false, value: 1, content: [] }
+      })
+      expect(result.isError, 'the edge drift refuses at the boundary').toBe(true)
+      expect(String((result.error as { message?: string })?.message ?? '')).toContain('moved between admission and execution')
+      expect(bodyRuns, 'zero body behind a moved binding').toBe(0)
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(y) zero flip: capture absent arms NOTHING — no listener face, no placement branch, the reserved native stays untouched', () => {
+    const w = makeGuardInject({ captureAbsent: true })
+    const built = buildPlane({ backends: { runCodeGuard: w } })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const face = built.value.runCodeGuard as { armed: boolean, onPreExecute: unknown, onExecute: unknown, declared: Array<Record<string, unknown>> } | undefined
+    expect(face).toBeDefined()
+    expect(face?.armed).toBe(false)
+    expect(face?.onPreExecute).toBeNull()
+    expect(face?.onExecute).toBeNull()
+    expect((face?.declared ?? []).map((d) => d.name)).toEqual(['run_code'])
+    expect(built.value.placementNames).not.toContain('run_code')
+  })
+
+  it('(n) the REAL REPLACEMENT path (consolidated card 1b): publish A, publish B over it while A\'s reader is LIVE — A\'s very next answer refuses (no boolean flip, no hand-swap: the pairing against resolvePaMount does it), and B answers', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      resolvePaMount: (root: string, instance: string) => { identity: unknown } | undefined
+    }
+    const box: { captured: unknown } = { captured: undefined }
+    const w = makeInject({
+      route: { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-l', revoked: false } },
+      mount: { box, current: () => registry.resolvePaMount('g3-plane-team', 'g3-instance')?.identity },
+    })
+    const pty = w.inject.ptyService as { backend: (t: string) => unknown }
+    const expectAnswer = { registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-l' }
+    let idB: Record<string, unknown> | undefined
+    try {
+      // A is not yet published: even with a LIVE generation, NOTHING is answered.
+      expect(pty.backend('shell'), 'unpublished mount answers nothing').toBeNull()
+      const idA = registry.publishPaMount('g3-plane-team', 'g3-instance', { instanceId: 'g3-instance', plane: 'A' })
+      box.captured = idA
+      expect(pty.backend('shell'), 'A, freshly published, answers the route identity').toEqual(expectAnswer)
+      // THE REAL REPLACE: publishPaMount over the SAME pair — the registry
+      // swaps the live record without notifying A. A's reader is untouched
+      // (same generation object, never flipped) — yet its very next answer
+      // MUST refuse, because the CURRENTLY published identity is no longer
+      // A's captured one.
+      idB = registry.publishPaMount('g3-plane-team', 'g3-instance', { instanceId: 'g3-instance', plane: 'B' })
+      expect(pty.backend('shell'), 'A refuses the moment a newer publication exists — pairing, not notification, is the authority').toBeNull()
+      // B's own reader answers — the law is a PAIRING, not a shutdown:
+      box.captured = idB
+      expect(pty.backend('shell'), 'B answers as the current publication').toEqual(expectAnswer)
+    } finally {
+      if (idB !== undefined) registry.revokePaMount('g3-plane-team', 'g3-instance', idB)
+    }
+  })
+
+  it('(m) the dispose-ORDERING law (root residue card): the scope EFFECT disposer (guaranteed at scope.dispose on the loop path, before the detach event) revokes the epoch BEFORE any later answer, and the late event is a harmless idempotent repeat', async () => {
+    const route = { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-m', revoked: false } }
+    let registered: (() => void) | undefined
+    let registeredName = ''
+    const w = makeInject({
+      route,
+      effect: (disposer, name) => { registered = disposer; registeredName = name },
+    })
+    const pty = w.inject.ptyService as { backend: (t: string) => unknown }
+    const expectAnswer = { registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-m' }
+    expect(pty.backend('shell'), 'alive epoch answers the route identity').toEqual(expectAnswer)
+    expect(typeof registered, 'the revoke rode the scope effect registration (agentCtx.effect), not only an event listener').toBe('function')
+    expect(registeredName, 'named effect — discoverable, never anonymous').toBe('dsh-agent-team/g3-mount-generation')
+    // THE LOOP PATH: scope.dispose runs the registered disposer at
+    // agent-loop :540-546 — BEFORE the registry ever reaches the detach-time
+    // agent/disposed emit (:513-514 via :561). Drive the REGISTERED disposer
+    // (the very closure makeInject received through the seam):
+    ;(registered as () => void)()
+    expect(pty.backend('shell'), 'the disposer-revoked epoch answers NOTHING to any later read').toBeNull()
+    // THE LATE EVENT: detach eventually fires agent/disposed — the same
+    // idempotent closure runs again; nothing throws, nothing re-opens:
+    ;(registered as () => void)()
+    expect(pty.backend('shell'), 'the late event is a harmless repeat — idempotent, still nothing').toBeNull()
+    expect(route.generation.revoked, 'the epoch stays dead — revoke is terminal, never reopened by a second path').toBe(true)
   })
 })

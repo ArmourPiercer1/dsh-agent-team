@@ -28,6 +28,23 @@ export interface TeamPluginHostContext {
      */
     readonly sandboxPolicy?: unknown;
     /**
+     * A5M2-G6 lifecycle observer (root ruling 3, lane increment 1): the PUBLIC
+     * Cordis child-fiber face — `ctx.inject(deps, callback)` (cordis
+     * lib/types/registry.d.ts:111; mixed onto the context per context.d.ts:30).
+     * The child fiber loads ONLY while every injected service is available
+     * (Base.inject semantics, registry.d.ts:58) and RE-RUNS its callback per
+     * public Provider generation (mount/unload/replacement/reload). Structural
+     * projection (the entry keeps Cordis-type independence); OPTIONAL — an
+     * absent face makes governed currentness unknowable, which fail-closes.
+     */
+    inject?(deps: readonly string[], callback: (child: {
+        get(name: string): unknown;
+    }, config?: unknown) => void): {
+        state: number;
+    } | PromiseLike<{
+        state: number;
+    }> | null;
+    /**
      * Cordis event registration: the listener is owned by this row's fiber
      * and disposed with the row. Optional in this structural projection —
      * the entry keeps Cordis-type independence (plan §19.2) and minimal
@@ -83,6 +100,12 @@ type TeamApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavaila
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
+/**
+ * ROOT 21:14 — the same-source target-vs-record comparison over the REAL
+ * assembly transportTarget shape (exported for the exact-shape positive/
+ * negative legs; the producer below and nothing else consumes it).
+ */
+export declare function g2ApprovedTargetMismatches(target: Record<string, unknown>, rec: Record<string, unknown>): string[];
 export declare function validateTeamPluginConfig(raw: unknown): TeamPluginConfig;
 /**
  * The default live-agent glue URL, derived from this host entry's own
@@ -240,6 +263,34 @@ export declare const name = "dsh-agent-team";
  * a TypeError.
  */
 export declare const inject: string[];
+/**
+ * ROOT round-75 (real producer, not a map): resolve the BROWSER PUBLIC
+ * entry pair from the fixed-639 public './src/*' subpaths — the SAME two
+ * faces the host plugin itself uses (launchChromium src/launch.ts:24;
+ * openBrowserWorker src/worker-client.ts:15 @639ed01539). Importing these
+ * modules LOADS EXPORTS ONLY: nothing is launched, no server starts, no
+ * worker spawns — acquisition lives exclusively in the governed port's
+ * lease (createG2TeamBrowserPort), never here.
+ * The stagehand package is USER-CHOICE plugin supply exactly like the
+ * PUBLIC web-search roots: its specifiers ride TYPED VARIABLES (the
+ * publicRoots discipline above) — the packages resolve through the live
+ * source-639 install's own module graph (public './src/*' export map),
+ * never through absolute private lib paths. An approved entryPaths pair
+ * (source-checkout worlds, same law as transportEntry) wins; otherwise
+ * the bare PUBLIC specifiers.
+ */
+export declare function g2ResolveBrowserPublicEntries(entryPaths?: {
+    launchEntry?: string;
+    workerEntry?: string;
+}): Promise<{
+    ok: true;
+    entries: Record<string, unknown>;
+    provenance: Record<string, unknown>;
+} | {
+    ok: false;
+    code: string;
+    message: string;
+}>;
 /**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
  * apply fiber). The apply body itself never rejects: it provides the

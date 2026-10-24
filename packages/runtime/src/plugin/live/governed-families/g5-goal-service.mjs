@@ -141,6 +141,13 @@
  */
 import { createHash } from 'node:crypto'
 
+// THE WRAP-UP'S TWO PUBLIC PIECES (root 02:51 ③): the native body builds its
+// goal-round wrap-up from exactly these public exports
+// (tool-goal/src/index.ts:11 `import { boundContextSummary, createUserMessage,
+// HarnessError } from '@deepseek-ai/dsh-llm'` @639ed01539). The row mirrors
+// the SAME construction — never a parallel renderer, never a private import.
+import { boundContextSummary, createUserMessage } from '@deepseek-ai/dsh-llm'
+
 /** Census family (M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX records 27/28/29). */
 export const A5_G5_FAMILY_ID = 'B-SESSION'
 export const A5_G5_ADAPTER_REVISION = 1
@@ -479,19 +486,60 @@ function staticParameterLaw(toolName, args) {
  *   readNative: (name: string) => object | undefined,   // capture seam
  *   goals: object,   // the GoalService-shaped port: the seven methods of
  *                    // A5_G5_GOAL_SERVICE_METHODS (extra methods may ride)
- *   blockedAfterConsecutiveRounds?: number,   // tool Config mirror, default 3
+ *   blockedAfterConsecutiveRounds?: number,   // host tool Config VALUE — trusted ONLY when supplied; absent = the goal-round blocked arm alone DELEGATES to the captured native body, host threshold/authority/wrap-up verbatim (root 05:5x + 06:5x; NEVER defaulted here; only a non-executable capture closes it)
  *   readExecutionFacts?: () => { kind: 'direct-human' } | { kind: 'goal-round' },
  *   observe?: (event) => void
  * }}
  * @returns {{ get_goal: object, create_goal: object, update_goal: object,
  *   adapterLaw: object }} the three rows keyed by tool name + the shared law.
  */
+/**
+ * MIRROR of the host's `renderWrapupContext` (tool-goal/src/wrapup.ts:17-41
+ * @639ed01539) — the model-visible closing instruction a goal-round terminal
+ * update defers. Byte-identical BY DESIGN: the service spec pins every long
+ * sentence against the pristine 639 source, so a host edit that moves this
+ * text fails the pin (and the next host bump must re-copy it verbatim, same
+ * law as the census bytes). The renderer is the host's TEXT; the deferral is
+ * the exec's OWN public face (ToolRunContext.deferContext, api-catalog) —
+ * this row adds no authority, no ledger, no second system.
+ * @param {string} objective - the terminal goal's objective, echoed for grounding.
+ * @param {string} [blockedReason] - the validated report for 'blocked'; omitted for 'complete'.
+ * @returns {Array<{type: 'text', text: string}>} one fresh context block.
+ */
+const G5_WRAPUP_GROUNDING = 'Report only what earlier rounds and tool results in this session actually establish; '
+  + 'when a detail is not in the session, say so instead of inventing it. '
+function renderG5WrapupContext(objective, blockedReason) {
+  const heading = `Objective: ${JSON.stringify(objective)}\n`
+  const text = blockedReason === undefined
+    ? '<goal_complete>\n'
+      + heading
+      + 'The goal is marked complete and this autonomous run is ending. Write the closing '
+      + 'message to the user now: state the outcome, summarize what was done and how it was '
+      + 'verified, and point to the concrete results (files, commits, or other artifacts). '
+      + G5_WRAPUP_GROUNDING
+      + 'Note anything the user should review or do next. Address the user directly. Do not '
+      + "call any more tools in this run; further work waits for the user's next instruction.\n"
+      + '</goal_complete>'
+    : '<goal_blocked>\n'
+      + heading
+      + `Blocked: ${JSON.stringify(blockedReason)}\n`
+      + 'The goal is marked blocked and this autonomous run is ending. Write the closing '
+      + 'message to the user now: state what has been completed so far, describe the concrete '
+      + 'blocking condition and what you tried, and say exactly what you need from the user to '
+      + 'continue. '
+      + G5_WRAPUP_GROUNDING
+      + 'Address the user directly. Do not call any more tools in this run; further work '
+      + "waits for the user's next instruction.\n"
+      + '</goal_blocked>'
+  return [{ type: 'text', text }]
+}
+
 export function createG5GoalServiceAdapter({
   realmId,
   providerId,
   readNative,
   goals,
-  blockedAfterConsecutiveRounds = 3,
+  blockedAfterConsecutiveRounds,
   readExecutionFacts,
   observe = () => {},
 } = {}) {
@@ -499,7 +547,8 @@ export function createG5GoalServiceAdapter({
   if (typeof providerId !== 'string' || providerId.length === 0) throw assemblyDefect('providerId is required (the placing assembly identifies itself)')
   if (typeof readNative !== 'function') throw assemblyDefect('readNative is required — the tools.get(name, scope) capture seam; a row that cannot capture mounts INACTIVE (declared_mount), it never invents a body')
   if (!isRecord(goals)) throw assemblyDefect('goals is required — the injected GoalService-shaped port (production: the live ctx.goals); this adapter holds no goal implementation')
-  if (!Number.isSafeInteger(blockedAfterConsecutiveRounds) || blockedAfterConsecutiveRounds < 1) {
+  const thresholdTrusted = blockedAfterConsecutiveRounds !== undefined
+  if (thresholdTrusted && (!Number.isSafeInteger(blockedAfterConsecutiveRounds) || blockedAfterConsecutiveRounds < 1)) {
     // Verbatim mirror of the host tool's config law (tool-goal/src/index.ts:126-132).
     throw assemblyDefect('blockedAfterConsecutiveRounds must be a positive safe integer')
   }
@@ -514,7 +563,7 @@ export function createG5GoalServiceAdapter({
   }
 
   const rows = {}
-  const stats = { dispatches: 0, refuses: 0, driftRejects: 0 }
+  const stats = { dispatches: 0, refuses: 0, driftRejects: 0, nativeDelegations: 0 }
   let draining = false
 
   const callExecutionFacts = () => {
@@ -636,17 +685,37 @@ export function createG5GoalServiceAdapter({
       // Authority edges the host enforces BEFORE the service call. With the
       // reader mounted the row mirrors them; without it the dimension is
       // carried UNOBSERVED (L6) — never claimed, never faked.
-      if (toolName === 'create_goal' && plan.targetManifest.executionAuthority.observed === true) {
+      // P1 SAFE CORRECTION (center, 2026-10-24, root-confirmed mechanism):
+      // an UNOBSERVED authority dimension NEVER opens a MUTATION arm. Host
+      // tool-goal enforces requireDirectHuman/completionAuthority BEFORE the
+      // service (@639ed01539 index.ts:224,:263,:271,:291 → authority.ts:100-118)
+      // and the service's exact-agent/CAS checks supply NO authority; a row
+      // without a trusted per-call reader therefore REFUSES the authority-
+      // gated write instead of passing it through unmirrored (the pass-through
+      // was the bypass: PA approve -> direct port call the host would refuse).
+      // Scoped to the authority-gated arms (get_goal and the read arms are
+      // unchanged); no new vocabulary (existing codes + the named AUTHORITY
+      // gap wording); the OBSERVED enforcement paths below stay byte-identical.
+      // Final shape = the owner's trusted readExecutionFacts supply (8722);
+      // this block then closes the refusal BY OBSERVATION, not by absence.
+      if (toolName === 'create_goal') {
+        if (plan.targetManifest.executionAuthority.observed !== true) {
+          return { refusal: refuseWith(CODES.DIRECT_HUMAN_REQUIRED, `${toolName}: ${A5_G5_GOAL_NAMED_GAPS.AUTHORITY}; the host requires a direct human turn before create (tool-goal/src/index.ts:224 → authority.ts:100-103) and UNOBSERVED is not a pass — the write arm stays closed until a trusted per-call reader observes it; zero port entry`) }
+        }
         if (plan.targetManifest.executionAuthority.kind !== 'direct-human') {
           return { refusal: refuseWith(CODES.DIRECT_HUMAN_REQUIRED, `${toolName}: this goal operation requires a direct human turn on a top-level agent (tool-goal/src/index.ts:224 → authority.ts:100-103); the mounted execution-facts reader says kind ${JSON.stringify(plan.targetManifest.executionAuthority.kind)} — zero port entry`) }
         }
       }
-      if (toolName === 'update_goal' && plan.targetManifest.executionAuthority.observed === true) {
+      if (toolName === 'update_goal') {
         const needsDirect = action === 'edit' || action === 'pause' || action === 'resume'
+        const isCompletion = action === 'complete' || action === 'blocked'
+        if ((needsDirect || isCompletion) && plan.targetManifest.executionAuthority.observed !== true) {
+          return { refusal: refuseWith(needsDirect ? CODES.DIRECT_HUMAN_REQUIRED : CODES.COMPLETION_AUTHORITY_REQUIRED, `${toolName}: action ${JSON.stringify(action)} is authority-gated at the host (tool-goal/src/index.ts:263,:271${isCompletion ? ',:291' : ''} → authority.ts:100-118) and ${A5_G5_GOAL_NAMED_GAPS.AUTHORITY}; UNOBSERVED is not a pass — zero port entry`) }
+        }
         if (needsDirect && plan.targetManifest.executionAuthority.kind !== 'direct-human') {
           return { refusal: refuseWith(CODES.DIRECT_HUMAN_REQUIRED, `${toolName}: action ${JSON.stringify(action)} requires a direct human turn (tool-goal/src/index.ts:263,:271 → authority.ts:100-103) — zero port entry`) }
         }
-        if ((action === 'complete' || action === 'blocked') && plan.targetManifest.executionAuthority.kind !== 'direct-human' && plan.targetManifest.executionAuthority.kind !== 'goal-round') {
+        if (isCompletion && plan.targetManifest.executionAuthority.kind !== 'direct-human' && plan.targetManifest.executionAuthority.kind !== 'goal-round') {
           return { refusal: refuseWith(CODES.COMPLETION_AUTHORITY_REQUIRED, `${toolName}: complete and blocked require a direct human turn or the current goal round (tool-goal/src/index.ts:291 → authority.ts:111-118) — zero port entry`) }
         }
       }
@@ -678,6 +747,40 @@ export function createG5GoalServiceAdapter({
         && plan.targetManifest.executionAuthority.kind === 'goal-round'
       if (goalRoundCompletion) {
         const getCall = { method: 'get', source: 'tool-goal/src/authority.ts:113 ctx.goals.get(execution.agent) inside completionAuthority' }
+        // P2 THRESHOLD TRUST (root 05:5x ruling + 06:5x DELEGATE; 639
+        // tool-goal Config :32-40/:126-131): the threshold is a HOST CONFIG
+        // VALUE (default 3 is the tool's own fallback, NOT a fact this row
+        // may assume — a host configured 5 would see a too-early blocked
+        // under a guessed 3, a host configured 1 an over-refusal). With NO
+        // trusted supply the goal-round BLOCKED arm alone hands the decision
+        // to the CAPTURED NATIVE BODY (below): the host's real resolved
+        // number, its own completionAuthority and its own single wrap-up,
+        // verbatim. Every other arm — direct-human completions, goal-round
+        // completes, edit/pause/resume under direct human, get_goal reads —
+        // keeps serving exactly as repaired, and trusted supply (the assembly
+        // passing the real config value) runs the verbatim mirror check below.
+        if (action === 'blocked' && !thresholdTrusted) {
+          if (typeof bound.def.execute !== 'function') {
+            // NEGATIVE CONTROL (root 06:5x): with NO executable captured
+            // identity there is nothing to delegate to, and the row NEVER
+            // defaults the host's config value — this arm refuses BEFORE
+            // the port (every other arm keeps serving).
+            return { refusal: refuseWith(CODES.BLOCK_THRESHOLD, `${toolName}: the goal-round blocked floor is the tool's CONFIG VALUE (tool-goal/src/index.ts:305-312 reads the resolved Config, default 3 at :126-132 — a host value this assembly never read); no executable captured native exists to delegate the decision to and the row NEVER defaults it — zero port entry; other arms unaffected`) }
+          }
+          // THE NATIVE DELEGATE (root 06:5x signed route, per the P2 supply
+          // evidence): no trusted threshold exists, so the DECISION rides
+          // the CAPTURED NATIVE BODY — bound.def, the very object the
+          // per-dispatch identity re-verify just confirmed (a re-lookup
+          // would be a different object; there is none). Its closure holds
+          // resolveConfig's REAL number (:126-132 @639), and its execute
+          // runs the host's OWN driver gate, completionAuthority (:291 →
+          // authority.ts:111-118), the :305-312 threshold and its OWN
+          // single exec.deferContext wrap-up (:319-329) — verbatim. The
+          // row reads NO port for this arm (the delegate is returned
+          // BEFORE the goals.get below), adds no second check, and wraps
+          // up NOT at all (runPlan returns before the wrap-up mirror).
+          return { delegate: { method: 'native-execute(update_goal)', source: 'tool-goal/src/index.ts:257-331 the CAPTURED native body, PA-admitted + identity-verified this dispatch: real threshold :305-312, completionAuthority :291, wrap-up :319-329 — zero port entry, zero row-side wrap-up' } }
+        }
         const current = goals.get(ctx.agent)
         if (action === 'blocked' && current !== undefined && current.roundsStarted < blockedAfterConsecutiveRounds) {
           // Verbatim host message shape (tool-goal/src/index.ts:307-311).
@@ -722,11 +825,76 @@ export function createG5GoalServiceAdapter({
       }
       const built = dispatchCalls(fresh, { agent, toolName })
       if (built.refusal !== undefined) return built.refusal
+      if (built.delegate !== undefined) {
+        // THE NATIVE DELEGATE ARM (root 06:5x): PA already admitted (the
+        // bridge runs runPlan only on the approved plan), the captured
+        // identity was re-verified above (identityProblem), and the exec is
+        // THIS dispatch's, verbatim — the public deferContext the native
+        // wrap-up needs rides it. ONE call to ONE body (bound.def — the
+        // captured registration identity, never a re-lookup); the body's
+        // own HarnessErrors (GOAL_TOOL_DRIVER_REQUIRED / COMPLETION_* /
+        // BLOCK_THRESHOLD at the REAL resolved number) propagate VERBATIM,
+        // exactly like port throws (L5) — never swallowed, re-labelled or
+        // answered twice. Drain semantics: a NEW call against a draining
+        // row refused at the runPlan edge above; a delegated body already
+        // running is the native tool's own execution and is never
+        // interrupted, rewritten or answered a second time by this row.
+        stats.dispatches += 1
+        stats.nativeDelegations += 1
+        observe({ event: 'native-delegate-commit', toolName, correlation: fresh.correlation, detail: 'goal-round blocked under an UNTRUSTED threshold: the captured native body decides — host resolveConfig number, native completionAuthority, native single wrap-up; zero port entry, zero row wrap-up' })
+        const nativeAnswer = await bound.def.execute(fresh.actualArgs, exec)
+        return deepFreeze({
+          ok: true,
+          nativeDelegated: true,
+          // The native body's OWN goalValue projection, verbatim — the row
+          // does NOT re-project (that would be a second transformation of
+          // host bytes).
+          value: nativeAnswer,
+          plan: fresh,
+          dispatch: [built.delegate],
+          authorityObserved: true,
+        })
+      }
       const ctx = { agent, toolName }
       const results = runPortCalls(built.list, ctx)
       const finalView = results[results.length - 1]
       stats.dispatches += 1
       observe({ event: 'port-commit', toolName, correlation: fresh.correlation, detail: fresh.parametersFingerprint })
+      // THE WRAP-UP MIRROR (root 02:51 ③; native tool-goal/src/index.ts:319-329
+      // @639ed01539): a goal-round COMPLETE/BLOCKED that actually landed defers
+      // the model-visible closing context through the DISPATCH'S OWN public
+      // exec.deferContext — the host body's exact construction
+      // (createUserMessage + renderWrapupContext mirror + the notice source
+      // `{kind:'tool-goal', form:'notice', summary: boundContextSummary(...)}`).
+      // This is context parity, NOT authority: the authority checks ran above
+      // and the host re-checks on the port. Only an OBSERVED goal-round
+      // completes here (direct-human closes need no wrap-up — the host's own
+      // `authority.kind === 'goal-round'` condition); a dispatch whose exec
+      // carries no deferContext face is OBSERVED, never faked (the WRAPUP
+      // named gap stays TRUE of the port: no GoalService method serves it).
+      if (toolName === 'update_goal'
+        && fresh.targetManifest.executionAuthority.observed === true
+        && fresh.targetManifest.executionAuthority.kind === 'goal-round') {
+        const g5Action = fresh.actualArgs?.action
+        if (g5Action === 'complete' || g5Action === 'blocked') {
+          const g5Objective = String(finalView?.objective ?? '')
+          if (typeof exec?.deferContext === 'function') {
+            exec.deferContext(createUserMessage({
+              content: renderG5WrapupContext(
+                g5Objective,
+                g5Action === 'blocked' ? String(fresh.actualArgs?.blocked_reason ?? '') : undefined,
+              ),
+              source: {
+                kind: 'tool-goal',
+                form: 'notice',
+                summary: boundContextSummary(`${g5Action}: ${g5Objective}`),
+              },
+            }))
+          } else {
+            observe({ event: 'wrapup-defer-UNAVAILABLE', toolName, detail: `the ${g5Action} landed goal-round but the dispatch exec carries no public deferContext face — the wrap-up is NOT fabricated` })
+          }
+        }
+      }
       return deepFreeze({
         ok: true,
         // Canonical result: the host goalValue projection over the FINAL

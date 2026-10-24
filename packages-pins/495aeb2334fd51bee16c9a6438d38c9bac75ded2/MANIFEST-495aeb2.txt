@@ -1,0 +1,13 @@
+# ROOT plugin package pin — dsh-agent-team@0.1.1-alpha.2 (ROOT-LEVEL package; supersedes the runtime-subpackage 34e9 surface for production mounting)
+source-branch: feat/a5-m2-integration
+source-HEAD: 495aeb2334fd51bee16c9a6438d38c9bac75ded2 (porcelain empty at pack; product-closure commit)
+pack: pnpm pack --pack-destination packages-pins/<HEAD> (repo root; files per root package.json: .agents/skills, cordis.patch.yml, packages/client/composition-shim, packages/runtime/dist, packages/runtime/root-binding, packages/runtime/src/plugin/upstream-resolver.mjs)
+build-provenance: pnpm build (tsc) + place-dist-glue.mjs 15 placements (NEW: governed-families todo.mjs + write.mjs, root product-closure ruling @ C2 mount audit) + pnpm build:composition; check-artifacts-at-head verdict=ok compared=1786 drift=0
+tgz: dsh-agent-team-0.1.1-alpha.2.tgz
+tgz-sha256: 486567abca54080a6c453509e92eebd34443eaf841e07f42b36118d894334307
+tgz-entries: 1811  (list: manifest-tgz-entries.txt)
+tree-sha256 (sorted entry list): 9217cf73f2e1449b1b3d9fa53c7ba4b98907bace42feeda8e66e7386cd6c13af
+identity: name=dsh-agent-team version=0.1.1-alpha.2 exports=[".","./host","./spill-local","./client","./package.json"] peers=9x EXACT 0.2.0-rc.2 (dsh, agent, llm, mcp-client, scope, session, spill-local, storage-domain, tool-fs-search)
+fixes-carried (vs 34c/34e9): (1) governed-families mirrored (ERR_MODULE_NOT_FOUND class CLOSED at product level); (2) dead deepSeekSearchOriginSource import removed (ESM link break CLOSED; web row answers typed search-origin-resolver-missing when armed — no stub, entry-reader injection is a disclosed follow-up); plus the write-round fixes (bind-time root real, dispose drain).
+law: OLD 34e9/raw/10-06 evidence surfaces UNTOUCHED (kept as evidence; NO in-place patching). This package is the ONLY authorized mount surface for the limited Host C2 — boot only after ROOT confirms name/version/hash above. Installer layout: normal node_modules over the fixed 639 baseline deps; no NODE_PATH, no allow-version, no tgz edits.
+secondary-manifest (root ruling 10:37Z, harness-check law): locale-invariant path list manifest-tgz-entries-C.txt (tar -tzf | LC_ALL=C sort), entries=1811, C-order digest=c7b8e3f292b377388653cb52c4741b11b735b6b7395e417eabd5183979c12e43 (sha256 of that sorted list). PRIMARY approval identity UNCHANGED (tgz-sha256 above; locale-sorted tree-sha256 9217cf73… stays as the recorded center artifact). Kits MUST gate on: (1) tgz sha256; (2) FULL path-set equality vs manifest-tgz-entries-C.txt (extra AND missing both fail — the check is never droppable); (3) deterministic (code-unit/C-order) list digest vs c7b8e3f292b377388653cb52c4741b11b735b6b7395e417eabd5183979c12e43. No locale-aggregation gates.

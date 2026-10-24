@@ -32,16 +32,28 @@
  *    (the signed guard, identity unmoved).
  *
  * VALUE LAWS: `allowed` = fully normalized (sorted, deduped, frozen) triples
- * from the SAME read. `topologyDigest` = the FULL SUMMARY of the complete
- * canonical content: sha256 over the canonical sorted full allowed set,
- * recomputed per read (any content movement moves it). `topologyRevision` =
- * the CONTENT-VERSION companion the ruling derives DETERMINISTICALLY from the
- * same canonical content (first 52 bits of the same digest -> a non-negative
- * safe integer). Compatibility semantics stated plainly: equal pair = same
- * normalized content; the short revision NEVER stands alone as equality
- * evidence (the digest carries the full content and the adapter's own
- * equality is the pair). No constant, no observation count, no monotonicity
- * or hidden-substitution claim.
+ * from the SAME read; triple identity is an UNAMBIGUOUS JSON tuple encoding
+ * (ROOT 14575: leaves accept ANY strings — the host validateManifest only
+ * rejects blank ones — so any separator join admits cross-field collisions;
+ * JSON escaping is injective, full values/types kept, no trim, no drop).
+ * `topologyDigest` = sha256 over the canonical sorted full AUTHORIZED
+ * INTERSECTION (the `allowed` set), recomputed per read (any authorized
+ * content movement moves it). SCOPE, DISCLOSED EXACTLY: the digest covers
+ * the normalized allowed triples — platform/id/method.name — which is
+ * precisely the field extent the SIGNED consumption law reads (classify
+ * :621-648 triple leaves; edge :824-838 revision+digest equality; list-
+ * constraint :1154-1165 the same triple leaves). It is NOT a whole-directory
+ * snapshot: visible-but-unauthorized entries and the manifest fields the law
+ * never reads (provider/method description, inputSchema, outputSchema) are
+ * deliberately out of digest scope — no full-snapshot claim, no speculative
+ * widening. `topologyRevision` = the CONTENT-VERSION companion the ruling
+ * derives DETERMINISTICALLY from that same canonical content (first 52 bits
+ * of the same digest -> a non-negative safe integer). Compatibility
+ * semantics stated plainly: equal pair = same authorized normalized content;
+ * the short revision NEVER stands alone as equality evidence (the digest
+ * carries the full digest-scope content and the adapter's own equality is
+ * the pair). No constant, no observation count, no monotonicity or
+ * hidden-substitution claim.
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g1-trusted-topology-supply
  */
@@ -58,7 +70,8 @@ export const A5_G1_TRUSTED_TOPOLOGY_SUPPLY_CODES = Object.freeze({
 const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /** Sorted-key canonical JSON (the lane's mint algebra — full and reversible,
- *  never a silent field-drop: the digest is over the COMPLETE content). */
+ *  never a silent field-drop: the digest is over the COMPLETE authorized
+ *  intersection, whose exact scope the header discloses). */
 const canonical = (value) => JSON.stringify(value, (_key, item) => (
   isRecord(item) && !Array.isArray(item)
     ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]))
@@ -71,7 +84,14 @@ const byTriple = (a, b) => a.platform.localeCompare(b.platform)
   || a.provider.localeCompare(b.provider)
   || a.method.localeCompare(b.method)
 
-const tripleKey = (t) => `${t.platform}\u0000${t.provider}\u0000${t.method}`
+// ROOT 14575 narrow-review fix: the identity of one triple is an UNAMBIGUOUS
+// tuple encoding — JSON.stringify over the three leaves in order. String
+// leaves accept ANY value (control characters included), so any separator
+// (a NUL join included) admits cross-field collisions and could authorize
+// the WRONG triple. JSON's per-leaf escaping makes the encoding injective on
+// strings: two distinct triples can never produce the same key. Full values
+// and types preserved — no trim, no normalization, no field drop.
+const tripleKey = (t) => JSON.stringify([t.platform, t.provider, t.method])
 
 /**
  * Create the trustedTopology supply over the mount's live public seams.

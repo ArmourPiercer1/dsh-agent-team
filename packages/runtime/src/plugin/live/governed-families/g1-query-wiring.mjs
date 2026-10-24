@@ -88,6 +88,7 @@
  */
 import {
   A5_G1_ADAPTER_REVISION,
+  A5_G1_CONTROL_ADAPTER_REVISION,
   A5_G1_FAMILY_GROUP,
   A5_G1_RECORD_SPECS,
   mountG1SurfaceAdapter,
@@ -144,6 +145,26 @@ export function g1PureQuerySubset() {
     .sort((a, b) => a.recordIndex - b.recordIndex))
 }
 
+/** THE B-CONTROL SUPPLY SET (root LIMITED BUILD ORDER 2026-10-25: the four
+ *  self-governance records proceed under the authorized Alpha5 tool scope -
+ *  the root 17:55 development HOLD on 83/84/87/88 is WITHDRAWN by that
+ *  ruling, which is a phase-construction release, NOT a safety downgrade or
+ *  a self-granted permission). DERIVED from the frozen spec table, never
+ *  hand-listed: capture 'tool' AND family 'B-CONTROL', EXCLUDING the
+ *  record-85 hand-over row - 85 stays armed solely by its own closed-key
+ *  hand-over through the pure-query loop (root 03:05 law intact, untouched).
+ *  Supply remains OPT-IN at the mount (the deployer's g1PureQuery.control
+ *  key): the ruling authorizes the wiring, it does NOT auto-enable the
+ *  tools or widen member visibility. */
+export function g1ControlSupplySubset() {
+  return Object.freeze(Object.entries(A5_G1_RECORD_SPECS)
+    .filter(([, spec]) => spec.capture === 'tool'
+      && spec.family === 'B-CONTROL'
+      && spec.recordIndex !== A5_G1_CONTROL85_HANDOVER.recordIndex)
+    .map(([name, spec]) => Object.freeze({ name, recordIndex: spec.recordIndex, familyId: spec.family }))
+    .sort((a, b) => a.recordIndex - b.recordIndex))
+}
+
 const refuseAssembly = (code, message) => Object.freeze({ ok: false, code, message })
 
 const refusalToThrow = (refusal) => {
@@ -172,6 +193,31 @@ const refusalToThrow = (refusal) => {
  *          familyRegistrations + rows/declared reporting) or a frozen
  *          `{ ok: false, code, message }` assembly refusal.
  */
+/** THE CLOSED SUBSET LAW for an assembled supply: a caller may hand the
+ *  assembly a row set OTHER than the pure-query default (the CONTROL supply
+ *  per the root 2026-10-25 limited build order), but only when EVERY row
+ *  answers the FROZEN dispatch table exactly — name, recordIndex and family
+ *  all three. A hand-edited or guessed row set is refused at the door; the
+ *  table stays the single source of the supply vocabulary. Returns undefined
+ *  when the set is legal, else the violation. */
+export function g1ValidateSupplySubset(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return 'subset must be a non-empty array of frozen-table rows'
+  const seen = new Set()
+  for (const row of rows) {
+    if (!isRecord(row) || typeof row.name !== 'string' || !Number.isInteger(row.recordIndex) || typeof row.familyId !== 'string') {
+      return 'every subset row must be {name, recordIndex, familyId}'
+    }
+    if (seen.has(row.name)) return `duplicate subset row '${row.name}'`
+    seen.add(row.name)
+    const spec = A5_G1_RECORD_SPECS[row.name]
+    if (spec === undefined) return `subset row '${row.name}' is not in the frozen dispatch table`
+    if (spec.recordIndex !== row.recordIndex || spec.family !== row.familyId) {
+      return `subset row '${row.name}' disagrees with the frozen table (record ${String(spec.recordIndex)}, ${String(spec.family)})`
+    }
+  }
+  return undefined
+}
+
 export function createG1QueryWiring(input = {}) {
   if (!isRecord(input)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'the wiring factory takes one input record')
   // The arm gate runs FIRST and over the raw key set: a dependency or plugin
@@ -183,10 +229,10 @@ export function createG1QueryWiring(input = {}) {
       return refuseAssembly(A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED, `'${arm}' is a dependency/plugin resource arm: the pure-query wiring candidate accepts NO such arm (card ruling — no immature-arm completion claims); the adapter module keeps that seam for its own record, this module never mounts it`)
     }
   }
-  const knownInput = new Set(['providerId', 'captured', 'placementFeed', 'trusted', 'bindingFacts', 'ports', 'admit', 'observe'])
+  const knownInput = new Set(['providerId', 'subset', 'captured', 'placementFeed', 'trusted', 'bindingFacts', 'ports', 'admit', 'observe'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the candidate takes exactly {providerId, captured, placementFeed, trusted, bindingFacts, ports, admit, observe}`)
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the candidate takes exactly {providerId, subset?, captured, placementFeed, trusted, bindingFacts, ports, admit, observe}`)
     }
   }
   if (typeof input.placementFeed !== 'function') {
@@ -214,13 +260,26 @@ export function createG1QueryWiring(input = {}) {
 
   const capturedIn = input.captured ?? {}
   if (!isRecord(capturedIn)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'captured must be a record (name -> {native, definitionIdentity}) or absent')
-  const subset = g1PureQuerySubset()
+  // The row set this wiring emits/captures/registers: the mounted DERIVED
+  // subset, defaulting to the pure-query line. The CLOSED subset law
+  // (g1ValidateSupplySubset) ran at the assembly door AND runs here — every
+  // row answers the frozen dispatch table name/recordIndex/family exactly,
+  // so no hand-edited row set reaches emission (root 2026-10-25 authorized
+  // exactly one other derived set: the B-CONTROL supply rows).
+  let subset = g1PureQuerySubset()
+  if (input.subset !== undefined) {
+    const subsetViolation = g1ValidateSupplySubset(input.subset)
+    if (subsetViolation !== undefined) {
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, `mounted subset is not a frozen-table row set: ${subsetViolation}`)
+    }
+    subset = Object.freeze([...input.subset].map((row) => Object.freeze({ name: row.name, recordIndex: row.recordIndex, familyId: row.familyId })))
+  }
   const subsetNames = new Set(subset.map((entry) => entry.name))
   // A capture presented for a NON-subset record is an attempt to wire a
   // non-query row through the pure-query candidate: a config defect, refused.
   for (const key of Object.keys(capturedIn)) {
     if (!subsetNames.has(key)) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.NON_SUBSET_CAPTURE, `'${key}' is not a pure-query G1 record (derived subset: ${subset.map((entry) => entry.name).join(', ')}); non-query rows are not emitted, captured-wired, or registered by this module`)
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.NON_SUBSET_CAPTURE, `'${key}' is not in the mounted G1 subset (mounted: ${subset.map((entry) => entry.name).join(', ')}); rows outside the mounted subset are not emitted, captured-wired, or registered by this module`)
     }
   }
   // A PRESENT-but-malformed capture is a config defect too — half a capture
@@ -341,7 +400,12 @@ export function createG1QueryWiring(input = {}) {
       definitionIdentity: key,
       entry: Object.freeze({
         familyId: rowEntry.row.familyId,
-        adapterRevision: A5_G1_ADAPTER_REVISION,
+        // FAMILY revision (root 2026-10-25 full pairing): B-CONTROL's wire
+        // format moved to 8; every other G1 family keeps 7. The registration
+        // and the claim (the reviewPayload the adapter mints) answer the SAME
+        // value - the format-identity pairing obligation; old approvals are
+        // explicitly stale, never translated.
+        adapterRevision: rowEntry.row.familyId === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION,
         providerIdentity: providerId,
       }),
     })
@@ -375,4 +439,80 @@ export function createG1QueryWiring(input = {}) {
     familyRegistrations,
   })
   return wiring
+}
+
+// ── ROOT 03:05 record-85 CLOSED-KEY HAND-OVER CLAIM (G1 family) ───────────
+// The law this mirrors VERBATIM is the B-TEAM atomic hand-off
+// (`claimTeamOpsFamily`, team-wiring.mjs:329-359, and its face law :176-186):
+// claim only what is CAPTURED, face-COMPLETE and identity-MINTED, so the raw
+// registration can LET the name and exactly ONE governed definition takes
+// its place at the plane mount (one name, one placement). That site function
+// is STRUCTURALLY closed to the ten B-TEAM keys (`A5_B_TEAM_TOOL_NAMES`,
+// team-adapters.mjs:213-217 — measured NOT to contain 'team_list_pending_
+// control'), so per the center ruling it is NEITHER force-fitted nor widened;
+// the G1 family owns its OWN claim here, with EXACTLY ONE closed key and
+// zero widening:
+//   record 85 — `team_list_pending_control` (B-CONTROL, own-layer).
+// The claim changes NO native permission: the descriptor, the caller/root
+// binding (live resolveCaller single chain), the requestToken discipline and
+// the PRE-READ Leader gate (tools.ts:1174, refusal TEAM_TOOL_PENDING_LIST_
+// NOT_LEADER before any ledger read) all stay the NATIVE's own — the governed
+// def spreads the captured native verbatim and replaces only `execute`
+// (the 53/54 law), and a member caller is still refused exactly by that
+// native gate, so a member gains ZERO new exposure: the name is visible
+// where and only where the template already made the native legal.
+export const A5_G1_CONTROL85_HANDOVER = Object.freeze({
+  name: 'team_list_pending_control',
+  recordIndex: 85,
+})
+
+const g1NonEmptyString = (value) => typeof value === 'string' && value.length > 0
+
+// The B-TEAM face law (team-wiring.mjs:176-186) mirrored verbatim into the
+// G1 family's own module — one qualification, one shape, no drift.
+const g1RegistrationFaceComplete = (native) => {
+  const output = isRecord(native) ? native.output : undefined
+  return isRecord(native)
+    && native.name !== undefined && typeof native.name === 'string' && native.name.length > 0
+    && typeof native.description === 'string'
+    && typeof native.execute === 'function'
+    && isRecord(output) && output.schema !== undefined
+    && typeof output.render === 'function'
+    && (output.presentationMeta === undefined || typeof output.presentationMeta === 'function')
+    && (native.timeoutMs === undefined || (Number.isFinite(native.timeoutMs) && native.timeoutMs > 0))
+}
+
+/**
+ * Qualify the ONE record-85 hand-over against THIS agent's already-legal
+ * team-tool selection (the selection IS the legal-visibility boundary: the
+ * blueprint allowlist was applied upstream). Never claims a name that is not
+ * captured here — an un-captured name keeps its raw registration byte-for-
+ * byte (or stays absent for this agent), so the claim can never EXPOSE
+ * anything.
+ * @param input {{
+ *   catalog: unknown,                      // THIS agent's selected team-tool defs
+ *   allowedNames?: unknown,                // optional further closed restriction (null/absent = the catalog is the restriction)
+ *   definitionIdentityOf?: unknown,        // the ONE real minter (definitionIdentityOf)
+ * }} input
+ * @returns a frozen `{ names, census }` in the claimTeamOpsFamily shape.
+ */
+export function claimG1Control85Handover (input = {}) {
+  const { name, recordIndex } = A5_G1_CONTROL85_HANDOVER
+  const catalog = isRecord(input) && Array.isArray(input.catalog) ? input.catalog : []
+  const allowed = isRecord(input) && Array.isArray(input.allowedNames) ? new Set(input.allowedNames) : null
+  const identityOf = isRecord(input) && typeof input.definitionIdentityOf === 'function' ? input.definitionIdentityOf : () => null
+  if (allowed !== null && !allowed.has(name)) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'not-allowed-for-this-member' })]) })
+  }
+  const native = catalog.find((def) => isRecord(def) && def.name === name)
+  if (native === undefined) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'capture-absent' })]) })
+  }
+  if (!g1RegistrationFaceComplete(native) || native.name !== name) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'registration-face-incomplete' })]) })
+  }
+  if (!g1NonEmptyString(identityOf(native))) {
+    return Object.freeze({ names: Object.freeze([]), census: Object.freeze([Object.freeze({ name, recordIndex, reason: 'capture-identity-unminted' })]) })
+  }
+  return Object.freeze({ names: Object.freeze([name]), census: Object.freeze([]) })
 }

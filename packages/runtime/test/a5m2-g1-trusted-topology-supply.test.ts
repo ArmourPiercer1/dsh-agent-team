@@ -157,6 +157,33 @@ describe('a5m2-g1-trusted-topology-supply: same-read intersection, canonical ful
     expect(supply.revision).toBe(TOPO.A5_G1_TRUSTED_TOPOLOGY_SUPPLY_REVISION)
   })
 
+  it('(B2) ROOT 14575 collision control: separator-injected cross-field triples never authorize each other; exotic strings keep FULL values', () => {
+    // host validateManifest imposes NO character grammar (only non-blank),
+    // so control characters ARE reachable directory/scope strings. The old
+    // NUL-join keys collided across field boundaries; the JSON-tuple encoding
+    // is injective — these two distinct triples must never match:
+    const inspect = makeInspect([
+      { platform: 'host', id: 'a', methods: [{ name: 'b\u0000c' }] }, // directory triple: (host, 'a', 'b\0c')
+    ])
+    const collidingScope = makeAuthorized([
+      { platform: 'host', provider: 'a\u0000b', method: 'c' }, // a DIFFERENT triple with the same old NUL-join key
+    ])
+    const collided = unwrap(TOPO.createG1TrustedTopologySupply({ inspect: inspect.face, authorized: collidingScope.reader }))
+    expect([...faceOf(collided).allowed]).toEqual([]) // NOT authorized — the collision must fail closed
+    // and the EXACT exotic triple still authorizes with values kept FULL
+    // (no trim, no normalization, no field drop):
+    const exactWrong = makeAuthorized([
+      { platform: 'host', provider: 'a', method: 'b\u0000c ' }, // trailing space must NOT be trimmed away
+    ])
+    const wrongSupply = unwrap(TOPO.createG1TrustedTopologySupply({ inspect: inspect.face, authorized: exactWrong.reader }))
+    expect([...faceOf(wrongSupply).allowed]).toEqual([])
+    const exactRight = makeAuthorized([
+      { platform: 'host', provider: 'a', method: 'b\u0000c' },
+    ])
+    const exact = unwrap(TOPO.createG1TrustedTopologySupply({ inspect: inspect.face, authorized: exactRight.reader }))
+    expect([...faceOf(exact).allowed]).toEqual([{ platform: 'host', provider: 'a', method: 'b\u0000c' }])
+  })
+
   it('(C) the whole face equals an independent recomputation, and the revision is the deterministic content-version safe int (two supplies, same content, same pair)', () => {
     const a = unwrap(TOPO.createG1TrustedTopologySupply({ inspect: makeInspect().face, authorized: makeAuthorized().reader }))
     const b = unwrap(TOPO.createG1TrustedTopologySupply({ inspect: makeInspect().face, authorized: makeAuthorized().reader }))
@@ -303,6 +330,10 @@ describe('a5m2-g1-trusted-topology-supply: same-read intersection, canonical ful
       expect(source.match(/(^|[^.\w])import\s*\(/m)).toBeNull()
       expect(/\bSymbol\s*\./.test(source)).toBe(false)
       expect(/(?:^|[\s{,])#\w/.test(source)).toBe(false)
+      // ROOT 14575 regression guard: no separator-join identity may return —
+      // triple identity stays the injective JSON tuple encoding.
+      expect(source.includes('\\u0000')).toBe(false)
+      expect(source.includes('JSON.stringify([t.platform')).toBe(true)
     })
 
     it('no constant revision/digest literal can stand in for the derived values; no adapter/plane/bindings edge', () => {

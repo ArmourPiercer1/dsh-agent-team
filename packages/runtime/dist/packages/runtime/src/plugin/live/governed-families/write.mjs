@@ -1,18 +1,34 @@
 /**
- * A5-M2 B-WRITE family — the governed EXISTING-FILE write arm.
+ * A5-M2 B-WRITE family — the governed EXISTENCE-HONEST write arm.
  *
  * The body of a governed write is NOT a native re-entry and NOT a
- * lane-shaped writer: it is THE reviewed post-consume execution closure
- * (`controlled-fs/src/post-consume-write.ts`, root ruling — verify-before-
- * truncate, `O_WRONLY|O_NOFOLLOW`, NO `O_CREAT`, single-flight, zero
- * arguments). This arm is the admission-shaped shell the plane row drives:
- * classify (pure lexical, zero FS) → the kernel's ONE final edge → execute,
- * which mints the closure ONLY from the frozen plan facts and the REAL
- * consumed proof, then calls the closure with NO arguments at all. The
- * closure is the private executor: nothing post-approval can be substituted
- * into it (P1), it runs at most once (P3), and it never creates a file —
- * the NEW-FILE path stays HELD pending the root ruling (an absent target
- * answers the lane's typed refusal, zero creation, by construction).
+ * lane-shaped writer: it is a post-consume execution closure minted from
+ * frozen facts alone. TWO reviewed laws, chosen by ONE advisory fact:
+ *  - the EXISTING-target path is the reviewed `post-consume-write.ts`
+ *    closure (root ruling r16 — verify-before-truncate, `O_WRONLY|
+ *    O_NOFOLLOW`, NO `O_CREAT`, single-flight, zero arguments);
+ *  - the ABSENT-target path is the reviewed `post-consume-create.ts`
+ *    closure (backlog `write（新建文件） 未开发 … 待派` — the new-file law:
+ *    the FINAL PARENT is FD-bound at the create instant (the verified
+ *    parent opens `O_DIRECTORY|O_NOFOLLOW`, its /proc/self/fd link is
+ *    re-read, and `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW` is issued through
+ *    that fd), NO directory creation (mkdir lives OUTSIDE the approved
+ *    `I:tool-invoke + F(write exact file)` effect set — the deviation
+ *    from the native mkdir-recursive spelling is DISCLOSED in the refusal
+ *    and in the approved facts). Intermediate components ride the
+ *    reviewed parent-path law; no per-component fd chain and no
+ *    whole-tree rename immunity is claimed (root P2 wording ruling).
+ * The path choice reads ONE world fact (lstat of the frozen target); it is
+ * ADVISORY ONLY — every boundary law lives in the closures, and both races
+ * are honest: a target that appears before the exclusive create answers
+ * EEXIST with ZERO bytes (the existing-file law re-answers on re-call), a
+ * target that vanishes before truncate answers ENOENT with zero creation.
+ * classify stays PURE (zero FS: existence is not knowable at approval, so
+ * the APPROVED FACT states the LAW, not an existence promise). This arm is
+ * the admission-shaped shell the plane row drives: classify → the kernel's
+ * ONE final edge → execute, which mints the closure ONLY from the frozen
+ * plan facts and the REAL consumed proof, then calls it with NO arguments
+ * at all (P1; at most once, P3).
  *
  * Law lineage (all reviewed, none re-decided here):
  *  - classify is PURE (todo.mjs law): parse the closed `{file_path,
@@ -38,13 +54,20 @@
 
 import { createHash } from 'node:crypto'
 import { realpathSync } from 'node:fs'
+import { lstat } from 'node:fs/promises'
 import path from 'node:path'
 
+import { createPostConsumeCreateClosure } from '../../../../controlled-fs/src/post-consume-create.js'
 import { createPostConsumeWriteClosure } from '../../../../controlled-fs/src/post-consume-write.js'
 
 export const A5_WRITE_FAMILY_ID = 'B-WRITE'
 export const A5_WRITE_TOOL_NAME = 'write'
-export const A5_WRITE_OPERATION = 'write-existing-file'
+/** THE APPROVED OPERATION LABEL. It used to read 'write-existing-file' —
+ *  honest under r16's scope, FALSE for a call whose approval would create.
+ *  Existence is unknowable at classify (pure law), so the label states the
+ *  NEUTRAL operation; the outcome truth (created / truncated-over) travels
+ *  in the receipt from the closure that actually ran. */
+export const A5_WRITE_OPERATION = 'write-file'
 /** The B-IMAGE precedent: the revision number is IN the manifest (the family
  *  rule validates it; a bumped adapter must bump it and re-freeze). */
 export const A5_WRITE_ADAPTER_REVISION = 1
@@ -250,11 +273,13 @@ export function createGovernedWriteArm({
       realmId,
       canonicalTarget: anchored,
       contentFingerprint,
-      // THE HELD PATH, STATED IN THE APPROVED FACT: this family writes
-      // EXISTING files only. A not-yet-existing target refuses at the
-      // closure (no O_CREAT — zero creation) and stays HELD for the root
-      // ruling; the approval the human reads says exactly this.
-      existingFileOnly: true,
+      // THE EXISTENCE-HONEST LAW, STATED IN THE APPROVED FACT: existence
+      // is not knowable at classify (pure law), so what the human approves
+      // is the LAW BOTH outcomes obey — never an existence promise, never
+      // a silent creation.
+      existingFileLaw: 'verify-before-truncate (the reviewed r16 closure; no O_CREAT)',
+      newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW issued through the verified final-parent fd (/proc/self/fd bind: a parent swap after the bind cannot steer the create; EEXIST races lose with ZERO bytes)',
+      directoryCreation: false,
     })
     const generations = generationFacts()
     const reviewPayload = deepFreeze({
@@ -357,6 +382,17 @@ export function createGovernedWriteArm({
       if (draining) return refuse(CODES.DRAINING, 'drained before the closure: zero write; no native fallback exists')
       entry.state = 'EXECUTING'
       observe({ event: 'backend-start', correlation: entry.correlation, detail: plan.canonicalTarget })
+      // THE ONE ADVISORY FACT: which reviewed law this target answers.
+      // NOT authority — the closures own every boundary; both races are
+      // answered honestly inside them (EEXIST: zero bytes; vanished
+      // before the exclusive open: the create path never truncates).
+      // A probe ERROR takes the existing-file closure: its law answers.
+      let targetAbsent = false
+      try {
+        await lstat(plan.canonicalTarget)
+      } catch (error) {
+        targetAbsent = error?.code === 'ENOENT'
+      }
       let closure
       try {
         // The approved-root REAL identity is the FROZEN bind-time fact (the
@@ -365,7 +401,7 @@ export function createGovernedWriteArm({
         // redefine the approval; the closure VERIFIES at the edge that the
         // root still STANDS at that frozen identity before any truncation
         // (a swap/move refuses ANCHOR-law, zero bytes, before any open).
-        closure = createPostConsumeWriteClosure(
+        closure = (targetAbsent ? createPostConsumeCreateClosure : createPostConsumeWriteClosure)(
           {
             approvedRootLexical: instanceRootDir,
             approvedRootReal,
@@ -388,7 +424,9 @@ export function createGovernedWriteArm({
         entry.state = 'COMMITTED'
         observe({ event: 'backend-commit', correlation: entry.correlation, detail: result.value.writtenFingerprint })
         observe({ event: 'backend-end', correlation: entry.correlation, detail: 'ok' })
-        return { ok: true, value: Object.freeze({ ...result.value, existingFileOnly: true }) }
+        // The OUTCOME truth (which reviewed law ran) rides the receipt as a
+        // fact, never as authority; the D-C2-1 pair stays verbatim.
+        return { ok: true, value: Object.freeze({ ...result.value, ...(targetAbsent ? { createdNew: true } : { existingFileOnly: true }) }) }
       }
       const mapped = mapClosureRefusal(result.error)
       if (mapped.cfClass === 'undetermined') {

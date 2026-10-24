@@ -29,10 +29,10 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-const pkgRoot = new URL('../', import.meta.url)
-const BINDINGS_SRC = fileURLToPath(new URL('src/plugin/live/agent-bindings.mjs', pkgRoot))
-const BINDINGS_DIST = fileURLToPath(new URL('dist/packages/runtime/src/plugin/live/agent-bindings.mjs', pkgRoot))
-const PLANE_SRC = fileURLToPath(new URL('src/plugin/live/team-tool-plane.mjs', pkgRoot))
+const pkgRoot = new URL('../', import.meta.url).href
+const BINDINGS_SRC = fileURLToPath(new URL('src/plugin/live/agent-bindings.mjs', pkgRoot).href)
+const BINDINGS_DIST = fileURLToPath(new URL('dist/packages/runtime/src/plugin/live/agent-bindings.mjs', pkgRoot).href)
+const PLANE_SRC = fileURLToPath(new URL('src/plugin/live/team-tool-plane.mjs', pkgRoot).href)
 
 const backendsAssembly = (text: string) => {
   const guardLine = text.split('\n').find((line) => line.includes('? {} : { backends: {'))
@@ -43,13 +43,24 @@ const backendsAssembly = (text: string) => {
   // comment-only lines are not rows (a commented-out spread must read as LOST)
   const slice = text.slice(from, close).split('\n').filter((line) => !line.trim().startsWith('//')).join('\n')
   const rows: Array<{ condVar: string | null; cond: string; key: string }> = []
-  for (const match of slice.matchAll(/\.\.\.\(([\s\S]*?)\? \{\} : \{ ([A-Za-z0-9]+):/g)) {
-    if (match[2] === 'backends') continue // the guard line itself opens with ...( and hands over `backends:` itself
-    const cond = match[1].trim()
-    const vars = [...cond.matchAll(/a5[A-Za-z0-9]+/g)].map((v) => v[0])
-    rows.push({ condVar: vars.length === 1 ? vars[0] : null, cond, key: match[2] })
+  for (const [, condRaw, keyRaw] of slice.matchAll(/\.\.\.\(([\s\S]*?)\? \{\} : \{ ([A-Za-z0-9]+):/g)) {
+    if (keyRaw === undefined || condRaw === undefined) continue // groups participate by construction; the skip is belt-and-braces, never a silent accept
+    if (keyRaw === 'backends') continue // the guard line itself opens with ...( and hands over `backends:` itself
+    const cond = condRaw.trim()
+    const vars = [...cond.matchAll(/a5[A-Za-z0-9]+/g)].map((v) => v[0]).filter((v): v is string => v !== undefined)
+    rows.push({ condVar: vars.length === 1 ? vars[0] ?? null : null, cond, key: keyRaw })
   }
-  return { guardLine, slice, rows }
+  // A5M2-CENTER (2026-10-24, e78 re-anchor merge): the WHOLE-BACKENDS spread
+  // class — `...(a5X === null ? {} : a5X.backends)` — hands over MANY keys
+  // through ONE gated row (the G2 mount's frozen face). Same zero-flip law
+  // (null = no keys at all), but no literal key follows the `:`, so the
+  // pattern above cannot see it; recognizing it here keeps the lost-row law
+  // TOTAL, and the key pairing moves to the dedicated center leg below.
+  const wholeSpreads: string[] = []
+  for (const [, varRaw] of slice.matchAll(/\.\.\.\((a5[A-Za-z0-9]+) === null \? \{\} : \1\.backends\)/g)) {
+    if (varRaw !== undefined) wholeSpreads.push(varRaw)
+  }
+  return { guardLine, slice, rows, wholeSpreads }
 }
 
 describe('A5M2-G3A-BINDINGS-UNION-C1 — guard/spread/plane-read pairing on the REAL bytes', () => {
@@ -64,12 +75,13 @@ describe('A5M2-G3A-BINDINGS-UNION-C1 — guard/spread/plane-read pairing on the 
 
   it('the guard names the G3 inject and EVERY guard-named a5 inject has exactly one conditional spread row (the audited lost-row class)', () => {
     for (const text of [src, dist]) {
-      const { guardLine, slice, rows } = backendsAssembly(text)
+      const { guardLine, slice, rows, wholeSpreads } = backendsAssembly(text)
       const guardVars = [...new Set([...guardLine.matchAll(/a5[A-Za-z0-9]+/g)].map((m) => m[0]))]
       expect(guardVars, 'the guard must keep naming the terminal inject').toContain('a5G3TerminalInject')
       for (const variable of guardVars) {
-        const carriers = rows.filter((row) => row.cond.includes(variable))
-        expect(carriers.length, `${variable} must be carried by exactly one backends spread row (guard names it; a lost row is the 760364998 regression)`).toBe(1)
+        const carriers = rows.filter((row) => row.cond.includes(variable)).length
+          + wholeSpreads.filter((v) => v === variable).length
+        expect(carriers, `${variable} must be carried by exactly one backends spread row (guard names it; a lost row is the 760364998 regression)`).toBe(1)
       }
       for (const row of rows) {
         expect(planeKeys.has(row.key), `backends spread hands the plane a key it never reads: ${row.key}`).toBe(true)
@@ -87,10 +99,40 @@ describe('A5M2-G3A-BINDINGS-UNION-C1 — guard/spread/plane-read pairing on the 
 
   it('no unconditional backends row exists (zero-flip: every family row is gated by its own test)', () => {
     for (const text of [src, dist]) {
-      const { slice, rows } = backendsAssembly(text)
+      const { slice, rows, wholeSpreads } = backendsAssembly(text)
       const spreadCount = [...slice.matchAll(/\.\.\.\(/g)].length
       // rows + the guard line's own ...( + the inverted-ternary g1Arm row
-      expect(spreadCount, 'every ...( inside the union is a gated row (none bare)').toBe(rows.length + 2)
+      // + whole-backends spreads (each still `=== null`-gated, center 2026-10-24)
+      expect(spreadCount, 'every ...( inside the union is a gated row (none bare)').toBe(rows.length + wholeSpreads.length + 2)
     }
+  })
+
+  // A5M2-CENTER leg (2026-10-24, e78 re-anchor merge; root law: a whole-
+  // backends spread is legal ONLY as a gated `=== null ? {} : X.backends`
+  // row AND its keys must be exactly the keys the plane's G2 surface table
+  // reads). The G2 mount hands over g2Mcp/g2Browser/g2Web as ONE frozen
+  // face (builder g2-team-mount.mjs backends.g2Mcp/:163 g2Browser/:228
+  // g2Web/:279); the plane never reads them as `input.backends?.<key>`
+  // literals — it reads them DYNAMICALLY at `input.backends?.[surface
+  // .injectKey]` over its own surface table. So THIS leg pins the key set
+  // against the surface table instead of the literal-read set the loop
+  // above uses; a builder key renamed/added without the matching surface
+  // row is RED, and the spread silently losing its row is RED through the
+  // guard-carrier law above.
+  const G2_MOUNT_SRC = fileURLToPath(new URL('src/plugin/live/governed-families/g2-team-mount.mjs', pkgRoot).href)
+  it('the whole-backends spread class stays gated and its key set equals the plane G2 surface injectKey table (center 2026-10-24)', () => {
+    for (const text of [src, dist]) {
+      const { wholeSpreads } = backendsAssembly(text)
+      expect(wholeSpreads, 'exactly one whole-backends spread today: the G2 mount').toEqual(['a5G2Mount'])
+      expect(text, 'the G2 spread keeps its null-gated form verbatim').toContain('...(a5G2Mount === null ? {} : a5G2Mount.backends),')
+    }
+    const mount = readFileSync(G2_MOUNT_SRC, 'utf8')
+    const builderKeys = new Set([...mount.matchAll(/^\s*backends\.([A-Za-z0-9]+) =/gm)].map((m) => m[1]))
+    const surfaceKeys = new Set([...plane.matchAll(/injectKey: '([A-Za-z0-9]+)'/g)].map((m) => m[1]))
+    expect(builderKeys, 'the builder must still hand exactly the G2 trio').toEqual(new Set(['g2Mcp', 'g2Browser', 'g2Web']))
+    for (const key of builderKeys) {
+      expect(surfaceKeys.has(key), `plane G2 surface table must read backends.${key} via its injectKey`).toBe(true)
+    }
+    expect(plane, 'the plane must read the face dynamically through the surface table').toContain('input.backends?.[surface.injectKey]')
   })
 })

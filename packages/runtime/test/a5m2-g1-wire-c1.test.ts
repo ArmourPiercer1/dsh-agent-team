@@ -106,6 +106,7 @@ import { parsePaControlManifest, validatePaFamilyTarget } from '../control/types
 import type { PaCallFactsCeilingSlot } from '../control/types.js'
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
 import { definitionIdentityOf, installScopedToolGuard, type ScopedGuardAgentCtx, untestedAssurance } from '../tool-dispatch/index.js'
+import { createTeamTools } from '../../tools/src/index.js'
 import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
 import {
@@ -972,7 +973,7 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
   })
 
-  it('the grammar facts at rev 7 are MEASURED at the validator: the rev-7 payloads PASS, the retired shapes deny with the pinned wordings, the three existing rules stay byte-identical', () => {
+  it('the grammar facts at rev 7 are MEASURED at the validator: the rev-7 payloads PASS, the retired shapes deny with the pinned wordings, the other rules stay byte-identical (B-CONTROL re-pinned at the full-pairing grammar, root 2026-10-25)', () => {
     // GRAMMAR facts at the validator — structure checks only. NOTHING here
     // is empirical consumption evidence (that is the two fixed-point legs);
     // per root the old source-shape refusal is named exactly as what it is.
@@ -1014,19 +1015,33 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
       trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
     })).toBe("queryPlatform: not the 'query-host' variant constant of the B-INSPECT typed plan")
     expect(validatePaFamilyTarget('B-CONTROL', { trusted: { memberAgentId: 'i', sessionHeaderId: 'h', realmId: 'r', owner: 'o', profileId: 'p' } }))
-      .toBe('trustedMemberAgentId: required by the B-CONTROL typed plan, absent')
+      // (root 2026-10-25 full pairing): the retired nested shape now denies
+      // on the discriminant first; the five trusted leaves still deny behind
+      // it — the closed law is unchanged, the measured first violation moved.
+      .toBe('controlRecord: required by the B-CONTROL typed plan, absent')
+    // (root 2026-10-25 LIMITED BUILD ORDER): the flat five-leaf shape is now
+    // the RETIRED encoding (family revision moved to 8) — it denies on the
+    // discriminant, translated by nothing; the admitted claim is the full
+    // pairing. The B-INSPECT pair and every other family stay byte-identical.
     expect(validatePaFamilyTarget('B-CONTROL', {
       trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
+    })).toContain('controlRecord')
+    expect(validatePaFamilyTarget('B-CONTROL', {
+      controlRecord: 'list-pending', requestRootSessionId: 'root-1', requestToken: 'tok-1', requestLimit: 'absent',
+      trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
     })).toBeUndefined()
-    // The three EXISTING rules byte-identical: B-SESSION's own law still
-    // accepts its own target and refuses the B-INSPECT leaves as extra keys
-    // (no variant grammar reached, no rule moved).
+    // B-SESSION's own law still accepts its OWN todo target and refuses the
+    // B-INSPECT leaves as extra keys. (Root 01:01 re-pin: the fixture now
+    // carries the REAL mint literal 'replace-list' (todo.mjs:64) — the old
+    // 'todo-list' was a fixture fiction no mint produces, legal before only
+    // because nothing typed the operation leaf; the todo group's law over
+    // every other leaf is byte-preserved.)
     expect(validatePaFamilyTarget('B-SESSION', {
-      operation: 'todo-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
+      operation: 'replace-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
       counts: { pending: 1, inProgress: 0, completed: 2 }, allowParallelPolicy: false, paramFingerprint: 'sha256:p',
     })).toBeUndefined()
     expect(validatePaFamilyTarget('B-SESSION', {
-      operation: 'todo-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
+      operation: 'replace-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
       counts: { pending: 1, inProgress: 0, completed: 2 }, allowParallelPolicy: false, paramFingerprint: 'sha256:p',
       inspectVariant: 'list', listLaw: 'x',
     })).toBe('inspectVariant: not part of the B-SESSION typed plan')
@@ -1266,6 +1281,13 @@ const ARM_ASM = (await import(new URL('../src/plugin/live/governed-families/g1-q
 }
 const ARM_WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as {
   g1PureQuerySubset: () => ReadonlyArray<{ name: string; recordIndex: number; familyId: string }>
+  g1ControlSupplySubset: () => ReadonlyArray<{ name: string; recordIndex: number; familyId: string }>
+  claimG1Control85Handover: (input: { catalog: unknown; allowedNames?: unknown; definitionIdentityOf?: unknown }) => { names: string[]; census: Array<{ name: string; recordIndex: number; reason: string }> }
+  A5_G1_CONTROL85_HANDOVER: { name: string; recordIndex: number }
+}
+const ARM_TOPO = (await import(new URL('../src/plugin/live/governed-families/g1-trusted-topology-supply.mjs', import.meta.url).href)) as {
+  createG1TrustedTopologySupply: (input?: { inspect?: unknown; authorized?: unknown; observe?: (row: unknown) => void }) =>
+    { ok: true; supply: { revision: number; current: () => unknown } } | { ok: false; code: string; message: string }
 }
 interface ArmRegistration { name: string; recordIndex: number; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }
 interface ArmAssembly {
@@ -1292,6 +1314,10 @@ interface ArmWorld {
   publish: () => ArmRegistration[]
   entryOf: (name: string) => ArmEntry | undefined
   revise: (name: string, change: Record<string, unknown>) => boolean
+  inspectListCalls: () => number
+  dropDirectoryProvider: (id: string) => void
+  c85Facts: () => { names: string[]; rawSelected: string[]; nativeIdentity: string | undefined; rawDisposeAll: () => void }
+  topologyNow: () => { topologyRevision: number; topologyDigest: string; allowed: unknown[] } | undefined
 }
 const ARM_TUPLE = Object.freeze({
   blueprintId: 'bp-a5m2-g1-wire',
@@ -1302,12 +1328,37 @@ const ARM_TUPLE = Object.freeze({
   providerVersion: PROVIDER_ID,
 })
 let armSeq = 0
-async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } = {}): Promise<ArmWorld> {
+type ArmScope = ReadonlyArray<{ platform: string; provider: string; method: string }>
+// the DEPLOYER-configured hard boundary the positive legs run on (the block
+// default OFF ships NOTHING; these triples are explicit cfg, EXPERIMENTAL —
+// 接线未测, the identity-domain ruling says this path stays experimental
+// until the Host 接线 window).
+const SCOPE_OK: ArmScope = [
+  { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+  { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
+]
+async function mountArmWorld(opts: {
+  scope?: ArmScope
+  injectCurrent?: () => unknown
+  noFace?: boolean
+  armRow?: boolean
+  // ROOT P1 record-85 chain worlds: the REAL team-tool selection THIS agent
+  // carries (already-legal visibility), plus an optional parent-layer decoy
+  // under the SAME name the scoped read would otherwise resolve.
+  c85Selection?: ArmDef[]
+  c85Decoy?: ArmDef
+  // ROOT 2026-10-25 LIMITED BUILD ORDER: the CONTROL supply opt-in key
+  // (g1PureQuery.control) and the REAL B-CONTROL natives this world's scoped
+  // registry answers (a leader world carries them; a member world does not).
+  control?: boolean
+  controlNatives?: ArmDef[]
+} = {}): Promise<ArmWorld> {
   const label = `arm-${String(++armSeq)}`
   const realmId = `a5m2-g1-arm-${label}`
   const topology = { current: structuredClone(TOPOLOGY_BASE) }
   const { defs: nativeDefs, nativeCalls } = makeCaptures(() => topology.current)
   const nativeLayer = new Map<string, HostNativeDef>(Object.entries(nativeDefs))
+  for (const def of opts.controlNatives ?? []) nativeLayer.set(def.name, def as never)
   const scopeLayer = new Map<string, ArmDef>()
   // THE ONE owner-held placed-definition ledger (block law mirrored): only
   // this world's registration seam writes it, and the Guard's bindingFeed,
@@ -1316,6 +1367,23 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
   const ownedNames: string[] = []
   const observations: string[] = []
   const legInputs: Record<string, unknown>[] = []
+  // ── THE BLOCK'S TOPOLOGY CFG MIRROR, mirrored 1:1 (root G1 final ruling:
+  //    ① signed { current } injection wins; ② `topologyScope` deployer hard
+  //    boundary x live public directory (a067 factory, fresh intersection);
+  //    ③ ABSENT = default OFF, NOTHING constructed, the face not even read.
+  //    The MCP three-source matcher is WITHDRAWN (identity domains have no
+  //    crosswalk) — no half of it stands here either.
+  const inspectDir: Array<{ platform: string; id: string; purpose: string; methods: Array<{ name: string }> }> = [
+    { platform: 'host', id: 'dsh_compute', purpose: 'compute', methods: [{ name: 'compute_health' }, { name: 'compute_list_jobs' }] },
+    { platform: 'host', id: 'rogue-provider', purpose: 'unauthorized', methods: [{ name: 'anything' }] },
+  ]
+  let inspectListCalls = 0
+  const inspectFace = {
+    list: () => {
+      inspectListCalls += 1
+      return inspectDir.map((v) => ({ ...v, methods: v.methods.map((m) => ({ ...m })) }))
+    },
+  }
   // The Guard-installable ctx (the provider-identity makeCtx shape): one
   // name, one placement; reads resolve the scoped layer first, then the
   // global native (the takeover law the production scoped registry obeys).
@@ -1340,6 +1408,59 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
       },
     },
     on: () => () => {},
+    cordisInspect: opts.noFace === true ? undefined : inspectFace,
+  }
+  // ── the block's topology cfg resolution mirrored (grammar, refusal code,
+  //    default OFF, injection-wins INERT law; EXPERIMENTAL 接线未测).
+  let armTopology: { current: () => { topologyRevision: number; topologyDigest: string; allowed: unknown[] } } | undefined
+  if (opts.injectCurrent !== undefined) {
+    armTopology = Object.freeze({ current: () => opts.injectCurrent!() as { topologyRevision: number; topologyDigest: string; allowed: unknown[] } })
+    if (opts.scope !== undefined) observations.push(`a5m2-g1: topologyScope-INERT for ${label} (the signed trustedTopology injection is the ONE face; the deployer scope is never consulted beside it)`)
+  } else if (opts.scope !== undefined) {
+    const triples: Array<{ platform: string; provider: string; method: string }> = []
+    let scopeBad: string | null = null
+    if (!Array.isArray(opts.scope)) {
+      scopeBad = 'must be an array of closed { platform, provider, method } triples'
+    } else {
+      for (const entry of opts.scope) {
+        const keys = entry !== null && typeof entry === 'object' && !Array.isArray(entry) ? Object.keys(entry) : null
+        if (keys === null || keys.length !== 3 || !(keys.includes('platform') && keys.includes('provider') && keys.includes('method'))) {
+          scopeBad = 'every entry carries EXACTLY platform/provider/method (closed grammar, no extras, no model-shaped fields)'
+          break
+        }
+        if (typeof entry.platform !== 'string' || (entry.platform !== 'host' && entry.platform !== 'client')) {
+          scopeBad = 'platform is the closed Host/Client plane, never a wildcard'
+          break
+        }
+        if (typeof entry.provider !== 'string' || entry.provider.length === 0 || entry.provider === '*'
+          || typeof entry.method !== 'string' || entry.method.length === 0 || entry.method === '*') {
+          scopeBad = 'provider/method are exact non-empty ids — there is NO allow-all state'
+          break
+        }
+        triples.push(Object.freeze({ platform: entry.platform, provider: entry.provider, method: entry.method }))
+      }
+    }
+    if (scopeBad !== null) {
+      throw Object.assign(new Error(`alpha5-g1-arm-mount-refused: topologyScope ${scopeBad}`), { code: 'alpha5-g1-arm-mount-refused' })
+    }
+    const frozenScope = Object.freeze(triples)
+    if (opts.noFace === true) {
+      observations.push(`a5m2-g1: topology-supply-ABSENT for ${label} (no public ctx.cordisInspect face on this mount — rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
+    } else {
+      const supplied = ARM_TOPO.createG1TrustedTopologySupply({
+        inspect: Object.freeze({ list: () => inspectFace.list() }),
+        authorized: () => Object.freeze(frozenScope.map((triple) => Object.freeze({ ...triple }))),
+        observe: (row: unknown) => { observations.push(`a5m2-g1: topo ${String((row as Record<string, unknown> | undefined)?.event ?? 'observe')}`) },
+      })
+      if (supplied.ok === true) {
+        armTopology = Object.freeze({ current: () => supplied.supply.current() as { topologyRevision: number; topologyDigest: string; allowed: unknown[] } })
+        observations.push(`a5m2-g1: topology-SUPPLIED for ${label} (EXPERIMENTAL deployer-configured hard boundary x live public directory — fresh per read, never allow-all)`)
+      } else {
+        observations.push(`a5m2-g1: topology-supply-REFUSED for ${label} (${String(supplied.code)})`)
+      }
+    }
+  } else {
+    observations.push(`a5m2-g1: topology-supply-ABSENT for ${label} (no trustedTopology/topologyScope configured — default OFF per root topology14575, allow-all is never the default; rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
   }
   // ── the REAL plane: no g1 rows on this route (one placement, one ledger),
   //    plus the arm's placement-attribution row (root ①) — the owner's live
@@ -1367,7 +1488,7 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
     instanceId: WORKER,
     teamSessionId: P6T4_ROOT,
     plane: {},
-    ...(opts.armRow === false ? {} : { backends: { g1Arm: { isPlaced: (name: string) => ledger.has(name) } } }),
+    ...(opts.armRow === false ? {} : { backends: { g1Arm: { isPlaced: (name: string) => ledger.has(name), ...(opts.control === true ? { names: ARM_WIRE.g1ControlSupplySubset().map((row) => row.name) } : {}) } } }),
     authorityFacts: { overlayGeneration: async () => 0, ensureAuthorityCurrent: async () => {} },
     controlLeg: async (legInput: unknown) => {
       legInputs.push(legInput as Record<string, unknown>)
@@ -1423,7 +1544,6 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
   //    binding-facts reader over the Guard dispatcher's OWN surface.
   const assemblies: ArmAssembly[] = []
   const keys = new Map<string, string>()
-  const cfgTopology = opts.cfgTopology !== false
   const trusted = { memberAgentId: WORKER, sessionHeaderId: HEADER_ID, realmId, owner: P6T4_ROOT, profileId: 'profile-a5m2-g1' }
   const g1PlaneSeam = {
     placementFeed: (name: string) => {
@@ -1446,15 +1566,43 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
     }
     return { bindingId: binding.bindingId, bindingRevision: binding.revision, policyGeneration: binding.policyGeneration, authorityGeneration: binding.authorityGeneration }
   }
+  // ── THE BLOCK'S RECORD-85 CLAIM MIRRORED (root P1): the REAL
+  // claimG1Control85Handover over THIS agent's REAL selection, the same raw-
+  // let filter law, and the EXACT captured instance the assembly may use.
+  const c85RawDisposers: Array<() => void> = []
+  let c85Names = new Set<string>()
+  let c85Native: ArmDef | undefined
+  let c85RawSelected: ArmDef[] = []
+  if (opts.c85Selection !== undefined) {
+    if (opts.c85Decoy !== undefined) nativeLayer.set('team_list_pending_control', opts.c85Decoy as never)
+    const claim = ARM_WIRE.claimG1Control85Handover({
+      catalog: opts.c85Selection,
+      allowedNames: null,
+      definitionIdentityOf: (def: ArmDef) => definitionIdentityOf(def as never),
+    })
+    for (const row of claim.census) observations.push(`a5m2-g1: record-85 handover census ${String(row.name)}:${String(row.reason)} for ${label}`)
+    c85Names = new Set(claim.names)
+    c85Native = claim.names.length === 0 ? undefined
+      : opts.c85Selection.find((def) => def?.name === ARM_WIRE.A5_G1_CONTROL85_HANDOVER.name)
+    // the raw filter (block law): let BOTH claims' names; the harness runs no
+    // B-TEAM claim, so only the G1 set applies here.
+    c85RawSelected = c85Names.size === 0 ? opts.c85Selection : opts.c85Selection.filter((def) => !c85Names.has(def.name))
+    // raw registration rides the agent layer exactly as the site registers it.
+    for (const def of c85RawSelected) c85RawDisposers.push(raw.tools.register(def) as () => void)
+  }
   for (const entry of ARM_WIRE.g1PureQuerySubset()) {
-    if (entry.familyId !== 'B-INSPECT') {
-      observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only)`)
+    const c85Armed = entry.recordIndex === 85 && entry.familyId === 'B-CONTROL'
+      && c85Names.has(entry.name) && c85Native !== undefined
+    if (entry.familyId !== 'B-INSPECT' && !c85Armed) {
+      observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only; root 03:05 carve-out: record 85 only via its closed-key hand-over); the raw name stays unregistered and untouched`)
       continue
     }
     const assembly = ARM_ASM.createG1QueryAssembly({
       providerId: PROVIDER_ID,
       registry: {
-        get: (name: string) => (name === entry.name ? raw.tools.get(name) : undefined),
+        get: (name: string) => (name !== entry.name ? undefined
+          : entry.recordIndex === 85 ? c85Native
+            : raw.tools.get(name)),
         register: (definition: ArmDef) => {
           const dispose = raw.tools.register(definition)
           ledger.set(definition.name, definition)
@@ -1468,7 +1616,7 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
       plane: () => g1PlaneSeam,
       trusted,
       bindingFacts: bindingFactsFor(entry.name),
-      ...(cfgTopology ? { topology: { current: () => topology.current } } : {}),
+      ...(armTopology === undefined ? {} : { topology: armTopology }),
       observe: (row: Record<string, unknown>) => { observations.push(`a5m2-g1: ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')}`) },
     })
     if (assembly.ok !== true) {
@@ -1476,8 +1624,54 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
     }
     const disposers = assembly.place()
     void disposers
-    for (const name of assembly.wiring?.placementNames ?? []) ownedNames.push(name)
+    for (const name of assembly.wiring?.placementNames ?? []) {
+      observations.push(`a5m2-g1: governed row PLACED ${name} for ${label}; takeover mount over the global native`)
+      ownedNames.push(name)
+    }
     assemblies.push(assembly)
+  }
+  // ── THE CONTROL SUPPLY LOOP MIRRORED (root LIMITED BUILD ORDER
+  // 2026-10-25): same block law as agent-bindings — the deployer's
+  // g1PureQuery.control key is the ONLY producer of the armed state; the
+  // derived B-CONTROL row set rides the SAME assembly, the SAME owner-held
+  // ledger, the SAME live binding-facts law and the SAME after-publish fill.
+  const controlSubsetNames = new Set(ARM_WIRE.g1ControlSupplySubset().map((row) => row.name))
+  if (opts.control === true) {
+    for (const entry of ARM_WIRE.g1ControlSupplySubset()) {
+      const controlAssembly = ARM_ASM.createG1QueryAssembly({
+        providerId: PROVIDER_ID,
+        subset: [entry],
+        registry: {
+          get: (name: string) => (name !== entry.name ? undefined : raw.tools.get(name)),
+          register: (definition: ArmDef) => {
+            const dispose = raw.tools.register(definition)
+            ledger.set(definition.name, definition)
+            return () => {
+              if (ledger.get(definition.name) === definition) ledger.delete(definition.name)
+              dispose()
+            }
+          },
+        },
+        runtimeAgent: { id: WORKER, session: { header: { id: HEADER_ID } } },
+        plane: () => g1PlaneSeam,
+        trusted,
+        bindingFacts: bindingFactsFor(entry.name),
+        observe: (row: Record<string, unknown>) => { observations.push(`a5m2-g1: ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')}`) },
+      })
+      if (controlAssembly.ok !== true) {
+        throw Object.assign(new Error(`alpha5-g1-arm-mount-refused: ${String(controlAssembly.code)} — ${String(controlAssembly.message)}`), { code: 'alpha5-g1-arm-mount-refused' })
+      }
+      const controlDisposers = controlAssembly.place()
+      void controlDisposers
+      for (const name of controlAssembly.wiring?.placementNames ?? []) {
+        observations.push(`a5m2-g1: governed B-CONTROL row PLACED ${name} for ${label}; takeover mount over the global native`)
+        ownedNames.push(name)
+      }
+      assemblies.push(controlAssembly)
+    }
+    observations.push(`a5m2-g1: control supply ARMED for ${label} (deployer key only; the ruling never auto-enables)`)
+  } else {
+    observations.push(`a5m2-g1: control supply DARK for ${label} (g1PureQuery.control not configured)`)
   }
   // The Guard's own bind of the mount's own-tool list (production:
   // bindOwnTools over the SAME live array the arm appended to — the GLUE-5
@@ -1490,8 +1684,12 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
     const out: ArmRegistration[] = []
     for (const assembly of assemblies) {
       for (const registration of assembly.registerAfterPublish()) {
-        if (registration.entry.familyId !== 'B-INSPECT') {
-          throw new Error(`arm law broken: a SUPPLY-GATED family reached the table (${registration.name})`)
+        if (registration.entry.familyId !== 'B-INSPECT'
+          && !(registration.recordIndex === 85 && registration.entry.familyId === 'B-CONTROL'
+            && c85Names.has(registration.name) && c85Native !== undefined)
+          && !(opts.control === true && registration.entry.familyId === 'B-CONTROL'
+            && controlSubsetNames.has(registration.name))) {
+          throw new Error(`arm law broken: a family outside the closed enablement reached the table (${registration.name})`)
         }
         // provider authority evidence (the image lane's Guard.entryOf law):
         // the LIVE authority answer, recorded beside the row identity.
@@ -1509,6 +1707,18 @@ async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } =
     plane, nativeCalls, topology, observations, legInputs, assemblies, ledger, scopeLayer, keys, publish,
     entryOf: (name: string) => guard.dispatcher.surface.entryOf(name) as ArmEntry | undefined,
     revise: (name: string, change: Record<string, unknown>) => guard.dispatcher.revise(name, change as never).ok === true,
+    inspectListCalls: () => inspectListCalls,
+    c85Facts: () => ({
+      names: [...c85Names],
+      rawSelected: c85RawSelected.map((d) => d.name),
+      nativeIdentity: c85Native === undefined ? undefined : definitionIdentityOf(c85Native as never) ?? undefined,
+      rawDisposeAll: () => { for (const dispose of c85RawDisposers.splice(0)) dispose() },
+    }),
+    dropDirectoryProvider: (id: string) => {
+      const i = inspectDir.findIndex((v) => v.id === id)
+      if (i >= 0) inspectDir.splice(i, 1)
+    },
+    topologyNow: () => armTopology?.current(),
   }
 }
 
@@ -1570,7 +1780,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('the wired def walks the SAME real chain through the PRODUCTION reader: durable row carries the rev-7 family block at FULL VALUE, the row binding IS the live Guard entry (provider authority evidence recorded, never aliased), leader allow, ONE consumption, the captured native entered ONCE', async () => {
-    const arm = await mountArmWorld()
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     const def = arm.scopeLayer.get('cordis_inspect_list')
     expect(def).toBeDefined()
@@ -1590,6 +1800,20 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
       trustedOwner: P6T4_ROOT,
       trustedProfileId: 'profile-a5m2-g1',
     })
+    // ROOT G1 FINAL RULING opt-in positive (EXPERIMENTAL 接线未测): the face
+    // the row carries is the PRODUCTION supply's answer over the fake public
+    // directory INTERSECTED with the deployer's explicit hard-boundary
+    // scope — one walk, one native run, the durable row carries the supply's
+    // own digest pair. No MCP-name intersection anywhere.
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(true)
+    const face = arm.topologyNow()
+    expect(face).toBeDefined()
+    expect(String(manifest?.targetManifest?.topologyDigest)).toBe(String(face?.topologyDigest))
+    expect(String(face?.topologyDigest).startsWith('sha256:')).toBe(true)
+    expect(face?.allowed).toEqual([
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
+    ])
     // The row's binding came THROUGH the production reader off the REAL
     // dispatcher surface: identity, family key and provider authority are
     // the LIVE entry's fields (the image lane's Guard.entryOf evidence law
@@ -1609,7 +1833,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('the query row on the arm: an authorized triple answers through the consumed plan; an unauthorized triple refuses at classify with zero row and zero native entry', async () => {
-    const arm = await mountArmWorld()
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     const def = arm.scopeLayer.get('cordis_inspect_query')
     const before = (await stateNow()).requests.length
@@ -1634,7 +1858,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('root ① RED control (no attribution row): the same place/bind/register lands, but with no g1Arm row the production reader answers NO placementName — every call fails closed with zero row and zero native entry', async () => {
-    const arm = await mountArmWorld({ armRow: false })
+    const arm = await mountArmWorld({ scope: SCOPE_OK, armRow: false })
     const registrations = arm.publish()
     expect(registrations).toHaveLength(2)
     const def = arm.scopeLayer.get('cordis_inspect_list')
@@ -1647,7 +1871,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
   })
 
   it('root ③ directed verification: a REAL dispatcher revise (verified=false) breaks the live binding-facts law mid-flight — the row refuses with the block fail-closed wording, zero row, zero native entry', async () => {
-    const arm = await mountArmWorld()
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
     arm.publish()
     expect(arm.revise('cordis_inspect_list', { verified: false })).toBe(true)
     const def = arm.scopeLayer.get('cordis_inspect_list')
@@ -1659,17 +1883,308 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
   })
 
-  it('topology absent (no integrator supply): the rows still mount, place and register, but every call refuses the module\u2019s OWN trusted-topology posture before admission — zero native entry, zero row', async () => {
-    const arm = await mountArmWorld({ cfgTopology: false })
+  it('root G1 FINAL RULING — DEFAULT OFF: with no trustedTopology/topologyScope nothing is constructed and the inspect face is never read; the existing red control does NOT flip — the rows still mount, place and register, but every call refuses the module\u2019s OWN P_G1_TRUSTED_TOPOLOGY_ABSENT posture before admission — zero native entry, zero row', async () => {
+    const arm = await mountArmWorld()
+    expect(arm.observations.some((o) => o.includes('topology-supply-ABSENT') && o.includes('default OFF'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(false)
+    // zero construct means zero directory read: the face is not even touched.
+    expect(arm.inspectListCalls()).toBe(0)
     const registrations = arm.publish()
     expect(registrations).toHaveLength(2)
     const def = arm.scopeLayer.get('cordis_inspect_list')
     const before = (await stateNow()).requests.length
     const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-notopo'), callId: 'toolu-call-arm-notopo' })
-      .then(() => undefined, (error: unknown) => String((error as Error).message))
+      .then(() => undefined, (error: unknown) => String((error as Error).message ?? error))
     expect(String(refusal)).toMatch(/TRUSTED_TOPOLOGY/)
     expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
     expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.inspectListCalls()).toBe(0)
+  })
+
+  it('root G1 FINAL RULING — explicit topologyScope = [] is a legal ZERO AUTHORIZATION face (distinguishable from absence, never widened); probed per-row, not generalized: the query row refuses ONE probed triple P_G1_INSPECT_TARGET_NOT_AUTHORIZED at zero row and zero native entry, while the list row still WALKS and answers the empty-constrained providers answer (providers empty, whole directory excluded)', async () => {
+    const arm = await mountArmWorld({ scope: [] })
+    arm.publish()
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(true)
+    expect((arm.topologyNow()?.allowed ?? ['gone'])).toHaveLength(0)
+    const query = arm.scopeLayer.get('cordis_inspect_query')
+    const before = (await stateNow()).requests.length
+    const refused = await query!.execute(
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-emptyq'), callId: 'toolu-call-arm-emptyq' },
+    ).then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refused)).toContain('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(0)
+    const list = arm.scopeLayer.get('cordis_inspect_list')
+    const callId = 'toolu-call-arm-emptylist'
+    const running = list!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol(callId), callId })
+    const row = await waitRowForCall(callId)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as { providers: unknown[]; excludedUnauthorizedProviders: number }
+    expect(value.providers).toHaveLength(0)
+    // the EMPTY face excludes the WHOLE directory (both visible providers).
+    expect(value.excludedUnauthorizedProviders).toBe(2)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(1)
+  })
+
+  it('root G1 FINAL RULING — the directory is intersected FRESH per call (a067 law): a provider disappearing from the public directory between calls makes the SAME deployer-configured triple refuse at classify — zero new row, zero new native entry (deployer scope is the boundary; visibility still never authorizes, and losing visibility revokes)', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
+    arm.publish()
+    const query = arm.scopeLayer.get('cordis_inspect_query')
+    const callId = 'toolu-call-arm-live1'
+    const running = query!.execute(
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol(callId), callId },
+    )
+    const row = await waitRowForCall(callId)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(1)
+    // the PUBLIC directory moves: the supply re-intersects per read, the
+    // face loses the triple, the next call refuses at classify.
+    arm.dropDirectoryProvider('dsh_compute')
+    const before = (await stateNow()).requests.length
+    const refused = await query!.execute(
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-live2'), callId: 'toolu-call-arm-live2' },
+    ).then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refused)).toContain('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(1)
+  })
+
+  it('root G1 FINAL RULING — scope configured but NO public inspect face: supply cannot intersect, NOTHING is supplied; the module\u2019s OWN fail-closed stands (the deployer scope alone never becomes a topology)', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK, noFace: true })
+    expect(arm.observations.some((o) => o.includes('topology-supply-ABSENT') && o.includes('ctx.cordisInspect face'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(false)
+    const def = arm.scopeLayer.get('cordis_inspect_list')
+    const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-noface'), callId: 'toolu-call-arm-noface' })
+      .then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refusal)).toMatch(/TRUSTED_TOPOLOGY/)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
+  })
+
+  it('root G1 FINAL RULING — the signed trustedTopology={current} injection WINS beside a configured scope (highest priority, law unchanged) and the scope stays INERT', async () => {
+    const injected = { topologyRevision: 7, topologyDigest: 'sha256:injected-signed-face', allowed: [] }
+    const arm = await mountArmWorld({ injectCurrent: () => structuredClone(injected), scope: SCOPE_OK })
+    expect(arm.observations.some((o) => o.includes('topologyScope-INERT'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('topology-SUPPLIED'))).toBe(false)
+    expect(arm.topologyNow()?.topologyDigest).toBe('sha256:injected-signed-face')
+    // the supply (and with it the directory read) was never constructed.
+    expect(arm.inspectListCalls()).toBe(0)
+  })
+
+  it('root G1 FINAL RULING — malformed topologyScope is a MOUNT refusal, never a degraded or widened scope (closed grammar: exact keys, closed platform, no wildcard, no empty, array only)', async () => {
+    const bad: Array<[string, unknown]> = [
+      ['non-array value', 'all'],
+      ['missing method key', [{ platform: 'host', provider: 'p' }]],
+      ['extra key', [{ platform: 'host', provider: 'p', method: 'm', note: 'x' }]],
+      ['wildcard platform', [{ platform: '*', provider: 'p', method: 'm' }]],
+      ['platform outside host|client', [{ platform: 'worker', provider: 'p', method: 'm' }]],
+      ['wildcard provider (allow-all state)', [{ platform: 'host', provider: '*', method: 'm' }]],
+      ['wildcard method', [{ platform: 'host', provider: 'p', method: '*' }]],
+      ['empty provider id', [{ platform: 'host', provider: '', method: 'm' }]],
+      ['non-string method', [{ platform: 'host', provider: 'p', method: 7 }]],
+      ['entry not an object', ['host/p/m']],
+    ]
+    for (const [why, scope] of bad) {
+      let code: string | undefined
+      await mountArmWorld({ scope: scope as ArmScope }).then(() => undefined, (error: unknown) => { code = String((error as { code?: string })?.code) })
+      expect(code, `expected mount refusal for ${why}`).toBe('alpha5-g1-arm-mount-refused')
+    }
+    // and the block itself carries the SAME refusal code for the same grammar.
+    const src = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+    expect(src).toContain("topologyScope ${g1ScopeBad}")
+  })
+
+  // ── ROOT P1 REAL CHAIN (root 04:0x narrow audit): the claim → raw-let
+  // filter → assembly CAPTURE → registration chain, on the REAL team-tool
+  // build, with a parent-layer SAME-NAME decoy the scoped read would resolve
+  // if the block captured by name again.
+  const buildRealC85 = (): ArmDef[] => {
+    const control = {
+      async listControlState() { return { requests: [] } },
+      async listOpenApprovalCases() { return [] },
+    }
+    const { tools } = createTeamTools({
+      teamRuntime: {},
+      controlService: control,
+      messaging: {},
+      activity: {},
+      resolveCaller: async () => ({ caller: { kind: 'instance', instanceId: 'inst-leader' }, rootSessionId: 'sess-c85-chain' }),
+    } as never)
+    return tools.filter((tool) => tool.name === 'team_list_pending_control') as unknown as ArmDef[]
+  }
+  // A SAME-NAMED definition sitting in the parent (global) layer: the decoy
+  // the scoped read would resolve if record 85 were still captured by name.
+  // Its face differs from the selection native's, so any capture of it is a
+  // different mint — the chain leg asserts the mint is the SELECTION's.
+  const c85Decoy = (): ArmDef => ({
+    name: 'team_list_pending_control',
+    output: { schema: { type: 'object' }, render: () => [] },
+    execute: async () => ({ decoy: 'PARENT-LAYER DECOY — must NEVER be captured' }),
+  })
+
+  it('ROOT P1 real chain, leader world: the REAL claim lets the raw name, the assembly captures EXACTLY the selection instance (a parent-layer same-named decoy is never captured), and exactly ONE governed def is placed AND registered', async () => {
+    const selection = buildRealC85()
+    expect(selection).toHaveLength(1)
+    const decoy = c85Decoy()
+    const arm = await mountArmWorld({ scope: SCOPE_OK, c85Selection: selection, c85Decoy: decoy })
+    const facts = arm.c85Facts()
+    expect(facts.names).toEqual(['team_list_pending_control'])
+    expect(facts.rawSelected).toEqual([]) // the raw def LET the agent layer
+    expect(facts.nativeIdentity).not.toBe(definitionIdentityOf(decoy as never))
+    arm.publish()
+    expect(arm.observations.some((o) => o.includes('governed row PLACED team_list_pending_control'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('record-85 handover census'))).toBe(false)
+    const placed = arm.scopeLayer.get('team_list_pending_control')
+    expect(placed).toBeDefined()
+    expect(placed).not.toBe(decoy)
+    expect(placed).not.toBe(selection[0])
+    expect(arm.ledger.get('team_list_pending_control')).toBe(placed)
+    expect(arm.observations.some((o) => o.includes('family REGISTERED name=team_list_pending_control'))).toBe(true)
+    // one placement: the raw instance reached the agent layer NOWHERE
+    expect([...arm.scopeLayer.values()].filter((d) => d === selection[0])).toHaveLength(0)
+  })
+
+  it('ROOT P1 real chain, member world (no legal visibility): capture-absent census only — the decoy in a parent layer is NEVER armed on, nothing is assembled, placed or registered for 85, the SUPPLY-GATED posture is byte-for-byte root 17:55', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK, c85Selection: [], c85Decoy: c85Decoy() })
+    expect(arm.observations.some((o) => o.includes('record-85 handover census team_list_pending_control:capture-absent'))).toBe(true)
+    arm.publish()
+    expect(arm.c85Facts().names).toEqual([])
+    expect(arm.scopeLayer.has('team_list_pending_control')).toBe(false)
+    expect(arm.ledger.has('team_list_pending_control')).toBe(false)
+    expect(arm.observations.some((o) => o.includes("row 'team_list_pending_control'") && o.includes('SUPPLY-GATED'))).toBe(true)
+    expect(arm.observations.some((o) => o.includes('governed row PLACED team_list_pending_control'))).toBe(false)
+  })
+
+  it('ROOT P1 no half-handover: a selection def the claim will NOT qualify (face-incomplete) can never be silenced either — the host registration law refuses the raw def as well, so the mount fails typed and the name answers NOT nothing halfway', async () => {
+    const broken = { ...buildRealC85()[0] } as Record<string, unknown>
+    delete broken.execute
+    let code: string | undefined
+    await mountArmWorld({ scope: SCOPE_OK, c85Selection: [broken as unknown as ArmDef] }).then(
+      () => { code = 'MOUNT-SUCCEEDED — half handover went live!' },
+      (error: unknown) => { code = String((error as { message?: string })?.message ?? error) },
+    )
+    expect(code).toContain('registration-ready')
+  })
+
+  // ── ROOT 2026-10-25 LIMITED BUILD ORDER: the four self-governance
+  // records (83/84/87/88) leave the HOLD under exactly two constraints the
+  // legs below pin: the deployer's config key is the ONLY producer of the
+  // armed state (dark by default, closed grammar otherwise), and the supply
+  // never widens visibility past the native the scoped registry already
+  // answers. The wire format answers the FULL-PAIRING closed table at the
+  // B-CONTROL family revision 8 (control/types.ts; the family-rules spec
+  // pins the grammar, these legs pin the supply).
+  const controlNativesBuild = (bag: Array<{ args: Record<string, unknown> }>): ArmDef[] => {
+    const control = {
+      async listControlState() { return { requests: [] } },
+      async listOpenApprovalCases() { return [] },
+      async requestControl(input: Record<string, unknown>) {
+        bag.push({ args: input })
+        return { requestId: 'req-arm-83', rootSessionId: input.rootSessionId, kind: input.kind, targetInstanceId: input.targetInstanceId, actionName: input.actionName, decision: null, status: 'pending', createdAt: 0 }
+      },
+      async resolveControl() { return { requestId: 'req-arm-83', status: 'resolved' } },
+    }
+    const { tools } = createTeamTools({
+      teamRuntime: {},
+      controlService: control,
+      messaging: {},
+      activity: {},
+      resolveCaller: async () => ({ caller: { kind: 'instance', instanceId: WORKER }, rootSessionId: P6T4_ROOT }),
+    } as never)
+    return tools.filter((tool) => ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission'].includes(tool.name)) as unknown as ArmDef[]
+  }
+
+  it('CONTROL supply opt-in law (root 2026-10-25): WITHOUT the deployer key nothing of the B-CONTROL supply world is constructed — dark observation, zero placement, zero registration', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
+    arm.publish()
+    expect(arm.observations.some((o) => o.includes('control supply DARK'))).toBe(true)
+    for (const name of ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission']) {
+      expect(arm.ledger.has(name), name).toBe(false)
+      expect(arm.scopeLayer.has(name), name).toBe(false)
+      expect(arm.keys.has(name), name).toBe(false)
+    }
+    expect(arm.observations.some((o) => o.includes('B-CONTROL row PLACED'))).toBe(false)
+  })
+
+  it('CONTROL supply armed on a leader world (deployer key only): the B-CONTROL rows mount over the REAL team-tool natives, placed through the ONE owner-held ledger and registered at family revision 8 with the provider pairing; the B-INSPECT pair does not move', async () => {
+    const bag: Array<{ args: Record<string, unknown> }> = []
+    const arm = await mountArmWorld({ scope: SCOPE_OK, control: true, controlNatives: controlNativesBuild(bag) })
+    const regs = arm.publish()
+    const armed = regs.filter((r) => r.entry.familyId === 'B-CONTROL' && r.recordIndex !== 85)
+    expect(armed.map((r) => r.name).sort()).toEqual(['team_grant_permission', 'team_request_control', 'team_resolve_control', 'team_revoke_permission'])
+    for (const reg of armed) {
+      expect(reg.entry.adapterRevision, `family revision for ${reg.name} (the full pairing moved it; nothing translates)`).toBe(8)
+      expect(reg.entry.providerIdentity).toBe(PROVIDER_ID)
+      expect(arm.observations.some((o) => o.includes(`B-CONTROL row PLACED ${reg.name}`)), reg.name).toBe(true)
+      expect(arm.ledger.has(reg.name), reg.name).toBe(true)
+      expect(arm.scopeLayer.has(reg.name), reg.name).toBe(true)
+    }
+    expect(arm.observations.some((o) => o.includes('control supply ARMED'))).toBe(true)
+    // the pairing law runs ACROSS families: B-INSPECT keeps its own revision.
+    expect(regs.find((r) => r.name === 'cordis_inspect_list')?.entry.adapterRevision).toBe(7)
+  })
+
+  it('CONTROL supply on a member world (no legal visibility for the Leader-side natives): capture-absent census only for those rows — zero placement, zero registration, visibility never widens past the native the scoped registry answers', async () => {
+    const bag: Array<{ args: Record<string, unknown> }> = []
+    const onlyRequest = controlNativesBuild(bag).filter((def) => def.name === 'team_request_control')
+    expect(onlyRequest).toHaveLength(1)
+    const arm = await mountArmWorld({ scope: SCOPE_OK, control: true, controlNatives: onlyRequest })
+    const regs = arm.publish()
+    expect(arm.observations.some((o) => o.includes('B-CONTROL row PLACED team_request_control'))).toBe(true)
+    for (const name of ['team_resolve_control', 'team_grant_permission', 'team_revoke_permission']) {
+      expect(arm.observations.some((o) => o.includes(`g1-asm:declared ${name}`)), name).toBe(true)
+      expect(arm.ledger.has(name), name).toBe(false)
+      expect(arm.scopeLayer.has(name), name).toBe(false)
+      expect(regs.find((r) => r.name === name), name).toBeUndefined()
+    }
+  })
+
+  it('CONTROL row end to end (assembly leg: 接线未测 pending Host, never 已测试): the governed team_request_control def walks the ONE PA chain — the durable row carries the B-CONTROL revision-8 FULL-PAIRING block at FULL VALUE (request identity + action facts; the omitted optional lane rides reviewed-encoding absent), leader allow, ONE consumption, the captured native entered ONCE', async () => {
+    const bag: Array<{ args: Record<string, unknown> }> = []
+    const arm = await mountArmWorld({ scope: SCOPE_OK, control: true, controlNatives: controlNativesBuild(bag) })
+    arm.publish()
+    const def = arm.scopeLayer.get('team_request_control')
+    expect(def).toBeDefined()
+    const callId = 'toolu-call-arm-83'
+    const running = def!.execute(
+      { rootSessionId: P6T4_ROOT, requestToken: 'tok-arm-83', kind: 'leader-approval', targetInstanceId: 'inst-target', actionName: 'tool-invoke:bash', toolName: 'bash' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol(callId), callId },
+    )
+    const row = await waitRowForCall(callId)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(String(manifest?.callId)).toBe(callId)
+    expect(manifest?.familyId).toBe('B-CONTROL')
+    expect(manifest?.adapterRevision, 'the walk carries the FAMILY revision the pairing moved (8), not the shared 7').toBe(8)
+    expect(manifest?.providerIdentity).toBe(PROVIDER_ID)
+    // THE §5 GAP, CLOSED at full value on the DURABLE row:
+    expect(manifest?.targetManifest).toMatchObject({
+      controlRecord: 'request-control',
+      requestRootSessionId: P6T4_ROOT,
+      requestToken: 'tok-arm-83',
+      requestKind: 'leader-approval',
+      requestTargetInstanceId: 'inst-target',
+      requestActionName: 'tool-invoke:bash',
+      requestToolName: 'bash',
+      requestSummary: 'absent',
+      trustedMemberAgentId: WORKER,
+      trustedSessionHeaderId: HEADER_ID,
+      trustedRealmId: arm.plane.realmId,
+      trustedOwner: P6T4_ROOT,
+      trustedProfileId: 'profile-a5m2-g1',
+    })
+    expect(row.status).toBe('pending')
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as Record<string, unknown>
+    // the captured NATIVE ran ONCE behind its own inner legitimacy (the stub
+    // service answers it; the outer PA never substituted the inner check).
+    expect(bag).toHaveLength(1)
+    expect(String(bag[0]?.args.correlation), 'the request token rides the native as the correlation fact').toBe('tok-arm-83')
+    expect(JSON.stringify(value)).toContain('req-arm-83')
+    const state = await stateNow()
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(1)
   })
 
   it('the block at source level: closed gate and refusal code, B-INSPECT-only supply, the ONE owner-held ledger feeding Guard/registration/attribution, place before the Guard bind, registration after publish, no plane g1 injection, no fabricated topology', () => {
@@ -1685,8 +2200,23 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(block).toContain('SUPPLY-GATED')
     expect(block).toContain('createG1QueryAssembly({')
     expect(block).toContain('g1PureQuerySubset()')
+    // CONTROL supply (root 2026-10-25 LIMITED BUILD ORDER): a CLOSED opt-in
+    // key arms the derived B-CONTROL row set through the SAME assembly, the
+    // SAME owner-held ledger and the SAME after-publish fill; unconfigured is
+    // DARK — the ruling never auto-enables the tools or widens visibility.
+    expect(block).toContain('g1ControlSupplySubset()')
+    expect(block).toContain('g1Cfg.control !== undefined && g1Cfg.control !== true')
+    expect(block).toContain('control supply DARK')
     // one assembly per supplied row; the registry seam answers ONLY this row.
-    expect(block).toContain('name === entry.name ? agentCtx.tools.get(name, agent) : undefined')
+    // ROOT P1: the B-INSPECT pair keeps the LIVE scoped takeover read; the
+    // record-85 row captures ONLY the exact selection instance the claim took
+    // (the raw filter already let the name — a parent-layer same name must
+    // never be captured).
+    expect(block).toContain('entry.recordIndex === 85 ? a5G1Control85Native')
+    expect(block).toContain('agentCtx.tools.get(name, agent))')
+    expect(block).toContain('&& a5G1Control85Native !== undefined')
+    // the exact-capture SAVE happens at the claim site (before this block):
+    expect(src).toContain('a5G1Control85Native = a5G1Claim85.names.length === 0 ? undefined')
     // the todo arm's live binding-facts law, per row, fail closed.
     expect(block).toContain('dispatcher?.surface?.entryOf?.(entry.name)')
     expect(block).toContain('binding-facts-unreadable')
@@ -1705,7 +2235,12 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(feedAt).toBeLessThan(src.indexOf('return a5PlaneValue === null'))
     // root 841 ①: the plane's attribution row for the arm route, fed by the
     // SAME ledger, forwarded at the shared backends union.
-    expect(src).toContain('g1Arm: { isPlaced: (name) => a5G1PlacedByName.has(name) }')
+    expect(src).toContain('g1Arm: a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames }')
+    expect(src).toContain('isPlaced: (name) => a5G1PlacedByName.has(name),')
+    // CONTROL attribution (root 2026-10-25): the plane learns the DERIVED
+    // CONTROL names ONLY beside an armed deployer key — never a wildcard.
+    expect(src).toContain('a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames }')
+    expect(src).toContain('? g1ControlSupplySubset().map((row) => row.name)')
     // no plane g1 row injection in this block; the plane's own route untouched
     // (code-level law: the block's prose may NAME the plane's own seam, it
     // never FORWARDS it).
@@ -1735,7 +2270,38 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     // the assembly module is imported, never restated; the adapter module is
     // never reached directly from this file.
     expect(src).toContain("import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'")
-    expect(src).toContain("import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'")
+    expect(src).toContain("import { g1PureQuerySubset, g1ControlSupplySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'")
+    // ROOT G1 FINAL LIMITED RULING: the production factory is imported and
+    // reachable ONLY through the explicit deployer cfg — `topologyScope`
+    // (closed-grammar triples handed over as the hard boundary, fresh-
+    // intersected with the PUBLIC ctx.cordisInspect directory by the supply
+    // itself) or the signed `trustedTopology = { current }` injection.
+    // DEFAULT OFF: nothing constructed without cfg. The withdrawn MCP
+    // three-source matcher is GONE at code level (identity domains have no
+    // proven crosswalk); no provider/method literal anywhere in the block.
+    expect(src).toContain("import { createG1TrustedTopologySupply } from './governed-families/g1-trusted-topology-supply.mjs'")
+    expect(block).toContain('createG1TrustedTopologySupply({')
+    expect(block).toContain('agentCtx?.cordisInspect')
+    expect(block).toContain('topology-SUPPLIED')
+    expect(block).toContain('topology-supply-ABSENT')
+    // ② the deployer hard boundary: closed cfg entry, refusal-code grammar,
+    // boundary handed over per read WITHOUT any MCP-name/caps/facet
+    // intersection (the withdrawn matcher stays withdrawn, no half of it).
+    expect(block).toContain('g1Cfg.topologyScope')
+    expect(block).toContain("(entry.platform !== 'host' && entry.platform !== 'client')")
+    expect(block).toContain("entry.provider === '*'")
+    expect(block).toContain('authorized: () => Object.freeze(g1ScopeFrozen.map((triple) => Object.freeze({ ...triple })))')
+    expect(block).not.toContain('configuredMcpServers(config)')
+    expect(block).not.toContain('filterMcpServers(configuredNames')
+    expect(block).not.toMatch(/mcpViews\[/)
+    // ③ default OFF: the no-cfg arm neither constructs nor reads the face.
+    expect(block).toContain('default OFF per root topology14575')
+    // ① the signed integrator seam is kept, unchanged, and WINS (the scope
+    // beside it stays INERT — explicit trusted injection over derived).
+    expect(block).toContain('g1Cfg.trustedTopology')
+    expect(block).toContain('topologyScope-INERT')
+    expect(block).not.toContain('dsh_compute')
+    expect(block).not.toContain('compute_health')
     expect(src).not.toContain("from './governed-families/g1-surface-adapters.mjs'")
     // the plane's own block (root ①): the arm attribution is closed-keyed
     // (frozen pure-query spellings) AND ledger-gated (actually placed) —
@@ -1743,7 +2309,8 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     const planeSrc = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
     expect(planeSrc).toContain('input.backends?.g1Arm')
     expect(planeSrc).toContain("code: 'G1_ARM_INJECT_INVALID'")
-    expect(planeSrc).toContain('g1ArmInject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)')
+    expect(planeSrc).toContain('if (g1ArmInject !== null')
+    expect(planeSrc).toContain('(g1ArmInject.names !== undefined && g1ArmInject.names.includes(spelling))')
     expect(planeSrc).toContain('g1ArmInject.isPlaced(spelling)')
   })
 })
