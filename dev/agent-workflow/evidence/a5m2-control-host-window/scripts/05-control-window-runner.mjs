@@ -516,6 +516,11 @@ async function main() {
   if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (pinned 3184/3499; never kill foreign)`)
   if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
   for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), RUN_DIR]) mkdirSync(p, { recursive: true })
+if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OUTER supervisor (A's
+    // pointer law reused verbatim: no globbing; written BEFORE boot so a boot
+    // failure is still auditable by the wrapper's budget check)
+    try { writeFileSync(process.env.A5M2_CONTROL_HOME_POINTER, `${HOME}\n`) } catch { /* monitor hint best-effort; window verdict never depends on it */ }
+  }
   writeFileSync(join(HOME, 'a5m2-ctl-hw-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, runner: '05-control-window-runner.mjs', composedSha: COMPOSED_SHA, packSha256: EXPECTED_PACK_SHA, stamp: RUN_STAMP }, null, 2))
   try {
     const selfSha = execFileSync('git', ['-C', ROOT_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
