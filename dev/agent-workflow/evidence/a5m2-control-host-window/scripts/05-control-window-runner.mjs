@@ -21,7 +21,7 @@
  *              surface carries no resolver)
  *
  * Outer-layer arrangement per the root's FINAL B ruling, carried onto the
- * standard pack 694b0c0eb8 (4a26ac9a descendant; vocabulary registration
+ * hand-off fix pack e58349dd (694b descendant; vocabulary registration
  * 0c15d1448c: 83/84/87/88 ruleable on the 85 invocation-only
  * pattern; envelope + native resolver identity UNTOUCHED): per-role exact
  * kind:any SINGLE-TOOL allow rules (projecting exact realm|tool:name, NOT
@@ -57,11 +57,11 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '694b0c0eb8d38511ba3322e786c4daefcc378628' // standard pack (int, parent a27f1a46, 4a26ac9a DESCENDANT; face = 4 dist .mjs fixing the governed-spawn-mount boot ORDER only — the old window's failure stays FAILED, not recomputed away)
-const EXPECTED_PACK_SHA = 'sha256:d703affb60f4945373ca9a2a2605bf646e3989375a3eb28b5cb16976157832e7' // f86 receipt, recomputed by B read-only (4,346,804 B)
-const EXPECTED_LOCK_SHA = 'sha256:b76e19639f3f9d39a031502c14e80dc47240dd6db95445a9c84427e1f5529c25' // f86 receipt, MEASURED value (letter's first variant was a typo)
+const COMPOSED_SHA = 'e58349ddbe39254db1972083dcdce2371a009e77' // CONTROL hand-off fix pack (694b DESCENDANT; face = agent-bindings one file, the 84 arm-vs-governed-native placement fix; the two earlier window failures stay FAILED, not recomputed away)
+const EXPECTED_PACK_SHA = 'sha256:0d1664100abf411bccb2255bd2d6b6b89a304798b7a09a1c240d2f137bee01b5' // f86 receipt, recomputed by B read-only (4,347,361 B)
+const EXPECTED_LOCK_SHA = 'sha256:0e8848a555d20c5aafd7ef3238530f337cce7853c16b1e3be61e8132220eb087' // f86 receipt, recomputed by B read-only (integrity vs new tgz MATCH)
 const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
-const EXPECTED_TGZ_DIR_PREFIX = 'out-694b0c0e-'
+const EXPECTED_TGZ_DIR_PREFIX = 'out-e58349dd-'
 const PACK_BYTES_MAX = 8_000_000
 const HOST_PORT = 3184 // root-pinned for B
 const MOCK_PORT = 3499 // root-pinned for B
@@ -70,7 +70,7 @@ const BP_ID = 'team.a5m2-ctl-hw'
 const WINDOW_GO = process.env.A5M2_CONTROL_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_CONTROL_DRY === '1'
 const INSTALL_DIR = process.env.A5M2_CONTROL_INSTALL_DIR
-  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-d703affb' // f86 frozen-offline install (RC=0, down 0); absence fail-closes rc3
+  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0d166410' // f86 frozen-offline install (RC=0, down 0); absence fail-closes rc3
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
