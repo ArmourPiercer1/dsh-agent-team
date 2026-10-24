@@ -268,6 +268,7 @@ export declare function g2ResolveBrowserPublicEntries(entryPaths?: {
 }): Promise<{
     ok: true;
     entries: Record<string, unknown>;
+    provenance: Record<string, unknown>;
 } | {
     ok: false;
     code: string;

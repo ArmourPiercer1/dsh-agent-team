@@ -1274,7 +1274,7 @@ export const inject = ['agents', 'storageDomain', 'sessions', 'sessionPersistenc
  */
 export async function g2ResolveBrowserPublicEntries(
   entryPaths?: { launchEntry?: string; workerEntry?: string },
-): Promise<{ ok: true; entries: Record<string, unknown> } | { ok: false; code: string; message: string }> {
+): Promise<{ ok: true; entries: Record<string, unknown>; provenance: Record<string, unknown> } | { ok: false; code: string; message: string }> {
   const launchSpecifier: string = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/launch.ts'
   const workerSpecifier: string = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/worker-client.ts'
   const launchTarget = typeof entryPaths?.launchEntry === 'string' && entryPaths.launchEntry.length > 0 ? entryPaths.launchEntry : launchSpecifier
@@ -1285,7 +1285,27 @@ export async function g2ResolveBrowserPublicEntries(
     if (typeof launchMod.launchChromium !== 'function' || typeof workerMod.openBrowserWorker !== 'function') {
       return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry modules resolved but answered no launchChromium/openBrowserWorker function (${launchTarget} / ${workerTarget}) — the public faces at this pin are missing; minting nothing, invoking nothing` }
     }
-    return { ok: true, entries: Object.freeze({ launchChromium: launchMod.launchChromium, openBrowserWorker: workerMod.openBrowserWorker }) }
+    // DEPLOYMENT-FACT DISCIPLINE (c): the record names the ACTUAL source
+    // the pair came from — the targets used AND, when the runtime answers
+    // it, the resolved URL import.meta.resolve gives FOR THIS INSTALL
+    // GRAPH (a bare specifier resolves in the ACTUAL host.ts install
+    // graph, NOT automatically at the fixed-639 root — (a): the Host-root
+    // probe evidenced only that environment). Recorded, never asserted.
+    const resolveOf = (t: string): string => {
+      try { return import.meta.resolve(t) } catch { return '<unresolved-by-import.meta.resolve>' }
+    }
+    return {
+      ok: true,
+      entries: Object.freeze({ launchChromium: launchMod.launchChromium, openBrowserWorker: workerMod.openBrowserWorker }),
+      provenance: Object.freeze({
+        launchTarget,
+        workerTarget,
+        launchResolved: resolveOf(launchTarget),
+        workerResolved: resolveOf(workerTarget),
+        via: launchTarget === launchSpecifier && workerTarget === workerSpecifier ? 'public-subpath-specifiers' : 'approved-entryPaths',
+        note: 'RECORDED actual source for this pair; shape is NOT 639 identity verification — downstream acceptance reads this record, never re-guesses',
+      }),
+    }
   } catch (error) {
     return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry pair (${launchTarget} / ${workerTarget}) is unresolvable here: ${String((error as { message?: unknown })?.message ?? error).slice(0, 180)} — USER-CHOICE plugin supply absent (source-639 public './src/*' route expected); typed refusal, no fallback, nothing launched` }
   }
@@ -2863,6 +2883,11 @@ async function buildG2TeamSupply(
       return { ok: false, code: built.code, message: built.message }
     }
     out.entries = { ...(out.entries as Record<string, unknown> | undefined), ...built.entries }
+    // SINGLE SOURCE (root final card): the producer-resolved pair + its
+    // RECORDED provenance are the ONLY browser pair the assembly may
+    // carry; the loader consumes input.entries verbatim and never lets a
+    // loader-pinned pair out-vote it.
+    out.entriesProvenance = built.provenance
   }
   return await mountMod.createG2TeamAssemblySupply(out)
 }
