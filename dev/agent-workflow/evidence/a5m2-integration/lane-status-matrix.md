@@ -211,3 +211,9 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 ## 01:4x G3A760 独审回归修复（中心块）
 - **确定回归**：G3A 合入的 backends union 带 a5G3TerminalInject **guard** 漏 **条件 spread**（:4458–4482）→ plane :1402 永读 undefined → :5421 后 terminal 会话全 mount-refused。**中心修复**=补 spread 一行（dated 注）+ dist 重生 cmp 等值 + **transport 回归钉两腿**（bindings 源含精确 spread 行 / plane 读 exactly backends?.terminal；a5p7 pinned-edge 先例形——createAgentBindings 需 live Host ctx，真启用腿属 live kit，接线未测维持）。g3 18 + family-rules 28 = 46/46。
 - 9c `c918c4944` leader-members 正文腿入账；e78 r45 `d5edd944d`；新分派：8722=G5 mount 臂（plane 有面 bindings 零挂载实测）、cf8=Jobs/表离线验证 driver；44ece=G1 topologyScope 默认拒绝供给（根G1最终裁决形）——四 slot 全活，各树唯一 owner，无新树/安装。
+
+## 01:5x 批（静态源签/CI/退役/收据）
+- G3A `540ac142c` 漏 spread **静态源签闭**（root 01:52；NOT_RUN 执行腿口径不变）；PR362 `9d8e24f9` 三 workflow 绿 census 40048544434；E1 CI 尾修毕。
+- 退役三树 01:53 现确认 RETIRED（HEAD/porcelain/15min 零写入实测）；wire-merge remove RC0 生效、+760MB 归还入账；余三候根裁。
+- e78 r45 `d5edd944d`/r46 `40d0f3b525fef7ddf411c99f00859d9a7badda03` 入账：(a) g2Web 经 supply 直通入 plane.backends 同面完成（g2WebEnabled 门+真实描述字节+typed refuse）；(b) 具名依赖=表无 B-WEL 条目→下一刀 B-WEB 闭合子集（B-BROWSER 先例同法）+纵切。**合入未做**（lane 基老、大 re-anchor，中心专项窗口）。
+- EB0 有界清单=本批 eb0-migration-inventory.md（唯一消费入口切换清单/owner+实际基线+Freeze；正式切换候 root 窗口）。
