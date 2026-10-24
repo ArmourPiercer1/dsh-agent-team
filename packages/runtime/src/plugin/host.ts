@@ -2505,7 +2505,23 @@ async function buildG2TeamSupply(
         HttpFetchProvider: new (limits: Record<string, unknown>) => unknown
       }
       const resolved = webMod.Config.parse(webFixedCfg.config ?? {})
-      // the host's OWN assertions (apply :82-85) run INSIDE its schema;
+      // root f792-review ①: the exported Config carries types/defaults
+      // ONLY — the POSITIVE-FINITE / timer-range / NON-NEGATIVE-INTEGER
+      // laws live in the host's apply() asserts (:82-85), NOT in the
+      // schema. Equivalent checks run HERE before construction (never
+      // claimed otherwise):
+      const posFin = (k: string) => { const v = resolved[k]; if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) return `webFixedProvider.config.${k} must be a positive finite number (the host's apply-law)`; return null }
+      for (const k of ['maxResponseBytes', 'maxBodyChars', 'timeoutMs']) {
+        const bad = posFin(k)
+        if (bad !== null) return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: bad }
+      }
+      if (typeof resolved.timeoutMs === 'number' && resolved.timeoutMs > 2_147_483_647) {
+        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webFixedProvider.config.timeoutMs exceeds the Node timer range (the host assertTimeoutMs law)' }
+      }
+      const mr = resolved.maxRedirects
+      if (typeof mr !== 'number' || !Number.isInteger(mr) || mr < 0) {
+        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webFixedProvider.config.maxRedirects must be a non-negative integer (the host assertNonNegativeInteger law)' }
+      }
       // mapping verbatim (index.ts:86-92):
       const limits: Record<string, unknown> = {
         maxResponseBytes: resolved.maxResponseBytes,

@@ -48,71 +48,14 @@ const refuse = (code, message) => {
  * the returned objects capture it by construction (no per-call re-
  * selection point exists here at all).
  */
-export function createG2TeamWebProviders ({ providerId, transport, searchTransport } = {}) {
-  if (typeof providerId !== 'string' || providerId.length === 0) {
-    refuse(A5_G2_WEB_CODES.TRANSPORT_ABSENT, 'providerId (the id a per-Team WebRuntimeConfig will pin) is REQUIRED')
-  }
-  if (transport === null || typeof transport !== 'object' || typeof transport.fetch !== 'function') {
-    refuse(A5_G2_WEB_CODES.TRANSPORT_ABSENT, 'transport must answer the exported WebFetchProvider shape (fetch(request)) — the public HttpFetchProvider instance built by the owning assembly; no fallback transport is ever minted')
-  }
-  const fetchProvider = Object.freeze({
-    id: providerId,
-    available: () => (typeof transport.available === 'function' ? transport.available() === true : true),
-    fetch: (request) => transport.fetch(request),
-  })
-  const searchProvider = searchTransport === null || searchTransport === undefined
-    ? null
-    : Object.freeze({
-        id: searchTransport.id ?? `${providerId}-search`,
-        available: () => (typeof searchTransport.available === 'function' ? searchTransport.available() !== false : true),
-        search: (request) => searchTransport.search(request),
-      })
-  return Object.freeze({ fetchProvider, searchProvider })
-}
-
-/**
- * The registration block, disposer-first: registers onto the web service
- * the CALLER owns (a Team-scoped ctx's `web`), and answers ONE disposer
- * that unwinds exactly what was registered (the host API itself returns
- * disposers — index.ts:103/114). A service without the public register
- * surface refuses typed; nothing half-registers.
- */
-export function registerG2TeamWebProviders ({ web, fetchProvider, searchProvider } = {}) {
-  if (web === null || typeof web !== 'object' || typeof web.registerFetchProvider !== 'function') {
-    refuse(A5_G2_WEB_CODES.SERVICE_ABSENT, 'the caller-owned web service must expose the PUBLIC registerFetchProvider(provider): () => void surface (web/src/index.ts:114 @639ed01539) — absent, nothing registers, no global fallback is touched')
-  }
-  const disposers = []
-  const unwind = () => { for (const dispose of disposers.splice(0).reverse()) dispose() }
-  try {
-    disposers.push(web.registerFetchProvider(fetchProvider))
-    if (searchProvider !== null && searchProvider !== undefined) {
-      if (typeof web.registerSearchProvider !== 'function') {
-        throw new TypeError('the service answers no PUBLIC registerSearchProvider — a search provider may not be half-declared')
-      }
-      disposers.push(web.registerSearchProvider(searchProvider))
-    }
-  } catch (error) {
-    // root 01:2x: a search-side rejection (missing API OR a THROWING
-    // register) rolls the fetch registration back — never half-mounted.
-    try { unwind() } catch { /* the unwind failure is reported with the cause below, never silently */ }
-    throw Object.assign(new Error(`${A5_G2_WEB_CODES.SERVICE_ABSENT}: registration refused and ROLLED BACK: ${String(error?.message ?? error)}`), { code: A5_G2_WEB_CODES.SERVICE_ABSENT })
-  }
-  let done = false
-  return Object.freeze({
-    ids: Object.freeze([fetchProvider.id, ...(searchProvider === null || searchProvider === undefined ? [] : [searchProvider.id])]),
-    dispose: () => {
-      if (done) return false
-      done = true
-      const failures = []
-      for (const dispose of disposers.splice(0).reverse()) {
-        try { dispose() } catch (error) { failures.push(String(error?.message ?? error)) }
-      }
-      // dispose failures are NEVER swallowed behind a `true`.
-      if (failures.length > 0) throw new Error(`${A5_G2_WEB_CODES.SERVICE_ABSENT}: disposer failed: ${failures.join(' | ')}`)
-      return true
-    },
-  })
-}
+/* ROOT f792-review ③④: the earlier createG2TeamWebProviders/
+ * registerG2TeamWebProviders shared-registration route is REMOVED — it
+ * had no consumer on this unreleased branch (production rides the fixed
+ * face below, never shared-WebRuntime registration), its method shapes
+ * were dynamic/signal-losing, and its rollback message could claim
+ * ROLLED BACK over a swallowed cleanup error. Deleting the idle route is
+ * the root-sanctioned cheapest fix: ONE fixed face remains, no idle
+ * framework kept, no misleading proof left standing. */
 
 /**
  * THE fixed capture+bind gateway face (root 01:2x): the provider instance
