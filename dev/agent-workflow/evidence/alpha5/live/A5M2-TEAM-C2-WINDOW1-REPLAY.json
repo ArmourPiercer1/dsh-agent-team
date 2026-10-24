@@ -1,0 +1,79 @@
+{
+  "mode": "window-replay",
+  "booted": false,
+  "hostGated": [
+    "C-BOOT",
+    "C-READINESS-BARRIER",
+    "C-CREATE-ONCE",
+    "C-LEADER-MEMBERS",
+    "teardown"
+  ],
+  "legs": [
+    {
+      "leg": "C-FRESH-HOME-PATH",
+      "ok": true,
+      "detail": "tests/homes/a5m2-team-c2-h1-<stamp> port=3180"
+    },
+    {
+      "leg": "C-FRESH-HOME-STAMP",
+      "ok": true,
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T045930730Z"
+    },
+    {
+      "leg": "C-WINDOW-CEILINGS",
+      "ok": true,
+      "detail": "wall=300000ms ceiling=67108864B"
+    },
+    {
+      "leg": "C-MOUNT-CANDIDATE",
+      "ok": true,
+      "detail": "dsh-agent-team@0.1.1-alpha.2 exports=.,./host,./spill-local,./client,./package.json adapter_leg_readable=true"
+    },
+    {
+      "leg": "C-BLUEPRINT-SOURCE-GATE",
+      "ok": true,
+      "detail": "supply=true gate_status=ok id=team.a5nx-main revision=1"
+    },
+    {
+      "leg": "C-IDENTITY-PREFLIGHT",
+      "ok": true,
+      "detail": "commit=699cc4fb7 sha256=c8dd3f07b precheck=false sourceSurfaceDisclosed=2"
+    },
+    {
+      "leg": "C-ROW-ASSEMBLED",
+      "ok": true,
+      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T045930730Z realm=a5m2-team-c2-h1--4T045930730Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T045930730Z"
+    },
+    {
+      "leg": "C-MOUNT-VALIDATE",
+      "ok": true,
+      "detail": "no A-TODO plane gates, no permissionPolicy key, world-scoped fs root, glue/seam from candidateMount"
+    },
+    {
+      "leg": "C-PROFILE-LAYER-RENDERED",
+      "ok": true,
+      "detail": "34 lines; blueprintSource inlined per the r17 mechanism; written only inside the window"
+    },
+    {
+      "leg": "C-PERMISSION-SOURCE",
+      "ok": true,
+      "detail": "row omits it: glue supplies boundTemplate.capabilities?.permissions (agent-bindings.mjs:2310); plane refuses NOT_GOVERNED without it (team-tool-plane.mjs:886-887); blueprint lanes keep real approvals, no allow-all"
+    },
+    {
+      "leg": "C-LEADER-BINDING",
+      "ok": true,
+      "detail": "derived at runtime from the real create answer (leader IS the root session): agent-bindings.mjs:4744, :7612"
+    },
+    {
+      "leg": "C-MOCK-DECIDE",
+      "ok": true,
+      "detail": "local scripted mock (localhost): exactly one team_list_members call then done; no external/paid LLM"
+    },
+    {
+      "leg": "C-SOURCE-SURFACE-DISCLOSED",
+      "ok": true,
+      "detail": "reported, never swallowed: product HEAD 45cce1e4af78 is not an accepted head (pin ced9e7dbb63b / tip 5062988f0626) | product package has TRACKED modifications — never write it, report it"
+    }
+  ],
+  "ok": true
+}

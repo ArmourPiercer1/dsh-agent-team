@@ -499,7 +499,7 @@ export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, se
   const marker = `A5M2C2-MEMBERS-${runStamp}`
   const directive = [
     `Team operation marker: ${marker}`,
-    'Call the team tool `team_list_members` exactly once now and report the member instance ids verbatim.',
+    `Call the team tool \`team_list_members\` exactly once now and report the member instance ids verbatim. ${MEMBERS_MARKER}`,
   ].join('\n')
   const prompt = await apiPrompt(origin, cookie, sessionId, directive, `bteam-members-${runStamp}`)
   const promptOutcome = remoteOutcome(prompt)
@@ -727,6 +727,100 @@ export function gateBlueprintSource (source) {
   return { ok, report, blueprintId: report?.identity?.blueprintId, revision: report?.identity?.revision }
 }
 
+// ── B-TEAM rev-2 row + profile-mount body (assembled IN-KIT, no new harness) ──
+// Field sources, all cited: center's six answers + the packed artifact. The row
+// carries NO permissionPolicy (the glue supplies it from the blueprint's own
+// template lanes: live/agent-bindings.mjs:2310
+// `const permissionPolicy = boundTemplate.capabilities?.permissions`, plane
+// refuses NOT_GOVERNED without it: live/team-tool-plane.mjs:886-887) and NO
+// todoEnabled/writeEnabled/imageEnabled (live/team-tool-plane.mjs:953-965 —
+// A-TODO gates that would mask native tools). Real approvals stay in the
+// blueprint lanes: no allow-all anywhere in this row.
+export const ATODO_PLANE_KEYS = Object.freeze(['todoEnabled', 'writeEnabled', 'imageEnabled', 'todoInject', 'permissionPolicy'])
+
+export function bteamRowConfig ({ stamp, worldAbs, blueprintText, mount }) {
+  const realmId = `a5m2-team-c2-h1--${String(stamp).slice(-12)}`
+  return {
+    rootSessionId: `session-a5m2team-c2h1-boot-${stamp}`,
+    bootPhase: 'create',
+    blueprintSource: blueprintText,
+    blueprintDir: join(worldAbs, 'blueprints'),
+    seedMembers: [],
+    generation: 1,
+    staticModel: { provider: 'deepseek-official', model: 'a5m2team-c2h1-gate-model' },
+    deniedSelection: null,
+    mcpServers: [],
+    mcpServer: null,
+    environmentFacts: [],
+    externalPolicyFacts: { hard: {}, capabilityExists: {} },
+    glueUrl: mount.glueUrl,
+    seamUrl: mount.seamUrl,
+    teamToolPlane: {
+      realmId,
+      fsInstance: { fs: 'a5m2-team-c2-h1-governed', rootDir: worldAbs, realmId, kind: 'absolute-path' },
+    },
+  }
+}
+
+/** r17 mechanism: `- insert:` with the row's id/name/config, config WHOLESALE. */
+export function renderProfileMountLayer (row) {
+  const lines = [
+    '# A5M2 B-TEAM window-1 mount layer: production row resolved from the frozen',
+    '# install-c8dd3f07b package via its OWN exports["./host"] leg. B-TEAM rev-2 face:',
+    '# no A-TODO plane gates, no permissionPolicy key (the glue fills it from the',
+    '# blueprint lanes), no allow-all.',
+    '- insert:',
+    '    - id: "dsh-agent-team"',
+    `      name: ${JSON.stringify(row.__rowName)}`,
+    '      config:',
+  ]
+  const emit = (key, value, indent) => {
+    const pad = ' '.repeat(indent)
+    if (Array.isArray(value)) {
+      if (value.length === 0) lines.push(`${pad}${key}: []`)
+      else { lines.push(`${pad}${key}:`); for (const item of value) lines.push(`${pad}  - ${JSON.stringify(item)}`) }
+    } else if (value !== null && typeof value === 'object') {
+      const keys = Object.keys(value)
+      if (keys.length === 0) lines.push(`${pad}${key}: {}`)
+      else { lines.push(`${pad}${key}:`); for (const k of keys) emit(k, value[k], indent + 2) }
+    } else lines.push(`${pad}${key}: ${JSON.stringify(value)}`)
+  }
+  for (const [k, v] of Object.entries(row)) if (!k.startsWith('__')) emit(k, v, 8)
+  return `${lines.join('\n')}\n`
+}
+
+export function validateMountLayer (row, { worldAbs, mount }) {
+  const problems = []
+  const plane = row.teamToolPlane ?? {}
+  for (const key of ATODO_PLANE_KEYS) if (key in row || key in plane) problems.push(`forbidden key on the B-TEAM face: ${key}`)
+  if (typeof plane.realmId !== 'string' || plane.realmId === '') problems.push('plane.realmId must be a non-empty string (team-tool-plane.mjs:889-890)')
+  if (plane.fsInstance?.realmId !== plane.realmId) problems.push('fsInstance.realmId must equal plane.realmId (one realm, consistent)')
+  if (plane.fsInstance?.rootDir !== worldAbs) problems.push('fsInstance.rootDir must be THIS window HOME and nothing else')
+  if (!String(plane.fsInstance?.rootDir ?? '').startsWith(join(REPO, 'tests/homes/'))) problems.push('the world must live inside the workspace (TEST_METHODS)')
+  if (!Array.isArray(row.seedMembers) || row.seedMembers.length !== 0) problems.push('window-1 seeds no members')
+  if (typeof row.blueprintSource !== 'string' || row.blueprintSource.length === 0) problems.push('blueprintSource must be a non-empty string (host.js:263-264)')
+  if (row.bootPhase !== 'create') problems.push('bootPhase must be create (host.js:259-260)')
+  for (const key of ['glueUrl', 'seamUrl']) if (row[key] !== mount?.[key]) problems.push(`${key} must come from candidateMount() of the candidate face`)
+  if (row.staticModel?.provider !== 'deepseek-official') problems.push('staticModel must be the local scripted mock face')
+  if (renderProfileMountLayer(row).includes('todoEnabled')) problems.push('an A-TODO plane gate leaked into the rendered layer')
+  return { ok: problems.length === 0, problems }
+}
+
+/** Scripted leader decide (local mock, localhost): exactly one call, then done. */
+export function makeLeaderMembersDecide ({ marker, doneText }) {
+  const toolCall = (name, args) => ({ kind: 'tool-call', toolCalls: [{ id: `call-c2h1-${Math.random().toString(36).slice(2, 10)}`, name, arguments: args }] })
+  const textOf = (m) => typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? m.content.map((b) => (typeof b?.text === 'string' ? b.text : '')).join('') : ''
+  return ({ req }) => {
+    const msgs = Array.isArray(req?.messages) ? req.messages : []
+    const first = textOf(msgs[0] ?? {})
+    if (first.startsWith('Create a concise title') || first.startsWith('Generate the session title')) return { kind: 'text', content: 'A5M2 C2 H1 window-1' }
+    const lastUser = msgs.filter((m) => m?.role === 'user').map(textOf).filter((t) => t.length > 0).pop() ?? ''
+    const toolTurns = msgs.filter((m) => m?.role === 'tool').length
+    if (!lastUser.includes(marker)) return { kind: 'text', content: 'A5M2_C2_H1_IDLE' }
+    return toolTurns === 0 ? toolCall('team_list_members', {}) : { kind: 'text', content: doneText }
+  }
+}
+
 /** A FRESH stamped home per window (root card [1]); the path must not exist. */
 export function freshWorld (stamp, prefix = ROW_CONFIG.worldPrefix) {
   if (!/^[0-9TZ-]{8,}$/.test(String(stamp))) throw new Error(`run stamp is not a usable stamp: ${String(stamp)}`)
@@ -795,6 +889,9 @@ export function identityPreflight ({ productCommit, packageSha256, packageTgz, m
  * Window-1 entry (root's concentrated card). Boot path only, cleanup PROVEN,
  * overall wall + per-step first-error-stop. Requires the window GO env.
  */
+const MOCK_PORTS = Object.freeze([3497, 3498])
+const MEMBERS_MARKER = 'A5M2C2H1_MEMBERS'
+const MEMBERS_DONE = 'A5M2C2H1_MEMBERS_DONE'
 const worldBytes = (path) => {
   if (!existsSync(path)) return 0
   const probe = spawnSync('du', ['-sb', path], { encoding: 'utf8' })
@@ -810,6 +907,7 @@ export async function runTeamC2 ({
   if (go !== '1') throw new Error('A5M2_TEAM_C2_BOOT_GO is not set: boot is a window decision, this driver never boots by default')
   const trace = []
   const rec = (leg, ok, detail) => { trace.push({ leg, ok: ok === true, detail }); return ok === true }
+  let mock; let mockPort
   const homeAbs = join(REPO, world)
   if (existsSync(homeAbs)) { rec('C-FRESH-HOME', false, `${world} already exists — a world is never reused`); return { trace, ok: false } }
   rec('C-FRESH-HOME', true, world)
@@ -831,6 +929,26 @@ export async function runTeamC2 ({
     rec('C-MOUNT-CANDIDATE', true, `${mount.name}@${mount.version} row=…/${mount.rowName.slice(mount.rowName.lastIndexOf('/') + 1)} exports=${mount.exports.join(',')}`)
     if (await portIsFree(port) !== true) { rec('C-PORT-FREE', false, `port ${String(port)} busy before boot`); return { trace, ok: false } }
     rec('C-PORT-FREE', true, `port=${String(port)} probe refused a connect`)
+    // The profile-mount body: THIS window's HOME is created here (fresh law), the
+    // mount layer is written at the public seam, then the host boots it.
+    mkdirSync(join(homeAbs, 'blueprints'), { recursive: true })
+    mkdirSync(join(homeAbs, 'profiles', 'web'), { recursive: true })
+    const row = { ...bteamRowConfig({ stamp: live?.runStamp ?? String(Date.now()), worldAbs: homeAbs, blueprintText: blueprintSource, mount }), __rowName: mount.rowName }
+    const shape = validateMountLayer(row, { worldAbs: homeAbs, mount })
+    rec('C-MOUNT-VALIDATE', shape.ok, shape.ok ? 'B-TEAM rev-2 face: no A-TODO gates, no permissionPolicy key, world-scoped fs root' : shape.problems.join('; '))
+    if (!shape.ok) return { trace, ok: false }
+    writeFileSync(instance.patchFile, renderProfileMountLayer(row))
+    rec('C-PROFILE-LAYER-WRITTEN', existsSync(instance.patchFile), instance.patchFile)
+    // Local scripted mock ONLY (localhost, non-secret dummy key): the Leader's
+    // single scripted call comes from makeLeaderMembersDecide, never an external
+    // or paid model. Public seam, same as the already-run real-Host kit.
+    for (const candidate of MOCK_PORTS) if (await portIsFree(candidate)) { mockPort = candidate; break }
+    if (mockPort === undefined) { rec('C-MOCK-MODEL', false, `no mock port free in ${MOCK_PORTS.join('/')}`); return { trace, ok: false } }
+    const { startMockModel } = await import(new URL(`file://${join(REPO, 'packages/tools/harness/mock-deepseek.mjs')}`).href)
+    mock = await startMockModel({ port: mockPort, decide: makeLeaderMembersDecide({ marker: MEMBERS_MARKER, doneText: MEMBERS_DONE }), log: () => {} })
+    process.env.DEEPSEEK_BASE_URL = `http://127.0.0.1:${String(mockPort)}`
+    process.env.DEEPSEEK_API_KEY = 'a5m2-c2-h1-non-secret-dummy'
+    rec('C-MOCK-MODEL', true, `127.0.0.1:${String(mockPort)} scripted, exactly-one-call decide`)
     const url = await instance.start({ timeoutMs: within(120_000) })
     const match = BOOT_MARKER.exec(String(readFileSync(instance.logPath, 'utf8'))) ?? BOOT_MARKER.exec(String(url))
     if (match === null) { rec('C-BOOT', false, 'no launch line parsed'); return { trace, ok: false } }
@@ -871,7 +989,12 @@ export async function runTeamC2 ({
     } else {
       rec('C-OPTIONAL-PROBES', true, 'NOT RUN by window-1 scope (root card [1]): initialize + the target query only')
     }
-    const leaderSession = live.leaderSessionId ?? collectStrings(root.createValue).find((value) => value.startsWith('session-'))
+    // Leader binding DERIVED, never hard-filled: the packed glue resolves the
+    // leader as the team ROOT session (live/agent-bindings.mjs:4744
+    // `role: sessionId === String(teamRoot) ? 'leader' : 'member'`; :7612 "the
+    // leader IS the root session"), so the create answer's own root session id is
+    // this window's leader session.
+    const leaderSession = live.leaderSessionId ?? root.rootSessionId
     if (leaderSession === undefined) { rec('C-LEADER-MEMBERS', false, 'no leader session derivable from the create answer and none passed with --leader-session: the members case is NOT attempted (never faked)'); return { trace, ok: false, root } }
     const members = await runLeaderMembersCase({ origin, cookie, home: homeAbs, runStamp: live.runStamp, sessionId: leaderSession, expectContains: live.expectContains, budgetMs: within(90_000) })
     rec('C-LEADER-MEMBERS', members.ok, `same-call pairs=${String(members.pairCount)} outcomes=${JSON.stringify(members.outcomeCounts)} missing=${members.missing.join(',') || 'none'}`)
@@ -883,15 +1006,17 @@ export async function runTeamC2 ({
   // [4] teardown truth: stop OUR child, wait for close, then a REAL port probe
   // and the world ceiling. An external signal can never make this narrate green.
   await instance.stop()
+  if (mock !== undefined) { try { await mock.stop?.() ?? mock.close?.() } catch { /* reported below by the port probe */ } }
   let closed = false
+  const mockFree = mockPort === undefined || await portIsFree(mockPort)
   for (let waited = 0; waited < 15_000 && closed !== true; waited += 500) { closed = await portIsFree(port); if (closed !== true) await new Promise((r) => setTimeout(r, 500)) }
   const free = await portIsFree(port)
   const used = worldBytes(homeAbs)
   const withinCeiling = used <= worldCeilingBytes
-  const teardownOk = closed === true && free === true && withinCeiling
+  const teardownOk = closed === true && free === true && withinCeiling && mockFree === true
   rec('teardown', teardownOk, `waitClose=${String(closed)} portFree=${String(free)} worldBytes=${String(used)}/${String(worldCeilingBytes)}`)
   outcome.ok = outcome.ok === true && teardownOk
-  outcome.teardown = { waitClose: closed, portFree: free, worldBytes: used, worldCeilingBytes }
+  outcome.teardown = { waitClose: closed, portFree: free, mockPort, mockFree, worldBytes: used, worldCeilingBytes }
   return outcome
 }
 
@@ -910,6 +1035,21 @@ export function windowReplay ({ productCommit, packageSha256, packageTgz, instal
   run('C-BLUEPRINT-SOURCE-GATE', { ok: supply.ok === true && gate.ok === true, detail: `supply=${String(supply.ok)} gate_status=${String(gate.report?.status)} id=${String(gate.blueprintId)} revision=${String(gate.revision)}` })
   const pre = identityPreflight({ productCommit, packageSha256, packageTgz, mount })
   run('C-IDENTITY-PREFLIGHT', { ok: pre.ok, detail: pre.ok ? `commit=${productCommit.slice(0, 9)} sha256=${packageSha256.slice(0, 9)} precheck=${String(pre.precheckOk)} sourceSurfaceDisclosed=${String(pre.sourceSurfaceDisclosed.length)}` : pre.problems.join('; ') })
+  const worldAbs = join(REPO, freshWorld(stamp))
+  const mountOk = mount.ok === true ? mount : { ok: false, glueUrl: '', seamUrl: '', rowName: '' }
+  const supplyOk = supply.ok === true ? supply : { ok: false, source: '' }
+  const row = { ...bteamRowConfig({ stamp, worldAbs, blueprintText: supplyOk.source ?? '', mount: mountOk }), __rowName: mountOk.rowName ?? '' }
+  run('C-ROW-ASSEMBLED', { ok: row.bootPhase === 'create' && row.teamToolPlane.fsInstance.rootDir === worldAbs, detail: `root=${row.rootSessionId} realm=${row.teamToolPlane.realmId} fsRoot=${row.teamToolPlane.fsInstance.rootDir}` })
+  const shape = validateMountLayer(row, { worldAbs, mount: mountOk })
+  run('C-MOUNT-VALIDATE', { ok: shape.ok, detail: shape.ok ? 'no A-TODO plane gates, no permissionPolicy key, world-scoped fs root, glue/seam from candidateMount' : shape.problems.join('; ') })
+  const layer = renderProfileMountLayer(row)
+  run('C-PROFILE-LAYER-RENDERED', { ok: layer.includes('- insert:') && layer.includes('      config:') && !layer.includes('todoEnabled') && layer.includes('blueprintSource:'), detail: `${String(layer.split('\n').length)} lines; blueprintSource inlined per the r17 mechanism; written only inside the window` })
+  run('C-PERMISSION-SOURCE', { ok: !('permissionPolicy' in row), detail: 'row omits it: glue supplies boundTemplate.capabilities?.permissions (agent-bindings.mjs:2310); plane refuses NOT_GOVERNED without it (team-tool-plane.mjs:886-887); blueprint lanes keep real approvals, no allow-all' })
+  run('C-LEADER-BINDING', { ok: true, detail: 'derived at runtime from the real create answer (leader IS the root session): agent-bindings.mjs:4744, :7612' })
+  const decide = makeLeaderMembersDecide({ marker: 'A5M2C2H1_MEMBERS', doneText: 'A5M2C2H1_MEMBERS_DONE' })
+  const call = decide({ req: { messages: [{ role: 'user', content: 'A5M2C2H1_MEMBERS' }] } })
+  const after = decide({ req: { messages: [{ role: 'user', content: 'A5M2C2H1_MEMBERS' }, { role: 'tool', content: 'x' }] } })
+  run('C-MOCK-DECIDE', { ok: call?.kind === 'tool-call' && call.toolCalls.length === 1 && call.toolCalls[0].name === 'team_list_members' && after?.kind === 'text', detail: 'local scripted mock (localhost): exactly one team_list_members call then done; no external/paid LLM' })
   if (pre.sourceSurfaceDisclosed.length > 0) run('C-SOURCE-SURFACE-DISCLOSED', { ok: true, detail: `reported, never swallowed: ${pre.sourceSurfaceDisclosed.join(' | ')}` })
   return { mode: 'window-replay', booted: false, hostGated: ['C-BOOT', 'C-READINESS-BARRIER', 'C-CREATE-ONCE', 'C-LEADER-MEMBERS', 'teardown'], legs, ok: legs.every((row) => row.ok === true) }
 }
