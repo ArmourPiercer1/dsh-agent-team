@@ -5,6 +5,23 @@
 **该隔离测试 worker** 授予"仅对本 Team/自身调用发起 request-control"的最小 fixture 授权。
 本文件全部为**真实源码引用**（非 querysmoke 推演）。阶段 fixture 授权 **不得**推广为产品默认。
 
+## 0. 根核验更正（2026-10-25 晚，A `f0a0b9557` 已核）——先读本节
+
+**A 第三窗的墙不是 `permissionMutationEnvelope`，是操作级 `MutationEnvelope`**（本文 §1/§3
+的 permissionMutationEnvelope 诊断对 A 墙为误归因，撤回，不再重述）：
+
+- **产品正本**：`packages/domain/blueprint/src/validate.ts:645-694 validateEnvelope`
+  （编译产物 dist `validate.js:962-978` = memberEnvelopes 条目验证，根所指行位）——
+  `MutationEnvelope = { allow: string[], deny: string[] }`（小写 slug 操作 token、
+  `allow∩deny=∅` 自一致律、逐 template 的顶层 `memberEnvelopes[]` + team envelope 两级）。
+- **M1 真形**：`tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs:1284-1293`——
+  member envelope YAML `allow: [send-message, report-progress, request-control], deny: []`。
+- **A 的正解（根已核）**：原 world 为 teamEnvelope 已含 request-control 而
+  **memberEnvelopes 空∩空** → edit-worker 的 member envelope 改
+  `allow: [request-control], deny: []`（仅此一项；不授 resolve/self-approve/policy）。
+- §2（纵切三段位点）与 §1 的文法描述本身仍为真实来源，可继续作参考；§3 的
+  permissionMutationEnvelope fixture 建议**作废**，以 A `f0a0b9557` 的操作级 shape 为准。
+
 ## 1. 真实 PermissionMutationEnvelope 完整 shape（原 M1 来源，逐字）
 
 - **运行时规范定义**：`packages/runtime/governance/permission-mutation.ts`
