@@ -101,8 +101,9 @@ const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-')
 const HOME = join(ROOT_DIR, 'tests', 'homes', `${WORLD_PREFIX}-${DRY ? 'dry-' : ''}${RUN_STAMP}Z`) // fresh EXPLICIT home (root-pinned law)
 const FIXTURE_DIR = join(HOME, 'read-fixture') // root final card: instance cwd was HostTree — the fixture lives in THIS run's HOME
 const FIXTURE_POSIX = (x) => String(x).replace(/\\/g, '/')
-const FIXTURE_FILE = FIXTURE_POSIX(FIXTURE_DIR) + '/package.json' // fs canonical: SAME absolute literal in carrier path, WIRE value, tool input
-const SAVED_BP_V3_YAML = [
+let WORKSPACE_CANONICAL = FIXTURE_POSIX(FIXTURE_DIR) // placeholder until the HOST-PUBLIC registration answers (root ruling); reassigned below
+let FIXTURE_FILE = WORKSPACE_CANONICAL + '/package.json' // carrier/WIRE/tool-input all read THIS at runtime: the real canonical, never a self-claimed literal
+const buildSavedBp = () => [ // MATERIALIZE AT WRITE TIME (after registration) — a module-baked literal would freeze the placeholder
   '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 CONTROL window team. Resolve member control requests through your team tools when instructed; keep answers brief."',
   '  capabilities:', '    teamTools:', '      kind: allow', '      items:', // LeaderTemplate capabilities REQUIRE teamTools (validate.ts:967 — the real parse
@@ -316,6 +317,15 @@ async function remoteCallReady(method, params, tag, version = 1, retries = 20) {
     await sleep(1500)
   }
   return last
+}
+async function workspaceRpc(method, request, tag) { // PUBLIC Host face: ctx.remote.workspace.create over the client channel
+  const res = await fetchJson(`${origin}/api/workspace/${method}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: JSON.stringify({ type: 'client-request', rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`, method: `workspace/${method}`, payload: { args: { request } } }),
+  })
+  TRANSCRIPT.push({ channel: 'workspace-rpc', method, request, status: res.status, body: res.body })
+  return res
 }
 async function sessionRpc(method, request, tag) {
   const res = await fetchJson(`${origin}/api/session/${method}`, {
@@ -708,7 +718,7 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
     if (!existsSync(HOST_ENTRY)) throw new Error(`host entry absent: ${HOST_ENTRY}`)
     log(`plugin entry resolved from the f86 fixture exports['./host']: ${HOST_ENTRY}`)
   }
-  writeFileSync(join(HOME, 'blueprints', 'a5m2-ctl-hw.yaml'), SAVED_BP_V3_YAML)
+  writeFileSync(join(HOME, 'blueprints', 'a5m2-ctl-hw.yaml'), buildSavedBp())
 
   if (DRY) {
     const dryPatch = join(HOME, 'dry-patch.yml')
@@ -754,7 +764,14 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   await teamReadyBarrier()
   mkdirSync(FIXTURE_DIR, { recursive: true }) // synthetic HOME-owned fixture BEFORE boot: unique window nonce inside
   writeFileSync(join(FIXTURE_DIR, 'package.json'), JSON.stringify({ name: 'a5m2-ctlhw-fixture', probe: `A5M2-CTLHW-PROBE-${NONCE}` }, null, 2))
-  const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID, defaultWorkspace: FIXTURE_POSIX(FIXTURE_DIR) }, 'ctlhw-create', 1) // W1: member with no explicit workspace INHERITS defaultWorkspace (member/src/workspace.js) — team+member anchor both = fixture dir
+  const wsReg = await workspaceRpc('create', { path: FIXTURE_POSIX(FIXTURE_DIR) }, 'ctlhw-wsreg') // PUBLIC registration (639 commands.ts:45-53 create-or-resolve; registry index:236-241 realpath+directory+durable). mkdir != registration.
+  const wsErr = resultError(wsReg.body)
+  if (wsErr !== null) throw new Error(`workspace/create (public registration) FAILED — STOP, raw kept (root ruling): ${JSON.stringify(wsErr)}`)
+  const wsView = resultData(wsReg.body)?.workspace ?? null
+  if (typeof wsView?.path !== 'string' || wsView.path.length === 0) throw new Error(`workspace/create answered without a canonical path — STOP, raw kept: ${JSON.stringify(wsReg.body).slice(0, 400)}`)
+  WORKSPACE_CANONICAL = wsView.path // the Host's OWN canonical (workspace/registry/index.ts:236-241); created=${String(resultData(wsReg.body)?.created)}
+  FIXTURE_FILE = `${WORKSPACE_CANONICAL}/package.json` // three-way exact read values + tool input now use the REAL canonical (root: 以workspace.path canonical绑定)
+  const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID, workspace: WORKSPACE_CANONICAL }, 'ctlhw-create', 2) // v2 workspace-aware closed set (params.js:121-124 minus initialWork plus workspace); durable defaultWorkspace == canonicalPath (s6-remote.js:1249-1251,1322-1324); W1 member inheritance
   if (resultError(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultError(team.body))}`) // full typed error, uncut
   await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`, 'ctlhw-leader-create')
   // root 2026-10-24: CHECK THE REAL RETURN FIRST — the create's tool_result
