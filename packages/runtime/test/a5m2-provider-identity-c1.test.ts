@@ -664,18 +664,51 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // createSubagentSpawnWiring (the spawn-family one-bound container, :3254)
     // and (2) the B-SUBAGENT CONTROLS wiring/registration constant passed to
     // createBSubagentControlWiring (the controls-family wiring, :3783).
-    // Measured on the merged source, all seven belong to todo/write/schedule/
-    // subagent-spawn/subagent-controls placements. No IMAGE arm/
-    // registration/callFacts site carries a constant: the FP-A2/FP-D legs
-    // above prove the live supply and the unchanged comparisons on the real
-    // objects, and the plane pin below stays.
+    // Measured then, all seven belonged to todo/write/schedule/subagent-spawn/
+    // subagent-controls placements. RE-ANCHOR 3 (A5M2 census run 40063499790
+    // head 447e14ac2, re-measured by the CENTER integrator on the MERGED tree
+    // after the d675 bind-after-def lane f24ff4d60): TWO additions and ONE
+    // retirement move this pin, net 7 + 2 - 3 = SIX. ADDITIONS: (1) the
+    // providerId passed to createG2TeamMount on the G2 team mount
+    // (agent-bindings.mjs:3689, the e78 G2 line) and (2) a5G5GoalInject.
+    // providerId, the identity the B-GOALS durable family registration carries
+    // on that route (agent-bindings.mjs:4078; its own comment: 'the same bytes
+    // every sibling arm registers with'). RETIREMENT: the d675 lane removed the
+    // OLD B-SCHEDULE early-capture block - all THREE of the constants RE-ANCHOR
+    // 1 counted there are GONE (retired-symbol grep=0 on the merged tree); the
+    // bind-after-def successor wires the family WITHOUT a literal provider
+    // constant at the mount face. The SIX surviving literals on the merged
+    // source are exactly: todo arm :3048, write arm :3143, subagent-spawn
+    // wiring :3443, G2 team mount :3689, G5 goal inject :4078, subagent-
+    // controls wiring :4333 - all family registration/wiring constants.
+    // No IMAGE arm/registration/callFacts site carries a constant: the FP-A2/
+    // FP-D legs above prove the live supply and the unchanged comparisons on
+    // the real objects, and the plane pin below stays.
     expect(
       matchAll(mount, /providerId: 'a5p5-plane',/g),
-      "todo + write + the three schedule-block placement constants + the two B-SUBAGENT joint constants (spawn wiring via createSubagentSpawnWiring, controls wiring via createBSubagentControlWiring) remain; none at an image site",
-    ).toHaveLength(7)
+      "todo + write + subagent-spawn wiring + subagent-controls + the G2 team mount + the G5 goal inject family constants, measured SIX on the merged tree after the bind-after-def retirement of the three old B-SCHEDULE literals (RE-ANCHOR 3 above; every site enumerated with its line)",
+    ).toHaveLength(6)
     expect(planeSrc).toContain('providerId: \'a5p5-plane\'') // the rev.0 row-lane tuple, untouched
-    // the plane never reads the provider off a row/receipt for supply purposes.
-    expect(planeSrc).not.toMatch(/providerIdentity:\s*(manifest|receipt|row)/)
+    // The plane never reads the provider off a MANIFEST or RECEIPT for supply
+    // purposes, and the FP-A/FP-D legs above byte-pin every COMPARISON site to
+    // the live supply. RE-ANCHOR (census 40063499790 attribution, CENTER-
+    // booked): the blanket row/ ban predates the G2 family wiring (bc6cf5ed6,
+    // merged long before this census; surfaced here only because the FP-E
+    // COUNT leg stopped the test short of this line). G2 legitimately reads
+    // the row's OWN providerId ONCE, at the paAdmit.open walk family block
+    // (team-tool-plane.mjs:5021-5030 family: Object.freeze({ familyId:
+    // row.familyId, adapterRevision: row.adapterRevision, providerIdentity:
+    // row.providerId, ... })) - the mount's own durable registration read back
+    // through the placement identity, the SAME-SOURCE supply FP-D endorses,
+    // never a comparison and never a second approval (the row payload rides
+    // INTO the PA walk; the bridge composes the durable manifest from it and
+    // answers the claim against the registration - the block comment is
+    // explicit). The teeth stay sharp: manifest/receipt reads remain banned
+    // outright, and the row read is pinned to EXACTLY this one byte-verified
+    // site - a second row-sourced providerIdentity anywhere is RED.
+    expect(planeSrc).not.toMatch(/providerIdentity:\s*(manifest|receipt)/)
+    expect(planeSrc).toContain('providerIdentity: row.providerId,\n          targetManifest: classified.targetManifest,')
+    expect(matchAll(planeSrc, /providerIdentity:\s*row\./g)).toHaveLength(1)
   })
 
   it('FP-E2 (the feed stays a feed): placement placementFeed still answers definitionIdentity + realmId and nothing else', async () => {

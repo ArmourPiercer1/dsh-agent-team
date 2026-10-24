@@ -34,7 +34,7 @@
  *    F(read project-scope) rides as a grammar-valid `read` effect on the
  *    resolved document resource. The closed operation set is exactly the four
  *    navigation ops — no diagnostics/executeCommand/generic fallback. The
- *    per(member×generation) realm assembly stays in sandbox-provider/
+ *    per(member×generation) realm assembly stays in sandbox provider lane 
  *    lsp-assembly.ts (§5.2), untouched.
  *  - B-PTC (`run_code`): the outer arm over the captured native definition
  *    the registry mints via createRunCodeTool (@deepseek-ai/dsh-tools ptc.ts:
@@ -106,7 +106,7 @@
  * NOT in this file: registration/placement/mask (CENTER), the admission
  * kernel (A owns Control/PA consumption; the arm only consumes ITS
  * consumed-proof at the edge), the jobs bridge, the PTC escalation
- * adjudication bridge, the LSP realm assembly (§5.2, sandbox-provider), and
+ * adjudication bridge, the LSP realm assembly (§5.2, sandbox provider lane), and
  * the §5.1 per-open backend provider itself.
  *
  * DELIVERABLE BOUNDARY for the REAL handles (root boundary ruling, @639ed01539
@@ -138,7 +138,7 @@
  *    revision + server identity/generation), enforced HERE at classify AND
  *    at the entry. The named MISSING capability (@639ed01539): a
  *    realm-scoped document-target resolver — ctx.lsp answers no realm/scope/
- *    revision, and this tree's sandbox-provider/lsp-assembly.ts owns the
+ *    revision, and this tree's sandbox provider lane lsp-assembly.ts owns the
  *    per-realm confined instances + generation discipline but answers none
  *    of the per-document obligations either.
  *  - B-PTC: the real executor is the HOST's run_code transport (createRunCode
@@ -550,7 +550,7 @@ function deepJsonEqual(a, b) {
  *  B-LSP — NO public LSP entry EXISTS at the pin: no host LSP service (the
  *  pinned tree has none; the model-facing tool's server is the plugin's own),
  *  and this module's tree owns the assembly seam only
- *  (packages/runtime/sandbox-provider/lsp-assembly.ts: per-realm confined
+ *  (packages/runtime/sandbox provider lane lsp-assembly.ts: per-realm confined
  *  streaming instances, launcher sha gate, per-member generation). The REAL
  *  handle therefore can only come from an INTEGRATOR assembly adapter over
  *  that seam — and §5.1/§5.2 make that adapter's answers INTERFACE
@@ -2541,7 +2541,7 @@ function validateLsp(args, h) {
   // realm/scope moves between approval and the entry refuses with zero
   // body). NO public controlled entry produces these answers at
   // 639ed01539: the host has no LSP service (checked), and this tree's
-  // sandbox-provider/lsp-assembly.ts owns per-realm confined instances +
+  // sandbox provider lane lsp-assembly.ts owns per-realm confined instances +
   // generation without ever answering a document's realm/scope — the
   // MISSING capability is a realm-scoped document-target resolver over that
   // seam (integrator adapter); until then this arm is control-plane-only.
