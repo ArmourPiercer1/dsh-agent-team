@@ -247,6 +247,33 @@ export declare const name = "dsh-agent-team";
  */
 export declare const inject: string[];
 /**
+ * ROOT round-75 (real producer, not a map): resolve the BROWSER PUBLIC
+ * entry pair from the fixed-639 public './src/*' subpaths — the SAME two
+ * faces the host plugin itself uses (launchChromium src/launch.ts:24;
+ * openBrowserWorker src/worker-client.ts:15 @639ed01539). Importing these
+ * modules LOADS EXPORTS ONLY: nothing is launched, no server starts, no
+ * worker spawns — acquisition lives exclusively in the governed port's
+ * lease (createG2TeamBrowserPort), never here.
+ * The stagehand package is USER-CHOICE plugin supply exactly like the
+ * PUBLIC web-search roots: its specifiers ride TYPED VARIABLES (the
+ * publicRoots discipline above) — the packages resolve through the live
+ * source-639 install's own module graph (public './src/*' export map),
+ * never through absolute private lib paths. An approved entryPaths pair
+ * (source-checkout worlds, same law as transportEntry) wins; otherwise
+ * the bare PUBLIC specifiers.
+ */
+export declare function g2ResolveBrowserPublicEntries(entryPaths?: {
+    launchEntry?: string;
+    workerEntry?: string;
+}): Promise<{
+    ok: true;
+    entries: Record<string, unknown>;
+} | {
+    ok: false;
+    code: string;
+    message: string;
+}>;
+/**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
  * apply fiber). The apply body itself never rejects: it provides the
  * `teamRoot` facade synchronously and tracks every setup failure through

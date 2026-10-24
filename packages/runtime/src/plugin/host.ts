@@ -1257,6 +1257,41 @@ export const name = 'dsh-agent-team'
 export const inject = ['agents', 'storageDomain', 'sessions', 'sessionPersistence', 'workspaceRegistry']
 
 /**
+ * ROOT round-75 (real producer, not a map): resolve the BROWSER PUBLIC
+ * entry pair from the fixed-639 public './src/*' subpaths — the SAME two
+ * faces the host plugin itself uses (launchChromium src/launch.ts:24;
+ * openBrowserWorker src/worker-client.ts:15 @639ed01539). Importing these
+ * modules LOADS EXPORTS ONLY: nothing is launched, no server starts, no
+ * worker spawns — acquisition lives exclusively in the governed port's
+ * lease (createG2TeamBrowserPort), never here.
+ * The stagehand package is USER-CHOICE plugin supply exactly like the
+ * PUBLIC web-search roots: its specifiers ride TYPED VARIABLES (the
+ * publicRoots discipline above) — the packages resolve through the live
+ * source-639 install's own module graph (public './src/*' export map),
+ * never through absolute private lib paths. An approved entryPaths pair
+ * (source-checkout worlds, same law as transportEntry) wins; otherwise
+ * the bare PUBLIC specifiers.
+ */
+export async function g2ResolveBrowserPublicEntries(
+  entryPaths?: { launchEntry?: string; workerEntry?: string },
+): Promise<{ ok: true; entries: Record<string, unknown> } | { ok: false; code: string; message: string }> {
+  const launchSpecifier: string = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/launch.ts'
+  const workerSpecifier: string = '@deepseek-ai/dsh-experimental-browser-use-stagehand-native/src/worker-client.ts'
+  const launchTarget = typeof entryPaths?.launchEntry === 'string' && entryPaths.launchEntry.length > 0 ? entryPaths.launchEntry : launchSpecifier
+  const workerTarget = typeof entryPaths?.workerEntry === 'string' && entryPaths.workerEntry.length > 0 ? entryPaths.workerEntry : workerSpecifier
+  try {
+    const launchMod = (await import(launchTarget)) as { launchChromium?: unknown }
+    const workerMod = (await import(workerTarget)) as { openBrowserWorker?: unknown }
+    if (typeof launchMod.launchChromium !== 'function' || typeof workerMod.openBrowserWorker !== 'function') {
+      return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry modules resolved but answered no launchChromium/openBrowserWorker function (${launchTarget} / ${workerTarget}) — the public faces at this pin are missing; minting nothing, invoking nothing` }
+    }
+    return { ok: true, entries: Object.freeze({ launchChromium: launchMod.launchChromium, openBrowserWorker: workerMod.openBrowserWorker }) }
+  } catch (error) {
+    return { ok: false, code: 'G2_BROWSER_SUPPLIER_UNRESOLVED', message: `the PUBLIC browser entry pair (${launchTarget} / ${workerTarget}) is unresolvable here: ${String((error as { message?: unknown })?.message ?? error).slice(0, 180)} — USER-CHOICE plugin supply absent (source-639 public './src/*' route expected); typed refusal, no fallback, nothing launched` }
+  }
+}
+
+/**
  * The plugin entry (Cordis named-export protocol: the loader awaits the
  * apply fiber). The apply body itself never rejects: it provides the
  * `teamRoot` facade synchronously and tracks every setup failure through
@@ -2810,6 +2845,24 @@ async function buildG2TeamSupply(
     } catch (error) {
       return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` }
     }
+  }
+  // ROOT round-75: the BROWSER public-entry producer, REAL. Arming is a
+  // pure config read (g2Mount.browser — the approved ask); resolution below
+  // LOADS EXPORTS ONLY (no boot, no launch, no worker). When armed and
+  // unresolvable the whole supply refuses NAMED — a browser row must never
+  // mount on a half face (the port's ENTRY_INCOMPLETE law stays the
+  // backstop, the producer refuses first). When armed and resolved the
+  // pair rides out.entries, which the loader hands to the browser
+  // all-or-nothing pairing verbatim.
+  const browserAsk = (g2Mount as { browser?: unknown }).browser
+  if (browserAsk !== undefined && browserAsk !== null) {
+    const built = await g2ResolveBrowserPublicEntries(
+      typeof browserAsk === 'object' ? (browserAsk as { entryPaths?: { launchEntry?: string; workerEntry?: string } }).entryPaths : undefined,
+    )
+    if (built.ok === false) {
+      return { ok: false, code: built.code, message: built.message }
+    }
+    out.entries = { ...(out.entries as Record<string, unknown> | undefined), ...built.entries }
   }
   return await mountMod.createG2TeamAssemblySupply(out)
 }
