@@ -11,7 +11,7 @@
  * before linking (a wrong-version store hit is a hard refusal, never a
  * silent fallback).
  */
-import { existsSync, lstatSync, mkdirSync, readdirSync, rmSync, symlinkSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -78,5 +78,3 @@ for (const [name, version] of DECLARED) {
   linked += 1
 }
 console.log(`provision-store-deps: ${linked}/${DECLARED.length} declared deps supplied from the existing store (zero installs)`)
-
-function safeLstat (p) { try { return lstatSync(p) !== null } catch { return false } }

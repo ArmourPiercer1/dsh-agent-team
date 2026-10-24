@@ -14,6 +14,11 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      // EXACT generated-package output of the schedule fork (the same
+      // artifact class as dist: produced by forks/dsh-schedule build,
+      // byte-verified by check-artifacts-committed, never hand-edited —
+      // root f6fb card: 精确生成目录识别＋正常产物核, no broad baseline).
+      'forks/**/lib/**',
       '**/composition-shim/**',
       '**/node_modules/**',
       '.worktrees/**',
@@ -128,7 +133,7 @@ export default tseslint.config(
     // Node scripts (composition smoke, future verify-* scripts) run under
     // node, so node globals are defined there only. TypeScript package code
     // stays global-free: the client half must remain browser-safe.
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'forks/**/scripts/**/*.mjs'],
     languageOptions: { globals: { ...globals.node } },
   },
   {
