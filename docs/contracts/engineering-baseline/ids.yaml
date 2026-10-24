@@ -2,8 +2,8 @@
 #
 # NORMATIVE STATUS, stated per kind (the entry fields below are authoritative and
 # are not changed by this comment): 18 entries -- 10 invariant, 4 requirement,
-# 4 acceptance -- carry `proposed-not-ratified`, and 1 entry, IDEA-EB-0001,
-# carries `idea-no-execution-authority`. An earlier wording here said "every
+# 4 acceptance -- carry `proposed-not-ratified`, and 2 entries, IDEA-EB-0001 and IDEA-EB-0002,
+# carry `idea-no-execution-authority`. An earlier wording here said "every
 # entry" and that was inaccurate for the idea. Neither value is a verdict on
 # whether the work it documents may be done: it says how much contractual force
 # the sentence has, not whether mechanical work on this baseline is authorized
@@ -150,3 +150,10 @@
   normative_status: idea-no-execution-authority
   owners: [CI/Test/Doc Owner]
   source_anchor: docs/ideas/IDEA-EB-0001-change-impact-graph.md
+
+- id: IDEA-EB-0002
+  kind: idea
+  statement: Reconsider whether the internal IO of the install_bundle action (installer file writes, network access, package initialization code) should be governed beyond the action's own permission and approval, what observed problem would trigger that discussion, and what maintaining it would cost; the other seven plugin_manager actions and all other tools' IO are outside this idea.
+  normative_status: idea-no-execution-authority
+  owners: [Contract/Security Owner]
+  source_anchor: docs/ideas/IDEA-EB-0002-install-internal-io-governance-review.md

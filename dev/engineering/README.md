@@ -216,6 +216,22 @@ mechanically refined". Two semantics worth stating because they are easy to over
   mtime is later. Nothing in this line compares timestamps; generated output carries no
   wall-clock for exactly that reason.
 
+## Where a scope-boundary decision is recorded
+
+Not every decision is a work item, and the places they go are different on purpose. A scope question
+that was answered but built nowhere goes to `.agents/notes/` (the decision-reason record); its
+unresolved residue goes to `docs/ideas/` with an id in
+`docs/contracts/engineering-baseline/ids.yaml` carrying `idea-no-execution-authority`; and **nothing
+goes into `registry.yaml`** -- its kinds
+(`work-package` / `implementation-pr` / `gate` / `migration`) are units of work, and per
+`dev/engineering/work-package-authorization.md` a work-package entry is what mechanical work authority
+attaches to, so writing one would manufacture construction authority nobody granted.
+`EB-ADR-0004` (Alpha.5's `install_bundle` install-internal-IO boundary, from the user answers of
+2026-10-24T09:03:32Z and 09:04:45Z) and `IDEA-EB-0002` are that shape: both name main's Alpha.5 contract
+and matrix as the authority and link to it instead of restating it, which is why there is still one place
+to change the contract. Read `dev/engineering/work-package-authorization.md` before turning any of it
+into a task.
+
 ## Where this line has NOT exited
 
 Read the green checks above as checks, not as an exit. What is still open, kept in its own words

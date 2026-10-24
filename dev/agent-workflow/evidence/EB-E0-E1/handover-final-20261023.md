@@ -45,13 +45,17 @@ file.** No new checker, no new review round, no Host run, no PR #361 merge, no E
 - `exit-evidence-sources.md` — §§7–13: the CI/C1 ruling and its retraction, acceptance levels read
   from source, the cold-read result with its 11-row gap table and disposition
 - `baseline-inventory.md` — EB0-1…EB0-5 **read-only tree census**, each fact labelled by its source
-- `eb0-baseline-from-receipts-20261024.md` — EB0-1…EB0-5 **completed from receipts that already
-  existed**: the field-level authority reconciliation, hosted CI durations with their queue caveat,
+- `eb0-baseline-from-receipts-20261024.md` — EB0-1…EB0-5 **assembled from receipts that already
+  existed**, which is not the same as EB0 being complete: it is an inventory with samples, most rows
+  n = 1, and EB0-5 has no same-platform selector p50/p95 study. It carries the field-level authority reconciliation, hosted CI durations with their queue caveat,
   the shipped-package attribution sample, install/cleanup/capacity receipts with the shared-volume
   disclaimer, and the window-4 timing decomposition whose unattributed ~14.9 s tail is left UNKNOWN
 - `integration-freeze.md` — satisfied vs unsatisfied freeze conditions, in its own words
-- `controls-run-1.log` … `controls-run-26.log`, `controls-failures-1.log`,
-  `mutation-control-1.log`, `probe-run-1.log`, `contracts-field-agreement-{1,2}.log`,
+- `controls-run-1.log` … `controls-run-27.log`, `controls-failures-1.log`,
+  `mutation-control-1.log`, `mutation-control-2-legacy-mirror.log`,
+  `decision-record-negative-controls-1.log` (the decision/id placement rules proved able to fail),
+  `adoption-diff-status-generated-line.patch` (prepared, **unapplied**), `probe-run-1.log`,
+  `contracts-field-agreement-{1,2}.log`,
   `ci-prgate-f44e-to-ff1f58.log`, `lint-line-1.json`, `catalog-index-preview.md`
 
 ## Bounded baseline available from material that already exists (no new runs)
@@ -110,6 +114,17 @@ file.** No new checker, no new review round, no Host run, no PR #361 merge, no E
   controls on that SHA → reconcile old vs new by hand once → change the consumer(s) in one commit
   → keep the generated view read-only afterwards. Any switch commit must cite the candidate SHA it
   was verified on.
+
+## Batch status at 2026-10-24 (merge authorized; root executes it, not this line)
+
+The user answered root's question at **09:09:04Z**: *"同意，该批最终验证通过后合并，暂不切换权威入口，也暂不
+合并 PR #361 的整份计划"*. So this non-authoritative documentation/tooling base batch may be merged once its
+final verification is green — by root, after an independent scope read of the same SHA. Contents in one
+list: the read-only doc tools and their fixtures; the generated view with the six-field `legacy_authority`
+mirror; the 9 package READMEs; the five comment-only governance-header files (no behaviour, disclosed in
+`integration-freeze.md`); the `install_bundle` decision record `EB-ADR-0004` and its open item
+`IDEA-EB-0002`; and the reading entry points. Never in it: `AGENTS.md`, `graph.yaml`, `docs/STATUS.md`
+content, the applied STATUS derived line, any workflow CI enforcement, any EB3 wiring.
 
 ## Three states, stated separately (added 2026-10-24)
 

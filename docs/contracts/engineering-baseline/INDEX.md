@@ -2,7 +2,7 @@
      by scripts/gen-current-state.mjs; refresh with `node scripts/docs-sync.mjs --write`.
      docs:sync --check and docs:probe refuse when this file no longer matches the catalog. -->
 
-# Engineering Baseline id index (19 ids)
+# Engineering Baseline id index (20 ids)
 
 Browsable listing over the machine-readable catalog. `ids.yaml` stays the source of
 truth; this file exists so the ids can be read and cited without opening YAML.
@@ -40,7 +40,7 @@ Listing an id here grants it nothing: every entry stays
 - source_anchor: docs/glossary.md
 - statement: A duplicated stable id, a deprecated synonym used in a current-state document, or a dangling reference fails the check; an unratified proposed entry does not fail merely because it is unimplemented.
 
-## idea (1)
+## idea (2)
 
 ### IDEA-EB-0001
 
@@ -48,6 +48,13 @@ Listing an id here grants it nothing: every entry stays
 - owners: CI/Test/Doc Owner
 - source_anchor: docs/ideas/IDEA-EB-0001-change-impact-graph.md
 - statement: Derive a change-impact graph that selects the minimal document and test set per PR from source symbols, owning contracts and dynamic tool-source deltas.
+
+### IDEA-EB-0002
+
+- normative_status: idea-no-execution-authority
+- owners: Contract/Security Owner
+- source_anchor: docs/ideas/IDEA-EB-0002-install-internal-io-governance-review.md
+- statement: Reconsider whether the internal IO of the install_bundle action (installer file writes, network access, package initialization code) should be governed beyond the action's own permission and approval, what observed problem would trigger that discussion, and what maintaining it would cost; the other seven plugin_manager actions and all other tools' IO are outside this idea.
 
 ## invariant (10)
 
