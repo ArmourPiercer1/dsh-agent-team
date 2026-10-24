@@ -213,6 +213,7 @@ let mock = null
 let instance = null
 let origin = null
 let cookie = null
+let launchToken = null // THIS launch's token, memory-only (639 protocol: valid across Connection reload — root 639-source ruling); NEVER logged
 let currentRoot = null
 
 function log(msg) { console.log(`[ctlhw] ${msg}`) }
@@ -410,16 +411,50 @@ async function remoteMountGate({ readLog, childGone = () => false, budgetMs = 12
     await sleep(pollMs)
   }
 }
+/** Root 2026-10-24 ruling, encoded as a PURE function (offline-micro-verifiable):
+ * a readiness 401 is a REAL auth rejection — recorded as AUTH_REJECTED, never swallowed.
+ * Recovery: exactly ONE public GET /?token auth exchange (same origin, THIS launch token;
+ * 303 + non-empty set-cookie required), then ONE read-only listRoots. Exchange failure,
+ * missing cookie, a SECOND 401 or any NO_RESULT -> immediate STOP. Loop reauth FORBIDDEN.
+ * Only a genuine typed starting re-enters the original bounded barrier. */
+function authRecoveryVerdict(status, err, reauthUsed) {
+  if (err === null) return 'ready'
+  const starting = err.code === 'internal-error' && err.details?.reason === 'runtime-not-ready'
+  if (starting) return 'retry-starting'
+  if (status === 401) return reauthUsed ? 'stop-second-auth-rejection' : 'recover-once'
+  return 'stop-other' // typed rejections, NO_RESULT on non-401 transports — never swallowed, never reauth'd
+}
 async function teamReadyBarrier(budgetMs = 180_000) {
   const deadline = Date.now() + budgetMs
+  let reauthUsed = false // ceiling: exactly ONE recovery exchange per window (root ruling; 08 proves the ceiling offline)
   for (;;) {
     const res = await remoteCall('team.listRoots', {}, 'ctlhw-ready', 3)
     const err = resultError(res.body)
-    if (err === null) return
-    const starting = err.code === 'internal-error' && err.details?.reason === 'runtime-not-ready' && String(err.message).includes('state: starting')
-    if (!starting) throw new Error(`readiness barrier STOP: ${JSON.stringify(err).slice(0, 300)}`)
-    if (Date.now() >= deadline) throw new Error('readiness budget exhausted while starting')
-    await sleep(1500)
+    const verdict = authRecoveryVerdict(res.status, err, reauthUsed)
+    if (verdict === 'ready') return
+    if (verdict === 'retry-starting') {
+      if (Date.now() >= deadline) throw new Error('readiness budget exhausted while starting')
+      await sleep(1500)
+      continue
+    }
+    if (verdict === 'stop-second-auth-rejection') throw new Error(`AUTH_REJECTED (2nd, status=401) after the single recovery exchange — STOP, loop reauth forbidden: ${JSON.stringify(err).slice(0, 200)}`)
+    if (verdict !== 'recover-once') throw new Error(`readiness barrier STOP: ${JSON.stringify(err).slice(0, 300)}`)
+    // FIRST readiness 401: record AUTH_REJECTED explicitly (never swallowed), then ONE public exchange.
+    log(`readiness AUTH_REJECTED status=401 (raw err=${JSON.stringify(err).slice(0, 120)}) — ONE public auth exchange: same origin, THIS launch token (values never logged)`)
+    if (launchToken === null) throw new Error('AUTH_REJECTED but no launch token in memory — STOP (no fabrication, no retry)')
+    const ex = await fetch(`${origin}/?token=${launchToken}`, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
+    const sc = ex.headers.get('set-cookie')
+    if (ex.status !== 303 || sc === null || sc.length === 0) throw new Error(`re-auth exchange FAILED status=${String(ex.status)} setCookieNonEmpty=${String(sc !== null && sc.length > 0)} — STOP (ceiling consumed)`)
+    cookie = sc.split(';', 1)[0]
+    log(`re-auth exchange: status=303 setCookieNonEmpty=true cookieSwapped=true sameOrigin=true (values not logged) — ONE read-only listRoots follows`)
+    reauthUsed = true
+    const after = await remoteCall('team.listRoots', {}, 'ctlhw-ready-after', 3)
+    const errAfter = resultError(after.body)
+    const verdictAfter = authRecoveryVerdict(after.status, errAfter, true)
+    if (verdictAfter === 'ready') return
+    if (verdictAfter !== 'retry-starting') throw new Error(`post-reauth probe verdict=${verdictAfter} status=${String(after.status)} err=${JSON.stringify(errAfter).slice(0, 200)} — STOP (no second exchange, no NO_RESULT swallowing)`)
+    if (Date.now() >= deadline) throw new Error('readiness budget exhausted while starting (post-reauth)')
+    await sleep(1500) // genuine typed starting -> back into the ORIGINAL bounded barrier
   }
 }
 function safeParse(v) {
@@ -775,6 +810,7 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   const m = /^http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)$/.exec(started.url)
   if (m === null) throw new Error('unexpected boot url shape')
   origin = `http://127.0.0.1:${m[1]}`
+  launchToken = m[2] // memory-only (host's own web line already carries it; the driver adds NO new persistence)
   const auth = await fetch(`${origin}/?token=${m[2]}`, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
   if (auth.status !== 303 || auth.headers.get('set-cookie') === null) throw new Error(`authenticate status=${auth.status}`)
   cookie = auth.headers.get('set-cookie').split(';', 1)[0]

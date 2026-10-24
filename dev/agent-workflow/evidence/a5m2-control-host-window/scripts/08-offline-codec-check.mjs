@@ -28,7 +28,7 @@ const boot = new Function(...mods.keys(), '__SELF_URL__', `
   const window = { location: { origin: 'http://127.0.0.1:0' } };
   ${region}
   currentRoot = 'session-offline-root'
-  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, readOkWitness, explicitRefusalWitness, permissionMutatedWitness, memberToolsSeen, member2ToolsSeen, leaderToolsSeen, NONCE }
+  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, readOkWitness, explicitRefusalWitness, permissionMutatedWitness, authRecoveryVerdict, memberToolsSeen, member2ToolsSeen, leaderToolsSeen, NONCE }
 `)(...mods.values(), new URL('./05-control-window-runner.mjs', import.meta.url).href)
 const results = []
 const A = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`) }
@@ -120,6 +120,19 @@ A('witness: foreign targetInstanceId fails', boot.permissionMutatedWitness({ isE
 A('witness: verb swap fails (grant leg shown a revoke row and vice versa)', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'revoke', changed: true }) }, expG) === false)
 A('witness: status:rejected never passes', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'rejected', code: 'X', message: 'm' }) }) === false)
 A('witness: isError=true never passes; unstructured never passes', boot.permissionMutatedWitness({ isError: true, text: '{"status":"permission-mutated","verb":"grant","changed":true}' }) === false && boot.permissionMutatedWitness({ isError: false, text: 'mutated ok' }) === false)
+
+
+// (10) ONE-recovery AUTH ceiling through the REAL verdict function (root ruling;
+// window 20261024T14-53-45Z raw shapes: 200+typed starting, then 401/NO_RESULT).
+const w4a = { code: 'internal-error', message: 'remote method team.listRoots is unavailable while the team runtime is not ready (state: starting)', details: { reason: 'runtime-not-ready' } }
+const w4b = { code: 'NO_RESULT', message: 'null' } // fetchJson wraps the 401's null body
+A('verdict: window-4 probe#1 (200 + typed starting) retries in the ORIGINAL bounded barrier', boot.authRecoveryVerdict(200, w4a, false) === 'retry-starting')
+A('verdict: window-4 probe#2 (401 + NO_RESULT wrap) FIRST time = recover-once, recorded not swallowed', boot.authRecoveryVerdict(401, w4b, false) === 'recover-once')
+A('verdict: SECOND 401 after the single exchange = STOP (loop reauth ceiling holds)', boot.authRecoveryVerdict(401, w4b, true) === 'stop-second-auth-rejection')
+A('verdict: post-reauth typed starting returns to the bounded barrier', boot.authRecoveryVerdict(200, w4a, true) === 'retry-starting')
+A('verdict: NO_RESULT on a NON-401 transport is NOT auth — never reauth-swallowed', boot.authRecoveryVerdict(500, w4b, false) === 'stop-other' && boot.authRecoveryVerdict(200, w4b, false) === 'stop-other')
+A('verdict: typed non-starting rejection never reauths', boot.authRecoveryVerdict(200, { code: 'PERMISSION_MUTATION_FAILED' }, false) === 'stop-other')
+A('verdict: clean result returns ready', boot.authRecoveryVerdict(200, null, false) === 'ready')
 
 const failed = results.filter((r) => !r.ok).length
 console.log(JSON.stringify({ verdict: failed === 0 ? 'OFFLINE-DECODER-OK' : 'OFFLINE-DECODER-FAIL', checks: results.length, failed }))
