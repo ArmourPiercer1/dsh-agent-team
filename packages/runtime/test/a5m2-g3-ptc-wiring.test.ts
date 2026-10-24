@@ -22,10 +22,20 @@
  *  (h) registration keys ride the placement feed FRESH: absent THROWS,
  *      moved THROWS; entry carries the adapter's family bytes;
  *  (i) admission deny: typed refusal, closePlan still lands, body never
- *      runs.
+ *      runs;
+ *  (j) P1 EVIDENCE (root consolidated run_code card): the bridge is PRESENT
+ *      UNMOUNTED — the host unconditionally reserves `run_code` against
+ *      registration/shadowing (639 core/tools/src/index.ts:1080-1081,
+ *      quoted in the census evidence byte); the plane/bindings placement
+ *      path is RETIRED (the sources carry no contribution); the census
+ *      observation names the P1 on every mount story. The PA seat law is
+ *      the REAL callable paAdmit shape (item 1): genuine seat accepted,
+ *      garbage (plain-object duck, memberless function) refused.
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g3-ptc-wiring
  */
+import { readFileSync } from 'node:fs'
+
 import { describe, expect, it } from 'vitest'
 
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
@@ -65,6 +75,7 @@ const PTC_WIRING = (await import(new URL('../src/plugin/live/governed-families/g
   a5G3PtcPaTargetFlat: (manifest: Record<string, unknown>) => Record<string, unknown>
   A5_G3_RUN_CODE_TOOL_NAME: string
   A5_G3_PTC_WIRING_CODES: Record<string, string>
+  A5_G3_PTC_MOUNT_STATUS: { mounted: boolean, code: string, evidence: string, nextShape: string }
 }
 const CODES = PTC_WIRING.A5_G3_PTC_WIRING_CODES
 
@@ -131,10 +142,15 @@ function makeWorld (opts: WorldOpts = {}) {
   const walks: Array<Record<string, unknown>> = []
   const closePlans: string[] = []
   let denyOpen = false
-  const pa = {
-    openCalls: 0,
+  // THE REAL PA SEAT SHAPE (root consolidated card item 1): the plane's own
+  // paAdmit is an async FUNCTION carrying open / edge / closePlan as
+  // properties (team-tool-plane :1992), passed through AS-IS — the double
+  // mirrors THAT shape; a plain-object duck is GARBAGE the bridge must
+  // refuse, never the other way round.
+  const pa = Object.assign(async function paAdmitDouble () {
+    return { kind: 'deny', code: 'DOUBLE_NOT_A_DIRECT_CALL', detail: 'spec world: the double is seated as the plane seats paAdmit; walks ride open/edge/closePlan' }
+  }, {
     open: async (walk: Record<string, unknown>) => {
-      pa.openCalls += 1
       walks.push(walk)
       if (denyOpen) return { kind: 'deny', code: 'ADMISSION_REFUSED', detail: 'spec world: the admission refused' }
       const grant = Object.freeze({
@@ -150,7 +166,7 @@ function makeWorld (opts: WorldOpts = {}) {
     },
     edge: async (input: Record<string, unknown>) => ({ kind: 'allow', consumedProof: { grant: input.grant } }),
     closePlan: (callId: string) => { closePlans.push(callId) },
-  }
+  })
   const placed = new Map<string, Definition>()
   const placementFeed = (name: string) => {
     if (opts.noFeed === true) return undefined
@@ -241,6 +257,23 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     })
     expect(duck.ok).toBe(false)
     expect(duck.code).toBe(CODES.INPUT_INVALID)
+    // GARBAGE also covers a MEMBERLESS function (item 1 law: the real seat
+    // is a callable CARRYING open / edge / closePlan — the callable shape
+    // alone never substitutes for the three faces).
+    const memberless = PTC_WIRING.buildG3RunCodeWiring({
+      realmId: REALM,
+      providerId: PROVIDER,
+      memberAgentId: MEMBER,
+      sessionHeaderId: HEADER,
+      readNative: () => undefined,
+      ptcFacts: GOOD_FACTS,
+      bindingFacts: () => ({ bindingId: 'b', bindingRevision: 1, policyGeneration: 0, authorityGeneration: 0 }),
+      placementFeed: () => undefined,
+      identityOf: () => 'def#1',
+      pa: async () => ({ kind: 'deny' }),
+    })
+    expect(memberless.ok).toBe(false)
+    expect(memberless.code).toBe(CODES.INPUT_INVALID)
   })
 
   it('(c) capture-absent is the honest DECLARED-INACTIVE census: no def, no registration, native untouched, drain safe', () => {
@@ -262,7 +295,7 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     const answer = await def.execute({ code: 'return 1', description: 'walk spec' }, w.execFor('exec-run-1'))
     expect(answer).toBe('NATIVE-TRANSPORT-ANSWER')
     expect(w.nativeCalls).toEqual(['native-execute'])
-    expect(w.pa.openCalls).toBe(1)
+    expect(w.walks.length).toBe(1)
     expect(w.closePlans).toEqual(['exec-run-1'])
     const walk = w.walks[0]
     const family = walk.family as Record<string, unknown>
@@ -297,7 +330,7 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(error).not.toBeNull()
     expect(String(error?.message)).toContain('P_PTC_ENVELOPE_UNEVIDENCED')
     expect(String(error?.message)).toContain('runDispatchBudget')
-    expect(w.pa.openCalls).toBe(0)
+    expect(w.walks.length).toBe(0)
     expect(w.nativeCalls).toEqual([])
     expect(w.closePlans).toEqual([])
   })
@@ -313,7 +346,7 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     const def = asm.definitions[0] as Definition
     const error = await refusalOf(def.execute({ code: 'return 1', description: 'no interpreter' }, w.execFor('exec-run-3')))
     expect(String(error?.message)).toContain('P_PTC_TARGET_UNRESOLVED')
-    expect(w.pa.openCalls).toBe(0)
+    expect(w.walks.length).toBe(0)
     expect(w.nativeCalls).toEqual([])
   })
 
@@ -323,7 +356,7 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(PTC_WIRING.a5G3PtcPaTargetFlat({ operation: 'program-run' })).toEqual({ operation: 'program-run' })
   })
 
-  it('(h) registration keys ride the placement feed FRESH: present pairs the adapter family bytes, absent THROWS, moved THROWS', () => {
+  it('(h) registration keys ride the placement feed FRESH: present pairs the adapter family bytes, absent THROWS, moved THROWS (MODULE law, kept with the UNMOUNTED bridge per (j) — no production mount rides it today)', () => {
     const w = makeWorld()
     const asm = w.build()
     const registrations = asm.familyRegistrations()
@@ -350,5 +383,43 @@ describe('A5M2-G3-PTC-RUNCODE — the governed run_code row on the REAL bytes', 
     expect(error?.code).toBe('ADMISSION_REFUSED')
     expect(w.nativeCalls).toEqual([])
     expect(w.closePlans).toEqual(['exec-run-4'])
+  })
+
+  it('(j) P1 EVIDENCE (root consolidated card): the mount census names the host-forbidden registration; the GENUINE callable seat is ACCEPTED, garbage refused (item 1)', () => {
+    // THE P1, pinned: the host 639 reserves the name against registration
+    // or shadowing — a placement arm would roll back the WHOLE plane at
+    // the unified registration, so this bridge is PRESENT UNMOUNTED and
+    // the status rides EVERY census observation. The quote is the host's
+    // own byte (core/tools/src/index.ts:1080-1081, read at this baseline).
+    const status = PTC_WIRING.A5_G3_PTC_MOUNT_STATUS
+    expect(status.mounted).toBe(false)
+    expect(status.code).toBe('P1-HOST-FORBIDDEN-REGISTRATION')
+    expect(status.evidence).toContain('cannot be registered or shadowed')
+    expect(status.evidence).toContain('PLANE_PLACEMENT_CONFLICT')
+    expect(status.nextShape, 'the root-allowed shape interposes the EXISTING seams, never a shadow registration').toContain('tools/execute(next)')
+    // the census observation carries the status — the declared path:
+    const w = makeWorld({ captureAbsent: true })
+    w.build()
+    const declaredEvent = w.events.find((e) => e.event === 'g3-ptc-wire:declared')
+    expect(declaredEvent).toBeDefined()
+    expect((declaredEvent?.mount as Record<string, unknown>)?.code).toBe('P1-HOST-FORBIDDEN-REGISTRATION')
+    // THE REAL SEAT SHAPE (item 1, root-measured): the plane's paAdmit is
+    // a CALLABLE carrying the three faces — the GENUINE shape assembles
+    // and serves (legs (d)-(i) all run on the function-shaped double
+    // precisely because the check mirrors it); the plain-object duck and
+    // the memberless function are garbage and refuse typed (leg (b)).
+    const wReal = makeWorld()
+    const asmReal = wReal.build()
+    expect(asmReal.ok).toBe(true)
+    expect(asmReal.definitions).toHaveLength(1)
+    // THE RETIRED PLACEMENT PATH stays retired (the discovered fact is
+    // pinned forward, not deleted): the plane carries NO runCode
+    // contribution and the bindings NO inject — re-adding a placement
+    // arm is RED until the seam card legitimately lands.
+    const planeSrc = readFileSync(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url), 'utf8')
+    const bindingsSrc = readFileSync(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url), 'utf8')
+    expect(planeSrc).not.toContain('buildG3RunCodeWiring')
+    expect(planeSrc).not.toContain('runCodeDefs')
+    expect(bindingsSrc).not.toContain('a5G3RunCodeInject')
   })
 })

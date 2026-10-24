@@ -94,13 +94,6 @@ describe('A5M2-G3A-BINDINGS-UNION-C1 — guard/spread/plane-read pairing on the 
       const g3 = rows.find((row) => row.cond.includes('a5G3TerminalInject'))
       expect(g3?.key, 'the terminal inject rides the terminal key').toBe('terminal')
       expect(planeKeys.has('terminal'), 'the real plane must read input.backends?.terminal').toBe(true)
-      // A5M2-G3 B-PTC run_code (root 04:4x card): the audited pair, pinned
-      // verbatim — a5G3RunCodeInject -> key runCode. A lost row here is the
-      // same 760364998 class the guard-carrier loop above measures; the
-      // explicit pin names it for THIS family.
-      const rc = rows.find((row) => row.cond.includes('a5G3RunCodeInject'))
-      expect(rc?.key, 'the run_code inject rides the runCode key').toBe('runCode')
-      expect(planeKeys.has('runCode'), 'the real plane must read input.backends?.runCode').toBe(true)
     }
   })
 
