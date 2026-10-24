@@ -1,0 +1,204 @@
+{
+  "stamp": "2026-10-24T09-18-02-628Z",
+  "dry": false,
+  "rc": 2,
+  "composedSha": "37646ac288dbd0ee3c998343dc91fd1a8da7a2d5",
+  "results": [],
+  "transcript": [
+    {
+      "channel": "mock",
+      "line": "mock: listening on 127.0.0.1:3498"
+    },
+    {
+      "channel": "team-remote",
+      "method": "team.listRoots",
+      "version": 3,
+      "params": {},
+      "status": 200,
+      "body": {
+        "type": "server-response",
+        "rpcId": "ehw-ready-10jfbf04za",
+        "result": {
+          "ok": false,
+          "error": {
+            "code": "internal-error",
+            "message": "remote method 'team.listRoots' is unavailable while the team runtime is not ready (state: starting) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable",
+            "details": {
+              "method": "team.listRoots",
+              "endpoint": "team.listRoots",
+              "contractVersion": 1,
+              "requestToken": null,
+              "reason": "runtime-not-ready"
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "team-remote",
+      "method": "team.listRoots",
+      "version": 3,
+      "params": {},
+      "status": 200,
+      "body": {
+        "type": "server-response",
+        "rpcId": "ehw-ready-kefptxm4ky",
+        "result": {
+          "ok": true,
+          "value": {
+            "data": {
+              "roots": [
+                {
+                  "rootSessionId": "session-a5m2edithw-boot-2026-10-24T09-18-02-628Z",
+                  "blueprintId": "team.a5m2-edit-hw.boot-anchor",
+                  "revision": "1",
+                  "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+                  "createdAt": "2026-10-24T09:18:05.361Z",
+                  "generation": 2,
+                  "memberCount": 0
+                }
+              ]
+            },
+            "provenance": {
+              "origin": "team-remote",
+              "method": "team.listRoots",
+              "endpoint": "team.listRoots",
+              "contractVersion": 3,
+              "requestToken": null,
+              "projectionGeneration": null,
+              "effectSequence": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "team-remote",
+      "method": "team.create",
+      "version": 1,
+      "params": {
+        "rootSessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z",
+        "blueprintId": "team.a5m2-edit-hw"
+      },
+      "status": 200,
+      "body": {
+        "type": "server-response",
+        "rpcId": "ehw-create-45l9rqct0u",
+        "result": {
+          "ok": true,
+          "value": {
+            "data": {
+              "path": "fresh-root",
+              "durable": {
+                "teamSession": {
+                  "schemaVersion": 1,
+                  "rootSessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z",
+                  "blueprint": {
+                    "blueprintId": "team.a5m2-edit-hw",
+                    "revision": "1",
+                    "contentHash": "sha256:44b27c352c85d130ebd1abca2803178b9e788c0aa296f75316f71f19f5da853a"
+                  },
+                  "createdAt": "2026-10-24T09:18:06.902Z",
+                  "generation": 1,
+                  "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use"
+                },
+                "binding": {
+                  "schemaVersion": 1,
+                  "kind": "team-root",
+                  "sessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z"
+                },
+                "wrote": true,
+                "leaderRow": {
+                  "schemaVersion": 2,
+                  "rootSessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z",
+                  "instanceId": "inst-leader",
+                  "templateId": "leader",
+                  "label": "leader",
+                  "createdAt": "2026-10-24T09:18:06.907Z",
+                  "activityVersion": 1
+                }
+              },
+              "bind": {
+                "requested": "fresh-root",
+                "bound": true,
+                "installed": true,
+                "identity": {
+                  "kind": "root",
+                  "sessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z",
+                  "rootSessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z"
+                },
+                "admitted": true,
+                "admissionCode": "ADMISSION_OPEN",
+                "emittedEvents": [
+                  {
+                    "name": "agent-setup/overlay-installed",
+                    "detail": "persona"
+                  },
+                  {
+                    "name": "agent-setup/overlay-installed",
+                    "detail": "model"
+                  },
+                  {
+                    "name": "agent-setup/overlay-installed",
+                    "detail": "capability"
+                  },
+                  {
+                    "name": "agent-setup/admission-decided",
+                    "detail": "ADMISSION_OPEN"
+                  }
+                ]
+              }
+            },
+            "provenance": {
+              "origin": "team-remote",
+              "method": "team.create",
+              "endpoint": "team.create",
+              "contractVersion": 1,
+              "requestToken": null,
+              "projectionGeneration": null,
+              "effectSequence": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "session-rpc",
+      "method": "prompt",
+      "request": {
+        "requestId": "ehw-prompt-z824ix-ehw-leader-1",
+        "sessionId": "session-a5m2edithw-p-2026-10-24T09-18-02-628Z",
+        "mode": "queue",
+        "content": [
+          {
+            "type": "text",
+            "text": "A5M2-EDITHW-LEADER z824ix"
+          }
+        ]
+      },
+      "status": 200,
+      "body": {
+        "type": "server-response",
+        "rpcId": "ehw-leader-u8zs31vvlq",
+        "result": {
+          "ok": true,
+          "value": {
+            "accepted": true
+          }
+        }
+      }
+    },
+    {
+      "channel": "mock",
+      "line": "mock: 1 [messages] text reply (16 chars): \"TURN-DONE z824ix\""
+    },
+    {
+      "channel": "mock",
+      "line": "mock: 2 [messages] tool-call reply: team_create_member"
+    },
+    {
+      "channel": "mock",
+      "line": "mock: 3 [messages] text reply (16 chars): \"TURN-DONE z824ix\""
+    }
+  ]
+}

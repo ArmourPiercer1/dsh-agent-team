@@ -198,8 +198,12 @@ function writePatch(patchPath, hostEntryHref) {
     '        environmentFacts: []', '        externalPolicyFacts:', '          hard: {}', '          capabilityExists: {}',
     '        teamToolPlane:', // the EDIT gate: closed key + SAME governed fs root (world, not cwd)
     '          editEnabled: true',
-    `          fsInstance:`,
-    `            rootDir: ${JSON.stringify(FSROOT)}`, '',
+    "          realmId: 'a5m2-edit-hw-realm'", // pinned so a5PlaneRealmId is static (agent-bindings :2629 fallback would embed the dynamic teamRoot)
+    '          fsInstance:', // COMPLETE ControlledFsInstance shape (37646 law, admission-binding :109-132 + controlled-fs.d.ts:28-33): fs id + rootDir + realmId EQUAL to the plane's + kind absolute-path
+    "            fs: 'a5m2-edit-hw-fs'",
+    `            rootDir: ${JSON.stringify(FSROOT)}`,
+    "            realmId: 'a5m2-edit-hw-realm'",
+    "            kind: 'absolute-path'", '',
   ].join('\n'))
 }
 
@@ -349,6 +353,9 @@ async function main() {
   if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (plan: 3183/3498; 3080 stable, 3180/3181 durable never touched)`)
   if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
   for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), FSROOT, RUN_DIR]) mkdirSync(p, { recursive: true })
+  if (process.env.A5M2_EDIT_HOME_POINTER) { // explicit HOME hand-off to the monitor (no globbing; written BEFORE boot so a boot failure is still auditable)
+    try { writeFileSync(process.env.A5M2_EDIT_HOME_POINTER, `${HOME}\n`) } catch { /* monitor hint best-effort; window verdict never depends on it */ }
+  }
   writeFileSync(join(HOME, 'a5m2-edit-hw-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, runner: '05-edit-window-runner.mjs', composedSha: COMPOSED_SHA, packSha256: EXPECTED_PACK_SHA, stamp: RUN_STAMP }, null, 2))
   try {
     const selfSha = execFileSync('git', ['-C', ROOT_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()

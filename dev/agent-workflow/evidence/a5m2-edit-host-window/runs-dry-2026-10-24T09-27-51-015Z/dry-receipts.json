@@ -1,0 +1,14 @@
+{
+  "dry": true,
+  "reachedBootBoundary": true,
+  "booted": false,
+  "portsAwaited": {
+    "host": 3183,
+    "hostIdle": true,
+    "mock": 3498,
+    "mockIdle": true
+  },
+  "manifestEntry": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+  "fsRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g3/tests/homes/a5m2-edit-hw-a-dry-2026-10-24T09-27-51-015ZZ/fsroot",
+  "patchWritten": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g3/tests/homes/a5m2-edit-hw-a-dry-2026-10-24T09-27-51-015ZZ/dry-patch.yml"
+}

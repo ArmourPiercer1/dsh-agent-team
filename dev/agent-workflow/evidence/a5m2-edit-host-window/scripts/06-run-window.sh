@@ -83,7 +83,7 @@ echo "ports 3183/3498 free (pre-check)"
 #     REAL-SPAWN receipt (root order): $! after setsid -w IS the exec'd node
 #     runner as session/group leader (PGID == PID, measured shape); written
 #     BEFORE the wait; wait carries the real rc.
-setsid -w env A5M2_EDIT_WINDOW=GRANTED node "$RUNNER" &
+setsid -w env A5M2_EDIT_WINDOW=GRANTED A5M2_EDIT_HOME_POINTER="$OUT/home.txt" node "$RUNNER" &
 SPAWN_PID=$!
 sleep 1
 SPAWN_PGID=$(ps -o pgid= -p "$SPAWN_PID" 2>/dev/null | tr -d '[:space:]'); [ -n "$SPAWN_PGID" ] || SPAWN_PGID="$SPAWN_PID"
@@ -110,8 +110,12 @@ for P in 3183 3498; do
   ss -ltn "sport = :${P}" | grep -q LISTEN && fail "port ${P} still occupied after exit — runner cleanup fact FALSE" 1
 done
 echo "ports 3183/3498 free (post)"
-WORLD=$(ls -1d tests/homes/a5m2-edit-hw-a-*-Z 2>/dev/null | tail -1 || true)
-[ -n "$WORLD" ] || fail "expected HOME for this window not found (raw retention law broken?)" 1
+# Explicit HOME hand-off from THIS run's pointer file — no globbing (the
+# prior window's glob missed the real '...628ZZ' stamp and falsely claimed
+# a missing HOME; the 64MiB check never actually ran that window — admitted).
+if [ -s "$OUT/home.txt" ]; then WORLD=$(tr -d '\n' < "$OUT/home.txt"); else fail "no explicit HOME pointer from this run ($OUT/home.txt absent — runner died before HOME stage); nothing deleted, scene retained" 1; fi
+[ -d "$WORLD" ] || fail "pointed HOME absent at ${WORLD} — raw retention law broken?" 1
+echo "HOME (explicit pointer): ${WORLD}"
 [ -f "$WORLD/a5m2-edit-hw-lock.json" ] && echo "world lock retained: $WORLD"
 NEWB=$(find "$WORLD" -type f -links 1 -printf '%s\n' 2>/dev/null | awk '{t+=$1} END {print t+0}')
 echo "HOME new bytes (nlink==1): ${NEWB} (budget ${HOME_BUDGET})"

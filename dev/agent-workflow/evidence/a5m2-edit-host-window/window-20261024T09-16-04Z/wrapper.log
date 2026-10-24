@@ -1,0 +1,8 @@
+window wrapper 20261024T09-16-04Z driver=d66e225bec6a77b2bb586eeca99e1d60d38c9850
+driver law: HEAD carries d66e225bec6a77b2bb586eeca99e1d60d38c9850 (logic pin); runner file sha256 8003aa804631a4de241db375d7f75742f03b209a10929ddff6ffca6d3db1923b (recorded; constants sync card 2026-10-28 is the only sanctioned drift from the d66 surface)
+fixture before: lock=7685317ff1ba675f… pkg=f17e6a0f5d6e6068…
+static-import audit (INFORMATIONAL ONLY — the real gate is f86's cold-import RC0 receipt): rc=0, report at dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-16-04Z/static-import-audit.json
+df avail: 18479669248 B (min 18000000000)
+ports 3183/3498 free (pre-check)
+timeout: unrecognized option '--group'
+Try 'timeout --help' for more information.

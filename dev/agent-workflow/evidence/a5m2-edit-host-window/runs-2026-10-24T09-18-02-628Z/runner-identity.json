@@ -1,0 +1,12 @@
+{
+  "runnerFullSha": "f6e76873cb221e8c2e6b7d274c662d49796f15ff",
+  "runnerFileSha256": "8003aa804631a4de241db375d7f75742f03b209a10929ddff6ffca6d3db1923b",
+  "composedSha": "37646ac288dbd0ee3c998343dc91fd1a8da7a2d5",
+  "packTgz": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-37646ac2-20261024T085726Z/dsh-agent-team-0.1.1-alpha.2.tgz",
+  "packSha256": "sha256:3652b2ce19025d0d25d8b661fc08f0a3cb0737bb7b4fbc339fd61a12e2b5fd7c",
+  "installDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2",
+  "armBlobExpectations": {
+    "edit": "5a6db608a4043793e8569998bbe1c8fa5a0695be",
+    "sre": "6a1ec67f062dd77ee7110a6d4d6e3781376f4f35"
+  }
+}
