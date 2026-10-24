@@ -1,0 +1,14 @@
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (908 entries)...
+Progress: resolved 1, reused 0, downloaded 0, added 0
+[WARN] deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+Progress: resolved 42, reused 0, downloaded 0, added 0
+✓ Lockfile passes supply-chain policies (908 entries in 4.3s)
+[ERR_PNPM_NO_OFFLINE_META] Failed to resolve @deepseek-ai/dsh-agent@0.2.0-rc.2 in package mirror /home/user/.cache/pnpm/v11/metadata/registry.npmjs.org/@deepseek-ai/dsh-agent.jsonl
+
+This error happened while installing a direct dependency of /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2
+PNPM_RC=1
+---df---
+8371372032
+---git---
+?? dev/agent-workflow/evidence/a5m2-g2-wire/lock-diag-store-20261024T041011.log
