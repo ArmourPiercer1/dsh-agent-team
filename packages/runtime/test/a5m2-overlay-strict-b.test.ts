@@ -32,7 +32,7 @@ import { untestedAssurance } from '../tool-dispatch/index.js'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)

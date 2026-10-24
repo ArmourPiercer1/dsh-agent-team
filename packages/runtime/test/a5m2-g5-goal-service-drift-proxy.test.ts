@@ -27,7 +27,7 @@
 import { describe, expect, it } from 'vitest'
 
 const G5 = (await import(new URL('../src/plugin/live/governed-families/g5-goal-service.mjs', import.meta.url).href)) as {
-  createG5GoalServiceAdapter: (input: Record<string, unknown>) => Record<string, any>
+  createG5GoalServiceAdapter: (input: Record<string, unknown>) => Record<string, { active: boolean; invoke: (args: Record<string, unknown>, exec: unknown) => Promise<{ ok?: boolean; code?: string; detail?: unknown }> }>
 }
 
 const DRIFT = 'P_G5_GOAL_CAPTURE_DRIFT'
@@ -114,9 +114,9 @@ describe('a5m2-g5 L7 drift law — real 639 proxy shapes', () => {
     expect(second.ok).toBe(true)
     // The wrappers genuinely differ per read — the shape that produced the
     // bash-6224 false positive is exercised, not simulated away.
-    expect((service as any).get !== (service as any).get).toBe(false) // raw reads are stable
+    expect((service as { get?: unknown }).get !== (service as { get?: unknown }).get).toBe(false) // raw reads are stable
     const face = shadowFace(service)
-    expect((face as any).get === (face as any).get).toBe(false) // shadow reads are fresh
+    expect((face as { get?: unknown }).get === (face as { get?: unknown }).get).toBe(false) // shadow reads are fresh
   })
 
   it('REAL-FACE: a swapped provider behind the binding refuses typed drift, zero further port entry', async () => {
@@ -136,7 +136,7 @@ describe('a5m2-g5 L7 drift law — real 639 proxy shapes', () => {
     const service = new RealGoalService()
     const adapter = realWorld(shadowFace(service))
     expect((await adapter.get_goal.invoke({}, EXEC)).ok).toBe(true)
-    ;(service as any).get = function replaced() { return view('active') }
+    ;(service as { get?: unknown }).get = function replaced() { return view('active') }
     const refused = await adapter.get_goal.invoke({}, EXEC)
     expect(refused.code).toBe(DRIFT)
     expect(String(refused.detail)).toContain('was replaced underneath the frozen bind')

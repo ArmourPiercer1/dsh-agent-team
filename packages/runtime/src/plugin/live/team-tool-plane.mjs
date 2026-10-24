@@ -7749,6 +7749,11 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
               }
             }
             livePaPlan.clear()
+            // A5M2 root card ② lifetime closure (independent review @b162):
+            // the dispose endpoint that ends every plan fact ends every
+            // ISSUED canonical binding record with it — same call-lifetime
+            // law as every livePaPlan.delete site.
+            issuedCanonicalPair.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the
             // mount — dispose is the only legal end of that obligation.
