@@ -414,7 +414,14 @@ function lastUserText(req) {
     if (m?.role !== 'user') continue
     const c = m.content
     if (typeof c === 'string') return c
-    if (Array.isArray(c)) return c.filter((p) => p?.type === 'text').map((p) => p.text ?? '').join('\n')
+    if (Array.isArray(c)) {
+      // messages-protocol follow-up turns END with a PURE tool_result user
+      // message (08 offline check caught this residual blind spot): a block
+      // message carrying ONLY results yields '' and the search CONTINUES to
+      // the real marker turn — never fall to TURN-DONE on the result block.
+      const t = c.filter((p) => p?.type === 'text').map((p) => p.text ?? '').join('\n')
+      if (t.length > 0 || !c.some((p) => p?.type === 'tool_result')) return t
+    }
   }
   return ''
 }
