@@ -1444,3 +1444,39 @@ describe('A5M2-WIRE round-45: createG2WebBackend — standard face, sync contrac
     expect(() => mm.createG2WebBackend({ webAdaptersMod: adapters, realmId: 'r', providerId: 'a5p5-plane', readNative: () => undefined, definitionIdentityOf: () => 'd', lanes, descriptions: {} })).toThrow(/captured description BYTES/)
   })
 })
+
+/* B-WEB closed table: legality + REAL-mint pairing through the row's own
+ * classifyCall law (nothing hand-written). */
+describe('A5M2-WIRE round-47: B-WEB table entry against the real web mint', () => {
+  it('the entry passes its own legality law; both real manifests validate; a tampered destination is refused', async () => {
+    const C = (await import('../control/types.js')) as typeof import('../control/types.js')
+    const rule = C.PA_FAMILY_TARGET_RULES['B-WEB']
+    expect(rule).toBeDefined()
+    if (rule === undefined) throw new Error('B-WEB entry missing')
+    expect(C.assertPaFamilyTargetRuleLegality('B-WEB', rule)).toBeUndefined()
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, { classify: (a: Record<string, unknown>) => { ok: boolean; targetManifest?: Record<string, unknown> } }> }
+    const req = <T,>(v: T | undefined): T => { if (v === undefined) throw new Error('web row missing'); return v }
+    const rows = adapters.createG2WebAdapters({ realmId: 'r-web', providerId: 'a5p5-plane', readNative: (name: string) => ({ name, definitionIdentity: 'di-w-' + name, execute: async () => ({ ok: true }) }), definitionIdentityOf: (name: string) => 'di-w-' + name, searchOrigin: 'https://search.example.invalid' })
+    const fetchRow = req(rows.web_fetch).classify({ url: 'https://target.example.invalid/a?b=1' })
+    expect(fetchRow.ok, JSON.stringify(fetchRow)).toBe(true)
+    const manifest = fetchRow.targetManifest as Record<string, unknown>
+    // NAMED GRAMMAR GAP (pinned, not papered): the real mint carries
+    // providerIdentityAtClassify as an OBJECT ({observed:false,reason} or
+    // {observed:true,fetchProviderId,searchProviderId,searchOrigin?}); the
+    // frozen value-token union has NO object token and the closed validator
+    // refuses any manifest key outside the typed plan — so this ONE key is
+    // table-unexpressible today. The refusal message is measured to name
+    // ONLY that key (everything else pairs); faking it as a string or
+    // dropping it is forbidden, so the honest pin is this exact refusal.
+    const fetchCheck = C.validatePaFamilyTargetAgainstRule('B-WEB', rule, manifest)
+    expect(String(fetchCheck)).toMatch(/providerIdentityAtClassify/)
+    expect(String(fetchCheck)).not.toMatch(/url|destinationOrigin|businessObligations|operation/)
+    const searchRow = req(rows.web_search).classify({ queries: ['alpha', 'beta'] })
+    expect(searchRow.ok).toBe(true)
+    const searchCheck = C.validatePaFamilyTargetAgainstRule('B-WEB', rule, searchRow.targetManifest as Record<string, unknown>)
+    expect(String(searchCheck)).toMatch(/providerIdentityAtClassify/)
+    expect(String(searchCheck)).not.toMatch(/queriesSummary|queryCount|providerOriginSource|destinationOrigin/)
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, destinationOrigin: 'https://evil.example.invalid' })).not.toBeUndefined()
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, url: undefined })).not.toBeUndefined()
+  })
+})

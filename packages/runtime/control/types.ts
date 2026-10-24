@@ -1591,6 +1591,41 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
    * connect — effect law pinned) and an explicit null otherwise — no
    * value dropped, nothing invented. Still does not stand for "all of
    * Browser" (ordinary public export awaits the user). No new kinds. */
+  // ROOT B-WEB closed-table entry (measured one-for-one against the REAL
+  // mint in g2-connector-adapters createG2WebAdapters :584-674 — web_fetch
+  // fetch-exact-url / web_search search-queries; NOTHING deleted, no
+  // target moved out of the fingerprint, no 'any': every manifest key the
+  // grammar can express is pinned. GRAMMAY GAP, reported verbatim:
+  // providerIdentityAtClassify is an OBJECT ({observed:false,reason} or
+  // {observed:true,fetchProviderId,searchProviderId,searchOrigin?}) and
+  // the frozen value-token union (string/boolean/nonNegativeInt/
+  // countsTriple/obligations/nullableString/stringArray) carries NO
+  // object token — this key therefore stays table-unexpressible and is
+  // named here instead of being faked as a string. It rides the manifest
+  // and the per-call provider re-resolution law (web/src/index.ts
+  // resolveProvider) and is listed in currentFields for the SAME
+  // reason it exists in the mint: a classify-time snapshot, never a
+  // per-dispatch re-promise.
+  'B-WEB': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'fetch-exact-url': Object.freeze({
+          adds: Object.freeze({ url: 'string', destinationOrigin: 'string' }),
+          binds: Object.freeze({}),
+        }),
+        'search-queries': Object.freeze({
+          adds: Object.freeze({ queriesSummary: 'stringArray', queryCount: 'nonNegativeInt', destinationOrigin: 'string', providerOriginSource: 'string' }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'providerIdentityAtClassify']),
+  }),
   'B-BROWSER': Object.freeze({
     required: Object.freeze({
       browserVariant: 'string',
