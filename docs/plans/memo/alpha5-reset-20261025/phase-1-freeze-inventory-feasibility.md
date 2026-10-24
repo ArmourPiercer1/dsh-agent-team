@@ -132,3 +132,106 @@ PoC 在独立 scratch/research branch 执行；可以创建测试专用 Minimal 
 工作树纪律：每个写者各自 branch/worktree；A/B 只读主代码树，改动只进 S1 自有研究文件。任何动到 shared authorized plan/graph/AGENTS 的指针变化须在 G1 后走 S2 独立权威切换 PR；本 S1 不切 current、不合 #360、不动 PR #361 与 #362 内容、不改 CI/产品源码。总账记录每份证据的 Git/ref、实际世界、审查者、保护范围、预算与停止条件。
 
 **S1 结束时应交给下一阶段的是可信的“现状与路线”，不是另一批未经整合的实现代码。**
+
+
+## 6. 独立审查后的强制执行补充
+
+本节为 S1 的有限预算、快照闭包、H0 顺序和 G1 状态定义。与前文较弱或含糊表述冲突时，以本节为准。所有数值均为首轮硬上限，不代表已获准启动 S1；超限必须先提交范围变更，由用户/项目授权主体批准后才能继续。
+
+### 6.1 F0 Snapshot Closure：固定本轮验收对象
+
+F0 由 Freeze Owner 签发为只读、版本化、不可变快照，至少包括：
+
+- Team 仓库的 commit SHA、所有被纳入的 PR/head/branch/ref 及采集时间；
+- 固定 Host 仓库与 commit SHA、tests/paths.mjs 中的实际 pin、构建/安装包 digest；
+- 工具来源集合：历史 93 条记录、当前 public catalog、已合并 manifest、Profile/配置、已受审插件和动态来源的明确纳入/排除清单；
+- 每一来源的 source ID/digest、source kind、scope/variant、采集方法；ExpectedToolObligations 与 ObservedRuntimeInventory 的版本和差集；
+- Profile/config digest、批准的 TestWorld/DSH_HOME、进程/端口、工作树/分支/dirty state、untracked/stash/local-only commits、受保护用户资产；
+- S1 Owner、Reviewer、预算计数器起点、证据存储位置和签发时间。
+
+F0 必须区分“已观察”“无法观察”“明确排除”和“未知”。GitHub API 不能证明本地进程、worktree、stash、untracked 文件、用户 World 或实际磁盘状态。任何未能实测的字段都标记 NOT_OBSERVED，并使依赖它的冻结/资产命题保持 BLOCKED-LOCAL-OBSERVATION。
+
+F0 签发后，本轮 G1 的 ExpectedToolObligations 集合闭合。之后发现的新来源只写入 SOURCE_DELTA / POST-G1 UNKNOWN 队列，记录发现时间、来源身份、为何不在 F0、潜在影响与建议是否重开 G1。新增来源不得回溯性改变已固定 G1 的 PASS 判定；只有新来源挑战既有安全不变量、证明原快照造假/漏掉当时已存在的权威来源，或改变用户批准的必交范围时，才提交明确的 G1 重开请求。不能由研究 Agent 自行扩大集合。
+
+### 6.2 H0：首个且优先级最高的 Host seam PoC
+
+在展开普通 Family 或 Bridge 的广泛技术路线前，先验证固定 Host 中 Guard 验证 Definition 后，dispatch 仍会重新 resolveExecution 的已知 TOCTOU 风险。该风险来自源码审查，尚非已复现的可利用漏洞。
+
+最小实验矩阵：
+
+1. 正控：固定 Definition A，从真实 public registration/dispatch 路径调用 A，确认正确 Body 计数为 1、预期外部效果存在。
+2. 注册换代：Guard 验证 A 后、dispatch 前注册/切换到 B；确认未验证的 B Body 计数为 0。
+3. 同名覆盖：同 Scope 同名定义换代；确认旧 Binding/Grant 不可执行新 Definition。
+4. Scope 变化：在 Guard 与 dispatch 间改变 Scope/Binding 身份；确认拒绝发生在 Body 前。
+5. 异步暂停/竞争：在可控 await/调度点触发换代；重复有限次数，记录调度点、最终 dispatch 身份、Body 计数与副作用。
+6. 测试灵敏度：植入一个已知错误的 post-Guard re-resolve 或等价缺陷，测试必须 RED；撤去植入后正控恢复。
+
+每项记录 Host SHA、Team SHA、Runner/Canary digest、World ID、Definition/Scope digest、Body 调用计数、实际外部效果和日志摘要。PASS 要求所有未验证 Body 调用计数均为零，且测试能够检测植入缺陷。事后撤销、审计告警、返回拒绝错误或只 mock dispatch 均不合格。
+
+若 H0 失败或公开 seam 无法观察真实 dispatch 身份，立即将依赖路径标为 CORE_SEAM_BLOCKER 或 ENV-BLOCKED（依据是技术缺口还是环境不可用），停止该路径的进一步实现型研究。不得用后续 G3 Oracle、事后审计或用户未明确批准的假设代替 H0。
+
+### 6.3 S1 项目级硬预算与自动停止
+
+首轮预算从 S1 正式启动时计时，Lane A/B 共用，不按 Owner 或机制组拆分后重复申请：
+
+| 资源 | 硬上限 | 达到上限后的动作 |
+|---|---:|---|
+| 总技术调查时间 | 2 个工作日（最多 16 Owner-hours，跨所有 Owner 汇总） | 停止新增技术实验，整理当前证据与未决项 |
+| PoC 实验总数 | 20 次独立实验；一次实验指一个预先登记的假设/输入组合，不得把重复循环伪装成一次 | 不得新增实验；未闭项转 UNKNOWN/NEEDS-RULING |
+| 真实 Host 启动/重启 | 合计 12 次 | 停止 Host 运行；不得以重启修复环境为由自动续期 |
+| 单次实验运行时间 | 30 分钟 | 自动停止本次实验并保全证据；不得无记录续跑 |
+| 单次实验新增证据 | 2 GiB | 停止生成大体积证据，保留最小复现与摘要/digest |
+| 同一假设的尝试 | 一次初始 PoC + 至多一次预先说明区分目的的补试 | 仍不确定则转 UNKNOWN/NEEDS-RULING 或 CORE_SEAM_BLOCKER |
+| 每个机制组的异常样本 | 一个代表性异常样本；若证明它不代表该组，须使用项目总实验额度并说明替换原因 | 不得因新异质性自动创建新机制组 |
+
+每个实验开跑前登记 ID、单一假设、可能结果、停止条件、Owner、Host 启动额度、预计时长、World、效果观察方式和证据上限。预算账本必须是跨 Owner 的单一共享账本。任何重试、分组拆分、换 Runner 或换 Owner 都继续计入原项目预算。
+
+达到任一上限后，禁止以“再做一个区分实验”“新发现一种异质性”或“动态来源不断增长”为理由自动扩项。只能输出 READY-PUBLIC、CONDITIONAL、UNKNOWN/NEEDS-RULING、ENV-BLOCKED 或 CORE_SEAM_BLOCKER，并提交所需新增预算、预期可区分的结论及用户批准请求。未经批准不得继续执行。
+
+### 6.4 逐工具分类不等于逐工具实测
+
+S1 必须对 F0 内每条 ExpectedToolObligation 逐名登记来源、Scope/variant、领域效果、候选路线、证据等级、必要测试与 Owner；但不要求在 G1 前对全部 93 条历史记录逐一完成真实 Host 正负控。
+
+真实 PoC 按共享的 Host seam/执行机制分组，优先顺序为：H0 Definition TOCTOU；普通 Family 公共注册与 Body 前拦截；read/write 与 process 的不同执行模型；一项具名 Bridge；动态来源和 Domain veto 的必要最小反例。异质工具只有在已有组的代表性假设不成立时才用剩余预算追加定点测试。逐工具静态分类不能冒充真实 Host 验收；族级 PoC 也不能让未测工具自动变成 READY。
+
+### 6.5 G1-I / G1-F 与阻断传播
+
+G1 拆分为：
+
+- G1-I Inventory：F0 可信且闭合；资产清单及差集可审；93 条历史记录可追踪；未知资产有 Owner 与保护；量化回收计划完整。
+- G1-F Feasibility：H0 已通过或以 CORE_SEAM_BLOCKER 明确阻断；关键普通 Family 的公共接入与授权前拦截存在可信路径；每条必交记录有可实施路线或具名 blocker；研究预算和停止条件可审。
+
+G1-I PASS 不代表 G1-F PASS。G1-I PASS 而 G1-F BLOCKED 时，可继续不依赖 Host 执行的 S2 文档/权威迁移准备，但不得进入 S4，也不得把阻断路径写为可实现。若 H0 因环境缺失无法执行，状态为 ENV-BLOCKED，不可当作通过。
+
+G1 总体状态必须为以下之一：
+
+| 状态 | 判定与下游规则 |
+|---|---|
+| G1 PASS | G1-I 与 G1-F 均通过；按总计划解锁 S2，S4 仍需 G2/G3 |
+| G1 PARTIAL | 有部分资产/路线成果但仍有缺项；只允许无依赖的只读工作 |
+| G1 BLOCKED-LOCAL-OBSERVATION | 本地工作树、进程、磁盘或 World 无法核实；不得宣称冻结/资产完整，不得清理 |
+| G1 ENV-BLOCKED | 合法 Host/凭据/平台不可用；不得用 mock 替代真实证据 |
+| G1 NEEDS-RULING | 安全合同、威胁模型、范围或成本取舍需要授权主体决定 |
+| G1 CORE_SEAM_BLOCKER | 公共 Host seam 无法证明可信身份或 Body 前拒绝；阻断依赖路径的 S4/发布 |
+
+“部分通过”不能由报告措辞自动升级为 PASS。每项状态必须带 Owner、快照 digest、证据、下一步、重开条件。
+
+### 6.6 资产与磁盘回收计划必须量化
+
+S1 仍不执行删除，但必须产出逐目录的实际 du、共享/硬链接说明、最后消费者、唯一性、重建成本、保护级别、回收风险和估算节省。将常态总占用 5–10 GB、集成高峰约 20 GB 作为目标预算，而非不顾真实必要性强制删减。若无法达到目标，必须逐项列出具名的不可回收资产、理由、Owner 和预计复核日期；不得用“UNKNOWN/IN-USE”永久搁置而不设处置责任。
+
+为 UNKNOWN/IN-USE 资产建立 DISPOSITION_PENDING 队列。每项必须有责任 Owner、需要补的观察、最迟复核 Gate 和建议去向。超过复核期限时升级到项目 Owner，不自动删除。清理必须在后续独立批准工作包中执行，S1 只提交方案。
+
+### 6.7 G1 独立审查清单
+
+独立 Reviewer 必须核验原始来源和关键运行证据，而不是只读研究报告：
+
+- F0 的每类来源、排除理由与快照 digest；SOURCE_DELTA 未被回溯混入；
+- 本地观察缺失是否正确传播为 BLOCKED-LOCAL-OBSERVATION；
+- H0 原始运行结果、Body 计数、外部副作用、植入缺陷 RED 证据；
+- 项目级预算账本和停止记录，确认未通过拆分机制组、Owner 或重试规避；
+- 每条必交工具的静态路线记录与真实实测状态没有混淆；
+- UNKNOWN/IN-USE 与磁盘回收队列有责任人、量化空间和复核节点；
+- G1-I、G1-F 判定与下游允许动作符合本节矩阵。
+
+G1 的交付是有限快照上的可信现状、关键安全 seam 结论、可实施路线和明确 blocker，而不是“发现所有未来工具”或“所有工具已实现”。
