@@ -2626,7 +2626,12 @@ async function buildG2TeamSupply(
     // supply is built inside apply() where ctx lives. No new credential
     // service, no key copies: snapshot get(name) reads only, nothing
     // stored or logged.
-    const launchEnvMod = (await import('@deepseek-ai/dsh-launch-environment')) as unknown as { launchEnvironmentOf: (c: unknown) => { get: (name: string) => { value: string } | undefined } }
+    // HOST-GRAPH-ONLY module (the 15-peer set does not carry it): the
+    // specifier rides a TYPED VARIABLE - the same discipline the PUBLIC
+    // web-search roots above use - so tsc compiles honestly while the
+    // installed host resolves the module at runtime. No ts-ignore, no any.
+    const launchEnvSpecifier: string = '@deepseek-ai/dsh-launch-environment'
+    const launchEnvMod = (await import(launchEnvSpecifier)) as unknown as { launchEnvironmentOf: (c: unknown) => { get: (name: string) => { value: string } | undefined } }
     const launchEnvSnapshot = launchEnvMod.launchEnvironmentOf(hostCtx)
     const launchEnv = { get: (name: string): string => launchEnvSnapshot.get(name)?.value ?? '' }
     const choice = webSearchCfg.provider
@@ -2734,7 +2739,8 @@ async function buildG2TeamSupply(
         // root), validated by the gateway's own positive-integer law
         // (index.ts:67-70). Nothing new is invented; absence takes the
         // deployment DEFAULT, never "uncapped".
-        const capMod = (await import('@deepseek-ai/dsh-tool-web')) as unknown as { WEB_SEARCH_MAX_RESULTS: number }
+        const toolWebSpecifier: string = '@deepseek-ai/dsh-tool-web' // same host-graph-only typing discipline
+        const capMod = (await import(toolWebSpecifier)) as unknown as { WEB_SEARCH_MAX_RESULTS: number }
         const laneCap = webSearchCfg.searchMaxResults ?? capMod.WEB_SEARCH_MAX_RESULTS
         if (!Number.isInteger(laneCap) || laneCap < 1) {
           return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed.searchMaxResults must be a positive integer (the gateway's own law, tool-web/src/index.ts:67-70) — got ${JSON.stringify(laneCap)}` }
@@ -2854,7 +2860,7 @@ async function buildG2TeamSupply(
     webFixed: async () => {
       const g2Cfg = (resolvedRowConfig as { teamToolPlane?: { g2Mount?: unknown } }).teamToolPlane?.g2Mount
       if (typeof g2Cfg !== 'object' || g2Cfg === null) return undefined
-      const built = await buildG2TeamSupply(resolvedRowConfig)
+      const built = await buildG2TeamSupply(resolvedRowConfig, ctx)
       return (built?.supply as { webFixedTransport?: unknown } | undefined)?.webFixedTransport
     },
     // A5-M2 B-IMAGE: the same lazy shape for the 639 public `attachments` service
