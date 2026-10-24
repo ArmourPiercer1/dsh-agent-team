@@ -354,7 +354,8 @@ async function world(opts: {
   current?: Record<string, unknown>
   nextViews?: Record<string, Record<string, unknown>>
   missingNative?: readonly string[]
-  foreignNative?: readonly string[]  nativeExecute?: Partial<Record<'get_goal' | 'create_goal' | 'update_goal', (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown>>
+  foreignNative?: readonly string[]
+  nativeExecute?: Partial<Record<'get_goal' | 'create_goal' | 'update_goal', (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown>>
   noNativeExecute?: readonly string[]
   portOmit?: readonly string[]
   blockedAfterConsecutiveRounds?: number
