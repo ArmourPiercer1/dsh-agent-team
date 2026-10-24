@@ -736,7 +736,7 @@ async function main() {
   // still a regular file. No zero-pending/zero-consume requirement here
   // (those belong to the later real-symlink/PA leg).
   currentCriterion = 'E4'
-  await apiPrompt(memberSession, `EDIT-ESCAPE ${NONCE}`, 'ehw-e4')
+  await apiPrompt(memberSession, 'EDIT-ESCAPE', 'ehw-e4') // root review fix: bare marker like E1/E2/E3 — the NONCE suffix made stepFor carry it while resultFor waited without it, a guaranteed timeout
   const escapeRes = await resultFor(stepOuter('EDIT-ESCAPE'))
   const canaryFrozen = sha256(CANARY) === canaryShaBefore && Math.abs(statSync(CANARY).mtimeMs - canaryMtimeBeforeMs) < 1
   const canaryStillRegular = (() => { try { return lstatSync(CANARY).isFile() && !lstatSync(CANARY).isSymbolicLink() } catch { return false } })()
