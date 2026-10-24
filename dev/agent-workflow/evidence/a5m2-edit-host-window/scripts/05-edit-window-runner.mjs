@@ -826,7 +826,7 @@ async function main() {
   // does not pass.
   check('E6', 'symlink under root passes lexical law, ALLOW CONSUMES, the WRITE refuses POST-CONSUME in the symlink/O_NOFOLLOW family with own-target bytes frozen and the link intact (arbitrary refusal does NOT pass)',
     sym6Consumed === true && symTargetFrozen && symStillLink
-    && /(NOFOLLOW|ELOOP|EACCES|symlink|symbolic|P_EDIT_SYMLINK|not a regular)/i.test(String(sym6Res))
+    && /symlink-alias|target name is a symlink alias \(O_NOFOLLOW\)/i.test(String(sym6Res)) // root final: 694b edit.mjs :259-260 maps ONLY ELOOP to cfReason='symlink-alias' detail 'target name is a symlink alias (O_NOFOLLOW); nothing was written'; :265 EACCES is path-rejected and does NOT count as the symlink proof
     && !/APPROVAL_DENIED/.test(String(sym6Res)),
     `requestId=${dr6.requestId} consumed=${String(sym6Consumed)} targetFrozen=${String(symTargetFrozen)} stillLink=${String(symStillLink)} result=${String(sym6Res).slice(0, 300)}`)
 
