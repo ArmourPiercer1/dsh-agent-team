@@ -57,11 +57,16 @@
  * SAME public lifecycle face the facade feed rides (host
  * scheduleLifecycle.currentGeneration() shape); epoch unobservable or
  * non-ACTIVE refuses BEFORE the gap fact is even consulted (fail closed);
- * nothing is cached across dispatches. PLAN_ONCE_MEMO 逐字携带: one-shot
- * records commit status inactive + appendDelivery at delivery
- * (runtime.ts:124-128); a governed row never re-plans a once memo.
- * delete/update revocation-path annotations remain comments, NOT policy
- * auto-revocation.
+ * nothing is cached across dispatches. PLAN_ONCE_MEMO CORRECTED per root
+ * (the original adapter law, schedule-adapters.mjs :343 verbatim in spirit:
+ * "PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER"): consumedPlans
+ * refuses replaying the SAME plan OBJECT with zero port entry; a caller
+ * that COPIES a plan's fields re-dispatches under the fingerprint law. It
+ * is NOT a one-shot reminder ledger and NOT the PA once-consumedProof —
+ * the real one-shot consumedProof is the CENTER PA wiring obligation (the
+ * plane's consume-for-execution edge); this module mints no consumedProof
+ * and never claims once-closure. delete/update revocation-path annotations
+ * remain comments, NOT policy auto-revocation.
  *
  * Tier: 接线未测 (no boot/Host). win32-irrelevant.
  */
@@ -100,7 +105,7 @@ export const A5_SCHEDULE_TRIGGER_GAP = Object.freeze({
     woken_tools: 'governed via the existing tools/execute PA path (family law)',
     ungoverned: 'the injection decision itself (may this reminder enter this Session now)',
   }),
-  PLAN_ONCE_MEMO: 'one-shot delivery commits status inactive + appendDelivery (runtime.ts:124-128); governed rows never re-plan a once memo',
+  PLAN_ONCE_MEMO: 'PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER (root correction): consumedPlans refuses replaying the SAME plan OBJECT with zero port entry; a copied plan re-dispatches under the fingerprint law; the real one-shot consumedProof is the CENTER PA wiring obligation — this gate mints none',
   REVOCATION: 'delete/update=revocation path 注释≠policy自动撤销',
   GATED_NAMES: Object.freeze(['schedule_create', 'schedule_update']),
 })
