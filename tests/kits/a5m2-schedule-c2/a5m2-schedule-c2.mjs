@@ -707,11 +707,16 @@ async function main() {
   cookie = auth.headers.get('set-cookie').split(';', 1)[0]
   log(`host booted at ${origin}`)
 
-  // ④ real session contract (cwd adoption; no invented fields)
+  // ④ Team root = SYNTHETIC UNUSED session id (center card 00:2x; proven image
+  // b811 shape a5m2-todo-c2.mjs:171/:1510/:1515): team.create MINTS the root
+  // itself. NO session/create for the team root — an already-opened ordinary
+  // session carries a held active write handle and Team-mode refuses a second
+  // agent under one session (host session-persistence/src/errors.ts:34; the
+  // product's own conflict class s6-remote.js:757-758). All later PUBLIC
+  // addressing (apiPrompt, resolveControl, ledger pages, member discovery)
+  // targets the minted team session through currentRoot.
   currentCriterion = 'setup'
-  const created = await sessionRpc('create', { cwd: HOME }, 'c2-session')
-  currentRoot = created?.sessionId
-  if (typeof currentRoot !== 'string') throw new Error(`session/create value shape: ${JSON.stringify(created).slice(0, 300)}`)
+  currentRoot = `session-a5m2c2-p-${RUN_STAMP}`
   // READ-ONLY readiness barrier first (root 02:1x); after it passes the
   // write request team.create is issued EXACTLY ONCE (never retried).
   await teamReadyBarrier()
