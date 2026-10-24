@@ -7,7 +7,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { zstdCompressSync, zstdDecompressSync } from 'node:zlib'
-import { decodeSessionLogFrames, remoteOutcome, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, blueprintRevisionOf, durableToolPairs, wireToolPairs, toolOutcomeOf, durableToolOutcome } from './a5m2-team-c2-runner.mjs'
+import { decodeSessionLogFrames, remoteOutcome, teamCreateParams, createUniqueTeamRoot, teamFirstQuery, blueprintRevisionOf, ensureTeamRootLive, teamReadState, teamLedgerPage, durableToolPairs, wireToolPairs, toolOutcomeOf, durableToolOutcome } from './a5m2-team-c2-runner.mjs'
 
 const first = Buffer.from('{"line":"frame-one"}\n')
 const second = Buffer.from('{"line":"frame-two"}\n')
@@ -48,7 +48,11 @@ globalThis.fetch = async (url, init) => {
     ? { data: { path: 'fresh-root', rootSessionId: body.payload.params.rootSessionId } }
     : body.method === 'team.getProjection'
       ? { projection: { teamSessionId: body.payload.params.teamSessionId, members: [] } }
-      : { roots: [{ rootSessionId: body.payload.params.rootSessionId ?? 'session-a5m2c2-p-T1' }] }
+      : body.method === 'team.ensureRootLive' || body.method === 'team.getReadState'
+        ? { addressed: body.payload.params.teamSessionId ?? body.payload.params.sessionId, state: 'live' }
+        : body.method === 'team.getLedgerPage'
+          ? { entries: [], nextAfterSequence: 0 }
+          : { roots: [{ rootSessionId: body.payload.params.rootSessionId ?? 'session-a5m2c2-p-T1' }] }
   return { status: 200, headers: new Headers(), text: async () => JSON.stringify({ result: { ok: true, value } }) }
 }
 const root = await createUniqueTeamRoot({ origin: 'http://127.0.0.1:1', cookie: 'c', runStamp: 'T1', blueprintId: 'team.bteam.c2', blueprintRevision: 1 })
@@ -124,6 +128,14 @@ contract.realDurableResultIsErrorNotPass = realResult !== undefined
   && typeof realResult.data.message.toolCallId === 'string'
 contract.evidenceIsClippedSoNoPairingClaimFromIt = evidenceClipped > 0 && evidenceParsed.filter((line) => line?.type === 'assistant/message').length === 0
 
+/* The remaining public Team legs: closed field sets enforced, real answers
+ * asserted, and a bad ledger `limit` refused before the wire. */
+contract.ensureRootLiveClosedSetAndRealAnswer = (await ensureTeamRootLive({ origin: 'http://127.0.0.1:1', cookie: 'c', teamSessionId: root.rootSessionId })).ok === true
+contract.readStateAnswers = (await teamReadState({ origin: 'http://127.0.0.1:1', cookie: 'c', sessionId: root.rootSessionId })).ok === true
+contract.ledgerPageAnswers = (await teamLedgerPage({ origin: 'http://127.0.0.1:1', cookie: 'c', teamSessionId: root.rootSessionId })).ok === true
+contract.ledgerLimitIsValidated = (await Promise.all([0, -1, 1.5, 'x'].map(async (bad) => {
+  try { await teamLedgerPage({ origin: 'http://127.0.0.1:1', cookie: 'c', teamSessionId: 'r', limit: bad }); return false } catch { return true }
+}))).every(Boolean)
 contract.wireFaceSeparateAndAbsenceUnknown = wireToolPairs([{ role: 'assistant', content: [{ type: 'tool_use', id: 'w1', name: 'team_list_members', input: {} }] }, { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'w1', content: [] }] }], 'team_list_members')[0].outcome === 'unknown'
 console.log(JSON.stringify(result, null, 2))
 result.contract = contract
