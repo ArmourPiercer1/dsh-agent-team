@@ -1,0 +1,29 @@
+control window wrapper 20261024T13-22-29Z driver=86d0e00c7094d2a12ce5a0264db6ebe96f682789
+driver law: HEAD carries 86d0e00c7094d2a12ce5a0264db6ebe96f682789; runner file sha256 c49b62f19f0a689234b4294c975e51aa15dab8a3de1e85bd0da1bc8dec675a1f
+fixture before: lock=0e8848a555d20c5a… pkg=fb4541bac8e8068d…
+df avail: 17443364864 B (min 6442450944)
+ports 3184/3499 free (pre-check)
+[ctlhw] plugin entry resolved from the f86 fixture exports['./host']: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0d166410/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
+spawn receipt written: pid=25 pgid=25 granted=true
+[ctlhw] host booted at http://127.0.0.1:3184
+[ctlhw] remote mount gate PASS (polls=1) [dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[ctlhw] FATAL: Error: team.create: {"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a5m2ctlhw-p-2026-10-24T13-22-29-248Z' failed: cannot get property \"sandboxPolicy\" without inject","details":{"method":"team.create","endpoint":"team.create","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAI
+    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/scripts/05-control-window-runner.mjs:583
+[ctlhw] check cleanup: PASS host port 3184 free after stop (free=true)
+[ctlhw] check cleanup: PASS mock port 3499 free after stop (free=true)
+[ctlhw] check cleanup: PASS host stop completed without error (host stopped | mock closed)
+[ctlhw] cleanup: host stopped | mock closed | world retained (root law: NEVER delete HOME/raw)
+{
+  "verdict": "FAIL",
+  "pass": false,
+  "failed": 1,
+  "checks": 4,
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T13-22-29-248Z"
+}
+runner rc=1 (143/137 = outer 300s/320s bound fired on the OWN group)
+ports 3184/3499 free (post)
+HOME (explicit pointer): /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-22-29-248ZZ
+world lock retained: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-22-29-248ZZ
+HOME new bytes (nlink==1): 17445 (budget 67108864)
+fixture byte-stable across the window (lock/pkg hashes equal)
+WRAPPER VERDICT: runner non-zero rc=1 — STOP (no second window without a fresh root order)
