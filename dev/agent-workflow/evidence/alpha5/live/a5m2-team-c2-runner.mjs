@@ -34,6 +34,7 @@ import {
 } from './a5m2-team-c2-kit.mjs'
 import {
   REMOTE_TEAM_CREATE_FIELDS, REMOTE_TEAM_CREATE_FIELDS_V2,
+  REMOTE_TEAM_GET_PROJECTION_FIELDS, REMOTE_TEAM_GET_READ_STATE_FIELDS,
 } from '../../../../../packages/runtime/dist/packages/remote/src/contracts/params.js'
 import {
   A5_B_TEAM_TOOL_NAMES, A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION,
@@ -268,6 +269,27 @@ export async function createUniqueTeamRoot ({ origin, cookie, runStamp, blueprin
   }
 }
 
+
+/**
+ * The FIRST Team query for the root this run created. Measured against the
+ * contract, not assumed: `/team-remote` exposes NO member-listing method —
+ * `params.ts:2336-2386` lists `team.create`, `team.admitInitialWork`,
+ * `team.listRoots`, `team.ensureRootLive`, `team.resolveControl`,
+ * `team.prepareOrdinaryOpen`, `team.getReadState`, `team.listCorruptControlLegs`,
+ * `team.getProjection`, `team.getLedgerPage`. Member listing (`team_list_members`,
+ * tool 74) is a TEAM TOOL executed inside the leader session, not an RPC, so the
+ * public read that addresses this root is `team.getProjection` (closed set
+ * `['teamSessionId']`, params.ts:602) — the field set is taken from the imported
+ * constant so the request cannot drift.
+ */
+export async function teamFirstQuery ({ origin, cookie, teamSessionId }) {
+  const closed = [...REMOTE_TEAM_GET_PROJECTION_FIELDS]
+  if (closed.length !== 1 || closed[0] !== 'teamSessionId') throw new Error(`team.getProjection closed set drifted: ${closed.join(', ')}`)
+  const res = await remoteCall(origin, cookie, 'team.getProjection', { teamSessionId }, 'bteam-query', 3)
+  const err = resultError(res.body)
+  return { ok: err === null, teamSessionId, method: 'team.getProjection', closedFields: closed, error: err ?? null, body: res.body }
+}
+
 /** Every string in a nested Remote payload (read-back containment check). */
 function collectStrings (value, out = []) {
   if (typeof value === 'string') out.push(value)
@@ -387,7 +409,10 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, g
     if (live !== undefined) {
       const root = await createUniqueTeamRoot({ origin, cookie, ...live })
       rec('C-CREATE-ONCE', root.ok, `${root.stage} root=${root.rootSessionId}${root.error === undefined ? '' : ` error=${JSON.stringify(root.error).slice(0, 160)}`}`)
-      return { trace, ok: trace.every((row) => row.ok), root }
+      if (!root.ok) return { trace, ok: false, root }
+      const query = await teamFirstQuery({ origin, cookie, teamSessionId: root.rootSessionId })
+      rec('C-TEAM-QUERY', query.ok, `${query.method} fields=${query.closedFields.join(',')} ${query.error === null ? 'answered' : `error=${JSON.stringify(query.error).slice(0, 160)}`}`)
+      return { trace, ok: trace.every((row) => row.ok), root, query }
     }
     // Team cases run against a NEW unique root created directly through the
     // public Team API (never by hijacking an ordinary session writer).

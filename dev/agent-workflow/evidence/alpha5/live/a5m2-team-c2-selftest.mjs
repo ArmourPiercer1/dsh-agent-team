@@ -6,7 +6,7 @@
  * do so.
  */
 import { zstdCompressSync, zstdDecompressSync } from 'node:zlib'
-import { decodeSessionLogFrames, resultError, teamCreateParams, createUniqueTeamRoot } from './a5m2-team-c2-runner.mjs'
+import { decodeSessionLogFrames, resultError, teamCreateParams, createUniqueTeamRoot, teamFirstQuery } from './a5m2-team-c2-runner.mjs'
 
 const first = Buffer.from('{"line":"frame-one"}\n')
 const second = Buffer.from('{"line":"frame-two"}\n')
@@ -44,12 +44,18 @@ globalThis.fetch = async (url, init) => {
   const body = JSON.parse(init.body)
   const payload = body.method === 'team.create'
     ? { ok: true, rootSessionId: body.payload.params.rootSessionId }
-    : { ok: true, roots: [{ rootSessionId: body.payload.params.rootSessionId ?? 'session-a5m2c2-p-T1' }] }
+    : body.method === 'team.getProjection'
+      ? { ok: true, projection: { teamSessionId: body.payload.params.teamSessionId, members: [] } }
+      : { ok: true, roots: [{ rootSessionId: body.payload.params.rootSessionId ?? 'session-a5m2c2-p-T1' }] }
   return { status: 200, headers: new Headers(), text: async () => JSON.stringify({ payload }) }
 }
 const root = await createUniqueTeamRoot({ origin: 'http://127.0.0.1:1', cookie: 'c', runStamp: 'T1', blueprintId: 'team.bteam.c2', blueprintRevision: 1 })
 contract.createOnceThenReadbackListsTheRoot = root.ok === true && root.stage === 'readback' && root.readbackListed === true
 contract.rootSessionIdFollowsLaneLaw = root.rootSessionId === 'session-a5m2c2-p-T1'
+const query = await teamFirstQuery({ origin: 'http://127.0.0.1:1', cookie: 'c', teamSessionId: root.rootSessionId })
+contract.firstTeamQueryAddressesTheCreatedRoot = query.ok === true && query.method === 'team.getProjection'
+  && query.closedFields.join(',') === 'teamSessionId'
+  && query.body.payload.projection.teamSessionId === root.rootSessionId
 result.contract = contract
 console.log(JSON.stringify(result, null, 2))
 process.exitCode = result.frameSegmentedRecoversBoth && Object.values(contract).every(Boolean) ? 0 : 1
