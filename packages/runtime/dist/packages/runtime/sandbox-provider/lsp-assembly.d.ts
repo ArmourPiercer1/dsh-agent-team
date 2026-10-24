@@ -92,7 +92,10 @@ export interface LspAssemblyOptions {
     readonly deps?: ProviderDeps;
     /** The (member × generation) → policy map. Calling it is itself the discipline: generations are explicit. */
     readonly policyFor: (memberId: string, generation: string) => LspRealmPolicy;
-    /** Readiness over the live pipes: default = one line-JSON ping must answer with the payload pid. */
+    /** Readiness over the live pipes: default = the STANDARD LSP initialize
+     *  handshake (Content-Length framed `initialize` → capabilities →
+     *  `initialized`); integrators may inject a stricter probe, never a
+     *  weaker echo. */
     readonly ready?: (instance: LspInstance) => Promise<boolean>;
     readonly readyTimeoutMs?: number;
     readonly terminateGraceMs?: number;
@@ -124,5 +127,19 @@ export interface LspRealmAssembly {
     /** Live instance count (teardown proof surface). */
     size(): number;
 }
+/**
+ * THE LSP BASE PROTOCOL CODEC (root LSP-review ruling 2026-10-25): the ONE
+ * Content-Length framing implementation this package uses — the assembly's
+ * readiness handshake and the consumer-side query backend (the realm supply)
+ * both ride it, so no second dialect exists. Exported for that single
+ * documented consumer; it carries no policy.
+ */
+export declare function encodeLspMessage(message: unknown): string;
+/** A streaming decoder for the Content-Length framing. `push` returns the
+ *  complete JSON messages the chunk completed; malformed framing THROWS —
+ *  a framing desync is fatal to the round-trip contract, never re-synced. */
+export declare function createLspFrameDecoder(maxBytes?: number): {
+    push: (chunk: Buffer | string) => readonly unknown[];
+};
 export declare function createLspRealmAssembly(options: LspAssemblyOptions): LspRealmAssembly;
 //# sourceMappingURL=lsp-assembly.d.ts.map

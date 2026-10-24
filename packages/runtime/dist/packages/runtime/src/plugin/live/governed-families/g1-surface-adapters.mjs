@@ -850,11 +850,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
      * each, the pairing law's mint side. Every other family keeps the nested
      * `trusted` envelope BYTE-IDENTICAL (its rule has not landed; its claim
      * still fails closed at the table — no drift either way). */
-<<<<<<< HEAD
-    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT' || spec.family === 'B-DEPENDENCY'
-=======
-    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT' || spec.family === 'B-PLUGIN'
->>>>>>> d0810c0877b157eac65f45bb4e5538fc1474d26e
+    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT' || spec.family === 'B-DEPENDENCY' || spec.family === 'B-PLUGIN'
     const targetManifest = deepFreeze(flatTrustedLeaves
       ? {
           ...built.target,
@@ -892,11 +888,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       effects,
       serviceObligations,
       targetManifest,
-<<<<<<< HEAD
-      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : spec.family === 'B-DEPENDENCY' ? A5_G1_DEPENDENCY_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
-=======
-      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : spec.family === 'B-PLUGIN' ? A5_G1_PLUGIN_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
->>>>>>> d0810c0877b157eac65f45bb4e5538fc1474d26e
+      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : spec.family === 'B-DEPENDENCY' ? A5_G1_DEPENDENCY_ADAPTER_REVISION : spec.family === 'B-PLUGIN' ? A5_G1_PLUGIN_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
       generations,
       parametersFingerprint: `sha256:${sha256(canonical(args ?? {}))}`,
     })
