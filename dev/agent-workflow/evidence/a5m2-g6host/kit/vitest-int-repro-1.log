@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts (8 tests | 1 failed) 38ms
+     ✓ (a) zero flip: no injection = no wiring face and no session_* placement 7ms
+     × (a2) the policy grammar pins session_* to the durable-approval lane: an allow entry outside the fs/shell family is refused at the projection 10ms
+     ✓ (b) defective owner evidence refuses the MOUNT (config is law, not wiring) 0ms
+     ✓ (c) REAL placement + lazy feed keys + PRODUCTION registry round-trip (placement identity, never capture identity) 4ms
+     ✓ (d) no control leg: the REAL paAdmit fails the walk CLOSED on its own bytes — zero port entry, native untouched 6ms
+     ✓ (e) durable-approval lane with the kernel minting the grant: the REAL edge consumes the one-shot proof, the ports serve; a re-used token is refused by the single-flight law 6ms
+     ✓ (f) dispose: the wiring drains (the row’s own DRAINING bytes) and the issued-identity ledger releases 3ms
+     ✓ (g) declared census: no searchBackend evidence = three placed rows; the two search names keep their natives 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (a2) the policy grammar pins session_* to the durable-approval lane: an allow entry outside the fs/shell family is refused at the projection
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:272:22
+    270|     const w = makeInject()
+    271|     const built = buildPlane({ backends: { sessionQuery: w.inject } },…
+    272|     expect(built.ok).toBe(false)
+       |                      ^
+    273|     if (built.ok === true) return
+    274|     expect(built.code).toBe('TOOL_BINDING_UNVERIFIED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  05:20:32
+   Duration  1.39s (transform 957ms, setup 0ms, import 1.22s, tests 38ms, environment 0ms)
+
