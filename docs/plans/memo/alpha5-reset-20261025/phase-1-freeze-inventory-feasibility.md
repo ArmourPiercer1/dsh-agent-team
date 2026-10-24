@@ -166,9 +166,9 @@ F0 签发后，本轮 G1 的 ExpectedToolObligations 集合闭合。之后发现
 5. 异步暂停/竞争：在可控 await/调度点触发换代；重复有限次数，记录调度点、最终 dispatch 身份、Body 计数与副作用。
 6. 测试灵敏度：植入一个已知错误的 post-Guard re-resolve 或等价缺陷，测试必须 RED；撤去植入后正控恢复。
 
-每项记录 Host SHA、Team SHA、Runner/Canary digest、World ID、Definition/Scope digest、Body 调用计数、实际外部效果和日志摘要。PASS 要求所有未验证 Body 调用计数均为零，且测试能够检测植入缺陷。事后撤销、审计告警、返回拒绝错误或只 mock dispatch 均不合格。
+每项记录 Host SHA、Team SHA、H0 自有 Runner/Fixture digest（Canary 属 S3 产物，H0 不引用其结果）、World ID、Definition/Scope digest、Body 调用计数、实际外部效果和日志摘要。PASS 要求所有未验证 Body 调用计数均为零，且测试能够检测植入缺陷。事后撤销、审计告警、返回拒绝错误或只 mock dispatch 均不合格。
 
-若 H0 失败或公开 seam 无法观察真实 dispatch 身份，立即将依赖路径标为 CORE_SEAM_BLOCKER 或 ENV-BLOCKED（依据是技术缺口还是环境不可用），停止该路径的进一步实现型研究。不得用后续 G3 Oracle、事后审计或用户未明确批准的假设代替 H0。
+若 H0 失败或公开 seam 无法观察真实 dispatch 身份，立即将依赖路径标为 CORE_SEAM_BLOCKER 或 ENV-BLOCKED（依据是技术缺口还是环境不可用），停止该路径的进一步实现型研究。不得用后续 G3 Oracle、事后审计或用户未明确批准的假设代替 H0。植入缺陷（第 6 项）只用作 Oracle 灵敏度对照，且只能位于 S1 自有的测试侧 Runner/Fixture 或下游测试适配层，不得修改 pristine Host 运行时、upstream 源码或产品源文件；H0 的正控与负控（第 1–5 项）必须在未修改的真实 Host 上经真实 public registration/dispatch 路径执行，以测试替身或 mock dispatch 得到的结果不得用于宣称 seam 安全。灵敏度对照优先使用第 6 项已允许的等价测试缺陷；若以不触碰 Host 的合法方式仍不能证明测试灵敏度，记为 H0 未通过并登记具名验证阻断，不得据此宣称 Host 缺少可用的 public seam，更不得为此修改 Host。H0 的观察与 RED 判定只依赖其自有夹具与真实 Host 返回值，不依赖 S3 的 Oracle、Canary 或 runner。
 
 ### 6.3 S1 项目级硬预算与自动停止
 
@@ -184,7 +184,7 @@ F0 签发后，本轮 G1 的 ExpectedToolObligations 集合闭合。之后发现
 | 同一假设的尝试 | 一次初始 PoC + 至多一次预先说明区分目的的补试 | 仍不确定则转 UNKNOWN/NEEDS-RULING 或 CORE_SEAM_BLOCKER |
 | 每个机制组的异常样本 | 一个代表性异常样本；若证明它不代表该组，须使用项目总实验额度并说明替换原因 | 不得因新异质性自动创建新机制组 |
 
-每个实验开跑前登记 ID、单一假设、可能结果、停止条件、Owner、Host 启动额度、预计时长、World、效果观察方式和证据上限。预算账本必须是跨 Owner 的单一共享账本。任何重试、分组拆分、换 Runner 或换 Owner 都继续计入原项目预算。
+每个实验开跑前登记 ID、单一假设、可能结果、停止条件、Owner、Host 启动额度、预计时长、World、效果观察方式和证据上限。预算账本必须是跨 Owner 的单一共享账本。任何重试、分组拆分、换 Runner 或换 Owner 都继续计入原项目预算。计数口径补充（不改变上表任何额度数字，也不新增门禁或产物体系）：2 个工作日为自 S1 正式启动连续累计的墙钟，启动记录须写明起止时刻与计时口径；等待 ENV-BLOCKED 环境期间仍计入墙钟，不得借此续期或改日历截止，只可在证据中登记等待区间；16 Owner-hours 为跨所有 Owner 的 active 投入工时汇总，与墙钟两个上限先到者生效。一次实验仍指一个预先登记的假设/输入组合：同一次实验内的多次读取、断言与采样不另计实验，但每一次重试、每一个不同假设或输入组合都各计一次，不得把多个独立实验藏进同一“循环”以规避计数；同一假设沿用“一次初始 PoC + 至多一次预先说明区分目的的补试”；“一次 Host 启动/重启”指一次真实 Host 进程启动尝试，含启动失败与崩溃后的重启。
 
 达到任一上限后，禁止以“再做一个区分实验”“新发现一种异质性”或“动态来源不断增长”为理由自动扩项。只能输出 READY-PUBLIC、CONDITIONAL、UNKNOWN/NEEDS-RULING、ENV-BLOCKED 或 CORE_SEAM_BLOCKER，并提交所需新增预算、预期可区分的结论及用户批准请求。未经批准不得继续执行。
 
@@ -201,7 +201,7 @@ G1 拆分为：
 - G1-I Inventory：F0 可信且闭合；资产清单及差集可审；93 条历史记录可追踪；未知资产有 Owner 与保护；量化回收计划完整。
 - G1-F Feasibility：H0 已通过或以 CORE_SEAM_BLOCKER 明确阻断；关键普通 Family 的公共接入与授权前拦截存在可信路径；每条必交记录有可实施路线或具名 blocker；研究预算和停止条件可审。
 
-G1-I PASS 不代表 G1-F PASS。G1-I PASS 而 G1-F BLOCKED 时，可继续不依赖 Host 执行的 S2 文档/权威迁移准备，但不得进入 S4，也不得把阻断路径写为可实现。若 H0 因环境缺失无法执行，状态为 ENV-BLOCKED，不可当作通过。
+G1-I PASS 不代表 G1-F PASS。G1-I PASS 而 G1-F BLOCKED 时，可继续不依赖 Host 执行的 S2 文档/权威迁移准备（同五阶段总计划 §7.1：G1-I 只解锁不依赖未证安全事实的 S2 文档/工程权威迁移，需要 G1-F 的执行路径一律不切换；S2 仍是原五阶段之一，不是额外阶段），但不得进入 S4，也不得把阻断路径写为可实现。若 H0 因环境缺失无法执行，状态为 ENV-BLOCKED，不可当作通过。缺证观察的传播按命题归属区分，不新增状态：资产与安全停止类必需观察（Team SHA 与纳入 refs、工作树/分支/dirty state、untracked/stash/local-only commits、进程/端口/TestWorld、实际磁盘 du 与受保护资产清单）为 NOT_OBSERVED 时，G1-I 只能为 BLOCKED-LOCAL-OBSERVATION；F0 要求的真实 Runtime 来源观测（ObservedRuntimeInventory 及其与 ExpectedToolObligations 的差集）未实测时，工具全集命题同样保持 BLOCKED-LOCAL-OBSERVATION，不得改用 GitHub 仓库清点或静态 manifest 宣称清单已闭。Host/H0 运行 seam 实验的环境缺失只影响 G1-F，并按原因归类：环境、凭据或平台不可用为 ENV-BLOCKED，只有经实测证实的技术 seam 缺口才为 CORE_SEAM_BLOCKER（沿用 §6.2 既有判据）；两者都不改变 G1-I 判定，反之亦然。
 
 G1 总体状态必须为以下之一：
 
