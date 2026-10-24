@@ -1,0 +1,15 @@
+file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/chunks/cac.uFydS1Z4.js:406
+          throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
+                ^
+
+CACError: Unknown option `--json`
+    at Command.checkUnknownOptions (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/chunks/cac.uFydS1Z4.js:406:17)
+    at CAC.runMatchedCommand (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/chunks/cac.uFydS1Z4.js:606:13)
+    at CAC.parse (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/chunks/cac.uFydS1Z4.js:547:12)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/cli.js:11:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+RC=1

@@ -1,0 +1,94 @@
+p4t6 census registration closure - A5-M2 round 7 (four controlled-fs paths), re-anchored by measurement
+======================================================================================================
+
+Lane: p4t6 registration closure (census owner). Base: origin/feat/a5-m2-integration
+b2182c6cdaf161ec8dcb9e7417203bedda3bafba, which carries both booked commits. Chosen over the
+handover oids because c0dcd378b..b2182c6cd adds ZERO new scannable file and does not touch
+packages/testkit/test/p4t6-session-event-scan.test.ts (git diff --name-status --diff-filter=A
+c0dcd378b b2182c6cd -- packages/ -> empty; git diff --stat c0dcd378b b2182c6cd -- <that file> -> empty).
+Working tree clean before the edit: git status --porcelain -> 0 lines.
+
+1. WHAT WAS BOOKED (4 paths, one batch, two landed commits)
+-----------------------------------------------------------
+each row: added-by commit (git log --diff-filter=A -1 <base> -- <path>), tracked at base
+(git ls-tree -r --name-only), and IN-SCAN from the same scanner run used for the anchor.
+
+  packages/runtime/controlled-fs/src/post-consume-write.ts        <- bce6173a2  tracked  IN-SCAN
+  packages/runtime/test/a5m2-post-consume-write-c1.test.ts        <- bce6173a2  tracked  IN-SCAN
+  packages/runtime/controlled-fs/src/bounded-bytes-read.ts        <- c0dcd378b  tracked  IN-SCAN
+  packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts           <- c0dcd378b  tracked  IN-SCAN
+
+No path is under dist/** or dev/agent-workflow/evidence/**. Zero duplicate: the booked array was
+cross-checked against every SCANNED_PATHS_* array in the ledger (71 arrays, 275 entries at the
+base): ledger-wide duplicate paths = 0.
+
+2. THE ANCHOR IS A MEASUREMENT, NOT A COPIED NUMBER
+---------------------------------------------------
+Command (repo root, this tree, booking time):
+  HOME=/tmp/m1home node -e "import('./packages/testkit/fault-injection/session-event-scan.mjs')
+    .then(m => { const r = m.scanSessionEventVocabulary(); ... })"
+Output:
+  MEASURED filesScanned = 1249 | files.length = 1249
+  IN-SCAN   packages/runtime/controlled-fs/src/post-consume-write.ts
+  IN-SCAN   packages/runtime/test/a5m2-post-consume-write-c1.test.ts
+  IN-SCAN   packages/runtime/controlled-fs/src/bounded-bytes-read.ts
+  IN-SCAN   packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts
+
+1249 is what the scanner printed on THIS tree. It is consistent with the round-6 anchor 1245
+plus exactly these four (checked per path), and nothing was taken from a CI print or from a
+prose running total: the booking edit adds SCANNED_PATHS_A5M2G (4 entries) to the two derived
+sums (983 + sum of the named lists) and to the by-path presence loop, and the it() title's
+self-description now states 1249 with the reason.
+
+3. THE PIN BITES (negative control, not a green-by-construction claim)
+---------------------------------------------------------------------
+Probe: a copy of the ledger at packages/testkit/test/p4t6-negprobe.test.ts - the name is inside
+the scanner's own exclusion (packages/testkit/test/p4t6-*.test.ts), so the probe cannot perturb
+the universe - with ONE of the four paths deleted from SCANNED_PATHS_A5M2G:
+  FAIL coverage: all nine package dirs discovered, ...
+  AssertionError: expected 1249 to be 1248 // Object.is equality
+  AssertionError: expected [ ...(3) ] to deeply equal [ ...(2) ]
+  Tests  2 failed | 8 passed (10)          NEGPROBE_RC=1
+Probe deleted afterwards (git status --porcelain -> only the ledger file modified). So dropping a
+booked path reddens the leg, i.e. the four entries are load-bearing.
+
+4. LEGS RUN ON THE COMMITTED TREE (real exit codes)
+---------------------------------------------------
+  packages/testkit       vitest run test/p4t6-session-event-scan.test.ts   10 passed (10)   rc=0
+  packages/tools/a5p5-tools vitest run test/a5p5-dormant-audit.test.ts      9 passed (9)    rc=0
+    (that lane's format law: every ledger line naming a5p5-tools must be exactly one quoted
+     path - the booking prose names no lane path, so such lines still match the shape)
+  packages/testkit       tsc -p tsconfig.json --noEmit                     rc=2  (see 5)
+  packages/testkit       vitest run test/a4p7-merge-gate.test.ts    4 failed | 31 passed  rc=1  (see 5)
+  packages/runtime       vitest run test/a5p7-lane-hygiene.test.ts  1 failed | 4 passed   rc=1  (see 5)
+
+5. PRE-EXISTING REDS ON THE BASE - measured, NOT introduced here, NOT touched
+-----------------------------------------------------------------------------
+Measured with the ledger edit stashed away (git stash push -- <ledger>; git status --porcelain
+-> 0; HEAD b2182c6cd), i.e. on the clean base, and the counts are identical to the ones above:
+  a4p7-merge-gate    4 failed | 31 passed   rc=1
+  a5p7-lane-hygiene  1 failed | 4 passed    rc=1
+Detail of each, as printed:
+  - typecheck leg: "2 TypeScript error line(s): packages/testkit typecheck:
+    test/p4t6-session-event-scan.test.ts(2987,9): error TS2554: Expected 1 arguments, but got 2."
+    (and the same at 3060,9). tsc on the clean testkit package alone: rc=2, exactly those 2
+    lines. Cause: the two derived-sum assertions pass a SECOND argument to toBe() -
+    "SCANNED_PATHS_A5M2B.length," on the line after the sum, at base :2987 and :3060. Vitest
+    ignores the extra argument (the leg is green) while tsc rejects it. With the booking edit
+    the SAME two errors appear shifted to :3005 and :3079, count unchanged. Left alone: the pin
+    expression is frozen by ruling, so this is reported, not fixed.
+  - composition smoke leg: read "refused" for the client plugin arm.
+  - artifacts legs: check:artifacts-committed verdict=stale drift=1; check:artifacts:head
+    verdict=not-run reason=store-not-writable (exit 3).
+  - a5p7-lane-hygiene "zero production consumers": importer list =
+    ["runtime/src/plugin/live/web-gateway-assembly.mjs"] - a production file naming the a5p7
+    lane, from the B-WEB round, unrelated to this ledger.
+
+6. DISCIPLINE
+-------------
+No push. Precise pathspec only (no git add -A): packages/testkit/test/p4t6-session-event-scan.test.ts
+and this evidence directory. Pin generation method unchanged; no assertion removed; no new leg;
+no new platform; no baseline file touched. The two paths previewed by the FS-kernel owner
+(bounded-bytes-read.ts and a5m2-fs-bounded-read-c1.test.ts) are booked here because this batch's
+handover covered them and both are already in the base tree; the per-path rows in section 1 are
+the record to re-check if the integration face later re-lands them under different oids.

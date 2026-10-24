@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/domain/test/a5p0-layer-audit.test.ts (4 tests) 15ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  06:56:42
+   Duration  484ms (transform 72ms, setup 0ms, import 224ms, tests 15ms, environment 0ms)
+
+RUNNER_EXIT=0

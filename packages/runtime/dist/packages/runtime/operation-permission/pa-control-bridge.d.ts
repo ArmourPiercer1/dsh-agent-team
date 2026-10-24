@@ -120,6 +120,23 @@ export interface PaControlLegInput {
      * retention — the center owns whether the body still runs).
      */
     readonly signal?: ControlWaitSignal;
+    /**
+     * A5-M2 (CENTER, single writer for all three governed families): the FAMILY this
+     * call belongs to, AS THE PLANE BOUND IT (never model input, never a self-report).
+     * The four fields are the M0 P-adds the strict manifest has always required and the
+     * center failed to carry; they are REQUIRED-TOGETHER once a family is bound, and
+     * they enter the manifest at FULL VALUE (no digest, no summary). An unbound call
+     * (every pre-A5M2 family) leaves the manifest byte-for-byte unchanged - that is the
+     * compatibility rule, and it must never be read as licence to let a BOUND family
+     * through with a field missing: a bound family with an incomplete carrier fails
+     * closed before any durable write.
+     */
+    readonly family?: {
+        readonly familyId: string;
+        readonly adapterRevision: number;
+        readonly providerIdentity: string;
+        readonly targetManifest: RemoteSafeJsonValue;
+    };
 }
 /** The landing edges the leg uses from the assembly (structural view — the
  *  real `ProductionAdmissionAssembly` satisfies it; nothing else may). */
@@ -201,6 +218,19 @@ export interface PaControlServiceLike {
 export interface PaControlBridgeDeps {
     /** The REAL Alpha.4 durable control plane (structural minimal face). */
     readonly controlService: PaControlServiceLike;
+    /**
+     * A5-M2 (CENTER): the plane's OWN governed-family registration, keyed by the trusted
+     * `binding.definitionIdentity`. This - never the presence of a carrier on the input -
+     * decides whether a call belongs to a governed family: a registered family that ships
+     * no review facts is refused, and an unregistered binding that claims a family is
+     * refused too. Keying on the definition identity (not on a name a caller could pick)
+     * is what keeps the discriminator out of the payload's reach.
+     */
+    readonly governedFamilies?: Readonly<Record<string, {
+        readonly familyId: string;
+        readonly adapterRevision: number;
+        readonly providerIdentity: string;
+    }>>;
     /** The TeamSession (root session id) the durable rows live under. */
     readonly rootSessionId: string;
     /** The requesting principal (host-authenticated — the member or leader

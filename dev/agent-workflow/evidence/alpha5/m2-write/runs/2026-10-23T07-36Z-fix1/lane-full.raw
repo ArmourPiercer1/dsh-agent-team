@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts (9 tests | 1 failed) 169ms
+     ✓ no shipped source outside the lane references a5p5-tools 128ms
+     ✓ the one reviewed edge is exactly the live row barrel import, and nothing else 1ms
+     ✓ the A5-M1 correlation spec touches the lane ONLY as its one pinned dynamic barrel line 4ms
+     × the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge 6ms
+     ✓ the a5glb glob parity spec names the lane ONLY as one quoted read path, never as an edge 27ms
+     ✓ the a5p0 consumer-set pin names the lane ONLY as quoted consumer paths, never as an edge 0ms
+     ✓ the tools build tsconfig names the lane ONLY as the bare compile-face include, never as an edge 0ms
+     ✓ the runtime build tsconfig names the lane ONLY as the bare install-surface include, never as an edge 0ms
+     ✓ the shared tools barrel still does not know the lane (explicit leg) 0ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-parity.test.ts (13 tests) 46ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-effects-schema.test.ts (12 tests) 28ms
+ ✓ packages/tools/a5p5-tools/test/a5m2-write-slice-defect-repro.test.ts (3 tests) 36ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-spill.test.ts (11 tests) 14ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-args.test.ts (13 tests) 12ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-render-injection.test.ts (8 tests) 9ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-render.test.ts (7 tests) 5ms
+ ✓ packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts (26 tests) 72ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-barrel-emit.test.ts (4 tests) 1471ms
+     ✓ tsc -p tsconfig.build.json emits, the emitted index.js imports, and the full barrel surface behaves from dist  1466ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts > a5p5-dormant-audit > the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge
+AssertionError: // (packages/tools/a5p5-tools/src/write-slice.ts - pure lexical anchor + argument: expected '// (packages/tools/a5p5-tools/src/wri…' to match /^'packages\/tools\/a5p5-tools\/…/tools\
+
+- Expected:
+/^'packages\/tools\/a5p5-tools\/[^']+',$/
+
++ Received:
+"// (packages/tools/a5p5-tools/src/write-slice.ts - pure lexical anchor + argument"
+
+ ❯ packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts:271:40
+    269|     for (const line of ledger.split('\n')) {
+    270|       if (!line.includes('a5p5-tools')) continue
+    271|       expect(line.trim(), line.trim()).toMatch(/^'packages\/tools\/a5p…
+       |                                        ^
+    272|     }
+    273|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  1 failed | 105 passed (106)
+   Start at  07:37:12
+   Duration  1.71s (transform 1.68s, setup 0ms, import 2.09s, tests 1.86s, environment 1ms)
+
+RUNNER_EXIT=1

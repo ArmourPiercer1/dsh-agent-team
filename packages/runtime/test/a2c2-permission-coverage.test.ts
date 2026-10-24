@@ -64,6 +64,9 @@ import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { SessionId } from '@deepseek-ai/dsh-session'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import * as op from '../operation-permission/index.js'
+// A5M2 coverage-safety card: the SAME stage-1 projection production calls
+// (zero copies of the filter law — this suite pins the shared function).
+import { projectManagedToolNames } from '../src/plugin/live/coverage-managed-projection.mjs'
 import { PERMISSION_TOOL_NAMES } from '../../domain/blueprint/src/index.js'
 import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
 import { applyBuiltInToolDeny } from '../../tools/src/index.js'
@@ -84,9 +87,16 @@ import {
 /** The strict default-deny policy (the A1-normalized shape). */
 const STRICT_DENY: TemplatePermissionPolicy = { default: 'deny', allow: [], ask: [], deny: [] }
 
-/** The three Team tool names used as the injected team-tool fact
- *  (real catalog names — packages/tools TeamToolDefinition). */
-const TEAM_TOOLS = ['team_delegate', 'team_follow_up', 'team_inspect_config']
+/** The Team tool names used as the injected team-tool fact
+ *  (real catalog names — packages/tools TeamToolDefinition). Root 22:4x:
+ *  ten B-TEAM names joined the MANAGED vocabulary (precedence #1 — the
+ *  three wired names below reclassify), while the four self-governance
+ *  controls stay OUT of the vocabulary (Gate 0f refuses their mount):
+ *  `team_request_control` keeps the OTHER_MANAGED_TEAM_TOOL class alive
+ *  and pins the exclusion boundary. */
+// The FOUR self-governance controls joined the vocabulary 2026-10-24 — the
+  // non-vocabulary control example is a synthetic still-outside name.
+const TEAM_TOOLS = ['team_delegate', 'team_follow_up', 'team_inspect_config', 'team_future_control']
 
 /** The synthetic unknown tool name (the §7.3-F unknown-semantics case). */
 const UNKNOWN_TOOL = 'foo_magic'
@@ -158,8 +168,21 @@ interface A2C2Api {
 /** The post-fix API surface (undefined members on the base tree). */
 const a2c2 = op as unknown as A2C2Api
 
+/** A5M2 coverage-safety card (root ruling 2026-10-25): the fixture calls
+ * the SAME shared projection the production glue calls — the pure module
+ * `projectManagedToolNames` with the class channel live and the three
+ * mount probes (placement / schedule / run_code) answered FALSE, because
+ * this vocabulary-only world has no mount. No test-local copy of the
+ * filter law exists anymore (the old mirrored filter is deleted). */
+const MANAGED_GROUND_TRUTH = projectManagedToolNames(PERMISSION_TOOL_NAMES, {
+  classOf: op.classifyPermissionTool,
+  placementGoverned: () => false,
+  scheduleGoverned: () => false,
+  runCodeGoverned: () => false,
+})
+
 /** The empty ownership facts (no team / no mcp — the pure registries). */
-const EMPTY_FACTS: A2C2Facts = { managedToolNames: PERMISSION_TOOL_NAMES, teamToolNames: [], mcpToolNames: [] }
+const EMPTY_FACTS: A2C2Facts = { managedToolNames: MANAGED_GROUND_TRUTH, teamToolNames: [], mcpToolNames: [] }
 
 // ---------------------------------------------------------------------------
 // The real-pipeline helpers (h1a/issue2/a2c1 recipe: the REAL upstream
@@ -371,8 +394,10 @@ const R: Record<string, unknown> = await (async () => {
   }
 
   // ==========================================================================
-  // S0-P3 · grep / subagent / web_fetch escape the 7-name managed
-  // vocabulary (plan §7.6 probe 3). Pre-fix observable gap: the final
+  // S0-P3 · grep / ralph / web_fetch escape the managed vocabulary
+  // (plan §7.6 probe 3; root 22:32: `subagent` itself is now a PA-WIRED
+  // vocabulary name — the UNWIRED orchestration example `ralph` carries the
+  // class proof). Pre-fix observable gap: the final
   // managed vocabulary (PERMISSION_TOOL_NAMES) covers only the
   // alpha.2 operation-permission tools — the fs-search, orchestration,
   // and egress tools are NOT in it, and the A2 canonical classifier
@@ -381,7 +406,7 @@ const R: Record<string, unknown> = await (async () => {
   // categories) and a surface of exactly those three fails.
   // ==========================================================================
   {
-    const escaping = ['grep', 'subagent', 'web_fetch']
+    const escaping = ['grep', 'ralph', 'web_fetch']
     // stable characterization (both trees).
     const managedSet = [...PERMISSION_TOOL_NAMES].sort()
     const inVocabulary = escaping.map((name) => PERMISSION_TOOL_NAMES.includes(name))
@@ -390,7 +415,7 @@ const R: Record<string, unknown> = await (async () => {
     // all three sensitive and the verdict fails with the sorted detail.
     const evaluator = a2c2.evaluatePermissionCoverage
     const gatePresent = typeof evaluator === 'function'
-    const verdict = gatePresent ? evaluator!(['web_fetch', 'subagent', 'grep'], EMPTY_FACTS) : undefined
+    const verdict = gatePresent ? evaluator!(['web_fetch', 'ralph', 'grep'], EMPTY_FACTS) : undefined
     out.p3 = {
       managedSet,
       inVocabulary,
@@ -419,7 +444,7 @@ const R: Record<string, unknown> = await (async () => {
   const introduced = (pre: readonly string[], fin: readonly string[]): string[] | undefined =>
     typeof a2c2.mcpIntroducedToolNames === 'function' ? a2c2.mcpIntroducedToolNames!(pre, fin) : undefined
 
-  // G1 · MANAGED_OPERATION_PERMISSION — the 7-name final managed
+  // G1 · MANAGED_OPERATION_PERMISSION — the nine-name final managed
   // vocabulary classifies managed and the surface PASSES (invariant
   // §1.3: no explicit Blueprint rule is required for coverage).
   {
@@ -558,15 +583,16 @@ const R: Record<string, unknown> = await (async () => {
   // one job-family tool FAILS with exactly those two entries.
   {
     const good = [
-      ...PERMISSION_TOOL_NAMES,
+      ...MANAGED_GROUND_TRUTH,
       'team_delegate',
       'team_follow_up',
+      'team_request_control',
       MCP_TOOL,
       'todo_write',
     ]
     const facts: A2C2Facts = {
-      managedToolNames: PERMISSION_TOOL_NAMES,
-      teamToolNames: ['team_delegate', 'team_follow_up'],
+      managedToolNames: MANAGED_GROUND_TRUTH,
+      teamToolNames: ['team_delegate', 'team_follow_up', 'team_request_control'],
       mcpToolNames: [MCP_TOOL],
     }
     const vGood = evalCoverage(good, facts)
@@ -820,11 +846,82 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
     ])
   })
 
-  it('P3 · grep/subagent/web_fetch escape the 7-name managed vocabulary (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
+  it('P3 · grep/ralph/web_fetch escape the forty-name managed vocabulary (root 22:32: subagent joined — the unwired orchestration example ralph keeps the class proof) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
     const p3 = R['p3'] as Record<string, any>
     // stable characterization of the pre-fix gap (both trees):
-    expect(p3.managedSet).toEqual(['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'write'])
-    expect(p3.inVocabulary).toEqual([false, false, false])
+    expect(p3.managedSet).toEqual([
+      'bash',
+      'cordis_inspect_list',
+      'cordis_inspect_query',
+      'create_goal',
+      'edit',
+      'get_goal',
+      'glob',
+      'grep',
+      'interrupt_agent',
+      'job_kill',
+      'job_list',
+      'job_output',
+      'list_agents',
+      'list_mcp_resource_templates',
+      'list_mcp_resources',
+      'list_subagent_models',
+      'lsp',
+      'plugin_manager',
+      'pwsh',
+      'read',
+      'read_image',
+      'read_mcp_resource',
+      'run_code',
+      'schedule_delete',
+      'schedule_list',
+      'send_message',
+      'session_event_read',
+      'session_event_search',
+      'session_event_trace',
+      'session_search',
+      'session_trace',
+      'stagehand_act',
+      'stagehand_extract',
+      'stagehand_navigate',
+      'stagehand_observe',
+      'stagehand_screenshot',
+      'stagehand_tabs',
+      'str_replace_editor',
+      'subagent',
+      'subagent_claude_code',
+      'subagent_codex',
+      'subagent_fork',
+      'team_archive_member',
+      'team_collect',
+      'team_create_member',
+      'team_delegate',
+      'team_follow_up',
+      'team_glob',
+      'team_grant_permission',
+      'team_grep',
+      'team_inspect_config',
+      'team_list_members',
+      'team_list_pending_control',
+      'team_list_templates',
+      'team_report_progress',
+      'team_request_control',
+      'team_resolve_control',
+      'team_revoke_permission',
+      'team_send_message',
+      'terminal_close',
+      'terminal_list',
+      'terminal_open',
+      'terminal_read',
+      'terminal_send',
+      'terminal_signal',
+      'todo_write',
+      'update_goal',
+      'web_fetch',
+      'web_search',
+      'write',
+    ])
+    expect(p3.inVocabulary).toEqual([true, false, true]) // 16:0x card: grep/web_fetch JOINED the vocabulary; ralph stays out (pure membership sync)
     expect(p3.classifyKinds).toEqual(['unsupported', 'unsupported', 'unsupported'])
     // the post-fix gate leg (RED on base):
     expect(p3.gatePresent).toBe(true)
@@ -838,7 +935,7 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
           'remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)',
       },
       {
-        name: 'subagent',
+        name: 'ralph',
         classification: 'known-sensitive-unmanaged',
         reason: 'generic subagent/workflow orchestration escapes MemberInstance governance (no alpha.2 operation adapter)',
         remediation:
@@ -856,30 +953,31 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
 })
 
 describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
-  it('G1 · the 7-name managed vocabulary classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
+  it('G1 · the REALLY-GOVERNED projection classifies MANAGED; unowned vocabulary names stay legitimately FATAL (705 split: vocab = legal naming, not governance)', () => {
     const g1 = R['g1'] as Record<string, any>
     expect(g1.present).toBe(true)
-    expect(g1.ok).toBe(true)
-    expect(g1.tools).toEqual([
-      { name: 'bash', classification: 'managed-operation-permission' },
-      { name: 'edit', classification: 'managed-operation-permission' },
-      { name: 'lsp', classification: 'managed-operation-permission' },
-      { name: 'pwsh', classification: 'managed-operation-permission' },
-      { name: 'read', classification: 'managed-operation-permission' },
-      { name: 'read_image', classification: 'managed-operation-permission' },
-      { name: 'write', classification: 'managed-operation-permission' },
-    ])
-    expect(g1.unmanaged).toEqual([])
-    expect(g1.safe).toEqual([])
+    const managedSet = new Set<string>(MANAGED_GROUND_TRUTH)
+    const managedRows = (g1.tools as { name: string; classification: string }[]).filter((t) => managedSet.has(t.name))
+    expect(managedRows.length).toBe(MANAGED_GROUND_TRUTH.length)
+    expect(managedRows.every((t) => t.classification === 'managed-operation-permission')).toBe(true)
+    for (const n of ['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'write']) expect(managedSet.has(n)).toBe(true)
+    expect(g1.ok).toBe(false)
+    const unowned = (g1.unmanaged as { name: string; classification: string }[])
+    for (const n of ['grep', 'send_message', 'web_fetch']) {
+      expect(unowned.some((e) => e.name === n && e.classification === 'known-sensitive-unmanaged')).toBe(true)
+    }
+    expect(unowned.some((e) => e.name === 'team_delegate' || e.name === 'run_code')).toBe(true)
+    expect(g1.safe).toContain('todo_write')
   })
 
-  it('G2 · the selected+registered Team tools classify OTHER_MANAGED_TEAM_TOOL and PASS', () => {
+  it('G2 · Team-owner names classify OTHER_MANAGED_TEAM_TOOL — vocab membership alone no longer welds MANAGED (705 owner-label) — both PASS', () => {
     const g2 = R['g2'] as Record<string, any>
     expect(g2.present).toBe(true)
     expect(g2.ok).toBe(true)
     expect(g2.tools).toEqual([
       { name: 'team_delegate', classification: 'other-managed-team-tool' },
       { name: 'team_follow_up', classification: 'other-managed-team-tool' },
+      { name: 'team_future_control', classification: 'other-managed-team-tool' },
       { name: 'team_inspect_config', classification: 'other-managed-team-tool' },
     ])
     expect(g2.unmanaged).toEqual([])
@@ -908,7 +1006,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g4.safe).toEqual(['todo_write'])
   })
 
-  it('G5 · every closed known-sensitive registry entry + the job_ family leg classify KNOWN_SENSITIVE_UNMANAGED and the surface FAILS', () => {
+  it('G5 · closed known-sensitive entries classify KNOWN_SENSITIVE_UNMANAGED and FAIL — ALL of them in this mount-less world: vocabulary membership is legal naming, not governance (705 recheck)', () => {
     const g5 = R['g5'] as Record<string, any>
     expect(g5.present).toBe(true)
     expect(g5.registry).toEqual([
@@ -930,9 +1028,30 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g5.prefixes).toEqual(['job_'])
     expect(g5.safe).toEqual(['todo_write'])
     expect(g5.ok).toBe(false)
-    // all 15 entries (14 exact names + the synthetic job-family leg)
-    // classify sensitive — the prefix family is the same class.
-    expect(g5.classifications).toEqual(Array(15).fill('known-sensitive-unmanaged'))
+    // 15 entries: the 9 unwired sensitive names + the synthetic job-family
+    // leg classify sensitive; the FIVE wired subagent-family names (the trio
+    // send_message / interrupt_agent / list_agents, root 22:4x, plus the
+    // spawn rows subagent / subagent_fork, joint-cand2 9b5c9f4b2, root
+    // 22:32) were only EVER vocabulary-legal; with no governance fact in this world they stay unmanaged — the
+    // name-based suspicion is SUPERSEDED, never silent: each is now gated
+    // by its own named allow/ask/deny rule.
+    expect(g5.classifications).toEqual([
+      'known-sensitive-unmanaged', // glob
+      'known-sensitive-unmanaged', // grep
+      'known-sensitive-unmanaged', // interrupt_agent — no governance fact here (705)
+      'known-sensitive-unmanaged', // job_kill
+      'known-sensitive-unmanaged', // job_list
+      'known-sensitive-unmanaged', // job_output
+      'known-sensitive-unmanaged', // synthetic job_ family leg
+      'known-sensitive-unmanaged', // list_agents — no governance fact here (705)
+      'known-sensitive-unmanaged', // ralph
+      'known-sensitive-unmanaged', // send_message — no governance fact here (705)
+      'known-sensitive-unmanaged', // subagent — no governance fact here (705)
+      'known-sensitive-unmanaged', // subagent_fork — no governance fact here (705)
+      'known-sensitive-unmanaged', // web_fetch
+      'known-sensitive-unmanaged', // web_search
+      'known-sensitive-unmanaged', // workflow
+    ])
     // the sorted detail: the synthetic job-family name carries the jobs
     // category reason (the family mapping).
     const jobPause = g5.unmanaged.find((e: any) => e.name === JOB_FAMILY_TOOL)
@@ -944,7 +1063,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
         'remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)',
     })
     expect(g5.unmanaged.map((e: any) => e.name)).toEqual(
-      [...g5.registry, JOB_FAMILY_TOOL].sort(),
+      [...(g5.registry as string[])].concat(JOB_FAMILY_TOOL).sort(), // 705: the whole closed set is unmanaged with no governance facts
     )
   })
 
@@ -974,7 +1093,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     ])
   })
 
-  it('G7 · the fixed precedence — a proven owner beats a name-based suspicion; the closed registries stay disjoint', () => {
+  it('G7 · the fixed precedence — a proven owner beats a name-based suspicion; the vocab∩sensitive overlap snapshot synced to the closed registries (705); precedence #1 still beats name-suspicion for GOVERNED names, MCP beats sensitive', () => {
     const g7 = R['g7'] as Record<string, any>
     expect(g7.present).toBe(true)
     expect(g7.managedBeatsTeam).toBe('managed-operation-permission')
@@ -982,7 +1101,11 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g7.mcpVerdictOk).toBe(true)
     expect(g7.teamBeatsMcp).toBe('other-managed-team-tool')
     expect(g7.registryOverlapSafeSensitive).toEqual([])
-    expect(g7.registryOverlapManagedSensitive).toEqual([])
+    // The ONLY managed∩sensitive overlap is the five wired subagent-family
+    // names (trio root 22:4x + spawn rows root 22:32): membership is
+    // intentional and the precedence order decides — MANAGED (#1) beats the
+    // name-based suspicion (#5). Any NEW overlap is this pin's red light.
+    expect(g7.registryOverlapManagedSensitive).toEqual(['grep', 'glob', 'job_output', 'job_list', 'job_kill', 'web_search', 'web_fetch', 'interrupt_agent', 'list_agents', 'send_message', 'subagent', 'subagent_fork'])
   })
 
   it('G8 · determinism — three input orders of the same surface give byte-identical verdicts', () => {
@@ -1007,6 +1130,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'read_image', classification: 'managed-operation-permission' },
       { name: 'team_delegate', classification: 'other-managed-team-tool' },
       { name: 'team_follow_up', classification: 'other-managed-team-tool' },
+      { name: 'team_request_control', classification: 'other-managed-team-tool' },
       { name: 'todo_write', classification: 'safe-unmanaged' },
       { name: 'write', classification: 'managed-operation-permission' },
     ])
@@ -1166,5 +1290,50 @@ describe('a2c2 S · the real-seam legs (MCP delta, legacy enablement, lifecycle)
     expect(s3.fatalVerdictsIdentical).toBe(true)
     expect(s3.fatalVerdict?.ok).toBe(false)
     expect(s3.fatalVerdict?.unmanagedTools.map((e: any) => e.name)).toEqual(['foo_magic', 'grep'])
+  })
+})
+
+// ===========================================================================
+// A5M2 coverage-safety card (root ruling 2026-10-25): the SHARED projection
+// law — production glue and this suite import the SAME pure function (the
+// old mirrored filter is deleted). These legs pin the law directly: the
+// real three input channels, the fail-closed refusal on missing / throwing
+// facts, and the untouched safe/unknown/MCP obligations of the evaluator.
+// ===========================================================================
+describe('coverage-managed-projection · the one shared producer law', () => {
+  const classOnly = {
+    classOf: op.classifyPermissionTool,
+    placementGoverned: () => false,
+    scheduleGoverned: () => false,
+    runCodeGoverned: () => false,
+  }
+  it('class channel: adapter-supported classes project, unsupported vocabulary names do not', () => {
+    const projected = projectManagedToolNames(['bash', 'write', 'grep', 'todo_write'], classOnly)
+    expect(projected).toEqual(['bash', 'write'])
+  })
+  it('mount channels: a TRUE governed fact admits the name; absent / throwing probes never do (fail-closed, no label drift)', () => {
+    expect(projectManagedToolNames(['run_code'], { ...classOnly, runCodeGoverned: (n) => n === 'run_code' })).toEqual(['run_code'])
+    expect(projectManagedToolNames(['team_delegate'], { ...classOnly, placementGoverned: (n) => n === 'team_delegate' })).toEqual(['team_delegate'])
+    // synthetic probe name on purpose: the law is name-blind, the FACT is the gate.
+    expect(projectManagedToolNames(['x_scheduled_pair'], { ...classOnly, scheduleGoverned: (n) => n === 'x_scheduled_pair' })).toEqual(['x_scheduled_pair'])
+    expect(projectManagedToolNames(['run_code'], classOnly)).toEqual([])
+    expect(projectManagedToolNames(['run_code'], { ...classOnly, runCodeGoverned: () => { throw new Error('fact unreadable') } })).toEqual([])
+    expect(projectManagedToolNames(['bash'], { ...classOnly, classOf: () => { throw new Error('class unreadable') } })).toEqual([])
+    // boolean probes never manufacture a name the vocabulary does not carry.
+    expect(projectManagedToolNames([], { ...classOnly, placementGoverned: () => true, scheduleGoverned: () => true, runCodeGoverned: () => true })).toEqual([])
+  })
+  it('the projection keeps the evaluator obligations: unprojected sensitive/unknown names still FAIL the gate', () => {
+    expect(typeof a2c2.evaluatePermissionCoverage).toBe('function')
+    const facts: A2C2Facts = {
+      managedToolNames: MANAGED_GROUND_TRUTH,
+      teamToolNames: [],
+      mcpToolNames: [],
+    }
+    const v = a2c2.evaluatePermissionCoverage!(
+      [...MANAGED_GROUND_TRUTH, 'grep', 'foo_magic'],
+      facts,
+    ) as unknown as { ok: boolean; unmanagedTools: { name: string }[] }
+    expect(v.ok).toBe(false)
+    expect(v.unmanagedTools.map((e) => e.name)).toEqual(['foo_magic', 'grep'])
   })
 })

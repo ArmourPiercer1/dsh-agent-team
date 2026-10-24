@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+stdout | packages/testkit/test/a5-current-contract.test.ts > checkCurrentContract — production path (current_contract is the only current authority) > Q9 phase_status three-state pointer vs the plan 当期三态指针 (proposed rule — mirror entry, pending CENTER landing) > N9: inconsistent / missing / non-scalar / collected-missing each grade RED naming the item — and the six-field reader misses every one today (pinned gap)
+N9 RED detail (proposed rule, joined as the leg joins findings): Q9: phase_status says M2-FROZEN but the plan 当期三态指针 says M2 进行中 — the milestone moved in one carrier only; update plan and pointer in the same commit
+pre-landing gap: checkCurrentContract findings on the SAME contradicting graph = []
+
+ ✓ packages/testkit/test/a5-current-contract.test.ts (33 tests) 454ms
+     ✓ production integration: the real state-freshness leg passes on this tree (graph-parse + contract Q1-Q8)  436ms
+
+ Test Files  1 passed (1)
+      Tests  33 passed (33)
+   Start at  07:18:19
+   Duration  703ms (transform 79ms, setup 0ms, import 107ms, tests 454ms, environment 0ms)
+
+RC=0

@@ -92,7 +92,7 @@ import { CONTROL_ERROR_CODES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS
 // The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
 // module's types file directly (the barrel predates the additive surface;
 // the module declares the closed vocabulary and the strict parser there).
-import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js';
+import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, isLosslessJsonValue, validatePaFamilyTarget } from '../control/types.js';
 import { authorityRank, mayReview } from '../governance/authority-ceiling.js';
 import { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, verifyEffectSetApproval } from '../tool-admission/approval-case.js';
 /** The frozen-A action name of a guarded plane-tool execution. */
@@ -219,7 +219,75 @@ export function createPaControlLeg(deps) {
         // integrity, and the same scope key can only ever answer the SAME
         // manifest bytes).
         const authorityScope = effectApprovalScope(toolInvokeEffect, realmId);
+        // A5-M2: whether THIS call belongs to a governed family is decided by the plane's own
+        // registration keyed on the trusted definition identity - never by whether a carrier
+        // happens to be present (which would let a new family opt out by shipping nothing).
+        // A registered family must carry all four P-adds and match the registration; a
+        // family claim on an unregistered binding is refused. All of it happens BEFORE the
+        // durable row, before the mint, before any consume: zero effect on the way out.
+        const expectedFamily = deps.governedFamilies?.[input.request.binding.definitionIdentity];
+        if (expectedFamily !== undefined) {
+            const f = input.family;
+            if (f === undefined)
+                return deny(`family-review-facts-missing: ${expectedFamily.familyId}`);
+            const bad = (typeof f.familyId !== 'string' || f.familyId.length === 0)
+                ? 'familyId'
+                : (typeof f.adapterRevision !== 'number' || !Number.isInteger(f.adapterRevision) || f.adapterRevision < 0)
+                    ? 'adapterRevision'
+                    : (typeof f.providerIdentity !== 'string' || f.providerIdentity.length === 0)
+                        ? 'providerIdentity'
+                        : (f.targetManifest === undefined || f.targetManifest === null)
+                            ? 'targetManifest'
+                            : undefined;
+            if (bad !== undefined)
+                return deny(`family-review-facts-incomplete: ${bad}`);
+            if (f.familyId !== expectedFamily.familyId) {
+                return deny(`family-mismatch: expected '${expectedFamily.familyId}', presented '${f.familyId}'`);
+            }
+            if (f.adapterRevision !== expectedFamily.adapterRevision) {
+                return deny(`family-adapter-revision-mismatch: expected ${expectedFamily.adapterRevision}, presented ${f.adapterRevision}`);
+            }
+            if (f.providerIdentity !== expectedFamily.providerIdentity) {
+                return deny(`family-provider-identity-mismatch: expected '${expectedFamily.providerIdentity}', presented '${f.providerIdentity}'`);
+            }
+        }
+        else if (input.family !== undefined) {
+            return deny(`family-claim-on-unregistered-binding: ${input.request.binding.definitionIdentity}`);
+        }
+        // A5-M2 (root review item 1): the RAW target manifest is walked BEFORE any
+        // deepLossless/JSON step touches it. Rewriting first and checking after is the flaw
+        // this closes - the rewrite is exactly what drops undefined members and turns NaN
+        // into null, so a check placed after it would bless bytes nobody ever presented.
+        if (input.family !== undefined && !isLosslessJsonValue(input.family.targetManifest)) {
+            return deny('family-target-manifest-not-lossless-json');
+        }
+        // A5-M2 (root, narrowed): the target must match the family's OWN typed plan
+        // structure - the minimal field/binding shape the implemented plan defines, not a
+        // copied-out fact set and not a re-frozen schema. Unknown family, missing field,
+        // wrong field type, extra key: refused here, before anything durable, with zero I/O.
+        // What the target MEANS is enforced by the same immutable plan downstream: approval
+        // and execution read that one plan, and the consumption invariants are unchanged.
+        if (input.family !== undefined) {
+            const targetViolation = validatePaFamilyTarget(input.family.familyId, input.family.targetManifest);
+            if (targetViolation !== undefined)
+                return deny(`family-target-invalid: ${targetViolation}`);
+        }
+        const familyFacts = input.family === undefined ? {} : {
+            familyId: input.family.familyId,
+            adapterRevision: input.family.adapterRevision,
+            providerIdentity: input.family.providerIdentity,
+            targetManifest: input.family.targetManifest,
+        };
         const manifest = deepLossless({
+            ...(input.family === undefined
+                ? {}
+                : {
+                    familyId: input.family.familyId,
+                    adapterRevision: input.family.adapterRevision,
+                    providerIdentity: input.family.providerIdentity,
+                    targetManifest: input.family.targetManifest,
+                }),
+            ...familyFacts,
             schema: PA_CONTROL_MANIFEST_SCHEMA,
             approvalCaseId: plan.approvalCaseId,
             authorityScope,
@@ -510,6 +578,28 @@ export function createPaEffectsVerifier(deps) {
         // The manifest is never a fact source; every field it shares with the
         // current reads must still hold, or the approved question has moved
         // (DRIFT — the row approves the question AS APPROVED, not its successor).
+        // A5-M2: the family block is checked against the CURRENT registration exactly like
+        // the binding tuple - a row that approved a governed-family question whose family
+        // registration moved or vanished is DRIFT, and a governed binding whose row carries
+        // no family block is drift too (the row cannot be silently smaller than its family).
+        if (manifest.familyId !== undefined) {
+            const gf = facts.governedFamily;
+            if (gf === undefined) {
+                return drifted('the governed-family registration for this binding is gone - the approved family question has no current authority');
+            }
+            if (gf.familyId !== manifest.familyId) {
+                return drifted(`the family moved (approved '${manifest.familyId}', current '${gf.familyId}')`);
+            }
+            if (gf.adapterRevision !== manifest.adapterRevision) {
+                return drifted(`the family adapter moved (approved revision ${manifest.adapterRevision}, current ${gf.adapterRevision})`);
+            }
+            if (gf.providerIdentity !== manifest.providerIdentity) {
+                return drifted(`the family provider moved (approved '${manifest.providerIdentity}', current '${gf.providerIdentity}')`);
+            }
+        }
+        else if (facts.governedFamily !== undefined) {
+            return drifted('this binding is governed by a family but the approved row carries no family block');
+        }
         const mb = manifest.binding;
         const fb = facts.binding;
         if (fb === null || typeof fb !== 'object'
@@ -536,7 +626,9 @@ export function createPaEffectsVerifier(deps) {
         const documents = facts.ceiling;
         let expansion;
         try {
-            expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument);
+            expansion = facts.subtreeContains === undefined
+                ? evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+                : evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument, facts.subtreeContains);
         }
         catch (error) {
             return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`);
@@ -558,6 +650,7 @@ export function createPaEffectsVerifier(deps) {
             authorityGeneration: facts.authorityGeneration,
             teamSessionId: facts.member.teamSessionId,
             instanceId: facts.member.instanceId,
+            ...(facts.subtreeContains === undefined ? {} : { subtreeContains: facts.subtreeContains }),
         });
         if (!planned.ok) {
             return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`);
@@ -614,6 +707,7 @@ export function createPaEffectsVerifier(deps) {
             },
             currentAuthorityGeneration: facts.authorityGeneration,
             documents,
+            ...(facts.subtreeContains === undefined ? {} : { subtreeContains: facts.subtreeContains }),
         });
         if (!presented.ok) {
             return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`);

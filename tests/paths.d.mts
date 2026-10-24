@@ -13,5 +13,6 @@ export const TEST_USE_BASELINE_SHA: string
 export const CLIENT_COMMIT_HASH: string
 export function findTestRepoRoot(start: string): string | null
 export function testUseTree(repoRoot: string): string
+export function testUsePath(start: string, ...segments: string[]): string
 export function homeRoot(repoRoot: string): string
 export function homeDir(repoRoot: string, name: string): string

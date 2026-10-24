@@ -51,6 +51,10 @@ export {
   PERMISSION_RESOURCE_KINDS,
   PERMISSION_RULE_FIELDS,
   PERMISSION_TOOL_NAMES,
+  // A5M2-B (static-producer card): the invocation-only closed set rides the
+  // same export block so consumers classify with the AUTHORITY constant
+  // instead of a re-typed list.
+  PERMISSION_INVOCATION_ONLY_TOOL_NAMES,
   POLICY_STATE_ID_MAX_LENGTH,
   POLICY_STATE_ID_PATTERN,
   REQUIREMENT_DOMAIN_MAX_LENGTH,

@@ -1,0 +1,12 @@
+PASS M2W.N0.mount-and-schemas — ctx.web.fetch=function ctx.web.search=function schemas=["web_search","web_fetch"] (production tool-web, both tools on)
+PASS M2W.N1.loopback-blocked-before-transport — typed原文="Error: URL hostname \"127.0.0.1\" resolves to a non-public IP address"; 实测(loopback): fixture accessLog +0, TCP钩子 +0, fetch钩子 +0 — 服务端 access-log +0 为实证
+PASS M2W.N2.private-ip-typed-refusal-static-prefix — typed原文="Error: URL hostname \"10.255.255.1\" resolves to a non-public IP address"; 辅助观测(仅进程内): TCP钩子 +0; 边界声明: 非 loopback 外部零连接不可实证 — 断言=typed(实测)+校验前置(静态 path:line)
+PASS M2W.N3.credentials-blocked — typed原文="Error: credentials in URLs are not allowed"; accessLog +0
+PASS M2W.N4.bad-scheme-refusal — typed原文="Error: unsupported URL scheme \"ftp:\" (only http and https are allowed)"; TCP钩子 +0
+PASS M2W.N6.malformed-url-typed-refusal — typed原文="Error: invalid URL: not-a-url"; TCP钩子 +0 (无 DNS 发起：解析失败在字符串层)
+PASS M2W.N5.search-credential-missing-before-endpoint — typed原文="Error: DeepSeek search has no API key for \"DEEPSEEK_API_KEY\"; store it through the credentials service (the web Models page writes it), export it in the launchi"; fetch钩子对 deepseek 目标=0, 本腿 fetch/TCP 增量=+0/+0
+PASS M2W.P0.stub-selection-mounted — schemas=["web_search","web_fetch"]; seam config searchProvider/fetchProvider=m2w-offline-stub; production providers mounted-but-unselected
+PASS M2W.P1.offline-stub-fetch-success — 成功路径: statusCode=200 kind=html token命中=true truncated=false; 桩命中=1 saw_url=http://127.0.0.1:3187/page; accessLog +1 (服务端实证)
+PASS M2W.P2.search-two-layer-target-vs-result-url — 两层对象: 搜索目标={"saw_query":"alpha5 m2w two-layer probe","maxResults":8,"target":"in-process-stub-call"} ≠ 结果URL=https://m2w-result.invalid/page; 结果URL 观测(进程内): fetch钩子=0 TCP钩子=0 :443=0 accessLog +0; 限制: undici 内部 DNS 不可钩 (destructured import)，外部网络层未观测
+RESULT_JSON dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T06-51-19Z/result.json
+SUMMARY total=10 pass=10 fail=0 exit=0

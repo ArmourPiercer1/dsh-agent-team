@@ -35,6 +35,51 @@
  */
 import { refuse } from './contract-stub.js';
 import { createConfinedProcessProvider, } from './provider.js';
+/**
+ * THE LSP BASE PROTOCOL CODEC (root LSP-review ruling 2026-10-25): the ONE
+ * Content-Length framing implementation this package uses — the assembly's
+ * readiness handshake and the consumer-side query backend (the realm supply)
+ * both ride it, so no second dialect exists. Exported for that single
+ * documented consumer; it carries no policy.
+ */
+export function encodeLspMessage(message) {
+    const body = JSON.stringify(message);
+    return `Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`;
+}
+/** A streaming decoder for the Content-Length framing. `push` returns the
+ *  complete JSON messages the chunk completed; malformed framing THROWS —
+ *  a framing desync is fatal to the round-trip contract, never re-synced. */
+export function createLspFrameDecoder(maxBytes = 8 * 1024 * 1024) {
+    let pending = Buffer.alloc(0);
+    return {
+        push: (chunk) => {
+            pending = Buffer.concat([pending, Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), 'utf8')]);
+            const out = [];
+            for (;;) {
+                if (pending.length > maxBytes)
+                    throw new Error('lsp framing: pending buffer exceeded the bound — the stream is not LSP-framed');
+                const headerEnd = pending.indexOf('\r\n\r\n');
+                if (headerEnd < 0) {
+                    if (pending.length > 64 * 1024)
+                        throw new Error('lsp framing: no header terminator within the header bound');
+                    break;
+                }
+                const header = pending.subarray(0, headerEnd).toString('ascii');
+                const match = /content-length:\s*(\d+)/i.exec(header);
+                if (match === null)
+                    throw new Error('lsp framing: header block carries no Content-Length');
+                const length = Number(match[1]);
+                const bodyStart = headerEnd + 4;
+                if (pending.length < bodyStart + length)
+                    break;
+                const body = pending.subarray(bodyStart, bodyStart + length).toString('utf8');
+                pending = pending.subarray(bodyStart + length);
+                out.push(JSON.parse(body));
+            }
+            return out;
+        },
+    };
+}
 export function createLspRealmAssembly(options) {
     const instances = new Map();
     const emit = (event) => { options.journal?.(event); };
@@ -50,11 +95,16 @@ export function createLspRealmAssembly(options) {
             assembly: options.assembly,
         });
     }
-    /** Default readiness: one line-JSON ping must be answered with the payload's pid. */
+    /** STANDARD-LSP readiness (root LSP-review ruling 2026-10-25: the old raw
+     *  line-JSON ping was a transport echo, NOT the protocol — readiness is now
+     *  the real LSP initialize handshake over Content-Length framing): send
+     *  `initialize` (id 0), await the framed response carrying
+     *  `result.capabilities`, then deliver `initialized`. end/error/timeout
+     *  before that is NOT ready. */
     function defaultReady(instance) {
         return new Promise((resolve) => {
             const timeoutMs = options.readyTimeoutMs ?? 15_000;
-            let buffer = '';
+            const decoder = createLspFrameDecoder();
             let done = false;
             const finish = (value) => {
                 if (done)
@@ -67,24 +117,25 @@ export function createLspRealmAssembly(options) {
                 resolve(value);
             };
             const onData = (chunk) => {
-                buffer += String(chunk);
-                for (;;) {
-                    const nl = buffer.indexOf('\n');
-                    if (nl < 0)
-                        break;
-                    const line = buffer.slice(0, nl);
-                    buffer = buffer.slice(nl + 1);
-                    if (!line.startsWith('{'))
-                        continue;
-                    let parsed;
-                    try {
-                        parsed = JSON.parse(line);
-                    }
-                    catch {
-                        continue;
-                    }
-                    const p = parsed;
-                    if (p['pong'] === 1 && p['pid'] === instance.pid) {
+                let messages;
+                try {
+                    messages = decoder.push(chunk);
+                }
+                catch {
+                    finish(false);
+                    return;
+                }
+                for (const msg of messages) {
+                    const m = msg;
+                    if (m.id === 0 && m.result !== null && typeof m.result === 'object'
+                        && m.result.capabilities !== null && typeof m.result.capabilities === 'object') {
+                        try {
+                            instance.handle.stdin.write(encodeLspMessage({ jsonrpc: '2.0', method: 'initialized', params: {} }));
+                        }
+                        catch {
+                            finish(false);
+                            return;
+                        }
                         finish(true);
                         return;
                     }
@@ -97,7 +148,12 @@ export function createLspRealmAssembly(options) {
             instance.handle.stdout.on('end', onEnd);
             instance.handle.stdout.on('error', onError);
             try {
-                instance.handle.stdin.write('{"ping":1}\n');
+                instance.handle.stdin.write(encodeLspMessage({
+                    jsonrpc: '2.0',
+                    id: 0,
+                    method: 'initialize',
+                    params: { processId: null, rootUri: null, capabilities: {}, clientInfo: { name: 'a5m2-lsp-realm-assembly', version: '1' } },
+                }));
             }
             catch {
                 finish(false);

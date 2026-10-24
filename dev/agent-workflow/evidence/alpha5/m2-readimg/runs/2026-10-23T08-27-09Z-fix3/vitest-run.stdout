@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+stdout | packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact
+DIAG-ROWS [{"requestId":"ctrl-0xpc0230hya3761v3a8790iw","rootSessionId":"session-root-p6t1","kind":"leader-approval","requester":{"kind":"instance","instanceId":"inst-p6t4seedw01","role":"member"},"subject":{"kind":"instance","instanceId":"inst-p6t4seedw01"},"targetInstanceId":"inst-p6t4seedw01","actionName":"team-tool-execute","correlation":"pa:tadm:session-root-p6t1:inst-p6t4seedw01:sha256:334c2dfd97ebff5bfbec3e06eff4007e1f3408f85ab9c2bc7b409ce069e99c84:g0:img-pos-1","status":"decided","createdAt":"2026-09-01T09:00:00Z","requestSequence":1,"toolName":"read_image","operationFingerprint":"sha256:7b4c71b5b56a328201101201134dd182a4a5c1f29bcde6517e2594600a433fc0","summary":"PA ask case=tadm:session-root-p6t1:inst-p6t4seedw01:sha256:334c2dfd97ebff5bfbec3e06eff4007e1f3408f85ab9c2bc7b409ce069e99c84:g0 rung=leader tool=read_image effects=2","reviewPayload":{"adapterRevision":2,"approvalCaseId":"tadm:session-root-p6t1:inst-p6t4seedw01:sha256:334c2dfd97ebff5bfbec3e06eff4007e1f3408f85ab9c2bc7b409ce069e99c84:g0","authorityGeneration":0,"authorityScope":{"matcher":{"kind":"exact","resource":"a5m2-img-r-0|tool:read_image"},"operationClass":"tool-invoke"},"binding":{"agentScopeKey":"img:img-pos-1","assurance":{"assurance":{"alias":{"evidence":null,"level":"untested","mechanism":null,"realmId":"a5m2-img-r-0","trustRoot":null},"content-read":{"evidence":null,"level":"untested","mechanism":null,"realmId":"a5m2-img-r-0","trustRoot":null},"directory-metadata":{"evidence":null,"level":"untested","mechanism":null,"realmId":"a5m2-img-r-0","trustRoot":null},"inherit-cancel":{"evidence":null,"level":"untested","mechanism":null,"realmId":"a5m2-img-r-0","trustRoot":null},"network-destination":{"evidence":null,"level":"untested","mechanism":null,"realmId":"a5m2-img-r-0","trustRoot":null},"write":{"evidence":null,"level":"untested","mechanism":null,"realmId":"a5m2-img-r-0","trustRoot":null}},"executionBoundary":"confined-subprocess","implementationOrigin":"team-trusted-extension"},"authorityGeneration":0,"bindingId":"img:img-pos-1","definitionIdentity":"defn-pin639-read_image@fixture","executionBoundary":"confined-subprocess","implementationOrigin":"team-trusted-extension","policyGeneration":0,"providerId":"a5p5-plane","revision":1,"status":"ACTIVE","toolName":"read_image"},"callId":"img-pos-1","deniedEffects":[],"effectSetFingerprint":"sha256:334c2dfd97ebff5bfbec3e06eff4007e1f3408f85ab9c2bc7b409ce069e99c84","effects":[{"kind":"read","resource":{"canonicalLocator":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/tests/homes/m2-readimg-arm-2026-10-23T08-27-12-667Z/1-arm/gov/photo.png","kind":"absolute-path","realmId":"a5m2-img-r-0","rights":["read"]}},{"kind":"tool-invoke","resource":null,"toolName":"read_image"}],"familyId":"B-IMAGE","member":{"instanceId":"inst-p6t4seedw01","teamSessionId":"session-root-p6t1"},"parametersFingerprint":"sha256:806ff5344c36b47cabbd9754bcd98773d3130b2c4632e9ff607f80ccab908f6f","perEffectRequired":["leader","leader"],"providerIdentity":"a5p5-plane","realmId":"a5m2-img-r-0","requiredAuthority":"leader","schema":"a5m1.pa-control-manifest.v2","targetManifest":{"adapterRevision":2,"businessObligations":[{"action":"create","entry":"SERVICE adapter commitImage -> the real store saveImage (post-consumption only; the store owns every image law)","right":"write","service":"attachment-store"},{"action":"attach-vision","entry":"dispatch-result content blocks ride the session log (Host dispatch leg — disclosed, asserted nowhere here)","right":"write","service":"session"}],"byteCap":20971520,"byteCapSource":"attachment-store-limits:min(maxImageBytes,maxMessageImageBytes)","canonicalTarget":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/tests/homes/m2-readimg-arm-2026-10-23T08-27-12-667Z/1-arm/gov/photo.png","declaredMediaType":"image/png","familyId":"B-IMAGE","operation":"read-exact-file","realmId":"a5m2-img-r-0"}},"reviewPayloadDigest":"sha256:7b4c71b5b56a328201101201134dd182a4a5c1f29bcde6517e2594600a433fc0"}]
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (16 tests | 1 failed | 15 skipped) 92ms
+     × C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact 89ms
+     ↓ no receipt, no execution: undefined/deny/manifest-less/grant-less receipts all refuse typed with ZERO port calls
+     ↓ the five-way binding refuses PAIR BY PAIR on the real durable manifest (callId / member / authorityGeneration / definition / provider), zero port calls each
+     ↓ approved target ≠ executed target refuses typed (swap the arguments after approval; the tie runs on TODAY'S projected effects)
+     ↓ family carrier is REQUIRED for a bound call and compared FIELD BY FIELD: the real chain carries the block (f696e6f2); a stripped carrier fails closed (NO pending release); ANY typed-plan field drift refuses beyond the four carrier values; the leg refuses a missing carrier BEFORE the row
+     ↓ world (a) all-allow is a LEGAL world (root ruling on f3864b24 item 1): no Control row, no requestId, receipt undefined EXECUTES on the trusted consumption context; a receipt presented there is a synthesized approval and refuses; an unclassified context never reaches a backend
+     ↓ capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects
+     ↓ the port refusal comes back VERBATIM (ANCHOR-DRIFT / fd-recycled are the CENTER law's words, not remapped), zero attachment writes
+     ↓ cancellation at all three points is zero-write: pre-flight (0 port calls), mid-read (AbortError), and AFTER the read BEFORE the commit (the commit-boundary re-check catches it)
+     ↓ no ledger, by construction: replaying the same receipt double-calls the PORT (whose SEQUENTIAL consumed-view guard refuses the sequential replay — concurrency single flight is CENTER's execToken law, not claimed here) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face
+     ↓ ownership is NEVER content-addressed: two namespaces committing identical bytes get TWO independent entitlements over ONE store object (positive control), a foreign namespace never fetches (zero store calls, negative control), and the original owner keeps working after the second mint (no owner overwrite — the rev-1 defect)
+     ↓ the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted)
+     ↓ classify stays PURE-LEXICAL (root ruling: 审批前一律纯 lexical): closed argument root, traversal refuses before any fs act, undeclared media refuses, and the frozen I+F effect set parses through the domain itself
+     ↓ DRAINING is terminal and faceless: after drain every stage refuses typed and the handle exposes no native/fallback/delegate face
+     ↓ assembly fails closed: no port, no arm; no store, no arm (缺 store 只算条件不可用 — never a fallback face, never a half-wired mount)
+     ↓ row-7 contrast — pre-fix repro vs post-fix typed refusal: the UNTOUCHED native face reads an out-of-root absolute image SUCCESSFULLY (the measured primary gap, alive at pin639), while the governed arm refuses the SAME absolute target with zero port calls
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact
+AssertionError: {"decision":"deny","requestId":"ctrl-0xpc0230hya3761v3a8790iw","detail":"the approval was denied (deny)"}: expected 'deny' to be 'approve' // Object.is equality
+
+Expected: "approve"
+Received: "deny"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:618:57
+    616|         console.log('DIAG-ROWS', JSON.stringify(rows))
+    617|       }
+    618|       expect(receipt.decision, JSON.stringify(receipt)).toBe('approve')
+       |                                                         ^
+    619|       const approveReceipt = receipt as Extract<PaControlLegResult, { …
+    620|       // the manifest is the DURABLE row's own class — not a fixture h…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 skipped (16)
+   Start at  08:27:10
+   Duration  2.01s (transform 1.37s, setup 0ms, import 1.76s, tests 92ms, environment 0ms)
+

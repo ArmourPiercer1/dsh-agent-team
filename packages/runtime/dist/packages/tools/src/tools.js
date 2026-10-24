@@ -231,6 +231,43 @@ async function resolveToolCaller(options, exec) {
     }
 }
 /**
+ * ④ (root 23:2x): THE SHARED CALLER/ROOT GATE. This is the SAME mechanical
+ * code the common entry ran inline: `resolveToolCaller` (SD-CALLER) and the
+ * P0 caller-root binding, with the SAME typed `rejected` VALUES, codes and
+ * `details`. It is exported so a GOVERNED entry that must answer the caller
+ * BEFORE it composes a durable claim runs the identical rule instead of a
+ * second identity rule — the identity source stays the injected
+ * `options.resolveCaller` (the runtime's own caller resolution), never a new
+ * one. Failure returns the native rejected result verbatim; success hands
+ * back the caller and the owning root, with NO downstream effect run.
+ */
+export async function resolveTeamToolCallerRootGate(options, exec, requestedRootSessionId) {
+    const callerResolution = await resolveToolCaller(options, exec);
+    if (!callerResolution.ok)
+        return callerResolution;
+    // P0 (caller-root binding): the calling session's OWNING root must equal the
+    // requested root — enforced here, BEFORE any downstream effect (ControlService
+    // read/write, TeamRuntime, messaging, activity). Every Team's leader resolves
+    // to the shared `inst-leader` identity, so without this gate a Leader of Team
+    // A addressing root B would be re-validated against Team B's rows as Team B's
+    // leader (read / resolve / request on the wrong team).
+    if (callerResolution.rootSessionId !== requestedRootSessionId) {
+        return {
+            ok: false,
+            result: {
+                status: 'rejected',
+                code: TEAM_TOOL_CALLER_ROOT_MISMATCH,
+                message: `team-tools: caller session belongs to Team root '${callerResolution.rootSessionId}', but the tool request targets root '${requestedRootSessionId}'`,
+                details: {
+                    callerRootSessionId: callerResolution.rootSessionId,
+                    requestedRootSessionId,
+                },
+            },
+        };
+    }
+    return callerResolution;
+}
+/**
  * Run one GUARDED work operation (SD-GUARD / SD-GUARD-NS):
  *
  * - a well-formed instance id ALWAYS consults the last-mile guard for the
@@ -332,28 +369,9 @@ function makeDefinition(options, spec) {
                 }
                 const rootSessionId = requireStringField(args, 'rootSessionId', ROOT_SESSION_MAX_LENGTH);
                 const requestToken = validateRequestToken(args);
-                const callerResolution = await resolveToolCaller(options, exec);
+                const callerResolution = await resolveTeamToolCallerRootGate(options, exec, rootSessionId);
                 if (!callerResolution.ok)
                     return callerResolution.result;
-                // P0 (caller-root binding): the calling session's OWNING root must
-                // equal the requested root — enforced here, at the ONE common
-                // entry of every team tool, BEFORE `spec.run` and therefore before
-                // any downstream effect (ControlService read/write, TeamRuntime,
-                // messaging, activity). Every Team's leader resolves to the shared
-                // `inst-leader` identity, so without this gate a Leader of Team A
-                // addressing root B would be re-validated against Team B's rows as
-                // Team B's leader (read / resolve / request on the wrong team).
-                if (callerResolution.rootSessionId !== rootSessionId) {
-                    return {
-                        status: 'rejected',
-                        code: TEAM_TOOL_CALLER_ROOT_MISMATCH,
-                        message: `team-tools: caller session belongs to Team root '${callerResolution.rootSessionId}', but the tool request targets root '${rootSessionId}'`,
-                        details: {
-                            callerRootSessionId: callerResolution.rootSessionId,
-                            requestedRootSessionId: rootSessionId,
-                        },
-                    };
-                }
                 const ctx = {
                     options,
                     toolName: spec.name,

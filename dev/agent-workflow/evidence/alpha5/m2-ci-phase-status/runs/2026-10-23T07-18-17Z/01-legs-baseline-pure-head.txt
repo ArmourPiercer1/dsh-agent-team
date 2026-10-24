@@ -1,0 +1,9 @@
+### baseline run 1 — 2026-10-23T~07:04Z, PURE HEAD c978eb2fc working tree (before CENTER live-edited the matrix); transcribed verbatim from the CI worker transcript:
+```
+DSH-CI-RUN head=c978eb2fc mode=default node=v24.21.0 cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel store-dir=default allow-refused=none
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.3 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 52
+DSH-CI-LEG leg=state-freshness verdict=fail seconds=0.1 detail=Q5: row todo_write (M-14) cites evidence path(s) vitest.json that do not resolve in-repo (existence is checked; tested SHAs and prose are not paths)
+DSH-CI-VERDICT fail pass=1 fail=1 skip=0 skipped=none legs=2 refused=0 refusedlegs=none seconds=0.4
+RC=1
+```
+NOTE: red is the shared matrix ⑥ wording of row todo_write (M-14) at HEAD (bare token vitest.json parsed as a path by Q5); CENTER fixed the wording in the live working tree mid-card (uncommitted full-path citation 机读正本=dev/agent-workflow/evidence/alpha5/m2-todo/runs/2026-10-23T06-57-31Z/vitest.json). Not a phase_status issue; not CI-writable.

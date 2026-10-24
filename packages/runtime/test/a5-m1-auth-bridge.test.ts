@@ -92,7 +92,7 @@ import {
   ControlError,
   createControlService,
 } from '../control/index.js'
-import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, parsePaControlManifest } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_SCHEMA, isLosslessJsonValue, paManifestClassOf, parsePaControlManifest, parsePaManifestFamilyBlock } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlRequestRecord,
@@ -360,10 +360,14 @@ let realmSeq = 0
 function directAssembly(
   documents?: () => AuthorityEnvelopeDocuments,
   realm?: string,
+  // A7 (root 2026-10-24): an optional policy so a MIXED effect set (some
+  // effects policy-allowed, one asking) can be built over the REAL assembly;
+  // every existing caller keeps DIRECT_POLICY by default.
+  policy: TemplatePermissionPolicy = DIRECT_POLICY,
 ): { assembly: ProductionAdmissionAssembly; realm: string } {
   const realmId = realm ?? `a5m1-auth-r-${String(realmSeq++)}`
   const built = createProductionAdmissionAssembly({
-    permissionPolicy: DIRECT_POLICY,
+    permissionPolicy: policy,
     realmId,
     templateId: 'a5m1-auth-tpl',
     definitionOwnerAuthority: 'human-user',
@@ -395,6 +399,25 @@ function directFixture(
   callerInstance = WORKER,
   effectsClaim?: unknown,
 ): DirectFixture {
+  const request = directRequest(ctx, callId, effectsClaim, callerInstance)
+  const planned = ctx.assembly.planApproval(request)
+  if (!planned.ok) throw new Error(`plan refused: ${planned.error.message}`)
+  return {
+    input: Object.freeze({ realmId: ctx.realm, member: request.member, callId, request, plan: planned.value, assembly: ctx.assembly }),
+    plan: planned.value,
+    correlation: paCorrelation(planned.value.approvalCaseId, callId),
+  }
+}
+
+/** The admission REQUEST, built exactly as the fixture built it (A7: the
+ *  all-allow regression leg needs the request WITHOUT the fixture's
+ *  plan-refusal throw, so the extraction is behaviour-preserving). */
+function directRequest(
+  ctx: { assembly: ProductionAdmissionAssembly; realm: string },
+  callId: string,
+  effectsClaim?: unknown,
+  callerInstance = WORKER,
+): AdmissionRequest {
   const bindingParsed = parseToolBinding({
     bindingId: `auth-row:${callId}`,
     agentScopeKey: `auth:${callId}`,
@@ -423,13 +446,7 @@ function directFixture(
     parametersFingerprint: canonicalJsonFingerprint({ command: `auth-${callId}` }),
     requestedEffects: effectsParsed.value as RequestedEffectSet,
   })
-  const planned = ctx.assembly.planApproval(request)
-  if (!planned.ok) throw new Error(`plan refused: ${planned.error.message}`)
-  return {
-    input: Object.freeze({ realmId: ctx.realm, member, callId, request, plan: planned.value, assembly: ctx.assembly }),
-    plan: planned.value,
-    correlation: paCorrelation(planned.value.approvalCaseId, callId),
-  }
+  return request
 }
 
 /** The exact manifest BYTES the bridge puts on the row (mirrored here for
@@ -2328,4 +2345,423 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio'))).toBe(true)
     expect(Date.now() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
+})
+
+/* ── A5M2-FAMILY (CENTER): the strict family block the manifest now carries ──────
+ * The bridge review's blockers 1 and 3 are about PROJECTION and LOSSLESSNESS: a field
+ * that reaches the durable row but is stripped on read-back approves less than it
+ * seems, and a target manifest whose undefined/NaN members a stringify silently drops
+ * hashes a question nobody asked. These legs pin the exported strict block parse -
+ * the helper both the manifest projection and the centre's own fold go through - so a
+ * later relaxation shows up HERE rather than in a guard that no longer sees the field.
+ * The end-to-end legs over a durable row (read-back -> resolve -> guard -> consume, and
+ * the registry-driven refusals at the leg) ride with the family cards' deltas; they are
+ * NOT claimed by this block. */
+describe('A5M2-FAMILY: the family block is all-or-nothing and lossless', () => {
+  const good = {
+    familyId: 'B-SESSION',
+    adapterRevision: 1,
+    providerIdentity: 'prov@1',
+    targetManifest: { operation: 'append', sessionHeaderId: 's-1', counts: { pending: 1 } },
+  }
+  it('L1 a row that bears no family field parses as no family (pre-A5M2 bytes keep their meaning)', () => {
+    expect(parsePaManifestFamilyBlock({})).toBe(undefined)
+    expect(parsePaManifestFamilyBlock({ realmId: 'r', callId: 'c' })).toBe(undefined)
+  })
+  it('L2 a complete block is carried at FULL value - no digest, no summary, no re-ordering', () => {
+    const parsed = parsePaManifestFamilyBlock(good)
+    expect(parsed).toEqual(good)
+    expect(JSON.stringify(parsed)).toBe(JSON.stringify(good))
+  })
+  it('L3 ANY member present makes ALL FOUR mandatory - a partial block fails the manifest', () => {
+    for (const dropped of ['familyId', 'adapterRevision', 'providerIdentity', 'targetManifest'] as const) {
+      const partial = { ...good } as Record<string, unknown>
+      delete partial[dropped]
+      expect(parsePaManifestFamilyBlock(partial), `drop ${dropped}`).toBe('invalid')
+    }
+  })
+  it('L4 malformed members are refused, not coerced', () => {
+    expect(parsePaManifestFamilyBlock({ ...good, familyId: '' })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, providerIdentity: '' })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, adapterRevision: -1 })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, adapterRevision: 1.5 })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, adapterRevision: '1' })).toBe('invalid')
+  })
+  it('L5 a target manifest that JSON would silently shrink is refused BEFORE any hashing', () => {
+    const lostUndefined = { a: 1, b: undefined }
+    const lostNaN = { a: 1, b: Number.NaN }
+    const lostNested = { a: { b: Infinity } }
+    const lostArray = { a: [1, undefined] }
+    // the trip-wire, first: a plain stringify DOES lose these - which is exactly why the
+    // block is refused here instead of being hashed after the loss.
+    expect(Object.keys(JSON.parse(JSON.stringify(lostUndefined)))).not.toContain('b')
+    expect(JSON.stringify(lostNaN)).toBe('{"a":1,"b":null}')
+    expect(JSON.stringify(lostNested)).toBe('{"a":{"b":null}}')
+    expect(JSON.stringify(lostArray)).toBe('{"a":[1,null]}')
+    for (const bad of [lostUndefined, lostNaN, lostNested, lostArray]) {
+      expect(parsePaManifestFamilyBlock({ ...good, targetManifest: bad })).toBe('invalid')
+    }
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: null })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: [1, 2] })).toBe('invalid')
+    // The literal { __proto__: x } sets a PROTOTYPE, not a key, so it is not the hazard
+    // worth pinning; the hazard is the OWN "__proto__" property a JSON.parse can hand
+    // over - that is what must never reach a durable row.
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: JSON.parse('{"__proto__":{"x":1}}') })).toBe('invalid')
+    expect(parsePaManifestFamilyBlock({ ...good, targetManifest: { a: 1, constructor: 2 } })).toBe('invalid')
+  })
+})
+
+/* ── A5M2-FAMILY-RAW (CENTER, root review item 1): the walk runs on the RAW value ────
+ * Two flaws the review named are pinned here: a validator that recurses objects but
+ * only skims array entries (so an object INSIDE an array escapes), and a check placed
+ * after the lossless-rewrite / stringify step (which has already dropped the member the
+ * check was supposed to catch). Both are pinned against the same helper the bridge
+ * calls before it builds the manifest, so the placement is not a comment - it is the
+ * only call site. */
+describe('A5M2-FAMILY-RAW: losslessness is decided on the raw value at every level', () => {
+  it('L6 objects nested inside arrays are walked, not skimmed (the recursion hole)', () => {
+    expect(isLosslessJsonValue({ ok: true })).toBe(true)
+    expect(isLosslessJsonValue({ list: [{ a: 1 }, { b: 'x' }] })).toBe(true)
+    expect(isLosslessJsonValue({ list: [{ a: undefined }] })).toBe(false)
+    expect(isLosslessJsonValue({ list: [{ a: Number.NaN }] })).toBe(false)
+    expect(isLosslessJsonValue({ list: [[{ a: Infinity }]] })).toBe(false)
+    expect(isLosslessJsonValue({ list: [() => 1] })).toBe(false)
+    expect(isLosslessJsonValue({ s: Symbol('x') })).toBe(false)
+    expect(isLosslessJsonValue({ n: 10n })).toBe(false)
+    expect(isLosslessJsonValue({ d: new Date(0) })).toBe(false)
+    expect(isLosslessJsonValue({ u: undefined })).toBe(false)
+  })
+  it('L7 checking AFTER the rewrite would have passed what the raw walk refuses', () => {
+    const raw = { operation: 'append', drop: undefined, bad: Number.NaN }
+    const rewritten = JSON.parse(JSON.stringify(raw)) as Record<string, unknown>
+    // the naive ordering: after the loss the value looks perfectly JSON-clean...
+    expect(isLosslessJsonValue(rewritten)).toBe(true)
+    expect(Object.keys(rewritten)).toEqual(['operation', 'bad'])
+    // ...while the raw value it came from is refused. This pair is the whole reason the
+    // gate sits before deepLossless/JSON in the leg, not after it.
+    expect(isLosslessJsonValue(raw)).toBe(false)
+    expect(parsePaManifestFamilyBlock({
+      familyId: 'B-SESSION',
+      adapterRevision: 1,
+      providerIdentity: 'prov@1',
+      targetManifest: raw,
+    })).toBe('invalid')
+  })
+  it('L8 a deep table of illegal raw target manifests is refused by the strict block parse - NOT the durable chain, which needs its own isolated-service leg', () => {
+    const withHoles: unknown[] = [1, 2]
+    withHoles.length = 4 // indexes 2 and 3 exist as holes, not as values
+    expect(withHoles.every((item) => item !== undefined)).toBe(true) // what every() sees
+    expect(JSON.stringify(withHoles)).toBe('[1,2,null,null]') // what JSON turns them into
+    const table: Record<string, unknown> = {
+      'undefined at depth 3': { a: { b: [{ c: undefined }] } },
+      'NaN in array of arrays': { a: [[Number.NaN]] },
+      'Infinity nested in object in array': { a: [{ b: Infinity }] },
+      'function member': { a: () => 1 },
+      'symbol key value': { a: Symbol('s') },
+      'bigint member': { a: 1n },
+      'class instance': { a: new (class Thing { readonly x = 1 })() },
+      'Date instance': { a: new Date(0) },
+      'null top': null,
+      'array top': [{ a: 1 }],
+      'string top': 'append',
+      // the sparse hole below: Array.every SKIPS holes, JSON.stringify renders them
+      // as null - so a walk built on every() would bless a value that loses a member.
+      'sparse array hole': { list: withHoles },
+    }
+    for (const [name, targetManifest] of Object.entries(table)) {
+      expect(parsePaManifestFamilyBlock({
+        familyId: 'B-SESSION',
+        adapterRevision: 1,
+        providerIdentity: 'prov@1',
+        targetManifest,
+      }), name).toBe('invalid')
+    }
+  })
+})
+
+/* ── A5M2-CHAIN (CENTER): what a registered family's row really binds ───────────────
+ * The chain claim this lane can prove without inventing anything: the approved target
+ * and the question the chain keys on are the SAME bytes of ONE immutable typed plan -
+ * the row's digest is computed over the payload that carries the target, so any edit to
+ * a target field changes the digest, and a changed plan is therefore a DIFFERENT
+ * approval, never a restatement of the old one. The refusals prove the other half: an
+ * unregistered binding cannot claim a family, a registered family shipping nothing is
+ * refused, and an out-of-structure target is refused - all before any row exists.
+ * THE CALIBER, stated where it cannot be missed: these are the BYTE-BINDING proof and
+ * the NEGATIVE control. The positive control this family still owes - a new family's
+ * durable APPROVAL through the guard into a real consume - is NOT delivered here and is
+ * never to be simulated by accepting a refusal or by reading a counter as a pass. The
+ * first attempt at that allow answered pa-authority-drift at the decision gate and stays
+ * open as its own delta. */
+describe('A5M2-ROW (byte binding + negative control, NOT the full chain): the row binds the plan it was asked under', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a5m2-chain-call')
+  const definitionIdentity = String((fixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
+  const familyFacts = { familyId: 'B-SESSION', adapterRevision: 1, providerIdentity: 'prov@1' }
+  const target = {
+    operation: 'replace-list',
+    agentId: 'agent-a',
+    sessionHeaderId: 'header-1',
+    todosDigest: 'sha256:todo',
+    counts: { pending: 1, inProgress: 0, completed: 0 },
+    allowParallelPolicy: false,
+    paramFingerprint: 'sha256:todo',
+  }
+  const family = { ...familyFacts, targetManifest: target }
+  const registeredLeg = () => makeLeg({ governedFamilies: { [definitionIdentity]: familyFacts } })
+
+  it('F1 the row carries the block, and its digest is the fingerprint of those very bytes', async () => {
+    const pending = registeredLeg()({ ...fixture.input, family })
+    const row = await waitRow((r) => r.correlation === fixture.correlation)
+    const parsed = parsePaControlManifest(row.reviewPayload)
+    expect(parsed, 'the read-back must keep the family block').toBeDefined()
+    expect(parsed?.familyId).toBe('B-SESSION')
+    expect(parsed?.adapterRevision).toBe(1)
+    expect(parsed?.providerIdentity).toBe('prov@1')
+    expect(parsed?.targetManifest).toEqual(target)
+    // the parameter summary and the target live in the same payload the digest locks:
+    // the approved target IS the question that was approved.
+    const locked = row as unknown as Record<string, unknown>
+    expect(locked.operationFingerprint).toBe(locked.reviewPayloadDigest)
+    expect(parsed?.parametersFingerprint, 'the block rides beside the parameter summary it belongs to').toBe(fixture.input.request.parametersFingerprint)
+    const edited = JSON.parse(JSON.stringify(row.reviewPayload)) as Record<string, unknown>
+    ;(edited.targetManifest as Record<string, unknown>).sessionHeaderId = 'header-2'
+    expect(canonicalJsonFingerprint(edited)).not.toBe(locked.operationFingerprint)
+    await resolve(humanCaller(), row.requestId, 'deny')
+    expect((await pending).decision).toBe('deny')
+  })
+
+  it('F2 the target bytes on the row come from the plan it was asked under, not from a later argument', async () => {
+    // A second, independent call whose plan carries DIFFERENT target bytes: the row that
+    // appears carries exactly those bytes. Together with F1's digest lock this is the
+    // chain's whole binding claim - the approved target and the recorded target are the
+    // same immutable plan's bytes, and the digest that keys the approval covers them, so
+    // a moved target is a different question and never a restatement of the first.
+    const movedCtx = directAssembly()
+    const movedFixture = directFixture(movedCtx, 'a5m2-chain-moved')
+    const movedDefinition = String((movedFixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
+    const pending = makeLeg({
+      governedFamilies: { [movedDefinition]: familyFacts },
+    })({ ...movedFixture.input, family: { ...family, targetManifest: { ...target, sessionHeaderId: 'header-2' } } })
+    const row = await waitRow((r) => r.correlation === movedFixture.correlation)
+    const payload = parsePaControlManifest(row.reviewPayload)
+    expect(payload?.targetManifest).toEqual({ ...target, sessionHeaderId: 'header-2' })
+    const locked = row as unknown as Record<string, unknown>
+    expect(locked.operationFingerprint).toBe(canonicalJsonFingerprint(row.reviewPayload))
+    expect(locked.operationFingerprint).not.toBe(
+      canonicalJsonFingerprint({
+        ...(row.reviewPayload as Record<string, unknown>),
+        targetManifest: { ...target, sessionHeaderId: 'header-1' },
+      }),
+    )
+    await resolve(humanCaller(), row.requestId, 'deny')
+    expect((await pending).decision).toBe('deny')
+  })
+
+  it('F3 the three refusals write no row at all', async () => {
+    const before = (await state()).requests.length
+    const unregistered = await makeLeg()({ ...fixture.input, family })
+    expect(unregistered.decision).toBe('deny')
+    expect(String(unregistered.decision === 'deny' ? unregistered.detail : '')).toContain('family-claim-on-unregistered-binding')
+    const bare = await registeredLeg()({ ...fixture.input })
+    expect(bare.decision).toBe('deny')
+    expect(String(bare.decision === 'deny' ? bare.detail : '')).toContain('family-review-facts-missing')
+    const outOfStructure = await registeredLeg()({
+      ...fixture.input,
+      family: { ...family, targetManifest: { ...target, counts: { pending: 1 } } },
+    })
+    expect(outOfStructure.decision).toBe('deny')
+    expect(String(outOfStructure.decision === 'deny' ? outOfStructure.detail : '')).toContain('family-target-invalid')
+    expect((await state()).requests.length).toBe(before)
+  })
+})
+
+/* ── A5M2-CHAIN-POS (CENTER): the positive control a family still owes ──────────────
+ * approve -> guard -> consume, end to end, on a registered family, with the CURRENT
+ * family fact answered by a facts source that is the same shape the plane's assembly
+ * answers (the assembly-side wiring is CENTER's own remaining job). Its own
+ * ControlService/verifier instance so the golden legs' counts are untouched; no new
+ * platform, no stub authority. */
+describe('A5M2-CHAIN-POS: a registered family is approved, guarded and consumed', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a5m2-chain-pos')
+  const definitionIdentity = String((fixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
+  const familyFacts = { familyId: 'B-SESSION', adapterRevision: 1, providerIdentity: 'prov@1' }
+  const target = {
+    operation: 'replace-list',
+    agentId: 'agent-a',
+    sessionHeaderId: 'header-1',
+    todosDigest: 'sha256:todo',
+    counts: { pending: 1, inProgress: 0, completed: 0 },
+    allowParallelPolicy: false,
+    paramFingerprint: 'sha256:todo',
+  }
+  const family = { ...familyFacts, targetManifest: target }
+
+  // the current trusted registration, answered through the SAME facts path the plane
+  // uses - the assembly-side fill is CENTER's job, here it is the same shape.
+  const factsSource: PaEffectsVerifierDeps['readCallFacts'] = async (input) => {
+    const facts = await fakeReadCallFacts(input)
+    return facts === undefined ? undefined : { ...facts, governedFamily: familyFacts }
+  }
+  const verifier = createPaEffectsVerifier({ readCallFacts: factsSource })
+  const service2: ControlService = createControlService({
+    teamDomain: domain,
+    blueprintCatalog: catalog,
+    externalPolicyFacts: async () => makeExternalPolicyFacts(),
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 5,
+    paEffectsVerifier: verifier,
+  })
+  const leg = createPaControlLeg({
+    controlService: service2,
+    rootSessionId: P6T4_ROOT,
+    caller: memberCaller(WORKER),
+    beneficiaryAuthority: 'member',
+    governedFamilies: { [definitionIdentity]: familyFacts },
+  })
+  const port = createPaGuardVerifyPort({ controlService: service2, rootSessionId: P6T4_ROOT, verifier })
+  async function state2() {
+    return service2.listControlState(P6T4_ROOT)
+  }
+  async function waitRow2(correlation: string): Promise<ControlRequestRecord> {
+    const deadline = Date.now() + 20_000
+    for (;;) {
+      const found = (await state2()).requests.find((r) => r.correlation === correlation)
+      if (found !== undefined) return found
+      if (Date.now() > deadline) throw new Error('the family control row never appeared')
+      await sleep(25)
+    }
+  }
+
+  it('durable family row -> real allow -> guard allows once -> exactly one consumption', async () => {
+    const pending = leg({ ...fixture.input, family })
+    const row = await waitRow2(fixture.correlation)
+    expect(parsePaControlManifest(row.reviewPayload)?.targetManifest).toEqual(target)
+
+    await service2.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const decided = await pending
+    if (decided.decision !== 'approve') {
+      // keep the first real failure verbatim instead of dressing it up as a pass
+      throw new Error(`POSITIVE CONTROL refused to approve: ${JSON.stringify(decided)}`)
+    }
+    expect(decided.decision).toBe('approve')
+
+    // WHERE the consumption happens, measured rather than assumed: returning the approval
+    // IS the guard consume - the bridge spends the allow exactly once at that moment, so
+    // the port afterwards answers allow-consumed (the golden positive leg answers the same
+    // way) and there is exactly one consumption record for this family row.
+    const probe = probeFor(fixture, row, fixture.input.request.parametersFingerprint)
+    const spent = await port.verify(probe)
+    expect(spent.allowed, JSON.stringify(spent)).toBe(false)
+    if (spent.allowed === false) expect(spent.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
+    const consumed = (await state2()).consumptions.filter((c) => c.requestId === row.requestId)
+    expect(consumed.length).toBe(1)
+    expect(String(consumed[0]?.requestId)).toBe(row.requestId)
+  })
+})
+
+// ── A7. MIXED effect sets — the producer contract (root ruling 2026-10-24) ─
+// The durable-chain regression for the shared PA producer bug the root
+// located (approval-case.ts: the plan loop walked only needApproval, so a
+// mixed set reached the strict Control manifest with too FEW rungs —
+// ask-first as a short vector, ask-later as JSON `null` holes; the 37646
+// windows and 4ab/17c all sat on this source). THE TWO QUANTITIES STAY
+// SEPARATE: the ONE case rung (`requiredAuthority`) remains the max over the
+// NEED-APPROVAL subset; `perEffectRequired` is DENSE per EFFECT, each entry
+// the real ceiling derivation. Real planner → real bridge → REAL
+// ControlService validator; the all-allow set still mints NO case.
+
+const A7_LOCATOR = '/a5m2-a7-regression/notes.txt'
+// The type ARGUMENT gives the nested allow[] elements their context (a bare
+// Object.freeze({…}) widens tool: 'read'|'write' to string — the real tsc
+// diagnostic at this line); no cast, no `as unknown`.
+const A7_MIXED_POLICY = Object.freeze<TemplatePermissionPolicy>({
+  default: 'ask',
+  allow: [
+    { tool: 'read', resource: { kind: 'exact' as const, path: A7_LOCATOR } },
+    { tool: 'write', resource: { kind: 'exact' as const, path: A7_LOCATOR } },
+  ],
+  ask: [],
+  deny: [],
+})
+
+/** The EDIT-shaped closed triple (edit.mjs:232-236): tool-invoke + read +
+ *  write over one anchored locator; `askFirst` picks the ask position. */
+function a7Claims(realm: string, order: 'ask-first' | 'ask-later' | 'all-allow'): unknown[] {
+  const invoke = { kind: 'tool-invoke', toolName: 'team_bash', resource: null }
+  const read = { kind: 'read', resource: { realmId: realm, kind: 'absolute-path', canonicalLocator: A7_LOCATOR, rights: ['read'] } }
+  const write = { kind: 'write', resource: { realmId: realm, kind: 'absolute-path', canonicalLocator: A7_LOCATOR, rights: ['write'] } }
+  if (order === 'ask-first') return [invoke, read, write]
+  if (order === 'ask-later') return [read, write, invoke]
+  return [read, write]
+}
+
+describe('A7 (mixed effect sets): DENSE per-effect rungs at the producer; strict validator accepts; all-allow mints no case', () => {
+  it('(a7-0) the MIXED policy truly allows read/write: an ALL-ALLOW set plans NO case', () => {
+    const ctx = directAssembly(undefined, undefined, A7_MIXED_POLICY)
+    const request = directRequest(ctx, 'a7-all-allow', a7Claims(ctx.realm, 'all-allow'))
+    const planned = ctx.assembly.planApproval(request)
+    // The case does NOT mint — observed as the ASSEMBLY guard ("planApproval
+    // asked for a plan no effect needs": expansion already proved zero
+    // effects need the Ask, which also PROVES the allow lanes matched the
+    // read/write effects). The producer's own guard ("no effect needed
+    // approval") is the second, deeper mouth of the same law; either way
+    // the outcome is one: NO case, NO durable row.
+    expect(planned.ok).toBe(false)
+    if (planned.ok) throw new Error('an all-allow set must not mint a case')
+    expect(planned.error.message).toMatch(/no effect needs|no effect needed approval/)
+  })
+
+  it('(a7-1) ask-FIRST [I ask, R allow, W allow]: the plan is DENSE over all THREE effects and the durable row survives the REAL strict validator', async () => {
+    const ctx = directAssembly(undefined, undefined, A7_MIXED_POLICY)
+    const fixture = directFixture(ctx, 'a7-ask-first', WORKER, a7Claims(ctx.realm, 'ask-first'))
+    expect(fixture.plan.perEffectRequired).toHaveLength(3)
+    expect(fixture.plan.perEffectRequired.every((rung) => typeof rung === 'string' && rung.length > 0)).toBe(true)
+    // the aggregate: the ONE case rung stays the need-approval max (the ask
+    // effect's rung) — exactly the value the need-approval-only producer
+    // computed; the dense fill must not have changed it.
+    expect(fixture.plan.requiredAuthority).toBe('leader')
+    // REPRODUCTION of the pre-fix producer shape AT THE STRICT BOUNDARY:
+    // the same bytes with the old short vector (1 rung against 3 effects)
+    // are refused by the service's own parser — the window-7 leg-deny.
+    const shortBytes = { ...manifestBytes(fixture), perEffectRequired: fixture.plan.perEffectRequired.slice(0, 1) }
+    expect(parsePaControlManifest(shortBytes)).toBeUndefined()
+    // the real bridge puts the dense manifest on the row and the service
+    // accepts it (a refusal here is exactly the pre-fix failure mode).
+    const leg = makeLeg()
+    const pending = leg(fixture.input)
+    const row = await waitRow((r) => r.correlation === fixture.correlation)
+    expect(row.status).toBe('pending')
+    expect(parsePaControlManifest(row.reviewPayload)).not.toBeUndefined()
+    expect((manifestOf(row).perEffectRequired as unknown[])).toHaveLength(3)
+    expect(manifestOf(row).requiredAuthority).toBe('leader')
+    await resolve(humanCaller(), row.requestId, 'allow')
+    const res = await pending
+    expect(res.decision).toBe('approve')
+  })
+
+  it('(a7-2) ask-LATER [R allow, W allow, I ask]: no JSON-`null` holes; dense vector passes the validator', async () => {
+    const ctx = directAssembly(undefined, undefined, A7_MIXED_POLICY)
+    const fixture = directFixture(ctx, 'a7-ask-later', WORKER, a7Claims(ctx.realm, 'ask-later'))
+    expect(fixture.plan.perEffectRequired).toHaveLength(3)
+    expect(fixture.plan.perEffectRequired.every((rung) => typeof rung === 'string' && rung.length > 0)).toBe(true)
+    expect(fixture.plan.requiredAuthority).toBe('leader')
+    // REPRODUCTION of the pre-fix ask-LATER shape: the sparse array the old
+    // producer produced (perEffectRequired[index] = rung at the ORIGINAL
+    // effect index) JSON-serialises to `null` holes — the strict parser
+    // refuses every null rung.
+    const holeBytes = { ...manifestBytes(fixture), perEffectRequired: JSON.parse(JSON.stringify([undefined, undefined, 'leader'])) as unknown[] }
+    expect(parsePaControlManifest(holeBytes)).toBeUndefined()
+    const leg = makeLeg()
+    const pending = leg(fixture.input)
+    const row = await waitRow((r) => r.correlation === fixture.correlation)
+    expect(parsePaControlManifest(row.reviewPayload)).not.toBeUndefined()
+    const manifest = manifestOf(row)
+    expect((manifest.perEffectRequired as unknown[])).toHaveLength(3)
+    expect(manifest.deniedEffects).toEqual([]) // no policyDenied here — none carried
+    await resolve(humanCaller(), row.requestId, 'allow')
+    const res = await pending
+    expect(res.decision).toBe('approve')
+  })
 })

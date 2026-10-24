@@ -1,0 +1,114 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts (55 tests | 3 failed) 289ms
+     ✓ the pinned baseline is the unique source: tests/paths.mjs SHA + version + the checkout itself 2ms
+     ✓ the REAL built plugin registers EXACTLY the five tools with pinned description bytes and compiled parameters the REAL host validator accepts 149ms
+     ✓ canonical SOURCE lines behind rev 2 are TEXT-PINNED (tool face, input DSL, operations, workspace law, boundary, presentation, extraction, types, service signatures) 4ms
+     ✓ the SAFE-FAILURES mirror in the module EQUALS the source table entry-for-entry (rev-2 sanitize law) 1ms
+     ✓ runtime proof on the built service: abstract search absent; concrete trace/read/authorization/titles all 2-formal 20ms
+     ✓ type violations on the captured compiled schema are refused typed with ZERO port entry 5ms
+     ✓ the REAL host validator agrees on the SAME captured schema (fixed point; the r9 idiom) 1ms
+     ✓ the input-law body taxonomy rides the native messages through the planning envelope 3ms
+     ✓ a foreign target and a MISSING target answer the ONE native failure — byte-equal to each other and to the native oracle — pre-read, zero read-port entry 5ms
+     ✓ the caller-self target rides the native short-circuit (workspace-access.ts:81) — zero filterSessions, direct read 3ms
+     ✓ the Team ceiling denies PRE-READ with zero port entry and no existence information (classify AND invoke) 1ms
+     ✓ session_search INTERSECTS the ceiling into the result lane: a same-workspace hit outside the ceiling is not served (the native oracle serves it — the ceiling is the Team-side delta) 3ms
+     ✓ event_search PRE-AUTHORIZES an explicit target before searchEvents, and a rogue page session fails the observed-header assert 2ms
+     ✓ current-session search without a step boundary throws the native NO_CURRENT_STEP failure in both pipelines 3ms
+     ✓ session_trace: identical string (title header, created, ancestors nearest-first, descendants) 2ms
+     ✓ session_trace on a foreign parent line stops at the boundary note (identical) 1ms
+     ✓ session_event_trace: identical string (target line, replaced-by, seq lists) 1ms
+     ✓ session_event_read: identical string (```json fenced target, Before neighbors with semantic text); keys ride only when supplied 1ms
+     ✓ session_event_search: identical strings for hits, current-step exclusion (seq to = 49), and the native empty-window string (title read BEFORE the short-circuit, zero searchEvents) 2ms
+     ✓ session_search: identical multi-hit string with the parent display through the AUTHORIZED filter (authorized id / root / [outside workspace]) and the cap note 2ms
+     ✓ title unavailability renders the SAME in both pipelines (rejected observation → untitled (title unavailable: CODE)) 20ms
+     ✓ an UNAUTHORIZED service failure rides the ONE target failure identically in both pipelines (sanitize:134-136) 2ms
+     ✓ a REAL SessionQueryError from the port surfaces with the TABLE-safe message and code, identical to the native oracle; the raw message never rides 6ms
+     ✓ an unknown port failure collapses to SESSION_QUERY_TOOL_FAILED in both pipelines 1ms
+     ✓ the native repeated-cursor law rides SESSION_QUERY_INVALID_CURSOR with the native message (no row-local code) 1ms
+     ✓ an off-contract page (items missing) is a governance integrity refusal — the row refuses to serve or page further 1ms
+     ✓ parent_session_ids ride REAL authorizeSessionIds pre-authorization; unauthorized parents are dropped; root null joins ONLY when include is true — byte-equal to the native oracle 1ms
+     ✓ include_root_sessions:false queries parents WITHOUT the root clause; false alone skips the lane 1ms
+     ✓ an ALL-unauthorized parent lane serves the native empty string with ZERO searchSessions entry 1ms
+     ✓ the ceiling intersects the parent lane too: an authorized-but-ceiling-denied parent never reaches the service filter 1ms
+     × evidence law: silence throws; present:false + evidence constructs WITHOUT any search facet, INACTIVE carries the evidence verbatim, and trace/event-read stay fully REAL (native oracle byte-equal without a search port) 2ms
+     ✓ evidence/wiring contradictions THROW at placement (present:true without a facet; present:false WITH one; present:false without the evidence string) 2ms
+     ✓ cursor paging rides the PINNED receiver: the second request carries the cursor on the SAME normalized request, byte-equal to the native oracle 1ms
+     ✓ REMOVED-LAW PIN (root ruling 3, ruling (c)): a same-instance facet/method rebind inside the SAME generation is NOT observed and never promised — the bound generation-1 handles keep serving; PORT_METHOD_MOVED no longer exists as a runtime law 1ms
+     ✓ a PUBLIC generation replacement INVALIDATES the row: PORT_RECEIVER_MOVED quoting pinned-vs-live markers, zero forwarding — old approvals never ride across generations (precision 2) 1ms
+     ✓ observer non-ACTIVE (no generation answerable) fail-closes typed PORT_LIFECYCLE_UNOBSERVABLE with zero forwarding; a restored ACTIVE generation serves again (precision 1; never latched) 1ms
+     ✓ caller drift (workspace move between classify and entry) refuses CALLER_DRIFT with zero forwarding 1ms
+     ✓ pre-aborted signals and drained rows refuse typed with zero port entry; dispatch facts (portCalls, portMethod) are observable 2ms
+     ✓ five ACTIVE typed rows (present:true evidence) carry the CAPTURED description bytes + output {type:string}, map to the five real methods, and name ONLY the resource-kind residual 2ms
+     ✓ classify stays pure and closed-surface: unknown/missing params refused; effects are the single tool-invoke; the fingerprint is canonical 2ms
+     × a missing native capture refuses NATIVE_FACE_ABSENT (no re-authored schema, no substituted body) 1ms
+     × config defects THROW at placement: identity, caller reader, ceiling, and the search arity law 2ms
+     ✓ session_event_search — the search-FAMILY target row still answers the Team ceiling at classify AND invoke with zero port entry 1ms
+     ✓ session_trace ANCESTOR lane: a ceiling-denied ancestor stops at the boundary note and NEVER enters the title port (native names it; the row does not) 2ms
+     ✓ session_trace DESCENDANT lane: a ceiling-denied descendant rides the null under-disclosure and never reaches visibleIds/title reads 2ms
+     ✓ ceiling REVOKED between entry and the first dispatch (live decision port, no stale snapshot): typed refusal BEFORE any port entry 1ms
+     ✓ caller moved ACROSS THE AUTHORIZATION AWAIT: the resumption recheck refuses CALLER_DRIFT — the read port is never entered 2ms
+     ✓ caller moved at the LAST AWAIT BEFORE SERVE: the titles-resumption recheck refuses — effects not rewound, NOTHING IS SERVED 2ms
+     ✓ mid-PAGING caller revocation: page 1 resolves, the resumption recheck refuses — the continuation request is never built or sent 2ms
+     ✓ the CURSOR-CONTINUATION REQUEST CONSTRUCTION is its own revalidation point (freshness gate, not the port edge) 2ms
+     ✓ OUTPUT-SET MEMBER revocation (trace lineage): p-root revoked during the titles await while the target s-a stays allowed — the WHOLE stale set is refused at final serve, nothing serves 2ms
+     ✓ OUTPUT-SET MEMBER revocation (search HIT, hasTarget=false row): s-b revoked during the titles await — the whole result set is refused, the stale hit list is never served 2ms
+     ✓ OUTPUT-SET MEMBER revocation (AUTHORIZED PARENT): p-root revoked during the titles await — authorizedParents membership is rechecked too, whole result refused 1ms
+     ✓ non-search rows: the KEY IS ABSENT AT ALL (hasOwnProperty false + ownKeys exclude it) — never a present-and-undefined member 2ms
+     ✓ search rows stay UNCHANGED: the key is PRESENT carrying the effective cap (default 100; configured 1 stays 1) on BOTH search-family rows 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 parent/root lane and evidence-backed mount law > evidence law: silence throws; present:false + evidence constructs WITHOUT any search facet, INACTIVE carries the evidence verbatim, and trace/event-read stay fully REAL (native oracle byte-equal without a search port)
+AssertionError: expected [Function] to throw error matching /generation/u but got 'g6-session-query: queryPorts.traceQue…'
+
+- Expected:
+/generation/u
+
++ Received:
+"g6-session-query: queryPorts.traceQueryPort is required (the trace family; CONCRETE on the engine (session-query/src/index.ts:327-331, :340-347 @639ed01539) — backend-independent exact traces (law :91-97))"
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1117:9
+    1115|       declaredMount: { searchBackend: { present: false, evidence: 'e' …
+    1116|       lifecycle: { currentGeneration: () => null }, generation: 1,
+    1117|     })).toThrow(/generation/u)
+       |         ^
+    1118|     const w = await makeWorld({ searchBackend: { present: false, evide…
+    1119|     expect(w.adapter.rows['session_search'].active).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 row facts — five typed rows, captured bytes, evidence mount > a missing native capture refuses NATIVE_FACE_ABSENT (no re-authored schema, no substituted body)
+TypeError: g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)
+ ❯ Module.createG6SessionQueryAdapter src/plugin/live/governed-families/g6-session-query.mjs:1157:11
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1313:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a5m2-g6-session-query-c1.test.ts > a5m2-g6 row facts — five typed rows, captured bytes, evidence mount > config defects THROW at placement: identity, caller reader, ceiling, and the search arity law
+AssertionError: expected [Function] to throw error matching /teamCeiling/u but got 'g6-session-query: lifecycle { current…'
+
+- Expected:
+/teamCeiling/u
+
++ Received:
+"g6-session-query: lifecycle { currentGeneration(): {id, service} | null } is required — the public Provider lifecycle is the ONLY currentness source (an assembly without it cannot establish governed freshness; fail-closed at construction)"
+
+ ❯ test/a5m2-g6-session-query-c1.test.ts:1340:86
+    1338|     expect(() => S.createG6SessionQueryAdapter({ ...base, realmId: '' …
+    1339|     expect(() => S.createG6SessionQueryAdapter({ ...base, readCaller: …
+    1340|     expect(() => S.createG6SessionQueryAdapter({ ...base, teamCeiling:…
+       |                                                                                      ^
+    1341|     expect(() => S.createG6SessionQueryAdapter({
+    1342|       ...base,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 52 passed (55)
+   Start at  05:02:14
+   Duration  960ms (transform 498ms, setup 0ms, import 522ms, tests 289ms, environment 0ms)
+

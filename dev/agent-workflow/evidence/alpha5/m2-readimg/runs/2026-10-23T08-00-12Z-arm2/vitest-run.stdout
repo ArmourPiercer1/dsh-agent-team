@@ -1,0 +1,133 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (15 tests | 6 failed) 752ms
+     × C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact 98ms
+     ✓ no receipt, no execution: undefined/deny/manifest-less/grant-less receipts all refuse typed with ZERO port calls 28ms
+     ✓ the five-way binding refuses PAIR BY PAIR on the real durable manifest (callId / member / authorityGeneration / definition / provider), zero port calls each 24ms
+     ✓ approved target ≠ executed target refuses typed (swap the arguments after approval; the tie runs on TODAY'S projected effects) 29ms
+     × thin family surface both ways: today'S absent projection is DISCLOSED never skipped silently; once carried it is PINNED (wrong familyId / stale revision / tampered targetManifest all refuse by value) 24ms
+     × capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects 23ms
+     ✓ the port refusal comes back VERBATIM (ANCHOR-DRIFT / fd-recycled are the CENTER law's words, not remapped), zero attachment writes 46ms
+     × cancellation at all three points is zero-write: pre-flight (0 port calls), mid-read (AbortError), and AFTER the read BEFORE the commit (the commit-boundary re-check catches it) 134ms
+     × no ledger, by construction: replaying the same receipt double-calls the PORT (which the one-shot consumed view refuses — the durable law lives outside the arm) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face 19ms
+     ✓ ownership is NEVER content-addressed: two namespaces committing identical bytes get TWO independent entitlements over ONE store object (positive control), a foreign namespace never fetches (zero store calls, negative control), and the original owner keeps working after the second mint (no owner overwrite — the rev-1 defect) 62ms
+     × the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted) 35ms
+     ✓ classify stays PURE-LEXICAL (root ruling: 审批前一律纯 lexical): closed argument root, traversal refuses before any fs act, undeclared media refuses, and the frozen I+F effect set parses through the domain itself 6ms
+     ✓ DRAINING is terminal and faceless: after drain every stage refuses typed and the handle exposes no native/fallback/delegate face 6ms
+     ✓ assembly fails closed: no port, no arm; no store, no arm (缺 store 只算条件不可用 — never a fallback face, never a half-wired mount) 0ms
+     ✓ row-7 contrast — pre-fix repro vs post-fix typed refusal: the UNTOUCHED native face reads an out-of-root absolute image SUCCESSFULLY (the measured primary gap, alive at pin639), while the governed arm refuses the SAME absolute target with zero port calls 211ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact
+AssertionError: the FS-PROC port threw (read is not defined): the read never returned; the attachment commit was never reached — the write boundary was NEVER crossed (sideEffectPossible=false states the read edge, not the write edge): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:561:34
+    559|       expect(approveReceipt.manifest?.parametersFingerprint).toBe(cano…
+    560|       const ran = await w.arm.execute({ file_path: 'photo.png' }, appr…
+    561|       expect(ran.ok, ran.detail).toBe(true)
+       |                                  ^
+    562|       const image = ran.value?.image
+    563|       expect(image?.mediaType).toBe('image/png')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > thin family surface both ways: today'S absent projection is DISCLOSED never skipped silently; once carried it is PINNED (wrong familyId / stale revision / tampered targetManifest all refuse by value)
+AssertionError: the FS-PROC port threw (read is not defined): the read never returned; the attachment commit was never reached — the write boundary was NEVER crossed (sideEffectPossible=false states the read edge, not the write edge): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:665:48
+    663|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    664|       const ranPending = await w.arm.execute({ file_path: 'photo.png' …
+    665|       expect(ranPending.ok, ranPending.detail).toBe(true)
+       |                                                ^
+    666|       expect(ranPending.disclosure).toContain('pending-center-finaliza…
+    667|       // simulate the CLOSED projection shape (CENTER closure pending …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects
+AssertionError: expected 'P_IMAGE_PORT_UNAVAILABLE' to be 'P_IMAGE_READ_TOO_LARGE' // Object.is equality
+
+Expected: "P_IMAGE_READ_TOO_LARGE"
+Received: "P_IMAGE_PORT_UNAVAILABLE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:708:24
+    706|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    707|       const ran = await w.arm.execute({ file_path: 'big.png' }, receip…
+    708|       expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.READ_TOO_LARGE)
+       |                        ^
+    709|       expect(ran.detail).toContain('33 bytes') // cap+1, exactly what …
+    710|       expect(w.adapter.stats().storeCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > cancellation at all three points is zero-write: pre-flight (0 port calls), mid-read (AbortError), and AFTER the read BEFORE the commit (the commit-boundary re-check catches it)
+AssertionError: expected 'P_IMAGE_PORT_UNAVAILABLE' to be 'P_IMAGE_CANCELLED_BEFORE_COMMIT' // Object.is equality
+
+Expected: "P_IMAGE_CANCELLED_BEFORE_COMMIT"
+Received: "P_IMAGE_PORT_UNAVAILABLE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:775:26
+    773|         const receipt = await approve(c) as Extract<PaControlLegResult…
+    774|         const ran = await w.arm.execute({ file_path: 'photo.png' }, re…
+    775|         expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.CANCELLED_BEFORE_CO…
+       |                          ^
+    776|         expect(w.adapter.stats().storeCalls).toBe(0)
+    777|         expect(w.objects()).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > no ledger, by construction: replaying the same receipt double-calls the PORT (which the one-shot consumed view refuses — the durable law lives outside the arm) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face
+AssertionError: the FS-PROC port threw (read is not defined): the read never returned; the attachment commit was never reached — the write boundary was NEVER crossed (sideEffectPossible=false states the read edge, not the write edge): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:790:38
+    788|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    789|       const first = await w.arm.execute({ file_path: 'photo.png' }, re…
+    790|       expect(first.ok, first.detail).toBe(true)
+       |                                      ^
+    791|       const second = await w.arm.execute({ file_path: 'photo.png' }, r…
+    792|       expect(second.code).toBe(A5_IMAGE_TYPED_CODES.PORT_REFUSAL)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted)
+AssertionError: expected 'P_IMAGE_PORT_UNAVAILABLE' to be 'P_IMAGE_STORE_LAW_REFUSED' // Object.is equality
+
+Expected: "P_IMAGE_STORE_LAW_REFUSED"
+Received: "P_IMAGE_PORT_UNAVAILABLE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:844:26
+    842|         const receipt = await approve(c) as Extract<PaControlLegResult…
+    843|         const ran = await w.arm.execute({ file_path: 'three.png' }, re…
+    844|         expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.STORE_LAW_REFUSED)
+       |                          ^
+    845|         // pin639 measured arm text (the dimension law, verbatim)
+    846|         expect(ran.detail).toContain('Image exceeds the configured per…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 9 passed (15)
+   Start at  08:00:13
+   Duration  2.64s (transform 1.52s, setup 0ms, import 1.75s, tests 752ms, environment 0ms)
+

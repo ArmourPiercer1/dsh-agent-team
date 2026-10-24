@@ -35,7 +35,7 @@ export {
 export { consultGuard } from './guard.js'
 export type { GuardConsultDecision } from './guard.js'
 
-export { createTeamTools } from './tools.js'
+export { createTeamTools, resolveTeamToolCallerRootGate } from './tools.js'
 export type { TeamToolSet } from './tools.js'
 
 export { selectTeamTools } from './tool-selector.js'

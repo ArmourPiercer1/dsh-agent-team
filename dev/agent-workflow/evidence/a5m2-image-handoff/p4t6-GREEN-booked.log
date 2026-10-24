@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 10ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  14:51:19
+   Duration  656ms (transform 150ms, setup 0ms, import 508ms, tests 10ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

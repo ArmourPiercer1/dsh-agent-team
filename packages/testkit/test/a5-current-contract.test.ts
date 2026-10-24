@@ -23,6 +23,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { checkStatePointers, checkCurrentContract } from '../../../scripts/ci-pr-gate.mjs'
@@ -82,6 +83,17 @@ describe('checkStatePointers — LEGACY-ONLY fixture entry (Alpha4 historical sh
 // ─────────────────────────────── production path ───────────────────────────────
 const BASELINE = '9'.repeat(40)
 
+// Q9 carriers (card M2-CI-PHASE-STATUS-01). The two phase_status fields were added to the
+// production block by M2-DOCS-01; the contract fixture below carries them as DEFAULTS so the
+// suite is green both pre-landing (the shipped six-field reader ignores them) and post-landing
+// (the proposed Q9 check grades them and finds them consistent). Synthetic SHAs in PS_OK carry
+// no meaning — the Q9 rule compares milestone STATE WORDS, not revisions.
+const PLAN_PATH = 'docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md'
+const PS_OK = 'M0-FROZEN (historical baseline preserved as-is) / M1-MERGED (master merge ' + '9'.repeat(40) + '; audited tree ' + '7'.repeat(40) + ') / M2-IN-PROGRESS'
+const PS_LINE = `  phase_status: "${PS_OK}"`
+const PSC_LINE = '  phase_status_collected: "2026-10-23T06:55:36Z"'
+const POINTER_OK = '- **当期三态指针（2026-10-23 更新）**：**M0 已冻结**（历史基线原样保留，契约集不改写）／**M1 已准入并合入 master** `929fc4a…`（已审 tree == `7a35409…`）／**M2 进行中**。上列 SHA = 里程碑/已审证据 SHA，非基线副本。'
+
 function contractGraph(over: Record<string, string> = {}) {
   const f = {
     phase_id: 'alpha5-tool-io-governance',
@@ -101,6 +113,8 @@ function contractGraph(over: Record<string, string> = {}) {
     `  matrix: ${f.matrix}`,
     `  baseline: ${f.baseline}`,
     `  baseline_collected: "${f.baseline_collected}"`,
+    PS_LINE,
+    PSC_LINE,
     'blocked: []',
   ].join('\n')
 }
@@ -125,7 +139,9 @@ const docs = (extra = '') =>
   `<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->\n<!-- phase-identity: alpha5-tool-io-governance -->\n# doc\n${extra}`
 const files = (over: Record<string, string | null> = {}) => {
   const map: Record<string, string | null> = {
-    'docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md': docs(),
+    // The plan default carries the 当期三态指针 line so the default contract (PS_OK above) is a
+    // CONSISTENT pair, pre- and post-landing of the proposed Q9 check.
+    'docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md': docs(POINTER_OK),
     'docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md': docs(),
     'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrixText(),
     'AGENTS.md': docs(),
@@ -389,6 +405,56 @@ describe('checkCurrentContract — production path (current_contract is the only
     it('negative 3: a dangling mapping — the appendix cites a stable ID no main row carries', () => {
       const r = gradeMatrix(annex(['- **ghost** [default] — 逐名适用：主表 ghost (M-99) 行事实']))
       expect(r.findings.some((x: string) => x.startsWith('Q5a:') && x.includes('M-99') && x.includes('dangling mapping'))).toBe(true)
+    })
+  })
+
+  // ─────────── Q9 phase_status three-state pointer (card M2-CI-PHASE-STATUS-01) ───────────
+  // LANDED. checkCurrentContract now reads phase_status / phase_status_collected (Q9, inserted
+  // right after the Q4 block in scripts/ci-pr-gate.mjs). While that patch was pending, this
+  // describe held a byte-for-byte MIRROR of the proposal and graded the mirror, because
+  // scripts/ci-pr-gate.mjs has CENTER as its single writer; the mirror is deleted here, so both
+  // controls below grade through the SHIPPED reader - these are production-rule assertions now,
+  // not fixture-level evidence of a proposal. The gap this file used to pin honestly (the
+  // six-field field() reader ignoring every other line of the block, so a contradicting pointer
+  // graded green) is flipped into the positive assertion at the end of N9.
+  describe('Q9 phase_status three-state pointer vs the plan 当期三态指针 (landed in checkCurrentContract)', () => {
+    // The same block extraction checkCurrentContract does, expressed as a mutation of the
+    // graph text: swap the two collected lines for the shape under test.
+    const withPhaseStatus = (g: string, statusLine: string | null = PS_LINE, collectedLine: string | null = PSC_LINE) => {
+      const sentinelled = g.replace(PS_LINE, '\u0000PS\u0000').replace(PSC_LINE, '\u0000PSC\u0000')
+      return sentinelled
+        .replace('\u0000PS\u0000', statusLine === null ? '' : statusLine)
+        .replace('\u0000PSC\u0000', collectedLine === null ? '' : collectedLine)
+    }
+
+    it('P9: phase_status agreeing with the plan 当期三态指针 grades clean — fixture graph AND fixture plan (both carriers are the fixture pair)', () => {
+      const f = files()
+      // fixture pair (contractGraph()/files() default to the consistent pair)
+      expect(grade(contractGraph(), f).findings.filter((x) => x.startsWith('Q9:'))).toEqual([])
+      // the rule must not break the tree it landed onto: grade the REAL graph against the REAL
+      // active plan through the shipped reader, and pin that the plan side of the comparison
+      // really is where the rule reads it.
+      const realGraph = readFileSync(resolve(REPO, 'dev/agent-workflow/graph.yaml'), 'utf8')
+      expect(readFileSync(resolve(REPO, PLAN_PATH), 'utf8')).toContain('当期三态指针')
+      expect(grade(realGraph, f).findings.filter((x) => x.startsWith('Q9:'))).toEqual([])
+    })
+
+    it('N9: inconsistent / missing / non-scalar / collected-missing each grade RED through the shipped reader, naming the item on both sides', () => {
+      const f = files()
+      const bad = (statusLine?: string | null, collectedLine?: string | null) =>
+        grade(withPhaseStatus(contractGraph(), statusLine, collectedLine), f).findings
+      // disagreement must name the milestone with BOTH spellings, or the red is a
+      // re-investigation rather than a pointer.
+      const contra = bad('  phase_status: "M0-FROZEN / M1-MERGED / M2-FROZEN"')
+      expect(contra.some((x) => x.startsWith('Q9:') && x.includes('M2-FROZEN') && x.includes('M2 进行中'))).toBe(true)
+      expect(bad(null).some((x) => x.startsWith('Q9:') && x.includes('phase_status is missing'))).toBe(true)
+      expect(bad('  phase_status: [M0-FROZEN, M1-MERGED, M2-IN-PROGRESS]').some((x) => x.startsWith('Q9:') && x.includes('single-line string scalar'))).toBe(true)
+      expect(bad(undefined, null).some((x) => x.startsWith('Q9:') && x.includes('phase_status_collected is missing'))).toBe(true)
+      expect(bad('  phase_status: "M0-DONE / M1-MERGED / M2-IN-PROGRESS"').some((x) => x.startsWith('Q9:') && x.includes('outside the closed vocabulary'))).toBe(true)
+      // The flipped gap: the SAME contradicting graph that graded green under the six-field
+      // reader now carries the Q9 finding. This line is the landing proof.
+      const landed = grade(withPhaseStatus(contractGraph(), '  phase_status: "M0-FROZEN / M1-MERGED / M2-FROZEN"'), f)
+      expect(landed.findings.some((x) => x.startsWith('Q9:') && x.includes('M2-FROZEN'))).toBe(true)
     })
   })
 

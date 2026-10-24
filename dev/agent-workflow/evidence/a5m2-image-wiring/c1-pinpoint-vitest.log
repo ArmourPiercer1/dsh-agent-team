@@ -1,0 +1,14 @@
+# cmd: pnpm exec vitest run packages/runtime/test/a5m2-image-row-c1.test.ts
+# run-at: kernel c978eb2fc7141b33cce9de50fb8dceae47934b91 (spec content == int@cc2e151ca, sha256 98140f338fb47ec9b7158f99028f1b519074a357d40b67c8a4f4a7101582f723)
+# date: 2026-10-23T11:21:32Z
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/runtime/test/a5m2-image-row-c1.test.ts (12 tests) 352ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  11:21:33
+   Duration  2.35s (transform 1.49s, setup 0ms, import 1.86s, tests 352ms, environment 0ms)
+
+REAL_RC=0

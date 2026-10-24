@@ -288,6 +288,439 @@ const SCANNED_PATHS_A5M1: readonly string[] = [
   'packages/runtime/test/a5-m1-seam-enforcement.test.ts',
 ]
 
+// A5-M2 (this round, branch `feat/a5-m1-center-kernel` off the audited M1 tree
+// 7a3540937, 2026-10-23) adds FOUR scannable files, booked by the integration
+// owner (CENTER) as one batch: the governed WRITE slice
+// (the lane's governed WRITE slice module - pure lexical anchor + argument
+// view + the admission-gated executor over INJECTED FS/PA ports, zero imports,
+// shipped UNWIRED; the barrel line rides the already-counted lane index) and its
+// formal C1 spec (the write-slice C1 file named in the array below, 20
+// legs); the B-SESSION todo_write C1 spec (packages/runtime/test/a5-m2-todo-write-c1.test.ts,
+// 14 legs - FIXTURE LEVEL: no production takeover exists, and the implicit-open
+// parameter root is booked as a drift witness, not as accepted behaviour); and
+// the B-WEB classify/manifest C1 spec (packages/runtime/test/a5m2w-web-c1.test.ts,
+// 8 legs - FIXTURE LEVEL: the closed effect set carries NO service kind, the
+// rights-matrix is the first gate, same implicit-open witness). The read_image
+// spec that was also present in the working tree at measurement time is NOT in
+// this commit (its typecheck is red in its own file), so it is deliberately not
+// booked here. Evidence lives under dev/agent-workflow/evidence/** (no scan set);
+// dist mirrors outside the scan; zero new denylist vocabulary.
+const SCANNED_PATHS_A5M2: readonly string[] = [
+  'packages/tools/a5p5-tools/src/write-slice.ts',
+  'packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts',
+  'packages/runtime/test/a5-m2-todo-write-c1.test.ts',
+  'packages/runtime/test/a5m2w-web-c1.test.ts',
+]
+
+// A5-M2 round 2 (2026-10-23, same integration branch): the read_image C1/C2/C3
+// spec joins after its own typecheck and lint went clean INSIDE its own file
+// (`pnpm --filter @dsh-agent-team/runtime run typecheck` rc 0, eslint rc 0, zero
+// eslint-disable, zero @ts-ignore, no baseline file touched) - it was withheld from
+// the A5-M2 booking above precisely because that was not yet true, and the booking
+// note there says so. MEASURED: the scanner on the shared development worktree read
+// 1237 against the booked 1232 = five unbooked paths, of which exactly ONE is this
+// spec; the other four are lane files other owners are still writing (untracked, NOT
+// in this commit, NOT booked here). On the committed set this face carries, the pin is
+// therefore 1232 + 1 = 1233, and the CI census/pr-gate leg on THIS head is the
+// authoritative re-anchor if any of the four foreign files lands in the same round.
+const SCANNED_PATHS_A5M2B: readonly string[] = [
+  'packages/runtime/test/a5m2-readimg-c1.test.ts',
+]
+
+// A5-M2 round 3: the B-SESSION governed arm lands in src (packages/runtime/src/
+// plugin/live/governed-families/todo.mjs - the P front-door takeover: closed-set
+// classify, typed refusals, one-shot ticket so an Ask/deny cannot reach the body,
+// claim-before-body single flight, the bind-time captured native definition with no
+// by-name re-lookup and no native fallback). UNMOUNTED: no takeover-table row and no
+// `todoEnabled` consumer yet, so the arm is inert by default. Its spec was already
+// booked in SCANNED_PATHS_A5M2 above, so this array books the ONE new scannable file.
+const SCANNED_PATHS_A5M2C: readonly string[] = [
+  'packages/runtime/src/plugin/live/governed-families/todo.mjs',
+]
+
+// A5-M2 round 4: the B-WEB connector lane joins as production wiring (the CENTER mount
+// landed the same round - agent-bindings row creation + the additive deps.web accessor in
+// plugin/host.ts + the place-dist placement + the audit consumer booking). Five paths, all
+// under packages/runtime: the lane package (types, destination envelope, the gateway itself),
+// the live assembly row, and its 19-leg spec. The edits this round made to ALREADY-COUNTED
+// files (agent-bindings.mjs, host.ts, place-dist-glue.mjs, the audit script, tsconfig.build,
+// the dist mirrors) add nothing to the scan; dist and dev/agent-workflow/evidence are outside
+// the scan set. Arithmetic, stated as arithmetic: the booked total was 1234 and this adds
+// exactly 5, so the committed set reads 1239. It is NOT re-measured here - the shared
+// development worktree simultaneously carries other owners' UNTRACKED scannables (the
+// B-IMAGE arm pair and its type surfaces and spec, the governed write row and its spec), so
+// any local reading on that tree is higher and is not this tree's number. The CI census /
+// pr-gate scanner run on THIS head is the authoritative anchor; if it prints a different
+// number the next commit re-anchors to the printed value, never to a chain value.
+const SCANNED_PATHS_A5M2D: readonly string[] = [
+  'packages/runtime/web-gateway/src/types.ts',
+  'packages/runtime/web-gateway/src/destination-envelope.ts',
+  'packages/runtime/web-gateway/src/index.ts',
+  'packages/runtime/src/plugin/live/web-gateway-assembly.mjs',
+  'packages/runtime/test/a5m2w-web-gateway.test.ts',
+]
+
+// A5-M2 round 5: the B-IMAGE front-door takeover arm and its attachment adapter land as
+// lane source, UNMOUNTED on purpose (no takeover-table row and no imageEnabled key yet -
+// the mount waits for its own independent review, because a plane row IS the takeover
+// declaration). Five paths: the arm, the adapter, their two adjacent tsc type surfaces,
+// and the 17-leg spec carrying the repair-before/repair-after pair (the untouched host face
+// reads across the root boundary; the same target through the arm is a typed refusal with
+// zero fs calls). Same arithmetic disclosure as round 4: booked 1239 + 5 = 1244 on the
+// committed set, the CI scanner on this head being the authoritative anchor.
+const SCANNED_PATHS_A5M2E: readonly string[] = [
+  'packages/runtime/src/plugin/live/governed-families/image.mjs',
+  'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
+  'packages/runtime/src/plugin/live/governed-families/image.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/image-attachment.d.mts',
+  'packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts',
+]
+
+// A5-M2 round 6: the write slice's defect-reproduction spec joins - three legs importing the
+// frozen pre-fix copy from evidence, keeping the three measured defects alive as regressions
+// (cross member/call authorisation, two writes under one grant, the symlink swap during the
+// approval wait overwriting outside the anchor). The pre-fix copy itself sits under
+// dev/agent-workflow/evidence and enters no scan set.
+const SCANNED_PATHS_A5M2F: readonly string[] = [
+  'packages/tools/a5p5-tools/test/a5m2-write-slice-defect-repro.test.ts',
+]
+
+// A5-M2 round 7 (2026-10-23, booked by the census owner on the A5-M2 integration face): the two
+// controlled-fs closures join, as one batch over two landed commits -
+//   bce6173a2  the post-consume write closure (verify the open BEFORE it truncates an existing
+//              file) plus its formal C1 spec, and
+//   c0dcd378b  the bounded-bytes read closure plus its formal C1 spec.
+// The anchor below is a measurement taken on THIS tree, not a value copied off a CI print and
+// not a chain value: the CI scanner was run here at booking time and printed filesScanned = 1249
+// with files.length = 1249, and it reported each of these four paths IN-SCAN in the same run.
+// 1249 is therefore the round-6 anchor 1245 plus exactly these four, verified per path. Evidence:
+// dev/agent-workflow/evidence/a5-m2-census-booking/, which enters no scan set.
+const SCANNED_PATHS_A5M2G: readonly string[] = [
+  'packages/runtime/controlled-fs/src/post-consume-write.ts',
+  'packages/runtime/test/a5m2-post-consume-write-c1.test.ts',
+  'packages/runtime/controlled-fs/src/bounded-bytes-read.ts',
+  'packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts',
+]
+
+// A5-M2 round 8 (2026-10-23, booked by the CENTER writer on the A5-M2 integration face): the
+// B-SESSION (todo_write) PRODUCTION-WIRING vertical joins as ONE scannable spec -
+//   packages/runtime/test/a5m2-todo-assembly-c1.test.ts  the assembly-level vertical: mount-time
+//     family registration keyed by the RUNTIME placement identity, same-source family facts across
+//     both readers, the durable row carrying the live list field-for-field, ONE execution-edge
+//     consumption witnessed by the row's own consumedProof, exactly one native append through the
+//     captured definition, plus the zero-flip / closed-key pairing / noTeam / cancel / drain /
+//     pairing / unregistered-claim negatives.
+// The two .mjs production EDITS this round rides (team-tool-plane.mjs, agent-bindings.mjs) are
+// ALREADY-COUNTED paths; dist mirrors and dev-evidence stay outside the scan; zero new denylist
+// vocabulary. The anchor is a measurement taken on THIS tree at booking time: the scanner ran
+// HERE and printed filesScanned = 1250 with files.length = 1250, reporting this path IN-SCAN in
+// the same run; 1250 is the round-7 anchor 1249 plus exactly this one, checked by path.
+const SCANNED_PATHS_A5M2H: readonly string[] = [
+  'packages/runtime/test/a5m2-todo-assembly-c1.test.ts',
+]
+
+// A5-M2 round 9 (2026-10-23, booked by the census owner on the A5-M2 integration face, the
+// CENSUS-IDENTITY-R7 handoff dev/agent-workflow/evidence/a5m2-todo-c2/CENSUS-IDENTITY-R7.md):
+// the packet's delta e922591dc..HEAD is TEN added scannable paths, but a per-path re-check
+// against THIS file's state at booking time finds FIVE of them ALREADY booked by the rounds
+// that landed after the packet's round-6 anchor — bounded-bytes-read.ts and
+// a5m2-fs-bounded-read-c1.test.ts (SCANNED_PATHS_A5M2G, round 7), post-consume-write.ts and
+// a5m2-post-consume-write-c1.test.ts (SCANNED_PATHS_A5M2G, round 7), and
+// a5m2-todo-assembly-c1.test.ts (SCANNED_PATHS_A5M2H, round 8). Booking all ten here would
+// double-count those five and book 1260 against a measured 1255. TRUSTING THE MEASUREMENT,
+// this round books the FIVE packet paths that were NOT yet booked — two production, three
+// spec:
+//   057178d2b  packages/runtime/controlled-fs/src/governed-image-read-port.ts (the B-IMAGE
+//              governed read port) + its C1 spec packages/runtime/test/a5m2-image-read-port-c1.test.ts
+//   1a399e977  packages/runtime/src/plugin/live/governed-families/write.mjs (the governed
+//              write family arm) + its existing-file C1 spec packages/runtime/test/a5m2-write-existing-c1.test.ts
+//   0d5255a49  packages/runtime/test/a5m2-image-row-c1.test.ts (the B-IMAGE plane-row spec)
+// The anchor is a measurement taken on THIS tree at booking time, not a chain value: the
+// scanner ran HERE at HEAD ae3a7eef7 before the booking and read `expected 1255 to be 1250`;
+// the GREEN run after this array printed filesScanned = 1255 with files.length = 1255 and
+// reported every one of the ten packet paths IN-SCAN (the five here plus the five already
+// carried by rounds 7 and 8). 1255 is the round-8 booked 1250 plus exactly these five,
+// checked per path; no chain value copied. Scratch evidence lives in the census worktree's
+// .census-evidence/ (gitignored tree, outside the scan); zero new denylist vocabulary.
+const SCANNED_PATHS_A5M2I: readonly string[] = [
+  'packages/runtime/controlled-fs/src/governed-image-read-port.ts',
+  'packages/runtime/test/a5m2-image-read-port-c1.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/write.mjs',
+  'packages/runtime/test/a5m2-write-existing-c1.test.ts',
+  'packages/runtime/test/a5m2-image-row-c1.test.ts',
+]
+
+const SCANNED_PATHS_A5M2J: readonly string[] = [
+  // A5-M2 independent-group round (root order 12:27; three owner lanes landed
+  // UNWIRED on this integration face, booked as ONE round by the CENTER
+  // integrator; registration/placement stay CENTER, zero production edits).
+  'packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+  'packages/runtime/test/a5m2-g1-surface-adapters.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+  'packages/runtime/test/a5m2-g2-connector-adapters.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  'packages/runtime/test/a5m2-g3-fsproc.test.ts',
+]
+
+const SCANNED_PATHS_A5M2K: readonly string[] = [
+  // A5-M2 G2 round-2 (root 13:1x order: wrapper-disclosure -> the REAL M0
+  // provider seams; UNWIRED, wiring stays CENTER, Host banned until the
+  // named boundaries close).
+  'packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+  'packages/runtime/test/a5m2-g2-provider-seams.test.ts',
+]
+
+// A5M2-CENSUS BATCH24 (center, 2026-10-24, e78 re-anchor merge e32fa6a27):
+// the THIRTY-EIGHT scannable paths that entered int since the BATCH23 pin
+// (68e1e73a7, 1298) WITHOUT a per-path booking - measured per-path (git
+// ls-tree set-diff against the BATCH23 tree; 38 added, ZERO removed; the
+// filter mirrors the scanner's own: .ts/.mts/.mjs under packages/, with
+// node_modules/dist/.tmp-fault skipped and the p4t6 self-files excluded).
+// Families riding them: the subagent/workflow module pairs (batch-14 lane),
+// the G1 supply pair + its two specs, the G3 terminal wiring + plane-mount
+// + union specs, the G5 goal-wiring + mount-arm, the G6 PA supply + spec,
+// and the e78 re-anchor's g2-team-mount/g2-web-supply + wire spec. RED
+// FIRST, measured: the coverage leg read `expected 1336 to be 1298` on the
+// merged tree before this booking; no chain number copied, no baseline
+// widened, no negative control removed.
+// A5M2-BATCH25 (2026-10-24, booked by the CENTER integrator on the CI
+// attribution batch): the THREE scannable files added to THIS tree since the
+// BATCH24 anchor, each merged through a signed lane batch and center-verified
+// on int (gates named in the merge commits): the G1 control-85 hand-off spec
+// (candidate HELD for the root's limited ruling; a spec is scannable regardless
+// of the ruling's fate), the G2 REAL-SDK contract spec (r53), and the G5 lane
+// test-entry module (8722 series; a test-side entry, zero production surface).
+// RED-first, MEASURED on this tree: the coverage leg read `expected 1339 to be
+// 1336` BEFORE this booking; 1339 = 1336 + exactly these three, checked by
+// path; no chain value copied.
+const SCANNED_PATHS_A5M2B25: readonly string[] = [
+  'packages/runtime/test/a5m2-g1-control85-handover.test.ts',
+  'packages/runtime/test/a5m2-g2-mcp-sdk-contract.test.ts',
+  'packages/runtime/test/a5m2-g5-lane-entry.mjs',
+]
+
+// A5M2-BATCH26 (2026-10-24, CENTER census-attribution booking; provenance in
+// the coverage-leg title clause above). Six scannable paths added since the
+// BATCH25 anchor 13b413014; 1339 + 6 = 1345 checked per path against the
+// pre-booking scanner run (expected 1345 to be 1339); no chain value copied.
+const SCANNED_PATHS_A5M2B26: readonly string[] = [
+  'packages/runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs',
+  'packages/runtime/test/a5m2-g3-ptc-wiring.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/schedule-bind-after-def.mjs',
+  'packages/runtime/src/plugin/live/governed-families/schedule-bind-after-def.d.mts',
+  'packages/runtime/test/a5m2-schedule-bind-after-def.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g2-team-mount.d.mts',
+]
+
+
+const SCANNED_PATHS_A5M2B24: readonly string[] = [
+  'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g2-web-supply.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-pa-supply.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-pa-supply.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/workflow-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/workflow-adapters.mjs',
+  'packages/runtime/test/a5m2-g1-query-assembly.test.ts',
+  'packages/runtime/test/a5m2-g1-trusted-topology-supply.test.ts',
+  'packages/runtime/test/a5m2-g2-wire-c1.test.ts',
+  'packages/runtime/test/a5m2-g3-bindings-union-c1.test.ts',
+  'packages/runtime/test/a5m2-g3-plane-mount-c1.test.ts',
+  'packages/runtime/test/a5m2-g3-terminal-wiring.test.ts',
+  'packages/runtime/test/a5m2-g5-goal-wiring.test.ts',
+  'packages/runtime/test/a5m2-g5-mount-arm.test.ts',
+  'packages/runtime/test/a5m2-g6-pa-supply-c1.test.ts',
+  'packages/runtime/test/a5m2-subagent-adapters.test.ts',
+  'packages/runtime/test/a5m2-subagent-plane-mount.test.ts',
+  'packages/runtime/test/a5m2-subagent-spawn-adapters.test.ts',
+  'packages/runtime/test/a5m2-subagent-spawn-plane-mount-c1.test.ts',
+  'packages/runtime/test/a5m2-subagent-spawn-wiring.test.ts',
+  'packages/runtime/test/a5m2-subagent-wiring.test.ts',
+  'packages/runtime/test/a5m2-workflow-adapters.test.ts',
+]
+
+const SCANNED_PATHS_A5M2W: readonly string[] = [
+  // A5-M2 WRITE PA HAND-OFF (root 13:38 MIN product fix, write C2, CENTER):
+  // the governed-write row's pre-dispatch hand-off wired on the audited M1
+  // read port shape — the production edits ride the ALREADY-COUNTED
+  // team-tool-plane.mjs + agent-bindings.mjs (and the step-1 adapter file,
+  // counted by its own path), dist mirrors outside the scan; this ONE new
+  // scannable spec carries the positive A->B leg, the ask-lane full-approval
+  // leg and the IN_FLIGHT / TERMINAL / CLOSED / LOST / MISMATCH / DRAINING /
+  // UNBOUND / no-match / field-absence negatives, all over the REAL arm,
+  // assembly, ControlService and closure; zero new denylist vocabulary.
+  'packages/runtime/test/a5m2-write-handoff-c1.test.ts',
+]
+
+const SCANNED_PATHS_A5M2IH: readonly string[] = [
+  // A5-M2 IMAGE PA HAND-OFF (root 14:44 SYMMETRIC third port paImageHandoff,
+  // write C2 follow-up, CENTER): the governed read_image row pre-dispatch
+  // hand-off on the SAME audited port protocol and the SAME shared token
+  // ledger - the production edits ride the ALREADY-COUNTED team-tool-plane.mjs
+  // + agent-bindings.mjs + pre-execute-adapter.ts (all counted by their own
+  // paths), dist mirrors outside the scan; this ONE new scannable spec
+  // carries the all-allow positive leg (front door opened NOTHING), the
+  // ask-lane B-IMAGE manifest leg, and the TERMINAL / IN_FLIGHT / LOST /
+  // CLOSED / MOUNT_GONE-DRAINING / MISMATCH / UNBOUND / no-match /
+  // field-absence negatives, all over the REAL B-IMAGE arm, REAL governed
+  // read port and REAL attachment adapter; zero new denylist vocabulary.
+  'packages/runtime/test/a5m2-image-handoff-c1.test.ts',
+]
+
+const SCANNED_PATHS_A5M2G2A: readonly string[] = [
+  // A5-M2 G2 TEAM-ASSEMBLY card (owner stopped, int/kernel SAME bytes,
+  // center-measured 9 new legs / 61 g2-family total, ESLint 0): the real-SDK
+  // Client + captured generation/timeout over the PUBLIC launchChromium /
+  // openNativeBrowser faces as an assembly CANDIDATE - UNWIRED, NOT a C2,
+  // no shared plane/glue bytes, WEB global/env forbidden (a real Team-only
+  // fixed provider is still the named blocker). TWO scannable files
+  // (module + spec); src-only, outside the install dist pathspec.
+  'packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+  'packages/runtime/test/a5m2-g2-team-assembly.test.ts',
+]
+const SCANNED_PATHS_A5M2B16: readonly string[] = [
+  // A5M2-BATCH16 (2026-10-23, center booking AFTER the incident rebuild at b57ff559d; booked by path at
+  // source-settling per the root 15:4x batch rule, NOT by chain value): the G5 goal-service adapter trio
+  // (module + d.mts + 20-leg spec), the G6 five-tool session-query trio (module + d.mts + 26-leg spec),
+  // the G1 pure-query wiring trio (module + d.mts + 15-leg spec) and the r17 drift-repro spec that pins
+  // THE exact drifted() expansion branch (repro only, zero product-code change). All four cards are
+  // UNWIRED components; production edits ride already-counted paths; dist and dev evidence sit outside
+  // the scan; zero new denylist vocabulary.
+  'packages/runtime/src/plugin/live/governed-families/g5-goal-service.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g5-goal-service.d.mts',
+  'packages/runtime/test/a5m2-g5-goal-service-c1.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query.d.mts',
+  'packages/runtime/test/a5m2-g6-session-query-c1.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.d.mts',
+  'packages/runtime/test/a5m2-g1-query-wiring.test.ts',
+  'packages/runtime/test/a5m2-r17-drift-repro-c1.test.ts',
+]
+const SCANNED_PATHS_A5M2B17: readonly string[] = [
+  // A5M2-BATCH17 (2026-10-23, center booking per the batch rule): the family-rules gap-pinning spec
+  // from feat/a5m2-family-rules (cherry-picked) - zero PA_FAMILY_TARGET_RULES entries added, the three
+  // named lane gaps (B-MCP / B-INSPECT / B-CONTROL) pinned at the validator with the wire-lanes exact
+  // deny strings plus byte-identical regression for the three existing rules; types.ts untouched;
+  // dist/dev outside the scan; zero new denylist vocabulary.
+  'packages/runtime/test/a5m2-family-rules-c1.test.ts',
+]
+const SCANNED_PATHS_A5M2B18: readonly string[] = [
+  // A5M2-BATCH18 (2026-10-23, center booking per the batch rule): the B-SCHEDULE family trio from
+  // feat/a5m2-new-family (cherry-picked d87a8fb22) - census records 30-33 over the REAL published
+  // ScheduleService + the four real defineTool products captured through the production seam; UNWIRED
+  // pure adapter (registration is PAIRED work per ruling), timer-arm/wake carried as verbatim named
+  // gaps; dist/dev outside the scan; zero new denylist vocabulary.
+  'packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+  'packages/runtime/src/plugin/live/governed-families/schedule-adapters.d.mts',
+  'packages/runtime/test/a5m2-schedule-adapters.test.ts',
+]
+
+
+
+
+const SCANNED_PATHS_A5M2B21: readonly string[] = [
+  // A5M2-BATCH21 (2026-10-23, center booking): B-SCHEDULE production round
+  // (3e88b2822) adds ONE scannable path - the production spec; the edited
+  // shared mounts, the wiring module growth and the d.mts ride ALREADY-COUNTED
+  // paths (B19). Zero new denylist vocabulary.
+  'packages/runtime/test/a5m2-schedule-production.test.ts',
+]
+
+const SCANNED_PATHS_A5M2B22: readonly string[] = [
+  // A5M2-BATCH22 (2026-10-23, center booking): provider-identity landing
+  // (chain 8ee495fc3..3f1e9cb22 cherry-picked -x onto int) adds ONE scannable
+  // path - the FP C1 spec; the re-anchored existing specs, d.mts, sources and
+  // mirrors ride ALREADY-COUNTED paths. Zero new denylist vocabulary expected.
+  'packages/runtime/test/a5m2-provider-identity-c1.test.ts',
+]
+
+const SCANNED_PATHS_A5M2B23: readonly string[] = [
+  // A5M2-BATCH23 (2026-10-23, center booking): B-TEAM combination landing
+  // (adapter trio 705742ad5..88ad3cf37 + wiring fc072d5c2/85ccbf9e3 + family
+  // chain 5d83ed6f6..29714cc20 picks) adds THREE scannable paths; the shared
+  // mounts, d.mts files and the re-glued mirrors ride ALREADY-COUNTED paths.
+  'packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+  'packages/runtime/src/plugin/live/governed-families/team-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/team-wiring.d.mts',
+  'packages/runtime/test/a5m2-team-adapters.test.ts',
+  'packages/runtime/test/a5m2-team-wiring-c1.test.ts',
+  'packages/runtime/test/a5m2-team-plane-mount-c1.test.ts',
+]
+
+const SCANNED_PATHS_A5M2B20: readonly string[] = [
+  // A5M2-BATCH20 (2026-10-23, center booking): the G6 PRODUCTION assembly round
+  // (992df168f trio on feat/a5m2-wire-g6) adds ONE scannable file - the plane
+  // mount spec; the edited plane/bindings modules and the wiring bridge ride
+  // ALREADY-COUNTED paths.
+  'packages/runtime/test/a5m2-g6-plane-mount-c1.test.ts',
+]
+
+const SCANNED_PATHS_A5M2B19: readonly string[] = [
+  // A5M2-BATCH19 (2026-10-23, center booking per the batch rule): the two wire
+  // lanes landed on int - B-SCHEDULE controlled wiring (59a058052: schedule
+  // .mjs/.d.mts/spec) and the B-SESSION-QUERY thin bridge (a33386817: g6
+  // .mjs/.d.mts/spec). Six scannable paths, zero new denylist vocabulary;
+  // dist mirrors stay OUTSIDE the scan.
+  'packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/schedule-wiring.d.mts',
+  'packages/runtime/test/a5m2-schedule-wiring.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.d.mts',
+  'packages/runtime/test/a5m2-g6-session-query-wiring.test.ts',
+]
+
+const SCANNED_PATHS_A5M2G1W: readonly string[] = [
+  // A5M2-G1-WIRE (branch feat/a5m2-wire-g1, base d25d15c6, root ruling 15:28
+  // 工具适配不等待中心接线): the pure-query G1 adapter rows (records 53 / 54
+  // / 85) WIRED into the production plane - Gate 0f, the closed g1Enabled
+  // key, and the ONE PA admission walk with the fresh final edge
+  // consumedProof as the ONLY door to the row body. ONE scannable file:
+  // this spec. The edited plane module rides the ALREADY-COUNTED path; the
+  // two dist mirrors and the place-dist entry stay OUTSIDE the scan (dist
+  // mirrors are outside; scripts/place-dist-glue.mjs is not under
+  // packages/**); zero new denylist vocabulary.
+  'packages/runtime/test/a5m2-g1-wire-c1.test.ts',
+]
+
+// A5M2-COVERAGE-SUPP (2026-10-24, root fix card ①, booked by the CENTER
+// integrator on the integration face): the TWO source paths of the
+// coverage-safety card (705 close-out) that the static producer registers
+// and the place-dist glue places, but which this ledger never booked —
+// the scanner counts them, the list did not carry them. Booked exactly as
+// the a2c2 card booked its pair; the card's test-side paths were already
+// counted; dist mirrors stay outside the scan; zero new denylist vocabulary.
+const SCANNED_PATHS_COVSUPP: readonly string[] = [
+  'packages/runtime/src/plugin/live/coverage-managed-projection.mjs',
+  'packages/runtime/src/plugin/live/coverage-managed-projection.d.mts',
+]
+
+// A5M2-OVERLAY-STRICTB (2026-10-24, overlay strict-b slice 2, booked by the
+// CENTER writer on this integration face): the plane/registry read-time
+// consumption round's ONE scannable file — its narrow REAL-chain regression
+// spec. The three production edits (plane-effect-backends.mjs,
+// team-tool-plane.mjs, agent-bindings.mjs) and the commit's dist mirrors all
+// ride ALREADY-COUNTED paths; zero new denylist vocabulary.
+const SCANNED_PATHS_A5M2OV: readonly string[] = [
+  'packages/runtime/test/a5m2-overlay-strict-b.test.ts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -308,7 +741,7 @@ const REQUIRED_SUITES: readonly string[] = [
 describe('p4t6 frozen Team SessionEvent denylist scan', () => {
   const scanResult = scanSessionEventVocabulary()
 
-  it('coverage: all nine package dirs discovered, nine carry source, 980 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration), and exec-autonomy-contract adds its two spec files (the domain leader-allow-lane contract spec + the runtime dual-gate spec), recording the two increments since the PR #18 pin, and the work-completion-wakeup adds its six scannable files (the runtime work-completion-notification module types + renderer + index, the pure-module spec, the live-glue spec, and the router-observer spec), and team-send-message-liveness adds its one acceptance-boundary regression spec and team-archive-member adds its one A1–A9 tool spec (packages/tools/test/archive-member-tool.test.ts) on the PR #25 merge, and strict-read-core-spill (PR #26 supplemental) adds its one pending-grant table source (runtime artifact-read pending.ts), and strict-read-core-spill (PR #26 final supplemental) adds its one composition override regression spec (runtime team-spill-local-composition.test.ts), and model-preference-routing (fix-model-preference-routing) adds its five scannable files (the runtime model token parser route.ts + the template model grant helper template-model.ts + the Gate B template-model-preference spec + the Gate D model-activation-step8 spec + the Gate E model-blueprint-initial-routing spec), and restart-recovery-017rc1 (task/team-restart-017rc1) adds its one v5 remote contract spec (remote c1-remote-v5.test.ts, the Commit-3 ordinary-open one-shot permit surface), recording the one missed Commit-3 increment since the Commit-2 pin, and restart-recovery-017rc1 supplemental (PR #31 fix round S1–S5) adds its two new scannable test files (runtime team-session-startup-fence H1/H2 spec + client s3-client-generation-spike evidence), recording the two missed supplement increments since the merge-union pin, and v4-work-completion-source (fix/v4-work-completion-source) adds its one live-glue producer-kind type declaration (runtime message-sources.d.ts, the MessageSourceMap augmentation for the producer-owned plugin:dsh-agent-team wake source), recording the one increment since the PR #31 pin, and team-projection-recovery-20260927 (fix/team-projection-recovery-20260927) adds its one compatibility-scope regression spec (runtime team-compatibility-scope.test.ts, the per-target-team compatibility prober scope), recording the one increment since the v4-work-completion-source pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) adds its ten v6-surface files (the runtime pure session read-state resolver + the pure live-token module and its three s6t specs (read-state resolver / live-token / s6 production-dispatcher v6), the remote pull-v6 pair assessor module and its c6 remote-v6 spec, and the client mount-level refresh coordinator module and its two v6 specs (projection store v6 identity + refresh coordinator)), recording the ten increments since the team-projection-recovery pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 review follow-up adds its two read-state-driven refresh files (the client read-state model module + its outcome-matrix spec), recording the two increments since the v6-surface pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 second follow-up adds its one Team-scoped overlay collision spec (runtime p01-team-scoped-overlay.test.ts, the two-team leader-collision unit over the real overlay + projection service + both token paths), recording the one increment since the review-follow-up pin, and pre-alpha3 PR-A (feat/pre-alpha3-pra-governance) adds its nine scannable files (the runtime governance mutation authority module — types/slot/service/index — plus its five governance test files: mutation-authority / concurrency / idempotence / reset-tombstone / restart), recording the nine increments since the PR-0 pin, and pre-alpha3 PR-B (feat/pre-alpha3-prb-effective-policy) adds its ten scannable files (the runtime effective-policy canonical read module — packages/runtime/effective-policy/types.ts + reader.ts + select.ts + legacy.ts + activation-policy.ts + index.ts — plus its four specs: packages/runtime/test/effective-policy-single-source.test.ts / effective-policy-policy-state-live.test.ts / boundary-committed-applied.test.ts / restart-effective-policy.test.ts), recording the ten increments since the PR-A pin, and pre-alpha3 PR-D adds its seven control-generalization test files (subject normalization + template/team subject + inline review/abandon + review payload roundtrip + legacy row compat), and pre-alpha3 PR-D review-fix (fix/pre-alpha3-w1c-control) adds its three control-abandon review test files (the narrow-close-authority spec control-abandon-without-resolve-envelope + the remote unmapped-code spec remote-control-abandoned-code + the abandon durable-write fault spec control-abandon-storage-fault), recording the three increments since the PR-D pin, and pre-alpha3 PR-D fix round 3 (feat/pre-alpha3-prd-control-generalization) adds its one wait-abort cascade suite (runtime control-inline-wait-abort.test.ts, the S1-S7 coupling-aware cascade: the inline mid-wait + pre-abort aborts durably abandon the SAME request via the shared abandon write path, the guarded/legacy aborts stay byte-identical, the decision race wins, the faulted cascade rejects typed), recording the one increment since the PR-D review-fix pin, and pre-alpha3 PR #42 fold (feat/pre-alpha3-pre-e-requirement-recovery, merge 1 ab108388) folds in the D-fix line (fix/d-req-recovery @ e696823e): its fifty-eight scannable files accumulated since the 822 pin (the nine W2-A requirement-facts + production-persona-substrate files + the thirty-five superseding PR-E cutover files (3ccbfe82) + the fourteen W3-D fix files)), recording the fifty-eight increments since the PR-D round-3 pin, and pre-alpha3 PR #42 pass 3 adds its one per-blueprint-scoping spec (runtime requirement-probe-blueprint-scoping.test.ts, the PF-1 fix suite) and pass 3b adds its two D-1/D-3 decision-scoping files (the runtime requirement-facts pending.ts classifier module + the 37-test requirement-d1-d3-decision-scoping spec), recording the three increments since the merge-1 pin, and pre-alpha3 F15 (feat/pre-alpha3-f15-mcp-live-loss) adds its two MCP live-loss specs (runtime f15-mcp-live-loss-characterization.test.ts, the RED gap probe + the public-seam tool-withdrawal evidence) and its §9 unit-matrix spec (runtime f15-mcp-live-loss.test.ts, the L1 normal / §9.4 re-sync / L2 permanent loss / L6 idempotence / L7 remount recovery / L3 zero-tool / L4 deny / L5 close / §9.5 multi-MCP isolation legs + the §9.2 static reconnect-policy call-site witness), recording the two increments since the 886 pin, and pre-alpha3 PR-F (feat/pre-alpha3-prf-closure) adds its three re-landed scannable files (the remote contracts semantic adapter (semantic.ts, the F.3 version->semantic translation + the shared live-projection wire application) + the runtime internal test-world mutation kernel (mutation/internal/mutation-service.ts, the F.2 StepClock/MutationService extraction) + the runtime same-source read-surface pin spec (prf-inspect-same-source.test.ts, the F.4 config-inspected policy/requirement/recovery views over the same durable facts the gates consume)), recording the three increments since the 888 pin, and the w1a F10/F11 stack-side re-land (master e44ebbbd, pre-e->master closure merge shared base) adds its five scannable files (the runtime bound-blueprint resolver (bound-blueprint.ts, the three-case bound-Blueprint contract) + the four runtime F10/F11 specs (governance-stale-ui-generation + remote-override-expected-generation + policy-state-multi-team-bound-blueprint + policy-state-bound-blueprint-production-wiring)), recording the five increments since the PR-F pin, and fix-runtime-template-consent (fix/runtime-template-consent, finding I) adds its one scannable regression test file (the runtime disabled-empty-template gate spec template-disable-no-requirements-gate.test.ts, the real-chain delegate-to-a-requirement-less-disabled-template block + re-enable over the durable availability fact), recording the one increment since the w1a re-land pin, and fix-runtime-template-consent (fix/runtime-template-consent, finding J) adds its one scannable regression test file (the runtime consent scope/hash binding spec consent-scope-hash-binding.test.ts, the host-entry real chain: the production creation preflight + the production consent writer — a consent is bound to the exact scope + blueprint content hash it was granted for (ADR-12): cross-scope same-reqID does not bleed, a stale rev1 consent is not inherited by the pre-team rev2 re-drive, the durable rows carry the scopeKey + contentHash key (legacy unkeyed rows fail closed against a keyed evaluation)), and fix-runtime-template-consent (fix/runtime-template-consent, finding I residual — the leader scope, 2026-10-01) adds its one scannable regression test file (the runtime leader-disable no-requirements initial-work spec leader-disable-no-requirements-initial-work.test.ts, the production closure + router real chain: a durable LEADER disable on a requirement-free leader template blocks admitInitialWork + the subsequent follow-up root boundary (zero model, zero work — the typed templateDisabled block naming the leader scope), the control/recovery lanes stay open, re-enable resumes through the same checks), and fix-persona-kind (PR #46, finding A, merged to master at 8e18819c) adds its two scannable regression test files (the runtime persona-KIND provider-preflight spec persona-kind-provider-preflight.test.ts, the persona-KIND-convention regression suite over the REAL production provider to preflight chain, and the persona-KIND SHIPPED DIST SMOKE spec persona-kind-shipped-dist-smoke.test.ts, the finding-A persona-KIND semantics + the Blocker-1 role identity + the Blocker-3 typed section-13.5 lane asserted over the BUILT dist artifact), recording the two increments from the PR #46 merge (896 -> 898 on that line), and fix-control-authz (fix/control-authz-boundary) adds its five scannable test files (the shared real-chain fixture fix-control-authz-helpers.ts + the four Control authorization-boundary regression suites: fix-control-authz-b-frozen-snapshot (B: the frozen review snapshot is the single source), fix-control-authz-c-abandon-terminal (C: the durable abandon mark is the terminal mark + the waiter liveness), fix-control-authz-d-restart-fresh-human (D: the restart-unique attempt identity, no approval replay) and fix-control-authz-h-send-message (H: the recovery send-message recipient-instance subject over the real chain)), recording the five increments since the w1a pin, and finding F (fix/mcp-target-materialization, this merge) adds its TWO scannable files (mcp-target-materialization.test.ts + mcp-target-materialization-unit.test.ts — the finding-F third file in my pre-merge tree, persona-kind-provider-preflight.test.ts, is already counted by the PR #46 pair above: no double count on the merged tree), recording the two finding-F increments (the merged tree since the 896 pin: 2 persona + 3 consent + 5 fix-control-authz + 2 finding-F = 12), and alpha3-pr5-notification-projection adds its seven scannable files (the runtime permission-notification awareness lane — types + notification + projection + index, the generation-tagged notification, the active-only never-throwing notifier and the read projection over the PR1 latest/history boundaries, shipped UNWIRED by design — plus its three specs a3p5-permission-notification / a3p5-permission-read-projection / a3p5-permission-notification-lane-hygiene), recording the seven PR5 increments + the one missed increment since the 934 pin (merged PR #56 client spec packages/client/test/pr56-control-subject-payload.test.ts), 934 -> 942 on the authoritative scanner run, and the alpha3-pr5 delivery-binding round adds its two scannable files (the INJECT-ONLY synchronous receipt gate source binding.ts + its a3p5-permission-delivery-binding spec pinning the parent GO classes a-e: running receives / idle-cold-closing-lifecycle-mismatch drop / active-to-idle race drops at the gate / wake-member landmines untouched / detached ack independence), 942 -> 944 on the authoritative scanner run, and the 2026-10-02 master integration merge of 940cd841 (alpha3-pr4 lifecycle lineage: the eleven scannable lifecycle-lane/plane/regression files join DISJOINT from the PR5 nine, the PR #56 client spec counted once) puts the merged tree at 955 on the scanner run of this suite (RED `merge/p4t6-RED.log`, GREEN `merge/p4t6-GREEN.log`), and the alpha3-pr5 FINAL PRODUCTION SPLICE adds its one scannable file (the root-assembled integration spec a3p5-permission-splice.test.ts; the splice wires EXISTING sources only — lane edits are doc-level, the edited root/types/glue files were already counted, dist is outside the scan; zero new denylist vocabulary, quarantine hits stay 15), 955 -> 956 on the scanner run of this suite (RED `splice/p4t6-RED.log`, GREEN `splice/p4t6-GREEN.log`), and the alpha3-pr5 ROOT BLOCK fix batch adds its two scannable spec files (a3p5-glue-permission-receipt — the REAL agent-bindings.mjs receipt exercised through the t12a live bridge with hostless fakes — and a3p5-permission-read-wiring — the override.getPermission read path over the root-assembled router + the real s6-remote gate port; the fix batch edits ALREADY-COUNTED files only otherwise — root.ts / types.ts / s6-remote.ts / the glue / the contracts / the lane docs; dist is outside the scan; zero new denylist vocabulary, quarantine hits stay 15), 956 -> 958 on the scanner run of this suite , and dsh-020rc2-upgrade (PR #62, 0.2.0-rc.2 host migration) adds its seven scannable rc2 test files (testkit rc2-kit-wire-shape / rc2-kit-fixture-invariants / rc2-kit-fault-injection / rc2-kit-pin-hygiene / rc2-kit-preset-seam / rc2-sanitize-evidence, tools rc2-team-deny-least-privilege), zero removals, 958 -> 965 on the scanner run of this suite (RED `logs/root-vitest-current-e89063c8-plus.log` reported `expected 964 to be 958`; the exact-base control `logs/base-vitest-the-10-failures-6b2f401b.log` shows this same suite PASSING at 958 with the own 0.1.7-rc.1 host tree of the base worktree, so the movement is the files added by this PR, not the host generation, and the same PR persona-residue round adds its three scannable files (the shared harness persona-slot reader packages/runtime/root-binding/harness/persona-probe.mjs + its persona-probe.d.mts type surface + the packages/runtime/test/rc2-persona-probe.test.ts contract-and-ledger spec), 965 -> 968 on the scanner run of this suite, and the same PR root-binding bounded-run harness round adds its three scannable files (packages/runtime/root-binding/harness/blueprint-source.mjs + packages/runtime/root-binding/harness/bounded-run.mjs + packages/runtime/root-binding/harness/bounded-run.regression.test.mjs, the bounded-run owner/builder harness, its blueprint source and its regression spec), 968 -> 971 on the scanner run of this suite with all 971 entries being intended packages/** source and the three new paths additionally asserted present by path, and A4-PR0 (feat/a4-pr0-proposal-substrate) adds its five scannable files (the durable governance proposal substrate packages/runtime/governance/proposal-store.ts and its lane-local closed error table proposal-codes.ts - shipped UNWIRED by design, ADR A4-6, no product surface reaches them - plus its three specs a4pr0-proposal-store / a4pr0-proposal-corrupt / a4pr0-proposal-generation), 973 -> 978 on the scanner run of this suite, and A4-PR7 §7.3 the version flip (`feat/a4-73-flip`) adds its one scannable file (the runtime a4p7-shipped-composition-blueprint spec — the embedded blueprint of the shipped composition blueprint parsed through the real `parseBlueprint`, which no test in the tree did before the cutover that changes what parses), 978 -> 979 on the scanner run of this suite, and alpha5-glue5-entry (GLUE-5 production assembly) adds its two scannable live-row .mjs files (the governed tool-plane placement row + the PR7 gateway live row) AND books the three P-B lane files its pre-merge tree brought in (registration face + barrel-emit spec + a5p4 assembly-config spec) as the per-merge booking of the integration owner, and alpha5-pb-binding-feed (P-B §6 binding-feed round) adds its one scannable lane spec (packages/runtime/test/a5pbr2-binding-feed.test.ts — the binding-feed positive control + the three §6 semantics over the lane seam), 1168 -> 1169 on the scanner run of this suite, and alpha5-schema-rev (VNEXT-SCHEMA reversible half, merged onto master 68deccaa) adds its nine scannable files (the four dormant domain modules blueprint-v4.ts + migration-report.ts + placement.ts + v4-authoring-map.ts plus the five a5sr1..a5sr5 contract suites; SUPPORTED stays [3], zero production consumers), recording the nine increments since the P-B binding-feed booking, and alpha5-v4-flip (the v4 flip atom: SUPPORTED=[3,4] single-point flip + fourth-parser dispatch + M-3 envelope-scope pair) adds its three scannable files (the a5fl1 flip suite + the a5fl2 grammar / a5fl3 kernel mirror pair), 1180 -> 1183 on the scanner run of this suite, and alpha5-natexe (branch `alpha5-natexe`, base alpha5-int-mnt@afd936ee; PR chain `alpha5-natexe-pr` off master b90aad2a) adds its ONE scannable lane spec (packages/runtime/test/a5natexe-native-takeover.test.ts — the native-spelling takeover on the placement feed: unfed GLUE-8 landing stands VERBATIM, fed takeover verified-abstain-execute-after-approval, the three feed gates, the lane native-spelling re-check, the closed mount-name domain; zero production edits beyond the Gate 0b build-refusal face, zero denylist vocabulary), the attribution recorded in the named lists below, and A5-SRGP (the alpha5-srgp search row, this PR) adds its three scannable files (runtime/src/plugin/live/search-backend.mjs + runtime/test/alpha5-search-harness.ts + runtime/test/alpha5-search-backend.test.ts), taking the scanned total from 1191 to 1194 on THIS merged tree - re-anchored by running the scanner on it, no chain value copied (the lane branch booked 1184 -> 1187 on a tree that also carried an A5G8 booking, the pre-squash PR branch measured 1190 -> 1193 on the 1b44da20 file; neither is a master number), attribution in the named list below, and A5-B2 (B2 exit-code fidelity, this round) adds its ONE scannable spec (packages/runtime/test/a5b2-exit-code-fidelity.test.ts - the additive --exit-passthrough law at the provider seam with the REAL launcher, the shipped shell row reporting the code it measured, and the glob/search rows pinned to keep carrying no exit code at all), 1196 -> 1197 on the scanner run of this suite, attribution in the named list belo, and alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879) adds its two scannable files (runtime/src/plugin/live/ptc-escalation-row.mjs - the PTC fs half-arm escalation adjudication row: the governed member durable-approval asks -> ONE one-shot OperationGrant through the PR2 mint + ledger, the in-production ladder request shape, per-root closed-world assembly, scope-gated registration so non-Team installs stay zero-expansion by construction; host.ts + agent-bindings EDITS are already-counted files, dist outside the scan, zero denylist vocabulary - + runtime/test/a5ptc-escalation-row.test.ts - the five-negative-control synthetic leg, RED-first; the lifecycle-fix rounds added files to NEITHER list (legs ride the existing spec), attribution in the named list above), taking the scanned total on THIS merged tree to 1199 - re-anchored by running the scanner on it (the pre-anchor run reports the measured number; no chain value copied), and A5-B3 (B3 cancel leg, arriving on this merged tree after alpha5-ptc-fs) adds its ONE scannable spec (packages/runtime/test/a5b3-cancel-leg.test.ts - the host cancel signal threaded to the shell row, `bash · cancelled` reachable for the user/parent causes of the closed AgentCancelCause union and for nothing else, hook/disposed keeping the death form, provider terminate pinned out of the cancelled word, and the glob/search rows pinned to zero motion), taking the scanned total on THIS merged tree to 1200 - re-anchored by running the scanner on this merged tree (the anchor line printed, read, and deleted; no chain value copied), and A5-GLOBOFF (the closed globEnabled planeCfg key, branch a5-globoff-key off master 5885e46e) adds its ONE scannable spec (packages/runtime/test/a5-globoff-key.test.ts - the default-true zero-flip law, the false-lands-existing-typed-shut law, the rename-cannot-restore law, the gate-beats-injection-seam and non-boolean-fails-closed laws, the unknown-key silent-ignore law kept, and the four-tool matrix leg proving grep/bash/read run for real while only glob lands shut), taking the scanned total on THIS merged tree to 1201 - re-anchored by running the scanner on this branch at booking time (the anchor printed, read, and deleted; no chain value copied) and A5-PINDIR (C-16 reserved-native registry, branch `a5-pindir` off master 5885e46e) adds its TWO scannable specs (packages/runtime/test/a5-pindir-reserved-native.test.ts - the 13-name per-name refusal matrix on all four mount surfaces, the two assembly-level impostor injections (names.glob=run_code, names.bash=schedule_list) refused at Gate 0b before any mount, the BIDIRECTIONAL drift machine-check against the host catalog harvest artifact (forward missing = RED; reverse pinned-not-in-catalog needs an explicit disposition entry, never silent), the pin-source machine-check (every pinned name carries a real registration source at the host tree - guessed names are RED, root 21:15Z), the host baseline pin leg, and the subagent_fork kept-disposition evidence legs (live bundle route at the pin; sibling codex/claude-code routes shipped disabled in every preset); plus packages/runtime/test/a5-pindir-subagent-flip.test.ts - the root 21:15Z flip-drift law: subagent_codex/subagent_claude_code are shipped native route names pinned preventively (default disabled is not an impersonation licence), an in-memory preset disabled->enabled flip fixture (host bundle strictly read-only) changes no pin state and plane claims refuse with the SAME verdict string in BOTH directions); the production edits ride the already-counted plane .mjs, zero denylist vocabulary), taking the scanned total on THIS merged tree to 1203 - MEASURED by the scanner anchor print (evidence/alpha5/pindir/p4t6-anchor-1203.txt, printed and read; the title literal equals it; no chain value copied), and A5-CAUSE (#340 follow-up: the install-wrapper cancel-cause relay, branch a5-abort-cause off master ca7ab2ab) adds its ONE scannable spec (packages/runtime/test/a5r-cause-relay.test.ts - the wrapper relays the incoming abort CAUSE verbatim: user/parent reach the row as the host cause object and the untouched cancelled law mints cancelled:true, hook/disposed keep the death form, the timeout/deadline DOMException passes with IDENTITY and mints nothing, a reason-less abort lands on a plain AbortError never a marker of ours, and the lane-OWNED definition-moved word is zero-motion; the production edit rides the already-counted install.ts, zero denylist vocabulary), taking the scanned total on THIS tree to 1204 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/abort-cause/p4t6-RED-unbooked.log reading `expected 1204 to be 1203`; the title literal equals it; no chain value copied), and alpha5-g6b-step-b (#337 rc-first completion records, UNION-booked with A5-CAUSE each keeping its measured delta) adds its TWO scannable specs (packages/runtime/test/alpha5-g6b-rc-first.test.ts - the rc-first judgment row spec; packages/runtime/test/a5-scratch-default.test.ts - the production default-form positive control of the scratch law, the root 23:12Z compatibility audit RED->GREEN; provider/row/kit-fixture edits all ride ALREADY-COUNTED files; launcher .py and dist outside the scan; zero new denylist vocabulary), taking the scanned total on THIS merged tree to 1206 - re-anchored by running the scanner on this merged tree (the pre-booking reading `expected 1206 to be 1205` in evidence `alpha5/g6b-flake/step-b/compat2-p4t6-red-measure.log`; no chain value copied, and G2-MCP-B (MCP option B, branch `a5mcp-binding` off master cad5cf03) adds its ONE scannable spec (packages/runtime/test/a5mcp-native-trust-filter.test.ts - the Guard trusted-native harvest EXCLUDES the mcp__ prefix family: the collection-shape legs over the REAL agent-bindings.mjs module, the UNVERIFIED-refuse algebra leg carrying the verbatim no-fallback message, the explicit-Binding-still-passes leg, the non-mcp zero-motion leg; the production edit rides the ALREADY-COUNTED agent-bindings.mjs, dist outside the scan; zero new denylist vocabulary - decision-layer refusal only, the PR7 effect-boundary deferred line stays booked), taking the scanned total on THIS tree to 1207 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/mcp-binding/p4t6-RED-unbooked.log reading `expected 1207 to be 1206`; no chain value copied; re-anchored on the merged tree at window time), and A5-JOBS-ISO (B-route jobs identity-lease closure + #349 fd-recycling determinisation + the root-released ONE bounded real-host validation run at run live-2026-10-20T08-27-52, whose twenty-eight evidence files ALL ride dev/ and enter NO scan set; the SCANNABLE face of this lane remains exactly three files - branch `a5-jobs-isolation`, union-booked with G2-MCP-B on THIS integration tree) adds its THREE scannable files (packages/runtime/test/a5p7-jobs-assembly.test.ts - the GLUE-5 live row as BEHAVIOR over durable MemberInstance rows: two-member same-ID contention, cross-member/cross-root unavailability with no owner-identity echo, the no-TTL teardown law and the C-BIND preemption; packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts - creation attribution pinning the creating lane, the management-path owner fence with the disclosed corded:false pass-through, the measured host-layer non-reach under a team-layer refusal, the two native kill forms never collapsing; packages/runtime/controlled-fs/test/poc3-fd-recycling-leg.mjs - the PoC3-E recycling leg moved into a child-process script so recycling is OBSERVABLE deterministically; zero production edits beyond already-counted files, zero denylist vocabulary), taking the scanned total on THIS integration tree to 1210 - MEASURED by the p4t6 scanner run on THIS merged tree (phase-2 integration anchor; the phase-1 rehearsal number was deliberately NOT copied), and A5-READ-SLICE (the governed read slice, branch a5-read-slice off base 5b39cab13) adds its TWO scannable files (packages/runtime/test/a5-read-slice-window.test.ts - the window-law suite over the REAL assembly chain: W1-W10 window semantics, the admission-then-IO byte bound, the same-FD ring under true short reads, the D denial family including the matcher canonical-first contract pin and D9 - the production permission listener + its recorded monotonic end-cap guard driving the SAME read def at body/bytes zero, the C card face, and the INSTALL-recipe assembly legs; + packages/runtime/src/plugin/live/plane-effect-backends.d.mts - the ADJACENT tsc type surface of the already-counted plane-effect-backends.mjs, minimal consumed-only, the a2-canonical-operation-realfs/persona-probe pattern; the two .mjs production edits and the two old-test shape edits ride ALREADY-COUNTED files, dist mirrors/docs/dev-evidence outside the scan; zero new denylist vocabulary), taking the scanned total on THIS tree to 1212 - MEASURED by the pre-booking scanner run (.probe-plan-tmp/r23-launch/read-tdd/consumerfix-p4t6-red-unbooked.raw reading `expected 1212 to be 1210`; no chain value copied), and A5-CANCEL-LEG (branch `a5-cancel-leg` off master 1739b262) adds its THREE scannable files (packages/runtime/src/plugin/live/cancel-leg.mjs - the shared cancel mechanics of the two async confined-rg rows: the boundary predicate, the ONE owned terminate per call whose result is READ, and the settle race whose tie law `exited > timedOut > aborted` is fixed by registration order, owning no wording of its own; + packages/runtime/test/a5-cancel-search.test.ts and packages/runtime/test/a5-cancel-glob.test.ts - the two suites pinning the law at each row, including the provider-layer zero-spawn face (the plan file the provider itself writes per accepted spawn, never the row-level `execCount()` face) and the late-handle adoption law; the two row `.mjs` edits, the C7 pin flip in a5b3-cancel-leg.test.ts and the place-dist-glue.mjs booking ride ALREADY-COUNTED files, dist mirrors and dev-evidence outside the scan; zero new denylist vocabulary), taking the scanned total on THIS tree to 1215 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/cancel-leg/p4t6-unbooked-RED.log reading `expected 1215 to be 1212`; the title literal equals it; no chain value copied), and A5-DOCS-REALIGN (branch a5-docs-realign off baseline 9b2ee57b, 2026-10-22 docs/CI realignment) adds its ONE scannable fixture spec (packages/testkit/test/a5-current-contract.test.ts - the current-contract Q1-Q8 fixture suite for the state-freshness leg, zero new denylist vocabulary, quarantine hit set measured unchanged at fifteen), taking the scanned total on THIS tree to 1216 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/docs-realignment-20261022/branch-drops/p4t6-RED-unbooked.log reading `expected 1216 to be 1215`; the title literal equals it; no chain value copied), and A5-M1 (the PR358 PA<->Control integration round, whose center/AUTH halves land on THIS tree at merge 3881e0f93 and whose measured HEAD is efecfe2b4) adds its TWELVE scannable files - the AUTH-owned production bridge (packages/runtime/operation-permission/pa-control-bridge.ts: the frozen-A full-obligation PA<->Control leg, admit -> durable Control ask -> real decision -> one-shot grant consumption, with the all-Effects verifier as the ONE injected port) and its real-store suite (packages/runtime/test/a5-m1-auth-bridge.test.ts); the PR358-B center mount index and its spec (packages/runtime/src/plugin/live/pa-mount-registry.mjs - the (teamRoot, instanceId) -> CURRENT mount index plus the call-level facts adapter, no cached facts, no authority ledger - + packages/runtime/test/a5-m1-pa-mount-registry.test.ts); the two ADJACENT tsc type surfaces the root 9e CI test-declaration round added for the already-counted .mjs modules (packages/runtime/src/plugin/live/pa-mount-registry.d.mts + packages/runtime/test/a5-m1-control-legs.d.mts, minimal consumed-only, the plane-effect-backends.d.mts / persona-probe.d.mts pattern); the CENTER body-path C1 round (packages/runtime/test/a5-m1-control-legs.mjs - the disclosed C1 stand-in controlLeg legs - + the bash / read / unsupported-fail-closed vertical slices packages/runtime/test/a5-m1-bash-c1.test.ts + a5-m1-read-c1c2.test.ts + a5-m1-unsupported-c1.test.ts, all over the frozen M0 contracts, implementing no new law); the host-exec-bound correlation suite (packages/runtime/test/a5-m1-correlation.test.ts - ONE real execution token allocates ONE hexec correlation, in-flight and terminal replays refuse, honest cancel ordering); and the center seam-enforcement suite (packages/runtime/test/a5-m1-seam-enforcement.test.ts - what the CENTER does with whatever a controlLeg returns, unit-level plane worlds, C1 scope disclosed). Every other file this round touched is an EDIT to an already-counted path (control/service.ts + control/types.ts, root.ts, agent-bindings.mjs, the plane rows, the a5p0/a3p3/a4p3 pins) or lives outside packages/** (dist mirrors, docs/**, dev/agent-workflow/evidence/**); zero new denylist vocabulary, and the quarantine hit set is measured unchanged at fifteen. taking the scanned total on THIS merged tree to 1228 - MEASURED by the scanner run on this tree (census run 39866646962 at headSha efecfe2b4 recorded `expected 1228 to be 1216`; the title literal equals it; no chain value copied; eleven of the twelve paths - both packages/runtime/src/plugin/live files and all nine packages/runtime/test/a5-m1-* files - ride the surface a concurrent facts round is still editing, so the booking carries a FOR-FINAL-INTEGRATION-RE-CHECK marker in the list below)', () => {
+  it('coverage: all nine package dirs discovered, nine carry source, 980 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection service, legacy carries the P7-T6 adapter and the P7-T7 session reader, contracts carries the P8-T1 projection DTO, remote carries the P8-T3 contract v1 + handlers and the P8-T4 push engine + test client, G8-S1 adds its two gate-supplement test files (storage stamp-advance + runtime generation-stamp), P8-S4B adds its four mutation/agent-setup sources and four p8s4b test files, P8-S5A adds its thirteen production-assembly files (plugin types + seams + root + projection source + legacy surface + node-min shim + upstream resolver + live bindings + five test files), P8-S5B adds its shared team-operation coordination module and the operation-fencing acceptance test, P8-S6 adds its three remote/principal/overlay production sources and five p8s6 test files, P8-S7R1 adds its two initial-work test files (wire contract + runtime admission), P8-S7-R2 adds its ten policy/model-state view files (contracts model-state + disposed-history DTOs + runtime durable-mutation-store, effective-config-view, model-state-view + five p8s7r2 test files), P8-S7-R4 adds its one handoff-surface production module and five p8s7r4 test files, P9-T1 adds its eleven scannable legacy-copy files (four team model .ts + the ui locales.ts + six legacy-copy spec .ts) and P9-T2 adds its css-modules.d.ts, and remote-mount-race adds its four fix test files (storage create-or-open + runtime mount race + runtime create-or-open boot + runtime team-tools registration), and TCM-M1 adds its two v2-surface test files (remote versioned-contract dispatcher spec + runtime s6 production-dispatcher version-routing spec), and D2 (Team D1-D6 repair v2) adds its two v3-surface test files (runtime s6 ensureRootLive handler spec + client open-team-mode mount spec), recording the nine missed increments since the TCM-D4 pin, and D3 (Team D1-D6 repair v2) adds its one ordinary-mode client-mount spec, and A2 (alpha.2 canonical operation) adds its seven scannable operation-permission files (module core types + errors + canonical-operation + index, the fake-resolver unit spec, the real fs-local backend spec .mjs + its .d.mts type surface), recording the ten missed alpha.1 T1-T4 capability increments since the repair-r1 pin + the alpha.2 A1 permission-policy spec file + the A4 control exact-scope spec file + the A3 static resolver source and spec (int integration), and exec-autonomy-contract adds its two spec files (the domain leader-allow-lane contract spec + the runtime dual-gate spec), recording the two increments since the PR #18 pin, and the work-completion-wakeup adds its six scannable files (the runtime work-completion-notification module types + renderer + index, the pure-module spec, the live-glue spec, and the router-observer spec), and team-send-message-liveness adds its one acceptance-boundary regression spec and team-archive-member adds its one A1–A9 tool spec (packages/tools/test/archive-member-tool.test.ts) on the PR #25 merge, and strict-read-core-spill (PR #26 supplemental) adds its one pending-grant table source (runtime artifact-read pending.ts), and strict-read-core-spill (PR #26 final supplemental) adds its one composition override regression spec (runtime team-spill-local-composition.test.ts), and model-preference-routing (fix-model-preference-routing) adds its five scannable files (the runtime model token parser route.ts + the template model grant helper template-model.ts + the Gate B template-model-preference spec + the Gate D model-activation-step8 spec + the Gate E model-blueprint-initial-routing spec), and restart-recovery-017rc1 (task/team-restart-017rc1) adds its one v5 remote contract spec (remote c1-remote-v5.test.ts, the Commit-3 ordinary-open one-shot permit surface), recording the one missed Commit-3 increment since the Commit-2 pin, and restart-recovery-017rc1 supplemental (PR #31 fix round S1–S5) adds its two new scannable test files (runtime team-session-startup-fence H1/H2 spec + client s3-client-generation-spike evidence), recording the two missed supplement increments since the merge-union pin, and v4-work-completion-source (fix/v4-work-completion-source) adds its one live-glue producer-kind type declaration (runtime message-sources.d.ts, the MessageSourceMap augmentation for the producer-owned plugin:dsh-agent-team wake source), recording the one increment since the PR #31 pin, and team-projection-recovery-20260927 (fix/team-projection-recovery-20260927) adds its one compatibility-scope regression spec (runtime team-compatibility-scope.test.ts, the per-target-team compatibility prober scope), recording the one increment since the v4-work-completion-source pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) adds its ten v6-surface files (the runtime pure session read-state resolver + the pure live-token module and its three s6t specs (read-state resolver / live-token / s6 production-dispatcher v6), the remote pull-v6 pair assessor module and its c6 remote-v6 spec, and the client mount-level refresh coordinator module and its two v6 specs (projection store v6 identity + refresh coordinator)), recording the ten increments since the team-projection-recovery pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 review follow-up adds its two read-state-driven refresh files (the client read-state model module + its outcome-matrix spec), recording the two increments since the v6-surface pin, and team-view-sync-complete (fix/team-view-sync-complete-20260927) PR #35 second follow-up adds its one Team-scoped overlay collision spec (runtime p01-team-scoped-overlay.test.ts, the two-team leader-collision unit over the real overlay + projection service + both token paths), recording the one increment since the review-follow-up pin, and pre-alpha3 PR-A (feat/pre-alpha3-pra-governance) adds its nine scannable files (the runtime governance mutation authority module — types/slot/service/index — plus its five governance test files: mutation-authority / concurrency / idempotence / reset-tombstone / restart), recording the nine increments since the PR-0 pin, and pre-alpha3 PR-B (feat/pre-alpha3-prb-effective-policy) adds its ten scannable files (the runtime effective-policy canonical read module — packages/runtime/effective-policy/types.ts + reader.ts + select.ts + legacy.ts + activation-policy.ts + index.ts — plus its four specs: packages/runtime/test/effective-policy-single-source.test.ts / effective-policy-policy-state-live.test.ts / boundary-committed-applied.test.ts / restart-effective-policy.test.ts), recording the ten increments since the PR-A pin, and pre-alpha3 PR-D adds its seven control-generalization test files (subject normalization + template/team subject + inline review/abandon + review payload roundtrip + legacy row compat), and pre-alpha3 PR-D review-fix (fix/pre-alpha3-w1c-control) adds its three control-abandon review test files (the narrow-close-authority spec control-abandon-without-resolve-envelope + the remote unmapped-code spec remote-control-abandoned-code + the abandon durable-write fault spec control-abandon-storage-fault), recording the three increments since the PR-D pin, and pre-alpha3 PR-D fix round 3 (feat/pre-alpha3-prd-control-generalization) adds its one wait-abort cascade suite (runtime control-inline-wait-abort.test.ts, the S1-S7 coupling-aware cascade: the inline mid-wait + pre-abort aborts durably abandon the SAME request via the shared abandon write path, the guarded/legacy aborts stay byte-identical, the decision race wins, the faulted cascade rejects typed), recording the one increment since the PR-D review-fix pin, and pre-alpha3 PR #42 fold (feat/pre-alpha3-pre-e-requirement-recovery, merge 1 ab108388) folds in the D-fix line (fix/d-req-recovery @ e696823e): its fifty-eight scannable files accumulated since the 822 pin (the nine W2-A requirement-facts + production-persona-substrate files + the thirty-five superseding PR-E cutover files (3ccbfe82) + the fourteen W3-D fix files)), recording the fifty-eight increments since the PR-D round-3 pin, and pre-alpha3 PR #42 pass 3 adds its one per-blueprint-scoping spec (runtime requirement-probe-blueprint-scoping.test.ts, the PF-1 fix suite) and pass 3b adds its two D-1/D-3 decision-scoping files (the runtime requirement-facts pending.ts classifier module + the 37-test requirement-d1-d3-decision-scoping spec), recording the three increments since the merge-1 pin, and pre-alpha3 F15 (feat/pre-alpha3-f15-mcp-live-loss) adds its two MCP live-loss specs (runtime f15-mcp-live-loss-characterization.test.ts, the RED gap probe + the public-seam tool-withdrawal evidence) and its §9 unit-matrix spec (runtime f15-mcp-live-loss.test.ts, the L1 normal / §9.4 re-sync / L2 permanent loss / L6 idempotence / L7 remount recovery / L3 zero-tool / L4 deny / L5 close / §9.5 multi-MCP isolation legs + the §9.2 static reconnect-policy call-site witness), recording the two increments since the 886 pin, and pre-alpha3 PR-F (feat/pre-alpha3-prf-closure) adds its three re-landed scannable files (the remote contracts semantic adapter (semantic.ts, the F.3 version->semantic translation + the shared live-projection wire application) + the runtime internal test-world mutation kernel (mutation/internal/mutation-service.ts, the F.2 StepClock/MutationService extraction) + the runtime same-source read-surface pin spec (prf-inspect-same-source.test.ts, the F.4 config-inspected policy/requirement/recovery views over the same durable facts the gates consume)), recording the three increments since the 888 pin, and the w1a F10/F11 stack-side re-land (master e44ebbbd, pre-e->master closure merge shared base) adds its five scannable files (the runtime bound-blueprint resolver (bound-blueprint.ts, the three-case bound-Blueprint contract) + the four runtime F10/F11 specs (governance-stale-ui-generation + remote-override-expected-generation + policy-state-multi-team-bound-blueprint + policy-state-bound-blueprint-production-wiring)), recording the five increments since the PR-F pin, and fix-runtime-template-consent (fix/runtime-template-consent, finding I) adds its one scannable regression test file (the runtime disabled-empty-template gate spec template-disable-no-requirements-gate.test.ts, the real-chain delegate-to-a-requirement-less-disabled-template block + re-enable over the durable availability fact), recording the one increment since the w1a re-land pin, and fix-runtime-template-consent (fix/runtime-template-consent, finding J) adds its one scannable regression test file (the runtime consent scope/hash binding spec consent-scope-hash-binding.test.ts, the host-entry real chain: the production creation preflight + the production consent writer — a consent is bound to the exact scope + blueprint content hash it was granted for (ADR-12): cross-scope same-reqID does not bleed, a stale rev1 consent is not inherited by the pre-team rev2 re-drive, the durable rows carry the scopeKey + contentHash key (legacy unkeyed rows fail closed against a keyed evaluation)), and fix-runtime-template-consent (fix/runtime-template-consent, finding I residual — the leader scope, 2026-10-01) adds its one scannable regression test file (the runtime leader-disable no-requirements initial-work spec leader-disable-no-requirements-initial-work.test.ts, the production closure + router real chain: a durable LEADER disable on a requirement-free leader template blocks admitInitialWork + the subsequent follow-up root boundary (zero model, zero work — the typed templateDisabled block naming the leader scope), the control/recovery lanes stay open, re-enable resumes through the same checks), and fix-persona-kind (PR #46, finding A, merged to master at 8e18819c) adds its two scannable regression test files (the runtime persona-KIND provider-preflight spec persona-kind-provider-preflight.test.ts, the persona-KIND-convention regression suite over the REAL production provider to preflight chain, and the persona-KIND SHIPPED DIST SMOKE spec persona-kind-shipped-dist-smoke.test.ts, the finding-A persona-KIND semantics + the Blocker-1 role identity + the Blocker-3 typed section-13.5 lane asserted over the BUILT dist artifact), recording the two increments from the PR #46 merge (896 -> 898 on that line), and fix-control-authz (fix/control-authz-boundary) adds its five scannable test files (the shared real-chain fixture fix-control-authz-helpers.ts + the four Control authorization-boundary regression suites: fix-control-authz-b-frozen-snapshot (B: the frozen review snapshot is the single source), fix-control-authz-c-abandon-terminal (C: the durable abandon mark is the terminal mark + the waiter liveness), fix-control-authz-d-restart-fresh-human (D: the restart-unique attempt identity, no approval replay) and fix-control-authz-h-send-message (H: the recovery send-message recipient-instance subject over the real chain)), recording the five increments since the w1a pin, and finding F (fix/mcp-target-materialization, this merge) adds its TWO scannable files (mcp-target-materialization.test.ts + mcp-target-materialization-unit.test.ts — the finding-F third file in my pre-merge tree, persona-kind-provider-preflight.test.ts, is already counted by the PR #46 pair above: no double count on the merged tree), recording the two finding-F increments (the merged tree since the 896 pin: 2 persona + 3 consent + 5 fix-control-authz + 2 finding-F = 12), and alpha3-pr5-notification-projection adds its seven scannable files (the runtime permission-notification awareness lane — types + notification + projection + index, the generation-tagged notification, the active-only never-throwing notifier and the read projection over the PR1 latest/history boundaries, shipped UNWIRED by design — plus its three specs a3p5-permission-notification / a3p5-permission-read-projection / a3p5-permission-notification-lane-hygiene), recording the seven PR5 increments + the one missed increment since the 934 pin (merged PR #56 client spec packages/client/test/pr56-control-subject-payload.test.ts), 934 -> 942 on the authoritative scanner run, and the alpha3-pr5 delivery-binding round adds its two scannable files (the INJECT-ONLY synchronous receipt gate source binding.ts + its a3p5-permission-delivery-binding spec pinning the parent GO classes a-e: running receives / idle-cold-closing-lifecycle-mismatch drop / active-to-idle race drops at the gate / wake-member landmines untouched / detached ack independence), 942 -> 944 on the authoritative scanner run, and the 2026-10-02 master integration merge of 940cd841 (alpha3-pr4 lifecycle lineage: the eleven scannable lifecycle-lane/plane/regression files join DISJOINT from the PR5 nine, the PR #56 client spec counted once) puts the merged tree at 955 on the scanner run of this suite (RED `merge/p4t6-RED.log`, GREEN `merge/p4t6-GREEN.log`), and the alpha3-pr5 FINAL PRODUCTION SPLICE adds its one scannable file (the root-assembled integration spec a3p5-permission-splice.test.ts; the splice wires EXISTING sources only — lane edits are doc-level, the edited root/types/glue files were already counted, dist is outside the scan; zero new denylist vocabulary, quarantine hits stay 15), 955 -> 956 on the scanner run of this suite (RED `splice/p4t6-RED.log`, GREEN `splice/p4t6-GREEN.log`), and the alpha3-pr5 ROOT BLOCK fix batch adds its two scannable spec files (a3p5-glue-permission-receipt — the REAL agent-bindings.mjs receipt exercised through the t12a live bridge with hostless fakes — and a3p5-permission-read-wiring — the override.getPermission read path over the root-assembled router + the real s6-remote gate port; the fix batch edits ALREADY-COUNTED files only otherwise — root.ts / types.ts / s6-remote.ts / the glue / the contracts / the lane docs; dist is outside the scan; zero new denylist vocabulary, quarantine hits stay 15), 956 -> 958 on the scanner run of this suite , and dsh-020rc2-upgrade (PR #62, 0.2.0-rc.2 host migration) adds its seven scannable rc2 test files (testkit rc2-kit-wire-shape / rc2-kit-fixture-invariants / rc2-kit-fault-injection / rc2-kit-pin-hygiene / rc2-kit-preset-seam / rc2-sanitize-evidence, tools rc2-team-deny-least-privilege), zero removals, 958 -> 965 on the scanner run of this suite (RED `logs/root-vitest-current-e89063c8-plus.log` reported `expected 964 to be 958`; the exact-base control `logs/base-vitest-the-10-failures-6b2f401b.log` shows this same suite PASSING at 958 with the own 0.1.7-rc.1 host tree of the base worktree, so the movement is the files added by this PR, not the host generation, and the same PR persona-residue round adds its three scannable files (the shared harness persona-slot reader packages/runtime/root-binding/harness/persona-probe.mjs + its persona-probe.d.mts type surface + the packages/runtime/test/rc2-persona-probe.test.ts contract-and-ledger spec), 965 -> 968 on the scanner run of this suite, and the same PR root-binding bounded-run harness round adds its three scannable files (packages/runtime/root-binding/harness/blueprint-source.mjs + packages/runtime/root-binding/harness/bounded-run.mjs + packages/runtime/root-binding/harness/bounded-run.regression.test.mjs, the bounded-run owner/builder harness, its blueprint source and its regression spec), 968 -> 971 on the scanner run of this suite with all 971 entries being intended packages/** source and the three new paths additionally asserted present by path, and A4-PR0 (feat/a4-pr0-proposal-substrate) adds its five scannable files (the durable governance proposal substrate packages/runtime/governance/proposal-store.ts and its lane-local closed error table proposal-codes.ts - shipped UNWIRED by design, ADR A4-6, no product surface reaches them - plus its three specs a4pr0-proposal-store / a4pr0-proposal-corrupt / a4pr0-proposal-generation), 973 -> 978 on the scanner run of this suite, and A4-PR7 §7.3 the version flip (`feat/a4-73-flip`) adds its one scannable file (the runtime a4p7-shipped-composition-blueprint spec — the embedded blueprint of the shipped composition blueprint parsed through the real `parseBlueprint`, which no test in the tree did before the cutover that changes what parses), 978 -> 979 on the scanner run of this suite, and alpha5-glue5-entry (GLUE-5 production assembly) adds its two scannable live-row .mjs files (the governed tool-plane placement row + the PR7 gateway live row) AND books the three P-B lane files its pre-merge tree brought in (registration face + barrel-emit spec + a5p4 assembly-config spec) as the per-merge booking of the integration owner, and alpha5-pb-binding-feed (P-B §6 binding-feed round) adds its one scannable lane spec (packages/runtime/test/a5pbr2-binding-feed.test.ts — the binding-feed positive control + the three §6 semantics over the lane seam), 1168 -> 1169 on the scanner run of this suite, and alpha5-schema-rev (VNEXT-SCHEMA reversible half, merged onto master 68deccaa) adds its nine scannable files (the four dormant domain modules blueprint-v4.ts + migration-report.ts + placement.ts + v4-authoring-map.ts plus the five a5sr1..a5sr5 contract suites; SUPPORTED stays [3], zero production consumers), recording the nine increments since the P-B binding-feed booking, and alpha5-v4-flip (the v4 flip atom: SUPPORTED=[3,4] single-point flip + fourth-parser dispatch + M-3 envelope-scope pair) adds its three scannable files (the a5fl1 flip suite + the a5fl2 grammar / a5fl3 kernel mirror pair), 1180 -> 1183 on the scanner run of this suite, and alpha5-natexe (branch `alpha5-natexe`, base alpha5-int-mnt@afd936ee; PR chain `alpha5-natexe-pr` off master b90aad2a) adds its ONE scannable lane spec (packages/runtime/test/a5natexe-native-takeover.test.ts — the native-spelling takeover on the placement feed: unfed GLUE-8 landing stands VERBATIM, fed takeover verified-abstain-execute-after-approval, the three feed gates, the lane native-spelling re-check, the closed mount-name domain; zero production edits beyond the Gate 0b build-refusal face, zero denylist vocabulary), the attribution recorded in the named lists below, and A5-SRGP (the alpha5-srgp search row, this PR) adds its three scannable files (runtime/src/plugin/live/search-backend.mjs + runtime/test/alpha5-search-harness.ts + runtime/test/alpha5-search-backend.test.ts), taking the scanned total from 1191 to 1194 on THIS merged tree - re-anchored by running the scanner on it, no chain value copied (the lane branch booked 1184 -> 1187 on a tree that also carried an A5G8 booking, the pre-squash PR branch measured 1190 -> 1193 on the 1b44da20 file; neither is a master number), attribution in the named list below, and A5-B2 (B2 exit-code fidelity, this round) adds its ONE scannable spec (packages/runtime/test/a5b2-exit-code-fidelity.test.ts - the additive --exit-passthrough law at the provider seam with the REAL launcher, the shipped shell row reporting the code it measured, and the glob/search rows pinned to keep carrying no exit code at all), 1196 -> 1197 on the scanner run of this suite, attribution in the named list belo, and alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879) adds its two scannable files (runtime/src/plugin/live/ptc-escalation-row.mjs - the PTC fs half-arm escalation adjudication row: the governed member durable-approval asks -> ONE one-shot OperationGrant through the PR2 mint + ledger, the in-production ladder request shape, per-root closed-world assembly, scope-gated registration so non-Team installs stay zero-expansion by construction; host.ts + agent-bindings EDITS are already-counted files, dist outside the scan, zero denylist vocabulary - + runtime/test/a5ptc-escalation-row.test.ts - the five-negative-control synthetic leg, RED-first; the lifecycle-fix rounds added files to NEITHER list (legs ride the existing spec), attribution in the named list above), taking the scanned total on THIS merged tree to 1199 - re-anchored by running the scanner on it (the pre-anchor run reports the measured number; no chain value copied), and A5-B3 (B3 cancel leg, arriving on this merged tree after alpha5-ptc-fs) adds its ONE scannable spec (packages/runtime/test/a5b3-cancel-leg.test.ts - the host cancel signal threaded to the shell row, `bash · cancelled` reachable for the user/parent causes of the closed AgentCancelCause union and for nothing else, hook/disposed keeping the death form, provider terminate pinned out of the cancelled word, and the glob/search rows pinned to zero motion), taking the scanned total on THIS merged tree to 1200 - re-anchored by running the scanner on this merged tree (the anchor line printed, read, and deleted; no chain value copied), and A5-GLOBOFF (the closed globEnabled planeCfg key, branch a5-globoff-key off master 5885e46e) adds its ONE scannable spec (packages/runtime/test/a5-globoff-key.test.ts - the default-true zero-flip law, the false-lands-existing-typed-shut law, the rename-cannot-restore law, the gate-beats-injection-seam and non-boolean-fails-closed laws, the unknown-key silent-ignore law kept, and the four-tool matrix leg proving grep/bash/read run for real while only glob lands shut), taking the scanned total on THIS merged tree to 1201 - re-anchored by running the scanner on this branch at booking time (the anchor printed, read, and deleted; no chain value copied) and A5-PINDIR (C-16 reserved-native registry, branch `a5-pindir` off master 5885e46e) adds its TWO scannable specs (packages/runtime/test/a5-pindir-reserved-native.test.ts - the 13-name per-name refusal matrix on all four mount surfaces, the two assembly-level impostor injections (names.glob=run_code, names.bash=schedule_list) refused at Gate 0b before any mount, the BIDIRECTIONAL drift machine-check against the host catalog harvest artifact (forward missing = RED; reverse pinned-not-in-catalog needs an explicit disposition entry, never silent), the pin-source machine-check (every pinned name carries a real registration source at the host tree - guessed names are RED, root 21:15Z), the host baseline pin leg, and the subagent_fork kept-disposition evidence legs (live bundle route at the pin; sibling codex/claude-code routes shipped disabled in every preset); plus packages/runtime/test/a5-pindir-subagent-flip.test.ts - the root 21:15Z flip-drift law: subagent_codex/subagent_claude_code are shipped native route names pinned preventively (default disabled is not an impersonation licence), an in-memory preset disabled->enabled flip fixture (host bundle strictly read-only) changes no pin state and plane claims refuse with the SAME verdict string in BOTH directions); the production edits ride the already-counted plane .mjs, zero denylist vocabulary), taking the scanned total on THIS merged tree to 1203 - MEASURED by the scanner anchor print (evidence/alpha5/pindir/p4t6-anchor-1203.txt, printed and read; the title literal equals it; no chain value copied), and A5-CAUSE (#340 follow-up: the install-wrapper cancel-cause relay, branch a5-abort-cause off master ca7ab2ab) adds its ONE scannable spec (packages/runtime/test/a5r-cause-relay.test.ts - the wrapper relays the incoming abort CAUSE verbatim: user/parent reach the row as the host cause object and the untouched cancelled law mints cancelled:true, hook/disposed keep the death form, the timeout/deadline DOMException passes with IDENTITY and mints nothing, a reason-less abort lands on a plain AbortError never a marker of ours, and the lane-OWNED definition-moved word is zero-motion; the production edit rides the already-counted install.ts, zero denylist vocabulary), taking the scanned total on THIS tree to 1204 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/abort-cause/p4t6-RED-unbooked.log reading `expected 1204 to be 1203`; the title literal equals it; no chain value copied), and alpha5-g6b-step-b (#337 rc-first completion records, UNION-booked with A5-CAUSE each keeping its measured delta) adds its TWO scannable specs (packages/runtime/test/alpha5-g6b-rc-first.test.ts - the rc-first judgment row spec; packages/runtime/test/a5-scratch-default.test.ts - the production default-form positive control of the scratch law, the root 23:12Z compatibility audit RED->GREEN; provider/row/kit-fixture edits all ride ALREADY-COUNTED files; launcher .py and dist outside the scan; zero new denylist vocabulary), taking the scanned total on THIS merged tree to 1206 - re-anchored by running the scanner on this merged tree (the pre-booking reading `expected 1206 to be 1205` in evidence `alpha5/g6b-flake/step-b/compat2-p4t6-red-measure.log`; no chain value copied, and G2-MCP-B (MCP option B, branch `a5mcp-binding` off master cad5cf03) adds its ONE scannable spec (packages/runtime/test/a5mcp-native-trust-filter.test.ts - the Guard trusted-native harvest EXCLUDES the mcp__ prefix family: the collection-shape legs over the REAL agent-bindings.mjs module, the UNVERIFIED-refuse algebra leg carrying the verbatim no-fallback message, the explicit-Binding-still-passes leg, the non-mcp zero-motion leg; the production edit rides the ALREADY-COUNTED agent-bindings.mjs, dist outside the scan; zero new denylist vocabulary - decision-layer refusal only, the PR7 effect-boundary deferred line stays booked), taking the scanned total on THIS tree to 1207 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/mcp-binding/p4t6-RED-unbooked.log reading `expected 1207 to be 1206`; no chain value copied; re-anchored on the merged tree at window time), and A5-JOBS-ISO (B-route jobs identity-lease closure + #349 fd-recycling determinisation + the root-released ONE bounded real-host validation run at run live-2026-10-20T08-27-52, whose twenty-eight evidence files ALL ride dev/ and enter NO scan set; the SCANNABLE face of this lane remains exactly three files - branch `a5-jobs-isolation`, union-booked with G2-MCP-B on THIS integration tree) adds its THREE scannable files (packages/runtime/test/a5p7-jobs-assembly.test.ts - the GLUE-5 live row as BEHAVIOR over durable MemberInstance rows: two-member same-ID contention, cross-member/cross-root unavailability with no owner-identity echo, the no-TTL teardown law and the C-BIND preemption; packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts - creation attribution pinning the creating lane, the management-path owner fence with the disclosed corded:false pass-through, the measured host-layer non-reach under a team-layer refusal, the two native kill forms never collapsing; packages/runtime/controlled-fs/test/poc3-fd-recycling-leg.mjs - the PoC3-E recycling leg moved into a child-process script so recycling is OBSERVABLE deterministically; zero production edits beyond already-counted files, zero denylist vocabulary), taking the scanned total on THIS integration tree to 1210 - MEASURED by the p4t6 scanner run on THIS merged tree (phase-2 integration anchor; the phase-1 rehearsal number was deliberately NOT copied), and A5-READ-SLICE (the governed read slice, branch a5-read-slice off base 5b39cab13) adds its TWO scannable files (packages/runtime/test/a5-read-slice-window.test.ts - the window-law suite over the REAL assembly chain: W1-W10 window semantics, the admission-then-IO byte bound, the same-FD ring under true short reads, the D denial family including the matcher canonical-first contract pin and D9 - the production permission listener + its recorded monotonic end-cap guard driving the SAME read def at body/bytes zero, the C card face, and the INSTALL-recipe assembly legs; + packages/runtime/src/plugin/live/plane-effect-backends.d.mts - the ADJACENT tsc type surface of the already-counted plane-effect-backends.mjs, minimal consumed-only, the a2-canonical-operation-realfs/persona-probe pattern; the two .mjs production edits and the two old-test shape edits ride ALREADY-COUNTED files, dist mirrors/docs/dev-evidence outside the scan; zero new denylist vocabulary), taking the scanned total on THIS tree to 1212 - MEASURED by the pre-booking scanner run (.probe-plan-tmp/r23-launch/read-tdd/consumerfix-p4t6-red-unbooked.raw reading `expected 1212 to be 1210`; no chain value copied), and A5-CANCEL-LEG (branch `a5-cancel-leg` off master 1739b262) adds its THREE scannable files (packages/runtime/src/plugin/live/cancel-leg.mjs - the shared cancel mechanics of the two async confined-rg rows: the boundary predicate, the ONE owned terminate per call whose result is READ, and the settle race whose tie law `exited > timedOut > aborted` is fixed by registration order, owning no wording of its own; + packages/runtime/test/a5-cancel-search.test.ts and packages/runtime/test/a5-cancel-glob.test.ts - the two suites pinning the law at each row, including the provider-layer zero-spawn face (the plan file the provider itself writes per accepted spawn, never the row-level `execCount()` face) and the late-handle adoption law; the two row `.mjs` edits, the C7 pin flip in a5b3-cancel-leg.test.ts and the place-dist-glue.mjs booking ride ALREADY-COUNTED files, dist mirrors and dev-evidence outside the scan; zero new denylist vocabulary), taking the scanned total on THIS tree to 1215 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/cancel-leg/p4t6-unbooked-RED.log reading `expected 1215 to be 1212`; the title literal equals it; no chain value copied), and A5-DOCS-REALIGN (branch a5-docs-realign off baseline 9b2ee57b, 2026-10-22 docs/CI realignment) adds its ONE scannable fixture spec (packages/testkit/test/a5-current-contract.test.ts - the current-contract Q1-Q8 fixture suite for the state-freshness leg, zero new denylist vocabulary, quarantine hit set measured unchanged at fifteen), taking the scanned total on THIS tree to 1216 - MEASURED by the pre-booking scanner run (dev/agent-workflow/evidence/alpha5/docs-realignment-20261022/branch-drops/p4t6-RED-unbooked.log reading `expected 1216 to be 1215`; the title literal equals it; no chain value copied), and A5-M1 (the PR358 PA<->Control integration round, whose center/AUTH halves land on THIS tree at merge 3881e0f93 and whose measured HEAD is efecfe2b4) adds its TWELVE scannable files - the AUTH-owned production bridge (packages/runtime/operation-permission/pa-control-bridge.ts: the frozen-A full-obligation PA<->Control leg, admit -> durable Control ask -> real decision -> one-shot grant consumption, with the all-Effects verifier as the ONE injected port) and its real-store suite (packages/runtime/test/a5-m1-auth-bridge.test.ts); the PR358-B center mount index and its spec (packages/runtime/src/plugin/live/pa-mount-registry.mjs - the (teamRoot, instanceId) -> CURRENT mount index plus the call-level facts adapter, no cached facts, no authority ledger - + packages/runtime/test/a5-m1-pa-mount-registry.test.ts); the two ADJACENT tsc type surfaces the root 9e CI test-declaration round added for the already-counted .mjs modules (packages/runtime/src/plugin/live/pa-mount-registry.d.mts + packages/runtime/test/a5-m1-control-legs.d.mts, minimal consumed-only, the plane-effect-backends.d.mts / persona-probe.d.mts pattern); the CENTER body-path C1 round (packages/runtime/test/a5-m1-control-legs.mjs - the disclosed C1 stand-in controlLeg legs - + the bash / read / unsupported-fail-closed vertical slices packages/runtime/test/a5-m1-bash-c1.test.ts + a5-m1-read-c1c2.test.ts + a5-m1-unsupported-c1.test.ts, all over the frozen M0 contracts, implementing no new law); the host-exec-bound correlation suite (packages/runtime/test/a5-m1-correlation.test.ts - ONE real execution token allocates ONE hexec correlation, in-flight and terminal replays refuse, honest cancel ordering); and the center seam-enforcement suite (packages/runtime/test/a5-m1-seam-enforcement.test.ts - what the CENTER does with whatever a controlLeg returns, unit-level plane worlds, C1 scope disclosed). Every other file this round touched is an EDIT to an already-counted path (control/service.ts + control/types.ts, root.ts, agent-bindings.mjs, the plane rows, the a5p0/a3p3/a4p3 pins) or lives outside packages/** (dist mirrors, docs/**, dev/agent-workflow/evidence/**); zero new denylist vocabulary, and the quarantine hit set is measured unchanged at fifteen. taking the scanned total on THIS merged tree to 1228 - MEASURED by the scanner run on this tree (census run 39866646962 at headSha efecfe2b4 recorded `expected 1228 to be 1216`; the title literal equals it; no chain value copied; eleven of the twelve paths - both packages/runtime/src/plugin/live files and all nine packages/runtime/test/a5-m1-* files - ride the surface a concurrent facts round is still editing, so the booking carries a FOR-FINAL-INTEGRATION-RE-CHECK marker in the list below), and A5-M2 (this round, branch feat/a5-m1-center-kernel off the audited M1 tree 7a3540937) adds its FOUR scannable files - the governed WRITE slice module of the tools lane (pure lexical anchor + argument view + admission-gated executor over INJECTED FS/PA ports, zero imports, shipped UNWIRED; its barrel edit rides the already-counted lane index) and the 20-leg formal C1 spec for that slice, named in the array above; the 14-leg B-SESSION spec packages/runtime/test/a5-m2-todo-write-c1.test.ts and the 8-leg B-WEB classify/manifest spec packages/runtime/test/a5m2w-web-c1.test.ts, both FIXTURE LEVEL with the implicit-open parameter-root witness booked as drift coverage rather than as accepted behaviour; the read_image spec present in the working tree at measurement time is NOT committed and is NOT booked. Evidence under dev/agent-workflow/evidence/** enters no scan set; dist outside the scan; zero new denylist vocabulary. taking the scanned total on THIS tree to 1245 (round 6 CORRECTION, 2026-10-23, CENTER, with the slip named: rounds B/C/D/E/F added 13 booked paths - the read_image spec, the todo arm, five web wiring paths, five B-IMAGE arm paths and the defect-repro spec of this round - while THIS compared number stayed at the round-A value 1232, so this leg has been RED on every head since the read_image commit and no CI run reached it because build:composition stopped first; I recorded running totals in prose instead of updating the number this assertion reads, which is precisely the failure mode a self-described pin exists to catch; 1245 = 1232 + 1 + 1 + 5 + 5 + 1, re-measured by this leg) - MEASURED by the pre-booking scanner run on this tree, which read `expected 1233 to be 1228` while the unbooked read_image spec was still present; 1228 + 4 booked = 1232 and the title literal equals that measured number; no chain value copied; round 2 of the same round adds ONE further scannable file (packages/runtime/test/a5m2-readimg-c1.test.ts, the read_image C1/C2/C3 spec, booked as SCANNED_PATHS_A5M2B after its own typecheck/lint went clean in-file) taking the booked total to 1233 on the committed set; round 3 adds ONE further scannable file (packages/runtime/src/plugin/live/governed-families/todo.mjs, the unmounted B-SESSION governed arm) for a booked total of 1234; round 4 adds the FIVE B-WEB wiring paths (the web-gateway lane package, its live assembly row and its 19-leg spec) for a booked total of 1239 on the committed set, with the CI scanner on that head as the authoritative anchor; round 5 adds the FIVE B-IMAGE arm paths for a booked total of 1244; round 7 (2026-10-23, booked by the census owner on the A5-M2 integration face) adds the FOUR controlled-fs paths - the post-consume write closure and its formal C1 spec from bce6173a2, and the bounded-bytes read closure and its formal C1 spec from c0dcd378b - for a booked total of 1249 on THIS tree, and that figure is a measurement taken here rather than a copied value: the CI scanner ran on this tree at booking time and printed filesScanned = 1249 with files.length = 1249, the same run reported all four paths IN-SCAN, and 1249 is the round-6 anchor 1245 plus exactly these four, checked per path - no CI-printed number and no chain value was copied; round 8 (2026-10-23, the B-SESSION todo PRODUCTION-WIRING vertical booked by the CENTER writer on this integration face) adds its ONE scannable spec (packages/runtime/test/a5m2-todo-assembly-c1.test.ts - the assembly vertical over the REAL arm, the plane’s own production assembly, the REAL leg/ControlService/verifier and the durable Control rows: mount-time family registration keyed by the RUNTIME placement identity, SAME-SOURCE family facts across both readers, the durable row carrying the live list field-for-field, ONE execution-edge consumption witnessed ONLY by the row’s own consumedProof, exactly one native append through the captured definition, plus the zero-flip / closed-key pairing both directions / noTeam / cancel / drain / grant-pairing / unregistered-family-claim negatives; the two .mjs production edits ride ALREADY-COUNTED paths, dist mirrors and dev-evidence outside the scan; zero new denylist vocabulary), taking the booked total to 1250 on THIS tree - MEASURED by the scanner run here at booking time, which printed filesScanned = 1250 with files.length = 1250 and reported the new path IN-SCAN in the same run; 1250 is the round-7 anchor 1249 plus exactly this one, checked by path; no chain value copied; round 9 (2026-10-23, booked by the census owner on the A5-M2 integration face on the CENSUS-IDENTITY-R7 handoff) re-anchors on THIS tree at HEAD ae3a7eef7: the packet books the identity of TEN added scannable paths since the round-6 anchor e922591dc - the 057178d2b governed image-read port packages/runtime/controlled-fs/src/governed-image-read-port.ts and its C1 spec a5m2-image-read-port-c1.test.ts, the 1a399e977 governed write arm packages/runtime/src/plugin/live/governed-families/write.mjs and its existing-file C1 spec a5m2-write-existing-c1.test.ts, the 0d5255a49 B-IMAGE plane-row spec a5m2-image-row-c1.test.ts, and five further paths (bounded-bytes-read.ts + a5m2-fs-bounded-read-c1.test.ts and post-consume-write.ts + a5m2-post-consume-write-c1.test.ts from c0dcd378b / bce6173a2, plus a5m2-todo-assembly-c1.test.ts from 307e9951a) that a per-path check against this file finds ALREADY booked by rounds 7 and 8 after the anchor of the packet - so round 9 books the FIVE still-unbooked paths as SCANNED_PATHS_A5M2I rather than all ten, which would double-count and book 1260 against a measured 1255, taking the booked total to 1255 on THIS tree - MEASURED by the scanner run here at booking time: the pre-booking RED run at ae3a7eef7 read `expected 1255 to be 1250`, the GREEN run printed filesScanned = 1255 with files.length = 1255, and the same run reported all ten packet paths IN-SCAN (the five booked here, the five carried by rounds 7 and 8); , and A5-M2-GROUPS (the 2026-10-23 independent-module round under the root 12:27 order; three owner lanes landed UNWIRED on this integration face, booked as ONE round by the CENTER integrator) adds its SIX scannable files - the G1 SERVICE/CONTROL/PLUGIN thin-adapter module packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs (14 captured-native-delegate surface rows over the frozen dispatch index, zero lane imports) + its 59-leg spec packages/runtime/test/a5m2-g1-surface-adapters.test.ts; the G2 CONNECTOR adapter module packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs (web_fetch/web_search always rows, the MCP resource trio and the stagehand six as honest declared_mount INACTIVE rows, the two mcp transport surface classifiers; its ONE lane import parseRequestedEffectSet is booked in the audit PR1_CONSUMERS list THIS same commit, the ptc-escalation-row pattern) + its 19-leg spec packages/runtime/test/a5m2-g2-connector-adapters.test.ts; and the G3 FS-PROC adapter module packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs (terminal six + lsp + run_code OUTER arms over captured native faces - registration/placement stay CENTER, the run_code row mount is a disclosed NAMED GAP riding already-counted paths) + its 15-leg spec packages/runtime/test/a5m2-g3-fsproc.test.ts; every registration-face fixed point in all three specs runs the REAL pinned-host validator; zero production edits; dist mirrors, docs and dev-evidence outside the scan; zero new denylist vocabulary, taking the booked total to 1261 on THIS tree - MEASURED by the scanner run here at booking time: the pre-booking RED read `expected 1261 to be 1255`, and 1261 is the round-9 anchor 1255 plus exactly these six, checked by path; no chain value copied, and A5-M2-G2-SEAMS (the round-2 of the same G2 lane under the root 13:1x order: disclosure moved to the REAL M0 provider seams — a provider-level WEB pin registered through the public registerSearchProvider/registerFetchProvider faces re-verifying provider identity/endpoint/destination per dispatch from its in-stack ledger, an MCP seam whose request(request, exec) IS the execution lease with live transport/endpoint/generation re-verification (factory-config strings never the incarnation), a BROWSER governed resource lease where PA-before-launch is STRUCTURAL and drain really awaits its own in-flight work, and consumeG2ApprovedPlan binding the frozen actualArgs AT the consumption edge; public entries only, no Core patch, no invented getter; named blockers stay exported verbatim where facts are unobservable; the module ships UNWIRED) adds its TWO scannable files - packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs + its 16-leg spec packages/runtime/test/a5m2-g2-provider-seams.test.ts - taking the booked total to 1263 on THIS tree - MEASURED by the scanner run here at booking time: the pre-booking RED read `expected 1263 to be 1261`, and 1263 is the round-10 anchor 1261 plus exactly these two, checked by path; no chain value copied, and A5-M2-WRITE-HANDOFF (root 13:38 MIN product fix, write C2, the CENTER writer on this integration face) adds its ONE scannable spec (packages/runtime/test/a5m2-write-handoff-c1.test.ts - the governed-write row pre-dispatch hand-off over the audited M1 read-port shape: the production A->B positive leg with ZERO front-door entries and the fresh-recheck single consume landing real bytes, the ask-lane leg riding the real durable PA row with its family manifest, and the IN_FLIGHT / TERMINAL / CLOSED / LOST / MISMATCH / DRAINING / UNBOUND / no-match / field-absence negatives all refusing with zero bytes; the production edits ride the ALREADY-COUNTED team-tool-plane.mjs + agent-bindings.mjs, dist outside the scan; zero new denylist vocabulary) taking the booked total to 1264 on THIS tree - MEASURED by the scanner run at booking time: the pre-booking RED read `expected 1264 to be 1263` (evidence dev/agent-workflow/evidence/a5m2-write-handoff/p4t6-RED-unbooked.log), and 1264 is the round-11 anchor 1263 plus exactly this one, checked by path; no chain value copied, and A5-M2-IMAGE-HANDOFF (root 14:44 SYMMETRIC third port paImageHandoff, the governed read_image pre-dispatch hand-off on the SAME audited port protocol and the SAME shared token ledger, write C2 follow-up) adds its ONE scannable spec (packages/runtime/test/a5m2-image-handoff-c1.test.ts - the all-allow positive leg with the old front door opened NOTHING and the body redeeming through the SAME fresh edge to ONE consume and ONE attachment commit, the ask-lane leg riding the REAL durable B-IMAGE manifest row field-for-field, and the TERMINAL / IN_FLIGHT / LOST / CLOSED / MOUNT_GONE-DRAINING / MISMATCH / UNBOUND / no-match / field-absence negatives all refusing with zero port calls and zero attachment writes; the production edits ride the ALREADY-COUNTED team-tool-plane.mjs + agent-bindings.mjs + pre-execute-adapter.ts, dist outside the scan; zero new denylist vocabulary) taking the booked total to 1265 on THIS tree - MEASURED by the scanner run at booking time: the pre-booking RED read `expected 1265 to be 1264` (evidence dev/agent-workflow/evidence/a5m2-image-handoff/p4t6-RED-unbooked.log), and 1265 is the round-12 anchor 1264 plus exactly this one, checked by path; no chain value copied, and A5-M2-G2-TEAM-ASSEMBLY (the G2 lane assembly-candidate card; owner stopped, int/kernel SAME bytes, center-measured 9 new legs / 61 g2-family total regression GREEN / ESLint 0; the real-SDK Client + captured generation/timeout over the PUBLIC launchChromium / openNativeBrowser faces as an UNWIRED CANDIDATE - NOT a production C2, no shared plane/glue bytes, WEB global/env forbidden, the real Team-only fixed provider stays the named blocker) adds its TWO scannable files (packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs + packages/runtime/test/a5m2-g2-team-assembly.test.ts; the module ships src-only, outside the install dist pathspec; zero new denylist vocabulary) taking the booked total to 1267 on THIS tree - MEASURED, and the booking slip is NAMED honestly: an initial same-day clause booked only the spec from a pre-booking reading of 1266 and carried an apostrophe that broke this file parsing at that head (both superseded by this repair commit), while BOTH card files are IN-SCAN (the scan module enumerates both by path, printed and read); the corrected leg re-measured RED `expected 1267 to be 1265` against the round-13 anchor on THIS tree (evidence dev/agent-workflow/evidence/a5m2-g2-team-assembly/p4t6-RED-remeasure-1267-vs-1265.log; the superseded initial RED p4t6-RED-unbooked.log kept), so 1267 is the round-13 anchor 1265 plus exactly these two, checked by path; no chain value copied), and A5M2-BATCH16 (the center batch booking after the 15:55 deletion incident and the official rebuild at b57ff559d) adds its TEN scannable files - the G5 goal-service adapter trio (module + d.mts + 20-leg spec, author re-applied its one-hunk conformance delta with mechanical inverse-hash proof), the G6 five-tool session-query trio (module + d.mts + 26-leg spec), the G1 pure-query wiring trio (module + d.mts + 15-leg spec) and the r17 drift-repro spec (the minimal C1 pinning the drifted() expansion branch as THE r17 failing branch, reproduction only) - all UNWIRED components whose production edits ride already-counted paths, dist and dev evidence outside the scan, zero new denylist vocabulary - taking the booked total to 1277 on THIS rebuilt tree - MEASURED by the pre-booking scanner run here, which read `expected 1277 to be 1267` (evidence dev/agent-workflow/evidence/a5m2-incident-batch16/p4t6-RED-unbooked-rebuilt.log), and 1277 is the round-14 anchor 1267 plus exactly these ten, checked by path; , and A5M2-BATCH17 (2026-10-23) adds ONE scannable file - the family-rules gap-pinning spec packages/runtime/test/a5m2-family-rules-c1.test.ts (7 legs pinning the three measured-unexpressible lane gaps B-MCP/B-INSPECT/B-CONTROL at the validator with the wire lanes exact deny strings and byte-identical regression for the three existing rules; ZERO new rules, types.ts untouched) - taking the booked total to 1278 on THIS tree - MEASURED by the pre-booking scanner run, which read expected 1278 to be 1277 (evidence dev/agent-workflow/evidence/a5m2-r17-fix/p4t6-RED-batch17.log), and 1278 is the round-16 anchor 1277 plus exactly this one, checked by path; , and A5M2-BATCH18 (2026-10-23) adds THREE scannable files - the B-SCHEDULE family trio packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs + schedule-adapters.d.mts + packages/runtime/test/a5m2-schedule-adapters.test.ts (census records 30-33 over the REAL published ScheduleService and the four real defineTool products captured via the production ctx.tools.get seam; UNWIRED pure adapter whose registration is PAIRED work per ruling; timer-arm/wake named gaps carried verbatim; 27 legs incl. the real registration minimum-entry RED-first proof) - taking the booked total to 1281 on THIS tree - MEASURED by the pre-booking scanner run, which read expected 1281 to be 1278 (evidence dev/agent-workflow/evidence/a5m2-r17-fix/p4t6-RED-batch18.log), and 1281 is the round-17 anchor 1278 plus exactly these three, checked by pathno chain value copied, and A5M2-G1-WIRE (branch feat/a5m2-wire-g1 off base d25d15c6, root ruling 15:28 工具适配不等待中心接线) adds its ONE scannable file (packages/runtime/test/a5m2-g1-wire-c1.test.ts - the 13-leg assembly C1 suite wiring the PURE-QUERY G1 adapter rows 53 cordis_inspect_list + 54 cordis_inspect_query + 85 team_list_pending_control into the production plane over the REAL ControlService and PA bridge, host defineTool capture products, the fresh final edge consumedProof as the ONLY door to the row body, the eleven other G1 records left declared/INACTIVE with no new files; the edited plane module rides the ALREADY-COUNTED path, the two dist mirrors and the place-dist-glue entry stay OUTSIDE the scan - dist mirrors are outside and scripts/place-dist-glue.mjs is not under packages/**; zero new denylist vocabulary) taking the booked total to 1268 on the WIRE tree - MEASURED by the pre-booking scanner run there (its single failing coverage leg read expected 1268 to be 1267; the FIRST unbooked attempt went RED for the WRONG reason too - a scratch log dir under packages/ entered the exactly-nine-dirs package discovery - closed by keeping every round log OUTSIDE packages/**, a measured scanner behavior worth naming) - and the merge of int 741597cc4 replays this ONE added path ONTO the merged chain: the merged face adds exactly this one path onto the incoming 1281 anchor, taking the total to 1282 - re-MEASURED on the merged tree (entry-dropped RED expected 1282 to be 1281, entry restored GREEN); the merged title literal equals the number; no chain value copied, and A5M2-BATCH26 (2026-10-24, booked by the CENTER integrator on the census-attribution round, root 定点修 order; the merge era after the BATCH25 anchor 13b413014) adds its SIX scannable files - the B-PTC run_code guard wiring packages/runtime/src/plugin/live/governed-families/g3-ptc-wiring.mjs + its spec packages/runtime/test/a5m2-g3-ptc-wiring.test.ts (merged via 861b8465b, root-narrow-signed FINAL timing card 93e4a7a64), the B-SCHEDULE bind-after-def trio packages/runtime/src/plugin/live/governed-families/schedule-bind-after-def.mjs + schedule-bind-after-def.d.mts + its spec packages/runtime/test/a5m2-schedule-bind-after-def.test.ts (merged via the d675 rebased lane f24ff4d60), and the adjacent tsc type surface packages/runtime/src/plugin/live/governed-families/g2-team-mount.d.mts (e78 accurate hand-typed declaration faf92f780, the sibling .d.mts pattern the directory already carries nineteen of; the scanner counts adjacent type surfaces by design per the session-event-scan.d.mts note) - every production edit of these rides ALREADY-COUNTED paths, dist mirrors and dev evidence outside the scan, zero new denylist vocabulary, taking the booked total to 1345 on THIS tree - MEASURED by the pre-booking scanner run here which read expected 1345 to be 1339 (the six unbooked paths enumerated by per-path diff against this file, 1339+6=1345 checked by path); no chain value copied, and A5M2-OVERLAY+COVSUPP (2026-10-24, booked by the CENTER integrator on the overlay strict-b slice-2 face, root fix-card item 1) adds its THREE scannable files - the coverage-safety card’s static-producer pair that this ledger never booked though the producer registers and the scanner counts them (packages/runtime/src/plugin/live/coverage-managed-projection.mjs + its adjacent tsc type surface coverage-managed-projection.d.mts, the plane-effect-backends.d.mts / persona-probe.d.mts pattern), listed as SCANNED_PATHS_COVSUPP, PLUS the overlay strict-b slice-2 narrow regression spec (packages/runtime/test/a5m2-overlay-strict-b.test.ts) listed as SCANNED_PATHS_A5M2OV - every production edit of slice 2 rides ALREADY-COUNTED paths (plane-effect-backends.mjs / team-tool-plane.mjs / agent-bindings.mjs + the coverage/barrier re-prefix), dist mirrors and dev evidence outside the scan, zero new denylist vocabulary, taking the booked total to 1418 on THIS tree - MEASURED by the pre-booking scanner run here which read expected 1418 to be 1415 (the three unbooked paths enumerated by per-path diff against this file, 1415+3=1418 checked by path; the two coverage paths the root fix-card item 1 named PLUS this overlay test which the current scanner also counts - root: 不裸1417盖差异, so the overlay test is listed by its real path too, not covered by a bare number); no chain value copied)', () => {
     expect(scanResult.packageDirs).toEqual([
       'client',
       'contracts',
@@ -2810,6 +3243,105 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
       'packages/runtime/test/a5ptc-escalation-row.test.ts',
     ]
+
+    // A5M2 census run 40083884439 (candidate 17c55b01e) SCAN-LEDGER BOOKING, booked by
+    const SCANNED_PATHS_A5M2FAM: readonly string[] = [
+    // the CENTER per the root ruling "登记计数仅据真实合法源差": SIXTY-FIVE
+    // scanned files reached the tree through root-signed lane batches merged on this
+    // candidate; booked family-by-family below (attribution = the merge that carried
+    // them), none invented, none swallowed into the 983 base.
+
+    // B-EDIT / B-SRE / B-WRITE family rows and their C1 suites (root-signed family lane batches; post-consume rows are the controlled-fs write/edit/sre companions):
+      'packages/runtime/controlled-fs/src/post-consume-create.ts',
+      'packages/runtime/controlled-fs/src/post-consume-edit.ts',
+      'packages/runtime/controlled-fs/src/post-consume-sre.ts',
+      'packages/runtime/src/plugin/live/governed-families/edit.mjs',
+      'packages/runtime/src/plugin/live/governed-families/sre.mjs',
+      'packages/runtime/test/a5m2-edit-c1.test.ts',
+      'packages/runtime/test/a5m2-edit-vertical-c1.test.ts',
+      'packages/runtime/test/a5m2-write-newfile-c1.test.ts',
+      'packages/runtime/test/a5m2-sre-arm-c1.test.ts',
+      'packages/runtime/test/a5m2-sre-c1.test.ts',
+      'packages/runtime/test/a5m2-sre-vertical-c1.test.ts',
+    // G1 surface family (present/human/skill rows, the present arm) and its suites (root-signed G1 lane batch):
+      'packages/runtime/src/plugin/live/governed-families/g1-present-arm.mjs',
+      'packages/runtime/src/plugin/live/governed-families/human.mjs',
+      'packages/runtime/src/plugin/live/governed-families/present.mjs',
+      'packages/runtime/src/plugin/live/governed-families/skill.mjs',
+      'packages/runtime/test/a5m2-g1-dependency-pa.test.ts',
+      'packages/runtime/test/a5m2-g1-human-c1.test.ts',
+      'packages/runtime/test/a5m2-g1-plugin-c1.test.ts',
+      'packages/runtime/test/a5m2-g1-present-arm.test.ts',
+      'packages/runtime/test/a5m2-g1-present-c1.test.ts',
+      'packages/runtime/test/a5m2-g1-skill-c1.test.ts',
+    // B-SEARCH governed row + B-TEAM pairing (bsearch lane, merged 4ea593fca round):
+      'packages/runtime/src/plugin/live/governed-families/search.mjs',
+      'packages/runtime/test/a5m2-bsearch-team-c1.test.ts',
+    // B-LSP wiring + realm supply + suites (lsp lane, root-signed):
+      'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+      'packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
+      'packages/runtime/test/a5m2-g3-lsp-mount-c1.test.ts',
+      'packages/runtime/test/a5m2-g3-lsp-realm-supply-c1.test.ts',
+      'packages/runtime/test/a5m2-lsp-wiring-c1.test.ts',
+    // B-PWSH arm/wiring + suites (pwsh lane, root-signed):
+      'packages/runtime/src/plugin/live/governed-families/pwsh-arm.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/pwsh-arm.mjs',
+      'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
+      'packages/runtime/test/a5m2-pwsh-arm.test.ts',
+      'packages/runtime/test/a5m2-pwsh-mount.test.ts',
+    // B-JOB adapters/wiring + suites (job lane slice-1/2; slice-2 merged via the CENTER pick 34ce05f44 of e97d38f8c):
+      'packages/runtime/src/plugin/live/governed-families/job-adapters.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/job-adapters.mjs',
+      'packages/runtime/src/plugin/live/governed-families/job-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/job-wiring.mjs',
+      'packages/runtime/test/a5m2-job-plane-mount.test.ts',
+      'packages/runtime/test/a5m2-job-wiring.test.ts',
+    // B-ORCH workflow wiring + suites (orch lane; workflow-wiring merged via e78 bridge batch):
+      'packages/runtime/src/plugin/live/governed-families/workflow-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
+      'packages/runtime/test/a5m2-workflow-wiring.test.ts',
+      'packages/runtime/test/a5m2-b-orch-plane-mount.test.ts',
+    // team-governed-provider + upstream-team + child-identity bridge + MCP pairing (root-signed family batches):
+      'packages/runtime/src/plugin/live/governed-families/team-governed-provider.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+      'packages/runtime/src/plugin/live/governed-families/upstreamteam.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs',
+      'packages/runtime/src/plugin/live/governed-families/child-identity-bridge.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/child-identity-bridge.mjs',
+      'packages/runtime/test/a5m2-team-governed-provider.test.ts',
+      'packages/runtime/test/a5m2-upstreamteam-adapters.test.ts',
+      'packages/runtime/test/a5m2-child-identity-bridge.test.ts',
+      'packages/runtime/test/a5m2-b-mcp-pairing-c1.test.ts',
+    // B-SCHEDULE trigger governance + the CENTER shared trigger carrier + fork trigger suite (carrier = center contract batch 2026-10-24, inert fail-closed):
+      'packages/runtime/src/plugin/live/governed-families/schedule-carrier.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/schedule-carrier.mjs',
+      'packages/runtime/src/plugin/live/governed-families/schedule-trigger-governance.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/schedule-trigger-governance.mjs',
+      'packages/runtime/test/a5m2-schedule-carrier-c1.test.ts',
+      'packages/runtime/test/a5m2-schedule-fork-trigger.test.ts',
+      'packages/runtime/test/a5m2-schedule-trigger-governance.test.ts',
+    // verify-surface family pair (verify lane 68701321 batch):
+      'packages/runtime/test/a5m2-verify-surface-domain-family.test.ts',
+      'packages/runtime/test/a5m2-verify-surface-neg4-preset-selfregister.test.ts',
+    // spawn bind-after-def card (root option-A + final hook-route ruling 2026-10-24):
+    // the SRE hand-off leg file carried 4ab→8deb (its ONLY added path; the scanner
+    // blob 64c4da0712d8e3e44dd022a4ca9b3286b919d992 unchanged) and this candidate's
+    // own targeted regression spec for the bind-after-def hook route.
+      'packages/runtime/test/a5m2-edit-sre-handoff-c1.test.ts',
+      'packages/runtime/test/a5m2-spawn-bind-after-def-c1.test.ts',
+    // CONTROL same-layer duplicate card (root limited ruling 2026-10-24):
+    // the exact-selected atomic hand-over narrow-core spec.
+      'packages/runtime/test/a5m2-g1-control-handover-c1.test.ts',
+    // G1 profile card (root limited ruling 2026-10-24, fresh-member window):
+    // the fresh/cold/conflict narrow-core spec for the boundTemplate reuse.
+      'packages/runtime/test/a5m2-g1-profile-fresh-member-c1.test.ts',
+    // B static producer card (root ruling 2026-10-24): the narrow repro over the
+    // real authority-facts seam (invocation-only inert / fs+default kept / unknown refuses).
+      'packages/runtime/test/a5m2-b-static-producer-narrow.test.ts',
+    ]
     // alpha5-int-r3 (rehearsal branch, replayed onto merged master 1962f879 after #330
     // landed): the integration round's own leg file — the two integration conditions of
     // the mount flip (allowPaths same-shape across glob/search/shell; the internal log
@@ -2880,7 +3412,36 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5READSLICE.length +
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
-        SCANNED_PATHS_A5M1.length,
+        SCANNED_PATHS_A5M1.length +
+        SCANNED_PATHS_A5M2.length +
+        SCANNED_PATHS_A5M2B.length +
+        SCANNED_PATHS_A5M2C.length +
+        SCANNED_PATHS_A5M2D.length +
+        SCANNED_PATHS_A5M2E.length +
+        SCANNED_PATHS_A5M2F.length +
+        SCANNED_PATHS_A5M2G.length +
+        SCANNED_PATHS_A5M2H.length +
+        SCANNED_PATHS_A5M2I.length +
+        SCANNED_PATHS_A5M2J.length +
+        SCANNED_PATHS_A5M2K.length +
+        SCANNED_PATHS_A5M2W.length +
+        SCANNED_PATHS_A5M2B25.length +
+        SCANNED_PATHS_A5M2B26.length +
+        SCANNED_PATHS_A5M2B24.length +
+        SCANNED_PATHS_A5M2IH.length +
+        SCANNED_PATHS_A5M2G2A.length +
+        SCANNED_PATHS_A5M2B16.length +
+        SCANNED_PATHS_A5M2B17.length +
+        SCANNED_PATHS_A5M2B18.length +
+        SCANNED_PATHS_A5M2B19.length +
+        SCANNED_PATHS_A5M2B20.length +
+        SCANNED_PATHS_A5M2B21.length +
+        SCANNED_PATHS_A5M2B22.length +
+        SCANNED_PATHS_A5M2B23.length +
+        SCANNED_PATHS_A5M2G1W.length +
+        SCANNED_PATHS_A5M2FAM.length +
+        SCANNED_PATHS_COVSUPP.length +
+        SCANNED_PATHS_A5M2OV.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2946,7 +3507,36 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5READSLICE.length +
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
-        SCANNED_PATHS_A5M1.length,
+        SCANNED_PATHS_A5M1.length +
+        SCANNED_PATHS_A5M2.length +
+        SCANNED_PATHS_A5M2B.length +
+        SCANNED_PATHS_A5M2C.length +
+        SCANNED_PATHS_A5M2D.length +
+        SCANNED_PATHS_A5M2E.length +
+        SCANNED_PATHS_A5M2F.length +
+        SCANNED_PATHS_A5M2G.length +
+        SCANNED_PATHS_A5M2H.length +
+        SCANNED_PATHS_A5M2I.length +
+        SCANNED_PATHS_A5M2J.length +
+        SCANNED_PATHS_A5M2K.length +
+        SCANNED_PATHS_A5M2W.length +
+        SCANNED_PATHS_A5M2B25.length +
+        SCANNED_PATHS_A5M2B26.length +
+        SCANNED_PATHS_A5M2B24.length +
+        SCANNED_PATHS_A5M2IH.length +
+        SCANNED_PATHS_A5M2G2A.length +
+        SCANNED_PATHS_A5M2B16.length +
+        SCANNED_PATHS_A5M2B17.length +
+        SCANNED_PATHS_A5M2B18.length +
+        SCANNED_PATHS_A5M2B19.length +
+        SCANNED_PATHS_A5M2B20.length +
+        SCANNED_PATHS_A5M2B21.length +
+        SCANNED_PATHS_A5M2B22.length +
+        SCANNED_PATHS_A5M2B23.length +
+        SCANNED_PATHS_A5M2G1W.length +
+        SCANNED_PATHS_A5M2FAM.length +
+        SCANNED_PATHS_COVSUPP.length +
+        SCANNED_PATHS_A5M2OV.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3033,6 +3623,32 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5CANCELEG,
       ...SCANNED_PATHS_A5DOCSREALIGN,
       ...SCANNED_PATHS_A5M1,
+      ...SCANNED_PATHS_A5M2,
+      ...SCANNED_PATHS_A5M2B,
+      ...SCANNED_PATHS_A5M2C,
+      ...SCANNED_PATHS_A5M2D,
+      ...SCANNED_PATHS_A5M2E,
+      ...SCANNED_PATHS_A5M2F,
+      ...SCANNED_PATHS_A5M2G,
+      ...SCANNED_PATHS_A5M2H,
+      ...SCANNED_PATHS_A5M2I,
+      ...SCANNED_PATHS_A5M2J,
+      ...SCANNED_PATHS_A5M2K,
+      ...SCANNED_PATHS_A5M2W,
+      ...SCANNED_PATHS_A5M2IH,
+      ...SCANNED_PATHS_A5M2G2A,
+      ...SCANNED_PATHS_A5M2B16,
+      ...SCANNED_PATHS_A5M2B17,
+      ...SCANNED_PATHS_A5M2B18,
+      ...SCANNED_PATHS_A5M2B19,
+      ...SCANNED_PATHS_A5M2B20,
+      ...SCANNED_PATHS_A5M2B21,
+      ...SCANNED_PATHS_A5M2B22,
+      ...SCANNED_PATHS_A5M2B23,
+      ...SCANNED_PATHS_A5M2G1W,
+      ...SCANNED_PATHS_A5M2FAM,
+      ...SCANNED_PATHS_COVSUPP,
+      ...SCANNED_PATHS_A5M2OV,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }

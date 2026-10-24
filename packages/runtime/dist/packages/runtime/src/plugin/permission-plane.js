@@ -69,7 +69,7 @@
  */
 import { parsePermissionMutationEnvelope, parsePermissionResourceText, parsePermissionStaticLayerFacts, permissionEffectiveAnswer, PermissionMutationError, } from '../../governance/index.js';
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js';
-import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from '../../../domain/blueprint/src/index.js';
+import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS, PERMISSION_INVOCATION_ONLY_TOOL_NAMES } from '../../../domain/blueprint/src/index.js';
 // A4-PR5 (rebase round): the plane consumes the beneficiary-derivation law
 // through the governance BARREL (the sanctioned single route; stated in the
 // a3p3 hygiene leg on the proposal-law module).
@@ -346,6 +346,23 @@ export function createPermissionAuthorityFacts(deps) {
         const rules = [];
         for (const lane of ['allow', 'ask', 'deny']) {
             for (const rule of policy[lane]) {
+                // A5M2-B (root static-producer card): the mutation plane's static
+                // comparison is EXCLUSIVELY fs/exec (classifyPermissionOperationClass
+                // answers only 'fs' | 'exec' | 'unknown'). A REGISTERED
+                // invocation-only rule — authority-constant membership, never a
+                // re-typed list — carries a tool-invoke-only authority (the exact
+                // realm|tool:name arm the kernel projects); it has no fs/exec
+                // dimension, so it rides NO static fs/exec fact: projecting it as a
+                // fake operation class would lie, and leaving it in would make the
+                // write-time grammar refuse the WHOLE layer (87 lost its effective
+                // before/after context, 88 inherited unhealthy call facts). This is
+                // an INPUT-TYPE exclusion of inert rows, not an authorization change:
+                // the lane's policy.default and EVERY fs/exec rule (deny included)
+                // stay byte-for-byte, an UNKNOWN class still refuses closed at the
+                // mutation grammar, and the invocation rows keep their real lives in
+                // the kernel's PA/native projections.
+                if (PERMISSION_INVOCATION_ONLY_TOOL_NAMES.includes(rule.tool))
+                    continue;
                 if (rule.resource.kind === 'any') {
                     rules.push({ operationClass: rule.tool, matcher: { kind: 'any' }, effect: lane });
                     continue;

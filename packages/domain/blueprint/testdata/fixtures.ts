@@ -1312,7 +1312,7 @@ export const NEG_PERMISSION_UNKNOWN_TOOL: NegativeFixture = {
     '    permissions:',
     '      default: ask',
     '      allow:',
-    '        - tool: grep',
+    '        - tool: workflow',
     '          resource:',
     '            kind: exact',
     '            path: "/a.txt"',

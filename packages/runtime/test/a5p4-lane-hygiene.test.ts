@@ -198,8 +198,29 @@ describe('a5p4 lane purity and dormancy', () => {
       }
     }
     walk(PACKAGES_DIR)
+    // A5M2 census run 40083884439 (root ruling, booked by the CENTER): the LSP
+    // ASSEMBLY mounts are NOT confined-process-provider mounts — forcing them
+    // into NAMED_PROVIDER_MOUNTS would book a factory edge they do not carry.
+    // They get their OWN precise booking: each file is pinned to exactly ONE
+    // import line at the lane's PUBLIC BARREL (index.ts:27 re-exports the LSP
+    // assembly face), deep paths into the lane are banned, and the booked
+    // symbol must actually be called. This list is the whole allowance; any
+    // other file touching the lane stays a finding exactly as before.
+    const NAMED_ASSEMBLY_MOUNTS: readonly { file: string; lane: string; edge: string }[] = [
+      {
+        file: 'runtime/src/plugin/live/agent-bindings.mjs',
+        lane: 'a5lsp2 — B-LSP realm-assembly mount (root census ruling: barrel face, never the deep module)',
+        edge: "import { createLspRealmAssembly } from '../../../sandbox-provider/index.js'",
+      },
+      {
+        file: 'runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
+        lane: 'a5lsp2 T12-M2 — persona/framing reuse (encodeLspMessage/createLspFrameDecoder via the barrel)',
+        edge: "import { encodeLspMessage, createLspFrameDecoder } from '../../../../sandbox-provider/index.js'",
+      },
+    ]
     const named = new Map(NAMED_PROVIDER_MOUNTS.map((m) => [m.file, m]))
-    const unnamed = offenders.filter((o) => !named.has(o)).sort()
+    const namedAssembly = new Map(NAMED_ASSEMBLY_MOUNTS.map((m) => [m.file, m]))
+    const unnamed = offenders.filter((o) => !named.has(o) && !namedAssembly.has(o)).sort()
     // THE TEETH, unchanged: a reference with no booked name is a red, exactly as
     // when the list was empty.
     expect(unnamed, `unnamed production consumers of the confined provider lane: ${unnamed.join(', ')}`).toEqual([])
@@ -219,6 +240,21 @@ describe('a5p4 lane purity and dormancy', () => {
       // names the symbol without a paren, so it never counts here.
       const calls = body.split('\n').filter((l) => /createConfinedProcessProvider\s*\(/.test(l) && !/^import\b/.test(l.trim())).length
       expect(calls, `${mount.file}: the booked row must actually mount the factory`).toBeGreaterThanOrEqual(1)
+    }
+    // The ASSEMBLY booking's own teeth (census 40083884439): exactly one
+    // barrel import line mentioning the lane; NO deep path; the booked
+    // assembly symbol is actually called.
+    for (const mount of NAMED_ASSEMBLY_MOUNTS) {
+      const path = resolve(PACKAGES_DIR, mount.file)
+      if (!existsSync(path)) continue // not mounted on THIS tree
+      const body = readFileSync(path, 'utf8')
+      const lines = body.split('\n').map((l) => l.trim())
+      const edges = lines.filter((l) => /sandbox-provider/.test(l) && /^import\b/.test(l))
+      expect(edges, `${mount.file}: an assembly mount carries exactly one pinned BARREL edge (${mount.lane})`).toEqual([mount.edge])
+      const deep = lines.filter((l) => /from\s+'[^']*sandbox-provider\/[^']+/.test(l) && !/sandbox-provider\/index\.js'/.test(l))
+      expect(deep, `${mount.file}: assembly mounts take the PUBLIC BARREL only — deep lane paths are closed (root ruling 40083884439)`).toEqual([])
+      const calls = lines.filter((l) => /createLspRealmAssembly\s*\(|encodeLspMessage\s*\(|createLspFrameDecoder\s*\(/.test(l) && !/^import\b/.test(l)).length
+      expect(calls, `${mount.file}: the booked assembly mount must actually use the face`).toBeGreaterThanOrEqual(1)
     }
     // What the leg SAW, in the open — the identity of the live set is the claim.
     const live = offenders.slice().sort()

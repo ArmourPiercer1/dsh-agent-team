@@ -1,0 +1,17 @@
+=== D1 身份形状：真实 Host 形 exec（agent.id + session.header.id） ===
+PRE-FIX  classify(real Host exec) => ok=false code=P_TODO_CLASSIFY_NO_OWNING_SESSION
+         detail: no exec.agent: the list is per-agent-session state and this caller owns no session
+POST-FIX classify(real Host exec) => ok=true fingerprint=ee916ee33a1b…
+POST-FIX classify(invented "identity" word) => ok=false code=P_TODO_CLASSIFY_NO_OWNING_SESSION (真实形状之外的词一律不可读，无 shim)
+=== D2 同 tick cancel：报告与实际 append 计数的一致性 ===
+PRE-FIX  same-tick cancel => settled=ALREADY-COMMITTED | appendCount@report=0
+         appendOutcome: the todo/write append rode the session log; cancellation cannot retract it
+PRE-FIX  after settle     => appendCount=1  ← 错报坐实（先称已提交、随后才 append）
+POST-FIX same-tick cancel => settled=CANCELLED-BEFORE-EXECUTION | appendCount@report=0
+POST-FIX execution result => code=P_TODO_CANCELLED | appendCount@settle=0  ← 报告与计数一致（体从未进入）
+=== D3 批准期后替换：exec.agent 与 nativeDefinition.execute ===
+PRE-FIX  exec.agent replaced post-approval => originalSession appends=0, FOREIGN appends=1  ← 落入 foreign session 坐实
+PRE-FIX  nativeDefinition.execute replaced post-approval => replacementRan=true, original appends=0  ← 落入 replacement body 坐实（延后按属性读）
+POST-FIX exec.agent replaced post-approval => originalSession appends=1, FOREIGN appends=0, ok=true  ← 快照定向：写入只落在分类时配对成功的会话
+POST-FIX nativeDefinition.execute replaced post-approval => replacementRan=false, code=P_TODO_DEFINITION_DRIFT, appends=0  ← 末端重核（捕获函数值 + definitionIdentity）typed 拒
+=== repro done ===

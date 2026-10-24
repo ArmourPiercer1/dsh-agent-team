@@ -1,0 +1,6 @@
+[g6-kit 23:48:58] pre-checks PASS (web 3186, mock 3187); production row = installed 874 pack
+[g6-kit 23:48:58] pre-launch budget: task-new 49152B / world-cap 209715200B (recovery account separate: 68464640B / 209715200B)
+[g6-kit 23:48:58] mock: mock: listening on 127.0.0.1:3187
+[g6-kit 23:49:00] host up at http://127.0.0.1:3186 (token scrubbed); cookie exchanged
+[g6-kit 23:49:00] FATAL: team.create failed: {"code":"internal-error","message":"remote method 'team.create' is unavailable while the team runtime is not ready (state: failed) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable","details":{"method":"team.create","endpoint":"team.create","contractVersion":1,"requestToken":null,"reason":"runtime-not-ready"}}
+[g6-kit 23:49:00] host stopped (killed=true portFree=true started=true)

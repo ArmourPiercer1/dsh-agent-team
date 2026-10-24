@@ -1,0 +1,22 @@
+ M dev/agent-workflow/evidence/alpha5/a5ie-r2b/a5ie-r2b-kit.mjs
+ M dev/agent-workflow/graph.yaml
+ M docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+ M docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-PLANB-ASSEMBLY.md
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/a5ie-r2b-kit.before-86364b07.mjs
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/a5ie-r2b-kit.before-9719e5d9.mjs
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-06-10Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-10-24Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-20-49Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-26-38Z/
+?? dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-23T06-31-02Z/
+?? dev/agent-workflow/evidence/alpha5/m2-mount-audit/
+?? dev/agent-workflow/evidence/alpha5/m2-readimg/
+?? dev/agent-workflow/evidence/alpha5/m2-todo/
+?? dev/agent-workflow/evidence/alpha5/m2-web/
+?? dev/agent-workflow/evidence/alpha5/m2-write/
+?? pack/
+?? packages/runtime/test/a5-m2-todo-write-c1.test.ts
+?? packages/runtime/test/a5m2-readimg-c1.test.ts
+?? packages/runtime/test/a5m2w-web-c1.test.ts
+?? packages/tools/a5p5-tools/src/write-slice.ts
+?? packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts

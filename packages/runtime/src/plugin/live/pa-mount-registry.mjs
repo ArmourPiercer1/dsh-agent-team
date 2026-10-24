@@ -28,6 +28,53 @@
 
 const mounts = new Map() // teamRoot -> Map(instanceId -> entry)
 
+// ── A5-M2 (root ruling, fix-2 round): THE governed-family registration table ──
+// The trusted family fact must reach BOTH consumption points through ONE
+// write: the actual call-level facts (the plane awaits these on every PA
+// path) AND the durable Control verifier (root.ts injects the same read into
+// the ONE verifier). Both points resolve the live binding inside
+// `readCallAuthorityFacts` below — so THAT is the single fill site, and the
+// table lives here, next to the fill, not in one caller's closure. A fill
+// kept private to one caller (the previous bindings-local wrapper) left the
+// durable verifier permanently reading "no registration" — every governed row
+// would answer DRIFT the moment its family was checked against current facts.
+// MOUNT-TIME law (unchanged): the table starts EMPTY — an unmounted world
+// keeps its exact bytes, writes nothing, and neither reader answers — and an
+// entry is written by the setup keyed by the RUNTIME definition identity the
+// seam's install pass minted for the placed row (read back through the
+// plane's `placementFeed` AFTER publish). One identity, one family: a second
+// DIFFERENT claim on the same identity is a config defect and fails the
+// setup, never a replacement. The leg's `governedFamilies` gate reads THIS
+// same object — one table, three readers, zero second sources.
+export const A5_GOVERNED_FAMILIES = Object.create(null)
+
+/** Write ONE mount-time family registration (idempotent for an identical
+ *  claim; a conflicting claim throws — see the table law above). */
+export function registerA5GovernedFamily(definitionIdentity, entry) {
+  if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) {
+    throw new TypeError('A5 governed-family registration: the runtime definition identity must be a non-empty string (keying on anything else is a second identity system)')
+  }
+  if (entry === null || typeof entry !== 'object'
+    || typeof entry.familyId !== 'string' || entry.familyId.length === 0
+    || !Number.isInteger(entry.adapterRevision) || entry.adapterRevision < 0
+    || typeof entry.providerIdentity !== 'string' || entry.providerIdentity.length === 0) {
+    throw new TypeError('A5 governed-family registration: {familyId, adapterRevision, providerIdentity} is the frozen registration shape (the leg compares exactly these three fields)')
+  }
+  const existing = A5_GOVERNED_FAMILIES[definitionIdentity]
+  if (existing !== undefined) {
+    if (existing.familyId === entry.familyId && existing.adapterRevision === entry.adapterRevision && existing.providerIdentity === entry.providerIdentity) return
+    throw new Error(`A5 governed-family registration: definition identity '${definitionIdentity}' is already governed as family '${existing.familyId}'; a second different claim ('${entry.familyId}') on one identity is a config defect, never a re-mount to paper over`)
+  }
+  A5_GOVERNED_FAMILIES[definitionIdentity] = Object.freeze({ ...entry })
+}
+
+/** The single read accessor of the table (a fill is an answer, never a
+ *  guess: an identity that was never registered answers undefined). */
+export function a5GovernedFamilyFor(definitionIdentity) {
+  if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) return undefined
+  return A5_GOVERNED_FAMILIES[definitionIdentity]
+}
+
 /** Publish the CURRENT mount for (teamRoot, instanceId). Called by
  *  agentSetup AFTER bindOwnTools + publish succeeded. Returns the MOUNT
  *  IDENTITY — the opaque handle the matching revoke must present; a key
@@ -299,12 +346,20 @@ async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamil
     return undefined
   }
   if (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0) return undefined
+  // A5-M2 (root fix-2 round): THE trusted registration fact rides the ONE read.
+  // Keyed by the live binding entry's OWN definitionIdentity — the same identity
+  // the leg gate and the registration write both speak — so the actual call-level
+  // facts and the durable verifier can never disagree about which family (if any)
+  // governs this binding. Unregistered ⇒ no field (the verifier's own law reads
+  // an absent registration as absent, never as a stale statement).
+  const governedFamily = a5GovernedFamilyFor(entryBinding.definitionIdentity)
   // 9e (AUTH ruling 3): NO bindingSnapshotDrift output — the named contract
   // is exactly the 12 fields; the verifier performs the 11-field full-tuple
   // + assurance comparison itself. A pre-computed flag here would invite
   // trusting the flag over the real comparison.
   return {
     facts: {
+      ...(governedFamily === undefined ? {} : { governedFamily }),
       policySource: {
         staticLayerRefs: Object.freeze([
           `blueprint:${String(tuple.blueprintId)}@${String(tuple.revision)}#${String(tuple.contentHash)}`,
@@ -473,5 +528,14 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
     requireApprovalPlan: true,
   })
   if (read === undefined || read.planSnapshot === undefined) return undefined
-  return { ...read.facts, planSnapshot: read.planSnapshot, authorityGeneration: read.authorityGeneration }
+  // A5-M2 r17 FIX (center): the mount's lexical containment seam rides the
+  // RUNTIME facts object ONLY (never the durable contract): the decision-side
+  // verifier hands it to the pure core exactly as the production Part A and
+  // final edges do, so a subtree rule reads the SAME answer on both sides.
+  return {
+    ...read.facts,
+    planSnapshot: read.planSnapshot,
+    authorityGeneration: read.authorityGeneration,
+    ...(typeof m.fsSeam?.subtreeContains === 'function' ? { subtreeContains: m.fsSeam.subtreeContains } : {}),
+  }
 }

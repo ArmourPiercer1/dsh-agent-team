@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (17 tests | 2 failed) 520ms
+     × C2 positive (approved path): classify emits the frozen I+F effect set, the ticket consumes to a controlled read + a durable store commit, the receipt identity is fingerprint-verified, and the same-scope reference re-reads byte-exact 140ms
+     ✓ row-7 contrast (pre-fix repro vs post-fix typed refusal, verbatim): the untouched host native face reads an out-of-root absolute target successfully (no root fence); the SAME target on the governed arm refuses P_IMAGE_CLASSIFY_TARGET_OUTSIDE_GOVERNED_ROOT with ZERO readPort calls 233ms
+     ✓ escape via traversal is refused at the pure classify stage with zero fs calls (the containment decision is the governor's own act, never delegated to the mounted backend) 5ms
+     ✓ symlink alias (inside spelling, outside bytes): refused at effect-time re-anchoring BEFORE any content read — zero readFile calls, zero attachment writes 6ms
+     ✓ byte cap lands AT READ TIME: the stat size above min(maxImageBytes, maxMessageImageBytes) refuses before the content read — zero readFile calls, the store never sees the file 6ms
+     ✓ the STORE owns the pixel laws: a dimension-capped deployment refuses through the commit, the durable store keeps zero objects, and the unknowable commit boundary keeps sideEffectPossible (never downgraded) 19ms
+     ✓ Ask-pending writes nothing: classify (+ even a prepared ticket) leaves zero reads, zero store calls, zero objects 5ms
+     ✓ no ticket, no effect: execute without a prepare-issued ticket refuses (rejection/denial face) and a consumed ticket single-claims with ALREADY_CONSUMED on re-fire 19ms
+     ✓ C3 before admission: cancel settles CANCELLED-BEFORE-ADMISSION, zero file reads + zero attachment writes 5ms
+     ✓ C3 after admission (ticket issued, never consumed): zero append-equivalents — no read started, no store call, no object 5ms
+     ✓ C3 mid-read abort: the live read dies before the commit; the report names the mid-read window, cleanup needs nothing (this call committed zero), and only this call had uncommitted work 11ms
+     ✓ C3 cancel after commit: the honest report names ALREADY-COMMITTED with the attachmentId, and the durable object stays — cancellation never deletes existing attachments (the arm owns no delete face) 19ms
+     × attachment namespace binding: a foreign session incarnation cannot reference the minted attachment (typed refusal, ZERO additional store calls); the minting scope can; an unknown id is UNKNOWN 21ms
+     ✓ the closed argument root: unknown top-level keys refuse P_IMAGE_CLASSIFY_UNKNOWN_PARAMETER with zero effects (the P layer tightens what the host schema layer leaves open — the native ignore-extra-keys face stays measured in a5m2-readimg-c1); no-extension and foreign-extension targets refuse UNDECLARED_MEDIA_TYPE at the pure stage 6ms
+     ✓ DRAINING closes every stage typed and the handle exposes NO native body / fallback face (BASE.C3 by construction) 5ms
+     ✓ conditional unavailability is fail-closed at assembly: no store port ⇒ the arm factory throws (no half-wired arm, no exemption); no read port ⇒ the same 1ms
+     ✓ a store that dies mid-life answers every consumed call with typed P_IMAGE_STORE_UNAVAILABLE (conditional unavailability, not exemption, never a native fallback) and keeps sideEffectPossible standing 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > C2 positive (approved path): classify emits the frozen I+F effect set, the ticket consumes to a controlled read + a durable store commit, the receipt identity is fingerprint-verified, and the same-scope reference re-reads byte-exact
+TypeError: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Object
+ ❯ sha256Hex packages/runtime/src/plugin/live/governed-families/image-attachment.mjs:41:51
+     39| })
+     40|
+     41| const sha256Hex = (bytes) => createHash('sha256').update(bytes).digest…
+       |                                                   ^
+     42|
+     43| /**
+ ❯ Object.referenceImage packages/runtime/src/plugin/live/governed-families/image-attachment.mjs:114:25
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:281:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > attachment namespace binding: a foreign session incarnation cannot reference the minted attachment (typed refusal, ZERO additional store calls); the minting scope can; an unknown id is UNKNOWN
+TypeError: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Object
+ ❯ sha256Hex packages/runtime/src/plugin/live/governed-families/image-attachment.mjs:41:51
+     39| })
+     40|
+     41| const sha256Hex = (bytes) => createHash('sha256').update(bytes).digest…
+       |                                                   ^
+     42|
+     43| /**
+ ❯ Object.referenceImage packages/runtime/src/plugin/live/governed-families/image-attachment.mjs:114:25
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:510:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 passed (17)
+   Start at  07:28:17
+   Duration  1.19s (transform 611ms, setup 0ms, import 534ms, tests 520ms, environment 0ms)
+

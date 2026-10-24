@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-1 SYNTHETIC-HISTORICAL (root 16:56: NOT a replay of the real r17 - the read_image-exact deny is NOT in the real policy and its covering deny raises a human-admin floor the real row NEVER had; kept as the 337 historical material): seam-on stops the expansion branch on this synthetic shape
+RR1-FIXED kind=refused code=APPROVAL_DENIED drift=[{"stage":"pa-verifier","gate":"resolve","outcome":"drift","detail":"the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))","requestId":"ctrl-1rpm98b0d9pf0e1s3wv450as"}]
+RR1 RESIDUAL (separate gate, recorded): the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-3 SYNTHETIC positive control (NOT the r17 shape - a deny rule the seam decides NON-covering): the fixed transport authorizes end to end
+RR3 kind=authorized code= drift=0
+
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts (5 tests | 2 failed) 40186ms
+     ✓ RR-1 SYNTHETIC-HISTORICAL (root 16:56: NOT a replay of the real r17 - the read_image-exact deny is NOT in the real policy and its covering deny raises a human-admin floor the real row NEVER had; kept as the 337 historical material): seam-on stops the expansion branch on this synthetic shape 51ms
+     ✓ RR-2 absence law: a mount whose decision side receives NO seam keeps the exact r17 drifted bytes (unchanged fail-closed) 47ms
+     ✓ RR-3 SYNTHETIC positive control (NOT the r17 shape - a deny rule the seam decides NON-covering): the fixed transport authorizes end to end 60ms
+     × RR-4 TRUE-r17 REPLAY seam-on: input identity checked first, then the same public allow resolves with the seam threaded (the real root cause closes on the real shape) 20014ms
+     × RR-5 TRUE-r17 REPLAY seam-off: the real policy snapshot without the decision-side seam reproduces the exact r17 deny bytes (absence law on the REAL shape) 20010ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-4 TRUE-r17 REPLAY seam-on: input identity checked first, then the same public allow resolves with the seam threaded (the real root cause closes on the real shape)
+Error: the durable control row for plane-image:a5m2-r17-drift-rr-4-1 never appeared
+ ❯ waitRowForCall test/a5m2-r17-drift-repro-c1.test.ts:247:38
+    245|     const found = (await stateNow()).requests.find((r) => String((r.re…
+    246|     if (found !== undefined) return found
+    247|     if (Date.now() > deadline) throw new Error(`the durable control ro…
+       |                                      ^
+    248|     await sleep(25)
+    249|   }
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts:678:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-5 TRUE-r17 REPLAY seam-off: the real policy snapshot without the decision-side seam reproduces the exact r17 deny bytes (absence law on the REAL shape)
+Error: the durable control row for plane-image:a5m2-r17-drift-rr-5-1 never appeared
+ ❯ waitRowForCall test/a5m2-r17-drift-repro-c1.test.ts:247:38
+    245|     const found = (await stateNow()).requests.find((r) => String((r.re…
+    246|     if (found !== undefined) return found
+    247|     if (Date.now() > deadline) throw new Error(`the durable control ro…
+       |                                      ^
+    248|     await sleep(25)
+    249|   }
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts:710:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  16:58:51
+   Duration  42.39s (transform 1.58s, setup 0ms, import 2.04s, tests 40.19s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -14,6 +14,16 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      // EXACT generated-package output of the SCHEDULE fork ONLY (root
+      // census-40083884439 ruling: precise directory — future forks are
+      // NOT pre-exempted). Honest attribution (root: 未核不称已核): these
+      // files are build output of the fork's own tsc build and are never
+      // hand-edited; check-artifacts-committed's INSTALL_SURFACES covers
+      // runtime/dist and client/composition-shim ONLY — the fork lib is
+      // NOT byte-checked by that tool; its verification rides the fork's
+      // build and the later package/Host round. Same artifact CLASS as
+      // dist (机器生成、不手改), no broader claim, no baseline relaxation.
+      'forks/dsh-schedule/lib/**',
       '**/composition-shim/**',
       '**/node_modules/**',
       '.worktrees/**',
@@ -99,6 +109,23 @@ export default tseslint.config(
       '.agents/**',
       '.dsh-vision-toolkit/**',
       '.private-raw-evidence/**',
+      // A5-M2 temporary package-extraction faces (`/pack/pack-*/`, `.gitignore`):
+      // diagnostic re-derivations of the versioned `.tgz`, never tracked, never a
+      // release artifact. ESLint does not read `.gitignore` — the same sentence this
+      // file keeps re-earning — so an unpacked face left in the working tree enters
+      // the lint universe and reddens the identity diff against a baseline nobody
+      // edited. Measured at `929fc4af2` with four faces unpacked:
+      // `scripts/lint-identities.mjs --diff` reported `universe: 1399 file(s) linted,
+      // 76 of them gitignored`, naming `pack/pack-3c9bfed65/package/packages/runtime/
+      // root-binding/**` (+68 more), and `ci-pr-gate`'s lint leg reported `29 NEW lint
+      // identities` whose names are those files; nothing in the tree was changed to
+      // cause it. No tracked path is collateral: `git ls-files | grep -c '^pack/'` = 0
+      // and `grep -c '^pack/pack-'` = 0, so this pattern can only remove untracked
+      // diagnostic mirrors. Product coverage is untouched: no `packages/**`, no
+      // `packages/*/dist/**` (tracked on purpose, plan rule 8) and no formal test
+      // lives under these prefixes. The files stay on disk — the faces and their
+      // evidence are kept, not deleted or moved; only the scan stops walking them.
+      'pack/pack-*/**',
       'dev/**',
       'docs/**',
       'tests/**',
@@ -111,7 +138,7 @@ export default tseslint.config(
     // Node scripts (composition smoke, future verify-* scripts) run under
     // node, so node globals are defined there only. TypeScript package code
     // stays global-free: the client half must remain browser-safe.
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'forks/**/scripts/**/*.mjs'],
     languageOptions: { globals: { ...globals.node } },
   },
   {

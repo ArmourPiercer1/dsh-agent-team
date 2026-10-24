@@ -1526,3 +1526,169 @@ describe('A5-M2 port→adapter — cleanup ownership is STATED, never guessed', 
     expect(closed, 'and the exec cleaned is the one that owned the state').toEqual(['a5m2-owned'])
   })
 })
+
+// ---------------------------------------------------------------------------
+// A5-M2 (root 2026-10-24): VOCABULARY + ENTRY REACHABILITY at the REAL
+// adapter. str_replace_editor is a registered INVOCATION-ONLY permission
+// tool, but this adapter has no canonical operation for it — classify
+// answers 'unsupported'. The hand-off ports must still get their shot
+// BEFORE the pass-through, or the PA-owned row would silently reach the
+// legacy lane. These legs run the real waterfall (install → trigger); no
+// direct port call substitutes for them.
+// ---------------------------------------------------------------------------
+
+describe('A5-M2 SRE entry reachability — the unsupported pass-through walks the hand-off ports FIRST', () => {
+  const installSrePort = (
+    worldName: string,
+    port: { open: (exec: unknown) => Promise<unknown>; close: (exec: unknown) => void; onTerminal: () => () => void },
+    extra: Record<string, unknown> = {},
+  ) => {
+    // createP6T4World is a CREATE — run-unique names, own world per leg.
+    const holder: { service?: ReturnType<typeof createControlService> } = {}
+    return (async () => {
+      const world = await createP6T4World(worldName, ['leader', 'worker'])
+      const service = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        waitPollIntervalMs: 10,
+      })
+      holder.service = service
+      const resolver = makeFakeResolver()
+      const ctx = makeFakeAgentCtx()
+      const observations: Record<string, unknown>[] = []
+      const disposer = installParameterPermissionListener(ctx, {
+        policy: W1_POLICY,
+        resolveTarget: resolver.resolver,
+        controlService: service,
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER_ID),
+        targetInstanceId: WORKER_ID,
+        isLeader: false,
+        paSreHandoff: port as never,
+        ...extra,
+      } as never)
+      return { world, service, resolver, ctx, observations, disposer }
+    })()
+  }
+
+  it('authorized hand-off on the UNSUPPORTED name rides next() — zero resolver, zero parameter row, witness recorded', async () => {
+    const openedExecs: string[] = []
+    const env = await installSrePort(`a5m2-sre-entry-auth-${Date.now().toString(36)}`, {
+      open: async (exec) => {
+        openedExecs.push(String((exec as { name?: string }).name))
+        return { kind: 'authorized', correlation: 'plane-sre:entry-1' }
+      },
+      close: () => {},
+      onTerminal: () => () => {},
+    })
+    const ctxWithObs = env.ctx
+    void ctxWithObs
+    const next = makeNext()
+    const decision = await env.ctx.trigger(
+      makeExec({ name: 'str_replace_editor', arguments: { command: 'str_replace' }, callId: 'a5m2-sre-auth' }),
+      next.fn,
+    )
+    expect(openedExecs, 'the PORT saw the unsupported-name exec — the pass-through no longer skips the walk').toEqual(['str_replace_editor'])
+    expect(decision.kind, 'PA answered; the decision is the chain default through next()').toBe('allow')
+    expect(next.calls(), 'ONE next, no parameter-permission row').toBe(1)
+    expect(env.resolver.calls.length, 'the parameter resolver was NEVER called').toBe(0)
+    env.disposer()
+  })
+
+  it('cancelled hand-off on the unsupported name DENIES in place — zero next, zero resolver', async () => {
+    const env = await installSrePort(`a5m2-sre-entry-cancel-${Date.now().toString(36)}`, {
+      open: async () => ({ kind: 'cancelled' }),
+      close: () => {},
+      onTerminal: () => () => {},
+    })
+    const next = makeNext()
+    const decision = await env.ctx.trigger(
+      makeExec({ name: 'str_replace_editor', arguments: {}, callId: 'a5m2-sre-cancel' }),
+      next.fn,
+    )
+    expect(decision.kind).toBe('deny')
+    expect(next.calls()).toBe(0)
+    expect(env.resolver.calls.length).toBe(0)
+    env.disposer()
+  })
+
+  it('an owned refusal on the unsupported name denies AND cleans exactly once', async () => {
+    const closed: string[] = []
+    const env = await installSrePort(`a5m2-sre-entry-refuse-${Date.now().toString(36)}`, {
+      open: async () => ({ kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_MISMATCH', detail: 'entry owns the state' }),
+      close: (exec) => { closed.push(String((exec as { callId?: string }).callId ?? 'unknown')) },
+      onTerminal: () => () => {},
+    })
+    const next = makeNext()
+    const decision = await env.ctx.trigger(
+      makeExec({ name: 'str_replace_editor', arguments: {}, callId: 'a5m2-sre-refuse' }),
+      next.fn,
+    )
+    expect(decision.kind).toBe('deny')
+    expect(closed).toEqual(['a5m2-sre-refuse'])
+    expect(next.calls()).toBe(0)
+    env.disposer()
+  })
+
+  it('a name NO supplied port owns keeps the pass-through byte-identical (read port only, SRE exec passes through)', async () => {
+    const world = await createP6T4World(`a5m2-sre-entry-nomatch-${Date.now().toString(36)}`, ['leader', 'worker'])
+    const service = createControlService({
+      teamDomain: world.domain,
+      blueprintCatalog: world.catalog,
+      externalPolicyFacts: world.ports.externalPolicyFacts,
+      now: () => P6T4_NOW,
+      waitPollIntervalMs: 10,
+    })
+    const resolver = makeFakeResolver()
+    const ctx = makeFakeAgentCtx()
+    let readOpenCalls = 0
+    const disposer = installParameterPermissionListener(ctx, {
+      policy: W1_POLICY,
+      resolveTarget: resolver.resolver,
+      controlService: service,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      targetInstanceId: WORKER_ID,
+      isLeader: false,
+      paReadHandoff: {
+        open: async () => { readOpenCalls += 1; return { kind: 'no-match' } },
+        close: () => {},
+        onTerminal: () => () => {},
+      },
+    })
+    const next = makeNext()
+    const decision = await ctx.trigger(
+      makeExec({ name: 'str_replace_editor', arguments: {}, callId: 'a5m2-sre-nomatch' }),
+      next.fn,
+    )
+    expect(readOpenCalls, 'the supplied port still gets asked (and answers no-match)').toBe(1)
+    expect(decision.kind, 'the pass-through is the OLD path: the chain default').toBe('allow')
+    expect(next.calls()).toBe(1)
+    expect(resolver.calls.length, 'unsupported + no claim ⇒ resolver never entered').toBe(0)
+    disposer()
+  })
+
+  it('a half-wired paEditHandoff / paSreHandoff refuses the INSTALL (residual: the two ports join the ⑤ shape check)', () => {
+    const base = {
+      policy: W1_POLICY,
+      resolveTarget: makeFakeResolver().resolver,
+      controlService: undefined as never,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      targetInstanceId: WORKER_ID,
+      isLeader: false,
+    }
+    // The ⑤ check runs BEFORE any registration, so a dead service never
+    // matters: the throw is the wiring refusal itself.
+    expect(() => installParameterPermissionListener(makeFakeAgentCtx() as never, {
+      ...base,
+      paEditHandoff: { open: async () => ({ kind: 'no-match' }), onTerminal: () => () => {} },
+    } as never)).toThrow(/pa-read-handoff-malformed.*paEditHandoff/)
+    expect(() => installParameterPermissionListener(makeFakeAgentCtx() as never, {
+      ...base,
+      paSreHandoff: { close: () => {}, onTerminal: () => () => {} },
+    } as never)).toThrow(/pa-read-handoff-malformed.*paSreHandoff/)
+  })
+})

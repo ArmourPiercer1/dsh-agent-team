@@ -1,0 +1,156 @@
+# install_bundle — REAL public-chain source proof + minimal verification plan
+A5M2-G1-WIRE lane · record 52 plugin_manager · B-PLUGIN · prepared for the CENTER consolidated card
+(root ruling 2026-10-25: 历史 G1 pure-only FORBIDDEN_ARMS 不代表全工具永久禁止，暂不盲删安全校验；
+只治理 Agent 安装行为；不新增约束任意初始化代码；不削 M0 IO/审批。本文 = 源证, 零施工, 零新 mock.)
+
+Baseline facts: host pin `tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84`
+(0.2.0-rc.2, read-only, porcelain clean at read). Lane tip d0810c0877b157eac65f45bb4e5538fc1474d26e.
+No Host, no install, no new dependency this round.
+
+## 1. The REAL public chain (every hop is a public surface — CORE PATCH BUDGET 0 compatible)
+
+1. **Tool face** — `packages/boot/plugin-manager/src/tools.ts:20-41`: register via `ctx.tools.register(defineTool(...))`;
+   closed 8-action enum `:41`; the row's install parameters (`target`, `enabled?`, `approvedBuilds?`, `registry?`) `:42-50`.
+2. **Host gate FIRST** — `tools.ts:38-44`: `policy = ctx.sandboxPolicy.resolve(exec.agent === undefined ? {} : { session })`
+   then `await approveEscalation({requestedMode:'danger-full-access', effectiveMode: policy.mode, subject:'plugin management operation',
+   justification: 'plugin_manager <json args>. …'}, { approver: ctx.get('approval'), agent: exec.agent, callId: exec.callId,
+   toolName: 'plugin_manager', signal: exec.signal })` then `exec.signal.throwIfAborted()`. Every non-grant throws BEFORE the manager.
+3. **The adjudicator is a PUBLIC function export** — `packages/sandbox/sandbox/src/index.ts:15` re-exports
+   `approveEscalation` (body `src/escalation.ts:171-206`): same-mode returns without approval (`:173`);
+   non-strictly-wider target throws (`:177-179`); missing approver (`:180-182`) / missing agent (`:183-185`) throw;
+   `approver.request({agent, toolName, callId, reason, displayReason{en,zh}, signal?})` `:188-199`; outcome law
+   `allowed-once → mode`, `rejected/cancelled/unavailable → THROW` `:200-206`. Package name
+   `@deepseek-ai/dsh-sandbox` (`packages/sandbox/sandbox/package.json:2`) = same published generation the lane
+   already depends on (0.2.0-rc.2 set, `packages/runtime/package.json:19-28`).
+4. **The manager is a PUBLIC global-store SERVICE** — token `pluginManager`: interface augmentation
+   `packages/boot/plugin-manager/src/index.ts:171` (`pluginManager: PluginManager`), service registration
+   `:206` (`super(ctx, 'pluginManager')`); the tool reads `ctx.pluginManager` (`tools.ts:45`); the header
+   (`tools.ts:1`) states Web controls use the SAME service — one ledger, one manager.
+5. **Install lifecycle contract — all `@Remote`** (same file): `installBundle(spec, options?)` `:461-462` with
+   **CALLER-supplied** `options.requestId` (`InstallBundleOptions.requestId`, `types.ts:144`; registration into
+   the owner's `installs` map `:463-466`; phase announcements emit `plugin-manager/install-state` `:467-469`
+   — settle is OBSERVED BY A LISTENER, never fabricated); invalid spec throws `ManagementFailure('invalid-spec')` `:470`;
+   abort discipline `stopped()` `:464/:471`. `waitForInstall(requestId)` `:574-577` — settled installs are deleted,
+   "null establishes neither success nor cancellation". `cancelInstall(requestId)` `:584-585` — AWAITED, returns
+   `PluginInstallCancellation` = `cancelled | too-late | not-running` (types `:208-210`).
+6. **The approver channel is a PUBLIC service** — token `approval`: surface declared by
+   `packages/interaction/user-approval/src/index.ts:26` (`approval: ApprovalService`); `request(...)` answers the
+   closed `ApprovalOutcome` enum the adjudicator switches over. The governed row NEVER holds the approver itself —
+   it rides the same `ctx.get('approval')` the tool face uses.
+
+## 2. Consumer chain (who already touches this service — the row must not fork it)
+- The agent tool (tools.ts, this lane's record 52 native) and the Web controls share ONE PluginManager instance
+  (`tools.ts:1` header + one service registration `index.ts:206`). There is no second install entry to police:
+  governing the AGENT install path (tool row) leaves Web controls on their own existing approval UI untouched —
+  exactly the user ruling "只治理 Agent 安装行为".
+
+## 3. Seam list (what the future card needs; every item public, none built here)
+| seam | public source | lane precedent (our tree) |
+| --- | --- | --- |
+| `deps.pluginManager = () => ctx.get('pluginManager')` | global-store token, `index.ts:171/:206` | `host.ts:3048-3052` (`terminals`/`subprocess` lazy call-time reads, honest-absence try/catch) |
+| `deps.pluginApproval = () => ctx.get('approval')` | `user-approval/src/index.ts:26` | same lazy pattern (`:3048`) |
+| `deps.sandboxPolicy` | already injected | `host.ts:3055` (`ctx.sandboxPolicy` property) |
+| `approveEscalation` import | `@deepseek-ai/dsh-sandbox` public export (`src/index.ts:15`) | dependency-addition = pnpm-lock touch → CARD DECISION (this round: not done) |
+| installFace bag `{ installBundle, waitForInstall, cancelInstall }` | the LIVE manager methods above (all `@Remote`) | adapter already re-verifies identity drift: `g1-surface-adapters.mjs:1070-1073` (installFace moved → DEFINITION_DRIFT, zero re-run) and `:1074-1077` (adjudicator moved → DEFINITION_DRIFT) |
+| wiring arm acceptance | `g1-query-wiring.mjs:122/:247` `FORBIDDEN_ARMS` | root: 不盲删 — pure-query world keeps the refusal byte-intact; card decides the exact armed-B-PLUGIN-subset acceptance shape |
+
+## 4. Governance boundary (user ruling, verbatim semantics)
+- **只治理 Agent 安装行为**: the governed entry is the agent tool row; the native's own gate chain (tools.ts:38-44)
+  stays FIRST inside the captured native for the tool path; the adapter L5 direct-manager path re-runs the SAME
+  exported adjudicator with the SAME ingredients before touching the manager — Team PA adds an approval FLOOR,
+  never replaces it (already law: adapter L5 edge head `:1059` onward, obligation `host-approval-escalation-channel` (classify-side `:553`)).
+- **不新增约束任意初始化代码**: nothing here gates plugin STARTUP/activation code — the row governs the
+  `plugin_manager` TOOL's install action only; M0 IO/approval surfaces untouched (no read/list lane is narrowed;
+  exemptions lane stays a separate action+target).
+
+## 5. Minimal verification plan (for the consolidated card — the SMALLEST real set, no mock repetition)
+1. **Dark world** (no seams): armed=false → zero placement (already source-pinned; do NOT re-mock).
+2. **Armed live Host** (tests/deepseek-harness-test-use runtime, DSH_HOME in-workspace, 3180 family):
+   ONE `install_bundle` call of a LOCAL-PATH bundle (relative spec — no registry egress needed): user approves via
+   the REAL approval channel once → row mints its OWN `g1-install-<uuid>` requestId (adapter `:1122`), enters
+   `installBundle(spec, { requestId })`, settle observed by listener, activation honest.
+3. **Denial leg**: reject the escalation → the adjudicator's throw passes through verbatim; assert manager
+   `installBundle` call count 0 (a real install spy via the profile package.json NOT changing is the end witness).
+4. **Cancel leg**: `cancelInstall(requestId)` awaited → `not-running`/`too-late` shape (never a fabricated receipt).
+5. **Non-install actions unaffected**: one list_plugins + one set_plugin round-trip on the same armed plane.
+Every assertion = raw RC + log path; tier stays 接线未测 until this plan has actually run on Host.
+
+## 6. Status accuracy (准确未测)
+- 7 actions (3×list, set_plugin, set_bundle, remove_bundle, set_version_exemption): 接线未测 — wired through the
+  closed table/registration path, zero live-Host evidence. NEVER call this 已测试.
+- install_bundle: TARGET pairing complete; ENTRY mount NOT supplied (L5 refuses fail-closed, zero manager entry).
+  The only new knowledge this round is the public-chain proof above; NO behavior change.
+
+## 7. ADDENDUM — the card landed (user 09:03:32: 只管理安装动作即可) — SHIPPED this round
+- The pure-query construction HOLD is withdrawn FOR THE PLUGIN INSTALL SUPPLY ONLY: the wiring now
+  accepts a named `arms` bag {installFace?, hostEscalation?} ONLY when the mounted row set is exactly
+  the B-PLUGIN supply; `controlledInstall` (B-DEPENDENCY) stays refused in every world (B-DEPENDENCY
+  禁臂保); every other subset keeps the byte-stable refusal. FORBIDDEN top-level spellings became
+  INPUT_INVALID unknown-inputs (named-bag law).
+- installFace = the LIVE manager face via host.ts `pluginManager: () => ctx.get('pluginManager')`
+  (same service as tool + Web controls — no fork); hostEscalation = exported approveEscalation (lazy
+  dynamic import per the dsh-launch-environment precedent) + tool-ctx sandboxPolicy + ctx.get('approval').
+- TIMING: the formal Team-PA consumption (admit) for install_bundle runs AFTER the Host grant, behind
+  the adapter's fresh binding/policy/authority re-read (moved tuple → DEFINITION_DRIFT, zero manager
+  entry); the thunk answers with the PLANE's real admit verdict — a callback faking approved is
+  impossible by construction. All 7 shipped actions keep classify→admit→delegate byte-for-byte.
+- LIFECYCLE: an INSTALL-PENDING is never returned as settled; execute() rides wait() to the observed
+  ChangeResult (listener-recorded + waitForInstall-confirmed) or throws typed.
+- pluginFacts ALIGNMENT: locators derive from the live profileContext.dir (package.json RESTORED_FILES
+  :78-79; compatibility.json PROFILE_COMPATIBILITY_FILENAME :10; bundles join(dir,name) :701); the
+  deployer's static closure may only fill gaps and a DISAGREEMENT refuses the mount; registries
+  re-read live from the manager's @Remote registries() (@:324-331) snapshot over the config pair.
+- Matrix honesty: the internal installer's pnpm/IO stays the HOST's sandbox domain — the entry PA
+  governs the Agent install ACTION only and never claims internal isolation.
+- Dependency DECLARATION — EXECUTED under the root R22 limited-dependency card (2026-10-25):
+  packages/runtime/package.json now declares `"@deepseek-ai/dsh-sandbox": "0.2.0-rc.2"` (the exact
+  version of the pinned Host639 package, public face exports["."]→lib/index.js + lib/types/index.d.ts,
+  approveEscalation in the public export list). Lock update was the SURGICAL pnpm path
+  (`pnpm add @deepseek-ai/dsh-sandbox@0.2.0-rc.2 --filter @dsh-agent-team/runtime --lockfile-only
+  --prefer-offline --ignore-scripts --store-dir=<workspace .gate store>` because the global store's
+  sqlite index is unopenable under this workspace sandbox): pnpm-lock.yaml diff = +3 lines (the
+  packages/runtime importer entry only — the 0.2.0-rc.2 snapshots pre-existed the graph), ZERO other
+  versions drifted, zero downloads, zero scripts, the global store untouched (workspace-local store
+  dir; files hardlink-shared). The same pnpm run materialized this tree's node_modules from the
+  committed lock (this worktree previously had none; no other environment was rebuilt). Side effect,
+  disclosed: the tsc build now emits ZERO errors — the nine "foreign" TS2307/TS2322/TS4112/TS2339
+  were missing-node_modules artifacts of this tree and were fixed by aligning it to its own lock;
+  the a5m2-schedule-production spec (needs @deepseek-ai/dsh-schedule, declared all along) now runs:
+  battery 56/56 files 1095/1095. NO dynamic-string trick: host.ts keeps the literal-specifier
+  dynamic import, and its types resolve for real.
+
+## 8. ROOT R22 INDEPENDENT REVIEW — the three finite fixes (this commit)
+- ① install_bundle effects = REAL-ACTION resources only (bundles-dir write + profile-config write +
+  tool-invoke). The registry-connect fan-out and the npm-cache write are NO LONGER projected (a
+  default-deny PA has no connect projection — enumerating one would IO_UNSUPPORTED the action forever
+  while governing nothing); they became an explicit obligation row 'internal-pnpm-installer-io' —
+  DISCLOSURE, NOT AN EFFECT (user phase ruling: 只管理安装动作即可; the matrix says internal installer
+  IO is the Host's domain). The other 7 actions keep their enumerations byte-for-byte; the cache leaf
+  left the install TARGET too (real-action params stay: spec, registries, locators).
+- ② bindings facts are COMPLETED facts with VISIBLE failure: one mount-moment refresh of the manager's
+  @Remote registries(); current() serves the deployment closure UNTIL settled and labels every answer
+  (registriesSource: 'deployment-closure' | 'live-manager-settled' |
+  'deployment-closure-after-refresh-failure' + registriesRefreshError) — a stale closure is never
+  called live. registry=null is legal (empty allowed-set + resolved recorded). cacheRootLocator is
+  OPTIONAL at every layer: its absence gates NOTHING (the 误伤 on the 7 actions is fixed).
+- ③ FINAL boundary AFTER BOTH approvals, same PA ledger (no second account): after consumeAfterGrant
+  returns, the row re-checks the SIGNAL (cancelled during either wait → zero manager entry), the LIVE
+  service-definition faces (manager/adjudicator identity — moved → DEFINITION_DRIFT, zero entry), and
+  the ACTUAL target via the CURRENT-facts reVerifyAtEdge before entering the manager.
+- Tier: 接线未测 stands (targeted specs are contract-face evidence, not live-Host).
+
+## 9. ROOT FINAL REVIEW (2f736 二次复审) — the two finite closures (this commit)
+- ① install_bundle PA effects = ACTION AUTHORIZATION ONLY: the single tool-invoke of the install
+  action. The manager's internal install-root and profile-config WRITES left the effect set too
+  (they are as internal as connect/cache); the target now carries the real ACTION parameters at
+  full value — spec, enabledClaim (reviewed encoding), approvedBuildsClaim, explicit registry,
+  allowed/fallback registries — plus the manager+profile identity locators. No installation-internal
+  file/network authorization is demanded anywhere on this action; the other 7 actions are byte-old.
+- ② The deployer face captures the REAL public manager methods + receiver (bound at mount — no
+  self-delegating wrappers, which made the identity checks self-proving). The terminal boundary
+  after the Team-PA admission RE-READS the authorized binding's generations (moved = the plan is no
+  longer backed by its authorized binding → zero manager entry) and the CURRENT profile facts via
+  the facts port. Only the public lifecycle and the current binding are verified; no same-fiber
+  hot-patch detection was added. Registry sampling is labelled 'settled-mount-observation' /
+  'deployment-closure*' — a mount observation or a deployment fallback, never "live", never an
+  install enablement gate.

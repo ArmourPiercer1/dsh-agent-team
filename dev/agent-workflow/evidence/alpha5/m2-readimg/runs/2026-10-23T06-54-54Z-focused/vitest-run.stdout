@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/runtime/test/a5m2-readimg-c1.test.ts (11 tests) 817ms
+     ✓ C1 positive: the registered tool reads a synthetic PNG into the typed image outcome with a durable content-addressed object on disk  456ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  06:54:54
+   Duration  1.09s (transform 363ms, setup 0ms, import 71ms, tests 817ms, environment 0ms)
+

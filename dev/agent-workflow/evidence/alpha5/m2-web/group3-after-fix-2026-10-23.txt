@@ -1,0 +1,28 @@
+{
+ "C1_expired_grant": {
+  "ok": false,
+  "msg": "grant-expired (recorder)",
+  "consumesAtCenter": 4,
+  "seamCalls": 1
+ },
+ "BASELINE_valid": {
+  "ok": true,
+  "seamCalls": 1
+ },
+ "C2_single_use_REUSED": {
+  "ok": false,
+  "msg": "grant-already-consumed (recorder single-use)",
+  "seamCalls": 1
+ },
+ "C3_payload_swap": {
+  "ok": false,
+  "msg": "payload-fingerprint-mismatch: the presented payloadFingerprint is not the canonical fingerprint of the carried operation (swapped payload; refused before consume)",
+  "consumedBurned": 4,
+  "seamCalls": 1
+ },
+ "C4_forged_binding_pair": {
+  "ok": false,
+  "msg": "definition-unknown-or-binding-mismatch (recorder)",
+  "seamCalls": 1
+ }
+}

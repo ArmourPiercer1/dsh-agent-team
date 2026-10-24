@@ -1,0 +1,311 @@
+/**
+ * a5m2-governed-write-row-c1 — M2-WRITE-01/C2 定点：the LIVE governed write
+ * ROW (`src/plugin/live/governed-write-row.mjs`) over the REAL production
+ * admission parts — the real `createProductionAdmissionAssembly` (real kernel,
+ * real one-shot grant ledger, real template-policy projection), a real FS
+ * world under `tests/homes/a5m2-gwr-*` (TEST_METHODS §7, destroyed after) —
+ * NOT stubs. The `pa` here is the all-allow / requires-approval / deny lanes
+ * of `paAdmitBody` built ONLY from real assembly entries (`admitCall`,
+ * `consumeForExecution`), line-for-line in that order; the durable Control
+ * leg and the full plane mount (writeName knob) ride with CENTER's shared
+ * wiring — the HOST leg is ENV_BLOCK (single Host owner, serial).
+ *
+ * Kernel one-shot replay law itself is the kernel suite's own claim
+ * (a5p2-composition); what THIS file pins is the ROW: exactly one writeText
+ * path per allow, zero open/zero write on every refusal (deny, pending,
+ * lane deny, default-deny, escalation, escapes, alias), the receipt law
+ * (D-C2-1: locator + fingerprint only, old content never travels back), the
+ * token single-flight (a spent identity is never re-armed; a write never
+ * re-runs), and the ANCHOR/alias law on the opened fd.
+ *
+ * @module packages/runtime/test/a5m2-governed-write-row-c1
+ */
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+
+import { binding, MEMBER } from './a5p2-fixtures.js'
+import { FIXED_NOW } from './a5p2-kernel-harness.js'
+import { createGrantLedger, createProductionAdmissionAssembly } from '../tool-admission/index.js'
+import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/types.js'
+
+interface RowCorr {
+  readonly token?: object
+  readonly correlation?: string
+  readonly signal?: { aborted?: boolean }
+}
+interface PaVerdictLike {
+  kind: string
+  cancelled?: boolean
+  code?: string
+  detail?: string
+}
+type RowBody = (raw: unknown, corr?: RowCorr) => Promise<Record<string, unknown>>
+
+const REPO_ROOT = realpathSync(resolve(fileURLToPath(new URL('../../../', import.meta.url).href)))
+const REALM = 'a5m2-gwr-realm'
+
+let worldRoot: string
+let rootDir: string
+let outsideDir: string
+
+beforeAll(() => {
+  worldRoot = join(REPO_ROOT, 'tests', 'homes', `a5m2-gwr-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e6)}`)
+  rootDir = join(worldRoot, 'root')
+  outsideDir = join(worldRoot, 'outside')
+  mkdirSync(join(rootDir, 'notes'), { recursive: true })
+  mkdirSync(outsideDir, { recursive: true })
+  writeFileSync(join(rootDir, 'old.txt'), 'OLD-SECRET-CONTENT\n')
+  writeFileSync(join(outsideDir, 'secret.txt'), 'OUTSIDE-SECRET\n')
+  symlinkSync(join('..', 'outside', 'secret.txt'), join(rootDir, 'link.txt'))
+  if (realpathSync(rootDir) !== rootDir) throw new Error(`gwr world not canonical: ${rootDir}`)
+})
+
+afterAll(() => {
+  rmSync(worldRoot, { recursive: true, force: true })
+})
+
+function sha(text: string): string {
+  return `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`
+}
+
+interface Harness {
+  readonly run: RowBody
+  readonly paCalls: string[]
+  readonly observeLines: string[]
+  readonly consumedCount: () => number
+  readonly fileExists: (rel: string) => boolean
+}
+
+async function rowOf(permissionPolicy: TemplatePermissionPolicy, decide?: (request: { effects: readonly unknown[] }) => { kind: string; code?: string }): Promise<Harness> {
+  const ledger = createGrantLedger()
+  const built = createProductionAdmissionAssembly({
+    permissionPolicy,
+    realmId: REALM,
+    templateId: 'tpl-m2w',
+    definitionOwnerAuthority: 'human-user',
+    role: 'member',
+    clock: () => FIXED_NOW,
+    authorityGeneration: () => 1,
+    beneficiaryAuthority: 'member',
+    ledger,
+  })
+  if (!built.ok) throw new Error(`real production assembly refused the fixture policy: ${JSON.stringify(built.error).slice(0, 300)}`)
+  const assembly = built.value
+  const paCalls: string[] = []
+  const observeLines: string[] = []
+  const pa = async (call: { realmId: string, callId: string, parametersFingerprint: string, requestedEffects: RequestedEffectSet }): Promise<PaVerdictLike> => {
+    paCalls.push(call.callId)
+    const request: AdmissionRequest = {
+      binding: binding({ toolName: 'write' }),
+      member: MEMBER,
+      callId: call.callId,
+      realmId: call.realmId,
+      parametersFingerprint: call.parametersFingerprint,
+      requestedEffects: call.requestedEffects,
+    }
+    const admitted = await assembly.admitCall(request)
+    if (admitted.ok !== true) return { kind: 'deny', code: String(admitted.error?.code ?? 'ADMISSION_CALL_REFUSED'), detail: String(admitted.error?.message ?? '') }
+    const decision = admitted.value
+    if (decision.kind === 'denied') return { kind: 'deny', code: String(decision.error?.code ?? 'ADMISSION_DENIED'), detail: String(decision.error?.message ?? '') }
+    if (decision.kind === 'requires-approval') {
+      return { kind: 'deny', code: 'APPROVAL_REQUEST_UNAVAILABLE', detail: 'PA needs a durable Control request; none is mounted (pending never runs)' }
+    }
+    const edge = assembly.consumeForExecution(decision.grant, {
+      currentAuthorityGeneration: 1,
+      member: MEMBER,
+      callId: call.callId,
+      realmId: call.realmId,
+      bindingId: decision.grant.bindingId,
+      bindingRevision: decision.grant.bindingRevision,
+      parametersFingerprint: call.parametersFingerprint,
+      requestedEffects: call.requestedEffects,
+    })
+    if (edge.ok !== true) return { kind: 'deny', code: String(edge.error?.code ?? 'GRANT_CONSUMPTION_REFUSED'), detail: String(edge.error?.message ?? '') }
+    return { kind: 'allow' }
+  }
+  const mod = (await import('../src/plugin/live/governed-write-row.mjs')) as { createGovernedWriteRow: (arms: Record<string, unknown>) => RowBody }
+  const run = mod.createGovernedWriteRow({
+    realmId: REALM,
+    rootDir,
+    policy: permissionPolicy,
+    decide: decide ?? (() => ({ kind: 'allow' })),
+    pa,
+    observe: (line: string) => { observeLines.push(line) },
+  })
+  return {
+    run,
+    paCalls,
+    observeLines,
+    consumedCount: () => ledger.consumedCount(),
+    fileExists: (rel: string) => existsSync(join(rootDir, rel)),
+  }
+}
+
+const ALLOW_ALL: TemplatePermissionPolicy = { default: 'allow', allow: [], ask: [], deny: [] }
+const DENY_ALL: TemplatePermissionPolicy = { default: 'deny', allow: [], ask: [], deny: [] }
+
+describe('a5m2 governed-write row — production-path controls over real parts', () => {
+  it('P1 approved write lands EXACTLY once: bytes, receipt (locator+fingerprint), durable consumption, observe RAN', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const r = await h.run({ file_path: 'notes/hello.txt', content: 'ROW-BYTES\n' }, { token: {} })
+    expect(r.kind).toBe('written')
+    expect(r.canonicalLocator).toBe(join(rootDir, 'notes', 'hello.txt'))
+    expect(r.writtenFingerprint).toBe(sha('ROW-BYTES\n'))
+    expect(r.bytes).toBe(10)
+    expect(readFileSync(join(rootDir, 'notes', 'hello.txt'), 'utf8')).toBe('ROW-BYTES\n')
+    expect(r.before).toBeUndefined()
+    expect(h.paCalls).toHaveLength(1)
+    // the REAL one-shot ledger: exactly one grant registered and consumed.
+    expect(h.consumedCount()).toBe(1)
+    expect(h.observeLines.some((l) => l.startsWith('governed-write RAN'))).toBe(true)
+  })
+
+  it('P2 overwrite: new bytes land; old content NEVER travels back (D-C2-1 receipt)', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const r = await h.run({ file_path: 'old.txt', content: 'FRESH-BYTES\n' }, { token: {} })
+    expect(r.kind).toBe('written')
+    expect(readFileSync(join(rootDir, 'old.txt'), 'utf8')).toBe('FRESH-BYTES\n')
+    expect(JSON.stringify(r)).not.toContain('OLD-SECRET-CONTENT')
+    expect('before' in r).toBe(false)
+    expect(r.writtenFingerprint).toBe(sha('FRESH-BYTES\n'))
+  })
+
+  it('P3 empty content is legitimate: an empty file lands (host write value law)', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const r = await h.run({ file_path: 'notes/empty.txt', content: '' }, { token: {} })
+    expect(r.kind).toBe('written')
+    expect(r.bytes).toBe(0)
+    expect(readFileSync(join(rootDir, 'notes', 'empty.txt'), 'utf8')).toBe('')
+  })
+
+  it('N1 the escalation pair is refused BEFORE admission: zero PA walk, zero consumption, zero file', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const r = await h.run({ file_path: 'notes/n1.txt', content: 'x', sandbox_permissions: 'workspace-write', justification: 'escape' }, { token: {} })
+    expect(r.kind).toBe('refused')
+    expect(r.refusalClass).toBe('schema')
+    expect(r.code).toBe('write-escalation-ungoverned')
+    expect(h.paCalls).toHaveLength(0)
+    expect(h.consumedCount()).toBe(0)
+    expect(h.fileExists('notes/n1.txt')).toBe(false)
+  })
+
+  it('N2 blank file_path and non-string content refuse schema-typed with zero PA walk', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    expect((await h.run({ file_path: '  ', content: 'x' }, { token: {} })).code).toBe('write-args-file-path-blank')
+    expect((await h.run({ file_path: 'notes/n2.txt', content: 7 }, { token: {} })).code).toBe('write-args-content-not-string')
+    expect(h.paCalls).toHaveLength(0)
+    expect(h.fileExists('notes/n2.txt')).toBe(false)
+  })
+
+  it('N3 lexical escape + absolute-outside refuse BEFORE admission; the outside secret never leaks', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const esc = await h.run({ file_path: '../outside/evil.txt', content: 'EVIL\n' }, { token: {} })
+    expect(esc.kind).toBe('refused')
+    expect(esc.code).toBe('locator-rejected')
+    expect(String(esc.text)).not.toContain('OUTSIDE-SECRET')
+    const abs = await h.run({ file_path: join(outsideDir, 'secret.txt'), content: 'OVERRIDE\n' }, { token: {} })
+    expect(abs.code).toBe('locator-rejected')
+    expect(h.paCalls).toHaveLength(0)
+    expect(h.consumedCount()).toBe(0)
+    expect(existsSync(join(outsideDir, 'evil.txt'))).toBe(false)
+    expect(readFileSync(join(outsideDir, 'secret.txt'), 'utf8')).toBe('OUTSIDE-SECRET\n')
+  })
+
+  it('N4 deny-default without a covering rule refuses at admission BEFORE PA; a covering exact-allow rule lets it through', async () => {
+    const denied = await rowOf(DENY_ALL)
+    const r = await denied.run({ file_path: 'notes/n4.txt', content: 'x' }, { token: {} })
+    expect(r.refusalClass).toBe('admission')
+    expect(r.code).toBe('template-default-deny')
+    expect(denied.paCalls).toHaveLength(0)
+    expect(denied.fileExists('notes/n4.txt')).toBe(false)
+    const ruled: TemplatePermissionPolicy = {
+      default: 'deny',
+      allow: [{ tool: 'write', resource: { kind: 'exact', path: join(rootDir, 'notes', 'n4.txt') } }],
+      ask: [],
+      deny: [],
+    }
+    const allowed = await rowOf(ruled)
+    const ok = await allowed.run({ file_path: 'notes/n4.txt', content: 'RULED\n' }, { token: {} })
+    expect(ok.kind).toBe('written')
+    expect(readFileSync(join(rootDir, 'notes', 'n4.txt'), 'utf8')).toBe('RULED\n')
+    expect(allowed.consumedCount()).toBe(1)
+  })
+
+  it('N5 the Ask lane without a durable Control leg is a refusal with its own code — pending NEVER allows (real kernel)', async () => {
+    const askPolicy: TemplatePermissionPolicy = {
+      default: 'deny',
+      allow: [],
+      ask: [{ tool: 'write', resource: { kind: 'exact', path: join(rootDir, 'notes', 'n5.txt') } }],
+      deny: [],
+    }
+    const h = await rowOf(askPolicy)
+    const r = await h.run({ file_path: 'notes/n5.txt', content: 'x' }, { token: {} })
+    expect(r.kind).toBe('refused')
+    expect(r.refusalClass).toBe('admission')
+    expect(r.code).toBe('APPROVAL_REQUEST_UNAVAILABLE')
+    expect(h.paCalls).toHaveLength(1)
+    expect(h.consumedCount()).toBe(0)
+    expect(h.fileExists('notes/n5.txt')).toBe(false)
+  })
+
+  it('N6 the template-lane fast deny refuses at admission; zero PA walk, zero file', async () => {
+    const h = await rowOf(ALLOW_ALL, () => ({ kind: 'deny', code: 'template-lane-deny' }))
+    const r = await h.run({ file_path: 'notes/n6.txt', content: 'x' }, { token: {} })
+    expect(r.refusalClass).toBe('admission')
+    expect(r.code).toBe('template-lane-deny')
+    expect(h.paCalls).toHaveLength(0)
+    expect(h.fileExists('notes/n6.txt')).toBe(false)
+  })
+
+  it('N7 token single-flight: an in-flight replay and a settled replay are BOTH refused; the write never re-runs', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const token = {}
+    const first = h.run({ file_path: 'notes/n7.txt', content: 'FIRST\n' }, { token })
+    const replay = await h.run({ file_path: 'notes/n7.txt', content: 'REPLAY\n' }, { token })
+    expect(replay.kind).toBe('refused')
+    expect(replay.code).toBe('exec-token-replay')
+    const ok = await first
+    expect(ok.kind).toBe('written')
+    // the settled identity is never re-armed either:
+    const after = await h.run({ file_path: 'notes/n7.txt', content: 'AGAIN\n' }, { token })
+    expect(after.kind).toBe('refused')
+    expect(after.code).toBe('exec-token-replay')
+    expect(readFileSync(join(rootDir, 'notes', 'n7.txt'), 'utf8')).toBe('FIRST\n')
+    expect(h.consumedCount()).toBe(1)
+  })
+
+  it('N8 a symlink target refuses typed (symlink-alias) with the alias TARGET bytes untouched and zero leak', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    const r = await h.run({ file_path: 'link.txt', content: 'THROUGH\n' }, { token: {} })
+    expect(r.kind).toBe('refused')
+    expect(r.code).toBe('symlink-alias')
+    expect(String(r.text)).not.toContain('OUTSIDE-SECRET')
+    expect(readFileSync(join(outsideDir, 'secret.txt'), 'utf8')).toBe('OUTSIDE-SECRET\n')
+    expect(h.consumedCount()).toBe(1) // the PA edge consumed INSIDE (the row ran nothing past it)
+  })
+
+  it('N9 a cancelled invocation never writes (allow+cancelled is a presented cancellation)', async () => {
+    const h = await rowOf(ALLOW_ALL)
+    // exercise the row's own pre-write signal check with an already-aborted
+    // signal that the PA lane here answers allow for (the production edge
+    // answers allow+cancelled; both branches must leave the file absent).
+    const aborted = { aborted: true }
+    const mod = (await import('../src/plugin/live/governed-write-row.mjs')) as { createGovernedWriteRow: (arms: Record<string, unknown>) => RowBody }
+    const cancelRow = mod.createGovernedWriteRow({
+      realmId: REALM,
+      rootDir,
+      policy: ALLOW_ALL,
+      decide: () => ({ kind: 'allow' }),
+      pa: async () => ({ kind: 'allow', cancelled: true }),
+      observe: () => {},
+    })
+    const r = await cancelRow({ file_path: 'notes/n9.txt', content: 'x' }, { token: {}, signal: aborted })
+    expect(r.kind).toBe('cancelled')
+    expect(h.fileExists('notes/n9.txt')).toBe(false)
+  })
+})

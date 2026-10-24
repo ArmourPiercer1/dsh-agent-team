@@ -25,4 +25,5 @@ export { createDirectBackend } from './backend-direct.js';
 export { createContractStubBackend } from './backend-stub.js';
 export { runToolCall, type AdmissionVerdict, type RunToolCallDeps, type SpillPointerFact, type ToolCallRequest, type ToolCallResult } from './pipeline.js';
 export { createGovernedToolDefinitions, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js';
+export { WRITE_SLICE_REFUSAL_CLASSES, parseWriteSliceArgs, lexicalWriteAnchor, createGovernedWriteExecutor, type WriteSliceRefusalClass, type WriteSliceRefusal, type WriteSliceWritten, type WriteSliceOutcome, type WriteToolArgsView, type SliceResourceRefView, type SliceEffectSetView, type SliceEffectParser, type SliceGatedWriteResult, type SliceGatedControlledFs, type SliceAdmissionPort, type SliceGatedLaneConfig, type SlicePaVerdict, type SlicePaRequest, type SlicePolicyRule, type SlicePolicyView, type SliceLaneVerdict, type GovernedWriteExecutorDeps, type GovernedWriteCall, } from './write-slice.js';
 //# sourceMappingURL=index.d.ts.map

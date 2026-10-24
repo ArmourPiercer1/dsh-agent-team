@@ -1,0 +1,10 @@
+# PREFLIGHT — image root package @249eb65ec (paImageHandoff producer; root 14:44 approved)
+
+Date: 2026-10-23T14:53-14:56Z. Lane: CENTER packaging + entry-import preflight (NOT a C2 run: no server, no port bound; Host639 root porcelain-clean @639ed01539; :3080 zero-touch; the C2 owner (307c) stays the ONLY Host runner).
+
+- pin dir (FROZEN read-only, 0 writable files): packages-pins/249eb65ec1789ab8bfcf02268d14d3d7060b8c2a/
+- tgz sha256 ca0f4b253fd3e9075e86d772f33ccb21c42c165ff7de3dee5949faf5c780d4b7 (3251993 bytes, 1813 entries; PATHSET-EQUAL-1813 vs the 19d54 pin; content delta EXACTLY SIX lines = the complete image hand-off product surface: adapter 4 dist lines + plane mjs + glue mjs)
+- build-at-head at 249eb65ec: verdict=ok compared=1788 drift=0; kit MUST read the full entry/hash lists from the pin dir (entries 5263586e…, tree f8d5622a…, install-surface 473 lines cc3d4b1b…).
+- install (fixed-639 normal dual-root, file: spec, 9 peers EXACT 0.2.0-rc.2, store-dir shared .pnpm-store, --ignore-scripts): INSTALL_RC=0, world tests/homes/a5m2-root-preflight-img-14-54-00Z.
+- probe (preflight.log, REAL_RC=0 direct status): 0-integrity 473/473 RE-HASH MATCHES-PIN bad=0; 1-host dsh-agent-team/host IMPORT-OK (inject present); 2-glue physical agent-bindings.mjs FULL static graph IMPORT-OK and carries the paImageHandoff forwarding law PRESENT; 2b-plane plane face PRESENT (paImageHandoff + imageHandoffOpen); 2c-adapter compiled face IMPORT-OK with the third port PRESENT; 3-seam createRealStorageDomainSeam IMPORT-OK. VERDICT PASS (5/5).
+- boundary: the 11 plane-direct legs (a5m2-image-handoff-c1) are C1 evidence ONLY. The image C2 on 307c must EMPIRICALLY show, DEFAULT ASKEPT: old parameter-permission rows for read_image = 0 (hand-off actually passes the gate), PENDING zero store, allow ONE consumption with the NORMALIZED ref and the model render carrying originalDimensions, deny/abandon zero, on the synthetic 2048x1536 PNG + maxImageDimension1024 real-normalize route (inputModalities=image); original fsroot/15-Team exclusion/19 global deny KEPT; FIRST-ERROR-STOP, NO 3-runs, NO live dist, Host gitignore untouched.

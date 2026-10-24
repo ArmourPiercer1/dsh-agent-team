@@ -1,0 +1,296 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ❯ test/a5m2-g1-surface-adapters.test.ts (103 tests | 1 failed) 123ms
+     ✓ the record set equals the frozen dispatch index (family-filtered, recordIndex-exact); spec VALUES carry no lane paths (string literals are audit edges) 5ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 4ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 1ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 1ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 2ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 25ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 1ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+     ✓ pre-aborted signal: the row refuses P_G1_PRE_ABORTED before admission — no gate call, no manager entry, no native entry (mirrors tools.ts:44 throwIfAborted BEFORE the entry) 1ms
+     ✓ rg: the install gate runs the REAL EXPORTED host approveEscalation — rejected/cancelled/no-approver/no-agent are the real THROWs surfacing as refusals with ZERO manager entry; the effective-mode repeat needs no approval 1ms
+     ✓ P1 89a9: sandboxPolicy.resolve receives EXACTLY the host scope — the Session OBJECT by reference for agent calls (a narrower session configuration resolves only when the object survives), { session: undefined } for a session-less agent, {} only when exec.agent is absent 1ms
+     ✓ plugin install gate plumbing: no escalation port mounted refuses GATE_ABSENT; no manager face refuses FACE_ABSENT; the signal re-check and the CURRENT-facts re-verify happen AFTER the awaited gate and BEFORE any manager entry 1ms
+     ✓ consumption-edge re-verify: post-classify mutation of the catalog / topology / domain registry / profile facts / install facts refuses the plan typed, zero native entry 1ms
+     ✓ inspect list: the all-providers answer is CONSTRAINED to the authorized topology (unauthorized providers never appear; methods filtered); unknown shapes fail closed 1ms
+     × inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse 8ms
+     ✓ plugin: per-action effect sets on the manager code paths; REAL npm-name/relative-path spec parse and REAL URL registry envelope; @scope/pkg entry targets are LEGAL; the exemption lane needs package-name@version and is never derivable 1ms
+     ✓ plugin face declares the REAL parameter list (tools.ts:22-31): offset/limit ride, there is NO bundle parameter 0ms
+     ✓ plugin install on the REAL async manager contract: invocation-owned requestId minted BEFORE the call and passed in options; settle OBSERVED BY LISTENER (waitForInstall answers null — the changeResult can only be the listener's); cancel AWAITED to the closed status; abort never claims copying stopped 2ms
+     ✓ present: read+meta per deliverable + the expose WRITE obligation; the commit witness is the same-exec append carrying the exec callId AND the native result's OWN turn — arbitrary integers refuse 1ms
+     ✓ present legality: relative deliverables ride workspace, OS-absolute deliverables are LEGAL and ride GOVERNED absolute-path effects (approval semantics at the commit lane, not a blanket refuse); relative .. stays refused THROUGH THE GRAMMAR 1ms
+     ✓ team faces keep their REAL optional fields: toolName+summary / note / limit classify as declared face params (unknown params still refuse) 1ms
+     ✓ dependency: no controlledInstall mount ⇒ the arm FAILS CLOSED before any fs of its own and before native entry; with the REAL EXPORTED installPrimaryRuntime mounted the arm RUNS the controlled path (its own manifest gate + validatePayloadEntries + rename-commit verify the payload) — no fixture copy/rename, no post-hoc BLOCKED, no self-hash claims 6ms
+     ✓ skill: classify consults the trusted catalog CURRENT facts — port absent, unknown name, catalog facts on the plan 0ms
+     ✓ domain surface: a model-supplied domainAuthorityId is a CLAIM verified against the mounted-port CURRENT registry 0ms
+     ✓ a present-but-wrong capture (name mismatch) or a capture without its definitionIdentity is a config defect: throws at assembly 0ms
+     ✓ r9: the passed-through nested-required face IS a canonical host registration face — REAL Host639 validator, no property-level markers, constraints bind 39ms
+ ✓ test/a5m2-g6-session-query-c1.test.ts (55 tests) 315ms
+ ✓ test/a5m2-g3-fsproc.test.ts (38 tests) 170ms
+ ✓ test/a5m2-g6-session-query-wiring.test.ts (41 tests) 58ms
+ ✓ test/a5m2-g2-provider-seams.test.ts (28 tests) 28ms
+ ✓ test/a5m2-todo-assembly-c1.test.ts (16 tests) 582ms
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+ ✓ test/a5m2-readimg-arm-c2c3.test.ts (16 tests) 2142ms
+     ✓ ASK-WORLD POSITIVE at component level (Control-harness chain — NOT Host, NOT the real mount): durable approve receipt (row + LEADER allow decision + Control-side check-and-reserve) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact  390ms
+     ✓ family carrier is REQUIRED for a bound call and compared FIELD BY FIELD: the real chain carries the block (f696e6f2); a stripped carrier fails closed (NO pending release); ANY typed-plan field drift refuses beyond the four carrier values; the leg refuses a missing carrier BEFORE the row  315ms
+     ✓ row-7 contrast — pre-fix repro vs post-fix typed refusal: the UNTOUCHED native face reads an out-of-root absolute image SUCCESSFULLY (the measured primary gap, alive at pin639), while the governed arm refuses the SAME absolute target with zero port calls  372ms
+ ✓ test/a5m2-family-rules-c1.test.ts (19 tests) 23ms
+ ✓ test/a5m2-image-row-c1.test.ts (17 tests) 524ms
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ test/alpha5-search-backend.test.ts (42 tests) 4693ms
+     ✓ argv-no-path: a directory target carries NO path string; a file target carries only its own name  316ms
+     ✓ explicit-path-is-load-bearing: without `-- .` the confined child answers a SILENT ZERO  313ms
+     ✓ P8b the confined face carries NO payload exit code — so completion is proved from the stream  371ms
+     ✓ P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row  973ms
+     ✓ M1 with `confined`, the plane factory returns the rg row and answers like rg  323ms
+     ✓ V8 a governed root that is a symlink alias is refused, never followed  351ms
+     ✓ V12 the audit face carries codes and arithmetic only — never a path, a row or the walker's words  378ms
+ ✓ test/a5m2-g5-goal-service-c1.test.ts (20 tests) 558ms
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ test/a3p4-permission-lifecycle-e2e.test.ts (26 tests) 312ms
+ ✓ test/a3p4-pr7-entry-exec-contract-regression.test.ts (17 tests) 724ms
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ test/a5m2-schedule-adapters.test.ts (27 tests) 119ms
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ❯ test/a5m2-g2-connector-adapters.test.ts (0 test)
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stdout | test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ❯ test/a5m2-g2-team-assembly.test.ts (0 test)
+ ✓ test/a3p4-pr4-production-entry-regression.test.ts (20 tests) 2983ms
+     ✓ a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)  848ms
+     ✓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline  846ms
+ ✓ test/a5m2-g1-query-wiring.test.ts (18 tests) 94ms
+ ✓ test/a5m2-write-existing-c1.test.ts (11 tests) 307ms
+ ✓ test/a3p4-r4-authority-binding.test.ts (17 tests) 122ms
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-1 SYNTHETIC-HISTORICAL (root 16:56: NOT a replay of the real r17 - the read_image-exact deny is NOT in the real policy and its covering deny raises a human-admin floor the real row NEVER had; kept as the 337 historical material): seam-on stops the expansion branch on this synthetic shape
+RR1-FIXED kind=refused code=APPROVAL_DENIED drift=[{"stage":"pa-verifier","gate":"resolve","outcome":"drift","detail":"the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))","requestId":"ctrl-1imxc630fcgcry1yon4fd1x4"}]
+RR1 RESIDUAL (separate gate, recorded): the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))
+
+ ✓ test/a5m2-image-handoff-c1.test.ts (11 tests) 142ms
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-3 SYNTHETIC positive control (NOT the r17 shape - a deny rule the seam decides NON-covering): the fixed transport authorizes end to end
+RR3 kind=authorized code= drift=0
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control > RR-4 TRUE-r17 REPLAY seam-on: input identity checked first, then the same public allow resolves with the seam threaded (the real root cause closes on the real shape)
+RR4-REAL kind=authorized code= drift=[]
+
+ ✓ test/a5m2-r17-drift-repro-c1.test.ts (5 tests) 235ms
+ ✓ test/a5m2-write-handoff-c1.test.ts (11 tests) 114ms
+ ✓ test/a3p4-pr4-decision-routing-regression.test.ts (13 tests) 590ms
+     ✓ exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes  349ms
+ ✓ test/a3p4-production-permission-plane.test.ts (7 tests) 167ms
+ ✓ test/a5m2-post-consume-write-c1.test.ts (18 tests) 61ms
+ ✓ test/a5m2-g6-plane-mount-c1.test.ts (8 tests) 45ms
+ ✓ test/a5m2-readimg-c1.test.ts (12 tests) 897ms
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5g7-unit-realm legs=6
+
+ ✓ test/alpha5-g1-deny-lane.test.ts (11 tests) 368ms
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+ ✓ test/a5m2-fs-bounded-read-c1.test.ts (12 tests) 36ms
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:35e2a775-1bd1-41d4-a327-57eaa1443fec-1 pid=809 exit=0 timedOut=false cancelled=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:fae810a8-a3d0-4756-9fe6-daf847c7ce77-1 pid=830 exit=1 timedOut=false cancelled=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g7-unit-realm legs=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob:mount:2a3d9e0f-9f23-470c-a667-426e0a4bbf44-1 pid=850 files=2 capped=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/a5g7-unit-mvlxsux2/root/data/needle.txt
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:cfe6b315-7a33-4a05-b153-5c766f73396d-1 pid=896 exit=0 timedOut=false cancelled=false
+
+ ✓ test/alpha5-glue7-plane-backends.test.ts (12 tests) 2233ms
+     ✓ G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps  435ms
+     ✓ G6b CANDIDATE-A archive: the glob FACTORY (unwired) keeps its bounded face + typed walker error + symlink-final refusal  348ms
+ ✓ test/a5m2-image-read-port-c1.test.ts (9 tests) 18ms
+ ✓ test/alpha5-g6b-rc-first.test.ts (15 tests) 1876ms
+     ✓ probe6b-form 500 consecutive: the silent rc=2 partial-results form is refused 500/500 — zero quiet judgements, zero lists, zero spills  1165ms
+ ✓ test/a5g6-install-face-render.test.ts (5 tests) 1161ms
+     ✓ the trio definitions all carry a render that returns an array of typed text blocks  1154ms
+ ✓ test/alpha5-glob-backend.test.ts (53 tests) 36551ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  708ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  384ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  722ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  855ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  583ms
+     ✓ L4 the backend mounts through the plane's OWN backends seam (no plane edit)  301ms
+     ✓ X3 the timeout arm settles cancelled and spills nothing  341ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  416ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  487ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  449ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  26063ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  1526ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  368ms
+ ✓ test/alpha5-glob-backend-adversarial.test.ts (8 tests) 217051ms
+     ✓ A4 rename→symlink RACE LOOP: 5000 iterations, zero leak  13934ms
+     ✓ A5 the REAL confined rg walk under the same swap race (6600 walks), zero leak  201785ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g2-connector-adapters.test.ts [ test/a5m2-g2-connector-adapters.test.ts ]
+Error: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json'
+ ❯ test/a5m2-g2-connector-adapters.test.ts:598:28
+    596| // ── census against the frozen dispatch index ───────────────────────…
+    597| describe('a5m2-g2 census (frozen dispatch index)', () => {
+    598|   const index = JSON.parse(readFileSync(join(REPO, 'docs', 'plans', 'a…
+       |                            ^
+    599|     records: Array<{ name: string; family: string; mountCondition: str…
+    600|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a5m2-g2-team-assembly.test.ts [ test/a5m2-g2-team-assembly.test.ts ]
+Error: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/deepseek-harness-test-use/packages/mcp/mcp-client/node_modules/@modelcontextprotocol/client/dist/index.mjs' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse
+AssertionError: expected undefined to match object { platform: 'host', …(2) }
+
+- Expected:
+{
+  "method": Any<String>,
+  "platform": "host",
+  "provider": Any<String>,
+}
+
++ Received:
+undefined
+
+ ❯ test/a5m2-g1-surface-adapters.test.ts:849:50
+    847|     expect(classified.targetManifest.topologyRevision).toBe(9)
+    848|     expect(classified.targetManifest.topologyDigest).toBe('sha256;topo…
+    849|     expect(classified.targetManifest.queryClaim).toMatchObject({ platf…
+       |                                                  ^
+    850|     const client = row.classify({ platform: 'client', provider: 'slot-…
+    851|     expect(client.ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 33 passed (36)
+      Tests  1 failed | 740 passed (741)
+   Start at  05:06:54
+   Duration  226.88s (transform 12.58s, setup 0ms, import 23.24s, tests 275.42s, environment 4ms)
+

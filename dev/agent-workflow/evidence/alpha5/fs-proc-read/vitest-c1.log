@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ① in-cap reads answer raw bytes > T1 a <cap non-utf8 binary file comes back BYTE-EXACT (raw fidelity, no utf8 round-trip, no preallocated tail) 4ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ②③ the exact cap boundary is a fact, not a refusal > T2 file == cap passes with byteLength === cap (multi-chunk, last chunk partial) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ②③ the exact cap boundary is a fact, not a refusal > T3 file == cap+1 answers ok:true, byteLength === cap+1, NOTHING TRUNCATED (the ring stops at the fact; the stop itself is pinned by T4) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ④ a far-larger file still answers EXACTLY cap+1 > T4 65543-byte file against a 1024-byte cap: byteLength === 1025 exactly, bytes are the first cap+1, the whole file was NOT slurped 3ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑤ short reads / EOF probes never fake an over-cap fact > T5 9-byte file, maxBytes 10, chunk 4: reads 4+4+1 (TRUE short read) then a 0-byte EOF probe; byteLength is the TRUTH 9 — requested-based counting would have answered 11 (>cap) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑥ cooperative per-chunk cancellation > T6a pre-aborted structural signal: cancelled with byteLength 0 (the check runs before the FIRST chunk) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑥ cooperative per-chunk cancellation > T6b getter signal flipping at the 4th check: cancelled with EXACTLY the OBSERVED count (3 completed 4-byte chunks = 12) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑥ cooperative per-chunk cancellation > T6c real AbortController aborting mid-ring: cancelled, honest partial count (multiple of the chunk quantum, strictly below the cap+1 stop) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑥ cooperative per-chunk cancellation > T6d signal present but NOT aborted changes nothing (plain object and real AbortSignal) 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑦ multi-chunk accumulation crosses boundaries correctly > T7 1000-byte chunks against a 5001-byte ring: 5 full chunks + a 1-byte final chunk = 5001 exactly 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — ⑦ multi-chunk accumulation crosses boundaries correctly > T7b the DEFAULT 65536 chunk against a 100001-byte ring: 65536 + 34465 = 100001 (cap+1) across the default-chunk boundary 1ms
+ ✓ packages/runtime/test/a5m2-fs-bounded-read-c1.test.ts > a5m2 fs-bounded-read — T8 kernel structural law (zero open / zero consume / zero wording) > T8 single export; type-only import; no open/realpath/stat/utf8/Buffer/path/ledger/consume face; the only ok:false arm is cancelled 1ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  08:38:39
+   Duration  278ms (transform 58ms, setup 0ms, import 76ms, tests 21ms, environment 0ms)
+

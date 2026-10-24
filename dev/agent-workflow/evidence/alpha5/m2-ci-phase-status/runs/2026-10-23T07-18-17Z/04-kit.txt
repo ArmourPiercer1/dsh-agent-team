@@ -1,0 +1,15 @@
+OK   parity: test mirror body == patch §2 fence body (line-for-line, modulo TS annotations)
+DSH-CI-LEG leg=phase-status-proposed verdict=pass detail=real graph block vs real plan 当期三态指针 agree
+OK   real tree: proposed rule grades the production graph+plan GREEN (the patch will not mis-red the real leg)
+DSH-CI-LEG leg=phase-status-proposed verdict=fail detail=Q9: phase_status says M2-FROZEN but the plan 当期三态指针 says M2 进行中 — the milestone moved in one carrier only; update plan and pointer in the same commit
+OK   negative red: disagree (M2-FROZEN vs plan M2 进行中)
+DSH-CI-LEG leg=phase-status-proposed verdict=fail detail=Q9: current_contract.phase_status is missing — the milestone pointer is a required current field (found 0 inside the block)
+OK   negative red: phase_status missing
+DSH-CI-LEG leg=phase-status-proposed verdict=fail detail=Q9: current_contract.phase_status must be a single-line string scalar, got a flow/block value ([M0-FROZEN, M1-MERGED, M2-IN-PROGRESS])
+OK   negative red: non-scalar (flow value)
+DSH-CI-LEG leg=phase-status-proposed verdict=fail detail=Q9: current_contract.phase_status_collected is missing — every collected pointer owes its own timestamp
+OK   negative red: phase_status_collected missing
+gap (pre-landing, shipped checkCurrentContract on the contradicting graph): ["Q3: current_contract.backlog must appear exactly once inside the block (found 0; two active claims for one pointer)","Q3: current_contract.matrix must appear exactly once inside the block (found 0; two active claims for one pointer)","Q2: current_contract.backlog missing","Q2: current_contract.matrix missing","Q5: matrix file unreadable; row contract cannot be graded","Q6: AGENTS.md unreadable; reference discipline cannot be graded","Q6: backlog unreadable; reference discipline cannot be graded","Q6: matrix unreadable; reference discipline cannot be graded"]
+OK   gap pinned: the shipped reader does NOT yet grade phase_status (this card exists to close it)
+KIT VERDICT pass
+RC=0

@@ -508,8 +508,8 @@ describe('a3 static resolver — provenance first-match indexing and determinism
 // ---------------------------------------------------------------------------
 
 describe('a3 static resolver — tool vocabulary pin (A2 handoff)', () => {
-  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same seven names, same order)', () => {
+  it('A2 PERMISSION_TOOL_VALUES deep-equals A1 PERMISSION_TOOL_NAMES (same names, same order; root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed + G6/B-TEAM/G1/controls/spawn/goal + 2026-10-24 six terminal and B-SRE registration — 70, synced by the real enumeration)', () => {
     expect(PERMISSION_TOOL_VALUES).toEqual(PERMISSION_TOOL_NAMES)
-    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh'])
+    expect(PERMISSION_TOOL_NAMES).toEqual(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'schedule_list', 'schedule_delete', 'session_search', 'session_event_search', 'session_trace', 'session_event_trace', 'session_event_read', 'create_goal', 'get_goal', 'update_goal', 'todo_write', 'terminal_open', 'terminal_send', 'terminal_read', 'terminal_signal', 'terminal_close', 'terminal_list', 'run_code', 'plugin_manager', 'grep', 'glob', 'team_grep', 'team_glob', 'job_output', 'job_list', 'job_kill', 'stagehand_act', 'stagehand_extract', 'stagehand_navigate', 'stagehand_observe', 'stagehand_screenshot', 'stagehand_tabs', 'list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource', 'web_search', 'web_fetch', 'team_list_members', 'team_list_templates', 'team_inspect_config', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect', 'team_send_message', 'team_report_progress', 'team_archive_member', 'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control', 'team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission', 'str_replace_editor', 'interrupt_agent', 'list_agents', 'send_message', 'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models'])
   })
 })

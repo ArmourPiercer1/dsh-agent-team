@@ -1,0 +1,11 @@
+$ tsc -p tsconfig.json
+
+TYPECHECK_RC=0 (appended from typecheck.rc for provenance)
+
+== run-note (root 修复波定点实跑, M2-TODO-01) ==
+三条定点腿最终 rc: VITEST_RC=0 (20/20), TYPECHECK_RC=0 (整包), ESLINT_RC=0 (双件)。
+本目录内迭代披露: vitest/typecheck 首跑 RC=1/2, 红点全在本卡自己的两文件, 共四处修复:
+  (1) 正控 lane 形: PermissionTool 闭集 {read,read_image,write,edit,lsp,bash,pwsh} 不含 todo_write 且 default:'allow' 被蓝图语法拒 -> 正控改走 ASK_DEFAULT + approvingControlLeg 真落 kernel grant (admission-kernel.ts:830 / types.ts:106 / approval-case.ts:82 扩词用 effect.toolName);
+  (2) operationFingerprint 补 'sha256:' 前缀 (冻结 grant 语法 $.parametersFingerprint field-type 实跑撞出);
+  (3) T18(d) 第二票 classify 挪到 exec.agent 替换之前 (本腿自身时序错, 修复语义不变);
+  (4) 直调审批 leg 的共享 .d.mts 面为 PLANE-seam 同步最小面 -> 本文件内一处已披露 as-unknown-as 适配 (a5b3-cancel-leg 先例), 未动共享声明。

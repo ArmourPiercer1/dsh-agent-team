@@ -1,0 +1,4 @@
+VITEST_RC=0
+TYPECHECK_RC=0
+ESLINT_RC=0
+run-note: 根语义裁定消费面收敛轮 (parametersFingerprint=臂侧全值摘要不改算法; operationFingerprint=PA manifest digest, 臂不再自算); 字段改名 25 处, 字节算法零变

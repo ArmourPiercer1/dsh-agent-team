@@ -462,10 +462,38 @@ export type PaReadHandoffOutcome = {
      *  the backstop for the exec that really ran. */
     readonly ownsHandoff?: boolean;
 };
+/**
+ * A5M2 overlay-strict-b — the TRUSTED canonical context the adapter hands
+ * a port on the canonical path: the adapter's OWN CanonicalOperation facts
+ * for THIS exec (post-canonicalization, fail-closed upstream). It is an
+ * identity pair, never a substitute key: `fingerprint` is the OPERATION
+ * fingerprint and is NOT the parametersFingerprint the PA request carries
+ * — the two bind together for the same exec, never as each other. Ports
+ * must not widen it (no arguments, no paths: the canonical facts only).
+ */
+export interface PaCanonicalHandoffContext {
+    readonly tool: string;
+    readonly resourceKind: string;
+    readonly resourceKey: string;
+    readonly fingerprint: string;
+}
 /** The A5-M2 hand-off ports, supplied by the glue from ONE plane mount. */
 export interface PaReadHandoffPorts {
-    /** Run the plane's full PA admission (Part A) for THIS exec, pre-dispatch. */
-    readonly open: (exec: object) => Promise<PaReadHandoffOutcome>;
+    /**
+     * Run the plane's full PA admission (Part A) for THIS exec, pre-dispatch.
+     *
+     * A5M2 overlay-strict-b (root 2026-10-25) — the OPTIONAL second argument:
+     * the adapter's OWN canonicalized operation, supplied on the canonical
+     * hand-off path ONLY (after canonicalization succeeded — the same exec,
+     * the same call, one identity pair). A port that receives it may treat it
+     * as the TRUSTED operation identity of this exec; a port that receives
+     * `undefined` (an old port-facing call, or a non-canonical path such as
+     * the unsupported pass-through) must NOT synthesize an operation — the
+     * old template closed refusal runs byte-for-byte there (no fake op: an
+     * SRE-style unsupported name never gets a stand-in canonical here).
+     * The context must be readable BEFORE the port's first admitCall.
+     */
+    readonly open: (exec: object, canonical?: PaCanonicalHandoffContext) => Promise<PaReadHandoffOutcome>;
     /** Void everything this exec still holds (idempotent, synchronous). */
     readonly close: (exec: object) => void;
     /** The terminal leg: `'tools/result'` — the one funnel every pipeline
@@ -599,6 +627,47 @@ export interface InstallParameterPermissionListenerParams {
      * mount takeover-mounted as its governed read, and never adds an Ask.
      */
     readonly paReadHandoff?: PaReadHandoffPorts;
+    /**
+     * A5-M2 PA-WRITE HAND-OFF (root 13:38, the MIN product hand-off): the SAME
+     * audited port shape, supplied only when THIS mount carries the governed
+     * WRITE row. ABSENT = today exactly. When present, the ONE name the mount
+     * takeover-mounted as its governed write asks the effect-set question at PA
+     * here, and the old `parameter-permission` front door opens NOTHING for it;
+     * everything unknown / unmounted / drifted keeps the old path (the port
+     * itself answers `no-match` for those — never this adapter guessing by
+     * name).
+     */
+    readonly paWriteHandoff?: PaReadHandoffPorts;
+    /**
+     * A5-M2 PA-IMAGE HAND-OFF (root 14:44, the SYMMETRIC third port): the SAME
+     * audited port shape, supplied only when THIS mount carries the governed
+     * IMAGE row. ABSENT = today exactly. When present, the ONE name the mount
+     * takeover-mounted as its governed read_image asks the effect-set question
+     * at PA here, and the old `parameter-permission` front door opens NOTHING
+     * for it; the port answers `no-match` for every other name — never this
+     * adapter guessing by name.
+     */
+    readonly paImageHandoff?: PaReadHandoffPorts;
+    /**
+     * A5-M2 PA-EDIT HAND-OFF (root 2026-10-24, the SECOND known blocker — an
+     * existing-blocker fix kept SEPARATE from the dense-rungs `e10` core): the
+     * SAME audited port shape, supplied only when THIS mount carries the
+     * verified + ACTIVE governed EDIT row. The ONE durable effect-set Ask
+     * belongs to PA (the :1407-1417 law restated): the pre-dispatch walk asks
+     * it over the real `exec.token` identity and this adapter opens NO
+     * `parameter-permission` row for the call — an Alpha4 row without a PA
+     * manifest is a record, never a credential. EDIT/SRE not being wired here
+     * before this card was an implementation-SCOPE choice, never a second
+     * approval to keep. ABSENT = today exactly; `no-match` for every other
+     * name — never this adapter guessing by name.
+     */
+    readonly paEditHandoff?: PaReadHandoffPorts;
+    /**
+     * A5-M2 PA-SRE HAND-OFF: the symmetric SRE port — identical law and
+     * shape to `paEditHandoff` (the governed `str_replace_editor` row);
+     * absent/unmounted keeps today byte-identically.
+     */
+    readonly paSreHandoff?: PaReadHandoffPorts;
     /**
      * Strict-read + Core-spill (implementation guide §9) — the injected
      * artifact-grant authorization port: for `read` decisions only, it
