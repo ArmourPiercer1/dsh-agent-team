@@ -90,6 +90,11 @@ import { createAnchoredGlobBackend } from './glob-backend.mjs'
 import { A5_G1_RECORD_SPECS, A5_G1_ADAPTER_REVISION } from './governed-families/g1-surface-adapters.mjs'
 import { A5_G6_FAMILY, A5_G6_TOOL_NAMES } from './governed-families/g6-session-query.mjs'
 import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-wiring.mjs'
+// A5M2-G5 B-SESSION GOAL SERVICE (this lane's additive import rows under
+// the G6 pair): the goal wiring bridge and the adapter's OWN census face —
+// imported VERBATIM, no law restated here.
+import { A5_G5_FAMILY_ID, A5_G5_GOAL_TOOL_NAMES } from './governed-families/g5-goal-service.mjs'
+import { buildG5GoalWiring } from './governed-families/g5-goal-wiring.mjs'
 // A5M2-B-TEAM-WIRE (this lane's additive import rows under the G6 pair): the
 // controlled B-TEAM member-operation wiring bridge and the adapter's OWN
 // family facts (the closed ten + the adapter revision the durable claim
@@ -1213,6 +1218,57 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamCeiling: sessionQueryInjectRaw.teamCeiling,
       declaredMount: sessionQueryInjectRaw.declaredMount,
       ...(sessionQueryInjectRaw.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInjectRaw.maxSearchResults }),
+    })
+  }
+
+  // A5M2-G5 B-SESSION GOAL SERVICE (root 01:1x wiring lane, this lane's
+  // block): the CLOSED inject key set for the goal family — exactly
+  // {providerId, readNative, goals, blockedAfterConsecutiveRounds,
+  // readExecutionFacts, registrationOf}. An unknown key is a config defect:
+  // refused, never ignored. `goals` must be the LIVE ctx.goals GoalService
+  // object — the port never substitutes; the adapter's own port law decides
+  // each record (a service missing an individual method lands as the
+  // adapter's honest per-record INACTIVE census, not a plane refusal). The
+  // three goal names obey the same one-name-one-placement law as every
+  // other family on this mount.
+  const goalInjectRaw = input.backends?.goal
+  const goalInjectInvalid = (why) => ({ ok: false, code: 'GOAL_ARM_INJECT_INVALID', message: `backends.goal: ${why}` })
+  let goalInject = null
+  if (goalInjectRaw !== undefined) {
+    const g5IsRec = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+    const g5Known = new Set(['providerId', 'readNative', 'goals', 'blockedAfterConsecutiveRounds', 'readExecutionFacts', 'registrationOf'])
+    const g5Unknown = Object.keys(g5IsRec(goalInjectRaw) ? goalInjectRaw : {}).filter((k) => !g5Known.has(k))
+    const g5Bad = !g5IsRec(goalInjectRaw)
+      ? 'the inject must be one object'
+      : g5Unknown.length > 0
+        ? `unknown key(s) ${g5Unknown.join(', ')} — the closed set is exactly {providerId, readNative, goals, blockedAfterConsecutiveRounds, readExecutionFacts, registrationOf}`
+        : typeof goalInjectRaw.providerId !== 'string' || goalInjectRaw.providerId.length === 0
+          ? 'providerId (non-empty string) is REQUIRED — the trusted in-process identity of the goal-service provider'
+          : typeof goalInjectRaw.readNative !== 'function'
+            ? 'readNative (name) => definition | undefined is REQUIRED — the member-scoped capture seam (name => ctx.tools.get(name, scope)); captured canonical faces only'
+            : !g5IsRec(goalInjectRaw.goals)
+              ? 'goals is REQUIRED — the LIVE ctx.goals GoalService object; the port never substitutes a stand-in'
+              : goalInjectRaw.blockedAfterConsecutiveRounds !== undefined
+                && !(Number.isSafeInteger(goalInjectRaw.blockedAfterConsecutiveRounds) && goalInjectRaw.blockedAfterConsecutiveRounds > 0)
+                ? 'blockedAfterConsecutiveRounds, when supplied, must be a positive safe integer (the tool-goal Config fact, default 3)'
+                : goalInjectRaw.readExecutionFacts !== undefined && typeof goalInjectRaw.readExecutionFacts !== 'function'
+                  ? 'readExecutionFacts, when supplied, must be () => the execution authority fact — without it the row rides UNOBSERVED (the adapter\'s AUTHORITY named gap), never a pass'
+                  : goalInjectRaw.registrationOf !== undefined && typeof goalInjectRaw.registrationOf !== 'function'
+                    ? 'registrationOf, when supplied, must be () => { adapterRevision, providerIdentity } — the version the PUBLISHED family registration carries; the bridge pairs it against every claim (root ⑤)'
+                    : undefined
+    if (g5Bad !== undefined) return goalInjectInvalid(g5Bad)
+    for (const g5Name of A5_G5_GOAL_TOOL_NAMES) {
+      if (g5Name === readName || g5Name === A5_TODO_MOUNT_NAME || g5Name === A5_WRITE_MOUNT_NAME || g5Name === A5_IMAGE_MOUNT_NAME || A5_G6_TOOL_NAMES.includes(g5Name)) {
+        return goalInjectInvalid(`'${g5Name}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the G5 block)`)
+      }
+    }
+    goalInject = Object.freeze({
+      providerId: goalInjectRaw.providerId,
+      readNative: goalInjectRaw.readNative,
+      goals: goalInjectRaw.goals,
+      ...(goalInjectRaw.blockedAfterConsecutiveRounds === undefined ? {} : { blockedAfterConsecutiveRounds: goalInjectRaw.blockedAfterConsecutiveRounds }),
+      ...(goalInjectRaw.readExecutionFacts === undefined ? {} : { readExecutionFacts: goalInjectRaw.readExecutionFacts }),
+      ...(goalInjectRaw.registrationOf === undefined ? {} : { registrationOf: goalInjectRaw.registrationOf }),
     })
   }
 
@@ -4303,6 +4359,84 @@ export function createTeamToolPlaneAssembly(input = {}) {
       return { ok: false, code: 'SESSION_QUERY_ARM_REFUSED', message: `backends.sessionQuery: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
     }
   }
+  // A5M2-G5 B-SESSION GOAL SERVICE (root 01:1x, this lane's block): the
+  // wiring bridge over the released G5 goal adapter (rev.1, owner-released,
+  // imported VERBATIM — no row law restated, no gate added) assembled on
+  // THIS mount: the mount realm, the LIVE ctx.goals port carried by the
+  // inject, and THE REAL `paAdmit` seat — the same way the G6 block mounts
+  // `pa: paAdmit` (the CALLABLE carrying open/edge/closePlan; the bridge
+  // accepts that exact shape). The issued definitions join the SAME
+  // placement/feed/dispose machinery as every other row (zero-flip law:
+  // with no injection this is byte-identical to the pre-G5 assembly).
+  // DISCLOSED, never worded closed (the adapter's own named gaps): the
+  // AUTHORITY fact rides UNOBSERVED unless `readExecutionFacts` is injected,
+  // and until the rules lane extends the SIGNED B-SESSION table with the
+  // three goal variants, production paAdmit refuses these plans at the
+  // family-target check — the expected production behavior of this wiring
+  // today. No Host enablement, no C2 claim.
+  const g5TokenLedger = new Map()
+  let g5Wiring = null
+  if (goalInject !== null) {
+    // THE ISSUED CALL IDENTITY — the same a5p5 row-mount law the G6 block
+    // obeys (register.ts:196-226): per-mount nonce + seq, with the REAL host
+    // execution token (object | symbol — never String(), which would collide
+    // distinct symbol identities) as the single-flight key. No PA fact lives
+    // here: plan facts live only in paAdmit's own map and die through
+    // closePlan / the edge's finally; this map holds one correlation per
+    // execution token until the mount's ONE release point in dispose.
+    let g5CallSeq = 0
+    const g5MountNonce = String(globalThis.crypto?.randomUUID?.()
+      ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`)
+    const g5Prefix = `team-${String(input.instanceId ?? templateId ?? 'unknown')}-g5`
+    const g5CorrelationOf = (exec, toolName) => {
+      const raw = exec !== null && typeof exec === 'object' ? exec.token : undefined
+      const tokenKey = (typeof raw === 'object' && raw !== null) ? raw : typeof raw === 'symbol' ? raw : undefined
+      if (tokenKey !== undefined) {
+        if (g5TokenLedger.has(tokenKey)) {
+          observe(`a5m2-g5: token-replay REFUSED name=${String(toolName)} — one governed call per execution token`)
+          return null
+        }
+      }
+      g5CallSeq += 1
+      const callId = `${g5Prefix}-${String(toolName)}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${g5MountNonce}-${String(g5CallSeq)}`
+      if (tokenKey !== undefined) g5TokenLedger.set(tokenKey, callId)
+      return callId
+    }
+    try {
+      const builtG5 = buildG5GoalWiring({
+        realmId,
+        providerId: goalInject.providerId,
+        readNative: goalInject.readNative,
+        goals: goalInject.goals,
+        ...(goalInject.blockedAfterConsecutiveRounds === undefined ? {} : { blockedAfterConsecutiveRounds: goalInject.blockedAfterConsecutiveRounds }),
+        ...(goalInject.readExecutionFacts === undefined ? {} : { readExecutionFacts: goalInject.readExecutionFacts }),
+        ...(goalInject.registrationOf === undefined ? {} : { registrationOf: goalInject.registrationOf }),
+        correlationOf: g5CorrelationOf,
+        // THE LAZY FEED (pb §6, the placedByName law): the family
+        // registration key is read at MOUNT MOMENT from the placement
+        // record — never an eager snapshot, never a guessed def#.
+        placementFeed: (name) => {
+          const d = placedByName.get(name)
+          if (d === undefined) return undefined
+          const identity = definitionIdentityOf(d)
+          return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
+        },
+        // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
+        // Nothing else poses.
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-g5: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtG5.ok !== true) {
+        return { ok: false, code: 'GOAL_ARM_REFUSED', message: `backends.goal: the wiring bridge refused the mount (${String(builtG5.code)} — ${String(builtG5.detail)})` }
+      }
+      g5Wiring = builtG5
+      for (const declaredRow of g5Wiring.declared) {
+        observe(`a5m2-g5: DECLARED-INACTIVE ${String(declaredRow.name)} (${String(declaredRow.reason)}) — native untouched, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'GOAL_ARM_REFUSED', message: `backends.goal: the adapter's own capture/port law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
   // A5M2-B-TEAM-WIRE (root ruling: the mature adapter is wired, not shelved;
   // nothing here awaits another family): the controlled wiring bridge over
   // the root-reviewed B-TEAM adapter (rev.1, records 74–82 + 86, imported
@@ -4376,6 +4510,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const g6Defs = g6Wiring === null ? [] : g6Wiring.definitions
+  const g5Defs = g5Wiring === null ? [] : g5Wiring.definitions
   // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the trio definitions the
   // control WIRING built (captured native faces, ONLY execute replaced; each
   // body walks its own open→edge→consumedProof path through THIS plane's
@@ -4388,9 +4523,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -4434,6 +4569,19 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         placementNames: g6Wiring.placementNames,
         declared: g6Wiring.declared,
         familyRegistrations: g6Wiring.familyRegistrations,
+      }) }),
+      /** A5M2-G5 B-SESSION GOAL SERVICE (this lane's block): the goal wiring
+       *  face for THIS mount (omitted, NOT set to `undefined`, when the
+       *  family is not deployed — the presence-decision law the hand-off
+       *  faces obey). The mount writer reads `familyRegistrations()` AFTER
+       *  publish and pairs each entry with `registerA5GovernedFamily` (keys
+       *  fresh through THIS plane's placement feed, the G6 law); the drain
+       *  rides this mount's dispose, never the writer's. */
+      ...(g5Wiring === null ? {} : { goal: Object.freeze({
+        familyId: A5_G5_FAMILY_ID,
+        placementNames: g5Wiring.placementNames,
+        declared: g5Wiring.declared,
+        familyRegistrations: g5Wiring.familyRegistrations,
       }) }),
       /** A5-M2 B-SUBAGENT CONTROL (this lane's block, root 21:01 card): the
        *  control trio's wiring face for THIS mount (omitted, NOT set to
@@ -4683,6 +4831,13 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // token-ledger release below.
             if (g6Wiring !== null) g6Wiring.drain()
             g6TokenLedger.clear()
+            // A5M2-G5 B-SESSION GOAL SERVICE: the SAME teardown law —
+            // DRAINING is the wiring's new-call prohibition (committed
+            // session appends stay durable; the adapter owns no cancellable
+            // resource and nothing is rewound, never a fake rollback); the
+            // issued-identity ledger releases at its ONE legal end.
+            if (g5Wiring !== null) g5Wiring.drain()
+            g5TokenLedger.clear()
             // B-SCHEDULE: the same teardown law — new calls refuse at both
             // legs (arm classify and the assembly row); committed durable
             // state is untouched (new-call prohibition ONLY).
