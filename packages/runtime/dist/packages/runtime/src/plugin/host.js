@@ -189,6 +189,61 @@ function registerUpstreamResolverOnce() {
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
+/**
+ * ROOT 21:14 — the same-source target-vs-record comparison over the REAL
+ * assembly transportTarget shape (exported for the exact-shape positive/
+ * negative legs; the producer below and nothing else consumes it).
+ */
+export function g2ApprovedTargetMismatches(target, rec) {
+    const mismatches = [];
+    if (target?.transport === 'stdio') {
+        const spawn = target.spawn;
+        if (spawn?.argv0 !== rec.command)
+            mismatches.push(`spawn.argv0 '${String(spawn?.argv0)}' vs approved command '${String(rec.command)}'`);
+        const targetArgs = Array.isArray(spawn?.args) ? spawn.args : [];
+        const recArgs = Array.isArray(rec.args) ? rec.args : [];
+        if (targetArgs.length !== recArgs.length)
+            mismatches.push(`spawn.args length ${String(targetArgs.length)} vs approved args length ${String(recArgs.length)}`);
+        else
+            for (let i = 0; i < targetArgs.length; i++)
+                if (targetArgs[i] !== recArgs[i])
+                    mismatches.push(`spawn.args[${i}] '${String(targetArgs[i])}' vs approved args[${i}] '${String(recArgs[i])}'`);
+        if (spawn?.cwd !== (typeof rec.cwd === 'string' ? rec.cwd : ''))
+            mismatches.push(`spawn.cwd ${String(spawn?.cwd)} vs approved cwd ${String(rec.cwd)} (RAW law: '' stays '')`);
+    }
+    else if (target?.transport === 'streamable-http') {
+        let tUrl;
+        let rUrl;
+        try {
+            const u = new URL(String(target.endpointUrl));
+            tUrl = { origin: u.origin, pathname: u.pathname, search: u.search };
+        }
+        catch {
+            tUrl = undefined;
+        }
+        try {
+            const u = new URL(String(rec.url));
+            rUrl = { origin: u.origin, pathname: u.pathname, search: u.search };
+        }
+        catch {
+            rUrl = undefined;
+        }
+        if (tUrl === undefined || rUrl === undefined)
+            mismatches.push('endpointUrl/approved url not a parseable URL');
+        else {
+            if (tUrl.origin !== rUrl.origin)
+                mismatches.push(`endpointUrl origin '${tUrl.origin}' vs approved origin '${rUrl.origin}'`);
+            if (tUrl.pathname !== rUrl.pathname)
+                mismatches.push(`endpointUrl path '${tUrl.pathname}' vs approved path '${rUrl.pathname}'`);
+            if (tUrl.search !== rUrl.search)
+                mismatches.push(`endpointUrl query '${tUrl.search}' vs approved query '${rUrl.search}'`);
+        }
+    }
+    else {
+        mismatches.push(`unknown transport axis '${String(target?.transport)}'`);
+    }
+    return mismatches;
+}
 export function validateTeamPluginConfig(raw) {
     // NB: function declaration, not a const arrow — TypeScript 6.0.3 control
     // flow only treats a never-returning call as an abrupt completion when the
@@ -1560,6 +1615,228 @@ export async function apply(ctx, config) {
                 ptcRouter.onAgentDisposed(payload.agent);
             }, { global: true });
         }
+        /**
+         * A5-M2 G2 supply producer (round-19, root 20:24: 真实供给不以传参冒充).
+         * Builds the face the bindings' `deps.g2TeamAssembly()` accessor answers,
+         * from the APPROVED plugin config alone. What is REAL here (public ports
+         * verified at the pinned host @639ed01539):
+         * - entries: the pinned PUBLIC entry files load through the SIGNED owner
+         *   loader (createG2TeamAssemblySupply -> loadG2TeamAssemblyEntries);
+         * - transport: `createTransport` at mcp-client/src/transport.ts:31, PUBLIC
+         *   over the package `./src/*` exports map — the closure binds each
+         *   approved per-server connection record (the SAME record the config
+         *   validation ran), so the transport is built from approved config only,
+         *   never from row-side re-derivation (fail-closed on an unknown server);
+         * - the browser worker mapping: the PUBLIC worker face answers
+         *   `execute(method, args, signal)` (worker-client.ts:70-71, used exactly
+         *   so by the host plugin itself at index.ts:187).
+         * What stays a TYPED REFUSAL (public port genuinely absent — enumerated in
+         * dev/agent-workflow/evidence/a5m2-g2-wire/g2-supply-public-gap-639.md, NOT
+         * papered over with getters or a global provider swap): the TEAM-scoped
+         * `mcpResources` face (the public retrieval `ctx.inject(['mcpResources'],
+         * cb)` is a composition-fiber API — server-context.ts:29 is the ONLY host
+         * usage; no per-Team scoped retrieval exists from plugin-assembly code),
+         * and the per-SESSION `consumeBrowserApproval` (the Team PA plane edge —
+         * bindings-owned, built after the mount; the lazy-bind increment is named
+         * in the gap doc, with the callResource mapping above already real).
+         * Absent `teamToolPlane.g2Mount` config answers `undefined` (the bindings
+         * then refuse typed exactly as before — no behavior change for worlds
+         * without the block).
+         */
+        async function buildG2TeamSupply(cfg) {
+            const g2Mount = cfg.teamToolPlane?.g2Mount;
+            if (g2Mount === null || typeof g2Mount !== 'object')
+                return undefined;
+            // specifier via URL (the glueUrl pattern at :1932/:1945 — same module,
+            // same typing discipline: the cast below is the module's only type face).
+            const g2MountModuleUrl = new URL('./live/governed-families/g2-team-mount.mjs', import.meta.url).href;
+            const mountMod = (await import(g2MountModuleUrl));
+            const webSupplyMod = (await import(new URL('./live/governed-families/g2-web-supply.mjs', import.meta.url).href));
+            const webSeamMod = (await import(new URL('./live/governed-families/g2-provider-seams.mjs', import.meta.url).href));
+            const entryPaths = g2Mount.entryPaths;
+            const transportEntry = g2Mount.transportEntry;
+            const serverConfigs = g2Mount.serverConfigs;
+            const out = { entryPaths };
+            // ROOT 21:30: the apply-ctx inject was the WRONG scope (apply ctx !=
+            // the Host's opaque per-Agent scopeOf(this.ctx); per-rootSessionId does
+            // not equal a scope key — registering there would be GLOBAL). The real
+            // member/Team scope ctx ALREADY EXISTS in the glue (bindings
+            // state.mcpMountCtx :2262-2268, `createScope(agentCtx, runtimeAgent)` —
+            // the same context the mini-MCP fibers mount on, "NEVER the shared row
+            // ctx"), and the bindings read the face there and augment the supply
+            // pre-call. The host producer therefore stops minting/passing any face.
+            // ROOT 21:02: the factory is Team-owned and REAL over PUBLIC pieces —
+            // StdioClientTransport / StreamableHTTPClientTransport (@modelcontextprotocol
+            // /client + /client/stdio, the SDK public face transport.ts itself imports)
+            // + the Host PUBLIC scrubbedParentEnv (@deepseek-ai/dsh-subprocess). The
+            // construction mirrors the host's own createTransport (transport.ts:31-49:
+            // command/args/scrubbed+config env/cwd; URL + requestInit.headers) — the
+            // transport.ts UNDERLAY, not its governance. A configured transportEntry
+            // (source-checkout worlds) still wins; otherwise the PUBLIC bare specifiers
+            // resolve through the live install's own module tree (root-21:02 补核).
+            let buildTransport;
+            if (Array.isArray(serverConfigs)) {
+                if (typeof transportEntry === 'string' && transportEntry.length > 0) {
+                    const tMod = (await import(transportEntry));
+                    if (typeof tMod.createTransport !== 'function') {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the approved transport entry (${transportEntry}) answered no createTransport — minting nothing over a defective entry` };
+                    }
+                    buildTransport = (rec) => tMod.createTransport(rec);
+                }
+                else {
+                    try {
+                        const sdkRootSpecifier = '@modelcontextprotocol/client';
+                        const sdkStdioSpecifier = '@modelcontextprotocol/client/stdio';
+                        const subprocessSpecifier = '@deepseek-ai/dsh-subprocess';
+                        const sdkRoot = (await import(sdkRootSpecifier));
+                        const sdkStdio = (await import(sdkStdioSpecifier));
+                        const subprocess = (await import(subprocessSpecifier));
+                        if (typeof sdkStdio.StdioClientTransport !== 'function' || typeof sdkRoot.StreamableHTTPClientTransport !== 'function' || typeof subprocess.scrubbedParentEnv !== 'function') {
+                            throw new Error('the PUBLIC trio resolved but answered no StdioClientTransport/StreamableHTTPClientTransport/scrubbedParentEnv');
+                        }
+                        buildTransport = (rec) => rec.transport === 'stdio'
+                            ? new sdkStdio.StdioClientTransport({
+                                command: rec.command,
+                                args: Array.isArray(rec.args) ? rec.args : [],
+                                env: { ...subprocess.scrubbedParentEnv(), ...(rec.env ?? {}) },
+                                cwd: typeof rec.cwd === 'string' ? rec.cwd : '',
+                            })
+                            : new sdkRoot.StreamableHTTPClientTransport(new URL(String(rec.url)), { requestInit: { headers: (rec.headers ?? {}) } });
+                    }
+                    catch (error) {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `no transport producer resolved: neither an approved transportEntry nor the PUBLIC bare trio (@modelcontextprotocol/client, /stdio, @deepseek-ai/dsh-subprocess — the pieces transport.ts:9-12 itself imports): ${String(error?.message ?? error).slice(0, 200)}` };
+                    }
+                }
+            }
+            if (buildTransport !== undefined && Array.isArray(serverConfigs)) {
+                const byServer = new Map();
+                for (const rec of serverConfigs) {
+                    if (typeof rec?.serverName === 'string')
+                        byServer.set(rec.serverName, rec);
+                }
+                // SYNC factory (the port calls makeTransport(target) synchronously and
+                // requires a Transport {start,send/close} back — g2-team-assembly
+                // :331-333). The approved record is the ONLY source; an unknown server
+                // name refuses, the row facts never re-derive a connection.
+                out.makeTransport = (target) => {
+                    const rec = byServer.get(String(target?.server));
+                    if (rec === undefined || rec.transport !== target?.transport) {
+                        throw new Error(`g2TeamAssembly: no approved ${String(target?.transport)} connection record for server '${String(target?.server)}' — the transport is fixed by approved config, never by row-side facts`);
+                    }
+                    // ROOT 21:14 (one narrow fix, assembly interface UNTOUCHED): the
+                    // factory consumes the REAL transportTarget the assembly hands it
+                    // (g2-team-assembly :273-278: { server, transport, endpointUrl? FULL
+                    // URL, spawn? { argv0, args[], cwd RAW } }) — the 21:01 read of the
+                    // summary fields (spawnArgv0/... /endpointOrigin) refused even valid
+                    // configs. Full compare now: argv0, EVERY args element (not just the
+                    // count), RAW cwd, and the FULL URL (origin + path + query) vs the
+                    // actual approved record — divergence throws BEFORE construction.
+                    const mismatches = g2ApprovedTargetMismatches(target, rec);
+                    if (mismatches.length > 0) {
+                        throw new Error(`g2TeamAssembly: the transport target and the approved ${String(target?.transport)} record for server '${String(target?.server)}' are NOT same-source (${mismatches.join('; ')}) — refusing before construction; no transport object exists`);
+                    }
+                    return buildTransport(rec);
+                };
+            }
+            // The PUBLIC stagehand worker mapping stays REAL and in place for the
+            // browser half (evidence cited above) — but it may only ride a supply
+            // that ALSO carries the Team PA approval face (the producer's
+            // all-or-nothing pairing): a mapping without its approval edge is a
+            // half-supply, and the per-session consumeApproval is bindings-owned.
+            // The host has no session edge to pass YET, so the mapping is passed
+            // through ONLY when a consumeBrowserApproval arrives on g2Mount's
+            // producer input (test/verification worlds); otherwise browser stays
+            // the typed pairing refusal, unchanged.
+            const g2CallResource = async (resource, method, args, signal) => {
+                // ROOT 21:01: the port hands the LEASE-OWNED resource ({ value, close }
+                // — the lease's law at g2-team-assembly :331 shape contract); the
+                // runtime is resource.value; execute binds THAT value, never a swapped
+                // runtime, and the close owner stays the lease.
+                const runtime = resource?.value;
+                const execute = runtime?.execute;
+                if (typeof execute !== 'function')
+                    throw new Error('g2TeamAssembly.callResource: the lease-owned resource.value answers no execute(method, args, signal) (worker-client.ts:70-71 public face on the leased runtime) — refusing, no fallback, no runtime swap');
+                return await execute.call(runtime, method, args, signal);
+            };
+            const g2ConsumeBrowserApproval = g2Mount.consumeBrowserApproval;
+            if (typeof g2ConsumeBrowserApproval === 'function') {
+                out.consumeBrowserApproval = g2ConsumeBrowserApproval;
+                out.callResource = g2CallResource;
+            }
+            // The two faces the host genuinely cannot mint TODAY (gap doc, fork
+            // options enumerated): passed ABSENT so the producer's own typed refusal
+            // names them at supply time, config-armed world or not.
+            // ROOT 01:0x CORRECTED ROUTE (not a new WebRuntime, not a composition,
+            // no register-equals-scope claim): the ORIGINAL authorized tool-level
+            // Team-only fork — when this Team's row config declares
+            // g2Mount.webFixedProvider, we build the SAME fixed provider through
+            // the PUBLIC root of @deepseek-ai/dsh-web-fetch-http (lib/index.js is
+            // shipped and resolvable; Config + HttpFetchProvider are exported) and
+            // hand the INSTANCE to the tool gateway directly. The valid config has
+            // ONE source: the host's own exported schemastery `Config` schema —
+            // parse(rowDeclared) fills exactly the defaulted fields the host's own
+            // apply() resolves, then the SAME mapping (index.ts:86-92 verbatim);
+            // this producer never invents a default, never touches a global
+            // provider id or env, and noTeam never reads this path (row-scoped
+            // config + per-instance plugin, cited law). Transport resolution stays
+            // the constructor's public default (publicHttpNetwork.resolve).
+            const webFixedCfg = g2Mount?.webFixedProvider;
+            if (webFixedCfg?.enabled === true) {
+                const webFetchSpecifier = '@deepseek-ai/dsh-web-fetch-http';
+                try {
+                    const webMod = (await import(webFetchSpecifier));
+                    const resolved = webMod.Config.parse(webFixedCfg.config ?? {});
+                    // root f792-review ①: the exported Config carries types/defaults
+                    // ONLY — the POSITIVE-FINITE / timer-range / NON-NEGATIVE-INTEGER
+                    // laws live in the host's apply() asserts (:82-85), NOT in the
+                    // schema. Equivalent checks run HERE before construction (never
+                    // claimed otherwise):
+                    const posFin = (k) => { const v = resolved[k]; if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0)
+                        return `webFixedProvider.config.${k} must be a positive finite number (the host's apply-law)`; return null; };
+                    for (const k of ['maxResponseBytes', 'maxBodyChars', 'timeoutMs']) {
+                        const bad = posFin(k);
+                        if (bad !== null)
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: bad };
+                    }
+                    if (typeof resolved.timeoutMs === 'number' && resolved.timeoutMs > 2_147_483_647) {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webFixedProvider.config.timeoutMs exceeds the Node timer range (the host assertTimeoutMs law)' };
+                    }
+                    const mr = resolved.maxRedirects;
+                    if (typeof mr !== 'number' || !Number.isInteger(mr) || mr < 0) {
+                        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webFixedProvider.config.maxRedirects must be a non-negative integer (the host assertNonNegativeInteger law)' };
+                    }
+                    // mapping verbatim (index.ts:86-92):
+                    const limits = {
+                        maxResponseBytes: resolved.maxResponseBytes,
+                        maxBodyChars: resolved.maxBodyChars,
+                        timeoutMs: resolved.timeoutMs,
+                        maxRedirects: resolved.maxRedirects,
+                        userAgent: resolved.userAgent,
+                    };
+                    // root 01:2x: the gateway receives a FIXED capture+bind face over
+                    // the constructed provider (AbortSignal passes verbatim; NO dynamic
+                    // re-fetch; search stays null — HttpFetchProvider does not search
+                    // and fetch never impersonates it).
+                    const fixedProvider = new webMod.HttpFetchProvider(limits);
+                    out.webFixedTransport = webSupplyMod.createG2FixedWebFace(fixedProvider);
+                    // ROOT card pairing: the Team-only FIXED lane for the plane's B-WEB
+                    // closed face is supplied HERE over the SAME real provider (the
+                    // reviewed seam pins it; declared envelope + current reader ride the
+                    // row-declared config — nothing constant, lane THROW = typed refusal
+                    // through the catch below).
+                    out.webFixedLanes = mountMod.createG2WebFixedLanes({
+                        fixedProvider: fixedProvider,
+                        seamMod: webSeamMod,
+                        declared: webFixedCfg.declared ?? {},
+                        readMountFacts: () => webFixedCfg.declared ?? {},
+                    });
+                }
+                catch (error) {
+                    return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String(error?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` };
+                }
+            }
+            return await mountMod.createG2TeamAssemblySupply(out);
+        }
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1602,11 +1879,23 @@ export async function apply(ctx, config) {
             jobs: () => ctx.get('jobs'),
             // M2 B-WEB (a5m2w): the same lazy global-store read as jobs, resolved at call time.
             web: () => ctx.get('web'),
+            webFixed: async () => {
+                const g2Cfg = resolvedRowConfig.teamToolPlane?.g2Mount;
+                if (typeof g2Cfg !== 'object' || g2Cfg === null)
+                    return undefined;
+                const built = await buildG2TeamSupply(resolvedRowConfig);
+                return built?.supply?.webFixedTransport;
+            },
             // A5-M2 B-IMAGE: the same lazy shape for the 639 public `attachments` service
             // (the store hand-face of the governed read_image triple). Additive optional,
             // never in a hard inject: worlds without the service answer the assembly's
             // observed store-absent lane, the gate-on mount refuses at the plane.
             attachments: () => ctx.get('attachments'),
+            // A5-M2 G2 (round-19): the lazy per-Team G2 supply accessor (see
+            // buildG2TeamSupply). Absent `teamToolPlane.g2Mount` config answers
+            // undefined — the bindings then refuse typed; NOTHING changes for
+            // worlds without the block (additive optional, never a hard inject).
+            g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig)),
             // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
             // `llm` service — the SAME token native read-image.ts:119-130 answers
             // `resolveModelInfo` through for its image-capability route gate. Resolved

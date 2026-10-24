@@ -83,6 +83,12 @@ type TeamApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavaila
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
+/**
+ * ROOT 21:14 — the same-source target-vs-record comparison over the REAL
+ * assembly transportTarget shape (exported for the exact-shape positive/
+ * negative legs; the producer below and nothing else consumes it).
+ */
+export declare function g2ApprovedTargetMismatches(target: Record<string, unknown>, rec: Record<string, unknown>): string[];
 export declare function validateTeamPluginConfig(raw: unknown): TeamPluginConfig;
 /**
  * The default live-agent glue URL, derived from this host entry's own
