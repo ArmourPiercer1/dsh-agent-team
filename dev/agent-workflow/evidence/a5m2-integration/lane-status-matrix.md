@@ -281,13 +281,14 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 |---|---|---|---|---|
 | run_code (B-PTC) | **未接线**（撤注册后）+总次数cap=**未开发**(639零面,披露制) | 44ece | 公开 seam 接线 commit；真实 Host 验收 | 接线卡 A/B 收尾→本地合，不推 |
 | search 供给 (G2-web) | 接线未测 | e78 | 外部验收=用户 key+三选一；部署 cap 逐次 mirror | e78：用已验证 boot 公共函数做 C2 场景准备（只 import，不 fork 生命周期） |
-| terminal (G3-term) | 接线未测 | 8e62e20c | Host 窗验收 | 同上口径的 terminal 场景准备腿 |
-| goal-service/session (G5) | 接线未测（88/88 测面） | 8722db94 关卡/00270f41 | Host 窗；G6 生命周期=**裁决未落**（未开发段） | G6 生命周期仅出方案纸，不写挂载 |
+| terminal (G3-term) | 接线未测 | 8e62e20c | Host 窗验收；**Terminal 受控 route+mount 世代身份已批（用户裁决 2）** | 8e62e20c：a5G3RouteIdentity 助手+backend() 换返回+drift 测试腿（~190 行 6 文件，实施中） |
+| goal-service/session (G5/G6) | 接线未测（88/88 测面） | 00270f41 | **G6 Provider 生命周期已批（用户裁决 3）**：非 ACTIVE 即拒/旧批准失效/无私符号 | 00270f41：矛盾位清单→lifecycle 锚定增改（已 GO） |
 | team (B-TEAM) | 接线未测；窗1备而不启 | **9c 独占入口**（禁并写） | 集中卡四项闭合+根窗 GO+PA=NOT_VERIFIED 待窗内日志定 | 9c 四项一笔 commit（在途） |
-| schedule (B-SCHEDULE) | 接线未测 | d675792d | Schedule 接管=**裁决未落**；Host | 场景准备腿（复用公共 boot 函数）；接管仅方案 |
+| schedule (B-SCHEDULE) | 接线未测 | d675792d | **原上游接管方案暂停（用户裁决 4：禁直接改上游源码）**；仅整插件 fork 或公开接口两路线 | d675792d：路线选项核查（公开接口=公开面实证；fork 承载面清单），只查不实现 |
 | subagent 适配器 | 接线未测 | 2aeefdeb | Host 窗 | 场景准备腿 |
-| image | 接线未测 | 5a473417 | r18 Host 复验 kit 未跑 | kit 准备收尾（原卡在案） |
+| image | **已测试（限定范围：bf4 固定三 case 已核）**；H1/H2 等未测面保持未测 | 5a473417 | H1/H2 未测面的 Host 复验 | r18 复验 kit 收尾（原卡在案） |
 | spill-local | 接线未测（lint 外文件链接根错在案） | cf8e0202 | Host 窗 | 场景准备腿 |
 | provider-id | 接线未测 | eb4d6466/d51973541 关卡 | Host 窗 | 无冲突则并入他窗场景准备，不单开 |
 
 **吞吐纪律**：每行只列一条下一实际命令；派工≠启动；任何新 Host=原窗口 GO；9c driver 入口禁并写；无 clone/install。
+- **用户四裁决落地派工（中心 13:2x）**：2/3=已批→8e62e20c/00270f41 恢复实现（首令已发、00270f41 矛盾位清单已回+GO）；1/4=禁直接改上游源码，仅 整插件 fork 或 公开接口（源码构建 Host 之真公开面可暂不支持 npm 包，但须事实核、私有深路径不算公开）→d675792d 路线核查、exports 同约束；e78=search 供给清单（以 b2 真实解析为准，禁新装）。**本地合流（不推，census in_progress@447e）**：44ece run_code 终裁 A/B（195fc6aa0）+9c 派生/窗案/集中卡（f3e36b065，冲突=收据 append-only 双保留）。image 行按根令改**已测试（限定范围：bf4 固定三 case）**，H1/H2 保持未测。
