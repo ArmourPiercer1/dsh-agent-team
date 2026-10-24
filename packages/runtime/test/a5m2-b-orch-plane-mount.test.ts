@@ -89,6 +89,7 @@ function makeWiring (planeRef: { current: PlaneValue | null }): { calls: string[
     workflowDelegates: delegates,
     liveWorkflowDelegates: () => delegates,
     placementFeed: (name: string) => planeRef.current?.placementFeed(name),
+    governedProvider: { name: 'team-governed-spawn', isActive: () => true, activeCalls: new WeakMap() },
     pa: Object.freeze(Object.assign(
       async () => ({ kind: 'allow', consumedProof: { token: 'spec-proof' } }),
       { closePlan: (_callId: string) => { /* spec plane */ } },
@@ -123,23 +124,27 @@ describe('a5m2-b-orch-plane-mount (b) the injection law', () => {
     const planeRef: { current: PlaneValue | null } = { current: null }
     const { wiring } = makeWiring(planeRef)
     expect(wiring.ok).toBe(true)
-    const enabledNoInject = buildPlane({ plane: { bOrchestrationEnabled: true } })
+    const enabledNoInject = buildPlane({ plane: { bOrchestrationEnabled: true, bOrchestrationRouting: 'team-governed-spawn' } })
     expect(enabledNoInject.ok).toBe(false)
     expect(enabledNoInject.code).toBe('B_ORCHESTRATION_INJECT_INVALID')
     const gateOffInject = buildPlane({ plane: {}, backends: { bOrchestration: injectOf(wiring) } })
     expect(gateOffInject.ok).toBe(false)
     expect(gateOffInject.code).toBe('B_ORCHESTRATION_INJECT_INVALID')
+    const routingPair = makeWiring({ current: null })
+    const noRouting = buildPlane({ plane: { bOrchestrationEnabled: true }, backends: { bOrchestration: injectOf(routingPair.wiring) } })
+    expect(noRouting.ok, 'an ARMED plane without routing evidence refuses the mount — the seat would have no name to drift-gate').toBe(false)
+    expect(String(noRouting.message)).toContain('bOrchestrationRouting')
     const nonBoolean = buildPlane({ plane: { bOrchestrationEnabled: 'yes' }, backends: { bOrchestration: injectOf(wiring) } })
     expect(nonBoolean.ok).toBe(false)
     expect(nonBoolean.code).toBe('B_ORCHESTRATION_INJECT_INVALID')
     const badFamily = buildPlane({
-      plane: { bOrchestrationEnabled: true },
+      plane: { bOrchestrationEnabled: true, bOrchestrationRouting: 'team-governed-spawn' },
       backends: { bOrchestration: Object.freeze({ ...injectOf(wiring), familyId: 'B-WRONG' }) },
     })
     expect(badFamily.ok).toBe(false)
     expect(badFamily.code).toBe('B_ORCHESTRATION_INJECT_INVALID')
     const extraKey = buildPlane({
-      plane: { bOrchestrationEnabled: true },
+      plane: { bOrchestrationEnabled: true, bOrchestrationRouting: 'team-governed-spawn' },
       backends: { bOrchestration: Object.freeze({ ...injectOf(wiring), extra: 1 }) },
     })
     expect(extraKey.ok).toBe(false)
@@ -156,7 +161,7 @@ describe('a5m2-b-orch-plane-mount (b) the injection law', () => {
       familyRegistrations: () => [],
       dispose: () => ({}),
     })
-    const missingAlways = buildPlane({ plane: { bOrchestrationEnabled: true }, backends: { bOrchestration: ralphInject } })
+    const missingAlways = buildPlane({ plane: { bOrchestrationEnabled: true, bOrchestrationRouting: 'team-governed-spawn' }, backends: { bOrchestration: ralphInject } })
     expect(missingAlways.ok).toBe(false)
     expect(missingAlways.message).toContain('always record')
   })
@@ -167,7 +172,7 @@ describe('a5m2-b-orch-plane-mount (c/d) placement, registry round-trip, teardown
     const planeRef: { current: PlaneValue | null } = { current: null }
     const { calls, wiring } = makeWiring(planeRef)
     expect(wiring.ok).toBe(true)
-    const built = buildPlane({ plane: { bOrchestrationEnabled: true }, backends: { bOrchestration: injectOf(wiring) } })
+    const built = buildPlane({ plane: { bOrchestrationEnabled: true, bOrchestrationRouting: 'team-governed-spawn' }, backends: { bOrchestration: injectOf(wiring) } })
     expect(built.ok, built.message).toBe(true)
     const value = built.value
     if (value === undefined) throw new Error('no plane value')

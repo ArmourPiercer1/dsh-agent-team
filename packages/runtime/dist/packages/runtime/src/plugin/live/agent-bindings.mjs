@@ -400,6 +400,7 @@ import { createScheduleWiring, createGovernedScheduleArm } from './governed-fami
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
 import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
 import { createBOrchestrationExecutionWiring } from './governed-families/workflow-wiring.mjs'
+import { createTeamGovernedSubagentProvider } from './governed-families/team-governed-provider.mjs'
 import { A5_B_ORCHESTRATION_TOOL_NAMES } from './governed-families/workflow-adapters.mjs'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
@@ -4877,6 +4878,59 @@ export function createAgentBindings(deps) {
             bOrchDelegates[orchName] = nativeFace.execute
           }
           const bOrchLiveDelegates = Object.freeze({ ...bOrchDelegates })
+          // PAIRING (center A-E card): the Team-governed SubagentProvider,
+          // registered under the EXACT routed name the deployment declared
+          // (planeCfg.bOrchestrationRouting = what workflow-ptc
+          // Config.provider / ralph Config.subagentProvider point at — the
+          // global spawn service is NOT replaced, names coexist). The seat
+          // opens only while registered; children then ride the provider's
+          // admission-before-create / restrict-before-publish law.
+          if (agents === null || typeof agents !== 'object' || typeof agents.create !== 'function') {
+            throw refuseBOrch('the public agents.create seam is not answerable (deps.agents.create) — the governed provider cannot establish children through anything else')
+          }
+          if (deps.subagents === null || typeof deps.subagents !== 'object' || typeof deps.subagents.registerProvider !== 'function') {
+            throw refuseBOrch('the public subagents.registerProvider seam is not answerable — no governed provider can be registered, and an unrouted mount must stay fail-closed rather than execute')
+          }
+          const bOrchRoutedName = typeof planeCfg.bOrchestrationRouting === 'string' && planeCfg.bOrchestrationRouting.length > 0 ? planeCfg.bOrchestrationRouting : null
+          if (bOrchRoutedName === null) {
+            throw refuseBOrch('planeCfg.bOrchestrationRouting is absent — the deployment must declare which provider name the engines route to (the seat drift-gates on it; a silent default would be a mis-deployed world executing)')
+          }
+          const bOrchActiveCalls = new WeakMap()
+          const bOrchLaneDenies = Object.freeze([...new Set((Array.isArray(permissionPolicy?.deny) ? permissionPolicy.deny : [])
+            .map((row) => (typeof row === 'string' ? row : row?.tool ?? row?.toolName ?? row?.name))
+            .filter((n) => typeof n === 'string' && n.length > 0))])
+          const bOrchPa = Object.assign(
+            (walk) => {
+              if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
+                return Promise.reject(new Error('the placed plane answers no paAdmit funnel — the execution arms have no unadmitted path'))
+              }
+              return a5PlaneValue.paAdmit(walk)
+            },
+            {
+              closePlan: (callId) => {
+                a5PlaneValue?.paAdmit?.closePlan?.(callId)
+              },
+            },
+          )
+          const bOrchTgp = createTeamGovernedSubagentProvider({
+            name: bOrchRoutedName,
+            agents,
+            pa: bOrchPa,
+            teamActivation: { runOwned: runOwnedActivation, wrapSetup: teamOwnedSetup },
+            laneResolver: () => ({ deny: [...bOrchLaneDenies] }),
+            activeCalls: bOrchActiveCalls,
+            observe: (row) => observations.push(`a5m2-b-orchestration-tgp: ${String(row?.event ?? 'event')} ${String(row?.callId ?? '')}`),
+          })
+          if (bOrchTgp.name !== bOrchRoutedName) {
+            throw refuseBOrch(`the governed provider refused its inputs (${String(bOrchTgp.code)}: ${String(bOrchTgp.message ?? '').slice(0, 140)})`)
+          }
+          let bOrchTgpDisposer = null
+          try {
+            bOrchTgpDisposer = deps.subagents.registerProvider(bOrchTgp)
+          } catch (error) {
+            throw refuseBOrch(`the public registerProvider seam refused the governed provider '${bOrchRoutedName}' (${String(error?.message ?? error).slice(0, 140)}) — a name collision means ANOTHER provider holds the routed name: refuse, never evict`)
+          }
+          if (typeof bOrchTgpDisposer !== 'function') bOrchTgpDisposer = null
           const bOrchAssembly = createBOrchestrationExecutionWiring({
             providerId: 'a5p5-plane',
             captured: Object.freeze({ ...bOrchCaptured }),
@@ -4899,6 +4953,7 @@ export function createAgentBindings(deps) {
             },
             workflowDelegates: Object.freeze({ ...bOrchDelegates }),
             liveWorkflowDelegates: () => bOrchLiveDelegates,
+            governedProvider: { name: bOrchRoutedName, isActive: () => bOrchTgpDisposer !== null, activeCalls: bOrchActiveCalls },
             placementFeed: (name) => {
               const fed = a5PlaneValue?.placementFeed?.(name)
               if (fed === undefined || fed === null) return undefined
@@ -4907,19 +4962,7 @@ export function createAgentBindings(deps) {
                 realmId: typeof fed.realmId === 'string' && fed.realmId.length > 0 ? fed.realmId : undefined,
               }
             },
-            pa: Object.assign(
-              (walk) => {
-                if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
-                  return Promise.reject(new Error('the placed plane answers no paAdmit funnel — the execution arms have no unadmitted path'))
-                }
-                return a5PlaneValue.paAdmit(walk)
-              },
-              {
-                closePlan: (callId) => {
-                  a5PlaneValue?.paAdmit?.closePlan?.(callId)
-                },
-              },
-            ),
+            pa: bOrchPa,
             observe: (row) => observations.push(`a5m2-b-orchestration: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
           })
           if (bOrchAssembly.ok !== true) {
@@ -4931,7 +4974,17 @@ export function createAgentBindings(deps) {
             providerId: bOrchAssembly.providerId,
             placementNames: bOrchAssembly.placementNames,
             familyRegistrations: bOrchAssembly.familyRegistrations,
-            dispose: bOrchAssembly.dispose,
+            dispose: () => {
+              // teardown order IS the law: unregister the routed name FIRST (a torn
+              // mount never leaves a live provider answering global-looking starts),
+              // then the wiring's drain.
+              if (bOrchTgpDisposer !== null) {
+                const off = bOrchTgpDisposer
+                bOrchTgpDisposer = null
+                try { off() } catch { /* best-effort, exactly once */ }
+              }
+              return bOrchAssembly.dispose()
+            },
           })
           observations.push(`a5m2-b-orchestration: ARMED for ${sessionId} (workflow always${Object.prototype.hasOwnProperty.call(bOrchCaptured, 'ralph') ? ' + captured ralph' : '; ralph carried as the adapter\'s DECLARED row — zero-flip'})`)
         }
