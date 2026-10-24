@@ -1,0 +1,158 @@
+{
+  "pins": {
+    "packGit": "7feb6a5e22bf7c531c1d679c786618b826b6ccdd",
+    "packTipEquiv": "root direct-supply pin 2026-10-24T16:37Z (coverage card closed, incl. real 562 ACTIVE mapping; no overlay fix yet)",
+    "tgz": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-7feb6a5e-20261024T163712Z/dsh-agent-team-0.1.1-alpha.2.tgz",
+    "tgzSha": "8e1eb73096b921128d585343015923e71c70c4edbe0af888294af2ceefda2146",
+    "install": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730",
+    "lockSha": "08fd5788e9b80432f30d2649ea473b2d8bf55003556188152eba2bb5b800e9de",
+    "pkgSha": "3b3319b5c38d567e807d6b74b69be71a3e0dfa14773c4cba0e0ea84b035ca3b7",
+    "hostGit": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "dfFloor": 6442450944,
+    "homeCap": 67108864
+  },
+  "fiveNames639": [
+    {
+      "name": "session_search",
+      "lib": "lib/index.js:956"
+    },
+    {
+      "name": "session_event_search",
+      "lib": "lib/index.js:965"
+    },
+    {
+      "name": "session_trace",
+      "lib": "lib/index.js:974"
+    },
+    {
+      "name": "session_event_trace",
+      "lib": "lib/index.js:983"
+    },
+    {
+      "name": "session_event_read",
+      "lib": "lib/index.js:999"
+    }
+  ],
+  "takeover": [
+    2391,
+    2403
+  ],
+  "checks": [
+    {
+      "name": "tgz-present-and-sha",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-7feb6a5e-20261024T163712Z/dsh-agent-team-0.1.1-alpha.2.tgz"
+    },
+    {
+      "name": "install-lock-sha",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/pnpm-lock.yaml"
+    },
+    {
+      "name": "install-fixture-pkg-sha (center pkg pin)",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/package.json"
+    },
+    {
+      "name": "host639-head",
+      "verdict": "PASS",
+      "detail": "HEAD=639ed01539 dirty=clean"
+    },
+    {
+      "name": "639-five-names",
+      "verdict": "PASS",
+      "detail": "[{\"name\":\"session_search\",\"lib\":\"lib/index.js:956\"},{\"name\":\"session_event_search\",\"lib\":\"lib/index.js:965\"},{\"name\":\"session_trace\",\"lib\":\"lib/index.js:974\"},{\"name\":\"session_event_trace\",\"lib\":\"lib/index.js:983\"},{\"name\":\"session_event_read\",\"lib\":\"lib/index.js:999\"}]"
+    },
+    {
+      "name": "2fb-five-names (g6-session-query.mjs A5_G6_TOOL_NAMES)",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/node_modules/.pnpm/dsh-agent-team@file+..+out-7feb6a5e-20261024T163712Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_93f8dd1dc5287aed564e2fd2fdafd3e0/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs"
+    },
+    {
+      "name": "2fb-takeover-lines (host.js LAZY supply)",
+      "verdict": "PASS",
+      "detail": "host.js:2391,host.js:2403"
+    },
+    {
+      "name": "row-present:row-host.js",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/node_modules/.pnpm/dsh-agent-team@file+..+out-7feb6a5e-20261024T163712Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_93f8dd1dc5287aed564e2fd2fdafd3e0/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+    },
+    {
+      "name": "row-present:glue-agent-bindings.mjs",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/node_modules/.pnpm/dsh-agent-team@file+..+out-7feb6a5e-20261024T163712Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_93f8dd1dc5287aed564e2fd2fdafd3e0/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+    },
+    {
+      "name": "row-present:seam.mjs",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/node_modules/.pnpm/dsh-agent-team@file+..+out-7feb6a5e-20261024T163712Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_93f8dd1dc5287aed564e2fd2fdafd3e0/node_modules/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs"
+    },
+    {
+      "name": "row-present:blueprint-validate.js",
+      "verdict": "PASS",
+      "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730/node_modules/.pnpm/dsh-agent-team@file+..+out-7feb6a5e-20261024T163712Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_93f8dd1dc5287aed564e2fd2fdafd3e0/node_modules/dsh-agent-team/packages/runtime/dist/packages/domain/blueprint/src/validate.js"
+    },
+    {
+      "name": "pinpatch-all-anchors-exact-once",
+      "verdict": "PASS",
+      "detail": "pin-fixture-install,pin-lock-sha,pin-tgz-path,pin-tgz-sha,law-world-const,law-world-name-clean,law-world-borrow,law-ports-blacklist,law-default-port,law-default-mock,case-c2b-strict-content,blueprint-deny-15-leader,blueprint-deny-15-worker,profile-layer-er-config,mock-tool-visibility-law,cli-emit-patch-offline"
+    },
+    {
+      "name": "blueprint-parser-replay-on-derived-source",
+      "verdict": "PASS",
+      "detail": "schemaVersion=3 contentHash=sha256:dfdf550c1…"
+    },
+    {
+      "name": "blueprint-deny-exact-15-both-lanes",
+      "verdict": "PASS",
+      "detail": "lanes=2 sizes=[16,16] raw15 all present, none faked/wildcarded"
+    },
+    {
+      "name": "blueprint-deny-excludes-session-query-targets",
+      "verdict": "PASS",
+      "detail": "session_* in deny lists: [] (must be empty — the target tool stays live)"
+    },
+    {
+      "name": "home-law",
+      "verdict": "PASS",
+      "detail": "default law: FRESH stamped empty HOME this window (driver mkdirs+monitors <=64MiB; RETAINED after run — no self-deletion, deletion never a gate); no copies of dirs/deps/store"
+    },
+    {
+      "name": "port-A-slot-borrow:3183",
+      "verdict": "PASS",
+      "detail": "A-slot borrowable — A NOT running on this port right now"
+    },
+    {
+      "name": "port-A-slot-borrow:3498",
+      "verdict": "PASS",
+      "detail": "A-slot borrowable — A NOT running on this port right now"
+    },
+    {
+      "name": "df-floor-6GiB",
+      "verdict": "PASS",
+      "detail": "avail=17056538624 floor=6442450944"
+    },
+    {
+      "name": "er-tool-resolution-style",
+      "verdict": "PASS",
+      "detail": "bare-name-resolves=true — patch mounts via bare package name"
+    },
+    {
+      "name": "er-tool-lib-normal-import",
+      "verdict": "PASS",
+      "detail": "exports name=tool-session-query apply=function"
+    },
+    {
+      "name": "er-patch-layer-actual-parse",
+      "verdict": "PASS",
+      "detail": "preset-standard: id=standard order=1 plugins=20/19+1 tool-row=true name=@deepseek-ai/dsh-tool-session-query; sqlite=:memory:/first-search"
+    },
+    {
+      "name": "er-model-input-schema-wire",
+      "verdict": "NOT_VERIFIED",
+      "detail": "NOT_VERIFIED offline by design (wire-side tool defs unobservable without boot); not a first-stop gate"
+    }
+  ]
+}

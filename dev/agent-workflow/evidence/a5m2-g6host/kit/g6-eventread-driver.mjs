@@ -56,15 +56,15 @@ const EVIDENCE_BASE = join(REPO_ROOT, 'dev/agent-workflow/evidence/a5m2-g6host')
 
 // ── fixed delivery pins (root card + center finals 2026-10-24) ────────────
 const PINS = {
-  packGit: '2fb129cfa23e138248fecc834a42c92238af95fe',
-  packTipEquiv: '18c3327e6eb0cbb2b147df32aad2c5653ccb5928 (test-only tip; dist subtree equal — center-verified)',
-  tgz: join(PACK_INT, 'out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz'),
-  tgzSha: '8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a',
-  install: join(PACK_INT, 'install-8077defc'),
-  lockSha: '5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088',
+  packGit: '7feb6a5e22bf7c531c1d679c786618b826b6ccdd',
+  packTipEquiv: 'root direct-supply pin 2026-10-24T16:37Z (coverage card closed, incl. real 562 ACTIVE mapping; no overlay fix yet)',
+  tgz: join(PACK_INT, 'out-7feb6a5e-20261024T163712Z/dsh-agent-team-0.1.1-alpha.2.tgz'),
+  tgzSha: '8e1eb73096b921128d585343015923e71c70c4edbe0af888294af2ceefda2146',
+  install: join(PACK_INT, 'install-8e1eb730'),
+  lockSha: '08fd5788e9b80432f30d2649ea473b2d8bf55003556188152eba2bb5b800e9de',
   // center's "pkg" pin measured on the INSTALL FIXTURE ROOT package.json
   // (the package.json INSIDE the tgz hashes 08402014… — recorded, distinct).
-  pkgSha: '4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722',
+  pkgSha: '3b3319b5c38d567e807d6b74b69be71a3e0dfa14773c4cba0e0ea84b035ca3b7',
   hostGit: '639ed015397290b3745d163aafe02ffee4aa3f84',
   hostTree: '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use',
   dfFloor: 6_442_450_944, // this window's 6GiB floor
@@ -97,7 +97,7 @@ const PATCHES = [
     '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6rc874-fixture-20261023T22-06-00Z/install',
     PINS.install],
   ['pin-lock-sha', '26bf7e77050090eaf194e4a06904ce26c6eb9972c4e260f807e8d2e48cd659bc', PINS.lockSha],
-  ['pin-tgz-path', 'out-874f3ae0d-20261023T213601Z', 'out-2fb129cf-20261024T135732Z'],
+  ['pin-tgz-path', 'out-874f3ae0d-20261023T213601Z', 'out-7feb6a5e-20261024T163712Z'],
   ['pin-tgz-sha', 'eda06b4a78bba180c0acef1b25237f3f741917385cd0728ee66adc737b1cd09d', PINS.tgzSha],
   ['law-world-const',
     "const WORLD = join(REPO_ROOT, 'tests/homes', `.a5m2-g6host-${RUN_STAMP}Z`)",
