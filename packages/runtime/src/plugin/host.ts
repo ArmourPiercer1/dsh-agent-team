@@ -578,6 +578,8 @@ interface GlueModule {
      * per-call typed refusal, never a setup failure).
      */
     readonly jobs?: () => unknown
+    /** B-ORCH C2 governed runner: lazy public engine accessor (honest absence). */
+    readonly workflowEngine?: () => unknown
     /**
      * M2 B-WEB (a5m2w, mirrors `jobs` above): the LAZY host web-service accessor for
      * the governed web connector row. Absent = the row refuses typed `web-seam-absent`;
@@ -2931,6 +2933,17 @@ async function buildG2TeamSupply(
     // array: worlds without the jobs service stay byte-identical and the
     // bridge answers a typed refusal per call, never a setup failure.
     jobs: () => ctx.get('jobs'),
+    // B-ORCH C2 (root 2026-10-25): the LAZY public engine accessor for the
+    // governed per-run workflow runner — same D1 shape as jobs (optional,
+    // resolved at call time; an unregistered token answers honest absence
+    // and the runner refuses typed, never native-falls-back).
+    workflowEngine: () => {
+      try {
+        return (ctx as { get?: (name: string) => unknown }).get?.('workflowEngine')
+      } catch {
+        return undefined
+      }
+    },
     // M2 B-WEB (a5m2w): the same lazy global-store read as jobs, resolved at call time.
     web: () => ctx.get('web'),
     webFixed: async () => {

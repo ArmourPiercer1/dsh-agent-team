@@ -134,6 +134,8 @@
  *                        archive/dispose procedure refuses). NOTE: host.ts
  *                        does not pass it yet — the integrator must add
  *                        `subagents: ctx.get('subagents')` to the glue deps
+ *                        (and, for the B-ORCH governed runner, the lazy
+ *                        `workflowEngine: () => ctx.get('workflowEngine')`)
  *                        (additive; the glue reads deps.subagents
  *                        defensively).
  *   agentPresets (OPTIONAL) - the DSH agentPresets public service surface
@@ -4477,7 +4479,6 @@ export function createAgentBindings(deps) {
             bOrchCaptured[orchName] = Object.freeze({ native: nativeFace, definitionIdentity: captureIdentity })
             bOrchDelegates[orchName] = nativeFace.execute
           }
-          const bOrchLiveDelegates = Object.freeze({ ...bOrchDelegates })
           // PAIRING (center A-E card): the Team-governed SubagentProvider,
           // registered under the EXACT routed name the deployment declared
           // (planeCfg.bOrchestrationRouting = what workflow-ptc
@@ -4531,6 +4532,159 @@ export function createAgentBindings(deps) {
             throw refuseBOrch(`the public registerProvider seam refused the governed provider '${bOrchRoutedName}' (${String(error?.message ?? error).slice(0, 140)}) — a name collision means ANOTHER provider holds the routed name: refuse, never evict`)
           }
           if (typeof bOrchTgpDisposer !== 'function') bOrchTgpDisposer = null
+          // THE PER-RUN CLOSURE RUNNER (root C2 ruling 2026-10-25): the
+          // governed delegate takes over the PUBLIC engine-consumer call
+          // instead of pairing the captured native body (captured-native-only
+          // no longer required). Faces, all public and measured:
+          //   ctx.workflowEngine.start(request)       tool-workflow/index.ts:282/:433
+          //   WorkflowStartRequest.subagentProvider   workflow-ptc/index.ts:136 (per-run override beats fixed config; name law :67/:71)
+          //   WorkflowRun{result,cancel,dispose}      runtime-types.ts:40-48 (the REAL close face)
+          //   subagents.registerProvider -> disposer  (host subagents; collision = refuse, never evict)
+          //   jobs registry (deps.jobs lazy, g3 law)  background = the registry's OWN run.result.then(->dispose) settle law: the per-run provider is reclaimed when the RUN settles, NEVER when the outer tool returns.
+          // Correlation: this call's REAL identity (the admitted exec; the
+          // provider closure is per-run by construction — no ALS, no signal
+          // identity, no parentAgent WeakMap). C1 settlement facts are the
+          // ACTIVATION/ledger-committed ones: rootSid (the team root) + the
+          // durable member instance resolved by instanceIdForSession (never
+          // invented) + the real workDelivery port. NO native fallback: a
+          // missing engine/jobs/member-instance face is a typed refusal (C3
+          // governed scope never omits config into native). Foreground/
+          // background/cancel/result/original-params mirror the published
+          // body law (tool-workflow/index.ts:433-478 fg; :255-317 bg).
+          const bOrchRunSerial = { n: 0 }
+          const bOrchStopReasonError = (result) => {
+            switch (result?.stopReason) {
+              case 'completed': return undefined
+              case 'cancelled': return `workflow run was cancelled${typeof result.error === 'string' ? ` (${result.error})` : ''}`
+              case 'error': return `workflow run failed: ${typeof result.error === 'string' ? result.error : 'unknown error'}`
+              default: return `workflow run ended abnormally (${String(result?.stopReason)})`
+            }
+          }
+          const bOrchRenderResult = (name, agentsStarted, value) => {
+            const rendered = JSON.stringify(value, null, 2) ?? 'null'
+            const max = 30000
+            return `workflow "${name}" completed (${agentsStarted} agent${agentsStarted === 1 ? '' : 's'}).\nReturn value:\n${rendered.length > max ? `${rendered.slice(0, max)}\n… [truncated: ${rendered.length - max} more characters]` : rendered}`
+          }
+          const bOrchJobOutcomeOf = (result, name) => {
+            switch (result?.stopReason) {
+              case 'completed': return { status: 'completed', detail: `${Number(result.agentsStarted) || 0} agent${Number(result.agentsStarted) === 1 ? '' : 's'}`, result: bOrchRenderResult(name, Number(result.agentsStarted) || 0, result.value) }
+              case 'cancelled': return { status: 'killed' }
+              default: return { status: 'failed', detail: typeof result?.error === 'string' ? result.error : 'unknown error' }
+            }
+          }
+          const bOrchRunDelegate = async (args, exec) => {
+            const parent = exec?.agent
+            if (typeof parent !== 'object' || parent === null) {
+              throw new Error('P_B_ORCH_NO_CALLING_AGENT: the governed workflow runner requires a calling agent (exec.agent was undefined) — no parent, no attribution, no run (the published body\'s own law)')
+            }
+            const engine = typeof deps.workflowEngine === 'function' ? deps.workflowEngine() : undefined
+            if (typeof engine?.start !== 'function') {
+              throw new Error('P_B_ORCH_ENGINE_UNREWIRED: the public ctx.workflowEngine face is not answerable in this world — the governed run is REFUSED typed (no native fallback in Team-enabled governed scope, root C3)')
+            }
+            const sid = String(parent.id ?? '')
+            const instanceId = sid.length > 0 ? instanceIdForSession(sid, undefined) : null
+            if (typeof instanceId !== 'string' || instanceId.length === 0) {
+              throw new Error(`P_B_ORCH_NOT_TEAM_MEMBER: the running agent '${sid.slice(0, 24)}' holds no durable member instance — the settlement binding is not committable by activation, so the governed run is refused (children would be ungoverned; no native fallback)`)
+            }
+            const runName = `${bOrchRoutedName}#r${(bOrchRunSerial.n += 1)}`
+            const runProvider = createTeamGovernedSubagentProvider({
+              name: runName,
+              agents,
+              pa: bOrchPa,
+              teamActivation: { runOwned: runOwnedActivation, wrapSetup: teamOwnedSetup },
+              laneResolver: () => ({ deny: [...bOrchLaneDenies] }),
+              activeCalls: bOrchActiveCalls,
+              settlement: { rootSessionId: rootSid, instanceId, workDelivery },
+              observe: (row) => observations.push(`a5m2-b-orchestration-run: ${String(row?.event ?? 'event')}`),
+            })
+            if (runProvider.ok === false) {
+              throw new Error(`P_B_ORCH_RUN_PROVIDER_REFUSED: the per-run governed provider refused its inputs (${String(runProvider?.code)}) — the run starts nothing`)
+            }
+            let reclaimArmed = true
+            let reclaim = () => {}
+            try {
+              const disposer = deps.subagents.registerProvider(runProvider)
+              if (typeof disposer === 'function') {
+                reclaim = () => {
+                  if (!reclaimArmed) return
+                  reclaimArmed = false
+                  try { disposer() } catch { /* settle-point reclaim, best-effort once */ }
+                }
+              }
+            } catch (error) {
+              throw new Error(`P_B_ORCH_RUN_REGISTER_REFUSED: the public registerProvider seam refused the per-run provider '${runName}' (${String(error?.message ?? error).slice(0, 140)}) — collision means another holder: refuse, never evict`)
+            }
+            const metaName = String(args?.meta?.name ?? 'workflow')
+            const startRequest = {
+              script: args?.script,
+              meta: args?.meta,
+              ...(args?.args !== undefined ? { args: args.args } : {}),
+              parent,
+              subagentProvider: runName,
+              ...(exec.signal !== undefined ? { signal: exec.signal } : {}),
+            }
+            if (args?.run_in_background === true) {
+              let registry = null
+              if (typeof deps.jobs === 'function') {
+                try { registry = deps.jobs() } catch { registry = null }
+              }
+              if (typeof registry?.start !== 'function') {
+                reclaim()
+                throw new Error('P_B_ORCH_BG_UNWIRED: the jobs registry face is absent — the background governed run is REFUSED typed (honest absence; never silently demoted to foreground, never native)')
+              }
+              let run = null
+              const jobId = registry.start({
+                kind: 'workflow',
+                label: metaName,
+                owner: parent.id,
+                run: (_job) => {
+                  try {
+                    run = engine.start(startRequest)
+                  } catch (error) {
+                    reclaim() // a synchronous META_INVALID/SCRIPT_PARSE releases the per-run provider
+                    throw error
+                  }
+                  const done = run.result.then(async (result) => {
+                    try { await run.dispose() } catch (error) { observations.push(`a5m2-b-orchestration-run: bg-dispose-fault ${String(error?.message ?? error).slice(0, 120)}`) }
+                    reclaim() // THE SETTLEMENT POINT (never the outer return)
+                    return bOrchJobOutcomeOf(result, metaName)
+                  }, (error) => {
+                    reclaim()
+                    throw error
+                  })
+                  return { cancel: (reason) => { run.cancel(reason ?? 'governed workflow job killed') }, done }
+                },
+              })
+              return Object.freeze({ kind: 'background', jobId, runId: run.id })
+            }
+            let fgRun
+            try {
+              fgRun = engine.start(startRequest)
+            } catch (error) {
+              reclaim()
+              throw error
+            }
+            const onAbort = () => { try { fgRun.cancel('parent step aborted') } catch { /* already settled */ } }
+            if (typeof exec.signal?.addEventListener === 'function') exec.signal.addEventListener('abort', onAbort, { once: true })
+            try {
+              const result = await fgRun.result
+              const fault = bOrchStopReasonError(result)
+              if (fault !== undefined) throw new Error(fault)
+              return Object.freeze({ kind: 'foreground', runId: fgRun.id, agentsStarted: result.agentsStarted, result: result.value })
+            } finally {
+              if (typeof exec.signal?.removeEventListener === 'function') exec.signal.removeEventListener('abort', onAbort)
+              try { await fgRun.dispose() } catch { /* quiescence dispose, best-effort */ }
+              reclaim() // the settle-point reclaim also covers foreground
+            }
+          }
+          // The delegation set is COMPLETE before the frozen bind (workflow
+          // rides the governed runner; every other family name keeps its
+          // captured pairing): edgeIntegrity then re-verifies THIS container
+          // and these method identities per dispatch (rebinding = fatal drift).
+          if (Object.prototype.hasOwnProperty.call(bOrchDelegates, 'workflow')) {
+            bOrchDelegates.workflow = bOrchRunDelegate
+          }
+          const bOrchLiveDelegates = Object.freeze({ ...bOrchDelegates })
           const bOrchAssembly = createBOrchestrationExecutionWiring({
             providerId: 'a5p5-plane',
             captured: Object.freeze({ ...bOrchCaptured }),
