@@ -29,6 +29,9 @@ importers:
       '@deepseek-ai/dsh-mcp-client':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(4f0df4fd67df1f951ab027e4a0172f10)
+      '@deepseek-ai/dsh-schedule':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(4df1b6d718fd8121b65df83e89404710)
       '@deepseek-ai/dsh-scope':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))

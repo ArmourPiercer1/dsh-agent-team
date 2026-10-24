@@ -27,7 +27,33 @@
  * the A3/A5 integration: once A1's module is merged, A3/A5 should import
  * `PermissionTool` from the A1 blueprint module and retire (or
  * re-export) this alias — the two definitions must never diverge (same
- * seven names, same closed semantics, plan §6.2 + A2C-1).
+ * names, same closed semantics, plan §6.2 + A2C-1; the A2C-1 suite pins
+ * `PERMISSION_TOOL_VALUES == PERMISSION_TOOL_NAMES`).
+ *
+ * Alpha.5 M2 (root 20:05 limited card): the A1 vocabulary gained the
+ * INVOCATION-ONLY pair `schedule_list` / `schedule_delete`
+ * (`PERMISSION_INVOCATION_ONLY_TOOL_NAMES` in the blueprint schema) and
+ * THIS alias widens WITH it — the never-diverge law holds. Widening the
+ * NAME SET changes no canonicalization BEHAVIOR: classification reads
+ * only the FILE and SHELL class lists below, so an invocation-only name
+ * keeps answering `unsupported` (the A2 adapter lane passes the call
+ * through unchanged — no file matcher, no fingerprint, no canonical
+ * operation is ever added for the class); the pair's authority rides
+ * the Alpha.5 admission projection's `tool-invoke` arm. The runtime
+ * single source for the third class is
+ * {@link INVOCATION_ONLY_PERMISSION_TOOL_VALUES} below.
+ *
+ * Alpha.5 M2 continuation (root 22:13/22:4x limited cards): the A1
+ * vocabulary widens the same class with the five G6 session-query names,
+ * the ten B-TEAM names, the three G1 PURE-QUERY names, the three
+ * B-SUBAGENT controls and the five B-SUBAGENT spawn ops (each verified
+ * against the production source: the plane's ONE PA tool-invoke lane, the G6
+ * landing 874f3ae0d, the controls trio at the source-signed branch
+ * 7c6869879; the old M0-B table is a historical record, not the current
+ * fact). Same law for all: canonicalization still answers `unsupported`
+ * (no canonical op, no file matcher, no fingerprint); they ride the
+ * `tool-invoke` arm and their invocation authority is NOT an I/O
+ * exemption.
  */
 export type PermissionTool =
   | 'read'
@@ -37,6 +63,34 @@ export type PermissionTool =
   | 'lsp'
   | 'bash'
   | 'pwsh'
+  | 'schedule_list'
+  | 'schedule_delete'
+  | 'session_search'
+  | 'session_event_search'
+  | 'session_trace'
+  | 'session_event_trace'
+  | 'session_event_read'
+  | 'team_list_members'
+  | 'team_list_templates'
+  | 'team_inspect_config'
+  | 'team_create_member'
+  | 'team_delegate'
+  | 'team_follow_up'
+  | 'team_collect'
+  | 'team_send_message'
+  | 'team_report_progress'
+  | 'team_archive_member'
+  | 'cordis_inspect_list'
+  | 'cordis_inspect_query'
+  | 'team_list_pending_control'
+  | 'interrupt_agent'
+  | 'list_agents'
+  | 'send_message'
+  | 'subagent'
+  | 'subagent_fork'
+  | 'subagent_codex'
+  | 'subagent_claude_code'
+  | 'list_subagent_models'
 
 /** Every {@link PermissionTool} value, for membership checks. */
 export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
@@ -47,6 +101,34 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'lsp',
   'bash',
   'pwsh',
+  'schedule_list',
+  'schedule_delete',
+  'session_search',
+  'session_event_search',
+  'session_trace',
+  'session_event_trace',
+  'session_event_read',
+  'team_list_members',
+  'team_list_templates',
+  'team_inspect_config',
+  'team_create_member',
+  'team_delegate',
+  'team_follow_up',
+  'team_collect',
+  'team_send_message',
+  'team_report_progress',
+  'team_archive_member',
+  'cordis_inspect_list',
+  'cordis_inspect_query',
+  'team_list_pending_control',
+  'interrupt_agent',
+  'list_agents',
+  'send_message',
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**
@@ -90,6 +172,113 @@ export type ToolLevelPermissionTool = 'bash' | 'pwsh'
 export const SHELL_PERMISSION_TOOL_VALUES: readonly ToolLevelPermissionTool[] = [
   'bash',
   'pwsh',
+]
+
+/**
+ * The INVOCATION-ONLY permission tools (Alpha.5 M2, root 20:05 limited
+ * card): `schedule_list` / `schedule_delete` — the native B-SCHEDULE
+ * pair with no matchable resource space (`schedule_list` takes an empty
+ * parameter face — host tools.ts:454; `schedule_delete` takes only an
+ * opaque record id returned by `schedule_list` — host tools.ts:470-479).
+ * The closed contract of the class, runtime single source:
+ * - rules carry the whole-tool `any` resource in ALL THREE lanes
+ *   (allow/ask/deny; the rule IS the invocation authority — an absent
+ *   rule resolves to `policy.default`, no implicit allow);
+ * - `exact` / `subtree` are rejected in every lane of every role — the
+ *   class is NEVER a file tool (no file matcher is ever added for it)
+ *   and NEVER a shell tool (no fingerprint, no exec dual gate);
+ * - canonicalization: NEVER — `classifyPermissionTool` keeps answering
+ *   `unsupported` (the A2 adapter lane passes the call through
+ *   unchanged); the authority rides the Alpha.5 admission projection's
+ *   `tool-invoke` arm (realm `tool-invoke` + `<realm>|tool:<name>`)
+ *   with the R-1a deny sources of the shared algebra;
+ * - `schedule_list authority != schedule_delete authority` (a rule or
+ *   an approval for one never gates the other);
+ * - `schedule_create` / `schedule_update` are NOT enabled — naming them
+ *   anywhere in this vocabulary is a defect (the blueprint schema's
+ *   `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` is the authority mirror);
+ * - Alpha.5 M2 continuation (root 22:13 + 22:4x limited cards) widens
+ *   the class with the five G6 session-query names, the ten B-TEAM names,
+ *   the three G1 PURE-QUERY names, the three B-SUBAGENT controls and the
+ *   five B-SUBAGENT spawn ops (records 39-43, tool-invoke-only envelope;
+ *   joint candidate 9b5c9f4b2, landing pending — naming pre-wires the
+ *   named channel only; each name verified against the production source:
+ *   A5_B_TEAM_TOOL_NAMES / A5_G1_PURE_QUERY_MOUNT_NAMES in the plane's
+ *   ONE PA admission lane, the G6 landing 874f3ae0d, the trio at the
+ *   source-signed branch 7c6869879; the M0-B frozen table is a historical
+ *   record, not the current implementation fact). Same law throughout:
+ *   `any` in all three lanes, exact/subtree refused, the `tool-invoke`
+ *   arm is the whole authority, and an invocation permission grants NO
+ *   I/O exemption — delegated durable writes ride their own delegated
+ *   chain, session rows read only their authorized-session seam, and
+ *   every name is a DISTINCT authority. The four Team self-governance
+ *   controls stay OUT (declared INACTIVE; Gate 0f refuses their mount).
+ */
+export type InvocationOnlyPermissionTool =
+  | 'schedule_list'
+  | 'schedule_delete'
+  | 'session_search'
+  | 'session_event_search'
+  | 'session_trace'
+  | 'session_event_trace'
+  | 'session_event_read'
+  | 'team_list_members'
+  | 'team_list_templates'
+  | 'team_inspect_config'
+  | 'team_create_member'
+  | 'team_delegate'
+  | 'team_follow_up'
+  | 'team_collect'
+  | 'team_send_message'
+  | 'team_report_progress'
+  | 'team_archive_member'
+  | 'cordis_inspect_list'
+  | 'cordis_inspect_query'
+  | 'team_list_pending_control'
+  | 'interrupt_agent'
+  | 'list_agents'
+  | 'send_message'
+  | 'subagent'
+  | 'subagent_fork'
+  | 'subagent_codex'
+  | 'subagent_claude_code'
+  | 'list_subagent_models'
+
+/**
+ * Every {@link InvocationOnlyPermissionTool} value. The single source of
+ * invocation-only class membership in the runtime: the admission
+ * projection's narrowing (deny/`any` law, exact/subtree refusal) reads
+ * THIS list — never a copied literal.
+ */
+export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPermissionTool[] = [
+  'schedule_list',
+  'schedule_delete',
+  'session_search',
+  'session_event_search',
+  'session_trace',
+  'session_event_trace',
+  'session_event_read',
+  'team_list_members',
+  'team_list_templates',
+  'team_inspect_config',
+  'team_create_member',
+  'team_delegate',
+  'team_follow_up',
+  'team_collect',
+  'team_send_message',
+  'team_report_progress',
+  'team_archive_member',
+  'cordis_inspect_list',
+  'cordis_inspect_query',
+  'team_list_pending_control',
+  'interrupt_agent',
+  'list_agents',
+  'send_message',
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**

@@ -199,6 +199,21 @@ export declare const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MATCHER_KINDS: reado
 /** The closed `maximumEffect` ceiling vocabulary (the §6 ladder's values). */
 export declare const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_MAX_EFFECTS: readonly string[];
 /**
+ * The closed `operationClass` vocabulary of the Alpha.3 PR4 / Alpha.4
+ * `permissionMutationEnvelope` carrier — the FROZEN ORIGINAL SEVEN-NAME
+ * permission vocabulary. The envelope grammar (design §5) pairs every
+ * operation class with a real resource matcher (file → exact/subtree,
+ * shell → fingerprint; NO `any` in this grammar); the invocation-only
+ * schedule names have no matcher this carrier can express, so they are
+ * deliberately ABSENT here even though the template permission lane
+ * accepts them (root 20:05: the envelope lane keeps the old seven-tool
+ * closed set isolated — widening the template vocabulary never widens
+ * this carrier). This list is a separate closed constant on purpose: it
+ * never reads `PERMISSION_TOOL_NAMES`, so the two sets cannot drift
+ * together.
+ */
+export declare const BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES: readonly string[];
+/**
  * The TWO v3 authority documents are ONE grammar (ADR A3-9, spec §3.3): the
  * Leader expansion ceiling (`permissionMutationEnvelope`, optional through the
  * PR1-PR6 bridge) and the Human User hard ceiling (`teamHardEnvelope`,
@@ -223,6 +238,12 @@ export declare const BLUEPRINT_AUTHORITY_ENVELOPE_EXEC_MATCHER_FIELDS: readonly 
 export declare const BLUEPRINT_AUTHORITY_ENVELOPE_MATCHER_KINDS: readonly string[];
 /** @see {@link BLUEPRINT_AUTHORITY_ENVELOPE_FIELDS} — the closed ceiling ladder. */
 export declare const BLUEPRINT_AUTHORITY_ENVELOPE_MAX_EFFECTS: readonly string[];
+/**
+ * @see {@link BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES} —
+ * the FROZEN seven-name `operationClass` closed set (the invocation-only
+ * schedule names are never envelope operation classes).
+ */
+export declare const BLUEPRINT_AUTHORITY_ENVELOPE_OPERATION_CLASSES: readonly string[];
 /** Max length of one exec fingerprint in the carrier (structural bound). */
 export declare const PERMISSION_FINGERPRINT_MAX_LENGTH = 256;
 /**
@@ -292,8 +313,13 @@ export declare const BLUEPRINT_POLICY_REFERENCEABLE_FIELDS: readonly string[];
 /** The only values a capability policy may map a domain to. */
 export declare const CAPABILITY_POLICY_DECISIONS: readonly string[];
 /**
- * The seven tool names a permission rule may gate (alpha.2 plan §4/§6.2 +
- * A2C-1, closed vocabulary). The shell class (`bash`, `pwsh`) allows
+ * The tool names a permission rule may gate (alpha.2 plan §4/§6.2 +
+ * A2C-1, closed vocabulary; Alpha.5 M2 root 20:05: extended by the
+ * invocation-only pair {@link PERMISSION_INVOCATION_ONLY_TOOL_NAMES} —
+ * the ORIGINAL seven-name classes below are UNCHANGED, and the envelope
+ * carrier keeps the seven-name closed set at
+ * {@link BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES}).
+ * The shell class (`bash`, `pwsh`) allows
  * tool-level ask/deny via `resource: { kind: 'any' }` only — no positive
  * parameter-level allow. Enforced in validation: a shell-class rule in
  * the `allow` lane is rejected on MEMBER templates, and an `exact`
@@ -313,6 +339,48 @@ export declare const CAPABILITY_POLICY_DECISIONS: readonly string[];
  * identities, and the envelope gates them with separate tokens).
  */
 export declare const PERMISSION_TOOL_NAMES: readonly string[];
+/**
+ * The INVOCATION-ONLY class of the permission vocabulary (Alpha.5 M2,
+ * root 20:05 limited card): `schedule_list` / `schedule_delete` are named
+ * by this CLOSED TWO-NAME SET ONLY — `schedule_create` / `schedule_update`
+ * exist on the native B-SCHEDULE family but are NOT permission tools here
+ * (enablement refused by card; a rule naming one is MALFORMED). These
+ * tools carry NO matchable resource space (native interface: `schedule_list`
+ * has an EMPTY parameter face — host tools.ts:454; `schedule_delete`
+ * carries only an opaque record `id` returned by `schedule_list` — host
+ * tools.ts:470-479 — never a workspace path, never a shell command), so a
+ * rule for them accepts the whole-tool `resource: { kind: 'any' }` in ALL
+ * THREE lanes (allow/ask/deny — the rule IS the invocation authority; no
+ * shell-class dual gate, no implicit default: an absent rule still
+ * resolves to `policy.default`) and rejects `exact` / `subtree` in every
+ * lane of every role. They are NEVER file tools and NEVER shell tools:
+ * no file matcher, no fingerprint, no canonical operation — their
+ * authority rides the admission projection's `tool-invoke` arm only, and
+ * a rule for one never gates the other.
+ *
+ * Alpha.5 M2 continuation (root 22:13 limited card): the class widens by
+ * the five G6 SESSION-QUERY names — `session_search` / `session_event_search`
+ * / `session_trace` / `session_event_trace` / `session_event_read` — named
+ * by the host CLOSED FIVE-NAME SET (`tool-session-query/src/index.ts`
+ * @639ed01539 :66/:76/:86/:96/:109, defineTool verbatim). Their parameter
+ * faces are structured session/sequence queries (session id, event `seq`,
+ * `before`/`after` counts, search text) — NEVER a workspace path, NEVER a
+ * shell command — so the SAME invocation-only law holds: `any` in all
+ * three lanes, `exact`/`subtree` refused every lane of every role, no file
+ * matcher, no fingerprint, no envelope carrier (the seven-name
+ * operationClass set stays frozen). Naming them here opens the named
+ * allow/ask/deny channel ONLY: the rows are PA-WIRED in the current
+ * integration production (center landing 874f3ae0d: adapter
+ * g6-session-query.mjs + wiring + the REAL bindings supply-close block +
+ * host lazy accessors; capture → PA open/edge/consume source-signed) —
+ * Host ACCEPTANCE is still pending, and the old M0-B frozen table
+ * (`host-unmounted-optin-package`, PROPOSED) is a historical record, NOT
+ * the current implementation fact. An invocation permission grants NO
+ * I/O exemption — these tools read only through their own authorized-
+ * session seam, and every resource-scoped effect still resolves to
+ * no-authority ⇒ Ask.
+ */
+export declare const PERMISSION_INVOCATION_ONLY_TOOL_NAMES: readonly string[];
 /**
  * The only fallback decisions a permission policy may declare
  * (alpha.2 plan §6.3). `allow` is NOT a legal default: a default of

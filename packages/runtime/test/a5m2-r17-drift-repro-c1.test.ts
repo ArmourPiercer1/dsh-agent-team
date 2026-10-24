@@ -485,10 +485,16 @@ async function mountWorld(
   const familyKey = String(fed?.definitionIdentity ?? '')
   if (familyKey.length === 0) throw new Error('the placed read_image row answered no placement definition identity')
   if (placedArm === undefined) throw new Error('the placement-moment factory never built the arm')
+  // A5M2 PROVIDER-IDENTITY SUPPLY: the arm face answers its provider identity
+  // LIVE (`string | undefined` now). THIS world builds a CONSTANT arm, so the
+  // constant must answer — narrowed honestly rather than widening the registry
+  // entry's declared type (an arm that answers nothing registers nothing).
+  const armProviderIdentity = placedArm.providerId
+  if (typeof armProviderIdentity !== 'string') throw new Error('a constant-provider arm answered no provider identity — the fixture is defective')
   registerA5GovernedFamily(familyKey, {
     familyId: placedArm.familyId,
     adapterRevision: placedArm.adapterRevision,
-    providerIdentity: placedArm.providerId,
+    providerIdentity: armProviderIdentity,
   })
   bindingFixtures.set(label, parseToolBinding({
     bindingId: `${IMAGE_TPL}:${label}`,
@@ -639,7 +645,6 @@ describe('A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, al
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const handoff = await opening
     const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
-    // eslint-disable-next-line no-console
     console.info('RR3 kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + String(driftRows.length))
     expect(handoff.kind, 'synthetic control: the seam-threaded decision authorizes').toBe('authorized')
     expect(driftRows.length).toBe(0)

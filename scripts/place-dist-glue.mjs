@@ -158,6 +158,71 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
   },
+  // A5M2 B-TEAM COMBINATION (center, atomic pair per the wiring owner's
+  // disclosure): the wiring module statically imports the adapter module
+  // and bindings statically import the wiring - placing ONE alone leaves a
+  // dangling import on the strict files:[dist] install face, so BOTH join
+  // in this single round; bytes ride unchanged.
+  // A5M2 B-SUBAGENT JOINT BATCH (root 22:33/34 landing, center): the spawn
+  // and controls production blocks added STATIC relative imports that no
+  // placement covered — the strict files:[dist] face would die at
+  // ERR_MODULE_NOT_FOUND (same documented class). Four modules join; the
+  // closure is self-contained (they import each other + the domain face
+  // already in dist); bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+  },
+  // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
+  // production blocks added STATIC relative imports that no placement
+  // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
+  // `files: ["dist"]` install face (exact failure class documented for
+  // todo.mjs). Four modules join the list; bytes ride unchanged.
+  // CASCADE (same closure round, center): the G6 adapter statically imports
+  // the G3 canonical-registration face (g6-session-query.mjs :212), so the
+  // module joins the list too; its only relative import (../ptc-escalation-row.mjs)
+  // is ALREADY placed; its two deeper relative .js targets exist in dist
+  // (tool-admission/grant-mint.js, domain/tool-governance/src/index.js — measured).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+  },
   // A5M2-G1-WIRE (root ruling 15:28 工具适配不等待中心接线): the plane now
   // imports the committed G1 adapter module by relative specifier (Gate 0f
   // reads `A5_G1_RECORD_SPECS` / the adapter-revision constant off the
@@ -189,6 +254,26 @@ export const PLACEMENTS = [
   {
     src: 'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  },
+  // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
+  // `agent-bindings.mjs` now imports the G1-WIRE lane's two production
+  // modules by RELATIVE specifier STATICALLY (at module load, gate or no
+  // gate) — without these placements the dist copy of the binding dies at
+  // `ERR_MODULE_NOT_FOUND … ./governed-families/g1-query-assembly.mjs` on the
+  // strict `files: ["dist"]` install face, and the drift gate cannot see the
+  // absence (an unplaced module is invisible to it — the todo.mjs lesson
+  // above). The closure lands inside the mirror: assembly imports wiring
+  // (placed here) + `pa-mount-registry.mjs` (placed above) + the domain
+  // tool-governance index (tsc's OWN emit); wiring imports
+  // `g1-surface-adapters.mjs` (placed above) + that same domain index. Byte-identical like every entry; drift gate D
+  // compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
   },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the

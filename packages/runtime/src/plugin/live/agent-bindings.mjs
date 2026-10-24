@@ -361,11 +361,23 @@ import { A5_GOVERNED_FAMILIES, a5GovernedFamilyFor, publishPaMount, readPaCallFa
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
+// A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer; the
+// spawn block below is the spawn writer's): the PRODUCTION WIRING over the
+// reviewed spawn adapter module — the two production seams (the plane PA
+// walk, the plane placement feed) are supplied HERE, the row laws stay in
+// governed-families/subagent-spawn-adapters.mjs verbatim.
+import { A5_B_SUBAGENT_SPAWN_RECORD_SPECS, A5_B_SUBAGENT_SPAWN_TOOL_NAMES } from './governed-families/subagent-spawn-adapters.mjs'
+import { createSubagentSpawnWiring } from './governed-families/subagent-spawn-wiring.mjs'
+// A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 card): the exclusive control-lane
+// wiring factory (its OWNED admit seat walks the plane's real paAdmit) plus the
+// frozen per-record census facts naming the trio it mounts under.
+import { createBSubagentControlWiring } from './governed-families/subagent-wiring.mjs'
+import { A5_B_SUBAGENT_RECORD_SPECS } from './governed-families/subagent-adapters.mjs'
 // A5M2 B-SCHEDULE (root 18:11): the REAL published Host error-class identity
 // — the SAME module the host's registerScheduleTools throws through at
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
-import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
+import { createGovernedScheduleArm, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
@@ -431,7 +443,18 @@ async function loadA5G3TerminalFaces () {
   return a5G3TerminalFaces
 }
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
+// A5M2-G6 B-SESSION-QUERY (root 992 ②): the PURE supply builder — the five
+// governed facets/provider/declared-mount are mapped OFF the live DSH public
+// sessionQuery service here, never injected through config.
+import { buildG6QuerySupplyFromService } from './governed-families/g6-session-query-wiring.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
+// A5M2-B-TEAM-WIRE (this lane's additive import row under the family rows):
+// the B-TEAM member-operation family CLAIM, computed by the wiring bridge's
+// OWN capture predicate over THIS member's lane set. The bridge itself is
+// assembled by the plane (it owns the real `paAdmit` seat); this assembly
+// owns the PLACEMENT and the post-publish family registration at the shared
+// fill point. No adapter law is restated here.
+import { claimTeamOpsFamily } from './governed-families/team-wiring.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
 // A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
@@ -450,7 +473,7 @@ import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // selector + built-in tool deny (T2) and the skill/MCP adapters + catalog
 // (T3) — consumed VERBATIM by the live setup (no re-implemented selector
 // or resolver in the glue; the static source is the T1 domain module).
-import { applyBuiltInToolDeny, selectTeamTools } from '../../../../tools/src/index.js'
+import { applyBuiltInToolDeny, resolveTeamToolCallerRootGate, selectTeamTools } from '../../../../tools/src/index.js'
 import {
   InMemorySkillCatalog,
   filterMcpServers,
@@ -533,6 +556,13 @@ import { definitionIdentityOf, installScopedToolGuard } from '../../../tool-disp
 import { A5_B_SCHEDULE_DELETE_MOUNT_NAME, A5_B_SCHEDULE_LIST_MOUNT_NAME, createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends.mjs'
+// A5M2-G1-WIRE MOUNT-ARM (this lane's block): the G1-WIRE lane's PRODUCTION
+// assembly module (its exclusive file, imported and consumed exactly as its
+// .d.mts spells — never restated, never edited here) plus the derived subset
+// table, read here ONLY to gate which rows this arm supplies (never a
+// hand-spelled name list — the subset stays derived from the frozen spec table).
+import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'
+import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
 // statically - the seam arrives through the additive deps.web accessor (host.ts).
@@ -881,7 +911,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, sessionQuery: sessionQueryBackend, sessionProjections: sessionProjectionsBackend } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -2456,6 +2486,13 @@ export function createAgentBindings(deps) {
       // the install flow, after this assembly ran. So the closure reads
       // through the LIVE plane value, never a build-time snapshot.
       let a5PlaneValue = null
+      // A5-M2 B-SUBAGENT-CONTROL-WIRING (root 20:03 + 21:01 cards): the built
+      // control trio wiring's inject face (null = this world mounts none —
+      // the zero-flip law). Declared in the SAME lexical scope as the
+      // pre-plane-build wiring section that fills it, the backends bag that
+      // carries it into the plane's ONE placement, and the post-publish
+      // family registration write (the 9e-4 lesson).
+      let a5SubagentControlInject = null
       // A5-M2 B-SESSION: the mount-time bound governed todo arm (null = this world
       // mounts none, the zero-flip law). Declared in the SAME lexical scope as both
       // the plane assembly that injects it and the later publish that registers its
@@ -2469,6 +2506,16 @@ export function createAgentBindings(deps) {
       let a5ImageInject = null
       let a5ScheduleInject = null
       let a5ImagePlacedArm = null
+      let a5SpawnWiring = null
+      // A5M2 PROVIDER-IDENTITY SUPPLY (site 4, the ONE reader of record): same
+      // outer-scope discipline as the inject above — it is WIRED ONCE in the
+      // mount assembly (where the plane injection is armed) and READ at two
+      // later moments that live in different blocks: the family registration
+      // after publish, and every consumption the arm/plane performs. It
+      // resolves the LIVE binding authority through the same dispatcher getter
+      // the durable facts read `facts.binding` from; it stores nothing and has
+      // no durable-row / receipt / plane channel (FP-D is structural).
+      let a5ImageProviderIdentity = null
       // A5M2-G6 B-SESSION-QUERY: same outer-scope discipline — the inject is
       // armed next to the plane assembly, the registration lands AFTER
       // publish at the shared fill point below (both must see one binding).
@@ -2477,6 +2524,37 @@ export function createAgentBindings(deps) {
       // deployment evidence, captured into a plane inject below (null = the
       // family is not deployed on this mount: zero flip).
       let a5G3TerminalInject = null
+      // A5M2-B-TEAM-WIRE (this lane's declaration, hoisted beside the G6 one
+      // for the same reason: the arm site and the post-publish fill point sit
+      // in different nested blocks of this setup body).
+      let a5TeamOpsInject = null
+      // ⑤ THE REAL REGISTRATION SOURCE. The mount registers the B-TEAM family
+      // through the existing registry below, keyed by each placed definition's
+      // identity; this holder keeps those keys so the wiring can read the
+      // registration BACK through the registry's own public query
+      // (`a5GovernedFamilyFor`) at call time. No new getter, no second store:
+      // the durable registration IS the answer, and it is read fresh per call.
+      const a5TeamOpsFamilyKeys = []
+      // A5M2-G1-WIRE MOUNT-ARM (this lane's declaration, hoisted for the same
+      // 9e-4 reason): the G1-WIRE assembly handle is BUILT and PLACED at the
+      // mount point below, and its family rows are written AFTER publish at
+      // the shared fill point — two different nested blocks of this setup
+      // body. One handle per SUPPLIED row (see the arm block for why).
+      const a5G1Assemblies = []
+      // A5M2-G1-WIRE MOUNT-ARM root ② (841 card): the ONE owner-held placed-
+      // definition ledger for the arm route (the B-TEAM
+      // `a5TeamOpsPlacedByName` shape). It is written ONLY by this assembly
+      // owner's own registration seam at the moment the host ACCEPTS the
+      // definition, and it is the single placement truth the route's three
+      // readers consult: (a) the Guard's bindingFeed (pre-feed continuity —
+      // the bind pins the identity the OWNER placed, the live scoped read
+      // only proves continuity with it), (b) the family registration's
+      // placement feed (`registerAfterPublish` keys), and (c) the plane's
+      // placement attribution (`backends.g1Arm.isPlaced`, consulted per
+      // call). No second ledger, and no live `tools.get` stands in for what
+      // the owner placed — an arbitrary current read could be handed
+      // anything.
+      const a5G1PlacedByName = new Map()
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2599,10 +2677,38 @@ export function createAgentBindings(deps) {
           // the plane assembly below — a name with no row stays on the
           // pre-feed path (never a weaker verification, just the same one).
           realmId: a5PlaneRealmId,
-          bindingFeed: (name) =>
-            a5PlaneValue === null
+          bindingFeed: (name) => {
+            // ROOT 19:53 ③: a governed B-TEAM name's feed entry is the identity
+            // of the definition THIS owner placed for it — the same object the
+            // Guard binds out of the scoped layer at `bindOwnTools` (read
+            // lazily, after the placement pass, per the pb §6 laziness law the
+            // plane's own feed already obeys). Every other name keeps the
+            // plane's placement map byte-for-byte.
+            const placedTeamOps = a5TeamOpsPlacedByName.get(name)
+            if (placedTeamOps !== undefined) {
+              const placedIdentity = definitionIdentityOf(placedTeamOps)
+              return placedIdentity === null
+                ? undefined
+                : Object.freeze({ definitionIdentity: placedIdentity, realmId: a5PlaneRealmId })
+            }
+            // A5M2-G1-WIRE MOUNT-ARM root ② (841 card): the G1 arm's placed
+            // definitions enter the SAME provider owner-held feed law — the
+            // pin is the identity THIS owner's registration seam recorded
+            // when the host accepted the definition (the same ledger the
+            // family registration keys from; one ledger, one mint), and the
+            // Guard's own live scoped read proves continuity at bind time.
+            // No ledger entry = the pre-feed path, byte-for-byte.
+            const placedG1 = a5G1PlacedByName.get(name)
+            if (placedG1 !== undefined) {
+              const placedIdentity = definitionIdentityOf(placedG1)
+              return placedIdentity === null
+                ? undefined
+                : Object.freeze({ definitionIdentity: placedIdentity, realmId: a5PlaneRealmId })
+            }
+            return a5PlaneValue === null
               ? undefined
-              : a5PlaneValue.placementFeed(name),
+              : a5PlaneValue.placementFeed(name)
+          },
           // A5-M1 replaced "Generation 0 until PR2 feeds the overlay /
           // authority generations into the Binding": the awaited durable
           // overlay generation rides the install above, and a later advance is
@@ -2674,6 +2780,26 @@ export function createAgentBindings(deps) {
       // Coverage Gate (the `teamTools` capability + the Team runtime are
       // the authority owner). Empty on every legacy / alpha.1 setup.
       let selectedTeamToolNames = []
+      // A5M2-B-TEAM-WIRE (this lane's declarations, hoisted beside
+      // selectedTeamToolNames for the SAME reason: the claim is computed in
+      // the registration block below, while the arm, the placement and the
+      // post-publish fill point live further out in this setup body).
+      let a5TeamOpsCfg = undefined
+      let a5TeamOpsClaim = Object.freeze({ names: Object.freeze([]), census: Object.freeze([]) })
+      const a5TeamOpsNativeByName = new Map()
+      const a5TeamOpsAllowedNames = new Set()
+      // ROOT 19:53 ③: the definitions THIS owner actually placed under the
+      // governed names (the very objects registered into the scoped layer).
+      // The Guard's pb §6 binding feed reads its identities lazily per name —
+      // the SAME object the Guard binds, never the family-scoped registry's
+      // shadow (a scoped feed does not stand in for Guard continuity).
+      const a5TeamOpsPlacedByName = new Map()
+      // Digest of the roster id SET (sha-256 over the canonical joined form) —
+      // supplementary to the ids themselves, never a stand-in for them.
+      const a5TeamOpsDigest = (ids) => {
+        const bytes = new TextEncoder().encode(ids.join('\n'))
+        return createHash('sha256').update(bytes).digest('hex')
+      }
       if (teamTools) {
         // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
         // registers only the catalog tools the template's teamTools entry
@@ -2683,8 +2809,49 @@ export function createAgentBindings(deps) {
         const catalog = Array.isArray(teamTools.tools) ? teamTools.tools : []
         const selected =
           capabilities.mode === 'selective' ? selectTeamTools(catalog, capabilities.teamTools) : [...catalog]
-        selectedTeamToolNames = selected.map((def) => def.name)
-        for (const def of selected) {
+        // ── A5M2-B-TEAM-WIRE (this lane's block at the site the adapter
+        // itself designates for B-TEAM registration) ───────────────────────
+        // The owner publishes the member-operation evidence on
+        // `config.teamToolPlane.teamMemberOps`. ABSENT (every existing config)
+        // = a5TeamOpsClaim.names is empty = the selection and the
+        // registration below are byte-for-byte what they were before this
+        // block: zero flip, no new behaviour. WHEN armed, exactly the names
+        // the wiring bridge can actually capture (the bridge's own
+        // registration-face + capture-identity predicate over THIS member's
+        // selected lane set) are claimed: the raw catalog registration yields
+        // for them here, and the GOVERNED row takes their placement after the
+        // plane mounts (below, before the Guard's own-tool bind). One name,
+        // one placement — the plane mounts into this SAME agent tool layer
+        // and the host's NamedEntries.insert refuses a second definition
+        // under one name in one layer (packages/core/scope/src/store.ts:43,
+        // measured), so a double registration is not an option at any point.
+        a5TeamOpsCfg = config?.teamToolPlane?.teamMemberOps
+        // ROOT 19:53 ② UNIFIED QUALIFICATION (atomic handover, no new
+        // exemption): the governed plane mounts only when the member is
+        // GOVERNED (`permissionPolicy !== undefined`, the GLUE-5 gate below)
+        // AND the host row carries `teamToolPlane`. Claiming on the global key
+        // ALONE could withdraw a raw registration for an ungoverned member that
+        // will never mount — the name would answer with NOTHING. The claim and
+        // the mount therefore obey ONE eligibility, read identically here and
+        // at the mount gate: claim ⇔ this member's plane will actually mount.
+        const a5TeamOpsEligible = permissionPolicy !== undefined
+          && a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null
+        if (a5TeamOpsEligible) {
+          for (const def of selected) a5TeamOpsNativeByName.set(def.name, def)
+          for (const def of selected) a5TeamOpsAllowedNames.add(def.name)
+          a5TeamOpsClaim = claimTeamOpsFamily({
+            catalog: selected,
+            allowedNames: [...a5TeamOpsAllowedNames],
+            definitionIdentityOf,
+          })
+          observations.push(`a5m2-b-team: family claim for ${sessionId} = ${a5TeamOpsClaim.names.length === 0 ? 'DECLARED-INACTIVE (census below)' : a5TeamOpsClaim.names.join(',')} (census=${a5TeamOpsClaim.census.map((row) => `${row.name}:${row.reason}`).join(',') || 'none'})`)
+        }
+        const a5TeamOpsClaimedNames = new Set(a5TeamOpsClaim.names)
+        const a5TeamOpsRawSelected = a5TeamOpsClaimedNames.size === 0
+          ? selected
+          : selected.filter((def) => !a5TeamOpsClaimedNames.has(def.name))
+        selectedTeamToolNames = a5TeamOpsRawSelected.map((def) => def.name)
+        for (const def of a5TeamOpsRawSelected) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
@@ -2941,6 +3108,39 @@ export function createAgentBindings(deps) {
           a5WriteInject = Object.freeze({ arm: writeArm, description: nativeWriteDefinition.description })
           observations.push(`a5m2-write: arm BOUND for ${sessionId} (native=${writeNativeIdentity.slice(0, 32)} member=${writeMemberAgentId.slice(0, 16)} header=${writeSessionHeaderId.slice(0, 16)} root=${writeRootDir.slice(0, 32)})`)
         }
+        // ── A5M2 PROVIDER-IDENTITY SUPPLY (candidate 2026-10-23 SITE 4: wired
+        // ONCE for this mount, here and nowhere else) ───────────────────────
+        // The ONE provider authority is the LIVE binding authority the Guard /
+        // install path already produces — the very dispatcher surface the
+        // call-level facts read `facts.binding` from (pa-mount-registry.mjs
+        // `readCallAuthorityFacts`: `m.guard?.dispatcher?.surface` → the unique
+        // verified + ACTIVE entry → `entry.binding`, the same object this mount
+        // record publishes below). Supply and durable row therefore read the
+        // SAME getter: r18's three-way tie agrees from ONE source instead of
+        // three constants. The reader's inputs are that surface ONLY — no plane
+        // reference, no mount record, no Control row, no receipt — which is why
+        // a row can never become a provider authority through it (FP-D is
+        // structural, not convention). An entry that is absent, unverified, not
+        // ACTIVE, or carries a non-string / empty providerId answers NOTHING:
+        // each consumer fails closed on `undefined` through its own existing
+        // refusal path (mount-refused here, the arm's consumption code at the
+        // consumption point). This module owns NO provider constant for the
+        // image family; the todo/write placement constants carry no provider
+        // comparison and stay untouched (root: do not copy the write pattern —
+        // and never copy its constant).
+        const a5LiveBindingProviderId = (placementName) => {
+          const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(placementName)
+          const binding = entry?.binding
+          if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+            || typeof binding?.providerId !== 'string' || binding.providerId.length === 0) return undefined
+          return binding.providerId
+        }
+        /** The image family's reader: the live authority behind THIS mount's
+         *  read_image placement, ASKED at every consumption moment (the arm is
+         *  constructed before bind, so the value is never captured). THIS is the
+         *  single wiring point (site 4) — the outer-scope binding above is
+         *  assigned exactly once, here, and never re-assigned. */
+        a5ImageProviderIdentity = () => a5LiveBindingProviderId(A5_IMAGE_TOOL_NAME)
         // A5-M2 B-IMAGE (CENTER vertical, root-authorized 实际接线): the governed
         // read_image row's PLACING assembly. The arm law differs from todo/write
         // in the one point the WeakMap algebra imposes (root central card on
@@ -3058,7 +3258,13 @@ export function createAgentBindings(deps) {
                 }
                 a5ImagePlacedArm = createGovernedReadImageArm({
                   definitionIdentity: identity,
-                  providerId: 'a5p5-plane',
+                  // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 1): the arm is built at
+                  // the PLACEMENT moment, which is BEFORE `bindOwnTools` — no
+                  // constant can be honest here, and the value at construction
+                  // would stay wrong forever. So the arm receives the mount's
+                  // ONE reader and re-asks the live binding authority at each
+                  // consumption moment (arm side stores nothing).
+                  provider: a5ImageProviderIdentity,
                   realmId: a5PlaneRealmId,
                   namespaceRoot: imageRootDir,
                   readBounded: imagePort,
@@ -3073,6 +3279,145 @@ export function createAgentBindings(deps) {
             })
             observations.push(`a5m2-image: arm FACTORY wired for ${sessionId} (root=${imageRootDir.slice(0, 32)}) — identity binds at the placement moment`)
           }
+        }
+        // A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer;
+        // this block is the spawn writer's): the governed spawn rows
+        // (census 39-43, family B-SUBAGENT) capture through the SAME
+        // member-scoped face as todo/write/image — the Agent object IS the
+        // scope key, the capture is the definition this member actually
+        // executes, no global-layer fallback — and ride THIS plane's ONE PA
+        // walk (`paAdmit`, read lazily through a5PlaneValue: rows can only
+        // run after placement, a mount consulting it earlier is broken and
+        // answers no key) and ONE placement feed (same lazy law). The
+        // census mount conditions drive the capture honestly: an 'always'
+        // record invisible to the member scope REFUSES the setup (a row
+        // masking a native name with nothing behind it is the plane's own
+        // refused class); a declared-mount record (codex/claude_code/list,
+        // shipped disabled) absent is carried as the adapter's honest
+        // DECLARED-INACTIVE. Zero-flip: planeCfg.spawnGoverned absent =
+        // byte-identical world (no capture, no injection, no registration).
+        if (planeCfg.spawnGoverned === true) {
+          const refuseSpawn = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed spawn mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-spawn-wiring-mount-refused'
+            observations.push(`a5m2-spawn: wiring-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseSpawn('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const spawnCaptured = {}
+          const spawnNativeBodies = {}
+          // THE READ-BACK DISTINCTION (root 20:41 read-only check — CONFIRMED
+          // at the sources, not assumed, and NOT yet observed in any run —
+          // disclosed as a source-level finding): the host scope store
+          // (core/scope chainLayers) answers the NEAREST layer last ("the
+          // nearest scope's entry wins a name"), and bindOwnTools/bindAll
+          // ('team-own') places THIS plane's governed definitions at the
+          // member scope UNDER THE SAME NAMES. Capture above ran BEFORE the
+          // placement (setup order: capture → plane build → place/bind →
+          // publish), so the natives were read clean; at CALL time the same
+          // scoped read answers THIS MOUNT'S PLACED definition, not the
+          // preset native object. The per-dispatch re-read therefore
+          // recognizes its own placement as the SAME real generation (the
+          // placed row delegates to the bound captured execute BY THE
+          // ADAPTER'S OWN construction) and answers a NEW container carrying
+          // the foreign handle only when the face moves to anything else —
+          // never a fake-stable snapshot, never a per-read new object (which
+          // would answer DELEGATE_DRIFT every dispatch while the mount is
+          // healthy). Limit, honestly: while the placement shadows the scope,
+          // a native swap UNDERNEATH is unobservable through this face; it
+          // lands as a placement change (teardown + re-setup re-captures, the
+          // Guard re-verifies the own bind through placement).
+          const readSpawnFace = (spawnName) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined)
+          const spawnPlacedByName = new Map() // filled right after the wiring builds: its definitions ARE the placements
+          const spawnCurrentBodies = () => Object.fromEntries(Object.keys(spawnNativeBodies).map((spawnName) => {
+            const current = readSpawnFace(spawnName)
+            const placed = spawnPlacedByName.get(spawnName)
+            if (placed !== undefined && current === placed) return [spawnName, spawnNativeBodies[spawnName]] // own placement = same generation: answer the BOUND handle
+            return [spawnName, current?.execute]
+          }))
+          const spawnStableGeneration = () => {
+            const bodies = spawnCurrentBodies()
+            return Object.keys(spawnNativeBodies).every((spawnName) => bodies[spawnName] === spawnNativeBodies[spawnName])
+          }
+          for (const spawnName of A5_B_SUBAGENT_SPAWN_TOOL_NAMES) {
+            let spawnNative
+            try {
+              spawnNative = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
+            } catch (error) {
+              throw refuseSpawn(`the member-scoped tool face could not be read for '${spawnName}' (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            if (spawnNative === null || typeof spawnNative !== 'object' || typeof spawnNative.execute !== 'function') {
+              if (A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always') {
+                throw refuseSpawn(`no native '${spawnName}' definition with an execute body is visible to this member scope — census 'always' records are never masked by a row with nothing behind it`)
+              }
+              continue
+            }
+            const spawnIdentity = definitionIdentityOf(spawnNative)
+            if (typeof spawnIdentity !== 'string' || spawnIdentity.length === 0) {
+              throw refuseSpawn(`the captured native '${spawnName}' answers no definitionIdentityOf identity`)
+            }
+            spawnCaptured[spawnName] = Object.freeze({ native: spawnNative, definitionIdentity: spawnIdentity })
+            spawnNativeBodies[spawnName] = spawnNative.execute
+          }
+          if (Object.keys(spawnCaptured).length === 0) {
+            throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring')
+          }
+          // THE ONE bound container (root 20:41 fix 1): the adapter compares
+          // the CONTAINER object identity (assembly gate + per-dispatch edge
+          // re-read), so a stable generation must answer THIS object — built
+          // once, after the capture, from the real captured bodies.
+          const spawnNativeDelegates = Object.freeze({ ...spawnNativeBodies })
+          const spawnWiringBuilt = createSubagentSpawnWiring({
+            providerId: 'a5p5-plane',
+            realmId: a5PlaneRealmId,
+            captured: spawnCaptured,
+            // THE DRIFT LAW, PRODUCTION SOURCE: the CURRENT member-scoped
+            // read answers per dispatch — a preset generation that moved
+            // swaps the object and the row refuses DRIFT. The self-placement
+            // shadow maps back to the captured object (read-back law above);
+            // a FOREIGN object on the face answers itself and refuses.
+            liveNative: (spawnName) => {
+              const current = readSpawnFace(spawnName)
+              const placed = spawnPlacedByName.get(spawnName)
+              if (placed !== undefined && current === placed) return spawnCaptured[spawnName].native
+              return current
+            },
+            spawnDelegates: spawnNativeDelegates,
+            // THE VERIFIED-HANDLE LAW (root 20:41 fix 1): the SAME real-
+            // generation container while every bound handle still answers
+            // the face (own placement included); a NEW container carrying
+            // the moved/foreign handles the moment it does not — the
+            // adapter's own DELEGATE_DRIFT refuses then, at the edge.
+            liveSpawnDelegates: () => (spawnStableGeneration() ? spawnNativeDelegates : Object.freeze(spawnCurrentBodies())),
+            // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
+            // plane construction; consulting before the plane answers
+            // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
+            placementFeed: (spawnName) => a5PlaneValue?.placementFeed?.(spawnName),
+            // THE PLANE'S ONE PA WALK, LAZILY (rows only run placed): a
+            // throw from the walk is the CALL's throw (the adapter catches
+            // nothing).
+            paAdmit: (request) => {
+              // THE REAL SEAT rides the mount as `spawnPaSeat` (the plane's
+              // out-hand for owner-built wiring — production-leg law, found
+              // by the spawn plane-mount spec: the value carries NO top-level
+              // paAdmit; the other lanes get the seat IN at assembly).
+              if (typeof a5PlaneValue?.spawnPaSeat !== 'function') {
+                throw new Error('the plane PA walk is not mounted on this assembly — the spawn rows have no admission path and enter nothing')
+              }
+              return a5PlaneValue.spawnPaSeat(request)
+            },
+            observe: (row) => observations.push(`a5m2-spawn: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
+          })
+          if (spawnWiringBuilt?.ok !== true) {
+            throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`)
+          }
+          a5SpawnWiring = spawnWiringBuilt.wiring
+          for (const spawnPlacedDef of a5SpawnWiring.definitions) spawnPlacedByName.set(spawnPlacedDef.name, spawnPlacedDef)
+          observations.push(`a5m2-spawn: WIRED for ${sessionId} (rows=${Object.keys(spawnCaptured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
         }
         // ── A5M2 B-SCHEDULE (root 17:38 + 18:11): the controlled list/delete
         // production CAPTURE. The capture law is the native face itself:
@@ -3111,15 +3456,28 @@ export function createAgentBindings(deps) {
             }
             scheduleNatives[scheduleName] = nativeFace
           }
-          // THE INERT PRODUCTION PORT (createScheduleInertPort's own law):
-          // the governed production body is the captured native execute; the
-          // port exists only to keep the adapter's shape/stability laws real
-          // over the assembly — ANY call reaching it is drift and answers
-          // loudly. The wiring seat (`admit`) is inert for the same reason:
-          // PRODUCTION admission is the plane's REAL PA edge inside the row
-          // (paAdmit.open → edge → the ONE consumedProof witness), never a
-          // factory double.
-          const scheduleProductionPort = createScheduleInertPort()
+          // THE PORT BOUNDARY (root 19:17): the signed adapter is fed the
+          // REAL published ScheduleService — the raw ctx.schedule handle
+          // through the entry's CURRENT FEED (the lazy strict global-store
+          // read under 'schedule'). liveScheduleService() re-reads the feed
+          // at every dispatch edge exactly where the host bodies resolve
+          // rootCtx.schedule, so the signed PORT_DRIFT legs are REAL: a
+          // service object or a service method replaced underneath the
+          // mount refuses BEFORE any port entry. There is no native-tool
+          // stand-in (that mis-layering turned the host's own {code,message}
+          // values into a TypeError/internal_error and re-mapped already-
+          // mapped views): the TOOL face is not a service. The native faces
+          // keep their real role — the capture IDENTITY behind liveNative.
+          // The wiring seat (`admit`) stays inert: PRODUCTION admission is
+          // the plane's REAL PA edge inside the row, never a factory double.
+          const rawScheduleService = typeof deps.scheduleServiceFeed === 'function' ? deps.scheduleServiceFeed() : undefined
+          if (rawScheduleService === null || typeof rawScheduleService !== 'object' || Array.isArray(rawScheduleService)
+            || typeof rawScheduleService.list !== 'function' || typeof rawScheduleService.delete !== 'function'
+            || typeof rawScheduleService.create !== 'function' || typeof rawScheduleService.update !== 'function'
+            || typeof rawScheduleService.catalog !== 'function' || typeof rawScheduleService.history !== 'function') {
+            throw refuseSchedule('the production port needs the REAL ctx.schedule raw handle — the entry feed answered no full ScheduleService-shaped service (list/delete/create/update/catalog/history). The native TOOL face is NOT a service stand-in (root 19:17); mount the host schedule service or keep the gate closed')
+          }
+          const liveScheduleProductionService = () => (typeof deps.scheduleServiceFeed === 'function' ? deps.scheduleServiceFeed() : rawScheduleService)
           const scheduleAssembly = createScheduleWiring({
             providerId: 'a5p5-plane',
             declaredService: Object.freeze({ present: true }),
@@ -3128,8 +3486,8 @@ export function createAgentBindings(deps) {
               schedule_delete: Object.freeze({ native: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME], definitionIdentity: `capture-side:${sessionId}:schedule_delete` }),
             }),
             liveNative: (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined),
-            scheduleService: scheduleProductionPort,
-            liveScheduleService: () => scheduleProductionPort,
+            scheduleService: rawScheduleService,
+            liveScheduleService: liveScheduleProductionService,
             capturedAgent: runtimeAgent,
             ScheduleInputError,
             // The family keys come from the PLANE's placement feed at the
@@ -3272,20 +3630,27 @@ export function createAgentBindings(deps) {
             },
           })
         })()
-        // A5M2-G6 B-SESSION-QUERY (root 18:2x, the lifted block scope): the
-        // Team-plane owner PUBLISHES the deployment evidence under
-        // `planeCfg.sessionQuery` — provider identity, the typed query
-        // facets, the caller law, the ceiling decision port and the
-        // declared-mount evidence (the adapter's own law decides their
-        // semantics; nothing is invented or stand-in'd here). ABSENT = the
-        // family is not deployed on this mount: no rows, zero flip. What
-        // THIS side owns is the CAPTURE: the natives are read through the
-        // SAME member-scoped seam the todo/write/image captures obey — the
-        // global face is NOT a fallback — and the seam is memoized so the
-        // whole mount sees ONE object per name (root 18:2x defect ② closed
-        // at the capture side too).
+        // A5M2-G6 B-SESSION-QUERY (root 992 ②: the REAL supply close). The
+        // five governed query facets, the provider identity and the
+        // declared-mount evidence are BUILT FROM the live DSH public
+        // `sessionQuery` service (the lazy `ctx.get('sessionQuery')` deps
+        // accessor — the same additive-optional global-store shape the
+        // jobs/web/attachments services ride); the Team ceiling answers the
+        // CURRENT durable membership (memberInstances of the TeamSession
+        // root, live lifecycle law, fresh per call); the caller law reads
+        // the ACTUAL exec owner (this member Agent's own session header,
+        // lazily, per call — never a global face). `planeCfg.sessionQuery`
+        // is ONLY the deployment-intent bit (the blueprint's `true`): a
+        // config VALUE carrying facets/ceiling/evidence is REFUSED — an
+        // externally injected stand-in is not production supply and is
+        // never called production-complete. Service not registered =
+        // honest DECLARED-INACTIVE census (zero flip, natives untouched,
+        // no setup failure); core facets incomplete = the same honest
+        // census with the observation bytes. The CAPTURE law is unchanged:
+        // member-scoped seam, memoized (root 18:2x ②), global face NOT a
+        // fallback.
         const g6Cfg = planeCfg?.sessionQuery
-        if (g6Cfg !== undefined && g6Cfg !== null) {
+        if (g6Cfg !== undefined && g6Cfg !== null && g6Cfg !== false) {
           const refuseG6 = (why) => {
             const error = new Error(
               `agent-bindings: alpha.5 governed session-query mount refused for '${sessionId}': ${why}`,
@@ -3294,34 +3659,388 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-g6: arm-REFUSED for ${sessionId}`)
             return error
           }
+          if (g6Cfg !== true) {
+            throw refuseG6('planeCfg.sessionQuery carries a VALUE — the query facets, provider identity, caller law, ceiling and declared-mount evidence are NOT injectable through config (externally supplied stand-ins are not supply); the only legal config face is the deployment-intent bit `true` — supply comes from the live sessionQuery service, the durable memberInstances and this Agent\'s own session header')
+          }
           if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
-            throw refuseG6('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+            throw refuseG6('the member Agent object is unreadable — the scope-aware native capture has no scope key and the actual-exec-owner caller law has no session header; the global face is NOT a fallback')
           }
-          const g6Captured = new Map()
-          const g6ReadNative = (name) => {
-            if (g6Captured.has(name)) return g6Captured.get(name)
-            let captured
-            try {
-              captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
-            } catch (error) {
-              throw refuseG6(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+          const g6Supply = buildG6QuerySupplyFromService(
+            typeof sessionQueryBackend === 'function' ? sessionQueryBackend() : undefined,
+            // Root 19:29 — the SAME Host public lazy accessor rides the
+            // supply: every adapter guard read re-observes the CURRENT
+            // `ctx.get('sessionQuery')` identity, so a whole-service
+            // replacement refuses through the row's own PORT_RECEIVER_MOVED
+            // law (the approved receiver/method handles keep executing
+            // while the identity matches and NEVER switch to the new
+            // instance's). The real accessor — no stale constant
+            // masquerading as current.
+            typeof sessionQueryBackend === 'function' ? sessionQueryBackend : undefined,
+          )
+          if (g6Supply.ok !== true) {
+            // An absent/incomplete service is a DEPLOYMENT census fact for
+            // this mount, not a setup failure: zero flip, natives untouched,
+            // one honest observed line.
+            observations.push(`a5m2-g6: family DECLARED-INACTIVE for ${sessionId} (${g6Supply.code})`)
+          } else {
+            const g6Captured = new Map()
+            const g6ReadNative = (name) => {
+              if (g6Captured.has(name)) return g6Captured.get(name)
+              let captured
+              try {
+                captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+              } catch (error) {
+                throw refuseG6(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+              }
+              // `undefined` is a LEGAL answer (a native this host build does
+              // not carry): the bridge lands it as the honest DECLARED-INACTIVE
+              // census — no def, no registration, native untouched.
+              g6Captured.set(name, captured === null ? undefined : captured)
+              return g6Captured.get(name)
             }
-            // `undefined` is a LEGAL answer (a native this host build does
-            // not carry): the bridge lands it as the honest DECLARED-INACTIVE
-            // census — no def, no registration, native untouched.
-            g6Captured.set(name, captured === null ? undefined : captured)
-            return g6Captured.get(name)
+            let g6BoundaryAbsentObserved = false
+            const g6ReadCaller = () => {
+              const header = runtimeAgent.session?.header
+              const ownId = header?.id
+              if (typeof ownId !== 'string' || ownId === '') {
+                // Fail-closed at the caller law: no owner identity, no
+                // classify, no port entry — never a guessed caller.
+                throw new Error(`agent-bindings: the actual exec owner of '${sessionId}' answers no session identity — the governed session-query caller law never guesses a caller`)
+              }
+              // The STEP BOUNDARY (root 18:58 residual 1): the actual exec
+              // owner's OWN turnBoundary projection, through the host
+              // public law verbatim — workspace-access.ts:56-69 @639ed01539
+              // builds the caller as { id: agent.session.id, header:
+              // agent.session.header, boundary: ctx.sessionProjections.
+              // stateOf(agent.session, 'turnBoundary') } (the projection
+              // state carries lastStepStartSeq, core/agent/src/types.ts:82
+              // — nullable). Without it the CURRENT-SESSION default
+              // (no explicit session_id) refuses with the row's own
+              // SESSION_QUERY_TOOL_NO_CURRENT_STEP at its own guard
+              // (g6-session-query.mjs:1600-1604) — NEVER a fabricated
+              // boundary here, and explicit-target reads are unaffected.
+              let boundary
+              try {
+                const projections = typeof sessionProjectionsBackend === 'function' ? sessionProjectionsBackend() : undefined
+                if (projections !== null && typeof projections === 'object' && typeof projections.stateOf === 'function') {
+                  const state = projections.stateOf(runtimeAgent.session, 'turnBoundary')
+                  if (state !== null && typeof state === 'object') boundary = state
+                }
+              } catch {
+                boundary = undefined
+              }
+              if (boundary === undefined && !g6BoundaryAbsentObserved) {
+                g6BoundaryAbsentObserved = true
+                observations.push(`a5m2-g6: turnBoundary projection unavailable for ${sessionId} — current-session searches will refuse NO_CURRENT_STEP at the row (explicit targets unaffected)`)
+              }
+              return Object.freeze({
+                id: String(ownId),
+                ...(typeof header.cwd === 'string' && header.cwd !== '' ? { cwd: String(header.cwd) } : {}),
+                ...(boundary === undefined ? {} : { boundary }),
+              })
+            }
+            const g6TeamCeiling = (target) => {
+              if (typeof target !== 'string' || target === '') return false
+              const ownId = String(runtimeAgent.session?.header?.id ?? '')
+              if (target === ownId || target === String(teamRoot)) return true
+              // The CURRENT durable membership, read fresh per call (the
+              // governance-routing live-lifecycle law beside this block:
+              // an ARCHIVED/DISPOSED instance never stays in the ceiling).
+              for (const mrow of domain.repositories.memberInstances.list(teamRoot)) {
+                if (String(mrow.childSessionId) === target) {
+                  const state = String(mrow.lifecycle ?? '')
+                  if (state !== 'ARCHIVED' && state !== 'DISPOSED') return true
+                }
+              }
+              return false
+            }
+            a5G6Inject = Object.freeze({
+              providerId: g6Supply.providerId,
+              readNative: g6ReadNative,
+              queryPorts: g6Supply.queryPorts,
+              readCaller: g6ReadCaller,
+              teamCeiling: g6TeamCeiling,
+              declaredMount: g6Supply.declaredMount,
+            })
+            observations.push(`a5m2-g6: inject armed for ${sessionId} (provider=${g6Supply.providerId}; supply=live sessionQuery service; ceiling=durable memberInstances of ${String(teamRoot)}; caller=own session header)`)
           }
-          a5G6Inject = Object.freeze({
-            providerId: g6Cfg.providerId,
-            readNative: g6ReadNative,
-            queryPorts: g6Cfg.queryPorts,
-            readCaller: g6Cfg.readCaller,
-            teamCeiling: g6Cfg.teamCeiling,
-            declaredMount: g6Cfg.declaredMount,
-            ...(g6Cfg.maxSearchResults === undefined ? {} : { maxSearchResults: g6Cfg.maxSearchResults }),
+        }
+        // ── A5M2-B-TEAM-WIRE (this lane's block): the B-TEAM member-operation
+        // injection, armed from the SAME owner evidence the claim above read
+        // (`config.teamToolPlane.teamMemberOps`). The plane owns the ADMISSION
+        // side — its real `paAdmit` seat occupies the adapter's REQUIRED admit
+        // seam (a factory plus `admit({ok:true})` is factory assembly, not
+        // wiring) — and this assembly owns the capture seams below and the
+        // PLACEMENT after the mount. The capture obeys the member-scoping law
+        // the todo/write/image captures obey: the native faces come from
+        // THIS member's selected lane set (the capability selector already
+        // applied the blueprint's teamTools allowlist), and the live re-read
+        // answers the CURRENT lane build, so the adapter's per-dispatch L7
+        // check is a live reading — never a bind-time constant compared with
+        // itself. ABSENT evidence = a5TeamOpsInject stays null = the plane
+        // call below is byte-identical to the pre-B-TEAM assembly.
+        a5TeamOpsInject = null
+        if (a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null && a5TeamOpsClaim.names.length > 0) {
+          const teamOpsBad = typeof a5TeamOpsCfg.providerId !== 'string' || a5TeamOpsCfg.providerId.length === 0
+            ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against)'
+            : undefined
+          if (teamOpsBad !== undefined) {
+            observations.push(`a5m2-b-team: arm-REFUSED for ${sessionId} (${teamOpsBad.slice(0, 60)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': ${teamOpsBad}`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          a5TeamOpsInject = Object.freeze({
+            providerId: a5TeamOpsCfg.providerId,
+            // ROOT 23:17 (center close-out): the SAME shared caller/root gate the
+            // native common entry runs, supplied HERE from the ONE real identity
+            // source this factory owns - the very `resolveCaller` the root builds
+            // createTeamTools with (root.ts passes live.resolveCaller; live IS this
+            // object, returned at the factory foot). The seam is consulted by the
+            // bridge before any durable fact; absent-gate behavior is unchanged.
+            callerGate: (exec, requestedRootSessionId) =>
+              resolveTeamToolCallerRootGate({ resolveCaller }, exec, requestedRootSessionId),
+            // ⑤ THE PRODUCER: the version this mount's registration ACTUALLY
+            // carries, read through the registry's existing public query. The
+            // wiring compares every claim it mints against this, and again at
+            // the edge, so an approval that carries a version the published
+            // registration no longer carries cannot reach the lane.
+            registrationOf: () => {
+              for (const key of a5TeamOpsFamilyKeys) {
+                const entry = a5GovernedFamilyFor(key)
+                if (entry !== undefined && entry !== null) {
+                  return { adapterRevision: entry.adapterRevision, providerIdentity: entry.providerIdentity }
+                }
+              }
+              return undefined
+            },
+            // ROOT 21:24/21:33: the QUERY rows' durable target is resolved
+            // through the lane's OWN published authority queries — nothing is
+            // invented, cached or mirrored into a second store:
+            //   team_list_members   -> the durable `memberInstances` roster
+            //                           (the same repository read at :1088 /
+            //                           :2053 / :3563 / :4791), reported as the
+            //                           rows' own instanceIds plus a digest of
+            //                           that id set (the ids ARE the identity;
+            //                           the digest is supplementary, never a
+            //                           count posing as one)
+            //   team_list_templates -> the BOUND BLUEPRINT's member templateIds
+            //                           through `getBoundBlueprint` (the host's
+            //                           `resolveBoundBlueprint` seam, blueprint
+            //                           source fallback inside)
+            //   team_inspect_config -> the ADDRESSED row's own instanceId /
+            //                           templateId / childSessionId, or
+            //                           `absent: true` when the roster carries
+            //                           no such instance (recorded, never a
+            //                           refusal: the lane's own addressing
+            //                           answer stands untouched)
+            queryFacts: Object.freeze({
+              resolve: (name, addressedInstanceId) => {
+                const root = String(teamRoot)
+                if (name === 'team_list_templates') {
+                  // THE SAME SET the native list_templates effect answers with:
+                  // the bound blueprint's LEADER template plus every member
+                  // template (root 22:35 ①) - a member-only set is a different
+                  // set than the one the caller's own tool returns.
+                  const blueprint = getBoundBlueprint(root)
+                  const leader = blueprint?.leader
+                  const leaderId = typeof leader === 'string' ? leader : String(leader?.templateId ?? '')
+                  const members = Array.isArray(blueprint?.members) ? blueprint.members : []
+                  const templateIds = [...new Set([
+                    ...(leaderId.length > 0 ? [leaderId] : []),
+                    ...members.map((entry) => String(entry?.templateId ?? '')),
+                  ])].filter((id) => id.length > 0)
+                  return Object.freeze({ templateIds: Object.freeze(templateIds) })
+                }
+                const rows = domain.repositories.memberInstances.list(root)
+                if (name === 'team_inspect_config') {
+                  const row = rows.find((candidate) => String(candidate?.instanceId ?? '') === String(addressedInstanceId ?? ''))
+                  if (row === undefined) return Object.freeze({ absent: true, addressedInstanceId: String(addressedInstanceId ?? '') })
+                  return Object.freeze({
+                    memberInstanceId: String(row.instanceId),
+                    ...(String(row.templateId ?? '').length > 0 ? { memberTemplateId: String(row.templateId) } : { memberTemplateId: null }),
+                    ...(String(row.childSessionId ?? '').length > 0 ? { memberChildSessionId: String(row.childSessionId) } : { memberChildSessionId: null }),
+                  })
+                }
+                const rosterMemberIds = [...new Set(rows.map((row) => String(row?.instanceId ?? '')).filter((id) => id.length > 0))].sort()
+                return Object.freeze({
+                  rosterMemberIds: Object.freeze(rosterMemberIds),
+                  rosterFingerprint: a5TeamOpsDigest(rosterMemberIds),
+                })
+              },
+            }),
+            // ONE-CAPTURE seam: this member's own selected lane set.
+            readNative: (name) => a5TeamOpsNativeByName.get(name),
+            // FRESH per-dispatch read of the LIVE lane build, still scoped to
+            // what THIS member is allowed: a rebuilt set answers a different
+            // object and the adapter refuses DEFINITION_DRIFT with zero
+            // delegate entry.
+            liveNative: (name) => {
+              if (!a5TeamOpsAllowedNames.has(name)) return undefined
+              const live = Array.isArray(teamToolsRef.current?.tools) ? teamToolsRef.current.tools : []
+              return live.find((def) => def?.name === name)
+            },
+            // THE DELEGATE PORT'S SOURCE: the same live lane set — capture
+            // and port are two reads of ONE createTeamTools build (adapter
+            // L3); a rebuilt set behind a stale capture is a split mount.
+            teamSet: () => (Array.isArray(teamToolsRef.current?.tools) ? teamToolsRef.current.tools : []),
+            definitionIdentityOf,
+            // THE RUNTIME PLACEMENT FEED: the identity of whatever the scoped
+            // layer answers under this name, read FRESH at mount moment —
+            // never a build-time snapshot, never a hand-spelled key.
+            placementFeed: (name) => {
+              const placed = agentCtx.tools.get(name, runtimeAgent)
+              const identity = definitionIdentityOf(placed)
+              return identity === null || identity === undefined
+                ? undefined
+                : Object.freeze({ definitionIdentity: identity, realmId: a5PlaneRealmId })
+            },
           })
-          observations.push(`a5m2-g6: inject armed for ${sessionId} (evidence keys=${Object.keys(g6Cfg).sort().join(',')})`)
+          observations.push(`a5m2-b-team: inject armed for ${sessionId} (claim=${a5TeamOpsClaim.names.join(',')})`)
+        }
+        // ── A5-M2 B-SUBAGENT-CONTROL-WIRING wiring section (control-lane owner, root 20:03 + 21:01 cards) ──
+        // The governed CONTROL trio (census 44/45/46: interrupt_agent /
+        // list_agents / send_message) is armed ONLY when the closed
+        // `subagentControlEnabled` key says on (absent = the section never
+        // runs, byte-for-byte zero flip). The wiring BUILDS the three
+        // definitions HERE over real runtime facts — member-scoped native
+        // capture (todo/write/schedule law; deny-lane names refused), the
+        // live subagents service through deps.subagents re-read per dispatch,
+        // agentCtx.agents per dispatch, the inline
+        // Symbol.for('dsh.subagent.adjacentAgentSendMessageTool') marker pair
+        // (byte-parity with the pinned host helper, no private import). The
+        // PLACEMENT is the plane's own (root 21:01: the defs ride allDefs /
+        // placedByName / ownNames / the Guard's assembly-owned bind and
+        // bindingFeed / the PA placement attribution — the existing
+        // machinery, no second ledger): the inject below hands them to the
+        // plane, which mounts and disposes them like every other row. The
+        // wiring's OWNED admit seat walks the LIVE plane funnel lazily
+        // (a5PlaneValue.paAdmit + closePlan — set by the time any call
+        // arrives); its placement feed reads back through the SAME plane
+        // placementFeed the Guard's bindingFeed consumes. liveNative is the
+        // PLACEMENT-SEAM reader (root 21:01 card 2): the member-scoped face
+        // first; when this mount's own governed def answers the name, the
+        // plane's placement record (the legitimate visibility seam) must
+        // corroborate THAT def's identity before the captured native is
+        // answered — corroboration lost returns the shadowing def instead and
+        // the adapter fails the leg DEFINITION_DRIFT, fail closed. The GLOBAL
+        // face is NEVER read: a global same-name is not the member-scope
+        // original source. A refusal here is a setup refusal.
+        if (planeCfg.subagentControlEnabled === true) {
+          const refuseSubagentControl = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-SUBAGENT control mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-subagent-control-mount-refused'
+            observations.push(`a5m2-b-subagent-control: mount-REFUSED for ${sessionId} (${String(why).slice(0, 140)})`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseSubagentControl('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          if (typeof agentCtx.tools?.get !== 'function') {
+            throw refuseSubagentControl('the scoped tool face cannot read — the member-scoped native capture is impossible')
+          }
+          for (const trioName of Object.keys(A5_B_SUBAGENT_RECORD_SPECS)) {
+            if (capabilities.mode === 'selective' && capabilities.builtinToolDeny.includes(trioName)) {
+              throw refuseSubagentControl(`'${trioName}' is DENIED by this member's capability policy — the governed trio mount is not an override channel for the deny lane`)
+            }
+          }
+          const subagentControlCaptured = {}
+          for (const trioName of Object.keys(A5_B_SUBAGENT_RECORD_SPECS)) {
+            let nativeFace
+            try {
+              nativeFace = agentCtx.tools.get(trioName, runtimeAgent)
+            } catch (error) {
+              throw refuseSubagentControl(`the member-scoped tool face could not be read for the native ${trioName} definition (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            if (nativeFace === null || typeof nativeFace !== 'object' || typeof nativeFace.execute !== 'function') {
+              throw refuseSubagentControl(`no executable native ${trioName} definition is visible to this member scope — the governed same-name mount has nothing to replace`)
+            }
+            let captureIdentity
+            try {
+              captureIdentity = definitionIdentityOf(nativeFace)
+            } catch {
+              captureIdentity = undefined
+            }
+            if (typeof captureIdentity !== 'string' || captureIdentity.length === 0) {
+              throw refuseSubagentControl(`the captured native ${trioName} answers no definition identity — the visible-through placement pair has nothing to key on`)
+            }
+            subagentControlCaptured[trioName] = Object.freeze({ native: nativeFace, definitionIdentity: captureIdentity })
+          }
+          if (deps.subagents === null || typeof deps.subagents !== 'object' || Array.isArray(deps.subagents)
+            || typeof deps.subagents.sendMessage !== 'function' || typeof deps.subagents.interrupt !== 'function'
+            || typeof deps.subagents.listChildren !== 'function' || typeof deps.subagents.listDescendants !== 'function') {
+            throw refuseSubagentControl('the production port needs the REAL ctx.subagents handle — the integrator accessor deps.subagents answered no SubagentRuntime-shaped service {sendMessage,interrupt,listChildren,listDescendants}; mount the service or keep the gate closed')
+          }
+          if (typeof agentCtx.agents?.get !== 'function') {
+            throw refuseSubagentControl('the plugin Context answers no agents registry face (agentCtx.agents.get) — the list projection has no live status source')
+          }
+          const ADJACENT_AGENT_SEND_MESSAGE_MARK = Symbol.for('dsh.subagent.adjacentAgentSendMessageTool')
+          const subagentControlAssembly = createBSubagentControlWiring({
+            providerId: 'a5p5-plane',
+            captured: Object.freeze(subagentControlCaptured),
+            liveNative: (name) => {
+              const live = agentCtx.tools.get(name, runtimeAgent)
+              const mine = (subagentControlAssembly?.definitions ?? []).find((d) => d.name === name)
+              if (live !== undefined && live !== null && mine !== undefined && live === mine) {
+                let mineIdentity
+                try {
+                  mineIdentity = definitionIdentityOf(mine)
+                } catch {
+                  mineIdentity = undefined
+                }
+                const fed = a5PlaneValue?.placementFeed?.(name)
+                if (fed !== undefined && fed !== null && typeof mineIdentity === 'string' && fed.definitionIdentity === mineIdentity) {
+                  return subagentControlCaptured[name]?.native
+                }
+              }
+              return live
+            },
+            subagentService: deps.subagents,
+            liveSubagentService: () => deps.subagents,
+            agentsRegistry: agentCtx.agents,
+            liveAgentsRegistry: () => agentCtx.agents,
+            isAdjacentAgentSendMessageTool: (definition) => typeof definition === 'object' && definition !== null && definition[ADJACENT_AGENT_SEND_MESSAGE_MARK] === true,
+            markAdjacentAgentSendMessageTool: (definition) => {
+              Object.defineProperty(definition, ADJACENT_AGENT_SEND_MESSAGE_MARK, { value: true })
+              return definition
+            },
+            placementFeed: (name) => {
+              const fed = a5PlaneValue?.placementFeed?.(name)
+              if (fed === undefined || fed === null) return undefined
+              return {
+                definitionIdentity: typeof fed.definitionIdentity === 'string' && fed.definitionIdentity.length > 0 ? fed.definitionIdentity : undefined,
+                realmId: typeof fed.realmId === 'string' && fed.realmId.length > 0 ? fed.realmId : undefined,
+              }
+            },
+            pa: Object.assign(
+              (walk) => {
+                if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
+                  return Promise.reject(new Error('the placed plane answers no paAdmit funnel — the control trio has no admission edge (this wiring ships no stub walk)'))
+                }
+                return a5PlaneValue.paAdmit(walk)
+              },
+              {
+                closePlan: (callId) => {
+                  a5PlaneValue?.paAdmit?.closePlan?.(callId)
+                },
+              },
+            ),
+            observe: (row) => observations.push(`a5m2-b-subagent-control: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')} ${String(row?.detail ?? '')}`),
+          })
+          if (subagentControlAssembly.ok !== true) {
+            throw refuseSubagentControl(`the wiring refused its inputs (${String(subagentControlAssembly.code)}: ${String(subagentControlAssembly.message ?? '').slice(0, 160)})`)
+          }
+          a5SubagentControlInject = Object.freeze({
+            definitions: subagentControlAssembly.definitions,
+            familyId: subagentControlAssembly.familyId,
+            providerId: subagentControlAssembly.providerId,
+            placementNames: subagentControlAssembly.placementNames,
+            familyRegistrations: subagentControlAssembly.familyRegistrations,
+            dispose: subagentControlAssembly.dispose,
+          })
+          observations.push(`a5m2-b-subagent-control: trio ARMED for ${sessionId} (placement rides the plane; records=${Object.keys(subagentControlCaptured).join(',')})`)
         }
         // A5M2 G3 B-TERMINAL (root 19:08, wiring lane; the G6 block's division
         // of labor verbatim): the Team-plane owner PUBLISHES the deployment
@@ -3735,14 +4454,31 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5G3TerminalInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
+            ...(a5SpawnWiring === null ? {} : { spawn: a5SpawnWiring }),
             ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
             ...(a5ScheduleInject === null ? {} : { schedule: a5ScheduleInject }),
-            ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
+            // A5M2-B-TEAM-WIRE (this lane's row in the shared backends union).
+            ...(a5TeamOpsInject === null ? {} : { teamOps: a5TeamOpsInject }),
+            // A5-M2 B-SUBAGENT-CONTROL-WIRING (this lane's row in the shared
+            // backends union, root 21:01): the trio defs ride the PLANE's one
+            // placement — ownNames, the Guard's assembly-owned bind and
+            // bindingFeed, and the PA placement attribution resolve them.
+            ...(a5SubagentControlInject === null ? {} : { subagentControl: a5SubagentControlInject }),
+            // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the placement
+            // attribution row for the arm route. The plane consults this
+            // LIVE reader per call, inside the frozen pure-query spelling
+            // set only; a name the owner does not CURRENTLY hold answers
+            // nothing (no placementName → the shared reader fails closed).
+            // The rows are the OWNER's placement, so the plane injects no
+            // `backends.g1` rows on this route — one placement, one ledger.
+            ...(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null
+              ? { g1Arm: { isPlaced: (name) => a5G1PlacedByName.has(name) } }
+              : {}),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3765,6 +4501,45 @@ export function createAgentBindings(deps) {
         }
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
+        // ── A5M2-B-TEAM-WIRE (this lane's block): THE PLACEMENT of the
+        // governed member-operation rows, BEFORE the Guard's own-tool bind.
+        // The raw catalog registration of exactly these names yielded for
+        // them above, so each name keeps ONE placement in this layer; the
+        // Guard then binds the GOVERNED definition's placement identity
+        // (install.ts bindOwnTools re-reads the scoped layer and requires the
+        // seam's mint), and the plane's seat admits the call only through the
+        // real PA walk. A row the mount did not emit — or a claimed name the
+        // mount did not mount — is a mount defect: refuse fail-closed, never
+        // place a stand-in and never register a guess.
+        if (a5TeamOpsInject !== null) {
+          const teamPlaneFace = built.value.teamOps
+          if (teamPlaneFace === undefined || teamPlaneFace === null) {
+            observations.push(`a5m2-b-team: placement-REFUSED for ${sessionId} (the plane surfaced no member-operation face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': the plane accepted the injection but surfaced no wiring face — nothing is placed and nothing registers`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          const mountedNames = new Set(teamPlaneFace.placementNames)
+          for (const claimed of a5TeamOpsClaim.names) {
+            if (!mountedNames.has(claimed)) {
+              observations.push(`a5m2-b-team: placement-REFUSED for ${sessionId} (claimed '${claimed}' is not on the mounted face)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed B-TEAM member-operation mount refused for '${sessionId}': the claim and the mounted face diverge on '${claimed}' — a raw tool would be left unregistered and a governed row unplaced`,
+              ), { code: 'alpha5-team-arm-mount-refused' })
+            }
+          }
+          for (const definition of teamPlaneFace.definitions) {
+            toolDisposers.push(agentCtx.tools.register(definition))
+            // ROOT 19:53 ③: record the PLACED object itself — the Guard's
+            // binding feed for this name resolves its identity from this ledger,
+            // so the Guard's continuity reads the very definition the layer
+            // answers under the name (one name, one placement, one identity).
+            a5TeamOpsPlacedByName.set(definition.name, definition)
+            a5PlaneOwnNames.push(definition.name)
+            a5PlaneOwnedNames.push(definition.name)
+            observations.push(`a5m2-b-team: governed row PLACED ${String(definition.name)} for ${sessionId} (raw catalog registration yielded for this name)`)
+          }
+        }
         // GLUE-7: the Guard's feed resolves through this live handle (the
         // def#N identity mints later, in the seam's install flow — a
         // build-time snapshot was measured live refusing a legitimate
@@ -3781,6 +4556,230 @@ export function createAgentBindings(deps) {
           revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
           return placed.dispose()
         })
+        // ── A5M2-G1-WIRE MOUNT-ARM (this lane's block; center 01:1x
+        // continuation, split 01:4x): the production supply for the pure-query
+        // G1 subset. The assembly line is the G1-WIRE lane's OWN module
+        // (g1-query-assembly.mjs — imported and consumed, never restated):
+        // this block supplies the live mount seams (the B-TEAM inject's shape,
+        // the signed supply-form law), calls the factory at the ARM moment
+        // (missing evidence = arm refusal, the sibling posture), PLACES the
+        // emitted definitions before the Guard's own-tool bind (one name, one
+        // placement: the raw layer holds none of these names — they are host
+        // global-layer natives this scoped placement shadows, the takeover
+        // mount the plane's `read`/`job_*` rows already are), and lets the
+        // module's `registerAfterPublish()` write the family rows at the
+        // settled single fill point below. NO plane G1 row injection happens
+        // here: the plane's own `g1Enabled`/`backends.g1` seam stays the
+        // frozen route of its assembly spec and is untouched by this block —
+        // the plane never sees the key this arm reads, so its world stays
+        // byte-identical to the pre-G1 build.
+        //
+        // WHY ONE ASSEMBLY PER SUPPLIED ROW: the wiring's `bindingFacts()`
+        // reader is ONE closure shared by every row it mounts (the frozen
+        // candidate contract), while the signed per-row law (the todo arm)
+        // demands the LIVE dispatcher tuple of THAT row's placement. One
+        // assembly per row keeps every supplied row's facts about itself —
+        // never another placement's tuple stamped onto it. The rows the
+        // assembly does not supply stay the module's own honest
+        // DECLARED-INACTIVE rows (no def, no placement, no registration).
+        //
+        // ENABLEMENT GATE (root 17:55, unchanged by this round): only
+        // B-INSPECT rows are supplied. The derived subset's third pure-query
+        // record — `team_list_pending_control` (B-CONTROL) — is NOT armed:
+        // the B-CONTROL enablement ruling is still open (its grammar landed;
+        // its registration/claim is not authorized), so the raw team-tool
+        // name stays exactly as today. The gate is this CLOSED vocabulary,
+        // never a config that could silently widen.
+        if (planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) {
+          const g1Cfg = planeCfg.g1PureQuery
+          const g1IsRecord = typeof g1Cfg === 'object' && g1Cfg !== null && !Array.isArray(g1Cfg)
+          if (g1Cfg !== true && !g1IsRecord) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': config.teamToolPlane.g1PureQuery must be true or a supply record (found ${JSON.stringify(g1Cfg) ?? String(g1Cfg)})`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1ProviderId = g1IsRecord && g1Cfg.providerId !== undefined
+            ? (typeof g1Cfg.providerId === 'string' && g1Cfg.providerId.length > 0 ? g1Cfg.providerId : null)
+            : 'a5p5-plane'
+          if (g1ProviderId === null) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': providerId must be a non-empty string (the provider identity the durable family gate compares against)`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1Bad = runtimeAgent === null || typeof runtimeAgent !== 'object'
+            ? 'the setup resolves no runtime Agent — captures and the family feed have no member scope (the todo capture law: the Agent object IS the scope key; no global fallback)'
+            : a5p1Guard === undefined || a5p1Guard === null
+              ? 'no Guard on this mount — binding facts have no live face to read'
+              : undefined
+          if (g1Bad !== undefined) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (${g1Bad.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': ${g1Bad}`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          // THE trusted TARGETS CONFIG face (the adapter's five facts; its
+          // mount law refuses any absence — no fallback). Every fact is a
+          // real fact of THIS mount, read the same way the sibling arms
+          // read theirs: member/session = the runtime Agent's own identity;
+          // realm = the mount's ONE realm; owner = the owning root session;
+          // profile = the member's durable roster template — the same
+          // repository read the B-TEAM queryFacts resolve performs.
+          const g1MemberAgentId = typeof runtimeAgent.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const g1SessionHeaderId = typeof runtimeAgent.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (g1MemberAgentId === undefined || g1SessionHeaderId === undefined) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (the real identity pairing facts are unreadable on this setup)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the arm carries no fallback for either`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1RosterRow = domain.repositories.memberInstances.list(String(teamRoot))
+            .find((row) => String(row?.instanceId ?? '') === String(instanceId))
+          const g1ProfileId = typeof g1RosterRow?.templateId === 'string' && g1RosterRow.templateId.length > 0
+            ? String(g1RosterRow.templateId)
+            : null
+          if (g1ProfileId === null) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (the durable roster answers no templateId for instance ${String(instanceId)} — the trusted profileId has no real producer)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': the trusted TARGETS profileId has no real producer (durable roster row absent or template-less for instance '${String(instanceId)}') — the arm invents no profile identity`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1Trusted = Object.freeze({
+            memberAgentId: g1MemberAgentId,
+            sessionHeaderId: g1SessionHeaderId,
+            realmId: a5PlaneRealmId,
+            owner: String(teamRoot),
+            profileId: g1ProfileId,
+          })
+          // THE RUNTIME PLACEMENT FEED (root 841 ② restated): the identity of
+          // the definition THIS owner's registration seam placed under this
+          // name, read from the owner-held ledger — the SAME ledger the
+          // Guard's bindingFeed pins from and the family registration keys
+          // from, so all three consumers carry ONE mint by construction.
+          // A live `tools.get` is NOT the feed here: whatever a current read
+          // happens to answer is not evidence of what the owner placed (an
+          // arbitrary current get may not impersonate owner placement); the
+          // Guard's own bind-time scoped read is the continuity proof, on
+          // the install.ts feed law. The plane's own feed cannot answer
+          // these names (they are not plane placements).
+          const g1PlaneSeam = Object.freeze({
+            placementFeed: (name) => {
+              const placed = a5G1PlacedByName.get(name)
+              if (placed === undefined) return undefined
+              const identity = definitionIdentityOf(placed)
+              return identity === null || identity === undefined
+                ? undefined
+                : Object.freeze({ definitionIdentity: identity, realmId: a5PlaneRealmId })
+            },
+            // THE PA EDGE: the plane's ONE real funnel, consulted lazily per
+            // call through the live handle (the B-SUBAGENT law — the module
+            // carries no stub walk; rows can only run after placement).
+            paAdmit: (walk) => a5PlaneValue.paAdmit(walk),
+          })
+          // The trusted CURRENT topology supply (B-INSPECT's classify + edge
+          // fact). The seam is a live reader, never a frozen snapshot; the
+          // SOURCE is the integrator's (the host glue supplies the authorized
+          // inspect directory as the deployment's authorization face). Absent
+          // = NOT mounted: the rows then keep the module's OWN fail-closed
+          // call-time refusal (P_G1_TRUSTED_TOPOLOGY_ABSENT verbatim) —
+          // mounted, placed, registered, and zero native entry until the
+          // source lands. This arm never fabricates a topology.
+          const g1Topology = g1IsRecord && g1Cfg.trustedTopology !== undefined
+            ? (typeof g1Cfg.trustedTopology?.current === 'function' ? Object.freeze({ current: () => g1Cfg.trustedTopology.current() }) : null)
+            : undefined
+          if (g1Topology === null) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (g1PureQuery.trustedTopology supplied without a current() reader — a CURRENT-facts source must be a live reader, never a frozen snapshot)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': trustedTopology must be { current: () => unknown } (a CURRENT-facts reader) when supplied`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          let g1PlacedCount = 0
+          for (const entry of g1PureQuerySubset()) {
+            if (entry.familyId !== 'B-INSPECT') {
+              observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only); the raw name stays unregistered and untouched`)
+              continue
+            }
+            const assembly = createG1QueryAssembly({
+              providerId: g1ProviderId,
+              registry: {
+                // LIVE scoped reads; this assembly supplies THIS row only —
+                // the other subset names answer nothing through THIS seam (the
+                // per-row split above; each name gets its own assembly and
+                // its own honest row, never another row's facts).
+                get: (name, agent) => (name === entry.name ? agentCtx.tools.get(name, agent) : undefined),
+                // The owner-held ledger write (root 841 ②): record the
+                // definition the moment the HOST seam accepts the
+                // registration, and retire it only when THIS registration's
+                // own dispose runs (a dispose of a moved-over definition must
+                // never delete a later placement of the same name).
+                register: (definition) => {
+                  const dispose = agentCtx.tools.register(definition)
+                  a5G1PlacedByName.set(definition.name, definition)
+                  return () => {
+                    if (a5G1PlacedByName.get(definition.name) === definition) a5G1PlacedByName.delete(definition.name)
+                    dispose()
+                  }
+                },
+              },
+              runtimeAgent,
+              plane: () => g1PlaneSeam,
+              trusted: g1Trusted,
+              // The CURRENT dispatcher entry behind THIS row's placement, read
+              // LIVE through the Guard dispatcher's own surface (the todo
+              // arm's law verbatim): unverified / inactive / malformed answers
+              // NOTHING — the read throws, classify/edge refuse with it; a
+              // stale tuple is never acceptable.
+              bindingFacts: () => {
+                const g1Entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(entry.name)
+                const g1Binding = g1Entry?.binding
+                if (g1Entry?.verified !== true || g1Binding?.status !== 'ACTIVE'
+                  || typeof g1Binding.bindingId !== 'string' || g1Binding.bindingId.length === 0
+                  || !Number.isInteger(g1Binding.revision)
+                  || !Number.isInteger(g1Binding.policyGeneration)
+                  || !Number.isInteger(g1Binding.authorityGeneration)) {
+                  throw new Error(`refused-g1 binding-facts-unreadable — '${entry.name}' answers no verified ACTIVE dispatcher binding (status=${String(g1Binding?.status ?? 'none')}); the G1 row fails closed, a stale tuple is never acceptable`)
+                }
+                return {
+                  bindingId: g1Binding.bindingId,
+                  bindingRevision: g1Binding.revision,
+                  policyGeneration: g1Binding.policyGeneration,
+                  authorityGeneration: g1Binding.authorityGeneration,
+                }
+              },
+              ...(g1Topology === undefined ? {} : { topology: g1Topology }),
+              observe: (row) => observations.push(`a5m2-g1: ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')} record=${String(row?.recordIndex ?? '')}`),
+            })
+            if (assembly.ok !== true) {
+              observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (${String(assembly.code)} row=${entry.name})`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}' row '${entry.name}': ${String(assembly.message)} (code: ${String(assembly.code)})`,
+              ), { code: 'alpha5-g1-arm-mount-refused' })
+            }
+            let g1Disposers
+            try {
+              g1Disposers = assembly.place()
+            } catch (error) {
+              // The module rolled back what THIS call placed (its place()
+              // law); the host's original error rides out untouched.
+              observations.push(`a5m2-g1: placement-REFUSED for ${sessionId} (${entry.name}: ${String(error?.message ?? error).slice(0, 120)})`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed G1 pure-query placement refused for '${sessionId}' row '${entry.name}': ${String(error?.message ?? error)}`,
+              ), { code: 'alpha5-g1-arm-mount-refused', cause: error })
+            }
+            for (const dispose of g1Disposers) toolDisposers.push(dispose)
+            for (const name of assembly.placementNames) {
+              a5PlaneOwnNames.push(name)
+              a5PlaneOwnedNames.push(name)
+              g1PlacedCount += 1
+              observations.push(`a5m2-g1: governed row PLACED ${name} for ${sessionId} (record ${String(entry.recordIndex)}; takeover mount over the global native)`)
+            }
+            a5G1Assemblies.push(assembly)
+          }
+          observations.push(`a5m2-g1: arm BOUND for ${sessionId} (provider=${g1ProviderId} placed=${String(g1PlacedCount)} topology=${g1Topology === undefined ? 'ABSENT — rows keep the module fail-closed posture' : 'mounted (live reader)'} realm=${a5PlaneRealmId})`)
+        }
+        // (B-SUBAGENT-CONTROL-WIRING: the wiring section stands BEFORE the plane build and the
+        // trio defs ride the PLANE's placement — root 21:01 card; see the inject block there.)
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
         // already holds. It brings NO registry: the TeamPermit gate + lease
@@ -4184,12 +5183,73 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (arm/feed identity mismatch)`)
             throw error
           }
+          // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 2): the provider identity this
+          // family registers under is the LIVE binding authority read AT THIS
+          // MOMENT — after bindOwnTools + publish, so the entry exists — and NOT
+          // a value carried off the arm (the arm was constructed before bind;
+          // reading it back from the arm was the second constant of the r18
+          // drift). An authority that answers nothing registers NOTHING: the
+          // mount is refused through the SAME existing mount-refused path with
+          // its own code, and there is no fallback constant to register under.
+          const imageProviderIdentity = a5ImageProviderIdentity()
+          if (typeof imageProviderIdentity !== 'string' || imageProviderIdentity.length === 0) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed image mount refused for '${sessionId}': the live binding authority behind the read_image placement answers no providerId at the registration moment — the family registration gets no guessed identity, and no row or arm value substitutes for it`,
+            )
+            error.code = 'alpha5-image-arm-mount-refused'
+            observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (no live provider authority)`)
+            throw error
+          }
           registerA5GovernedFamily(imageFed.definitionIdentity, {
             familyId: a5ImagePlacedArm.familyId,
             adapterRevision: a5ImagePlacedArm.adapterRevision,
-            providerIdentity: a5ImagePlacedArm.providerId,
+            providerIdentity: imageProviderIdentity,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
+        }
+        // A5-M2 B-SUBAGENT registration: same law, same single fill point.
+        // The keys come from the adapter's familyRegistrations(), which
+        // reads the PLANE'S OWN placementFeed fresh (ABSENT/MOVED throw —
+        // never a guessed key, never a silent skip); this loop only feeds
+        // the registry's ONE table. A second different claim on one
+        // identity throws through registerA5GovernedFamily itself (config
+        // defect, never a re-mount to paper over). The entry's adapterRevision
+        // carries the mount's ACTUAL mint generation (the wiring's registration
+        // path, root 22:02) — the same number every PA block of this mount
+        // presents, so the bridge family gate answers on equal bytes.
+        if (a5SpawnWiring !== null) {
+          for (const spawnReg of a5SpawnWiring.familyRegistrations()) {
+            registerA5GovernedFamily(spawnReg.definitionIdentity, spawnReg.entry)
+            observations.push(`a5m2-spawn: family REGISTERED for ${sessionId} (placement=${String(spawnReg.definitionIdentity).slice(0, 32)} row=${spawnReg.name} family=${spawnReg.entry.familyId})`)
+          }
+        }
+        // ── A5-M2 B-SUBAGENT-CONTROL-WIRING block B (family registration; control-lane owner, root 20:03 + 21:01 cards) ──
+        // The B-SUBAGENT family claims ride the ONE registration table the
+        // todo/write/image/schedule/G6 lanes write (pa-mount-registry), over
+        // the PLANE's own wiring face (the G6 mount-writer law: read AFTER
+        // publish; presence of the face is the deployment decision). The
+        // keys are the PLACED definitions' identities, read back through
+        // THIS plane's placementFeed — the same map the Guard's bindingFeed
+        // consumes (a row that answers no placement identity is a broken
+        // mount — refuse, never guess, never silently skip; the wiring's
+        // familyRegistrations carries its own PLACEMENT_KEY_ABSENT/MOVED
+        // laws and the trusted family facts — this block is transport only).
+        if (a5PlaneValue?.subagentControl !== undefined) {
+          let controlRegistrations
+          try {
+            controlRegistrations = a5PlaneValue.subagentControl.familyRegistrations()
+          } catch (error) {
+            const refusal = new Error(
+              `agent-bindings: alpha.5 governed B-SUBAGENT control family registration refused for '${sessionId}': ${String(error?.message ?? error).slice(0, 220)}`,
+            )
+            refusal.code = 'alpha5-subagent-control-mount-refused'
+            observations.push(`a5m2-b-subagent-control: family-registration-REFUSED for ${sessionId} (placement feed silent or key moved)`)
+            throw refusal
+          }
+          for (const controlRegistration of controlRegistrations) {
+            registerA5GovernedFamily(controlRegistration.definitionIdentity, controlRegistration.entry)
+            observations.push(`a5m2-b-subagent-control: family REGISTERED for ${sessionId} (record=${String(controlRegistration.recordIndex)} ${String(controlRegistration.name)} placement=${String(controlRegistration.definitionIdentity).slice(0, 32)})`)
+          }
         }
         // A5M2-G6 B-SESSION-QUERY: THE SAME fill point, the SAME law — the
         // registration keys are the placement feed's RUNTIME identities of
@@ -4310,6 +5370,80 @@ export function createAgentBindings(deps) {
           for (const registration of g3Registrations) {
             registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
             observations.push(`a5m2-g3: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
+        }
+
+        // ── A5M2-B-TEAM-WIRE (this lane's block): THE PAIRED FAMILY
+        // REGISTRATION at the settled single fill point (post publish, like
+        // every sibling family). The keys are the placement feed's RUNTIME
+        // identities of the definitions this assembly PLACED above, read
+        // fresh through the adapter's own `familyRegistrations()` face — a
+        // silent feed THROWS (P_B_TEAM_PLACEMENT_KEY_ABSENT) and a moved
+        // identity THROWS (P_B_TEAM_PLACEMENT_KEY_MOVED); neither is ever
+        // guessed and neither is ever skipped silently. DECLARED-INACTIVE
+        // census rows have no definition, no placement and no registration:
+        // the native stays untouched behind them.
+        if (a5TeamOpsInject !== null) {
+          const teamOpsPlane = a5PlaneValue?.teamOps
+          if (teamOpsPlane === undefined || teamOpsPlane === null) {
+            observations.push(`a5m2-b-team: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM member-operation family registration refused for '${sessionId}': the plane surfaced no wiring face at the fill point`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          let teamOpsRegistrations
+          try {
+            teamOpsRegistrations = teamOpsPlane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-b-team: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-TEAM family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-team-arm-mount-refused' })
+          }
+          for (const registration of teamOpsRegistrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            a5TeamOpsFamilyKeys.push(registration.definitionIdentity)
+            observations.push(`a5m2-b-team: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} record=${String(registration.recordIndex)})`)
+          }
+        }
+        // ── A5M2-G1-WIRE MOUNT-ARM: the paired family registration at the
+        // settled single fill point (post publish, like every sibling
+        // family). The keys are the placement feed's RUNTIME identities — the
+        // `def#N` the install seam minted, read back through the SAME feed the
+        // Guard's binding feed consumes (the module's own `familyRegistrations`
+        // law, re-verified in its spec): a capture-side `g1-capture@` string is
+        // NEVER a family key. The module writes through the PRODUCTION
+        // `registerA5GovernedFamily` and re-reads its own entry verbatim; a
+        // feed that answers no key (PLACEMENT_KEY_ABSENT) or a key that MOVED
+        // throws and is turned into a mount refusal here — never a guessed
+        // key, never a silent skip. SUPPLY-GATED and DECLARED-INACTIVE rows
+        // have no definition, no placement and no registration.
+        for (const g1Assembly of a5G1Assemblies) {
+          let g1Registrations
+          try {
+            g1Registrations = g1Assembly.registerAfterPublish()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g1: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g1-arm-mount-refused', cause: error })
+          }
+          for (const registration of g1Registrations) {
+            // Provider AUTHORITY EVIDENCE (the image lane's Guard.entryOf
+            // law, root 841): the registration moment reads the LIVE
+            // dispatcher entry for this placement and RECORDS the provider
+            // the real authority pins on the binding beside the row's own
+            // family identity. This is evidence capture, not wiring: the
+            // row's family providerIdentity is the inspect-provider claim
+            // the module wrote; the binding's providerId is the install-law
+            // answer (install.ts writes it); neither is aliased to the other
+            // and no check is loosened here — the value is observed so a
+            // divergence can never be silent.
+            const g1LiveEntry = a5p1Guard?.dispatcher?.surface?.entryOf?.(registration.name)
+            const g1LiveProviderId = g1LiveEntry?.binding?.providerId
+            observations.push(`a5m2-g1: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} rev=${String(registration.entry.adapterRevision)} record=${String(registration.recordIndex)} bindingProvider=${typeof g1LiveProviderId === 'string' && g1LiveProviderId.length > 0 ? g1LiveProviderId : 'none'}${g1LiveEntry?.verified === true && g1LiveEntry?.binding?.status === 'ACTIVE' ? '' : ' binding-NOT-ACTIVE'})`)
           }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,

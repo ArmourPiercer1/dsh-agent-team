@@ -87,21 +87,22 @@
  *     (`pa-control-bridge.ts:428-470`): registered bindings MUST carry the
  *     four P-adds, the targetManifest must pass `isLosslessJsonValue`
  *     (:459), and `validatePaFamilyTarget(familyId, targetManifest)`
- *     (:467) must find the family's registered typed-plan structure. As
- *     measured: `PA_FAMILY_TARGET_RULES` (control/types.ts:1194) carries NO
- *     'B-SESSION-QUERY' entry, and the rev-4 targetManifest is not
- *     expressible with the CURRENT closed kinds — `callerWorkspaceCwd`
- *     admits null, `maxSearchResults` is an always-present member that is
- *     undefined on non-search rows (fails the lossless walk), and
- *     `disclosures` is a string array (no kind covers it); the closed
- *     key-set law refuses BOTH including and omitting each such key. New
- *     kinds are NOT this lane's to add — the exact rule-grammar delta is
- *     ROUTED TO CENTER (and the manifest-side shape is the adapter owner's,
- *     released code). Until it lands, a real production walk on these
- *     registrations fails CLOSED at the bridge with the bridge's own bytes
- *     (`family-target-invalid: familyId: no target structure is registered
- *     for 'B-SESSION-QUERY'`, or the lossless deny ahead of it) — the
- *     spec pins those refusal strings through the REAL published checkers.
+ *     (:467) must find the family's registered typed-plan structure. The
+ *     rules gate LANDED as the SIGNED two-table pair (root 19:28; the
+ *     family-rules lane at 5a16c4aa, carried in this lane's combined
+ *     tree): 'B-SESSION-QUERY' is a closed five-variant map — toolName the
+ *     variant leaf, callerWorkspaceCwd 'nullableString', disclosures
+ *     'stringArray', maxSearchResults REQUIRED nonNegativeInt on the two
+ *     search rows and EXPLICITLY FORBIDDEN on the three always-mount rows
+ *     (presence of any value denies; omission accepts). With the mint
+ *     omission law (eab9a9c0) ALL FIVE real rev-4 manifests validate —
+ *     the spec pins ACCEPT through the REAL published checker, and pins
+ *     that carrying the old key-with-undefined shape back still refuses
+ *     (the mint must OMIT, never translate). What the bridge still
+ *     enforces beyond the table is registration-side (the four P-adds,
+ *     the registry entry), not vocabulary; the adapter-revision /
+ *     stale-approval duties are unchanged (rev-6 stale explicitly — no
+ *     silent translation). No Host enablement, no C2 claim.
  *
  * STATUS: wiring bridge; NOT C2 — no Host, no ports, no tests/homes, no
  * network. The adapter spec (a5m2-g6-session-query-c1.test.ts) owns the row
@@ -138,6 +139,8 @@ export const A5_G6_QUERY_WIRING_CODES = Object.freeze({
   PLAN_INTEGRITY: 'P_G6_WIRE_PLAN_INTEGRITY',
   PLACEMENT_KEY_ABSENT: 'P_G6_WIRE_PLACEMENT_KEY_ABSENT',
   PLACEMENT_KEY_MOVED: 'P_G6_WIRE_PLACEMENT_KEY_MOVED',
+  SUPPLY_ABSENT: 'P_G6_WIRE_SUPPLY_ABSENT',
+  SUPPLY_INCOMPLETE: 'P_G6_WIRE_SUPPLY_INCOMPLETE',
 })
 
 const deepFreeze = (value) => {
@@ -149,6 +152,25 @@ const deepFreeze = (value) => {
 }
 
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
+
+/** Stable, key-ordered rendering of a JSON plan fact (plan facts carry only
+ *  JSON values; the adapter deep-freezes them at capture). Used for the
+ *  FULL-VALUE comparison of the approved callerSnapshot against every later
+ *  same-plan fact (root 992: the parametersFingerprint does NOT cover the
+ *  caller id or the step boundary — an explicit-target call from a same-cwd
+ *  caller A→B, or a step-boundary tick that widens the query window, moves
+ *  NOTHING the fingerprint can see; only the snapshot's own value binds
+ *  them). */
+const canonicalValue = (value) => {
+  const stable = (v) => {
+    if (v === null || typeof v !== 'object') return v
+    if (Array.isArray(v)) return v.map(stable)
+    const out = {}
+    for (const key of Object.keys(v).sort()) out[key] = stable(v[key])
+    return out
+  }
+  return JSON.stringify(stable(value))
+}
 
 /** Carry a typed refusal (row's own or this layer's) as a throw, keeping the
  *  code and detail VERBATIM on the error object (the plane's refusal-carry
@@ -303,14 +325,22 @@ export function buildG6SessionQueryWiring (input = {}) {
         observe({ event: 'g6-wire:classify-REFUSED', name: toolName, code: classified.code })
         throw refusalToThrow(classified)
       }
-      // BODY BINDING (root 18:2x, the TOCTOU close): the APPROVED PLAN is
-      // frozen right here — the row's deep-frozen actualArgs snapshot and
-      // its parametersFingerprint. From this line on, the caller-side args
-      // object never re-enters the row: whatever the caller (or anything
-      // holding the same object) mutates during the awaits below, the body
-      // runs the APPROVED snapshot or nothing.
+      // BODY BINDING (root 18:2x + 992, the TOCTOU close at FULL VALUE): the
+      // APPROVED PLAN is frozen right here — the row's deep-frozen
+      // actualArgs snapshot, its parametersFingerprint AND the full value
+      // of its callerSnapshot (id, cwd, step boundary). From this line on,
+      // the caller-side args object never re-enters the row: whatever the
+      // caller (or anything holding the same object) mutates during the
+      // awaits below, the body runs the APPROVED snapshot or nothing. The
+      // fingerprint alone does NOT bind the caller (root 992, measured): an
+      // explicit-target call whose workspace cwd is unchanged answers the
+      // SAME fingerprint for a different caller, and a step-boundary tick
+      // that widens the readable window moves NOTHING the fingerprint can
+      // see — so the snapshot's own value is the bound fact, compared at
+      // every later same-plan check.
       const frozenArgs = classified.plan.actualArgs
       const approvedFingerprint = classified.parametersFingerprint
+      const approvedCallerKey = canonicalValue(classified.plan.callerSnapshot)
       const callId = correlationOf(exec, toolName)
       if (typeof callId !== 'string' || callId.length === 0) {
         throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.CALL_ID_ABSENT, `${toolName}: the execution answered no ISSUED call identity — the PA walk has no single-flight key; a guessed correlation is forbidden`))
@@ -362,18 +392,26 @@ export function buildG6SessionQueryWiring (input = {}) {
           // The body NEVER self-attests consumption: no witness, no port entry.
           throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.CONSUME_PROOF_MISSING, `${toolName}: the execution edge answered allow without its one-shot consume witness — the row never substitutes a self-attested consumption; the body did not run and zero port entries were made`))
         }
-        // RE-BIND before the body (root 18:2x): the CURRENT classify of the
-        // FROZEN approved snapshot must still answer the APPROVED
-        // fingerprint — the caller moving A→B, a moved workspace cwd or a
-        // moved step-boundary makes the row answer a refusal or a different
-        // fingerprint, and either one refuses: the grant was issued for the
-        // frozen plan and NEVER rides a newer scope (a newer permission
-        // never re-qualifies the old grant either — there is no second
-        // ceiling ask here). Zero port entry on this path.
+        // RE-BIND before the body (root 18:2x + 992): the CURRENT classify
+        // of the FROZEN approved snapshot must still answer the APPROVED
+        // plan at FULL VALUE — the parametersFingerprint AND the complete
+        // callerSnapshot (caller id, workspace cwd, step boundary). A
+        // caller moving A→B under an explicit target and an unchanged cwd
+        // keeps the fingerprint identical, and a boundary tick that widens
+        // the query window moves nothing the fingerprint sees: both refuse
+        // on the snapshot's value, not on a re-derived permission (a newer
+        // permission never re-qualifies the old grant either — there is no
+        // second ceiling ask here). Zero port entry on this path.
         const rebound = row.classify(frozenArgs)
-        if (rebound.ok !== true || rebound.parametersFingerprint !== approvedFingerprint) {
-          observe({ event: 'g6-wire:plan-DRIFT', name: toolName, callId, code: rebound.ok === true ? 'fingerprint-moved' : rebound.code })
-          throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.PLAN_DRIFT, `${toolName}: the plan facts moved between the approved plan and the body (${String(rebound.ok === true ? `fingerprint ${String(rebound.parametersFingerprint).slice(0, 16)}… != approved` : rebound.code)}) — the grant was issued for the frozen plan; zero port entry`))
+        const reboundCallerKey = rebound.ok === true ? canonicalValue(rebound.plan?.callerSnapshot) : null
+        if (rebound.ok !== true || rebound.parametersFingerprint !== approvedFingerprint || reboundCallerKey !== approvedCallerKey) {
+          const driftDetail = rebound.ok !== true
+            ? rebound.code
+            : rebound.parametersFingerprint !== approvedFingerprint
+              ? 'fingerprint-moved'
+              : 'caller-snapshot-moved'
+          observe({ event: 'g6-wire:plan-DRIFT', name: toolName, callId, code: driftDetail })
+          throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.PLAN_DRIFT, `${toolName}: the plan facts moved between the approved plan and the body (${String(driftDetail)}${driftDetail === 'caller-snapshot-moved' ? ' — the approved callerSnapshot (id/cwd/step-boundary) no longer matches the live caller' : ''}) — the grant was issued for the frozen plan; zero port entry`))
         }
         // ② the row's OWN governed body, run on the APPROVED snapshot:
         // receiver/method pins, caller re-verify (the row's own
@@ -385,9 +423,11 @@ export function buildG6SessionQueryWiring (input = {}) {
           observe({ event: 'g6-wire:invoke-REFUSED', name: toolName, code: ran?.code })
           throw refusalToThrow(ran)
         }
-        // RESULT PAIRING: what served must BE the approved plan — a body
-        // that answers a different fingerprint never rides this grant.
-        if (!isRecord(ran.plan) || ran.plan.parametersFingerprint !== approvedFingerprint) {
+        // RESULT PAIRING: what served must BE the approved plan — the same
+        // fingerprint AND the same full callerSnapshot; a body that answers
+        // a different plan (or ran under a moved caller/boundary between
+        // the re-bind and its own capture) never rides this grant.
+        if (!isRecord(ran.plan) || ran.plan.parametersFingerprint !== approvedFingerprint || canonicalValue(ran.plan.callerSnapshot) !== approvedCallerKey) {
           observe({ event: 'g6-wire:plan-INTEGRITY', name: toolName, callId })
           throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.PLAN_INTEGRITY, `${toolName}: the row answered a plan that is not the approved one — the served value is withheld (zero provided bytes)`))
         }
@@ -470,4 +510,147 @@ export function buildG6SessionQueryWiring (input = {}) {
     familyRegistrations,
   })
   return assembly
+}
+
+/**
+ * REAL SUPPLY (root 992 ②: 真实服务供给也须闭). The ONLY legal production
+ * source of the inject's facets/provider/evidence is the LIVE DSH public
+ * `sessionQuery` service (the registered `SessionQueryEngine`, reached
+ * through the lazy `ctx.get('sessionQuery')` global-store accessor — the
+ * same additive-optional dep shape the jobs/web/attachments services ride).
+ * This is the PURE observe-and-map half: the mount-side glue hands in the
+ * live service; the caller law (the actual exec owner's own session header)
+ * and the Team ceiling (the current durable memberInstances) are the mount's
+ * OWN authorities and are deliberately NOT derived from config here.
+ * `ok:false` answers are TYPED census facts, not faults: ABSENT service =
+ * the family is not deployed in this process (honest DECLARED-INACTIVE,
+ * zero flip); core facets INCOMPLETE = fail-closed, never a partial supply.
+ * `searchSessions`/`searchEvents` may legitimately be unimplemented — that
+ * lands as the declared-mount-absent census (the two search names keep
+ * their natives). Externally injected facet objects are NOT supply: the
+ * glue REFUSES a config that carries them.
+ * @param {unknown} service - the live `ctx.get('sessionQuery')` answer
+ *  observed AT THE MOUNT MOMENT: the APPROVED receiver identity.
+ * @param {(() => unknown)=} observeCurrent - the SAME Host public lazy
+ *  accessor (`() => ctx.get('sessionQuery')`, root 19:29): consulted on
+ *  EVERY adapter guard read so a WHOLE-SERVICE replacement (a new
+ *  instance under the token — possibly even carrying the very same
+ *  method objects) becomes visible to the row's existing receiver guard.
+ *  Production supply MUST pass it (the glue does); when absent the
+ *  identity stays pinned to the approved instance (pure/test use only —
+ *  a stale constant never masquerades as `current`).
+ * @returns {{ ok: true, providerId: string, queryPorts: Record<string, unknown>, declaredMount: Record<string, unknown> } | { ok: false, code: string, detail: string }}
+ */
+export function buildG6QuerySupplyFromService (service, observeCurrent) {
+  if (service === null || typeof service !== 'object') {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_ABSENT, 'the DSH public sessionQuery service is not registered in this process — the B-SESSION-QUERY family is not deployed here (honest DECLARED-INACTIVE census, zero flip; never a fake stand-in, never a config substitute)')
+  }
+  const core = ['traceSession', 'traceEvent', 'readEvent', 'filterSessions', 'readTitleSnapshots']
+  const missing = core.filter((name) => typeof service[name] !== 'function')
+  if (missing.length > 0) {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_INCOMPLETE, `the registered sessionQuery service implements no ${missing.join(', ')} — the family mounts no partial supply (fail-closed; the natives stay untouched)`)
+  }
+  // THE LIVE VALUE MAPPED INTO THE ROW'S EXISTENT IDENTITY GUARDS (root
+  // 19:17): the row pins the facet OBJECT + bound FUNCTION at placement
+  // and RE-READS `facet[method]` per dispatch — at entry
+  // (g6-session-query.mjs:1391-1399), after every await and before serving
+  // (guardFacts :1425-1436) — refusing PORT_RECEIVER_MOVED /
+  // PORT_METHOD_MOVED on any mismatch. A build-time-frozen wrapper made
+  // those guards structurally blind to a real generational change (the
+  // OLD handle kept serving — i6's behavior, refused by root 19:17: the
+  // established drift-refusal law demands the CALL REFUSES). So each
+  // supplied facet property is a GETTER that maps the CURRENT live method
+  // into every guard read, STABLE PER GENERATION (the same source method
+  // always answers the same bound face — a steady service never trips the
+  // guards; bind(thisArg) preserves the method's own `length`, so the
+  // adapter's signature law still measures the REAL face, and `this` stays
+  // the service receiver the guards pin). The moment service[name] is a
+  // DIFFERENT function, the next guard read answers a different object
+  // and the row's OWN PORT_METHOD_MOVED law refuses — entry, mid-walk and
+  // final serve alike, zero forwarding; a vanished (non-function) current
+  // value reads as undefined ≠ the pinned ref and fails closed the same
+  // way. No new guard, no adapter edit: the live value rides the guard the
+  // row already runs.
+  const liveFacet = (names) => {
+    const facet = {}
+    for (const name of names) {
+      const perGeneration = new WeakMap()
+      Object.defineProperty(facet, name, {
+        enumerable: true,
+        get () {
+          const current = service[name]
+          if (typeof current !== 'function') return undefined
+          let face = perGeneration.get(current)
+          if (face === undefined) {
+            face = current.bind(service)
+            perGeneration.set(current, face)
+          }
+          return face
+        },
+      })
+    }
+    return Object.freeze(facet)
+  }
+  const searchPresent = typeof service.searchSessions === 'function' && typeof service.searchEvents === 'function'
+  const facetObjects = {
+    ...(searchPresent
+      ? { searchQueryPort: liveFacet(['searchSessions', 'searchEvents']) }
+      : {}),
+    traceQueryPort: liveFacet(['traceSession', 'traceEvent']),
+    eventReadQueryPort: liveFacet(['readEvent']),
+    authorizationQueryPort: liveFacet(['filterSessions']),
+    titlesQueryPort: liveFacet(['readTitleSnapshots']),
+  }
+  // THE CURRENT SERVICE IDENTITY RIDES THE ROW'S EXISTENT RECEIVER GUARD
+  // (root 19:29 — the one true receiver-wide change left open): the row
+  // checks `queryPorts[facet] !== ref.object` at entry (:1391-1399) and in
+  // guardFacts after every await / before final serve (:1425-1436),
+  // refusing PORT_RECEIVER_MOVED. A mount-time snapshot alone made a
+  // WHOLE-SERVICE replacement invisible — the getters would keep observing
+  // the OLD instance (and its possibly identical method objects) forever.
+  // So each queryPorts facet property is itself a GETTER consulting the
+  // Host lazy accessor NOW: while `ctx.get('sessionQuery')` still answers
+  // the APPROVED service the guard read answers the approved facet object
+  // (steady state never trips anything, and execution keeps riding the
+  // approved real receiver/method handles — they never switch); the
+  // moment the accessor answers a DIFFERENT instance, the very next guard
+  // read answers a foreign object and the row's OWN PORT_RECEIVER_MOVED
+  // law refuses, zero forwarding. An observer that throws (the identity
+  // unobservable right now) fails closed the same way. No new guard, no
+  // service framework: the live identity rides the guard the row runs.
+  const observe = typeof observeCurrent === 'function' ? observeCurrent : () => service
+  const receiverMoved = Object.freeze({ a5m2G6: 'receiver-identity-moved-sentinel' })
+  const queryPorts = {}
+  for (const [facetName, facetObject] of Object.entries(facetObjects)) {
+    Object.defineProperty(queryPorts, facetName, {
+      enumerable: true,
+      get () {
+        let current
+        try {
+          current = observe()
+        } catch {
+          return receiverMoved
+        }
+        return current === service ? facetObject : receiverMoved
+      },
+    })
+  }
+  return deepFreeze({
+    ok: true,
+    // Provider identity = the service's OWN registration name (the Service
+    // base stores the super(ctx, 'sessionQuery') name; the registration key
+    // is the fallback) — a trusted in-process identity, never a configured
+    // string.
+    providerId: typeof service.name === 'string' && service.name !== '' ? String(service.name) : 'sessionQuery',
+    queryPorts: Object.freeze(queryPorts),
+    // Declared-mount = the OBSERVED evidence of THIS process's registration
+    // (the trusted publisher): search facets callable → present; not
+    // implemented → honestly absent with the observation as the evidence
+    // bytes.
+    declaredMount: Object.freeze({
+      searchBackend: searchPresent
+        ? Object.freeze({ present: true })
+        : Object.freeze({ present: false, evidence: 'the registered sessionQuery service implements no searchSessions/searchEvents (observed at mount) — no search row mounts; the search names keep their natives' }),
+    }),
+  })
 }

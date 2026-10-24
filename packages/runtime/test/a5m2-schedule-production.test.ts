@@ -13,14 +13,25 @@
  * ControlService; admission rides the REAL paAdmit.open / paAdmit.edge legs,
  * whose success branch carries the ONE consumeForExecution witness the row
  * demands as `consumedProof`; the placement moment binds the REAL
- * definitionIdentityOf of the def the plane actually placed; and the BODY is
- * the host's OWN captured code — `registerScheduleTools` from the published
- * '@deepseek-ai/dsh-schedule' — whose closure resolves `rootCtx.schedule`
- * AFRESH at every dispatch (the live-read law runs inside host code, not a
- * plugin stand-in), whose owner law is the host's own `exec.agent !== agent`
- * REFERENCE comparison, and whose error mirror is the SAME module identity of
- * `ScheduleInputError` the native bodies throw (同Host错误类 is single here by
- * module identity: one import, one class, native and arm alike).
+ * definitionIdentityOf of the def the plane actually placed; and (root
+ * 18:52, 不绕adapter) the arm's execute IS the adapter row's own
+ * `delegate(plan, { exec })` — the FULL signed same-plan execution boundary
+ * (edgeIntegrity: drain / CURRENT native face + execute / CURRENT service +
+ * method identities; NOT_OWN_PLAN; fresh re-classify + PLAN_STALE; the
+ * ALREADY_DISPATCHED plan-object memo; the owner REFERENCE law; the abort
+ * law; the frozen port call; the L6 mirror). THE PORT IS THE RAW SERVICE
+ * (root 19:17): the adapter is fed the REAL published ScheduleService —
+ * ctx.schedule itself through a CURRENT FEED (`() => rootCtx.schedule`,
+ * the spec mirror of the entry's lazy strict global-store read under
+ * 'schedule') — never a wrapper of the native TOOL face: the tool output
+ * is a rendered view set / tool VALUE, and mapping it a second time or
+ * feeding a {code,message} VALUE through the delegate's records.map is
+ * exactly the mis-layering closed here. liveScheduleService() re-reads the
+ * feed at every dispatch edge exactly where the host bodies resolve
+ * rootCtx.schedule, so the signed PORT_DRIFT legs are REAL service drift:
+ * a service OBJECT or a service METHOD replaced underneath the mount
+ * refuses BEFORE any port entry, in either direction (the replacement
+ * service records nothing; the bound one is never asked again).
  *
  * create/update: never mounted, never registered, never armable (the closed
  * inject key set refuses even a test that tries). The trigger gap stays open.
@@ -28,8 +39,7 @@
  * DISCLOSED STAND-INS (never claimed as production): the schedule SERVICE
  * behind the fake rootCtx (the real ScheduleService's persistence order and
  * timer legs are the adapter's named gaps), the durable TeamDomain/Control
- * world itself, and the policy fixtures. The inert port never dispatches in
- * production — if any leg of this spec ever sees a port call it fails loudly.
+ * world itself, and the policy fixtures.
  */
 import { describe, it, expect, afterAll } from 'vitest'
 import { mkdirSync, rmSync } from 'node:fs'
@@ -62,14 +72,13 @@ import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-gov
 import { createPaControlLeg, createPaEffectsVerifier } from '../operation-permission/pa-control-bridge.js'
 import type { PaControlLegInput, PaEffectsVerifierDeps } from '../operation-permission/pa-control-bridge.js'
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
-import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, memberCaller, p6t4Seed } from './p6t4-helpers.js'
+import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, leaderCaller, memberCaller, p6t4Seed } from './p6t4-helpers.js'
 // THE production module identity: the SAME published package agent-bindings
 // imports. registerScheduleTools mints the native faces; ScheduleInputError
 // is the ONE class identity the native bodies throw and the arm mirrors.
 import { ScheduleInputError, registerScheduleTools } from '@deepseek-ai/dsh-schedule'
 import {
   createGovernedScheduleArm,
-  createScheduleInertPort,
   createScheduleWiring,
 } from '../src/plugin/live/governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from '../src/plugin/live/governed-families/schedule-adapters.mjs'
@@ -271,6 +280,9 @@ interface World {
   legInputs: Record<string, unknown>[]
   legResults: { decision?: string; detail?: string; requestId?: string }[]
   throwNextDeleteError: (e: Error | null) => void
+  throwNextListError: (e: Error | null) => void
+  swapScheduleService: (next: Record<string, unknown>) => void
+  rebindScheduleList: (fn: (input: unknown) => Promise<unknown>) => void
   arms: {
     schedule_list: { definitionIdentity: string; classify: (raw: unknown) => Record<string, unknown>; execute: (plan: Record<string, unknown>, exec: Record<string, unknown>) => Promise<Record<string, unknown>>; drain: () => void }
     schedule_delete: { definitionIdentity: string; classify: (raw: unknown) => Record<string, unknown>; execute: (plan: Record<string, unknown>, exec: Record<string, unknown>) => Promise<Record<string, unknown>>; drain: () => void }
@@ -308,24 +320,43 @@ async function mountWorld(
   }]
   const serviceCalls = { list: [] as unknown[], delete: [] as unknown[] }
   const throwNextDelete: { error: Error | null } = { error: null }
+  // THE RAW SERVICE: the FULL published ctx.schedule shape (the adapter's
+  // shape law refuses a partial port). list/delete carry the recorded fake;
+  // the never-enabled methods exist and refuse loudly (the world mirrors
+  // the real service's SHAPE, and this mount never dispatches them).
+  const notEnabled = async () => { throw new Error('never-enabled in this world') }
   const rootCtx = {
     schedule: {
-      list: async (input: unknown) => { serviceCalls.list.push(input); return rows.slice() },
+      list: async (input: unknown) => { serviceCalls.list.push(input); if (throwNextList.error !== null) throw throwNextList.error; return rows.slice() },
       delete: async (input: unknown, signal: unknown) => {
         serviceCalls.delete.push({ input, signal })
         if (throwNextDelete.error !== null) throw throwNextDelete.error
         return { deleted: true, id: (input as { id: string }).id }
       },
-    },
+      create: notEnabled,
+      catalog: notEnabled,
+      history: notEnabled,
+      update: notEnabled,
+    } as Record<string, unknown>,
   }
+  const throwNextList: { error: Error | null } = { error: null }
   const faces = new Map<string, Record<string, unknown>>()
-  registerScheduleTools(rootCtx as never, { tools: { register: (def: Record<string, unknown>) => { faces.set(String(def.name), def); return () => { faces.delete(String(def.name)) } } } } as never, agent as never)
+  const toolCtx = { tools: { register: (def: Record<string, unknown>) => { faces.set(String(def.name), def); return () => { faces.delete(String(def.name)) } } } }
+  registerScheduleTools(rootCtx as never, toolCtx as never, agent as never)
   const nativeList = faces.get(LIST)
   const nativeDelete = faces.get(DELETE)
   if (nativeList === undefined || nativeDelete === undefined) throw new Error('the published registerScheduleTools did not answer the list/delete faces')
 
-  // THE family assembly: the inert port law verbatim from production glue.
-  const inertPort = createScheduleInertPort()
+  // THE family assembly — the PRODUCTION port law (root 19:17) mirrored
+  // verbatim from the glue: the RAW ctx.schedule handle at bind time and a
+  // CURRENT FEED liveScheduleService() that re-reads the store at every
+  // dispatch edge (the spec mirror of the entry's lazy strict
+  // ctx.get('schedule')). The native faces keep their real role: the
+  // capture IDENTITY behind liveNative, never a service stand-in.
+  const schedulePort = rootCtx.schedule
+  const liveScheduleService = () => rootCtx.schedule
+  const swapScheduleService = (next: Record<string, unknown>) => { rootCtx.schedule = next }
+  const rebindScheduleList = (fn: (input: unknown) => Promise<unknown>) => { (rootCtx.schedule as { list: unknown }).list = fn }
   const assemblyWiring = createScheduleWiring({
     providerId: PROVIDER,
     declaredService: Object.freeze({ present: true }),
@@ -334,13 +365,13 @@ async function mountWorld(
       schedule_delete: Object.freeze({ native: nativeDelete, definitionIdentity: `capture-side:${label}:schedule_delete` }),
     }),
     liveNative: (name: string) => faces.get(name),
-    scheduleService: inertPort,
-    liveScheduleService: () => inertPort,
+    scheduleService: schedulePort as never,
+    liveScheduleService,
     capturedAgent: agent,
     ScheduleInputError,
     placementFeed: () => undefined,
     admit: async () => { throw new Error('P_B_SCHEDULE_PRODUCTION_ADMIT_INERT — production admission is the plane PA edge, never this seat') },
-    observe: (row: unknown) => { observed.push(`wire:${String((row as { event?: string })?.event ?? 'event')}`) },
+    observe: (row: unknown) => { const r = row as { event?: string; code?: string }; observed.push(`wire:${String(r?.event ?? 'event')}${r?.code === undefined ? '' : `:${String(r.code)}`}`) },
   } as never)
   if (assemblyWiring.ok !== true) throw new Error(`the family assembly refused: ${String((assemblyWiring as { code?: string }).code)} ${(assemblyWiring as { message?: string }).message}`)
 
@@ -356,7 +387,7 @@ async function mountWorld(
       ScheduleInputError,
       definitionIdentity: identity,
       providerId: PROVIDER,
-      observe: (row: unknown) => { observed.push(`arm:${String((row as { event?: string })?.event ?? 'event')}`) },
+      observe: (row: unknown) => { const r = row as { event?: string; code?: string; settled?: string }; observed.push(`arm:${String(r?.event ?? 'event')}${r?.settled === undefined ? '' : `:${String(r.settled)}`}${r?.code === undefined ? '' : `:${String(r.code)}`}`) },
     } as never)
     if (built.ok !== true) throw new Error(`${String((built as { code?: string }).code)}: ${String((built as { message?: string }).message)}`)
     placedArms[name] = built.arm as unknown as Record<string, unknown>
@@ -453,8 +484,7 @@ async function mountWorld(
   if (built.ok !== true || built.value === undefined) {
     // refusal signalling for the negative legs: the built answer rides the
     // thrown error (a plain object is refused, never a silent fallback).
-    throw Object.assign(new Error('__REFUSAL_EXPECTED__'), { built })
-    throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
+    throw Object.assign(new Error(`__REFUSAL_EXPECTED__ (${String(built.code)}): ${String(built.message)}`), { built })
   }
   const plane = built.value
   realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
@@ -496,16 +526,56 @@ async function mountWorld(
     rootCtx: rootCtx as unknown as { schedule: Record<string, unknown> },
     rows, serviceCalls, observed, legInputs, legResults, arms: placedArms, listIdentity, deleteIdentity,
     throwNextDeleteError: (e: Error | null) => { throwNextDelete.error = e },
+    throwNextListError: (e: Error | null) => { throwNextList.error = e },
+    swapScheduleService,
+    rebindScheduleList,
   } as unknown as World
+}
+
+/** COMBINATION POSTURE (5a16c4aa paired): a validated B-SCHEDULE claim now
+ *  MINTS its durable approval request (pre-combination it died at the
+ *  unregistered-family deny BEFORE minting). The paired legs therefore
+ *  await the pending request, assert the family block it carried, and the
+ *  LEADER answers deny — the flight refuses through the real approval
+ *  answer with the body never running. */
+/** GRANT sibling of denyFirstPending (AUTH pairing pass-through): the
+ *  leader answers ALLOW — the row then dispatches through the REAL
+ *  delegate boundary exactly once. */
+async function allowFirstPending(label: string): Promise<string> {
+  for (let i = 0; i < 400; i++) {
+    const st = await service.listControlState(P6T4_ROOT)
+    const pending = st.requests.find((r) => String((r as { status?: string }).status) === 'pending') as { requestId?: string } | undefined
+    if (pending?.requestId !== undefined) {
+      const requestId = String(pending.requestId)
+      await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId, decision: 'allow', note: `paired-leg grant ${label}` })
+      return requestId
+    }
+    await new Promise((r) => setTimeout(r, 10))
+  }
+  throw new Error(`no pending Control request minted for ${label}`)
+}
+
+async function denyFirstPending(label: string): Promise<string> {
+  for (let i = 0; i < 400; i++) {
+    const st = await service.listControlState(P6T4_ROOT)
+    const pending = st.requests.find((r) => String((r as { status?: string }).status) === 'pending') as { requestId?: string } | undefined
+    if (pending?.requestId !== undefined) {
+      const requestId = String(pending.requestId)
+      await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId, decision: 'deny', note: `paired-leg deny ${label}` })
+      return requestId
+    }
+    await new Promise((r) => setTimeout(r, 10))
+  }
+  throw new Error(`no pending Control request minted for ${label} (the paired rule must MINT, not pre-deny)`)
 }
 
 function execFor(agent: Record<string, unknown>): Record<string, unknown> {
   const controller = new AbortController()
   return { agent, token: Symbol(`exec-${String(Math.random())}`), signal: controller.signal }
 }
-const nativeSettledRows = (world: World) => world.observed.filter((r) => r.includes('arm:native-settled'))
+const delegatedRows = (world: World) => world.observed.filter((r) => r.startsWith('arm:b-schedule-arm:delegated'))
 
-describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — grammar gate CLOSED pending root', () => {
+describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — the signed B-SCHEDULE rule table is REGISTERED at this base (family-chain landing bf4e89e108620479d1a43344a8ea74d82cfde229): the validated ask-lane claim MINTS its approval request; with the AUTH pairing landed the GRANT answer dispatches exactly once and DENY (policy or leader) never dispatches', () => {
   // ── GROUP A — the real plane flight up to the SIGNED-GRAMMAR BOUNDARY ──
   // Every leg below runs the mounted plane's own row execute: the REAL
   // paAdmit.open, the REAL durable Control leg carrying the walk's four
@@ -513,43 +583,73 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
   // at root's unsigned grammar (target structure + rule vocabulary) — and
   // that boundary is pinned with ZERO durable residue, never papered over.
 
-  it('SP-R1 the full flight runs to the grammar boundary and leaves ZERO durable residue: refusal exact, no service entry, no Control row, no leaked plan fact, token SETTLED (replay refused)', async () => {
+  it('SP-R1 PAIRED refresh (combination consequence @5d4fb7322): the requires-approval flight now MINTS the pending request instead of dying pre-mint; the leader deny answers it exactly, body zero, delegated zero, the ONLY durable delta is the minted request plus its deny decision (recorded field-for-field), no leaked plan fact, token SETTLED (replay refused)', async () => {
     const world = await mountWorld('r1')
-    const stateBefore = JSON.stringify(await service.listControlState(P6T4_ROOT))
+    const stateBefore = await service.listControlState(P6T4_ROOT)
     const exec = execFor(world.agent)
-    await expect(world.listDef.execute({}, exec)).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
+    const flight = world.listDef.execute({}, exec)
+    const requestId = await denyFirstPending('r1')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
     expect(world.serviceCalls.list).toHaveLength(0)
-    expect(nativeSettledRows(world)).toHaveLength(0)
-    expect(JSON.stringify(await service.listControlState(P6T4_ROOT)), 'the grammar refusal happens BEFORE any pending approval is minted — the call never becomes approvable').toBe(stateBefore)
+    expect(delegatedRows(world)).toHaveLength(0)
+    // The COMBINATION's own diff, recorded: pre-combination this leg saw
+    // ZERO durable state (the unregistered-family deny preceded minting);
+    // post-combination the approved-shape flight leaves EXACTLY the minted
+    // request and its deny decision — no other durable movement.
+    const stateAfter = await service.listControlState(P6T4_ROOT)
+    expect(stateAfter.requests).toHaveLength(stateBefore.requests.length + 1)
+    expect(stateAfter.decisions).toHaveLength(stateBefore.decisions.length + 1)
+    expect(stateAfter.consumptions).toHaveLength(stateBefore.consumptions.length)
+    expect(stateAfter.abandonments).toHaveLength(stateBefore.abandonments.length)
+    expect(stateAfter.corruptLegs).toHaveLength(stateBefore.corruptLegs.length)
     expect(world.plane.livePaPlan.size).toBe(0)
     await expect(world.listDef.execute({}, exec)).rejects.toThrow(/exec-token-replay/)
-  })
+  }, 20_000)
 
-  it('SP-R2 the ask-lane claim reaches the durable Control leg WITH the four-P-add family block: familyId/adapterRevision/providerIdentity + the 11-leaf targetManifest (taskId null for list, exactly measured)', async () => {
+  it('SP-R2 PAIRED (5a16c4aa): the ask-lane list claim now PASSES the signed B-SCHEDULE rule and MINTS the durable request (requestId defined — pre-combination it died unregistered before minting); the minted leg input carries the four-P-add block and the 11-leaf targetManifest with taskId null; the leader deny answer refuses the flight with the body never running', async () => {
     const world = await mountWorld('r2')
-    await expect(world.listDef.execute({}, execFor(world.agent))).rejects.toThrow(/APPROVAL_DENIED/)
+    const exec = execFor(world.agent)
+    const flight = world.listDef.execute({}, exec)
+    const requestId = await denyFirstPending('r2')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/APPROVAL_DENIED/)
+    // the claim that PASSED the signed rule — field-for-field on the minted leg:
     expect(world.legInputs.length).toBeGreaterThanOrEqual(1)
-    expect(world.legResults[0]?.decision).toBe('deny')
-    expect(world.legResults[0]?.requestId, 'the grammar refusal happens BEFORE any Control request is minted — there is nothing to approve').toBeUndefined()
-    expect(String(world.legResults[0]?.detail)).toContain('familyId: no target structure is registered')
-    expect(String(world.legResults[0]?.detail)).toContain('B-SCHEDULE')
     const family = world.legInputs[0]?.family as { familyId: string; adapterRevision: number; providerIdentity: string; targetManifest: Record<string, unknown> }
-    expect(family.familyId).toBe('B-SCHEDULE')
+    expect(family, 'the four-P-add family block rode the REAL Control leg').toBeDefined()
+    expect(String(family.familyId)).toBe('B-SCHEDULE')
     expect(family.adapterRevision).toBe(A5_B_SCHEDULE_ADAPTER_REVISION)
-    expect(family.providerIdentity).toBe('a5m2-wire-lane')
-    expect(Object.keys(family.targetManifest)).toHaveLength(11)
-    expect(family.targetManifest.taskId).toBeNull()
-  })
+    expect(String(family.providerIdentity)).toBe('a5m2-wire-lane')
+    const manifest = family.targetManifest
+    expect(Object.keys(manifest)).toHaveLength(11)
+    expect(manifest.taskId).toBeNull()
+    // the answer is now the REAL approval answer: a requestId exists (the
+    // request was MINTED and resolved) — the paired contrast to the old
+    // pre-mint grammar deny.
+    expect(world.legResults[0]?.requestId).toBeDefined()
+    // body zero (deny answered before dispatch), lease law intact:
+    expect(world.serviceCalls.list).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
 
-  it('SP-R3 the delete claim carries the EXACT taskId through the same real leg (the nullable single column, admitted side); the flight still falls closed on the identical grammar refusal', async () => {
+  it('SP-R3 PAIRED (5a16c4aa): the delete claim mints too, and the MINTED leg carries the EXACT taskId through the same signed rule (the nullable single column, admitted side) with destinationSessionId === the owner session; the leader deny refuses the flight with zero delete entries', async () => {
     const world = await mountWorld('r3')
-    await expect(world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, execFor(world.agent))).rejects.toThrow(/APPROVAL_DENIED/)
-    expect(String(world.legResults[0]?.detail)).toContain('familyId: no target structure is registered')
-    expect(world.serviceCalls.delete).toHaveLength(0)
+    const exec = execFor(world.agent)
+    const flight = world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, exec)
+    const requestId = await denyFirstPending('r3')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/APPROVAL_DENIED/)
     const family = world.legInputs[0]?.family as { targetManifest: Record<string, unknown> }
-    expect(family.targetManifest.taskId).toBe('sch_a5m2_prod_1')
-    expect(family.targetManifest.destinationSessionId).toBe(String((world.agent.session as { id: unknown }).id))
-  })
+    const manifest = family.targetManifest
+    expect(Object.keys(manifest)).toHaveLength(11)
+    expect(manifest.taskId).toBe('sch_a5m2_prod_1')
+    expect(String(manifest.destinationSessionId)).toBe(String(world.agent.session.id))
+    expect(String(manifest.ownerSessionId)).toBe(String(world.agent.session.id))
+    expect(world.legResults[0]?.requestId).toBeDefined()
+    expect(world.serviceCalls.delete).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
 
   it('SP-R4 waiting-cancel lease cleanup: an aborted call refuses with zero service entry, its token stays SETTLED (replay refused, never re-armed), and the NEXT fresh call still flies the full path — no leaked lease, no poisoned mount', async () => {
     const world = await mountWorld('r4')
@@ -560,18 +660,24 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(world.serviceCalls.list).toHaveLength(0)
     await expect(world.listDef.execute({}, shared)).rejects.toThrow(/exec-token-replay/)
     const legsBefore = world.legInputs.length
-    await expect(world.listDef.execute({}, execFor(world.agent))).rejects.toThrow(/APPROVAL_DENIED/)
+    // PAIRED refresh (combination consequence @5d4fb7322): the fresh call
+    // MINTS its pending request now — the leader deny answers it; the
+    // cancelled flight left no lease in front of it.
+    const freshFlight = world.listDef.execute({}, execFor(world.agent))
+    const requestId = await denyFirstPending('r4')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(freshFlight).rejects.toThrow(/APPROVAL_DENIED/)
     expect(world.legInputs.length, 'the fresh call reached the Control leg — the cancelled flight left no lease in front of it').toBeGreaterThan(legsBefore)
     expect(world.plane.livePaPlan.size).toBe(0)
   })
 
-  it('SP-R5 the rule vocabulary is part of the CLOSED grammar: a per-tool schedule_* policy rule is refused AT PLANE BUILD with the measured core-vocabulary projection refusal (never silently ignored, never half-mounted)', async () => {
-    const built = await mountWorld('r5', {
+  it('SP-R5 FLIPPED-RECORDED (AUTH pairing landed: 3a3c2a076 -> ab52338da + 0e4b7120b -> d9ea1713f on this tree): the very rule the closed core vocabulary used to refuse at plane build — allow schedule_list {kind:any} — now BUILDS the plane; the paired names are invocation-only members of the closed grammar at this base', async () => {
+    const world = await mountWorld('r5', {
       policy: { default: 'ask', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy,
-    }).then(() => undefined, (e: unknown) => (e as { built?: { ok: boolean; code?: string; message?: string } }).built)
-    expect(built?.ok).toBe(false)
-    expect(String(built?.code)).toBe('TOOL_BINDING_UNVERIFIED')
-    expect(String(built?.message)).toContain('must be one of read | read_image | write | edit | lsp | bash | pwsh')
+    })
+    const names = world.plane.definitions.map((d) => d.name)
+    expect(names).toContain(LIST)
+    expect(names).toContain(DELETE)
   })
 
   it('SP-R6 create/update are NOT enabled anywhere on the mount: no schedule_create/schedule_update row is placed, and an inject carrying a create key is refused the WHOLE mount (closed key set, never ignored)', async () => {
@@ -618,7 +724,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
   // closure AT DISPATCH. This is what runs the instant a grant can land —
   // and nothing dumber than the unsigned grammar stands between.
 
-  it('SP-B1 the governed list body IS the captured host closure: classify mints the 11-leaf claim + closed effects, execute returns the REAL scheduleView rows read for the BOUND owner session', async () => {
+  it('SP-B1 the governed list body flies the DELEGATE boundary and settles the REAL scheduleView rows read for the BOUND owner session (frozen port call, settled "service")', async () => {
     const world = await mountWorld('b1')
     const arm = world.arms.schedule_list
     const classified = arm.classify({})
@@ -627,29 +733,72 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const manifest = classified.targetManifest as Record<string, unknown>
     expect(Object.keys(manifest)).toHaveLength(11)
     expect(manifest.taskId).toBeNull()
-    const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; value: unknown }
+    const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string; value: unknown }
     expect(ran.ok).toBe(true)
+    expect(ran.settled).toBe('service')
     const rows = ran.value as Array<Record<string, unknown>>
     expect(Array.isArray(rows)).toBe(true)
     expect(String(rows[0]?.id)).toBe('sch_a5m2_prod_1')
     expect(String(rows[0]?.deliveryMode)).toBe('host')
+    // SINGLE conversion, measured: the RAW service record (status ACTIVE,
+    // scheduledAt in 2026-01-01) was mapped exactly once by the delegate —
+    // state derived from the raw bytes, raw fields intact (a double map of
+    // an already-viewed row is the mis-layering root 19:17 closed).
+    expect(String(rows[0]?.state)).toBe('overdue')
+    expect(String(rows[0]?.title)).toBe('lane row')
+    expect(String(rows[0]?.status)).toBe('ACTIVE')
     expect((world.serviceCalls.list[0] as { sessionId: string }).sessionId).toBe(String(world.agent.session.id))
-    expect(nativeSettledRows(world)).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
   })
 
-  it('SP-B2 live ctx.schedule: the host closure resolves rootCtx.schedule AFRESH per dispatch — swapping the service under the same rootCtx changes what the SAME arm reads (a bind-time snapshot is impossible in host code)', async () => {
+  it('SP-B2 service-OBJECT drift: the service replaced underneath the mount answers PORT_DRIFT on the object leg (detail: "not the bound port object") with zero entries on either service — the current feed observes the ACTUAL ctx.schedule (root 19:17; legs split per root 19:31: this leg proves the OBJECT identity check ALONE)', async () => {
     const world = await mountWorld('b2')
     const arm = world.arms.schedule_list
     const c1 = arm.classify({})
-    await arm.execute(c1.plan as Record<string, unknown>, execFor(world.agent))
+    const first = await arm.execute(c1.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string }
+    expect(first.ok).toBe(true)
+    expect(first.settled).toBe('service')
     expect(world.serviceCalls.list).toHaveLength(1)
-    const swapped: unknown[] = []
-    world.rootCtx.schedule = { ...world.rootCtx.schedule, list: async (input: unknown) => { swapped.push(input); return [] } }
-    const c2 = arm.classify({})
-    const second = await arm.execute(c2.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; value: unknown[] }
-    expect(second.value).toHaveLength(0)
-    expect(swapped).toHaveLength(1)
+    // the service OBJECT is replaced underneath the mount.
+    const replacedCalls: unknown[] = []
+    world.swapScheduleService({
+      list: async (input: unknown) => { replacedCalls.push(input); return [] },
+      delete: async () => ({ deleted: false }),
+      create: async () => { throw new Error('never') },
+      catalog: async () => { throw new Error('never') },
+      history: async () => { throw new Error('never') },
+      update: async () => { throw new Error('never') },
+    })
+    const second = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string; detail?: string }
+    expect(second.ok).toBe(false)
+    expect(second.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
+    // the EXACT signed leg that fired (per-leg precise RC, not just code):
+    expect(String(second.detail)).toContain('not the bound port object')
     expect(world.serviceCalls.list).toHaveLength(1)
+    expect(replacedCalls).toHaveLength(0)
+    // 组合真RC: the exact typed code rides BOTH observable channels.
+    expect(world.observed.filter((r) => r.includes('P_B_SCHEDULE_PORT_DRIFT') && r.startsWith('arm:b-schedule-arm:delegated'))).toHaveLength(1)
+    expect(world.observed.filter((r) => r.startsWith('wire:b-schedule:refusal:P_B_SCHEDULE_PORT_DRIFT'))).toHaveLength(1)
+  })
+
+  it('SP-B2M service-METHOD drift on the ORIGINAL bound object: the object identity check PASSES and the method-identity leg alone refuses PORT_DRIFT (detail: "rebound underneath the frozen bind") with zero entries — independently proven, the object leg cannot have fired first (root 19:31)', async () => {
+    const world = await mountWorld('b2m')
+    const arm = world.arms.schedule_list
+    const first = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string }
+    expect(first.ok).toBe(true)
+    expect(world.serviceCalls.list).toHaveLength(1)
+    // the SAME service OBJECT, one method rebound underneath the frozen
+    // bind — no swap happened, so only the method-identity leg CAN fire.
+    let reboundHits = 0
+    world.rebindScheduleList(async () => { reboundHits += 1; return [] })
+    const second = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string; detail?: string }
+    expect(second.ok).toBe(false)
+    expect(second.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
+    expect(String(second.detail)).toContain("rebound underneath the frozen bind")
+    expect(reboundHits).toBe(0)
+    expect(world.serviceCalls.list).toHaveLength(1)
+    expect(world.observed.filter((r) => r.includes('P_B_SCHEDULE_PORT_DRIFT') && r.startsWith('arm:b-schedule-arm:delegated'))).toHaveLength(1)
+    expect(world.observed.filter((r) => r.startsWith('wire:b-schedule:refusal:P_B_SCHEDULE_PORT_DRIFT'))).toHaveLength(1)
   })
 
   it('SP-B3 the admitted delete body reaches the service with the OWNER session and the EXACT branded id and settles the native value — exactly one dispatch', async () => {
@@ -659,22 +808,22 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(classified.ok).toBe(true)
     expect((classified.targetManifest as Record<string, unknown>).taskId).toBe('sch_a5m2_prod_1')
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
-    expect(ran).toEqual({ ok: true, value: { deleted: true, id: 'sch_a5m2_prod_1' } })
+    expect(ran).toEqual({ ok: true, settled: 'service', value: { deleted: true, id: 'sch_a5m2_prod_1' } })
     expect((world.serviceCalls.delete[0] as { input: unknown }).input).toEqual({ sessionId: String(world.agent.session.id), id: 'sch_a5m2_prod_1' })
-    expect(nativeSettledRows(world)).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
   })
 
-  it('SP-B4 the id law is the CAPTURED host law: a whitespace-padded id settles the host invalid_rule VALUE with ZERO service entry (the refusal wording is the host\u2019s own, not a lane invention)', async () => {
+  it('SP-B4 the id law is the CAPTURED host law at the delegate boundary: a whitespace-padded id settles the host invalid_rule VALUE (settled tool-law-value) with ZERO service entry — the refusal wording is the host\u2019s own, not a lane invention', async () => {
     const world = await mountWorld('b4')
     const arm = world.arms.schedule_delete
     const classified = arm.classify({ id: ' sch_a5m2_prod_1 ' })
     expect(classified.ok, 'the id law is a VALUE inside the admitted call, not a pre-admission refuse (measured mapping: taskId rode null)').toBe(true)
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
-    expect((ran as { value: unknown }).value).toEqual({ code: 'invalid_rule', message: 'schedule_delete id must be non-empty without surrounding whitespace.' })
+    expect(ran).toEqual({ ok: true, settled: 'tool-law-value', value: { code: 'invalid_rule', message: 'schedule_delete id must be non-empty without surrounding whitespace.' } })
     expect(world.serviceCalls.delete).toHaveLength(0)
   })
 
-  it('SP-B5 同Host错误类 by MODULE IDENTITY: a real ScheduleInputError thrown by the service settles its own {code, message} through the host operationError mirror inside the captured closure — not internal_error, not a throw', async () => {
+  it('SP-B5 同Host错误类 by MODULE IDENTITY with COMPLETE return/error fidelity: a real ScheduleInputError thrown by delete settles its own {code, message} through the L6 mirror, and one thrown by LIST settles VERBATIM as service-error-value — no TypeError, no internal_error, no second mapping (root 19:17)', async () => {
     const world = await mountWorld('b5')
     // the code is one of the PUBLIC Schedule input codes (the published
     // d.ts restricts the union — itself a proof the REAL class is in hand)
@@ -682,33 +831,143 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const arm = world.arms.schedule_delete
     const classified = arm.classify({ id: 'sch_a5m2_prod_1' })
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
-    // the mirror ran INSIDE the host closure (its operationError caught the
-    // imported class identity) — the arm sees a settled VALUE, not a throw:
-    // one class, one module identity, host law end to end.
-    expect(ran).toEqual({ ok: true, value: { code: 'invalid_selector', message: 'The schedule selector is not valid.' } })
+    // the service THROWS; the frozen port call rethrows; the delegate's L6
+    // mirror runs `instanceof` against the assembly-injected class identity
+    // — one module identity from the service to the settled tool VALUE.
+    expect(ran).toEqual({ ok: true, settled: 'service-error-value', value: { code: 'invalid_selector', message: 'The schedule selector is not valid.' } })
+    // the list side is the mis-layering's old failure point: a VALUE from
+    // the service must settle VERBATIM, never crash records.map.
+    world.throwNextListError(new ScheduleInputError('invalid_rule', 'The selector is not valid.'))
+    const listArm = world.arms.schedule_list
+    const listRan = await listArm.execute(listArm.classify({}).plan as Record<string, unknown>, execFor(world.agent))
+    expect(listRan).toEqual({ ok: true, settled: 'service-error-value', value: { code: 'invalid_rule', message: 'The selector is not valid.' } })
   })
 
-  it('SP-B6 owner同Agent is the host REFERENCE law: an id/session-bytes LOOK-ALIKE settles the host internal_error VALUE with ZERO service entry; the bound object itself dispatches', async () => {
+  it('SP-B6 owner同Agent is the delegate\u2019s own REFERENCE law: an id/session-bytes LOOK-ALIKE settles the host internal_error VALUE with ZERO service entry; a FRESH plan by the bound object dispatches (the refused plan rides the same one-shot memo — no re-arm)', async () => {
     const world = await mountWorld('b6')
     const arm = world.arms.schedule_list
     const classified = arm.classify({})
     const lookAlike = { id: world.agent.id, session: { id: String(world.agent.session.id) } }
-    const refusal = await arm.execute(classified.plan as Record<string, unknown>, execFor(lookAlike))
-    expect(refusal).toMatchObject({ ok: true, settled: 'host-identity-value' })
-    expect((refusal as { value: unknown }).value).toEqual({ code: 'internal_error', message: 'The schedule operation failed.' })
+    const refusal = await arm.execute(classified.plan as Record<string, unknown>, execFor(lookAlike)) as { ok: boolean; settled?: string; value: unknown }
+    expect(refusal).toMatchObject({ ok: true, settled: 'tool-law-value' })
+    expect(refusal.value).toEqual({ code: 'internal_error', message: 'The schedule operation failed.' })
     expect(world.serviceCalls.list).toHaveLength(0)
-    const ok = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; value: unknown }
+    const ok = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string; value: unknown }
+    expect(ok.settled).toBe('service')
     expect(Array.isArray(ok.value)).toBe(true)
     expect(world.serviceCalls.list).toHaveLength(1)
   })
 
-  it('SP-B7 the drain law lands on the production arm: after drain, classify refuses P_B_SCHEDULE_DRAINING (the assembly row refuse rides) and the captured body is unreachable — committed durable state untouched, new-call prohibition only', async () => {
+  it('SP-B7 the drain law lands AT the delegate, not on a re-classify: a plan classified while the PA window was open meets a drain that lands before the body, and the execute refuses P_B_SCHEDULE_DRAINING with ZERO native entry — committed durable state untouched, new-call prohibition only', async () => {
     const world = await mountWorld('b7')
     const arm = world.arms.schedule_list
+    const planned = arm.classify({})
+    expect(planned.ok).toBe(true)
     arm.drain()
+    const ran = await arm.execute(planned.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    expect(ran.ok).toBe(false)
+    expect(ran.code).toBe('P_B_SCHEDULE_DRAINING')
+    expect(world.serviceCalls.list).toHaveLength(0)
     const after = arm.classify({})
     expect(after.ok).toBe(false)
     expect(String(after.code)).toBe('P_B_SCHEDULE_DRAINING')
-    expect(world.serviceCalls.list).toHaveLength(0)
   })
+
+  it('SP-B8 the SAME plan OBJECT never dispatches twice: the re-presented plan answers the adapter\u2019s own ALREADY_DISPATCHED memo with exactly ONE service entry (the plan-once memo lives at the delegate, not in a lane rule)', async () => {
+    const world = await mountWorld('b8')
+    const arm = world.arms.schedule_list
+    const planned = arm.classify({})
+    const first = await arm.execute(planned.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean }
+    expect(first.ok).toBe(true)
+    const twice = await arm.execute(planned.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    expect(twice.ok).toBe(false)
+    expect(twice.code).toBe('P_B_SCHEDULE_ALREADY_DISPATCHED')
+    expect(world.serviceCalls.list).toHaveLength(1)
+  })
+
+  // ── GROUP C — AUTH PAIRING PASS-THROUGH (root 20:57; vocabulary = the
+  // cherry-picked AUTH closed set ab52338da (3a3c2a076) + d9ea1713f
+  // (0e4b7120b)): the two invocation-only names ride the REAL policy algebra
+  // against the REAL list/delete assembly. Grant dispatches; denial refuses;
+  // when the policy itself decides, NO approval is minted. ──
+
+  it('SP-R9 GRANT pass-through (list): a default-DENY policy whose allow lane carries the whole-tool schedule_list any-rule builds; the claim needs NO Control mint, dispatches through the real raw-service port, and the seeded row comes back (title intact, single conversion)', async () => {
+    const world = await mountWorld('r9', { policy: { default: 'deny', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy })
+    const st0 = await service.listControlState(P6T4_ROOT)
+    const out = await world.listDef.execute({}, execFor(world.agent))
+    expect(JSON.stringify(out)).toContain('lane row')
+    expect(world.serviceCalls.list).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
+    const st1 = await service.listControlState(P6T4_ROOT)
+    expect(st1.requests).toHaveLength(st0.requests.length)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R10 GRANT pass-through (delete): the schedule_delete any-rule on the deny-default plane grants exactly ONE dispatch — the id rides the real port verbatim, the service record answers, no second entry exists', async () => {
+    const world = await mountWorld('r10', { policy: { default: 'deny', allow: [{ tool: 'schedule_delete', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy })
+    const st0 = await service.listControlState(P6T4_ROOT)
+    const out = await world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, execFor(world.agent))
+    expect(JSON.stringify(out)).toContain('sch_a5m2_prod_1')
+    expect(world.serviceCalls.delete).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
+    const st1 = await service.listControlState(P6T4_ROOT)
+    expect(st1.requests).toHaveLength(st0.requests.length)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R11 cross-tool no-carry: allow schedule_list ONLY — the list row dispatches grant-free while the delete claim on the SAME plane is refused by the deny default with ZERO delete body and NO mint (one rule never gates the sibling)', async () => {
+    const world = await mountWorld('r11', { policy: { default: 'deny', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy })
+    const st0 = await service.listControlState(P6T4_ROOT)
+    const ok = await world.listDef.execute({}, execFor(world.agent))
+    expect(JSON.stringify(ok)).toContain('lane row')
+    await expect(world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, execFor(world.agent))).rejects.toThrow(/denied|deny/i)
+    expect(world.serviceCalls.delete).toHaveLength(0)
+    const st1 = await service.listControlState(P6T4_ROOT)
+    expect(st1.requests).toHaveLength(st0.requests.length)
+  }, 20_000)
+
+  it('SP-R12 DENY pass-through (measured): the deny-lane whole-tool schedule_list any-rule still OPENS the durable approval request (the family PA edge precedes the policy answer); the deny resolution refuses with zero service entry, zero dispatch, lease clean', async () => {
+    const world = await mountWorld('r12', { policy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'schedule_list', resource: { kind: 'any' } }] } as unknown as TemplatePermissionPolicy })
+    const flight = world.listDef.execute({}, execFor(world.agent))
+    const requestId = await denyFirstPending('r12')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
+    expect(world.serviceCalls.list).toHaveLength(0)
+    expect(delegatedRows(world)).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R12B the deny algebra is NEVER loosened (measured pairing fact, root 20:05 card): with the deny-lane rule in place a leader ALLOW answer does NOT dispatch — the flight still refuses with the APPROVAL_DENIED law wording and the port stayed untouched', async () => {
+    const world = await mountWorld('r12b', { policy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'schedule_list', resource: { kind: 'any' } }] } as unknown as TemplatePermissionPolicy })
+    const flight = world.listDef.execute({}, execFor(world.agent))
+    const requestId = await allowFirstPending('r12b')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/APPROVAL_DENIED.*answered deny/)
+    expect(world.serviceCalls.list).toHaveLength(0)
+    expect(delegatedRows(world)).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R13 closed-set negatives: (a) an exact resource on the invocation-only pair is REFUSED at plane build (the whole-tool any is its only legal shape); (b) schedule_create is not a permission tool at all — the vocabulary refusal names the closed list', async () => {
+    const exactRefused = await mountWorld('r13a', { policy: { default: 'ask', allow: [{ tool: 'schedule_list', resource: { kind: 'exact', path: '/tmp/a' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy }).then(() => undefined, (e: unknown) => (e as { built?: { ok: boolean; message?: string } }).built)
+    expect(exactRefused?.ok).toBe(false)
+    expect(String(exactRefused?.message)).toContain("gives the invocation-only tool 'schedule_list' a 'exact' resource")
+    expect(String(exactRefused?.message)).toContain("the whole-tool 'any' rule is its only projectable shape")
+    const createRefused = await mountWorld('r13b', { policy: { default: 'ask', allow: [{ tool: 'schedule_create', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy }).then(() => undefined, (e: unknown) => (e as { built?: { ok: boolean; code?: string; message?: string } }).built)
+    expect(createRefused?.ok).toBe(false)
+    expect(String(createRefused?.message)).toContain('must be one of')
+  })
+
+  it('SP-R14 the GRANT answer pass-through (ask lane → leader allow → real dispatch): the minted request answered allow now runs the FULL body — exactly one raw-service entry, the seeded row back, lease settled', async () => {
+    const world = await mountWorld('r14')
+    const exec = execFor(world.agent)
+    const flight = world.listDef.execute({}, exec)
+    const requestId = await allowFirstPending('r14')
+    expect(requestId.length).toBeGreaterThan(0)
+    await flight
+    expect(world.serviceCalls.list).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
 })
