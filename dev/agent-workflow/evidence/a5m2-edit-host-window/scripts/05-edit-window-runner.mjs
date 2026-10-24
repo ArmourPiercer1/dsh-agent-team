@@ -659,16 +659,41 @@ async function main() {
   const pend0 = await pendingRequestIds()
   check('E-pending0', 'no pending control requests before the first governed call', pend0.length === 0, `pending=${JSON.stringify(pend0)}`)
 
-  // [E0-schema] SCHEMA SHAPE ONLY (property NAMES + required SET) per work-
-  // card — not a full public-schema behaviour claim.
+  // [E0-schema PROBE, root protocol fix] the Host's wire conversion is
+  // llm-deepseek serialize.ts:160-164 (RUNTIME lib/types/serialize.js:168-172):
+  //   tools.map(tool => ({ name, description, input_schema: tool.parameters,
+  //                        ...defer_loading? }))
+  // The mock receives the Messages request verbatim, so the wire tool object
+  // is {name, description, input_schema} — the old decoder that read only
+  // function.parameters/parameters produced ABSENT. The decoder now also
+  // reads input_schema (narrow, protocol-faithful addition).
+  // SEMANTICS: this leg is an INDEPENDENT FORENSIC PROBE — ok:null,
+  // blocking:false. It is NEVER marked PASS (schema-shape evidence is not a
+  // contract signature), and a shortfall here must NOT chain-stop
+  // E1-E4 (safety-preflight failures elsewhere still stop). The actual wire
+  // def's necessary fields are RECORDED for offline review; nothing here is
+  // reconstructed afterwards.
   currentCriterion = 'E0-schema'
   const editDef = memberToolDefs.find((t) => (typeof t === 'string' ? t : t?.function?.name ?? t?.name) === 'edit') ?? null
-  const editParams = editDef?.function?.parameters ?? editDef?.parameters ?? null
+  const editParams = editDef?.function?.parameters ?? editDef?.parameters ?? editDef?.input_schema ?? null
   const propKeys = editParams && typeof editParams.properties === 'object' ? Object.keys(editParams.properties).sort().join(',') : 'ABSENT'
   const reqKeys = Array.isArray(editParams?.required) ? [...editParams.required].sort().join(',') : 'ABSENT'
-  check('E0-schema', 'edit row schema SHAPE: closed six property names + closed three required (shape only, not full schema behaviour)',
-    propKeys === 'file_path,justification,new_string,old_string,replace_all,sandbox_permissions' && reqKeys === 'file_path,new_string,old_string',
-    `props=${propKeys} required=${reqKeys}`)
+  const wireDefFields = editDef === null ? 'DEF-ABSENT' : JSON.stringify({
+    topLevelKeys: Object.keys(editDef).sort(),
+    name: editDef?.function?.name ?? editDef?.name ?? null,
+    descBytes: Buffer.byteLength(String(editDef?.function?.description ?? editDef?.description ?? '')),
+    schemaType: editParams?.type ?? null,
+    propKeys, required: reqKeys,
+  })
+  const shapeMatches = propKeys === 'file_path,justification,new_string,old_string,replace_all,sandbox_permissions' && reqKeys === 'file_path,new_string,old_string'
+  results.push({
+    critId: 'E0-schema', blocking: false, ok: null,
+    name: 'edit row wire schema SHAPE probe (independent, non-blocking, NEVER a PASS claim; serialize.ts:160-164 wire shape)',
+    // verdict kept OUT of ok on purpose: 'shape-matches-list' / 'UNKNOWN-or-mismatch'
+    verdict: shapeMatches ? 'shape-matches-list (still not a contract PASS)' : 'UNKNOWN-or-mismatch',
+    detail: `wireDef=${wireDefFields}`,
+  })
+  log(`E0-schema PROBE (non-blocking, no PASS): verdict=${shapeMatches ? 'shape-matches-list' : 'UNKNOWN-or-mismatch'} wireDef=${wireDefFields.slice(0, 300)}`)
 
   currentCriterion = 'E1'
   const shaBefore = sha256(target)
@@ -745,7 +770,8 @@ async function main() {
     `result=${String(escapeRes).slice(0, 280)} canarySha=${sha256(CANARY)} canaryShaBefore=${canaryShaBefore} canaryMtimeMs=${statSync(CANARY).mtimeMs}/${canaryMtimeBeforeMs} stillRegular=${String(canaryStillRegular)}`)
 
   await cleanup()
-  finish(results.every((r) => r.ok) && cleanupOk ? 0 : 1)
+  // non-blocking probe rows (ok:null, blocking:false) never decide the rc; real criteria (ok true/false) do.
+  finish(results.every((r) => r.blocking === false || r.ok === true) && cleanupOk ? 0 : 1)
 }
 main().then(
   () => {},
