@@ -360,10 +360,14 @@ let realmSeq = 0
 function directAssembly(
   documents?: () => AuthorityEnvelopeDocuments,
   realm?: string,
+  // A7 (root 2026-10-26): an optional policy so a MIXED effect set (some
+  // effects policy-allowed, one asking) can be built over the REAL assembly;
+  // every existing caller keeps DIRECT_POLICY by default.
+  policy: TemplatePermissionPolicy = DIRECT_POLICY,
 ): { assembly: ProductionAdmissionAssembly; realm: string } {
   const realmId = realm ?? `a5m1-auth-r-${String(realmSeq++)}`
   const built = createProductionAdmissionAssembly({
-    permissionPolicy: DIRECT_POLICY,
+    permissionPolicy: policy,
     realmId,
     templateId: 'a5m1-auth-tpl',
     definitionOwnerAuthority: 'human-user',
@@ -395,6 +399,25 @@ function directFixture(
   callerInstance = WORKER,
   effectsClaim?: unknown,
 ): DirectFixture {
+  const request = directRequest(ctx, callId, effectsClaim, callerInstance)
+  const planned = ctx.assembly.planApproval(request)
+  if (!planned.ok) throw new Error(`plan refused: ${planned.error.message}`)
+  return {
+    input: Object.freeze({ realmId: ctx.realm, member: request.member, callId, request, plan: planned.value, assembly: ctx.assembly }),
+    plan: planned.value,
+    correlation: paCorrelation(planned.value.approvalCaseId, callId),
+  }
+}
+
+/** The admission REQUEST, built exactly as the fixture built it (A7: the
+ *  all-allow regression leg needs the request WITHOUT the fixture's
+ *  plan-refusal throw, so the extraction is behaviour-preserving). */
+function directRequest(
+  ctx: { assembly: ProductionAdmissionAssembly; realm: string },
+  callId: string,
+  effectsClaim?: unknown,
+  callerInstance = WORKER,
+): AdmissionRequest {
   const bindingParsed = parseToolBinding({
     bindingId: `auth-row:${callId}`,
     agentScopeKey: `auth:${callId}`,
@@ -423,13 +446,7 @@ function directFixture(
     parametersFingerprint: canonicalJsonFingerprint({ command: `auth-${callId}` }),
     requestedEffects: effectsParsed.value as RequestedEffectSet,
   })
-  const planned = ctx.assembly.planApproval(request)
-  if (!planned.ok) throw new Error(`plan refused: ${planned.error.message}`)
-  return {
-    input: Object.freeze({ realmId: ctx.realm, member, callId, request, plan: planned.value, assembly: ctx.assembly }),
-    plan: planned.value,
-    correlation: paCorrelation(planned.value.approvalCaseId, callId),
-  }
+  return request
 }
 
 /** The exact manifest BYTES the bridge puts on the row (mirrored here for
@@ -2641,5 +2658,107 @@ describe('A5M2-CHAIN-POS: a registered family is approved, guarded and consumed'
     const consumed = (await state2()).consumptions.filter((c) => c.requestId === row.requestId)
     expect(consumed.length).toBe(1)
     expect(String(consumed[0]?.requestId)).toBe(row.requestId)
+  })
+})
+
+// ── A7. MIXED effect sets — the producer contract (root ruling 2026-10-26) ─
+// The durable-chain regression for the shared PA producer bug the root
+// located (approval-case.ts: the plan loop walked only needApproval, so a
+// mixed set reached the strict Control manifest with too FEW rungs —
+// ask-first as a short vector, ask-later as JSON `null` holes; the 37646
+// windows and 4ab/17c all sat on this source). THE TWO QUANTITIES STAY
+// SEPARATE: the ONE case rung (`requiredAuthority`) remains the max over the
+// NEED-APPROVAL subset; `perEffectRequired` is DENSE per EFFECT, each entry
+// the real ceiling derivation. Real planner → real bridge → REAL
+// ControlService validator; the all-allow set still mints NO case.
+
+const A7_LOCATOR = '/a5m2-a7-regression/notes.txt'
+const A7_MIXED_POLICY: TemplatePermissionPolicy = Object.freeze({
+  default: 'ask',
+  allow: [
+    { tool: 'read', resource: { kind: 'exact' as const, path: A7_LOCATOR } },
+    { tool: 'write', resource: { kind: 'exact' as const, path: A7_LOCATOR } },
+  ],
+  ask: [],
+  deny: [],
+})
+
+/** The EDIT-shaped closed triple (edit.mjs:232-236): tool-invoke + read +
+ *  write over one anchored locator; `askFirst` picks the ask position. */
+function a7Claims(realm: string, order: 'ask-first' | 'ask-later' | 'all-allow'): unknown[] {
+  const invoke = { kind: 'tool-invoke', toolName: 'team_bash', resource: null }
+  const read = { kind: 'read', resource: { realmId: realm, kind: 'absolute-path', canonicalLocator: A7_LOCATOR, rights: ['read'] } }
+  const write = { kind: 'write', resource: { realmId: realm, kind: 'absolute-path', canonicalLocator: A7_LOCATOR, rights: ['write'] } }
+  if (order === 'ask-first') return [invoke, read, write]
+  if (order === 'ask-later') return [read, write, invoke]
+  return [read, write]
+}
+
+describe('A7 (mixed effect sets): DENSE per-effect rungs at the producer; strict validator accepts; all-allow mints no case', () => {
+  it('(a7-0) the MIXED policy truly allows read/write: an ALL-ALLOW set plans NO case', () => {
+    const ctx = directAssembly(undefined, undefined, A7_MIXED_POLICY)
+    const request = directRequest(ctx, 'a7-all-allow', a7Claims(ctx.realm, 'all-allow'))
+    const planned = ctx.assembly.planApproval(request)
+    // The case does NOT mint — observed as the ASSEMBLY guard ("planApproval
+    // asked for a plan no effect needs": expansion already proved zero
+    // effects need the Ask, which also PROVES the allow lanes matched the
+    // read/write effects). The producer's own guard ("no effect needed
+    // approval") is the second, deeper mouth of the same law; either way
+    // the outcome is one: NO case, NO durable row.
+    expect(planned.ok).toBe(false)
+    if (planned.ok) throw new Error('an all-allow set must not mint a case')
+    expect(planned.error.message).toMatch(/no effect needs|no effect needed approval/)
+  })
+
+  it('(a7-1) ask-FIRST [I ask, R allow, W allow]: the plan is DENSE over all THREE effects and the durable row survives the REAL strict validator', async () => {
+    const ctx = directAssembly(undefined, undefined, A7_MIXED_POLICY)
+    const fixture = directFixture(ctx, 'a7-ask-first', WORKER, a7Claims(ctx.realm, 'ask-first'))
+    expect(fixture.plan.perEffectRequired).toHaveLength(3)
+    expect(fixture.plan.perEffectRequired.every((rung) => typeof rung === 'string' && rung.length > 0)).toBe(true)
+    // the aggregate: the ONE case rung stays the need-approval max (the ask
+    // effect's rung) — exactly the value the need-approval-only producer
+    // computed; the dense fill must not have changed it.
+    expect(fixture.plan.requiredAuthority).toBe('leader')
+    // REPRODUCTION of the pre-fix producer shape AT THE STRICT BOUNDARY:
+    // the same bytes with the old short vector (1 rung against 3 effects)
+    // are refused by the service's own parser — the window-7 leg-deny.
+    const shortBytes = { ...manifestBytes(fixture), perEffectRequired: fixture.plan.perEffectRequired.slice(0, 1) }
+    expect(parsePaControlManifest(shortBytes)).toBeUndefined()
+    // the real bridge puts the dense manifest on the row and the service
+    // accepts it (a refusal here is exactly the pre-fix failure mode).
+    const leg = makeLeg()
+    const pending = leg(fixture.input)
+    const row = await waitRow((r) => r.correlation === fixture.correlation)
+    expect(row.status).toBe('pending')
+    expect(parsePaControlManifest(row.reviewPayload)).not.toBeUndefined()
+    expect((manifestOf(row).perEffectRequired as unknown[])).toHaveLength(3)
+    expect(manifestOf(row).requiredAuthority).toBe('leader')
+    await resolve(humanCaller(), row.requestId, 'allow')
+    const res = await pending
+    expect(res.decision).toBe('approve')
+  })
+
+  it('(a7-2) ask-LATER [R allow, W allow, I ask]: no JSON-`null` holes; dense vector passes the validator', async () => {
+    const ctx = directAssembly(undefined, undefined, A7_MIXED_POLICY)
+    const fixture = directFixture(ctx, 'a7-ask-later', WORKER, a7Claims(ctx.realm, 'ask-later'))
+    expect(fixture.plan.perEffectRequired).toHaveLength(3)
+    expect(fixture.plan.perEffectRequired.every((rung) => typeof rung === 'string' && rung.length > 0)).toBe(true)
+    expect(fixture.plan.requiredAuthority).toBe('leader')
+    // REPRODUCTION of the pre-fix ask-LATER shape: the sparse array the old
+    // producer produced (perEffectRequired[index] = rung at the ORIGINAL
+    // effect index) JSON-serialises to `null` holes — the strict parser
+    // refuses every null rung.
+    const holeBytes = { ...manifestBytes(fixture), perEffectRequired: JSON.parse(JSON.stringify([undefined, undefined, 'leader'])) as unknown[] }
+    expect(parsePaControlManifest(holeBytes)).toBeUndefined()
+    const leg = makeLeg()
+    const pending = leg(fixture.input)
+    const row = await waitRow((r) => r.correlation === fixture.correlation)
+    expect(parsePaControlManifest(row.reviewPayload)).not.toBeUndefined()
+    const manifest = manifestOf(row)
+    expect((manifest.perEffectRequired as unknown[])).toHaveLength(3)
+    expect(manifest.deniedEffects).toEqual([]) // no policyDenied here — none carried
+    await resolve(humanCaller(), row.requestId, 'allow')
+    const res = await pending
+    expect(res.decision).toBe('approve')
   })
 })

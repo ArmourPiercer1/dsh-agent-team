@@ -263,6 +263,89 @@ export function planEffectSetApproval(input) {
     if (required === undefined) {
         return { ok: false, unapprovable: { effectIndex: -1, plane: 'approval', detail: 'no effect needed approval, so there is nothing to plan — the caller must not open a case with an empty ask' } };
     }
+    // ---- DENSE RUNGS OVER THE WHOLE EFFECT SET (root ruling 2026-10-26; the
+    // shared-contract producer bug — the SAME source sits in 4ab/37646/17c).
+    // THE TWO QUANTITIES STAY SEPARATE:
+    //  * `required` (the ONE case rung) is the max over the NEED-APPROVAL
+    //    subset ONLY — this function plans "the effects that need an Ask"
+    //    and aggregates at the rank-table max inside the loop above. The
+    //    completion pass below NEVER touches it.
+    //  * `perEffectRequired` is a per-EFFECT dense vector: the strict Control
+    //    manifest puts ALL effects and ALL rungs side by side
+    //    (pa-control-bridge.ts:490/497), the consumption contract requires
+    //    equal length and per-index stability (pa-control-bridge.ts:932,
+    //    :952-953; team-tool-plane.mjs:2898-2903) and the validator refuses
+    //    a length mismatch or a JSON-`null` hole (control/types.ts:2772-2779).
+    //    The EXECUTION-side verifier has walked EVERY effect with this exact
+    //    ceiling walk since day one (verifyEffectSetApproval :464-501); only
+    //    the producer skipped the non-approval effects, so a mixed set —
+    //    e.g. the EDIT set [tool-invoke ask, read allow, write allow] —
+    //    reached the strict validator as 1 rung against 3 effects (ask-last
+    //    even as `null` holes). Every added rung is the SAME real
+    //    authority-ceiling derivation the approval walk performs (beneficiary
+    //    as initiator, same scope, same documents, same fail-closed rules) —
+    //    NOT a bridge-side constant, and NOT a relaxation anywhere downstream.
+    //    A case is only ever minted when at least one effect needs the Ask
+    //    (the guard above), so all-allow sets still create NO case, and
+    //    deniedEffects / deny-owner floors stay EXCLUSIVELY on the truly
+    //    policyDenied effects handled in the loop above.
+    const needApprovalSet = new Set(input.needApproval);
+    for (let index = 0; index < input.effects.effects.length; index += 1) {
+        if (needApprovalSet.has(index))
+            continue;
+        const effect = input.effects.effects[index];
+        const scope = effectApprovalScope(effect, input.realmId);
+        let evaluation;
+        try {
+            evaluation = evaluateAuthorityCeiling({
+                beneficiaryAuthority: input.beneficiaryAuthority,
+                // The initiator here is the BENEFICIARY — identical to the
+                // approval walk above: this only asks WHICH rung could sign.
+                initiatorAuthority: input.beneficiaryAuthority,
+                operationClass: scope.operationClass,
+                matcher: scope.matcher,
+                desiredEffect: DESIRED_EFFECT,
+                documents: input.documents,
+                ...(input.subtreeContains === undefined ? {} : { subtreeContains: input.subtreeContains }),
+            });
+        }
+        catch (error) {
+            if (error instanceof AuthorityBindingError) {
+                return {
+                    ok: false,
+                    unapprovable: {
+                        effectIndex: index,
+                        plane: 'approval',
+                        detail: `effect ${index} (${effect.kind}) has an unreadable authority binding (${error.message}) — the plan fails closed for the WHOLE effect set`,
+                    },
+                };
+            }
+            throw error;
+        }
+        if (evaluation.outcome === 'undetermined' || evaluation.requiredAuthority === undefined) {
+            return {
+                ok: false,
+                unapprovable: {
+                    effectIndex: index,
+                    plane: 'approval',
+                    detail: `effect ${index} (${effect.kind}) is undetermined on the approval plane — a request containing an undetermined effect mints no case, even when policy already allows it`,
+                },
+            };
+        }
+        // No deny-owner floor applies here: floors arise only from policy-DENIED
+        // effects, and those all live in the needApproval walk above (this
+        // effect needed no approval).
+        perEffectRequired[index] = evaluation.requiredAuthority;
+    }
+    if (perEffectRequired.length !== input.effects.effects.length || perEffectRequired.some((slot) => slot === undefined)) {
+        // The dense invariant the consumers enforce — stated HERE so a future
+        // edit that reintroduces a hole reddes at the PRODUCER, never at the
+        // Control validator after a half-written durable row.
+        return {
+            ok: false,
+            unapprovable: { effectIndex: -1, plane: 'approval', detail: 'internal: the per-effect rung vector is not dense over the effect set — the plan is refused at the producer' },
+        };
+    }
     return {
         ok: true,
         value: {
