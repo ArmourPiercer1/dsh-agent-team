@@ -493,6 +493,13 @@ import { definitionIdentityOf, installScopedToolGuard } from '../../../tool-disp
 import { A5_B_SCHEDULE_DELETE_MOUNT_NAME, A5_B_SCHEDULE_LIST_MOUNT_NAME, createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends.mjs'
+// A5M2-G1-WIRE MOUNT-ARM (this lane's block): the G1-WIRE lane's PRODUCTION
+// assembly module (its exclusive file, imported and consumed exactly as its
+// .d.mts spells — never restated, never edited here) plus the derived subset
+// table, read here ONLY to gate which rows this arm supplies (never a
+// hand-spelled name list — the subset stays derived from the frozen spec table).
+import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'
+import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
 // statically - the seam arrives through the additive deps.web accessor (host.ts).
@@ -2454,6 +2461,12 @@ export function createAgentBindings(deps) {
       // for the same reason: the arm site and the post-publish fill point sit
       // in different nested blocks of this setup body).
       let a5TeamOpsInject = null
+      // A5M2-G1-WIRE MOUNT-ARM (this lane's declaration, hoisted for the same
+      // 9e-4 reason): the G1-WIRE assembly handle is BUILT and PLACED at the
+      // mount point below, and its family rows are written AFTER publish at
+      // the shared fill point — two different nested blocks of this setup
+      // body. One handle per SUPPLIED row (see the arm block for why).
+      const a5G1Assemblies = []
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -4078,6 +4091,209 @@ export function createAgentBindings(deps) {
           revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
           return placed.dispose()
         })
+        // ── A5M2-G1-WIRE MOUNT-ARM (this lane's block; center 01:1x
+        // continuation, split 01:4x): the production supply for the pure-query
+        // G1 subset. The assembly line is the G1-WIRE lane's OWN module
+        // (g1-query-assembly.mjs — imported and consumed, never restated):
+        // this block supplies the live mount seams (the B-TEAM inject's shape,
+        // the signed supply-form law), calls the factory at the ARM moment
+        // (missing evidence = arm refusal, the sibling posture), PLACES the
+        // emitted definitions before the Guard's own-tool bind (one name, one
+        // placement: the raw layer holds none of these names — they are host
+        // global-layer natives this scoped placement shadows, the takeover
+        // mount the plane's `read`/`job_*` rows already are), and lets the
+        // module's `registerAfterPublish()` write the family rows at the
+        // settled single fill point below. NO plane G1 row injection happens
+        // here: the plane's own `g1Enabled`/`backends.g1` seam stays the
+        // frozen route of its assembly spec and is untouched by this block —
+        // the plane never sees the key this arm reads, so its world stays
+        // byte-identical to the pre-G1 build.
+        //
+        // WHY ONE ASSEMBLY PER SUPPLIED ROW: the wiring's `bindingFacts()`
+        // reader is ONE closure shared by every row it mounts (the frozen
+        // candidate contract), while the signed per-row law (the todo arm)
+        // demands the LIVE dispatcher tuple of THAT row's placement. One
+        // assembly per row keeps every supplied row's facts about itself —
+        // never another placement's tuple stamped onto it. The rows the
+        // assembly does not supply stay the module's own honest
+        // DECLARED-INACTIVE rows (no def, no placement, no registration).
+        //
+        // ENABLEMENT GATE (root 17:55, unchanged by this round): only
+        // B-INSPECT rows are supplied. The derived subset's third pure-query
+        // record — `team_list_pending_control` (B-CONTROL) — is NOT armed:
+        // the B-CONTROL enablement ruling is still open (its grammar landed;
+        // its registration/claim is not authorized), so the raw team-tool
+        // name stays exactly as today. The gate is this CLOSED vocabulary,
+        // never a config that could silently widen.
+        if (planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) {
+          const g1Cfg = planeCfg.g1PureQuery
+          const g1IsRecord = typeof g1Cfg === 'object' && g1Cfg !== null && !Array.isArray(g1Cfg)
+          if (g1Cfg !== true && !g1IsRecord) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': config.teamToolPlane.g1PureQuery must be true or a supply record (found ${JSON.stringify(g1Cfg) ?? String(g1Cfg)})`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1ProviderId = g1IsRecord && g1Cfg.providerId !== undefined
+            ? (typeof g1Cfg.providerId === 'string' && g1Cfg.providerId.length > 0 ? g1Cfg.providerId : null)
+            : 'a5p5-plane'
+          if (g1ProviderId === null) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': providerId must be a non-empty string (the provider identity the durable family gate compares against)`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1Bad = runtimeAgent === null || typeof runtimeAgent !== 'object'
+            ? 'the setup resolves no runtime Agent — captures and the family feed have no member scope (the todo capture law: the Agent object IS the scope key; no global fallback)'
+            : a5p1Guard === undefined || a5p1Guard === null
+              ? 'no Guard on this mount — binding facts have no live face to read'
+              : undefined
+          if (g1Bad !== undefined) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (${g1Bad.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': ${g1Bad}`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          // THE trusted TARGETS CONFIG face (the adapter's five facts; its
+          // mount law refuses any absence — no fallback). Every fact is a
+          // real fact of THIS mount, read the same way the sibling arms
+          // read theirs: member/session = the runtime Agent's own identity;
+          // realm = the mount's ONE realm; owner = the owning root session;
+          // profile = the member's durable roster template — the same
+          // repository read the B-TEAM queryFacts resolve performs.
+          const g1MemberAgentId = typeof runtimeAgent.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const g1SessionHeaderId = typeof runtimeAgent.session?.header?.id === 'string' && runtimeAgent.session.header.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (g1MemberAgentId === undefined || g1SessionHeaderId === undefined) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (the real identity pairing facts are unreadable on this setup)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the arm carries no fallback for either`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1RosterRow = domain.repositories.memberInstances.list(String(teamRoot))
+            .find((row) => String(row?.instanceId ?? '') === String(instanceId))
+          const g1ProfileId = typeof g1RosterRow?.templateId === 'string' && g1RosterRow.templateId.length > 0
+            ? String(g1RosterRow.templateId)
+            : null
+          if (g1ProfileId === null) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (the durable roster answers no templateId for instance ${String(instanceId)} — the trusted profileId has no real producer)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': the trusted TARGETS profileId has no real producer (durable roster row absent or template-less for instance '${String(instanceId)}') — the arm invents no profile identity`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1Trusted = Object.freeze({
+            memberAgentId: g1MemberAgentId,
+            sessionHeaderId: g1SessionHeaderId,
+            realmId: a5PlaneRealmId,
+            owner: String(teamRoot),
+            profileId: g1ProfileId,
+          })
+          // THE RUNTIME PLACEMENT FEED (the B-TEAM law verbatim): the identity
+          // of whatever the scoped layer answers under this name, read FRESH —
+          // never a build-time snapshot, never a hand-spelled key. The plane's
+          // own feed cannot answer these names (they are not plane placements);
+          // the module's keys stay the runtime identity the seam minted.
+          const g1PlaneSeam = Object.freeze({
+            placementFeed: (name) => {
+              const placed = agentCtx.tools.get(name, runtimeAgent)
+              const identity = definitionIdentityOf(placed)
+              return identity === null || identity === undefined
+                ? undefined
+                : Object.freeze({ definitionIdentity: identity, realmId: a5PlaneRealmId })
+            },
+            // THE PA EDGE: the plane's ONE real funnel, consulted lazily per
+            // call through the live handle (the B-SUBAGENT law — the module
+            // carries no stub walk; rows can only run after placement).
+            paAdmit: (walk) => a5PlaneValue.paAdmit(walk),
+          })
+          // The trusted CURRENT topology supply (B-INSPECT's classify + edge
+          // fact). The seam is a live reader, never a frozen snapshot; the
+          // SOURCE is the integrator's (the host glue supplies the authorized
+          // inspect directory as the deployment's authorization face). Absent
+          // = NOT mounted: the rows then keep the module's OWN fail-closed
+          // call-time refusal (P_G1_TRUSTED_TOPOLOGY_ABSENT verbatim) —
+          // mounted, placed, registered, and zero native entry until the
+          // source lands. This arm never fabricates a topology.
+          const g1Topology = g1IsRecord && g1Cfg.trustedTopology !== undefined
+            ? (typeof g1Cfg.trustedTopology?.current === 'function' ? Object.freeze({ current: () => g1Cfg.trustedTopology.current() }) : null)
+            : undefined
+          if (g1Topology === null) {
+            observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (g1PureQuery.trustedTopology supplied without a current() reader — a CURRENT-facts source must be a live reader, never a frozen snapshot)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': trustedTopology must be { current: () => unknown } (a CURRENT-facts reader) when supplied`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          let g1PlacedCount = 0
+          for (const entry of g1PureQuerySubset()) {
+            if (entry.familyId !== 'B-INSPECT') {
+              observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only); the raw name stays unregistered and untouched`)
+              continue
+            }
+            const assembly = createG1QueryAssembly({
+              providerId: g1ProviderId,
+              registry: {
+                // LIVE scoped reads; this assembly supplies THIS row only —
+                // the other subset names answer nothing through THIS seam (the
+                // per-row split above; each name gets its own assembly and
+                // its own honest row, never another row's facts).
+                get: (name, agent) => (name === entry.name ? agentCtx.tools.get(name, agent) : undefined),
+                register: (definition) => agentCtx.tools.register(definition),
+              },
+              runtimeAgent,
+              plane: () => g1PlaneSeam,
+              trusted: g1Trusted,
+              // The CURRENT dispatcher entry behind THIS row's placement, read
+              // LIVE through the Guard dispatcher's own surface (the todo
+              // arm's law verbatim): unverified / inactive / malformed answers
+              // NOTHING — the read throws, classify/edge refuse with it; a
+              // stale tuple is never acceptable.
+              bindingFacts: () => {
+                const g1Entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(entry.name)
+                const g1Binding = g1Entry?.binding
+                if (g1Entry?.verified !== true || g1Binding?.status !== 'ACTIVE'
+                  || typeof g1Binding.bindingId !== 'string' || g1Binding.bindingId.length === 0
+                  || !Number.isInteger(g1Binding.revision)
+                  || !Number.isInteger(g1Binding.policyGeneration)
+                  || !Number.isInteger(g1Binding.authorityGeneration)) {
+                  throw new Error(`refused-g1 binding-facts-unreadable — '${entry.name}' answers no verified ACTIVE dispatcher binding (status=${String(g1Binding?.status ?? 'none')}); the G1 row fails closed, a stale tuple is never acceptable`)
+                }
+                return {
+                  bindingId: g1Binding.bindingId,
+                  bindingRevision: g1Binding.revision,
+                  policyGeneration: g1Binding.policyGeneration,
+                  authorityGeneration: g1Binding.authorityGeneration,
+                }
+              },
+              ...(g1Topology === undefined ? {} : { topology: g1Topology }),
+              observe: (row) => observations.push(`a5m2-g1: ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')} record=${String(row?.recordIndex ?? '')}`),
+            })
+            if (assembly.ok !== true) {
+              observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (${String(assembly.code)} row=${entry.name})`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}' row '${entry.name}': ${String(assembly.message)} (code: ${String(assembly.code)})`,
+              ), { code: 'alpha5-g1-arm-mount-refused' })
+            }
+            let g1Disposers
+            try {
+              g1Disposers = assembly.place()
+            } catch (error) {
+              // The module rolled back what THIS call placed (its place()
+              // law); the host's original error rides out untouched.
+              observations.push(`a5m2-g1: placement-REFUSED for ${sessionId} (${entry.name}: ${String(error?.message ?? error).slice(0, 120)})`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed G1 pure-query placement refused for '${sessionId}' row '${entry.name}': ${String(error?.message ?? error)}`,
+              ), { code: 'alpha5-g1-arm-mount-refused', cause: error })
+            }
+            for (const dispose of g1Disposers) toolDisposers.push(dispose)
+            for (const name of assembly.placementNames) {
+              a5PlaneOwnNames.push(name)
+              a5PlaneOwnedNames.push(name)
+              g1PlacedCount += 1
+              observations.push(`a5m2-g1: governed row PLACED ${name} for ${sessionId} (record ${String(entry.recordIndex)}; takeover mount over the global native)`)
+            }
+            a5G1Assemblies.push(assembly)
+          }
+          observations.push(`a5m2-g1: arm BOUND for ${sessionId} (provider=${g1ProviderId} placed=${String(g1PlacedCount)} topology=${g1Topology === undefined ? 'ABSENT — rows keep the module fail-closed posture' : 'mounted (live reader)'} realm=${a5PlaneRealmId})`)
+        }
         // (B-SUBAGENT-CONTROL-WIRING: the wiring section stands BEFORE the plane build and the
         // trio defs ride the PLANE's placement — root 21:01 card; see the inject block there.)
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
@@ -4671,6 +4887,33 @@ export function createAgentBindings(deps) {
           for (const registration of teamOpsRegistrations) {
             registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
             observations.push(`a5m2-b-team: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} record=${String(registration.recordIndex)})`)
+          }
+        }
+        // ── A5M2-G1-WIRE MOUNT-ARM: the paired family registration at the
+        // settled single fill point (post publish, like every sibling
+        // family). The keys are the placement feed's RUNTIME identities — the
+        // `def#N` the install seam minted, read back through the SAME feed the
+        // Guard's binding feed consumes (the module's own `familyRegistrations`
+        // law, re-verified in its spec): a capture-side `g1-capture@` string is
+        // NEVER a family key. The module writes through the PRODUCTION
+        // `registerA5GovernedFamily` and re-reads its own entry verbatim; a
+        // feed that answers no key (PLACEMENT_KEY_ABSENT) or a key that MOVED
+        // throws and is turned into a mount refusal here — never a guessed
+        // key, never a silent skip. SUPPLY-GATED and DECLARED-INACTIVE rows
+        // have no definition, no placement and no registration.
+        for (const g1Assembly of a5G1Assemblies) {
+          let g1Registrations
+          try {
+            g1Registrations = g1Assembly.registerAfterPublish()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g1: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g1-arm-mount-refused', cause: error })
+          }
+          for (const registration of g1Registrations) {
+            observations.push(`a5m2-g1: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} rev=${String(registration.entry.adapterRevision)} record=${String(registration.recordIndex)})`)
           }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,

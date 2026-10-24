@@ -235,6 +235,26 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
   },
+  // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
+  // `agent-bindings.mjs` now imports the G1-WIRE lane's two production
+  // modules by RELATIVE specifier STATICALLY (at module load, gate or no
+  // gate) — without these placements the dist copy of the binding dies at
+  // `ERR_MODULE_NOT_FOUND … ./governed-families/g1-query-assembly.mjs` on the
+  // strict `files: ["dist"]` install face, and the drift gate cannot see the
+  // absence (an unplaced module is invisible to it — the todo.mjs lesson
+  // above). The closure lands inside the mirror: assembly imports wiring
+  // (placed here) + `pa-mount-registry.mjs` (placed above) + the domain
+  // tool-governance index (tsc's OWN emit); wiring imports
+  // `g1-surface-adapters.mjs` (placed above) + that same domain index. Byte-identical like every entry; drift gate D
+  // compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative
