@@ -37,9 +37,9 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // root-accepted minimal release fix (direct child of 5c313418: 4 paths, 3 same-blob mirror placements only)
-const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // dist arm blob this tree measured
-const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35'
+const COMPOSED_SHA = '4a26ac9a904dc6ad1cef56b8b1c096ab88e131de' // SYNC CARD 2026-10-24b (root prep GO): int tip carrying EDIT/SRE PA handoff 87245b1ba + vocabulary 0c15d1448 + the 2676 fix; constants-only sync, d66 execution logic untouched
+const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // dist arm blob MEASURED (git hash-object) against the NEW install-e3e845f0: identical — the handoff did not touch the arm file
+const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35' // likewise RE-MEASURED against install-e3e845f0: identical
 const PACK_BYTES_MAX = 8_000_000
 const HOST_PORT = 3183
 const MOCK_PORT = 3498
@@ -57,7 +57,7 @@ const INSTALL_DIR = process.env.A5M2_EDIT_INSTALL_DIR ?? null // f86's NEW final
 const PACK_COMPOSED = process.env.A5M2_EDIT_COMPOSED_SHA ?? null
 const EXPECTED_PACK_SHA = process.env.A5M2_EDIT_PACK_SHA256 ?? null // REQUIRED: full hash from f86's new receipt (sha256: prefix)
 const EXPECTED_TGZ_NAME = process.env.A5M2_EDIT_TGZ_NAME ?? 'dsh-agent-team-0.1.1-alpha.2.tgz' // same tree -> same name unless the receipt says otherwise
-const EXPECTED_TGZ_DIR_PREFIX = 'out-37646ac2-' // full dir arrives in the receipt; the segment must carry the new product prefix
+const EXPECTED_TGZ_DIR_PREFIX = 'out-4a26ac9a-' // receipt names out-4a26ac9a-20261024T120122Z; the NAME only saves a glob — the fail-closed field check (:225 class) stays the authority
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -244,6 +244,7 @@ function writePatch(patchPath, hostEntryHref) {
     ...ANCHOR_V3_YAML.replace(/\n$/, '').split('\n').map((l) => `          ${l}`),
     `        blueprintDir: ${JSON.stringify(join(HOME, 'blueprints'))}`,
     '        seedMembers: []',
+    `        defaultWorkspace: ${JSON.stringify(FSROOT)}`, // root functional-window GO: member.workspace == THIS FSROOT; an explicit value ALWAYS wins in withDefaultWorkspace (host.ts :1032), so no Host cwd ever reaches a matcher
     '        generation: 1',
     '        staticModel:', '          provider: deepseek-official', '          model: a5m2-edit-window-model',
     '        deniedSelection: null', '        mcpServers: []', '        mcpServer: null',
@@ -582,8 +583,8 @@ async function main() {
         })()))
     if (text.startsWith('A5M2-EDITHW-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `ehw-create-${NONCE}`, delegationTemplateId: 'edit-worker', label: 'edit1' } }))
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
-    if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } }))
-    if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } }))
+    if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: join(FSROOT, 'notes.txt'), old_string: 'beta', new_string: 'BETA-ALLOWED' } }))
+    if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: join(FSROOT, 'notes.txt'), old_string: 'alpha', new_string: 'ALPHA-DENIED' } }))
     return { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
 
