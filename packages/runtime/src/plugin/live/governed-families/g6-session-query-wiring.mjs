@@ -565,12 +565,12 @@ export function buildG6QuerySupplyFromService (service, lifecycle) {
   if (lifecycle === null || typeof lifecycle !== 'object' || typeof lifecycle.currentGeneration !== 'function') {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.PORT_LIFECYCLE_UNOBSERVABLE, 'no public Provider lifecycle observer was supplied — governed query currentness is unknowable at this assembly and the family fail-closes (typed census, zero flip; never allow-by-default, never a per-read identity stand-in)')
   }
-  if (service === null || typeof service !== 'object') {
-    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_ABSENT, 'the DSH public sessionQuery service is not registered in this process — the B-SESSION-QUERY family is not deployed here (honest DECLARED-INACTIVE census, zero flip; never a fake stand-in, never a config substitute)')
-  }
   const generation = lifecycle.currentGeneration()
   if (generation === null || generation === undefined || typeof generation.id !== 'number' || generation.service !== service) {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.PORT_LIFECYCLE_UNOBSERVABLE, `the lifecycle observer answers no ACTIVE generation bound to THIS service (observer=${generation === null || generation === undefined ? 'no-active-generation' : 'generation-' + String(generation.id)}) — provider absent, reloading, or non-ACTIVE; the mount fail-closes typed and the family stays DECLARED-INACTIVE for this mount`)
+  }
+  if (service === null || typeof service !== 'object') {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_ABSENT, 'the DSH public sessionQuery service is not registered in this process — the B-SESSION-QUERY family is not deployed here (honest DECLARED-INACTIVE census, zero flip; never a fake stand-in, never a config substitute)')
   }
   const core = ['traceSession', 'traceEvent', 'readEvent', 'filterSessions', 'readTitleSnapshots']
   const missing = core.filter((name) => typeof service[name] !== 'function')
