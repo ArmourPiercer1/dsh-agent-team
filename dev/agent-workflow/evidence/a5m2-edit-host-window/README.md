@@ -22,10 +22,17 @@ source 同 blob）。pack 产物经 `A5M2_EDIT_PACK_TGZ` + `A5M2_EDIT_PACK_SHA25
   B-EDIT PA request → `team.resolveControl allow` → 真 `tool_result` →
   `control-allow-consumed` 耐久事实 + 盘上字节 `alpha→BETA-ALLOWED` 重读 +
   mtime 前进。
-- **E2 EDIT-DENY 负链**：同靶第二次 edit → `deny` → 结果面带
-  `cf-class=denied`（风险事实 In-BAND）+ **零执行字节双测**（sha 相等 +
-  mtime 冻结比对——runner 先 `utimesSync` 冻钟，touch-open 也会露）+ 该
-  requestId 无 allow-consumed 事实。
+- **E2 EDIT-DENY 负链（oracle 修法 R-root 2026-10-24 裁定）**：同靶第二次 edit →
+  `deny` → **语义 typed 判据，全部绑定同一 requestId**：typed 码
+  `APPROVAL_DENIED` + `durable Control request <同一id> answered deny` 绑定串 +
+  ledger 该 requestId 的 `control-decision-recorded` 事实存在（真实同请求决策）+
+  无 `control-allow-consumed` + 零副作用**且本窗把 sha/mtime 数值记入 detail**
+  （冻钟比对保留；root：before 值未保存即不可称独立重算——现记值）。旧
+  `cf-class=denied` 期望系把 team-tool-plane 执行-edge（:4038/4546/5016/5367,
+  mapClosureRefusal）标记外推到 PA 预-arm deny，root 裁**非合同、oracle 误绑**；
+  13-12-19 窗原 RC=1 **保留不回填**，该腿事实标"真实拒绝/无 consume 已证"
+  （真源：同 13:12:26.792 行 EDIT-DENY+APPROVAL_DENIED+ctrl answered deny、
+  bridge leg-deny(deny)、同 ctrl hasFact false；CANCELLED=拒后 arm 清理）。
 - E0 前置：member 工具表真含 `edit`（mount 实开收据）。
 
 race-04（inotify harness，`scripts/04-race-inotify-harness.mjs`）**不入本窗**，

@@ -645,8 +645,8 @@ async function main() {
   const consumed = await hasFact(allowReq, 'control-allow-consumed')
   check('E1', 'ALLOW -> control-allow-consumed fact + REAL bytes changed + mtime advanced + result not a refusal',
     consumed !== false && shaBefore !== shaAfter && readFileSync(target, 'utf8') === 'alpha\nBETA-ALLOWED\ngamma\n'
-    && stAfter.mtimeMs > stBefore.mtimeMs && !String(allowRes).includes('cf-class=denied'),
-    `requestId=${allowReq} consumed=${JSON.stringify(consumed).slice(0, 200)} result=${String(allowRes).slice(0, 250)}`)
+    && stAfter.mtimeMs > stBefore.mtimeMs && !/APPROVAL_DENIED|refused-edit|pa-handoff-refused/.test(String(allowRes)),
+    `requestId=${allowReq} consumed=${JSON.stringify(consumed).slice(0, 200)} shaBefore=${shaBefore} shaAfter=${shaAfter} mtimeBeforeMs=${stBefore.mtimeMs} mtimeAfterMs=${stAfter.mtimeMs} result=${String(allowRes).slice(0, 250)}`)
 
   // E2: DENY chain — zero executed bytes on the SAME target
   currentCriterion = 'E2'
@@ -656,10 +656,26 @@ async function main() {
   const denyReq = await driveGoverned(memberSession, 'EDIT-DENY', 'deny', 'ehw-e2')
   const denyRes = await resultFor(stepOuter('EDIT-DENY'))
   const denyConsumed = await hasFact(denyReq, 'control-allow-consumed')
-  check('E2', 'DENY -> zero executed bytes (sha + mtime double-check) + result carries in-band refusal + NO allow-consumed fact',
-    denyShaBefore === sha256(target) && Math.abs(statSync(target).mtimeMs - denyStBefore.mtimeMs) < 1
-    && String(denyRes).includes('cf-class=denied') && denyConsumed === false,
-    `requestId=${denyReq} consumed=${JSON.stringify(denyConsumed)} result=${String(denyRes).slice(0, 300)}`)
+  // [oracle fix per root ruling 2026-10-24] the deny leg is judged SEMANTIC and
+  // TYPED — not by the execution-edge 'cf-class' string (that marker belongs to
+  // the write/read edge refusals in team-tool-plane and was an oracle
+  // mis-binding for PA pre-arm denies; ruled non-contractual here). Required,
+  // all bound to the SAME requestId: (a) typed refusal code
+  // APPROVAL_DENIED, (b) the durable-request binding string naming THIS
+  // requestId answered deny, (c) the ledger control-decision-recorded fact for
+  // this requestId exists (the real same-request decision), (d) NO
+  // control-allow-consumed fact, (e) zero side effects — and the byte/mtime
+  // VALUES are recorded in the detail THIS window (root: a before-value not
+  // saved cannot later be claimed as independently recomputed; here it is).
+  const denyDecision = await hasFact(denyReq, 'control-decision-recorded')
+  const denyShaAfter = sha256(target)
+  const denyMtimeAfterMs = statSync(target).mtimeMs
+  check('E2', 'DENY -> typed APPROVAL_DENIED bound to the SAME requestId + same-request decision fact + zero side effects WITH recorded values + NO allow-consumed fact',
+    denyShaBefore === denyShaAfter && Math.abs(denyMtimeAfterMs - denyStBefore.mtimeMs) < 1
+    && String(denyRes).includes('APPROVAL_DENIED')
+    && String(denyRes).includes(`durable Control request ${denyReq} answered deny`)
+    && denyDecision !== false && denyConsumed === false,
+    `requestId=${denyReq} consumed=${JSON.stringify(denyConsumed)} decisionFact=${denyDecision === false ? 'ABSENT' : JSON.stringify({ sequence: denyDecision.sequence, keys: Object.keys(denyDecision.payload ?? {}).slice(0, 10) })} shaBefore=${denyShaBefore} shaAfter=${denyShaAfter} mtimeBeforeMs=${denyStBefore.mtimeMs} mtimeAfterMs=${denyMtimeAfterMs} result=${String(denyRes).slice(0, 300)}`)
 
   await cleanup()
   finish(results.every((r) => r.ok) && cleanupOk ? 0 : 1)
