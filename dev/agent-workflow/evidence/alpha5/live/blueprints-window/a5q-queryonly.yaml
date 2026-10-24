@@ -1,0 +1,82 @@
+---
+# A5M2 B-TEAM window query-only blueprint (root's limited config-fix ruling).
+# Leader capabilities: teamTools narrowed to the ONE target query; the 15 native
+# tools named by THIS run's raw line 6 are masked through the real
+# applyBuiltInToolDeny scope (packed agent-bindings.mjs:2785, selective-mode
+# maskedNames :2738/:4295; closed shape static-capability-source.d.ts:28-32).
+# Coverage/Guard/default-ask stay exactly as the host resolves them; NO allow-all,
+# no fake managed, no enum/safelist change. a5nx-main.yaml is untouched history.
+schemaVersion: 3
+blueprintId: team.a5q-queryonly
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5q query-only team. Follow the directive marker exactly and call the named team tool exactly once."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+    builtinToolDeny:
+      - ask_user_question
+      - create_goal
+      - exit_plan_mode
+      - get_goal
+      - present
+      - skill
+      - update_goal
+      - workflow
+      - glob
+      - grep
+      - job_kill
+      - job_list
+      - job_output
+      - web_fetch
+      - web_search
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+members:
+  - templateId: obs
+    displayName: "a5q member (no team tools, native masked)"
+    persona: "You are a5q member obs. You perform no team operations in window-1."
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny:
+        - ask_user_question
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - present
+        - skill
+        - update_goal
+        - workflow
+        - glob
+        - grep
+        - job_kill
+        - job_list
+        - job_output
+        - web_fetch
+        - web_search
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow: []
+        ask: []
+        deny: []
+---

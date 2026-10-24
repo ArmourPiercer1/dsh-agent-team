@@ -1135,6 +1135,8 @@ export async function windowReplay ({ productCommit, packageSha256, packageTgz, 
   const mount = candidateMount(installFace)
   run('C-MOUNT-CANDIDATE', { ok: mount.ok === true, detail: mount.ok === true ? `${mount.name}@${mount.version} exports=${mount.exports.join(',')} adapter_leg_readable=${String(mount.adapterMarker)}` : String(mount.error) })
   const gate = blueprintPath === undefined ? { ok: false } : gateBlueprintSource(supply.source ?? '')
+  const denyCount = (supply.ok === true ? String(supply.source).match(/^      - [a-z_]+$/gm) ?? [] : []).length
+  run('C-QUERY-ONLY-BLUEPRINT', { ok: supply.ok === true && String(supply.blueprintId) === 'team.a5q-queryonly' && denyCount === 15 && !/allow:\s*\[\s*\{/.test(String(supply.source)) && /default: ask/.test(String(supply.source)), detail: `id=${String(supply.blueprintId)} builtinToolDeny entries=${String(denyCount)} (raw line 6: unknown-unmanaged 7 + known-sensitive-unmanaged 8), teamTools=team_list_members only, permissions.default stays ask, no allow-all lane written` })
   run('C-BLUEPRINT-SOURCE-GATE', { ok: supply.ok === true && gate.ok === true, detail: `supply=${String(supply.ok)} gate_status=${String(gate.report?.status)} id=${String(gate.blueprintId)} revision=${String(gate.revision)}` })
   const pre = identityPreflight({ productCommit, packageSha256, packageTgz, mount })
   run('C-IDENTITY-PREFLIGHT', { ok: pre.ok, detail: pre.ok ? `commit=${productCommit.slice(0, 9)} sha256=${packageSha256.slice(0, 9)} precheck=${String(pre.precheckOk)} sourceSurfaceDisclosed=${String(pre.sourceSurfaceDisclosed.length)}` : pre.problems.join('; ') })
@@ -1198,7 +1200,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     packageSha256: 'c8dd3f07b940efec03ec69173a3f98a9ded6106ccf725e0bda88efa74c754b0e',
     packageTgz: '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-699cc4fb7a27941b19c1550c42d45d45520535da-20261024T043040Z/dsh-agent-team-0.1.1-alpha.2.tgz',
     installFace: '/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-c8dd3f07b/node_modules/dsh-agent-team',
-    blueprint: join(REPO, 'dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml'),
+    // Query-only blueprint for this window (root's limited config-fix ruling); a5nx-main stays
+    // untouched history and is still the historical fixture the earlier cards cited.
+    blueprint: join(REPO, 'dev/agent-workflow/evidence/alpha5/live/blueprints-window/a5q-queryonly.yaml'),
   }
   if (flag('--window-replay')) {
     const out = await windowReplay({ ...FROZEN, blueprintPath: valueOf('--blueprint-artifact') ?? FROZEN.blueprint })
