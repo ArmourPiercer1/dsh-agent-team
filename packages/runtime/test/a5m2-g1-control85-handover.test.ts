@@ -154,7 +154,13 @@ describe('A5M2-G1 record-85 closed-key hand-over', () => {
     // ② the arm gate: record 85 arms ONLY through family + recordIndex + the
     //    claimed key; every other non-B-INSPECT row keeps the root 17:55 skip
     //    and its SUPPLY-GATED observation.
-    expect(src).toContain("const a5G1Control85Armed = entry.recordIndex === 85\n              && entry.familyId === 'B-CONTROL' && a5G1Control85Names.has(entry.name)")
+    expect(src).toContain("const a5G1Control85Armed = entry.recordIndex === 85\n              && entry.familyId === 'B-CONTROL'\n              && a5G1Control85Names.has(entry.name)\n              && a5G1Control85Native !== undefined")
+    // ROOT P1 exact capture: the assembly reads the CLAIMED selection instance
+    // for record 85 — never a scoped re-read (the raw name was let), never a
+    // parent-layer same-named definition.
+    expect(src).toContain('entry.recordIndex === 85 ? a5G1Control85Native')
+    expect(src).toContain(': agentCtx.tools.get(name, agent))')
+    expect(src).toContain('a5G1Control85Native = a5G1Claim85.names.length === 0 ? undefined')
     expect(src).toContain("if (entry.familyId !== 'B-INSPECT' && !a5G1Control85Armed)")
     expect(src).toContain('SUPPLY-GATED')
     // ③ native permissions: the tools package is NOT in this change's path —

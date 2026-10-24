@@ -499,7 +499,7 @@ import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends
 // table, read here ONLY to gate which rows this arm supplies (never a
 // hand-spelled name list — the subset stays derived from the frozen spec table).
 import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'
-import { g1PureQuerySubset, claimG1Control85Handover } from './governed-families/g1-query-wiring.mjs'
+import { g1PureQuerySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'
 import { createG1TrustedTopologySupply } from './governed-families/g1-trusted-topology-supply.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
@@ -2719,6 +2719,13 @@ export function createAgentBindings(deps) {
       // native is legally visible in THIS agent's selection — one eligibility
       // law, read identically at the arm and here).
       let a5G1Control85Names = new Set()
+      let a5G1Control85Native = undefined
+      // THE EXACT CAPTURE (root P1): the raw filter below REMOVES this name
+      // from the agent-layer registration, so the scoped read the assembly
+      // performs can no longer see it — and a parent layer carrying a SAME-
+      // NAMED definition would be captured by mistake. The definition this
+      // agent's selection carried is kept HERE, at the moment of the claim,
+      // and it is the ONLY definition the record-85 assembly may capture.
       const a5TeamOpsNativeByName = new Map()
       const a5TeamOpsAllowedNames = new Set()
       // ROOT 19:53 ③: the definitions THIS owner actually placed under the
@@ -2799,6 +2806,8 @@ export function createAgentBindings(deps) {
             definitionIdentityOf,
           })
           a5G1Control85Names = new Set(a5G1Claim85.names)
+          a5G1Control85Native = a5G1Claim85.names.length === 0 ? undefined
+            : selected.find((def) => def?.name === A5_G1_CONTROL85_HANDOVER.name)
           for (const row of a5G1Claim85.census) {
             observations.push(`a5m2-g1: record-85 handover census ${row.name}:${String(row.reason)} for ${sessionId}`)
           }
@@ -4409,7 +4418,9 @@ export function createAgentBindings(deps) {
             // and the native stays Leader-only by its OWN pre-read gate. Any
             // other B-CONTROL row stays exactly as root 17:55 left it.
             const a5G1Control85Armed = entry.recordIndex === 85
-              && entry.familyId === 'B-CONTROL' && a5G1Control85Names.has(entry.name)
+              && entry.familyId === 'B-CONTROL'
+              && a5G1Control85Names.has(entry.name)
+              && a5G1Control85Native !== undefined
             if (entry.familyId !== 'B-INSPECT' && !a5G1Control85Armed) {
               observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only; root 03:05 carve-out: record 85 only via its closed-key hand-over); the raw name stays unregistered and untouched`)
               continue
@@ -4421,7 +4432,13 @@ export function createAgentBindings(deps) {
                 // the other subset names answer nothing through THIS seam (the
                 // per-row split above; each name gets its own assembly and
                 // its own honest row, never another row's facts).
-                get: (name, agent) => (name === entry.name ? agentCtx.tools.get(name, agent) : undefined),
+                // ROOT P1 (record 85): the claimed selection instance, never a
+                // scoped re-read — the raw filter already let this name, and a
+                // parent layer's same-named definition must not be captured.
+                // The B-INSPECT pair keeps the live scoped takeover read.
+                get: (name, agent) => (name !== entry.name ? undefined
+                  : entry.recordIndex === 85 ? a5G1Control85Native
+                    : agentCtx.tools.get(name, agent)),
                 // The owner-held ledger write (root 841 ②): record the
                 // definition the moment the HOST seam accepts the
                 // registration, and retire it only when THIS registration's
