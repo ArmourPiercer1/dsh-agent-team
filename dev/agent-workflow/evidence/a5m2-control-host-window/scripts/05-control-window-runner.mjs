@@ -57,11 +57,11 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = 'e58349ddbe39254db1972083dcdce2371a009e77' // CONTROL hand-off fix pack (694b DESCENDANT; face = agent-bindings one file, the 84 arm-vs-governed-native placement fix; the two earlier window failures stay FAILED, not recomputed away)
-const EXPECTED_PACK_SHA = 'sha256:0d1664100abf411bccb2255bd2d6b6b89a304798b7a09a1c240d2f137bee01b5' // f86 receipt, recomputed by B read-only (4,347,361 B)
-const EXPECTED_LOCK_SHA = 'sha256:0e8848a555d20c5aafd7ef3238530f337cce7853c16b1e3be61e8132220eb087' // f86 receipt, recomputed by B read-only (integrity vs new tgz MATCH)
+const COMPOSED_SHA = 'f923bba276aa8e4eeeca4099c1f1beecd9baa2d2' // sandboxPolicy supply fix pack (e583 DESCENDANT, root-signed 2026-10-24; the three prior window failures stay FAILED, not recomputed away)
+const EXPECTED_PACK_SHA = 'sha256:c5a36a6addd18e3abf842003b104b5fbd5ffa332c2c44b917791fec940cffa6a' // f86 receipt, recomputed by B read-only (4,347,866 B)
+const EXPECTED_LOCK_SHA = 'sha256:a35cba756621c50eb9c882fa2ae4f2adf629151149d6e8c1dbe1f858f9e8cb25' // f86 step-B FINAL lock, recomputed by B read-only (612,696 B, 5x out-f923bba2)
 const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
-const EXPECTED_TGZ_DIR_PREFIX = 'out-e58349dd-'
+const EXPECTED_TGZ_DIR_PREFIX = 'out-f923bba2-'
 const PACK_BYTES_MAX = 8_000_000
 const HOST_PORT = 3184 // root-pinned for B
 const MOCK_PORT = 3499 // root-pinned for B
@@ -70,7 +70,7 @@ const BP_ID = 'team.a5m2-ctl-hw'
 const WINDOW_GO = process.env.A5M2_CONTROL_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_CONTROL_DRY === '1'
 const INSTALL_DIR = process.env.A5M2_CONTROL_INSTALL_DIR
-  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0d166410' // f86 frozen-offline install (RC=0, down 0); absence fail-closes rc3
+  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-c5a36a6a' // f86 frozen-offline install (RC=0, +532 reused, down 0); absence fail-closes rc3
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
