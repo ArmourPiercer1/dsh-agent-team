@@ -585,11 +585,17 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
          * is DISCLOSED below — never projected as Team-PA effects (a PA
          * default-deny has no connect projection; enumerating one would
          * IO_UNSUPPORTED the action forever without governing anything).
-         * Every other plugin action keeps its enumeration byte-for-byte. */
-        effects.push(
-          { kind: 'write', resource: dirRes(realmId, facts.installRootLocator, ['write', 'list', 'meta']) },
-          { kind: 'write', resource: pathRes(realmId, facts.profileConfigLocator, ['read', 'write', 'meta']) },
-        )
+         * Every other plugin action keeps its enumeration byte-for-byte.
+         * ACTION AUTHORIZATION ONLY (root final review ①): the install action's
+         * PA effect is the tool-invoke of plugin_manager's install action
+         * itself. The manager's internal install-root and profile-config
+         * writes are as much INTERNAL to the manager as connect/cache — the
+         * agent never touches those paths; enumerating them demanded file
+         * authorization the action-only ruling removed. What the PA governs
+         * and witnesses lives on the TARGET (real spec, enabled,
+         * approvedBuilds, explicit registry, manager+profile identity
+         * locators); the internal IO stays DISCLOSURE. remove_bundle and the
+         * other plugin actions keep their own effect sets byte-for-byte. */
         built.obligations = [
           TOOL_NAME_OBLIGATION,
           { target: 'host-approval-escalation-channel', operation: 'danger-full-access-approval', right: 'read', note: 'the REAL Host gate chain (sandboxPolicy.resolve + the EXPORTED approveEscalation adjudicator over {approver: ctx.get(\'approval\'), agent, callId, toolName, signal}, tools.ts:38-44) is a HARD PRECONDITION of the install entry: the row mounts those exact seams as hostEscalation and refuses when they are absent or the adjudicator does not grant; Team PA never stands in for it' },
@@ -610,6 +616,10 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
           fallbackRegistries: [...facts.fallbackRegistries],
           profileConfigLocator: facts.profileConfigLocator,
           installRootLocator: facts.installRootLocator,
+          enabledClaim: pluginReviewed(rawArgs.enabled),
+          approvedBuildsClaim: Array.isArray(rawArgs.approvedBuilds)
+            ? rawArgs.approvedBuilds.map((entry) => String(entry))
+            : [],
           versionExemptionDerived: false,
         }
         break
@@ -1195,9 +1205,33 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
           entry.state = 'REFUSED-ABORTED-AFTER-CONSUME'
           return classifyRefuse(CODES.ABORTED_AFTER_GATE, `${spec.recordIndex}·B-PLUGIN·${providerId}: the signal aborted during the awaited Host gate or the awaited Team-PA consumption — zero manager entry happened`)
         }
-        if (!isRecord(installFace) || installFace.installBundle !== bindInstall || !isRecord(escalation) || escalation.approveEscalation !== bindEscalate) {
-          entry.state = 'REFUSED-DEFINITION-MOVED-AFTER-CONSUME'
-          return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the manager/adjudicator definition face moved during the two awaited approvals — this plan was approved against a different service definition; zero manager entry happened`)
+        /* The mount-captured bag identity is SELF-PROVING for a frozen face —
+         * it cannot see the live service behind it (root final review ②). The
+         * honest terminal check re-reads the REAL public supplies instead: the
+         * SAME authorized binding's generations (moved during the awaited
+         * Team-PA admission = the plan's binding is gone — zero entry) and the
+         * CURRENT profile facts through the facts port (reVerifyAtEdge). Only
+         * the public lifecycle supplies and the current binding are verified;
+         * arbitrary same-fiber hot-patch detection is NOT expanded here. */
+        let postConsumeGenerations
+        try {
+          const nowFacts = bindingFacts()
+          postConsumeGenerations = {
+            bindingId: nowFacts?.bindingId ?? null,
+            bindingRevision: nowFacts?.bindingRevision ?? null,
+            policyGeneration: nowFacts?.policyGeneration ?? null,
+            authorityGeneration: nowFacts?.authorityGeneration ?? null,
+          }
+        } catch (error) {
+          entry.state = 'REFUSED-CONSUME-UNREADABLE'
+          return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the binding facts could not be re-read at the terminal boundary (${String(error)}); zero manager entry happened`)
+        }
+        if (postConsumeGenerations.bindingId !== plan.generations.bindingId
+          || postConsumeGenerations.bindingRevision !== plan.generations.bindingRevision
+          || postConsumeGenerations.policyGeneration !== plan.generations.policyGeneration
+          || postConsumeGenerations.authorityGeneration !== plan.generations.authorityGeneration) {
+          entry.state = 'REFUSED-GENERATION-MOVED-AFTER-CONSUME'
+          return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the binding/policy/authority tuple moved during the awaited Team-PA admission — the plan is no longer backed by the binding it was authorized against; zero manager entry happened`)
         }
         const postConsumeStale = reVerifyAtEdge(plan)
         if (postConsumeStale !== null) return postConsumeStale

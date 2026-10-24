@@ -138,3 +138,19 @@ Every assertion = raw RC + log path; tier stays 接线未测 until this plan has
   service-definition faces (manager/adjudicator identity — moved → DEFINITION_DRIFT, zero entry), and
   the ACTUAL target via the CURRENT-facts reVerifyAtEdge before entering the manager.
 - Tier: 接线未测 stands (targeted specs are contract-face evidence, not live-Host).
+
+## 9. ROOT FINAL REVIEW (2f736 二次复审) — the two finite closures (this commit)
+- ① install_bundle PA effects = ACTION AUTHORIZATION ONLY: the single tool-invoke of the install
+  action. The manager's internal install-root and profile-config WRITES left the effect set too
+  (they are as internal as connect/cache); the target now carries the real ACTION parameters at
+  full value — spec, enabledClaim (reviewed encoding), approvedBuildsClaim, explicit registry,
+  allowed/fallback registries — plus the manager+profile identity locators. No installation-internal
+  file/network authorization is demanded anywhere on this action; the other 7 actions are byte-old.
+- ② The deployer face captures the REAL public manager methods + receiver (bound at mount — no
+  self-delegating wrappers, which made the identity checks self-proving). The terminal boundary
+  after the Team-PA admission RE-READS the authorized binding's generations (moved = the plan is no
+  longer backed by its authorized binding → zero manager entry) and the CURRENT profile facts via
+  the facts port. Only the public lifecycle and the current binding are verified; no same-fiber
+  hot-patch detection was added. Registry sampling is labelled 'settled-mount-observation' /
+  'deployment-closure*' — a mount observation or a deployment fallback, never "live", never an
+  install enablement gate.

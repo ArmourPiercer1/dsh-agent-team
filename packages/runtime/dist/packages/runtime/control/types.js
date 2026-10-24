@@ -1164,6 +1164,8 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
                         fallbackRegistries: 'stringArray',
                         profileConfigLocator: 'string',
                         installRootLocator: 'string',
+                        enabledClaim: 'string',
+                        approvedBuildsClaim: 'stringArray',
                         versionExemptionDerived: 'boolean',
                     }),
                     binds: Object.freeze({}),

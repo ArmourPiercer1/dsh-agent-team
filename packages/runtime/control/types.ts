@@ -1751,6 +1751,8 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
             fallbackRegistries: 'stringArray',
             profileConfigLocator: 'string',
             installRootLocator: 'string',
+            enabledClaim: 'string',
+            approvedBuildsClaim: 'stringArray',
             versionExemptionDerived: 'boolean',
           }),
           binds: Object.freeze({}),
