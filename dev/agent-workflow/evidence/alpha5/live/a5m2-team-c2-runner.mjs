@@ -859,6 +859,44 @@ export function makeLeaderMembersDecide ({ marker, doneText }) {
   }
 }
 
+/**
+ * Root's one-point card: the `dsh web:` URL banner does NOT mean the Team route
+ * exists — 699cc host.js awaits createTeamDomain at :1224 first and registers the
+ * Team Remote only at :2831-2853 (root.boot at :2862). So before the FIRST team
+ * RPC we wait for THIS run's host log to carry the registration site's OWN line,
+ * taken verbatim from the packed source (host.js:1019-1020):
+ *   `[dsh-agent-team] remote mount: MOUNTED channel=…`  (also the "(late, after
+ *   …ms)" variant), qualified by the plugin's own `[dsh-agent-team]` prefix so it
+ *   cannot collide with another plugin's "remote" line. A SKIPPED (host.js:1023)
+ *   or a bootstrap FAILED stops immediately and typed. NOT a generic 405 retry.
+ */
+export const REMOTE_MOUNT_MARKER = '[dsh-agent-team] remote mount: MOUNTED channel=/team-remote'
+export const REMOTE_MOUNT_REFUSALS = Object.freeze([
+  { name: 'REMOTE_MOUNT_SKIPPED', pattern: /\[dsh-agent-team\] remote mount: SKIPPED/ },
+  { name: 'REMOTE_MOUNT_FAILED', pattern: /\[dsh-agent-team\] remote mount: FAILED/ },
+  { name: 'PLUGIN_BOOTSTRAP_FAILED', pattern: /\[dsh-agent-team\] bootstrap FAILED/ },
+])
+
+export async function remoteMountGate ({ readLog, childGone = () => false, budgetMs = 120_000, pollMs = 250 }) {
+  const deadline = Math.min(Date.now() + budgetMs, windowDeadlineAt === 0 ? Number.POSITIVE_INFINITY : windowDeadlineAt)
+  let polls = 0
+  for (;;) {
+    polls += 1
+    checkWorldBudget('remote-mount-gate-poll')
+    if (childGone() === true) throw new Error('HOST_CHILD_EXITED before the Team Remote mounted: no team RPC was attempted')
+    const text = String(readLog() ?? '')
+    const refusal = REMOTE_MOUNT_REFUSALS.find((entry) => entry.pattern.test(text))
+    if (refusal !== undefined) {
+      const line = text.split('\n').find((row) => refusal.pattern.test(row)) ?? refusal.name
+      throw new Error(`${refusal.name}: ${line.trim().slice(0, 300)}`)
+    }
+    const mounted = text.split('\n').find((row) => row.includes(REMOTE_MOUNT_MARKER))
+    if (mounted !== undefined) return { mounted: true, polls, line: mounted.trim().slice(0, 200) }
+    if (Date.now() > deadline) throw new Error(`REMOTE_MOUNT_NEVER_APPEARED after ${String(polls)} polls: no '${REMOTE_MOUNT_MARKER}' line in this run's host log (the URL banner is not the route)`)
+    await new Promise((resolve) => setTimeout(resolve, pollMs))
+  }
+}
+
 /** A FRESH stamped home per window (root card [1]); the path must not exist. */
 export function freshWorld (stamp, prefix = ROW_CONFIG.worldPrefix) {
   if (!/^[0-9TZ-]{8,}$/.test(String(stamp))) throw new Error(`run stamp is not a usable stamp: ${String(stamp)}`)
@@ -944,7 +982,7 @@ export async function runTeamC2 ({
 } = {}) {
   if (go !== '1') throw new Error('A5M2_TEAM_C2_BOOT_GO is not set: boot is a window decision, this driver never boots by default')
   const trace = []
-  const rec = (leg, ok, detail) => { trace.push({ leg, ok: ok === true, detail }); return ok === true }
+  const rec = (leg, ok, detail) => { trace.push({ leg, ok: ok === true, detail, at: new Date().toISOString() }); return ok === true }
   let mock; let mockPort
   const homeAbs = join(REPO, world)
   setWindowDeadline(wallMs)
@@ -996,6 +1034,14 @@ export async function runTeamC2 ({
     rec('C-BOOT', true, redactLaunchToken(`${origin}/?token=${match[2]}`))
     if (Number(match[1]) !== port) { rec('C-PORT-EXPLICIT', false, `launch answered ${String(match[1])}, window pinned ${String(port)}`); return { trace, ok: false } }
     rec('C-PORT-EXPLICIT', true, `port=${String(port)}`)
+    // [root one-point card] wait for the plugin's OWN registration line before
+    // issuing ANY team RPC; a bootstrap/SKIPPED refusal stops typed and first.
+    const mountGate = await remoteMountGate({
+      readLog: () => String(readFileSync(instance.logPath, 'utf8')),
+      childGone: () => instance.child === undefined || (instance.child.exitCode !== null || instance.child.signalCode !== null),
+      budgetMs: within(120_000),
+    })
+    rec('C-REMOTE-MOUNT-MARKER', mountGate.mounted, `polls=${String(mountGate.polls)} ${mountGate.line}`)
     const exchange = await jsonFetch(`${origin}/?token=${match[2]}`, { redirect: 'manual' }, within(30_000))
     const cookie = exchange.headers.getSetCookie?.().map((c) => c.split(';')[0]).join('; ') ?? ''
     if (blueprintSource.length > 0) {
@@ -1078,7 +1124,7 @@ export async function runTeamC2 ({
 }
 
 /** NO-BOOT replay of the fixed paths: identity, mount, artifact gate, budget, kit row. */
-export function windowReplay ({ productCommit, packageSha256, packageTgz, installFace, blueprintPath }) {
+export async function windowReplay ({ productCommit, packageSha256, packageTgz, installFace, blueprintPath }) {
   const legs = []
   const run = (name, value) => { legs.push({ leg: name, ...value }); return value.ok === true }
   const supply = blueprintArtifactSupply(blueprintPath)
@@ -1125,6 +1171,20 @@ export function windowReplay ({ productCommit, packageSha256, packageTgz, instal
   setWorldGuard(undefined)
   run('C-WORLD-GUARD-ABORTS', { ok: guardThrew.startsWith('WORLD_CEILING_EXCEEDED'), detail: guardThrew === '' ? 'NOT OBSERVED' : guardThrew.slice(0, 120) })
   run('C-MOCK-DECIDE', { ok: call?.kind === 'tool-call' && call.toolCalls.length === 1 && call.toolCalls[0].name === 'team_list_members' && after?.kind === 'text', detail: 'local scripted mock (localhost): exactly one team_list_members call then done; no external/paid LLM' })
+  const bannerOnly = 'dsh web: http://127.0.0.1:3180/?token=REDACTED\n'
+  const mountedLine = `${REMOTE_MOUNT_MARKER} channel=http`
+  const seq = ['starting', bannerOnly, bannerOnly, `${bannerOnly}\n${mountedLine}`]
+  let reads = 0
+  const mountedLater = await remoteMountGate({ readLog: () => seq[Math.min(reads++, seq.length - 1)], budgetMs: 2_000, pollMs: 5 })
+  let skipThrew = ''
+  try { await remoteMountGate({ readLog: () => `${bannerOnly}\n[dsh-agent-team] remote mount: SKIPPED — no connection service`, budgetMs: 500, pollMs: 5 }) } catch (error) { skipThrew = error instanceof Error ? error.message : String(error) }
+  let bootThrew = ''
+  try { await remoteMountGate({ readLog: () => '[dsh-agent-team] bootstrap FAILED: TeamDomainError: the TeamDomain is closed', budgetMs: 500, pollMs: 5 }) } catch (error) { bootThrew = error instanceof Error ? error.message : String(error) }
+  let neverThrew = ''
+  try { await remoteMountGate({ readLog: () => bannerOnly, budgetMs: 120, pollMs: 10 }) } catch (error) { neverThrew = error instanceof Error ? error.message : String(error) }
+  let exitThrew = ''
+  try { await remoteMountGate({ readLog: () => bannerOnly, childGone: () => true, budgetMs: 500, pollMs: 5 }) } catch (error) { exitThrew = error instanceof Error ? error.message : String(error) }
+  run('C-REMOTE-MOUNT-GATE', { ok: mountedLater.mounted === true && mountedLater.polls === 4 && skipThrew.startsWith('REMOTE_MOUNT_SKIPPED') && bootThrew.startsWith('PLUGIN_BOOTSTRAP_FAILED') && neverThrew.startsWith('REMOTE_MOUNT_NEVER_APPEARED') && exitThrew.startsWith('HOST_CHILD_EXITED'), detail: `offline sequence on THIS run's log only: banner-only never green (polls=${String(mountedLater.polls)} to the verbatim marker '${REMOTE_MOUNT_MARKER}'); SKIPPED typed; bootstrap FAILED typed; child exit typed; absence typed — no retry logic anywhere` })
   if (pre.sourceSurfaceDisclosed.length > 0) run('C-SOURCE-SURFACE-DISCLOSED', { ok: true, detail: `reported, never swallowed: ${pre.sourceSurfaceDisclosed.join(' | ')}` })
   return { mode: 'window-replay', booted: false, hostGated: ['C-BOOT', 'C-READINESS-BARRIER', 'C-CREATE-ONCE', 'C-LEADER-MEMBERS', 'teardown'], legs, ok: legs.every((row) => row.ok === true) }
 }
@@ -1141,7 +1201,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     blueprint: join(REPO, 'dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml'),
   }
   if (flag('--window-replay')) {
-    const out = windowReplay({ ...FROZEN, blueprintPath: valueOf('--blueprint-artifact') ?? FROZEN.blueprint })
+    const out = await windowReplay({ ...FROZEN, blueprintPath: valueOf('--blueprint-artifact') ?? FROZEN.blueprint })
     console.log(JSON.stringify(out, null, 2))
     process.exitCode = out.ok ? 0 : 1
   } else if (flag('--live')) {
