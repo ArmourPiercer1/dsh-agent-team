@@ -8,6 +8,29 @@ together with the new-package constants sync (new composed SHA / out-<sha>-
 prefix / tgz name / pack sha256 / install dir — constants-sync-card class,
 logic untouched); NOT against 37646 ("不用37646宣修复").
 
+## Anchored new-package identity (CENTER receipt 2026-10-24; doc alignment
+only — applying anything below still awaits the root's window GO)
+
+- source SHA (int tip; carries EDIT/SRE handoff `87245b1ba` + vocabulary
+  registration `0c15d1448` + the 2676 fix):
+  `4a26ac9a904dc6ad1cef56b8b1c096ab88e131de`
+- tgz `dsh-agent-team-0.1.1-alpha.2.tgz`, sha256
+  `sha256:e3e845f082bb4bdc843f52e715ee5d30385495f37c70bc53d02497003720bc9f`
+  (4,337,935 B / 1,866 entries; recomputed by CENTER)
+- INSTALL_DIR `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-e3e845f0`
+  (frozen offline RC0; live mount 55/55 incl. edit/write all-0)
+- fixture pkg-lock hash for THIS pack: `d23fe07ca7d7935562083dee5c7bb255afd4517199f0033021c9646fda67d9c0`
+- constants-sync items at GO time (runner :40-:60, constants ONLY):
+  `COMPOSED_SHA -> 4a26ac9a…`; `A5M2_EDIT_PACK_SHA256 -> sha256:e3e845f0…`;
+  `A5M2_EDIT_INSTALL_DIR -> …/install-e3e845f0`; tgz NAME unchanged
+  (`dsh-agent-team-0.1.1-alpha.2.tgz`); `EXPECTED_TGZ_DIR_PREFIX` — the
+  receipt names no `out-<sha>-` dir; resolve the pack's actual
+  `out-…-*/` directory in the field AT APPLICATION and confirm the prefix
+  there (the fail-closed check :225 stays authoritative — never relax it);
+  EDIT/SRE arm blob expectations re-measured against the new dist (if the
+  handoff touched arm blobs, the identity.json expectation updates from the
+  MEASURED bytes, never guessed).
+
 ## 1) Plugin row config (writePatch, dsh-agent-team row): pin the workspace
 
 Law pinned read-only at 37646 host.ts: `defaultWorkspace` is a public config
