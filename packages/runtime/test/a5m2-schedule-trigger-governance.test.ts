@@ -44,7 +44,7 @@ describe('a5m2 schedule trigger-governance (measured gap, no invented seam)', ()
     expect(r.gap?.G5_permission_supply.ungoverned).toContain('injection decision')
     // NO invented enablement: the module has no seam face, no rootGo, and
     // literally no code path that answers enabled:true (pinned here).
-    const module = readFileSync(join(here, '..', 'src', 'plugin', 'live', 'governed-families', 'schedule-trigger-governance.mjs'), 'utf8')
+    const module = readFileSync(join(laneRoot, 'src', 'plugin', 'live', 'governed-families', 'schedule-trigger-governance.mjs'), 'utf8')
     expect(module).not.toContain('rootGo')
     expect(module).not.toContain('enabled: true')
   })
