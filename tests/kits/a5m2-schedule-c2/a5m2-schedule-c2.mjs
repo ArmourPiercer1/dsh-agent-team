@@ -304,6 +304,36 @@ async function remoteCallReady(method, params, tag, version = 1, retries = 20) {
   }
   return last
 }
+// Root 02:1x card: minimal bounded READ-ONLY team-runtime readiness barrier.
+// team.listRoots is the EXISTING public v3-only read method (874 s6-remote.ts
+// :4053-4063; params {}; no root addressed, no repository writes, no agent
+// effects). The first "starting" refusal was answered by the readiness gate
+// BEFORE the business dispatcher (:4814-4834), so nothing was ever executed;
+// this kit previously had only the 429 retry and no ready barrier. Policy:
+//   - EXACT runtime-not-ready envelope whose message says "state: starting"
+//     -> bounded wait (poll every 1.5s, hard budget);
+//   - state "failed", any other error, transport/shape anomaly -> STOP now;
+//   - ok -> proceed; team.create is then issued EXACTLY ONCE by the caller
+//     (write requests are never retried; the product is not modified).
+async function teamReadyBarrier(budgetMs = 180_000) {
+  const deadline = Date.now() + budgetMs
+  let polls = 0
+  for (;;) {
+    polls += 1
+    const res = await remoteCall('team.listRoots', {}, 'c2-ready', 3)
+    const err = resultError(res.body)
+    if (err === null) {
+      log(`team runtime READY via read-only team.listRoots (polls=${polls})`)
+      return
+    }
+    const starting = err.code === 'internal-error'
+      && err.details?.reason === 'runtime-not-ready'
+      && String(err.message).includes('state: starting')
+    if (!starting) throw new Error(`readiness barrier STOP (immediate, polls=${polls}): ${JSON.stringify(err).slice(0, 400)}`)
+    if (Date.now() >= deadline) throw new Error(`readiness barrier budget exhausted while state=starting (polls=${polls})`)
+    await sleep(1500)
+  }
+}
 async function sessionRpc(method, request, tag) {
   const res = await fetchJson(`${origin}/api/session/${method}`, {
     method: 'POST',
@@ -682,7 +712,10 @@ async function main() {
   const created = await sessionRpc('create', { cwd: HOME }, 'c2-session')
   currentRoot = created?.sessionId
   if (typeof currentRoot !== 'string') throw new Error(`session/create value shape: ${JSON.stringify(created).slice(0, 300)}`)
-  const team = await remoteCallReady('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'c2-create', 1)
+  // READ-ONLY readiness barrier first (root 02:1x); after it passes the
+  // write request team.create is issued EXACTLY ONCE (never retried).
+  await teamReadyBarrier()
+  const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'c2-create', 1)
   const teamErr = resultError(team.body)
   if (teamErr !== null) throw new Error(`team.create: ${JSON.stringify(teamErr).slice(0, 400)}`)
   log(`team created at root session ${currentRoot}`)
