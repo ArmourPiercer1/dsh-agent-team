@@ -1,5 +1,5 @@
 import { PA_FAMILY_TARGET_RULES, assertPaFamilyTargetRuleLegality, validatePaFamilyTargetAgainstRule } from '../control/types.js'
-import { g2ApprovedTargetMismatches } from '../src/plugin/host.js'
+import { g2ApprovedTargetMismatches, g2ResolveBrowserPublicEntries } from '../src/plugin/host.js'
 /**
  * A5M2-G2-WIRE C1 (G2 lane, root ruling 15:28; wiring + assembly legs ONLY):
  * the EXTERNAL-CONNECTION family (WEB / MCP / BROWSER) wired into the
@@ -1879,5 +1879,43 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     expect(two.value.sources.length).toBe(3) // cap 3 over 3+3 deduped candidates
     expect(two.value.truncated).toBe(true)
     expect(two.value.sources.map((src) => src.url)).toEqual(['https://r.invalid/20', 'https://r.invalid/30', 'https://r.invalid/21']) // round-robin, then break merge at the cap
+  })
+})
+
+describe('A5M2-G2-WIRE r75: BROWSER public-entry PRODUCER (real code, no boot)', () => {
+  // ROOT round-75: the producer CONSUMES the public './src/*' factories
+  // (launchChromium src/launch.ts:24 / openBrowserWorker src/worker-client.ts:15
+  // @639ed01539). LOAD EXPORTS ONLY is the whole contract of this leg —
+  // NOTHING may be launched: a successful resolve answers TWO FUNCTIONS and
+  // the modules' import alone proves no browser/worker/server exists.
+  it('unarmed lane resolve: unresolvable bare specifiers refuse NAMED, mint nothing', async () => {
+    const r = await g2ResolveBrowserPublicEntries()
+    if (r.ok === true) {
+      // a FULLY LINKED source-639 lane resolves the public pair: face law
+      expect(typeof (r.entries as { launchChromium?: unknown }).launchChromium).toBe('function')
+      expect(typeof (r.entries as { openBrowserWorker?: unknown }).openBrowserWorker).toBe('function')
+      return
+    }
+    expect(r.code).toBe('G2_BROWSER_SUPPLIER_UNRESOLVED')
+    expect(r.message).toContain('stagehand-native/src/launch.ts')
+    expect(r.message).toContain('typed refusal, no fallback, nothing launched')
+  })
+  it('approved entryPaths (source-639 public src subpaths): resolves the REAL pair, invokes nothing', async () => {
+    const root = new URL('../../../tests/deepseek-harness-test-use/packages/experimental/browser-use-stagehand-native/', import.meta.url).href
+    const r = await g2ResolveBrowserPublicEntries({ launchEntry: root + 'src/launch.ts', workerEntry: root + 'src/worker-client.ts' })
+    expect(r.ok).toBe(true)
+    if (r.ok !== true) return
+    const fns = r.entries as { launchChromium: unknown; openBrowserWorker: unknown }
+    expect(typeof fns.launchChromium).toBe('function')
+    expect(typeof fns.openBrowserWorker).toBe('function')
+    // the pair rides frozen (the supply face never lets a caller swap it)
+    expect(Object.isFrozen(r.entries)).toBe(true)
+  })
+  it('entryPaths pointing at a wrong-shaped module: typed refusal, never a half supply', async () => {
+    const r = await g2ResolveBrowserPublicEntries({ launchEntry: new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href, workerEntry: new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href })
+    expect(r.ok).toBe(false)
+    if (r.ok === true) return
+    expect(r.code).toBe('G2_BROWSER_SUPPLIER_UNRESOLVED')
+    expect(r.message).toContain('minting nothing, invoking nothing')
   })
 })
