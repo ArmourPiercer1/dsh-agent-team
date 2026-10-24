@@ -92,6 +92,11 @@ export function createScheduleBindAfterDef(deps) {
   let bound = false
   let bindStarted = false
   let establishAttempted = false
+  // ROOT b6 handover window: the provisional deny lives OUTSIDE `disposers`
+  // on purpose — a pair-close (law A) unwinds FACES but must never lift the
+  // shield over a half-mounted pair; it releases on full success, else ONLY
+  // at dispose (the pair stays refused until the mount itself is gone).
+  let provisionalLift = null
   let disposed = false
   let gateOpenedBy = null // the gate's {ok:true} proof while the pair is closing (audit line)
   const note = (event, extra) => deps.observe?.({ event, ...(extra ?? {}) })
@@ -297,6 +302,13 @@ export function createScheduleBindAfterDef(deps) {
       throw breakpoint('bind-registration-fault', 'the governed face registration to succeed after the gate', `threw ${String(error?.message ?? error).slice(0, 160)}`, 'pair-closed')
     }
     bound = true
+    // The hook set is LIVE synchronously above; only now does the provisional
+    // shield stand down — deny hands over to governance with no gap.
+    if (provisionalLift !== null) {
+      const lift = provisionalLift
+      provisionalLift = null
+      lift()
+    }
     note('bound-after-def', { defs: [...originalDefs.keys()], serviceCaptured: true, gate: 'ok' })
   }
 
@@ -326,6 +338,27 @@ export function createScheduleBindAfterDef(deps) {
       if (!establishAttempted) {
         establishAttempted = true
         const entries = [...originalDefs.entries()].map(([name, definition]) => ({ name, definition }))
+        // THE HANDOVER WINDOW (root b6 终裁): bindOwnTools turns BOTH names
+        // ACTIVE SYNCHRONOUSLY — the generic unbound refusal is gone from
+        // that moment — while the governed hooks exist only after the AWAITED
+        // canonical gate and registration. So BEFORE establishing ACTIVE, a
+        // PROVISIONAL deny mounts over the EXISTING public guard seam
+        // (agent.ctx.tools.guard — the same face the deny lane registers
+        // through; no Guard-body change, no new mechanism): sameAgent, exactly
+        // the pair names, deny-only. It lifts only on the full hook success
+        // below; every failure keeps it refused until dispose.
+        const registerProvisional = deps.registerGuardFor ? deps.registerGuardFor(agent) : deps.registerGuard
+        if (typeof registerProvisional !== 'function') {
+          throw breakpoint('provisional-deny-unavailable', 'the public guard seam (ctx.tools.guard) to answer BEFORE the pair is made ACTIVE — no governed hook exists yet and the unbound refusal ends at bind', 'no guard registration face supplied', 'b6 handover window')
+        }
+        const provisionalNames = new Set(entries.map((entry) => entry.name))
+        const lift = registerProvisional((exec) => (exec?.agent === agent && provisionalNames.has(exec?.name))
+          ? 'a5m2-schedule: governed bind in flight — the Tool Binding is ACTIVE while the governed hooks complete their awaited setup; refused for the whole handover window (provisional handover deny; released on success, kept until dispose on failure)'
+          : undefined)
+        if (typeof lift !== 'function') {
+          throw breakpoint('provisional-deny-unavailable', 'the provisional guard registration to answer with its disposer', `answered ${typeof lift}`, 'b6 handover window')
+        }
+        provisionalLift = lift
         const answer = await Promise.resolve(deps.establishNative
           ? deps.establishNative(entries)
           : { ok: true })
@@ -385,6 +418,13 @@ export function createScheduleBindAfterDef(deps) {
   function dispose() {
     disposed = true
     closePair('dispose')
+    // "failure keeps deny until dispose": the mount is gone, the shield goes
+    // with it (teardown-unmounts-native is the shared sibling semantics).
+    if (provisionalLift !== null) {
+      const lift = provisionalLift
+      provisionalLift = null
+      try { lift() } catch { /* idempotent teardown */ }
+    }
   }
 
   return Object.freeze({ start, dispose, isBound: () => bound, bindPoints: SCHEDULE_AFTER_DEF_BIND_POINTS })

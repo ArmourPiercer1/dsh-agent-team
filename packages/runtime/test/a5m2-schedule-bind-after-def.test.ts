@@ -60,6 +60,7 @@ interface Harness {
   takes: number
   settles: unknown[]
   establishCalls: number
+  guardsAtEstablish: number[]
   waits: number
   defs: Map<string, unknown>
   fireCreated: (agent: unknown) => void
@@ -94,6 +95,7 @@ function harness (opts: HarnessOptions = {}): Harness {
     takes: 0,
     settles: [],
     establishCalls: 0,
+    guardsAtEstablish: [],
     waits: 0,
     defs: opts.defs ?? new Map<string, unknown>([['schedule_list', makeDef('schedule_list')], ['schedule_delete', makeDef('schedule_delete')]]),
     fireCreated: () => {},
@@ -124,6 +126,9 @@ function harness (opts: HarnessOptions = {}): Harness {
     scheduleServiceFeed: () => FIXED_SERVICE,
     establishNative: (entries: Array<{ name: string }>) => {
       h.establishCalls += 1
+      // b6: the provisional handover deny must ALREADY stand when ACTIVE is
+      // written — the window has no unguarded moment:
+      h.guardsAtEstablish.push(h.guards.length)
       expect(entries.map((e) => e.name).sort()).toEqual(['schedule_delete', 'schedule_list'])
       if (opts.establish === undefined) return { ok: true }
       return typeof opts.establish === 'function' ? (opts.establish as () => unknown)() : opts.establish
@@ -170,6 +175,11 @@ async function bindOk (opts: HarnessOptions = {}): Promise<{ h: Harness, handle:
   h.fireCreated(AGENT)
   await flush()
   expect(handle.isBound()).toBe(true)
+  expect(h.guardsAtEstablish).toEqual([1])
+  // provisional lifted on success; what stands is the ONE standing guard,
+  // which (consume supplied) never denies — governance now lives in the hooks.
+  expect(h.guards).toHaveLength(1)
+  expect(h.guards[0]?.({ name: 'schedule_list', agent: AGENT })).toBeUndefined()
   return { h, handle }
 }
 
@@ -448,6 +458,57 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(h.settles).toHaveLength(1)
   })
 
+  it('(j) THE HANDOVER WINDOW (b6): the provisional deny (sameAgent, pair names ONLY) stands BEFORE ACTIVE is written, refuses calls through the whole awaited gate, hands over to governance on success, and on failure keeps refusing until dispose', async () => {
+    let releaseGate: () => void = () => {}
+    const gateOpen = new Promise<void>((resolve) => { releaseGate = resolve })
+    const h = harness({ gate: async () => { await gateOpen; return { ok: true } } })
+    const handle = createScheduleBindAfterDef(h.deps as never)
+    handle.start(AGENT)
+    h.fireCreated(AGENT)
+    await new Promise((resolve) => { setTimeout(resolve, 2) })
+    // mid-window: ACTIVE is written, the gate is still awaited, hooks are NOT in
+    expect(h.establishCalls).toBe(1)
+    expect(h.guardsAtEstablish).toEqual([1]) // the shield was mounted BEFORE establish
+    expect(handle.isBound()).toBe(false)
+    const shield = h.guards[0]
+    expect(shield).toBeDefined()
+    expect(shield?.({ name: 'schedule_list', agent: AGENT })).toContain('provisional handover deny')
+    expect(shield?.({ name: 'schedule_delete', agent: AGENT })).toContain('provisional handover deny')
+    expect(shield?.({ name: 'schedule_list', agent: OTHER })).toBeUndefined() // sameAgent exact
+    expect(shield?.({ name: 'bash', agent: AGENT })).toBeUndefined() // pair names ONLY
+    // success: hooks go live synchronously, THEN the shield stands down
+    releaseGate()
+    await flush()
+    expect(handle.isBound()).toBe(true)
+    expect(h.guards).toHaveLength(1) // provisional gone; only the standing (non-denying) guard remains
+    expect(h.guards[0]?.({ name: 'schedule_list', agent: AGENT })).toBeUndefined()
+    const exec = listener<ExecHandler>(h, 'tools/execute')
+    expect(await exec({ name: 'schedule_list', agent: AGENT, callId: 'j-1', token: {} }, async () => 'DISPATCHED')).toBe('DISPATCHED')
+    expect(h.consumeCalls).toBe(1)
+    // failure AFTER the shield mounted: refused, and it KEEPS refusing until dispose
+    const failed = harness({ establish: () => ({ ok: false, detail: 'bind refused' }) })
+    const handleF = createScheduleBindAfterDef(failed.deps as never)
+    handleF.start(AGENT)
+    failed.fireCreated(AGENT)
+    await flush()
+    expect(handleF.isBound()).toBe(false)
+    expect(failed.guardsAtEstablish).toEqual([1])
+    expect(failed.guards).toHaveLength(1) // kept past the refusal…
+    expect(failed.guards[0]?.({ name: 'schedule_list', agent: AGENT })).toContain('provisional handover deny')
+    handleF.dispose()
+    expect(failed.guards).toHaveLength(0) // …until exactly dispose
+    // no public guard face = the establishment REFUSES before any ACTIVE write
+    const bare = harness()
+    delete bare.deps.registerGuard
+    const handleB = createScheduleBindAfterDef(bare.deps as never)
+    handleB.start(AGENT)
+    bare.fireCreated(AGENT)
+    await flush()
+    expect(bare.establishCalls).toBe(0) // refusal PRECEDES establish
+    expect(bare.gateCalls).toHaveLength(0)
+    expect(bare.refusals[0]?.breakpoint?.kind).toBe('provisional-deny-unavailable')
+  })
+
   it('(i) source law (readFileSync precedent): serial-queue-safe created handler, REAL ACTIVE-tuple reader (no private map), the SAME plane ledger face for take/settle (no new ledger), bind-time execute refs, ordering-law observation — all pinned where they must live', () => {
     const here = dirname(fileURLToPath(import.meta.url))
     const read = (...parts: string[]) => readFileSync(join(here, ...parts), 'utf8')
@@ -485,6 +546,13 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(mod).toContain("throw breakpoint('native-tuple-not-active'")
     expect(mod).toContain("deps.onBindClose?.({ reason: 'disposed-during-gate' })")
     expect(mod).toContain("throw breakpoint('disposed-during-gate'")
+    // b6: the handover shield mounts BEFORE the ACTIVE write and lives outside
+    // the face-list unwind (a pair-close never lifts it); audit origin wording
+    expect(mod).toContain('provisional handover deny')
+    expect(mod).toContain("throw breakpoint('provisional-deny-unavailable'")
+    expect(mod.indexOf('registerProvisional((exec)')).toBeLessThan(mod.indexOf('deps.establishNative'))
+    expect(ab).toContain('TEAM GOVERNANCE BINDING established')
+    expect(ab).toContain('implementation registered by the ORIGINAL Schedule plugin')
     // earlier laws still stand:
     expect(ab).toContain('pa.paAdmit.open(walk)')
     expect(ab).toContain('pa.paAdmit.edge(Object.freeze(')
