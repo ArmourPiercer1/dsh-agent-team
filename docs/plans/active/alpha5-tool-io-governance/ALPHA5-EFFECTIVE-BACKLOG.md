@@ -85,3 +85,10 @@
 | B-TEAM | 接线未测 | 读源 `1eb278c37`（int 不含）；中心代合 merge=`4ea06e4c4`（lane 分支上） | `9c642a96`@wire-team | 六叶+rev2 配对批=owner 在 handback 树自著，(g) 翻转同提交 |
 
 适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。
+
+## D. 阶段性合同决定与 OPEN 复议（2026-10-24，用户裁决直录）
+
+| ID | 项 | 状态 | 事实与源 |
+|---|---|---|---|
+| BL-20 | **plugin_manager 治理范围阶段性决定**：当前 Alpha.5 对 plugin_manager **仅治理"安装动作"的权限审批**；其**内部 pnpm 文件 IO / 网络 / 任意初始化不承诺隔离** | **阶段决定（非完成声称）**；随附 **OPEN 复议项**（见 BL-21） | 用户裁决 **2026-10-24 09:03:32 UTC**（"只管理安装动作即可"，root 直送 44ece 集中卡）＋ **2026-10-24 09:04:45 UTC** 补充（"记录为后续待讨论项目：这只是目前 Alpha.5 这么做，以后如果发现有问题可能还会进一步升级管控"）。边界细则＝`dev/agent-workflow/evidence/a5m2-integration/TOOL-TABLE-CURRENT.md` plugin_manager 行（合同 owner＝CENTER 维护）；public 链源证＝`dev/agent-workflow/evidence/a5m2-g1-plugin-install-bundle/SOURCE-PROOF.md`（int `c4f81b837`）。**约束口径**：保 Host installer 与 `approveEscalation` **不 fork**；**其他工具 IO 不豁免**（安装动作之外的 IO 仍按各自族义务）；`controlledInstall` 不随本项开放（属 B-DEPENDENCY）。**本行不构成任何功能/测试完成声称**（该族档位＝接线未测，见 TOOL-TABLE-CURRENT）。历史冻结快照原样保留，以本补充覆盖当期口径。PR361 工程基线升级对应更新体系由 root 直送专属 lane 单独记录同一权威链接（避免双权威）。 |
+| BL-21 | **OPEN 复议**：是否将管控**升级到安装动作的内部 IO**（pnpm 文件/网络/初始化），及其**证据代价与维护代价** | **OPEN — 待讨论**（用户 09:04:45 原话："以后如果发现有问题可能还会进一步升级管控"） | **不是永久豁免，也不自动成为 Alpha.6 施工项**；开启条件＝出现实际问题或根/用户新的裁决。任何升级须新的合同决定＋新的验收证据，本行只登记复议义务，不预判结论。 |

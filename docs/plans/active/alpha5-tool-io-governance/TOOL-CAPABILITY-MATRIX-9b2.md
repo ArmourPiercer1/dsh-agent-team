@@ -170,3 +170,10 @@
 3. 适用性=**每行自身依赖路径**对 tested SHA→baseline 的 git diff 实测（本轮各 N/M 均为 `git diff --name-only` 现算，文件集随行而列于 ⑥ 内）；未比对行=NOT_VERIFIED；**禁止全表统一文件集外推**，禁止以适用性暗示真伪（适用性只说明历史结论离基线多远）。
 4. tested SHA≠merge SHA：merge 点（如 `93cd7b09`）只在 ② 列作合入事实；⑥ 的 tested SHA 以台账实测基线为准（lsp 行=`7962022e`/`1d0d03d0`，见 ACCEPTANCE-STATUS LSP 行原文）。
 <!-- q5:appendix-end -->
+
+## 当前补充（2026-10-24 09:03:32 / 09:04:45 UTC 用户裁决；**只追加不改写上方冻结快照**）
+
+- 上方 A-6 行 `plugin_manager` 的 `逐名：UNKNOWN` 为**历史冻结值**，原样保留。
+- 当期口径由本补充覆盖：Alpha.5 对 `plugin_manager` **仅治理"安装动作"的权限审批**；内部 pnpm 文件 IO／网络／任意初始化**不承诺隔离**（阶段性合同边界，**非功能/测试完成声称**）。
+- **OPEN 复议**（非永久豁免、非自动 Alpha.6 施工）：是否升级到安装内部 IO 管控及其证据/维护代价 —— 见 `ALPHA5-EFFECTIVE-BACKLOG.md` BL-20/BL-21。
+- 边界与四档正位＝`dev/agent-workflow/evidence/a5m2-integration/TOOL-TABLE-CURRENT.md`（合同 owner＝CENTER）；PR361 工程基线升级更新体系由 root 直送专属 lane 记录同一权威链接（避免双权威）。
