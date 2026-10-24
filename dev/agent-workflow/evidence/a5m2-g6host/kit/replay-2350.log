@@ -1,0 +1,15 @@
+[g6-kit 23:27:32] replay OK   R1-list-first — {"kind":"tool-call","toolCalls":[{"id":"call-g6-4om1jtcr","n
+[g6-kit 23:27:32] replay OK   R1-resolve-second — {"kind":"tool-call","toolCalls":[{"id":"call-g6-18a8cvtv","n
+[g6-kit 23:27:32] replay OK   R1-completion-reachable — {"kind":"text","content":"G6_DONE_PAIR_RESOLVED_15kc39t1 :: {\"status\":\"contro
+[g6-kit 23:27:32] replay OK   R1-fail-terminal — {"kind":"text","content":"G6_PAIR_RESOLVE_FAIL :: boom-not-resolved"}
+[g6-kit 23:27:32] replay OK   R2-session-search-restored — tools=5
+[g6-kit 23:27:32] replay OK   R2-runtime-seq-not-frozen — null-stage=[] seven=["7"]
+[g6-kit 23:27:32] replay OK   R3-old-call-face-rejected — faces=1 id=call-old-1
+[g6-kit 23:27:32] replay OK   R4-branch-positive
+[g6-kit 23:27:32] replay OK   R4-branch-existence-leak-fails
+[g6-kit 23:27:32] replay OK   R4-branch-shape-nostep-legal
+[g6-kit 23:27:32] replay OK   R4-branch-faceless-fails
+[g6-kit 23:27:32] host stopped (killed=false portFree=false)
+[g6-kit 23:28:02] CLEANUP FAILURES: instance.stop returned portFree=false | port 3999 not free 30s after cleanup (waitForPortFree=false)
+[g6-kit 23:28:02] replay OK   R4-cleanup-records-false-returns — ["instance.stop returned portFree=false","port 3999 not free 30s after cleanup (waitForPortFree=false)"]
+[g6-kit 23:28:02] replay ALL PASS (REPLAY.json)

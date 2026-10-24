@@ -112,10 +112,16 @@
  * @module runtime/plugin/live/governed-families/g2-connector-adapters
  */
 import { createHash } from 'node:crypto'
-import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
+import { parseRequestedEffectSet, canonicalJsonStringify } from '../../../../../domain/tool-governance/src/index.js'
 
 /** Adapter identity (§1 reviewPayload P-additions: familyId + adapterRevision). */
-export const A5_G2_ADAPTER_REVISION = 1
+// ROOT 02:17 revision migration: 2 -> 3. THE ONE constant pairs every real
+// descriptor, the family registration arm and the PA walk claim in THIS
+// commit (shared across web/mcp/browser rows — the same-window sync the
+// ruling names). deepEqual/digest are NOT migration evidence; the constant
+// is. Pre-bump approved manifests do NOT translate: the plane's revision
+// check refuses them, which is the intended semantics.
+export const A5_G2_ADAPTER_REVISION = 3
 export const A5_G2_FAMILY = Object.freeze({ web: 'B-WEB', mcp: 'B-MCP', browser: 'B-BROWSER' })
 
 /** Typed refusal codes (the STRINGS are pinned by the lane fixture
@@ -604,7 +610,14 @@ export function createG2WebAdapters({ realmId, providerId, readNative, searchOri
             // CURRENT provider fact (fix card 2): the fetch destination is
             // THIS call's URL (from the arguments), while the provider that
             // actually serves it is re-resolved per call by the native seam.
-            providerIdentityAtClassify: providerFactsAtClassify(),
+            // ROOT 02:17 ENCODING (r48 diff, approved): the SAME snapshot
+            // object, losslessly encoded by the existing canonical serializer
+            // (key order canonical; nulls and key-absence preserved exactly).
+            // The INTERNAL snapshot object and the re-verify logic stay OBJECTS —
+            // only the targetManifest leaf is the canonical JSON string, so the
+            // B-WEB table carries it as the same-named required 'string'. No
+            // move out of target/fingerprint, no object kind, no hashing.
+            providerIdentityAtClassify: canonicalJsonStringify(providerFactsAtClassify()),
             businessObligations: [{
               service: 'web-runtime', action: 'fetch', right: 'connect',
               entry: 'captured native web_fetch execute -> ctx.web.fetch(request, exec.signal) (tool-web fetch.ts:499-510; web/src/index.ts:155-164 @639ed01539); redirect-per-hop and loopback/linklocal checks are the ProviderGateway row\'s law',
@@ -658,7 +671,7 @@ export function createG2WebAdapters({ realmId, providerId, readNative, searchOri
             queriesSummary: args.queries.map((q) => q.trim()),
             queryCount: args.queries.length,
             destinationOrigin: origin.origin,
-            providerIdentityAtClassify: facts,
+            providerIdentityAtClassify: canonicalJsonStringify(facts),
             providerOriginSource: originRaw === searchOrigin && !(facts.observed === true && typeof facts.searchOrigin === 'string' && facts.searchOrigin.length > 0)
               ? 'bind-time assembly-declared searchOrigin (trusted placement fact; no CURRENT reader supplied — see providerIdentityAtClassify for the observed/named-blocker state)'
               : 'readProviderFacts() CURRENT origin — read once per classify and frozen here (the config-bound family of web-gateway-assembly.boundSearchOriginSource). Provider selection stays the seam\'s call-time law (web/src/index.ts resolveProvider :167+ @639ed01539), never mirrored or invented here.',
@@ -727,17 +740,43 @@ export function createG2McpResourceAdapters({ realmId, providerId, readNative, d
       if (surface.transport === 'streamable-http') effects.push(connectEffect(realmId, surface.endpointOrigin))
       if (surface.domainAuthorityId !== undefined) effects.push(domainRefEffect(surface.domainAuthorityId))
       const canonical = { server: server.value }
+      // B-MCP REV-2 MINT (root-routed deltas D1-D3 from the LANDED rule map,
+      // f1e0c92ec cherry-pick): the table types SIX closed groups over one
+      // mint-synthesized discriminant; the mint answers in the measured flat
+      // key names the closed law requires.
+      //  D1 (flatten): the nested `surface` object projects LOSSLESSLY to its
+      //    measured inner key names at top level (record/transport/
+      //    connectionIncarnation/endpointOrigin + spawn -> spawnArgv0/
+      //    spawnArgCount/spawnCwd) — the signed Schedule lane's flat-
+      //    projection precedent; no signed kind types a nested object.
+      //  D3 (synthesize): ONE discriminant over transport x lane, derivable
+      //    from measured facts only (the signed B-INSPECT inspectVariant
+      //    pattern). `transport` itself keeps the MEASURED spelling
+      //    ('streamable-http' stays); the axis label 'http' is the variant's,
+      //    never a rewrite of the fact.
+      const transportAxis = surface.transport === 'stdio' ? 'stdio' : 'http'
+      const laneAxis = toolName === 'read_mcp_resource' ? 'read' : toolName === 'list_mcp_resource_templates' ? 'templates' : 'list'
       const manifest = {
+        mcpVariant: `${transportAxis}:${laneAxis}`,
         operation: MCP_METHODS[toolName],
         server: server.value,
-        surface: { record: surface.record, transport: surface.transport, connectionIncarnation: surface.connectionIncarnation, ...(surface.endpointOrigin === undefined ? {} : { endpointOrigin: surface.endpointOrigin }), ...(surface.spawn === undefined ? {} : { spawn: surface.spawn }) },
+        record: surface.record,
+        transport: surface.transport,
+        connectionIncarnation: surface.connectionIncarnation,
+        ...(surface.spawn === undefined
+          ? { endpointOrigin: surface.endpointOrigin }
+          : { spawnArgv0: surface.spawn.argv0, spawnArgCount: surface.spawn.argCount, spawnCwd: surface.spawn.cwd }),
         // CURRENT-FACTS law (fix card 2): the provider is RE-SELECTED at
         // request time by scope+serverName (mcp-resources/src/index.ts:120-125
         // @639ed01539); this manifest freezes the classify-time placement
         // facts — wrapper identity is not the connection incarnation.
         providerReSelectionLaw: 'the request leg re-selects the provider from the live exec.agent scope + serverName at REQUEST time (mcp-resources/src/index.ts:120-125 @639ed01539); a stale/unmounted server fails there — this manifest freezes classify-time placement facts only',
-        ...(surface.connectionIncarnation === 'unobserved' ? { connectionIncarnationReason: A5_G2_NAMED_BLOCKERS.MCP } : {}),
-        ...(surface.domainAuthorityId === undefined ? {} : { domainAuthorityId: surface.domainAuthorityId }),
+        //  D2 (always-emit null): applicability-conditional leaves ride the
+        //    signed nullableString law — null is MEASURED ABSENCE, a missing
+        //    key is a DRIFT DENIAL (the 18:07 key-omission law stays the G6
+        //    row's law).
+        connectionIncarnationReason: surface.connectionIncarnation === 'unobserved' ? A5_G2_NAMED_BLOCKERS.MCP : null,
+        domainAuthorityId: surface.domainAuthorityId === undefined ? null : surface.domainAuthorityId,
         businessObligations: [surface.obligation],
       }
       if (toolName === 'read_mcp_resource') {
@@ -753,11 +792,17 @@ export function createG2McpResourceAdapters({ realmId, providerId, readNative, d
         manifest.uriVerbatim = uri.value
         manifest.uriOpacity = 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge'
       } else {
+        // D2 on the four list groups: cursor ALWAYS rides — null when no
+        // cursor was passed (the signed taskId-null precedent). The read
+        // groups carry NO cursor key (not in their adds): 'read declares no
+        // cursor' is STRUCTURAL at the grammar edge.
         if (args.cursor !== undefined) {
           const cursor = requireString(args.cursor, 'cursor')
           if (cursor.ok !== true) return cursor
           canonical.cursor = cursor.value
           manifest.cursor = cursor.value
+        } else {
+          manifest.cursor = null
         }
       }
       return { ok: true, effects, canonical, targetManifest: manifest }
@@ -822,12 +867,24 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
   const attachEffects = proof.mode === 'attach' ? [connectEffect(realmId, cdpOrigin.origin)] : []
   const shared = { familyId: A5_G2_FAMILY.browser, mountCondition: 'declared_mount', realmId, providerId, readNative, definitionIdentityOf, observe, declared: { active: true, detail: '' }, preEffectDisclosure: A5_G2_NAMED_BLOCKERS.BROWSER }
 
+  // root 22:26 pairing: the flat table leaves ride the SAME manifest the
+  // approval fingerprint and final edge read — real variant/record, REAL
+  // injected incarnation facts ('unobserved' only per the signed B-MCP
+  // absence law; no self-attesting constant), explicit nulls for absent
+  // pageId/domainAuthorityId. Every existing value stays verbatim: no
+  // field moved out, none deleted, no hash standing in for a target.
+  const g2BrowserIncarnation = typeof proof.connectionIncarnation === 'string' && proof.connectionIncarnation.length > 0 ? proof.connectionIncarnation : 'unobserved'
   const baseManifest = (method, pageId) => ({
+    browserVariant: `${proof.mode}:${method}`,
+    record: 'surface:browser_owned',
     operation: `browser-${method}`,
     mode: proof.mode,
-    ...(pageId === undefined ? {} : { pageId }),
+    connectionIncarnation: g2BrowserIncarnation,
+    providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone. Incarnation rotation stale-proofs an approval ONLY IF the connection-owning assembly injects the real fact via declaredService.connectionIncarnation — while the fact reads unobserved the rotation is UNPROVEN, never a claimed guarantee (B-BROWSER re-selection law mirroring the signed B-MCP absence wording @639ed01539)',
+    connectionIncarnationReason: typeof proof.connectionIncarnationReason === 'string' && proof.connectionIncarnationReason.length > 0 ? proof.connectionIncarnationReason : null,
+    pageId: pageId === undefined ? null : pageId,
     ...(proof.mode === 'attach' ? { attachEndpointOrigin: cdpOrigin.origin, attachNote: 'attached browser may also be changed by its user (native GUIDANCE); incarnation re-check belongs to the owned provider (§5.5)' } : {}),
-    ...(typeof proof.domainAuthorityId === 'string' && proof.domainAuthorityId.length > 0 ? { domainAuthorityId: proof.domainAuthorityId } : {}),
+    domainAuthorityId: typeof proof.domainAuthorityId === 'string' && proof.domainAuthorityId.length > 0 ? proof.domainAuthorityId : null,
   })
   const domainEffects = typeof proof.domainAuthorityId === 'string' && proof.domainAuthorityId.length > 0
     ? () => [domainRefEffect(proof.domainAuthorityId)]
@@ -936,10 +993,11 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
         }
         const manifest = baseManifest('tabs', pageId)
         manifest.branch = args.action
-        if (url !== undefined) {
-          manifest.url = url
-          manifest.destinationOrigin = urlOrigin
-        }
+        // explicit-null device (pageId precedent): the REAL url rides
+        // verbatim when declared; absence is an explicit null, never a
+        // silently missing target field (root 22:44 tabs variant).
+        manifest.url = url === undefined ? null : url
+        manifest.destinationOrigin = urlOrigin === undefined ? null : urlOrigin
         manifest.businessObligations = [{
           service: 'browser', action: `tab-${args.action}`, right: 'write',
           entry: url === undefined

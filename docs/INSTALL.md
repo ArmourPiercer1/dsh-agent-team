@@ -437,6 +437,77 @@ config:
         minAbiVersion: 3
 ```
 
+**B-TERMINAL 列（`teamToolPlane.terminal`；A5M2-G3-WIRE 接线，root 20:14 表单列补齐）**：
+`terminal_*` 六行的受治挂载证据。**缺省不配 = 零翻转**（无行、无注册、native
+逐字节不变）；证据装配出的 inject 不合格 = **挂载被类型化拒绝**
+（`TERMINAL_ARM_INJECT_INVALID`，inject 键集 CLOSED、多余键同样拒绝；
+表单列自身按列读取，未识别的列不产生任何事实）。表单列的语义生产者分工：
+
+```yaml
+config:
+  teamToolPlane:
+    terminal:
+      providerId: "my-team-provider"          # 行 provider 身份（durable family gate 比对键）
+      declaredBackends: ["shell"]             # §5.1 declared_mount：公开的 DECLARED backend 类型集（非空字符串数组）
+      sessionConfig:                          # 装配内 REAL producer 的 base Config
+        rows: 24                              #   （发布 law 原样物化：主入口可调用 Schemastery
+        cols: 80                              #     schema Config(raw) 先物化默认——backendType/
+                                              #     disposeGraceMs 等不手抄——resolveConfig 补
+                                              #     dialect shell 默认，validateConfig 断言不变量；
+                                              #     组合失败 = 记诊断，不吞 null）
+```
+
+**ptyService 三事实无外注列，open plan 走真实 confine 通道（root 20:38 producer
+令 + 21:03/21:07 更正）**：`session` 只解析本 member 自己的 live
+`terminals.list(owner)` 快照（pid 派生 incarnation，status 逐字携带；他主/未知
+sid 答 nothing）。`approvedOpenPlan` 答的是**真实受限计划**：base Config 经
+发布的 `Config(raw)`→`resolveConfig`→`validateConfig` 组合（root 21:27：
+主入口可调用 Schemastery schema 物化默认）得出原始 argv 后，由公开
+`SandboxProvider.confine(argv, policy)` 在 `policy =
+sandboxPolicy.resolve({session})` 下**包裹成受限 argv**（terminal-bash 自家
+spawnArgv 同一律：argv := confined.argv，cwd := policy.workspaceRoot——
+terminal-bash/src/index.ts:103-108/:204-215 @639ed01539），terminal 维度与
+grace 取物化后的 resolved 字段。confine 为 async 而 adapter 同步读 plan（签核
+claim 律），故计划在挂载时预 mint、并在每个 terminal_open 行 classify 前由
+wiring 刷新（`ptyService.premintOpenPlan`）；预 mint 失败答 NOTHING，adapter
+在执行入口仍以**实际** launch spec 的 digest 复验——claim 永不是 envelope。
+**`backend` = 受治路由身份 × 挂载世代（用户裁决 2，经中心分派）**：受治目标
+是**本 mount 的 Team 受控路由**——每次 open 经公开
+`TerminalSessionService.registerBackend`（terminal/src/index.ts:125
+@639ed01539）mint 的 per-open one-shot backend（adapter :684/:953，私有
+type `dsh-g3-po-<callId>-<seq>`）——身份答
+`{ registrationId: "dsh-g3-po:<type>", incarnation: <挂载世代> }`：世代 =
+ capture 时刻 mint 的每 mount 一个值，**被替换/已作废的世代即刻失效其旧批准**
+ （Agent 作用域撤销走既有公开生命周期事件 `agent/disposed`——Host
+ core/agent runtime-types.ts:270 声明、index.ts:514 在每次 handle dispose
+ 时发射，即 dropResidency 所 await 的那条路——订阅回调即翻转 revoked，与行级
+ mount 撤销双保险；此后一切读取答 NOTHING，in-flight 调用在 adapter 入口
+ recheck 处以 `P_TERM_TARGET_DRIFT` 命名 old→unresolvable 拒绝，零端口进入；
+ 不追踪任何无关公共 backend，也不为其新设注册 API）。
+ **当前发布配对（root consolidated 1b）**：`backend` 每次作答都重读
+ `resolvePaMount(teamRoot, instanceId)`，捕获身份 ≠ 当前发布身份即**具名拒答**
+ （新 mount 覆盖发布无需通知旧闭包——新 randomUUID 本身不失效旧读者，配对
+ 才失效；未发布同样 NOTHING）。C1 (l) 腿以**真实替换路径**钉死：publish A →
+ publish B 覆盖 → A 的下一个作答即 null（B 自己作答，配对不是关停）。
+ **每类型真实覆盖（root consolidated 2）**：身份只绑本装配**真实实现的受控
+ 路由类型**——即物化 Config 自家 `backendType`（唯一实现）；declared ∩ live
+ 但非 covered 的类型一律拒答，并在挂载 census 观测中列为
+ `UNCOVERED-declared=[…]`（Host 侧名字存在从不证明实现）。live 律保留：
+ `listBackends()`（index.ts:143）不再含该类型即答 NOTHING →
+ `P_TERM_TARGET_UNRESOLVED`。
+**公开面证据（裁决 (d)）**：上述 imports 全部走包自家 exports map——
+`@deepseek-ai/dsh-terminal-bash/package.json` 与 `@deepseek-ai/dsh-terminal/package.json`
+均显式发布 `"./src/*": "./src/*"`（两包 package.json **:21**
+@639ed01539），是合法公开子路径而非深私钥路径。**诚实边界**：两包 `files`
+只含 `lib/**`，npm 发行包不含 `src`——npm 安装态与本支持面**不等价**；
+支持面 = 完整 639 checkout + 依赖 + TS 启动链（root scripts `dsh`/`start:web`
+= `node --import tsx/esm apps/cli/src/bin.ts`；worker-client TS 分支注册
+tsx/esm/api）。两项待 Host 窗口实证（本轮未探测）：同一实际 Host 实例的
+使用、Chrome 可执行文件。live 的 `terminals`/`subprocess`/`sandbox` 服务与 `sandboxPolicy`
+属性不进表单：Host 自身公开面，经 lazy deps 挂载时刻读取；已挂载世界的
+`TerminalBackendCleanupError` 还须与 live service 的 `instanceof` 律同实例配对
+（配对不过 = 拒绝挂载）。
+
 **read-only 最小配方（Alpha.5 READ slice；P1 回归的机读对象）**：上块是
 含 shell 行的完整形态。本配方**仅为 `read` 提供此配置所需的能力/授权，不配置
 shell 信任对**（不配 `confinedProvider`/launcher 字段）；**grep/glob/bash 行

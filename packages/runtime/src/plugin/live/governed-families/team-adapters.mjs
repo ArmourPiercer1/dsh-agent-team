@@ -193,7 +193,13 @@ import { createHash } from 'node:crypto'
 
 /** Census family (M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX records 74–82, 86). */
 export const A5_B_TEAM_FAMILY_ID = 'B-TEAM'
-export const A5_B_TEAM_ADAPTER_REVISION = 1
+// ROOT 01:0x MECHANICAL MIGRATION: the six-leaf target grammar is landed, so
+// B-TEAM's real adapter revision moves 1 -> 2. This ONE constant is the only
+// source of the version: the descriptor/face below, the familyRegistration
+// entry the mount publishes, and the PA claim this wiring mints all read it, so
+// a durable plan or approval composed under revision 1 fails the existing
+// revision check instead of being translated forward.
+export const A5_B_TEAM_ADAPTER_REVISION = 2
 /** Frozen mount condition of all ten records (always). */
 export const A5_B_TEAM_MOUNT_CONDITION = 'always'
 
@@ -815,6 +821,18 @@ export function createTeamAdapterAssembly(input = {}) {
       if (admitted?.ok !== true) {
         throw refusalToThrow(admitted ?? { code: CODES.ADMISSION_ABSENT, detail: 'the admission seam refused this call' })
       }
+      // THE ONE PRIVATE SETTLED-VALUE RETURN (root 24:2x, B-TEAM only). The
+      // admission seam holds the SHARED caller/root rule and may answer a call
+      // that must never reach the port: it hands back the typed rejected VALUE
+      // it holds, by reference, through the exact private shape
+      // `{ ok: true, settled: true, value }`. Nothing here interprets, wraps or
+      // re-mints that value - the lane's own bytes go straight back to the
+      // caller - and the delegate is never entered, so no downstream effect and
+      // no second identity resolution can run past the PA walk. EVERY ordinary
+      // admission refusal still takes the exception path above, and every
+      // admitted call still falls through to the delegate below: this branch is
+      // reachable only by that one shape, which no caller argument can produce.
+      if (admitted.settled === true) return admitted.value
       // The mirrored argument law answers VALUES (the lane's own rejected
       // shape) — a tool-law miss is NOT an error, it is the lane's answer;
       // delegate settles it with zero delegate entry.

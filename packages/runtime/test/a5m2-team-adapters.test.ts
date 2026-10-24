@@ -277,7 +277,7 @@ const VALID_ARGS: Record<string, Record<string, unknown>> = {
 describe('a5m2-team-adapters (a) frozen facts + purity', () => {
   it('census/contract facts and the ten-record closed family (B-CONTROL five NEVER ride)', () => {
     expect(ADAPTER.A5_B_TEAM_FAMILY_ID).toBe('B-TEAM')
-    expect(ADAPTER.A5_B_TEAM_ADAPTER_REVISION).toBe(1)
+    expect(ADAPTER.A5_B_TEAM_ADAPTER_REVISION).toBe(2)  // ROOT 01:0x six-leaf migration: real adapter revision 1 -> 2 (one constant, never translated back)
     expect(ADAPTER.A5_B_TEAM_MOUNT_CONDITION).toBe('always')
     expect([...NAMES].sort()).toEqual([
       'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate',
@@ -693,7 +693,9 @@ describe('a5m2-team-adapters (i/j) drain + registration', () => {
     const assembly = mount(harness)
     const registrations = assembly.familyRegistrations()
     expect(registrations).toHaveLength(10)
-    expect(registrations[0]?.entry).toEqual({ familyId: 'B-TEAM', adapterRevision: 1, providerIdentity: 'b-team' })
+    // ROOT 01:0x migration: the literal is replaced by the ONE constant the
+    // registration actually reads, so this census pin cannot drift again.
+    expect(registrations[0]?.entry).toEqual({ familyId: 'B-TEAM', adapterRevision: ADAPTER.A5_B_TEAM_ADAPTER_REVISION, providerIdentity: 'b-team' })
     expect(registrations.map((r) => r.definitionIdentity).sort()).toEqual(NAMES.map((n) => `placed-${n}`).sort())
     expect(registrations.find((r) => r.name === 'team_archive_member')?.recordIndex).toBe(86)
     // absent key:

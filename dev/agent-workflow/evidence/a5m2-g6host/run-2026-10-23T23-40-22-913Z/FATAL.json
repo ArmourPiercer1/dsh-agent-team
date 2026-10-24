@@ -1,0 +1,12 @@
+{
+  "fatal": "team.create failed: {\"code\":\"NO_RESULT\",\"message\":\"null\"}",
+  "results": [],
+  "transcript": [
+    {
+      "at": "2026-10-23T23:40:27.802Z",
+      "method": "team.create",
+      "status": 405,
+      "body": "null"
+    }
+  ]
+}

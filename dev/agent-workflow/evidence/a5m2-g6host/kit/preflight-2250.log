@@ -1,0 +1,4 @@
+[g6-kit 22:56:46] FATAL: Error: no free non-blacklisted port in [3186, 3187] (3080 dev / 3180-3184 p6t6 / 3182,3497 image owner)
+    at runPrechecks (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/g6-host-kit.mjs:358:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///srv/workspace/dsh-plugin

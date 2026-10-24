@@ -1,0 +1,116 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/packages/runtime
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts (8 tests | 5 failed) 16ms
+     ✓ (a) zero flip: no injection = no wiring face and no session_* placement 6ms
+     ✓ (a2) the policy grammar pins session_* to the durable-approval lane: an allow entry outside the fs/shell family is refused at the projection 1ms
+     ✓ (b) defective owner evidence refuses the MOUNT (config is law, not wiring) 0ms
+     × (c) REAL placement + lazy feed keys + PRODUCTION registry round-trip (placement identity, never capture identity) 6ms
+     × (d) no control leg: the REAL paAdmit fails the walk CLOSED on its own bytes — zero port entry, native untouched 1ms
+     × (e) durable-approval lane with the kernel minting the grant: the REAL edge consumes the one-shot proof, the ports serve; a re-used token is refused by the single-flight law 1ms
+     × (f) dispose: the wiring drains (the row’s own DRAINING bytes) and the issued-identity ledger releases 1ms
+     × (g) declared census: no searchBackend evidence = three placed rows; the two search names keep their natives 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (c) REAL placement + lazy feed keys + PRODUCTION registry round-trip (placement identity, never capture identity)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:293:22
+    291|     const w = makeInject()
+    292|     const built = buildPlane({ backends: { sessionQuery: w.inject } })
+    293|     expect(built.ok).toBe(true)
+       |                      ^
+    294|     if (built.ok !== true) return
+    295|     const value = built.value
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (d) no control leg: the REAL paAdmit fails the walk CLOSED on its own bytes — zero port entry, native untouched
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:326:22
+    324|     const sink: string[] = []
+    325|     const built = buildPlane({ backends: { sessionQuery: w.inject } },…
+    326|     expect(built.ok).toBe(true)
+       |                      ^
+    327|     if (built.ok !== true) return
+    328|     const placed = built.value.mount(fakeAgentCtx([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (e) durable-approval lane with the kernel minting the grant: the REAL edge consumes the one-shot proof, the ports serve; a re-used token is refused by the single-flight law
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:345:22
+    343|     const seen: Array<{ family: Record<string, unknown> | undefined }>…
+    344|     const built = buildPlane({ backends: { sessionQuery: w.inject }, c…
+    345|     expect(built.ok).toBe(true)
+       |                      ^
+    346|     if (built.ok !== true) return
+    347|     const def = built.value.definitions.find((d) => d.name === 'sessio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (f) dispose: the wiring drains (the row’s own DRAINING bytes) and the issued-identity ledger releases
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:376:22
+    374|     const w = makeInject()
+    375|     const built = buildPlane({ backends: { sessionQuery: w.inject }, c…
+    376|     expect(built.ok).toBe(true)
+       |                      ^
+    377|     if (built.ok !== true) return
+    378|     const placed = built.value.mount(fakeAgentCtx([]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/a5m2-g6-plane-mount-c1.test.ts > A5M2-G6-PLANE-MOUNT — the B-SESSION-QUERY block in the REAL plane: placement, feed, registry, seat, teardown > (g) declared census: no searchBackend evidence = three placed rows; the two search names keep their natives
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a5m2-g6-plane-mount-c1.test.ts:390:22
+    388|     const w = makeInject({ searchPresent: false })
+    389|     const built = buildPlane({ backends: { sessionQuery: w.inject } })
+    390|     expect(built.ok).toBe(true)
+       |                      ^
+    391|     if (built.ok !== true) return
+    392|     const placedNames = [...(built.value.sessionQuery?.placementNames …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 3 passed (8)
+   Start at  05:03:21
+   Duration  1.13s (transform 769ms, setup 0ms, import 968ms, tests 16ms, environment 0ms)
+

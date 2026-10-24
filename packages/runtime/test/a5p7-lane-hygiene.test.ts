@@ -135,6 +135,11 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
   // `test/` directory.
   const REVIEWED_TEST_EDGE_EXCEPTIONS: readonly string[] = [
     'domain/test/a5sr3-default-deny-mapping.test.ts',
+    // center (root-01:21 batch): a5m2-g3-fsproc.test.ts imports the lane's
+    // jobs-gateway-assembly in a REVIEWED test (dynamic import at its :145,
+    // arrived on int with the G3A merge @ d30dc52f8 — 9c reported the red).
+    // Test edge, not a production consumer; the leg's claim is unchanged.
+    'runtime/test/a5m2-g3-fsproc.test.ts',
   ]
 
   const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = [

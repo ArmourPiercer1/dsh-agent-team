@@ -140,7 +140,7 @@ import {
   createTeamAdapterAssembly,
 } from './team-adapters.mjs'
 
-export const A5_B_TEAM_WIRING_REVISION = 1
+export const A5_B_TEAM_WIRING_REVISION = 2
 
 /** Typed codes OWNED by this wiring layer (P_B_TEAM_WIRE_*). Adapter refusals
  *  keep the row's own P_B_TEAM_* codes verbatim — never rewritten here. */
@@ -197,7 +197,9 @@ const measuredText = (value) => nonEmptyString(value)
  * invented, nothing dropped). A refusal here is a CLAIM-COMPOSITION refusal
  * before any durable fact and with zero port entry: the measured shape moved.
  */
-function mintTargetManifest (plan) {
+function mintTargetManifest (plan, readQueryFacts) {
+  const QUERY_DURABLE_GROUPS = new Set(['team-list-members', 'team-list-templates', 'team-inspect-config'])
+  const read = typeof readQueryFacts === 'function' ? readQueryFacts : () => undefined
   const target = isRecord(plan) ? plan.target : undefined
   const root = isRecord(target) ? target.root : undefined
   const member = isRecord(target) ? target.member : undefined
@@ -234,6 +236,64 @@ function mintTargetManifest (plan) {
   if (effect.refusal !== undefined) return effect.refusal
   const face = leaf('face')
   if (face.refusal !== undefined) return face.refusal
+  // THE DURABLE QUERY LEAVES (rev 2, paired with the family table's six adds):
+  // the three read rows carry the facts their target IS, read through the
+  // owner's published authority queries. This is the SAME composition law as
+  // every leaf above — a leaf the read cannot answer is a claim this bridge
+  // does not mint, refused before any durable question with zero port entry —
+  // and it replaces nothing: the lane's rejected VALUE, the classifier and the
+  // caller's ordering all ran, and still run, in front of it. Absence is
+  // minted as `null` (the FACT of absence), never as an invented row value.
+  const group = action.value
+  if (!QUERY_DURABLE_GROUPS.has(group)) {
+    return deepFreeze({
+    contract: contract.value,
+    operation: action.value,
+    rootClaim: root.claim,
+    rootAdjudication: root.adjudication,
+    memberClaim,
+    memberAdjudication,
+    targetObject: object.value,
+    revisionLaw: revision.value,
+    effectLabel: effect.value,
+    argumentLawFace: face.value,
+  })
+  }
+  const facts = read(group, memberClaim)
+  const stringsOf = (value) => Array.isArray(value) && value.every((item) => typeof item === 'string')
+  const nullable = (value) => value === null || typeof value === 'string'
+  if (!isRecord(facts)) {
+    return wiringRefuse(WIRE.TARGET_MINT, `the durable target read for '${group}' answered nothing — a query claim mints no leaf the published read did not answer`)
+  }
+  const durable = {}
+  if (group === 'team-list-members') {
+    if (!stringsOf(facts.rosterMemberIds)) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the roster read returned no array of member-instance ids — the roster leaves are not minted from anything else')
+    }
+    if (typeof facts.rosterFingerprint !== 'string' || facts.rosterFingerprint.length === 0) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the roster read returned no digest of the id set it answered with')
+    }
+    durable.rosterMemberIds = Object.freeze([...facts.rosterMemberIds])
+    durable.rosterFingerprint = facts.rosterFingerprint
+  }
+  if (group === 'team-list-templates') {
+    if (!stringsOf(facts.templateIds)) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the bound-blueprint read returned no array of member templateIds — no catalog-wide set is substituted for this session\'s blueprint')
+    }
+    durable.templateIds = Object.freeze([...facts.templateIds])
+  }
+  if (group === 'team-inspect-config') {
+    if (typeof memberClaim !== 'string') {
+      return wiringRefuse(WIRE.TARGET_MINT, 'an inspect claim with no addressed member mints no member leaves')
+    }
+    if ((facts.memberTemplateId !== undefined && !nullable(facts.memberTemplateId))
+      || (facts.memberChildSessionId !== undefined && !nullable(facts.memberChildSessionId))) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the addressed member read answered templateId/childSessionId outside string|null — absence is minted as null, not as a guess')
+    }
+    durable.memberInstanceId = memberClaim
+    durable.memberTemplateId = facts.memberTemplateId ?? null
+    durable.memberChildSessionId = facts.memberChildSessionId ?? null
+  }
   return deepFreeze({
     contract: contract.value,
     operation: action.value,
@@ -245,6 +305,7 @@ function mintTargetManifest (plan) {
     revisionLaw: revision.value,
     effectLabel: effect.value,
     argumentLawFace: face.value,
+    ...durable,
   })
 }
 
@@ -321,13 +382,13 @@ const defaultCorrelationOf = (exec) => (isRecord(exec) && nonEmptyString(exec.ca
  */
 export function buildTeamOpsWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(WIRE.INPUT_INVALID, 'the wiring bridge takes one input record')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'queryFacts', 'callerGate', 'registrationOf'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
       return wiringRefuse(WIRE.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, liveNative, teamSet, placementFeed, definitionIdentityOf, correlationOf, pa, observe}`)
     }
   }
-  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {} } = input
+  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, queryFacts, callerGate, registrationOf } = input
   if (!nonEmptyString(realmId)) return wiringRefuse(WIRE.INPUT_INVALID, 'realmId is REQUIRED (non-empty string) — the walk has no realm without it')
   if (!nonEmptyString(providerId)) return wiringRefuse(WIRE.INPUT_INVALID, 'providerId is REQUIRED (non-empty string) — the durable family gate compares the provider identity the owner published, and this bridge invents none')
   if (typeof readNative !== 'function') return wiringRefuse(WIRE.INPUT_INVALID, 'readNative (name) => definition | undefined is REQUIRED — the MEMBER-SCOPED capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)')
@@ -437,7 +498,61 @@ export function buildTeamOpsWiring (input = {}) {
   // consumedProof, the lane's requestToken idempotency lives INSIDE the
   // delegated chain (NAMED GAP PLAN_ONCE_MEMO, never closed here).
   const admittedPlans = new WeakSet()
-  const stats = { admits: 0, admittedOnce: 0, admissionRefusals: 0, mintRefusals: 0, toolLawValues: 0, walks: 0, edges: 0, witnessed: 0 }
+  const stats = { admits: 0, admittedOnce: 0, admissionRefusals: 0, callerGateRefusals: 0, mintRefusals: 0, toolLawValues: 0, walks: 0, edges: 0, witnessed: 0 }
+
+  // ROOT 21:24 — the QUERY target's durable facts, read through the OWNER's
+  // published authority queries (the lane's own root resolution, the durable
+  // `memberInstances` roster, the bound blueprint). This block RESOLVES and
+  // RE-CHECKS; it refuses nothing and rewrites no return value: the lane's
+  // native rejected VALUE, the adapter's classification and the caller's
+  // ordering stay exactly as they are, and the seven write rows never reach
+  // this code (their supply was never forced). The re-check after the
+  // approval landed is the SAME source read again, so a roster or blueprint
+  // that moved between the walk and the grant is recorded as drift rather
+  // than silently vouched for. No cache, no second ledger of record: this is
+  // the same store the lane itself reads.
+  const QUERY_TARGET_NAMES = new Set(['team_list_members', 'team_list_templates', 'team_inspect_config'])
+  const queryFactsLedger = []
+  // The read the MINT consumes, captured as the mint consumes it so the
+  // post-approval re-check compares against the facts the claim actually
+  // carried (not against a later reading of the same store).
+  // ② (root 22:35) The facts a CALL minted with are kept in a box created for
+  // THAT CALL, never on the assembly: two calls in flight (or a write call
+  // between an await and the post-approval read) cannot overwrite each other,
+  // and nothing reads a shared variable after an await.
+  let mintFactsBox = null
+  const readQueryFacts = (group, memberClaim) => {
+    const tool = String(group).replace(/-/g, '_')
+    if (!QUERY_TARGET_NAMES.has(tool) || typeof queryFacts?.resolve !== 'function') return undefined
+    try {
+      const facts = queryFacts.resolve(tool, typeof memberClaim === 'string' ? memberClaim : undefined)
+      if (mintFactsBox !== null) {
+        mintFactsBox.facts = facts
+        mintFactsBox.claim = typeof memberClaim === 'string' ? memberClaim : undefined
+      }
+      return facts
+    } catch (error) {
+      const fault = String(error?.message ?? error).slice(0, 160)
+      if (mintFactsBox !== null) {
+        mintFactsBox.fault = fault
+        mintFactsBox.claim = typeof memberClaim === 'string' ? memberClaim : undefined
+      }
+      // The read's own failure stays OBSERVABLE next to the composition
+      // refusal that follows from it; an unknown target is never minted as an
+      // empty one (root 22:45 boundary).
+      observe({ event: 'b-team-wire:query-facts-unresolved', name: tool, fault })
+      // An unreadable durable target mints no leaf (the mint's own composition
+      // law); the fault is still RECORDED below, so the failure is visible
+      // rather than inferred from a generic refusal.
+      return undefined
+    }
+  }
+  const readAgain = (group, memberClaim) => {
+    const tool = String(group).replace(/-/g, '_')
+    if (!QUERY_TARGET_NAMES.has(tool) || typeof queryFacts?.resolve !== 'function') return undefined
+    try { return queryFacts.resolve(tool, typeof memberClaim === 'string' ? memberClaim : undefined) } catch { return undefined }
+  }
+  const stableJson = (facts) => { try { return JSON.stringify(facts ?? null) } catch { return '<unserializable>' } }
 
   const wireAdmit = async (ctx) => {
     const classified = isRecord(ctx) ? ctx.classified : undefined
@@ -464,7 +579,73 @@ export function buildTeamOpsWiring (input = {}) {
       observe({ event: 'b-team-wire:tool-law-value', name, code: plan.toolError.code, paEntry: false })
       return Object.freeze({ ok: true })
     }
-    const targetManifest = mintTargetManifest(plan)
+    // ④ (root 23:2x): THE CALLER/ROOT GATE runs HERE, before any durable fact
+    // is read and before the claim is minted — the SAME rule the native common
+    // entry runs, reached through the exported shared helper in packages/tools
+    // (no second identity rule, no second error vocabulary). A refusal is the
+    // NATIVE typed rejected VALUE carried through verbatim (its own code, its
+    // own message, its `details`), with zero PA entry, zero fact read and zero
+    // port entry; success falls through untouched. A world that publishes no
+    // gate behaves exactly as it did before this seam existed.
+    // ④ CLOSED PER ROOT's NARROW REVIEW (67e90): the wrapped refusal this lane
+    // used to return was still an EXCEPTION by the time it reached the caller
+    // (the adapter's `refusalToThrow`), and reading it back meant catching a
+    // thrown error to find a value - which is hiding, and it would also accept
+    // any object claiming to be a native VALUE. Now the trusted gate's native
+    // failure takes an EXPLICIT DIRECT-RETURN CHANNEL: nothing is minted, no
+    // fact is read, no PA question opens, and the seat answers "this layer
+    // forwards nothing" ({ok:true}) so the ADAPTER'S OWN delegate - the real
+    // native tool - settles the call with its OWN typed rejected VALUE at its
+    // :496 gate, before `spec.run` and therefore with zero downstream effect.
+    // The caller thus receives the native's bytes because they ARE the
+    // native's bytes: this layer invents none and carries none, so a forged
+    // `nativeValue` has no path into the answer. Ordinary PA / admission
+    // refusals keep their existing exception semantics untouched.
+    if (typeof callerGate === 'function') {
+      const target = isRecord(plan.target) ? plan.target : undefined
+      const rootLeaf = isRecord(target) ? target.root : undefined
+      const rootClaim = isRecord(rootLeaf) && typeof rootLeaf.claim === 'string' ? rootLeaf.claim : ''
+      const gate = await callerGate(ctx.exec, rootClaim)
+      if (gate?.ok !== true) {
+        // ROOT 24:0x: the ok:true FORWARD design is BLOCKED, not an authorized
+        // answer - the native re-enters its own identity resolution and then
+        // `spec.run`, so the call would run past the PA walk. Until the signed
+        // adapter offers the explicit private settled-value return at execute
+        // (`if (admitted?.settled === true) return admitted.value`, the two-line
+        // delta at team-adapters.mjs:817-823 that this seam is waiting on), the
+        // refusal stays an ordinary seat refusal: the caller's answer is this
+        // seat's OWN code, the native is never re-entered, and nothing is
+        // carried as a "native value" (no forged-value path, no fake ok:true,
+        // no swallowing of unrelated admission refusals).
+        stats.callerGateRefusals += 1
+        const value = isRecord(gate) ? gate.result : undefined
+        const trusted = isRecord(value) && value.status === 'rejected'
+          && typeof value.code === 'string' && value.code.length > 0
+          && typeof value.message === 'string'
+        observe({
+          event: 'b-team-wire:caller-gate-refused',
+          name,
+          code: trusted ? value.code : undefined,
+          paEntry: false,
+          factsRead: false,
+          minted: false,
+          delegateEntry: false,
+          settledReturn: trusted,
+        })
+        // The private settled-value channel (adapter execute): the trusted
+        // internal gate's OWN typed rejected VALUE goes back to the caller by
+        // reference, with zero PA entry, zero durable read and zero port
+        // entry. A gate answer that is not a well-formed rejected VALUE is
+        // never smuggled through that channel - it stays an ordinary seat
+        // refusal, and no caller-supplied data ever forms it.
+        if (trusted) return Object.freeze({ ok: true, settled: true, value })
+        return wiringRefuse(WIRE.ADMISSION_CANCELLED, `${String(name)}: the shared caller/root gate refused this call with an answer that is not a well-formed rejected VALUE — zero PA entry, zero durable fact read, zero port entry`)
+      }
+    }
+    const callBox = { facts: undefined, claim: undefined, fault: undefined }
+    mintFactsBox = callBox
+    const targetManifest = mintTargetManifest(plan, readQueryFacts)
+    mintFactsBox = null
     if (targetManifest.ok === false) {
       stats.mintRefusals += 1
       observe({ event: 'b-team-wire:claim-mint-REFUSED', name, code: targetManifest.code })
@@ -475,6 +656,37 @@ export function buildTeamOpsWiring (input = {}) {
       stats.admissionRefusals += 1
       observe({ event: 'b-team-wire:call-id-ABSENT', name })
       return wiringRefuse(WIRE.CALL_ID_ABSENT, `${String(name)}: the execution answered no ISSUED call identity — the PA walk has no single-flight key and a guessed correlation is forbidden; zero port entry`)
+    }
+    // ⑤ (root 23:5x) THE VERSION PAIRING, at the two real points: the
+    // registration the mount PUBLISHES and the claim this seat COMPOSES must
+    // agree, and they are compared again at the edge, after the grant landed.
+    // This is the adapter revision the durable row carries (the adapter's own
+    // fact) against the identity the registration owner published — NOT the
+    // wiring revision, which vouches for nothing. A mismatch answers with the
+    // seat's own existing admission / edge cancellation codes (no new refusal
+    // vocabulary): before the composition no PA question opens, after the
+    // grant the lane is never entered.
+    // THE PAIRED VERSION. The claim below mints `pairingRevision`; the same
+    // expression is what the mount publishes into the family registration (the
+    // adapter's registration face takes its revision from the same constant the
+    // claim reads), so a durable approval carries ONE version and the
+    // registration carries that same version. Comparing them is therefore a
+    // comparison of the claim's version against the registration this mount
+    // actually published - not a wiring counter, which revokes nothing.
+    const pairingRevision = A5_B_TEAM_ADAPTER_REVISION
+    const published = typeof registrationOf === 'function' ? registrationOf() : undefined
+    const registrationMismatch = (where) => {
+      if (!isRecord(published)) return undefined
+      if (published.adapterRevision === pairingRevision && published.providerIdentity === providerId) return undefined
+      return `${String(name)}: the ${where} carries adapterRevision ${JSON.stringify(published.adapterRevision)} / providerIdentity ${JSON.stringify(published.providerIdentity)} while this claim mints pairingRevision ${String(pairingRevision)} / ${JSON.stringify(providerId)} — a claim is never minted, and never forwarded to the lane, on a registration it does not match`
+    }
+    {
+      const mismatch = registrationMismatch('published registration')
+      if (mismatch !== undefined) {
+        stats.admissionRefusals += 1
+        observe({ event: 'b-team-wire:registration-claim-MISMATCH', name, stage: 'pre-pa', paEntry: false })
+        return wiringRefuse(WIRE.ADMISSION_CANCELLED, mismatch)
+      }
     }
     const parsedEffects = parseRequestedEffectSet([Object.freeze({ kind: 'tool-invoke', toolName: name, resource: null })])
     if (parsedEffects.ok !== true) {
@@ -491,7 +703,7 @@ export function buildTeamOpsWiring (input = {}) {
       // 载荷法: the four P-adds at FULL VALUE, from the adapter's own facts.
       family: Object.freeze({
         familyId: A5_B_TEAM_FAMILY_ID,
-        adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
+        adapterRevision: pairingRevision,
         providerIdentity: providerId,
         targetManifest,
       }),
@@ -539,6 +751,38 @@ export function buildTeamOpsWiring (input = {}) {
         return wiringRefuse(WIRE.CONSUME_PROOF_MISSING, `${String(name)}: the execution edge answered allow without its one-shot consume witness — the seat never substitutes a self-attested consumption; the governed chain was not entered`)
       }
       stats.witnessed += 1
+      if (QUERY_TARGET_NAMES.has(String(name))) {
+        // ③ (root 22:35) the re-check goes out with the SAME addressed claim
+        // the mint used; `undefined` here used to lose the addressed instance
+        // and manufacture a drift that never happened.
+        const admitFacts = callBox.fault !== undefined
+          ? Object.freeze({ unresolved: true, fault: callBox.fault })
+          : callBox.facts
+        const afterFacts = readAgain(String(name).replace(/_/g, '-'), callBox.claim)
+        const drifted = stableJson(admitFacts) !== stableJson(afterFacts)
+        queryFactsLedger.push(Object.freeze({
+          name: String(name),
+          admitFacts: Object.freeze(admitFacts ?? { unresolved: true }),
+          // 审批后同源复查: the SAME published query read again after the grant
+          // landed, so a roster/blueprint that moved is recorded, not vouched.
+          postApprovalFacts: Object.freeze(afterFacts ?? { unresolved: true }),
+          drifted,
+        }))
+        observe({ event: 'b-team-wire:query-facts', name: String(name), drifted })
+      }
+      {
+        // Same comparison, after the grant landed: a registration that moved
+        // under a walk that was opened against the old one stops here — the
+        // approval is not carried into the lane on a stale version.
+        const current = typeof registrationOf === 'function' ? registrationOf() : undefined
+        const stale = isRecord(current)
+          && (current.adapterRevision !== pairingRevision || current.providerIdentity !== providerId)
+        if (stale) {
+          stats.admissionRefusals += 1
+          observe({ event: 'b-team-wire:registration-claim-MISMATCH', name, stage: 'post-grant', laneEntry: false })
+          return wiringRefuse(WIRE.EDGE_CANCELLED, registrationMismatch('registration at the edge'))
+        }
+      }
       admittedPlans.add(plan)
       stats.admits += 1
       stats.admittedOnce += 1
@@ -600,6 +844,10 @@ export function buildTeamOpsWiring (input = {}) {
     familyRegistrations: adapterResult.familyRegistrations,
     /** This edge's claim ledger. */
     claimStats: () => deepFreeze({ ...stats }),
+    /** The admit ⇄ post-approval same-source readings for the three read rows. */
+    queryFactsLedger: () => deepFreeze([...queryFactsLedger]),
+    /** The three read rows whose durable target is resolved (74/75/76). */
+    queryTargetNames: Object.freeze([...QUERY_TARGET_NAMES]),
     /** THE SEAT ITSELF — the exact function the adapter was handed above,
      *  published so the mount owner's spec drives the REAL seat (never a
      *  stub of it) leg by leg. Production dispatch reaches it only through

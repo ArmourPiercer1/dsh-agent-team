@@ -1,0 +1,17 @@
+test/a5m2-g3-ptc-wiring.test.ts(287,18): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+test/a5m2-g3-ptc-wiring.test.ts(301,20): error TS18048: 'walk' is possibly 'undefined'.
+test/a5m2-g3-ptc-wiring.test.ts(323,55): error TS2322: Type 'null' is not assignable to type 'number'.
+test/a5m2-g3-ptc-wiring.test.ts(364,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-g3-ptc-wiring.test.ts(365,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-g3-ptc-wiring.test.ts(366,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-g3-ptc-wiring.test.ts(419,35): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string'.
+test/a5m2-g3-ptc-wiring.test.ts(420,38): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string'.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

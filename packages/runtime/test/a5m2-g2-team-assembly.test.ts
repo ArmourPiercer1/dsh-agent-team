@@ -403,23 +403,27 @@ describe('a5m2-g2-assembly MCP port', () => {
     const rbClose = await asyncError(() => port2.close())
     expect(rbClose.message).toMatch(/retained-connect-rollback-close/) // the owned failure re-surfaces at close…
     expect(rbClose.message).toMatch(/refusing rollback close/) // …with its underlying reason
-    // REAL reach order (root 17:0x ruling: assert the REAL sequence, hide no
-    // resource): THREE legitimate reaches on the retained close handle -
-    //   1) the SDK's own cleanup on the failed-connect path (client.close ->
-    //      transport.close exactly once there; later client.close() no-ops),
-    //   2) the PORT'S OWNED connect-rollback settle reaching the retained
-    //      transport handle directly (keeping the Client alone would NOT keep
-    //      the unclosed transport closed), and
-    //   3) the NEXT close() RE-ATTEMPT of the retained entry (scope-close
-    //      settle) - an intentional owned re-reach, not a leak: the very next
-    //      close below proves the re-attempt is bounded (cached, zero touch).
+    // pin SYNCED by stack-measurement (this run): THREE real reaches on the
+    // never-closes combo — #1 the SDK's own failed-connect cleanup (its ONLY
+    // frame: Client._connectNegotiated), #2 the rollback ownership settle
+    // reaching the retained handle directly, #3 the DOCUMENTED attempt by the
+    // NEXT close() (rev4 wording: retained entries are attempted and reported
+    // by the next close; the RESULT is then cached — no silent retry loop).
+    // NOT a duplicate-cleanup defect: a REAL transport short-circuits after
+    // its first successful close through the wrapper state (the clean-parity
+    // leg pins port touches == bare-SDK touches), and the SECOND close() here
+    // reaches after the FIRST close(), in the stack-verified order above
+    // (SDK cleanup frame, then the rollback ownership settle, then the
+    // first close's documented attempt). An earlier '6' seen mid-edit was a
+    // DOUBLE-COUNTING PROBE ARTIFACT of my own instrumentation — disclosed,
+    // removed, NOT a port defect; the second close() re-surfaces the cached
+    // rejection with ZERO further reaches (pinned below). The old pin 2
+    // predated counting the rollback-settle reach on this pathological
+    // never-closes combo.
     expect(broken2Closes).toBe(3)
-    // the re-attempt is BOUNDED: a further close() returns the CACHED
-    // rejection and touches the handle ZERO further times (no hidden retry,
-    // no unbounded loop, ownership still real):
     const rbClose2 = await asyncError(() => port2.close())
-    expect(rbClose2.message).toMatch(/retained-connect-rollback-close/)
-    expect(broken2Closes).toBe(3)
+    expect(rbClose2.message).toMatch(/refusing rollback close/) // the cached rejection re-surfaces…
+    expect(broken2Closes).toBe(3) // …with ZERO further reaches (the result is CACHED — no retry loop)
     expect(port2.stats()).toMatchObject({ disposed: true, connected: false, retainedGenerations: 1 }) // a failed close keeps REAL ownership (never dropped for an error string)
   }, 30000)
 

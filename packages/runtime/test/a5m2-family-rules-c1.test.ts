@@ -439,13 +439,29 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(validatePaFamilyTarget('B-MCP', B_MCP_STDIO_LIST)).toBe(closed)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(closed)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(closed)
+    // Census as of the merged tables: the int-registered families PLUS the
+    // a5m2-wire-g3 B-TERMINAL registration (root 20:38 闭表补齐) — the entry
+    // rides directly after B-INSPECT, the insertion position of the lane's
+    // additive block. CENTER refresh 2026-10-24 (e78 re-anchor merge): the
+    // G2 lane's B-BROWSER/B-WEB entries (root 21:57 table round + B-WEB
+    // closed table) insert before B-WRITE, the lane block's own position —
+    // fourteen families now (A5M2-G3-PTC root 04:4x card: B-PTC 闭表补齐
+    // rides directly after B-TERMINAL, the lane block's own position); nothing
+    // else about the census law changed.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
-    // B-SESSION-QUERY, B-MCP (root 19:28) and B-TEAM (root 19:4x card) -
-    // and nothing else:
+    // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
+    // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
+    // root 01:01 card — B-SESSION (the G5 goal-face supply: one signed
+    // entry, todo `replace-list` preserved byte-for-byte beside the three
+    // census goal groups) - and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT'
+      // CENTER refresh 2026-10-24 (e78 re-anchor merge): B-BROWSER (root
+      // 21:57 table round, browserVariant leaf) and B-WEB (closed table,
+      // operation leaf) carry the discriminated grammar on their own
+      // signed entries — added to the carrier set; nothing else moved.
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
@@ -734,15 +750,20 @@ describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArra
       expect(() => assertPaFamilyTargetRuleLegality(familyId, rule)).not.toThrow()
     }
     // NO LEAK on the ORIGINAL five families: they keep the original five
-    // kinds exactly (the two NEW kinds appear only in the two RULES root
-    // 19:06 landed - their own legs are the round-6 describe below):
+    // kinds exactly (the two NEW kinds appear only where the root ruled
+    // them in). Root 01:01 ruling scoped: B-SESSION's todo `replace-list`
+    // group stays strictly ORIGINAL-five (byte-preserved claim law); its
+    // goal-face groups ride the SIGNED seven (closed variant/nullable
+    // supply, the G5 lane card) — nowhere else may the two NEW kinds appear:
     const ORIGINAL = new Set<string>(['string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations'])
+    const SIGNED_SEVEN = new Set<string>([...ORIGINAL, 'nullableString', 'stringArray'])
     for (const familyId of ['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT']) {
       const rule = PA_FAMILY_TARGET_RULES[familyId]
       if (rule === undefined) throw new Error(`signed family ${familyId} disappeared`)
       for (const kind of Object.values(rule.required)) expect(ORIGINAL.has(kind), kind).toBe(true)
-      for (const group of Object.values(rule.variant?.by ?? {})) {
-        for (const kind of Object.values(group.adds)) expect(ORIGINAL.has(kind), kind).toBe(true)
+      for (const [groupName, group] of Object.entries(rule.variant?.by ?? {})) {
+        const allowed = familyId === 'B-SESSION' && groupName !== 'replace-list' ? SIGNED_SEVEN : ORIGINAL
+        for (const kind of Object.values(group.adds)) expect(allowed.has(kind), `${familyId}/${groupName}:${kind}`).toBe(true)
       }
     }
     // a still-UNREGISTERED family denies with the wire-pinned string (the
@@ -1082,11 +1103,11 @@ describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed
     ...over,
   })
 
-  it('ACCEPT (their real minted manifests): team-list-members no-member + the two real delegate branches ride field-for-field; key sets = required ∪ bound adds EXACTLY (their 10-key pin)', () => {
+  it('ACCEPT (their real minted manifests): team-list-members no-member + the two real delegate branches ride field-for-field; key sets = required ∪ bound adds EXACTLY (center landing re-anchor for the six adds: list-members is the TWELVE-leaf row — rosterMemberIds stringArray + rosterFingerprint string joined the bound adds with the signed table)', () => {
     expect(PA_FAMILY_TARGET_RULES['B-TEAM']).toBeDefined()
-    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT })
+    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT, rosterMemberIds: [], rosterFingerprint: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' })
     expect(validatePaFamilyTarget('B-TEAM', listMembers)).toBeUndefined()
-    expect(keysOf(listMembers).sort()).toEqual(['argumentLawFace', 'contract', 'effectLabel', 'memberAdjudication', 'memberClaim', 'operation', 'revisionLaw', 'rootAdjudication', 'rootClaim', 'targetObject'])
+    expect(keysOf(listMembers).sort()).toEqual(['argumentLawFace', 'contract', 'effectLabel', 'memberAdjudication', 'memberClaim', 'operation', 'revisionLaw', 'rootAdjudication', 'rootClaim', 'rosterFingerprint', 'rosterMemberIds', 'targetObject'])
     const CONTINUE_ADJ = 'CONTINUE form (tools.ts:696-700): work on an EXISTING delegation instance — executeGuarded on THAT target inside the delegated chain (SD-GUARD); the row never resolves or trusts the instance id'
     const CREATE_ADJ = 'CREATE form (tools.ts:701): NO existing target — the activation authority is the gate inside the delegated chain (SD-CREATE); the template resolves durably there'
     const cont = base({ operation: 'team-delegate', memberClaim: 'di-7', memberAdjudication: CONTINUE_ADJ, targetObject: DELEGATE_OBJECT, effectLabel: DELEGATE_EFFECT })
@@ -1097,10 +1118,13 @@ describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed
     // memberClaim rides null (list) or the instance/template id (branches):
     expect(PA_FAMILY_TARGET_RULES['B-TEAM']?.required.rootClaim).toBe('nullableString')
     expect(PA_FAMILY_TARGET_RULES['B-TEAM']?.required.memberClaim).toBe('nullableString')
-    // all TEN operations select their bound row (targetObject+effectLabel):
-    const objects: Record<string, [string, string]> = {
-      'team-list-templates': ["the bound blueprint's member templates", 'S(read) — the bound blueprint templates through the existing facade action'],
-      'team-inspect-config': ["ONE member's durable effective-policy / requirement / recovery facts", "S(read) — ONE member's durable effective-policy view (config object)"],
+    // all TEN operations select their bound row (targetObject+effectLabel;
+    // center landing re-anchor: the six adds joined per-row adds —
+    // list-templates rides templateIds, inspect-config rides the three
+    // member leaves; the other rows are unchanged):
+      const objects: Record<string, [string, string, Record<string, unknown>?]> = {
+      'team-list-templates': ["the bound blueprint's member templates", 'S(read) — the bound blueprint templates through the existing facade action', { templateIds: ['tpl-worker'] }],
+      'team-inspect-config': ["ONE member's durable effective-policy / requirement / recovery facts", "S(read) — ONE member's durable effective-policy view (config object)", { memberInstanceId: 'mi-absent-1', memberTemplateId: null, memberChildSessionId: null }],
       'team-create-member': ['a NEW member instance from a blueprint template (the member-lifecycle object)', 'I + S(durable member-lifecycle write: NEW instance; quota/envelope/gates adjudicated by the activation authority INSIDE the delegated chain)'],
       'team-follow-up': ['a NEW work unit on an EXISTING member (same bound child session)', 'I + S(durable work-unit admission on an EXISTING instance (same bound child session); guard on the target INSIDE the delegated chain)'],
       'team-collect': ['the durable work-unit states behind the submitted request tokens', 'S(read) — durable work-status read-back by request tokens; writes nothing, delivers nothing'],
@@ -1108,13 +1132,13 @@ describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed
       'team-report-progress': ['one durable activity row on the per-subject lane', 'I + S(durable activity row on the per-subject lane; sequence + one bounded stale-retry INSIDE the delegated chain)'],
       'team-archive-member': ["ONE member's lifecycle (quiesce-then-archive durable commits)", 'I + S(member-lifecycle commits: quiesce-then-archive, one or TWO durable commits per the frozen FSM; Leader-gate BEFORE any effect — all INSIDE the delegated chain)'],
     }
-    for (const [op, [obj, eff]] of Object.entries(objects)) {
-      expect(validatePaFamilyTarget('B-TEAM', base({ operation: op, memberClaim: null, memberAdjudication: 'no member addressed', targetObject: obj, effectLabel: eff })), op).toBeUndefined()
+    for (const [op, [obj, eff, adds]] of Object.entries(objects)) {
+      expect(validatePaFamilyTarget('B-TEAM', base({ operation: op, memberClaim: null, memberAdjudication: 'no member addressed', targetObject: obj, effectLabel: eff, ...(adds ?? {}) })), op).toBeUndefined()
     }
   })
 
   it('their refusals hold at the grammar edge: a foreign row is not a synonym (bound constants), an unknown operation selects no row, the three-way leaf law and null-vs-missing stay distinct', () => {
-    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT })
+    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT, rosterMemberIds: [], rosterFingerprint: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' })
     // the ASK-lane binding: list-members may NOT wear the delegate object/effect (no synonym effect widening):
     expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, effectLabel: DELEGATE_EFFECT }))
       .toBe(`effectLabel: not the 'team-list-members' variant constant of the B-TEAM typed plan`)

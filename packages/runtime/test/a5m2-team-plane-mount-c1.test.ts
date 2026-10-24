@@ -162,7 +162,7 @@ function mintingControlLeg (seen: Array<Record<string, unknown> | undefined>) {
 /** The lane doubles: the SAME objects are the capture source, the live read
  *  and the delegate port — exactly the L3 pairing the adapter enforces (the
  *  delegate IS the captured execute), so one entry here is one port entry. */
-function makeLane (opts: { missing?: string[] } = {}) {
+function makeLane (opts: { withQueryFacts?: boolean, missing?: string[] } = {}) {
   const missing = new Set(opts.missing ?? [])
   const lane: Definition[] = []
   const entries: Array<{ name: string; args: Record<string, unknown>; exec: unknown }> = []
@@ -182,8 +182,20 @@ function makeLane (opts: { missing?: string[] } = {}) {
   // The placement owner's record (what agent-bindings' placementFeed reads:
   // the definition the scoped layer answers under this name).
   const placedByName = new Map<string, Definition>()
+  const withQueryFacts = opts.withQueryFacts !== false
   const inject = Object.freeze({
     providerId: PROVIDER,
+    // The published durable reads the QUERY rows mint their target leaves
+    // from (content-bearing rows; the fingerprint is a digest of the id set).
+    ...(withQueryFacts === false ? {} : {
+      queryFacts: Object.freeze({
+        resolve: (name: string) => (name === 'team_list_templates'
+          ? { templateIds: ['tpl-worker'] }
+          : name === 'team_inspect_config'
+            ? { memberTemplateId: 'tpl-worker', memberChildSessionId: 's-child-mi9' }
+            : { rosterMemberIds: ['mi-9'], rosterFingerprint: 'sha256:mi-9' }),
+      }),
+    }),
     readNative: (name: string) => lane.find((def) => def.name === name),
     liveNative: (name: string) => lane.find((def) => def.name === name),
     teamSet: () => lane,
@@ -372,20 +384,44 @@ describe('A5M2-B-TEAM-PLANE-MOUNT — the B-TEAM block in the REAL plane: inject
   })
 
   describe('(e2) the policy-ALLOW lane is MEASURED, not assumed', () => {
-    it('an allow attempt over a tool-invoke family refuses with the plane\'s OWN binding-verification bytes (no lane entry)', async () => {
+    it('a team-tool ALLOW rule projects per the root 22:4x invocation-only law and serves through the kernel — and the admitted token still buys no replay', async () => {
       const lane = makeLane()
       const sink: string[] = []
       const built = buildPlane({ backends: { teamOps: lane.inject } }, sink, POLICY_ALLOW_ATTEMPT)
-      // MEASURED: the refusal is at the plane's OWN policy-projection
-      // validation — an ALLOW entry over a family whose placement the plane
-      // does not hold (the A4 closed vocabulary admits no ALLOW resource kind
-      // for a tool-invoke effect either) refuses the MOUNT with
-      // TOOL_BINDING_UNVERIFIED before any row exists. Fail closed, zero lane
-      // entry, nothing to dispose.
-      expect(built.ok).toBe(false)
-      expect(built.code).toBe('TOOL_BINDING_UNVERIFIED')
-      expect(lane.entries).toHaveLength(0)
-      expect(sink.some((row) => row.includes('unverified')) || sink.length === 0).toBe(true)
+      // QUALIFIED BY THE CENTER E2 NARROWING (root ruling: narrow per commit,
+      // qualify, fix on int). The MOUNT-time TOOL_BINDING_UNVERIFIED this leg
+      // once measured was real in its world: team_* names were then absent
+      // from PERMISSION_TOOL_NAMES, so deriveTeamPolicyAuthority refused the
+      // rule at admission-kernel.ts:822 before any row existed. ROOT'S OWN
+      // limited cards superseded that world — 830c80456 (root 20:05, the
+      // schedule pair) created the invocation-only class and 2d8e39f7b (root
+      // 22:4x) added the B-TEAM ten to the production-confirmed closed sets:
+      // `any` is legal in ALL THREE lanes and the rule IS the invocation
+      // authority on the `tool-invoke` arm alone (blueprint schema.ts:515,
+      // admission-kernel.ts:867). Mount acceptance is therefore CURRENT
+      // root law, not a lane relaxation. And the law MEASURED at the
+      // execution layer is the other half of the same card: for the
+      // invocation-only class the RULE IS the invocation authority — the
+      // projected allow arm admits through the kernel itself, so an
+      // allow-projected call RUNDS the full governed walk (classify → kernel
+      // admit on the projected arm → one-shot edge → row) and serves, while
+      // the NO-RULE world stays fail-closed — pinned by (d) one describe
+      // above with the plane's own APPROVAL_REQUEST_UNAVAILABLE bytes.
+      // MEASURED HERE: the allow authority really lands (served bytes,
+      // exactly one lane entry, no control leg anywhere) AND the
+      // single-flight law still holds over the admitted execution token —
+      // an allow rule is a standing authority, never a replay licence.
+      expect(built.ok === true ? 'ok' : `${String(built.code)} ${String(built.message)}`).toBe('ok')
+      const face = faceOf(built)
+      const { dispose } = placeAndRegister(built, lane, [])
+      const exec = { callId: 'host-call-e2', token: { id: 'token-e2' }, signal: new AbortController().signal }
+      const value = await defOf(face, LIST_TOOL).execute({ ...LIST_ARGS }, exec)
+      expect((value as { served?: string }).served).toBe(`${LIST_TOOL}-bytes`)
+      expect(lane.entries).toHaveLength(1)
+      const replay = await refusalOf(defOf(face, ARCHIVE_TOOL).execute({ ...ARCHIVE_ARGS }, exec))
+      expect(replay.message).not.toBe('')
+      expect(lane.entries).toHaveLength(1)
+      dispose()
     })
   })
 

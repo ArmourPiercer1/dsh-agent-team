@@ -111,6 +111,18 @@ const PR1_CONSUMERS = Object.freeze([
   'runtime/src/plugin/live/governed-families/g6-session-query.mjs',
   'runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
   'runtime/src/plugin/live/governed-families/team-wiring.mjs',
+  // A5M2 census run 40056814591 (head 5a8c6d052) NEW-RED attribution, booked
+  // by the CENTER integrator 2026-10-24: the five governed-family wiring/assembly
+  // modules merged through their signed lane batches (root narrow signs; center
+  // re-verified on int at f48218bf8/dc02689b6 gates) each consume ONLY
+  // parseRequestedEffectSet — the SAME reviewed canonical requested-effects
+  // grammar at the row (the g2-connector-adapters / ptc-escalation-row pattern),
+  // effects fail closed through the real parser, zero lane edits, zero new faces.
+  'runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+  'runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.
