@@ -163,7 +163,7 @@ import { TextEncoder } from 'node:util'
 import { PTC_ESCALATION_MODES } from '../ptc-escalation-row.mjs'
 
 /** Adapter generation for the whole G3 module (all three families move as one). */
-export const A5_G3_ADAPTER_REVISION = 2
+export const A5_G3_ADAPTER_REVISION = 3
 
 export const A5_G3_FAMILIES = Object.freeze({
   TERMINAL: 'B-TERMINAL',
@@ -681,7 +681,7 @@ function deepJsonEqual(a, b) {
  * pinned launch spec once (and only once) the effect started; `state` is
  * 'idle' | 'claimed' | 'done' | 'refused' for the claim-once audit.
  */
-function createOneShotControlledBackend({ internalType, owner, canonical, callId, approvedPlan, approvedDigest, subprocess, onLaunched }) {
+function createOneShotControlledBackend({ internalType, owner, canonical, callId, approvedPlan, approvedDigest, subprocess, sessionFactory, cleanupErrorClass, onLaunched }) {
   if (subprocess === null || typeof subprocess.spawnTerminal !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createOneShotControlledBackend: a controlled PTY launch capability with spawnTerminal(SubprocessTerminalSpawnSpec) is required — the §5.1 backend spawns ONLY through the restricted process plan, never a bare process')
   }
@@ -719,22 +719,38 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
         || typeof plan.cwd !== 'string' || plan.cwd.length === 0
         || !Number.isInteger(plan.rows) || plan.rows <= 0 || !Number.isInteger(plan.cols) || plan.cols <= 0
         || !Number.isInteger(plan.graceMs) || plan.graceMs < 0
-        || approvedOpenPlanDigest(plan) !== approvedDigest) {
+        || approvedOpenPlanDigest(plan, canonical) !== approvedDigest) {
         state.current = 'refused'
         throw new Error(`P_TERM_OPEN_PLAN_MOVED: the approved controlled open plan for call ${callId} moved or is incomplete at the claim — the one-shot backend executes the APPROVED plan or nothing (zero effect, before any await)`)
       }
-      const argv = argvSource ?? [plan.executable, ...(plan.argv0 !== undefined ? [plan.argv0] : [])]
-      // THE ACTUAL ENVELOPE: the exact pinned spec handed to the controlled
-      // capability — recorded as it RUNS, and digested for re-verification
-      // against the approved plan. This is the envelope of record.
+      // THE REAL SESSION CAPABILITY (root 16:2x problem 4): the controlled
+      // handle must be carried by the REAL fixed-Host session class — the
+      // pinned 639 terminal-bash session class lives at src/session.ts:237
+      // (LocalPtySession; export map reaches ./src/*, production supply of
+      // that path unverified by this lane; construction needs a VALIDATED
+      // complete ResolvedConfig) whose initialize() gates readiness and whose
+      // startSend/readOutput/cancel/read/signal/status/close ARE the send,
+      // readiness and scrollback law. An adapter-side shim would FABRICATE
+      // that law (done-at-exit instead of done-at-readiness, fake wait
+      // reasons, invented page math), so a mount without the injected real
+      // factory refuses HERE, before any effect — naming the seam.
+      if (typeof sessionFactory !== 'function') {
+        state.current = 'refused'
+        throw new Error(`P_TERM_OPEN_SESSION_CAPABILITY_ABSENT: the per-open launch for call ${callId} refuses BEFORE any effect — the controlled handle must be wrapped by the REAL session capability (pinned 639 terminal-bash src/session.ts:237 LocalPtySession with a VALIDATED complete ResolvedConfig; initialize() gates readiness); deps.sessionFactory is absent on this mount and no adapter shim substitutes for it`)
+      }
+      // THE ENVELOPE OF RECORD IS THE CANONICAL PLAN: exactly the shape the
+      // approved digest covers (normalize BEFORE digest/spawn — root 16:2x
+      // problem 1: no post-digest cwd override, no null->'dumb' default
+      // applied after approval).
+      const canonicalPlanFacts = canonicalOpenPlan(plan, canonical)
       const launchSpec = Object.freeze({
-        argv: Object.freeze([...argv]),
-        cwd: canonical.cwd ?? plan.cwd,
-        ...(plan.env === null || plan.env === undefined ? {} : { env: { ...plan.env } }),
-        rows: plan.rows,
-        cols: plan.cols,
-        terminalType: plan.terminalType ?? 'dumb',
-        graceMs: plan.graceMs,
+        ...canonicalPlanFacts,
+        argv: Object.freeze([...canonicalPlanFacts.argv]),
+        // env is UNIFIED (root 4fdaf review 1): canonicalOpenPlan omits an
+        // absent/nullish env, so a missing key must behave EXACTLY like
+        // null here — a strict === null test let undefined materialize
+        // env:{} into the launch spec and diverge from the digest again.
+        ...(canonicalPlanFacts.env === undefined || canonicalPlanFacts.env === null ? {} : { env: Object.freeze({ ...canonicalPlanFacts.env }) }),
         ...(spec.signal === undefined ? {} : { signal: spec.signal }),
       })
       state.launch = launchSpec
@@ -745,99 +761,50 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
       // owns its pre-answer rollback); cancel after the answer follows the
       // cleanup law on the started resource.
       if (typeof onLaunched === 'function') onLaunched(launchSpec)
-      // REAL PROCESS-TREE QUIESCENCE: close() settles only on the awaited
-      // provider terminate (idempotent; every observed session member;
-      // after settlement no write/inspection/signal remains in flight).
-      let closing = null
-      let settled = false
-      handle.done.then(() => { settled = true }, () => { settled = true })
-      const ring = []
-      let ringChars = 0
-      let outputTail = ''
-      const keepOutput = (chunk) => {
-        const text = String(chunk)
-        outputTail += text
-        if (outputTail.length > 1_048_576) outputTail = outputTail.slice(-524_288)
-        ring.push(text)
-        ringChars += text.length
-        while (ringChars > 65_536 && ring.length > 1) ringChars -= ring.shift().length
-      }
-      void (async () => {
-        // the OUTPUT PUMP: keeps the ring/current tail fed for the whole
-        // session life; a provider transport failure is not the session's
-        // outcome (done carries that), so the pump swallows and exits.
+      // THE REAL SESSION CAPABILITY, REUSED: sessionFactory is the
+      // integrator-injected REAL class — the pinned 639 session lives at
+      // terminal-bash src/session.ts:237 (LocalPtySession; the package
+      // export map reaches ./src/*, but the PRODUCTION supply of that
+      // path is unverified here), constructed with a VALIDATED complete
+      // ResolvedConfig (validateConfig law — not an empty object claiming
+      // materialized defaults). Its initialize() IS the startup readiness
+      // law. Failure cleanup follows the REAL rejectAfterStartupCleanup
+      // law (terminal-bash index.ts:174-180/219-228): a NOT-CONSTRUCTED
+      // resource cleans through provider terminate, a CONSTRUCTED one
+      // through session.close (which owns quiescence); both are AWAITED,
+      // and a cleanup FAILURE is propagated together with the original
+      // failure (the TerminalBackendCleanupError law) — never a claimed
+      // quiescence over a swallowed rejection.
+      let session
+      try {
+        session = await sessionFactory(handle, launchSpec)
+      } catch (error) {
+        const original = String(error?.message ?? error)
         try {
-          for await (const chunk of handle.output) keepOutput(chunk)
-        } catch { /* provider transport failure: done carries the outcome */ }
-      })()
-      if (typeof handle.output?.once === 'function') handle.output.once('error', () => {})
-      const ops = []
-      return {
-        motd: '',
-        pid: handle.pid,
-        startSend: (request) => {
-          const text = String(request?.text ?? '')
-          const submit = request?.submit !== false
-          const line = submit && !text.endsWith('\n') ? `${text}\n` : text
-          let mark = outputTail.length
-          const preLen = outputTail.length
-          const writePromise = settled || closing !== null
-            ? Promise.reject(new Error(`P_TERM_OPEN_SESSION_SETTLED: session ${spec.sessionId} is no longer live`))
-            : handle.write(line)
-          if (writePromise !== undefined) void writePromise.catch(() => {})
-          const op = {
-            // THE RAW word: done resolves EXACTLY what the provider's
-            // handle.done resolves (the SubprocessOutcome the host contract
-            // promises) — the shim never re-wraps the native settle.
-            done: writePromise
-              .then(() => { void preLen; mark = outputTail.length; return handle.done },
-                (error) => ({ failed: true, detail: String(error?.message ?? error) })),
-            readOutput: () => outputTail.slice(mark),
-            cancel: () => {
-              const r = request?.cancel
-              if (r !== undefined && r !== null && typeof r.abort === 'function') { r.abort(); return true }
-              return false
-            },
-          }
-          ops.push(op)
-          return op
-        },
-        read: (request) => {
-          const text = ring.join('')
-          const count = Number.isInteger(request?.count) && request.count > 0 ? request.count : 200
-          const lines = text.split('\n')
-          const offset = Number.isInteger(request?.offset) && request.offset >= 0 ? request.offset : 0
-          return { text: lines.slice(0, Math.max(0, lines.length - offset)).slice(-count).join('\n'), truncated: offset > 0 || lines.length > count }
-        },
-        signal: async (signal) => {
-          const answered = await handle.signalForeground(signal)
-          // the answer is PASSED through faithfully: a provider that answers
-          // with the group pid rides as {deliveredTo}; a richer snapshot
-          // rides as-is — the adapter never reshapes the service word
-          return typeof answered === 'number' ? { deliveredTo: answered } : answered
-        },
-        status: () => (settled ? { kind: 'exited' } : { kind: 'running', pid: handle.pid }),
-        close: async (reason) => {
-          // CARD 2 (root central adjudication): a REJECTED terminate is a
-          // REFUSAL of the close, never a `closed:false` ANSWER. The real
-          // contract (@639ed01539: TerminalBackendSession.close resolves ONLY
-          // on awaited quiescence; SubprocessTerminalHandle.terminate carries
-          // no false word) has no `closed:false` value to answer with —
-          // swallowing the rejection into one fabricated a success shape AND,
-          // cached in `closing`, made the refusal permanent. The rejection
-          // now rides OBSERVABLE (the close rejects, the row carries the
-          // typed failure), and the cached attempt is DROPPED so a later
-          // close re-enters the real terminate: a refused terminate stays
-          // RETRYABLE through this same entry.
-          if (closing === null) {
-            closing = handle.terminate().then(
-              () => ({ closed: true, reason: String(reason ?? '') }),
-              (error) => { closing = null; throw error },
-            )
-          }
-          return closing
-        },
+          await handle.terminate()
+        } catch (cleanupError) {
+          // THE REAL CLASS CARRIES BOTH ERRORS (root 414): the service's
+          // instanceof TerminalBackendCleanupError law keeps the cleanup
+          // fact through release() and answers the outer caller.
+          throw new cleanupErrorClass(error, cleanupError)
+        }
+        throw new Error(`P_TERM_OPEN_STARTUP_FAILED: the REAL session capability refused to construct for call ${callId} before publication (${original}) — the unpublished handle was TERMINATED AND AWAITED to quiescence; zero published effect, zero session`)
       }
+      try {
+        if (typeof session?.initialize === 'function') await session.initialize(spec.signal)
+      } catch (error) {
+        const original = String(error?.message ?? error)
+        try {
+          await session.close('PTY startup failed')
+        } catch (cleanupError) {
+          // THE REAL CLASS CARRIES BOTH ERRORS (root 414): the service's
+          // instanceof TerminalBackendCleanupError law keeps the cleanup
+          // fact through release() and answers the outer caller.
+          throw new cleanupErrorClass(error, cleanupError)
+        }
+        throw new Error(`P_TERM_OPEN_STARTUP_FAILED: startup readiness failed for call ${callId} (${original}) — the CONSTRUCTED session was closed through its own close() and AWAITED to quiescence before this refusal; zero published effect, zero session`)
+      }
+      return session
     },
   }
   // state is BACKEND-LOCAL on purpose: the claim-once law runs inside
@@ -869,6 +836,23 @@ export function createHostTerminalControlPort(deps) {
   // SpawnSpec) — terminal allocation, foreground groups and awaited
   // whole-session quiescence. A bare process spawn is never used.
   const subprocess = deps.subprocess ?? null
+  const sessionFactory = deps.sessionFactory ?? null
+  if (sessionFactory !== null && typeof sessionFactory !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.sessionFactory must be the REAL session factory (pinned 639 terminal-bash LocalPtySession wrapper) or absent')
+  }
+  // THE REAL CLEANUP-ERROR CLASS (root 414 review): startup+cleanup failures
+  // must ride the PUBLIC pinned-639 TerminalBackendCleanupError
+  // (terminal/src/types.ts:17-27, an AggregateError carrying spawnError +
+  // cleanupError). The REAL TerminalSessionService.spawn catch (index.ts:
+  // 197-199) tests `error instanceof TerminalBackendCleanupError` to keep
+  // the cleanup fact through spawnReservation.release(cleanupFailure)
+  // (index.ts:221) — a plain Error LOSES that fact (release(undefined)).
+  // No duck class, no parallel error system: the integrator injects the
+  // SAME class object the service itself imports, so instanceof is exact.
+  const cleanupErrorClass = deps.TerminalBackendCleanupError ?? null
+  if (cleanupErrorClass !== null && typeof cleanupErrorClass !== 'function') {
+    throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.TerminalBackendCleanupError must be the REAL pinned-639 class (terminal/src/types.ts:17-27) or absent — never a duck-typed substitute')
+  }
   if (subprocess !== null && typeof subprocess.spawnTerminal !== 'function') {
     throw new TypeError('g3-fsproc-adapters/createHostTerminalControlPort: deps.subprocess must answer spawnTerminal(SubprocessTerminalSpawnSpec) (the controlled PTY capability) or be absent')
   }
@@ -962,10 +946,15 @@ export function createHostTerminalControlPort(deps) {
         if (subprocess === null) {
           return { ok: false, code: 'P_TERM_OPEN_CAPABILITY_ABSENT', detail: 'the per-open controlled backend spawns ONLY through the restricted process plan on the controlled PTY capability (SubprocessRuntime.spawnTerminal: terminal allocation, foreground groups, awaited whole-session quiescence) — deps.subprocess is absent on this mount, and a bare process spawn is never substituted' }
         }
+        if (sessionFactory === null || cleanupErrorClass === null) {
+          return { ok: false, code: 'P_TERM_OPEN_SESSION_CAPABILITY_ABSENT', detail: 'the per-open controlled handle must be carried by the REAL fixed-Host session capability (pinned 639 terminal-bash src/session.ts:237 LocalPtySession, constructed with a VALIDATED complete ResolvedConfig — the export map reaches ./src/* but production supply of that path is unverified by this lane; initialize() gates startup readiness and its startSend/readOutput/cancel/read/signal/status/close ARE the send, readiness and scrollback law) — deps.sessionFactory and/or deps.TerminalBackendCleanupError is absent on this mount (the REAL service relies on the instanceof law — a plain Error would drop the cleanup fact at spawnReservation.release) and no adapter-side shim or duck class is substituted (a shim would fabricate the law: done-at-exit instead of done-at-readiness, invented wait reasons, invented page math); refused BEFORE any effect, zero spawn, zero resource' }
+        }
         openSequence += 1
         const internalType = `dsh-g3-po-${String(spec.callId)}-${openSequence}`
         const approvedDigest = String(approved.envelopeDigest ?? '')
         const { backend } = createOneShotControlledBackend({
+          sessionFactory,
+          cleanupErrorClass,
           internalType,
           owner,
           canonical: {
@@ -1025,16 +1014,8 @@ export function createHostTerminalControlPort(deps) {
           // the ENVELOPE facts (argv, env, dims, grace), never the routing
           // extras the capability spec carries in addition.
           const launched = launchedByCall.get(String(spec.callId)) ?? null
-          if (launched !== null && approvedDigest.length > 0 && approvedOpenPlanDigest({
-            argv: launched.argv,
-            cwd: launched.cwd,
-            env: launched.env ?? null,
-            rows: launched.rows,
-            cols: launched.cols,
-            terminalType: launched.terminalType,
-            graceMs: launched.graceMs,
-          }) !== approvedDigest) {
-            return refusalAfterEffects({ sessionId: spawned.sessionId }, 'P_TERM_OPEN_ENVELOPE_DRIFT', `the ACTUAL pinned launch spec deviates from the approved envelope (${approvedDigest} -> ${approvedOpenPlanDigest(launched)}): the session was cleaned through the service — effects started, never a zero-effect word`)
+          if (launched !== null && approvedDigest.length > 0 && approvedOpenPlanDigest(launched, canonical) !== approvedDigest) {
+            return refusalAfterEffects({ sessionId: spawned.sessionId }, 'P_TERM_OPEN_ENVELOPE_DRIFT', `the ACTUAL pinned launch spec deviates from the approved envelope (${approvedDigest} -> ${approvedOpenPlanDigest(launched, canonical)}): the session was cleaned through the service — effects started, never a zero-effect word`)
           }
           // NATIVE result fields ride VERBATIM (sessionId/kind-bearing status/
           // pid/type/motd) — native-shaped pass-through, not a re-shape.
@@ -1070,7 +1051,25 @@ export function createHostTerminalControlPort(deps) {
           // with their cleanup truth — this catch never dresses a started
           // effect as zero.
           const message = String(error?.message ?? error)
-          const oneShotRefusal = /^P_TERM_(PLAN_CLAIM_CONSUMED|OPEN_ID_MISMATCH|OPEN_OWNER_MISMATCH|OPEN_REQUEST_DRIFT|OPEN_PLAN_MOVED|OPEN_PLAN_ABSENT):/
+          // STARTUP FAILURE IS NOT ZERO-EFFECT: the controlled spawn STARTED
+          // (an effect happened); the real startup law cleans the
+          // UNPUBLISHED handle to awaited quiescence BEFORE publication, so
+          // nothing was ever ownable — but the honesty law names the
+          // started-and-cleaned truth, never a zero-effect word.
+          // THE REAL SERVICE SHAPE: a cleanup failure arrives as the PUBLIC
+          // pinned-639 TerminalBackendCleanupError (AggregateError: fixed
+          // message, errors [spawnError, cleanupError]) that crossed the
+          // service's own instanceof law and its release(cleanupFailure) —
+          // the outer reply names BOTH errors from the aggregate itself.
+          if (cleanupErrorClass !== null && error instanceof cleanupErrorClass) {
+            const spawnMsg = String(error.spawnError?.message ?? error.errors?.[0]?.message ?? error)
+            const cleanupMsg = String(error.cleanupError?.message ?? error.errors?.[1]?.message ?? 'unknown')
+            return { ok: false, code: 'P_TERM_OPEN_STARTUP_CLEANUP_FAILED', detail: `the REAL TerminalBackendCleanupError crossed the fixed-639 service (terminal/src/types.ts:17-27; service index.ts:197-199/221 kept the cleanup fact through release): startup failure (${spawnMsg}) AND cleanup failure (${cleanupMsg}) — started-and-CLEANUP-FAILED: cleanup did NOT reach quiescence, resources may remain and need operator attention; the port claims NO quiescence, NO zero-effect word, and no retry-suppression` }
+          }
+          if (message.startsWith('P_TERM_OPEN_STARTUP_FAILED:')) {
+            return { ok: false, code: 'P_TERM_OPEN_STARTUP_FAILED', detail: `${message} — the controlled spawn STARTED and was cleaned to awaited quiescence BEFORE publication (started-and-cleaned, not zero-effect); no session was ever published or ownable` }
+          }
+          const oneShotRefusal = /^P_TERM_(PLAN_CLAIM_CONSUMED|OPEN_ID_MISMATCH|OPEN_OWNER_MISMATCH|OPEN_REQUEST_DRIFT|OPEN_PLAN_MOVED|OPEN_PLAN_ABSENT|OPEN_SESSION_CAPABILITY_ABSENT):/
           if (oneShotRefusal.test(message)) {
             return { ok: false, code: message.slice(0, message.indexOf(':')), detail: `${message} — refused BEFORE any effect (every verification runs before the first await); zero spawn, zero resource` }
           }
@@ -2141,25 +2140,40 @@ const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
  * RE-VERIFIES it against the ACTUAL pinned launch spec handed to the
  * controlled spawn seam (the plan that RAN, not the plan that was said).
  */
-function approvedOpenPlanDigest(plan) {
-  // argv NORMALIZES: an executable (+optional argv0) plan and the launch
-  // spec it becomes are the SAME envelope — the digest compares the
-  // canonical ARGV form, plus cwd/env/dims/grace/terminal type.
-  const argvCanonical = Array.isArray(plan.argv) && plan.argv.length > 0
+/**
+ * NORMALIZED LAUNCH ENVELOPE (root 16:2x problem 1): digest what WILL spawn.
+ * executable->argv normalization, the request cwd override, and the
+ * subprocess terminal-type default ('dumb') apply BEFORE the digest is
+ * computed, so the approved digest, the claim-time recheck and the pinned
+ * launch spec are the SAME canonical shape: a post-digest mutation is
+ * impossible by construction, and a plan that cannot reach canonical form
+ * refuses BEFORE any spawn, never after.
+ */
+function canonicalOpenPlan(plan, canonical = {}) {
+  const argv = Array.isArray(plan?.argv) && plan.argv.length > 0 && plan.argv.every((a) => typeof a === 'string' && a.length > 0)
     ? [...plan.argv]
-    : (typeof plan.executable === 'string' && plan.executable.length > 0
+    : (typeof plan?.executable === 'string' && plan.executable.length > 0
       ? [plan.executable, ...(plan.argv0 !== undefined ? [plan.argv0] : [])]
       : null)
-  const canonicalPlan = JSON.stringify({
-    argv: argvCanonical,
-    cwd: plan.cwd ?? null,
-    env: plan.env === null || plan.env === undefined ? null : Object.fromEntries(Object.keys(plan.env).sort().map((k) => [k, plan.env[k]])),
-    rows: plan.rows ?? null,
-    cols: plan.cols ?? null,
-    terminalType: plan.terminalType ?? null,
-    graceMs: plan.graceMs ?? null,
-  })
-  return 'sha256:' + createHash('sha256').update(canonicalPlan).digest('hex')
+  if (argv === null) return null
+  const env = plan.env === null || plan.env === undefined
+    ? null
+    : Object.fromEntries(Object.keys(plan.env).sort().map((k) => [k, plan.env[k]]))
+  return {
+    argv,
+    cwd: typeof canonical.cwd === 'string' && canonical.cwd.length > 0 ? canonical.cwd : plan.cwd,
+    ...(env === null ? {} : { env }),
+    rows: plan.rows,
+    cols: plan.cols,
+    terminalType: plan.terminalType ?? 'dumb',
+    graceMs: plan.graceMs,
+  }
+}
+
+function approvedOpenPlanDigest(plan, canonical = {}) {
+  const canon = canonicalOpenPlan(plan, canonical)
+  if (canon === null) return 'sha256:UNRESOLVED'
+  return 'sha256:' + createHash('sha256').update(JSON.stringify(canon)).digest('hex')
 }
 
 /**
@@ -2210,7 +2224,7 @@ function validateTerminalOpen(args, h) {
   }
   const poEnvelopeDigest = typeof po.envelopeDigest === 'string' && po.envelopeDigest.length > 0
     ? po.envelopeDigest
-    : approvedOpenPlanDigest(poPlan)
+    : approvedOpenPlanDigest(poPlan, { ...(args.cwd !== undefined ? { cwd: args.cwd } : {}) })
   const canonical = { type: args.type, ...(args.name !== undefined ? { name: args.name } : {}), ...(args.cwd !== undefined ? { cwd: args.cwd } : {}) }
   return {
     ok: true,
@@ -2246,7 +2260,7 @@ function validateTerminalOpen(args, h) {
       const nowPo = serviceFacts?.approvedOpenPlan?.(callId) ?? null
       const nowDigest = nowPo === null || nowPo?.plan === undefined || nowPo?.plan === null
         ? null
-        : (typeof nowPo.envelopeDigest === 'string' && nowPo.envelopeDigest.length > 0 ? nowPo.envelopeDigest : approvedOpenPlanDigest(nowPo.plan))
+        : (typeof nowPo.envelopeDigest === 'string' && nowPo.envelopeDigest.length > 0 ? nowPo.envelopeDigest : approvedOpenPlanDigest(nowPo.plan, { ...(args.cwd !== undefined ? { cwd: args.cwd } : {}) }))
       if (nowDigest === null || nowDigest !== poEnvelopeDigest) {
         return { ok: false, code: 'P_TERM_TARGET_DRIFT', detail: `the approved controlled open plan / envelope digest moved between approval and the entry (${poEnvelopeDigest} -> ${nowDigest ?? 'unresolvable'})` }
       }

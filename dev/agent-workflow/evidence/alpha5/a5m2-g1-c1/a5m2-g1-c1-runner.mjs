@@ -9,7 +9,7 @@
  *   1. test/a5m2-g1-wire-c1.test.ts            (31 legs; incl. the ROOT-P1
  *      real claim->raw-let->exact-capture->registration chain legs)
  *   2. test/a5m2-g1-control85-handover.test.ts (4 legs)
- *   3. test/a5m2-g1-trusted-topology-supply.test.ts (9 legs)
+ *   3. test/a5m2-g1-trusted-topology-supply.test.ts (10 legs on the int combination; 9 on the 94798 base)
  *   4. test/a5m2-g1-query-assembly.test.ts     (12 legs)
  * Per-leg lines come from vitest's OWN json reporter — no parallel reporting
  * system. Status law (root): these are author mirror-assembly worlds, NOT
@@ -43,7 +43,7 @@ const VITEST_VERSION = '4.1.11'
 const EXPECTED = Object.freeze({
   'test/a5m2-g1-wire-c1.test.ts': 31,
   'test/a5m2-g1-control85-handover.test.ts': 4,
-  'test/a5m2-g1-trusted-topology-supply.test.ts': 9,
+  'test/a5m2-g1-trusted-topology-supply.test.ts': 10, // CENTER (2026-10-24, int merge 96d3aa13c): the int combination carries TEN legs in this spec (9 from the 94798 base + 1 merged in on the int face); measured on int, not copied
   'test/a5m2-g1-query-assembly.test.ts': 12,
 })
 const SPECS = Object.keys(EXPECTED)

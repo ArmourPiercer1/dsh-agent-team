@@ -437,6 +437,48 @@ config:
         minAbiVersion: 3
 ```
 
+**B-TERMINAL 列（`teamToolPlane.terminal`；A5M2-G3-WIRE 接线，root 20:14 表单列补齐）**：
+`terminal_*` 六行的受治挂载证据。**缺省不配 = 零翻转**（无行、无注册、native
+逐字节不变）；证据装配出的 inject 不合格 = **挂载被类型化拒绝**
+（`TERMINAL_ARM_INJECT_INVALID`，inject 键集 CLOSED、多余键同样拒绝；
+表单列自身按列读取，未识别的列不产生任何事实）。表单列的语义生产者分工：
+
+```yaml
+config:
+  teamToolPlane:
+    terminal:
+      providerId: "my-team-provider"          # 行 provider 身份（durable family gate 比对键）
+      declaredBackends: ["shell"]             # §5.1 declared_mount：公开的 DECLARED backend 类型集（非空字符串数组）
+      sessionConfig:                          # 装配内 REAL producer 的 base Config
+        rows: 24                              #   （发布 law 原样物化：resolveConfig+validateConfig
+        cols: 80                              #     先行，zod 默认由发布 schema 填——backendType/
+                                              #     disposeGraceMs 等不手抄；Config 读失败 = 记诊断，
+                                              #     不吞 null）
+```
+
+**ptyService 三事实无外注列，open plan 走真实 confine 通道（root 20:38 producer
+令 + 21:03/21:07 更正）**：`session` 只解析本 member 自己的 live
+`terminals.list(owner)` 快照（pid 派生 incarnation，status 逐字携带；他主/未知
+sid 答 nothing）。`approvedOpenPlan` 答的是**真实受限计划**：base Config 经
+发布的 resolveConfig/validateConfig 物化出原始 argv 后，由公开
+`SandboxProvider.confine(argv, policy)` 在 `policy =
+sandboxPolicy.resolve({session})` 下**包裹成受限 argv**（terminal-bash 自家
+spawnArgv 同一律：argv := confined.argv，cwd := policy.workspaceRoot——
+terminal-bash/src/index.ts:103-108/:204-215 @639ed01539），terminal 维度与
+grace 取物化后的 resolved 字段。confine 为 async 而 adapter 同步读 plan（签核
+claim 律），故计划在挂载时预 mint、并在每个 terminal_open 行 classify 前由
+wiring 刷新（`ptyService.premintOpenPlan`）；预 mint 失败答 NOTHING，adapter
+在执行入口仍以**实际** launch spec 的 digest 复验——claim 永不是 envelope。
+**`backend` 现为有意的 fail-closed**：公开面 `listBackends()` 只答
+`string[]`（terminal/src/index.ts:143）、`registerBackend` 只回 disposer
+（index.ts:125）——**注册世代（同名更换可感知）无任何公开供给者**，而部署申报
+常量不感知更换（root 21:07 禁），故该 seam 现答 null = terminal_open 行
+`P_TERM_TARGET_UNRESOLVED`，直至 Host 公开面补齐注册世代来源（确切缺口入口已
+报中心）。live 的 `terminals`/`subprocess`/`sandbox` 服务与 `sandboxPolicy`
+属性不进表单：Host 自身公开面，经 lazy deps 挂载时刻读取；已挂载世界的
+`TerminalBackendCleanupError` 还须与 live service 的 `instanceof` 律同实例配对
+（配对不过 = 拒绝挂载）。
+
 **read-only 最小配方（Alpha.5 READ slice；P1 回归的机读对象）**：上块是
 含 shell 行的完整形态。本配方**仅为 `read` 提供此配置所需的能力/授权，不配置
 shell 信任对**（不配 `confinedProvider`/launcher 字段）；**grep/glob/bash 行

@@ -18,6 +18,16 @@ export interface TeamPluginHostContext {
     provide(name: string, value: unknown): void;
     effect(factory: () => () => void, label?: string): void;
     /**
+     * A5M2 G3 B-TERMINAL (root 21:07, wiring lane): the shared confinement
+     * POLICY property the real Host context carries beside the service store
+     * (terminal-bash injects the same `sandboxPolicy` face and resolves
+     * `resolve({session})` per spawn — terminal-bash/src/index.ts:204
+     * @639ed01539). Optional in this structural projection (the same
+     * Cordis-type-independence law as `events` above): the B-TERMINAL open-plan
+     * pre-mint reads it, a mount without `planeCfg.terminal` never does.
+     */
+    readonly sandboxPolicy?: unknown;
+    /**
      * Cordis event registration: the listener is owned by this row's fiber
      * and disposed with the row. Optional in this structural projection —
      * the entry keeps Cordis-type independence (plan §19.2) and minimal
@@ -73,6 +83,12 @@ type TeamApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavaila
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
+/**
+ * ROOT 21:14 — the same-source target-vs-record comparison over the REAL
+ * assembly transportTarget shape (exported for the exact-shape positive/
+ * negative legs; the producer below and nothing else consumes it).
+ */
+export declare function g2ApprovedTargetMismatches(target: Record<string, unknown>, rec: Record<string, unknown>): string[];
 export declare function validateTeamPluginConfig(raw: unknown): TeamPluginConfig;
 /**
  * The default live-agent glue URL, derived from this host entry's own

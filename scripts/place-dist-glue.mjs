@@ -193,6 +193,43 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
   },
+  // A5M2 G5 B-SESSION GOAL SERVICE (G5 lane, root 01:01 card): the plane's
+  // G5 block statically imports BOTH modules (team-tool-plane.mjs G5 import
+  // rows), so the strict `files: ["dist"]` face needs them placed — the
+  // documented ERR_MODULE_NOT_FOUND class; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g5-goal-service.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-service.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+  },
+  // A5M2 G2 RE-ANCHOR (center, this merge): the lane's own glue rows carried
+  // FOUR g2 modules but MISSED g2-web-supply.mjs, which the merged bindings
+  // imports statically (:453 createG2WebCenterPorts) - the documented
+  // dangling-import class (the static placement list never scans closures).
+  // All FIVE join here; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-web-supply.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-web-supply.mjs',
+  },
   // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
   // production blocks added STATIC relative imports that no placement
   // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
@@ -235,6 +272,26 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
   },
+  // A5M2-G3-WIRE (root 20:14 card item 3, 组合须补): the plane and the glue
+  // import the B-TERMINAL family by RELATIVE specifier — the wiring bridge
+  // (`g3-terminal-wiring.mjs`, imported by the mirrored plane) and its
+  // adapter (`g3-fsproc-adapters.mjs`, imported by the wiring AND the
+  // mirrored glue). Without BOTH placements the dist copy dies at
+  // ERR_MODULE_NOT_FOUND on the strict `files: ["dist"]` install face —
+  // exactly the invisible-absence class the C2 audit named for todo.mjs.
+  // Closure law holds: the wiring's cross-module legs land on tsc's OWN
+  // emit of the domain tool-governance index (inside the mirror, the G1
+  // law) and on the adapter below; the adapter's only cross-module leg is
+  // `../ptc-escalation-row.mjs` (already placed above); everything else is
+  // node builtins. Byte-identical like every entry; drift gate D compares.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  },
   // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
   // `agent-bindings.mjs` now imports the G1-WIRE lane's two production
   // modules by RELATIVE specifier STATICALLY (at module load, gate or no
@@ -255,16 +312,11 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-query-wiring.mjs',
   },
+  // center 01:3x (44ece trustedTopology-wiring batch): the supply is
+  // statically imported by the binding's mount-arm block — the same
+  // RELATIVE-specifier class as the two rows above (tsc never emits .mjs;
+  // an unplaced module is invisible to the drift gate until placed).
   {
-    // ROOT 01:01 trustedTopology supply wiring (this branch's mount-arm
-    // block): `agent-bindings.mjs` now statically imports the a067 supply
-    // factory (picked from int 12c850c6a) by RELATIVE specifier — same
-    // GLUE-5/g1-query class: without this placement the dist copy of the
-    // binding dies at `ERR_MODULE_NOT_FOUND …
-    // ./governed-families/g1-trusted-topology-supply.mjs` on the strict
-    // `files: ["dist"]` install face. The module's own import closure is
-    // exactly [node:crypto] (a067 spec leg G), so ONE row covers it.
-    // Byte-identical like every entry; drift gate D compares src vs dist.
     src: 'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
   },

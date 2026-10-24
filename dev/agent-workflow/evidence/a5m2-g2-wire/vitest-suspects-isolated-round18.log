@@ -1,0 +1,401 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/packages/runtime
+
+ ❯ test/a5p7-lane-hygiene.test.ts (5 tests | 1 failed) 115ms
+     ✓ the lane files this round adds are exactly the recorded set (the p4t6 increment) 2ms
+     × zero production consumers: no importer outside the lanes and the a5p7 specs 101ms
+     ✓ the two reviewed GLUE-5 edges are exactly the pinned import lines 4ms
+     ✓ the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge 3ms
+     ✓ every lane file carries zero frozen denylist vocabulary 4ms
+ ❯ test/a5w-integration-wiring.test.ts (14 tests | 1 failed) 163ms
+     ✓ the runtime typecheck tsconfig includes controlled-fs and sandbox-provider 2ms
+     ✓ the runtime build tsconfig emits controlled-fs/src and sandbox-provider 0ms
+     × the provider factory is exported for EXPLICIT calls, and only the named rows call it 135ms
+     ✓ a gated lane with NO admission binding refuses reads with a typed C-FS denied 6ms
+     ✓ UNBOUND_ADMISSION_RECHECK itself always refuses and names itself 0ms
+     ✓ happy leg: read passes; the port sees the grant fingerprint verbatim 4ms
+     ✓ divergent binding: the intent fingerprint is refused BEFORE the port is consulted 1ms
+     ✓ a null presented fingerprint cannot exec through a bound recheck 0ms
+     ✓ a port refusal passes through typed, with the port reason visible 1ms
+     ✓ injected containment saying NO denies even where the lane prefix rule would cover 1ms
+     ✓ injected containment saying YES admits the subtree read 2ms
+     ✓ the raw lane factory keeps its narrow lane rule untouched (zero behaviour drift) 3ms
+     ✓ arbitrary-tree profile is NOT published while OpenAtPort is unlanded 1ms
+     ✓ wiring files carry no G-g closure claim; G-g is cited OPEN only 2ms
+ ❯ test/a5m2-g1-surface-adapters.test.ts (103 tests | 8 failed) 192ms
+     ✓ the record set equals the frozen dispatch index (family-filtered, recordIndex-exact); spec VALUES carry no lane paths (string literals are audit edges) 4ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 4ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 1ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 1ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 2ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 23ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 9ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 1ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 1ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       × REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 2ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+     ✓ pre-aborted signal: the row refuses P_G1_PRE_ABORTED before admission — no gate call, no manager entry, no native entry (mirrors tools.ts:44 throwIfAborted BEFORE the entry) 1ms
+     ✓ rg: the install gate runs the REAL EXPORTED host approveEscalation — rejected/cancelled/no-approver/no-agent are the real THROWs surfacing as refusals with ZERO manager entry; the effective-mode repeat needs no approval 4ms
+     ✓ P1 89a9: sandboxPolicy.resolve receives EXACTLY the host scope — the Session OBJECT by reference for agent calls (a narrower session configuration resolves only when the object survives), { session: undefined } for a session-less agent, {} only when exec.agent is absent 6ms
+     ✓ plugin install gate plumbing: no escalation port mounted refuses GATE_ABSENT; no manager face refuses FACE_ABSENT; the signal re-check and the CURRENT-facts re-verify happen AFTER the awaited gate and BEFORE any manager entry 1ms
+     ✓ consumption-edge re-verify: post-classify mutation of the catalog / topology / domain registry / profile facts / install facts refuses the plan typed, zero native entry 1ms
+     ✓ inspect list: the all-providers answer is CONSTRAINED to the authorized topology (unauthorized providers never appear; methods filtered); unknown shapes fail closed 3ms
+     × inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse 1ms
+     ✓ plugin: per-action effect sets on the manager code paths; REAL npm-name/relative-path spec parse and REAL URL registry envelope; @scope/pkg entry targets are LEGAL; the exemption lane needs package-name@version and is never derivable 2ms
+     ✓ plugin face declares the REAL parameter list (tools.ts:22-31): offset/limit ride, there is NO bundle parameter 0ms
+     ✓ plugin install on the REAL async manager contract: invocation-owned requestId minted BEFORE the call and passed in options; settle OBSERVED BY LISTENER (waitForInstall answers null — the changeResult can only be the listener's); cancel AWAITED to the closed status; abort never claims copying stopped 2ms
+     ✓ present: read+meta per deliverable + the expose WRITE obligation; the commit witness is the same-exec append carrying the exec callId AND the native result's OWN turn — arbitrary integers refuse 1ms
+     ✓ present legality: relative deliverables ride workspace, OS-absolute deliverables are LEGAL and ride GOVERNED absolute-path effects (approval semantics at the commit lane, not a blanket refuse); relative .. stays refused THROUGH THE GRAMMAR 4ms
+     ✓ team faces keep their REAL optional fields: toolName+summary / note / limit classify as declared face params (unknown params still refuse) 1ms
+     ✓ dependency: no controlledInstall mount ⇒ the arm FAILS CLOSED before any fs of its own and before native entry; with the REAL EXPORTED installPrimaryRuntime mounted the arm RUNS the controlled path (its own manifest gate + validatePayloadEntries + rename-commit verify the payload) — no fixture copy/rename, no post-hoc BLOCKED, no self-hash claims 7ms
+     ✓ skill: classify consults the trusted catalog CURRENT facts — port absent, unknown name, catalog facts on the plan 0ms
+     ✓ domain surface: a model-supplied domainAuthorityId is a CLAIM verified against the mounted-port CURRENT registry 3ms
+     ✓ a present-but-wrong capture (name mismatch) or a capture without its definitionIdentity is a config defect: throws at assembly 0ms
+     ✓ r9: the passed-through nested-required face IS a canonical host registration face — REAL Host639 validator, no property-level markers, constraints bind 78ms
+ ❯ test/a5p4-lane-hygiene.test.ts (8 tests | 2 failed) 772ms
+     ✓ error codes, assurance levels and dimensions match element-for-element 2ms
+     ✓ the lease status mirror matches the frozen lease law 0ms
+     ✓ the lane has the expected production files 1ms
+     ✓ pure files import nothing outside the lane and carry no node: specifier 2ms
+     ✓ the I/O files import ONLY within the lane (no frozen-lane import, no bare specifiers) 1ms
+     × self-typechecks with strict settings (in-process; the shared tsconfig stays untouched) 694ms
+     × NAMED MOUNTS ONLY: every production reference to the lane is a booked row with one pinned public-face edge 69ms
+     ✓ hard-profile enablement is compiled OFF and no source turns it on 1ms
+ ❯ test/p6t3-restart.test.ts (5 tests | 2 failed) 9ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 2ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 4ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 0ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ❯ test/p6t3-mediation.test.ts (7 tests | 5 failed) 13ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 7ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 0ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 2ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 19 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > cordis_inspect_list > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > cordis_inspect_query > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > team_request_control > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > team_resolve_control > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > team_list_pending_control > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > team_grant_permission > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > team_revoke_permission > REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan
+AssertionError: expected undefined to deeply equal { …(5) }
+
+- Expected:
+{
+  "memberAgentId": "agent-member-1",
+  "owner": "owner-root-1",
+  "profileId": "profile-live-1",
+  "realmId": "realm-alpha",
+  "sessionHeaderId": "session-header-77",
+}
+
++ Received:
+undefined
+
+ ❯ test/a5m2-g1-surface-adapters.test.ts:486:51
+    484|         expect(parsed.ok === true ? [] : (parsed as unknown as { probl…
+    485|         expect(kindsOf(classified.effects)).toEqual(EXPECT_KINDS[name]…
+    486|         expect(classified.targetManifest.trusted).toEqual({ ...TRUSTED…
+       |                                                   ^
+    487|         expect(classified.generations).toMatchObject({
+    488|           bindingId: 'binding-3', bindingRevision: 7, policyGeneration…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/19]⎯
+
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse
+AssertionError: expected undefined to deeply equal { topologyRevision: 9, …(1) }
+
+- Expected:
+{
+  "topologyDigest": "sha256;toponine",
+  "topologyRevision": 9,
+}
+
++ Received:
+undefined
+
+ ❯ test/a5m2-g1-surface-adapters.test.ts:831:48
+    829|     expect(classified.ok).toBe(true)
+    830|     if (!classified.ok) return
+    831|     expect(classified.targetManifest.topology).toEqual({ topologyRevis…
+       |                                                ^
+    832|     const client = row.classify({ platform: 'client', provider: 'slot-…
+    833|     expect(client.ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/19]⎯
+
+ FAIL  test/a5p4-lane-hygiene.test.ts > a5p4 lane purity and dormancy > self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)
+AssertionError: expected 'Cannot find type definition file for …' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ Cannot find type definition file for 'node'.   The file is in the program because:     Entry point of type library 'node' specified in compilerOptions
++ Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:stream'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Cannot find name 'node:url'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
++ Parameter 'code' implicitly has an 'any' type.
++ Parameter 'signal' implicitly has an 'any' type.
+
+ ❯ test/a5p4-lane-hygiene.test.ts:133:18
+    131|     const diagnostics = ts.getPreEmitDiagnostics(program)
+    132|     const text = diagnostics.map((d) => ts.flattenDiagnosticMessageTex…
+    133|     expect(text).toBe('')
+       |                  ^
+    134|   })
+    135|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/19]⎯
+
+ FAIL  test/a5p4-lane-hygiene.test.ts > a5p4 lane purity and dormancy > NAMED MOUNTS ONLY: every production reference to the lane is a booked row with one pinned public-face edge
+AssertionError: unnamed production consumers of the confined provider lane: runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs",
++ ]
+
+ ❯ test/a5p4-lane-hygiene.test.ts:205:106
+    203|     // THE TEETH, unchanged: a reference with no booked name is a red,…
+    204|     // when the list was empty.
+    205|     expect(unnamed, `unnamed production consumers of the confined prov…
+       |                                                                                                          ^
+    206|     // Each booked name, on the tree that carries it, is pinned to ONE…
+    207|     // the public face — the shape of the mount is part of the booking.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/19]⎯
+
+ FAIL  test/a5p7-lane-hygiene.test.ts > a5p7 lane hygiene — DORMANT means DORMANT > zero production consumers: no importer outside the lanes and the a5p7 specs
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "runtime/src/plugin/live/web-gateway-assembly.mjs",
++   "runtime/test/a5m2-g3-fsproc.test.ts",
++ ]
+
+ ❯ test/a5p7-lane-hygiene.test.ts:206:23
+    204|       if (/jobs-gateway|vnext-field-mapping/.test(text)) importers.pus…
+    205|     }
+    206|     expect(importers).toEqual([])
+       |                       ^
+    207|   })
+    208|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/19]⎯
+
+ FAIL  test/a5w-integration-wiring.test.ts > a5w compile surface > the provider factory is exported for EXPLICIT calls, and only the named rows call it
+AssertionError: unbooked live-glue references to the confined provider lane: plugin/live/governed-families/g3-fsproc-adapters.mjs: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "plugin/live/governed-families/g3-fsproc-adapters.mjs",
++ ]
+
+ ❯ test/a5w-integration-wiring.test.ts:173:107
+    171|     const named = new Set(NAMED_PROVIDER_MOUNTS.map((m) => m.file))
+    172|     const unnamed = underSrc.filter((f) => !named.has(f))
+    173|     expect(unnamed, `unbooked live-glue references to the confined pro…
+       |                                                                                                           ^
+    174|     for (const mount of NAMED_PROVIDER_MOUNTS) {
+    175|       const path = join(RUNTIME, 'src', mount.file)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/19]⎯
+
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+
+Expected: "session-child-p6t3-leader"
+Received: "session-root-p6t1"
+
+ ❯ test/p6t3-mediation.test.ts:334:36
+    332|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    333|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    334|     expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+       |                                    ^
+    335|
+    336|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/19]⎯
+
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ test/p6t3-mediation.test.ts:399:31
+    397|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    398|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    399|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    400|       P6T3_SEEDS.leader.childSessionId,
+    401|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/19]⎯
+
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ test/p6t3-mediation.test.ts:415:29
+    413|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    414|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    415|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    416|       P6T3_SEEDS.leader.childSessionId,
+    417|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/19]⎯
+
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ test/p6t3-mediation.test.ts:429:43
+    427|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    428|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    429|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    430|       md.leaderInputs + md.scoutInputs,
+    431|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/19]⎯
+
+ FAIL  test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ test/p6t3-mediation.test.ts:471:18
+    469|     const scout = P6T3_SEEDS.scout
+    470|     const input = md.noGrant.input
+    471|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    472|     expect(input.attribution.fromInstanceId).toBe(
+    473|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/19]⎯
+
+ FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ test/p6t3-restart.test.ts:404:18
+    402|
+    403|     const input = rt.inputMed
+    404|     expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+       |                  ^
+    405|     expect(input.attribution).toEqual({
+    406|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/19]⎯
+
+ FAIL  test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode test/p6t3-helpers.ts:373:11
+    371| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    372|   if (!isMessagingError(error)) {
+    373|     throw new Error(
+       |           ^
+    374|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    375|     )
+ ❯ test/p6t3-restart.test.ts:451:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/19]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  19 failed | 123 passed (142)
+   Start at  20:11:47
+   Duration  2.08s (transform 3.97s, setup 0ms, import 5.41s, tests 1.26s, environment 1ms)
+

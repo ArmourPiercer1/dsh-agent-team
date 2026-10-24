@@ -470,6 +470,76 @@ const SCANNED_PATHS_A5M2K: readonly string[] = [
   'packages/runtime/test/a5m2-g2-provider-seams.test.ts',
 ]
 
+// A5M2-CENSUS BATCH24 (center, 2026-10-24, e78 re-anchor merge e32fa6a27):
+// the THIRTY-EIGHT scannable paths that entered int since the BATCH23 pin
+// (68e1e73a7, 1298) WITHOUT a per-path booking - measured per-path (git
+// ls-tree set-diff against the BATCH23 tree; 38 added, ZERO removed; the
+// filter mirrors the scanner's own: .ts/.mts/.mjs under packages/, with
+// node_modules/dist/.tmp-fault skipped and the p4t6 self-files excluded).
+// Families riding them: the subagent/workflow module pairs (batch-14 lane),
+// the G1 supply pair + its two specs, the G3 terminal wiring + plane-mount
+// + union specs, the G5 goal-wiring + mount-arm, the G6 PA supply + spec,
+// and the e78 re-anchor's g2-team-mount/g2-web-supply + wire spec. RED
+// FIRST, measured: the coverage leg read `expected 1336 to be 1298` on the
+// merged tree before this booking; no chain number copied, no baseline
+// widened, no negative control removed.
+// A5M2-BATCH25 (2026-10-24, booked by the CENTER integrator on the CI
+// attribution batch): the THREE scannable files added to THIS tree since the
+// BATCH24 anchor, each merged through a signed lane batch and center-verified
+// on int (gates named in the merge commits): the G1 control-85 hand-off spec
+// (candidate HELD for the root's limited ruling; a spec is scannable regardless
+// of the ruling's fate), the G2 REAL-SDK contract spec (r53), and the G5 lane
+// test-entry module (8722 series; a test-side entry, zero production surface).
+// RED-first, MEASURED on this tree: the coverage leg read `expected 1339 to be
+// 1336` BEFORE this booking; 1339 = 1336 + exactly these three, checked by
+// path; no chain value copied.
+const SCANNED_PATHS_A5M2B25: readonly string[] = [
+  'packages/runtime/test/a5m2-g1-control85-handover.test.ts',
+  'packages/runtime/test/a5m2-g2-mcp-sdk-contract.test.ts',
+  'packages/runtime/test/a5m2-g5-lane-entry.mjs',
+]
+
+const SCANNED_PATHS_A5M2B24: readonly string[] = [
+  'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g1-trusted-topology-supply.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g2-web-supply.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-pa-supply.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-pa-supply.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/subagent-wiring.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/workflow-adapters.d.mts',
+  'packages/runtime/src/plugin/live/governed-families/workflow-adapters.mjs',
+  'packages/runtime/test/a5m2-g1-query-assembly.test.ts',
+  'packages/runtime/test/a5m2-g1-trusted-topology-supply.test.ts',
+  'packages/runtime/test/a5m2-g2-wire-c1.test.ts',
+  'packages/runtime/test/a5m2-g3-bindings-union-c1.test.ts',
+  'packages/runtime/test/a5m2-g3-plane-mount-c1.test.ts',
+  'packages/runtime/test/a5m2-g3-terminal-wiring.test.ts',
+  'packages/runtime/test/a5m2-g5-goal-wiring.test.ts',
+  'packages/runtime/test/a5m2-g5-mount-arm.test.ts',
+  'packages/runtime/test/a5m2-g6-pa-supply-c1.test.ts',
+  'packages/runtime/test/a5m2-subagent-adapters.test.ts',
+  'packages/runtime/test/a5m2-subagent-plane-mount.test.ts',
+  'packages/runtime/test/a5m2-subagent-spawn-adapters.test.ts',
+  'packages/runtime/test/a5m2-subagent-spawn-plane-mount-c1.test.ts',
+  'packages/runtime/test/a5m2-subagent-spawn-wiring.test.ts',
+  'packages/runtime/test/a5m2-subagent-wiring.test.ts',
+  'packages/runtime/test/a5m2-workflow-adapters.test.ts',
+]
+
 const SCANNED_PATHS_A5M2W: readonly string[] = [
   // A5-M2 WRITE PA HAND-OFF (root 13:38 MIN product fix, write C2, CENTER):
   // the governed-write row's pre-dispatch hand-off wired on the audited M1
@@ -3220,6 +3290,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2J.length +
         SCANNED_PATHS_A5M2K.length +
         SCANNED_PATHS_A5M2W.length +
+        SCANNED_PATHS_A5M2B25.length +
+        SCANNED_PATHS_A5M2B24.length +
         SCANNED_PATHS_A5M2IH.length +
         SCANNED_PATHS_A5M2G2A.length +
         SCANNED_PATHS_A5M2B16.length +
@@ -3309,6 +3381,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2J.length +
         SCANNED_PATHS_A5M2K.length +
         SCANNED_PATHS_A5M2W.length +
+        SCANNED_PATHS_A5M2B25.length +
+        SCANNED_PATHS_A5M2B24.length +
         SCANNED_PATHS_A5M2IH.length +
         SCANNED_PATHS_A5M2G2A.length +
         SCANNED_PATHS_A5M2B16.length +

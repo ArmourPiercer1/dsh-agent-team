@@ -1019,15 +1019,18 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     expect(validatePaFamilyTarget('B-CONTROL', {
       trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
     })).toBeUndefined()
-    // The three EXISTING rules byte-identical: B-SESSION's own law still
-    // accepts its own target and refuses the B-INSPECT leaves as extra keys
-    // (no variant grammar reached, no rule moved).
+    // B-SESSION's own law still accepts its OWN todo target and refuses the
+    // B-INSPECT leaves as extra keys. (Root 01:01 re-pin: the fixture now
+    // carries the REAL mint literal 'replace-list' (todo.mjs:64) — the old
+    // 'todo-list' was a fixture fiction no mint produces, legal before only
+    // because nothing typed the operation leaf; the todo group's law over
+    // every other leaf is byte-preserved.)
     expect(validatePaFamilyTarget('B-SESSION', {
-      operation: 'todo-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
+      operation: 'replace-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
       counts: { pending: 1, inProgress: 0, completed: 2 }, allowParallelPolicy: false, paramFingerprint: 'sha256:p',
     })).toBeUndefined()
     expect(validatePaFamilyTarget('B-SESSION', {
-      operation: 'todo-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
+      operation: 'replace-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
       counts: { pending: 1, inProgress: 0, completed: 2 }, allowParallelPolicy: false, paramFingerprint: 'sha256:p',
       inspectVariant: 'list', listLaw: 'x',
     })).toBe('inspectVariant: not part of the B-SESSION typed plan')

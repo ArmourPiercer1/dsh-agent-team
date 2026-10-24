@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/packages/runtime
+
+ ✓ test/a5m2-family-rules-c1.test.ts (21 tests) 24ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  19:45:30
+   Duration  530ms (transform 297ms, setup 0ms, import 369ms, tests 24ms, environment 0ms)
+

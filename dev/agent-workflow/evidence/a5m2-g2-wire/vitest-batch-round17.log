@@ -1,0 +1,82 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/packages/runtime
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C2-1 success POSITIVE: real bytes of the real file come back (business result, not a guard light)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C2-2 window consumption is REAL business output (offset/limit slice the real bytes)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C2-3 read leaves ZERO durable state: target bytes/attrs unchanged by the governed leg
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-2 symlink alias to outside never discloses
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-3 swap to an outside symlink AFTER a real read: the next call answers the NEW truth or refuses — never the old snapshot
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=25 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/swap.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-3 swap to an outside symlink AFTER a real read: the next call answers the NEW truth or refuses — never the old snapshot
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-6 malformed window refused BEFORE any resolution (pure parameter law first)
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-7 default-deny lane answers BEFORE the backend; allow-rule path still answers
+[dsh-agent-team] a5g7-read: governed-read default-deny refusal call path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-7 default-deny lane answers BEFORE the backend; allow-rule path still answers
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-8 subtree rule WITHOUT the containment seam cannot even MOUNT (admission never guesses coverage); WITH the seam it admits
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-11 all-allow path: unanswerable call-level facts refuse the real read with ZERO bytes
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-11b all-allow path: the plane asks with the REAL call identity, and a complete ALL-ALLOW answer delivers the bytes
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M1 production A→B: the open leg authorizes on the REAL walk, the body redeems through the REAL edge and the bytes arrive
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:6c3e9295-6dd3-4aef-b8df-ea6fc5be4f79-2
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M1 production A→B: the open leg authorizes on the REAL walk, the body redeems through the REAL edge and the bytes arrive
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M2 close before the body: the plan fact and the flight both die, and the late body delivers ZERO bytes
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:3ebbc747-2952-4856-ba0b-b1b0af68d4b2-2
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M2 close before the body: the plan fact and the flight both die, and the late body delivers ZERO bytes
+[dsh-agent-team] a5g7-read: governed-read cancelled-at-pa-edge
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M3 a second open on the same token is a SIDE-EFFECT-FREE refusal — no reuse, and the first leg keeps its state
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:ba0d2d37-286d-48f7-950e-b313b7acbcf2-2
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M3 a second open on the same token is a SIDE-EFFECT-FREE refusal — no reuse, and the first leg keeps its state
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M4 a close that lands on an in-flight leg ends it: nothing is registered late and the token is never re-armed
+[dsh-agent-team] a5g7-read: governed-read pa-handoff dropped — the leg was closed while PA was being asked
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M5 the refusal that ALREADY wrote its pending placeholder says it owns it — and the close clears the placeholder
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > R-C1-13 workspace-relative rules (r7 seam): a relative DENY mounts where the fallback refused; the relative subtree COVERS the real read; an escaping rule keeps the existing semantics; the production mount carries the seam
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+stdout | test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > R-C1-13 workspace-relative rules (r7 seam): a relative DENY mounts where the fallback refused; the relative subtree COVERS the real read; an escaping rule keeps the existing semantics; the production mount carries the seam
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2/tests/homes/a5-m1-read-mvle548x/root/target.txt
+
+ ✓ test/a5-m1-read-c1c2.test.ts (22 tests) 434ms
+ ✓ test/a5m2-g2-provider-seams.test.ts (28 tests) 29ms
+ ✓ test/a5m2-family-rules-c1.test.ts (21 tests) 24ms
+ ✓ test/a5m2-write-handoff-c1.test.ts (11 tests) 102ms
+ ✓ test/a5m2-image-handoff-c1.test.ts (11 tests) 112ms
+ ✓ test/a5m2-g2-wire-c1.test.ts (13 tests) 154ms
+ ✓ test/a5m2-todo-assembly-c1.test.ts (16 tests) 389ms
+
+ Test Files  7 passed (7)
+      Tests  122 passed (122)
+   Start at  19:56:44
+   Duration  2.31s (transform 5.72s, setup 0ms, import 7.97s, tests 1.24s, environment 1ms)
+
