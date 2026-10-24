@@ -480,6 +480,9 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
   // named NOT-READY gap, never a stand-in — and the lane-pairing law then
   // keeps the web_search row honestly unmounted.
   const webSearchLane = search === null || typeof search !== 'object' ? null : (() => {
+    if (!Number.isInteger(search.searchMaxResults) || search.searchMaxResults < 1) {
+      throw new Error('G2_SUPPLY_ENTRY_INVALID: the search half needs the REAL deployment cap searchMaxResults (positive integer — the tool-web Config face searchMaxResults, default WEB_SEARCH_MAX_RESULTS=8 at tool-web/src/search.ts:19; the lane cannot cancel the cap by absence)')
+    }
     const sp = search.fixedSearchProvider
     if (sp === null || typeof sp !== 'object' || typeof sp.id !== 'string' || sp.id.length === 0) {
       throw new Error('G2_SUPPLY_ENTRY_INVALID: the search half needs the REAL selected provider object with its own public id (exa|perplexity|deepseek-official); nothing pins around an absence or a stand-in')
@@ -495,7 +498,7 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
     // the derived endpoint origin rides the lane so the backend can hold
     // the classify searchOrigin to the SAME source (e51-final ②).
     const declaredSearchObj = search.declared ?? {}
-    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats, ...(typeof declaredSearchObj.endpointOrigin === 'string' ? { endpointOrigin: declaredSearchObj.endpointOrigin } : {}) })
+    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats, searchMaxResults: search.searchMaxResults, ...(typeof declaredSearchObj.endpointOrigin === 'string' ? { endpointOrigin: declaredSearchObj.endpointOrigin } : {}) })
   })()
   return Object.freeze({
     web_fetch: Object.freeze({
@@ -639,15 +642,30 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
           // gateway law (search.ts:237-238): ONE query rides the provider's
           // PUBLIC answer VERBATIM — no re-shaping; the merge below is the
           // multi-query law only.
+          // THE DEPLOYMENT CAP (root 05:0x): searchMaxResults is SUPPLIED
+          // (the tool-web Config face, default WEB_SEARCH_MAX_RESULTS=8,
+          // tool-web/src/search.ts:19 — the lane never cancels it by
+          // absence; the mount law above refuses such a lane). Single
+          // requests ride the PUBLIC maxResults field (types.ts:25) and
+          // the WebRuntime enforcement law VERBATIM (capSources,
+          // web/src/index.ts:196-199): over-return truncates sources and
+          // flags truncated; the merge then re-applies the TOTAL cap with
+          // droppedSource (search.ts:270-279).
+          const maxResults = lane.searchMaxResults
           if (queries.length === 1) {
-            out = Object.freeze(await laneMethod.call(lane.provider, { query: queries[0] }, signal))
+            const one = await laneMethod.call(lane.provider, { query: queries[0], maxResults }, signal)
+            out = Object.freeze(typeof one?.sources?.length === 'number' && one.sources.length > maxResults
+              ? { ...one, sources: one.sources.slice(0, maxResults), truncated: true }
+              : one)
           } else {
           const per = []
           for (const query of queries) {
-            // the PUBLIC one-query request, verbatim, per query; the answer
-            // is the PUBLIC WebSearchResult (web/src/types.ts:35-42):
-            // {content?, sources, truncated} — read under THAT schema.
-            per.push({ query, res: await laneMethod.call(lane.provider, { query }, signal) })
+            // the PUBLIC one-query request (maxResults = cost/latency
+            // optimization at the provider, enforced regardless after).
+            const raw = await laneMethod.call(lane.provider, { query, maxResults }, signal)
+            per.push({ query, res: typeof raw?.sources?.length === 'number' && raw.sources.length > maxResults
+              ? { ...raw, sources: raw.sources.slice(0, maxResults), truncated: true }
+              : raw })
           }
           // mergeSearchResults (tool-web/src/search.ts:258-292) VERBATIM:
           // dedupe by url, round-robin by rank across the per-query results,
@@ -661,11 +679,13 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
           for (const entry of per) {
             if (Array.isArray(entry.res?.sources)) sourceRanks = Math.max(sourceRanks, entry.res.sources.length)
           }
-          for (let rank = 0; rank < sourceRanks; rank++) {
+          let droppedSource = false
+          merge: for (let rank = 0; rank < sourceRanks; rank++) {
             for (const entry of per) {
               const source = Array.isArray(entry.res?.sources) ? entry.res.sources[rank] : undefined
               if (source !== undefined && !seen.has(source.url)) {
                 seen.add(source.url)
+                if (sources.length === maxResults) { droppedSource = true; break merge }
                 sources.push(source)
               }
             }
@@ -676,7 +696,7 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
           out = Object.freeze({
             ...(contents.length > 0 ? { content: contents.join('\n\n') } : {}),
             sources: Object.freeze(sources),
-            truncated: per.some((entry) => entry.res?.truncated === true),
+            truncated: per.some((entry) => entry.res?.truncated === true) || droppedSource,
           })
           }
         } else {
