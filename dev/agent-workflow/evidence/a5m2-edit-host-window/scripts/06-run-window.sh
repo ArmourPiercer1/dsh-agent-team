@@ -74,12 +74,34 @@ for P in 3183 3498; do
 done
 echo "ports 3183/3498 free (pre-check)"
 
-# [4] ONE bounded run: own process group, 300s outer TERM to the GROUP, 20s
-#     grace, then KILL the GROUP only, then wait. Foreign trees untouched.
+# [4] ONE bounded run: own process group; 300s outer TERM to the OWN group,
+#     20s grace, then KILL the OWN group only; foreign trees untouched.
+#     (First firing aborted pre-boot with zero Host spawns: this host's
+#     timeout build (coreutils 9.4 variant, help-verified) LACKS --group —
+#     rc125 at the tool, HOME never created, ports never bound. Replaced
+#     with an equivalent pure-bash own-group watchdog; same bound, same law.)
+#     REAL-SPAWN receipt (root order): $! after setsid -w IS the exec'd node
+#     runner as session/group leader (PGID == PID, measured shape); written
+#     BEFORE the wait; wait carries the real rc.
+setsid -w env A5M2_EDIT_WINDOW=GRANTED node "$RUNNER" &
+SPAWN_PID=$!
+sleep 1
+SPAWN_PGID=$(ps -o pgid= -p "$SPAWN_PID" 2>/dev/null | tr -d '[:space:]'); [ -n "$SPAWN_PGID" ] || SPAWN_PGID="$SPAWN_PID"
+printf '{ "spawnPid": %s, "spawnPgid": "%s", "nodeChildPid": "%s", "outerBound": "bash watchdog: TERM own group at 300s, KILL at 320s", "startedUtc": "%s" }\n' \
+  "$SPAWN_PID" "$SPAWN_PGID" "$SPAWN_PID" "$(date -u +%FT%TZ)" > "$OUT/spawn-receipt.json"
+echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
+(
+  sleep 300
+  kill -TERM -"${SPAWN_PGID}" 2>/dev/null || true
+  sleep 20
+  kill -KILL -"${SPAWN_PGID}" 2>/dev/null || true
+) &
+WATCHDOG_PID=$!
 RC=0
-A5M2_EDIT_WINDOW=GRANTED setsid timeout --group --kill-after=20s 300s \
-  node "$RUNNER" || RC=$?
-echo "runner rc=${RC} (124/137 = outer 300s bound fired on the OWN group)"
+wait "$SPAWN_PID" || RC=$?
+kill "$WATCHDOG_PID" 2>/dev/null || true
+wait "$WATCHDOG_PID" 2>/dev/null || true
+echo "runner rc=${RC} (143/137 = outer 300s/320s bound fired on the OWN group)"
 
 # [5] post facts: ports free, this window's HOME + lock retained, fixture
 #     byte-stable (read-only reuse), HOME new-bytes budget.
