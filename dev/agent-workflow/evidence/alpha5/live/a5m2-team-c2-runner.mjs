@@ -204,8 +204,30 @@ function envelopeCheck () {
   return { ok: problems.length === 0, problems }
 }
 
+// [C1] The WHOLE-WINDOW deadline wins over any per-leg budget: every fetch is
+// clamped to what the window has left, so a 240s RPC budget can never outlive
+// the 300s window. `setWindowDeadline(0)` clears it (tests, non-window calls).
+let windowDeadlineAt = 0
+export function setWindowDeadline (msFromNow) { windowDeadlineAt = msFromNow === 0 ? 0 : Date.now() + msFromNow }
+export function windowRemainingMs () { return windowDeadlineAt === 0 ? Number.POSITIVE_INFINITY : windowDeadlineAt - Date.now() }
+export function clampToWindow (timeoutMs) {
+  const left = windowRemainingMs()
+  if (left <= 0) throw new Error(`WINDOW_WALL_EXHAUSTED: the window deadline wins over the ${String(timeoutMs)}ms leg budget`)
+  return Math.min(timeoutMs, left)
+}
+
+// [C2] mid-window ceiling guard: exceeded => ABORT now, not at the final du.
+let worldGuard = undefined
+export function setWorldGuard (path, ceilingBytes) { worldGuard = path === undefined ? undefined : { path, ceilingBytes } }
+export function checkWorldBudget (where) {
+  if (worldGuard === undefined) return { ok: true, used: 0 }
+  const used = worldBytes(worldGuard.path)
+  if (used > worldGuard.ceilingBytes) throw new Error(`WORLD_CEILING_EXCEEDED at ${where}: ${String(used)} > ${String(worldGuard.ceilingBytes)}`)
+  return { ok: true, used }
+}
+
 const jsonFetch = async (url, init, timeoutMs = 240_000) => {
-  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
+  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(clampToWindow(timeoutMs)) })
   const text = await res.text()
   try { return { status: res.status, headers: res.headers, body: JSON.parse(text) } }
   catch { return { status: res.status, headers: res.headers, body: text } }
@@ -259,10 +281,11 @@ export function pairToolResults (messages, issuedIds) {
  * a failed state, or a transport/shape anomaly stops immediately.
  */
 export async function teamReadyBarrier ({ origin, cookie, budgetMs = 180_000, pollMs = 1_500, log = () => {} }) {
-  const deadline = Date.now() + budgetMs
+  const deadline = Math.min(Date.now() + budgetMs, windowDeadlineAt === 0 ? Number.POSITIVE_INFINITY : windowDeadlineAt)
   let polls = 0
   for (;;) {
     polls += 1
+    checkWorldBudget(`readiness-poll-${String(polls)}`)
     const res = await remoteCall(origin, cookie, 'team.listRoots', {}, 'bteam-ready', 3)
     const outcome = remoteOutcome(res)
     if (outcome.state === 'ok') return { ready: true, polls, value: outcome.value }
@@ -503,9 +526,10 @@ export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, se
   ].join('\n')
   const prompt = await apiPrompt(origin, cookie, sessionId, directive, `bteam-members-${runStamp}`)
   const promptOutcome = remoteOutcome(prompt)
-  const deadline = Date.now() + budgetMs
+  const deadline = Math.min(Date.now() + budgetMs, windowDeadlineAt === 0 ? Number.POSITIVE_INFINITY : windowDeadlineAt)
   let pairs = []
   for (;;) {
+    checkWorldBudget('members-poll')
     const events = sessionEventsForRun(home, marker)
     pairs = durableToolPairs(events, 'team_list_members')
     if (pairs.some((pair) => pair.paired)) break
@@ -808,16 +832,30 @@ export function validateMountLayer (row, { worldAbs, mount }) {
 
 /** Scripted leader decide (local mock, localhost): exactly one call, then done. */
 export function makeLeaderMembersDecide ({ marker, doneText }) {
+  let emitted = false
   const toolCall = (name, args) => ({ kind: 'tool-call', toolCalls: [{ id: `call-c2h1-${Math.random().toString(36).slice(2, 10)}`, name, arguments: args }] })
+  const partsOf = (m) => (Array.isArray(m?.content) ? m.content : [])
+  const hasMarkerInParts = (msgs, marker) => msgs.some((m) => partsOf(m).some((b) => typeof b?.text === 'string' && b.text.includes(marker)))
+  const answered = (msgs) => msgs.some((m) => partsOf(m).some((b) => b?.type === 'tool_result' || m?.role === 'tool'))
   const textOf = (m) => typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? m.content.map((b) => (typeof b?.text === 'string' ? b.text : '')).join('') : ''
   return ({ req }) => {
     const msgs = Array.isArray(req?.messages) ? req.messages : []
     const first = textOf(msgs[0] ?? {})
     if (first.startsWith('Create a concise title') || first.startsWith('Generate the session title')) return { kind: 'text', content: 'A5M2 C2 H1 window-1' }
+    // [Q] The REAL Messages API returns tool results as role:'user' with
+    // content[type:'tool_result'] (mock-deepseek.mjs:298 supports that shape and
+    // :265 hands the RAW req to decide), while counting only role:'tool' would
+    // miss it and re-issue the call. Chosen fix: (ii) a ONCE-FIRED LATCH per
+    // window — after the single emission it is DONE regardless of shape — PLUS
+    // (i) explicit recognition of a real tool_result as 'already answered'.
+    if (answered(msgs)) return { kind: 'text', content: doneText }
+    if (emitted) return { kind: 'text', content: doneText }
     const lastUser = msgs.filter((m) => m?.role === 'user').map(textOf).filter((t) => t.length > 0).pop() ?? ''
     const toolTurns = msgs.filter((m) => m?.role === 'tool').length
-    if (!lastUser.includes(marker)) return { kind: 'text', content: 'A5M2_C2_H1_IDLE' }
-    return toolTurns === 0 ? toolCall('team_list_members', {}) : { kind: 'text', content: doneText }
+    if (!lastUser.includes(marker) && !hasMarkerInParts(msgs, marker)) return { kind: 'text', content: 'A5M2_C2_H1_IDLE' }
+    if (toolTurns > 0) return { kind: 'text', content: doneText }
+    emitted = true
+    return toolCall('team_list_members', {})
   }
 }
 
@@ -909,6 +947,8 @@ export async function runTeamC2 ({
   const rec = (leg, ok, detail) => { trace.push({ leg, ok: ok === true, detail }); return ok === true }
   let mock; let mockPort
   const homeAbs = join(REPO, world)
+  setWindowDeadline(wallMs)
+  setWorldGuard(homeAbs, worldCeilingBytes)
   if (existsSync(homeAbs)) { rec('C-FRESH-HOME', false, `${world} already exists — a world is never reused`); return { trace, ok: false } }
   rec('C-FRESH-HOME', true, world)
   const wall = Date.now() + wallMs
@@ -971,6 +1011,7 @@ export async function runTeamC2 ({
     const root = await createUniqueTeamRoot({ origin, cookie, ...live })
     rec('C-CREATE-ONCE', root.ok, `initialize-only ${root.stage} root=${root.rootSessionId}${root.error === undefined ? '' : ` error=${JSON.stringify(root.error).slice(0, 160)}`}`)
     if (!root.ok) return { trace, ok: false, root }
+    checkWorldBudget('after-create')
     // [1] optional probes do NOT run in window-1; they stay available by flag.
     const probes = {}
     if (optionalProbes) {
@@ -1002,21 +1043,37 @@ export async function runTeamC2 ({
   }
 
   let outcome
-  try { outcome = await flow() } catch (error) { outcome = { trace, ok: false, error: error instanceof Error ? error.message : String(error) } }
+  try { outcome = await flow() } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    outcome = { trace, ok: false, error: message }
+    rec('C-RUNTIME-ABORT', false, message)
+  }
   // [4] teardown truth: stop OUR child, wait for close, then a REAL port probe
   // and the world ceiling. An external signal can never make this narrate green.
+  // [C4] two SEPARATE, separately-recorded facts: this run's child exit event is
+  // awaited FIRST, and only then is the port probed independently. A port probe
+  // never stands in for waitClose. Only THIS run's child handle is touched.
+  const child = instance.child
   await instance.stop()
-  if (mock !== undefined) { try { await mock.stop?.() ?? mock.close?.() } catch { /* reported below by the port probe */ } }
-  let closed = false
+  let childClose
+  if (child === undefined) childClose = { closed: true, detail: 'no child handle was ever created by this run' }
+  else if (child.exitCode !== null || child.signalCode !== null) childClose = { closed: true, detail: `exit code=${String(child.exitCode)} signal=${String(child.signalCode)}` }
+  else childClose = await Promise.race([
+    new Promise((resolve) => child.once('exit', (code, signal) => resolve({ closed: true, detail: `exit code=${String(code)} signal=${String(signal)}` }))),
+    new Promise((resolve) => setTimeout(() => resolve({ closed: false, detail: 'child exit event not observed within 15s' }), 15_000)),
+  ])
+  rec('child-exit', childClose.closed, childClose.detail)
+  if (mock !== undefined) { try { await mock.stop?.() ?? mock.close?.() } catch { /* recorded by the probe below */ } }
   const mockFree = mockPort === undefined || await portIsFree(mockPort)
-  for (let waited = 0; waited < 15_000 && closed !== true; waited += 500) { closed = await portIsFree(port); if (closed !== true) await new Promise((r) => setTimeout(r, 500)) }
   const free = await portIsFree(port)
+  rec('port-free-after-stop', free, `independent probe of ${String(port)} after the child exit event`)
   const used = worldBytes(homeAbs)
   const withinCeiling = used <= worldCeilingBytes
-  const teardownOk = closed === true && free === true && withinCeiling && mockFree === true
-  rec('teardown', teardownOk, `waitClose=${String(closed)} portFree=${String(free)} worldBytes=${String(used)}/${String(worldCeilingBytes)}`)
+  const teardownOk = childClose.closed === true && free === true && withinCeiling && mockFree === true
+  rec('teardown', teardownOk, `childExit=${String(childClose.closed)} portFreeProbe=${String(free)} worldBytes=${String(used)}/${String(worldCeilingBytes)} mockFree=${String(mockFree)}`)
   outcome.ok = outcome.ok === true && teardownOk
-  outcome.teardown = { waitClose: closed, portFree: free, mockPort, mockFree, worldBytes: used, worldCeilingBytes }
+  outcome.teardown = { childExit: childClose.closed, childExitDetail: childClose.detail, portFreeProbe: free, mockPort, mockFree, worldBytes: used, worldCeilingBytes }
+  setWindowDeadline(0); setWorldGuard(undefined)
   return outcome
 }
 
@@ -1049,6 +1106,24 @@ export function windowReplay ({ productCommit, packageSha256, packageTgz, instal
   const decide = makeLeaderMembersDecide({ marker: 'A5M2C2H1_MEMBERS', doneText: 'A5M2C2H1_MEMBERS_DONE' })
   const call = decide({ req: { messages: [{ role: 'user', content: 'A5M2C2H1_MEMBERS' }] } })
   const after = decide({ req: { messages: [{ role: 'user', content: 'A5M2C2H1_MEMBERS' }, { role: 'tool', content: 'x' }] } })
+  // REAL Messages protocol shape: the tool result arrives as role:'user' with
+  // content[type:'tool_result'] — the decide must NOT re-issue the call.
+  const realProtocol = decide({ req: { messages: [{ role: 'user', content: [{ type: 'text', text: 'A5M2C2H1_MEMBERS' }] }, { role: 'assistant', content: [{ type: 'tool_use', id: 'call-1', name: 'team_list_members', input: {} }] }, { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'call-1', content: '[]' }] }] } })
+  run('C-MOCK-NO-REPEAT', { ok: realProtocol?.kind === 'text' && realProtocol?.content === 'A5M2C2H1_MEMBERS_DONE', detail: 'role:user + content[type:tool_result] (mock-deepseek.mjs:298 shape, raw req at :265) is treated as answered; the once-fired latch also blocks any second emission' })
+  setWindowDeadline(1_000)
+  const clamped = clampToWindow(240_000)
+  setWindowDeadline(0)
+  const cleared = clampToWindow(240_000)
+  setWindowDeadline(-1)
+  let threw = false
+  try { clampToWindow(240_000) } catch { threw = true }
+  setWindowDeadline(0)
+  run('C-WINDOW-CLAMP', { ok: clamped <= 1_000 && cleared === 240_000 && threw, detail: `240s leg budget clamped to ${String(clamped)}ms inside the window; exhausted window throws instead of outliving it` })
+  setWorldGuard(REPO, 1) // a directory that certainly exists: the guard must abort on it
+  let guardThrew = ''
+  try { checkWorldBudget('replay') } catch (error) { guardThrew = error instanceof Error ? error.message : String(error) }
+  setWorldGuard(undefined)
+  run('C-WORLD-GUARD-ABORTS', { ok: guardThrew.startsWith('WORLD_CEILING_EXCEEDED'), detail: guardThrew === '' ? 'NOT OBSERVED' : guardThrew.slice(0, 120) })
   run('C-MOCK-DECIDE', { ok: call?.kind === 'tool-call' && call.toolCalls.length === 1 && call.toolCalls[0].name === 'team_list_members' && after?.kind === 'text', detail: 'local scripted mock (localhost): exactly one team_list_members call then done; no external/paid LLM' })
   if (pre.sourceSurfaceDisclosed.length > 0) run('C-SOURCE-SURFACE-DISCLOSED', { ok: true, detail: `reported, never swallowed: ${pre.sourceSurfaceDisclosed.join(' | ')}` })
   return { mode: 'window-replay', booted: false, hostGated: ['C-BOOT', 'C-READINESS-BARRIER', 'C-CREATE-ONCE', 'C-LEADER-MEMBERS', 'teardown'], legs, ok: legs.every((row) => row.ok === true) }
@@ -1079,7 +1154,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const pre = identityPreflight({ productCommit: FROZEN.productCommit, packageSha256: FROZEN.packageSha256, packageTgz: FROZEN.packageTgz, mount })
     if (pre.ok !== true) { console.error(`identity preflight refused: ${pre.problems.join('; ')}`); process.exit(2) }
     const runStamp = stamp
-    process.on('SIGTERM', () => { console.error('SIGTERM: window aborted, exit non-zero (teardown truth is not narrated)'); process.exitCode = 1; process.exit(1) })
+    // [C3] a signal must NOT process.exit past the cleanup: collapse the window
+    // deadline so the next clamped fetch/check throws inside the run, the
+    // child-exit + port-probe teardown still executes, and we exit non-zero.
+    let signalSeen
+    const onSignal = (name) => () => {
+      signalSeen = name
+      console.error(`${name}: collapsing the window deadline so cleanup runs; exit will be non-zero`)
+      setWindowDeadline(1)
+    }
+    process.on('SIGTERM', onSignal('SIGTERM'))
+    process.on('SIGINT', onSignal('SIGINT'))
     const outcome = await runTeamC2({
       port: Number(valueOf('--port') ?? ROW_CONFIG.port),
       world: freshWorld(stamp),
@@ -1089,7 +1174,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       live: { runStamp, blueprintId: artifact.blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt'), leaderSessionId: valueOf('--leader-session'), expectContains: (valueOf('--expect-contains') ?? '').split(',').map((v) => v.trim()).filter((v) => v.length > 0) },
     })
     console.log(JSON.stringify(outcome, null, 2))
-    process.exitCode = outcome.ok ? 0 : 1
+    process.exitCode = outcome.ok && signalSeen === undefined ? 0 : 1
+    if (signalSeen !== undefined) console.error(`exit 1: the window was aborted by ${signalSeen}`)
   } else {
     const result = precheck()
     console.log(JSON.stringify({ mode: 'precheck', booted: false, ...result }, null, 2))

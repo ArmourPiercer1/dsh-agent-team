@@ -17,7 +17,7 @@
     {
       "leg": "C-FRESH-HOME-STAMP",
       "ok": true,
-      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T045930730Z"
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T050349366Z"
     },
     {
       "leg": "C-WINDOW-CEILINGS",
@@ -37,12 +37,12 @@
     {
       "leg": "C-IDENTITY-PREFLIGHT",
       "ok": true,
-      "detail": "commit=699cc4fb7 sha256=c8dd3f07b precheck=false sourceSurfaceDisclosed=2"
+      "detail": "commit=699cc4fb7 sha256=c8dd3f07b precheck=false sourceSurfaceDisclosed=1"
     },
     {
       "leg": "C-ROW-ASSEMBLED",
       "ok": true,
-      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T045930730Z realm=a5m2-team-c2-h1--4T045930730Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T045930730Z"
+      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T050349366Z realm=a5m2-team-c2-h1--4T050349366Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T050349366Z"
     },
     {
       "leg": "C-MOUNT-VALIDATE",
@@ -65,6 +65,21 @@
       "detail": "derived at runtime from the real create answer (leader IS the root session): agent-bindings.mjs:4744, :7612"
     },
     {
+      "leg": "C-MOCK-NO-REPEAT",
+      "ok": true,
+      "detail": "role:user + content[type:tool_result] (mock-deepseek.mjs:298 shape, raw req at :265) is treated as answered; the once-fired latch also blocks any second emission"
+    },
+    {
+      "leg": "C-WINDOW-CLAMP",
+      "ok": true,
+      "detail": "240s leg budget clamped to 1000ms inside the window; exhausted window throws instead of outliving it"
+    },
+    {
+      "leg": "C-WORLD-GUARD-ABORTS",
+      "ok": true,
+      "detail": "WORLD_CEILING_EXCEEDED at replay: 1180219203 > 1"
+    },
+    {
       "leg": "C-MOCK-DECIDE",
       "ok": true,
       "detail": "local scripted mock (localhost): exactly one team_list_members call then done; no external/paid LLM"
@@ -72,7 +87,7 @@
     {
       "leg": "C-SOURCE-SURFACE-DISCLOSED",
       "ok": true,
-      "detail": "reported, never swallowed: product HEAD 45cce1e4af78 is not an accepted head (pin ced9e7dbb63b / tip 5062988f0626) | product package has TRACKED modifications — never write it, report it"
+      "detail": "reported, never swallowed: product HEAD 680068a7aca5 is not an accepted head (pin ced9e7dbb63b / tip 5062988f0626)"
     }
   ],
   "ok": true
