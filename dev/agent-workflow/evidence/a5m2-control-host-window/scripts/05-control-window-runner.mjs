@@ -20,11 +20,17 @@
  *   L4 member  toolCall team_resolve_control ATTEMPT -> REFUSED (the member's
  *              surface carries no resolver)
  *
- * Outer-layer permissions are FULLY ARRANGED for this scenario (root a738 ③):
- * member: allow-lane tool-invoke team_request_control (its outer Ask is
- * arranged BEFORE the call — never parked waiting on its own 83 round trip);
- * leader: governed, allow-lane for exactly the three leader tools this
- * scenario calls. Default deny elsewhere, both roles.
+ * Outer-layer arrangement per the CLOSED GRAMMAR the real parse enforced (root
+ * a738 ③, read through the product's own validator): the permission `tool`
+ * vocabulary is closed and does NOT contain team_request_control/team_resolve_
+ * control (only team_list_pending_control among the Control faces) — no rule
+ * can name the 83/84 faces, and the PR-D precedent (leader default:ask with
+ * the resolve unruled, executed) proves PA never gates them: their outer
+ * arrangement is the request-control/resolve-control ENVELOPES + teamTools
+ * face + the native's resolver-role closure (invariant 37). Governed faces
+ * ARE arranged: leader allow-lane team_create_member + team_list_pending_
+ * control; member default deny with empty rules (its call is not ruleable;
+ * no Ask can park behind its own 83 round trip). Default deny elsewhere.
  *
  * BOOT is behind the root's ruling: A5M2_CONTROL_WINDOW=GRANTED. Without it:
  * NOT_RUN receipt, rc 3. A5M2_CONTROL_DRY=1 runs the REAL pre-flight to the
@@ -93,11 +99,20 @@ const ANCHOR_V3_YAML = [
 const SAVED_BP_V3_YAML = [
   '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 CONTROL window team. Resolve member control requests through your team tools when instructed; keep answers brief."',
-  '  capabilities:', '    permissions:', '      default: deny', '      allow:', // LEADER governed + OUTER ARRANGED (root a738 ③): exactly the three leader tools this scenario calls, any resource; nothing else.
+  '  capabilities:', '    teamTools:', '      kind: allow', '      items:', // LeaderTemplate capabilities REQUIRE teamTools (validate.ts:967 — the real parse
+  '        - team_create_member', '        - team_list_pending_control', // caught its absence): the closed leader face for THIS scenario, exact three.
+  '        - team_resolve_control',
+  '    builtinToolDeny:', // capabilities is ALL-OR-NOTHING once present (validate.ts:966-970) —
+  '      - ask_user_question', '      - create_goal', '      - exit_plan_mode', // full closed shape, kit leaderBlock law: teamTools/builtinToolDeny/skills/mcp/(permissions).
+  '      - get_goal', '      - glob', '      - grep', '      - job_kill',
+  '      - job_list', '      - job_output', '      - present', '      - skill',
+  '      - update_goal', '      - web_fetch', '      - web_search', '      - workflow',
+  '    skills:', '      kind: allow', '      items: []',
+  '    mcp:', '      kind: allow', '      items: []',
+  '    permissions:', '      default: deny', '      allow:', // LEADER governed + OUTER ARRANGED (root a738 ③): exactly the three leader tools this scenario calls, any resource; nothing else.
   '          - tool: team_create_member', '            resource:', '              kind: any',
   '          - tool: team_list_pending_control', '            resource:', '              kind: any',
-  '          - tool: team_resolve_control', '            resource:', '              kind: any',
-  '        ask: []', '        deny: []',
+  '      ask: []', '      deny: []', // team_resolve_control carries NO rule ON PURPOSE: outside the closed permission
   'members:', '  - templateId: ctl-worker',
   '    persona: "You are the control worker. Follow the marker instructions literally and only."',
   '    capabilities:', '      teamTools:', '        kind: allow', '        items:',
@@ -108,10 +123,9 @@ const SAVED_BP_V3_YAML = [
   '        - job_list', '        - job_output', '        - present', '        - skill',
   '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
-  '      permissions:', // MEMBER governed + OUTER ARRANGED: the 83 tool call rides an ALLOW lane — its outer Ask is arranged BEFORE the call, never parked waiting on its own 83 round trip (root a738 ③).
-  '        default: deny', '        allow:',
-  '          - tool: team_request_control', '            resource:', '              kind: any',
-  '        ask: []', '        deny: []',
+  '      permissions:', // MEMBER governed. The 83/84 faces live OUTSIDE the closed permission
+  '        default: deny', '        allow: []', // vocabulary (the real parse proved no rule can
+  '        ask: []', '        deny: []', // request-control ENVELOPE below is this call's outer arrangement (root a738 ③).
   'teamEnvelope:', '  allow:',
   '    - assign-task', '    - create-member', '    - send-message',
   '    - report-progress', '    - request-control', '    - resolve-control',
@@ -599,8 +613,19 @@ async function main() {
   currentCriterion = 'L4-identity'
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-RESOLVE-ATTEMPT ${NONCE} rid=${r83}`, 'ctlhw-selfres')
   const selfRes = await waitFor('member resolve-attempt tool result (refusal expected)', 120_000, () => callResults.find((r) => r.step === 'member:resolveAttempt') ?? null)
-  const refused = selfRes?.isError === true || !String(selfRes?.text ?? '').includes('"ok":true')
-  check('L4', 'member resolve attempt REFUSED (surface denial / typed refusal — a member has no resolver)', refused === true, `isError=${String(selfRes?.isError)} text=${String(selfRes?.text).slice(0, 160)}`)
+  // root a738 fix 2: an arbitrary isError or the ABSENCE of "ok":true is NOT
+  // a refusal witness — the real successful native answers status=
+  // 'control-resolved' without any ok:true either. ACCEPT ONLY the explicit
+  // identity code (control/errors.ts:85 CONTROL_RESOLVER_NOT_AUTHORIZED —
+  // invariant 37, a member is never a resolver) or an EXPLICIT tool-not-
+  // visible shape. An already-decided conflict or any unknown format FAILS
+  // this check — never a false negative-control PASS.
+  const selfText = String(selfRes?.text ?? '')
+  const ALREADY_DECIDED_CONFLICT = /already carries a durable decision/i.test(selfText)
+  const EXPLICIT_IDENTITY = selfText.includes('CONTROL_RESOLVER_NOT_AUTHORIZED')
+  const EXPLICIT_NOT_VISIBLE = /(?:unknown|no such|no) tool|tool '[^']*' (?:is )?(?:not available|not found|not registered|unavailable)|team_resolve_control (?:is )?(?:not available|not found|not registered|unavailable|not visible)/i.test(selfText)
+  const refused = !ALREADY_DECIDED_CONFLICT && (EXPLICIT_IDENTITY || EXPLICIT_NOT_VISIBLE)
+  check('L4', 'member resolve attempt refused by an EXPLICIT identity code or explicit not-visible shape (unknown formats / resolved-conflicts never pass)', refused === true, `identity=${String(EXPLICIT_IDENTITY)} notVisible=${String(EXPLICIT_NOT_VISIBLE)} conflict=${String(ALREADY_DECIDED_CONFLICT)} isError=${String(selfRes?.isError)} text=${selfText.slice(0, 160)}`)
   const factsFinal = await controlFacts()
   check('L4', 'the identity refusal left NO extra durable decision fact', factsFinal['control-decision-recorded'].length === 1, `decided=${String(factsFinal['control-decision-recorded'].length)}`)
 
