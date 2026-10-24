@@ -482,8 +482,13 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // with a command-keyed closed map) rides directly after B-EDIT, the lane
     // block's own insertion position — SEVENTEEN… sixteen→seventeen with the
     // root's own count of the table; the enumeration below is the authority.
+    // A5M2 G1-WIRE (center 14575 advance order, M0 1-record B-DEPENDENCY): the
+    // record-25 `load_workspace_dependencies` rule rides directly after
+    // B-INSPECT, the G1 lane block's own insertion position — eighteen. It does
+    // NOT carry the discriminated grammar (ONE minted claim shape; the
+    // single-flow law needs no variant group — no speculative widening).
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-INSPECT', 'B-DEPENDENCY', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the

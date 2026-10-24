@@ -1690,6 +1690,35 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
+  // A5M2 G1-WIRE (center 14575 advance order, M0 1-record): the durable claim of
+  // record 25 `load_workspace_dependencies` is the adapter CLASSIFY manifest read
+  // as FLAT LEAVES (the B-CONTROL mint law). Target per
+  // M0-B-FAMILY-TARGET-CONTRACTS.md §B-DEPENDENCY: I+S(workspace runtime install
+  // namespace, install, write) + F(精确runtime cache/目的目录/临时路径). The three
+  // locators ride at FULL VALUE - the F envelope: the payload source directory,
+  // the fixed runtime root under the Harness home, and its parent (where the
+  // controlled path's staging directory lives); the reused controlled path rides
+  // as ONE reviewed-encoding 'string' leaf the adapter mints as a constant (the
+  // B-TERMINAL precedent - no new kind; the delegate's bind-check refuses a moved
+  // mount instead of re-running a stale plan). The trusted TARGETS envelope rides
+  // as flat leaves like B-CONTROL/B-INSPECT (the pairing law's mint side).
+  // Manifest versions, payload digests and the install RESULT are resource-derived
+  // truth - NEVER current fields: the post-approval execution edge owns them, and
+  // the reused installPrimaryRuntime gates and verifies them itself.
+  'B-DEPENDENCY': Object.freeze({
+    required: Object.freeze({
+      sourceLocator: 'string',
+      rootLocator: 'string',
+      parentLocator: 'string',
+      installPathRef: 'string',
+      trustedMemberAgentId: 'string',
+      trustedSessionHeaderId: 'string',
+      trustedRealmId: 'string',
+      trustedOwner: 'string',
+      trustedProfileId: 'string',
+    }),
+    currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
+  }),
   // A5M2-G3-WIRE B-TERMINAL (root 20:38 闭表补齐; the lane module is
   // src/plugin/live/governed-families/g3-fsproc-adapters.mjs over the pinned
   // 639 terminal faces — six verbs, one per-open controlled plan). The
