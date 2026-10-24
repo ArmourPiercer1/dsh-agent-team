@@ -3387,7 +3387,44 @@ export function createAgentBindings(deps) {
           }
           const g3Terminals = typeof deps.terminals === 'function' ? deps.terminals() : undefined
           const g3Subprocess = typeof deps.subprocess === 'function' ? deps.subprocess() : undefined
-          const g3JobsService = typeof deps.jobs === 'function' ? deps.jobs() : undefined
+          // THE REAL JOBS SUPPLY (root 01:1x, Jobs production half): the
+          // registry rides a LIVE forwarder resolved AT CALL TIME through
+          // the SAME lazy ctx.jobs accessor law the jobs-gateway row and the
+          // host tool-terminal obey (host.ts:2345 `jobs: () => ctx.get('jobs')`
+          // — ctx.get THROWS on an unregistered token, so the accessor is
+          // called inside a guard: an absent service answers HONEST absence,
+          // it never crashes the member mount). The mount-moment read stays
+          // a PRESENCE PROBE (the adapter's signed typed refusal surface,
+          // P_TERM_BG_PORT_UNWIRED, keeps answering worlds with no jobs
+          // service — zero effects, zero guess); once the key rides, every
+          // start/kill reaches the CURRENT registry (a restart/swap of the
+          // service is no longer frozen behind the mount snapshot). A
+          // registry that VANISHED after the probe makes the forwarder throw
+          // — the arm then keeps its honest FAILED-UNKNOWN word (effects
+          // started-unknown is the truth; no fake accept, no posed face).
+          const g3ReadJobsRegistry = () => {
+            if (typeof deps.jobs !== 'function') return null
+            let live = null
+            try {
+              live = deps.jobs()
+            } catch {
+              return null // ctx.get throws on an unregistered token — honest absence
+            }
+            return live !== null && typeof live === 'object' && typeof live.start === 'function' && typeof live.kill === 'function' ? live : null
+          }
+          const g3JobsService = g3ReadJobsRegistry()
+          const g3LiveJobs = g3JobsService === null ? null : Object.freeze({
+            start: (spec) => {
+              const live = g3ReadJobsRegistry()
+              if (live === null) throw new Error('P_TERM_BG_REGISTRY_ABSENT: the lazy ctx.jobs accessor answered no JobRegistry {start,kill} at call time — the background send started NOTHING; the arm keeps the honest FAILED-UNKNOWN word (no registry is posed)')
+              return live.start(spec)
+            },
+            kill: (id, caller, reason) => {
+              const live = g3ReadJobsRegistry()
+              if (live === null) throw new Error('P_TERM_BG_REGISTRY_ABSENT: the lazy ctx.jobs accessor answered no JobRegistry at call time — the started job is left exactly where it is; the owner-checked kill refused, nothing was guessed')
+              return reason === undefined ? live.kill(id, caller) : live.kill(id, caller, reason)
+            },
+          })
           // THE ENABLED-PATH SUPPLY (root 20:14 item 1): the pinned terminal
           // faces load HERE and only here — a mount without `planeCfg.terminal`
           // never evaluates the specifier at all — through the entry's ALREADY
@@ -3614,14 +3651,16 @@ export function createAgentBindings(deps) {
               TerminalBackendCleanupError: g3Faces.cleanupErrorClass,
               // The bg-send lane: the JobRegistry face only travels WITH its
               // branded owner reader (the adapter's own law); absent = the
-              // bg operations refuse typed, never run unowned.
-              ...(g3JobsService !== undefined && g3JobsService !== null && typeof g3JobsService.start === 'function' && typeof g3JobsService.kill === 'function'
-                ? { jobs: g3JobsService, ownerSessionId: () => sessionId }
-                : {}),
+              // bg operations refuse typed, never run unowned. When it rides
+              // it rides as the LIVE forwarder above — calls resolve the
+              // CURRENT ctx.jobs registry, the branded owner is THIS member's
+              // SessionId (start, owner-checked kill and the cancel-cleanup
+              // kill all resolve the same brand through this one reader).
+              ...(g3LiveJobs !== null ? { jobs: g3LiveJobs, ownerSessionId: () => sessionId } : {}),
               approvedOpenPlan: (callId) => g3PtyService.approvedOpenPlan(callId),
             }),
           })
-          observations.push(`a5m2-g3: inject armed for ${sessionId} (evidence keys=${Object.keys(g3Cfg).sort().join(',')} terminals=${g3Terminals === undefined || g3Terminals === null ? 'ABSENT' : 'present'} subprocess=${g3Subprocess === undefined || g3Subprocess === null ? 'ABSENT' : 'present'})`)
+          observations.push(`a5m2-g3: inject armed for ${sessionId} (evidence keys=${Object.keys(g3Cfg).sort().join(',')} terminals=${g3Terminals === undefined || g3Terminals === null ? 'ABSENT' : 'present'} subprocess=${g3Subprocess === undefined || g3Subprocess === null ? 'ABSENT' : 'present'} jobs=${g3LiveJobs !== null ? 'live-accessor(probe-present)' : typeof deps.jobs === 'function' ? 'accessor-probe-abstained(no-registry-face-now; bg refuses typed)' : 'no-accessor(bg refuses typed)'})`)
         }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,

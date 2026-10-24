@@ -33,7 +33,27 @@
  *  (f) teardown: dispose drains the wiring (DRAINING refuses new calls, the
  *      adapter's own bytes);
  *  (g) declared census: an uncaptured native keeps its NATIVE (no def, no
- *      registration — the mount never masks an undeployed face).
+ *      registration — the mount never masks an undeployed face);
+ *  (h)/(i)/(j) the REAL facts supply, the placement callback law, and the
+ *      LIVE control/query rows (see the legs);
+ *  (k) JOBS real supply + the REAL mint/edge walk: the kernel mints, the
+ *      registry MINTS the jobId, the branded-owner JobSpec rides, the row
+ *      serves the HOST kind-tagged {kind:'background', jobId} word, and a
+ *      POST-SERVE abort retracts nothing (the accepted job is job_kill's);
+ *  (l) the REAL cancel supply: an abort landing MID-EXECUTION (while
+ *      jobs.start runs, the job UNRECORDED) registers the intent with zero
+ *      speculative kills, and the ANSWERED job is owner-checked killed — the
+ *      success commit REFUSED with the cleanup truth (root 580f① law now
+ *      production-reachable through the bridge's abort listener);
+ *  (m) jobs supply ABSENT is the typed zero-effect refusal through the REAL
+ *      walk (P_TERM_BG_PORT_UNWIRED, zero port entry); the foreground send
+ *      on the SAME row still serves.
+ *  DISCLOSED (added with (k)-(l)): the jobs registry is a RECORDING double
+ *  with the pinned @639 signatures (lib/types/index.d.ts:71/:116); the
+ *  mid-execution abort is STAGED inside that double's start (the same
+ *  measured-window staging law leg (j) uses for the pid poison) — the real
+ *  race it stands in for: an interrupt arriving while jobs.start runs, the
+ *  job not yet recorded at the arm.
  *
  * DISCLOSED STAND-INS (NOT C2 — no Host, no ports, no tests/homes, no
  * network): the six native faces, the terminals service, the subprocess
@@ -99,7 +119,12 @@ const { registerA5GovernedFamily, a5GovernedFamilyFor } = REGISTRY
 
 const PARAMS: Record<string, Record<string, unknown>> = {
   terminal_open: { type: 'object', properties: { type: { type: 'string' }, name: { type: 'string' }, cwd: { type: 'string' } }, required: ['type'], additionalProperties: false },
-  terminal_send: { type: 'object', properties: { sessionId: { type: 'string' }, text: { type: 'string' } }, required: ['sessionId', 'text'], additionalProperties: false },
+  // REAL-SHAPE fidelity (root 01:1x, @639 tool-terminal src/index.ts:199-208):
+  // the registered terminal_send carries submit and — under the default
+  // enableRunInBackground (:37 default true) — run_in_background as an
+  // OPTIONAL boolean; the closed additionalProperties law stays. The bg lane
+  // this spec now walks cannot even CLASSIFY without the real parameter.
+  terminal_send: { type: 'object', properties: { sessionId: { type: 'string' }, text: { type: 'string' }, submit: { type: 'boolean' }, run_in_background: { type: 'boolean' } }, required: ['sessionId', 'text'], additionalProperties: false },
   terminal_read: { type: 'object', properties: { sessionId: { type: 'string' }, offset: { type: 'number' } }, required: ['sessionId'], additionalProperties: false },
   terminal_signal: { type: 'object', properties: { sessionId: { type: 'string' }, signal: { type: 'string', enum: ['SIGINT', 'SIGTERM', 'SIGKILL', 'SIGTSTP', 'SIGHUP'] } }, required: ['sessionId', 'signal'], additionalProperties: false },
   terminal_close: { type: 'object', properties: { sessionId: { type: 'string' } }, required: ['sessionId'], additionalProperties: false },
@@ -159,7 +184,7 @@ function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | unde
   }
 }
 
-function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number } } = {}) {
+function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown> } = {}) {
   const portCalls = opts.portCalls ?? []
   const absent = new Set(opts.absent ?? [])
   // THE LIVE SNAPSHOT SOURCE (root 21:36: the CONTROL/QUERY rows ride live
@@ -185,7 +210,7 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
   const terminals = {
     registerBackend: () => () => {},
     spawn: async () => { portCalls.push('spawn'); throw new Error('spec plane world: spawn not driven here') },
-    startSend: () => { portCalls.push('startSend'); return { done: Promise.resolve({ settled: true }) } },
+    startSend: () => { portCalls.push('startSend'); return opts.sendOperation !== undefined ? opts.sendOperation() : { done: Promise.resolve({ settled: true }) } },
     read: () => { portCalls.push('read'); return { viewport: 'pty-viewport', cursorOffset: 12 } },
     signal: async () => { portCalls.push('signal'); return { kind: 'sent' } },
     kill: async () => { portCalls.push('kill'); return true },
@@ -221,6 +246,16 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
       TerminalBackendCleanupError: class TerminalBackendCleanupError extends AggregateError {
         constructor (spawnError: unknown, cleanupError: unknown) { super([spawnError, cleanupError], 'PTY backend startup and cleanup both failed'); this.name = 'TerminalBackendCleanupError' }
       },
+      // THE JOBS SUPPLY rides exactly as the production inject carries it
+      // (agent-bindings' live forwarder + the branded owner reader): the
+      // registry face travels WITH its owner reader or not at all (the
+      // adapter's own law). The double below is a RECORDING registry — the
+      // host JobRegistry's start/kill are the pinned @639 signatures
+      // (lib/types/index.d.ts:71/:116: start(spec) → JobId synchronous;
+      // kill(id, caller?, reason?) → 'requested' | 'already-finished').
+      ...(opts.jobs !== undefined
+        ? { jobs: opts.jobs, ...(opts.ownerSessionId === undefined ? {} : { ownerSessionId: opts.ownerSessionId }) }
+        : {}),
     }),
     // THE PLANE'S OWN rev-0 row tuple (measured at :1443-1463): this is the
     // identity paAdmitPartA admits THIS lane under absent a mounted live
@@ -661,6 +696,288 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
       await expect(def('terminal_send').execute({ sessionId: 'pty-1', text: 'again\n' }, exec('g3-j-drift')))
         .rejects.toThrow(/P_TERM_TARGET_DRIFT[\s\S]*pid:4242 -> pid:9999/)
       expect(portCalls.filter((c) => c === 'startSend').length, 'the drift refused at the entry — ZERO further service effects').toBe(sendsBefore)
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(k) JOBS real supply + REAL mint/edge (root 01:1x): the bg send mints through the kernel, the registry MINTS the jobId, the branded-owner JobSpec rides, and the row serves the HOST kind-tagged word', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const portCalls: string[] = []
+    // THE recording registry — the pinned @639 face (lib/types/index.d.ts
+    // :71/:116): start(spec) mints the JobId SYNCHRONOUSLY and runs the job
+    // (hooks come from spec.run — the operation starts INSIDE run, the host
+    // tool-terminal index.ts:262-276 law); kill(id, caller?, reason?) is the
+    // owner-checked control answering requested | already-finished.
+    const jobsLog: string[] = []
+    const specs: Array<Record<string, unknown>> = []
+    let hooks: { cancel: (reason?: string) => void, done: Promise<unknown> } | null = null
+    let opCancelled = 0
+    const sendOperation = () => ({
+      done: new Promise<Record<string, unknown>>((resolve) => { setTimeout(() => resolve({ waitReason: 'inferred_idle', viewport: 'made', sessionStatus: { kind: 'running' }, truncated: false }), 0) }),
+      cancel: () => { opCancelled += 1 },
+      readOutput: () => ({ delta: 'made\n', truncated: false }),
+    })
+    const jobs = {
+      start: (spec: { run: (job: Record<string, unknown>) => unknown, [k: string]: unknown }) => {
+        jobsLog.push('start')
+        specs.push(spec)
+        hooks = spec.run({}) as { cancel: (reason?: string) => void, done: Promise<unknown> }
+        return 'job-g3-bg-1' // THE registry mints the id — the row never fabricates one
+      },
+      kill: (id: string, caller?: string, reason?: string) => {
+        jobsLog.push(`kill:${String(id)}:${String(caller)}:${String(reason ?? '')}`)
+        hooks?.cancel(reason)
+        return id === 'job-g3-bg-1' ? 'requested' : 'already-finished'
+      },
+    }
+    const w = makeInject({ portCalls, jobs, ownerSessionId: (ownerAgentId: string) => `s-brand:${String(ownerAgentId)}`, sendOperation })
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const controller = new AbortController()
+      const served = await (built.value.definitions.find((d) => d.name === 'terminal_send') as Definition)
+        .execute({ sessionId: 'pty-1', text: 'make\n', run_in_background: true }, { token: { k: 'g3-k-bg' }, agent: AGENT, signal: controller.signal })
+      // THE REAL MINT/EDGE WALK LANDED: one kernel mint, one real consume,
+      // the trusted family block at FULL VALUE (载荷法).
+      expect(seen.length, 'the bg send walked the REAL mint once').toBe(1)
+      expect(seen[0]!.family).toMatchObject({ familyId: 'B-TERMINAL', adapterRevision: 3, providerIdentity: PROVIDER })
+      // THE SERVED WORD IS THE HOST's: { kind:'background', jobId } with the
+      // id the REGISTRY minted (tool-terminal index.ts:278 @639).
+      expect(served).toEqual({ kind: 'background', jobId: 'job-g3-bg-1' })
+      // THE JobSpec IS THE SIGNED SHAPE: kind, label, BRANDED owner (the
+      // inject's owner reader resolved with the dispatching Agent's id —
+      // never omitted, never unowned), the output source, the run hook.
+      expect(specs.length, 'exactly one job registered').toBe(1)
+      expect(specs[0]).toMatchObject({ kind: 'pty-send', label: 'g3 terminal_send pty-1', owner: `s-brand:${MEMBER}` })
+      expect(typeof (specs[0]!.run as unknown as () => unknown)).toBe('function')
+      expect(Array.isArray(specs[0]!.output)).toBe(true)
+      expect(hooks, 'the registry ran the job: JobHooks {cancel, done} answered').not.toBeNull()
+      expect(typeof hooks!.cancel).toBe('function')
+      expect(hooks!.done).toBeInstanceOf(Promise)
+      // the operation started INSIDE run (the registry owns the start), the
+      // row itself entered the terminals face exactly once.
+      expect(portCalls.filter((c) => c === 'startSend')).toEqual(['startSend'])
+      // the host's own real AbortSignal rode the walk and committed served.
+      controller.abort() // POST-SERVE abort: the committed row is never retracted
+      expect(portCalls.filter((c) => c === 'kill'), 'cancel is not close — the PTY stayed untouched').toEqual([])
+      expect(opCancelled, 'the post-commit abort did NOT retract the accepted job').toBe(0)
+      await hooks!.done
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(l) REAL abort MID-EXECUTION is HONOURED (root 01:1x cancel supply + 580f①): the interrupt landing while jobs.start runs registers the intent (zero speculative kill), and the ANSWERED job is owner-checked killed — the success commit REFUSED with the cleanup truth', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const portCalls: string[] = []
+    const jobsLog: string[] = []
+    const controller = new AbortController()
+    let killCountAtAbort = -1
+    let hooks: { cancel: (reason?: string) => void, done: Promise<unknown> } | null = null
+    let opCancelled = 0
+    let settleOp: (v: Record<string, unknown>) => void = () => {}
+    const sendOperation = () => ({
+      done: new Promise<Record<string, unknown>>((resolve) => { settleOp = resolve }),
+      cancel: () => { opCancelled += 1; settleOp({ waitReason: 'session_exit', viewport: 'interrupted', sessionStatus: { kind: 'running' }, truncated: false }) },
+      readOutput: () => ({ delta: '', truncated: false }),
+    })
+    const jobs = {
+      start: (spec: { run: (job: Record<string, unknown>) => unknown, [k: string]: unknown }) => {
+        jobsLog.push('start')
+        // THE MEASURED WINDOW (the same staging law leg (j) uses for the pid
+        // poison): the user interrupt lands WHILE jobs.start runs — the
+        // operation has started inside run(), but the port has not yet
+        // RECORDED the job (record runs after start returns). This is
+        // exactly the race the bridge's abort listener now covers.
+        hooks = spec.run({}) as { cancel: (reason?: string) => void, done: Promise<unknown> }
+        controller.abort() // synchronous listener → arm.cancel EXECUTING, resource NOT yet recorded
+        killCountAtAbort = jobsLog.filter((l) => l.startsWith('kill')).length
+        return 'job-g3-bg-9'
+      },
+      kill: (id: string, caller?: string, reason?: string) => {
+        jobsLog.push(`kill:${String(id)}:${String(caller)}:${String(reason ?? '')}`)
+        hooks?.cancel(reason)
+        return id === 'job-g3-bg-9' ? 'requested' : 'already-finished'
+      },
+    }
+    const w = makeInject({ portCalls, jobs, ownerSessionId: (ownerAgentId: string) => `s-brand:${String(ownerAgentId)}`, sendOperation })
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const refusal = await refusalOf((built.value.definitions.find((d) => d.name === 'terminal_send') as Definition)
+        .execute({ sessionId: 'pty-1', text: 'make\n', run_in_background: true }, { token: { k: 'g3-l-abort-mid' }, agent: AGENT, signal: controller.signal }))
+      // 不猜尚无资源: AT the abort NOTHING was killed — the registration is
+      // an INTENT, not a speculative kill (the resource had just started
+      // inside run() but stood UNRECORDED at the arm).
+      expect(killCountAtAbort, 'the abort moment itself killed nothing').toBe(0)
+      // HONOURED after the answer: the port's post-effect recheck read the
+      // intent, stopped the STARTED job through the owner-checked registry
+      // control, and REFUSED the success commit (never a committed accept).
+      expect(refusal.code).toBe('P_TERM_CANCELLED_AFTER_EFFECT')
+      expect(refusal.message).toMatch(/cancel|cleanup/i)
+      expect(jobsLog, 'start once, then exactly ONE owner-checked kill naming the branded owner')
+        .toEqual(['start', 'kill:job-g3-bg-9:s-brand:agent-member-1:cancelled after the background send started'])
+      expect(opCancelled, 'the cancel reached the OPERATION through hooks.cancel (cancel is not close)').toBe(1)
+      expect(portCalls.filter((c) => c === 'startSend'), 'the operation started exactly once inside run').toEqual(['startSend'])
+      expect(portCalls.filter((c) => c === 'kill'), 'the PTY/session survived the cancelled send — cancel is not close').toEqual([])
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(m) jobs supply ABSENT is the TYPED zero-effect refusal through the REAL walk: the bg send reaches NOTHING, the foreground send on the SAME row still serves', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const portCalls: string[] = []
+    // NO jobs key on the mount — the supply contract: the registry face
+    // travels WITH its branded owner reader or the bg lane refuses typed.
+    const w = makeInject({ portCalls })
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const def = built.value.definitions.find((d) => d.name === 'terminal_send') as Definition
+      const refusal = await refusalOf(def.execute({ sessionId: 'pty-1', text: 'make\n', run_in_background: true }, { token: { k: 'g3-m-bg' }, agent: AGENT }))
+      expect(refusal.code).toBe('P_TERM_BG_PORT_UNWIRED')
+      expect(portCalls.length, 'the unwired bg send entered ZERO service faces').toBe(0)
+      // the SAME row, foreground: the refusal was the JOBS lane, never the row.
+      const served = await def.execute({ sessionId: 'pty-1', text: 'ls\n' }, { token: { k: 'g3-m-fg' }, agent: AGENT })
+      expect(served, 'the foreground send still serves').toBeDefined()
+      expect(portCalls).toEqual(['startSend'])
     } finally {
       registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
     }
