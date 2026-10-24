@@ -27,7 +27,7 @@ RUNNER=dev/agent-workflow/evidence/a5m2-edit-host-window/scripts/05-edit-window-
 DRIVER_SHA=d66e225bec6a77b2bb586eeca99e1d60d38c9850
 TS=$(date -u +%Y%m%dT%H-%M-%SZ)
 OUT=dev/agent-workflow/evidence/a5m2-edit-host-window/window-${TS}
-DF_MIN=18000000000
+DF_MIN=6442450944   # root 09:31Z order: temporary 6 GiB bar for this window (20GB maintenance target NOT withdrawn)
 HOME_BUDGET=67108864   # 64 MiB of NEW bytes (nlink==1), fourth-window law
 
 cd "$REPO_WT"
