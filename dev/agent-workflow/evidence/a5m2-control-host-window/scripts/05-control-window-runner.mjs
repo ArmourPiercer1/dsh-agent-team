@@ -703,8 +703,16 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   const ALREADY_DECIDED_CONFLICT = /already carries a durable decision/i.test(selfText)
   const EXPLICIT_IDENTITY = selfText.includes('CONTROL_RESOLVER_NOT_AUTHORIZED')
   const EXPLICIT_NOT_VISIBLE = /(?:unknown|no such|no) tool|tool '[^']*' (?:is )?(?:not available|not found|not registered|unavailable)|team_resolve_control (?:is )?(?:not available|not found|not registered|unavailable|not visible)/i.test(selfText)
-  const refused = !ALREADY_DECIDED_CONFLICT && (EXPLICIT_IDENTITY || EXPLICIT_NOT_VISIBLE)
-  check('L4', 'member resolve attempt refused by an EXPLICIT identity code or explicit not-visible shape (unknown formats / resolved-conflicts never pass)', refused === true, `identity=${String(EXPLICIT_IDENTITY)} notVisible=${String(EXPLICIT_NOT_VISIBLE)} conflict=${String(ALREADY_DECIDED_CONFLICT)} isError=${String(selfRes?.isError)} text=${selfText.slice(0, 160)}`)
+  // EXACT closed-world Guard refusal family (root 2026-10-24 original ruling:
+  // the L4-binding-denial SATISFIES the original oracle — 700-03 permits an
+  // explicit not-visible/binding-absent shape, and this window's member has
+  // NO resolver at all). closed-world-guard.js:138 emits EXACTLY:
+  //   team tool guard: "team_resolve_control" has no Team Tool Binding on this Agent (closed world: ...)
+  // Added as a NAMED EXACT family ONLY (this tool name + this guard phrase) —
+  // NEVER a blanket "any isError/any error". Already-decided conflicts still FAIL.
+  const EXPLICIT_BINDING_DENIED = /team tool guard: "team_resolve_control" has no Team Tool Binding on this Agent \(closed world:/i.test(selfText)
+  const refused = !ALREADY_DECIDED_CONFLICT && (EXPLICIT_IDENTITY || EXPLICIT_NOT_VISIBLE || EXPLICIT_BINDING_DENIED)
+  check('L4', 'member resolve attempt refused by EXPLICIT identity code, explicit not-visible, OR the exact closed-world Binding-denial guard family (native-identity STILL untested; unknown formats / resolved-conflicts never pass)', refused === true, `identity=${String(EXPLICIT_IDENTITY)} notVisible=${String(EXPLICIT_NOT_VISIBLE)} bindingDenied(EXACT family)=${String(EXPLICIT_BINDING_DENIED)} conflict=${String(ALREADY_DECIDED_CONFLICT)} isError=${String(selfRes?.isError)} text=${selfText.slice(0, 160)}`)
   const factsFinal = await controlFacts()
   check('L4', 'the identity refusal left NO extra durable decision fact', factsFinal['control-decision-recorded'].length === 1, `decided=${String(factsFinal['control-decision-recorded'].length)}`)
 
