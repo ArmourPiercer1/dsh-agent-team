@@ -57,11 +57,11 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '2fb129cfa23e138248fecc834a42c92238af95fe' // fresh-member profile producer pack (strict 2fb child-of-f923; face = 1 dist agent-bindings blob c9c3a787..; int tip 18c3327e6 = product-identical per root; the FOUR prior window failures stay FAILED, not recomputed away)
-const EXPECTED_PACK_SHA = 'sha256:8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a' // f86 receipt, recomputed by B read-only (4,348,510 B)
-const EXPECTED_LOCK_SHA = 'sha256:5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088' // f86 step-B FINAL lock, recomputed by B read-only (612,696 B, integrity=2fb tgz MATCH)
+const COMPOSED_SHA = '7feb6a5e22bf7c531c1d679c786618b826b6ccdd' // standard package supplied 2026-10-24: static producer InvocationOnly exclusion fix INSIDE (87/88's two typed closures re-verifiable); overlay98f NOT inside — post-grant business effect must NOT be preset // fresh-member profile producer pack (strict 2fb child-of-f923; face = 1 dist agent-bindings blob c9c3a787..; int tip 18c3327e6 = product-identical per root; the FOUR prior window failures stay FAILED, not recomputed away)
+const EXPECTED_PACK_SHA = 'sha256:8e1eb73096b921128d585343015923e71c70c4edbe0af888294af2ceefda2146' // f86 receipt, recomputed by B read-only (4,348,510 B)
+const EXPECTED_LOCK_SHA = 'sha256:08fd5788e9b80432f30d2649ea473b2d8bf55003556188152eba2bb5b800e9de' // f86 step-B FINAL lock, recomputed by B read-only (612,696 B, integrity=2fb tgz MATCH)
 const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
-const EXPECTED_TGZ_DIR_PREFIX = 'out-2fb129cf-'
+const EXPECTED_TGZ_DIR_PREFIX = 'out-7feb6a5e-'
 const PACK_BYTES_MAX = 8_000_000
 const HOST_PORT = 3184 // root-pinned for B
 const MOCK_PORT = 3499 // root-pinned for B
@@ -70,7 +70,7 @@ const BP_ID = 'team.a5m2-ctl-hw'
 const WINDOW_GO = process.env.A5M2_CONTROL_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_CONTROL_DRY === '1'
 const INSTALL_DIR = process.env.A5M2_CONTROL_INSTALL_DIR
-  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc' // f86 frozen-offline install (RC=0, +532 reused, down 0); absence fail-closes rc3
+  ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8e1eb730' // f86 frozen-offline install (RC=0, +532 reused, down 0); absence fail-closes rc3
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
