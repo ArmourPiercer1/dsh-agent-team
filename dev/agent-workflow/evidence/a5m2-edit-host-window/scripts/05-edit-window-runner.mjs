@@ -1034,11 +1034,17 @@ async function main() {
     e9bRes = await resultFor(stepOuter('EDIT-POSTREVOKE'))
   }
   const e9bNoConsume = e9bReq === null ? null : (await hasFact(e9bReq, 'control-allow-consumed')) === false
-  const e9bTypedRefusal = /refused|P_EDIT|IO_POLICY|APPROVAL_DENIED|denied/.test(String(e9bRes)) && !/Edited/.test(String(e9bRes))
-  const e9bDeniedLane = e9bReq !== null && e9bNoConsume === true && !/Edited/.test(String(e9bRes))
-  check('E9b', "post-revoke residue on the 'gamma' canary (provably present in EVERY prior state): bytes unchanged AND behavior proves non-execution — real PA pending denied with no consume on the SAME requestId, or a typed permission refusal; bare sha-unchanged does NOT pass",
-    sha256(target) === e9bShaBefore && (e9bDeniedLane || e9bTypedRefusal),
-    `pending=${String(e9bReq)} noConsume=${String(e9bNoConsume)} typedRefusal=${String(e9bTypedRefusal)} deniedLane=${String(e9bDeniedLane)} shaBefore=${e9bShaBefore} shaNow=${sha256(target)} result=${String(e9bRes).slice(0, 260)}`)
+  const e9bPreDispatch = /IO_POLICY_UNSUPPORTED|admission refused|tool guard/i.test(String(e9bRes))
+  // [root ruling 22:05, E9b shape frozen] the ONLY passing shape is a REAL
+  // PA row — the SAME requestId appearing on the pending-control list — then
+  // deny → no 'control-allow-consumed' on that id → zero bytes. A pre-dispatch
+  // admission/guard refusal NEVER reaches a PA row and is NOT permission-layer
+  // deny; it never passes this criterion. Silent execution moves bytes and
+  // fails as a genuine residue.
+  const e9bPaDenyLane = e9bReq !== null && e9bNoConsume === true && !/Edited/.test(String(e9bRes))
+  check('E9b', "post-revoke 'gamma' canary: REAL PA pending row (pending-control-listed requestId, NOT a pre-dispatch admission refusal) denied on the SAME requestId with no consume fact AND zero bytes — the only passing shape; pre-dispatch refuse never passes; silent execution fails as residue",
+    sha256(target) === e9bShaBefore && e9bPaDenyLane,
+    `pending=${String(e9bReq)} noConsume=${String(e9bNoConsume)} preDispatchRefusal=${String(e9bPreDispatch)} paDenyLane=${String(e9bPaDenyLane)} shaBefore=${e9bShaBefore} shaNow=${sha256(target)} result=${String(e9bRes).slice(0, 260)}`)
 
   await cleanup()
   // non-blocking probe rows (ok:null, blocking:false) never decide the rc; real criteria (ok true/false) do.
