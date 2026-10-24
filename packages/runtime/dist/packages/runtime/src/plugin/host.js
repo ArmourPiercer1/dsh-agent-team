@@ -1647,6 +1647,11 @@ export async function apply(ctx, config) {
             // NO_CURRENT_STEP guard when the projection is unavailable — never a
             // fabricated boundary. Additive optional, never a hard inject.
             sessionProjections: () => ctx.get('sessionProjections'),
+            // A5M2-G5 MOUNT-ARM (root 01:34 card): the LAZY public `goals` service
+            // (global-store ctx.get read, the sessionQuery/jobs pattern verbatim) —
+            // the mount arm hands THIS live face to the plane as the governed port;
+            // nothing is mirrored, cached or stand-in'd.
+            goals: () => ctx.get('goals'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

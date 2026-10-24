@@ -4566,11 +4566,6 @@ export function createAgentBindings(deps) {
             // placement — ownNames, the Guard's assembly-owned bind and
             // bindingFeed, and the PA placement attribution resolve them.
             ...(a5SubagentControlInject === null ? {} : { subagentControl: a5SubagentControlInject }),
-            // center (root G3A760 narrow review): the merge guard carried
-            // a5G3TerminalInject but this spread was dropped — plane :1402
-            // read nothing and the post-mount wiring-face check refused
-            // every terminal session. Restored to the union's law verbatim.
-            ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
             // A5M2-G5 MOUNT-ARM (this lane's row in the shared backends
             // union): the goal bag rides the plane's own `backends.goal`
             // reader; null = no key at all = byte-identical pre-G5 assembly.
