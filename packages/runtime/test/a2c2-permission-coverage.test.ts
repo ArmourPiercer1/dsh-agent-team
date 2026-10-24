@@ -165,8 +165,18 @@ interface A2C2Api {
 /** The post-fix API surface (undefined members on the base tree). */
 const a2c2 = op as unknown as A2C2Api
 
+/** A5M2 coverage-safety card (root ruling 2026-10-24): the GLUE feeds stage 1
+ * only what THIS scope really governs — the adapter-supported classes
+ * (classifyPermissionTool, the same function the pre-execute ladder routes
+ * on). The fixtures MIRROR that producer (a faithful copy of the feed, NOT
+ * a hand-filled word list); a harness-extracted single-source producer is
+ * the disclosed follow-up. */
+const MANAGED_GROUND_TRUTH = PERMISSION_TOOL_NAMES.filter(
+  (name) => op.classifyPermissionTool(name).kind !== 'unsupported',
+)
+
 /** The empty ownership facts (no team / no mcp — the pure registries). */
-const EMPTY_FACTS: A2C2Facts = { managedToolNames: PERMISSION_TOOL_NAMES, teamToolNames: [], mcpToolNames: [] }
+const EMPTY_FACTS: A2C2Facts = { managedToolNames: MANAGED_GROUND_TRUTH, teamToolNames: [], mcpToolNames: [] }
 
 // ---------------------------------------------------------------------------
 // The real-pipeline helpers (h1a/issue2/a2c1 recipe: the REAL upstream
@@ -572,7 +582,7 @@ const R: Record<string, unknown> = await (async () => {
       'todo_write',
     ]
     const facts: A2C2Facts = {
-      managedToolNames: PERMISSION_TOOL_NAMES,
+      managedToolNames: MANAGED_GROUND_TRUTH,
       teamToolNames: ['team_delegate', 'team_follow_up', 'team_request_control'],
       mcpToolNames: [MCP_TOOL],
     }

@@ -7937,7 +7937,23 @@ export function createAgentBindings(deps) {
           finalSurfaceNames,
         )
         const verdict = evaluatePermissionCoverage(finalSurfaceNames, {
-          managedToolNames: PERMISSION_TOOL_NAMES,
+          // A5M2 (root security ruling 2026-10-24): the CLOSED VOCABULARY
+          // says what a blueprint may NAME; it is not a claim that THIS scope
+          // governs the name. Stage 1 of the evaluator must therefore see
+          // only vocabulary members the operation-permission adapter REALLY
+          // governs here — its canonical classes (classifyPermissionTool:
+          // the SAME function the pre-execute ladder routes on, so the gate
+          // and the runtime can never disagree). An invocation-only name is
+          // governed only where it is actually PLACED, and that real fact
+          // already rides teamToolNames below (GLUE-5 placement attribution);
+          // un-placed, it keeps its original class — a proven MCP owner is
+          // never claimed by the vocabulary, and a sensitive name the scope
+          // has not taken over still refuses the setup (no default-deny
+          // downgrade through a legal word list). No second ledger, no new
+          // list, no touched default.
+          managedToolNames: PERMISSION_TOOL_NAMES.filter(
+            (name) => classifyPermissionTool(name).kind !== 'unsupported',
+          ),
           // GLUE-5: the placed plane names are TEAM-OWNED by authority
           // (the assembly placed them and the Guard bindOwnTools-verified
           // them — placement attribution IS their management fact), so they
