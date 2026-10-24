@@ -189,6 +189,15 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-adapters.mjs',
   },
+  // A5M2-B-UPSTREAMTEAM: the B-UPSTREAMTEAM governed-adapter rows (records
+  // 65-73). Same class as the rows above — tsc never emits .mjs, so the runtime
+  // glue has to be placed for the production row's glueUrl to resolve. Bytes
+  // ride unchanged; the .d.mts type surface stays source-side (no .d.mts has
+  // ever been placed in dist).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs',
+  },
   {
     src: 'packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs',

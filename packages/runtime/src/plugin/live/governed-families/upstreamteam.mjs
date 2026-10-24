@@ -119,6 +119,8 @@ export const A5_B_UPSTREAMTEAM_CODES = Object.freeze({
   mountNotDeclared: 'P_UPSTREAMTEAM_MOUNT_NOT_DECLARED',
   paSeatMissing: 'P_UPSTREAMTEAM_PA_SEAT_MISSING',
   portMethodMissing: 'P_UPSTREAMTEAM_PORT_METHOD_MISSING',
+  nativeHandleMissing: 'P_UPSTREAMTEAM_NATIVE_HANDLE_MISSING',
+  nativeDrift: 'P_UPSTREAMTEAM_NATIVE_DEFINITION_DRIFT',
 })
 
 /**
@@ -169,29 +171,14 @@ function marshalArgs(name, args, caller, port) {
 }
 
 /**
- * Names this revision does NOT row, with the exact host-side law that still has
- * to be transcribed before a row can be honest about it (each citation is a
- * line range of the captured 639 body):
- *   68 spawn_teammate — the native composes a <system-reminder> teammate brief
- *     into `prompt` and calls spawnTeammate(agent, { name, description,
- *     prompt: [ … ], context: args.context ?? 'fresh' }) (lib/index.js:268-296);
- *     restating that brief here would fork host copy instead of reusing the
- *     captured native face, so the row waits for a ruling on reuse.
- *   69 wait_agent — value-side law is a guard chain before the port call:
- *     timeout_ms must be a safe integer in 10000..3600000, and an inactive-peer
- *     check over listMembers with ACTIVE_WAIT_STATUSES answers
- *     NO_ACTIVE_PEER_MESSAGE; only then waitForChange(caller, timeoutMs,
- *     exec.signal) (lib/index.js:338-350). The signal is an exec face, not a
- *     model face, and the status set has not been transcribed yet.
- *   72 team_task_list — post-call filter over listTasks(caller) on
- *     status/owner/ready plus cursor/limit paging (lib/index.js:430-440); the
- *     predicate tail and paging law are not fully transcribed yet.
+ * The three native-delegated names: the row governs admission, the CAPTURED
+ * native keeps its own semantics (teammate brief / guard chain and exec signal /
+ * filter and paging). Nothing here restates those bytes.
  */
-export const A5_B_UPSTREAMTEAM_NAMED_GAPS = Object.freeze({
-  spawn_teammate: Object.freeze({ recordIndex: 68, reason: 'native composes the teammate brief into prompt (lib/index.js:268-296); reuse ruling pending before a row forks that copy' }),
-  wait_agent: Object.freeze({ recordIndex: 69, reason: 'guard chain + exec.signal face and ACTIVE_WAIT_STATUSES not transcribed (lib/index.js:338-350)' }),
-  team_task_list: Object.freeze({ recordIndex: 72, reason: 'filter predicate tail and cursor/limit paging not transcribed (lib/index.js:430-440)' }),
-})
+export const A5_B_UPSTREAMTEAM_NATIVE_DELEGATED = Object.freeze(['spawn_teammate', 'wait_agent', 'team_task_list'])
+
+/** Names whose value-side port law is transcribed into a service call. */
+export const A5_B_UPSTREAMTEAM_SERVICE_ROWED_NAMES = Object.freeze(Object.keys(A5_B_UPSTREAMTEAM_SERVICE_METHODS))
 
 /**
  * ONE NAME, ONE PLACEMENT (the settled house method, the same shape the plane
@@ -203,13 +190,15 @@ export const A5_B_UPSTREAMTEAM_NAMED_GAPS = Object.freeze({
 export function upstreamTeamPlacementEntry(name) {
   const spec = A5_B_UPSTREAMTEAM_RECORD_SPECS[name]
   if (spec === undefined) return null
-  if (Object.prototype.hasOwnProperty.call(A5_B_UPSTREAMTEAM_NAMED_GAPS, name)) return null
+  const delegated = A5_B_UPSTREAMTEAM_NATIVE_DELEGATED.includes(name)
+  if (!delegated && A5_B_UPSTREAMTEAM_SERVICE_ROWED_NAMES.indexOf(name) === -1) return null
   return Object.freeze({
     familyId: A5_B_UPSTREAMTEAM_FAMILY_ID,
     recordIndex: spec.recordIndex,
     operation: spec.operation,
     mountCondition: A5_B_UPSTREAMTEAM_MOUNT_CONDITION,
-    effect: A5_B_UPSTREAMTEAM_EFFECT_LABELS[name]?.effect ?? 'unknown',
+    effect: A5_B_UPSTREAMTEAM_EFFECT_LABELS[name]?.effect ?? 'native-delegated',
+    valueSide: delegated ? 'captured-native' : 'transcribed-service-port',
   })
 }
 
@@ -235,6 +224,30 @@ export function createUpstreamTeamRow(name, input = {}) {
   }
   if (typeof callerAgent !== 'string' || callerAgent.length === 0) {
     return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.callerUnresolved, name }
+  }
+  if (A5_B_UPSTREAMTEAM_NATIVE_DELEGATED.includes(name)) {
+    const native = input.native
+    if (native === null || typeof native !== 'object' || typeof native.execute !== 'function' || native.definition === undefined) {
+      return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.nativeHandleMissing, name }
+    }
+    const face = input.definitionIdentityOf?.(native.definition)
+    const placed = input.placementFeed?.(name)
+    if (typeof face === 'string' && typeof placed?.definitionIdentity === 'string' && placed.definitionIdentity !== face) {
+      return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.nativeDrift, name }
+    }
+    const admitNative = typeof pa === 'function' ? pa : pa.admit
+    return {
+      ok: true,
+      entry: upstreamTeamPlacementEntry(name) ?? { familyId: A5_B_UPSTREAMTEAM_FAMILY_ID, recordIndex: A5_B_UPSTREAMTEAM_RECORD_SPECS[name].recordIndex, operation: A5_B_UPSTREAMTEAM_RECORD_SPECS[name].operation, mountCondition: A5_B_UPSTREAMTEAM_MOUNT_CONDITION, effect: 'native-delegated', valueSide: 'captured-native' },
+      invoke: () => admitNative({
+        operation: A5_B_UPSTREAMTEAM_RECORD_SPECS[name].operation,
+        recordIndex: A5_B_UPSTREAMTEAM_RECORD_SPECS[name].recordIndex,
+        // The ORIGINAL (args, exec) pair reaches the verified captured native:
+        // the teammate brief, the wait guard chain and exec.signal, and the
+        // task-list filter/paging all stay native.
+        run: () => native.execute(args, input.exec),
+      }),
+    }
   }
   const method = A5_B_UPSTREAMTEAM_SERVICE_METHODS[name]?.method
   if (typeof port?.[method] !== 'function' || (method !== 'listMembers' && typeof port.brandTaskId !== 'function' && (name === 'team_task_get' || name === 'team_task_create' || name === 'team_task_update'))) {

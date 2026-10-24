@@ -45,6 +45,7 @@ export interface BUpstreamTeamPlacementEntry {
   readonly operation: string
   readonly mountCondition: typeof A5_B_UPSTREAMTEAM_MOUNT_CONDITION
   readonly effect: string
+  readonly valueSide: 'transcribed-service-port' | 'captured-native'
 }
 
 /**
@@ -86,11 +87,25 @@ export type BUpstreamTeamPa =
   | { admit: (request: BUpstreamTeamPaRequest) => unknown }
 
 /** Input of {@link createUpstreamTeamRow}: injected port, caller, PA seat. */
+/** A verified captured-native handle: the native definition plus its execute. */
+export interface BUpstreamTeamNativeHandle {
+  readonly definition: unknown
+  execute(args: BUpstreamTeamArgs, exec: unknown): unknown
+}
+
 export interface BUpstreamTeamRowInput {
   readonly port?: BUpstreamTeamPort
   readonly callerAgent?: string
   readonly pa?: BUpstreamTeamPa
   readonly args?: BUpstreamTeamArgs
+  /** Captured native handle, required for the native-delegated names. */
+  readonly native?: BUpstreamTeamNativeHandle
+  /** The exec face handed to a native-delegated call (signal lives here). */
+  readonly exec?: unknown
+  /** The seam's own capture-side identity mint (house law, pb 6). */
+  readonly definitionIdentityOf?: (definition: unknown) => string | null
+  /** The runtime placement record used to corroborate the captured identity. */
+  readonly placementFeed?: (name: string) => { definitionIdentity?: string; realmId?: string } | undefined
 }
 
 /** Typed refusal codes of this family. */
@@ -100,6 +115,8 @@ export interface BUpstreamTeamCodes {
   readonly mountNotDeclared: 'P_UPSTREAMTEAM_MOUNT_NOT_DECLARED'
   readonly paSeatMissing: 'P_UPSTREAMTEAM_PA_SEAT_MISSING'
   readonly portMethodMissing: 'P_UPSTREAMTEAM_PORT_METHOD_MISSING'
+  readonly nativeHandleMissing: 'P_UPSTREAMTEAM_NATIVE_HANDLE_MISSING'
+  readonly nativeDrift: 'P_UPSTREAMTEAM_NATIVE_DEFINITION_DRIFT'
 }
 
 /** A row that is ready to run (governance already seated) or a typed refusal. */
@@ -119,6 +136,9 @@ export declare const A5_B_UPSTREAMTEAM_CODES: BUpstreamTeamCodes
 export declare const A5_B_UPSTREAMTEAM_NAMED_GAPS: Readonly<Partial<Record<BUpstreamTeamToolName, BUpstreamTeamNamedGap>>>
 
 /** Placement entry for a rowed name, or null (gap / unknown name). */
+export declare const A5_B_UPSTREAMTEAM_NATIVE_DELEGATED: readonly string[]
+export declare const A5_B_UPSTREAMTEAM_SERVICE_ROWED_NAMES: readonly BUpstreamTeamToolName[]
+
 export declare function upstreamTeamPlacementEntry(name: string): BUpstreamTeamPlacementEntry | null
 
 /** Build the row for one name, riding the plane's own PA funnel. */
