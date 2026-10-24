@@ -20,17 +20,21 @@
  *   L4 member  toolCall team_resolve_control ATTEMPT -> REFUSED (the member's
  *              surface carries no resolver)
  *
- * Outer-layer arrangement per the CLOSED GRAMMAR the real parse enforced (root
- * a738 ③, read through the product's own validator): the permission `tool`
- * vocabulary is closed and does NOT contain team_request_control/team_resolve_
- * control (only team_list_pending_control among the Control faces) — no rule
- * can name the 83/84 faces, and the PR-D precedent (leader default:ask with
- * the resolve unruled, executed) proves PA never gates them: their outer
- * arrangement is the request-control/resolve-control ENVELOPES + teamTools
- * face + the native's resolver-role closure (invariant 37). Governed faces
- * ARE arranged: leader allow-lane team_create_member + team_list_pending_
- * control; member default deny with empty rules (its call is not ruleable;
- * no Ask can park behind its own 83 round trip). Default deny elsewhere.
+ * Outer-layer arrangement (root's FINAL B-authorization ruling, supersedes
+ * every earlier reading here): 83/84 are NOT PA-exempt — the old PR-D/native
+ * behaviour proves NOTHING about the new CONTROL arm. The closed permission
+ * vocabulary still lacks team_request_control/team_resolve_control (87/88 too;
+ * only 85 is registered, invocation-only); that registration is the MAIN
+ * writer's shared-writer job (85-pattern four names + SRE; no new matcher/
+ * ledger, native roles/envelopes/ceiling/default-deny untouched) — B never
+ * writes schema and never calls "default deny + empty rules" an arrangement
+ * (that claim is RETRACTED; the current rules below are the OLD-product
+ * interim, honest label: arrangement INCOMPLETE until the new product).
+ * The prepared driver delta for the new product (few lines, per-role exact
+ * kind:any single-tool rules — projected exact realm|tool:name, NOT alltools;
+ * everything else stays deny) is staged at PENDING-NEWPRODUCT-DRIVER-DELTA.md
+ * next to this runner; it goes in ONLY when the main's new product SHA receipt
+ * lands (pins swapped in the same change).
  *
  * BOOT is behind the root's ruling: A5M2_CONTROL_WINDOW=GRANTED. Without it:
  * NOT_RUN receipt, rc 3. A5M2_CONTROL_DRY=1 runs the REAL pre-flight to the
@@ -109,10 +113,11 @@ const SAVED_BP_V3_YAML = [
   '      - update_goal', '      - web_fetch', '      - web_search', '      - workflow',
   '    skills:', '      kind: allow', '      items: []',
   '    mcp:', '      kind: allow', '      items: []',
-  '    permissions:', '      default: deny', '      allow:', // LEADER governed + OUTER ARRANGED (root a738 ③): exactly the three leader tools this scenario calls, any resource; nothing else.
+  '    permissions:', '      default: deny', '      allow:', // OLD-PRODUCT INTERIM: only the TWO vocab-nameable faces get allow lanes;
   '          - tool: team_create_member', '            resource:', '              kind: any',
-  '          - tool: team_list_pending_control', '            resource:', '              kind: any',
-  '      ask: []', '      deny: []', // team_resolve_control carries NO rule ON PURPOSE: outside the closed permission
+  '          - tool: team_list_pending_control', '            resource:', '              kind: any', // 83/84 are NOT exempt — they await the MAIN's closed-vocabulary registration; the
+  '      ask: []', '      deny: []', // prepared per-role delta (exact kind:any single-tool rules) is staged in
+  '', // PENDING-NEWPRODUCT-DRIVER-DELTA.md (apply ONLY with the new product SHA pins).
   'members:', '  - templateId: ctl-worker',
   '    persona: "You are the control worker. Follow the marker instructions literally and only."',
   '    capabilities:', '      teamTools:', '        kind: allow', '        items:',
@@ -123,7 +128,7 @@ const SAVED_BP_V3_YAML = [
   '        - job_list', '        - job_output', '        - present', '        - skill',
   '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
-  '      permissions:', // MEMBER governed. The 83/84 faces live OUTSIDE the closed permission
+  '      permissions:', // OLD-PRODUCT INTERIM (vocabulary lacks the name — arrangement INCOMPLETE,
   '        default: deny', '        allow: []', // vocabulary (the real parse proved no rule can
   '        ask: []', '        deny: []', // request-control ENVELOPE below is this call's outer arrangement (root a738 ③).
   'teamEnvelope:', '  allow:',
