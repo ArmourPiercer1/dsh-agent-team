@@ -1,0 +1,67 @@
+test/a5m2-g3-lsp-mount-c1.test.ts(72,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string'.
+test/a5m2-g3-lsp-mount-c1.test.ts(74,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string'.
+test/a5m2-g3-lsp-mount-c1.test.ts(393,12): error TS18048: 'reg' is possibly 'undefined'.
+test/a5m2-g3-lsp-mount-c1.test.ts(394,37): error TS18048: 'reg' is possibly 'undefined'.
+test/a5m2-g3-lsp-mount-c1.test.ts(398,39): error TS18048: 'reg' is possibly 'undefined'.
+test/a5m2-g3-lsp-mount-c1.test.ts(398,63): error TS18048: 'reg' is possibly 'undefined'.
+test/a5m2-g3-lsp-mount-c1.test.ts(399,41): error TS18048: 'reg' is possibly 'undefined'.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(185,99): error TS7006: Parameter 'm' implicitly has an 'any' type.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(185,102): error TS7006: Parameter 'g' implicitly has an 'any' type.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(204,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(214,99): error TS7006: Parameter 'm' implicitly has an 'any' type.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(214,102): error TS7006: Parameter 'g' implicitly has an 'any' type.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(224,81): error TS2554: Expected 1 arguments, but got 2.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(256,99): error TS7006: Parameter 'm' implicitly has an 'any' type.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(256,102): error TS7006: Parameter 'g' implicitly has an 'any' type.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(360,27): error TS2532: Object is possibly 'undefined'.
+test/a5m2-g3-lsp-realm-supply-c1.test.ts(367,24): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(233,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(235,12): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(237,53): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(pattern: string | RegExp, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 2 of 3, '(pattern: string | RegExp): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 3 of 3, '(pattern: string, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+test/a5m2-lsp-wiring-c1.test.ts(247,35): error TS2554: Expected 1 arguments, but got 2.
+test/a5m2-lsp-wiring-c1.test.ts(276,86): error TS2554: Expected 0 arguments, but got 1.
+test/a5m2-lsp-wiring-c1.test.ts(293,26): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(306,37): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(306,37): error TS2345: Argument of type 'Promise<unknown> | undefined' is not assignable to parameter of type 'Promise<unknown>'.
+  Type 'undefined' is not assignable to type 'Promise<unknown>'.
+test/a5m2-lsp-wiring-c1.test.ts(310,36): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(310,36): error TS2345: Argument of type 'Promise<unknown> | undefined' is not assignable to parameter of type 'Promise<unknown>'.
+  Type 'undefined' is not assignable to type 'Promise<unknown>'.
+test/a5m2-lsp-wiring-c1.test.ts(311,52): error TS2554: Expected 1 arguments, but got 2.
+test/a5m2-lsp-wiring-c1.test.ts(314,35): error TS2532: Object is possibly 'undefined'.
+test/a5m2-lsp-wiring-c1.test.ts(314,35): error TS2345: Argument of type 'Promise<unknown> | undefined' is not assignable to parameter of type 'Promise<unknown>'.
+  Type 'undefined' is not assignable to type 'Promise<unknown>'.
+test/a5m2-lsp-wiring-c1.test.ts(318,69): error TS2554: Expected 1 arguments, but got 2.
+test/a5m2-lsp-wiring-c1.test.ts(352,71): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(pattern: string | RegExp, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 2 of 3, '(pattern: string | RegExp): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 3 of 3, '(pattern: string, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+test/a5m2-lsp-wiring-c1.test.ts(355,72): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(pattern: string | RegExp, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 2 of 3, '(pattern: string | RegExp): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 3 of 3, '(pattern: string, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
