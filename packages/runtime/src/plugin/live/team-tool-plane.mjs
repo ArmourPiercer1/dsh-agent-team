@@ -3487,13 +3487,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
         properties: {
           canonicalLocator: Object.freeze({ type: 'string' }),
           writtenFingerprint: Object.freeze({ type: 'string' }),
+          // EXACTLY ONE outcome flag is present on every receipt (the ARM
+          // guarantees it: existing path lands existingFileOnly:true, the
+          // create path lands createdNew:true — never both, never neither).
+          // The parent-level canonical form cannot express the XOR, so the
+          // pair is declared here and the producer keeps the stronger law.
           existingFileOnly: Object.freeze({ type: 'boolean' }),
+          createdNew: Object.freeze({ type: 'boolean' }),
         },
         // r9 canonical law (same-source scan of the write face): property-level
         // `required: true` is the host's authored DSL, not a registration
-        // face; every property of this receipt is REQUIRED, said once at the
-        // parent exactly like the host's compiled output form.
-        required: Object.freeze(['canonicalLocator', 'writtenFingerprint', 'existingFileOnly']),
+        // face; the D-C2-1 pair is REQUIRED at the parent exactly like the
+        // host's compiled output form; the outcome flag's exactly-one law
+        // is the arm's (see above), not something this grammar can overclaim.
+        required: Object.freeze(['canonicalLocator', 'writtenFingerprint']),
       }),
       // r12 ROOT MIN FIX (13:10): `render` lives INSIDE `output` — the real
       // tools.register contract (index.ts:1063 throws unless output.render is
@@ -3503,7 +3510,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // one validated canonical value (the image row's structure reused).
       render: (_args, value) => [{
         type: 'text',
-        text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (existing-file governed write, ${String(value?.writtenFingerprint ?? '')}).`,
+        text: `Wrote ${String(value?.canonicalLocator ?? 'the approved target')} (${value?.createdNew === true ? 'new-file governed write, created' : 'existing-file governed write'}, ${String(value?.writtenFingerprint ?? '')}).`,
       }],
     }),
     // presentCall stays at the definition's TOP level — its real Host contract

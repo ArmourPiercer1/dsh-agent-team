@@ -844,6 +844,15 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         currentFields: Object.freeze(['operation', 'providerIdentityAtClassify']),
     }),
     'B-WRITE': Object.freeze({
+        // A5M2-G3 REAL-GAP card (2026-10-25): the write plan is EXISTENCE-
+        // HONEST — existence is unknowable at pure classify, so the approved
+        // target states the LAW both outcomes obey (the reviewed r16 existing-
+        // file closure; the new FD-bound O_EXCL create closure) instead of the
+        // old `existingFileOnly: true` promise, which was FALSE for any call
+        // whose approval would create. `directoryCreation: false` is the
+        // closed-effect-set fact (I:tool-invoke + F(write exact file) only —
+        // mkdir lives outside the grant; disclosed deviation from the native
+        // mkdir-recursive spelling).
         required: Object.freeze({
             familyId: 'string',
             adapterRevision: 'nonNegativeInt',
@@ -851,7 +860,9 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
             realmId: 'string',
             canonicalTarget: 'string',
             contentFingerprint: 'string',
-            existingFileOnly: 'boolean',
+            existingFileLaw: 'string',
+            newFileLaw: 'string',
+            directoryCreation: 'boolean',
         }),
         currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
     }),
