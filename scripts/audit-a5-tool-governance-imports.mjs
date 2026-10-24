@@ -131,6 +131,22 @@ const PR1_CONSUMERS = Object.freeze([
   'runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
   'runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs',
   'runtime/src/plugin/live/governed-families/subagent-wiring.mjs',
+  // A5M2 census run 40083884439 (candidate 17c55b01e) NEW-RED attribution, booked
+  // by the CENTER integrator 2026-10-24: FIVE more governed-family wiring/provider
+  // modules reached the reviewed tree through their signed lane batches merged on
+  // this candidate (job trio via e97d38f8c slice-2; pwsh/g3-lsp/workflow/
+  // team-governed-provider via earlier root-narrow-signed merges - the audit
+  // rounds before this candidate simply never walked them together). Each imports
+  // ONLY parseRequestedEffectSet at its own line (g3-lsp-wiring.mjs:54,
+  // job-wiring.mjs:29, pwsh-wiring.mjs:30, team-governed-provider.mjs:72,
+  // workflow-wiring.mjs:36) - the SAME reviewed canonical requested-effects
+  // grammar at the row (the ptc-escalation-row / g3-ptc pattern), effects fail
+  // closed through the real parser, zero lane edits, zero new faces.
+  'runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/job-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
+  'runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+  'runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.

@@ -40,7 +40,8 @@
  * documentScope) are the INTEGRATOR's supply — the realm-scoped document
  * resolver the adapter names as the MISSING capability lives with the mount
  * card's assembly leg (spawnStreaming + realm policy reconstruction over
- * `sandbox-provider/lsp-assembly.ts`, the 77ffb187-reusable face), NOT here.
+ * the confined provider lane's lsp-assembly module, the 77ffb187-reusable
+ * face), NOT here.
  *
  * THE EXECUTION ROUTE: `controlPort` is optional and rides the adapter's OWN
  * law — with a port the port's prepare/handle executes behind the kernel

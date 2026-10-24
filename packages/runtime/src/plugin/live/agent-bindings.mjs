@@ -349,9 +349,11 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // consumer-side supply OVER it; the plane receives only the published fact
 // face through the `backends.lsp` row below (the plane imports NEITHER
 // module). The relative specifier lands on the tsc emit in the dist mirror
-// and on the TS source under vitest (the a5lsp2-assembly import precedent) —
-// NO vendored reimplementation, per the root ruling.
-import { createLspRealmAssembly } from '../../../sandbox-provider/lsp-assembly.js'
+// and on the TS source under vitest — through the lane's PUBLIC BARREL only
+// (root census ruling 40083884439: index.ts:27 already re-exports the LSP
+// assembly face; deep paths into the lane are closed to production mount
+// files). NO vendored reimplementation, per the root ruling.
+import { createLspRealmAssembly } from '../../../sandbox-provider/index.js'
 import { createA5LspRealmSupply } from './governed-families/lsp-realm-supply.mjs'
 // T12-M2: READ-ONLY reuse of the persona resolver (agent-setup/persona) and
 // the blueprint parser (the domain facade) — the composition that puts the

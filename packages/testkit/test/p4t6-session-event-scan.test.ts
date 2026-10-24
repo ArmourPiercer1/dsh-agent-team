@@ -3221,6 +3221,90 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
       'packages/runtime/test/a5ptc-escalation-row.test.ts',
     ]
+
+    // A5M2 census run 40083884439 (candidate 17c55b01e) SCAN-LEDGER BOOKING, booked by
+    const SCANNED_PATHS_A5M2FAM: readonly string[] = [
+    // the CENTER per the root ruling "登记计数仅据真实合法源差": SIXTY-FIVE
+    // scanned files reached the tree through root-signed lane batches merged on this
+    // candidate; booked family-by-family below (attribution = the merge that carried
+    // them), none invented, none swallowed into the 983 base.
+
+    // B-EDIT / B-SRE / B-WRITE family rows and their C1 suites (root-signed family lane batches; post-consume rows are the controlled-fs write/edit/sre companions):
+      'packages/runtime/controlled-fs/src/post-consume-create.ts',
+      'packages/runtime/controlled-fs/src/post-consume-edit.ts',
+      'packages/runtime/controlled-fs/src/post-consume-sre.ts',
+      'packages/runtime/src/plugin/live/governed-families/edit.mjs',
+      'packages/runtime/src/plugin/live/governed-families/sre.mjs',
+      'packages/runtime/test/a5m2-edit-c1.test.ts',
+      'packages/runtime/test/a5m2-edit-vertical-c1.test.ts',
+      'packages/runtime/test/a5m2-write-newfile-c1.test.ts',
+      'packages/runtime/test/a5m2-sre-arm-c1.test.ts',
+      'packages/runtime/test/a5m2-sre-c1.test.ts',
+      'packages/runtime/test/a5m2-sre-vertical-c1.test.ts',
+    // G1 surface family (present/human/skill rows, the present arm) and its suites (root-signed G1 lane batch):
+      'packages/runtime/src/plugin/live/governed-families/g1-present-arm.mjs',
+      'packages/runtime/src/plugin/live/governed-families/human.mjs',
+      'packages/runtime/src/plugin/live/governed-families/present.mjs',
+      'packages/runtime/src/plugin/live/governed-families/skill.mjs',
+      'packages/runtime/test/a5m2-g1-dependency-pa.test.ts',
+      'packages/runtime/test/a5m2-g1-human-c1.test.ts',
+      'packages/runtime/test/a5m2-g1-plugin-c1.test.ts',
+      'packages/runtime/test/a5m2-g1-present-arm.test.ts',
+      'packages/runtime/test/a5m2-g1-present-c1.test.ts',
+      'packages/runtime/test/a5m2-g1-skill-c1.test.ts',
+    // B-SEARCH governed row + B-TEAM pairing (bsearch lane, merged 4ea593fca round):
+      'packages/runtime/src/plugin/live/governed-families/search.mjs',
+      'packages/runtime/test/a5m2-bsearch-team-c1.test.ts',
+    // B-LSP wiring + realm supply + suites (lsp lane, root-signed):
+      'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
+      'packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
+      'packages/runtime/test/a5m2-g3-lsp-mount-c1.test.ts',
+      'packages/runtime/test/a5m2-g3-lsp-realm-supply-c1.test.ts',
+      'packages/runtime/test/a5m2-lsp-wiring-c1.test.ts',
+    // B-PWSH arm/wiring + suites (pwsh lane, root-signed):
+      'packages/runtime/src/plugin/live/governed-families/pwsh-arm.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/pwsh-arm.mjs',
+      'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
+      'packages/runtime/test/a5m2-pwsh-arm.test.ts',
+      'packages/runtime/test/a5m2-pwsh-mount.test.ts',
+    // B-JOB adapters/wiring + suites (job lane slice-1/2; slice-2 merged via the CENTER pick 34ce05f44 of e97d38f8c):
+      'packages/runtime/src/plugin/live/governed-families/job-adapters.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/job-adapters.mjs',
+      'packages/runtime/src/plugin/live/governed-families/job-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/job-wiring.mjs',
+      'packages/runtime/test/a5m2-job-plane-mount.test.ts',
+      'packages/runtime/test/a5m2-job-wiring.test.ts',
+    // B-ORCH workflow wiring + suites (orch lane; workflow-wiring merged via e78 bridge batch):
+      'packages/runtime/src/plugin/live/governed-families/workflow-wiring.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
+      'packages/runtime/test/a5m2-workflow-wiring.test.ts',
+      'packages/runtime/test/a5m2-b-orch-plane-mount.test.ts',
+    // team-governed-provider + upstream-team + child-identity bridge + MCP pairing (root-signed family batches):
+      'packages/runtime/src/plugin/live/governed-families/team-governed-provider.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
+      'packages/runtime/src/plugin/live/governed-families/upstreamteam.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs',
+      'packages/runtime/src/plugin/live/governed-families/child-identity-bridge.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/child-identity-bridge.mjs',
+      'packages/runtime/test/a5m2-team-governed-provider.test.ts',
+      'packages/runtime/test/a5m2-upstreamteam-adapters.test.ts',
+      'packages/runtime/test/a5m2-child-identity-bridge.test.ts',
+      'packages/runtime/test/a5m2-b-mcp-pairing-c1.test.ts',
+    // B-SCHEDULE trigger governance + the CENTER shared trigger carrier + fork trigger suite (carrier = center contract batch 2026-10-24, inert fail-closed):
+      'packages/runtime/src/plugin/live/governed-families/schedule-carrier.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/schedule-carrier.mjs',
+      'packages/runtime/src/plugin/live/governed-families/schedule-trigger-governance.d.mts',
+      'packages/runtime/src/plugin/live/governed-families/schedule-trigger-governance.mjs',
+      'packages/runtime/test/a5m2-schedule-carrier-c1.test.ts',
+      'packages/runtime/test/a5m2-schedule-fork-trigger.test.ts',
+      'packages/runtime/test/a5m2-schedule-trigger-governance.test.ts',
+    // verify-surface family pair (verify lane 68701321 batch):
+      'packages/runtime/test/a5m2-verify-surface-domain-family.test.ts',
+      'packages/runtime/test/a5m2-verify-surface-neg4-preset-selfregister.test.ts',
+    ]
     // alpha5-int-r3 (rehearsal branch, replayed onto merged master 1962f879 after #330
     // landed): the integration round's own leg file — the two integration conditions of
     // the mount flip (allowPaths same-shape across glob/search/shell; the internal log
@@ -3317,7 +3401,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B21.length +
         SCANNED_PATHS_A5M2B22.length +
         SCANNED_PATHS_A5M2B23.length +
-        SCANNED_PATHS_A5M2G1W.length,
+        SCANNED_PATHS_A5M2G1W.length +
+        SCANNED_PATHS_A5M2FAM.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3409,7 +3494,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B21.length +
         SCANNED_PATHS_A5M2B22.length +
         SCANNED_PATHS_A5M2B23.length +
-        SCANNED_PATHS_A5M2G1W.length,
+        SCANNED_PATHS_A5M2G1W.length +
+        SCANNED_PATHS_A5M2FAM.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3519,6 +3605,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5M2B22,
       ...SCANNED_PATHS_A5M2B23,
       ...SCANNED_PATHS_A5M2G1W,
+      ...SCANNED_PATHS_A5M2FAM,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }

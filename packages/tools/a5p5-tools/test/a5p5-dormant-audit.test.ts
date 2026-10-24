@@ -154,7 +154,22 @@ const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-sess
  * form-pinned: ONE line, the barrel import, no deep import, no second edge,
  * no other file.
  */
-const REVIEWED_EDGE_EXCEPTIONS: readonly string[] = ['runtime/src/plugin/live/team-tool-plane.mjs']
+// A5M2 census run 40083884439 (root ruling ③, booked by the CENTER): the B-SEARCH
+// governed row `governed-families/search.mjs` is the SECOND reviewed production
+// edge — a LIVE row (root: "生产单行 barrel import + runToolCall 非注释"), the
+// B-SEARCH mount retired for it is exactly the same slice GLUE-5 retired for
+// the plane row: the row is placed only through the governed placement route
+// and calls `runToolCall` through the BARREL at exactly ONE line (:85, form-
+// pinned by the leg below). The permit is that path AND that one spelling —
+// never names-only, never a second line, never a deep import.
+const REVIEWED_EDGE_EXCEPTIONS: readonly string[] = ['runtime/src/plugin/live/team-tool-plane.mjs', 'runtime/src/plugin/live/governed-families/search.mjs']
+
+/** The reviewed edges' pinned spellings — the exception list and this pair
+ *  list must stay one-for-one (asserted in the leg below). */
+const REVIEWED_EDGE_LINES: readonly { path: string; line: string }[] = [
+  { path: 'runtime/src/plugin/live/team-tool-plane.mjs', line: "import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'" },
+  { path: 'runtime/src/plugin/live/governed-families/search.mjs', line: "import { parseGlobArgs, parseGrepArgs, runToolCall } from '../../../../../tools/a5p5-tools/src/index.js'" },
+]
 
 /**
  * TEST-ONLY EDGES — a THIRD kind, deliberately NOT folded into either list
@@ -220,14 +235,17 @@ describe('a5p5-dormant-audit', () => {
     // The live row names the lane in EXACTLY one line — the barrel import of
     // the single registration-face symbol — never a deep import into the
     // lane's internals, never a second lane string anywhere in the file.
-    const row = readFileSync(join(packagesRoot, 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
-    let namedLines = 0
-    for (const line of row.split('\n')) {
-      if (!line.includes('a5p5-tools')) continue
-      namedLines += 1
-      expect(line.trim(), line.trim()).toBe(`import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'`)
+    expect(REVIEWED_EDGE_LINES.map((e) => e.path).sort(), 'the exception list and the pinned-spelling list are one-for-one').toEqual([...REVIEWED_EDGE_EXCEPTIONS].sort())
+    for (const entry of REVIEWED_EDGE_LINES) {
+      const row = readFileSync(join(packagesRoot, ...entry.path.split('/')), 'utf8')
+      let namedLines = 0
+      for (const line of row.split('\n')) {
+        if (!line.includes('a5p5-tools')) continue
+        namedLines += 1
+        expect(line.trim(), `${entry.path}: ${line.trim()}`).toBe(entry.line)
+      }
+      expect(namedLines, `${entry.path}: the row names the lane in EXACTLY one line`).toBe(1)
     }
-    expect(namedLines).toBe(1)
   })
 
   it('the A5-M1 correlation spec touches the lane ONLY as its one pinned dynamic barrel line', () => {

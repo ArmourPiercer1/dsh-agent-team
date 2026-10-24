@@ -63,6 +63,7 @@
     "@deepseek-ai/dsh-tool-web": "0.2.0-rc.2"
   },
   "devDependencies": {
+    "@js-temporal/polyfill": "0.5.1",
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",
     "globals": "^16.0.0",

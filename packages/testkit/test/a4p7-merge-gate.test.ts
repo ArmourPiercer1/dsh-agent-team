@@ -563,7 +563,15 @@ const LINT_LINTABLE_EXT = /\.(?:mjs|cjs|js|jsx|ts|tsx|mts|cts)$/
 // to be parsed as code — two `no-unused-expressions` errors from a doc comment. Globs and
 // block comments do not mix; `eslint.config.mjs` keeps its patterns in line comments for the
 // same reason.
-const RATIFIED_INVISIBLE_PREFIXES: readonly string[] = [...INSTALL_SURFACES.map((s) => `${s}/`), 'dev/', 'docs/', 'tests/']
+// Plus ONE explicitly named entry, not derived (root census-40083884439
+// ruling, booked by the CENTER): forks/dsh-schedule/lib/ is the schedule
+// fork's EXACT tsc build output — ratified invisible because the fork's
+// own build produces it and the later package/Host round verifies it;
+// check-artifacts-committed does NOT byte-check this directory (its
+// INSTALL_SURFACES are runtime/dist and client/composition-shim only),
+// and the ratification names this one directory — no forks/** prefix,
+// future forks are NOT pre-ratified.
+const RATIFIED_INVISIBLE_PREFIXES: readonly string[] = [...INSTALL_SURFACES.map((s) => `${s}/`), 'dev/', 'docs/', 'tests/', 'forks/dsh-schedule/lib/']
 
 /**
  * ESLint's own bin rather than `npx`, and that is a measurement

@@ -69,7 +69,7 @@ import { setTimeout as setTimer, clearTimeout as clearTimer } from 'node:timers'
 // backend and the assembly's readiness ride the SAME Content-Length
 // implementation — exported from the assembly module for exactly this
 // consumer; no second dialect exists in this package.
-import { encodeLspMessage, createLspFrameDecoder } from '../../../../sandbox-provider/lsp-assembly.js'
+import { encodeLspMessage, createLspFrameDecoder } from '../../../../sandbox-provider/index.js'
 
 export const A5_LSP_REALM_SUPPLY_REVISION = 2
 

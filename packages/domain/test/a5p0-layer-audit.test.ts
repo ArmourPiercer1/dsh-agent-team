@@ -67,9 +67,15 @@ describe('the tool-governance lane audit', () => {
       'runtime/controlled-fs/src/cf-errors.ts',
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
+      // A5M2 (census run 40083884439 red on candidate 17c55b01e, booked by the
+      // CENTER): the post-consume CREATE row - TYPE-ONLY FsWriteReceipt/
+      // GovernanceResult vocabulary (post-consume-create.ts:65/69), erased at
+      // emit, zero runtime edge; the file predates no lane rule - the PR3/PR5
+      // subtree prefix already sanctioned it; this booking is the set-pin only.
       // A5M2 (census run 40014719612 red, booked by the center): the post-consume
       // write row - TYPE-ONLY FsWriteReceipt/GovernanceResult vocabulary; erased
       // at emit, zero runtime edge.
+      'runtime/controlled-fs/src/post-consume-create.ts',
       'runtime/controlled-fs/src/post-consume-write.ts',
       // A5-M1: the PA↔Control bridge — the manifest digest it writes
       // (pa-control-bridge.ts:394) and the assurance snapshot it compares
@@ -87,6 +93,13 @@ describe('the tool-governance lane audit', () => {
       'runtime/src/plugin/live/governed-families/g1-query-assembly.mjs', // A5M2 census-40056814591 attribution (CENTER 2026-10-24; parseRequestedEffectSet-only, see the audit script)
       'runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
       'runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
+      // A5M2 census run 40083884439 (candidate 17c55b01e), booked by the CENTER:
+      // the five later governed-family wiring/provider modules - each consumes
+      // ONLY parseRequestedEffectSet (g3-lsp-wiring:54, job-wiring:29,
+      // pwsh-wiring:30, team-governed-provider:72, workflow-wiring:36), the same
+      // reviewed grammar face as g3-ptc-wiring; see the audit-script booking for
+      // full provenance.
+      'runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
       // A5M2 census-40063499790: the B-PTC run_code guard wiring (merged via
       // the root narrow-signed FINAL timing card 93e4a7a64 at int 861b8465b);
       // consumes ONLY parseRequestedEffectSet at g3-ptc-wiring.mjs:78 - the
@@ -97,9 +110,13 @@ describe('the tool-governance lane audit', () => {
       'runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
       'runtime/src/plugin/live/governed-families/g6-session-query.mjs',
       'runtime/src/plugin/live/governed-families/image.mjs',
+      'runtime/src/plugin/live/governed-families/job-wiring.mjs',
+      'runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
       'runtime/src/plugin/live/governed-families/subagent-spawn-wiring.mjs', // A5M2 census-40056814591 attribution (CENTER 2026-10-24)
       'runtime/src/plugin/live/governed-families/subagent-wiring.mjs', // A5M2 census-40056814591 attribution (CENTER 2026-10-24)
+      'runtime/src/plugin/live/governed-families/team-governed-provider.mjs',
       'runtime/src/plugin/live/governed-families/team-wiring.mjs',
+      'runtime/src/plugin/live/governed-families/workflow-wiring.mjs',
       // A5-M1: the governed effect backends row — `parseRequestedEffectSet`
       // (plane-effect-backends.mjs:64) resolving the READ row's requested
       // effects into the frozen closed resource vocabulary at :1050, before

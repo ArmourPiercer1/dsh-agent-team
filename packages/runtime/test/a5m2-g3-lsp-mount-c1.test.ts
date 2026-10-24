@@ -437,12 +437,17 @@ describe('A5M2-G3-LSP-MOUNT-C1 — the B-LSP mount: zero flip, typed gate, place
     expect(BINDINGS_SRC).toContain('const lspPlane = a5PlaneValue?.lsp')
     expect(BINDINGS_SRC).toContain('lspRegistrations = lspPlane.familyRegistrations()')
     expect(BINDINGS_SRC).toContain('a5LspInject.lifecycle.drainAll()')
-    // the REAL modules are imported (root ruling: reuse, never fork)
-    expect(BINDINGS_SRC).toContain("from '../../../sandbox-provider/lsp-assembly.js'")
+    // the REAL modules are imported (root ruling: reuse, never fork); the
+    // assembly face arrives through the lane's PUBLIC BARREL only (census
+    // run 40083884439 root ruling — index.ts re-exports lsp-assembly; the
+    // deep path is closed to production mount files)
+    expect(BINDINGS_SRC).toContain("import { createLspRealmAssembly } from '../../../sandbox-provider/index.js'")
+    expect(BINDINGS_SRC).not.toContain("from '../../../sandbox-provider/lsp-assembly.js'")
     expect(BINDINGS_SRC).toContain("from './governed-families/lsp-realm-supply.mjs'")
     // the plane consumed the published face ONLY (no supply/assembly import)
     expect(PLANE_SRC).not.toContain('lsp-realm-supply.mjs')
     expect(PLANE_SRC).not.toContain('sandbox-provider/lsp-assembly.js')
+    expect(PLANE_SRC).not.toContain('sandbox-provider') // the plane touches NO lane path (measured zero mentions)
     expect(PLANE_SRC).toContain("import { buildG3LspWiring, A5_G3_LSP_TOOL_NAME } from './governed-families/g3-lsp-wiring.mjs'")
   })
 

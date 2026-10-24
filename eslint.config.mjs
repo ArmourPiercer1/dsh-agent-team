@@ -14,11 +14,16 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
-      // EXACT generated-package output of the schedule fork (the same
-      // artifact class as dist: produced by forks/dsh-schedule build,
-      // byte-verified by check-artifacts-committed, never hand-edited —
-      // root f6fb card: 精确生成目录识别＋正常产物核, no broad baseline).
-      'forks/**/lib/**',
+      // EXACT generated-package output of the SCHEDULE fork ONLY (root
+      // census-40083884439 ruling: precise directory — future forks are
+      // NOT pre-exempted). Honest attribution (root: 未核不称已核): these
+      // files are build output of the fork's own tsc build and are never
+      // hand-edited; check-artifacts-committed's INSTALL_SURFACES covers
+      // runtime/dist and client/composition-shim ONLY — the fork lib is
+      // NOT byte-checked by that tool; its verification rides the fork's
+      // build and the later package/Host round. Same artifact CLASS as
+      // dist (机器生成、不手改), no broader claim, no baseline relaxation.
+      'forks/dsh-schedule/lib/**',
       '**/composition-shim/**',
       '**/node_modules/**',
       '.worktrees/**',

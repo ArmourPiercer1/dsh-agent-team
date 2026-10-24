@@ -150,6 +150,18 @@ describe('a5w compile surface', () => {
     { file: 'plugin/live/search-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
   ]
 
+  /**
+   * A5M2 census run 40083884439 (root ruling, booked by the CENTER): the LSP
+   * ASSEMBLY mounts carry the lane's PUBLIC BARREL LSP face, not the
+   * confined-process-provider factory - their own precise booking, mirrored
+   * one-for-one with NAMED_ASSEMBLY_MOUNTS in a5p4-lane-hygiene (the names
+   * must move together; deep lane paths stay closed).
+   */
+  const NAMED_ASSEMBLY_MOUNTS: readonly { file: string; edge: string }[] = [
+    { file: 'plugin/live/agent-bindings.mjs', edge: "import { createLspRealmAssembly } from '../../../sandbox-provider/index.js'" },
+    { file: 'plugin/live/governed-families/lsp-realm-supply.mjs', edge: "import { encodeLspMessage, createLspFrameDecoder } from '../../../../sandbox-provider/index.js'" },
+  ]
+
   it('the provider factory is exported for EXPLICIT calls, and only the named rows call it', async () => {
     const { createConfinedProcessProvider } = await import('../sandbox-provider/index.js')
     expect(typeof createConfinedProcessProvider).toBe('function')
@@ -168,7 +180,7 @@ describe('a5w compile surface', () => {
     }
     walk(join(RUNTIME, 'src'))
     const underSrc = offenders.map((f) => f.slice(join(RUNTIME, 'src').length + 1).split('\\').join('/')).sort()
-    const named = new Set(NAMED_PROVIDER_MOUNTS.map((m) => m.file))
+    const named = new Set([...NAMED_PROVIDER_MOUNTS.map((m) => m.file), ...NAMED_ASSEMBLY_MOUNTS.map((m) => m.file)])
     const unnamed = underSrc.filter((f) => !named.has(f))
     expect(unnamed, `unbooked live-glue references to the confined provider lane: ${unnamed.join(', ')}`).toEqual([])
     for (const mount of NAMED_PROVIDER_MOUNTS) {

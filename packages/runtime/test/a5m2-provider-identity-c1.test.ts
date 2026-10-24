@@ -723,10 +723,20 @@ describe('A5M2 PROVIDER-IDENTITY SUPPLY — one live authority feeds arm / famil
     // No IMAGE arm/registration/callFacts site carries a constant: the FP-A2/
     // FP-D legs above prove the live supply and the unchanged comparisons on
     // the real objects, and the plane pin below stays.
+    // RE-ANCHOR 8 (census run 40083884439 red on candidate 17c55b01e; CENTER
+    // re-measured every site): ELEVEN -> TWELVE, +1 REAL family addition and
+    // zero retirements - the B-JOB control-wiring constant at
+    // agent-bindings.mjs:4967 (createBJobControlWiring family registration,
+    // blame 34ce05f44 = the center pick of lane e97d38f8c slice-2, merged
+    // through the root's freeze intake), the same family-registration
+    // category as every counted site. ALL TWELVE re-measured: todo :3106,
+    // write :3201, EDIT :3286, SRE :3373, subagent-spawn :3707, schedule
+    // PAIR :3974/:4008, G2 team :4229, G5 goal :4618, subagent-controls
+    // :4873, B-JOB :4967, B-ORCH :5398.
     expect(
       matchAll(mount, /providerId: 'a5p5-plane',/g),
-      "todo + write + subagent-spawn + G2 team mount + G5 goal + subagent-controls + the schedule PAIR bind/publish constants (CARD #2), measured ELEVEN on the merged tree (RE-ANCHOR 7 above; every site enumerated with its line)",
-    ).toHaveLength(11)
+      "todo + write + EDIT + SRE + subagent-spawn + G2 team mount + G5 goal + subagent-controls + B-JOB + B-ORCH + the schedule PAIR bind/publish constants (CARD #2), measured TWELVE on the merged tree (RE-ANCHOR 8 above; every site enumerated with its line)",
+    ).toHaveLength(12)
     expect(planeSrc).toContain('providerId: \'a5p5-plane\'') // the rev.0 row-lane tuple, untouched
     // The plane never reads the provider off a MANIFEST or RECEIPT for supply
     // purposes, and the FP-A/FP-D legs above byte-pin every COMPARISON site to
