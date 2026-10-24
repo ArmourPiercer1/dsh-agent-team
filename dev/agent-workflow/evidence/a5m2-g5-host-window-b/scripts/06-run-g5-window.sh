@@ -7,14 +7,16 @@
 # spawns). One run = at most ONE boot, exactly TWO governed G5 calls
 # (get_goal allow / get_goal deny). NO auto second window, NO ad-hoc install,
 # NO chmod, NO candidate switching. Fixed pins (center 2fb delivery 2026-10-24T135732Z):
-#   product  = 2fb129cfa23e138248fecc834a42c92238af95fe (tip-equivalent 18c3327e6,
+#   product  = 71f03119136c286aa2cd01aef6629ecd2906b8d3 (placement fix; changed-file
 #              test-only diff, dist subtree identical)
-#   tgz      = .worktrees/pack-int/out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz
-#              sha256 8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a
-#   fixture  = .worktrees/pack-int/install-8077defc (READ-ONLY; lock
-#              5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088;
-#              pkg 4ef112fb43f058bc…; cold-import authority = product receipts
-#              logs-2fb129cf-20261024T135732Z 19-cold-* + 20-cold-necessary RC=0 —
+#   tgz      = .worktrees/pack-int/out-71f03119-20261024T145829Z/dsh-agent-team-0.1.1-alpha.2.tgz
+#              sha256 0c71c8f9d36e2207f79e5fc1f502792ce58bf7c290246f12d6f3cf6969967bab
+#              (4,348,702 B / 1,866 entries; entries vs 2fb +/-0; changed-file blob
+#               3d75d1a6d2c234cb798a87f5a36a53cb5fc61c7e = team-tool-plane.mjs, src=dist)
+#   fixture  = .worktrees/pack-int/install-0c71c8f9 (READ-ONLY; lock
+#              d68e374b7bb5e4468293e57416155dc63bc54594e232534eb55a949d242cf5b4;
+#              pkg 56e7e1ccd86bc95a…; cold-import authority = product receipts
+#              logs-71f03119-20261024T145829Z 19-cold-* + 20-cold-necessary RC=0 —
 #              read-only, NEVER rerun here. Pre-boot gates are IDENTITY-ONLY: the
 #              exact dist quartet blob hashes + lock/pkg pins + REAL blueprint
 #              parse (root review ruling: the source-keyword supply gate was
@@ -44,10 +46,10 @@ OUT=dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-${TS}
 DF_MIN=6442450944   # TEMPORARY: the root ruling shared from the A monitor (g3 38b81fff, root 09:31Z: 18e9 -> 6 GiB); the 18e9 decimal law returns when root says so
 HOME_BUDGET=67108864   # 64 MiB, unique-dev:inode bytes in this HOME — enforced IN FLIGHT by the watchdog (root budget card), not only post-exit
 SAMPLE_EVERY=10        # DISCLOSURE (root card): 10s sampling is a STOP-LOSS — writes between samples are unchecked, so the window can transiently exceed the 64 MiB line before the breach fires; it is NOT a hard quota and was never claimed as one. Exact accounting is the post-exit figure.
-PIN_TGZ_SHA=8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a
-PIN_LOCK_SHA=5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088
-PIN_PKG_SHA=4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722
-PIN_COMPOSED=2fb129cfa23e138248fecc834a42c92238af95fe
+PIN_TGZ_SHA=0c71c8f9d36e2207f79e5fc1f502792ce58bf7c290246f12d6f3cf6969967bab
+PIN_LOCK_SHA=d68e374b7bb5e4468293e57416155dc63bc54594e232534eb55a949d242cf5b4
+PIN_PKG_SHA=56e7e1ccd86bc95a7a55f902bfee5683a00d5db721e5d7da15f88e67e960bf99
+PIN_COMPOSED=71f03119136c286aa2cd01aef6629ecd2906b8d3
 
 cd "$REPO_WT"
 G5_SLOT=${A5M2_G5_SLOT:-B}   # root final scheduling: G5 = B slot (3184/3499); G6 holds A
@@ -85,7 +87,7 @@ FIX_TGZ_SHA=$(sha256sum "$FIX_TARGET" | cut -d' ' -f1)
 echo "fixture before: lock=${FIX_LOCK_BEFORE:0:16}… pkg=${FIX_PKG_BEFORE:0:16}… tgz=${FIX_TGZ_SHA:0:16}… target=${FIX_TARGET}"
 
 # [1.5] the OLD full-tree static audit is REMOVED (root order); the cold-import
-#       authority is the product receipt (logs-2fb129cf-20261024T135732Z). The
+#       authority is the product receipt (logs-71f03119-20261024T145829Z). The
 #       runner's pre-boot gates are IDENTITY-ONLY (exact quartet hashes + lock/pkg
 #       + REAL parse); the keyword "supply" gate was removed per root review —
 #       comment-only needles proved nothing.
@@ -252,7 +254,7 @@ cat > "$OUT/external-receipt.json" <<EOF
   "fixturePkgSha256Before": "${FIX_PKG_BEFORE}", "fixturePkgSha256After": "${FIX_PKG_AFTER}",
   "dfAvailBytes": ${AVAIL}, "dfMin": ${DF_MIN}, "runnerRc": ${RC}, "dry": "${A5M2_G5_DRY:-0}",
   "borrowedSlot": "${G5_SLOT}", "slotPorts": [${G5_PORT_HOST}, ${G5_PORT_MOCK}],
-  "fixturePkgShaPin": "${PIN_PKG_SHA}", "coldImportAuthority": "logs-2fb129cf-20261024T135732Z (19-cold-* + 20-cold-necessary RC=0; read-only)",
+  "fixturePkgShaPin": "${PIN_PKG_SHA}", "coldImportAuthority": "logs-71f03119-20261024T145829Z (19-cold-* + 20-cold-necessary RC=0; read-only)",
   "portsFreePost": true, "worldRetained": "${WORLD}", "homeNewBytes": ${NEWB},
   "homeBudget": ${HOME_BUDGET}
 }
