@@ -27,6 +27,7 @@ export interface G2TgpChildChain {
     rootSessionId: string
     instanceId: string
     templateId: string
+    admittedCallId: string
   }): Promise<{ childSessionId: string, handle: { agent: unknown, dispose?: () => Promise<void> } }>
 }
 

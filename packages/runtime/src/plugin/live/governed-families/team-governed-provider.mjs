@@ -266,6 +266,10 @@ export function createTeamGovernedSubagentProvider (input = {}) {
           rootSessionId: binding.rootSessionId,
           instanceId,
           templateId: input.templateId,
+          // the routing/lifecycle install identity for the shared
+          // bridge (root item A): the admitted child-call id — a
+          // reversible audit identity, NOT a grant and NOT a token.
+          admittedCallId: childCallId,
         })
       } catch (error) {
         closePlan(childCallId)

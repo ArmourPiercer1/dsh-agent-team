@@ -404,6 +404,7 @@ import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
 import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
 import { createBOrchestrationExecutionWiring } from './governed-families/workflow-wiring.mjs'
 import { createTeamGovernedSubagentProvider } from './governed-families/team-governed-provider.mjs'
+import { createChildIdentityBridge } from './governed-families/child-identity-bridge.mjs'
 import { A5_B_ORCHESTRATION_TOOL_NAMES } from './governed-families/workflow-adapters.mjs'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
@@ -5064,6 +5065,7 @@ export function createAgentBindings(deps) {
               // REFUSED typed here — forwarding-then-dropping or dropping
               // silently would pretend a support the seam does not have
               // (root interface card 2026-10-26).
+              if (typeof args?.admittedCallId !== 'string' || args.admittedCallId.length === 0) throw new Error('P_B_ORCH_CHILD_ROUTE_INPUT: the bridge install needs the admitted child-call identity')
               for (const extra of ['parentAgent', 'agentOptions', 'signal']) {
                 if (args?.[extra] !== undefined) throw new Error(`P_B_ORCH_CHAIN_FIELD_UNSUPPORTED: createChildSession takes no '${extra}' — refusing typed instead of silently dropping it`)
               }
@@ -5074,7 +5076,34 @@ export function createAgentBindings(deps) {
               })
               const handle = await ensureLiveAgent(String(created.childSessionId))
               await sessionPersistence.ensureMaterialized(handle.agent.session)
-              return { childSessionId: String(created.childSessionId), handle }
+              // LAW 1 INSTALL BEFORE PUBLISH (root item A): the bridge
+              // binding is installed the moment the REAL child id
+              // exists and BEFORE the handle is published to any
+              // consumer; failure ROLLS BACK (the fresh handle is
+              // disposed, nothing publishes unrouted). The authority
+              // generation is the durable permission-overlay read (the
+              // one generation face, never folded to zero).
+              const childSessionId = String(created.childSessionId)
+              try {
+                childIdentityBridge.install({
+                  childSessionId,
+                  rootSessionId: args.rootSessionId,
+                  owningMemberInstanceId: instanceId,
+                  admittedCallId: args.admittedCallId,
+                  generation: await readAuthorityGeneration(args.rootSessionId, instanceId),
+                })
+              } catch (error) {
+                try { await handle.dispose() } catch { /* rollback best-effort */ }
+                throw new Error(`P_B_ORCH_CHILD_ROUTE_INSTALL_FAILED (rolled back, nothing published): ${String(error?.message ?? error)}`)
+              }
+              // LAWS 3+4 (drain -> reclaim -> retire): the published
+              // handle's dispose runs the bridge settle around the REAL
+              // reclaim; owner cancellation/regeneration drains through
+              // drainByOwner (the owner-budget lane's port).
+              return {
+                childSessionId,
+                handle: Object.freeze({ agent: handle.agent, dispose: () => childIdentityBridge.settle(childSessionId, () => handle.dispose()) }),
+              }
             },
           }
           const bOrchRunDelegate = async (args, exec) => {
@@ -10486,6 +10515,15 @@ export function createAgentBindings(deps) {
   // answer a Leader of Team A addressing root B would be re-validated
   // against Team B's rows as Team B's leader (the pending-list +
   // resolve-control cross-team chain).
+  // THE CHILD IDENTITY BRIDGE (root ruling 2026-10-26 item A): a
+  // trusted identity ROUTING / lifecycle index ONLY — no second
+  // permission decision, no grants, no ledger (the durable member
+  // ledger above stays the single authority for real members). Provider
+  // children are routed THROUGH the owning member below, so their tool
+  // calls resolve under the CURRENT valid envelope of the ORIGINAL
+  // member and the ORIGINAL Provider/Guard, while holding no member
+  // powers of their own.
+  const childIdentityBridge = createChildIdentityBridge()
   const resolveCaller = async (sessionId) => {
     const sid = String(sessionId)
     // TCM-D4: the caller resolves under the session's OWNING team root from
@@ -10510,6 +10548,17 @@ export function createAgentBindings(deps) {
             rootSessionId: String(teamRoot),
           }
         }
+      }
+    }
+    // A governed provider child: route through the OWNING member (the
+    // install-before-publish binding of the childChain wrapper). Routing
+    // only — Guard/PA/envelope apply exactly as for the owner; retired
+    // or unrouted sessions keep the fail-closed throw below.
+    const routed = childIdentityBridge.resolve(sid)
+    if (routed !== undefined) {
+      return {
+        caller: { kind: 'instance', instanceId: String(routed.owningMemberInstanceId) },
+        rootSessionId: String(routed.rootSessionId),
       }
     }
     throw new Error(`p6t6 caller map: no caller for session ${sessionId}`)
