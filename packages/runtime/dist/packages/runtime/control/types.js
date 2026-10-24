@@ -648,15 +648,88 @@ export function parsePaManifestFamilyBlock(v) {
     };
 }
 export const PA_FAMILY_TARGET_RULES = Object.freeze({
+    // A5M2 (root 01:01 card, G5 lane supply): the B-SESSION family carries TWO
+    // minted claim shapes under ONE signed entry — the todo `replace-list` plan
+    // (todo.mjs:234-246, unchanged field-for-field) and the G5 goal-service
+    // face (g5-goal-wiring.mjs flat projection over g5-goal-service.mjs rev.1
+    // plan facts, records 27/28/29). Discriminated through the ALREADY-SIGNED
+    // variant grammar (root 17:40 mechanism, the B-SUBAGENT encoding precedent):
+    // the shared required leaf is `operation` — both mints emit it as a literal
+    // their LANE mints from census truth (todo.mjs:64 'replace-list'; the G5
+    // census A5_G5_GOAL_RECORDS 'goal-read'/'goal-create'/'goal-action-
+    // dispatch') — and each group closes over its own exact key set. ZERO new
+    // kinds: the goal leaves ride the committed grammar (string, boolean,
+    // nonNegativeInt, stringArray, nullableString — root 18:42: missing ≠ null
+    // ≠ '' stay three outcomes; the authority pair is nullable on BOTH sides so
+    // observed/UNOBSERVED stay distinguishable end-to-end, never a silent
+    // pass). `namedGaps` carries the adapter's VERBATIM gap strings — the
+    // disclosure contract stays mint-side like every family's. `binds` pins
+    // each goal group's toolName to its ONE literal (full-value binding — a
+    // goal variant can never ride another tool's leaf); the todo group binds
+    // nothing (it has no constant leaf of its own; its field set was and stays
+    // the signed six-over-the-leaf). TODO CLAIM VERDICTS ARE PRESERVED: every
+    // denial the flat rule produced for a real todo claim (first-missing-
+    // required in the same field order, foreign-key closed-set, wrong-type)
+    // rides the SAME bytes through the group law; the only refusal that did not
+    // exist before is for an operation literal NO mint can produce, which
+    // selected nothing before only because nothing typed the leaf at all.
+    // currentFields keeps the signed trio (current-facts law unmoved; the goal
+    // groups add NOTHING to it).
     'B-SESSION': Object.freeze({
         required: Object.freeze({
             operation: 'string',
-            agentId: 'string',
-            sessionHeaderId: 'string',
-            todosDigest: 'string',
-            counts: 'countsTriple',
-            allowParallelPolicy: 'boolean',
-            paramFingerprint: 'string',
+        }),
+        variant: Object.freeze({
+            leaf: 'operation',
+            by: Object.freeze({
+                'replace-list': Object.freeze({
+                    adds: Object.freeze({
+                        agentId: 'string',
+                        sessionHeaderId: 'string',
+                        todosDigest: 'string',
+                        counts: 'countsTriple',
+                        allowParallelPolicy: 'boolean',
+                        paramFingerprint: 'string',
+                    }),
+                    binds: Object.freeze({}),
+                }),
+                'goal-read': Object.freeze({
+                    adds: Object.freeze({
+                        toolName: 'string',
+                        recordIndex: 'nonNegativeInt',
+                        portMethods: 'stringArray',
+                        authorityObserved: 'boolean',
+                        authorityKind: 'nullableString',
+                        authorityReason: 'nullableString',
+                        namedGaps: 'stringArray',
+                    }),
+                    binds: Object.freeze({ toolName: 'get_goal' }),
+                }),
+                'goal-create': Object.freeze({
+                    adds: Object.freeze({
+                        toolName: 'string',
+                        recordIndex: 'nonNegativeInt',
+                        portMethods: 'stringArray',
+                        authorityObserved: 'boolean',
+                        authorityKind: 'nullableString',
+                        authorityReason: 'nullableString',
+                        namedGaps: 'stringArray',
+                    }),
+                    binds: Object.freeze({ toolName: 'create_goal' }),
+                }),
+                'goal-action-dispatch': Object.freeze({
+                    adds: Object.freeze({
+                        toolName: 'string',
+                        recordIndex: 'nonNegativeInt',
+                        portMethods: 'stringArray',
+                        authorityObserved: 'boolean',
+                        authorityKind: 'nullableString',
+                        authorityReason: 'nullableString',
+                        namedGaps: 'stringArray',
+                    }),
+                    binds: Object.freeze({ toolName: 'update_goal' }),
+                }),
+            }),
         }),
         currentFields: Object.freeze(['operation', 'agentId', 'sessionHeaderId']),
     }),
