@@ -30,8 +30,10 @@
  *    `controlledInstall` / `installFace` / `hostEscalation` NEVER (a mount
  *    that presents one is refused P_G1_WIRE_ARM_NOT_ACCEPTED, so an immature
  *    arm can never ride this wiring by accident); the ports bag is
- *    whitelisted to the ONE CURRENT-facts source the subset can consult
- *    (`trustedTopology`) — every other port (trustedCatalog, pluginFacts,
+ *    whitelisted to the CURRENT-facts sources the MOUNTED row set can
+ *    consult (`trustedTopology` always; `pluginFacts` only when every
+ *    mounted row is B-PLUGIN, CENTER order 2026-10-25) — every other
+ *    port (trustedCatalog,
  *    dependencyFacts, domainPortRegistry) is the same refusal.
  *  - A row whose facts are not observable stays an honest DECLARED/INACTIVE
  *    row exactly as the adapter module spells it: when the placement
@@ -89,6 +91,7 @@
 import {
   A5_G1_ADAPTER_REVISION,
   A5_G1_CONTROL_ADAPTER_REVISION,
+  A5_G1_PLUGIN_ADAPTER_REVISION,
   A5_G1_FAMILY_GROUP,
   A5_G1_RECORD_SPECS,
   mountG1SurfaceAdapter,
@@ -161,6 +164,21 @@ export function g1ControlSupplySubset() {
     .filter(([, spec]) => spec.capture === 'tool'
       && spec.family === 'B-CONTROL'
       && spec.recordIndex !== A5_G1_CONTROL85_HANDOVER.recordIndex)
+    .map(([name, spec]) => Object.freeze({ name, recordIndex: spec.recordIndex, familyId: spec.family }))
+    .sort((a, b) => a.recordIndex - b.recordIndex))
+}
+
+/**
+ * DERIVED B-PLUGIN supply subset of the frozen table: `capture === 'tool'`
+ * AND `family === 'B-PLUGIN'` (record 52 plugin_manager — the CENTER
+ * whole-family order names it; the old zero-code-closed reading is
+ * withdrawn). Like the CONTROL subset this is a pure read of the frozen
+ * table, never a hand-list; the closed subset law validates whatever a
+ * mount presents against it.
+ */
+export function g1PluginSupplySubset() {
+  return Object.freeze(Object.entries(A5_G1_RECORD_SPECS)
+    .filter(([, spec]) => spec.capture === 'tool' && spec.family === 'B-PLUGIN')
     .map(([name, spec]) => Object.freeze({ name, recordIndex: spec.recordIndex, familyId: spec.family }))
     .sort((a, b) => a.recordIndex - b.recordIndex))
 }
@@ -248,14 +266,6 @@ export function createG1QueryWiring(input = {}) {
     return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'the trusted TARGETS face (memberAgentId, sessionHeaderId, realmId, owner, profileId) is CONFIG that must be provided at mount — the adapter validates its shape per row; this layer refuses its absence')
   }
   const providerId = typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'plugin'
-  const portsIn = input.ports ?? {}
-  if (!isRecord(portsIn)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'ports must be a record (or absent)')
-  for (const key of Object.keys(portsIn)) {
-    if (!ALLOWED_PORTS.includes(key)) {
-      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED, `ports.${key} is not a pure-query CURRENT-facts source — the whitelist is {${ALLOWED_PORTS.join(', ')}}; every other port is another family's face or a resource arm this candidate never carries`)
-    }
-  }
-  const ports = Object.freeze({ ...portsIn })
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
 
   const capturedIn = input.captured ?? {}
@@ -274,6 +284,25 @@ export function createG1QueryWiring(input = {}) {
     }
     subset = Object.freeze([...input.subset].map((row) => Object.freeze({ name: row.name, recordIndex: row.recordIndex, familyId: row.familyId })))
   }
+  // The ports whitelist is resolved AGAINST the mounted row set: a
+  // pure-query world keeps the single-source whitelist BYTE-FOR-BYTE; a
+  // subset whose every row is B-PLUGIN (CENTER whole-family order
+  // 2026-10-25, record 52) additionally admits the pluginFacts CURRENT-
+  // facts source the family's classify law requires. A mixed row set gets
+  // neither extra port; the three resource ARMS (controlledInstall,
+  // installFace, hostEscalation) stay refused in EVERY world — install
+  // enters only through the adapter L5 edge once a deployer mounts those
+  // seams, which today it refuses with zero manager entry.
+  const subsetIsPluginOnly = subset.every((entry) => entry.familyId === 'B-PLUGIN')
+  const allowedPorts = subsetIsPluginOnly ? [...ALLOWED_PORTS, 'pluginFacts'] : ALLOWED_PORTS
+  const portsIn = input.ports ?? {}
+  if (!isRecord(portsIn)) return refuseAssembly(A5_G1_QUERY_WIRING_CODES.INPUT_INVALID, 'ports must be a record (or absent)')
+  for (const key of Object.keys(portsIn)) {
+    if (!allowedPorts.includes(key)) {
+      return refuseAssembly(A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED, `ports.${key} is not a CURRENT-facts source for the mounted G1 subset — the whitelist is {${allowedPorts.join(', ')}}; every other port is another family's face or a resource arm this candidate never carries`)
+    }
+  }
+  const ports = Object.freeze({ ...portsIn })
   const subsetNames = new Set(subset.map((entry) => entry.name))
   // A capture presented for a NON-subset record is an attempt to wire a
   // non-query row through the pure-query candidate: a config defect, refused.
@@ -405,7 +434,7 @@ export function createG1QueryWiring(input = {}) {
         // and the claim (the reviewPayload the adapter mints) answer the SAME
         // value - the format-identity pairing obligation; old approvals are
         // explicitly stale, never translated.
-        adapterRevision: rowEntry.row.familyId === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION,
+        adapterRevision: rowEntry.row.familyId === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : rowEntry.row.familyId === 'B-PLUGIN' ? A5_G1_PLUGIN_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION,
         providerIdentity: providerId,
       }),
     })

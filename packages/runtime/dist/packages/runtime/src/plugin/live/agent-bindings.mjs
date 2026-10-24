@@ -589,7 +589,7 @@ import { createGovernedJobsBridge, lexicalAnchor } from './plane-effect-backends
 // table, read here ONLY to gate which rows this arm supplies (never a
 // hand-spelled name list — the subset stays derived from the frozen spec table).
 import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'
-import { g1PureQuerySubset, g1ControlSupplySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'
+import { g1PureQuerySubset, g1ControlSupplySubset, g1PluginSupplySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'
 import { createG1TrustedTopologySupply } from './governed-families/g1-trusted-topology-supply.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
@@ -2971,18 +2971,22 @@ export function createAgentBindings(deps) {
       let a5PlaneOwnNames = []
       if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
         const planeCfg = config.teamToolPlane
-        // CONTROL supply attribution hoist (root LIMITED BUILD ORDER
-        // 2026-10-25): ONLY when the deployer's closed key arms the supply
-        // does the plane learn the DERIVED CONTROL row names (the g1Control-
-        // SupplySubset of the frozen table — never a wildcard, never hand-
-        // listed); unconfigured worlds keep the arm face byte-for-byte what
-        // it was and answer no CONTROL placement. (The arm block below owns
-        // the grammar validation; a malformed key still refuses the mount.)
-        const a5G1ControlArmNames = (planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null
-          && typeof planeCfg.g1PureQuery === 'object' && !Array.isArray(planeCfg.g1PureQuery)
-          && planeCfg.g1PureQuery.control === true)
-          ? g1ControlSupplySubset().map((row) => row.name)
-          : null
+        // SUPPLY attribution hoist (root LIMITED BUILD ORDER 2026-10-25;
+        // B-PLUGIN widened by the CENTER whole-family order the same day):
+        // ONLY when the deployer's closed key arms a supply does the plane
+        // learn that family's DERIVED row names (the frozen-table subsets —
+        // never a wildcard, never hand-listed); unconfigured worlds keep the
+        // arm face byte-for-byte what it was and answer no governed-SUPPLY
+        // placement. (The arm block below owns the grammar validation; a
+        // malformed key still refuses the mount.)
+        const a5G1SupplyArmNames = (() => {
+          const g1SupplyCfg = planeCfg?.g1PureQuery
+          if (g1SupplyCfg === undefined || g1SupplyCfg === null || typeof g1SupplyCfg !== 'object' || Array.isArray(g1SupplyCfg)) return null
+          const armedNames = []
+          if (g1SupplyCfg.control === true) armedNames.push(...g1ControlSupplySubset().map((row) => row.name))
+          if (g1SupplyCfg.plugin === true) armedNames.push(...g1PluginSupplySubset().map((row) => row.name))
+          return armedNames.length > 0 ? armedNames : null
+        })()
         const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
         // B-ACT-1-PR C2: the governed jobs bridge for the fixed `job_*`
         // management trio. Built ONLY when the closed `jobsEnabled` key says
@@ -6173,7 +6177,7 @@ export function createAgentBindings(deps) {
             // The rows are the OWNER's placement, so the plane injects no
             // `backends.g1` rows on this route — one placement, one ledger.
             ...(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null
-              ? { g1Arm: a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames } }
+              ? { g1Arm: a5G1SupplyArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1SupplyArmNames } }
               : {}),
             // G2 lanes ride the SAME backends face (root 19:31 item 1): the
             // mount's g2Mcp/g2Browser backends are what the plane's G2
@@ -6792,6 +6796,105 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-g1: control supply ARMED for ${sessionId} (B-CONTROL records 83/84/87/88 requested; placed rows=${String(g1ControlPlacedCount)}; the deployer's config key is the ONLY producer of this state — the ruling never auto-enables)`)
           } else {
             observations.push(`a5m2-g1: control supply DARK for ${sessionId} (g1PureQuery.control not configured — the B-CONTROL rows 83/84/87/88 stay unmounted and their natives untouched; opt-in per the root 2026-10-25 limited build order)`)
+          }
+          // B-PLUGIN supply (CENTER whole-family order 2026-10-25: record 52
+          // plugin_manager takes REAL wiring; the old zero-code-closed
+          // reading is withdrawn). SAME closed grammar as the control lane:
+          // `g1PureQuery.plugin` is ABSENT (DARK — the row stays unmounted,
+          // its native untouched) or exactly TRUE; any other value refuses
+          // the mount. Armed supply ADDITIONALLY requires the deployer's
+          // pluginFacts record — the trusted profile facts the family's
+          // classify law enumerates its write envelope from; without it the
+          // mount is refused, never degraded. The row executes the CAPTURED
+          // NATIVE (bindBody): the Host gate chain at tools.ts:38-44 and the
+          // per-action validation run INSIDE the native verbatim — the outer
+          // PA adds the approval floor, never a substitute ceiling. The
+          // install_bundle manager entry stays fail-closed (adapter L5: no
+          // hostEscalation/installFace mounts exist in this candidate; the
+          // wiring refuses those arms in EVERY world).
+          if (g1IsRecord && g1Cfg.plugin !== undefined && g1Cfg.plugin !== true) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': g1PureQuery.plugin must be exactly true when present (found ${JSON.stringify(g1Cfg.plugin) ?? String(g1Cfg.plugin)}) — the B-PLUGIN supply is a CLOSED grammar`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          const g1PluginFactsCfg = g1IsRecord && g1Cfg.plugin === true ? g1Cfg.pluginFacts : undefined
+          if (g1IsRecord && g1Cfg.plugin === true && !(typeof g1PluginFactsCfg === 'object' && g1PluginFactsCfg !== null && !Array.isArray(g1PluginFactsCfg)
+            && ['profileConfigLocator', 'installRootLocator', 'cacheRootLocator', 'exemptionsLocator'].every((key) => typeof g1PluginFactsCfg[key] === 'string' && g1PluginFactsCfg[key].length > 0)
+            && Array.isArray(g1PluginFactsCfg.allowedRegistries) && Array.isArray(g1PluginFactsCfg.fallbackRegistries))) {
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': g1PureQuery.plugin=true needs pluginFacts — { profileConfigLocator, installRootLocator, cacheRootLocator, exemptionsLocator: non-empty strings; allowedRegistries, fallbackRegistries: arrays } (the trusted profile facts the write envelope is enumerated from; a plugin row without them refuses every call and must not be armed)`,
+            ), { code: 'alpha5-g1-arm-mount-refused' })
+          }
+          if (g1IsRecord && g1Cfg.plugin === true) {
+            let g1PluginPlacedCount = 0
+            for (const entry of g1PluginSupplySubset()) {
+              const pluginAssembly = createG1QueryAssembly({
+                providerId: g1ProviderId,
+                // the CLOSED B-PLUGIN row set, derived from the frozen table.
+                subset: g1PluginSupplySubset(),
+                pluginFacts: { current: () => g1PluginFactsCfg },
+                registry: {
+                  // LIVE scoped takeover read — same law as the control
+                  // lane: no scoped answer for THIS agent means capture
+                  // ABSENT (honest census row, zero placement, zero
+                  // registration; visibility never widens).
+                  get: (name, agent) => (name !== entry.name ? undefined : agentCtx.tools.get(name, agent)),
+                  register: (definition) => {
+                    const dispose = agentCtx.tools.register(definition)
+                    a5G1PlacedByName.set(definition.name, definition)
+                    return () => {
+                      if (a5G1PlacedByName.get(definition.name) === definition) a5G1PlacedByName.delete(definition.name)
+                      dispose()
+                    }
+                  },
+                },
+                runtimeAgent,
+                plane: () => g1PlaneSeam,
+                trusted: g1Trusted,
+                bindingFacts: () => {
+                  const g1Entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(entry.name)
+                  const g1Binding = g1Entry?.binding
+                  if (g1Entry?.verified !== true || g1Binding?.status !== 'ACTIVE'
+                    || typeof g1Binding.bindingId !== 'string' || g1Binding.bindingId.length === 0
+                    || !Number.isInteger(g1Binding.revision) || !Number.isInteger(g1Binding.policyGeneration) || !Number.isInteger(g1Binding.authorityGeneration)) {
+                    throw new Error(`refused-g1 binding-facts-unreadable — '${entry.name}' answers no verified ACTIVE dispatcher binding (status=${String(g1Binding?.status ?? 'none')}); the G1 row fails closed, a stale tuple is never acceptable`)
+                  }
+                  return {
+                    bindingId: g1Binding.bindingId,
+                    bindingRevision: g1Binding.revision,
+                    policyGeneration: g1Binding.policyGeneration,
+                    authorityGeneration: g1Binding.authorityGeneration,
+                  }
+                },
+                observe: (row) => observations.push(`a5m2-g1: plugin ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')} record=${String(row?.recordIndex ?? '')}`),
+              })
+              if (pluginAssembly.ok !== true) {
+                observations.push(`a5m2-g1: plugin arm-REFUSED for ${sessionId} (${String(pluginAssembly.code)} row=${entry.name})`)
+                throw Object.assign(new Error(
+                  `agent-bindings: alpha.5 governed G1 B-PLUGIN mount refused for '${sessionId}' row '${entry.name}': ${String(pluginAssembly.message)} (code: ${String(pluginAssembly.code)})`,
+                ), { code: 'alpha5-g1-arm-mount-refused' })
+              }
+              let pluginDisposers
+              try {
+                pluginDisposers = pluginAssembly.place()
+              } catch (error) {
+                observations.push(`a5m2-g1: plugin placement-REFUSED for ${sessionId} (${entry.name}: ${String(error?.message ?? error).slice(0, 120)})`)
+                throw Object.assign(new Error(
+                  `agent-bindings: alpha.5 governed G1 B-PLUGIN placement refused for '${sessionId}' row '${entry.name}': ${String(error?.message ?? error)}`,
+                ), { code: 'alpha5-g1-arm-mount-refused', cause: error })
+              }
+              for (const dispose of pluginDisposers) toolDisposers.push(dispose)
+              for (const name of pluginAssembly.placementNames) {
+                a5PlaneOwnNames.push(name)
+                a5PlaneOwnedNames.push(name)
+                g1PluginPlacedCount += 1
+                observations.push(`a5m2-g1: governed B-PLUGIN row PLACED ${name} for ${sessionId} (record ${String(entry.recordIndex)}; takeover mount over the global native, family revision 8)`)
+              }
+              a5G1Assemblies.push(pluginAssembly)
+            }
+            observations.push(`a5m2-g1: plugin supply ARMED for ${sessionId} (B-PLUGIN record 52 requested; placed rows=${String(g1PluginPlacedCount)}; the deployer's config key is the ONLY producer of this state — no auto-enable; install_bundle keeps the adapter's zero-manager-entry refusal until the Host gate seams are mounted)`)
+          } else {
+            observations.push(`a5m2-g1: plugin supply DARK for ${sessionId} (g1PureQuery.plugin not configured — the B-PLUGIN row 52 stays unmounted and its native untouched; opt-in per the CENTER whole-family order)`)
           }
           observations.push(`a5m2-g1: arm BOUND for ${sessionId} (provider=${g1ProviderId} placed=${String(g1PlacedCount)} topology=${g1Topology === undefined ? 'ABSENT — rows keep the module fail-closed posture' : 'mounted (live reader)'} realm=${a5PlaneRealmId})`)
         }

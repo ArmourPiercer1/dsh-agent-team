@@ -471,8 +471,7 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // additive block. CENTER refresh 2026-10-24 (e78 re-anchor merge): the
     // G2 lane's B-BROWSER/B-WEB entries (root 21:57 table round + B-WEB
     // closed table) insert before B-WRITE, the lane block's own position —
-    // fifteen families now (root 2026-10-24 LSP REAL-OWNER card: B-LSP rides directly after B-TERMINAL, the lane block's own position); (A5M2-G3-PTC root 04:4x card: B-PTC 闭表补齐
-    // rides directly after B-TERMINAL, the lane block's own position); nothing
+    // fifteen families now (root 2026-10-24 LSP REAL-OWNER card: B-LSP rides directly after B-TERMINAL, the lane block's own position; A5M2-G3-PTC root 04:4x card: B-PTC 闭表补齐 rides directly after B-TERMINAL, the lane block's own position; CENTER whole-family order 2026-10-25: B-PLUGIN record 52 lands directly after B-CONTROL, the G1 lane block's own position — the old zero-code-closed reading of that row is withdrawn); nothing
     // else about the census law changed.
     // A5M2-G3 FS-EDIT card 2026-10-25 (this lane): B-EDIT (the write leaf's
     // sibling, M-02 pre-booked paired-read shape) rides directly after
@@ -488,7 +487,7 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // NOT carry the discriminated grammar (ONE minted claim shape; the
     // single-flow law needs no variant group — no speculative widening).
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-INSPECT', 'B-DEPENDENCY', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-PLUGIN', 'B-INSPECT', 'B-DEPENDENCY', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
@@ -502,7 +501,7 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
       // signed entries — added to the carrier set; nothing else moved.
       // B-CONTROL joins the carrier set (root 2026-10-25 LIMITED BUILD ORDER:
       // the §5 full-pairing change uses the existing closed variant grammar).
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL' || familyId === 'B-SRE'
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL' || familyId === 'B-SRE' || familyId === 'B-PLUGIN'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
