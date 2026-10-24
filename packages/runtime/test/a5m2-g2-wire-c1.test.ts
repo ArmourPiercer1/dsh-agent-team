@@ -1460,23 +1460,39 @@ describe('A5M2-WIRE round-47: B-WEB table entry against the real web mint', () =
     const fetchRow = req(rows.web_fetch).classify({ url: 'https://target.example.invalid/a?b=1' })
     expect(fetchRow.ok, JSON.stringify(fetchRow)).toBe(true)
     const manifest = fetchRow.targetManifest as Record<string, unknown>
-    // NAMED GRAMMAR GAP (pinned, not papered): the real mint carries
-    // providerIdentityAtClassify as an OBJECT ({observed:false,reason} or
-    // {observed:true,fetchProviderId,searchProviderId,searchOrigin?}); the
-    // frozen value-token union has NO object token and the closed validator
-    // refuses any manifest key outside the typed plan — so this ONE key is
-    // table-unexpressible today. The refusal message is measured to name
-    // ONLY that key (everything else pairs); faking it as a string or
-    // dropping it is forbidden, so the honest pin is this exact refusal.
-    const fetchCheck = C.validatePaFamilyTargetAgainstRule('B-WEB', rule, manifest)
-    expect(String(fetchCheck)).toMatch(/providerIdentityAtClassify/)
-    expect(String(fetchCheck)).not.toMatch(/url|destinationOrigin|businessObligations|operation/)
+    // ROOT 02:17 ENCODING (approved r48 diff): the leaf is now the FULL
+    // snapshot losslessly encoded by the existing canonicalJsonStringify —
+    // the table pairs it as the same-named required 'string'. Verified
+    // here: both real manifests VALIDATE; parse-back equals the snapshot
+    // branch-for-branch including nulls, searchOrigin key-ABSENCE and the
+    // named-blocker text (no summary, no hash, nothing moved).
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, manifest)).toBeUndefined()
+    const enc = String(manifest.providerIdentityAtClassify)
+    expect(typeof manifest.providerIdentityAtClassify).toBe('string')
+    const back = JSON.parse(enc) as Record<string, unknown>
+    expect(back.observed).toBe(false) // observed:false branch preserved byte-exact
+    expect(String(back.reason)).toContain('B-WEB') // named blocker verbatim
+    const adapters2 = adapters
+    const observedRows = adapters2.createG2WebAdapters({ realmId: 'r-web', providerId: 'a5p5-plane', readNative: (name: string) => ({ name, definitionIdentity: 'di-w-' + name, execute: async () => ({ ok: true }) }), definitionIdentityOf: (name: string) => 'di-w-' + name, readProviderFacts: () => ({ fetchProviderId: 'local-fetch', searchProviderId: null }) })
+    const m2 = (req(observedRows.web_fetch).classify({ url: 'https://target.example.invalid/x' }) as { targetManifest?: Record<string, unknown> }).targetManifest as Record<string, unknown>
+    const b2 = JSON.parse(String(m2.providerIdentityAtClassify)) as Record<string, unknown>
+    expect(b2.observed).toBe(true)
+    expect(b2.fetchProviderId).toBe('local-fetch')
+    expect(b2.searchProviderId).toBe(null)
+    expect('searchOrigin' in b2).toBe(false) // KEY-ABSENCE preserved, not null
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, m2)).toBeUndefined()
     const searchRow = req(rows.web_search).classify({ queries: ['alpha', 'beta'] })
     expect(searchRow.ok).toBe(true)
-    const searchCheck = C.validatePaFamilyTargetAgainstRule('B-WEB', rule, searchRow.targetManifest as Record<string, unknown>)
-    expect(String(searchCheck)).toMatch(/providerIdentityAtClassify/)
-    expect(String(searchCheck)).not.toMatch(/queriesSummary|queryCount|providerOriginSource|destinationOrigin/)
-    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, destinationOrigin: 'https://evil.example.invalid' })).not.toBeUndefined()
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, searchRow.targetManifest as Record<string, unknown>)).toBeUndefined()
+    // HONEST LAW BOUNDARY (measured this round): the TABLE is a
+    // type/closedness law — a well-typed tampered VALUE passes it by
+    // design; the value's integrity rides the canonical FINGERPRINT
+    // (parametersFingerprint/reviewPayloadDigest over the payload) and the
+    // effects (the exact origin is in the connect effect — asserted on the
+    // classify result itself). Structural tampering IS refused here:
+    expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, smuggledKey: 'x' })).not.toBeUndefined()
+    const fetchEffects = JSON.stringify((req(rows.web_fetch).classify({ url: 'https://target.example.invalid/a?b=1' }) as { effects?: unknown }).effects)
+    expect(fetchEffects).toContain('target.example.invalid') // the exact destination origin rides the effects, not a moved-out copy
     expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, url: undefined })).not.toBeUndefined()
   })
 })

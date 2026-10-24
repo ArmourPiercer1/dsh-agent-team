@@ -1592,23 +1592,22 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
    * value dropped, nothing invented. Still does not stand for "all of
    * Browser" (ordinary public export awaits the user). No new kinds. */
   // ROOT B-WEB closed-table entry (measured one-for-one against the REAL
-  // mint in g2-connector-adapters createG2WebAdapters :584-674 — web_fetch
-  // fetch-exact-url / web_search search-queries; NOTHING deleted, no
-  // target moved out of the fingerprint, no 'any': every manifest key the
-  // grammar can express is pinned. GRAMMAY GAP, reported verbatim:
-  // providerIdentityAtClassify is an OBJECT ({observed:false,reason} or
-  // {observed:true,fetchProviderId,searchProviderId,searchOrigin?}) and
-  // the frozen value-token union (string/boolean/nonNegativeInt/
-  // countsTriple/obligations/nullableString/stringArray) carries NO
-  // object token — this key therefore stays table-unexpressible and is
-  // named here instead of being faked as a string. It rides the manifest
-  // and the per-call provider re-resolution law (web/src/index.ts
-  // resolveProvider) and is listed in currentFields for the SAME
-  // reason it exists in the mint: a classify-time snapshot, never a
-  // per-dispatch re-promise.
+  // mint in g2-connector-adapters createG2WebAdapters — web_fetch
+  // fetch-exact-url / web_search search-queries; NOTHING deleted, no target
+  // moved out of the fingerprint, no 'any'. providerIdentityAtClassify
+  // follows the ROOT 02:17 ruling (r48 diff): the existing canonical-JSON-
+  // string precedent (domain/tool-governance canonicalJsonStringify, in use
+  // since before this entry) carries the FULL snapshot losslessly under the
+  // same key name as a required 'string'; the internal snapshot object and
+  // its re-verify logic remain objects.
   'B-WEB': Object.freeze({
     required: Object.freeze({
       operation: 'string',
+      // ROOT 02:17: same-named required 'string' — the mint carries the
+      // snapshot losslessly via the existing canonicalJsonStringify (observed
+      // branches, every ID/null, searchOrigin key-absence all preserved byte-
+      // exact). Not a new object kind; nothing moved out of the plan.
+      providerIdentityAtClassify: 'string',
       businessObligations: 'obligations',
     }),
     variant: Object.freeze({

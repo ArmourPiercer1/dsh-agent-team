@@ -112,10 +112,16 @@
  * @module runtime/plugin/live/governed-families/g2-connector-adapters
  */
 import { createHash } from 'node:crypto'
-import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
+import { parseRequestedEffectSet, canonicalJsonStringify } from '../../../../../domain/tool-governance/src/index.js'
 
 /** Adapter identity (§1 reviewPayload P-additions: familyId + adapterRevision). */
-export const A5_G2_ADAPTER_REVISION = 2
+// ROOT 02:17 revision migration: 2 -> 3. THE ONE constant pairs every real
+// descriptor, the family registration arm and the PA walk claim in THIS
+// commit (shared across web/mcp/browser rows — the same-window sync the
+// ruling names). deepEqual/digest are NOT migration evidence; the constant
+// is. Pre-bump approved manifests do NOT translate: the plane's revision
+// check refuses them, which is the intended semantics.
+export const A5_G2_ADAPTER_REVISION = 3
 export const A5_G2_FAMILY = Object.freeze({ web: 'B-WEB', mcp: 'B-MCP', browser: 'B-BROWSER' })
 
 /** Typed refusal codes (the STRINGS are pinned by the lane fixture
@@ -604,7 +610,14 @@ export function createG2WebAdapters({ realmId, providerId, readNative, searchOri
             // CURRENT provider fact (fix card 2): the fetch destination is
             // THIS call's URL (from the arguments), while the provider that
             // actually serves it is re-resolved per call by the native seam.
-            providerIdentityAtClassify: providerFactsAtClassify(),
+            // ROOT 02:17 ENCODING (r48 diff, approved): the SAME snapshot
+            // object, losslessly encoded by the existing canonical serializer
+            // (key order canonical; nulls and key-absence preserved exactly).
+            // The INTERNAL snapshot object and the re-verify logic stay OBJECTS —
+            // only the targetManifest leaf is the canonical JSON string, so the
+            // B-WEB table carries it as the same-named required 'string'. No
+            // move out of target/fingerprint, no object kind, no hashing.
+            providerIdentityAtClassify: canonicalJsonStringify(providerFactsAtClassify()),
             businessObligations: [{
               service: 'web-runtime', action: 'fetch', right: 'connect',
               entry: 'captured native web_fetch execute -> ctx.web.fetch(request, exec.signal) (tool-web fetch.ts:499-510; web/src/index.ts:155-164 @639ed01539); redirect-per-hop and loopback/linklocal checks are the ProviderGateway row\'s law',
@@ -658,7 +671,7 @@ export function createG2WebAdapters({ realmId, providerId, readNative, searchOri
             queriesSummary: args.queries.map((q) => q.trim()),
             queryCount: args.queries.length,
             destinationOrigin: origin.origin,
-            providerIdentityAtClassify: facts,
+            providerIdentityAtClassify: canonicalJsonStringify(facts),
             providerOriginSource: originRaw === searchOrigin && !(facts.observed === true && typeof facts.searchOrigin === 'string' && facts.searchOrigin.length > 0)
               ? 'bind-time assembly-declared searchOrigin (trusted placement fact; no CURRENT reader supplied — see providerIdentityAtClassify for the observed/named-blocker state)'
               : 'readProviderFacts() CURRENT origin — read once per classify and frozen here (the config-bound family of web-gateway-assembly.boundSearchOriginSource). Provider selection stays the seam\'s call-time law (web/src/index.ts resolveProvider :167+ @639ed01539), never mirrored or invented here.',
