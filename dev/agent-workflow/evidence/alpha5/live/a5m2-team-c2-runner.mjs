@@ -21,6 +21,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { zstdDecompressSync } from 'node:zlib'
 
 import { DshInstance, redactLaunchToken } from '../../../../../tests/characterization/lib/instance.mjs'
@@ -75,8 +76,21 @@ const PRODUCT_TIP_LATER = '83a2c30c7d6599ef81da14b83527cd0c47f90d5f'
  *  verified to touch no `teamOps`/`callerGate`/`queryFacts`/`registrationOf`
  *  line). The drift=0 artifact attribution still belongs to the pin. */
 const PRODUCT_TIP_CURRENT = 'd6af4715cfbe3c24c5b1fc432d71e454f7a33fdf'
+/** Two further heads accepted by the SAME law, each measured read-only against
+ *  the supplied package: at that head the built mirror answers adapter revision
+ *  2, and this lane's B-TEAM family files (`team-adapters.mjs`,
+ *  `team-wiring.mjs`) diff EMPTY. For the checked-out head the worktree was
+ *  also measured clean (no tracked AND no untracked entries). */
+const PRODUCT_TIP_LATER_2 = 'fb1746bafc387ab47b17e1bd7264cb7d11de8166'
+const PRODUCT_TIP_LATER_3 = 'f11468cabf277302e97a4705815e37c7c14dc5e6'
+/** Two further heads accepted by the SAME law, each measured from the supplied
+ *  package read-only: the built mirror answers adapter revision 2 at that head,
+ *  and this lane's B-TEAM family files (`team-adapters.mjs`, `team-wiring.mjs`)
+ *  diff EMPTY against it; the worktree state (tracked and untracked both clean)
+ *  was measured for the checked-out head `f11468cab…`. */
+
 const productTree = () => process.env.A5M2_TEAM_C2_PRODUCT_TREE ?? SHARED_PRODUCT_TREE
-const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, PRODUCT_TIP_LATER, PRODUCT_TIP_CURRENT, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
+const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, PRODUCT_TIP_LATER, PRODUCT_TIP_CURRENT, PRODUCT_TIP_LATER_2, PRODUCT_TIP_LATER_3, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
 /**
@@ -172,9 +186,9 @@ export function runProvenReader (script, ...args) {
 /** Unverified wire shapes. A case touching one stops with this id instead of
  *  guessing the protocol. */
 export const GAPS = Object.freeze({
-  'GAP-BLUEPRINT-IDENTITY': 'a `team.create` case needs a real `blueprintId` + `blueprintRevision` (v3 blueprint generation). The param shape is verified and built below, and the source is gated by the production `inspectBlueprintSource`, but no blueprint is minted here — the create call is therefore not issued yet.',
+  'GAP-BLUEPRINT-IDENTITY': 'closed for the REUSE face, open for the LIVE-MINT face: an existing real v3 artifact on disk can be supplied through `--blueprint-artifact` and is gated by the production `inspectBlueprintSource` (measured on dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml -> ok, identity {schemaVersion:3, blueprintId:team.a5nx-main, revision:"1"}). What remains open is a FRESHLY MINTED v3 blueprint in a live round — that needs the booted host, so it stays named rather than simulated.',
   'GAP-INITIAL-WORK-TOKEN': '`team.admitInitialWork` is a v2-only WRITE method whose CLOSED params are `rootSessionId, requestToken, prompt, attachedContext` (contracts/params.ts:578-592) and whose handler (`packages/remote/src/handlers/team.ts:760-776`) forwards `requestToken` straight to the port. A leg here would need a token minted by a prior landed initial-work flow this driver chain never runs, so the call is NOT issued and the leg stays NOT_RUN with that named precondition.',
-  'GAP-DURABLE-REPLAY': 'C-DUR-1 needs a durable approval composed under the PREVIOUS adapter revision; without such a row the leg is not attempted (and never "proved" by a file revision or by two refusals).',
+  'GAP-DURABLE-REPLAY': 'C-DUR-1 needs a PREIMAGE, not a restatement: a durable approval ROW composed while the mount published adapter revision 1, replayed now that it publishes 2. Producing that row requires a booted host with a PA durable approval ledger written under the old revision; no such row exists in this repository today, and none may be fabricated. Real evidence for it can only come from an UNCLIPPED durable export — the clipped `…| {json}` evidence files in this repo (e.g. the a5fl live events, truncated at ~1085 chars) cannot carry a full approval row, which is why the a356-style unclipped export dimension is the named source.',
 })
 
 /** The closed Remote v1 envelope, verified against the built contract source
@@ -558,6 +572,39 @@ export async function teamLedgerPage ({ origin, cookie, teamSessionId, afterSequ
   return { ok: outcome.state === 'ok', state: outcome.state, teamSessionId, error: outcome.error ?? null, value: outcome.state === 'ok' ? outcome.value : null }
 }
 
+
+/**
+ * REAL v3 blueprint supply for the live round: an existing artifact on disk,
+ * read and gated by the PRODUCTION source gate — never a synthetic id.
+ * Measured against
+ * `dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/
+ * blueprints-v3/a5nx-main.yaml`: `inspectBlueprintSource` answers
+ * `{ status: 'ok', identity: { schemaVersion: 3, blueprintId:
+ * 'team.a5nx-main', revision: '1' } }`. The artifact spells the revision as the
+ * STRING `"1"` while the wire requires a positive safe integer
+ * (`contracts/ids.ts:161-166`), so the identity is converted through
+ * `blueprintRevisionOf` rather than copied verbatim.
+ */
+export function blueprintArtifactSupply (path) {
+  const source = readFileSync(path, 'utf8')
+  const report = inspectBlueprintSource(source)
+  const identity = report?.identity
+  if (report?.status !== 'ok' || identity === undefined || identity === null) {
+    return { ok: false, path, report, error: 'the production source gate did not answer ok with an identity' }
+  }
+  const revision = blueprintRevisionOf(identity.revision)
+  if (revision === undefined) return { ok: false, path, identity, error: 'the artifact carries no usable revision' }
+  return {
+    ok: true,
+    path,
+    blueprintId: identity.blueprintId,
+    blueprintRevision: revision,
+    schemaVersion: identity.schemaVersion,
+    contentHash: createHash('sha256').update(source).digest('hex'),
+    source,
+  }
+}
+
 /** Prechecks only: source-level, no host, no world, no install. */
 export function precheck () {
   const problems = [...validateRow().problems]
@@ -743,7 +790,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (flag('--live')) {
     // A real round needs the row/blueprint the lane owner owns; nothing is
     // invented here, and the host tree is the reused read-only package.
-    const blueprintId = valueOf('--blueprint-id')
+    const artifact = valueOf('--blueprint-artifact') === undefined ? undefined : blueprintArtifactSupply(valueOf('--blueprint-artifact'))
+    if (artifact !== undefined && artifact.ok !== true) {
+      console.error(`--blueprint-artifact refused: ${String(artifact.error)} (${valueOf('--blueprint-artifact')})`)
+      process.exit(2)
+    }
+    const blueprintId = artifact?.blueprintId ?? valueOf('--blueprint-id')
     const expectContains = (valueOf('--expect-contains') ?? '').split(',').map((value) => value.trim()).filter((value) => value.length > 0)
     const runStamp = valueOf('--run-stamp') ?? new Date().toISOString().replace(/[:.]/g, '')
     if (blueprintId === undefined) {
@@ -753,7 +805,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const outcome = await runTeamC2({
         port: Number(valueOf('--port') ?? 3188),
         world: ROW_CONFIG.world,
-        blueprintSource: valueOf('--blueprint-file') === undefined ? '' : readFileSync(valueOf('--blueprint-file'), 'utf8'),
+        blueprintSource: artifact?.source ?? (valueOf('--blueprint-file') === undefined ? '' : readFileSync(valueOf('--blueprint-file'), 'utf8')),
         live: { runStamp, blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt'), leaderSessionId: valueOf('--leader-session'), expectContains },
       })
       console.log(JSON.stringify(outcome, null, 2))
