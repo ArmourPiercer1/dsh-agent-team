@@ -69,6 +69,10 @@ describe('a5m2 schedule trigger-governance (measured gap, no invented seam)', ()
     const backlog = readFileSync(join(laneRoot, 'docs', 'plans', 'active', 'alpha5-tool-io-governance', 'ALPHA5-EFFECTIVE-BACKLOG.md'), 'utf8')
     expect(backlog).toContain('create/update 触发缺口未闭不可启用亦必交不删')
     expect(A5_SCHEDULE_TRIGGER_LAWS.TRIGGER_GOVERNANCE).toContain('无公开 pre-delivery 治理 seam')
+    // PLAN_ONCE_MEMO CORRECTED (root): the adapter :343 internal plan-object
+    // memo, NOT a one-shot ledger / PA once-consumedProof conflation.
+    expect(A5_SCHEDULE_TRIGGER_GAP.PLAN_ONCE_MEMO).toContain('INTERNAL MEMO, NOT THE ONE-SHOT LEDGER')
+    expect(A5_SCHEDULE_TRIGGER_GAP.PLAN_ONCE_MEMO).not.toContain('inactive + appendDelivery')
     const baseline = join(mainRoot, 'tests', 'deepseek-harness-test-use')
     const runtimePath = join(baseline, 'packages', 'schedule', 'schedule', 'src', 'runtime.ts')
     if (!existsSync(runtimePath)) {
