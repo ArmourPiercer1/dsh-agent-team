@@ -483,6 +483,22 @@ const SCANNED_PATHS_A5M2K: readonly string[] = [
 // FIRST, measured: the coverage leg read `expected 1336 to be 1298` on the
 // merged tree before this booking; no chain number copied, no baseline
 // widened, no negative control removed.
+// A5M2-BATCH25 (2026-10-24, booked by the CENTER integrator on the CI
+// attribution batch): the THREE scannable files added to THIS tree since the
+// BATCH24 anchor, each merged through a signed lane batch and center-verified
+// on int (gates named in the merge commits): the G1 control-85 hand-off spec
+// (candidate HELD for the root's limited ruling; a spec is scannable regardless
+// of the ruling's fate), the G2 REAL-SDK contract spec (r53), and the G5 lane
+// test-entry module (8722 series; a test-side entry, zero production surface).
+// RED-first, MEASURED on this tree: the coverage leg read `expected 1339 to be
+// 1336` BEFORE this booking; 1339 = 1336 + exactly these three, checked by
+// path; no chain value copied.
+const SCANNED_PATHS_A5M2B25: readonly string[] = [
+  'packages/runtime/test/a5m2-g1-control85-handover.test.ts',
+  'packages/runtime/test/a5m2-g2-mcp-sdk-contract.test.ts',
+  'packages/runtime/test/a5m2-g5-lane-entry.mjs',
+]
+
 const SCANNED_PATHS_A5M2B24: readonly string[] = [
   'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.d.mts',
   'packages/runtime/src/plugin/live/governed-families/g1-query-assembly.mjs',
@@ -3274,6 +3290,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2J.length +
         SCANNED_PATHS_A5M2K.length +
         SCANNED_PATHS_A5M2W.length +
+        SCANNED_PATHS_A5M2B25.length +
         SCANNED_PATHS_A5M2B24.length +
         SCANNED_PATHS_A5M2IH.length +
         SCANNED_PATHS_A5M2G2A.length +
@@ -3364,6 +3381,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2J.length +
         SCANNED_PATHS_A5M2K.length +
         SCANNED_PATHS_A5M2W.length +
+        SCANNED_PATHS_A5M2B25.length +
         SCANNED_PATHS_A5M2B24.length +
         SCANNED_PATHS_A5M2IH.length +
         SCANNED_PATHS_A5M2G2A.length +
