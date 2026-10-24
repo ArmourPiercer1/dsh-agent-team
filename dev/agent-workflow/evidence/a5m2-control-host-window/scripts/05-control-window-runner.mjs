@@ -270,13 +270,51 @@ async function sessionRpc(method, request, tag) {
 let promptSeq = 0
 const apiPrompt = (sessionId, text, tag) => sessionRpc('prompt', { requestId: `ctlhw-prompt-${NONCE}-${tag}-${promptSeq += 1}`, sessionId, mode: 'queue', content: [{ type: 'text', text }] }, tag)
 
+// [root one-point card, B inherits A's gap] the `dsh web:` URL banner does
+// NOT mean the Team route exists (host.js awaits createTeamDomain first and
+// registers the Team Remote later; A's sixth window fired the first RPC right
+// after the banner and stopped on 405/NO_RESULT). BEFORE the first RPC this
+// driver waits for THIS run's host log to carry the registration site's OWN
+// line `[dsh-agent-team] remote mount: MOUNTED channel=/team-remote`;
+// SKIPPED / mount FAILED / bootstrap FAILED stop typed and first, child exit
+// stops as HOST_CHILD_EXITED, timeout stops as REMOTE_MOUNT_NEVER_APPEARED —
+// NOT a generic 405 retry; post-mount readiness stays the ORIGINAL
+// teamReadyBarrier (unknown answers stop, no retry). Ported near-verbatim
+// from A's committed minimal fix (.worktrees/a5m2-wire-g3 @ a7f7c0e8e,
+// 05-edit-window-runner.mjs:327-364, itself the fourth-window barrier per
+// commit 7f6bbd46c1ca536cb09feae85f627940f40b7bb4) — no redesign, no product
+// package touched.
+const REMOTE_MOUNT_MARKER = '[dsh-agent-team] remote mount: MOUNTED channel=/team-remote'
+const REMOTE_MOUNT_REFUSALS = Object.freeze([
+  { name: 'REMOTE_MOUNT_SKIPPED', pattern: /\[dsh-agent-team\] remote mount: SKIPPED/ },
+  { name: 'REMOTE_MOUNT_FAILED', pattern: /\[dsh-agent-team\] remote mount: FAILED/ },
+  { name: 'PLUGIN_BOOTSTRAP_FAILED', pattern: /\[dsh-agent-team\] bootstrap FAILED/ },
+])
+async function remoteMountGate({ readLog, childGone = () => false, budgetMs = 120_000, pollMs = 250 }) {
+  const deadline = Date.now() + budgetMs
+  let polls = 0
+  for (;;) {
+    polls += 1
+    if (childGone() === true) throw new Error('HOST_CHILD_EXITED before the Team Remote mounted: no team RPC was attempted')
+    const text = String(readLog() ?? '')
+    const found = REMOTE_MOUNT_REFUSALS.find((entry) => entry.pattern.test(text))
+    if (found !== undefined) {
+      const line = text.split('\n').find((row) => found.pattern.test(row)) ?? found.name
+      throw new Error(`${found.name}: ${line.trim().slice(0, 300)}`)
+    }
+    const mounted = text.split('\n').find((row) => row.includes(REMOTE_MOUNT_MARKER))
+    if (mounted !== undefined) return { mounted: true, polls, line: mounted.trim().slice(0, 200) }
+    if (Date.now() > deadline) throw new Error(`REMOTE_MOUNT_NEVER_APPEARED after ${String(polls)} polls: no '${REMOTE_MOUNT_MARKER}' line in this run's host log (the URL banner is not the route)`)
+    await sleep(pollMs)
+  }
+}
 async function teamReadyBarrier(budgetMs = 180_000) {
   const deadline = Date.now() + budgetMs
   for (;;) {
     const res = await remoteCall('team.listRoots', {}, 'ctlhw-ready', 3)
     const err = resultError(res.body)
     if (err === null) return
-    const starting = err.code === 'internal-error' && err.details?.reason === 'runtime-not-ready'
+    const starting = err.code === 'internal-error' && err.details?.reason === 'runtime-not-ready' && String(err.message).includes('state: starting')
     if (!starting) throw new Error(`readiness barrier STOP: ${JSON.stringify(err).slice(0, 300)}`)
     if (Date.now() >= deadline) throw new Error('readiness budget exhausted while starting')
     await sleep(1500)
@@ -493,6 +531,16 @@ async function main() {
   if (auth.status !== 303 || auth.headers.get('set-cookie') === null) throw new Error(`authenticate status=${auth.status}`)
   cookie = auth.headers.get('set-cookie').split(';', 1)[0]
   log(`host booted at ${origin}`)
+
+  // [root fix, 7f6bbd barrier via A a7f7c0e8e] the URL banner is NOT the
+  // route — wait for the plugin's OWN registration line before ANY team RPC
+  // (typed refusals stop first; no team call happens before it).
+  const mountGate = await remoteMountGate({
+    readLog: () => String(readFileSync(instance.logPath, 'utf8')),
+    childGone: () => instance.child === undefined || instance.child.exitCode !== null || instance.child.signalCode !== null,
+    budgetMs: 120_000,
+  })
+  log(`remote mount gate PASS (polls=${mountGate.polls}) ${mountGate.line}`)
 
   currentCriterion = 'setup'
   currentRoot = `session-a5m2ctlhw-p-${RUN_STAMP}`
