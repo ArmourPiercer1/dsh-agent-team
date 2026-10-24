@@ -2467,6 +2467,20 @@ export function createAgentBindings(deps) {
       // the shared fill point — two different nested blocks of this setup
       // body. One handle per SUPPLIED row (see the arm block for why).
       const a5G1Assemblies = []
+      // A5M2-G1-WIRE MOUNT-ARM root ② (841 card): the ONE owner-held placed-
+      // definition ledger for the arm route (the B-TEAM
+      // `a5TeamOpsPlacedByName` shape). It is written ONLY by this assembly
+      // owner's own registration seam at the moment the host ACCEPTS the
+      // definition, and it is the single placement truth the route's three
+      // readers consult: (a) the Guard's bindingFeed (pre-feed continuity —
+      // the bind pins the identity the OWNER placed, the live scoped read
+      // only proves continuity with it), (b) the family registration's
+      // placement feed (`registerAfterPublish` keys), and (c) the plane's
+      // placement attribution (`backends.g1Arm.isPlaced`, consulted per
+      // call). No second ledger, and no live `tools.get` stands in for what
+      // the owner placed — an arbitrary current read could be handed
+      // anything.
+      const a5G1PlacedByName = new Map()
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2599,6 +2613,20 @@ export function createAgentBindings(deps) {
             const placedTeamOps = a5TeamOpsPlacedByName.get(name)
             if (placedTeamOps !== undefined) {
               const placedIdentity = definitionIdentityOf(placedTeamOps)
+              return placedIdentity === null
+                ? undefined
+                : Object.freeze({ definitionIdentity: placedIdentity, realmId: a5PlaneRealmId })
+            }
+            // A5M2-G1-WIRE MOUNT-ARM root ② (841 card): the G1 arm's placed
+            // definitions enter the SAME provider owner-held feed law — the
+            // pin is the identity THIS owner's registration seam recorded
+            // when the host accepted the definition (the same ledger the
+            // family registration keys from; one ledger, one mint), and the
+            // Guard's own live scoped read proves continuity at bind time.
+            // No ledger entry = the pre-feed path, byte-for-byte.
+            const placedG1 = a5G1PlacedByName.get(name)
+            if (placedG1 !== undefined) {
+              const placedIdentity = definitionIdentityOf(placedG1)
               return placedIdentity === null
                 ? undefined
                 : Object.freeze({ definitionIdentity: placedIdentity, realmId: a5PlaneRealmId })
@@ -3999,7 +4027,7 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null && a5ScheduleInject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5SpawnWiring === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -4014,6 +4042,16 @@ export function createAgentBindings(deps) {
             // placement — ownNames, the Guard's assembly-owned bind and
             // bindingFeed, and the PA placement attribution resolve them.
             ...(a5SubagentControlInject === null ? {} : { subagentControl: a5SubagentControlInject }),
+            // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the placement
+            // attribution row for the arm route. The plane consults this
+            // LIVE reader per call, inside the frozen pure-query spelling
+            // set only; a name the owner does not CURRENTLY hold answers
+            // nothing (no placementName → the shared reader fails closed).
+            // The rows are the OWNER's placement, so the plane injects no
+            // `backends.g1` rows on this route — one placement, one ledger.
+            ...(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null
+              ? { g1Arm: { isPlaced: (name) => a5G1PlacedByName.has(name) } }
+              : {}),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -4187,14 +4225,21 @@ export function createAgentBindings(deps) {
             owner: String(teamRoot),
             profileId: g1ProfileId,
           })
-          // THE RUNTIME PLACEMENT FEED (the B-TEAM law verbatim): the identity
-          // of whatever the scoped layer answers under this name, read FRESH —
-          // never a build-time snapshot, never a hand-spelled key. The plane's
-          // own feed cannot answer these names (they are not plane placements);
-          // the module's keys stay the runtime identity the seam minted.
+          // THE RUNTIME PLACEMENT FEED (root 841 ② restated): the identity of
+          // the definition THIS owner's registration seam placed under this
+          // name, read from the owner-held ledger — the SAME ledger the
+          // Guard's bindingFeed pins from and the family registration keys
+          // from, so all three consumers carry ONE mint by construction.
+          // A live `tools.get` is NOT the feed here: whatever a current read
+          // happens to answer is not evidence of what the owner placed (an
+          // arbitrary current get may not impersonate owner placement); the
+          // Guard's own bind-time scoped read is the continuity proof, on
+          // the install.ts feed law. The plane's own feed cannot answer
+          // these names (they are not plane placements).
           const g1PlaneSeam = Object.freeze({
             placementFeed: (name) => {
-              const placed = agentCtx.tools.get(name, runtimeAgent)
+              const placed = a5G1PlacedByName.get(name)
+              if (placed === undefined) return undefined
               const identity = definitionIdentityOf(placed)
               return identity === null || identity === undefined
                 ? undefined
@@ -4236,7 +4281,19 @@ export function createAgentBindings(deps) {
                 // per-row split above; each name gets its own assembly and
                 // its own honest row, never another row's facts).
                 get: (name, agent) => (name === entry.name ? agentCtx.tools.get(name, agent) : undefined),
-                register: (definition) => agentCtx.tools.register(definition),
+                // The owner-held ledger write (root 841 ②): record the
+                // definition the moment the HOST seam accepts the
+                // registration, and retire it only when THIS registration's
+                // own dispose runs (a dispose of a moved-over definition must
+                // never delete a later placement of the same name).
+                register: (definition) => {
+                  const dispose = agentCtx.tools.register(definition)
+                  a5G1PlacedByName.set(definition.name, definition)
+                  return () => {
+                    if (a5G1PlacedByName.get(definition.name) === definition) a5G1PlacedByName.delete(definition.name)
+                    dispose()
+                  }
+                },
               },
               runtimeAgent,
               plane: () => g1PlaneSeam,
@@ -4913,7 +4970,19 @@ export function createAgentBindings(deps) {
             ), { code: 'alpha5-g1-arm-mount-refused', cause: error })
           }
           for (const registration of g1Registrations) {
-            observations.push(`a5m2-g1: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} rev=${String(registration.entry.adapterRevision)} record=${String(registration.recordIndex)})`)
+            // Provider AUTHORITY EVIDENCE (the image lane's Guard.entryOf
+            // law, root 841): the registration moment reads the LIVE
+            // dispatcher entry for this placement and RECORDS the provider
+            // the real authority pins on the binding beside the row's own
+            // family identity. This is evidence capture, not wiring: the
+            // row's family providerIdentity is the inspect-provider claim
+            // the module wrote; the binding's providerId is the install-law
+            // answer (install.ts writes it); neither is aliased to the other
+            // and no check is loosened here — the value is observed so a
+            // divergence can never be silent.
+            const g1LiveEntry = a5p1Guard?.dispatcher?.surface?.entryOf?.(registration.name)
+            const g1LiveProviderId = g1LiveEntry?.binding?.providerId
+            observations.push(`a5m2-g1: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId} rev=${String(registration.entry.adapterRevision)} record=${String(registration.recordIndex)} bindingProvider=${typeof g1LiveProviderId === 'string' && g1LiveProviderId.length > 0 ? g1LiveProviderId : 'none'}${g1LiveEntry?.verified === true && g1LiveEntry?.binding?.status === 'ACTIVE' ? '' : ' binding-NOT-ACTIVE'})`)
           }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
