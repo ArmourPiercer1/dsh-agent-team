@@ -1520,7 +1520,7 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
       createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, unknown>
     }
     const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown> }
-    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2FixedWebFace: (p: object) => { fetch: (r: Record<string, unknown>, s?: unknown) => Promise<unknown> } }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2FixedWebFace: (p: object) => { fetch: (r: Record<string, unknown>, s?: unknown) => Promise<unknown> }; createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
     const fetchCalls: Array<{ url: unknown; signalSeen: boolean }> = []
     const fixedProvider = {
       id: 'team-fixed-fetch-vertical',
@@ -1532,6 +1532,7 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
     }
     const declared = { origin: 'https://target.example.invalid', endpointOrigin: 'https://target.example.invalid', configIdentity: 'vertical-cfg-1' }
     const face = WS.createG2FixedWebFace(fixedProvider)
+    const trio = WS.createG2WebCenterPorts({ assemblyId: 'a5m2-g2-wire-web-vertical' }) as unknown as { beginCall: (c: Record<string, unknown>) => () => void }
     const world = await mountWorld('web-vertical', {
       surface: 'web',
       familyGate: 'g2WebEnabled',
@@ -1544,6 +1545,10 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
         webMount: {
           lanes: MOUNT.createG2WebFixedLanes({ fixedProvider, seamMod, declared, readMountFacts: () => declared }),
           face: { fetch: async (r: Record<string, unknown>, s?: unknown) => await face.fetch(r, s) },
+          // ROOT 23bc-CARD ② in production: the row body announces the call
+          // in the REAL supply ledger — here the REAL trio for THIS team
+          // root (same assembly id as the mount's announce pairing).
+          resolveWebCenterPorts: () => ({ ports: trio, assemblyId: 'a5m2-g2-wire-web-vertical' }),
         },
         observe: () => {},
       }),
@@ -1583,5 +1588,58 @@ describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
     // the replay law still holds on the plane edge (one token, one flight):
     await expect((defFetch as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }).execute({ url: 'https://target.example.invalid/page' }, exec1)).rejects.toThrow(/exec-token-replay/)
     expect(fetchCalls.length).toBe(1) // the refusal never reached the provider: consume is not double-fired
+  })
+})
+/* ROOT round-51 CARD: beginCall is the PRODUCTION inFlight gate of every
+ * governed web call. The legs run the REAL trio (g2-web-supply) through
+ * the REAL backend invoke (g2-team-mount) — neither is stubbed. */
+describe('A5M2-WIRE round-51: beginCall wired on the real web row body', () => {
+  interface Venue { row: { invoke: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }; fetches: string[]; trio: { beginCall: (c: Record<string, unknown>) => () => void }; release: () => void }
+  const makeVenue = async (opts: { assemblyId: string; announcedAssemblyId?: string; withPorts?: boolean }): Promise<Venue> => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => { createRowset: () => Array<Record<string, unknown>> } }
+    const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as { createG2WebAdapters: (i: Record<string, unknown>) => Record<string, unknown> }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2WebCenterPorts: (i: Record<string, unknown>) => unknown }
+    const trio = WS.createG2WebCenterPorts({ assemblyId: opts.assemblyId }) as { beginCall: (c: Record<string, unknown>) => () => void }
+    const fetches: string[] = []
+    let settleGate: () => void = () => {}
+    const gate = new Promise<void>((res) => { settleGate = res })
+    const backend = MOUNT.createG2WebBackend({
+      webAdaptersMod: adapters, realmId: 'r-51', providerId: 'a5p5-plane',
+      readNative: (name: string) => ({ name, definitionIdentity: 'di-51-' + name, execute: async () => ({ ok: true }) }),
+      definitionIdentityOf: (name: string) => 'di-51-' + name,
+      lanes: { web_fetch: { provider: { id: 'p', available: () => true }, registrationLaw: { configuredProviderIdMustEqual: 'a5p5-plane' }, stats: () => ({}) } },
+      descriptions: { web_fetch: 'governed fetch row' },
+      fixedFace: { fetch: async (r: Record<string, unknown>) => { fetches.push(String(r?.url)); await gate; return { ok: true } } },
+      ...(opts.withPorts === false ? { resolveWebCenterPorts: () => null } : { resolveWebCenterPorts: () => ({ ports: trio, assemblyId: opts.announcedAssemblyId ?? opts.assemblyId }) }),
+    })
+    const row = (backend.createRowset()[0] ?? {}) as Venue['row']
+    return { row, fetches, trio, release: () => settleGate() }
+  }
+  const EXEC_OK = { g2ApprovedCallId: 'call-1', g2ConsumedProof: { grant: { grantId: 'grant-1' } } }
+  it('the gate refuses BEFORE the provider: missing callId is the non-conflation TypeError; wrong assembly is G2_WEB_ASSEMBLY_MISMATCH; no trio entry is G2_WEB_CENTER_PORTS_ABSENT — zero fetches on all three', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51' })
+    await expect(v.row.invoke({ url: 'https://x.invalid/' }, { g2ConsumedProof: { grant: { grantId: 'g' } } })).rejects.toThrow(/announced separately/)
+    const w = await makeVenue({ assemblyId: 'asm-owner', announcedAssemblyId: 'asm-impostor' })
+    await expect(w.row.invoke({ url: 'https://x.invalid/' }, EXEC_OK)).rejects.toThrow(/G2_WEB_ASSEMBLY_MISMATCH/)
+    const n = await makeVenue({ assemblyId: 'asm-51c', withPorts: false })
+    await expect(n.row.invoke({ url: 'https://x.invalid/' }, EXEC_OK)).rejects.toThrow(/G2_WEB_CENTER_PORTS_ABSENT/)
+    expect(v.fetches.length + w.fetches.length + n.fetches.length).toBe(0)
+  })
+  it('one grant, one live context: a concurrent second call on the SAME grant throws G2_WEB_GRANT_INFLIGHT while the first is in flight; after the first CLOSES (success), inFlight is EMPTY — the same grant announces cleanly again', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51b' })
+    const first = v.row.invoke({ url: 'https://hold.invalid/' }, { g2ApprovedCallId: 'call-A', g2ConsumedProof: { grant: { grantId: 'grant-SAME' } } })
+    await new Promise((r) => setTimeout(r, 5))
+    await expect(v.row.invoke({ url: 'https://second.invalid/' }, { g2ApprovedCallId: 'call-B', g2ConsumedProof: { grant: { grantId: 'grant-SAME' } } })).rejects.toThrow(/G2_WEB_GRANT_INFLIGHT/)
+    expect(v.fetches).toEqual(['https://hold.invalid/']) // the refused twin never reached the provider
+    v.release()
+    await expect(first).resolves.toBeDefined()
+    const closer = v.trio.beginCall({ grant: { grantId: 'grant-SAME' }, call: { callId: 'call-reuse' }, assemblyId: 'asm-51b' }) // EMPTY ledger: re-announce succeeds
+    closer()
+  })
+  it('the closer runs on REFUSAL too: a body that throws after announcing leaves no inFlight entry (same grant announces again right after)', async () => {
+    const v = await makeVenue({ assemblyId: 'asm-51d' })
+    await expect(v.row.invoke({ notTheUrl: true } as Record<string, unknown>, EXEC_OK)).rejects.toThrow(/G2_WEB_FETCH_URL_INVALID/)
+    const closer = v.trio.beginCall({ grant: { grantId: 'grant-1' }, call: { callId: 'call-2' }, assemblyId: 'asm-51d' })
+    closer()
   })
 })

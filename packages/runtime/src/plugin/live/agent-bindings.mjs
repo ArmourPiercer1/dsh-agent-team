@@ -1007,6 +1007,11 @@ export function createAgentBindings(deps) {
   // M2 B-WEB (a5m2w): per-root web connector rows; state-only (no leases, no timers),
   // so close() only clears the table.
   const liveWebGatewayAssemblies = new Map()
+  // ROOT 23bc-CARD ② wiring (round-51): the trio's inFlight ledger is
+  // reachable from the TEAM row side by team root — one entry per gateway
+  // assembly, set where the trio is minted (same lifetime as the assembly
+  // map above; no separate ledger semantics invented here).
+  const liveWebG2CenterPortsByRoot = new Map()
   // alpha5 PTC fs half-arm (10:04Z work order): the per-root escalation
   // adjudication assemblies (live/ptc-escalation-row.mjs). Same lifecycle
   // as the jobs-gateway map: created lazily on the first governed mount,
@@ -3665,6 +3670,11 @@ export function createAgentBindings(deps) {
             ...(planeCfg.g2WebEnabled === true && g2Supply.webFixedLanes !== null && typeof g2Supply.webFixedLanes === 'object'
               ? { webMount: {
                 lanes: g2Supply.webFixedLanes,
+                ...(g2Supply.webFixedTransport !== null && typeof g2Supply.webFixedTransport === 'object' ? { face: g2Supply.webFixedTransport } : {}),
+                resolveWebCenterPorts: () => {
+                  const ports = liveWebG2CenterPortsByRoot.get(String(teamRoot))
+                  return ports === undefined ? null : { ports, assemblyId: String(teamRoot) }
+                },
                 ...(typeof planeCfg.g2Web?.searchOrigin === 'string' ? { searchOrigin: planeCfg.g2Web.searchOrigin } : {}),
               } }
               : {}),
@@ -5227,6 +5237,7 @@ export function createAgentBindings(deps) {
             assemblyId: gatewayRootKey,
             searchOriginFacts: typeof config?.webGateway?.searchOrigin === 'string' ? { origin: config.webGateway.searchOrigin } : undefined,
           })
+          liveWebG2CenterPortsByRoot.set(gatewayRootKey, g2WebCenterPorts)
           // ROOT card: the 00:53 {name,execute} rowset is REMOVED (wrong row
           // face + raw.effects/fingerprint law breaks). The lawful caller is
           // createG2WebAdapters' rows on backends.g2Web through g2RowExecute's
