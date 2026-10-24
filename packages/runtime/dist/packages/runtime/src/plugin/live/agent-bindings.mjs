@@ -340,6 +340,17 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
 import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+// A5M2 G3 B-LSP realm supply (center LSP mount leg, root 限施工裁决 2026-10-24):
+// the mount builds the REAL realm assembly — the SHIPPED createLspRealmAssembly
+// product (R-1 spawnStreaming + R-2 realm destroy/rebuild; measured present on
+// int AND master at 77ffb1874, the tsc emit node-imports clean) — and the
+// consumer-side supply OVER it; the plane receives only the published fact
+// face through the `backends.lsp` row below (the plane imports NEITHER
+// module). The relative specifier lands on the tsc emit in the dist mirror
+// and on the TS source under vitest (the a5lsp2-assembly import precedent) —
+// NO vendored reimplementation, per the root ruling.
+import { createLspRealmAssembly } from '../../../sandbox-provider/lsp-assembly.js'
+import { createA5LspRealmSupply } from './governed-families/lsp-realm-supply.mjs'
 // T12-M2: READ-ONLY reuse of the persona resolver (agent-setup/persona) and
 // the blueprint parser (the domain facade) — the composition that puts the
 // blueprint persona onto the real DSH Agent at create/setup.
@@ -2544,6 +2555,12 @@ export function createAgentBindings(deps) {
       // deployment evidence, captured into a plane inject below (null = the
       // family is not deployed on this mount: zero flip).
       let a5G3TerminalInject = null
+      // A5M2 G3 B-LSP (center LSP mount leg): the realm-supply inject,
+      // HOISTED to the SAME outer scope as a5G3TerminalInject so both the
+      // backends union (the spread below) and the post-publish registration
+      // ring + the awaited realm drain read the SAME binding. null = not
+      // deployed = zero flip.
+      let a5LspInject = null
       // A5M2 G3 B-PTC run_code GUARD (root FINAL LIMITED ruling 2026-10-25):
       // the inject for the GUARD-SEAM entry, built below from
       // `planeCfg.runCode` (null = not deployed = zero flip). NOT the
@@ -5293,6 +5310,177 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-pwsh: inject assembled for ${sessionId} (declared=${String(pwshCfg.declared)})`)
         }
+        // ── A5M2 G3 B-LSP realm-supply inject (center LSP mount leg, root
+        // 限施工裁决 2026-10-24) ── the Team-plane owner PUBLISHES deployment
+        // evidence under `planeCfg.lsp` = {providerId, assembly, policy,
+        // serverBinaryIdentity?}: the trusted-deployment block for ONE member
+        // x ONE policy generation (the realm spelling `lsp:<member>:<gen>` is
+        // DERIVED by the supply, never declared). Riding the terminal/pwsh
+        // capture-arm law VERBATIM: the member-scoped native capture
+        // (agentCtx.tools.get(name, runtimeAgent) with a per-mount memo — the
+        // global face is NOT a fallback), the real identity pairing, and the
+        // CURRENT dispatcher binding reader (the terminal law verbatim — an
+        // unreadable tuple THROWS, never a stale tuple). ABSENT = zero flip;
+        // a mis-typed block is refused HERE (config is law). What THIS side
+        // builds: the REAL createLspRealmAssembly (the shipped R-1/R-2
+        // product — NOT a parallel reimplementation, root ruling) over the
+        // deployment's policy map, and the consumer-side supply over it; the
+        // PLANE receives only the published fact face + the supply-named
+        // realm + the lifecycle passthroughs. THE ASSEMBLY IS LAZY: the mount
+        // starts NO process — until a policy round drives lifecycle.
+        // syncGeneration, the facts answer server()=>null and the rows
+        // refuse P_LSP_TARGET_UNRESOLVED (never a bare-process substitute).
+        // (The inject slot is the HOISTED a5LspInject beside
+        // a5G3TerminalInject — this block only ASSIGNS it.)
+        const lspCfg = planeCfg.lsp
+        if (lspCfg !== undefined && lspCfg !== null) {
+          const refuseLsp = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-LSP mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-g3-lsp-mount-refused'
+            observations.push(`a5m2-g3-lsp: inject-REFUSED for ${sessionId}`)
+            return error
+          }
+          const lIsRec = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+          const lWant = ['assembly', 'policy', 'providerId', 'serverBinaryIdentity']
+          if (!lIsRec(lspCfg)) {
+            throw refuseLsp('planeCfg.lsp must be a record with exactly the closed keys {providerId, assembly: {trustRoot, scratchRoot, launcherPath?, launcherSha256?, minAbiVersion?}, policy: {generation, bindingId, grantFingerprint, argv, cwd}, serverBinaryIdentity?}')
+          }
+          for (const key of Object.keys(lspCfg)) {
+            if (!lWant.includes(key)) throw refuseLsp(`unknown planeCfg.lsp key '${key}' — the deployment surface is CLOSED (a wider pose is a drift, not a capability)`)
+          }
+          if (typeof lspCfg.providerId !== 'string' || lspCfg.providerId.length === 0) {
+            throw refuseLsp('planeCfg.lsp.providerId is required (the family entry carries the provider identity verbatim — NO plane-side default constant; the FP-E law keeps this site literal-free)')
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseLsp('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const lspMemberAgentId = typeof runtimeAgent.id === 'string' && runtimeAgent.id.length > 0 ? runtimeAgent.id : undefined
+          const lspSessionHeaderId = typeof runtimeAgent.session?.header?.id === 'string' && runtimeAgent.session?.header?.id.length > 0
+            ? runtimeAgent.session.header.id
+            : undefined
+          if (lspMemberAgentId === undefined || lspSessionHeaderId === undefined) {
+            throw refuseLsp('the real identity pairing facts are unreadable on this setup (runtimeAgent.id / runtimeAgent.session.header.id) — the supply carries no fallback for either')
+          }
+          const lAsm = lspCfg.assembly
+          const lPol = lspCfg.policy
+          const lAsmBad = !lIsRec(lAsm)
+            ? 'planeCfg.lsp.assembly must be a record {trustRoot, scratchRoot, launcherPath?, launcherSha256?, minAbiVersion?} (the ProviderAssemblyConfig face — the production entry the assembler OWNS; no defaults are invented here)'
+            : !(typeof lAsm.trustRoot === 'string' || lAsm.trustRoot === null)
+              ? 'planeCfg.lsp.assembly.trustRoot is required (string | null — the provider face, never an inferred root)'
+              : typeof lAsm.scratchRoot !== 'string' || lAsm.scratchRoot.length === 0
+                ? 'planeCfg.lsp.assembly.scratchRoot is required (the provider scratch law owns the placement)'
+                : (lAsm.launcherPath !== undefined && typeof lAsm.launcherPath !== 'string')
+                  || (lAsm.launcherSha256 !== undefined && typeof lAsm.launcherSha256 !== 'string')
+                  || (lAsm.minAbiVersion !== undefined && !Number.isInteger(lAsm.minAbiVersion))
+                  ? 'launcherPath/launcherSha256 must be strings, minAbiVersion an integer (typed deployment evidence, not free-form)'
+                  : undefined
+          if (lAsmBad !== undefined) throw refuseLsp(lAsmBad)
+          const lPolBad = !lIsRec(lPol)
+            ? 'planeCfg.lsp.policy must be a record {generation, bindingId, grantFingerprint, argv, cwd} — the ONE (member x generation) realm policy the deployment issued'
+            : typeof lPol.generation !== 'string' || lPol.generation.length === 0
+              ? 'policy.generation is required (the realm spelling and the §5.2 server-generation fact both ride it)'
+              : typeof lPol.bindingId !== 'string' || lPol.bindingId.length === 0
+                || typeof lPol.grantFingerprint !== 'string' || lPol.grantFingerprint.length === 0
+                ? 'policy.bindingId/grantFingerprint are required (the provider grant facts the confined spawn carries verbatim)'
+                : !Array.isArray(lPol.argv) || lPol.argv.length === 0 || lPol.argv.some((a) => typeof a !== 'string' || a.length === 0)
+                  ? 'policy.argv must be a NON-EMPTY array of non-empty strings (the confined server command; a shell string is not an argv)'
+                  : typeof lPol.cwd !== 'string' || lPol.cwd.length === 0
+                    ? 'policy.cwd is required (the realm workspace root the document containment law resolves against)'
+                    : undefined
+          if (lPolBad !== undefined) throw refuseLsp(lPolBad)
+          if (lspCfg.serverBinaryIdentity !== undefined
+            && (typeof lspCfg.serverBinaryIdentity !== 'string' || lspCfg.serverBinaryIdentity.length === 0)) {
+            throw refuseLsp('serverBinaryIdentity must be a non-empty string when present (the server-identity POLICY fact; absent, the law reads policy.argv[0] — it is NEVER inferred from a live handle)')
+          }
+          const lspServerIdentity = lspCfg.serverBinaryIdentity ?? lPol.argv[0]
+          const lspCaptured = new Map()
+          const lspReadNative = (name) => {
+            if (lspCaptured.has(name)) return lspCaptured.get(name)
+            let captured
+            try {
+              captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+            } catch (error) {
+              throw refuseLsp(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            lspCaptured.set(name, captured === null ? undefined : captured)
+            return lspCaptured.get(name)
+          }
+          const lspBindingFacts = (toolName) => {
+            // The CURRENT dispatcher entry behind this mount's placement of
+            // THAT tool — the terminal law verbatim: an unverified/inactive/
+            // malformed tuple answers NOTHING; the read throws, classify/edge
+            // refuse with it, fail closed, never a stale tuple.
+            const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(String(toolName))
+            const binding = entry?.binding
+            if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+              || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+              || !Number.isInteger(binding.revision)
+              || !Number.isInteger(binding.policyGeneration)
+              || !Number.isInteger(binding.authorityGeneration)) {
+              throw new Error(`the live dispatcher binding behind ${String(toolName)} is unreadable (no verified/ACTIVE tuple on the Guard dispatcher surface)`)
+            }
+            return {
+              bindingId: binding.bindingId,
+              bindingRevision: binding.revision,
+              policyGeneration: binding.policyGeneration,
+              authorityGeneration: binding.authorityGeneration,
+            }
+          }
+          let lspSupply
+          try {
+            // THE REAL ASSEMBLY (root 限施工裁决: reuse, never fork). The
+            // policy map is the deployment's ONE issued tuple: any other
+            // (member x generation) throws BEFORE any process exists (the
+            // assembly journals it as assemble-failed stage=policy).
+            const lspAssembly = createLspRealmAssembly({
+              assembly: Object.freeze({
+                ...(lAsm.launcherPath === undefined ? {} : { launcherPath: lAsm.launcherPath }),
+                ...(lAsm.launcherSha256 === undefined ? {} : { launcherSha256: lAsm.launcherSha256 }),
+                ...(lAsm.minAbiVersion === undefined ? {} : { minAbiVersion: lAsm.minAbiVersion }),
+              }),
+              trustRoot: lAsm.trustRoot,
+              scratchRoot: lAsm.scratchRoot,
+              policyFor: (memberId, generation) => {
+                if (memberId !== lspMemberAgentId || generation !== lPol.generation) {
+                  throw new Error(`the mounted deployment carries NO policy for ('${String(memberId)}','${String(generation)}') — the capture arm publishes exactly the ONE issued (member x generation) tuple; an unissued realm is refused before any process exists`)
+                }
+                return Object.freeze({
+                  grantFingerprint: lPol.grantFingerprint,
+                  bindingId: lPol.bindingId,
+                  argv: Object.freeze([...lPol.argv]),
+                  cwd: lPol.cwd,
+                  env: Object.freeze([]),
+                })
+              },
+            })
+            lspSupply = createA5LspRealmSupply({
+              assembly: lspAssembly,
+              memberId: lspMemberAgentId,
+              serverIdentityOf: (memberId, generation) => (memberId === lspMemberAgentId && generation === lPol.generation) ? lspServerIdentity : null,
+            })
+          } catch (error) {
+            throw refuseLsp(`the realm supply could not be built (${String(error?.message ?? error).slice(0, 200)}) — nothing is posed, no process exists`)
+          }
+          if (lspSupply.ok !== true) {
+            throw refuseLsp(`the realm supply refused the mount (${String(lspSupply.code)}: ${String(lspSupply.detail)})`)
+          }
+          a5LspInject = Object.freeze({
+            providerId: lspCfg.providerId,
+            memberAgentId: lspMemberAgentId,
+            sessionHeaderId: lspSessionHeaderId,
+            realmId: lspSupply.realmIdOf(lPol.generation),
+            readNative: lspReadNative,
+            bindingFacts: lspBindingFacts,
+            lspFacts: lspSupply.facts,
+            lifecycle: Object.freeze({
+              syncGeneration: (generation) => lspSupply.syncGeneration(generation),
+              drainAll: () => lspSupply.drainAll(),
+            }),
+          })
+          observations.push(`a5m2-g3-lsp: inject armed for ${sessionId} (realm=${a5LspInject.realmId} server=${lspServerIdentity}) — assembly LAZY (no process at mount; facts answer TARGET_UNRESOLVED until a policy round ensures the realm)`)
+        }
         // ── A5M2 G3 B-PTC run_code GUARD inject (root FINAL LIMITED ruling
         // 2026-10-25; the a5G3TerminalInject capture law, the guard-seam
         // shape) ── the Team-plane owner PUBLISHES deployment evidence under
@@ -5510,7 +5698,7 @@ export function createAgentBindings(deps) {
             : undefined,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5PwshInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5LspInject === null && a5PwshInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
@@ -5524,6 +5712,15 @@ export function createAgentBindings(deps) {
             // row the plane never receives the deployment evidence and the
             // post-publish registration reads no wiring face -> mount-refused.
             ...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),
+            // A5M2 G3 B-LSP (center LSP mount leg, root 限施工裁决; the
+            // shared-hunk disclosure: THIS row + the guard conjunct naming
+            // a5LspInject + the capture block + the registration ring are the
+            // four shared-hunk sites of the lane): the realm-supply family's
+            // row in the shared backends union, terminal-adjacent. WITHOUT
+            // this row the plane never receives the published facts and the
+            // post-publish registration reads no wiring face -> mount-refused
+            // (the 760364998 lost-row class the union-c1 spec measures).
+            ...(a5LspInject === null ? {} : { lsp: a5LspInject }),
             // A5M2-PWSH (CENTER pwsh card): the win32 shell family's row in
             // the shared backends union. The guard above names
             // a5PwshInject; WITHOUT this row the plane never receives the
@@ -6822,6 +7019,50 @@ export function createAgentBindings(deps) {
             registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
             observations.push(`a5m2-g3: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
           }
+        }
+
+        // A5M2 G3 B-LSP registration (center LSP mount leg, the terminal/G6
+        // law verbatim): the keys are the placement feed's RUNTIME
+        // definitionIdentity of the PLACED row (read lazily through the
+        // wiring face), and a silent or moved feed THROWS
+        // (P_LSP_WIRE_PLACEMENT_KEY_* carried, never a guessed key, never a
+        // silent skip). The DECLARED-INACTIVE census row (a native the
+        // capture cannot answer) has no definition, no placement and no
+        // registration — the native stays untouched behind it. THEN the
+        // REALM teardown (center ③): the supply's drainAll rides THIS mount's
+        // toolDisposers on the AWAITED close chain (the ROOT 20:04 disposer
+        // law) — new calls are already DRAINING (the plane dispose ran the
+        // wiring's drain), drainAll terminates every live realm through the
+        // provider's terminate + settle: NET-ZERO, never a silent drop, never
+        // a fake rollback (a refusal lands its honest word in the
+        // observation channel).
+        if (a5LspInject !== null) {
+          const lspPlane = a5PlaneValue?.lsp
+          if (lspPlane === undefined || lspPlane === null) {
+            const detail = 'the plane accepted the lsp injection but surfaced no wiring face — the mount is broken and registers nothing'
+            observations.push(`a5m2-g3-lsp: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-LSP mount refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-lsp-mount-refused' })
+          }
+          let lspRegistrations
+          try {
+            lspRegistrations = lspPlane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g3-lsp: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed B-LSP family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g3-lsp-mount-refused' })
+          }
+          for (const registration of lspRegistrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-g3-lsp: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
+          toolDisposers.push(async () => {
+            const word = await a5LspInject.lifecycle.drainAll()
+            observations.push(`a5m2-g3-lsp: realm drainAll ${word?.ok === true ? 'settled (net-zero)' : `REFUSED (${String(word?.error?.code ?? 'unknown')})`} for ${sessionId}`)
+          })
         }
 
 

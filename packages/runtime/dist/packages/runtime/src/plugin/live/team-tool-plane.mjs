@@ -94,6 +94,13 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // same bridge law as G6 — the committed G3 adapter is reached THROUGH the
 // wiring module only (the adapter itself is never imported or edited here).
 import { buildG3TerminalWiring, A5_G3_TERMINAL_TOOL_NAMES } from './governed-families/g3-terminal-wiring.mjs'
+// A5M2 G3 B-LSP (center LSP mount leg, root 限施工裁决 2026-10-24): the LSP
+// family rides the SAME bridge law — the committed fsproc adapter is reached
+// through the wiring module only, and the realm supply is NOT imported here
+// at all: the plane consumes the OWNER-PUBLISHED facts through the closed
+// `backends.lsp` row (the supply + the REAL realm assembly are built by the
+// agent-bindings capture arm; the plane holds no authority below this line).
+import { buildG3LspWiring, A5_G3_LSP_TOOL_NAME } from './governed-families/g3-lsp-wiring.mjs'
 // A5M2-PWSH GOVERNED MOUNT (CENTER pwsh card, root FIXED scope 2026-10-25):
 // the win32 shell's governed row rides the same bridge law as the terminal
 // family — the ARM CLASS (governed-families/pwsh-arm.mjs) and the mount
@@ -665,6 +672,19 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // disabled-unless-win32) lands the honest DECLARED-INACTIVE census: no
   // def, native untouched, no registration — never a fake arm.
   pwsh: Object.freeze(['pwsh']),
+  // A5M2 G3 B-LSP (center LSP mount leg, root 限施工裁决): the governed LSP
+  // navigation row mounts at the FIXED native spelling 'lsp' behind the
+  // CLOSED `backends.lsp` key plus the owner-published realm-supply inject
+  // (never the names map). Same-name, same-meaning ledger truth: the row
+  // classifies through the committed fsproc adapter (its §5.2 contract
+  // including the realm/documentRealm/documentScope obligations), admission
+  // walks THIS plane's PA, and the BODY is the captured native's own
+  // execute (保留原生 — the adapter's delegate law); the realm facts answer
+  // from the REAL createLspRealmAssembly supply the capture arm publishes —
+  // a live realm or an honest TARGET_UNRESOLVED, never a bare-process
+  // substitute. The plane re-implements no host law and holds no authority
+  // below this line.
+  lsp: Object.freeze(['lsp']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -1553,6 +1573,66 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }
     }
     terminalInject = Object.freeze({ ...terminalInjectRaw })
+  }
+
+  // ── A5M2 G3 B-LSP GOVERNED MOUNT injection law (center LSP mount leg, root
+  // 限施工裁决 2026-10-24) ──
+  // The CLOSED `backends.lsp` key, the terminal law verbatim: ABSENT = the
+  // family is not deployed on this assembly (zero rows, zero flip — the
+  // byte-identical pre-LSP assembly); a DEFECTIVE inject refuses the MOUNT
+  // with the typed LSP_ARM_INJECT_INVALID (config is law, not wiring). The
+  // inject is the OWNER-PUBLISHED deployment evidence the agent-bindings
+  // capture arm builds over the REAL createLspRealmAssembly supply: the
+  // member-scoped captured native, the real identity pair, the CURRENT
+  // dispatcher binding reader, the mount-named REALM spelling (the supply's
+  // realmIdOf — when a policy generation moves, the mount still names the
+  // realm it armed, and the §5.2 documentRealm obligation reads a mismatch:
+  // a moved realm REFUSES, never navigates), and the four §5.2 facts. The
+  // plane imports neither the assembly nor the supply module: it consumes
+  // the published face and builds the wiring through the bridge only.
+  const lspInjectRaw = input.backends?.lsp
+  const lspInjectInvalid = (why) => ({ ok: false, code: 'LSP_ARM_INJECT_INVALID', message: `backends.lsp: ${why}` })
+  let lspInject = null
+  if (lspInjectRaw !== undefined) {
+    const lIsRec = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+    const lWant = ['bindingFacts', 'lifecycle', 'lspFacts', 'memberAgentId', 'providerId', 'readNative', 'realmId', 'sessionHeaderId']
+    if (!lIsRec(lspInjectRaw)) {
+      return lspInjectInvalid('the inject must be a record with exactly the closed keys {providerId, memberAgentId, sessionHeaderId, readNative, bindingFacts, realmId, lspFacts, lifecycle}')
+    }
+    for (const key of Object.keys(lspInjectRaw)) {
+      if (!lWant.includes(key)) return lspInjectInvalid(`unknown inject key '${key}' — the backends.lsp surface is CLOSED (the bridge's own input law mirrors this set; a wider pose is a drift, not a capability)`)
+    }
+    for (const key of lWant) {
+      if (lspInjectRaw[key] === undefined) return lspInjectInvalid(`'${key}' is REQUIRED (closed key set — no default, no fallback, never an inferred identity)`)
+    }
+    const lFacts = lspInjectRaw.lspFacts
+    const lBad = typeof lspInjectRaw.providerId !== 'string' || lspInjectRaw.providerId.length === 0
+      ? 'providerId is required (the family entry carries the provider identity verbatim — no plane-side constant)'
+      : typeof lspInjectRaw.memberAgentId !== 'string' || lspInjectRaw.memberAgentId.length === 0
+        ? 'memberAgentId is required (the real identity pairing, no fallback)'
+        : typeof lspInjectRaw.sessionHeaderId !== 'string' || lspInjectRaw.sessionHeaderId.length === 0
+          ? 'sessionHeaderId is required (the real identity pairing, no fallback)'
+          : typeof lspInjectRaw.realmId !== 'string' || lspInjectRaw.realmId.length === 0
+            ? 'realmId is required — the supply-named realm spelling (realmIdOf at mount); a §5.2 documentRealm mismatch then REFUSES rather than navigating a moved realm'
+            : typeof lspInjectRaw.readNative !== 'function'
+              ? 'readNative (name) => the CAPTURED native definition is required (the member-scoped capture seam; the global face is NOT a fallback)'
+              : typeof lspInjectRaw.bindingFacts !== 'function'
+                ? 'bindingFacts (toolName) => {bindingId, bindingRevision, policyGeneration, authorityGeneration} is required — the CURRENT dispatcher binding read LIVE (the terminal arm reader law verbatim)'
+                : !lIsRec(lFacts)
+                  ? 'lspFacts must be the supply\'s published fact face {server, document, documentRealm, documentScope}'
+                  : typeof lFacts.server !== 'function' || typeof lFacts.document !== 'function'
+                    || typeof lFacts.documentRealm !== 'function' || typeof lFacts.documentScope !== 'function'
+                    ? 'lspFacts must carry ALL FOUR §5.2 functions (server/document/documentRealm/documentScope) — the committed adapter enforces the pair at :2548-2551 and re-reads it at the entry; a partial face is the drift the adapter refuses, never a partial mount'
+                    : !lIsRec(lspInjectRaw.lifecycle)
+                      ? 'lifecycle must be the supply passthrough face {syncGeneration, drainAll} (the R-2 generation discipline + the net-zero realm teardown)'
+                      : typeof lspInjectRaw.lifecycle.syncGeneration !== 'function' || typeof lspInjectRaw.lifecycle.drainAll !== 'function'
+                        ? 'lifecycle.syncGeneration/drainAll must be functions (the policy-change discipline ride and the mount-drain net-zero teardown)'
+                        : undefined
+    if (lBad !== undefined) return lspInjectInvalid(lBad)
+    if (A5_G3_LSP_TOOL_NAME === readName || A5_G3_LSP_TOOL_NAME === A5_TODO_MOUNT_NAME || A5_G3_LSP_TOOL_NAME === A5_WRITE_MOUNT_NAME || A5_G3_LSP_TOOL_NAME === A5_IMAGE_MOUNT_NAME) {
+      return lspInjectInvalid(`'${A5_G3_LSP_TOOL_NAME}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the B-LSP block)`)
+    }
+    lspInject = Object.freeze({ ...lspInjectRaw })
   }
 
   // ── A5M2-PWSH GOVERNED MOUNT injection law (CENTER pwsh card, root 2026-10-25) ──
@@ -5265,6 +5345,76 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const g3Defs = g3Wiring === null ? [] : g3Wiring.definitions
+  // ── A5M2 G3 B-LSP rows (center LSP mount leg, root 限施工裁决) ────────────
+  // The SAME mount law as the G3 terminal block above: an ISSUED call
+  // identity (per-mount nonce + seq + the REAL exec.token as single-flight
+  // key, object|symbol — never String()), the LAZY placement feed, THE REAL
+  // SEAT (`pa: paAdmit`). ONE plane-side difference is DISCLOSED, not hidden:
+  // the arm's realmId is the SUPPLY-NAMED realm spelling (lspInject.realmId,
+  // the mount-armed `lsp:<member>:<generation>` identity), not the plane's
+  // placement realm — the §5.2 documentRealm obligation compares the LIVE
+  // realm against exactly that name, so a moved policy generation makes the
+  // mount's rows REFUSE (P_LSP_REALM_SCOPE_ESCAPED) until a re-mount, by
+  // construction. The placement feed still answers the PLANE's placement
+  // attribution (the entry key rides definitionIdentity alone — the bridge
+  // never reads the feed's realm). Zero-flip law: with no injection this is
+  // byte-identical to the pre-LSP assembly.
+  const g3lspTokenLedger = new Map()
+  let lspWiring = null
+  if (lspInject !== null) {
+    let lspCallSeq = 0
+    const lspMountNonce = String(globalThis.crypto?.randomUUID?.()
+      ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`)
+    const lspPrefix = `team-${String(input.instanceId ?? templateId ?? 'unknown')}-g3lsp`
+    const lspCorrelationOf = (exec, toolName) => {
+      const raw = exec !== null && typeof exec === 'object' ? exec.token : undefined
+      const tokenKey = (typeof raw === 'object' && raw !== null) ? raw : typeof raw === 'symbol' ? raw : undefined
+      if (tokenKey !== undefined) {
+        if (g3lspTokenLedger.has(tokenKey)) {
+          observe(`a5m2-g3-lsp: token-replay REFUSED name=${String(toolName)} — one governed call per execution token`)
+          return null
+        }
+      }
+      lspCallSeq += 1
+      const callId = `${lspPrefix}-${String(toolName)}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${lspMountNonce}-${String(lspCallSeq)}`
+      if (tokenKey !== undefined) g3lspTokenLedger.set(tokenKey, callId)
+      return callId
+    }
+    try {
+      const builtLsp = buildG3LspWiring({
+        realmId: lspInject.realmId,
+        providerId: lspInject.providerId,
+        memberAgentId: lspInject.memberAgentId,
+        sessionHeaderId: lspInject.sessionHeaderId,
+        readNative: lspInject.readNative,
+        lspFacts: lspInject.lspFacts,
+        bindingFacts: lspInject.bindingFacts,
+        correlationOf: lspCorrelationOf,
+        // THE LAZY FEED (pb §6, the placedByName law, verbatim): the
+        // registration key and the arm's entry re-verify both read the
+        // placement record at LOOKUP time — never an eager snapshot.
+        placementFeed: (name) => {
+          const d = placedByName.get(name)
+          if (d === undefined) return undefined
+          const identity = definitionIdentityOf(d)
+          return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
+        },
+        identityOf: (def) => definitionIdentityOf(def),
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-g3-lsp: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtLsp.ok !== true) {
+        return { ok: false, code: 'LSP_ARM_REFUSED', message: `backends.lsp: the wiring bridge refused the mount (${String(builtLsp.code)} — ${String(builtLsp.detail)})` }
+      }
+      lspWiring = builtLsp
+      for (const declaredRow of lspWiring.declared) {
+        observe(`a5m2-g3-lsp: DECLARED-INACTIVE ${String(declaredRow.name)} (${String(declaredRow.reason)}) — native untouched, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'LSP_ARM_REFUSED', message: `backends.lsp: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
+  const lspDefs = lspWiring === null ? [] : lspWiring.definitions
   // ── A5M2-PWSH GOVERNED MOUNT build (the same seat + placement law as every
   // sibling family: THE REAL SEAT is paAdmit itself, the identity seam is the
   // plane's own definitionIdentityOf, the registration key rides the fresh
@@ -5615,9 +5765,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && editDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && pwshDefs.length === 0 && g2Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && editDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && lspDefs.length === 0 && pwshDefs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...editDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...pwshDefs, ...g2Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...editDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...lspDefs, ...pwshDefs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -5702,6 +5852,24 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         placementNames: g3Wiring.placementNames,
         declared: g3Wiring.declared,
         familyRegistrations: g3Wiring.familyRegistrations,
+      }) }),
+      /** A5M2 G3 B-LSP: the LSP wiring face for THIS mount (omitted, NOT set
+       *  to `undefined`, when the family is not deployed — the same
+       *  presence-decision law). The mount writer reads
+       *  `familyRegistrations()` AFTER publish and pairs each entry with
+       *  `registerA5GovernedFamily`; the wiring drain rides this mount's
+       *  dispose (new-call prohibition) and the REALM net-zero teardown
+       *  (`lifecycle.drainAll`) rides the agent-bindings mount disposer on
+       *  the AWAITED close chain — never the writer's. The lifecycle pair is
+       *  the supply passthrough the Host round drives for the R-2 policy
+       *  discipline (syncGeneration) and the net-zero end (drainAll). */
+      ...(lspWiring === null ? {} : { lsp: Object.freeze({
+        familyId: lspWiring.familyId,
+        placementNames: lspWiring.placementNames,
+        declared: lspWiring.declared,
+        familyRegistrations: lspWiring.familyRegistrations,
+        syncGeneration: lspInject.lifecycle.syncGeneration,
+        drainAll: lspInject.lifecycle.drainAll,
       }) }),
       /** A5M2-PWSH (CENTER pwsh card): the governed pwsh family face for
        *  THIS mount (omitted, NOT set to `undefined`, when not deployed).
@@ -6010,6 +6178,15 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             if (g3Wiring !== null) g3Wiring.drain()
       if (pwshWiring !== null) pwshWiring.drain()
             g3TokenLedger.clear()
+            // A5M2 G3 B-LSP: the SAME teardown law — DRAINING is the wiring's
+            // new-call prohibition (an entered body is not rewound, no native
+            // fallback exists); the issued-identity ledger releases at its ONE
+            // legal end beside the others. The REALM teardown (terminate +
+            // settle, net-zero) is ASYNC and rides the agent-bindings mount
+            // disposer on the awaited close chain — this dispose stays
+            // synchronous like every sibling's.
+            if (lspWiring !== null) lspWiring.drain()
+            g3lspTokenLedger.clear()
             // A5M2 G3 B-PTC run_code GUARD: the same teardown law — the
             // guard's word is a new-call prohibition (matching run_code
             // calls then refuse TYPED; in-flight walks settle on their
