@@ -17,7 +17,7 @@
     {
       "leg": "C-FRESH-HOME-STAMP",
       "ok": true,
-      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T054626156Z"
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T054646495Z"
     },
     {
       "leg": "C-WINDOW-CEILINGS",
@@ -31,8 +31,8 @@
     },
     {
       "leg": "C-QUERY-ONLY-BLUEPRINT",
-      "ok": false,
-      "detail": "id=team.a5q-queryonly builtinToolDeny entries=15 (raw line 6: unknown-unmanaged 7 + known-sensitive-unmanaged 8), teamTools=team_list_members only, permissions.default stays ask, exactly one explicit allow rule (- tool: team_list_members + resource.kind any, syntax from a5nx-main.yaml:47-50 / kit-r1r main.yaml:26-30), no allow-all"
+      "ok": true,
+      "detail": "id=team.a5q-queryonly builtinToolDeny entries=15 (raw line 6: unknown-unmanaged 7 + known-sensitive-unmanaged 8), teamTools=team_list_members only, permissions.default stays ask, leader lane carries EXACTLY ONE rule (team_list_members + resource.kind any) while the 4 baseline member rules from the copied a5nx fixture stay unchanged (5 total in the file), and permissionMutationEnvelope / policyStates / metadata are present as in the baseline"
     },
     {
       "leg": "C-BLUEPRINT-SOURCE-GATE",
@@ -47,7 +47,7 @@
     {
       "leg": "C-ROW-ASSEMBLED",
       "ok": true,
-      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T054626156Z realm=a5m2-team-c2-h1--4T054626156Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T054626156Z"
+      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T054646495Z realm=a5m2-team-c2-h1--4T054646495Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T054646495Z"
     },
     {
       "leg": "C-MOUNT-VALIDATE",
@@ -82,7 +82,7 @@
     {
       "leg": "C-WORLD-GUARD-ABORTS",
       "ok": true,
-      "detail": "WORLD_CEILING_EXCEEDED at replay: 1180304687 > 1"
+      "detail": "WORLD_CEILING_EXCEEDED at replay: 1180305068 > 1"
     },
     {
       "leg": "C-MOCK-DECIDE",
@@ -100,5 +100,5 @@
       "detail": "reported, never swallowed: product HEAD 3b55935e3204 is not an accepted head (pin ced9e7dbb63b / tip 5062988f0626)"
     }
   ],
-  "ok": false
+  "ok": true
 }
