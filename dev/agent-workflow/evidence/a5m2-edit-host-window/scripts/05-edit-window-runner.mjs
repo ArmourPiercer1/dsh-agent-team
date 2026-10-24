@@ -442,6 +442,24 @@ function editWorkerInstanceId() {
   walk(doc)
   return byTemplate.get('edit-worker') ?? null
 }
+async function ledgerFactsAll(factType, needle) {
+  const hits = []
+  let afterSequence = 0
+  for (let pageNo = 0; pageNo < 50; pageNo += 1) {
+    const page = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `ehw-ledger-a-${pageNo + 1}`, 1)
+    const data = resultData(page.body)
+    const entries = Array.isArray(data?.entries) ? data.entries : []
+    for (const e of entries) {
+      if (e?.type !== factType && e?.factType !== factType) continue
+      if (needle === undefined || JSON.stringify(e?.payload ?? e).includes(needle)) hits.push({ sequence: e.sequence ?? e.seq ?? null, payload: e.payload ?? null })
+    }
+    const next = data?.afterSequence ?? data?.nextAfterSequence
+    if (typeof next !== 'number' || entries.length === 0) break
+    afterSequence = next
+  }
+  hits.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
+  return hits
+}
 async function ledgerFactPresent(factType, needle) {
   let afterSequence = 0
   for (let pageNo = 0; pageNo < 50; pageNo += 1) {
@@ -667,7 +685,7 @@ async function main() {
     if (text.startsWith('GRANT-EDIT')) return emitOrClose(text, () => ({ name: 'team_grant_permission', args: { rootSessionId: currentRoot, requestToken: `ehw-grant-${NONCE}`, targetInstanceId: editWorkerInstanceId(), rules: [{ operationClass: 'edit', matcher: { kind: 'exact', value: 'notes.txt' }, effect: 'allow' }] } })) // WIRE matcher = {kind, value} per the cheat-sheet; server-side canonicalization at the target member's durable effective workspace
     if (text.startsWith('REVOKE-EDIT')) return emitOrClose(text, () => ({ name: 'team_revoke_permission', args: { rootSessionId: currentRoot, requestToken: `ehw-revoke-${NONCE}`, targetInstanceId: editWorkerInstanceId(), rules: [{ operationClass: 'edit', matcher: { kind: 'exact', value: 'notes.txt' }, effect: 'allow' }] } })) // 88 same shape/name-swap per the cheat-sheet; reveal-as-expansion rides the SAME mutation authority
     if (text.startsWith('EDIT-POSTGRANT')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-GRANTED' } })) // independent marker; behavior AFTER the grant is RECORDED honestly (overlay-consumed vs still-ask), never pre-claimed
-    if (text.startsWith('EDIT-POSTREVOKE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-REVOKED' } })) // zero-residue probe: if this executes without ANY pending row after the revoke, that is a residual-effect FAIL
+    if (text.startsWith('EDIT-POSTREVOKE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'gamma', new_string: 'GAMMA-REVOKED' } })) // root card 2: targets the INDEPENDENT 'gamma' row present in EVERY prior state of this file — a residual allow MUST move bytes to hide; behavior is additionally required
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
     if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } })) // root ruling: the EDIT row's anchor contract is RELATIVE-to-root (edit.mjs :89-94 path.isAbsolute refuses); workspace/FSROOT stay aligned so the relative spelling resolves to the SAME target via canonicalLocator :233-236
     if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } })) // same single-variable ruling as the allow arm
@@ -954,10 +972,18 @@ async function main() {
     const hit = callResults.find((r) => r.step === stepOuter('REVOKE-EDIT'))
     return hit ? hit.text : null
   })
-  const e9Facts = await ledgerFactPresent('permission-mutated', 'notes.txt')
-  check('E9a', 'revoke (88): EXECUTED without rejection AND a durable permission-mutated fact present post-revoke (second mutation)',
-    e9Facts !== null && !/status.*rejected|rejected/.test(String(revokeOutcome)),
-    `fact=${JSON.stringify(e9Facts).slice(0, 220)} result=${String(revokeOutcome).slice(0, 260)}`)
+  // [root false-pass card 1 fix] the FIRST permission-mutated row from seq 0
+  // would happily be E8a's GRANT — the revoke must be proven by a NEW fact
+  // strictly after the grant fact, with a DISTINCT payload, plus structured
+  // success on the call itself (not merely the absence of 'rejected').
+  const e9All = await ledgerFactsAll('permission-mutated', 'notes.txt')
+  const e9New = e9All.filter((f) => e8Fact?.sequence != null && typeof f.sequence === 'number' && f.sequence > e8Fact.sequence)
+  const e9Last = e9New.length > 0 ? e9New[e9New.length - 1] : null
+  const e9PayloadDistinct = e9Last !== null && JSON.stringify(e9Last.payload) !== JSON.stringify(e8Fact?.payload)
+  const e9Structured = String(revokeOutcome).length > 0 && !/rejected|NOT_LEADER|unwired|"isError":true|error/i.test(String(revokeOutcome))
+  check('E9a', 'revoke (88): structured-success call AND a NEW permission-mutated fact with sequence STRICTLY after the grant fact and a DISTINCT payload (the grant fact can no longer impersonate the revoke)',
+    e9Last !== null && e9PayloadDistinct && e9Structured,
+    `grantSeq=${String(e8Fact?.sequence)} newFacts=${JSON.stringify(e9New).slice(0, 260)} payloadDistinct=${String(e9PayloadDistinct)} structured=${String(e9Structured)} result=${String(revokeOutcome).slice(0, 240)}`)
 
   // [E9b hard, zero-residue] after the revoke, a fresh EDIT must NOT execute
   // silently: bytes MUST be unchanged. A pending row reappearing is the
@@ -966,6 +992,14 @@ async function main() {
   const e9bShaBefore = sha256(target)
   const pendBefore9 = new Set(await pendingRequestIds())
   await apiPrompt(memberSession, 'EDIT-POSTREVOKE', 'ehw-e9b')
+  // [root false-pass card 2 fix] the old fixed old_string 'BETA-ALLOWED'
+  // could be ABSENT by now (E8b may have rewritten it to BETA-GRANTED), so a
+  // residual allow would "pass" by finding no match — sha-unchanged alone was
+  // a false-pass path. This leg targets the INDEPENDENT 'gamma' row, which
+  // every state of this window provably still contains, so an executing
+  // residual WOULD move bytes. And passing now requires BEHAVIOR: either a
+  // real PA pending that we deny with NO consume on the SAME requestId, or a
+  // typed permission refusal in the result — never bare sha-unchanged.
   let e9bReq = null
   try {
     e9bReq = await waitFor('post-revoke pending?', 8_000, async () => {
@@ -981,9 +1015,12 @@ async function main() {
     await new Promise((res) => setTimeout(res, 2_000))
     e9bRes = await resultFor(stepOuter('EDIT-POSTREVOKE'))
   }
-  check('E9b', 'post-revoke zero residue: bytes MUST be unchanged; regression-to-ask (pending) recorded and denied — silent execution would FAIL',
-    sha256(target) === e9bShaBefore,
-    `pending=${String(e9bReq)} shaBefore=${e9bShaBefore} shaNow=${sha256(target)} result=${String(e9bRes).slice(0, 260)}`)
+  const e9bNoConsume = e9bReq === null ? null : (await hasFact(e9bReq, 'control-allow-consumed')) === false
+  const e9bTypedRefusal = /refused|P_EDIT|IO_POLICY|APPROVAL_DENIED|denied/.test(String(e9bRes)) && !/Edited/.test(String(e9bRes))
+  const e9bDeniedLane = e9bReq !== null && e9bNoConsume === true && !/Edited/.test(String(e9bRes))
+  check('E9b', "post-revoke residue on the 'gamma' canary (provably present in EVERY prior state): bytes unchanged AND behavior proves non-execution — real PA pending denied with no consume on the SAME requestId, or a typed permission refusal; bare sha-unchanged does NOT pass",
+    sha256(target) === e9bShaBefore && (e9bDeniedLane || e9bTypedRefusal),
+    `pending=${String(e9bReq)} noConsume=${String(e9bNoConsume)} typedRefusal=${String(e9bTypedRefusal)} deniedLane=${String(e9bDeniedLane)} shaBefore=${e9bShaBefore} shaNow=${sha256(target)} result=${String(e9bRes).slice(0, 260)}`)
 
   await cleanup()
   // non-blocking probe rows (ok:null, blocking:false) never decide the rc; real criteria (ok true/false) do.
