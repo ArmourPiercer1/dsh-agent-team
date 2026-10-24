@@ -390,6 +390,15 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/pwsh-wiring.mjs',
   },
+  // A5M2-SCHEDULE TRIGGER-GOVERNANCE (this lane, 2026-10-26): the create/
+  // update semantics block lands next to its siblings; the future pair
+  // mount (bindings) will statically import it by RELATIVE specifier — the
+  // strict files:["dist"] face must see it (todo.mjs lesson; drift gate
+  // blind to unplaced). Node-builtins-only closure; byte-identical.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-trigger-governance.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-trigger-governance.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative
