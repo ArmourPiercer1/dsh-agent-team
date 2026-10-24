@@ -38,7 +38,11 @@
  *  3. PLACEMENT through the REAL registration entry: `place()` registers each
  *     emitted definition with the live `registry.register` face (the same
  *     ToolRuntime minimum-entry core that REFUSES a fabricated shape — the
- *     wiring spec's (f) leg measures it) and keeps the exact disposers.
+ *     wiring spec's (f) leg measures it), records every successful disposer
+ *     ITEM BY ITEM, and on a mid-list throw rolls back only this call's
+ *     completed items before rethrowing the ORIGINAL error (root P2 on b656;
+ *     a rollback failure is aggregated onto it, its disposer kept — no fake
+ *     cleanup).
  *  4. REGISTRATION after publish: `registerAfterPublish()` reads the
  *     placement keys back through the wiring's `familyRegistrations()`
  *     (feed-read at the mount moment, throws instead of guessing) and writes
@@ -255,14 +259,50 @@ export function createG1QueryAssembly(mount = {}) {
     return Object.freeze({ ok: false, code: wiring.code, message: wiring.message })
   }
 
-  // ── 3. PLACEMENT through the live registration entry (disposers owned here)
+  // ── 3. PLACEMENT through the live registration entry (disposers owned here).
+  //    ROOT NARROW-REVIEW P2 ON b656: every successful register is recorded
+  //    ITEM BY ITEM the moment it succeeds — a mid-list throw loses nothing.
+  //    The failure path rolls back ONLY the items THIS call completed (reverse
+  //    order), rethrows the ORIGINAL exception untouched, and a rollback
+  //    disposer that itself throws is aggregated onto that error and its
+  //    disposer STAYS owned here for a later unplace() — never a fake cleanup.
   let disposers = null
   const place = () => {
     if (disposers !== null) return disposers
     if (typeof mount.registry.register !== 'function') {
       throw typedRefusal(CODES.EVIDENCE_ABSENT, 'place() needs the live registry.register face — placement happens through the REAL registration entry or not at all')
     }
-    disposers = wiring.definitions.map((definition) => mount.registry.register(definition))
+    const placedThisCall = []
+    try {
+      for (const definition of wiring.definitions) {
+        placedThisCall.push({ name: definition.name, dispose: mount.registry.register(definition) })
+      }
+    } catch (error) {
+      const rollbackErrors = []
+      const survivors = []
+      for (let index = placedThisCall.length - 1; index >= 0; index -= 1) {
+        const item = placedThisCall[index]
+        try {
+          item.dispose()
+        } catch (rollbackError) {
+          rollbackErrors.push({ name: item.name, error: rollbackError })
+          survivors.push(item.dispose)
+        }
+      }
+      // No fake cleanup: an item whose rollback threw stays owned here so a
+      // later unplace() can still reach it; the assembly never claims it gone.
+      if (survivors.length > 0) disposers = Object.freeze(survivors)
+      if (rollbackErrors.length > 0) {
+        observe({ event: 'g1-asm:place-rollback-ERRORS', count: rollbackErrors.length, names: rollbackErrors.map((entry) => entry.name) })
+        try {
+          Object.defineProperty(error, 'g1AsmPlaceRollbackErrors', { value: Object.freeze(rollbackErrors), configurable: true, enumerable: false })
+        } catch {
+          observe({ event: 'g1-asm:place-rollback-errors-UNATTACHABLE', count: rollbackErrors.length })
+        }
+      }
+      throw error
+    }
+    disposers = Object.freeze(placedThisCall.map((item) => item.dispose))
     observe({ event: 'g1-asm:placed', count: disposers.length })
     return disposers
   }

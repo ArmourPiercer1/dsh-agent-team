@@ -28,7 +28,10 @@
  *  (E) placement happens through a REAL registration entry: place() registers
  *      every wired def into a second REAL ToolRuntime (the agent-scope twin
  *      disclosed below), stored verbatim with the captured output face;
- *      unplace() disposes exactly;
+ *      unplace() disposes exactly; the ROOT P2 focus leg (b656 review) drives
+ *      a REAL same-layer collision mid-list: per-item disposer recording,
+ *      rollback of only this call's items, the host's original error rethrown
+ *      intact, retry-able state, no fake cleanup;
  *  (F) registerAfterPublish(): BEFORE the seam's install pass it THROWS the
  *      wiring's P_G1_WIRE_PLACEMENT_KEY_ABSENT (no guess, no skip); AFTER,
  *      with the feed backed by the REAL definitionIdentityOf mint of the
@@ -429,6 +432,35 @@ describe('a5m2-g1-query-assembly: the mount-side PA production line over the wir
       const again = assembly.place()
       expect(again.length).toBe(3)
       expect(world.placedCtx.tools.get('cordis_inspect_list')).toBeDefined()
+      assembly.unplace()
+    })
+
+    it('ROOT P2 focus (REAL ToolRuntime same-layer collision): a mid-list "already registered" rolls back ONLY this call\'s completed registrations, keeps the host\'s original error intact, and re-place completes once the collision is cleared', async () => {
+      const world = await makeWorld()
+      const assembly = unwrap(world.result)
+      // a REAL collision in the SAME placement layer: the host's own
+      // registration law refuses the second same-name entry mid-list.
+      const collider = world.placedCtx.tools.register(makeNative('cordis_inspect_query').native)
+      let thrown: unknown
+      try {
+        assembly.place()
+      } catch (error) {
+        thrown = error
+      }
+      // the ORIGINAL host error survives untouched (no replacement, no reword)
+      expect((thrown as Error).message).toMatch(/already registered/i)
+      // the first successful item's disposer was NOT lost: it was rolled back
+      expect(world.placedCtx.tools.get('cordis_inspect_list')).toBeUndefined()
+      // rollback touched only THIS call's items: the collider stands untouched
+      expect(world.placedCtx.tools.get('cordis_inspect_query')).toBeDefined()
+      // no fake state: nothing was left claimed, a retry re-attempts the whole list…
+      expect(() => assembly.place()).toThrow(/already registered/i)
+      expect(world.placedCtx.tools.get('cordis_inspect_list')).toBeUndefined()
+      // …and completes once the collision lifts
+      collider()
+      const again = assembly.place()
+      expect(again.length).toBe(3)
+      expect(world.placedCtx.tools.get('cordis_inspect_query')).toBe(assembly.definitions[1])
       assembly.unplace()
     })
   })
