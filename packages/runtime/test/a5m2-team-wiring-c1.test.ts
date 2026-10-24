@@ -497,7 +497,7 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
         // B-TEAM LEAVES, not the family list; B-TERMINAL JOINS the eleven
         // names at this merge from the a5m2-wire-g3 additive entry,
         // riding directly after B-INSPECT).
-        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'] /* census sync (this lane's B-PTC round): B-BROWSER/B-WEB rode in on the G2 re-anchor merge and these two pins never refreshed (pre-existing int drift, reported); B-PTC joins after B-TERMINAL per root 04:4x 闭表补齐 */)
         expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
         expect(isLosslessJsonValue(manifest)).toBe(true)
         expect(validatePaFamilyTarget('B-TEAM', manifest)).toBeUndefined()

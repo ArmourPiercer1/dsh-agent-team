@@ -123,6 +123,7 @@ const G3 = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc
   A5_G3_TERMINAL_TYPED_CODES: Record<string, string>
   A5_G3_LSP_TYPED_CODES: Record<string, string>
   A5_G3_PTC_TYPED_CODES: Record<string, string>
+  A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS: readonly string[]
   g3CanonicalRegistrationFace: (spec: Record<string, unknown>) => Record<string, unknown>
   createGovernedTerminalArms: (deps: Record<string, unknown>) => Record<TerminalName, Arm>
   createGovernedLspArm: (deps: Record<string, unknown>) => Arm
@@ -412,7 +413,13 @@ const CAPTURED = {
     code: { type: 'string', required: true, description: 'Program source' },
     description: { type: 'string', required: true, description: 'What the program does' },
     timeoutMs: { type: 'number', description: 'Run timeout' },
-    sandbox_permissions: { type: 'string', enum: ['read-only', 'workspace-write', 'danger-full-access'], description: 'Requested wider sandbox' },
+    // A5M2-G3-PTC refresh (root 04:4x card, e78 handoff [B], self-verified): the REAL
+    // minted enum is the two escalation TARGETS (639 sandbox/sandbox/src/
+    // escalation.ts:41 ESCALATION_TARGETS via core/tools/src/ptc.ts:110
+    // RUN_CODE_CONTROLS); the pre-fix fixture hand-carried the 3-member bridge
+    // ask vocabulary. The classify pair-law vocabulary (PTC_ESCALATION_MODES)
+    // is unchanged — only this CAPTURED host face moved to the measured bytes.
+    sandbox_permissions: { type: 'string', enum: ['workspace-write', 'danger-full-access'], description: 'Requested wider sandbox' },
     justification: { type: 'string', description: 'Why the wider sandbox is needed' },
   },
 } as const
@@ -1224,9 +1231,17 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
       expect(r.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ESCALATION_ARGS_INVALID)
     }
     expect(w.native.calls.length).toBe(0)
-    // The single-source law: the captured face's escalation enum IS the
-    // mounted row's vocabulary (assembly audit pairs them at mount).
-    expect((CAPTURED.run_code.sandbox_permissions.enum as readonly string[]).join(',')).toBe(PTC_ROW.PTC_ESCALATION_MODES.join(','))
+    // The single-source law, [B]-refreshed (root 04:4x card): the captured
+    // face's escalation enum IS the adapter's CAPTURE PIN — the MEASURED
+    // host minted ESCALATION_TARGETS (639 escalation.ts:41 via ptc.ts:110).
+    // The row's CLASSIFY pair-law vocabulary stays the ONE bridge source
+    // (PTC_ESCALATION_MODES, ptc-escalation-row.mjs:80, UNTOUCHED); the two
+    // vocabularies are different faces (target list vs ask adjudication)
+    // and each now pairs one-for-one with its own single source.
+    expect((CAPTURED.run_code.sandbox_permissions.enum as readonly string[]).join(',')).toBe(G3.A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS.join(','))
+    expect(G3.A5_G3_PTC_RUN_CODE_ESCALATION_TARGETS).toEqual(['workspace-write', 'danger-full-access'])
+    // the classify-side single source stays the UNTOUCHED bridge bytes:
+    expect(PTC_ROW.PTC_ESCALATION_MODES.join(',')).toBe('read-only,workspace-write,danger-full-access')
     // The arm carries NO approval face: escalate/allow/adjudicate exist
     // nowhere on it — escalation answers happen only in ptc-escalation-row.
     const faces = Object.keys(w.arm).sort().join(',')

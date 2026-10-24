@@ -1609,6 +1609,65 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
   }),
+  /* A5M2-G3 B-PTC run_code (root 04:4x throughput card; 闭表补齐 for this
+   * family — the counterpart of the wiring-side flat view
+   * src/plugin/live/governed-families/g3-ptc-wiring.mjs a5G3PtcPaTargetFlat,
+   * MINTED from the adapter's own CLASSIFY manifest bytes, g3-fsproc-
+   * adapters.mjs validateRunCode). The single `program-run` variant carries
+   * the measured target at FULL VALUE: the interpreter identity pair, the
+   * EVIDENCED effective envelope pair (mode + the config-declared
+   * enforcement census — the row states exactly what the supply face
+   * answers, the arm refuses the run when a fact stops being evidenced),
+   * the child-channel facts (capabilityList as a closed stringArray, its
+   * digest, the two deployer-declared positive budgets), the code/
+   * description digests, and the escalation request as MANIFEST DATA
+   * (nullableString: null = no request; the ANSWER lives only on the
+   * ptc-escalation-row bridge, never here). Object leaves (timeoutPolicy)
+   * ride under the sanctioned 受审编码 canonical-JSON string ('absent' =
+   * null), the B-TERMINAL reviewed-encoding precedent — no new kind. The
+   * envelope/budget/channel DRIFT law stays the adapter's own recheckTarget
+   * at the entry; currentFields names only the pure-data identity legs a
+   * CURRENT call restates, mirroring B-TERMINAL. ENABLEMENT IS NOT THIS
+   * TABLE: the mount is the plane's closed backends.runCode gate; nothing
+   * here claims Host verification. */
+  'B-PTC': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      toolName: 'string',
+      realmId: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'program-run': Object.freeze({
+          adds: Object.freeze({
+            interpreterRuntimeIdentity: 'string',
+            interpreterLanguage: 'string',
+            envelopeMode: 'string',
+            envelopeEnforcement: 'string',
+            timeoutPolicyJson: 'string',
+            capabilityList: 'stringArray',
+            capabilityCount: 'nonNegativeInt',
+            channelDigest: 'string',
+            maxParallelSubCalls: 'nonNegativeInt',
+            runDispatchBudget: 'nonNegativeInt',
+            lineageFacts: 'string',
+            codeDigest: 'string',
+            descriptionDigest: 'string',
+            timeoutMsJson: 'string',
+            requestedSandboxMode: 'nullableString',
+            justificationDigest: 'nullableString',
+            effectDelta: 'stringArray',
+          }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
+  }),
   /* A5-M2 B-SCHEDULE (root 19:06: rule mapping lands on the ALREADY-APPROVED
    * 18:42 structure; the two kinds are signed). The MINT this entry pairs
    * with (read-only fixed-commit measurement, never copied): the wire lane
