@@ -126,28 +126,43 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
 #       post-mortem; a broken monitor is treated as a breach — fail closed);
 #   (c) once ANY termination is issued, the drain MUST finish: poll the OWN
 #       PGID until the group is empty or 20s elapse, then KILL the group.
-#       The parent never cancels an armed escalation (that is how the follow-up
-#       KILL used to be lost when the runner exited first); an UNARMED watchdog
-#       is cancelled by the parent as soon as the runner returns. Nothing here
-#       touches foreign processes, any other world, or :3080.
+#   (d) CANCELLATION IS A REQUEST, NEVER A KILL (root ruling 2026-10-24). The
+#       old protocol let the parent test the marker and then kill the watchdog;
+#       that left a race — the parent saw "no marker", the watchdog armed and
+#       TERM'd, and the parent's kill deleted the supervisor mid-drain. Now the
+#       parent only touches $OUT/watchdog-cancel and WAITS; the watchdog tests
+#       that request itself, at the top of each tick and again immediately
+#       before arming. UNARMED + requested => the watchdog exits on its own
+#       (rc 0). ARMED => the request is ignored and the drain runs to
+#       completion. Only the watchdog can end the watchdog. Nothing here touches
+#       foreign processes, any other world, or :3080.
 (
   BREACH=""
+  REASON=""
   DEADLINE=$(( $(date +%s) + 300 ))
   while :; do
+    # a cancel request is honored ONLY while unarmed — checked by the watchdog
+    # itself, so there is no parent-side test-then-kill window left.
+    if [ -e "$OUT/watchdog-cancel" ] && [ ! -e "$OUT/watchdog-armed" ]; then
+      echo "watchdog: cancel request honored while UNARMED — exiting, no signal was ever sent"
+      exit 0
+    fi
     if [ -s "$OUT/home.txt" ]; then
       W=$(tr -d '\n' < "$OUT/home.txt" 2>/dev/null) || BREACH="home-pointer read failed"
       if [ -z "$BREACH" ] && [ -n "$W" ] && [ -d "$W" ]; then
         # BUDGET ACCOUNTING LAW (root final口径): walk THIS HOME only, never
         # following symlinks (find does not dereference by default) — read-only
         # shared dependency targets (node_modules etc.) are never pulled in;
-        # every real file counts ONCE BY UNIQUE dev:inode (plain du-style, no
+        # every real file counts ONCE BY UNIQUE %D:%i — find's DEVICE number
+        # (%d is tree depth, not the device; root ruling 2026-10-24) plus inode
+        # (plain du-style, no
         # deref), so links>1 files this run creates are NOT silently dropped the
         # way an nlink==1 filter dropped them. Shared links stay read-only;
         # runtime writes are real files inside HOME.
         # '|| BREACH=' is load-bearing: under set -e + pipefail an UNGUARDED
         # sampler that fails would KILL this subshell — no breach, no TERM, and
         # the parent's 'wait || true' swallows the death (root reliability card).
-        NB=$(find "$W" -xdev -type f -printf '%d:%i %s\n' 2>/dev/null | sort -u -k1,1 | awk '{t+=$2} END {printf "%.0f\n", t}') || BREACH="HOME byte sampling failed"
+        NB=$(find "$W" -xdev -type f -printf '%D:%i %s\n' 2>/dev/null | sort -u -k1,1 | awk '{t+=$2} END {printf "%.0f\n", t}') || BREACH="HOME byte sampling failed"
         case "$NB" in ''|*[!0-9]*) if [ -z "$BREACH" ]; then BREACH="HOME sample not decimal: '${NB}'"; fi ;; esac
         if [ -z "$BREACH" ] && [ "$NB" -gt "$HOME_BUDGET" ]; then BREACH="HOME bytes (unique inodes) ${NB} exceeded budget ${HOME_BUDGET} (in-flight hard stop)"; fi
       fi
@@ -163,17 +178,25 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
     if [ -n "$BREACH" ]; then
       printf '{ "breachAt": "%s", "reason": "%s" }\n' "$(date -u +%FT%TZ)" "$BREACH" > "$OUT/budget-breach.json"
       echo "watchdog: BUDGET/CAPACITY BREACH — ${BREACH}; terminating OWN group"
+      REASON="breach"
       break
     fi
     NOW=$(date +%s)
-    [ "$NOW" -lt "$DEADLINE" ] || break
+    if [ "$NOW" -ge "$DEADLINE" ]; then REASON="timeout-300s"; break; fi
     sleep "$SAMPLE_EVERY"
   done
-  # ROOT RULING (fixed order, fa56 re-review): the ARMED marker is PERSISTED
-  # BEFORE the first TERM — on BOTH the 300s-timeout and the breach path — so a
-  # parent returning early can never mistake an in-progress escalation for an
-  # unarmed watchdog and cancel its drain. A local shell variable is NOT the
-  # marker; the file is. The parent cancels ONLY on a confirmed-unarmed check.
+  # ROOT RULINGS (fa56 + today): the ARMED marker is persisted BEFORE the first
+  # TERM on both paths; the CANCEL is honored only where standing down is safe:
+  #  - BREACH outranks cancel: capacity/budget exceeded means the OWN group must
+  #    be stopped no matter what the parent asked.
+  #  - timeout + pending cancel: the parent files the request only after the
+  #    runner returned, so the bound is moot — the watchdog stands down with no
+  #    signal ever sent (a late cancel arriving AFTER this test is simply void:
+  #    armed means the drain finishes; that ordering is race-safe).
+  if [ "$REASON" != breach ] && [ -e "$OUT/watchdog-cancel" ]; then
+    echo "watchdog: cancel honored at the bound (reason=${REASON}) — standing down, no signal ever sent"
+    exit 0
+  fi
   touch "$OUT/watchdog-armed"
   kill -TERM -"${SPAWN_PGID}" 2>/dev/null || true
   DRAIN_END=$(( $(date +%s) + 20 ))
@@ -189,10 +212,16 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
 WATCHDOG_PID=$!
 RC=0
 wait "$SPAWN_PID" || RC=$?
-if [ ! -e "$OUT/watchdog-armed" ]; then
-  kill "$WATCHDOG_PID" 2>/dev/null || true   # UNARMED only: no escalation was ever issued, nothing is lost
+# REQUEST the cancellation, then wait: no signal is ever sent to the supervisor.
+# Unarmed => the watchdog sees the request on its next tick and exits by itself;
+# armed => the request is ignored and the drain/KILL finishes before it returns.
+touch "$OUT/watchdog-cancel"
+WRC=0
+wait "$WATCHDOG_PID" || WRC=$?
+echo "watchdog exited rc=${WRC} (armed=$( [ -e "$OUT/watchdog-armed" ] && echo yes || echo no), cancel requested)"
+if [ -e "$OUT/watchdog-armed" ] && [ "$WRC" -ne 0 ] && [ "$WRC" -ne 143 ]; then
+  echo "WRAPPER VERDICT: the ARMED watchdog did not complete its drain (rc ${WRC}) — supervision failed, refusing to certify cleanup (rc 1)"; exit 1
 fi
-wait "$WATCHDOG_PID" 2>/dev/null || true
 echo "runner rc=${RC} (143/137 = outer 300s bound or an in-flight budget/capacity breach fired on the OWN group)"
 
 # [5] post facts
@@ -205,7 +234,7 @@ if [ -s "$OUT/home.txt" ]; then WORLD=$(tr -d '\n' < "$OUT/home.txt"); else fail
 [ -d "$WORLD" ] || fail "pointed HOME absent at ${WORLD} — raw retention law broken?" 1
 echo "HOME (explicit pointer): ${WORLD}"
 [ -f "$WORLD/a5m2-g5-hw-lock.json" ] && echo "world lock retained: $WORLD"
-NEWB=$(find "$WORLD" -xdev -type f -printf '%d:%i %s\n' 2>/dev/null | sort -u -k1,1 | awk '{t+=$2} END {printf "%.0f\n", t}') || NEWB="sampling-failed"
+NEWB=$(find "$WORLD" -xdev -type f -printf '%D:%i %s\n' 2>/dev/null | sort -u -k1,1 | awk '{t+=$2} END {printf "%.0f\n", t}') || NEWB="sampling-failed"
 case "$NEWB" in ''|*[!0-9]*) fail "HOME byte accounting failed ('${NEWB}') — cannot certify the budget law" 1 ;; esac
 echo "HOME bytes (unique dev:inode, no symlink-deref): ${NEWB} (budget ${HOME_BUDGET})"
 FIX_LOCK_AFTER=$(sha256sum "$A5M2_G5_INSTALL_DIR/pnpm-lock.yaml" | cut -d' ' -f1)
