@@ -276,13 +276,11 @@ async function run () {
 
   // supervision on OUR PGID: TERM@300s; KILL only if the group still lives
   // 20s later; both timers CANCELLED when the runner exits first.
-  let killTimer = null
-  const termTimer = setTimeout(() => {
-    try { process.kill(-child.pid, 'SIGTERM') } catch {}
-    killTimer = setTimeout(() => {
-      if (child.exitCode === null && child.signalCode === null) { try { process.kill(-child.pid, 'SIGKILL') } catch {} }
-    }, 20_000)
-  }, 300_000)
+  // root fixed law 2026-10-24: ABSOLUTE TERM at launch+300s and ABSOLUTE
+  // KILL at launch+320s against OUR PGID; parent exit does NOT cancel the
+  // group wind-down and no extra 20s tail is added (not 340s).
+  const termTimer = setTimeout(() => { try { process.kill(-child.pid, 'SIGTERM') } catch {} }, 300_000)
+  const killTimer = setTimeout(() => { try { process.kill(-child.pid, 'SIGKILL') } catch {} }, 320_000)
   // HOME monitor: fresh HOME ≤64MiB DURING the run (this window's law).
   let homeViolation = null
   const homeTimer = setInterval(() => {
@@ -295,27 +293,32 @@ async function run () {
     } catch {}
   }, 5_000)
   const code = await new Promise((res) => child.once('exit', (c) => res(c)))
-  clearTimeout(termTimer); if (killTimer !== null) clearTimeout(killTimer); clearInterval(homeTimer)
+  clearInterval(homeTimer)
+  // parent exit ≠ group empty: the 300/320 timers STAY ARMED and we drain OUR
+  // PGID on a 5s loop (df floor re-asserted every loop) until the group is
+  // EMPTY; ports are re-checked only AFTER the group cleared (root law).
+  let pgidGone = false
+  let pgidDrainMs = 0
+  let dfDuringDrainFloor = true
+  for (;;) {
+    try { process.kill(-child.pid, 0); pgidGone = false } catch { pgidGone = true; break }
+    try {
+      const d = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]
+      if (Number(d) < PINS.dfFloor) dfDuringDrainFloor = false
+    } catch { dfDuringDrainFloor = false }
+    await new Promise((r) => setTimeout(r, 5000))
+    pgidDrainMs += 5000
+  }
+  clearTimeout(termTimer); clearTimeout(killTimer)
 
   // postflight: REAL enforcement facts (any violation fails the RC).
   const after = { portsFree: await Promise.all([portFree(ports.host), portFree(ports.mock)]) }
-  // parent exit ≠ group empty (root ruling 2026-10-24): KEEP DRAINING our own
-  // PGID until it is EMPTY, bounded at 20s. Group still non-empty at 20s =
-  // violation — a non-empty group can never PASS.
-  let pgidGone = false
-  let pgidDrainMs = 0
-  while (pgidDrainMs <= 20_000) {
-    try { process.kill(-child.pid, 0); pgidGone = false } catch { pgidGone = true; break }
-    // sustained wind-down on OUR PGID only: re-TERM every 2s while it lives.
-    if (pgidDrainMs % 2000 === 0) { try { process.kill(-child.pid, 'SIGTERM') } catch {} }
-    await new Promise((r) => setTimeout(r, 500))
-    pgidDrainMs += 500
-  }
   const post = { lockSha: sha256(join(PINS.install, 'pnpm-lock.yaml')), pkgSha: sha256(join(PINS.install, 'package.json')) }
   let homeBytes = null
   try { if (existsSync(worldPath)) homeBytes = dirBytes(worldPath) } catch {}
   const violations = []
-  if (pgidGone !== true) violations.push(`own PGID ${child.pid} still alive post-run (descendants not cleaned)`)
+  if (pgidGone !== true) violations.push(`own PGID ${child.pid} still alive after drain (descendants not cleaned)`)
+  if (dfDuringDrainFloor !== true) violations.push('df dropped below the 6GiB floor during group drain')
   if (after.portsFree.includes(false)) violations.push(`ports ${ports.host}/${ports.mock} not free post-run (our cleanup incomplete)`)
   if (post.lockSha !== before.lockSha || post.pkgSha !== before.pkgSha) violations.push('fixture lock/pkg bytes CHANGED during run (install-freeze violated)')
   if (homeViolation !== null) violations.push(`HOME exceeded 64MiB mid-run (${String(homeViolation)}B) — killed`)
@@ -363,31 +366,52 @@ function findFirstFile (dir, name, depth) {
   return null
 }
 
-// ── REAL kit evidence shape (root review 2026-10-24): results.json =
-// { results, verdicts, transcript }. results rows are
-// { id, status, faceFound, isError, toolResult, toolUseId, expect, ... };
-// verdicts rows are { id, verdict, why?, expect?, observed? }. Correlation
-// by STABLE case id + toolUseId; tool names come from the STABLE case table
-// (never a fabricated field). The business oracle PARSES the readEvent JSON
-// payload — same session id / EXACT seq (expected seq taken from the C3 row's
-// parsed marker hit) / self-planted marker INSIDE the parsed row content.
-// Unparseable shapes FAIL; no substring-of-blob green. ─────────────────────
+// ── REAL 2fb output formats (root fixed ruling 2026-10-24, cited from the
+// DELIVERED file packages/runtime/dist/.../governed-families/g6-session-query
+// .mjs :786-802 formatEventSearch / :916-934 formatEventRead):
+//   C3 search text  : "Session <id> — <title>" then "N. seq <seq> | <type> |
+//                     <surface> | <time>" + "   Snippet: <text>" lines.
+//   C2b read text   : "Session <id> — <title>", "Target event seq <n>:", then
+//                     ONE fenced ```json block = the SINGLE target event.
+// The oracle parses THESE formats and the mustInclude-exact triple ROOT/seq/
+// marker: marker token taken EXACTLY from the single marker-carrying C3
+// Snippet; no prefix matching, no arbitrary markers, no fabricated rows. ──
 const CASE_TOOL = { C1: 'session_trace', C2: 'session_event_trace', C2b: 'session_event_read', C3: 'session_event_search', C4: 'session_event_search', C5: 'session_trace', C6: 'session_trace', C7: 'session_trace', C8: 'session_event_search', C10: 'session_trace', C11: 'session_search' }
 
-const parseRows = (text) => {
+function parseEventSearch (text) {
   if (typeof text !== 'string') return null
-  const attempts = [text, (text.match(/\[[\s\S]*\]/) ?? [null])[0], (text.match(/\{[\s\S]*\}/) ?? [null])[0]]
-  for (const a of attempts) {
-    if (a === null) continue
-    try {
-      const v = JSON.parse(a)
-      const rows = Array.isArray(v) ? v : Array.isArray(v?.rows) ? v.rows : Array.isArray(v?.events) ? v.events : Array.isArray(v?.data) ? v.data : null
-      if (Array.isArray(rows)) return rows
-    } catch { /* next attempt */ }
+  const session = text.match(/^Session (\S+) — /m)?.[1] ?? null
+  if (session === null) return null
+  const lines = text.split('\n')
+  const hits = []
+  for (let i = 0; i < lines.length; i += 1) {
+    const m = lines[i].match(/^\d+\. seq (\d+) \| [^|]+\| [^|]+\| (.*)$/)
+    if (m !== null) {
+      const snip = (lines[i + 1] ?? '').match(/^   Snippet: ([\s\S]*)$/)?.[1] ?? ''
+      hits.push({ seq: Number(m[1]), snippet: snip })
+    }
   }
-  return null
+  return { session, hits }
 }
-const rowField = (row, names) => { for (const n of names) { if (row?.[n] !== undefined) return row[n] } return undefined }
+
+function parseEventRead (text) {
+  if (typeof text !== 'string') return null
+  const session = text.match(/^Session (\S+) — /m)?.[1] ?? null
+  const targetSeq = text.match(/^Target event seq (\d+):$/m)?.[1] ?? null
+  const fence = text.match(/```json\n([\s\S]*?)\n```/)
+  if (session === null || targetSeq === null || fence === null) return null
+  let event = null
+  try { event = JSON.parse(fence[1]) } catch { return null }
+  if (event === null || typeof event !== 'object' || Array.isArray(event)) return null
+  return { session, targetSeq: Number(targetSeq), event }
+}
+
+const stringsIn = (v, acc = []) => {
+  if (typeof v === 'string') acc.push(v)
+  else if (Array.isArray(v)) for (const x of v) stringsIn(x, acc)
+  else if (v !== null && typeof v === 'object') for (const x of Object.values(v)) stringsIn(x, acc)
+  return acc
+}
 
 function evaluateErEvidence (kitDir) {
   const p = findFirstFile(kitDir, 'results.json', 3)
@@ -401,34 +425,33 @@ function evaluateErEvidence (kitDir) {
   const c3 = row('C3')
   let positive = null
   let why = null
-  if (c2b === null) {
-    why = 'C2b result row missing'
-  } else if (verdictOfId('C2b') !== 'PASS') {
-    why = `verdicts[C2b]=${verdictOfId('C2b')}`
-  } else if (c2b.status !== 'DONE' || c2b.faceFound !== true || c2b.isError === true || typeof c2b.toolUseId !== 'string') {
-    why = 'C2b row not DONE/faceFound/correlated-by-toolUseId'
-  } else {
-    const readRows = parseRows(c2b.toolResult)
-    if (readRows === null) {
-      why = 'readEvent payload NOT parseable JSON — structured oracle refuses (no substring green)'
-    } else {
-      const c3rows = c3 !== null ? parseRows(c3.toolResult) : null
-      const expectedSeq = c3rows?.map((r) => Number(rowField(r, ['seq', 'eventSeq', 'sequence']))).find((n) => Number.isFinite(n)) ?? null
-      const markerRe = /G6_MARKER_[a-z0-9]+/i
-      const hits = readRows.filter((r) => markerRe.test(String(rowField(r, ['content', 'text', 'payload']) ?? '')))
-      const sameSeq = expectedSeq === null ? [] : hits.filter((r) => Number(rowField(r, ['seq', 'eventSeq', 'sequence'])) === expectedSeq)
-      const sessions = [...new Set(sameSeq.map((r) => String(rowField(r, ['sessionId', 'session_id', 'session']) ?? '')))].filter((s) => s !== '')
-      const ownOnly = sessions.length === 1 && sessions[0].startsWith('session-team-g6-')
-      const pass = expectedSeq !== null && sameSeq.length > 0 && ownOnly
-      if (pass) {
-        positive = {
-          tool: CASE_TOOL.C2b,
-          toolUseId: c2b.toolUseId,
-          kitVerdict: 'PASS',
-          structured: { parsedRows: readRows.length, expectedSeq, markerHits: hits.length, exactSeqHits: sameSeq.length, session: sessions[0] },
+  if (c2b === null) why = 'C2b result row missing'
+  else if (verdictOfId('C2b') !== 'PASS') why = `verdicts[C2b]=${verdictOfId('C2b')}`
+  else if (c2b.status !== 'DONE' || c2b.faceFound !== true || c2b.isError === true || typeof c2b.toolUseId !== 'string') why = 'C2b row not DONE/faceFound/correlated-by-toolUseId'
+  else {
+    const read = parseEventRead(c2b.toolResult)
+    if (read === null) why = 'C2b text is NOT the delivered formatEventRead shape (Session line + Target event seq line + single fenced JSON event) — structured oracle refuses'
+    else {
+      const search = c3 !== null ? parseEventSearch(c3.toolResult) : null
+      if (search === null) why = 'C3 text is NOT the delivered formatEventSearch shape — no trustworthy expected seq/marker source'
+      else {
+        const markerHits = search.hits.filter((h) => /G6_MARKER_\S+/.test(h.snippet))
+        if (markerHits.length !== 1) why = `C3 marker-Snippet hits=${String(markerHits.length)} (must be EXACTLY one to pin the marker+seq)`
+        else {
+          const token = markerHits[0].snippet.match(/(G6_MARKER_\S+)/)[1]
+          const expectedSeq = markerHits[0].seq
+          const okSession = read.session === search.session
+          const okSeq = read.targetSeq === expectedSeq && read.event?.seq === expectedSeq
+          const okMarker = stringsIn(read.event).some((s) => s.includes(token))
+          if (okSession && okSeq && okMarker) {
+            positive = {
+              tool: CASE_TOOL.C2b,
+              toolUseId: c2b.toolUseId,
+              kitVerdict: 'PASS',
+              structured: { format: 'formatEventRead+formatEventSearch', session: read.session, targetSeq: read.targetSeq, eventSeqField: read.event?.seq ?? null, markerToken: token, markerFrom: 'C3 Snippet (exact)' },
+            }
+          } else why = `structured: sessionMatch=${String(okSession)} (read=${read.session} search=${search.session}) seqMatch=${String(okSeq)} (target=${String(read.targetSeq)} event.seq=${String(read.event?.seq)} expected=${String(expectedSeq)}) markerMatch=${String(okMarker)}`
         }
-      } else {
-        why = `structured oracle: expectedSeq=${String(expectedSeq)} exactSeqHits=${String(sameSeq.length)} sessions=${JSON.stringify(sessions)}`
       }
     }
   }
@@ -436,36 +459,68 @@ function evaluateErEvidence (kitDir) {
   return { verdict: positive !== null ? 'PASS' : 'FAIL', why, positive, familyNegatives }
 }
 
-// ── TARGETED OFFLINE SHAPE CONTROL: REAL minimal kit shapes only (results
-// rows {id,status,faceFound,isError,toolResult,toolUseId,expect}; verdicts
-// rows {id,verdict}) — no invented fields. ─────────────────────────────────
+// ── TARGETED OFFLINE SHAPE CONTROL: the 8 fixtures below are TEXT VERBATIM
+// IN THE DELIVERED formatEventSearch/formatEventRead shapes (:786-802/:916-
+// 934 cited) — no invented shapes. ─────────────────────────────────────────
 async function selftest () {
   const out = []
   const t = (name, ok) => out.push(`${ok ? 'PASS' : 'FAIL'} ${name}`)
   const tmp = join(EVIDENCE_BASE, `selftest-${new Date().toISOString().replace(/[:.]/g, '-')}Z`)
-  const mk = (dir, c2bToolResult, c2bVerdict) => {
+  const C3_TEXT = [
+    'Session session-team-g6-abc — Team G6 root',
+    '',
+    'Event search results (1):',
+    '1. seq 7 | message | leader | 2026-10-24 14:00:01',
+    '   Snippet: delegated G6_MARKER_xyz123 task',
+  ].join('\n')
+  const readText = (session, targetSeq, eventJson, markerLine) => [
+    `Session ${session} — Team G6 root`,
+    `Target event seq ${String(targetSeq)}:`,
+    '```json',
+    eventJson,
+    '```',
+    '',
+    markerLine,
+  ].join('\n')
+  const GOOD_EVENT = '{\n  "seq": 7,\n  "type": "message",\n  "data": {\n    "text": "delegated G6_MARKER_xyz123 task"\n  }\n}'
+  const mk = (dir, c2bText, c2bVerdict = 'PASS', c3Text = C3_TEXT) => {
     mkdirSync(join(tmp, dir, 'kit'), { recursive: true })
     const results = [
-      { id: 'C3', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c3', expect: 'ok', toolResult: JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 7, content: 'delegated G6_MARKER_xyz123 task' }]) },
-      { id: 'C2b', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c2b', expect: 'ok', toolResult: c2bToolResult },
-      { id: 'C6', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c6', expect: 'deny', toolResult: 'CEILING denied' },
-      { id: 'C7', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c7', expect: 'deny', toolResult: 'CEILING denied' },
-      { id: 'C10', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c10', expect: 'deny', toolResult: 'CEILING denied' },
+      { id: 'C3', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c3', expect: 'ok', toolResult: c3Text },
+      { id: 'C2b', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c2b', expect: 'ok', toolResult: c2bText },
+      { id: 'C6', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c6', expect: 'deny', toolResult: 'This session cannot read that target' },
+      { id: 'C7', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c7', expect: 'deny', toolResult: 'This session cannot read that target' },
+      { id: 'C10', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c10', expect: 'deny', toolResult: 'This session cannot read that target' },
     ]
     const verdicts = [{ id: 'C3', verdict: 'PASS' }, { id: 'C2b', verdict: c2bVerdict }, { id: 'C6', verdict: 'PASS' }, { id: 'C7', verdict: 'PASS' }, { id: 'C10', verdict: 'PASS' }]
     writeFileSync(join(tmp, dir, 'kit', 'results.json'), JSON.stringify({ results, verdicts, transcript: [] }))
   }
-  mk('good', JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 7, content: 'event with G6_MARKER_xyz123' }]), 'PASS')
+  const good = readText('session-team-g6-abc', 7, GOOD_EVENT, 'Before:\n- seq 6 | message | leader | 2026-10-24 14:00:00')
+  mk('good', good)
   const g = evaluateErEvidence(join(tmp, 'good'))
-  t('shape: parsed rows, exact seq 7 (from C3), marker, own session -> green', g.verdict === 'PASS' && g.positive?.structured?.exactSeqHits === 1 && g.positive?.toolUseId === 'tu-c2b' && g.familyNegatives.every((x) => x.role.includes('FAMILY negative')))
-  mk('bad1', 'CEILING denied (unknown refusal text)', 'PASS')
-  t('shape: unparseable/refusal payload -> NOT green', evaluateErEvidence(join(tmp, 'bad1')).verdict === 'FAIL')
-  mk('bad2', JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 8, content: 'event with G6_MARKER_xyz123' }]), 'PASS')
-  t('shape: marker at WRONG seq (8!=7) -> NOT green', evaluateErEvidence(join(tmp, 'bad2')).verdict === 'FAIL')
-  mk('bad3', JSON.stringify([{ sessionId: 'session-other-9999', seq: 7, content: 'G6_MARKER_xyz123' }]), 'PASS')
-  t('shape: foreign session rows -> NOT green', evaluateErEvidence(join(tmp, 'bad3')).verdict === 'FAIL')
-  mk('bad4', JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 7, content: 'G6_MARKER_xyz123' }]), 'FAIL')
-  t('shape: verdicts[C2b]=FAIL -> NOT green', evaluateErEvidence(join(tmp, 'bad4')).verdict === 'FAIL')
+  t('shape: real read/search text, exact ROOT+seq 7+marker -> green', g.verdict === 'PASS' && g.positive?.structured?.markerToken === 'G6_MARKER_xyz123' && g.positive?.toolUseId === 'tu-c2b' && g.familyNegatives.every((x) => x.role.includes('FAMILY negative')))
+  mk('bad1', 'This session cannot read that target')
+  t('shape: refusal text (not the read format) -> NOT green', evaluateErEvidence(join(tmp, 'bad1')).verdict === 'FAIL')
+  mk('bad2', readText('session-team-g6-abc', 8, GOOD_EVENT, ''))
+  t('shape: Target event seq line 8 != C3 marker seq 7 -> NOT green', evaluateErEvidence(join(tmp, 'bad2')).verdict === 'FAIL')
+  mk('bad3', readText('session-team-g6-abc', 7, '{\n  "seq": 9,\n  "type": "message"\n}', ''))
+  t('shape: fenced event.seq 9 != target 7 -> NOT green', evaluateErEvidence(join(tmp, 'bad3')).verdict === 'FAIL')
+  mk('bad4', readText('session-other-9999', 7, GOOD_EVENT, ''))
+  t('shape: read Session != search Session -> NOT green', evaluateErEvidence(join(tmp, 'bad4')).verdict === 'FAIL')
+  mk('bad5', readText('session-team-g6-abc', 7, '{\n  "seq": 7,\n  "type": "message",\n  "data": {\n    "text": "unrelated"\n  }\n}', ''))
+  t('shape: exact marker token absent from target event -> NOT green', evaluateErEvidence(join(tmp, 'bad5')).verdict === 'FAIL')
+  mk('bad6', good, 'FAIL')
+  t('shape: verdicts[C2b]=FAIL -> NOT green', evaluateErEvidence(join(tmp, 'bad6')).verdict === 'FAIL')
+  mk('bad7', good, 'PASS', [
+    'Session session-team-g6-abc — Team G6 root',
+    '',
+    'Event search results (2):',
+    '1. seq 7 | message | leader | 2026-10-24 14:00:01',
+    '   Snippet: delegated G6_MARKER_xyz123 task',
+    '2. seq 9 | message | leader | 2026-10-24 14:00:02',
+    '   Snippet: follow-up G6_MARKER_xyz123 note',
+  ].join('\n'))
+  t('shape: TWO marker hits (ambiguous seq pin) -> NOT green', evaluateErEvidence(join(tmp, 'bad7')).verdict === 'FAIL')
   t('shape: absent evidence -> NOT green', evaluateErEvidence(join(tmp, 'none')).verdict === 'FAIL')
   const { source } = deriveKit()
   const line = source.split('\n').find((l) => l.includes("id: 'C2b'")) ?? ''
