@@ -1,0 +1,59 @@
+Scope: all 10 workspace projects
+Recreating /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/node_modules
+? Verifying lockfile against supply-chain policies (908 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +815
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.15.0.      │
+   │     Changelog: https://pnpm.io/v/12.15.0      │
+   │   To update, run: corepack use pnpm@12.15.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+Progress: resolved 815, reused 483, downloaded 62, added 145
+Progress: resolved 815, reused 483, downloaded 138, added 621
+[WARN] Tarball download average speed 9 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.9.tgz (GET)
+[WARN] Tarball download average speed 21 KiB/s (size 30 KiB) is below 50 KiB/s: https://registry.npmjs.org/@typescript-eslint/types/-/types-8.68.0.tgz (GET)
+Progress: resolved 815, reused 483, downloaded 182, added 663
+[WARN] Tarball download average speed 18 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/@csstools/css-syntax-patches-for-csstree/-/css-syntax-patches-for-csstree-1.1.12.tgz (GET)
+Progress: resolved 815, reused 483, downloaded 230, added 713
+[WARN] Tarball download average speed 2 KiB/s (size 6 KiB) is below 50 KiB/s: https://registry.npmjs.org/std-env/-/std-env-4.2.0.tgz (GET)
+Progress: resolved 815, reused 483, downloaded 321, added 804
+Progress: resolved 815, reused 483, downloaded 326, added 809
+Progress: resolved 815, reused 483, downloaded 328, added 811
+Progress: resolved 815, reused 483, downloaded 329, added 811
+Progress: resolved 815, reused 483, downloaded 330, added 813
+✓ Lockfile passes supply-chain policies (908 entries in 9.4s)
+Progress: resolved 815, reused 483, downloaded 331, added 814
+Progress: resolved 815, reused 483, downloaded 332, added 814
+Progress: resolved 815, reused 483, downloaded 332, added 815, done
+
+dependencies:
++ @deepseek-ai/dsh 0.2.0-rc.2
++ @deepseek-ai/dsh-agent 0.2.0-rc.2
++ @deepseek-ai/dsh-launch-environment 0.2.0-rc.2
++ @deepseek-ai/dsh-llm 0.2.0-rc.2
++ @deepseek-ai/dsh-mcp-client 0.2.0-rc.2
++ @deepseek-ai/dsh-schedule 0.2.0-rc.2
++ @deepseek-ai/dsh-scope 0.2.0-rc.2
++ @deepseek-ai/dsh-session 0.2.0-rc.2
++ @deepseek-ai/dsh-spill-local 0.2.0-rc.2
++ @deepseek-ai/dsh-storage-domain 0.2.0-rc.2
++ @deepseek-ai/dsh-tool-fs-search 0.2.0-rc.2
++ @deepseek-ai/dsh-tool-web 0.2.0-rc.2
++ yaml 2.9.0
++ zod 4.4.3
+
+devDependencies:
++ @eslint/js 9.39.5
++ eslint 9.39.5
++ globals 16.5.0
++ typescript 6.0.3
++ typescript-eslint 8.68.0
++ vitest 4.1.11
+
+Done in 14.9s using pnpm v11.7.0
