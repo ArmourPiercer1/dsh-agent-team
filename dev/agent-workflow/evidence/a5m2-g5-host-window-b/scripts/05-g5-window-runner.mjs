@@ -165,10 +165,18 @@ const SAVED_BP_V3_YAML = [
   '        - job_list', '        - job_output', '        - present', '        - skill',
   '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
-  '      permissions:', '        default: deny', '        allow: []', '        ask: []', '        deny: []',
-  '        # NO goal rule is nameable in this product: the goal names sit outside the closed',
-  '        # PERMISSION_TOOL_NAMES vocabulary; the G5 PA ask is family-STRUCTURAL via',
-  '        # the plane paAdmit seat (tool-admission approval case), never a lane rule.',
+  '      permissions:', '        default: deny', '        allow: []',
+  // VOCAB CARD 48bdce5f (center direct order 2026-10-24, prep only): the ask lane
+  // names EXACTLY ONE invocation-only rule — { tool: get_goal, resource: any } —
+  // the window's tested subject. create_goal/update_goal are NOT named (stay
+  // default-deny); no global-any, no other relaxation. Semantics per root:
+  // ask-lane naming opens the NAMED CHANNEL -> a real Control request the PA
+  // drives grant/deny (E1 consumes the SAME requestId; E2 surfaces the exact
+  // APPROVAL_DENIED face). Against the OLD 71f vocabulary this blueprint is
+  // MALFORMED_DTO BY DESIGN — it boots only on the fixed package carrying the
+  // goal trio in both closed sets (validator gates it at parse; DRY proves it).
+  '        ask:', '          - tool: get_goal', '            resource:', '              kind: any',
+  '        deny: []',
   'teamEnvelope:', '  allow:',
   '    - assign-task', '    - create-member', '    - send-message',
   '    - report-progress', '    - request-control', '    - resolve-control',
