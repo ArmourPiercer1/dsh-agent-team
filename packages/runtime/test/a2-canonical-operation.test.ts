@@ -423,11 +423,18 @@ describe('a2 classification (plan §7.5)', () => {
     }
   })
 
-  it('isPermissionToolName matches exactly the closed six', () => {
+  it('isPermissionToolName matches the closed 30-name vocabulary (root 22:4x: PA-wired names are MEMBERS — yet classify above stays unsupported for them, the A2 lane carve-out)', () => {
     for (const tool of ['read', 'read_image', 'write', 'edit', 'lsp', 'bash']) {
       expect(isPermissionToolName(tool)).toBe(true)
     }
-    for (const tool of ['web_fetch', 'team_delegate', 'BASH']) {
+    // the invocation-only classes are vocabulary members (named lane rules
+    // exist for them) while classifyPermissionTool keeps answering
+    // `unsupported` (no canonical op) — the two laws are separate arms.
+    for (const tool of ['schedule_list', 'session_search', 'team_delegate', 'cordis_inspect_query', 'team_list_pending_control', 'send_message', 'interrupt_agent', 'list_agents', 'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models']) {
+      expect(isPermissionToolName(tool)).toBe(true)
+      expect(classifyPermissionTool(tool)).toEqual({ kind: 'unsupported' })
+    }
+    for (const tool of ['web_fetch', 'workflow', 'BASH']) {
       expect(isPermissionToolName(tool)).toBe(false)
     }
   })

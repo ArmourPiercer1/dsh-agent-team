@@ -1011,3 +1011,150 @@ describe('invocation-only class: schedule_list / schedule_delete projection law 
     if (leaderShellAllow.ok) expect(leaderShellAllow.value.notes.some((n) => /exec dual-gate reader not wired/.test(n))).toBe(true) // exec law intact
   })
 })
+
+// ═══════════════════════════════════════════════════════════════════════════
+// G6 SESSION-QUERY NAMES (Alpha.5 M2 continuation, root 22:13 limited card)
+// — the five names ride the IDENTICAL invocation-only projection law the
+// schedule pair opened: `any` in all three lanes projects the single
+// `tool-invoke` arm (the rule IS the invocation authority), exact/subtree
+// refuse, deny rides the shared R-1a sources, absence stays no-authority,
+// each name a DISTINCT authority. Membership is list-driven
+// (INVOCATION_ONLY_PERMISSION_TOOL_VALUES) — zero new kernel code; this
+// block proves the widened list carries the law unchanged.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('invocation-only class: G6 session-query projection law (root 22:13)', () => {
+  const G6 = ['session_search', 'session_event_search', 'session_trace', 'session_event_trace', 'session_event_read'] as const
+
+  it('allow-lane any projects the single tool-invoke arm as ALLOW for EVERY G6 name — no notes, no dual gate, no I/O companion arm', () => {
+    for (const name of G6) {
+      const r = projOf({ default: 'deny', allow: [{ tool: name, resource: { kind: 'any' } }], ask: [], deny: [] }, { leaderExecTokenPresent: () => false })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      const spell = r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`)
+      expect(spell).toEqual([`tool-invoke@${REALM}|tool:${name}:allow`]) // the ONE arm — invocation authority ONLY (no file/network arm exists to ride)
+      expect(r.value.notes).toEqual([])
+      expect(r.value.coversEffect(toolInvokeEffect(name))).toBe(true)
+    }
+  })
+
+  it('ask-lane any projects ASK; an absent rule stays no-authority for every G6 name (no implicit allow under default:ask)', () => {
+    const asked = projOf({ default: 'deny', allow: [], ask: [{ tool: 'session_trace', resource: { kind: 'any' } }], deny: [] })
+    expect(asked.ok).toBe(true)
+    if (!asked.ok) return
+    expect(asked.value.buildDocument().rules.every((rule) => rule.maximumEffect === 'ask')).toBe(true)
+    const none = projOf({ default: 'ask', allow: [], ask: [], deny: [] })
+    expect(none.ok).toBe(true)
+    if (!none.ok) return
+    for (const name of G6) expect(none.value.coversEffect(toolInvokeEffect(name))).toBe(false)
+  })
+
+  it('deny-lane any projects DENY for all five names at once with five R-1a sources (one per ruleIndex, shared algebra)', () => {
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: G6.map((name) => ({ tool: name, resource: { kind: 'any' } } as TemplatePermissionPolicy['deny'][number])) })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const sources = r.value.denySources()
+    expect(sources.length).toBe(G6.length)
+    expect(sources.map((s) => s.matcher.resource)).toEqual(G6.map((name) => `${REALM}|tool:${name}`))
+    expect(sources.map((s) => s.sourceRef)).toEqual(G6.map((_, i) => `tpl-1#deny[${i}]`))
+    expect(r.value.notes).toEqual([])
+  })
+
+  it('cross-name no-cross across the G6 five: an authority for one never answers for any other', () => {
+    const only = projOf({ default: 'deny', allow: [{ tool: 'session_event_read', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(only.ok).toBe(true)
+    if (!only.ok) return
+    for (const name of G6) {
+      expect(only.value.coversEffect(toolInvokeEffect(name))).toBe(name === 'session_event_read')
+    }
+  })
+
+  it('exact/subtree are refused for every G6 name in every lane (projection refuses even partially — the class carries no resource space)', () => {
+    for (const name of G6) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const kind of ['exact', 'subtree'] as const) {
+          const r = projOf({ default: 'ask', allow: [], ask: [], deny: [], [lane]: [{ tool: name, resource: { kind, path: '/data/notes' } as unknown as TemplatePermissionPolicy['deny'][number]['resource'] }] } as TemplatePermissionPolicy)
+          expect(r.ok).toBe(false)
+          if (r.ok) return // expected refusal holds → continue (root 20:57 guard law)
+          expect(r.error.details?.['refusal']).toBe('projection-rule-malformed')
+          expect(String(r.error.message)).toContain('invocation-only')
+        }
+      }
+    }
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRODUCTION-CONFIRMED SETS (root 22:4x + 22:32 cards) — ten B-TEAM, three
+// G1 pure-query, three B-SUBAGENT controls and FIVE spawn ops (joint
+// candidate 9b5c9f4b2, whose closed effect envelope is tool-invoke ONLY,
+// resource null — the projection law below is exactly what those rows
+// consume) ride the IDENTICAL invocation-only projection law: list-driven
+// membership, zero new kernel code. Team rows' durable writes adjudicate
+// INSIDE the delegated chain (the template lane never projects them — the
+// tool-invoke arm is the whole authority, so an invocation rule is no I/O
+// exemption); the G1 rows walk the plane's ONE PA admission at their fixed
+// native spellings; the trio's adjacency/ancestor law and the spawn side's
+// provider/model/maxDepth constraints live in the service, not in a
+// projected resource.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('invocation-only class: production-confirmed sets projection law (root 22:4x + 22:32)', () => {
+  const CONFIRMED = [
+    'team_list_members', 'team_list_templates', 'team_inspect_config',
+    'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
+    'team_send_message', 'team_report_progress', 'team_archive_member',
+    'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
+    'interrupt_agent', 'list_agents', 'send_message',
+    'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code',
+    'list_subagent_models',
+  ] as const
+
+  it('allow-lane any projects the single tool-invoke arm as ALLOW for EVERY confirmed name — no notes, no dual gate, no companion effect kind', () => {
+    for (const name of CONFIRMED) {
+      const r = projOf({ default: 'deny', allow: [{ tool: name, resource: { kind: 'any' } }], ask: [], deny: [] }, { leaderExecTokenPresent: () => false })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      const spell = r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`)
+      expect(spell).toEqual([`tool-invoke@${REALM}|tool:${name}:allow`])
+      expect(r.value.notes).toEqual([])
+      expect(r.value.coversEffect(toolInvokeEffect(name))).toBe(true)
+    }
+  })
+
+  it('deny-lane any projects DENY for all twenty-one at once — twenty-one R-1a sources, one per ruleIndex (shared algebra, nothing dropped)', () => {
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: CONFIRMED.map((name) => ({ tool: name, resource: { kind: 'any' } } as TemplatePermissionPolicy['deny'][number])) })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const sources = r.value.denySources()
+    expect(sources.length).toBe(CONFIRMED.length)
+    expect(sources.map((s) => s.matcher.resource)).toEqual(CONFIRMED.map((name) => `${REALM}|tool:${name}`))
+    expect(r.value.notes).toEqual([])
+  })
+
+  it('cross-name no-cross: team_delegate authority answers for NO other confirmed name; send_message answers only for itself', () => {
+    const d = projOf({ default: 'deny', allow: [{ tool: 'team_delegate', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(d.ok).toBe(true)
+    if (!d.ok) return
+    for (const name of CONFIRMED) expect(d.value.coversEffect(toolInvokeEffect(name))).toBe(name === 'team_delegate')
+    const m = projOf({ default: 'deny', allow: [{ tool: 'send_message', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(m.ok).toBe(true)
+    if (!m.ok) return
+    expect(m.value.coversEffect(toolInvokeEffect('send_message'))).toBe(true)
+    expect(m.value.coversEffect(toolInvokeEffect('interrupt_agent'))).toBe(false)
+  })
+
+  it('exact/subtree refused for every confirmed name in every lane (fail closed at BOTH gates; no partial projection)', () => {
+    for (const name of CONFIRMED) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const kind of ['exact', 'subtree'] as const) {
+          const r = projOf({ default: 'ask', allow: [], ask: [], deny: [], [lane]: [{ tool: name, resource: { kind, path: '/data/notes' } as unknown as TemplatePermissionPolicy['deny'][number]['resource'] }] } as TemplatePermissionPolicy)
+          expect(r.ok).toBe(false)
+          if (r.ok) return // expected refusal holds → continue (root 20:57 guard law)
+          expect(r.error.details?.['refusal']).toBe('projection-rule-malformed')
+          expect(String(r.error.message)).toContain('invocation-only')
+        }
+      }
+    }
+  })
+})

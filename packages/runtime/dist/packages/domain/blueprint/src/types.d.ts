@@ -60,8 +60,20 @@ import type { V4ToolBindingAuthoring } from './blueprint-v4.js';
  * (`BLUEPRINT_PERMISSION_MUTATION_ENVELOPE_OPERATION_CLASSES`). The two
  * schedule tools are DISTINCT (`schedule_list authority !=
  * schedule_delete authority`).
+ *
+ * Alpha.5 M2 continuation (root 22:13 + 22:4x limited cards) widens the
+ * same class with the five G6 SESSION-QUERY names, the ten B-TEAM names,
+ * the three G1 PURE-QUERY names and the three B-SUBAGENT controls names
+ * and the five B-SUBAGENT spawn ops (joint candidate 9b5c9f4b2, landing
+ * pending) — each verified name-by-name against the CURRENT production
+ * (PA tool-invoke rows: the plane's ONE paAdmit; the G6 landing
+ * 874f3ae0d; the controls trio at the source-signed branch 7c6869879;
+ * the old M0-B frozen table is a historical record, NOT the current
+ * implementation fact). Naming a row opens the named allow/ask/deny
+ * channel only; an invocation permission is NEVER an I/O exemption and
+ * each name is a DISTINCT authority.
  */
-export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete';
+export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read' | 'team_list_members' | 'team_list_templates' | 'team_inspect_config' | 'team_create_member' | 'team_delegate' | 'team_follow_up' | 'team_collect' | 'team_send_message' | 'team_report_progress' | 'team_archive_member' | 'cordis_inspect_list' | 'cordis_inspect_query' | 'team_list_pending_control' | 'interrupt_agent' | 'list_agents' | 'send_message' | 'subagent' | 'subagent_fork' | 'subagent_codex' | 'subagent_claude_code' | 'list_subagent_models';
 /**
  * The resource a permission rule addresses (alpha.2 plan §6.2):
  *

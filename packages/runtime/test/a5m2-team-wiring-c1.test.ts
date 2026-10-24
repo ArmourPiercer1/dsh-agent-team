@@ -491,6 +491,11 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       return defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-grammar')).then(() => {
         const manifest = manifestOf(walkAt(w, 0))
+        // The measured registered key set — kept by the center across the
+        // root 23:17 full-chain merge (integration-copy pin, re-anchored at
+        // root 23:09 for B-SUBAGENT / cc6a0f643; the six adds extend the
+        // B-TEAM LEAVES, not the family list, so the ten names stand).
+        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
         expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
         expect(isLosslessJsonValue(manifest)).toBe(true)
         expect(validatePaFamilyTarget('B-TEAM', manifest)).toBeUndefined()
