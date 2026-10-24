@@ -150,6 +150,9 @@ export const A5_WRITE_MOUNT_NAME = 'write'
 // gate key, not the names map; same-name-same-meaning through the CAPTURED
 // native definition identity).
 export const A5_EDIT_MOUNT_NAME = 'edit'
+/** A5M2 FS-EDIT card PART E: the fixed native spelling of the governed
+ *  str_replace_editor row (the mount name is the native tool name). */
+export const A5_SRE_MOUNT_NAME = 'str_replace_editor'
 // A5-M2 B-IMAGE (CENTER vertical): the governed image-read row mounts at the
 // FIXED native spelling 'read_image' (a PLANE_RESERVED_NATIVE name, pinned to
 // the 639 host face) behind the closed `imageEnabled` key.
@@ -1155,6 +1158,52 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
 
+  // A5M2 FS-EDIT card PART E (root 2026-10-25 continuation card): the
+  // `sreEnabled` CLOSED gate key (absent = false; a non-boolean is a config
+  // defect) pairing with backends.sre BOTH directions (config law, not
+  // wiring), the governed sre arm face validated, the CAPTURED native
+  // description required (governed-families/sre.mjs — the four-branch
+  // command-keyed row: view I+R, create I+F, str_replace/insert I+R+F).
+  const sreEnabledRaw = input.plane?.sreEnabled
+  if (sreEnabledRaw !== undefined && typeof sreEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: `planeCfg.sreEnabled must be a boolean when present — got ${JSON.stringify(sreEnabledRaw) ?? String(sreEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const sreEnabled = sreEnabledRaw === true
+  const sreInjectRaw = input.backends?.sre
+  const sreInjectInvalid = (why) => ({ ok: false, code: 'SRE_ARM_INJECT_INVALID', message: `backends.sre: ${why}` })
+  if (sreEnabled && sreInjectRaw === undefined) {
+    return sreInjectInvalid('sreEnabled is true but no governed str_replace_editor arm is injected - the mount would mask the native name with nothing behind it; there is no fallback row and no silent disable')
+  }
+  if (!sreEnabled && sreInjectRaw !== undefined) {
+    return sreInjectInvalid('an arm is injected while sreEnabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let sreInject = null
+  if (sreInjectRaw !== undefined) {
+    const arm = sreInjectRaw.arm
+    const bad = arm === null || typeof arm !== 'object'
+      ? 'the arm is missing (the governed-families/sre arm object is the injected face)'
+      : (typeof arm.familyId !== 'string' || arm.familyId.length === 0)
+        ? 'arm.familyId is not a non-empty string'
+        : (!Number.isInteger(arm.adapterRevision) || arm.adapterRevision < 0)
+          ? 'arm.adapterRevision is not a non-negative integer'
+          : (typeof arm.providerId !== 'string' || arm.providerId.length === 0)
+            ? 'arm.providerId is not a non-empty string'
+            : !['classify', 'prepare', 'execute', 'cancel', 'drain'].every((m) => typeof arm[m] === 'function')
+              ? 'the arm does not carry the full classify/prepare/execute/cancel/drain face'
+              : (typeof sreInjectRaw.description !== 'string' || sreInjectRaw.description.length === 0)
+                ? 'the captured native description is missing (the row mounts the HOST description bytes verbatim - same-name, same-meaning)'
+                : undefined
+    if (bad !== undefined) return sreInjectInvalid(bad)
+    sreInject = Object.freeze({ arm, description: sreInjectRaw.description })
+    if (readName === A5_SRE_MOUNT_NAME) {
+      return sreInjectInvalid(`the read row already mounts under '${A5_SRE_MOUNT_NAME}' (planeCfg.readName) - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
+    }
+  }
+
   // A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer; this
   // block is the spawn writer's, the row laws live in governed-families/
   // subagent-spawn-adapters.mjs): the `backends.spawn` face is the VALUE of
@@ -1243,6 +1292,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (todoInject !== null) g1Taken.add(A5_TODO_MOUNT_NAME)
     if (writeInject !== null) g1Taken.add(A5_WRITE_MOUNT_NAME)
     if (editInject !== null) g1Taken.add(A5_EDIT_MOUNT_NAME)
+    if (sreInject !== null) g1Taken.add(A5_SRE_MOUNT_NAME)
     if (imageInject !== null) g1Taken.add(A5_IMAGE_MOUNT_NAME)
     const g1Entries = []
     for (const entryRaw of g1InjectRaw.rows) {
@@ -1472,7 +1522,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       const why = entryBad(label, scheduleInjectRaw[label])
       if (why !== undefined) return scheduleInjectInvalid(why)
     }
-    for (const taken of [readName, writeInject !== null ? A5_WRITE_MOUNT_NAME : undefined, editInject !== null ? A5_EDIT_MOUNT_NAME : undefined]) {
+    for (const taken of [readName, writeInject !== null ? A5_WRITE_MOUNT_NAME : undefined, editInject !== null ? A5_EDIT_MOUNT_NAME : undefined, sreInject !== null ? A5_SRE_MOUNT_NAME : undefined]) {
       if (taken === A5_B_SCHEDULE_LIST_MOUNT_NAME || taken === A5_B_SCHEDULE_DELETE_MOUNT_NAME) {
         return scheduleInjectInvalid(`'${taken}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
       }
@@ -2025,6 +2075,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
     if (writeInject !== null && spelling === A5_WRITE_MOUNT_NAME) return A5_WRITE_MOUNT_NAME
     if (editInject !== null && spelling === A5_EDIT_MOUNT_NAME) return A5_EDIT_MOUNT_NAME
+    if (sreInject !== null && spelling === A5_SRE_MOUNT_NAME) return A5_SRE_MOUNT_NAME
     if (imageInject !== null && spelling === A5_IMAGE_MOUNT_NAME) return A5_IMAGE_MOUNT_NAME
     // A5-M2 B-SUBAGENT spawn rows mount at the NATIVE spellings (the closed
     // name list the wiring value carries); the name resolves here ONLY when
@@ -2123,6 +2174,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   let todoCorrSeq = 0
   let writeCorrSeq = 0
   let editCorrSeq = 0
+  let sreCorrSeq = 0
   let imageCorrSeq = 0
   // A5-M2 G1 PURE-QUERY: ONE sequence for the whole G1 trio of this mount —
   // the durable row identity must be unique per FLIGHT, and one token runs one
@@ -3870,6 +3922,193 @@ export function createTeamToolPlaneAssembly(input = {}) {
     presentCall: (args) => ({ card: 'generic', title: 'Edit file (governed)', kind: 'other', rawInput: args?.file_path }),
   })]
 
+  // THE GOVERNED str_replace_editor ROW (A5M2 FS-EDIT card PART E): the
+  // masked def carries the COMPLETE fixed-639 public parameter face (the
+  // seven names, the enum, the null-placeholder spellings) and the NATIVE
+  // output face {type: 'string'} (the rendered editor text). DISCLOSED
+  // scope, identical to the edit row: NO pre-dispatch PA hand-off lane — a
+  // handed-off flight meets the ordinary replay refusal, never a
+  // re-approval. The execute protocol below is the write/edit rows' law
+  // item for item (real token, shared ledger, owner-current-before-freeze,
+  // ONE PA walk with the family block, kernel-grant prepare, real edge,
+  // consumed-proof witness, fix-3 abort race, risk facts IN-BAND).
+  const sreDefs = sreInject === null ? [] : [Object.freeze({
+    name: A5_SRE_MOUNT_NAME,
+    // The CAPTURED native description bytes (Gate SRE) — same-name,
+    // same-meaning, never a plane-invented wording.
+    description: sreInject.description,
+    parameters: Object.freeze({
+      command: { type: 'string', required: true, enum: ['view', 'create', 'str_replace', 'insert'], description: 'The commands to run. Allowed options are: `view`, `create`, `str_replace`, `insert`.' },
+      path: { type: 'string', required: true, description: 'Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`.' },
+      file_text: { oneOf: [{ type: 'string' }, { type: 'null' }], description: 'Required string parameter of `create` command, with the content of the file to be created. A null placeholder is treated as omitted by commands that do not use this parameter.' },
+      insert_line: { oneOf: [{ type: 'integer' }, { type: 'null' }], description: 'Required integer parameter of `insert` command. The `new_str` will be inserted AFTER the line `insert_line` of `path`. A null placeholder is treated as omitted by commands that do not use this parameter.' },
+      new_str: { oneOf: [{ type: 'string' }, { type: 'null' }], description: 'Optional string parameter of `str_replace` command containing the new string (if omitted, no string will be added). Required string parameter of `insert` command containing the string to insert. A null placeholder is accepted only by commands that do not use this parameter.' },
+      old_str: { oneOf: [{ type: 'string' }, { type: 'null' }], description: 'Required string parameter of `str_replace` command containing the string in `path` to replace. A null placeholder is treated as omitted by commands that do not use this parameter.' },
+      view_range: { oneOf: [{ type: 'array', items: { type: 'integer' } }, { type: 'null' }], description: 'Optional parameter of `view` command when `path` points to a file. If omitted or null, the full file is shown. If provided, the file will be shown in the indicated line number range, e.g. [11, 12] will show lines 11 and 12. Indexing at 1 to start. Setting `[start_line, -1]` shows all lines from `start_line` to the end of the file.' },
+    }),
+    execute: async (raw, exec) => {
+      const arm = sreInject.arm
+      // Identity law (the write row's, verbatim): the REAL registry token;
+      // absent is a typed front refusal — zero classify, zero walk, zero row.
+      const execToken = exec?.token
+      const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+      if (tokenKey === undefined) {
+        throw new Error('refused-sre exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token')
+      }
+      const priorFlight = governedTokenLedger.get(tokenKey)
+      if (priorFlight !== undefined) {
+        throw new Error(`refused-sre exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (the shared token ledger: one token runs one governed flight; a settled token is never re-armed). The str_replace_editor row carries NO pre-dispatch hand-off lane (disclosed M-02 scope): a handed-off write/read flight never serves an editor call and vice versa`)
+      }
+      sreCorrSeq += 1
+      const correlation = `plane-sre:${realmId}-${String(sreCorrSeq)}`
+      governedTokenLedger.set(tokenKey, { correlation, settled: false })
+      const signal = exec?.signal
+      let abortListener
+      try {
+        // OWNER-CURRENT BEFORE THE FREEZE (the write row's fix-4 law):
+        if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+          const freshAuthority = await paReadGenerationFresh()
+          if (freshAuthority.ok === true) {
+            try {
+              await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+            } catch (error) {
+              observe(`a5m2-sre-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+            }
+          }
+        }
+        let classified
+        try {
+          classified = arm.classify(raw, exec, correlation)
+        } catch (error) {
+          throw new Error(`refused-sre arm-unavailable — the governed str_replace_editor arm could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
+        }
+        if (classified.ok !== true || classified.plan === undefined) {
+          throw new Error(`refused-sre ${classified.code ?? 'P_SRE_CLASSIFY_INVALID_ARGUMENTS'} — ${classified.detail ?? 'the governed classify refused this call before admission'}`)
+        }
+        if (signal !== undefined && typeof signal.addEventListener === 'function') {
+          abortListener = () => { arm.cancel(classified.plan) }
+          signal.addEventListener('abort', abortListener, { once: true })
+        }
+        const parsedEffects = parseRequestedEffectSet(classified.effects)
+        if (parsedEffects.ok !== true) {
+          throw new Error(`refused-sre effects-unparsable — the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+        }
+        const walk = {
+          realmId,
+          callId: correlation,
+          parametersFingerprint: classified.parametersFingerprint,
+          requestedEffects: parsedEffects.value,
+          toolName: A5_SRE_MOUNT_NAME,
+          family: Object.freeze({
+            familyId: classified.reviewPayload.familyId,
+            adapterRevision: classified.reviewPayload.adapterRevision,
+            providerIdentity: classified.reviewPayload.providerIdentity,
+            targetManifest: classified.reviewPayload.targetManifest,
+          }),
+          ...(signal === undefined ? {} : { signal }),
+        }
+        const opened = await paAdmit.open(walk)
+        if (opened.kind === 'deny') {
+          const settled = arm.cancel(classified.plan)
+          throw new Error(`refused-sre ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+        }
+        if (opened.cancelled === true) {
+          const settled = arm.cancel(classified.plan)
+          throw new Error(`str_replace_editor \u00b7 cancelled — the call was cancelled at the PA edge before admission (${String(settled.sreOutcome ?? 'zero editor effect')})`)
+        }
+        if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+          arm.cancel(classified.plan)
+          throw new Error(`refused-sre APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal arm state never substitutes for the kernel answer`)
+        }
+        let prepared
+        try {
+          prepared = arm.prepare(classified.plan, opened.grant)
+        } catch (error) {
+          paAdmit.closePlan(walk.callId)
+          arm.cancel(classified.plan)
+          throw new Error(`refused-sre arm-unavailable — the arm threw while preparing the grant (${String(error?.message ?? error).slice(0, 160)}); the plan fact was closed and nothing ran`)
+        }
+        if (prepared.ok !== true) {
+          paAdmit.closePlan(walk.callId)
+          throw new Error(`refused-sre ${prepared.code ?? 'P_SRE_NOT_ADMITTED'} — ${prepared.detail ?? 'the arm refused the kernel grant'}`)
+        }
+        const edge = await paAdmit.edge({
+          ...walk,
+          grant: opened.grant,
+          paDurableMint: opened.paDurableMint,
+          request: opened.request,
+          placementName: opened.placementName,
+          paConstructionBinding: opened.paConstructionBinding,
+        })
+        if (edge.kind === 'deny') {
+          const settled = arm.cancel(classified.plan)
+          throw new Error(`refused-sre ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+        }
+        if (edge.cancelled === true) {
+          const settled = arm.cancel(classified.plan)
+          throw new Error(`str_replace_editor \u00b7 cancelled — the call was cancelled at the execution edge (${String(settled.sreOutcome ?? 'zero editor effect')}; the approval stays unspent and is never replayed)`)
+        }
+        // The witness law: `consumed: true` comes ONLY from the REAL final
+        // edge's consumedProof; the row never self-attests.
+        const proof = edge.consumedProof
+        if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+          const settled = arm.cancel(classified.plan)
+          throw new Error(`refused-sre CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the closure is never minted (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
+        }
+        // The NAMED race (fix-3 law): consumption is settled fact; an
+        // unclaimed closure changes ZERO.
+        if (signal?.aborted === true) {
+          const settled = arm.cancel(classified.plan)
+          throw new Error(`str_replace_editor \u00b7 cancelled — the call was aborted after the execution edge consumed the grant and before the closure began (the consumption is a settled fact and is never rolled back; ${String(settled.sreOutcome ?? 'zero editor effect')})`)
+        }
+        const ran = await arm.execute(classified.plan, { consumed: true, grant: proof.grant, signal })
+        if (ran.ok !== true) {
+          // Error protocol (the write row's ruling, verbatim): the arm's
+          // structured risk facts ride the refusal MESSAGE — the only string
+          // the model reads — never beautified, never dropped.
+          const risk = []
+          if (typeof ran.cfClass === 'string') risk.push(`cf-class=${ran.cfClass}`)
+          if (typeof ran.cfReason === 'string') risk.push(`cf-reason=${ran.cfReason}`)
+          if (ran.sideEffectPossible === true) risk.push('side-effect-possible=true')
+          const error = new Error(`refused-sre ${ran.code ?? 'P_SRE_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the closure'}${risk.length > 0 ? ` \u00b7 ${risk.join(' \u00b7 ')}` : ''}`)
+          if (typeof ran.cfClass === 'string') error.cfClass = ran.cfClass
+          if (typeof ran.cfReason === 'string') error.cfReason = ran.cfReason
+          if (ran.sideEffectPossible === true) error.sideEffectPossible = true
+          throw error
+        }
+        // The native output face is the RENDERED editor text (a string):
+        // the receipt's branch truth {canonicalLocator, rendered, …}
+        // projects onto it here; the before/after pair stays in the arm
+        // receipt (the model face is the native string, M-02 echo law holds
+        // inside it — the view text rides only under the READ effect).
+        return String(ran.value.rendered)
+      } finally {
+        if (abortListener !== undefined && typeof signal?.removeEventListener === 'function') {
+          signal.removeEventListener('abort', abortListener)
+        }
+        // Every path settles the token (shared ledger; the map dies with
+        // the mount).
+        governedTokenLedger.set(tokenKey, { correlation, settled: true })
+      }
+    },
+    output: Object.freeze({
+      schema: Object.freeze({ type: 'string' }),
+      render: (_args, value) => [{ type: 'text', text: String(value ?? '') }],
+    }),
+    // The NATIVE presentEditorCall law (index.ts:380-425), reproduced per
+    // command: view is a read card, the three mutation branches are diff
+    // cards — same-name, same-meaning on the presentation face too.
+    presentCall: (args) => {
+      const path = String(args?.path ?? '')
+      if (args?.command === 'view') {
+        return { card: 'generic', title: `view ${path}`, kind: 'read', locations: [{ path }] }
+      }
+      const oldText = args?.command === 'create' ? null : String(args?.old_str ?? '')
+      const newText = args?.command === 'create' ? String(args?.file_text ?? '') : args?.command === 'insert' ? String(args?.new_str ?? '') : String(args?.new_str ?? '')
+      return { card: 'diff', title: `${String(args?.command ?? 'str_replace_editor')} ${path}`, diffs: [{ path, oldText, newText }], locations: [{ path }] }
+    },
+  })]
+
   const baseDefs = readExecutor === null ? defs : Object.freeze([
     ...defs,
     Object.freeze({
@@ -5518,9 +5757,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && editDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && g2Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && editDefs.length === 0 && sreDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...editDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...g2Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...editDefs, ...sreDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
