@@ -1,4 +1,55 @@
-# B-Control 最小纵切 runner 备料（2026-10-25；等根具体 GO，**未 boot**）
+# B-Control 最小纵切 runner 备料（2026-10-25 根有限裁决后重写；B 仍未 GO，**未 boot**）
+
+> 根有限裁决要点（照办状态逐条）：kit 加显式仅目标场景 selector ✓（本次落地，driver SHA 另钉）；
+> **禁止默认跑 C1–C5 只报 C1** ✓（R1 方案作废——C1 只是 kit 场景编号，非验收等级）；
+> 产品必须真实挂载 **37646 标准 tgz / 现 install-0a3f11b2 只读 fixture**，**不以 --worktree 源码冒包**、
+> 不 install/clone ✓（§2 挂载合同）；承认 **A 已通 RPC allow ≠ Control 四工具 C2** ✓（§3）；
+> 旧 kit 大改 → 直接复用 A 已启动公共 runner 替 Control 场景，不新通用框架 ✓（§5）；
+> 端口 3184/mock 3499/fresh 显式 HOME 保 ✓；不 11-legs 扩展 ✓。
+
+## 2'. 产品挂载合同（真实包，非源码冒包）
+
+- 启动链实测契约：`tests/characterization/lib/instance.mjs:89` 以
+  `<hostTree>/apps/cli/lib/bin.js web --port` 拉起 —— 故挂载点 =
+  **`--testuse <install-0a3f11b2 只读挂载根>`**，该根必须暴露 `apps/cli/lib/bin.js`
+  （标准包 CLI 布局）；37646 标准 tgz = 该安装夹具的冻结来源，两者为"包→安装"同一输入链。
+- **`--worktree` 只承载 kit/driver/evidence/HOME，绝不作为产品输入**（本 kit 的
+  `HOST_TREE = TESTUSE`，:169 实录）；工作区可见范围**当前无** install-0a3f11b2 挂载
+  （find 实测无该目录、无 37646 tgz）→ ready 依据之一 = 主挂载后运行前**只读预检**：
+  `test -f <mount>/apps/cli/lib/bin.js` + 记录 mount 树 `git rev-parse HEAD`（或包
+  `package.json#version` + tgz SHA256），双数入回执。预检不过 = fatal 停，不改 driver 迁就
+  （**固定输入不等禁止修 driver**）。
+
+## 3'. 真实受治理 Control 工具名/路径与纵切场景（不再猜）
+
+- 治理行（封闭面实名，`team-tool-plane.mjs:171-178` + PA 表 `control/types.ts:1492+` variant 叶）：
+  **`team_request_control`**（83，variant `request-control`：requestToken+kind/targetInstanceId/
+  actionName/toolName/summary）、**`team_resolve_control`**（84，`resolve-control`：caseId+decision/note）、
+  `team_list_pending_control`（85，closed-key hand-over 行）。87/88 grant/revoke 不在本最小纵切。
+- **本 call 消费**定义：83 行 plan 在**同一次 classify/plan** 产出 durable row/定义身份/variant 叶
+  （wire-c1 :1050 定点律）→ PA ONE consumption → captured native entered ONCE（:2145 装配层已证）。
+- **场景**（kit C1 段内三步，即最小纵切）：member ask-lane（真实 pre-execute adapter 拦 edit/bash 类
+  操作）→ worker 侧 `team_request_control` 发起 → Leader `team_resolve_control` allow →
+  被拦的**本 call** 恢复执行（ask-lane 语义即同 call 消费）；durable 双对账 =
+  产品 wire `team.getLedgerPage` + 只读 `team_domain.json` 扫描。
+- **承认根澄清**：A 已通的 RPC allow 通道 ≠ Control 四工具的 C2 运行已测；本纵切跑绿才允许
+  `team_request_control`/`team_resolve_control` 两行称 C2 运行已测（消费腿随 C1 语义）。
+
+## 6. selector 落地（driver SHA 另钉）与命令
+
+`--scenario <Cn>`：显式仅目标场景（setup + 单段 + 该场景 verdict；summary 记
+`scenario` 字段）。依赖法为**实测**：C1/C3 setup 后自含；C2/C4 依赖 C1 段创建的 w1、
+C5 读 C4 弃单 → selector **拒收**（不悄悄拉前置），要连跑请用全 kit 默认。
+负路已实测：`--scenario C2` / `--scenario C9` 均在 boot 前 throw（本备料轮实跑仅这两条
+纯参数校验，未触 boot）。
+
+```bash
+node tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs   --scenario C1   --worktree <冻结候选worktree>   --testuse <install-0a3f11b2 只读挂载根>   --host-port 3184 --mock-port 3499   --evidence-dir <worktree>/.gate/bctl-c1-<stamp> --keep
+```
+
+- **双钉**：driver SHA = 本 selector 提交（回执给完整 SHA，钉 `--worktree` 内 kit 文件）；
+  产品 SHA/版本 = mount 预检记录（tgz SHA256 + bin 树版本/SHA）。二者独立入账。
+
 
 范围 = 仅"请求→Leader 决议→同 call 消费"纵切（= 既有 kit 的 C1 判据），**不**新增 11-legs、
 **不**自动 boot、**不**改 driver。复用已核真实 shape（A `f0a0b9557` 同源的成员操作级 envelope）

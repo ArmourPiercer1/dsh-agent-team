@@ -124,6 +124,27 @@ function argValue(name, dflt) {
 }
 const FLAG_KEEP = args.includes('--keep')
 
+// ── TARGET-SCENARIO SELECTOR (explicit, root-limited ruling 2026-10-25) ────
+// `--scenario <Cn>` runs the shared setup + EXACTLY ONE criterion segment and
+// the verdict covers that scenario alone. The dependency law is MEASURED, not
+// assumed: C1 and C3 are self-contained after setup (C3 creates its request
+// via the p6t6 thin route); C2 and C4 delegate to worker w1 CREATED inside
+// the C1 segment, and C5 reads C4's abandonment - those three REFUSE the
+// selector rather than silently pulling predecessors in (only-target law).
+// A full-kit run remains the default: no selector, no behavior change.
+const SCENARIO = argValue('scenario', null)
+if (SCENARIO !== null) {
+  if (!['C1', 'C2', 'C3', 'C4', 'C5'].includes(SCENARIO)) {
+    throw new Error(`--scenario must name one of C1..C5, got ${JSON.stringify(SCENARIO)}`)
+  }
+  if (SCENARIO === 'C2' || SCENARIO === 'C4' || SCENARIO === 'C5') {
+    throw new Error(`--scenario ${SCENARIO} is not self-contained (${SCENARIO === 'C5' ? 'C5 reads C4 durable abandonment' : SCENARIO + ' delegates to worker w1 created in the C1 segment'}); the only-target selector refuses predecessor-pulling - run the full kit instead`)
+  }
+}
+function scenarioSelected(id) {
+  return SCENARIO === null || SCENARIO === id
+}
+
 const KIT_DIR = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(argValue('worktree', resolve(KIT_DIR, '..', '..', '..')))
 let TESTUSE = resolve(argValue('testuse', join(WORKTREE, 'tests', 'deepseek-harness-test-use')))
@@ -1570,7 +1591,7 @@ async function main() {
     }
 
     // ── C1: the existing ask path (member ask -> leader tool allow -> exec) ─
-    {
+    if (scenarioSelected('C1')) {
       const p1 = await apiPrompt(host.origin, host.cookie, ROOT_P, `${MK_CREATE} Create worker w1 from template worker, then delegate the C1 task asynchronously.`, 'c1-create')
       if (!(p1.status === 200 && p1.body?.result?.ok === true)) {
         await dieFatal(`C1 create turn not admitted (status=${p1.status} body=${JSON.stringify(p1.body).slice(0, 300)})`)
@@ -1626,7 +1647,7 @@ async function main() {
     }
 
     // ── C2: remote v4 allow/deny (both paths over the product wire) ────────
-    {
+    if (scenarioSelected('C2')) {
       const p2 = await apiPrompt(host.origin, host.cookie, ROOT_P, `${MK_C2L} Delegate the C2 task to w1 (two bash steps) asynchronously.`, 'c2-delegate')
       if (!(p2.status === 200 && p2.body?.result?.ok === true)) {
         await dieFatal(`C2 delegate turn not admitted (status=${p2.status} body=${JSON.stringify(p2.body).slice(0, 300)})`)
@@ -1705,7 +1726,7 @@ async function main() {
     }
 
     // ── C3: template-target inline request (create/display/resolve + D.4) ──
-    {
+    if (scenarioSelected('C3')) {
       // CREATED via the p6t6 thin route wrapping the production
       // control-service authority (the HONEST-WIRE MAP gap: no product
       // wire creates subject/coupling-bearing requests in this branch).
@@ -1793,7 +1814,7 @@ async function main() {
     }
 
     // ── C4: disconnect -> durable abandoned, zero effect ───────────────────
-    {
+    if (scenarioSelected('C4')) {
       // LEG A — the D.6 criterion (the round-2 fix): the SAME-request
       // coupling-aware cascade over a REAL HTTP wait. The template-
       // subject inline request is created via the p6t6 thin route (the
@@ -2064,7 +2085,7 @@ async function main() {
     }
 
     // ── C5: restart (same DSH_HOME) reads abandoned/history ────────────────
-    {
+    if (scenarioSelected('C5')) {
       await stopHost(host)
       const portFreeAfterKill = await waitForPortFree(HOST_PORT, 15_000)
       log(`C5: host killed; port ${HOST_PORT} free=${portFreeAfterKill}`)
@@ -2183,11 +2204,12 @@ async function main() {
     }
     scrubDir(RUN_DIR)
 
-    const criteria = Object.values(results)
+    const criteria = SCENARIO === null ? Object.values(results) : [results[SCENARIO]]
     const pass = criteria.every((c) => c.pass === true)
     const exitCode = pass ? 0 : 2
     const summary = {
       kit: 'pr-d-control-real-host',
+      scenario: SCENARIO ?? 'all',
       stamp: RUN_STAMP,
       world: `tests/homes/${RUN_STAMP}`,
       worldPath: HOME,
