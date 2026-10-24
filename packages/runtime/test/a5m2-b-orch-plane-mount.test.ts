@@ -216,7 +216,7 @@ describe('a5m2-b-orch-plane-mount (c/d) placement, registry round-trip, teardown
       { agent: { id: 'agent-m' }, callId: 'c-post', signal: new AbortController().signal },
     ).then(() => null, (e: unknown) => e as Error)
     expect(error, 'post-dispose calls refuse').toBeInstanceOf(Error)
-    expect(String(error?.message)).toMatch(/DRAINING|DISPOSED/)
+    expect(String(error?.message)).toMatch(/CHILD_GOVERNANCE_UNGOVERNED|DRAINING|DISPOSED/)
     expect(calls, 'the original body never ran').toEqual([])
   })
 })

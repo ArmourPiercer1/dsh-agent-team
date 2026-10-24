@@ -55,43 +55,33 @@ describe('A5M2 B-ORCH execution consumer: outer PA governance over the ORIGINAL 
     expect(w.ok).not.toBe(true)
     expect(w.code).toBe(A5_B_ORCH_WIRING_CODES.ADMISSION_SEAT_OWNED)
   })
-  it('ONE outer admission per call: the walk carries realm/call/record-47 and the manifest CARRIES the child breakpoint; on allow the ORIGINAL exec runs verbatim', async () => {
-    const walks = []
+  it('FAIL-CLOSED SAFETY BLOCK (root audit of 07bb0c95): every call refuses typed BEFORE the walk — zero PA consumption, zero body entry, the audit chain rides the refusal', async () => {
+    const walks: Record<string, unknown>[] = []
     const { input, calls } = fixtures(async (walk) => { walks.push(walk); return { kind: 'allow' } })
     const w = createBOrchestrationExecutionWiring(input)
     if (w.ok !== true) throw w
     const def = w.definitions.find((d) => d.name === 'workflow')
-    const answer = await def.execute(ARGS, execFor())
-    expect(answer).toEqual({ runId: 'run-1', agentsStarted: 2, result: 'settled' })
-    expect(walks.length).toBe(1)
-    const walk = walks[0]
-    expect(walk.realmId).toBe('realm-orch')
-    expect(walk.callId).toBe('orch-call-1')
-    expect(walk.toolName).toBe('workflow')
-    expect(walk.family.familyId).toBe('B-ORCHESTRATION')
-    expect(walk.family.recordIndex).toBe(47)
-    expect(walk.family.targetManifest.addressClaim).toBeNull()
-    expect(walk.family.targetManifest.childGovernance).toContain('host.ts:197-207')
-    expect(walk.family.targetManifest.childGovernance).toContain('index.ts:804')
-    expect(walk.family.targetManifest.childGovernance).toContain('invariant.ts:53-54')
-    expect(walk.requestedEffects).toBeDefined() // the DOMAIN parser's canonical value, not a minted envelope
-    expect(typeof walk.parametersFingerprint).toBe('string')
-    expect(calls.length).toBe(1) // the ORIGINAL body ran exactly once…
-    expect(calls[0].args).toEqual(ARGS) // …args byte-identical through the frozen plan (plan-frozen copy — the law)
+    await expect(def.execute(ARGS, execFor())).rejects.toMatchObject({
+      message: expect.stringContaining('P_B_ORCH_WIRE_CHILD_GOVERNANCE_UNGOVERNED'),
+    })
+    expect(walks.length, 'the PA funnel is never consumed for a call that cannot execute').toBe(0)
+    expect(calls.length, 'the original body never enters').toBe(0)
+    expect(w.walks()).toBe(0)
+    await expect(def.execute(ARGS, execFor('c-detail'))).rejects.toMatchObject({
+      message: expect.stringContaining('activationFence'),
+    })
+    await expect(def.execute(ARGS, execFor('c-detail2'))).rejects.toMatchObject({
+      message: expect.stringContaining('agentSetup'),
+    })
   })
-  it('deny / throw / pre-aborted all enter NOTHING and never the body; deny bytes ride VERBATIM', async () => {
-    const cases = [
-      { pa: async () => ({ kind: 'deny', detail: 'the leader said no' }), code: A5_B_ORCH_WIRING_CODES.DENIED, bodyCalls: 0, detail: 'the leader said no' },
-      { pa: async () => { throw new Error('funnel down') }, code: A5_B_ORCH_WIRING_CODES.PA_FAULT, bodyCalls: 0, detail: 'funnel down' },
-    ]
-    for (const c of cases) {
-      const { input, calls } = fixtures(c.pa)
+  it('deny/throw/pre-aborted ALL meet the SAME fail-closed refusal first (no input reaches the walk machinery while the block stands)', async () => {
+    for (const pa of [async () => ({ kind: 'deny', detail: 'x' }), async () => { throw new Error('funnel down') }]) {
+      const { input, calls } = fixtures(pa)
       const w = createBOrchestrationExecutionWiring(input)
       if (w.ok !== true) throw w
       const def = w.definitions.find((d) => d.name === 'workflow')
-      await expect(def.execute(ARGS, execFor('c2'))).rejects.toMatchObject({ code: c.code })
-      expect(calls.length).toBe(c.bodyCalls)
-      await expect(def.execute(ARGS, execFor('c2b'))).rejects.toMatchObject({ message: expect.stringContaining(c.detail) })
+      await expect(def.execute(ARGS, execFor('c2'))).rejects.toMatchObject({ message: expect.stringContaining('CHILD_GOVERNANCE_UNGOVERNED') })
+      expect(calls.length).toBe(0)
     }
     const ac = new AbortController()
     ac.abort()
@@ -99,7 +89,7 @@ describe('A5M2 B-ORCH execution consumer: outer PA governance over the ORIGINAL 
     const w = createBOrchestrationExecutionWiring(input)
     if (w.ok !== true) throw w
     const def = w.definitions.find((d) => d.name === 'workflow')
-    await expect(def.execute(ARGS, { callId: 'c3', agent: { id: 'a1' }, signal: ac.signal })).rejects.toMatchObject({ code: A5_B_ORCH_WIRING_CODES.CANCELLED })
+    await expect(def.execute(ARGS, { callId: 'c3', agent: { id: 'a1' }, signal: ac.signal })).rejects.toMatchObject({ message: expect.stringContaining('CHILD_GOVERNANCE_UNGOVERNED') })
     expect(calls.length).toBe(0)
   })
   it('mount places on the REAL tools face with rollback handles; second mount refused; dispose drains FIRST and runs each disposer exactly once', async () => {
@@ -118,8 +108,8 @@ describe('A5M2 B-ORCH execution consumer: outer PA governance over the ORIGINAL 
     expect(String(d2.semantics)).toContain('already disposed')
     expect(order.length).toBe(1) // exactly once
     const def = w.definitions.find((d) => d.name === 'workflow')
-    // dispose drains the adapter FIRST: new calls meet the DRAINING
-    // new-call prohibition at the row level (adapter semantics verbatim)
-    await expect(def.execute(ARGS, execFor('c4'))).rejects.toMatchObject({ code: 'P_B_ORCH_DRAINING' })
+    // post-dispose the fail-closed block stands FIRST (and independently of
+    // it the drain law would refuse too): zero body entry either way
+    await expect(def.execute(ARGS, execFor('c4'))).rejects.toMatchObject({ message: expect.stringMatching(/CHILD_GOVERNANCE_UNGOVERNED|DRAINING/) })
   })
 })
