@@ -26,7 +26,7 @@ import { zstdDecompressSync } from 'node:zlib'
 import { DshInstance, redactLaunchToken } from '../../../../../tests/characterization/lib/instance.mjs'
 import {
   TEST_USE_REL, TEST_HOME_ROOT_REL, TEST_PORT_RANGES, STABLE_INSTANCE_PORT,
-  CLIENT_COMMIT_HASH, DSH_BASELINE_VERSION,
+  CLIENT_COMMIT_HASH, DSH_BASELINE_VERSION, TEST_USE_BASELINE_SHA,
 } from '../../../../../tests/paths.mjs'
 import { inspectBlueprintSource } from '../../../../../packages/runtime/dist/packages/domain/blueprint/src/index.js'
 import {
@@ -38,6 +38,10 @@ import {
 
 const REPO = resolve(import.meta.dirname, '../../../../..')
 const LIST_ROOTS_CONTRACT_VERSION = 3
+/** The main tree's already-verified pristine runtime (root 01:01: reuse in
+ *  place, zero copy). Overridable by parameter, never cloned or installed. */
+const SHARED_HOST_TREE = '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use'
+const hostTree = () => process.env.A5M2_TEAM_C2_HOST_TREE ?? SHARED_HOST_TREE
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
 /**
@@ -205,10 +209,23 @@ export function precheck () {
   // type/rpcId/method/payload, `payload` = { version, params }).
   const envelope = envelopeCheck()
   if (!envelope.ok) problems.push(...envelope.problems)
-  const hostTree = join(REPO, TEST_USE_REL)
-  if (!existsSync(hostTree)) problems.push(`host tree missing: ${hostTree} (pristine baseline ${DSH_BASELINE_VERSION})`)
-  const bp = spawnSync('git', ['-C', REPO, 'status', '--porcelain', '--', 'tests/kits/a5m2-schedule-c2'], { encoding: 'utf8' })
-  if (bp.stdout.trim() !== '') problems.push('the Schedule kit lane must stay untouched')
+  // ROOT 01:01 OVERRIDE: the product package is REUSED IN PLACE, zero copy. The
+  // clone/install plan is revoked (a clone inside this tree is still a new
+  // copy), so the host tree is a PATH PARAMETER pointing at the main tree's
+  // already-verified pristine runtime. READ-ONLY COVENANT: nothing under this
+  // path is ever written by this driver; the DSH_HOME world stays in THIS tree
+  // under `tests/homes` per TEST_METHODS §7. The assertions below are identity
+  // checks — existence, the exact baseline SHA, and a clean work tree — not
+  // provisioning steps.
+  const host = hostTree()
+  if (!existsSync(host)) problems.push(`host tree absent: ${host}`)
+  else {
+    const head = spawnSync('git', ['-C', host, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim()
+    if (head !== TEST_USE_BASELINE_SHA) problems.push(`host tree HEAD ${head.slice(0, 12)} != baseline ${TEST_USE_BASELINE_SHA.slice(0, 12)}`)
+    const dirty = spawnSync('git', ['-C', host, 'status', '--porcelain'], { encoding: 'utf8' }).stdout.trim()
+    if (dirty !== '') problems.push('host tree is not pristine (porcelain non-empty) — never write it, report it')
+    if (!existsSync(join(host, 'node_modules'))) problems.push('host tree has no node_modules (reuse requires the existing install; nothing is installed here)')
+  }
   return Object.freeze({ ok: problems.length === 0, problems, criteria: CRITERIA_IDS, reuse: REUSE_INSTALL.baselineVersion, gaps: Object.keys(GAPS) })
 }
 
@@ -229,7 +246,7 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, go = pr
   const trace = []
   const rec = (leg, ok, detail) => { trace.push({ leg, ok, detail }); return ok }
   const instance = new DshInstance({
-    hostTree: join(REPO, TEST_USE_REL),
+    hostTree: hostTree(),
     dshHome: join(REPO, world),
     port,
     clientCommitHash: CLIENT_COMMIT_HASH,
