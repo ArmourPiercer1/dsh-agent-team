@@ -37,7 +37,7 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '5c31341803318ab35465908bf93b1f77f5cad16a' // root-pinned product candidate (f86 packs exactly this)
+const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // root-accepted minimal release fix (direct child of 5c313418: 3 dist + placement only)
 const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // dist arm blob this tree measured
 const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35'
 const PACK_BYTES_MAX = 8_000_000
@@ -47,11 +47,17 @@ const WORLD_PREFIX = 'a5m2-edit-hw-a'
 const BP_ID = 'team.a5m2-edit-hw'
 const WINDOW_GO = process.env.A5M2_EDIT_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_EDIT_DRY === '1'
-const INSTALL_DIR = process.env.A5M2_EDIT_INSTALL_DIR ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2/'
+// SYNC CARD 2026-10-28 (root order): ONLY these parameter/expectation
+// constants moved with the product 5c313418 -> 37646ac2; d66's execution
+// logic is untouched. The old pack hash 0a3f11b2... MUST NOT be inherited —
+// the NEW tgz hash arrives as an explicit receipt input, no default.
+// driver SHA (the d66 signed logic, carried by HEAD) and product SHA (below)
+// are separate facts and stay recorded separately in runner-identity.json.
+const INSTALL_DIR = process.env.A5M2_EDIT_INSTALL_DIR ?? null // f86's NEW final full path, REQUIRED (locator swapped with the repack)
 const PACK_COMPOSED = process.env.A5M2_EDIT_COMPOSED_SHA ?? null
-const EXPECTED_PACK_SHA = 'sha256:0a3f11b2c07178cd5377debb11c221fac23d963c666a7a2688ba446168d50b6b' // the f86 tgz of 5c313418, pinned
-const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
-const EXPECTED_TGZ_DIR = 'out-5c313418-20261024T082308Z'
+const EXPECTED_PACK_SHA = process.env.A5M2_EDIT_PACK_SHA256 ?? null // REQUIRED: full hash from f86's new receipt (sha256: prefix)
+const EXPECTED_TGZ_NAME = process.env.A5M2_EDIT_TGZ_NAME ?? 'dsh-agent-team-0.1.1-alpha.2.tgz' // same tree -> same name unless the receipt says otherwise
+const EXPECTED_TGZ_DIR_PREFIX = 'out-37646ac2-' // full dir arrives in the receipt; the segment must carry the new product prefix
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
@@ -59,6 +65,9 @@ function notRun(reason) {
 }
 if (!WINDOW_GO && !DRY) notRun('window env A5M2_EDIT_WINDOW not GRANTED (root ruling pending) — nothing booted')
 if (PACK_COMPOSED !== null && PACK_COMPOSED !== COMPOSED_SHA) notRun(`A5M2_EDIT_COMPOSED_SHA ${PACK_COMPOSED} is not the pinned product ${COMPOSED_SHA}`)
+if (INSTALL_DIR === null) notRun('A5M2_EDIT_INSTALL_DIR is REQUIRED: f86\'s new final full fixture path from the new receipt (locator swapped with the repack)')
+if (EXPECTED_PACK_SHA === null) notRun('A5M2_EDIT_PACK_SHA256 is REQUIRED: the NEW tgz full hash from f86\'s receipt — the old 0a3f11b2 hash is retired and must not be inherited')
+if (!EXPECTED_PACK_SHA.startsWith('sha256:')) notRun('A5M2_EDIT_PACK_SHA256 must carry the sha256: prefix')
 
 const ROOT_DIR = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
 if (ROOT_DIR === null) { console.error('findTestRepoRoot returned null'); process.exit(3) }
@@ -153,7 +162,7 @@ async function cleanup() {
 
 // ── explicit product pin (fail closed) ─────────────────────────────────────
 // ── ② explicit f86 fixture reuse (READ-ONLY; absent => fail-closed rc3) ───
-if (!existsSync(INSTALL_DIR)) notRun(`f86 fixture install dir absent (f86 step-0 pending; this runner does NOT create or install it): ${INSTALL_DIR}`)
+if (!existsSync(INSTALL_DIR)) notRun(`f86 fixture install dir absent (awaiting f86's NEW pack/fixture receipt for 37646ac2; this runner does NOT create or install it): ${INSTALL_DIR}`)
 {
   const fixManifestPath = join(INSTALL_DIR, 'package.json')
   if (!existsSync(fixManifestPath)) { console.error(`fixture manifest absent: ${fixManifestPath}`); process.exit(3) }
@@ -161,7 +170,7 @@ if (!existsSync(INSTALL_DIR)) notRun(`f86 fixture install dir absent (f86 step-0
   if (typeof fixDeps !== 'string' || !fixDeps.startsWith('file:')) { console.error(`fixture manifest plugin file: entry missing (got ${JSON.stringify(fixDeps)})`); process.exit(3) }
   const fileTarget = fixDeps.slice('file:'.length)
   const resolvedTgz = fileTarget.startsWith('/') ? fileTarget : resolve(INSTALL_DIR, fileTarget)
-  if (basename(resolvedTgz) !== EXPECTED_TGZ_NAME || basename(dirname(resolvedTgz)) !== EXPECTED_TGZ_DIR) { console.error(`fixture file: target is NOT the new pack: ${resolvedTgz}`); process.exit(3) }
+  if (basename(resolvedTgz) !== EXPECTED_TGZ_NAME || !basename(dirname(resolvedTgz)).startsWith(EXPECTED_TGZ_DIR_PREFIX)) { console.error(`fixture file: target is NOT the new pack (want ${EXPECTED_TGZ_DIR_PREFIX}*/${EXPECTED_TGZ_NAME}): ${resolvedTgz}`); process.exit(3) }
   if (!existsSync(resolvedTgz)) { console.error(`new pack tgz absent behind the fixture pointer: ${resolvedTgz}`); process.exit(3) }
   if (statSync(resolvedTgz).size > PACK_BYTES_MAX) { console.error('pack bytes exceed the bound'); process.exit(3) }
   if (`sha256:${sha256(resolvedTgz)}` !== EXPECTED_PACK_SHA) { console.error(`pack sha256 drifted from the pinned ${EXPECTED_PACK_SHA}`); process.exit(2) }
