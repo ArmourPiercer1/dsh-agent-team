@@ -34,8 +34,15 @@ const here = dirname(fileURLToPath(import.meta.url))
 const SRC = readFileSync(resolve(here, '../src/plugin/live/agent-bindings.mjs'), 'utf8')
 
 /** Mirror of the patched arm block — verbatim shape, closure state injected. */
-function armProfile({ rosterRows, instanceId, bindPath, boundTemplate }) {
-  const g1RosterRow = rosterRows.find((row) => String(row?.instanceId ?? '') === String(instanceId))
+interface RosterRow { instanceId?: string, templateId?: string }
+interface ArmProfileInput {
+  rosterRows: readonly RosterRow[]
+  instanceId: string
+  bindPath: string
+  boundTemplate: { templateId?: string } | null | undefined
+}
+function armProfile({ rosterRows, instanceId, bindPath, boundTemplate }: ArmProfileInput): string {
+  const g1RosterRow = rosterRows.find((row: RosterRow) => String(row?.instanceId ?? '') === String(instanceId))
   const g1RowProfileId = typeof g1RosterRow?.templateId === 'string' && g1RosterRow.templateId.length > 0
     ? String(g1RosterRow.templateId)
     : null
