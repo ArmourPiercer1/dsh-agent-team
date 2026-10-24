@@ -208,6 +208,23 @@ describe('a5m2-g1-control-handover-c1 source pair (shipped bytes)', () => {
     expect(SRC).toContain('const a5G1ControlSupplyNatives = new Map()')
   })
 
+  it('SANDBOXPOLICY CARD: the plugin install seams are built ONLY inside the plugin:true gate (control-only never reads them) and the host seam is the public optional read', () => {
+    // dark-world leg: the construction moved INSIDE the gate — an
+    // unconditional pre-gate read evaluated the inject-gated 639 property
+    // (entry fiber inject list host.ts:1325 carries NO sandboxPolicy) and
+    // failed root-start with `cannot get property "sandboxPolicy" without
+    // inject` even for control-only mounts.
+    expect(SRC.indexOf('if (g1IsRecord && g1Cfg.plugin === true) {')).toBeLessThan(SRC.indexOf('const g1HostSandboxPolicy'))
+    // enabled-world leg: the seam is the public OPTIONAL read beside the
+    // pluginManager siblings — never the bare gated property; the
+    // adapter-edge P_G1_HOST_APPROVAL_GATE_ABSENT refusal (unsupplied
+    // enabled world) stays the legitimate posture, pinned behaviorally in
+    // a5m2-g1-surface-adapters (P_G1_HOST_APPROVAL_GATE_ABSENT).
+    const HOST_TS = readFileSync(resolve(here, '../src/plugin/host.ts'), 'utf8')
+    expect(HOST_TS).not.toContain('sandboxPolicy: () => ctx.sandboxPolicy')
+    expect(HOST_TS).toContain(`sandboxPolicy: () => { try { return ctx.get('sandboxPolicy') } catch { return undefined } }`)
+  })
+
   it('the B-CONTROL capture reads the EXACT claimed instance first, scoped only for UNCLAIMED names; the 85 anchor law is untouched', () => {
     const arm = SRC.slice(SRC.indexOf('THE B-CONTROL SUPPLY LOOP'))
     expect(arm).toContain('a5G1ControlSupplyNatives.get(name) ?? agentCtx.tools.get(name, agent)')

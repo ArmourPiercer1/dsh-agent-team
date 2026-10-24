@@ -606,7 +606,12 @@ describe('B-TERMINAL backends transport — regression pins (root G3A760)', () =
     const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href), 'utf8')
     expect(src).toContain('...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),')
     // the guard alone (without the spread) was the regression shape:
-    expect(src).toContain('a5SpawnWiring === null && a5G3TerminalInject === null')
+    // THREE-tuple since the bind-after-def HOOK lane (a27f): the guard
+    // conjuncts run spawnWiring -> spawnDefer -> terminalInject; the hook
+    // route added the DEFERRED entry between the wiring and the terminal —
+    // the pin tracks the shipped adjacency, the union semantics are
+    // unchanged (a defer-only world still keeps the backends union open).
+    expect(src).toContain('a5SpawnWiring === null && a5SpawnDefer === null && a5G3TerminalInject === null')
   })
   it('the plane reads exactly input.backends?.terminal', () => {
     const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href), 'utf8')

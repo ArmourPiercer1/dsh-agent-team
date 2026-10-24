@@ -2333,12 +2333,24 @@ export async function apply(ctx, config) {
             // run).
             terminals: () => ctx.get('terminals'),
             subprocess: () => ctx.get('subprocess'),
-            // A5M2 G3 B-TERMINAL (root 21:07): the confinement provider + policy
-            // property, resolved at call time through the same public faces the
-            // terminal-bash backend itself consumes (ctx.get('sandbox') is the
-            // 639 global-store token; sandboxPolicy is the ctx property beside it).
+            // A5M2 G3 B-TERMINAL (root 21:07): the confinement provider + policy,
+            // resolved at call time through the same public faces the terminal-bash
+            // backend itself consumes (ctx.get('sandbox') is the 639 global-store
+            // token). ROOT 13:5x SANDBOXPOLICY CARD: ctx.sandboxPolicy is an
+            // INJECT-GATED property (host tools.ts:13 law) and this entry fiber's
+            // inject (host.ts:1325) does NOT carry it — a bare property read throws
+            // `cannot get property "sandboxPolicy" without inject`. The seam is
+            // therefore the PUBLIC OPTIONAL read beside the plugin seams: an absent
+            // face answers undefined and every consumer keeps its own honest-ABSENT
+            // posture (terminal: no confinement flip; plugin: adapter L5 refuses).
+            // No global hard inject — the startup dependency surface is unchanged.
             sandbox: () => ctx.get('sandbox'),
-            sandboxPolicy: () => ctx.sandboxPolicy,
+            sandboxPolicy: () => { try {
+                return ctx.get('sandboxPolicy');
+            }
+            catch {
+                return undefined;
+            } },
             // A5M2-G1-WIRE B-PLUGIN install seams — call-time reads, honest absence
             // (an unregistered token throws at ctx.get; the reader answers undefined
             // and the plugin install lane keeps its adapter-edge fail-closed posture).

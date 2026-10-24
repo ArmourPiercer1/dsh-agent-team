@@ -7479,21 +7479,32 @@ export function createAgentBindings(deps) {
               cancelInstall: g1PluginManager.cancelInstall.bind(g1PluginManager),
             })
             : null
-          const g1HostSandboxPolicy = typeof deps.sandboxPolicy === 'function' ? deps.sandboxPolicy() : undefined
-          const g1HostEscalation = typeof deps.pluginApproveEscalation === 'function'
-            ? Object.freeze({
-              sandboxPolicy: g1HostSandboxPolicy,
-              approver: typeof deps.pluginApproval === 'function' ? deps.pluginApproval() : undefined,
-              approveEscalation: async (request, approval) => {
-                const adjudicator = await deps.pluginApproveEscalation()
-                if (typeof adjudicator !== 'function') {
-                  throw new Error('the public @deepseek-ai/dsh-sandbox approveEscalation export did not resolve in this world; the row never substitutes its own adjudicator — zero manager entry')
-                }
-                return adjudicator(request, approval)
-              },
-            })
-            : null
+          // ROOT 13:5x SANDBOXPOLICY CARD: the install seams serve the
+          // B-PLUGIN install action ONLY — in the plugin-DARK world they are
+          // not built AT ALL (the pre-gate unconditional read of
+          // deps.sandboxPolicy() evaluated the inject-gated host face even
+          // for control-only mounts and failed root-start with
+          // `cannot get property "sandboxPolicy" without inject`). The
+          // construction now lives INSIDE the plugin:true gate; the enabled
+          // world rides the public optional seam, and an unsupplied enabled
+          // world keeps the adapter L5 LEGITIMATE refusal
+          // (P_G1_HOST_APPROVAL_GATE_ABSENT). Enforcement/resolve logic and
+          // the absent-posture are unchanged; nothing is hard-injected.
           if (g1IsRecord && g1Cfg.plugin === true) {
+            const g1HostSandboxPolicy = typeof deps.sandboxPolicy === 'function' ? deps.sandboxPolicy() : undefined
+            const g1HostEscalation = typeof deps.pluginApproveEscalation === 'function'
+              ? Object.freeze({
+                sandboxPolicy: g1HostSandboxPolicy,
+                approver: typeof deps.pluginApproval === 'function' ? deps.pluginApproval() : undefined,
+                approveEscalation: async (request, approval) => {
+                  const adjudicator = await deps.pluginApproveEscalation()
+                  if (typeof adjudicator !== 'function') {
+                    throw new Error('the public @deepseek-ai/dsh-sandbox approveEscalation export did not resolve in this world; the row never substitutes its own adjudicator — zero manager entry')
+                  }
+                  return adjudicator(request, approval)
+                },
+              })
+              : null
             let g1PluginPlacedCount = 0
             for (const entry of g1PluginSupplySubset()) {
               const pluginAssembly = createG1QueryAssembly({
