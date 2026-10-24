@@ -113,6 +113,13 @@ const SAVED_BP_V3_YAML = [
   `              path: '@@TARGET_ABS@@'`,
   '          - tool: write', '            resource:', '              kind: exact',
   `              path: '@@TARGET_ABS@@'`,
+  // [E6 supply per root final ruling] canonical EXACT read+write for THIS
+  // window's own HOME FSROOT link2.txt ONLY — not the directory, no glob,
+  // no external path. edit stays ask; the Leader answers THIS request only.
+  '          - tool: read', '            resource:', '              kind: exact',
+  `              path: '@@LINK2_ABS@@'`,
+  '          - tool: write', '            resource:', '              kind: exact',
+  `              path: '@@LINK2_ABS@@'`,
   '        ask:',
   '          - tool: edit', '            resource:', '              kind: any',
   '        deny: []',
@@ -534,7 +541,7 @@ async function main() {
     if (!existsSync(distArm)) throw new Error(`the f86 fixture carries NO dist edit arm: ${distArm}`)
     log(`plugin entry resolved from the f86 fixture exports['./host']: ${HOST_ENTRY}; dist edit arm present`)
   }
-  writeFileSync(join(HOME, 'blueprints', 'a5m2-edit-hw.yaml'), SAVED_BP_V3_YAML.replaceAll('@@TARGET_ABS@@', join(FSROOT, 'notes.txt')))
+  writeFileSync(join(HOME, 'blueprints', 'a5m2-edit-hw.yaml'), SAVED_BP_V3_YAML.replaceAll('@@TARGET_ABS@@', join(FSROOT, 'notes.txt')).replaceAll('@@LINK2_ABS@@', join(FSROOT, 'link2.txt')))
 
   if (DRY) {
     const dryPatch = join(HOME, 'dry-patch.yml')
@@ -614,7 +621,6 @@ async function main() {
     if (text.startsWith('A5M2-EDITHW-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `ehw-create-${NONCE}`, delegationTemplateId: 'edit-worker', label: 'edit1' } }))
     if (text.startsWith('EDIT-REASK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-REASKED' } })) // E3: INDEPENDENT marker/callId — proves a new call does NOT inherit the old allow; NOT a same-token replay claim
     if (text.startsWith('EDIT-ESCAPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: '../outside-canary.txt', old_string: 'C', new_string: 'X' } })) // E4: lexical '..' escape to the HOME canary
-    if (text.startsWith('EDIT-REPLAY')) return { kind: 'tool-call', toolCalls: [{ id: `call-ehw-${NONCE}-member:EDIT-ALLOW`, name: 'edit', arguments: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } }] } // E5: SAME wire call id as E1 — a REAL replay attempt on the public model wire (mock controls toolCalls[].id); the dispatcher/execute layer must not re-execute
     if (text.startsWith('EDIT-SYMLINK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'link2.txt', old_string: 'T', new_string: 'X' } })) // E6: lexical-passing symlink; refusal is expected POST-CONSUME at the write (O_NOFOLLOW)
     if (text.startsWith('EDIT-XENVELOPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes-b.txt', old_string: 'bravo', new_string: 'BRAVO-B' } })) // E7: lawful in-root path OUTSIDE this member's envelope (envelope-level cross check; NOT a second owner)
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
@@ -787,31 +793,21 @@ async function main() {
     /ANCHOR|P_EDIT|refused-edit|APPROVAL_DENIED/.test(String(escapeRes)) && canaryFrozen && canaryStillRegular,
     `result=${String(escapeRes).slice(0, 280)} canarySha=${sha256(CANARY)} canaryShaBefore=${canaryShaBefore} canaryMtimeMs=${statSync(CANARY).mtimeMs}/${canaryMtimeBeforeMs} stillRegular=${String(canaryStillRegular)}`)
 
-  // [E5 real same-id replay] after E1's grant was consumed, the mock re-emits
-  // the PUBLIC wire tool call with the IDENTICAL id. Evidence form (honest):
-  // the same-id second result is deduped by the observer harvest, so this leg
-  // is judged by EFFECTS + LEDGER, not by a tool_result text: target frozen,
-  // no NEW pending row within the settle window, and the allow-consumed fact
-  // count for allowReq stays exactly 1.
-  currentCriterion = 'E5'
-  const replayShaBefore = sha256(target)
-  const pendBefore5 = new Set(await pendingRequestIds())
-  const consumeCountBefore = (await controlFacts())['control-allow-consumed'].filter((e) => e.payload?.requestId === allowReq).length
-  await apiPrompt(memberSession, 'EDIT-REPLAY', 'ehw-e5')
-  let replayNewPending = []
-  try {
-    await waitFor('replay settle', 6_000, async () => {
-      const fresh = (await pendingRequestIds()).filter((r) => !pendBefore5.has(r))
-      if (fresh.length > 0) { replayNewPending = fresh; return true }
-      return null
-    })
-  } catch { /* no new pending inside the settle window = expected shape */ }
-  await new Promise((res) => setTimeout(res, 2_000)) // let any async effect land before measuring
-  const consumeCountAfter = (await controlFacts())['control-allow-consumed'].filter((e) => e.payload?.requestId === allowReq).length
-  check('E5', 'real same-id wire replay after consumption: target frozen, NO new pending in settle, allow-consumed count stays 1 (effects+ledger evidence form)',
-    replayShaBefore === sha256(target) && replayNewPending.length === 0 && consumeCountBefore === 1 && consumeCountAfter === 1,
-    `shaBefore=${replayShaBefore} shaNow=${sha256(target)} newPending=${JSON.stringify(replayNewPending)} consumeCount=${consumeCountBefore}->${consumeCountAfter}`)
-
+  // [E5 WITHDRAWN per root final ruling 2026-10-24 — UNVERIFIED, obligation
+  // NOT downgraded] the same-wire-id probe is NOT a token replay: the fixed
+  // 639 registry creates the execution token INTERNALLY
+  // (packages/core/tools/src/index.ts :1905-1907 createExecutionToken() =
+  // Symbol('dsh.tool.execution'); :1393 inside createExecution(); type :319;
+  // ToolExecution.token :397), and the 694b handoff (:4175-4211) / body
+  // (:4369-4400) key by that REAL exec.token object/symbol — the wire callId
+  // is not the token. The probe also looped without emitOrClose, its 6s catch
+  // swallowed RPC/exit errors (false pass), and beta was already rewritten by
+  // E1 so no matching effect existed. Token single-use/reuse lives at the
+  // product's internal layer (plane-effect-backends :1133/1137
+  // 'exec-token-terminal', :1189 'exec-token-replay'); an outer same-token
+  // double-dispatch has NO public seam — reconciliation: NO dedicated
+  // integration negative exists in this lane's kits (gap LISTED, product-side
+  // territory; no backdoor built).
   // [E6 symlink POST-CONSUME] the lexical law passes this path (name under the
   // root, no '..', not absolute), so PA asks and the operator ALLOWS; the
   // write must then refuse via O_NOFOLLOW (edit :250/260 region) with ZERO
@@ -823,8 +819,15 @@ async function main() {
   const sym6Consumed = (await hasFact(dr6.requestId, 'control-allow-consumed')) !== false
   const symTargetFrozen = sha256(SYM_TARGET) === symTargetShaBefore
   const symStillLink = (() => { try { return lstatSync(SYM_LINK).isSymbolicLink() } catch { return false } })()
-  check('E6', 'symlink under root passes lexical law, ALLOW consumes, the WRITE refuses post-consume (O_NOFOLLOW) with own-target bytes frozen and the link intact',
-    sym6Consumed && symTargetFrozen && symStillLink && /refused|P_EDIT|ANCHOR|EBADF|denied|not-a-regular|symlink/i.test(String(sym6Res)),
+  // STRICT oracle per root final ruling: consumption MUST have happened (a
+  // pre-dispatch refusal, e.g. APPROVAL_DENIED, FAILS this leg — the point is
+  // the POST-CONSUME symlink/O_NOFOLLOW refusal), and the refusal text must
+  // belong to the REAL symlink-alias/O_NOFOLLOW family — an arbitrary refusal
+  // does not pass.
+  check('E6', 'symlink under root passes lexical law, ALLOW CONSUMES, the WRITE refuses POST-CONSUME in the symlink/O_NOFOLLOW family with own-target bytes frozen and the link intact (arbitrary refusal does NOT pass)',
+    sym6Consumed === true && symTargetFrozen && symStillLink
+    && /(NOFOLLOW|ELOOP|EACCES|symlink|symbolic|P_EDIT_SYMLINK|not a regular)/i.test(String(sym6Res))
+    && !/APPROVAL_DENIED/.test(String(sym6Res)),
     `requestId=${dr6.requestId} consumed=${String(sym6Consumed)} targetFrozen=${String(symTargetFrozen)} stillLink=${String(symStillLink)} result=${String(sym6Res).slice(0, 300)}`)
 
   // [E7 cross-ENVELOPE (level 1, named honestly)] a lawful in-root file that
@@ -849,7 +852,7 @@ async function main() {
   }
   const xRes = await resultFor(stepOuter('EDIT-XENVELOPE'))
   const xConsumed = xReq === null ? false : (await hasFact(xReq, 'control-allow-consumed')) !== false
-  check('E7', "cross-envelope in-root path 'notes-b.txt' refused (either lane recorded honestly), target-b frozen, no allow-consumed",
+  check('E7', "path-not-in-scope (NOT cross-owner, level-1 only): in-root 'notes-b.txt' refused (lane recorded honestly), target-b frozen, no allow-consumed",
     /refused|P_EDIT|ANCHOR|denied|APPROVAL_DENIED/.test(String(xRes)) && sha256(XB) === xbShaBefore && xConsumed === false,
     `lane=${xPath} requestId=${String(xReq)} consumed=${String(xConsumed)} xbSha=${sha256(XB)} xbShaBefore=${xbShaBefore} result=${String(xRes).slice(0, 280)}`)
 
