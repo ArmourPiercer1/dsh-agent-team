@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (40 = 35 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five; root 20:05/22:13/22:4x/22:32) + Team self-governance four + B-SRE one; root 2026-10-24 registration)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (43 = 38 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five + goal trio; root 20:05/22:13/22:4x/22:32/15:2x) + Team self-governance four + B-SRE one; root 2026-10-24 registration)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -956,6 +956,9 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'session_trace',
       'session_event_trace',
       'session_event_read',
+      'create_goal',
+      'get_goal',
+      'update_goal',
       'team_list_members',
       'team_list_templates',
       'team_inspect_config',

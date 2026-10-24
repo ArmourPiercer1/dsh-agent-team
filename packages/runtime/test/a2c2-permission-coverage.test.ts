@@ -830,7 +830,10 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
   it('P3 · grep/ralph/web_fetch escape the forty-name managed vocabulary (root 22:32: subagent joined — the unwired orchestration example ralph keeps the class proof) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
     const p3 = R['p3'] as Record<string, any>
     // stable characterization of the pre-fix gap (both trees):
-    expect(p3.managedSet).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'edit', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'str_replace_editor', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_grant_permission', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_request_control', 'team_resolve_control', 'team_revoke_permission', 'team_send_message', 'write'])
+    expect(p3.managedSet).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query',
+      'create_goal', 'edit',
+      'get_goal', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'str_replace_editor', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_grant_permission', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_request_control', 'team_resolve_control', 'team_revoke_permission', 'team_send_message',
+      'update_goal', 'write'])
     expect(p3.inVocabulary).toEqual([false, false, false])
     expect(p3.classifyKinds).toEqual(['unsupported', 'unsupported', 'unsupported'])
     // the post-fix gate leg (RED on base):
@@ -871,7 +874,9 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'bash', classification: 'managed-operation-permission' },
       { name: 'cordis_inspect_list', classification: 'managed-operation-permission' },
       { name: 'cordis_inspect_query', classification: 'managed-operation-permission' },
+      { name: 'create_goal', classification: 'managed-operation-permission' },
       { name: 'edit', classification: 'managed-operation-permission' },
+      { name: 'get_goal', classification: 'managed-operation-permission' },
       { name: 'interrupt_agent', classification: 'managed-operation-permission' },
       { name: 'list_agents', classification: 'managed-operation-permission' },
       { name: 'list_subagent_models', classification: 'managed-operation-permission' },
@@ -907,6 +912,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'team_resolve_control', classification: 'managed-operation-permission' },
       { name: 'team_revoke_permission', classification: 'managed-operation-permission' },
       { name: 'team_send_message', classification: 'managed-operation-permission' },
+      { name: 'update_goal', classification: 'managed-operation-permission' },
       { name: 'write', classification: 'managed-operation-permission' },
     ])
     expect(g1.unmanaged).toEqual([])
@@ -1067,7 +1073,9 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'bash', classification: 'managed-operation-permission' },
       { name: 'cordis_inspect_list', classification: 'managed-operation-permission' },
       { name: 'cordis_inspect_query', classification: 'managed-operation-permission' },
+      { name: 'create_goal', classification: 'managed-operation-permission' },
       { name: 'edit', classification: 'managed-operation-permission' },
+      { name: 'get_goal', classification: 'managed-operation-permission' },
       { name: 'interrupt_agent', classification: 'managed-operation-permission' },
       { name: 'list_agents', classification: 'managed-operation-permission' },
       { name: 'list_subagent_models', classification: 'managed-operation-permission' },
@@ -1105,6 +1113,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'team_revoke_permission', classification: 'managed-operation-permission' },
       { name: 'team_send_message', classification: 'managed-operation-permission' },
       { name: 'todo_write', classification: 'safe-unmanaged' },
+      { name: 'update_goal', classification: 'managed-operation-permission' },
       { name: 'write', classification: 'managed-operation-permission' },
     ])
     expect(g9.badOk).toBe(false)

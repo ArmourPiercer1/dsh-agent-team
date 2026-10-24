@@ -430,6 +430,13 @@ export const PERMISSION_TOOL_NAMES = [
     'session_trace',
     'session_event_trace',
     'session_event_read',
+    // A5M2-G5 goal trio (root 15:2x finite registration card): names verbatim
+    // from g5-goal-service A5_G5_GOAL_TOOL_NAMES; invocation-only class (the
+    // B-SESSION/B-TEAM precedent — projected tool-invoke arm alone, exact
+    // realm|tool:name matcher). No list-style name; fileValues untouched.
+    'create_goal',
+    'get_goal',
+    'update_goal',
     'team_list_members',
     'team_list_templates',
     'team_inspect_config',
@@ -530,6 +537,11 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES = [
     'session_trace',
     'session_event_trace',
     'session_event_read',
+    // The goal trio is invocation-only (root 15:2x card): tool-invoke arm is
+    // their ENTIRE declared authority (exact realm|tool:name matcher).
+    'create_goal',
+    'get_goal',
+    'update_goal',
     // B-TEAM (root 22:4x continuation card; names verbatim from the CURRENT
     // integration production — team-adapters.mjs A5_B_TEAM_TOOL_NAMES, PA
     // lane via the plane's ONE paAdmit, bindings actualservice 85ccbf9e3,

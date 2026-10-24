@@ -70,6 +70,9 @@ export type PermissionTool =
   | 'session_trace'
   | 'session_event_trace'
   | 'session_event_read'
+  | 'create_goal'
+  | 'get_goal'
+  | 'update_goal'
   | 'team_list_members'
   | 'team_list_templates'
   | 'team_inspect_config'
@@ -113,6 +116,9 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'session_trace',
   'session_event_trace',
   'session_event_read',
+  'create_goal',
+  'get_goal',
+  'update_goal',
   'team_list_members',
   'team_list_templates',
   'team_inspect_config',
@@ -232,6 +238,9 @@ export type InvocationOnlyPermissionTool =
   | 'session_trace'
   | 'session_event_trace'
   | 'session_event_read'
+  | 'create_goal'
+  | 'get_goal'
+  | 'update_goal'
   | 'team_list_members'
   | 'team_list_templates'
   | 'team_inspect_config'
@@ -273,6 +282,9 @@ export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPerm
   'session_trace',
   'session_event_trace',
   'session_event_read',
+  'create_goal',
+  'get_goal',
+  'update_goal',
   'team_list_members',
   'team_list_templates',
   'team_inspect_config',
