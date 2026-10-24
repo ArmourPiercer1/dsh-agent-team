@@ -48,12 +48,38 @@ import { createPostConsumeEditClosure } from '../controlled-fs/src/post-consume-
 // the write-handoff spec's precedent (a5m2-write-handoff-c1.test.ts:249):
 // the governed .mjs family module is loaded through the URL form and cast —
 // the arm's surface is pinned BY these tests, not by a declaration file.
+// The arm's structural face as THESE tests drive it — real types and real
+// narrowing, no `any` (root edit-any card): the shapes below are exactly
+// what the arm answers (effects entries, the plan fact's callId, the
+// refuse-result's typed code), pinned leg-for-leg by the assertions.
+interface ClassifiedEdit {
+  ok: boolean
+  code?: string
+  detail?: string
+  plan: { callId: string }
+  parametersFingerprint: string
+  effects: Array<{ kind: string; resource: { canonicalLocator: string; rights: string[] } | null }>
+  reviewPayload: {
+    familyId: string
+    adapterRevision: number
+    providerIdentity: string
+    targetManifest: { readEffectLaw: string; creationPossible: boolean }
+  }
+}
+interface ArmRefusal {
+  ok?: boolean
+  code?: string
+  detail?: string
+  settled?: string
+  editOutcome?: string
+  sideEffectPossible?: boolean
+}
 const EDIT_MOD = (await import(new URL('../src/plugin/live/governed-families/edit.mjs', import.meta.url).href)) as {
   createGovernedEditArm: (deps: Record<string, unknown>) => {
-    classify: (args: Record<string, unknown>, exec: unknown, callId: string) => any
-    prepare: (plan: any, grant: unknown) => any
-    execute: (plan: any, consumed: unknown) => Promise<any>
-    cancel: (plan: any) => any
+    classify: (args: Record<string, unknown>, exec: unknown, callId: string) => ClassifiedEdit
+    prepare: (plan: { callId: string }, grant: unknown) => ArmRefusal
+    execute: (plan: { callId: string }, consumed: unknown) => Promise<ArmRefusal & { value?: { before: string; after: string; canonicalLocator: string } }>
+    cancel: (plan: { callId: string }) => ArmRefusal
     drain: () => void
   }
 }
@@ -323,10 +349,17 @@ describe('A5M2 B-EDIT arm (classify purity, M-02 effects, pairing)', () => {
     expect(c.ok).toBe(true)
     expect(c.effects.map((e: { kind: string }) => e.kind)).toEqual(['tool-invoke', 'read', 'write'])
     const loc = path.join(w.root, 'notes.md')
-    expect(c.effects[1].resource.canonicalLocator).toBe(loc)
-    expect(c.effects[2].resource.canonicalLocator).toBe(loc)
-    expect(c.effects[1].resource.rights).toEqual(['read'])
-    expect(c.effects[2].resource.rights).toEqual(['write'])
+    // real narrowing: the read/write legs MUST be the resource-carrying
+    // entries — the guard failing is a law break, not a type dodge.
+    const resourceLeg = (i: number): { canonicalLocator: string; rights: string[] } => {
+      const resource = c.effects[i]?.resource
+      if (resource === undefined || resource === null) throw new Error(`effect leg ${String(i)} must carry the exact-locator resource`)
+      return resource
+    }
+    expect(resourceLeg(1).canonicalLocator).toBe(loc)
+    expect(resourceLeg(2).canonicalLocator).toBe(loc)
+    expect(resourceLeg(1).rights).toEqual(['read'])
+    expect(resourceLeg(2).rights).toEqual(['write'])
     expect(validatePaFamilyTarget('B-EDIT', c.reviewPayload.targetManifest)).toBeUndefined()
     expect(c.reviewPayload.targetManifest.readEffectLaw).toContain('另需 read effect')
     expect(c.reviewPayload.targetManifest.creationPossible).toBe(false)
@@ -370,6 +403,7 @@ describe('A5M2 B-EDIT arm (classify purity, M-02 effects, pairing)', () => {
     const grant = { grantId: 'g-9', callId: c.plan.callId, parametersFingerprint: c.parametersFingerprint, bindingId: binding.bindingId, bindingRevision: binding.bindingRevision }
     const ran = await arm.execute(c.plan, { consumed: true, grant })
     expect(ran.ok).toBe(true)
+    if (ran.value === undefined) throw new Error('a committed execute must carry the closure receipt')
     expect(ran.value.before).toBe('alpha beta\n')
     expect(ran.value.after).toBe('alpha GAMMA\n')
     expect(readFileSync(path.join(w.root, 'q.txt'), 'utf8')).toBe('alpha GAMMA\n')
