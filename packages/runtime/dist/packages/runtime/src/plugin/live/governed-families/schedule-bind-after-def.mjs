@@ -58,6 +58,13 @@ export const SCHEDULE_AFTER_DEF_BIND_POINTS = Object.freeze({
 })
 
 const PAIR = Object.freeze(['schedule_list', 'schedule_delete'])
+// CONTINUATION CARD ② (root 2026-10-26, fork route ruled): the create/update
+// GOVERNED ARMS ride the SAME list/delete law (same-Agent native hook, PA
+// final consume, per-name capture). They arm ONLY when the wiring supplies
+// the trigger-governance gate (deps.triggerGate); while the ruled fork is
+// not the mounted provider the gate refuses dispatch (必交不删, 缺口未闭不可
+// 启用) BEFORE any PA consume — no grant is spent on a refusal.
+const TRIGGER_ARMS = Object.freeze(['schedule_create', 'schedule_update'])
 
 const isRecord = (value) => value !== null && typeof value === 'object'
 
@@ -102,8 +109,14 @@ export function createScheduleBindAfterDef(deps) {
   const note = (event, extra) => deps.observe?.({ event, ...(extra ?? {}) })
   const wait = deps.wait ?? ((ms) => new Promise((resolve) => { globalThis.setTimeout(resolve, ms) }))
 
+  // list/delete ALWAYS (frozen, no regression); create/update join when the
+  // trigger-governance gate is wired (the ② arms).
+  function armNames() {
+    return deps.triggerGate === undefined || deps.triggerGate === null ? [...PAIR] : [...PAIR, ...TRIGGER_ARMS]
+  }
+
   function captureOriginalDefs(agent) {
-    for (const name of PAIR) {
+    for (const name of armNames()) {
       let def
       try {
         def = deps.readToolDefinition(name, agent)
@@ -120,7 +133,7 @@ export function createScheduleBindAfterDef(deps) {
     }
     // BIND-MOMENT RE-READ (gate b): a look-alike copy that answers the SECOND
     // read of the same name is refused here, before any listener exists.
-    for (const name of PAIR) {
+    for (const name of armNames()) {
       const again = deps.readToolDefinition(name, agent)
       if (again !== originalDefs.get(name)) {
         throw breakpoint('def-identity-drift', 'the same original definition object at the bind-moment re-read', 'a different object (look-alike copy)', `pair:${name}`)
@@ -178,6 +191,9 @@ export function createScheduleBindAfterDef(deps) {
     if (live.list !== bindMethods.list || live.delete !== bindMethods.delete) {
       throw breakpoint('service-method-drift', 'the bound list/delete METHOD identities', 'the service methods changed under the same object', 'per-dispatch methods')
     }
+    if (bindMethods.armed && (live.create !== bindMethods.create || live.update !== bindMethods.update)) {
+      throw breakpoint('service-method-drift', 'the bound create/update METHOD identities (the ② arms)', 'the service methods changed under the same object', 'per-dispatch methods')
+    }
   }
 
   async function bindExecutions(agent) {
@@ -189,11 +205,13 @@ export function createScheduleBindAfterDef(deps) {
       throw breakpoint('service-lifecycle-unobservable', 'the PUBLIC provider lifecycle to answer {id, service} at the bind (inject fiber ACTIVE)', 'the wiring supplied the face and it did not answer — fail closed, no raw-feed fallback on the proxy world', 'G6-0655 lifecycle law')
     }
     const serviceAtBind = genAtBind !== undefined ? genAtBind.service : deps.scheduleServiceFeed?.()
+    const armed = deps.triggerGate !== undefined && deps.triggerGate !== null
     if (!isRecord(serviceAtBind)
-      || typeof serviceAtBind.list !== 'function' || typeof serviceAtBind.delete !== 'function') {
-      throw breakpoint('service-shape', 'full ScheduleService-shaped live handle (list/delete)', String(serviceAtBind), 'execute/live service identity')
+      || typeof serviceAtBind.list !== 'function' || typeof serviceAtBind.delete !== 'function'
+      || (armed && (typeof serviceAtBind.create !== 'function' || typeof serviceAtBind.update !== 'function'))) {
+      throw breakpoint('service-shape', armed ? 'full ScheduleService-shaped live handle (list/delete + create/update arms)' : 'full ScheduleService-shaped live handle (list/delete)', String(serviceAtBind), 'execute/live service identity')
     }
-    const bindMethods = Object.freeze({ service: serviceAtBind, list: serviceAtBind.list, delete: serviceAtBind.delete, executes: new Map(), generationId: genAtBind?.id ?? null })
+    const bindMethods = Object.freeze({ service: serviceAtBind, list: serviceAtBind.list, delete: serviceAtBind.delete, create: armed ? serviceAtBind.create : undefined, update: armed ? serviceAtBind.update : undefined, armed, executes: new Map(), generationId: genAtBind?.id ?? null })
     // The bind-time EXECUTE references (root residual 4): current.execute
     // compared against def.execute on the SAME object is a tautology; the
     // comparison runs against these SAVED references instead.
@@ -262,6 +280,16 @@ export function createScheduleBindAfterDef(deps) {
         }
         try {
           verifyLive(agent, exec.name, bindMethods)
+          // ② TRIGGER-ARM GATE (before ANY PA consume — a refused arm spends
+          // no grant): while the ruled fork is not the mounted governed
+          // provider the gate answers TRIGGER_GOVERNANCE_OPEN and the native
+          // create/update body is entered ZERO times (必交不删 / 不可启用).
+          if (bindMethods.armed && TRIGGER_ARMS.includes(exec.name)) {
+            const t = await Promise.resolve(deps.triggerGate.evaluateDispatch(exec.name))
+            if (t?.enabled !== true) {
+              throw breakpoint('trigger-governance-open', 'the trigger-governance gate to answer enabled (the ruled fork mounted with its admission consumer)', `refused ${String(t?.code ?? 'n/a')}: ${String(t?.detail ?? '').slice(0, 180)}`, 'schedule trigger law (root 2026-10-26)')
+            }
+          }
           let answer
           try {
             answer = await deps.consumePaAtBody(exec, def)
