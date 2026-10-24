@@ -36,6 +36,16 @@ export interface ScheduleBindDeps {
   registerGuardFor?: (agent: unknown) => ((guard: (exec: unknown) => string | undefined) => (() => void) | undefined) | undefined
   registerGuard?: ((guard: (exec: unknown) => string | undefined) => (() => void) | undefined) | undefined
   scheduleServiceFeed?: () => unknown
+  /** PUBLIC provider lifecycle (the G6-0655 shape): the CURRENT ACTIVE
+   *  generation `{ id, service: facade }`, or null when the observer fiber
+   *  is absent/non-ACTIVE. Supplied = the CURRENTNESS law is the provider
+   *  GENERATION (Cordis 639 answers a fresh tracker proxy per ctx.get, so
+   *  object identity across reads is not a world-carried fact); omitted =
+   *  the non-proxy world keeps the object-identity law. A replacement
+   *  generation or non-ACTIVE INVALIDATES the bound capture (typed
+   *  refusal); same-generation in-place method swaps are NOT promised to
+   *  be observed (the i6 law — bound handles keep serving). */
+  serviceGeneration?: () => { id: number, service: unknown } | null
   /** Root residuals 1/2: the safe point is only complete when this answers
    *  true for BOTH pair names — the wiring reads the REAL Guard dispatcher
    *  surface (entryOf → ACTIVE binding of the bound def identity). */

@@ -3584,6 +3584,16 @@ export function createAgentBindings(deps) {
               : { on: (event, handler) => { const d = agentCtx.on(event, handler, { global: true }); return typeof d === 'function' ? d : () => {} } }),
             registerGuardFor: (agent) => (fn) => (typeof agent?.ctx?.tools?.guard === 'function' ? agent.ctx.tools.guard(fn) : undefined),
             scheduleServiceFeed: () => deps.scheduleServiceFeed(),
+            // THE PUBLIC PROVIDER LIFECYCLE FACE (root 2026-10-24 residual,
+            // the G6-PROVEN 0655a9f4c shape): on Cordis 639 object identity
+            // across ctx.get reads is not a fact the world carries (fresh
+            // tracker proxy per read), so the module's CURRENTNESS law is
+            // the provider GENERATION (ACTIVE-gated {id, facade}); the face
+            // is passed ONLY when the host published it — no face keeps the
+            // non-proxy world on its identity law (unit suites unchanged).
+            serviceGeneration: (typeof deps.scheduleLifecycle?.currentGeneration === 'function'
+              ? () => deps.scheduleLifecycle.currentGeneration()
+              : undefined),
             // ROOT b4 终裁: the tuple is ESTABLISHED, never waited for. The
             // safe point runs this ONCE the ORIGINAL defs are visible: the
             // Team Guard assembly's OWN bind/verification (bindOwnTools =

@@ -77,6 +77,8 @@ interface HarnessOptions {
   take?: boolean
   establish?: unknown | (() => unknown)
   gateDuring?: (self: { handle?: Handle }) => void
+  feed?: () => unknown
+  serviceGeneration?: () => unknown
 }
 
 function harness (opts: HarnessOptions = {}): Harness {
@@ -123,7 +125,8 @@ function harness (opts: HarnessOptions = {}): Harness {
       h.guards.push(fn)
       return () => { h.guards.splice(h.guards.indexOf(fn), 1); h.disposal.push('guard') }
     },
-    scheduleServiceFeed: () => FIXED_SERVICE,
+    scheduleServiceFeed: opts.feed ?? (() => FIXED_SERVICE),
+    ...(opts.serviceGeneration === undefined ? {} : { serviceGeneration: opts.serviceGeneration }),
     establishNative: (entries: Array<{ name: string }>) => {
       h.establishCalls += 1
       // b6: the provisional handover deny must ALREADY stand when ACTIVE is
@@ -202,6 +205,72 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(h.refusals[0]?.breakpoint?.kind).toBe('def-never-appeared')
     expect(h.establishCalls).toBe(0) // establishment waits for the def face, never before
     expect(h.gateCalls).toHaveLength(0)
+  })
+
+  it('(k) THE CORDIS 639 PROXY WORLD (root 2026-10-24 residual): raw reads answer a FRESH proxy per read and a FRESH method object per access — the PUBLIC provider GENERATION (the G6-0655 shape) is the currentness law; a replacement/non-ACTIVE generation INVALIDATES the bound capture', async () => {
+    // The 639 tracker shape as root measured it (host.ts:2994-3000 was the
+    // phantom-drift source): EVERY ctx.get read returns a new tracker proxy
+    // and EVERY method access returns a new function object. An identity
+    // comparison across reads was a guaranteed FALSE refusal (正向必拒).
+    const target = makeService() as Record<string, unknown>
+    const rawRead = (): Record<string, unknown> => new Proxy(target, {
+      get: (t, key) => {
+        const v = Reflect.get(t, key)
+        if (typeof v === 'function') {
+          const fn = (...args: unknown[]): unknown => (v as (...a: unknown[]) => unknown)(...args)
+          return fn
+        }
+        return v
+      },
+    })
+    // The bind-ONCE facade law (mirrors host.ts bindOnceScheduleFacade):
+    // child.get bound ONCE at the generation boundary, functions bound ONCE.
+    const bindOnceFacade = (svc: Record<string, unknown>): Record<string, unknown> => Object.freeze(Object.fromEntries(Object.keys(svc).map((key) => {
+      const v = svc[key]
+      return [key, typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(svc) : v]
+    })))
+    let generation: { id: number, service: unknown } | null = Object.freeze({ id: 1, service: bindOnceFacade(rawRead()) })
+    // ANTI-FAKE-GREEN: the tracker world NEVER answers the same object twice,
+    // while the generation facade's method handles ARE stable bound handles —
+    // a plain-object-identity harness could not express this difference:
+    expect(rawRead()).not.toBe(rawRead())
+    const facade1 = generation.service as Record<string, unknown>
+    expect(facade1.list).toBe(facade1.list)
+    const face = (): unknown => generation
+    const { h } = await bindOk({ feed: () => generation?.service, serviceGeneration: face })
+    // POSITIVE: real dispatch through the proxy world — CURRENTNESS is the
+    // generation, never the (never-reused) read identity; the facade is fed
+    // to the gate as the service face (adapter assembly identity law holds
+    // within one generation because the facade answers the SAME object).
+    const gateInput = h.gateCalls[0] as { service: unknown }
+    expect(gateInput.service).toBe(generation?.service)
+    const exec = listener<ExecHandler>(h, 'tools/execute')
+    expect(await exec({ name: 'schedule_list', agent: AGENT, callId: 'k-1', token: {} }, async () => 'DISPATCHED')).toBe('DISPATCHED')
+    expect(h.consumeCalls).toBe(1)
+    expect(h.notes.map((n) => n.event)).not.toContain('post-boundary-service-drift')
+    // NEGATIVE 1 (replacement): the provider moved to a NEW generation — the
+    // old capture is INVALIDATED, the call refuses with the typed lifecycle
+    // drift and the PA seat is NEVER entered on the stale provider.
+    generation = Object.freeze({ id: 2, service: bindOnceFacade(rawRead()) })
+    await expect(exec({ name: 'schedule_list', agent: AGENT, callId: 'k-2', token: {} }, async () => 'DISPATCHED'))
+      .rejects.toMatchObject({ breakpoint: { kind: 'service-generation-drift' } })
+    expect(h.consumeCalls).toBe(1)
+    // NEGATIVE 2 (non-ACTIVE window): the lifecycle stops answering —
+    // unknowable NEVER becomes allow-by-default (fail closed).
+    generation = null
+    await expect(exec({ name: 'schedule_list', agent: AGENT, callId: 'k-3', token: {} }, async () => 'DISPATCHED'))
+      .rejects.toMatchObject({ breakpoint: { kind: 'service-lifecycle-unobservable' } })
+    expect(h.consumeCalls).toBe(1)
+    // SOURCE LAW: the host publishes exactly this shape — inject callback IS
+    // the generation boundary, the facade binds ONCE, the FEED answers only
+    // the CURRENT ACTIVE generation, and the fiber gate quotes the public
+    // FiberState.ACTIVE (2). Zero private unwrap anywhere in the block.
+    const here = dirname(fileURLToPath(import.meta.url))
+    const host = readFileSync(join(here, '..', 'src', 'plugin', 'host.ts'), 'utf8')
+    expect(host).toContain("ctx.inject(['schedule']")
+    expect(host).toContain('bindOnceScheduleFacade')
+    expect(host).toContain('scheduleServiceFeed: (): unknown => scheduleLifecycle.currentGeneration()?.service')
+    expect(host).toContain('state !== 2')
   })
 
   it('(b) look-alike copy at the bind-moment re-read refuses the whole bind BEFORE the gate', async () => {
