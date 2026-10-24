@@ -387,6 +387,7 @@ import { createSubagentSpawnWiring } from './governed-families/subagent-spawn-wi
 // wiring factory (its OWNED admit seat walks the plane's real paAdmit) plus the
 // frozen per-record census facts naming the trio it mounts under.
 import { createBSubagentControlWiring } from './governed-families/subagent-wiring.mjs'
+import { createBJobControlWiring } from './governed-families/job-wiring.mjs'
 import { A5_B_SUBAGENT_RECORD_SPECS } from './governed-families/subagent-adapters.mjs'
 // A5M2 B-SCHEDULE (root 18:11): the REAL published Host error-class identity
 // — the SAME module the host's registerScheduleTools throws through at
@@ -2529,6 +2530,10 @@ export function createAgentBindings(deps) {
       // carries it into the plane's ONE placement, and the post-publish
       // family registration write (the 9e-4 lesson).
       let a5SubagentControlInject = null
+      // A5M2 B-JOB slice-2 (CENTER whole-family card 09:5x): the governed
+      // job-control wiring face; ABSENT = today's honest non-governed jobs
+      // rows byte-for-byte (the zero-flip law the whole fleet obeys).
+      let a5JobControlInject = null
       let a5BOrchestrationInject = null
       // A5-M2 B-SESSION: the mount-time bound governed todo arm (null = this world
       // mounts none, the zero-flip law). Declared in the SAME lexical scope as both
@@ -4929,6 +4934,103 @@ export function createAgentBindings(deps) {
           })
           observations.push(`a5m2-b-subagent-control: trio ARMED for ${sessionId} (placement rides the plane; records=${Object.keys(subagentControlCaptured).join(',')})`)
         }
+        // ── A5M2 B-JOB CONTROL-WIRING (slice-2 mount leg; CENTER whole-family
+        // card 09:5x; root M0 unowned-row assignment) ── the FC-JOB trio keeps
+        // the PLANE'S OWN existing rows (job_output/job_list/job_kill under the
+        // closed jobsEnabled gate); this leg supplies the PA-walked dispatch
+        // face + the family claim, and the rows route THROUGH the face while it
+        // is present (absent = today's honest non-governed leg, byte-for-byte
+        // zero flip). The BRIDGE is the body: the two-fence order is enforced
+        // INSIDE createGovernedJobsBridge and never re-implemented here; the
+        // wiring binds that handle and re-verifies it per call
+        // (JOB_ADAPTER_BRIDGE_DRIFT, verified handles only). The PURE fence/
+        // projection probe mints MANIFEST facts only (ownerRelation/
+        // ownerAdjudication via checkManagementAccess, producerIncarnation via
+        // the svc.get projection) — pure reads, NOT a second enforcement seat;
+        // absent probes mint the honest absence words. PA is the plane's ONE
+        // funnel read LAZILY (rows run only after publish); the placement feed
+        // reads back through the SAME plane placementFeed (the G6 law). A
+        // refusal here is a setup refusal; there is no fallback row.
+        if (planeCfg.jobsEnabled === true && a5JobsBridge !== null) {
+          const refuseJobControl = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed B-JOB control mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-job-control-mount-refused'
+            observations.push(`a5m2-b-job-control: mount-REFUSED for ${sessionId} (${String(why).slice(0, 140)})`)
+            return error
+          }
+          const jobViewer = { rootSessionId: String(teamRoot), instanceId: String(instanceId) }
+          const jobGatewayRow = () => liveJobsGatewayAssemblies.get(String(teamRoot)) ?? null
+          const jobService = typeof deps.jobs === 'function' ? deps.jobs : () => undefined
+          const jobControlAssembly = createBJobControlWiring({
+            providerId: 'a5p5-plane',
+            bridge: a5JobsBridge,
+            liveBridge: () => a5JobsBridge,
+            probe: async (name, caller, snapshot) => {
+              if (name === 'job_list') {
+                return {
+                  ownerRelation: 'caller-scoped-own-set (host caller fence scopes the list)',
+                  ownerAdjudication: 'host caller fence — the scoped sweep answers no Team-layer address',
+                  producerIncarnation: 'caller-scoped-sweep',
+                }
+              }
+              const jobId = typeof snapshot?.job_id === 'string' ? snapshot.job_id : ''
+              const facts = {}
+              const gateway = jobGatewayRow()
+              if (gateway !== null && typeof gateway.checkManagementAccess === 'function' && jobId.length > 0) {
+                const verdict = gateway.checkManagementAccess({ jobId, viewer: jobViewer })
+                if (verdict?.ok === true && verdict.corded === true) {
+                  facts.ownerRelation = 'corded-own-member-scope'
+                  facts.ownerAdjudication = 'team gateway fence answers first; the host caller fence stays authoritative'
+                } else if (verdict?.ok === true) {
+                  facts.ownerRelation = 'host caller fence authoritative (corded:false disclosed pass-through)'
+                  facts.ownerAdjudication = 'host caller fence — the Team lane never attributed this jobId'
+                } else if (verdict?.ok === false) {
+                  facts.ownerRelation = 'foreign-member-scope'
+                  facts.ownerAdjudication = 'team gateway fence answers with owner-mismatch BEFORE host entry'
+                }
+              }
+              try {
+                const view = jobService()?.get?.(jobId, caller)
+                if (view !== null && typeof view === 'object' && typeof view.kind === 'string') {
+                  facts.producerIncarnation = `${view.kind}@startedAt=${String(view.startedAt)}`
+                }
+              } catch { /* honest absence — mintBJobTarget mints 'unobserved' */ }
+              return facts
+            },
+            placementFeed: (name) => {
+              const fed = a5PlaneValue?.placementFeed?.(name)
+              if (fed === undefined || fed === null) return undefined
+              return {
+                definitionIdentity: typeof fed.definitionIdentity === 'string' && fed.definitionIdentity.length > 0 ? fed.definitionIdentity : undefined,
+                realmId: typeof fed.realmId === 'string' && fed.realmId.length > 0 ? fed.realmId : undefined,
+              }
+            },
+            pa: Object.assign(
+              (walk) => {
+                if (a5PlaneValue === null || typeof a5PlaneValue.paAdmit !== 'function') {
+                  return Promise.reject(new Error('the placed plane answers no paAdmit funnel — the job trio has no admission edge (this wiring ships no stub walk)'))
+                }
+                return a5PlaneValue.paAdmit(walk)
+              },
+              { closePlan: (callId) => { a5PlaneValue?.paAdmit?.closePlan?.(callId) } },
+            ),
+            observe: (row) => observations.push(`a5m2-b-job-control: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')} ${String(row?.detail ?? '')}`),
+          })
+          if (jobControlAssembly.ok !== true) {
+            throw refuseJobControl(`the wiring refused its inputs (${String(jobControlAssembly.code)}: ${String(jobControlAssembly.message ?? '').slice(0, 160)})`)
+          }
+          a5JobControlInject = Object.freeze({
+            dispatch: jobControlAssembly.dispatch,
+            familyId: jobControlAssembly.familyId,
+            providerId: jobControlAssembly.providerId,
+            placementNames: jobControlAssembly.placementNames,
+            familyRegistrations: jobControlAssembly.familyRegistrations,
+            dispose: jobControlAssembly.dispose,
+          })
+          observations.push(`a5m2-b-job-control: trio ARMED for ${sessionId} (placement rides the plane; rows=job_output,job_list,job_kill)`)
+        }
         // A5M2-WIRE-G2 B-ORCHESTRATION execution arm (records 47 workflow /
         // 48 ralph): the REAL consumer behind the frozen adapters (root
         // 637842 correction). Same-source law: the member-scoped capture IS
@@ -6237,6 +6339,7 @@ export function createAgentBindings(deps) {
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
           ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5EditInject === null && a5SreInject === null && a5ImageInject === null && a5G6Inject === null && a5TeamOpsInject === null && a5SubagentControlInject === null && a5BOrchestrationInject === null && a5SpawnWiring === null && a5G3TerminalInject === null && a5LspInject === null && a5PwshInject === null && a5G3RunCodeGuardInject === null && a5G5GoalInject === null && a5G2Mount === null && !(planeCfg?.g1PureQuery !== undefined && planeCfg?.g1PureQuery !== null) ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
+            ...(a5JobControlInject === null ? {} : { jobControl: a5JobControlInject }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5EditInject === null ? {} : { edit: a5EditInject }),
@@ -7702,6 +7805,33 @@ export function createAgentBindings(deps) {
           for (const controlRegistration of controlRegistrations) {
             registerA5GovernedFamily(controlRegistration.definitionIdentity, controlRegistration.entry)
             observations.push(`a5m2-b-subagent-control: family REGISTERED for ${sessionId} (record=${String(controlRegistration.recordIndex)} ${String(controlRegistration.name)} placement=${String(controlRegistration.definitionIdentity).slice(0, 32)})`)
+          }
+        }
+        // ── A5M2 B-JOB registration (slice-2; CENTER whole-family card) ── THE
+        // SAME mount-writer law as every sibling: read the plane's own face
+        // AFTER publish; the keys are the PLACED job rows' identities read
+        // FRESH through the wiring's familyRegistrations (its own
+        // JOB_ADAPTER_PLACEMENT_KEY_ABSENT/_MOVED throws ride this block —
+        // never a guessed key, never a silent skip); the entry's
+        // adapterRevision is the mount's ACTUAL mint generation (the 22:02
+        // consistency law — the same number every B-JOB PA block presents, so
+        // the bridge family gate answers on equal bytes). Presence of the
+        // face is the deployment decision; this block is transport only.
+        if (a5PlaneValue?.jobControl !== undefined) {
+          let jobControlRegistrations
+          try {
+            jobControlRegistrations = a5PlaneValue.jobControl.familyRegistrations()
+          } catch (error) {
+            const refusal = new Error(
+              `agent-bindings: alpha.5 governed B-JOB family registration refused for '${sessionId}': ${String(error?.message ?? error).slice(0, 220)}`,
+            )
+            refusal.code = 'alpha5-job-control-mount-refused'
+            observations.push(`a5m2-b-job-control: family-registration-REFUSED for ${sessionId} (placement feed silent or key moved)`)
+            throw refusal
+          }
+          for (const jobControlRegistration of jobControlRegistrations) {
+            registerA5GovernedFamily(jobControlRegistration.definitionIdentity, jobControlRegistration.entry)
+            observations.push(`a5m2-b-job-control: family REGISTERED for ${sessionId} (record=${String(jobControlRegistration.recordIndex)} ${String(jobControlRegistration.name)} placement=${String(jobControlRegistration.definitionIdentity).slice(0, 32)})`)
           }
         }
         // A5M2-WIRE-G2 B-ORCHESTRATION registration: same law, same single
