@@ -28,7 +28,7 @@ const boot = new Function(...mods.keys(), '__SELF_URL__', `
   const window = { location: { origin: 'http://127.0.0.1:0' } };
   ${region}
   currentRoot = 'session-offline-root'
-  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, NONCE }
+  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, NONCE }
 `)(...mods.values(), new URL('./05-control-window-runner.mjs', import.meta.url).href)
 const results = []
 const A = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`) }
@@ -62,6 +62,13 @@ A('L3 emits team_resolve_control (NOT TURN-DONE) with the listed requestId', t3?
 // (3) unique-callId law holds across both protocols (no mixing)
 boot.harvest(reqRes)
 A('re-harvest does NOT duplicate the same callId', boot.callResults.filter((x) => x.callId === cid).length === 1)
+
+// (5) ERROR branch: a TRUE isError create return must ABORT before any bind
+// wait (gate verdict offline-decidable); non-null is arrival-only, never a
+// business-success PASS; timeout fails honestly.
+A('gate: is_error=true -> abort-refusal (binding wait NEVER entered)', boot.createGate({ isError: true, text: 'x' }).action === 'abort-refusal')
+A('gate: arrival WITHOUT isError -> proceed-bind only (NO business-success claim)', boot.createGate({ isError: false, text: '{}' }).action === 'proceed-bind')
+A('gate: null -> fail-timeout (honest, never fake)', boot.createGate(null).action === 'fail-timeout')
 
 const failed = results.filter((r) => !r.ok).length
 console.log(JSON.stringify({ verdict: failed === 0 ? 'OFFLINE-DECODER-OK' : 'OFFLINE-DECODER-FAIL', checks: results.length, failed }))

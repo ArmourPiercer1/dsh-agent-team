@@ -425,6 +425,13 @@ function lastUserText(req) {
   }
   return ''
 }
+function createGate(res) { // PURE verdict (08 offline-verifiable): non-null WITHOUT isError is only
+  // "a real return arrived" — NEVER a business-success claim; a TRUE isError
+  // aborts BEFORE any bind wait; the timeout fails honestly. (root 442 原审 residual)
+  if (res === null) return { action: 'fail-timeout' }
+  if (res.isError === true) return { action: 'abort-refusal' }
+  return { action: 'proceed-bind' }
+}
 const toolCallLog = [] // MINIMAL emit/result fields only (root 2026-10-24: no full-payload logging)
 function harvest(req) {
   const msgs = bodyOf(req).messages ?? []
@@ -637,7 +644,11 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   // (whichever protocol carries it) BEFORE waiting on the bind; a refused/
   // errored create must surface its typed error immediately, not silently.
   const createRes = await waitFor('team_create_member tool result (protocol-aware harvest)', 60_000, () => callResults.find((r) => r.step === 'leader:create') ?? null)
-  check('L1', 'team_create_member REAL return harvested and correlated by callId', createRes !== null, `isError=${String(createRes?.isError)} text=${String(createRes?.text).slice(0, 400)}`)
+  const gate = createGate(createRes) // a REAL return arrived is wiring-only evidence — NO business-success claim
+  check('L1', 'team_create_member REAL return harvested and correlated by callId (arrival only, business semantics NOT asserted)', gate.action !== 'fail-timeout', `gate=${gate.action} isError=${String(createRes?.isError)} text=${String(createRes?.text).slice(0, 400)}`)
+  if (gate.action === 'abort-refusal') { // FAIL FAST: the real refusal is recorded; NO 120s bind wait
+    throw new Error(`team_create_member REAL refusal (fail-fast, bind never awaited): ${String(createRes.text)}`)
+  }
   const member = await waitFor('member binding in team_domain', 120_000, () => domainFacts())
   log(`member instance=${member.instanceId} session=${member.sessionId}`)
 
