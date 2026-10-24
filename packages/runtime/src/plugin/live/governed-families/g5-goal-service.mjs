@@ -636,17 +636,37 @@ export function createG5GoalServiceAdapter({
       // Authority edges the host enforces BEFORE the service call. With the
       // reader mounted the row mirrors them; without it the dimension is
       // carried UNOBSERVED (L6) — never claimed, never faked.
-      if (toolName === 'create_goal' && plan.targetManifest.executionAuthority.observed === true) {
+      // P1 SAFE CORRECTION (center, 2026-10-24, root-confirmed mechanism):
+      // an UNOBSERVED authority dimension NEVER opens a MUTATION arm. Host
+      // tool-goal enforces requireDirectHuman/completionAuthority BEFORE the
+      // service (@639ed01539 index.ts:224,:263,:271,:291 → authority.ts:100-118)
+      // and the service's exact-agent/CAS checks supply NO authority; a row
+      // without a trusted per-call reader therefore REFUSES the authority-
+      // gated write instead of passing it through unmirrored (the pass-through
+      // was the bypass: PA approve -> direct port call the host would refuse).
+      // Scoped to the authority-gated arms (get_goal and the read arms are
+      // unchanged); no new vocabulary (existing codes + the named AUTHORITY
+      // gap wording); the OBSERVED enforcement paths below stay byte-identical.
+      // Final shape = the owner's trusted readExecutionFacts supply (8722);
+      // this block then closes the refusal BY OBSERVATION, not by absence.
+      if (toolName === 'create_goal') {
+        if (plan.targetManifest.executionAuthority.observed !== true) {
+          return { refusal: refuseWith(CODES.DIRECT_HUMAN_REQUIRED, `${toolName}: ${A5_G5_GOAL_NAMED_GAPS.AUTHORITY}; the host requires a direct human turn before create (tool-goal/src/index.ts:224 → authority.ts:100-103) and UNOBSERVED is not a pass — the write arm stays closed until a trusted per-call reader observes it; zero port entry`) }
+        }
         if (plan.targetManifest.executionAuthority.kind !== 'direct-human') {
           return { refusal: refuseWith(CODES.DIRECT_HUMAN_REQUIRED, `${toolName}: this goal operation requires a direct human turn on a top-level agent (tool-goal/src/index.ts:224 → authority.ts:100-103); the mounted execution-facts reader says kind ${JSON.stringify(plan.targetManifest.executionAuthority.kind)} — zero port entry`) }
         }
       }
-      if (toolName === 'update_goal' && plan.targetManifest.executionAuthority.observed === true) {
+      if (toolName === 'update_goal') {
         const needsDirect = action === 'edit' || action === 'pause' || action === 'resume'
+        const isCompletion = action === 'complete' || action === 'blocked'
+        if ((needsDirect || isCompletion) && plan.targetManifest.executionAuthority.observed !== true) {
+          return { refusal: refuseWith(needsDirect ? CODES.DIRECT_HUMAN_REQUIRED : CODES.COMPLETION_AUTHORITY_REQUIRED, `${toolName}: action ${JSON.stringify(action)} is authority-gated at the host (tool-goal/src/index.ts:263,:271${isCompletion ? ',:291' : ''} → authority.ts:100-118) and ${A5_G5_GOAL_NAMED_GAPS.AUTHORITY}; UNOBSERVED is not a pass — zero port entry`) }
+        }
         if (needsDirect && plan.targetManifest.executionAuthority.kind !== 'direct-human') {
           return { refusal: refuseWith(CODES.DIRECT_HUMAN_REQUIRED, `${toolName}: action ${JSON.stringify(action)} requires a direct human turn (tool-goal/src/index.ts:263,:271 → authority.ts:100-103) — zero port entry`) }
         }
-        if ((action === 'complete' || action === 'blocked') && plan.targetManifest.executionAuthority.kind !== 'direct-human' && plan.targetManifest.executionAuthority.kind !== 'goal-round') {
+        if (isCompletion && plan.targetManifest.executionAuthority.kind !== 'direct-human' && plan.targetManifest.executionAuthority.kind !== 'goal-round') {
           return { refusal: refuseWith(CODES.COMPLETION_AUTHORITY_REQUIRED, `${toolName}: complete and blocked require a direct human turn or the current goal round (tool-goal/src/index.ts:291 → authority.ts:111-118) — zero port entry`) }
         }
       }

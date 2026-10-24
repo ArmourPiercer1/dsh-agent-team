@@ -412,7 +412,7 @@ describe('a5m2-g5 wiring — placement and census', () => {
 describe('a5m2-g5 wiring — the full walk through the published split-path seat (real mint/edge legs)', () => {
   it('success: classify -> open(approved+grant) -> edge(consumedProof) -> row.runPlan -> the canonical goalValue served VERBATIM -> closePlan exactly once', async () => {
     const CREATED = VIEW({ id: 'goal-new', objective: 'wire the goal service', revision: 1 })
-    const w = await world({ current: VIEW(), nextViews: { create: CREATED } })
+    const w = await world({ current: VIEW(), nextViews: { create: CREATED }, readExecutionFacts: () => ({ kind: 'direct-human' }) }) // P1 2026-10-24: a trusted per-call reader is now REQUIRED for a write arm to run
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'create_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<Record<string, unknown>> }
     const served = await def.execute({ objective: 'wire the goal service' }, execWithCall('call-g5-create'))
     // goalValue's projection (timestamps dropped), asserted against the
@@ -543,11 +543,25 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
   it('AUTHORITY named gap: without readExecutionFacts the durable targetManifest carries the UNOBSERVED fact verbatim — never a pass', async () => {
     const w = await world({ nextViews: { create: VIEW({ id: 'goal-auth' }) } })
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'create_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
-    await def.execute({ objective: 'o' }, execWithCall('call-auth'))
+    // CENTER P1 SAFE BLOCK 2026-10-24 (root-confirmed): the durable row STILL
+    // says UNOBSERVED verbatim AND the mutation now REFUSES before the port -
+    // the old pass-through was the authority bypass (host would refuse @224).
+    await expect(def.execute({ objective: 'o' }, execWithCall('call-auth'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
     const target = (w.seat.openWalks()[0] as { family: { targetManifest: Record<string, unknown> } }).family.targetManifest
     expect(target.authorityObserved).toBe(false)
     expect(String(target.authorityReason)).toContain('AUTHORITY UNOBSERVED')
     expect(target.authorityKind).toBeNull() // missing ≠ null ≠ '': UNOBSERVED is SAYABLE, never a silent pass
+  })
+
+  it('CENTER P1 2026-10-24 safe block: UNOBSERVED authority refuses every gated write before the port; the get_goal READ arm stays open', async () => {
+    const w = await world({ current: VIEW(), nextViews: { create: VIEW({ id: 'goal-x' }), pause: VIEW({ phase: 'paused', revision: 2 }) } })
+    const defs = Object.fromEntries((w.asm.definitions ?? []).map((d) => [d.name, d as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }]))
+    await expect(defs.create_goal!.execute({ objective: 'o' }, execWithCall('c1'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
+    await expect(defs.update_goal!.execute({ goal_id: 'goal-w1', revision: 1, action: 'edit' }, execWithCall('c2'))).rejects.toThrow('P_G5_GOAL_DIRECT_HUMAN_REQUIRED')
+    await expect(defs.update_goal!.execute({ goal_id: 'goal-w1', revision: 1, action: 'complete' }, execWithCall('c3'))).rejects.toThrow('P_G5_GOAL_COMPLETION_AUTHORITY_REQUIRED')
+    expect(w.nativeEntered()).toBe(0) // every refusal settles BEFORE the native/port
+    const served = await defs.get_goal!.execute({}, execWithCall('c4')) // the READ arm is unchanged
+    expect((served as { goal?: { id?: string } }).goal?.id).toBeDefined()
   })
 
   it('with the authority seam injected the row ENFORCES its own laws through the bridge (goal-round completion needs the round fact)', async () => {
@@ -574,7 +588,7 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
 
 describe('a5m2-g5 wiring — the NAMED GAP at its measured bytes: the signed B-SESSION table carries only the todo variant', () => {
   it('the goal targetManifest is LOSSLESS JSON (passes the real published losslessness checker)', async () => {
-    const w = await world({ nextViews: { pause: VIEW({ phase: 'paused', revision: 2 }) } })
+    const w = await world({ nextViews: { pause: VIEW({ phase: 'paused', revision: 2 }) }, readExecutionFacts: () => ({ kind: 'direct-human' }) }) // P1 2026-10-24
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
     await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'pause' }, execWithCall('call-lossless'))
     const walk = w.seat.openWalks()[0] as { family: { targetManifest: unknown } }
@@ -582,7 +596,7 @@ describe('a5m2-g5 wiring — the NAMED GAP at its measured bytes: the signed B-S
   })
 
   it('the REAL signed table ACCEPTS every minted goal projection (all three census variants, binds honored)', async () => {
-    const w = await world({ nextViews: { create: VIEW({ id: 'goal-a' }), pause: VIEW({ phase: 'paused' }) } })
+    const w = await world({ nextViews: { create: VIEW({ id: 'goal-a' }), pause: VIEW({ phase: 'paused' }) }, readExecutionFacts: () => ({ kind: 'direct-human' }) }) // P1 2026-10-24
     const targets: Record<string, unknown> = {}
     const get = (w.asm.definitions ?? []).find((d) => d.name === 'get_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
     await get.execute({}, execWithCall('call-tbl-get'))
