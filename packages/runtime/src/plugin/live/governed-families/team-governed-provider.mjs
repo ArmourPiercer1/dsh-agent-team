@@ -1,4 +1,21 @@
 /**
+ * REJECTED CANDIDATE (root final e438 consolidation card, 2026-10-25) — NOT
+ * a pairing, NOT ready, UNREACHABLE behind the restored workflow block
+ * (1e731166). Defects accepted without contest: routing here keys on the
+ * team plugin's self-declared name, not the engines' ACTUAL resolved
+ * Config.provider/subagentProvider; setup supplies restrict, not the REAL
+ * Team setup/Guard/PA/IO/durable ownership (production answers no
+ * laneRecheck); parent.sessionId is WRONG (live identity = Agent.id) and
+ * AgentHandle carries NO result face (settlement must ride the subagents
+ * service run law: followup/whenIdle/stopReason/cancel — never an invented
+ * result); the parent WeakMap correlation is unsafe under concurrency and
+ * the child fingerprint binds no real request; capabilities overclaim
+ * (outputSchema/depthLimit are not enforced). The module is kept ONLY as
+ * history for the root full-source re-pairing (real Team member create/run
+ * chain + per-run seam); acceptance laws:
+ * evidence/a5m2-g2-wire/e438-acceptance-laws-round88.md.
+ */
+/**
  * A5M2-WIRE-G2 THE TEAM-GOVERNED SUBAGENT PROVIDER (pairing A, root/center
  * cards after the c6a50abfa safety block): the named provider the engine
  * configs route to — workflow-ptc Config.provider
