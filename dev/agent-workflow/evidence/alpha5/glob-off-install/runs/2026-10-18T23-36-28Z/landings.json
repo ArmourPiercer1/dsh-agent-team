@@ -1,0 +1,35 @@
+{
+  "off": {},
+  "default": {
+    "team_bash": [
+      {
+        "i": 0,
+        "text": "bash · exit=0\n> A5GLOBOFF-BASH-TOK\n> A5GLOBOFF-WROTE-9\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+      },
+      {
+        "i": 1,
+        "text": "bash · exit=1\n> (empty stdout)\nstderr:\n> cat: ../outside/secret.txt: Permission denied\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":1,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+      }
+    ],
+    "team_grep": [
+      {
+        "i": 2,
+        "text": "search · content · 1 matches\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-36-28Z/workspace/governed/notes.txt:2: A5GLOBOFF-GREP-TOK lives here\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"content\",\"totalMatches\":1,\"truncated\":false}"
+      }
+    ],
+    "team_glob": [
+      {
+        "i": 3,
+        "text": "search · files_with_matches · 2 matches\n> gpos/zzgloboff-alpha.txt\n> gpos/zzgloboff-beta.txt\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"files_with_matches\",\"totalMatches\":2,\"truncated\":false}"
+      }
+    ],
+    "read": [
+      {
+        "i": 4,
+        "text": "line one\nA5GLOBOFF-GREP-TOK lives here\n"
+      }
+    ]
+  },
+  "rename": {},
+  "expectedRefusalVerbatim": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+}

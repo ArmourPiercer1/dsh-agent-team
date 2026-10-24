@@ -1,0 +1,43 @@
+# human-config-template.yml — 真人试用配置层【无秘密模板】（README §3b）
+# 用法：复制为 <human-world>/profiles/web/cordis.patch.yml 后，把下面全部大写占位值
+#       换成真值（勿保留），然后跑 `install-candidate.sh --check-config <human-world>`
+#       门，最后才启动。
+# 法：先配置后启动——启动之后再改此文件【不生效】（重启同目录才生效）。
+# 秘密法：真实 provider 的接入行（BASE_URL / API_KEY）只进启动 env，绝不写进本文件。
+# 形状律 = 已装 dist 的 validateTeamPluginConfig（本模板 = 其必填全套的最小满足形；
+# --check-config 会直接调用该函数做形状校验，最终仍以真 boot 出行为准）。
+- id: dsh-agent-team
+  name: dsh-agent-team/host
+  config:
+    # 启动期对根会话的动作：create-or-open = 没有就建、有就开（真人日常最常配）
+    bootPhase: create-or-open
+    # 根（leader）会话 id：自己起一个稳定名即可（create-or-open 会自动创建）
+    rootSessionId: session-human-demo-1
+    # 蓝图源（非空字符串）。起步用【单行双引号内联 YAML 文档】——\n 表示换行、\" 表示引号；
+    # 例（可直接起步的合法值）："---\nschemaVersion: 3\nblueprintId: human-demo\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader.\"\nmembers:\n  - templateId: wa\n    persona: \"Worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+    blueprintSource: "---\nschemaVersion: 3\nblueprintId: human-demo\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader.\"\nmembers:\n  - templateId: wa\n    persona: \"Worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+    # 配置代际：正整数，当前填 1
+    generation: 1
+    # 预置成员：留空数组即可（成员由 leader 运行期创建）
+    seedMembers: []
+    # 模型选择：这里只写 provider 名与模型名两个标识（非秘密）；
+    # BASE_URL / API_KEY 在启动 env 里给，绝不写进文件
+    staticModel:
+      provider: deepseek
+      model: deepseek-chat
+    # 拒绝选择面：null = 默认
+    deniedSelection: null
+    mcpServer: null
+    # 环境事实 / 外策事实：真人起步留空
+    environmentFacts: []
+    externalPolicyFacts:
+      hard: {}
+      capabilityExists: {}
+    # 工具平面（可选层；键名按契约 realmId，不是 realm）
+    teamToolPlane:
+      realmId: human-realm-demo
+      names:
+        # 平面改名：不得冒名 reserved native 名（subagent_codex / subagent_claude_code /
+        # subagent_fork / subagent 等——冒名会被 typed 拒 PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED）；
+        # zglob-human 是无冲突示例。
+        glob: zglob-human

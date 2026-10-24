@@ -1,0 +1,21 @@
+  dereferenced symlink -> bytes: link-abs-into-cleanup-face (was -> /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-src-fake)
+  dereferenced symlink -> bytes: link-file-abs (was -> /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-install-fake/deployment/landlock-prelauncher.py)
+human world created: /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z
+  sentinel: /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z/.CANDIDATE-HUMAN-USE
+  note: no inherited active layer (clean)
+  template: profiles/web/cordis.patch.TEMPLATE.yml (inactive name — the host loads only cordis.patch.yml)
+  PASS launcher sha256 == INSTALLED record (73cb3858a687a849…)
+  PASS plugin trust root present: /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z/profiles/web/node_modules/dsh-agent-team (name=dsh-agent-team version=0)
+  PASS DSH_HOME exists and is writable: /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z
+  PASS copied launcher bytes identical to source world
+WORLD=/tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z
+START-CHECKLIST
+ 1) cp /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z/profiles/web/cordis.patch.TEMPLATE.yml /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z/profiles/web/cordis.patch.yml
+ 2) edit that file: replace every REPLACE_ME (the REAL provider's three lines go into the ENV at boot — keys NEVER in the file)
+ 3) gate:  node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/human-world.mjs check --state /tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-INSTALLED.json "/tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z"
+ 4) boot:  DSH_HOME="/tmp/a5-human-guard-2026-10-19T02-19-08Z.rO4X/n5/homes/candidate-human-2026-10-19T02-19-11-212Z" DSH_CLIENT_COMMIT_HASH=639ed01539 \
+            DEEPSEEK_BASE_URL=<real-base> DEEPSEEK_API_KEY=<real-key> \
+            node undefined/apps/cli/lib/bin.js web --port <FREE_PORT_3180-3186> --no-open &  echo $! > /tmp/candidate-human.pid
+           (configure FIRST, then boot — edits after boot do not take effect; stop = kill $(cat /tmp/candidate-human.pid);
+            resume later = boot the SAME directory again: the world keeps its state; nothing here ever cleans it)
+ 5) this world is NEVER touched by install/try/rollback automated cleanup (prefix exclusion + negative gate + sentinel).

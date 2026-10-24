@@ -1,0 +1,30 @@
+{
+  "runStamp": "2026-10-19T02-19-45Z",
+  "candidateSha": "d5de74974b0320b191b310ead82407d478477ed7",
+  "legs": [
+    "probe",
+    "pos",
+    "bash-b2",
+    "glob-off",
+    "pin-table"
+  ],
+  "dryRun": true,
+  "pass": 2,
+  "fail": 0,
+  "book": 0,
+  "exitCode": 0,
+  "criteria": [
+    {
+      "id": "D1",
+      "claim": "dry-run wiring: state sha matches CANDIDATE_SHA; src clone present; helpers importable (this line runs after all top-level imports succeeded)",
+      "pass": true,
+      "observed": "sha=d5de74974b host-bin=true"
+    },
+    {
+      "id": "D2",
+      "claim": "dry-run: a host port and a mock port from the 3180/349x families are free right now",
+      "pass": true,
+      "observed": "host=3180 mock=3491"
+    }
+  ]
+}

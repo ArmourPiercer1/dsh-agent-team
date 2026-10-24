@@ -1,0 +1,21 @@
+{
+  "distPlaneRel": "packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs",
+  "inManifest": true,
+  "globEnabledHits": 14,
+  "shutBackendIdHits": 1,
+  "gateLines": [
+    "*    plane?: { realmId, names?, confinedProvider?, definitionOwnerAuthority?, fsInstance?, globEnabled? },",
+    "// Gate 0c (root ruling 20:31Z, a5-globoff): `planeCfg.globEnabled` is a",
+    "const globEnabledRaw = input.plane?.globEnabled",
+    "if (globEnabledRaw !== undefined && typeof globEnabledRaw !== 'boolean') {",
+    "message: `planeCfg.globEnabled must be a boolean when present — got ${JSON.stringify(globEnabledRaw) ?? String(globEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,",
+    "const globEnabled = globEnabledRaw !== false",
+    "// Gate 0c enforcement, part 2 (a5-globoff ②/④): `globEnabled:false` builds",
+    "const realGlob = globEnabled === false ? null",
+    "const globDisabledShut = globEnabled === false ? createShutBackend('a5-glob-config-disabled') : null",
+    "glob: globDisabledShut ?? realGlob ?? shut,",
+    "const hostedGlob = globDisabledShut ?? input.backends?.glob ?? input.backends?.search ?? productionBackends.glob"
+  ],
+  "shutDetail": "the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+  "expectedRefusalVerbatim": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+}

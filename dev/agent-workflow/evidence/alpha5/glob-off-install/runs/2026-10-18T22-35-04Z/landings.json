@@ -1,0 +1,32 @@
+{
+  "byMode": {
+    "doff": {
+      "team_bash": [
+        {
+          "i": 0,
+          "text": "bash · exit=0\n> A5GLOBOFFD-BASH-TOK\n> A5GLOBOFFD-WROTE-9\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+        }
+      ],
+      "team_glob": [
+        {
+          "i": 1,
+          "text": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+        }
+      ]
+    },
+    "dcodex": {},
+    "dclaude": {},
+    "dfork": {}
+  },
+  "memberToolCallOrderByMode": {
+    "doff": [
+      "team_bash",
+      "team_glob"
+    ],
+    "dcodex": [],
+    "dclaude": [],
+    "dfork": []
+  },
+  "expectedRefusalVerbatim": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+  "baselineRun": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/glob-off-install/runs/2026-10-18T22-07-01Z"
+}

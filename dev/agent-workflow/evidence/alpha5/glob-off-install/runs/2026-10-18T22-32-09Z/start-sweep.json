@@ -1,0 +1,8 @@
+{
+  "staleHomes": [
+    "a5glob-off-probe-2026-10-18T22-29-33Z"
+  ],
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes",
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.a5glob-off-store",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glob-off-delta-src-20261018T222000Z"
+}

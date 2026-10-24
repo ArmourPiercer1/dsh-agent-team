@@ -1,0 +1,19 @@
+human world created: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z
+  sentinel: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z/.CANDIDATE-HUMAN-USE
+  note: inherited probe layer moved aside -> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z/profiles/web/cordis.patch.yml.imported-from-probe
+  template: profiles/web/cordis.patch.TEMPLATE.yml (inactive name — the host loads only cordis.patch.yml)
+  PASS launcher sha256 == INSTALLED record (1264ea584e3438d6…)
+  PASS plugin trust root present: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z/profiles/web/node_modules/dsh-agent-team (name=dsh-agent-team version=0.1.1-alpha.2)
+  PASS DSH_HOME exists and is writable: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z
+  PASS copied launcher bytes identical to source world
+START-CHECKLIST
+ 1) cp /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z/profiles/web/cordis.patch.TEMPLATE.yml /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z/profiles/web/cordis.patch.yml
+ 2) edit that file: replace every REPLACE_ME (the REAL provider's three lines go into the ENV at boot — keys NEVER in the file)
+ 3) gate:  node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/human-world.mjs check --state /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-INSTALLED.json "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z"
+ 4) boot:  DSH_HOME="/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-human-2026-10-19T01-01-46-640Z" DSH_CLIENT_COMMIT_HASH=639ed01539 \
+            DEEPSEEK_BASE_URL=<real-base> DEEPSEEK_API_KEY=<real-key> \
+            node /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port <FREE_PORT_3180-3186> --no-open &  echo $! > /tmp/candidate-human.pid
+           (configure FIRST, then boot — edits after boot do not take effect; stop = kill $(cat /tmp/candidate-human.pid);
+            resume later = boot the SAME directory again: the world keeps its state; nothing here ever cleans it)
+ 5) this world is NEVER touched by install/try/rollback automated cleanup (prefix exclusion + negative gate + sentinel).
+W=tests/homes/candidate-human-2026-10-19T01-01-46-640Z

@@ -1,0 +1,65 @@
+{
+  "byRowDefaultPath": {
+    "globDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-32-09Z/workspace/governed.a5g7-glob-scratch",
+      "exists": false,
+      "plans": [],
+      "exits": []
+    },
+    "searchDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-32-09Z/workspace/governed.a5srgp-search-scratch",
+      "exists": false,
+      "plans": [],
+      "exits": []
+    },
+    "shellDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-32-09Z/workspace/governed",
+      "exists": true,
+      "plans": [
+        {
+          "file": "plan-mveejdpg-2hzwo0.json",
+          "argv": [
+            "/bin/sh",
+            "-c",
+            "echo A5GLOBOFFD-BASH-TOK; echo A5GLOBOFFD-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+          ]
+        }
+      ],
+      "exits": [
+        {
+          "plan": "plan-mveejdpg-2hzwo0",
+          "pid": 244,
+          "rc": 0
+        }
+      ],
+      "rgPlans": 0,
+      "globWalkerPlans": 0
+    }
+  },
+  "wholeTree": {
+    "root": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-32-09Z",
+    "dirsVisited": 35,
+    "counts": {
+      "shell": 1
+    },
+    "countsWithExit": {
+      "shell": 1
+    },
+    "exitRecords": 1,
+    "globWalkerPlans": [],
+    "plans": [
+      {
+        "rel": "workspace/governed/plans/plan-mveejdpg-2hzwo0.json",
+        "planId": "plan-mveejdpg-2hzwo0",
+        "kind": "shell",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "echo A5GLOBOFFD-BASH-TOK; echo A5GLOBOFFD-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+        ],
+        "argvBytes": 101,
+        "hasExitRecord": true
+      }
+    ]
+  }
+}

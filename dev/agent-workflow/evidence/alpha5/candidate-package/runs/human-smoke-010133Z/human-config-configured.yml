@@ -1,0 +1,19 @@
+# human-config-template.yml — 真人试用配置层【无秘密模板】（README §3b）
+# 用法：复制为 <human-world>/profiles/web/cordis.patch.yml，把下面全部大写占位值换成真值（勿保留），
+#       然后跑 `install-candidate.sh --check-config <human-world>` 门，再启动。
+# 法：先配置后启动——启动之后再改此文件【不生效】（重启同目录才生效）。
+# 秘密法：真实 provider 的三行（BASE_URL / API_KEY / 模型选择如需）只进启动 env，
+#       绝不写进本文件；本模板不含任何 mock 地址、不引用任何会被自动清理的试验世界。
+- id: dsh-agent-team
+  name: dsh-agent-team/host
+  config:
+    # 本实例的根会话 id：起宿主后在会话列表里建一个会话，把它的 id 填这里（首次可先启动拿到 id 再按 3b 的"重开"流程填）
+    rootSessionId: session-human-demo-1
+    teamToolPlane:
+      # 任意稳定标识即可（realm = 平面命名空间）
+      realm: human-realm-demo
+      names:
+        # 平面改名：不得冒名 reserved native 名（subagent_codex / subagent_claude_code /
+        # subagent_fork / subagent 等——冒名会被 typed 拒 PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED）；
+        # zglob-human 是无冲突示例。
+        glob: zglob-human

@@ -1,0 +1,68 @@
+{
+  "runStamp": "2026-10-18T22-54-00Z",
+  "candidateSha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "legs": [
+    "probe"
+  ],
+  "dryRun": false,
+  "pass": 9,
+  "fail": 0,
+  "book": 0,
+  "exitCode": 0,
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "the trial runs EXACTLY the SHA the installer recorded (no drift between install and trial)",
+      "pass": true,
+      "observed": "sha=52d73534f92e69efe12c72c347d435f66f3f85fe"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before the run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "H2",
+      "claim": "host ports [3180] + mock 3491 from the 3180/349x families self-proved free before the run (3080 excluded)",
+      "pass": true,
+      "observed": "hostPorts=[3180] mock=3491"
+    },
+    {
+      "id": "P1",
+      "claim": "FASTEST LEG: the installed face boots (boot marker + 401 without token + 303 with token) — no prompts, no model",
+      "pass": true,
+      "observed": "noToken=401 auth=303 boot=dsh web: http://127.0.0.1:3180/?token=<REDACTED-d3d58a8a>"
+    },
+    {
+      "id": "P2",
+      "claim": "the public seam composes the installed team row + spill/client rows while the probe world is the SAME bytes INSTALLED.json recorded",
+      "pass": true,
+      "observed": "exit=0"
+    },
+    {
+      "id": "P3",
+      "claim": "the probe boot left no bootstrap/module/config errors in the host log",
+      "pass": true,
+      "observed": "[]"
+    },
+    {
+      "id": "C1",
+      "claim": "named teardown: every world this run created (exact names in sweep-list.json) is gone; launch-token residue 0 (probe-only runs create NO world: the INSTALLED world is kept for rollback-candidate.sh by design)",
+      "pass": true,
+      "observed": "left=[] swept=[] residue=[\"n/a\"]"
+    },
+    {
+      "id": "C2",
+      "claim": "the stable :3080 instance is untouched (read-only probe before/after) and the test-use host porcelain stayed 0",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    }
+  ]
+}

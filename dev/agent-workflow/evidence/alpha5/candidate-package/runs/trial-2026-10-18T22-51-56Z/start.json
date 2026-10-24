@@ -1,0 +1,11 @@
+{
+  "legs": [
+    "pos",
+    "bash-b2",
+    "glob-off"
+  ],
+  "candidateSha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7",
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes",
+  "staleFromThisStamp": []
+}

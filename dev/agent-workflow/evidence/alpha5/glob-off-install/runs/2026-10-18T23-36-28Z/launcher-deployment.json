@@ -1,0 +1,19 @@
+{
+  "launcher": {
+    "rel": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-probe-2026-10-18T23-36-28Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytes": 26992,
+    "worktreeSha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytesMatchCommitAndWorktree": true,
+    "isScript": true,
+    "carriesExitPassthrough": true
+  },
+  "abiPreflight": {
+    "rc": 0,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "kind": "abi-available",
+    "abiVersion": 4
+  },
+  "note": "deployment input for the confined provider: git-show blob; NOT on the published face (disclosed gap I8), byte-pinned by the row config trustRoot + launcherSha256"
+}

@@ -1,0 +1,9 @@
+  PASS human sentinel present (this gate only runs on human worlds)
+  PASS no REPLACE_ME placeholders
+  PASS no mock residue
+  PASS no references to swept trial worlds
+  FAIL validateTeamPluginConfig REFUSES the config: dsh-agent-team row config: generation must be a positive integer
+  PASS launcher sha256 == INSTALLED record (1264ea584e3438d6…)
+  PASS plugin trust root present: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/human-boolfix-01-39-00Z/shapefix/world/profiles/web/node_modules/dsh-agent-team (name=dsh-agent-team version=0.1.1-alpha.2)
+  PASS DSH_HOME exists and is writable: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/human-boolfix-01-39-00Z/shapefix/world
+CHECK-CONFIG: FAIL — fix above, do not boot yet

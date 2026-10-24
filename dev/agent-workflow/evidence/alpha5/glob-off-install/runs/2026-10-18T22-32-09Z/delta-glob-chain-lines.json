@@ -1,0 +1,40 @@
+{
+  "baseline": [
+    "* chain), and the default backends are a typed `IO_POLICY_UNSUPPORTED`",
+    "// face's IO_POLICY_UNSUPPORTED is a LANDING, never deny evidence).",
+    "function createShutBackend(backendId) {",
+    "code: 'IO_POLICY_UNSUPPORTED',",
+    "*    plane?: { realmId, names?, confinedProvider?, definitionOwnerAuthority?, fsInstance?, globEnabled? },",
+    "// Gate 0c (root ruling 20:31Z, a5-globoff): `planeCfg.globEnabled` is a",
+    "const globEnabledRaw = input.plane?.globEnabled",
+    "if (globEnabledRaw !== undefined && typeof globEnabledRaw !== 'boolean') {",
+    "message: `planeCfg.globEnabled must be a boolean when present — got ${JSON.stringify(globEnabledRaw) ?? String(globEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,",
+    "const globEnabled = globEnabledRaw !== false",
+    "const shut = createShutBackend('a5-effect-face-pending')",
+    "// Gate 0c enforcement, part 2 (a5-globoff ②/④): `globEnabled:false` builds",
+    "const realGlob = globEnabled === false ? null",
+    "const globDisabledShut = globEnabled === false ? createShutBackend('a5-glob-config-disabled') : null",
+    "glob: globDisabledShut ?? realGlob ?? shut,",
+    "const hostedGlob = globDisabledShut ?? input.backends?.glob ?? input.backends?.search ?? productionBackends.glob"
+  ],
+  "newHead": [
+    "* chain), and the default backends are a typed `IO_POLICY_UNSUPPORTED`",
+    "// face's IO_POLICY_UNSUPPORTED is a LANDING, never deny evidence).",
+    "function createShutBackend(backendId) {",
+    "code: 'IO_POLICY_UNSUPPORTED',",
+    "*    plane?: { realmId, names?, confinedProvider?, definitionOwnerAuthority?, fsInstance?, globEnabled? },",
+    "// Gate 0c (root ruling 20:31Z, a5-globoff): `planeCfg.globEnabled` is a",
+    "const globEnabledRaw = input.plane?.globEnabled",
+    "if (globEnabledRaw !== undefined && typeof globEnabledRaw !== 'boolean') {",
+    "message: `planeCfg.globEnabled must be a boolean when present — got ${JSON.stringify(globEnabledRaw) ?? String(globEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,",
+    "const globEnabled = globEnabledRaw !== false",
+    "const shut = createShutBackend('a5-effect-face-pending')",
+    "// Gate 0c enforcement, part 2 (a5-globoff ②/④): `globEnabled:false` builds",
+    "const realGlob = globEnabled === false ? null",
+    "const globDisabledShut = globEnabled === false ? createShutBackend('a5-glob-config-disabled') : null",
+    "glob: globDisabledShut ?? realGlob ?? shut,",
+    "const hostedGlob = globDisabledShut ?? input.backends?.glob ?? input.backends?.search ?? productionBackends.glob"
+  ],
+  "identical": true,
+  "changedLineCount": 65
+}

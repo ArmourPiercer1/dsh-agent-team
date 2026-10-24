@@ -1,0 +1,8 @@
+  PASS human sentinel present (this gate only runs on human worlds)
+  PASS no REPLACE_ME placeholders
+  PASS no mock residue
+  PASS no references to swept trial worlds
+  PASS launcher sha256 == INSTALLED record (1264ea584e3438d6…)
+  PASS plugin trust root present: tests/homes/candidate-human-2026-10-19T01-01-46-640Z/profiles/web/node_modules/dsh-agent-team (name=dsh-agent-team version=0.1.1-alpha.2)
+  PASS DSH_HOME exists and is writable: tests/homes/candidate-human-2026-10-19T01-01-46-640Z
+CHECK-CONFIG: PASS — safe to boot (README §3b order: config -> check -> boot)

@@ -1,0 +1,11 @@
+{
+  "wholeTree": {
+    "root": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-dcodex-2026-10-18T22-32-09Z",
+    "dirsVisited": 17,
+    "counts": {},
+    "countsWithExit": {},
+    "exitRecords": 0,
+    "globWalkerPlans": [],
+    "plans": []
+  }
+}

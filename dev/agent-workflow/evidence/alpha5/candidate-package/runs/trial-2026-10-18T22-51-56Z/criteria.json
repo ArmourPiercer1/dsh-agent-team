@@ -1,0 +1,160 @@
+{
+  "runStamp": "2026-10-18T22-51-56Z",
+  "candidateSha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "legs": [
+    "pos",
+    "bash-b2",
+    "glob-off"
+  ],
+  "dryRun": false,
+  "pass": 24,
+  "fail": 0,
+  "book": 0,
+  "exitCode": 0,
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "the trial runs EXACTLY the SHA the installer recorded (no drift between install and trial)",
+      "pass": true,
+      "observed": "sha=52d73534f92e69efe12c72c347d435f66f3f85fe"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before the run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "H2",
+      "claim": "host ports [3180,3181,3182] + mock 3491 from the 3180/349x families self-proved free before the run (3080 excluded)",
+      "pass": true,
+      "observed": "hostPorts=[3180,3181,3182] mock=3491"
+    },
+    {
+      "id": "W.pos",
+      "claim": "the pos world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha (no drift)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==installed"
+    },
+    {
+      "id": "W.pos.abi",
+      "claim": "the host's Landlock ABI is available (>=3) for the confined shell/glob rows in the pos world",
+      "pass": true,
+      "observed": "abi=abi-available/4"
+    },
+    {
+      "id": "B.pos",
+      "claim": "the installed face boots (mode pos): boot marker + GET / without token = 401 + token gate 303 with set-cookie",
+      "pass": true,
+      "observed": "noToken=401 auth=303"
+    },
+    {
+      "id": "B2.pos",
+      "claim": "team.create is accepted on the installed face (mode pos)",
+      "pass": true,
+      "observed": "status=200"
+    },
+    {
+      "id": "W.globoff",
+      "claim": "the globoff world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha (no drift)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==installed"
+    },
+    {
+      "id": "W.globoff.abi",
+      "claim": "the host's Landlock ABI is available (>=3) for the confined shell/glob rows in the globoff world",
+      "pass": true,
+      "observed": "abi=abi-available/4"
+    },
+    {
+      "id": "G0",
+      "claim": "THE SHUT-OFF GATE IS ON THE FACE THAT RUNS: the INSTALLED dist bytes consume planeCfg.globEnabled and carry the honest disabled backendId",
+      "pass": true,
+      "observed": "globEnabledHits=14 shutIdHits=1"
+    },
+    {
+      "id": "G3",
+      "claim": "the written profile layer carries teamToolPlane.globEnabled: false verbatim (the shut is a config fact, kit bytes aside)",
+      "pass": true,
+      "observed": "layerHasGlobEnabledFalse=true"
+    },
+    {
+      "id": "B.globoff",
+      "claim": "the installed face boots (mode globoff): boot marker + GET / without token = 401 + token gate 303 with set-cookie",
+      "pass": true,
+      "observed": "noToken=401 auth=303"
+    },
+    {
+      "id": "B2.globoff",
+      "claim": "team.create is accepted on the installed face (mode globoff)",
+      "pass": true,
+      "observed": "status=200"
+    },
+    {
+      "id": "L2a",
+      "claim": "LEG A/1 create-member: team_create_member + team_list_members rode the Leader wire and an instance id came back",
+      "pass": true,
+      "observed": "leaderTools=[\"team_create_member\",\"team_list_members\",\"team_delegate\",\"team_collect\"]"
+    },
+    {
+      "id": "L2b",
+      "claim": "LEG A/2 delegate+collect: team_delegate ran on the created INSTANCE (async:false) and team_collect read the member result back to the Leader",
+      "pass": true,
+      "observed": "leaderTools=[\"team_create_member\",\"team_list_members\",\"team_delegate\",\"team_collect\"]"
+    },
+    {
+      "id": "L2c",
+      "claim": "LEG A/3 delegated work landed: team_bash positive inside the governed root rendered bash · exit=0 with the token, and the write exists on disk",
+      "pass": true,
+      "observed": "landing=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=0\\\\n> CAND-BASH-TOK\\\\n> CAND-WROTE-9\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":0,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"truncated\\\\\\\":false}\\\"}]\" wrote=true"
+    },
+    {
+      "id": "L3a",
+      "claim": "LEG C out-of-bounds negative control: the leg lands bash · exit=1 over the kernel Permission denied stderr, meta exitCode=1 (real code, #336 face)",
+      "pass": true,
+      "observed": "landing=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=1\\\\n> (empty stdout)\\\\nstderr:\\\\n> cat: ../outside/secret.txt: Permission denied\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":1,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"truncated\\\\\\\":false}\\\"}]\""
+    },
+    {
+      "id": "L3b",
+      "claim": "zero disclosure + honest render: the outside marker never rides the wire in ANY request of this world; cancelled renders false absent a cancel (post-#340 semantics)",
+      "pass": true,
+      "observed": "markerOnWire=0"
+    },
+    {
+      "id": "G1",
+      "claim": "LEG B mount unchanged: with globEnabled:false the team_glob name STILL reaches the member wire (the EFFECT face refuses; nothing disappears)",
+      "pass": true,
+      "observed": "memberPlaneNames=[\"read\",\"team_bash\",\"team_glob\",\"team_grep\"]"
+    },
+    {
+      "id": "G2",
+      "claim": "LEG B typed shut: team_glob lands the EXISTING refusal face verbatim (a5p5-refused / IO_POLICY_UNSUPPORTED, detail sentence taken from the INSTALLED bytes) — and the refusal is a refusal, not a truncated answer",
+      "pass": true,
+      "observed": "landing=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\\\"}]\""
+    },
+    {
+      "id": "G4",
+      "claim": "LEG B no fallback: the glob fixture seed names (zzcand-*) appear in NO wire byte of the off world — after the refusal nothing listed out",
+      "pass": true,
+      "observed": "perSeed=[{\"name\":\"zzcand-alpha.txt\",\"hits\":0},{\"name\":\"zzcand-beta.txt\",\"hits\":0}]"
+    },
+    {
+      "id": "C1",
+      "claim": "named teardown: every world this run created (exact names in sweep-list.json) is gone; launch-token residue 0 (probe-only runs create NO world: the INSTALLED world is kept for rollback-candidate.sh by design)",
+      "pass": true,
+      "observed": "left=[] swept=[\"pos:swept\",\"globoff:swept\"] residue=[0,0]"
+    },
+    {
+      "id": "C2",
+      "claim": "the stable :3080 instance is untouched (read-only probe before/after) and the test-use host porcelain stayed 0",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    }
+  ]
+}

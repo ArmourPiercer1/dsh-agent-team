@@ -1,0 +1,4 @@
+{
+  "worlds": [],
+  "policy": "exact names only — NO glob deletes; the INSTALLED world stays until rollback-candidate.sh"
+}

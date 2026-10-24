@@ -1,0 +1,72 @@
+{
+  "glob": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-49-48Z/workspace/governed.a5g7-glob-scratch",
+    "exists": false,
+    "plans": [],
+    "exits": []
+  },
+  "search": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-49-48Z/workspace/governed.a5srgp-search-scratch",
+    "exists": true,
+    "plans": [
+      {
+        "file": "plan-mved0y7b-xr7u6o.json",
+        "argv": [
+          "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux",
+          "--no-config",
+          "--json",
+          "--regexp=A5GLOBOFF-GREP-TOK",
+          "--no-ignore-parent",
+          "--no-ignore-global",
+          "--",
+          "."
+        ]
+      }
+    ],
+    "exits": [
+      {
+        "plan": "plan-mved0y7b-xr7u6o",
+        "pid": 238,
+        "rc": 0
+      }
+    ],
+    "rgPlans": 0,
+    "globWalkerPlans": 0
+  },
+  "shell": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-49-48Z/workspace/governed",
+    "exists": true,
+    "plans": [
+      {
+        "file": "plan-mved0xx3-x6jaqb.json",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "echo A5GLOBOFF-BASH-TOK; echo A5GLOBOFF-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+        ]
+      },
+      {
+        "file": "plan-mved0xz8-kxpg8e.json",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "cat ../outside/secret.txt"
+        ]
+      }
+    ],
+    "exits": [
+      {
+        "plan": "plan-mved0xx3-x6jaqb",
+        "pid": 224,
+        "rc": 0
+      },
+      {
+        "plan": "plan-mved0xz8-kxpg8e",
+        "pid": 227,
+        "rc": 1
+      }
+    ],
+    "rgPlans": 0,
+    "globWalkerPlans": 0
+  }
+}

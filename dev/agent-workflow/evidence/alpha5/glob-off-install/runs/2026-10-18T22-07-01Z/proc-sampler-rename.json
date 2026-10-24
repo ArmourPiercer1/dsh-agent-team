@@ -1,0 +1,31 @@
+{
+  "counts": {
+    "rg": 0,
+    "rgGlobWalker": 0,
+    "launcher": 4,
+    "bash": 1,
+    "other": 6
+  },
+  "sightings": [
+    {
+      "at": 1792361479923,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --abi-probe"
+    },
+    {
+      "at": 1792361479973,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg selective "
+    },
+    {
+      "at": 1792361480024,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg denyall --"
+    },
+    {
+      "at": 1792361480074,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --confined-exec-stream -"
+    }
+  ]
+}

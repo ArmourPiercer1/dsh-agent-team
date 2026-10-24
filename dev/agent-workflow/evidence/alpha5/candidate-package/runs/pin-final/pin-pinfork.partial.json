@@ -1,0 +1,21 @@
+{
+  "mode": "pinfork",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pinfork-2026-10-19T00-19-10Z",
+  "claim": "subagent_fork",
+  "ok": true,
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af"
+  },
+  "prompt": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"cand-pinfork-tc2\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-cand-pinfork-team-2026-10-19T00-19-10Z' failed: agent-bindings: alpha.5 Team tool plane refused the mount for 'session-cand-pinfork-team-2026-10-19T00-19-10Z': plane row 'glob' cannot mount under reserved native name 'subagent_fork' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence (code: PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED)\",\"details\":{\"",
+    "error": null
+  },
+  "discHits": 0
+}

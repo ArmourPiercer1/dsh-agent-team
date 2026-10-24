@@ -1,0 +1,15 @@
+{
+  "worlds": [
+    {
+      "mode": "pos",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pos-2026-10-19T00-05-37Z",
+      "swept": true
+    },
+    {
+      "mode": "globoff",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-globoff-2026-10-19T00-05-37Z",
+      "swept": true
+    }
+  ],
+  "policy": "exact names only — NO glob deletes; the INSTALLED world stays until rollback-candidate.sh"
+}

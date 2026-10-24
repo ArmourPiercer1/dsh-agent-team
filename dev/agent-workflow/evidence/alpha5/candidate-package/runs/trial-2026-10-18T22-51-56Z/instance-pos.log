@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pos-2026-10-18T22-51-56Z/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3180/?token=<REDACTED-104c00de>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=cand-pos-realm
+[dsh-agent-team] a5ptc: census-boot root=session-cand-pos-team-2026-10-18T22-51-56Z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pos-2026-10-18T22-51-56Z/deployment/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=cand-pos-realm
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=cand-pos-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=cand-pos-realm call=team-inst-08oon5i01fqr-bash-1 pid=260 exit=0 timedOut=false cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=cand-pos-realm call=team-inst-08oon5i01fqr-bash-2 pid=263 exit=1 timedOut=false cancelled=false

@@ -1,0 +1,9 @@
+  PASS human sentinel present (this gate only runs on human worlds)
+  PASS no REPLACE_ME placeholders
+  PASS no mock residue
+  PASS no references to swept trial worlds
+  FAIL validateTeamPluginConfig REFUSES the config: File URL host must be "localhost" or empty on linux
+  FAIL launcherPath missing: runs/human-boolfix-01-39-00Z/fixture-world-nolauncher/deployment/landlock-prelauncher.py
+  PASS plugin trust root present: runs/human-boolfix-01-39-00Z/fixture-world-nolauncher/profiles/web/node_modules/dsh-agent-team (name=dsh-agent-team version=0.1.1-alpha.2)
+  PASS DSH_HOME exists and is writable: runs/human-boolfix-01-39-00Z/fixture-world-nolauncher
+CHECK-CONFIG: FAIL — fix above, do not boot yet

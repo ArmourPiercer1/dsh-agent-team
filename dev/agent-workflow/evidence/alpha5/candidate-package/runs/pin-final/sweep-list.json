@@ -1,0 +1,25 @@
+{
+  "worlds": [
+    {
+      "mode": "pincodex",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pincodex-2026-10-19T00-19-10Z",
+      "swept": true
+    },
+    {
+      "mode": "pincc",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pincc-2026-10-19T00-19-10Z",
+      "swept": true
+    },
+    {
+      "mode": "pinfork",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pinfork-2026-10-19T00-19-10Z",
+      "swept": true
+    },
+    {
+      "mode": "pinok",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pinok-2026-10-19T00-19-10Z",
+      "swept": true
+    }
+  ],
+  "policy": "exact names only — NO glob deletes; the INSTALLED world stays until rollback-candidate.sh"
+}

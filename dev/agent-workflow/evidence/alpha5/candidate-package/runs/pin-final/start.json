@@ -1,0 +1,9 @@
+{
+  "legs": [
+    "pin-table"
+  ],
+  "candidateSha": "d5de74974b0320b191b310ead82407d478477ed7",
+  "rootSha": "dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af",
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes",
+  "staleFromThisStamp": []
+}

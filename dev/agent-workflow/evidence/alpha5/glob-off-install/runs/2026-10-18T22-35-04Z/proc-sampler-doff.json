@@ -1,0 +1,26 @@
+{
+  "counts": {
+    "rg": 0,
+    "rgGlobWalker": 0,
+    "launcher": 3,
+    "bash": 1,
+    "other": 9
+  },
+  "sightings": [
+    {
+      "at": 1792362982624,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-35-04Z/deployment/landlock-prelauncher.py --abi-probe"
+    },
+    {
+      "at": 1792362982673,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-35-04Z/deployment/landlock-prelauncher.py --enforce-leg selective --"
+    },
+    {
+      "at": 1792362982773,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-35-04Z/deployment/landlock-prelauncher.py --confined-exec-stream --p"
+    }
+  ]
+}

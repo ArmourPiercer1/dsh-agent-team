@@ -1,0 +1,100 @@
+{
+  "mode": "globoff",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-globoff-2026-10-18T22-51-56Z",
+  "ok": true,
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "expectedCount": 1773,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7"
+  },
+  "launcher": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-globoff-2026-10-18T22-51-56Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+  },
+  "abi": {
+    "kind": "abi-available",
+    "abi_version": 4,
+    "raw": [
+      "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'"
+    ]
+  },
+  "expectedRefusalVerbatim": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+  "bootLine": "dsh web: http://127.0.0.1:3181/?token=<REDACTED-439231c8>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "catalogPreflight": 200,
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"cand-globoff-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-cand-globoff-team-2026-10-18T22-51-56Z\",\"blueprint\":{\"blueprintId\":\"cand-globoff-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:f6acccc06816527631056357b01429e2df6f32b59de45bfd1ad073820d9464b1\"},\"createdAt\":\"2026-10-18T22:53:28.264Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-globoff-2026-10-18T22-51-56Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-cand-globoff-team-2026-10-18T22-51-56Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-cand-globoff-team-2026-10-18T22-51-56Z\",\"i"
+  },
+  "leaderToolCalls": [
+    "team_create_member",
+    "team_list_members",
+    "team_delegate",
+    "team_collect"
+  ],
+  "memberResultsBackToLeader": true,
+  "listMembersResult": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"list-members\\\",\\\"rootSessionId\\\":\\\"session-cand-globoff-team-2026-10-18T22-51-56Z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"members-listed\\\",\\\"members\\\":[{\\\"instanceId\\\":\\\"inst-1wtzqgk1ehp1\\\",\\\"templateId\\\":\\\"wa\\\",\\\"label\\\":\\\"cand-a\\\",\\\"lifecycle\\\":\\\"CREATED\\\",\\\"childSessionId\\\":\\\"session-team-child-d86d2b21035850a475f4918b6ab86276\\\"},{\\\"instanceId\\\":\\\"inst-leader\\\",\\\"templateId\\\":\\\"leader\\\",\\\"label\\\":\\\"leader\\\"}]},\\\"requestToken\\\":\\\"cand-globoff-tok-lm\\\"}\"}]",
+  "memberRequestCount": 2,
+  "memberWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "team_glob"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"CAND_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is liv\"}",
+  "outsideMarkerOnWire": 0,
+  "seedNamesOnWire": [
+    {
+      "name": "zzcand-alpha.txt",
+      "hits": 0
+    },
+    {
+      "name": "zzcand-beta.txt",
+      "hits": 0
+    }
+  ],
+  "bashWroteExists": false,
+  "bashWroteBytes": null,
+  "results": [
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]"
+  ],
+  "names": [
+    "team_glob"
+  ]
+}

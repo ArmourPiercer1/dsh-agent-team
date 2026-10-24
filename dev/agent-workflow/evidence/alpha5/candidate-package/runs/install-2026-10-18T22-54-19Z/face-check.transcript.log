@@ -1,0 +1,11 @@
+PASS I2 — STRICT profile face: the profile declares EXACTLY the candidate plugin, node_modules top level holds nothing else, and the reconciler appended the bundle rows [deps=["dsh-agent-team"] nm=["dsh-agent-team"] bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]]
+PASS I3a — INSTALL THREE-ZEROS (1/4 count): the installed tree holds exactly the declared face — one file per declared entry (RECOUNTED from package.json files: at CANDIDATE_SHA; never a hard-coded expectation) [installed=1773 declared-files-face=1773 (files: entries=1771 + pack-always=2)]
+PASS I3b — INSTALL THREE-ZEROS (2/4 missing = 0): every declared file materialized in the install dir [missing=0 []]
+PASS I3c — INSTALL THREE-ZEROS (3/4 extra = 0): nothing outside the declared face landed [extra=0 []]
+PASS I3d — INSTALL THREE-ZEROS (4/4 sha-mismatch = 0): every installed file is BYTE-IDENTICAL to that path at the installed commit [mismatch=0 rootSha=91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7]
+PASS I3e — the bytes beyond the declared files: list are exactly the pack rules' always-included pair (disclosed, not folded into the count) [alwaysIncluded=["README.md","package.json"]]
+PASS I4 — the installed bundle layer is machine-agnostic (rows reference the package by name; no file:/ URL landed in the profile manifest) [bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]]
+PASS I8 — DISCLOSED FACE GAP (honest, not worked around): the Landlock pre-launcher is NOT on the published face — the installer supplies it as a deployment input, byte-pinned from the SAME commit [launcherInFace=false launcherSha=1264ea584e3438d6… bytes=26992]
+PASS I9 — the deployment input is the RIGHT BYTES: commit blob == clone blob, starts with "#!", and the launcher itself answers the ABI probe [sha=1264ea584e3438d6… commit==src=true abi=abi-available/4]
+PASS I5 — the host composes the INSTALLED bundle row through the public profile seam: --dump-config carries id dsh-agent-team / name dsh-agent-team/host plus the spill-local + client rows, no skipped bundle [exit=0 teamRow=true subRows=true skipped=false]
+SUMMARY pass=10 fail=0 booked=0 (receipt: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/install-2026-10-18T22-54-19Z/face-check.json)

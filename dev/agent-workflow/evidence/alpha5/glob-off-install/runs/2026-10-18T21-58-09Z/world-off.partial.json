@@ -1,0 +1,234 @@
+{
+  "mode": "off",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z",
+  "ok": false,
+  "face": "REAL INSTALL (dsh plugin --profile web add github:…#<sha>)",
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "nodeModulesTop": [
+      "dsh-agent-team"
+    ],
+    "dependencies": [
+      "dsh-agent-team"
+    ]
+  },
+  "installedFace": {
+    "expectedCount": 1773,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "b18fcfee908c4923fd1f15a9d0ba1a4249f3697d76f6d6831562453c30b88023"
+  },
+  "launcher": {
+    "rel": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytes": 26992,
+    "worktreeSha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytesMatchCommitAndWorktree": true,
+    "isScript": true,
+    "carriesExitPassthrough": true
+  },
+  "launcherAbiPreflight": {
+    "rc": 0,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "kind": "abi-available",
+    "abiVersion": 4
+  },
+  "layerHasGlobEnabledKey": true,
+  "bootLine": "dsh web: http://127.0.0.1:3182/?token=<REDACTED-8986800a>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5go-off-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5glob-off-team-2026-10-18T21-58-09Z\",\"blueprint\":{\"blueprintId\":\"a5glob-off-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:b74964c81a25f539f05a8bd2a869008f972fe9b5bd8fba1c596eaf41c5317017\"},\"createdAt\":\"2026-10-18T21:58:57.445Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5glob-off-team-2026-10-18T21-58-09Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5glob-off-team-2026-10-18T21-58-09Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"lead"
+  },
+  "memberARequestCount": 6,
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "team_bash",
+    "team_bash",
+    "team_grep",
+    "team_glob",
+    "read"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> A5GLOBOFF-BASH-TOK\\n> A5GLOBOFF-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/workspace/governed/notes.txt:2: A5GLOBOFF-GREP-TOK lives here\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"line one\\nA5GLOBOFF-GREP-TOK lives here\\n\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"A5GLOBOFF_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=0\\\\n> A5GLOBOFF-BASH-TOK\\\\n> A5GLOBOFF-WROTE-9\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":0,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"truncated\\\\\\\":false}\\\"}] | r1=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=1\\\\n> (empty stdout)\\\\nstderr:\\\\n> cat: ../outside/secret.txt: Permission denied\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":1,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"truncated\\\\\\\":fal | r2=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"search · content · 1 matches\\\\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/workspace/governed/notes.txt:2: A5GLOBOFF-GREP-TOK lives here\\\\na5p5-meta { | r3=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is liv | r4=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"line one\\\\nA5GLOBOFF-GREP-TOK lives here\\\\n\\\"}]\"}",
+  "planeObservations": [
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]"
+  ],
+  "globalNames": [],
+  "ledgersByRowPath": {
+    "globDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/workspace/governed.a5g7-glob-scratch",
+      "exists": false,
+      "plans": [],
+      "exits": []
+    },
+    "searchDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/workspace/governed.a5srgp-search-scratch",
+      "exists": true,
+      "plans": [
+        {
+          "file": "plan-mvedcb35-pm31y9.json",
+          "argv": [
+            "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux",
+            "--no-config",
+            "--json",
+            "--regexp=A5GLOBOFF-GREP-TOK",
+            "--no-ignore-parent",
+            "--no-ignore-global",
+            "--",
+            "."
+          ]
+        }
+      ],
+      "exits": [
+        {
+          "plan": "plan-mvedcb35-pm31y9",
+          "pid": 238,
+          "rc": 0
+        }
+      ],
+      "rgPlans": 0,
+      "globWalkerPlans": 0
+    },
+    "shellDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/workspace/governed",
+      "exists": true,
+      "plans": [
+        {
+          "file": "plan-mvedcau0-wqmea2.json",
+          "argv": [
+            "/bin/sh",
+            "-c",
+            "echo A5GLOBOFF-BASH-TOK; echo A5GLOBOFF-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+          ]
+        },
+        {
+          "file": "plan-mvedcaw2-c6ithr.json",
+          "argv": [
+            "/bin/sh",
+            "-c",
+            "cat ../outside/secret.txt"
+          ]
+        }
+      ],
+      "exits": [
+        {
+          "plan": "plan-mvedcau0-wqmea2",
+          "pid": 224,
+          "rc": 0
+        },
+        {
+          "plan": "plan-mvedcaw2-c6ithr",
+          "pid": 227,
+          "rc": 1
+        }
+      ],
+      "rgPlans": 0,
+      "globWalkerPlans": 0
+    }
+  },
+  "sampler": {
+    "counts": {
+      "rg": 0,
+      "rgGlobWalker": 0,
+      "launcher": 9,
+      "bash": 1,
+      "other": 8
+    },
+    "sightings": [
+      {
+        "at": 1792360797752,
+        "kind": "launcher",
+        "cmd": "python3 -c import os,sys; sys.exit(0 if os.path.isfile(\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/lan"
+      },
+      {
+        "at": 1792360797802,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --enforce-leg selective --s"
+      },
+      {
+        "at": 1792360797853,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --enforce-leg denyall --scr"
+      },
+      {
+        "at": 1792360797903,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --enforce-leg badhandled --"
+      },
+      {
+        "at": 1792360797954,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+      },
+      {
+        "at": 1792360798004,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+      },
+      {
+        "at": 1792360798104,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --abi-probe"
+      },
+      {
+        "at": 1792360798153,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --enforce-leg selective --s"
+      },
+      {
+        "at": 1792360798254,
+        "kind": "launcher",
+        "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-58-09Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+[c1sw-probe] row applied (passive observers on tools/execute + tools/post-execute + internal/dispatch; routes /__c1sw/{health,facts,mitigate,direct}; mitigate=OFF)
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5c1fix-b-2026-10-18T22-46-29Z/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3189/?token=<REDACTED-fe88e0b3>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=c1sw-realm
+[dsh-agent-team] a5ptc: census-boot root=session-c1sw-team-2026-10-18T22-46-29Z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5c1fix-b-2026-10-18T22-46-29Z/deployment/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=c1sw-realm
+[c1sw-probe] internal-tap call=call-c1sw-0-mbz7mt sig-present=true t=1792363671049
+[c1sw-probe] enter call=call-c1sw-0-mbz7mt t=1792363671049 sig-present=true ctor=AbortSignal aborted-at-entry=false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=c1sw-realm rows=6
+[c1sw-probe] sig-swap call=call-c1sw-0-mbz7mt t=1792363671244 from=AbortSignal to=AbortSignal abortedNow=false reasonNow=undefined
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1sw-realm call=team-inst-0s8efoz1ce2v-bash-1 pid=204 exit=0 timedOut=false cancelled=false
+[c1sw-probe] post-exec call=call-c1sw-0-mbz7mt t=1792363671287 isError=false err= content=[{"type":"text","text":"bash · exit=0\n> (empty stdout)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"}] addCtx=0
+[c1sw-probe] internal-tap call=call-c1sw-1-939sft sig-present=true t=1792363671307
+[c1sw-probe] enter call=call-c1sw-1-939sft t=1792363671310 sig-present=true ctor=AbortSignal aborted-at-entry=false
+[c1sw-probe] sig-swap call=call-c1sw-1-939sft t=1792363671330 from=AbortSignal to=AbortSignal abortedNow=false reasonNow=undefined
+[c1sw-probe] ABORT call=call-c1sw-0-mbz7mt gen=entry t=1792363675309 reason-ctor=Object reason-kind=user reason-keys=["kind"] reason-json={"kind":"user"}
+[c1sw-probe] ABORT call=call-c1sw-1-939sft gen=entry t=1792363675309 reason-ctor=Object reason-kind=user reason-keys=["kind"] reason-json={"kind":"user"}
+[c1sw-probe] ABORT call=call-c1sw-1-939sft gen=gen1 t=1792363675309 reason-ctor=Object reason-kind=user reason-keys=["kind"] reason-json={"kind":"user"}
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1sw-realm call=team-inst-0s8efoz1ce2v-bash-2 pid=206 exit=not-observed timedOut=false cancelled=true
+[c1sw-probe] post-exec call=call-c1sw-1-939sft t=1792363675336 isError=true err=tool call aborted content=[{"type":"text","text":"Error: tool call aborted"}] addCtx=0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=c1sw-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1sw-realm call=team-inst-leader-bash-1 pid=245 exit=not-observed timedOut=false cancelled=true
+[c1sw-probe] direct done t=1792363680845 elapsed=426ms text=bash · cancelled > (empty stdout) a5p5-meta {"kind":"shell","exitCode":null,"timedOut":false,"cancelled":true,"truncated":false}
+[c1sw-probe] mitigate-flag set to true
+[c1sw-probe] internal-tap call=call-c1sw-2-bervot sig-present=true t=1792363712336
+[c1sw-probe] enter call=call-c1sw-2-bervot t=1792363712336 sig-present=true ctor=AbortSignal aborted-at-entry=false
+[c1sw-probe] sig-swap call=call-c1sw-2-bervot t=1792363712356 from=AbortSignal to=AbortSignal abortedNow=false reasonNow=undefined
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1sw-realm call=team-inst-0s8efoz1ce2v-bash-3 pid=248 exit=137 timedOut=false cancelled=false
+[c1sw-probe] post-exec call=call-c1sw-2-bervot t=1792363712381 isError=false err= content=[{"type":"text","text":"bash · exit=137\n> (empty stdout)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":137,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"}] addCtx=0
+[c1sw-probe] post-exec call=call-c1sw-mit-fpg8y7 t=1792363744411 isError=true err=tool call aborted before dispatch content=[{"type":"text","text":"Error: tool call aborted before dispatch"}] addCtx=0
+[c1sw-probe] MITIGATE-ON replacing content for call=call-c1sw-mit-fpg8y7 (accept-decision, content-only)
+[c1sw-probe] mitigate-flag set to false

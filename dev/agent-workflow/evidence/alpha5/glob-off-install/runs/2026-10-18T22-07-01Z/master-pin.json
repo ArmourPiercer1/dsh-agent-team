@@ -1,0 +1,6 @@
+{
+  "expected": "46e48218e48314662586ff053ca3825e2889a6bb",
+  "lsRemoteFromSrcWorktree": "ca7ab2abcfa0d91650bbb2994395a7bd9c065b59",
+  "lsRemoteFromMainCheckout": "ca7ab2abcfa0d91650bbb2994395a7bd9c065b59",
+  "srcWorktreeHead": "46e48218e48314662586ff053ca3825e2889a6bb"
+}

@@ -1,0 +1,53 @@
+---
+schemaVersion: 3
+blueprintId: cand-pincc-main-bp
+revision: "1"
+displayName: "candidate pin-table probe (pincc)"
+description: "pin-table: reserved-native mount-name claim refuses at the team-session bind (public seam install face)."
+leader:
+  templateId: leader
+  persona: "You are the leader of a probe team. Reply with one line: CAND_PIN_OK. Never call any tool."
+  capabilities:
+    teamTools:
+      kind: allow
+      items: []
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+members:
+  - templateId: wa
+    persona: "Probe member. Never called."
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow: []
+        ask: []
+        deny: []
+memberEnvelopes: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+requirements: []
+policyStates: []
+metadata: {}
+---

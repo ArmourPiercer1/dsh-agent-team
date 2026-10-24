@@ -1,0 +1,364 @@
+{
+  "runStamp": "2026-10-18T23-39-12Z",
+  "ports": [
+    3183,
+    3493
+  ],
+  "installSpec": "github:ArmourPiercer1/dsh-agent-team#097fccf9922ce009c0184d514ac365f1f22b634f",
+  "installedSha": "097fccf9922ce009c0184d514ac365f1f22b634f",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5scratchdef-src-20261018T233528Z",
+  "srcWorktreeHead": "097fccf9922ce009c0184d514ac365f1f22b634f",
+  "expectedRefusalVerbatim": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+  "testuse": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainAfter": ""
+  },
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.a5scratchdef-store",
+  "installedFileCount": 1773,
+  "rootSha": "dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af",
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "INSTALL SPEC = live a5-g6b-rcfinal, measured from TWO SOURCES (git ls-remote inside the pinned source worktree AND inside the main checkout), both equal to the graded SHA, and the pinned source worktree HEAD IS that SHA (nothing spliced in)",
+      "pass": true,
+      "observed": "ls-remote[src]=097fccf9922ce009c0184d514ac365f1f22b634f ls-remote[main]=097fccf9922ce009c0184d514ac365f1f22b634f srcHEAD=097fccf9922ce009c0184d514ac365f1f22b634f"
+    },
+    {
+      "id": "H1c",
+      "claim": "the graded SHA carries the candidate in its OWN lineage and source bytes: its subject lineage matches /#337/ , the production plane row still consumes globEnabled / a5-glob-config-disabled, and the live glob row's DEFAULT scratch is the governed-root SIBLING (the #337 form the default contract rides with no scratchRoot key at all)",
+      "pass": true,
+      "observed": "lineage-match=true src-globEnabled=true src-shutId=true globDefaultSiblingScratch=true row=097fccf9 fix(assembly): #337 生产兼容收口——live glob 行缺省 scratch 落治理根旁系（根 23"
+    },
+    {
+      "id": "H1e",
+      "claim": "pin condition of the NAMED ref, stated not hidden: the ref tip measured live equals the frozen SHA that this run installs (H1b above), while master is recorded separately with its relation to the graded SHA (ancestor / descendant / diverged) so the report never implies a face it did not run",
+      "pass": true,
+      "observed": "graded=097fccf9922c ref=a5-g6b-rcfinal masterNow=708fb3fed655 gradedAncestorOfMaster=false masterAncestorOfGraded=true masterOnTop=0 gradedOnTop=27"
+    },
+    {
+      "id": "H2",
+      "claim": "host ports 3183 self-proved free before the run + a mock port from the 349x family free",
+      "pass": true,
+      "observed": "mock=3493"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before this run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "RG",
+      "claim": "rg deployment precondition (booked): the glob/search rows spawn the packaged ripgrep through the host resolver",
+      "pass": null,
+      "observed": "resolved=true answer=\"ripgrep 15.0.0 (rev 3a612f88b8)\""
+    },
+    {
+      "id": "I1",
+      "claim": "REAL install through the host's own public package face — `dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#<master-sha>` into a NEW install dir (workspace-local pnpm store) — exits 0",
+      "pass": true,
+      "observed": "exit=0 in 4s; tail=[WARN] Issues with peer dependencies found. Run \"pnpm peers check\" to list them. | dependencies: | + dsh-agent-team github:ArmourPiercer1/dsh-agent-team#097fccf9922ce009c0184d514ac365f1f22b634f | Pack"
+    },
+    {
+      "id": "I2",
+      "claim": "STRICT profile face: the profile declares EXACTLY this repo's one plugin, node_modules top level holds nothing else, and the reconciler appended the dsh-agent-team bundle row",
+      "pass": true,
+      "observed": "deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "id": "I3a",
+      "claim": "INSTALL THREE-ZEROS (1/4 count): the installed tree holds exactly the declared face — one file per declared entry",
+      "pass": true,
+      "observed": "installed=1773 face=1773 (files:=1771 + pack-always=2)"
+    },
+    {
+      "id": "I3b",
+      "claim": "INSTALL THREE-ZEROS (2/4 missing = 0)",
+      "pass": true,
+      "observed": "missing=0 []"
+    },
+    {
+      "id": "I3c",
+      "claim": "INSTALL THREE-ZEROS (3/4 extra = 0)",
+      "pass": true,
+      "observed": "extra=0 []"
+    },
+    {
+      "id": "I3d",
+      "claim": "INSTALL THREE-ZEROS (4/4 sha ≠ 0): every installed file is BYTE-IDENTICAL to that path at the installed commit; rootSha recorded",
+      "pass": true,
+      "observed": "mismatch=0 rootSha=dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af"
+    },
+    {
+      "id": "I3e",
+      "claim": "the bytes beyond the declared `files:` list are exactly the pack rules' always-included pair (disclosed, not folded into the count)",
+      "pass": true,
+      "observed": "alwaysIncluded=[\"README.md\",\"package.json\"]"
+    },
+    {
+      "id": "I4",
+      "claim": "the installed bundle layer is machine-agnostic (rows reference the package by name — no file: URL, no absolute path)",
+      "pass": true,
+      "observed": "hostRow=true"
+    },
+    {
+      "id": "I9",
+      "claim": "the launcher bytes the installer supplies for the confined provider are the RIGHT BYTES: git-show blob byte-identical to the graded commit and the pinned checkout, `#!` script, carries the --exit-passthrough arm, and --abi-probe measures a real landlock ABI (launcher bytes present: recorded)",
+      "pass": true,
+      "observed": "sha=1264ea584e3438d6… bytes=26992 commit==src=true abi=abi-available/4"
+    },
+    {
+      "id": "I8",
+      "claim": "DISCLOSED FACE GAP (honest, not worked around): the Landlock pre-launcher is NOT on the published face, so the installer supplies it as a deployment input",
+      "pass": true,
+      "observed": "launcherInFace=false launcherSha=1264ea584e3438d6…"
+    },
+    {
+      "id": "I5",
+      "claim": "the pinned host composes the INSTALLED bundle row through the public profile seam AND carries the OFF key verbatim into the composed tree (--dump-config shows the team row + plane + globEnabled: false + spill/client rows)",
+      "pass": true,
+      "observed": "exit=0 teamRow=true plane=true globEnabledFalse=true subRows=true"
+    },
+    {
+      "id": "I-SHIP",
+      "claim": "THE SHUT-OFF GATE IS ON THE FACE THAT RUNS: the INSTALLED dist bytes of the production plane row consume planeCfg.globEnabled and carry the honest disabled backendId (not only the git source)",
+      "pass": true,
+      "observed": "globEnabledHits=14 shutIdHits=1"
+    },
+    {
+      "id": "W.default.install",
+      "claim": "the default world booted on a REAL installed face with three zeros (missing/extra/sha) and byte-identical to the measured install probe (rootSha equality)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=dd2b75e17fddbc2e==probe"
+    },
+    {
+      "id": "H3",
+      "claim": ":3080 stable instance untouched (read-only probe before/after identical) and the test-use host porcelain 0 after",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "W1",
+      "claim": "all three worlds ran on the REAL installed face and were swept",
+      "pass": true,
+      "observed": "default:ok/swept"
+    },
+    {
+      "id": "M0b",
+      "claim": "the production entry's OWN observation stream (read through the read-only observer row, /__a5ie/facts) shows the plane placing all four rows in the off world — the mount line is the same face the plugin booted, not a kit reconstruction",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M0",
+      "claim": "THE MOUNT IS UNCHANGED BY THE KEY: with globEnabled:false the four plane names still reach the model-facing wire of the governed member (the row mounts and its EFFECT face is what refuses — nothing disappears)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M1",
+      "claim": "team_glob ON THE INSTALLED FACE lands the EXISTING typed shut face verbatim — a5p5-refused / kind=backend-failed / IO_POLICY_UNSUPPORTED with the shut detail read OUT OF THE INSTALLED BYTES (zero new error surface)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M2",
+      "claim": "ZERO glob-row spawns, out-of-band (no in-process counter, no log trust, no path assumption): walking the WHOLE off world for the provider's own records (plans/plan-*.json + out/plan-*/exit.json) and attributing every plan from its own argv finds NO glob-walker plan (`rg … --files`) anywhere while the key is off — a shut row never even prepares a confined plan",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M2b",
+      "claim": "IN-WORLD POSITIVE CONTROL for that detector: in the SAME off world the argv-attributed ledger shows the shell row's confined plans (>= 2, one per bash leg) and the search row's rg plan (>= 1, rg WITHOUT --files), each with its exit.json record — the missing glob-walker plan is the row being shut, not the detector being blind",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M3",
+      "claim": "team_grep REALLY RUNS with glob shut: the governed search row returns the seeded token on the content face (no refusal, no exit= anywhere)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M4",
+      "claim": "team_bash POSITIVE (REAL Landlock) with glob shut: confined run RAN (token on stdout, exit=0) and the inside-root write landed on disk (fs-probed before the sweep)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M5",
+      "claim": "team_bash NEGATIVE CONTROL with glob shut (r5 same-shape): the out-of-bounds leg still lands `bash · exit=1` + the kernel refusal verbatim, and the outside marker appears in NO wire byte of this world",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M6",
+      "claim": "read REALLY READS with glob shut (governed read row, takeover name untouched): the seeded file content comes back through the plane, no refusal",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M7",
+      "claim": "process-table corroboration (attributable form): the /proc sampler (50 ms, whole world lifetime) sighted NO rg process carrying the glob-walker face (`rg … --files …`) in the off world, while it demonstrably saw that world's confined lanes (launcher sightings > 0). Corroboration only — M2 (the provider plan/exit ledger) is the proof.",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M8",
+      "claim": "host-log row witness (the provider's own lines): ZERO anchored-glob witness lines in the off world while the search/shell witnesses are present in the same log",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M9",
+      "claim": "NO FALLBACK, install-face form: the glob fixture's unique seed names (zzgloboff-*) appear in NO wire byte and NO host-log byte of the off world — after the refusal nothing listed out, no partial result, no direct-fs enumeration surface",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "M10",
+      "claim": "the refusal is a REFUSAL, not a truncated answer: the glob landing carries no result lines and no files_with_matches meta alongside the typed refusal",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "C1",
+      "claim": "CONTROL (zero-default-change ON THE INSTALLED FACE): the byte-identical config with the key ABSENT runs the REAL anchored rg glob — both seeded files listed, no refusal, and the glob completion law untouched (no exit=/exitCode)",
+      "pass": true,
+      "observed": "names=[\"gpos/zzgloboff-alpha.txt\",\"gpos/zzgloboff-beta.txt\"]"
+    },
+    {
+      "id": "C2",
+      "claim": "OUT-OF-BAND POSITIVE CONTROL for the M2 detector: in the control world the SAME whole-tree walk DOES find the glob-walker plan — packaged rg with the glob walker face (`--files`), one plan + one exit.json per glob call — which is what turns M2's zero into a fact about the key",
+      "pass": true,
+      "observed": "globWalkerPlans=1 withExit=1 planAt=\"workspace/governed.a5g7-glob-scratch/plans/plan-mvegxlyy-q4k8go.json\" argv=[\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg\",\"--files\",\"--glob=*.txt\"]"
+    },
+    {
+      "id": "S1",
+      "claim": "THE DEFAULT FORM IS LIVE ON THE INSTALLED FACE, AND ITS SCRATCH LAW HOLDS WHERE IT LANDED: the glob row — configured with the contract text and NO scratchRoot key — prepared its confined walker plan at the governed-root SIBLING (`<root>.a5g7-glob-scratch/plans/plan-*.json`) with its exit record, no glob-walker plan sits inside the governed root, and the listing the member got back carries no scratch artifact",
+      "pass": true,
+      "observed": "globPlans=1 atSibling=1 insideRoot=0 withExit=1 planAt=\"workspace/governed.a5g7-glob-scratch/plans/plan-mvegxlyy-q4k8go.json\" scratchInListing=0"
+    },
+    {
+      "id": "S1b",
+      "claim": "where the same default moved (booked, never graded): the SAME contract-shaped default world at the 21-5xZ baseline put the glob row's plan at \"workspace/plans/plan-mvedp91i-ix1p52.json\" (provider default was cwd-relative, before the empty-scratch law); this run records \"workspace/governed.a5g7-glob-scratch/plans/plan-mvegxlyy-q4k8go.json\" — the two recorded paths are the difference the #337 assembly fix closed, observed on two real installs",
+      "pass": null,
+      "observed": "baseline=\"workspace/plans/plan-mvedp91i-ix1p52.json\" now=\"workspace/governed.a5g7-glob-scratch/plans/plan-mvegxlyy-q4k8go.json\""
+    },
+    {
+      "id": "C2b",
+      "claim": "sampling-resolution book (never graded): rg sightings in the CONTROL world where the glob row IS live — rgTotal=0, glob-walker-attributable=0; a ~10 ms rg process may simply be missed at 50 ms, which is exactly why M2/C2 ride the provider ledger, not the sampler",
+      "pass": null,
+      "observed": "rgTotal=0 globWalker=0"
+    },
+    {
+      "id": "C3",
+      "claim": "the host's own glob witness fires in the control world (`anchored-glob ran … pid= files=`) — the pair that makes M8's zero a fact about the key and not about logging",
+      "pass": true,
+      "observed": "lines=[\"[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-default-realm call=team-inst-02p6bi61tnpg-glob-4 pid=271 files=2 capped=false\"]"
+    },
+    {
+      "id": "C4",
+      "claim": "SAME-SHAPE CONTROL for the three surviving rows: with the key absent the grep/bash/read landings keep the same form as in the off world (grep hit + search meta; bash exit=0 + write; read content) — the key changes exactly one row",
+      "pass": true,
+      "observed": "grep=\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T2 bash=\"bash · exit=0\\n> A5GLOBOFF-BASH-TOK\\n> A5GLOBOFF-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\" read=\"line one\\nA5GLOBOFF-GREP-TOK lives here\\n\""
+    },
+    {
+      "id": "C5",
+      "claim": "the two configs differ in EXACTLY ONE key: the off world's written profile layer carries teamToolPlane.globEnabled and the control world's does not (the difference is the config, not the kit)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "C6",
+      "claim": "r5-shaped regression on the control world (a5ie-r5 minimum): the out-of-bounds bash leg still lands exit=1 with the kernel refusal verbatim and the marker stays off the wire",
+      "pass": true,
+      "observed": "landing=\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\" markerOnWire=0"
+    },
+    {
+      "id": "R1",
+      "claim": "RENAME FORM mounts under the new spelling: with names.glob=\"zglob\" + globEnabled:false the member wire carries zglob and NOT team_glob (the shut decision rides the class, the name is still a valid mount spelling)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "R2",
+      "claim": "a renamed glob is STILL SHUT on the installed face: zglob lands the same typed refusal bytes (same code, same detail sentence from the installed face)",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "R3",
+      "claim": "and it still spawns nothing: the rename world's whole-tree ledger carries no glob-walker plan either (the class gate wins before any backend is built), while its shell plan is there",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "R4",
+      "claim": "nothing else closed in the rename world: team_bash still runs for real (exit=0) and no glob-walker rg was sighted in that world either",
+      "pass": null,
+      "na": true,
+      "observed": "shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"
+    },
+    {
+      "id": "Z1",
+      "claim": "no bootstrap/module/config refusal leaked in any of the three worlds (no ERR_MODULE_NOT_FOUND, no mount-REFUSED, no PLANE_CONFIG/TEAM_PLUGIN_CONFIG line, no placement-REFUSED)",
+      "pass": true,
+      "observed": "hostErrors=[]"
+    },
+    {
+      "id": "Z2",
+      "claim": "the typed refusal appears EXACTLY where the key puts it: one IO_POLICY landing for each shut glob call (off world + rename world) and none in the control world — across all driven legs of all executed worlds the count is exactly the number of shut shapes, never one more, never one less",
+      "pass": true,
+      "observed": "ioLandings=0 of 5 legs"
+    },
+    {
+      "id": "T1",
+      "claim": "world cleanup: EXACT-prefix sweep — no a5scratchdef-* DSH_HOME (or lock) remains under tests/homes; the byte manifest + logs are the retained evidence",
+      "pass": true,
+      "observed": "left=[] installHomeSwept=true"
+    },
+    {
+      "id": "T2",
+      "claim": "launch-token hygiene: raw instance logs deleted after redaction at capture",
+      "pass": true,
+      "observed": "rawLeft=[]"
+    },
+    {
+      "id": "T3",
+      "claim": "ports released after the run (three host ports + the mock port self-prove free again)",
+      "pass": true,
+      "observed": "ports=3183+3493 free=true"
+    },
+    {
+      "id": "T4",
+      "claim": "pnpm store kept OUTSIDE the world set and is removed by name by the operator after this run: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.a5scratchdef-store; pinned source worktree: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5scratchdef-src-20261018T233528Z @097fccf9922c",
+      "pass": null,
+      "observed": "storeExists=true"
+    }
+  ]
+}
