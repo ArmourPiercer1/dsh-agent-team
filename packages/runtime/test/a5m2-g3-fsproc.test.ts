@@ -1250,7 +1250,7 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
     // The arm carries NO approval face: escalate/allow/adjudicate exist
     // nowhere on it — escalation answers happen only in ptc-escalation-row.
     const faces = Object.keys(w.arm).sort().join(',')
-    expect(faces).toBe('adapterRevision,cancel,classify,declaredAbsent,definitionIdentity,drain,execute,familyId,inFlight,parametersFace,prepare,providerId,toolName')
+    expect(faces).toBe('adapterRevision,cancel,classify,declaredAbsent,definitionIdentity,drain,execute,familyId,inFlight,parametersFace,prepare,providerId,recheckAtEntry,settleEntry,toolName')
   })
 
   it('THE ENVELOPE LAW + ACTUAL BUDGET MAPPING (root FINAL LIMITED ruling): a null/empty ENVELOPE still refuses at classify AND at the entry; a GARBAGE supplied budget refuses typed; an unobservable (null) budget SERVES carrying the honest disclosure leaf', async () => {

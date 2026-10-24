@@ -77,8 +77,8 @@
  */
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 import {
-  A5_G3_ADAPTER_REVISION,
   A5_G3_FAMILIES,
+  A5_G3_PTC_ADAPTER_REVISION,
   A5_G3_PTC_TOTAL_DISPATCH_CAP_DISCLOSURE,
   createGovernedRunCodeArm,
 } from './g3-fsproc-adapters.mjs'
@@ -453,7 +453,7 @@ export function buildG3RunCodeWiring (input = {}) {
       entry: Object.freeze({
         // the adapter's OWN family bytes — never re-typed here
         familyId: A5_G3_FAMILIES.PTC,
-        adapterRevision: A5_G3_ADAPTER_REVISION,
+        adapterRevision: A5_G3_PTC_ADAPTER_REVISION,
         providerIdentity: providerId,
       }),
     })
@@ -463,7 +463,7 @@ export function buildG3RunCodeWiring (input = {}) {
     ok: true,
     familyId: A5_G3_FAMILIES.PTC,
     revision: A5_G3_PTC_WIRING_REVISION,
-    adapterRevision: A5_G3_ADAPTER_REVISION,
+    adapterRevision: A5_G3_PTC_ADAPTER_REVISION,
     providerId,
     placementNames: Object.freeze(definitions.map((definition) => definition.name)),
     definitions: Object.freeze(definitions),
@@ -505,13 +505,17 @@ export function buildG3RunCodeWiring (input = {}) {
 //       wall-timer) and per-child registry rides (:620-624/:687-691) are
 //       HOST-side facts this seam never mirrors, replaces, or re-accounts.
 //
-// The plan record closes when THIS admission walk settles (the grant was
-// consumed at the edge — the settled fact; the body's fate is the native's
-// own word). One listener, zero new scheduling accounts, zero placement,
-// zero registration of the reserved name. TIER: WIRED (接线) — 接线未测;
+// The plan record closes when THIS admission walk settles — at whichever
+// seat the walk settles in: the pre listener closes refusals and downstream
+// non-dispatch exits; the execute listener (the actual body boundary) owns
+// every walk that reaches consumption (the grant consumed at the edge is a
+// settled fact; the body's fate is the native's own word). TWO scope-
+// filtered listeners, zero new scheduling accounts, zero placement, zero
+// registration of the reserved name. TIER: WIRED (接线) — 接线未测;
 // real-Host acceptance is a later card. ─────────────────────────────────
 export const A5_G3_PTC_GUARD_STATUS = Object.freeze({
-  entry: 'tools/pre-execute scope-filtered interposition (public seam; never a registration)',
+  entry: 'TWO listeners, public seams only: tools/pre-execute = admission/Ask preparation (classify -> PA open -> the arm RECORDS the grant); tools/execute = THE BODY BOUNDARY (ONE edge consume with placementName + paConstructionBinding forwarded, the REAL liveVerdict recheck, then next() exactly once). Never a registration.',
+  timingLaw: 'FINAL TIMING LAW (root 2026-10-25): the pre-execute next() may continue into a downstream Ask — pre is NOT the body entry and never claims body-adjacent safety; the one-consume + liveVerdict + exactly-once next() ride the actual dispatch boundary',
   tier: 'WIRED-NOT-TESTED (root final limited ruling 2026-10-25; 已测试 needs the real-Host acceptance)',
   registrationBan: 'ABSOLUTE — 639 core/tools/src/index.ts:1080-1081 (PR355 §2.3); the reserved native is never registered, shadowed, or wrapped',
   nativeUntouched: 'concurrency ptc.ts:316-317/:447-452/:495/:660; parent cancel :538-555; timeout+sandbox :697-708; sub-calls ride the original registry :620-624/:687-691',
@@ -522,6 +526,8 @@ export const A5_G3_PTC_GUARD_CODES = Object.freeze({
   IDENTITY_UNBOUND: 'RUNCODE_GUARD_IDENTITY_UNBOUND',
   CALL_ID_ABSENT: 'RUNCODE_GUARD_CALL_ID_ABSENT',
   TOKEN_REPLAY: 'RUNCODE_GUARD_TOKEN_REPLAY',
+  NO_ADMISSION: 'RUNCODE_GUARD_NO_ADMISSION',
+  CANCELLED: 'RUNCODE_GUARD_CANCELLED',
   DRAINED: 'RUNCODE_GUARD_DRAINED',
   ARM_UNAVAILABLE: 'RUNCODE_GUARD_ARM_UNAVAILABLE',
   KEY_MOVED: 'RUNCODE_GUARD_KEY_MOVED',
@@ -581,6 +587,7 @@ export function buildG3RunCodeGuard (input = {}) {
       armed: false,
       declared: Object.freeze([Object.freeze({ name: A5_G3_RUN_CODE_TOOL_NAME, familyId: A5_G3_FAMILIES.PTC, status: 'DECLARED-INACTIVE', reason: native === undefined ? captureReason : 'registration-face-incomplete' })]),
       onPreExecute: null,
+      onExecute: null,
       familyRegistrations: () => Object.freeze([]),
       drain: () => deepFreeze({ event: 'g3-ptc-wire:guard-drain', semantics: 'nothing was armed — the word settles no resource' }),
     })
@@ -616,6 +623,27 @@ export function buildG3RunCodeGuard (input = {}) {
   let drained = false
   const tokenLedger = new Map()
   const inFlightCalls = new Set()
+  // THE TWO-STAGE SHAPE (root FINAL TIMING ruling 2026-10-25, D1/D2): the
+  // pre-execute next() may continue into a DOWNSTREAM Ask — pre is NOT the
+  // final body entry, and consuming there would claim an
+  // "immediately-before-body" safety the seam does not offer. So PRE keeps
+  // only the necessary admission/Ask preparation (classify -> PA open ->
+  // the arm records the kernel grant); the admitted walk waits HERE for
+  // the ACTUAL body boundary — the public `tools/execute` waterfall — where
+  // the ONE edge consume, the REAL liveVerdict traversal and the exactly
+  // once called next() all live. A grant is one-shot and callId-bound; the
+  // token ledger and the one-shot pending map keep any replay impossible
+  // while a walk waits.
+  const pendingWalks = new Map()
+  /** The body-boundary refusal is a FAILURE RESULT, not a decision: at
+   *  `tools/execute` the waterfall answers ToolExecutionResult, and never
+   *  calling next() IS the zero-body-entry (the reserved native transport
+   *  is not dispatched). The typed code travels in the error word. */
+  const failureResult = (refusal) => deepFreeze({
+    isError: true,
+    error: { message: `run_code governed refusal ${String(refusal?.code ?? 'REFUSED')} — ${String(refusal?.detail ?? 'refused at the body boundary')}` },
+    content: [{ type: 'text', text: `run_code refused by the A5 governed guard: ${String(refusal?.code ?? 'REFUSED')}` }],
+  })
   const onPreExecute = async (exec, next) => {
     if (!isRecord(exec) || exec.name !== A5_G3_RUN_CODE_TOOL_NAME) return next()
     const agent = exec.agent
@@ -669,64 +697,163 @@ export function buildG3RunCodeGuard (input = {}) {
         ...(signal === undefined ? {} : { signal }),
       })
       const opened = await pa.open(walk)
+      // The open was ATTEMPTED: whatever the kernel answered, its plan
+      // record for this callId is closed HERE unless the walk parks
+      // admitted for the body boundary (the plane finally law carried).
+      const closeAfterOpen = () => {
+        try { pa.closePlan(callId) } catch { /* the close word never masks a decision */ }
+      }
       if (opened?.cancelled === true) {
+        closeAfterOpen()
         return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.ADMISSION_CANCELLED, 'run_code: cancelled at the PA open edge before admission — zero body entry'))
       }
-      if (opened?.kind === 'deny') return refusalToDecision(opened)
+      if (opened?.kind === 'deny') {
+        closeAfterOpen()
+        return refusalToDecision(opened)
+      }
       if (opened?.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        closeAfterOpen()
         return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.APPROVAL_NOT_LANDED, `run_code: the admission answered ${String(opened?.kind ?? 'unsettled')} without a landed grant — internal state never substitutes for the kernel answer (zero body entry)`))
       }
-      const edge = await pa.edge(Object.freeze({
-        ...walk,
-        grant: opened.grant,
-        ...(opened.paDurableMint === undefined ? {} : { paDurableMint: opened.paDurableMint }),
-        ...(opened.request === undefined ? {} : { request: opened.request }),
-      }))
-      if (edge?.cancelled === true) {
-        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.EDGE_CANCELLED, 'run_code: cancelled at the execution edge — the approval stays unspent and is never replayed; zero body entry'))
-      }
-      if (edge?.kind === 'deny') return refusalToDecision(edge)
-      const proof = edge?.consumedProof
-      if (!isRecord(proof) || !isRecord(proof.grant) || typeof proof.grant.grantId !== 'string') {
-        return refusalToDecision(wiringRefuse(A5_G3_PTC_WIRING_CODES.CONSUME_PROOF_MISSING, 'run_code: the execution edge answered allow without its one-shot consume witness — the row never substitutes a self-attested consumption; the reserved native was NOT dispatched (zero body entry)'))
-      }
-      if (isRecord(signal) && signal.aborted === true) {
-        arm.cancel(classified.plan)
-        return deepFreeze({ kind: 'cancel' })
-      }
-      const prepared = arm.prepare(classified.plan, proof.grant)
+      // THE ADMISSION RECORD (pre-stage, D1 law): the arm records the kernel
+      // grant the open answered — PREPARED, NOT consumed. The consumption
+      // and the live-source re-verification belong to the body boundary.
+      const prepared = arm.prepare(classified.plan, opened.grant)
       if (prepared?.ok !== true) {
         observe({ event: 'g3-ptc-wire:guard-prepare-REFUSED', name: A5_G3_RUN_CODE_TOOL_NAME, code: prepared?.code })
+        try { pa.closePlan(callId) } catch { /* the close word never masks a decision */ }
         return refusalToDecision(isRecord(prepared) && typeof prepared.code === 'string'
           ? prepared
           : wiringRefuse(A5_G3_PTC_WIRING_CODES.PREPARE_REFUSED, 'run_code: the arm refused to record the kernel grant — zero body entry'))
       }
-      // ONE CONSUME is spent (the edge witness above). ALLOW: hand the call
-      // to the waterfall — the sibling listeners still decide and the
-      // terminal answers; when the chain allows, the RESERVED NATIVE runs
-      // with the ORIGINAL exec (identity/signal fused by the registry) and
-      // ALL its native guarantees. The decision travels VERBATIM.
+      pendingWalks.set(callId, Object.freeze({
+        plan: classified.plan,
+        walk,
+        grant: opened.grant,
+        opened,
+        ...(signal === undefined ? {} : { signal }),
+      }))
+      // PRE-ADMISSION PASSED: hand the call to the downstream chain —
+      // sibling listeners and the human Ask still stand between here and
+      // the dispatch. The decision travels VERBATIM; nothing here claims a
+      // body-entry safety this seat cannot offer.
       const decision = await next()
-      observe({ event: decision?.kind === 'allow' ? 'g3-ptc-wire:guard-allowed' : 'g3-ptc-wire:guard-downstream', name: A5_G3_RUN_CODE_TOOL_NAME, callId, kind: String(decision?.kind ?? 'unsettled') })
+      if (decision?.kind !== 'allow' && decision?.kind !== 'ask') {
+        // Downstream refused/cancelled BEFORE dispatch: tools/execute will
+        // never fire for this call, so this listener settles the walk —
+        // the arm entry cancels, the kernel plan record closes, zero body.
+        pendingWalks.delete(callId)
+        arm.cancel(classified.plan)
+        try { pa.closePlan(callId) } catch { /* the close word never masks a decision */ }
+      }
+      // 'ask': the walk (and its one-shot, callId-bound grant) waits for
+      // the ACTUAL boundary. If the human allows, tools/execute consumes;
+      // if the human refuses, the kernel's own row lifecycle answers — the
+      // pre seat never re-presents an unconsumed grant (the token ledger
+      // and the one-shot pending map keep any replay impossible).
+      observe({ event: decision?.kind === 'allow' ? 'g3-ptc-wire:guard-admitted' : 'g3-ptc-wire:guard-downstream', name: A5_G3_RUN_CODE_TOOL_NAME, callId, kind: String(decision?.kind ?? 'unsettled') })
       return decision
     } finally {
-      // THE PLAN CLOSE: this admission walk settles its own plan record on
-      // EVERY exit (the plane finally law carried); the grant consumption
-      // made at the edge is a settled fact and is never rolled back.
+      // The in-flight marker stands from the open until the walk settles —
+      // released HERE only when the walk did NOT park pending for the body
+      // boundary (refusals and settled non-dispatch exits).
+      if (!pendingWalks.has(callId)) inFlightCalls.delete(callId)
+    }
+  }
+  const onExecute = async (exec, next) => {
+    // THE BODY BOUNDARY (the public `tools/execute` waterfall): the ONE
+    // edge consume, the REAL liveVerdict traversal and the exactly once
+    // called next() — the transport dispatches the reserved native with
+    // the ORIGINAL exec (identity/signal fused by the registry), and the
+    // sub-tool chain rides the original registry untouched.
+    if (!isRecord(exec) || exec.name !== A5_G3_RUN_CODE_TOOL_NAME) return next()
+    const agent = exec.agent
+    if (!isRecord(agent) || agent.id !== memberAgentId) return next()
+    const callId = typeof exec.callId === 'string' && exec.callId.length > 0 ? exec.callId : null
+    const pending = callId === null ? undefined : pendingWalks.get(callId)
+    if (pending === undefined) {
+      // FAIL-CLOSED at the boundary: a run_code dispatch WITHOUT an
+      // admitted walk (drift, replay, or a dispatch that skipped the pre
+      // stage) never touches the body.
+      observe({ event: 'g3-ptc-wire:guard-boundary-REFUSED', name: A5_G3_RUN_CODE_TOOL_NAME, code: A5_G3_PTC_GUARD_CODES.NO_ADMISSION, callId: String(callId ?? 'absent') })
+      return failureResult({ code: A5_G3_PTC_GUARD_CODES.NO_ADMISSION, detail: 'a run_code dispatch reached the body boundary without an admitted PA walk — the reserved native is not dispatched (zero body entry)' })
+    }
+    pendingWalks.delete(callId)
+    const { plan, walk, opened } = pending
+    const signal = isRecord(exec.signal) ? exec.signal : pending.signal
+    try {
+      if (drained) {
+        arm.cancel(plan)
+        return failureResult({ code: A5_G3_PTC_GUARD_CODES.DRAINED, detail: 'the guard drained between admission and the body boundary — the admitted walk is cancelled, the reserved native never runs' })
+      }
+      if (isRecord(signal) && signal.aborted === true) {
+        arm.cancel(plan)
+        return failureResult({ code: A5_G3_PTC_GUARD_CODES.CANCELLED, detail: 'cancelled before the body boundary — zero body is the truth, not a race' })
+      }
+      const edge = await pa.edge(Object.freeze({
+        ...walk,
+        grant: pending.grant,
+        ...(opened.paDurableMint === undefined ? {} : { paDurableMint: opened.paDurableMint }),
+        ...(opened.request === undefined ? {} : { request: opened.request }),
+        // D2 (root narrow review 2026-10-25): the REAL PA edge evaluates
+        // its conditional placement/construction-binding validation
+        // (plane :2290) ONLY when these fields arrive — omitting them
+        // SKIPS the drift law. They pass through EXACTLY as the open
+        // answered them; the guard never re-derives or invents either.
+        ...(opened.placementName === undefined ? {} : { placementName: opened.placementName }),
+        ...(opened.paConstructionBinding === undefined ? {} : { paConstructionBinding: opened.paConstructionBinding }),
+      }))
+      if (edge?.cancelled === true) {
+        arm.cancel(plan)
+        return failureResult(wiringRefuse(A5_G3_PTC_WIRING_CODES.EDGE_CANCELLED, 'run_code: cancelled at the execution edge — the approval stays unspent and is never replayed; zero body entry'))
+      }
+      if (edge?.kind === 'deny') return failureResult(edge)
+      const proof = edge?.consumedProof
+      if (!isRecord(proof) || !isRecord(proof.grant) || typeof proof.grant.grantId !== 'string') {
+        return failureResult(wiringRefuse(A5_G3_PTC_WIRING_CODES.CONSUME_PROOF_MISSING, 'run_code: the execution edge answered allow without its one-shot consume witness — the row never substitutes a self-attested consumption; the reserved native was NOT dispatched (zero body entry)'))
+      }
+      // D1 AT THE REAL BOUNDARY: the EXISTING liveVerdict machinery (the
+      // CURRENT binding facts, the live dispatcher's definition identity,
+      // the captured function value, the family's service target facts)
+      // re-traversed HERE — drift during the whole admit-wait window,
+      // including the downstream Ask, refuses with zero body entry.
+      const cleared = await arm.recheckAtEntry(plan, { consumed: true, grant: proof.grant })
+      if (cleared?.ok !== true) {
+        observe({ event: 'g3-ptc-wire:guard-boundary-REFUSED', name: A5_G3_RUN_CODE_TOOL_NAME, code: cleared?.code, callId })
+        return failureResult(cleared)
+      }
+      // ONE CONSUME spent, the entry EXECUTING: the transport's next()
+      // dispatches the RESERVED NATIVE. The result travels VERBATIM — a
+      // native error result is the native's own word, never re-wrapped.
+      const result = await next()
+      arm.settleEntry(plan, result?.isError !== true, result?.isError === true ? 'transport-error-result' : 'transport-ok')
+      observe({ event: 'g3-ptc-wire:guard-body-settled', name: A5_G3_RUN_CODE_TOOL_NAME, callId, isError: result?.isError === true })
+      return result
+    } catch (error) {
+      // A throw at the boundary never settles as success: close the arm's
+      // account with the error's word and rethrow — the funnel owns the
+      // error result; the body already ran (or did not) by the transport's
+      // own truth.
+      arm.settleEntry(plan, false, `boundary-threw: ${String(error?.message ?? error).slice(0, 160)}`)
+      throw error
+    } finally {
+      // THE PLAN CLOSE moves WITH the walk: this listener owns the kernel
+      // plan record once the boundary is reached — closed on EVERY exit.
       inFlightCalls.delete(callId)
       try { pa.closePlan(callId) } catch { /* the close word never masks a decision */ }
     }
   }
   const assembly = Object.freeze({
     ok: true,
-    kind: 'pre-execute-guard',
+    kind: 'two-stage-guard',
     familyId: A5_G3_FAMILIES.PTC,
     revision: A5_G3_PTC_WIRING_REVISION,
-    adapterRevision: A5_G3_ADAPTER_REVISION,
+    adapterRevision: arm.adapterRevision,
     providerId,
     armed: true,
     declared: Object.freeze([]),
     onPreExecute,
+    onExecute,
     familyRegistrations: () => {
       // The ledger key is the CURRENT reserved-native identity through the
       // SAME seam; a MOVED identity throws (identities do not float).
@@ -748,13 +875,25 @@ export function buildG3RunCodeGuard (input = {}) {
         definitionIdentity: identity,
         entry: Object.freeze({
           familyId: A5_G3_FAMILIES.PTC,
-          adapterRevision: A5_G3_ADAPTER_REVISION,
+          // the arm's OWN family bytes (D4 pairing: descriptor/registration/
+          // claim carry the SAME value — the B-PTC row rides its own 4)
+          adapterRevision: arm.adapterRevision,
           providerIdentity: providerId,
         }),
       })])
     },
     drain: () => {
       drained = true
+      // Admitted-but-unconsumed walks cannot stay parked open: each one's
+      // arm entry cancels and its kernel plan record closes. The word is
+      // still a NEW-CALL PROHIBITION only — no running resource settles.
+      for (const parkedCallId of [...pendingWalks.keys()]) {
+        const parked = pendingWalks.get(parkedCallId)
+        pendingWalks.delete(parkedCallId)
+        inFlightCalls.delete(parkedCallId)
+        try { arm.cancel(parked.plan) } catch { /* cancel is a word, not a kill */ }
+        try { pa.closePlan(parkedCallId) } catch { /* the close word never masks a decision */ }
+      }
       if (arm !== null) { arm.drain() }
       return deepFreeze({ event: 'g3-ptc-wire:guard-drain', semantics: 'new-call prohibition only — no resource is settled by this word' })
     },

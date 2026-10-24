@@ -103,6 +103,13 @@ interface PlaneValue {
     declared: ReadonlyArray<{ name: string, status: string, reason: string }>
     familyRegistrations: () => Array<{ name: string, definitionIdentity: string, entry: { familyId: string, adapterRevision: number, providerIdentity: string } }>
   }
+  runCodeGuard?: {
+    armed: boolean
+    onPreExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>) | null
+    onExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>) | null
+    declared: ReadonlyArray<Record<string, unknown>>
+    familyRegistrations: () => Array<{ name: string, definitionIdentity: string, entry: { familyId: string, adapterRevision: number, providerIdentity: string } }>
+  }
   mount: (agentCtx: unknown) => { ok: boolean, code?: string, dispose?: () => void }
 }
 type Built = { ok: true, value: PlaneValue } | { ok: false, code: string, message: string }
@@ -981,5 +988,250 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     } finally {
       registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
     }
+  })
+})
+
+// ── A5M2-G3-PTC GUARD (root D3 card 2026-10-25): the run_code placement
+// flows through the ORIGINAL PA mapping and the REAL shipped reader —
+// open -> registry(bindingFamilyOf :192) -> plane resolves the native
+// owner's true placement, and ONLY then admit -> (D1) recheck -> native.
+// The seat, the kernel mint and the reader are REAL; only the transport's
+// body-next double stands where the host dispatch would run. ─────────────
+const PTC_PARAMS = {
+  type: 'object',
+  properties: {
+    code: { type: 'string' },
+    description: { type: 'string' },
+    timeoutMs: { type: 'number' },
+    sandbox_permissions: { type: 'string', enum: ['workspace-write', 'danger-full-access'] },
+    justification: { type: 'string' },
+  },
+  required: ['code', 'description'],
+  additionalProperties: false,
+}
+
+function makeGuardInject (opts: { captureAbsent?: boolean } = {}) {
+  const natives = new Map<string, Definition>()
+  if (opts.captureAbsent !== true) {
+    natives.set('run_code', {
+      name: 'run_code',
+      description: 'native run_code production description',
+      parameters: PTC_PARAMS,
+      execute: async () => { throw new Error('NATIVE BODY NEVER RUNS THROUGH THE GUARD') },
+      output: { schema: { type: 'object' }, render: (value: unknown) => JSON.stringify(value) },
+    })
+  }
+  return Object.freeze({
+    providerId: PROVIDER,
+    memberAgentId: MEMBER,
+    sessionHeaderId: HEADER,
+    readNative: (name: string) => natives.get(name),
+    ptcFacts: () => ({
+      interpreter: { runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' },
+      effectiveEnvelope: { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
+      timeout: { defaultMs: 30000, maxMs: 120000 },
+      childChannel: { capabilityList: ['read', 'write'], channelDigest: 'sha256:chan-plane', maxParallelSubCalls: 8, runDispatchBudget: 64 },
+    }),
+    // the ONE live source: the SAME rev-0 tuple the published dispatcher
+    // answers through entryOf('run_code') (the reader's seed).
+    bindingFacts: (toolName: string) => ({
+      bindingId: `plane-row:${TEMPLATE}:${toolName}`,
+      bindingRevision: 1,
+      policyGeneration: 0,
+      authorityGeneration: 0,
+    }),
+  })
+}
+
+describe('A5M2-G3-PTC-GUARD-PLANE — run_code placement through the ORIGINAL PA mapping and the REAL reader (D3)', () => {
+  it('(w) the REAL shipped reader resolves the native owner placement: two reads (construction + edge) both named run_code, the kernel minted the grant, the boundary consumed once and the body-next ran EXACTLY once', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => ['run_code'], entryOf: (name: string) => (name === 'run_code' ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined) } } }
+    const w = makeGuardInject()
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const reads: Array<Record<string, unknown>> = []
+    const built = buildPlane({
+      backends: { runCodeGuard: w },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => {
+        reads.push(input)
+        return registry.readPaCallFactsForCall(input)
+      },
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const rcFace = built.value.runCodeGuard as { armed: boolean, onPreExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>), onExecute: ((exec: Record<string, unknown>, next: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>), familyRegistrations: () => Array<{ definitionIdentity: string, entry: Record<string, unknown> }> } | undefined
+    expect(rcFace).toBeDefined()
+    const face = rcFace as NonNullable<typeof rcFace>
+    expect(face.armed).toBe(true)
+    // the production fill point: the family registers under the RESERVED
+    // NATIVE's own definition identity, riding the paired r4 family bytes.
+    for (const reg of face.familyRegistrations()) {
+      registerA5GovernedFamily(reg.definitionIdentity, reg.entry as { familyId: string, adapterRevision: number, providerIdentity: string })
+      expect(reg.entry).toMatchObject({ familyId: 'B-PTC', adapterRevision: 4, providerIdentity: PROVIDER })
+    }
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const exec = Object.freeze({
+        name: 'run_code',
+        callId: 'g3-ptc-real-call',
+        arguments: { code: 'return 1', description: 'real-reader leg' },
+        agent: AGENT,
+      })
+      let preNextCalls = 0
+      const admit = await face.onPreExecute(exec, async () => {
+        preNextCalls += 1
+        return { kind: 'allow' }
+      })
+      expect(admit).toEqual({ kind: 'allow' })
+      expect(preNextCalls).toBe(1)
+      // THE D3 POINT: the production read reached the REAL reader WITH the
+      // native owner's true placement — before the plane branch this read
+      // arrived with NO placementName and bindingFamilyOf :193 refused.
+      expect(reads.length, 'the construction read ran through the real reader').toBeGreaterThanOrEqual(1)
+      expect([...new Set(reads.map((r) => String(r.placementName ?? '')))], 'paPlacementNameOf named the reserved native').toEqual(['run_code'])
+      expect(seen.length).toBe(1)
+      expect(seen[0]?.family).toMatchObject({ familyId: 'B-PTC', adapterRevision: 4, providerIdentity: PROVIDER })
+      let bodyRuns = 0
+      const served = await face.onExecute(exec, async () => {
+        bodyRuns += 1
+        return { isError: false, value: 1, content: [] }
+      })
+      expect(served).toEqual({ isError: false, value: 1, content: [] })
+      expect(bodyRuns, 'the reserved native rides the transport exactly once').toBe(1)
+      // the measured double-read law: construction + EDGE, both WITH placement
+      // (the edge re-read is where :2290 compares the forwarded tuple).
+      expect(reads.length, 'construction + edge reads both ran for the placed row').toBe(2)
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(x) the FORWARDED construction tuple is LIVE at the edge (D2 through the real PA): a moved dispatcher binding between admission and the boundary refuses with the own-drift word of the plane — zero body', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const revision = { now: 1 }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: revision.now,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => ['run_code'], entryOf: (name: string) => (name === 'run_code' ? { verified: true, revision: revision.now, binding: tupleFor(name) } : undefined) } } }
+    const w = makeGuardInject()
+    const built = buildPlane({
+      backends: { runCodeGuard: w },
+      controlLeg: mintingControlLeg([]),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const face = built.value.runCodeGuard as NonNullable<typeof built.value.runCodeGuard>
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    const onPre = face.onPreExecute
+    const onExec = face.onExecute
+    if (onPre === null || onExec === null) throw new Error('spec world: the armed guard answered no listener face')
+    try {
+      const exec = Object.freeze({
+        name: 'run_code',
+        callId: 'g3-ptc-drift-call',
+        arguments: { code: 'return 1', description: 'drift leg' },
+        agent: AGENT,
+      })
+      expect((await onPre(exec, async () => ({ kind: 'allow' }))).kind).toBe('allow')
+      // the dispatcher binding the transport WOULD stand on moves mid-walk
+      revision.now = 2
+      let bodyRuns = 0
+      const result = await onExec(exec, async () => {
+        bodyRuns += 1
+        return { isError: false, value: 1, content: [] }
+      })
+      expect(result.isError, 'the edge drift refuses at the boundary').toBe(true)
+      expect(String((result.error as { message?: string })?.message ?? '')).toContain('moved between admission and execution')
+      expect(bodyRuns, 'zero body behind a moved binding').toBe(0)
+    } finally {
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(y) zero flip: capture absent arms NOTHING — no listener face, no placement branch, the reserved native stays untouched', () => {
+    const w = makeGuardInject({ captureAbsent: true })
+    const built = buildPlane({ backends: { runCodeGuard: w } })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const face = built.value.runCodeGuard as { armed: boolean, onPreExecute: unknown, onExecute: unknown, declared: Array<Record<string, unknown>> } | undefined
+    expect(face).toBeDefined()
+    expect(face?.armed).toBe(false)
+    expect(face?.onPreExecute).toBeNull()
+    expect(face?.onExecute).toBeNull()
+    expect((face?.declared ?? []).map((d) => d.name)).toEqual(['run_code'])
+    expect(built.value.placementNames).not.toContain('run_code')
   })
 })

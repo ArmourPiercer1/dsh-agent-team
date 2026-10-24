@@ -6153,12 +6153,29 @@ export function createAgentBindings(deps) {
               `agent-bindings: alpha.5 governed B-PTC run_code guard refused for '${sessionId}': ${detail}`,
             ), { code: 'alpha5-g3-runcode-mount-refused' })
           }
-          if (rcPlane.armed === true && typeof rcPlane.onPreExecute === 'function') {
-            const disposeRunCodeGuard = agentCtx.on('tools/pre-execute', rcPlane.onPreExecute)
-            toolDisposers.push(typeof disposeRunCodeGuard === 'function'
-              ? disposeRunCodeGuard
+          if (rcPlane.armed === true) {
+            // THE FINAL TIMING LAW installs BOTH seats (root 2026-10-25):
+            // tools/pre-execute runs admission/Ask preparation, tools/execute
+            // is the body boundary (ONE consume + the real liveVerdict + the
+            // next() called exactly once). A half-listener guard would admit
+            // without a body-boundary check, or check without admission —
+            // the mount refuses instead.
+            if (typeof rcPlane.onPreExecute !== 'function' || typeof rcPlane.onExecute !== 'function') {
+              const detail = 'the armed guard face lacks onPreExecute/onExecute — a half-listener guard is not a guard; both public-seam seats install or the mount refuses'
+              observations.push(`a5m2-g3-ptc: guard-REFUSED for ${sessionId} (incomplete listener face)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed B-PTC run_code guard refused for '${sessionId}': ${detail}`,
+              ), { code: 'alpha5-g3-runcode-mount-refused' })
+            }
+            const disposeRunCodeGuardPre = agentCtx.on('tools/pre-execute', rcPlane.onPreExecute)
+            toolDisposers.push(typeof disposeRunCodeGuardPre === 'function'
+              ? disposeRunCodeGuardPre
               : () => { /* the face answered no disposer — the plane drain still refuses new walks */ })
-            observations.push(`a5m2-g3-ptc: guard LISTENER installed for ${sessionId} (tools/pre-execute, agent-scoped; reserved native untouched)`)
+            const disposeRunCodeGuardBoundary = agentCtx.on('tools/execute', rcPlane.onExecute)
+            toolDisposers.push(typeof disposeRunCodeGuardBoundary === 'function'
+              ? disposeRunCodeGuardBoundary
+              : () => { /* the face answered no disposer — the plane drain still refuses new walks */ })
+            observations.push(`a5m2-g3-ptc: guard LISTENERS installed for ${sessionId} (tools/pre-execute admission + tools/execute body boundary, both agent-scoped; reserved native untouched)`)
           } else {
             observations.push(`a5m2-g3-ptc: guard DECLARED-INACTIVE for ${sessionId} (capture census above — no listener, no registration, the reserved native stays untouched)`)
           }
