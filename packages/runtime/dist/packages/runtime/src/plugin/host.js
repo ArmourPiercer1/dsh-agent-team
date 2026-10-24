@@ -2146,14 +2146,32 @@ export async function apply(ctx, config) {
         // One-shot binding of the provider surface onto a frozen facade. Generic
         // enumeration (the real service object's own keys) — a non-object answer
         // passes through untouched so the consumers' typed shape refusals stand.
+        // THE PUBLIC SURFACE THE FAMILY CONSUMES (root ca3 final residual,
+        // 2026-10-25): 'schedule_list'/'schedule_delete' are the CLOSED pair
+        // (schedule-bind-after-def.mjs PAIR), so the facade captures EXACTLY
+        // list/delete — the real 639 shape forces this: ScheduleService is a
+        // CLASS (packages/schedule/schedule/src/index.ts:100) whose list
+        // (:289-295) and delete (:342-356) are PROTOTYPE methods, the Remote
+        // variant carries only prototype metadata, and the Cordis tracker
+        // proxy has NO ownKeys trap — an Object.keys(source) facade (own
+        // enumerable only) would miss both methods (service-shape refuses every
+        // mount) while copying the constructor's own fields would leak private
+        // state. Explicit capture by public name, each bound to the STABLE
+        // SOURCE RECEIVER of this generation; a generation whose service lacks
+        // the surface answers null (the typed service-lifecycle-unobservable /
+        // service-shape refusals ride, nothing mounts blind). No private
+        // unwrap, no whole-object scan, no global cache.
+        const SCHEDULE_PUBLIC_SURFACE = ['list', 'delete'];
         const bindOnceScheduleFacade = (svc) => {
             if (svc === null || typeof svc !== 'object')
                 return svc;
             const source = svc;
             const facade = {};
-            for (const key of Object.keys(source)) {
+            for (const key of SCHEDULE_PUBLIC_SURFACE) {
                 const value = source[key];
-                facade[key] = typeof value === 'function' ? value.bind(source) : value;
+                if (typeof value !== 'function')
+                    return null;
+                facade[key] = value.bind(source);
             }
             return Object.freeze(facade);
         };
