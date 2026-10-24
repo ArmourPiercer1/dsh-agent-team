@@ -200,3 +200,10 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 - **a5p7 继承红（9c 上报，中心责任修复）**：int base 实测复现；`web-gateway-assembly.mjs:3`=注释 literal 误中（E1 同款，最小 hyphenless 改文+注记），`a5m2-g3-fsproc.test.ts:145`=G3A 合入的已审测试 import（d30dc52f8）→ 入 `REVIEWED_TEST_EDGE_EXCEPTIONS` dated 条目；audit 机制未动。修后 **5/5**。
 - **a067 NUL-tuple 修复合入 = pick `0e5645d9d2a1d368ce108615da9de36a91e3bfd1`**（tripleKey=JSON 单射、B2 定点碰撞负控、G 腿回归守卫；supply spec **10/10**、wire 25/25、glue 36 含更新镜像）。**中心裁（候根确认）**：a067 上报的 adapter list-constraint :1160 `${platform}::${provider}` 同类分隔符歧义属 **f28 已签源**——修则走 f28 窄再签（同源单行 JSON tuple），中心不默改已签文件；可达性=manifest 无字符法下理论可达，fail-closed 法下应修。
 - **退役登记**（详见 retire-receipts.md）：joint-cand/joint-cand2/family-rules/wire-merge=**RETIRE-READY**（HEAD=remote、tracked/WIP 零、无独有物、任务闭）；pinbuild=**PROTECT**（独有未推 tgz）；eb-e0-e1=**排除**（owner 在跑）。remove 由 a356 执行；文件级小组与整树 remove 不得同路径并写。
+
+## 01:3x dated 更正（根0e80源卡口径覆盖，随下批推送）
+
+- **撤"只会少答/永不扩权"**：MCP server-name ≡ inspect provider-id **未证明同一身份域**，偶然同名可**错误授权**；本矩阵前文引 44ece 该口径的两处自本行起作废（原文不删，以本行为准）。
+- **int 实测缺口**：derived supply 现**默认 ON**（agent-bindings :4727-4756），违"未签不得生产启用"——纠正卡已送 44ece（默认 OFF+显式 opt-in+spec 翻正），SHA 到即合。合入前 int 上该路径**不得用于任何 Host 启用**。
+- tuple JSON 修（`0e5645d9d`）独立可签；旧 f28 两口已签不动。
+- 6002/G3A 7603 增量已交根窄审（源 scope≠全已签）；e78 实为 idle、根已直接续 g2Web 注入+PA 纵切（中心前文"在途"口径按此更正）；pinbuild tgz/E1 保护不变，四树精确 HEAD 候 a356 现状复核。
