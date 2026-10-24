@@ -16,16 +16,22 @@
  *  - ANCHOR before anything: the instance root must still resolve at the
  *    FROZEN approved real identity (a root/ancestor swap refuses, zero
  *    creation — the same check, before any open);
- *  - THE PARENT CHAIN IS FD-BOUND, not path-bound: the walk opens the root
- *    once, then each parent component RELATIVE to its parent FileHandle
- *    with `O_DIRECTORY | O_NOFOLLOW` (Node >= 20 FileHandle-relative open).
- *    A symlinked component answers ELOOP -> `symlink-alias` (denied); an
- *    absent component answers `not-a-directory` — NO directory is ever
- *    created: the row's approved effect set is EXACTLY
- *    `I:tool-invoke + F(write exact file)` (matrix M-02: "无新 kind"), so
- *    `mkdir` — including the native `writeFileAtomic`'s
- *    `mkdir(recursive)` (fsio.ts:598 @639ed01539) — is OUTSIDE the grant.
- *    This deviation from native is DISCLOSED, never silent;
+ *  - the parent rides the REVIEWED path law (lstat symlink refuses
+ *    `symlink-alias`, absent answers `not-a-directory`, realpath must equal
+ *    the MAPPED real spelling) and NO directory is ever created: the row's
+ *    approved effect set is EXACTLY `I:tool-invoke + F(write exact file)`
+ *    (matrix M-02: "无新 kind"), so `mkdir` — including the native
+ *    `writeFileAtomic`'s `mkdir(recursive)` (fsio.ts:598 @639ed01539) — is
+ *    OUTSIDE the grant. This deviation from native is DISCLOSED, never
+ *    silent;
+ *  - THE FINAL PARENT IS FD-BOUND AT THE CREATE INSTANT: the verified
+ *    parent directory is opened `O_DIRECTORY | O_NOFOLLOW`, its
+ *    `/proc/self/fd/<n>` link is re-read to confirm the bind, and the
+ *    exclusive create is issued through THAT fd — a parent-name swap after
+ *    the bind cannot steer the create. Intermediate components ride the
+ *    reviewed path law with the SAME residual as the existing-file
+ *    closure; no per-component fd chain and no whole-tree rename immunity
+ *    is claimed (root P2 wording ruling 2026-10-25);
  *  - the final open is `O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW` on the
  *    PARENT FD: O_EXCL makes create-if-absent atomic (no truncate window,
  *    no content substitution — an existing target races LOST: EEXIST,
@@ -33,7 +39,10 @@
  *  - after creation, the fd is verified INSIDE the anchor
  *    (`verifyOpenedHandle`, snapshot null — the fresh inode is its own
  *    identity) and must be a regular file with `nlink === 1` (a hardlink
- *    alias at the fresh name refuses as `denied-inode`; the empty
+ *    alias at the fresh name answers `write-side-effect-unconfirmed` with
+ *    sideEffectPossible true — the fresh file was legitimately created and
+ *    STANDS; a failed identity re-read settles the SAME way, never a bare
+ *    throw; the empty
  *    in-root file that was legitimately created stays — the honest
  *    partial-effect statement rides `write-side-effect-unconfirmed` with
  *    sideEffectPossible true);
@@ -96,11 +105,18 @@ export function createPostConsumeCreateClosure(frozenPlan, ctx, cfg) {
     if (!isNonEmptyString(instanceRootDir)) {
         throw new TypeError('post-consume-create: instanceRootDir must be a non-empty string');
     }
-    if (!isBeneath(frozenPlan.approvedRootReal, frozenPlan.approvedLocator)) {
+    // The reviewed existing-file closure's MAPPING law (post-consume-write.ts
+    // :213-221), verbatim: the lexical locator's RELATIVE path is mapped onto
+    // the FROZEN real root. A stable trusted root symlink (/alias -> /real/
+    // root) then answers normally — the real spelling is the working spelling
+    // from here on. This mapping does NOT relax child-path symlinks: every
+    // child component is still required to resolve at its mapped real
+    // spelling below (root P2 ruling 2026-10-25).
+    const absPath = path.join(frozenPlan.approvedRootReal, relTarget);
+    if (!isBeneath(frozenPlan.approvedRootReal, absPath) || absPath === frozenPlan.approvedRootReal) {
         throw new TypeError('post-consume-create: the approved locator does not resolve beneath the approved root real identity');
     }
     const signal = ctx?.signal;
-    const absPath = frozenPlan.approvedLocator;
     let state = 'open';
     const closure = Object.freeze({
         claimed: () => state !== 'open',
@@ -199,7 +215,14 @@ export function createPostConsumeCreateClosure(frozenPlan, ctx, cfg) {
                     return settle(cfsUndetermined('exec-time-identity-drift', 'post-consume create refused: the bound parent fd cannot be re-read through /proc (no fd view); nothing was created', { sideEffectPossible: false }));
                 }
                 if (bindPath !== parentReal || !isBeneath(frozenPlan.approvedRootReal, bindPath)) {
-                    return settle(cfsDenial('outside-anchor', `post-consume create refused: the bound parent fd resolves to '${bindPath}', not the verified parent identity '${parentReal}' (bind-time drift — the gap the fd chain exists to close); nothing was created`));
+                    return settle(cfsDenial('outside-anchor', `post-consume create refused: the bound parent fd resolves to '${bindPath}', not the verified parent identity '${parentReal}' (bind-time drift — the final-parent bind check closes the swap window between the verify and the create); nothing was created`));
+                }
+                // Cancellation re-check AFTER the parent bind and IMMEDIATELY
+                // BEFORE the exclusive create (root P2 ruling 2026-10-25: the bind
+                // await is a real await point — a cancellation that lands during it
+                // must NOT create; zero FS beyond the read-only bind).
+                if (isAborted(signal)) {
+                    return settle(cfsDenial('effect-outside-grant', 'post-consume create refused: the call was cancelled after the parent bind but before the create — a cancelled call produces no effect; nothing was created or written'));
                 }
                 // ── THE EXCLUSIVE CREATE, THROUGH THE BOUND PARENT FD ──────────
                 try {
@@ -231,15 +254,33 @@ export function createPostConsumeCreateClosure(frozenPlan, ctx, cfg) {
                     }
                     return settle(cfsDenial('path-rejected', `post-consume create refused: the exclusive create failed (${String(code)}: ${String(err.message ?? err).slice(0, 160)}) — nothing was written`));
                 }
+                // Cancellation that lands AT/AFTER the create is NOT zero: the
+                // exclusive create IS a real effect — the file at the exact target
+                // STANDS (root P2 ruling: cancel-after-create is a real side
+                // effect). Never success, never "nothing was created"; the observed
+                // content bytes are 0.
+                if (isAborted(signal)) {
+                    return settle(cfsUndetermined('write-side-effect-unconfirmed', 'the call was cancelled at/after the exclusive create: the created file STANDS at the exact target as a real side effect (0 content bytes written)', { sideEffectPossible: true }));
+                }
                 // ── post-create identity: regular, single-linked, INSIDE anchor ─
-                const verdict = await verifyOpenedHandle(fileHandle, frozenPlan.approvedRootReal, null);
-                if (verdict.verdict === 'escape') {
-                    return settle(cfsDenial('exec-time-escape', `post-consume create refused: the created fd resolves OUTSIDE the approved anchor (${verdict.resolvedPath}); the empty in-root file that was created stands — no content was written`));
+                // The identity re-reads run AFTER a real effect already landed, so
+                // ANY failure of them (a bare throw included) settles through the
+                // EXISTING undetermined protocol with sideEffectPossible true
+                // (root P2 ruling: no new error system; the created file stands).
+                let fresh;
+                try {
+                    const verdict = await verifyOpenedHandle(fileHandle, frozenPlan.approvedRootReal, null);
+                    if (verdict.verdict === 'escape') {
+                        return settle(cfsDenial('exec-time-escape', `post-consume create refused: the created fd resolves OUTSIDE the approved anchor (${verdict.resolvedPath}); the empty in-root file that was created stands — no content was written`));
+                    }
+                    if (verdict.verdict !== 'confirmed') {
+                        return settle(cfsUndetermined('exec-time-identity-drift', `post-consume create refused after creation: the fresh identity is ${verdict.verdict}; no content was written; the empty file at the exact target may stand`, { sideEffectPossible: true }));
+                    }
+                    fresh = await fileHandle.stat({ bigint: false });
                 }
-                if (verdict.verdict !== 'confirmed') {
-                    return settle(cfsUndetermined('exec-time-identity-drift', `post-consume create refused after creation: the fresh identity is ${verdict.verdict}; no content was written; the empty file at the exact target may stand`, { sideEffectPossible: true }));
+                catch (err) {
+                    return settle(cfsUndetermined('write-side-effect-unconfirmed', `post-consume create: the post-create identity re-read failed (${String(err.message ?? err).slice(0, 160)}) — the created file STANDS at the exact target; no content was written`, { sideEffectPossible: true }));
                 }
-                const fresh = await fileHandle.stat({ bigint: false });
                 if (!fresh.isFile()) {
                     return settle(cfsDenial('not-a-file', 'post-consume create refused: the freshly created object is not a regular file — no content was written'));
                 }

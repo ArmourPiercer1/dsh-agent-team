@@ -16,16 +16,22 @@
  *  - ANCHOR before anything: the instance root must still resolve at the
  *    FROZEN approved real identity (a root/ancestor swap refuses, zero
  *    creation — the same check, before any open);
- *  - THE PARENT CHAIN IS FD-BOUND, not path-bound: the walk opens the root
- *    once, then each parent component RELATIVE to its parent FileHandle
- *    with `O_DIRECTORY | O_NOFOLLOW` (Node >= 20 FileHandle-relative open).
- *    A symlinked component answers ELOOP -> `symlink-alias` (denied); an
- *    absent component answers `not-a-directory` — NO directory is ever
- *    created: the row's approved effect set is EXACTLY
- *    `I:tool-invoke + F(write exact file)` (matrix M-02: "无新 kind"), so
- *    `mkdir` — including the native `writeFileAtomic`'s
- *    `mkdir(recursive)` (fsio.ts:598 @639ed01539) — is OUTSIDE the grant.
- *    This deviation from native is DISCLOSED, never silent;
+ *  - the parent rides the REVIEWED path law (lstat symlink refuses
+ *    `symlink-alias`, absent answers `not-a-directory`, realpath must equal
+ *    the MAPPED real spelling) and NO directory is ever created: the row's
+ *    approved effect set is EXACTLY `I:tool-invoke + F(write exact file)`
+ *    (matrix M-02: "无新 kind"), so `mkdir` — including the native
+ *    `writeFileAtomic`'s `mkdir(recursive)` (fsio.ts:598 @639ed01539) — is
+ *    OUTSIDE the grant. This deviation from native is DISCLOSED, never
+ *    silent;
+ *  - THE FINAL PARENT IS FD-BOUND AT THE CREATE INSTANT: the verified
+ *    parent directory is opened `O_DIRECTORY | O_NOFOLLOW`, its
+ *    `/proc/self/fd/<n>` link is re-read to confirm the bind, and the
+ *    exclusive create is issued through THAT fd — a parent-name swap after
+ *    the bind cannot steer the create. Intermediate components ride the
+ *    reviewed path law with the SAME residual as the existing-file
+ *    closure; no per-component fd chain and no whole-tree rename immunity
+ *    is claimed (root P2 wording ruling 2026-10-25);
  *  - the final open is `O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW` on the
  *    PARENT FD: O_EXCL makes create-if-absent atomic (no truncate window,
  *    no content substitution — an existing target races LOST: EEXIST,
@@ -33,7 +39,10 @@
  *  - after creation, the fd is verified INSIDE the anchor
  *    (`verifyOpenedHandle`, snapshot null — the fresh inode is its own
  *    identity) and must be a regular file with `nlink === 1` (a hardlink
- *    alias at the fresh name refuses as `denied-inode`; the empty
+ *    alias at the fresh name answers `write-side-effect-unconfirmed` with
+ *    sideEffectPossible true — the fresh file was legitimately created and
+ *    STANDS; a failed identity re-read settles the SAME way, never a bare
+ *    throw; the empty
  *    in-root file that was legitimately created stays — the honest
  *    partial-effect statement rides `write-side-effect-unconfirmed` with
  *    sideEffectPossible true);

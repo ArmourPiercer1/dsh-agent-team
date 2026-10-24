@@ -9,12 +9,15 @@
  *    O_NOFOLLOW`, NO `O_CREAT`, single-flight, zero arguments);
  *  - the ABSENT-target path is the reviewed `post-consume-create.ts`
  *    closure (backlog `write（新建文件） 未开发 … 待派` — the new-file law:
- *    FD-BOUND parent chain (`O_DIRECTORY|O_NOFOLLOW` per component, the
- *    openat gap the old HELD branch named), `O_WRONLY|O_CREAT|O_EXCL|
- *    O_NOFOLLOW` on the bound parent fd, NO directory creation (mkdir
- *    lives OUTSIDE the approved `I:tool-invoke + F(write exact file)`
- *    effect set — the deviation from the native mkdir-recursive spelling
- *    is DISCLOSED in the refusal and in the approved facts).
+ *    the FINAL PARENT is FD-bound at the create instant (the verified
+ *    parent opens `O_DIRECTORY|O_NOFOLLOW`, its /proc/self/fd link is
+ *    re-read, and `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW` is issued through
+ *    that fd), NO directory creation (mkdir lives OUTSIDE the approved
+ *    `I:tool-invoke + F(write exact file)` effect set — the deviation
+ *    from the native mkdir-recursive spelling is DISCLOSED in the refusal
+ *    and in the approved facts). Intermediate components ride the
+ *    reviewed parent-path law; no per-component fd chain and no
+ *    whole-tree rename immunity is claimed (root P2 wording ruling).
  * The path choice reads ONE world fact (lstat of the frozen target); it is
  * ADVISORY ONLY — every boundary law lives in the closures, and both races
  * are honest: a target that appears before the exclusive create answers
@@ -275,7 +278,7 @@ export function createGovernedWriteArm({
       // is the LAW BOTH outcomes obey — never an existence promise, never
       // a silent creation.
       existingFileLaw: 'verify-before-truncate (the reviewed r16 closure; no O_CREAT)',
-      newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW on an FD-BOUND parent chain (symlinked parents refuse, EEXIST races lose with zero bytes)',
+      newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW issued through the verified final-parent fd (/proc/self/fd bind: a parent swap after the bind cannot steer the create; EEXIST races lose with ZERO bytes)',
       directoryCreation: false,
     })
     const generations = generationFacts()

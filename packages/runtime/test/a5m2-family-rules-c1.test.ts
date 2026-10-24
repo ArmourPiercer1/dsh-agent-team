@@ -570,7 +570,7 @@ const B_WRITE_REAL = {
   canonicalTarget: '/srv/mcp/state.json',
   contentFingerprint: `sha256:${'1'.repeat(64)}`,
   existingFileLaw: 'verify-before-truncate (the reviewed r16 closure; no O_CREAT)',
-  newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW on an FD-BOUND parent chain (symlinked parents refuse, EEXIST races lose with zero bytes)',
+  newFileLaw: 'create-if-absent: O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW issued through the verified final-parent fd (/proc/self/fd bind: a parent swap after the bind cannot steer the create; EEXIST races lose with ZERO bytes)',
   directoryCreation: false,
 }
 
