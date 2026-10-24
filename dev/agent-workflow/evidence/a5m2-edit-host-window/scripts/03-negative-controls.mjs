@@ -1,10 +1,12 @@
 /**
- * A5M2 EDIT/SRE host-window prep — 03 NEGATIVE CONTROLS (WRITTEN, NOT RUN).
- *
- * 载体同 02（c1-leader-approval-smoke 的 bootHost/resolveControl/零触探针形）。
- * 端口 = 规划 3184（独立世界 README §3 neg 行）。核心不变量：**deny lane →
- * 零执行字节**；classify 前 typed 拒 → **零行**。所有字节判据用 before/after
- * sha256 + mtime 双测，不靠回执措辞。
+ * A5M2 EDIT/SRE host-window — 03 ASSERT LIBRARY (NOT RUN; fed ONLY by the
+ * REAL evidence of 05-edit-window-runner.mjs; same carrier law as 02).
+ * Window A's live negative is N1 below (EDIT deny on the SAME target, inside
+ * the single boot — the runner freezes mtime via utimesSync before the deny
+ * so even a touch-open would show). N2-N5 stay library law for later
+ * SRE/race windows. Core invariants: deny lane -> ZERO executed bytes
+ * (sha256 + mtime double-checked, never the receipt's wording); typed
+ * pre-classification refusals -> ZERO rows.
  */
 import { createHash } from 'node:crypto'
 import { readFileSync, existsSync } from 'node:fs'
