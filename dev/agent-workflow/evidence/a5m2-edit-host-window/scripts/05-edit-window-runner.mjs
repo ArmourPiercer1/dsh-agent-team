@@ -100,7 +100,20 @@ const SAVED_BP_V3_YAML = [
   '        - job_list', '        - job_output', '        - present', '        - skill',
   '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
-  '      permissions:', '        default: deny', '        allow: []', '        ask:',
+  // permissions = the CLOSED edit effect set (edit.mjs :232-236 verbatim), one rule each:
+  //   tool-invoke('edit')  -> ask lane below (real PA: ask -> Leader decision -> consume/deny)
+  //   read  exact target   -> allow (M-02 paired read leg, SAME governed read arm, same locator)
+  //   write exact target   -> allow (the content effect I)
+  // (F = the bound O_RDWR|O_NOFOLLOW fd discipline INSIDE the arm — a law-fact, not an admission
+  // rule.) Root ruling: necessary IO for THIS synthetic world's exact file only; NO external
+  // path, NO production profile, NO PA skip; deny lane remains REAL (E2 = control-layer deny,
+  // arm CANCELLED before any IO).
+  '      permissions:', '        default: deny', '        allow:',
+  '          - tool: read', '            resource:', '              kind: exact',
+  `              path: '@@TARGET_ABS@@'`,
+  '          - tool: write', '            resource:', '              kind: exact',
+  `              path: '@@TARGET_ABS@@'`,
+  '        ask:',
   '          - tool: edit', '            resource:', '              kind: any',
   '        deny: []',
   'teamEnvelope:', '  allow:',
@@ -390,7 +403,7 @@ async function main() {
     if (!existsSync(distArm)) throw new Error(`the f86 fixture carries NO dist edit arm: ${distArm}`)
     log(`plugin entry resolved from the f86 fixture exports['./host']: ${HOST_ENTRY}; dist edit arm present`)
   }
-  writeFileSync(join(HOME, 'blueprints', 'a5m2-edit-hw.yaml'), SAVED_BP_V3_YAML)
+  writeFileSync(join(HOME, 'blueprints', 'a5m2-edit-hw.yaml'), SAVED_BP_V3_YAML.replaceAll('@@TARGET_ABS@@', join(FSROOT, 'notes.txt')))
 
   if (DRY) {
     const dryPatch = join(HOME, 'dry-patch.yml')
