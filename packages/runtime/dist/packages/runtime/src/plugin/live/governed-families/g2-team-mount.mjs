@@ -38,6 +38,7 @@
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g2-team-mount
  */
+import { pathToFileURL } from 'node:url'
 import { A5_G2_WEB_ROUTE_GAP, createG2TeamBrowserPort, createG2TeamMcpPort, A5_G2_ASSEMBLY_CODES, loadG2TeamAssemblyEntries } from './g2-team-assembly.mjs'
 import { createG2McpResourceAdapters, createG2BrowserAdapters, createG2WebAdapters } from './g2-connector-adapters.mjs'
 
@@ -352,8 +353,30 @@ export async function createG2TeamAssemblySupply(input = {}) {
   if (!pairArmed && (entryPaths === null || typeof entryPaths !== 'object')) {
     return refuse(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'entryPaths {launchEntry, workerEntry, sdkClientEntry} are REQUIRED when no producer-resolved pair is armed — the loader pins the PUBLIC entry files; paths are approved config, never guessed here')
   }
-  let entries = pairArmed && (entryPaths === null || entryPaths === undefined) ? {} : undefined
-  if (entries === undefined) {
+  let entries
+  if (pairArmed) {
+    // ROOT 05:27 residual law: when ARMED the OLD BROWSER LOADER NEVER RUNS
+    // at all — its launchEntry/workerEntry paths are NOT a precondition of
+    // the producer-resolved pair nor of the SDK Client (a stale/broken old
+    // browser path, or an SDK-only entryPaths, must never block the new
+    // complete pair; the producer resolved the browser source via LEGAL
+    // PUBLIC SUBPATHS and recorded the provenance — that pair IS the
+    // source). The SDK Client stays INDEPENDENTLY loadable from its own
+    // approved sdkClientEntry path when one is configured.
+    entries = {}
+    if (entryPaths !== null && typeof entryPaths === 'object' && typeof entryPaths.sdkClientEntry === 'string' && entryPaths.sdkClientEntry.length > 0) {
+      try {
+        const p = entryPaths.sdkClientEntry
+        const sdkMod = await import(p.startsWith('file://') ? p : pathToFileURL(p).href)
+        if (typeof sdkMod.Client !== 'function') {
+          throw new Error('the pinned SDK client entry answered no Client function — the assembly refuses to run on substitutes')
+        }
+        entries = { Client: sdkMod.Client }
+      } catch (error) {
+        return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE), `the pinned SDK client entry failed to load (${String(error?.message ?? error).slice(0, 200)}) — refusing before any construction`)
+      }
+    }
+  } else {
     try {
       entries = await loadG2TeamAssemblyEntries(entryPaths)
     } catch (error) {
