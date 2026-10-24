@@ -3708,6 +3708,14 @@ export function createAgentBindings(deps) {
             ...(planeCfg.g2WebEnabled === true && g2Supply.webFixedLanes !== null && typeof g2Supply.webFixedLanes === 'object'
               ? { webMount: {
                 lanes: g2Supply.webFixedLanes,
+                // ROOT real-gap card (1): the REAL web register face is a
+                // CAPABILITY READ of the member context, never an
+                // invention — armed only when the host context actually
+                // answers registerFetchProvider/registerSearchProvider
+                // (web/web/src/index.ts:103/:114 public faces). Absent
+                // here the mount keeps today's byte-identical un-armed
+                // world (the named gap, not a fallback).
+                ...(typeof agentCtx?.web?.registerFetchProvider === 'function' || typeof agentCtx?.web?.registerSearchProvider === 'function' ? { registerFace: agentCtx.web } : {}),
                   resolveWebCenterPorts: () => {
                   const ports = liveWebG2CenterPortsByRoot.get(String(teamRoot))
                   return ports === undefined ? null : { ports, assemblyId: String(teamRoot) }

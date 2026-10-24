@@ -293,6 +293,48 @@ export async function createG2TeamMount(input = {}) {
       const cleanup = await disposeBuilt()
       return refuse(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, withCleanup(`g2Web backend refused at mount: ${String(error?.message ?? error)}`, cleanup))
     }
+    // ROOT real-gap card (1): the REAL Team-scoped FIXED PROVIDER BINDING.
+    // webMount.registerFace = the runtime web registration face handed to
+    // the Team scope (ctx.web.registerFetchProvider/registerSearchProvider,
+    // web/web/src/index.ts:103/:114 @639ed01539 — registration RETURNS the
+    // real disposer). The mount binds EXACTLY the fixed lane providers the
+    // supply already resolved (the seam-branded seam products): identity
+    // rides the provider's OWN id — no server name invented, no network
+    // egress, nothing boots. Every returned disposer is recorded as an
+    // EFFECT DISPOSER (the G3-proven pattern: exactly-once, awaited by
+    // THIS mount's dispose law). An armed-but-defective face refuses
+    // NAMED with what already bound UNWOUND through disposeBuilt. Absent
+    // the face the world stays byte-identical: A5_G2_WEB_ROUTE_GAP below
+    // is the COMPOSITION-GLOBAL selector gap and stays verbatim — this
+    // binding NEVER rides that selector; the Team face arrives fully
+    // chosen or not at all.
+    const registerFace = webMount.registerFace
+    if (registerFace !== null && typeof registerFace === 'object') {
+      const bindHalf = (kind, fnName, provider) => {
+        if (provider === undefined || provider === null) return // half absent = the named NOT-READY gap, never a stand-in
+        if (typeof provider.id !== 'string' || provider.id.length === 0) {
+          throw Object.assign(new Error(`the fixed ${kind} lane provider carries no own id — Team-scoped identity rides the provider's REAL id, never an invented server name`), { code: A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE })
+        }
+        const register = registerFace[fnName]
+        if (typeof register !== 'function') {
+          throw Object.assign(new Error(`the armed registerFace answers no ${fnName}(provider) (web/web/src/index.ts:${kind === 'fetch' ? '103' : '114'} @639ed01539) — a defective face never half-binds`), { code: A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE })
+        }
+        const disposer = register(provider)
+        if (typeof disposer !== 'function') {
+          throw Object.assign(new Error(`${fnName} answered NO disposer function — the PUBLIC registration law at index.ts:${kind === 'fetch' ? '103' : '114'} is not upheld here; refusing`), { code: A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE })
+        }
+        let settled = false
+        built.push({ label: `web:${kind}-register:${provider.id}`, port: Object.freeze({ close: async () => { if (!settled) { settled = true; disposer() } return Object.freeze({ ok: true, failures: [] }) } }) })
+        observe({ event: 'provider-bound', lane: 'web', kind, providerIdentity: provider.id, realmId, providerId })
+      }
+      try {
+        bindHalf('fetch', 'registerFetchProvider', webMount.lanes?.web_fetch?.provider)
+        bindHalf('search', 'registerSearchProvider', webMount.lanes?.web_search?.provider)
+      } catch (error) {
+        const cleanup = await disposeBuilt()
+        return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE), withCleanup(`g2Web provider binding refused: ${String(error?.message ?? error)}`, cleanup))
+      }
+    }
   }
 
   return Object.freeze({

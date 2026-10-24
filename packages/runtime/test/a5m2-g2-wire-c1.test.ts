@@ -1979,3 +1979,96 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     expect(s.browserEntries.launchChromium).toBe((built.entries as { launchChromium: unknown }).launchChromium)
   })
 })
+
+/* ROOT real-gap card (1): the REAL Team-scoped FIXED PROVIDER BINDING at
+ * the mount — register through the supplied web register face (public
+ * registerFetchProvider/registerSearchProvider law, index.ts:103/:114),
+ * close on scope.dispose as EFFECT DISPOSERS (exactly-once, awaited),
+ * Team-scoped identity from the provider's OWN id + the mount's own
+ * realm/provider facts. Author-side only: no Host, no network, no boot. */
+describe('A5M2-G2-WIRE r81: web fixed-provider Team-scoped register+close binding', () => {
+  const webFixtures = async () => {
+    const MOUNT = await import('../src/plugin/live/governed-families/g2-team-mount.mjs')
+    const seamMod = await import('../src/plugin/live/governed-families/g2-provider-seams.mjs')
+    const fixedProvider = { id: 'team-fixed-fetch-r81', available: () => true, fetch: async () => ({ ok: true, content: 'x' }) }
+    const declared = { origin: 'https://target.example.invalid', endpointOrigin: 'https://target.example.invalid', configIdentity: 'r81-cfg' }
+    const lanes = MOUNT.createG2WebFixedLanes({ fixedProvider, seamMod, declared, readMountFacts: () => declared })
+    const readNative = (name) => ({ name, description: `native ${name}` })
+    const definitionIdentityOf = () => 'def-id-r81'
+    return { MOUNT, lanes, readNative, definitionIdentityOf, fixedProvider }
+  }
+  const baseMount = (MOUNT, extra) => MOUNT.createG2TeamMount({
+    realmId: 'a5m2-r81-realm', providerId: 'a5p5-plane',
+    readNative: (name) => ({ name, description: `native ${name}` }),
+    definitionIdentityOf: () => 'def-id-r81',
+    webMount: extra.webMount,
+    observe: extra.observe ?? (() => {}),
+  })
+  it('binds the fixed fetch provider at mount; disposer runs EXACTLY ONCE on scope.dispose', async () => {
+    const { MOUNT, lanes, fixedProvider } = await webFixtures()
+    const registered: unknown[] = []
+    let closes = 0
+    const mount = await baseMount(MOUNT, {
+      webMount: { lanes, registerFace: { registerFetchProvider: (p) => { registered.push(p); return () => { closes += 1 } } } },
+      observe: () => {},
+    })
+    expect(mount.ok).toBe(true)
+    if (mount.ok !== true) return
+    // identity: the seam-branded provider arrives at the face (its own id
+    // is what Team scope keys on — never an invented server name)
+    expect(registered.length).toBe(1)
+    expect((registered[0] as { id?: string }).id).toBe(fixedProvider.id)
+    expect(mount.dispose).toBeTypeOf('function')
+    const d1 = await mount.dispose()
+    expect(d1).toEqual({ ok: true, failures: [] })
+    expect(closes).toBe(1)
+    await mount.dispose() // repeated dispose NEVER re-runs the disposer
+    expect(closes).toBe(1)
+  })
+  it('defective face (no registerFetchProvider): typed FACE refusal with what bound UNWOUND', async () => {
+    const { MOUNT, lanes } = await webFixtures()
+    const mount = await baseMount(MOUNT, {
+      // search half answers, fetch half absent — fetch is bound FIRST so
+      // a half-defective face must never leave a half-binding behind
+      webMount: { lanes, registerFace: { registerSearchProvider: () => () => {} } },
+    })
+    // mount order is fetch-then-search; fetch face missing => refusal
+    expect(mount.ok).toBe(false)
+    if (mount.ok === true) return
+    expect(mount.code).toBe('P_G2_ASM_FACE_INCOMPLETE')
+    expect(String(mount.message)).toContain('registerFetchProvider')
+  })
+  it('a register answering NO disposer refuses typed (the public registration law is upheld)', async () => {
+    const { MOUNT, lanes } = await webFixtures()
+    const mount = await baseMount(MOUNT, {
+      webMount: { lanes, registerFace: { registerFetchProvider: () => undefined } },
+    })
+    expect(mount.ok).toBe(false)
+    if (mount.ok === true) return
+    expect(mount.code).toBe('P_G2_ASM_FACE_INCOMPLETE')
+    expect(String(mount.message)).toContain('disposer')
+  })
+  it('un-armed world byte-identical: without registerFace NOTHING registers (named gap stays)', async () => {
+    const { MOUNT, lanes } = await webFixtures()
+    let touched = 0
+    const face = { registerFetchProvider: () => { touched += 1; return () => {} } }
+    const mount = await baseMount(MOUNT, { webMount: { lanes } }) // face NOT passed
+    expect(mount.ok).toBe(true)
+    expect(face.registerFetchProvider).toBeTypeOf('function') // a REAL face exists…
+    expect(touched).toBe(0) // …yet is NEVER consulted when not armed
+    if (mount.ok === true) await mount.dispose()
+  })
+  it('binding identity OBSERVES the mount facts (realmId/providerId) with the provider id', async () => {
+    const { MOUNT, lanes, fixedProvider } = await webFixtures()
+    const events: Record<string, unknown>[] = []
+    const mount = await baseMount(MOUNT, {
+      webMount: { lanes, registerFace: { registerFetchProvider: () => () => {} } },
+      observe: (e) => { events.push(e) },
+    })
+    expect(mount.ok).toBe(true)
+    const bound = events.find((e) => e.event === 'provider-bound')
+    expect(bound).toBeDefined()
+    expect(bound).toMatchObject({ lane: 'web', kind: 'fetch', providerIdentity: fixedProvider.id, realmId: 'a5m2-r81-realm', providerId: 'a5p5-plane' })
+    if (mount.ok === true) await mount.dispose()
+  })
+})
