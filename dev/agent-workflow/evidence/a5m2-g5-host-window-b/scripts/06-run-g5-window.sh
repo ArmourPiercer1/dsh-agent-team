@@ -132,7 +132,6 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
 #       touches foreign processes, any other world, or :3080.
 (
   BREACH=""
-  ARMED=0
   DEADLINE=$(( $(date +%s) + 300 ))
   while :; do
     if [ -s "$OUT/home.txt" ]; then
@@ -151,16 +150,19 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
     if [ -n "$BREACH" ]; then
       printf '{ "breachAt": "%s", "reason": "%s" }\n' "$(date -u +%FT%TZ)" "$BREACH" > "$OUT/budget-breach.json"
       echo "watchdog: BUDGET/CAPACITY BREACH — ${BREACH}; terminating OWN group"
-      kill -TERM -"${SPAWN_PGID}" 2>/dev/null || true
-      ARMED=1
       break
     fi
     NOW=$(date +%s)
     [ "$NOW" -lt "$DEADLINE" ] || break
     sleep "$SAMPLE_EVERY"
   done
+  # ROOT RULING (fixed order, fa56 re-review): the ARMED marker is PERSISTED
+  # BEFORE the first TERM — on BOTH the 300s-timeout and the breach path — so a
+  # parent returning early can never mistake an in-progress escalation for an
+  # unarmed watchdog and cancel its drain. A local shell variable is NOT the
+  # marker; the file is. The parent cancels ONLY on a confirmed-unarmed check.
+  touch "$OUT/watchdog-armed"
   kill -TERM -"${SPAWN_PGID}" 2>/dev/null || true
-  ARMED=1
   DRAIN_END=$(( $(date +%s) + 20 ))
   while [ "$(date +%s)" -lt "$DRAIN_END" ]; do
     pgrep -g "${SPAWN_PGID}" >/dev/null 2>&1 || break
@@ -170,7 +172,6 @@ echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID}"
     kill -KILL -"${SPAWN_PGID}" 2>/dev/null || true
     echo "watchdog: OWN group still present after the 20s drain — KILL sent (foreign processes untouched)"
   fi
-  [ "$ARMED" = 1 ] && touch "$OUT/watchdog-armed"
 ) &
 WATCHDOG_PID=$!
 RC=0
