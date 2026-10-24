@@ -494,8 +494,10 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
         // The measured registered key set — kept by the center across the
         // root 23:17 full-chain merge (integration-copy pin, re-anchored at
         // root 23:09 for B-SUBAGENT / cc6a0f643; the six adds extend the
-        // B-TEAM LEAVES, not the family list, so the ten names stand).
-        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+        // B-TEAM LEAVES, not the family list; B-TERMINAL JOINS the eleven
+        // names at this merge from the a5m2-wire-g3 additive entry,
+        // riding directly after B-INSPECT).
+        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
         expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
         expect(isLosslessJsonValue(manifest)).toBe(true)
         expect(validatePaFamilyTarget('B-TEAM', manifest)).toBeUndefined()

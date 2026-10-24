@@ -1614,6 +1614,22 @@ export async function apply(ctx, config) {
             // leaves the current route unresolvable, which the governed arm refuses at
             // the same pre-resource position native does.
             llm: () => ctx.get('llm'),
+            // A5M2 G3 B-TERMINAL (root 19:08, wiring lane; the deps.jobs/B-WEB lazy
+            // pattern verbatim): the LIVE public `terminals` service face and the
+            // `subprocess` capability, resolved AT CALL TIME through the same
+            // global-store read. Additive optional accessors: worlds without the
+            // services answer undefined and the terminal inject's hard-visit law
+            // refuses the mount typed — never a setup failure for a family that is
+            // not deployed (absent planeCfg.terminal = zero flip, these reads never
+            // run).
+            terminals: () => ctx.get('terminals'),
+            subprocess: () => ctx.get('subprocess'),
+            // A5M2 G3 B-TERMINAL (root 21:07): the confinement provider + policy
+            // property, resolved at call time through the same public faces the
+            // terminal-bash backend itself consumes (ctx.get('sandbox') is the
+            // 639 global-store token; sandboxPolicy is the ctx property beside it).
+            sandbox: () => ctx.get('sandbox'),
+            sandboxPolicy: () => ctx.sandboxPolicy,
             // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
             // DSH public `sessionQuery` service — the registered SessionQueryEngine
             // whose five facets (search / trace / event-read / authorization /

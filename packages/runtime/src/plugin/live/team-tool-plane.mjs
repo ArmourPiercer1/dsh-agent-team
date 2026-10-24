@@ -90,6 +90,10 @@ import { createAnchoredGlobBackend } from './glob-backend.mjs'
 import { A5_G1_RECORD_SPECS, A5_G1_ADAPTER_REVISION } from './governed-families/g1-surface-adapters.mjs'
 import { A5_G6_FAMILY, A5_G6_TOOL_NAMES } from './governed-families/g6-session-query.mjs'
 import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-wiring.mjs'
+// A5M2 G3 B-TERMINAL (root 19:08, wiring lane): the terminal family rides the
+// same bridge law as G6 — the committed G3 adapter is reached THROUGH the
+// wiring module only (the adapter itself is never imported or edited here).
+import { buildG3TerminalWiring, A5_G3_TERMINAL_TOOL_NAMES } from './governed-families/g3-terminal-wiring.mjs'
 // A5M2-G5 B-SESSION GOAL SERVICE (this lane's additive import rows under
 // the G6 pair): the goal wiring bridge and the adapter's OWN census face —
 // imported VERBATIM, no law restated here.
@@ -592,6 +596,21 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // declared/INACTIVE (four-tier law, Gate 0f), and the gate refuses any
   // mount that tries to place them.
   g1_pure_query: Object.freeze(['cordis_inspect_list', 'cordis_inspect_query']),
+  // A5M2 G3 B-TERMINAL (root 19:08 production wiring): the six governed
+  // terminal rows mount at their FIXED native spellings behind the closed
+  // `backends.terminal` inject key (never a names map - same law as every
+  // entry above). The same-name, same-meaning implementation this ledger
+  // records: the row classifies through the COMMITTED G3 family adapter
+  // (`governed-families/g3-fsproc-adapters.mjs`, reached via the G3 wiring
+  // bridge), walks THIS plane's ONE PA admission (open/edge/demanded
+  // one-shot consumedProof), and the BODY is the REAL handle route -
+  // createHostTerminalControlPort over the live ctx.terminals service face,
+  // the controlled spawnTerminal capability and the REAL pinned-639
+  // LocalPtySession seam (the handle answers, the arm routes; 保留原生 with
+  // the family's §5.1 laws closed in the adapter). An un-injected member of
+  // the six lands the honest DECLARED-INACTIVE census - no def, native
+  // untouched.
+  terminal: Object.freeze(['terminal_open', 'terminal_send', 'terminal_read', 'terminal_signal', 'terminal_close', 'terminal_list']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -1175,6 +1194,39 @@ export function createTeamToolPlaneAssembly(input = {}) {
     g1Inject = Object.freeze({ rows: Object.freeze(g1Entries) })
   }
 
+  // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the arm route places the
+  // B-INSPECT pure-query rows through the ASSEMBLY OWNER's own scoped
+  // registration, so the plane injects no rows (`backends.g1` stays absent —
+  // the two routes are mutually exclusive by construction here). What the
+  // arm route DOES supply is the owner's live placement-ledger reader: a
+  // truth about names the owner has ACTUALLY placed and still holds.
+  // `paPlacementNameOf` consults it ONLY inside the frozen pure-query
+  // spelling set and ONLY while the ledger says the name is currently
+  // placed — never a wildcard for arbitrary names (the spawn row's
+  // actually-placed law, same shape). ABSENT = byte-for-byte zero flip.
+  const g1ArmInjectRaw = input.backends?.g1Arm
+  let g1ArmInject = null
+  if (g1ArmInjectRaw !== undefined && g1ArmInjectRaw !== null) {
+    const g1ArmBad = (typeof g1ArmInjectRaw !== 'object' || Array.isArray(g1ArmInjectRaw))
+      ? 'the injected arm-placement face is not { isPlaced }'
+      : typeof g1ArmInjectRaw.isPlaced !== 'function'
+        ? 'the arm-placement face carries no isPlaced(name) live reader — the owner holds the placement ledger, this plane only consults it per name'
+        : undefined
+    if (g1ArmBad !== undefined) {
+      return { ok: false, code: 'G1_ARM_INJECT_INVALID', message: `backends.g1Arm: ${g1ArmBad}` }
+    }
+    g1ArmInject = Object.freeze({ isPlaced: (name) => {
+      try {
+        return g1ArmInjectRaw.isPlaced(name) === true
+      } catch {
+        // A faulting owner reader answers NOTHING for every name: the
+        // placement attribution fails closed (no placementName → the shared
+        // reader's no-placement-name refusal), never a wildcard pass.
+        return false
+      }
+    } })
+  }
+
   // A5M2-G6 B-SESSION-QUERY (root 18:2x, the lifted block scope): the five
   // governed session-query rows ride THIS plane's placement pipeline, the
   // REAL paAdmit seat and the shared placement feed. The injection is the
@@ -1329,6 +1381,57 @@ export function createTeamToolPlaneAssembly(input = {}) {
       list: Object.freeze({ createArm: scheduleInjectRaw.list.createArm, description: scheduleInjectRaw.list.description, parameters: scheduleInjectRaw.list.parameters, output: Object.freeze({ schema: scheduleInjectRaw.list.output.schema, render: scheduleInjectRaw.list.output.render }) }),
       delete: Object.freeze({ createArm: scheduleInjectRaw.delete.createArm, description: scheduleInjectRaw.delete.description, parameters: scheduleInjectRaw.delete.parameters, output: Object.freeze({ schema: scheduleInjectRaw.delete.output.schema, render: scheduleInjectRaw.delete.output.render }) }),
     })
+  }
+
+  // A5M2 G3 B-TERMINAL (root 19:08): the CLOSED `backends.terminal` gate
+  // key, the G6 presence discipline — ABSENT (the ordinary config) = the
+  // family is not deployed on this assembly: no rows, byte-for-byte zero
+  // flip; there is no separate enable key and no fallback row. A DEFECTIVE
+  // inject refuses the MOUNT with a typed code (config is law, not wiring).
+  // The inject is the OWNER-PUBLISHED deployment evidence: the member-scoped
+  // native capture seam, the DECLARED public backend set, the §5.1 service
+  // facts seam (backend/session/approvedOpenPlan — the per-open CONTROLLED
+  // EXECUTION PLAN reader), the REAL control-port deps (the live
+  // ctx.terminals face + the controlled spawnTerminal capability + the REAL
+  // pinned-639 LocalPtySession seam + the SAME TerminalBackendCleanupError
+  // class the service imports), and the CURRENT binding-facts reader. The
+  // adapter's own hard-visit law decides the DEEP semantics of every member
+  // (this plane adds no gate to that surface — the G6 division verbatim);
+  // the plane's shape check only refuses structurally-broken evidence
+  // before any wiring runs.
+  const terminalInjectRaw = input.backends?.terminal
+  const terminalInjectInvalid = (why) => ({ ok: false, code: 'TERMINAL_ARM_INJECT_INVALID', message: `backends.terminal: ${why}` })
+  let terminalInject = null
+  if (terminalInjectRaw !== undefined) {
+    const tIsRec = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+    const tBad = typeof terminalInjectRaw.providerId !== 'string' || terminalInjectRaw.providerId.length === 0
+      ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against)'
+      : typeof terminalInjectRaw.readNative !== 'function'
+        ? 'readNative (name) => definition is required — the MEMBER-SCOPED native capture seam (the agentCtx.tools.get(name, runtimeAgent) law the G6/todo captures obey; the global face is NOT a fallback, and an uncaptured member lands the honest DECLARED-INACTIVE census)'
+        : typeof terminalInjectRaw.memberAgentId !== 'string' || terminalInjectRaw.memberAgentId.length === 0
+          ? 'memberAgentId must be the REAL member Agent id (exec.agent.id shape) — the arm owns state through the exact Agent, never a name lookup'
+          : typeof terminalInjectRaw.sessionHeaderId !== 'string' || terminalInjectRaw.sessionHeaderId.length === 0
+            ? 'sessionHeaderId must be the durable session header id (exec.agent.session.header.id shape) — the ownership leg, never guessed'
+            : !Array.isArray(terminalInjectRaw.declaredBackends) || terminalInjectRaw.declaredBackends.length === 0
+              || terminalInjectRaw.declaredBackends.some((t) => typeof t !== 'string' || t.length === 0)
+              ? 'declaredBackends must be a non-empty array of the DECLARED public backend types (§5.1 declared_mount law; internal per-open types are outside the declared surface by construction)'
+              : !tIsRec(terminalInjectRaw.ptyService)
+                || typeof terminalInjectRaw.ptyService.backend !== 'function'
+                || typeof terminalInjectRaw.ptyService.session !== 'function'
+                || typeof terminalInjectRaw.ptyService.approvedOpenPlan !== 'function'
+                ? 'ptyService {backend, session, approvedOpenPlan} is required — the §5.1 governance interface: target identity/incarnation AND the per-open CONTROLLED EXECUTION PLAN are SERVICE facts; a seam that cannot answer the plan is not the §5.1 backend feed'
+                : !tIsRec(terminalInjectRaw.controlPortDeps)
+                  ? 'controlPortDeps is required — the REAL handle route (§5.1 delivery word): {terminals, resolveOwner, subprocess, sessionFactory, TerminalBackendCleanupError, jobs?, ownerSessionId?}; the adapter\'s own hard-visit law validates every member (a control-plane-only pose is not the §5.1 backend)'
+                  : typeof terminalInjectRaw.bindingFacts !== 'function'
+                    ? 'bindingFacts (toolName) => {bindingId, bindingRevision, policyGeneration, authorityGeneration} is required — the CURRENT dispatcher binding of THAT tool\'s entry, read LIVE (the todo/write arm reader law; bindingIds are per-tool facts, a snapshot never substitutes)'
+                    : undefined
+    if (tBad !== undefined) return terminalInjectInvalid(tBad)
+    for (const g3Name of A5_G3_TERMINAL_TOOL_NAMES) {
+      if (g3Name === readName || g3Name === A5_TODO_MOUNT_NAME || g3Name === A5_WRITE_MOUNT_NAME || g3Name === A5_IMAGE_MOUNT_NAME) {
+        return terminalInjectInvalid(`'${g3Name}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the G3 block)`)
+      }
+    }
+    terminalInject = Object.freeze({ ...terminalInjectRaw })
   }
 
   // ── A5-M2 B-SUBAGENT CONTROL injection law (this lane's block, root 21:01 card) ──
@@ -1675,6 +1778,24 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // A5-M2 G1 PURE-QUERY: the three fixed spellings resolve to themselves,
     // ONLY when this mount actually placed them (zero flip otherwise).
     if (g1Inject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)) return spelling
+    // A5M2-G3-WIRE (root 20:14 card item 2): the B-TERMINAL rows mount at
+    // their FIXED native spellings, so production `readCallFacts` must be
+    // able to name their placement — WITHOUT this line the read arrives with
+    // NO placementName and the registry refuses the binding lookup (the
+    // mount would walk but never bind). THE REUSED SOURCE IS THE WIRING'S
+    // OWN PLACEMENT LIST (the Team85 pattern): a name resolves iff the G3
+    // wiring on THIS mount actually placed it — census rows and unmounted
+    // worlds answer undefined exactly as before (zero flip; no whole-family
+    // whitelist, no fake binding, never a guessed mapping).
+    if (g3Wiring !== null && g3Wiring.placementNames.includes(spelling)) return spelling
+    // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the arm route places the row
+    // through the OWNER's scoped registration, so `g1Inject` stays null — the
+    // name resolves ONLY while the owner's placement ledger CURRENTLY holds
+    // this very name (the actually-placed law, never an arbitrary-name
+    // wildcard). No ledger entry = no placementName = the shared reader's
+    // no-placement-name fail-closed, exactly as before.
+    if (g1ArmInject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)
+      && g1ArmInject.isPlaced(spelling)) return spelling
     // A5M2-B-TEAM-WIRE (root 19:53 ①): a claimed member-operation name mounts
     // at its OWN native spelling — but the row is placed by the registration
     // owner, not by this plane's `names` map, so it resolves HERE through the
@@ -4510,6 +4631,81 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const g6Defs = g6Wiring === null ? [] : g6Wiring.definitions
+  // ── A5M2 G3 B-TERMINAL rows (root 19:08 production wiring) ──────────────
+  // The SAME mount law as the G6 block above: an ISSUED call identity
+  // (per-mount nonce + seq + the REAL exec.token as single-flight key,
+  // object|symbol — never String()), the LAZY placement feed, and THE REAL
+  // SEAT (`pa: paAdmit` — the callable carrying open/edge/closePlan). The
+  // bridge owns the walk (classify -> open -> edge -> demanded one-shot
+  // consumedProof -> arm.execute on the REAL handle route); this plane owns
+  // the correlation, the placement feed, the family-face exposure and the
+  // dispose drain. Zero-flip law: with no injection this is byte-identical
+  // to the pre-G3 assembly.
+  const g3TokenLedger = new Map()
+  let g3Wiring = null
+  if (terminalInject !== null) {
+    let g3CallSeq = 0
+    const g3MountNonce = String(globalThis.crypto?.randomUUID?.()
+      ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`)
+    const g3Prefix = `team-${String(input.instanceId ?? templateId ?? 'unknown')}-g3`
+    const g3CorrelationOf = (exec, toolName) => {
+      const raw = exec !== null && typeof exec === 'object' ? exec.token : undefined
+      const tokenKey = (typeof raw === 'object' && raw !== null) ? raw : typeof raw === 'symbol' ? raw : undefined
+      if (tokenKey !== undefined) {
+        if (g3TokenLedger.has(tokenKey)) {
+          // An in-flight or settled token re-used allocates NOTHING new: the
+          // walk refuses through the bridge's CALL_ID_ABSENT bytes; the plane
+          // observes the fact.
+          observe(`a5m2-g3: token-replay REFUSED name=${String(toolName)} — one governed call per execution token`)
+          return null
+        }
+      }
+      g3CallSeq += 1
+      const callId = `${g3Prefix}-${String(toolName)}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${g3MountNonce}-${String(g3CallSeq)}`
+      if (tokenKey !== undefined) g3TokenLedger.set(tokenKey, callId)
+      return callId
+    }
+    try {
+      const builtG3 = buildG3TerminalWiring({
+        realmId,
+        providerId: terminalInject.providerId,
+        memberAgentId: terminalInject.memberAgentId,
+        sessionHeaderId: terminalInject.sessionHeaderId,
+        readNative: terminalInject.readNative,
+        declaredBackends: terminalInject.declaredBackends,
+        ptyService: terminalInject.ptyService,
+        controlPortDeps: terminalInject.controlPortDeps,
+        bindingFacts: terminalInject.bindingFacts,
+        correlationOf: g3CorrelationOf,
+        // THE LAZY FEED (pb §6, the placedByName law): the registration key
+        // and the arm's entry re-verify both read the placement record at
+        // LOOKUP time — never an eager snapshot, never a guessed def#.
+        placementFeed: (name) => {
+          const d = placedByName.get(name)
+          if (d === undefined) return undefined
+          const identity = definitionIdentityOf(d)
+          return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
+        },
+        // THE IDENTITY SEAM (the image timing): the bridge binds
+        // definitionIdentityOf(the def THIS mount places) at the placement
+        // moment — the same WeakMap algebra the Guard compares against.
+        identityOf: (def) => definitionIdentityOf(def),
+        // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-g3: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtG3.ok !== true) {
+        return { ok: false, code: 'TERMINAL_ARM_REFUSED', message: `backends.terminal: the wiring bridge refused the mount (${String(builtG3.code)} — ${String(builtG3.detail)})` }
+      }
+      g3Wiring = builtG3
+      for (const declaredRow of g3Wiring.declared) {
+        observe(`a5m2-g3: DECLARED-INACTIVE ${String(declaredRow.name)} (${String(declaredRow.reason)}) — native untouched, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'TERMINAL_ARM_REFUSED', message: `backends.terminal: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
+  const g3Defs = g3Wiring === null ? [] : g3Wiring.definitions
   const g5Defs = g5Wiring === null ? [] : g5Wiring.definitions
   // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the trio definitions the
   // control WIRING built (captured native faces, ONLY execute replaced; each
@@ -4523,9 +4719,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && g3Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...g3Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -4570,6 +4766,19 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         declared: g6Wiring.declared,
         familyRegistrations: g6Wiring.familyRegistrations,
       }) }),
+      /** A5M2 G3 B-TERMINAL: the terminal wiring face for THIS mount
+       *  (omitted, NOT set to `undefined`, when the family is not deployed —
+       *  the same presence-decision law). The mount writer reads
+       *  `familyRegistrations()` AFTER publish and pairs each entry with
+       *  `registerA5GovernedFamily`; the drain rides this mount's dispose,
+       *  never the writer's. */
+      ...(g3Wiring === null ? {} : { terminal: Object.freeze({
+        familyId: g3Wiring.familyId,
+        placementNames: g3Wiring.placementNames,
+        declared: g3Wiring.declared,
+        familyRegistrations: g3Wiring.familyRegistrations,
+      }) }),
+
       /** A5M2-G5 B-SESSION GOAL SERVICE (this lane's block): the goal wiring
        *  face for THIS mount (omitted, NOT set to `undefined`, when the
        *  family is not deployed — the presence-decision law the hand-off
@@ -4831,6 +5040,13 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // token-ledger release below.
             if (g6Wiring !== null) g6Wiring.drain()
             g6TokenLedger.clear()
+            // A5M2 G3 B-TERMINAL: the SAME teardown law — DRAINING is the
+            // wiring's new-call prohibition (an entered body is not rewound,
+            // no native fallback exists); the issued-identity ledger
+            // releases at its ONE legal end, beside the plane's own
+            // token-ledger release below.
+            if (g3Wiring !== null) g3Wiring.drain()
+            g3TokenLedger.clear()
             // A5M2-G5 B-SESSION GOAL SERVICE: the SAME teardown law —
             // DRAINING is the wiring's new-call prohibition (committed
             // session appends stay durable; the adapter owns no cancellable
