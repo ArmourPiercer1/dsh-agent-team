@@ -282,6 +282,7 @@ export async function createG2TeamMount(input = {}) {
         ...(typeof webMount.searchOrigin === 'string' && webMount.searchOrigin.length > 0 ? { searchOrigin: webMount.searchOrigin } : {}),
         ...(typeof webMount.readProviderFacts === 'function' ? { readProviderFacts: webMount.readProviderFacts } : {}),
         lanes: webMount.lanes,
+        ...(webMount.face !== null && typeof webMount.face === 'object' ? { fixedFace: webMount.face } : {}),
         descriptions: Object.freeze({
           web_fetch: String(readNative('web_fetch')?.description ?? ''),
           web_search: String(readNative('web_search')?.description ?? ''),
@@ -508,7 +509,7 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
  * contract: an honest inability to row is a THROW at build, never an
  * empty rowset.
  */
-export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions } = {}) {
+export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readNative, searchOrigin, readProviderFacts, definitionIdentityOf, observe, lanes, descriptions, fixedFace } = {}) {
   if (lanes === null || typeof lanes !== 'object' || lanes.web_fetch === undefined || lanes.web_fetch.provider === undefined) {
     throw new Error('G2_SUPPLY_ENTRY_INVALID: the g2Web backend requires the seam-branded fixed lanes (createG2WebFixedLanes product); without them the plane fail-closes by law, so nothing is injected here either')
   }
@@ -517,13 +518,42 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
     ...(typeof searchOrigin === 'string' && searchOrigin.length > 0 ? { searchOrigin } : {}),
     readProviderFacts, definitionIdentityOf, ...(typeof observe === 'function' ? { observe } : {}),
   }))
-  const probe = build()
+  // PAIRING LAW (measured at the plane): EVERY row of the rowset must
+  // carry its seam-branded lane, and search is honestly UNSUPPLIED while
+  // no web_search lane exists — the web_search row therefore is not
+  // mounted (honest absence, the plane's own pairing law), never injected
+  // lane-less. web_fetch (the fixed provider's real capability) always
+  // rides; an empty filtered rowset would be the contract breach.
+  const lawful = (rows) => rows.filter((row) => row.toolName === 'web_fetch'
+    || lanes[row.toolName] !== undefined)
+  const probe = lawful(build())
   if (probe.length === 0) throw new Error('G2_SUPPLY_ENTRY_INVALID: the web adapters answered an empty rowset — a contract breach, not an honest no-mount')
   if (descriptions === null || typeof descriptions !== 'object' || typeof descriptions.web_fetch !== 'string' || descriptions.web_fetch.length === 0) {
     throw new Error('G2_SUPPLY_ENTRY_INVALID: the plane law requires captured description BYTES for web_fetch; the owning assembly must supply the real captured text, never a placeholder')
   }
+  // TEAM-BOUND BODY (the g2Mcp actuation precedent, same law): the row's
+  // consumed call walks the ONE fixed provider face THIS mount was built
+  // over — NOT a capture that re-selects per exec scope. Governance is
+  // UNCHANGED (classify/effects/targetManifest ride verbatim; the plane's
+  // single final edge consumes; the ACTUAL approved identity/proof ride
+  // the extended exec copy into invoke); raw args ride verbatim.
+  const boundBuild = () => lawful(build()).map((row) => Object.freeze({
+    ...row,
+    invoke: async (args, exec) => {
+      if (fixedFace === null || typeof fixedFace !== 'object' || typeof fixedFace.fetch !== 'function') {
+        throw new Error('G2_WEB_FIXED_FACE_ABSENT: a mounted web_fetch row without the fixed provider face is a mount defect, never a fall-back to the shared seam')
+      }
+      const url = args?.url
+      if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
+      const out = await fixedFace.fetch({ url }, (exec?.signal) ?? undefined)
+      // the row-body answer law (measured at the consumption edge): the
+      // edge returns the invoke answer and the plane reads ran.value —
+      // the same {ok,value} struct the g2Mcp bound body answers with.
+      return Object.freeze({ ok: true, value: out })
+    },
+  }))
   return Object.freeze({
-    createRowset: build,
+    createRowset: boundBuild,
     descriptions: Object.freeze({ ...descriptions }),
     teamFixedWebProviderLanes: Object.freeze({ ...lanes }),
   })

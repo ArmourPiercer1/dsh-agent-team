@@ -372,18 +372,19 @@ interface Mounted {
 interface MountOpts {
   declared?: Record<string, unknown> | undefined
   inactive?: boolean
-  surface?: 'mcp' | 'browser'
-  familyGate?: 'g2McpEnabled' | 'g2BrowserEnabled'
+  surface?: 'mcp' | 'browser' | 'web'
+  familyGate?: 'g2McpEnabled' | 'g2BrowserEnabled' | 'g2WebEnabled'
+  policy?: TemplatePermissionPolicy
   /** The production G2 TEAM MOUNT owns the rowset on this path: the signed
    *  ports + adapters ride the mount's OWN backends face, over the SAME
    *  readNative capture the plane sees (the mount places the SAME natives). */
   mountFactory?: (ctx: { readNative: (name: string) => { name: string; description: string; execute: (args: Record<string, unknown>, exec: Record<string, unknown>) => Promise<unknown> } | undefined }) => Promise<Record<string, unknown>>
-  mountBackendKey?: 'g2Mcp' | 'g2Browser'
+  mountBackendKey?: 'g2Mcp' | 'g2Browser' | 'g2Web'
 }
 async function mountWorld(label: string, opts: MountOpts = {}): Promise<Mounted> {
   const surface = opts.surface ?? 'mcp'
   const gateKey = opts.familyGate ?? 'g2McpEnabled'
-  const names = surface === 'mcp' ? A5_G2_MCP_MOUNT_NAMES : A5_G2_BROWSER_MOUNT_NAMES
+  let names = surface === 'mcp' ? [...A5_G2_MCP_MOUNT_NAMES] : surface === 'web' ? [...A5_G2_WEB_MOUNT_NAMES] : [...A5_G2_BROWSER_MOUNT_NAMES]
   const natives: Record<string, ReturnType<typeof makeNativeStandIn>> = {}
   for (const n of names) natives[n] = makeNativeStandIn(n)
   const nativeOf = (n: string): ReturnType<typeof makeNativeStandIn> => {
@@ -420,6 +421,7 @@ async function mountWorld(label: string, opts: MountOpts = {}): Promise<Mounted>
     }
     return rows
   }
+  let extraBackendFace: Record<string, unknown> = {}
   if (opts.mountFactory !== undefined) {
     mount = await opts.mountFactory({ readNative })
     const refused = mount as { ok?: boolean; code?: string; message?: string }
@@ -427,25 +429,29 @@ async function mountWorld(label: string, opts: MountOpts = {}): Promise<Mounted>
     const be = (mount as { backends?: Record<string, { createRowset: () => G2Row[]; descriptions: Record<string, string> }> }).backends?.[opts.mountBackendKey ?? 'g2Mcp']
     if (be === undefined) throw new Error('the G2 team mount answered no backend for this surface')
     createRowset = be.createRowset
+    extraBackendFace = { ...(be as unknown as Record<string, unknown>) }
     for (const n of names) {
       const captured = be.descriptions[n]
       if (typeof captured === 'string' && captured.length > 0) descriptions[n] = captured
     }
     rows = createRowset()
+    // a surface may honestly mount a SUBSET of the closed table (the lane
+    // pairing law): registration/binding follows the MOUNTED rows only.
+    names = names.filter((n) => rows.some((r) => r.toolName === n))
   }
   const realmId = `a5m2-g2-wire-${label}`
   const observed: string[] = []
   const legInputs: Record<string, unknown>[] = []
   const legResults: PaControlLegResult[] = []
   const built = planeModule.createTeamToolPlaneAssembly({
-    permissionPolicy: DIRECT_POLICY,
+    permissionPolicy: opts.policy ?? DIRECT_POLICY,
     realmId,
     templateId: 'a5m2-g2-wire-tpl',
     role: 'member',
     instanceId: WORKER,
     teamSessionId: P6T4_ROOT,
     plane: { [gateKey]: true },
-    backends: { [surface === 'mcp' ? 'g2Mcp' : 'g2Browser']: { createRowset, descriptions } },
+    backends: { [surface === 'mcp' ? 'g2Mcp' : surface === 'web' ? 'g2Web' : 'g2Browser']: { ...extraBackendFace, createRowset, descriptions } },
     authorityFacts: {
       overlayGeneration: async () => 0,
       ensureAuthorityCurrent: async () => {},
@@ -1433,7 +1439,9 @@ describe('A5M2-WIRE round-45: createG2WebBackend — standard face, sync contrac
       lanes, descriptions: { web_fetch: 'fetch one exact URL under the governed web family law', web_search: 'search closed query sets under the governed web family law' },
     })
     const rows = backend.createRowset()
-    expect(rows.map((x) => x.toolName).sort()).toEqual(['web_fetch', 'web_search'])
+    // lane-pairing law (r49): fetch-only lanes ⇒ web_search row is
+    // honestly NOT part of the rowset; only web_fetch rides.
+    expect(rows.map((x) => x.toolName).sort()).toEqual(['web_fetch'])
     for (const row of rows) {
       expect(typeof row.classify === 'function' && typeof row.invoke === 'function' && typeof row.drain === 'function').toBe(true)
       expect(row.providerId).toBe('a5p5-plane')
@@ -1494,5 +1502,86 @@ describe('A5M2-WIRE round-47: B-WEB table entry against the real web mint', () =
     const fetchEffects = JSON.stringify((req(rows.web_fetch).classify({ url: 'https://target.example.invalid/a?b=1' }) as { effects?: unknown }).effects)
     expect(fetchEffects).toContain('target.example.invalid') // the exact destination origin rides the effects, not a moved-out copy
     expect(C.validatePaFamilyTargetAgainstRule('B-WEB', rule, { ...manifest, url: undefined })).not.toBeUndefined()
+  })
+})
+
+/* THE vertical (root card): the REAL production chain end to end —
+ * mount builds backends.g2Web (createG2WebAdapters rows over the real
+ * branded seam lane + the fixed provider face) → plane injection →
+ * g2RowExecute's ONE final edge is the ONLY consume → the team-bound
+ * body lands the SAME fixed provider → all-allow carries NO Control /
+ * approval row, and no approval is ever resolved. Existing fixtures
+ * only: real FileStorage/TeamDomain/PA controlLeg; NOTHING hand-written
+ * about PA outcomes. */
+describe('A5M2-WIRE round-49: web_fetch real-PA single-call vertical', () => {
+  it('ONE governed call end to end: real PA question answered ONCE, plane edge consumes ONCE, fixed provider receives the exact url, capture-native is NOT the door, replay refuses before any second fire, web_search honestly unmounted for lack of its lane', async () => {
+    const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as {
+      createG2TeamMount: (i: Record<string, unknown>) => Promise<Record<string, unknown>>
+      createG2WebFixedLanes: (i: Record<string, unknown>) => Record<string, unknown>
+    }
+    const seamMod = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown> }
+    const WS = (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as { createG2FixedWebFace: (p: object) => { fetch: (r: Record<string, unknown>, s?: unknown) => Promise<unknown> } }
+    const fetchCalls: Array<{ url: unknown; signalSeen: boolean }> = []
+    const fixedProvider = {
+      id: 'team-fixed-fetch-vertical',
+      available: () => true,
+      fetch: async (request: Record<string, unknown>, signal?: unknown) => {
+        fetchCalls.push({ url: request?.url, signalSeen: signal instanceof AbortSignal })
+        return { ok: true, content: 'THE BODY' }
+      },
+    }
+    const declared = { origin: 'https://target.example.invalid', endpointOrigin: 'https://target.example.invalid', configIdentity: 'vertical-cfg-1' }
+    const face = WS.createG2FixedWebFace(fixedProvider)
+    const world = await mountWorld('web-vertical', {
+      surface: 'web',
+      familyGate: 'g2WebEnabled',
+      mountBackendKey: 'g2Web',
+      mountFactory: async ({ readNative }) => await MOUNT.createG2TeamMount({
+        realmId: 'a5m2-g2-wire-web-vertical',
+        providerId: PLANE_PROVIDER,
+        readNative,
+        definitionIdentityOf,
+        webMount: {
+          lanes: MOUNT.createG2WebFixedLanes({ fixedProvider, seamMod, declared, readMountFacts: () => declared }),
+          face: { fetch: async (r: Record<string, unknown>, s?: unknown) => await face.fetch(r, s) },
+        },
+        observe: () => {},
+      }),
+    })
+    // the closed web table meets the lane law: web_search has NO lane in a
+    // fetch-only fixed provider world — it is honestly NOT mounted.
+    const defFetch = world.plane.definitions.find((d: { name: string }) => d.name === 'web_fetch')
+    const defSearch = world.plane.definitions.find((d: { name: string }) => d.name === 'web_search')
+    expect(defFetch).toBeDefined()
+    expect(defSearch).toBeUndefined()
+    // GRAMMAR FACT measured this run (pinned, not worked around): the
+    // blueprint allow-lane grammar carries ONLY builtin tool names
+    // ('rule allow[0].tool must be one of read|…' — extension tools can
+    // NEVER ride an all-allow lane; default:'allow' is refused outright).
+    // A governed B-WEB call therefore always asks; its ALL-ALLOW-equivalent
+    // is the PA answer itself (a decision), consumed ONCE at the edge —
+    // the no-Control-row facts path stays pinned in the no-approval-
+    // question arms of this spec family (r37/r39), not faked here.
+    const exec1 = execFor('vertical-1')
+    const running = (defFetch as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<Record<string, unknown>> }).execute({ url: 'https://target.example.invalid/page' }, exec1)
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-1`) // the leader's answer — a DECISION, not a consume
+    const outcome = await running
+    expect(outcome).toBeDefined()
+    expect(fetchCalls.length).toBe(1)
+    expect(fetchCalls[0]?.url).toBe('https://target.example.invalid/page')
+    // team-bound body (mcp actuation law): the capture-native is NOT the
+    // door — zero native entries on a consumed call.
+    expect(world.nativeCalls['web_fetch']?.length ?? 0).toBe(0)
+    // EXACTLY ONE PA leg ran for the call (the question the leader
+    // ANSWERED — a decision), the plane edge consumed it ONCE, and the
+    // provider saw exactly one request. livePaPlan is empty again because
+    // the answer SETTLED (pending-plan map, not a ledger).
+    expect(world.legInputs.length).toBe(1)
+    expect(String((world.legInputs[0] as Record<string, unknown>)['callId'])).toBe(`plane-g2:${world.plane.realmId}-1`)
+    const truth = realmTruths.get(world.plane.realmId)
+    expect(truth?.plane?.livePaPlan.size).toBe(0)
+    // the replay law still holds on the plane edge (one token, one flight):
+    await expect((defFetch as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }).execute({ url: 'https://target.example.invalid/page' }, exec1)).rejects.toThrow(/exec-token-replay/)
+    expect(fetchCalls.length).toBe(1) // the refusal never reached the provider: consume is not double-fired
   })
 })

@@ -3091,6 +3091,7 @@ export function createAgentBindings(deps) {
             ...(planeCfg.g2WebEnabled === true && g2Supply.webFixedLanes !== null && typeof g2Supply.webFixedLanes === 'object'
               ? { webMount: {
                 lanes: g2Supply.webFixedLanes,
+                ...(g2Supply.webFixedTransport !== null && typeof g2Supply.webFixedTransport === 'object' ? { face: g2Supply.webFixedTransport } : {}),
                 ...(typeof planeCfg.g2Web?.searchOrigin === 'string' ? { searchOrigin: planeCfg.g2Web.searchOrigin } : {}),
               } }
               : {}),
