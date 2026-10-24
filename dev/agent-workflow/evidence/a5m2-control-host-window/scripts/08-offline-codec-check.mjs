@@ -69,6 +69,7 @@ A('re-harvest does NOT duplicate the same callId', boot.callResults.filter((x) =
 A('gate: is_error=true -> abort-refusal (binding wait NEVER entered)', boot.createGate({ isError: true, text: 'x' }).action === 'abort-refusal')
 A('gate: arrival WITHOUT isError -> proceed-bind only (NO business-success claim)', boot.createGate({ isError: false, text: '{}' }).action === 'proceed-bind')
 A('gate: null -> fail-timeout (honest, never fake)', boot.createGate(null).action === 'fail-timeout')
+A('gate: isError=false BUT status:rejected -> abort-refusal (never success, no 120s)', boot.createGate({ isError: false, text: '{"status":"rejected","code":"X","message":"m"}' }).action === 'abort-refusal')
 
 const failed = results.filter((r) => !r.ok).length
 console.log(JSON.stringify({ verdict: failed === 0 ? 'OFFLINE-DECODER-OK' : 'OFFLINE-DECODER-FAIL', checks: results.length, failed }))

@@ -430,6 +430,10 @@ function createGate(res) { // PURE verdict (08 offline-verifiable): non-null WIT
   // aborts BEFORE any bind wait; the timeout fails honestly. (root 442 原审 residual)
   if (res === null) return { action: 'fail-timeout' }
   if (res.isError === true) return { action: 'abort-refusal' }
+  // root 2026-10-24 explicit: a business rejection (status:"rejected") MUST
+  // fail-fast and keep the raw EVEN WHEN isError=false — arrival without the
+  // error flag is NEVER success and must never burn the 120s bind wait.
+  if (/"status"\s*:\s*"rejected"/.test(String(res.text ?? ''))) return { action: 'abort-refusal' }
   return { action: 'proceed-bind' }
 }
 const toolCallLog = [] // MINIMAL emit/result fields only (root 2026-10-24: no full-payload logging)
