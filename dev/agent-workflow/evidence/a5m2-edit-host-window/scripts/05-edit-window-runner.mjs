@@ -29,7 +29,7 @@
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { appendFileSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../../../tests/paths.mjs'
@@ -145,6 +145,7 @@ const results = []
 const steps = new Map()
 const callResults = []
 const memberToolsSeen = []
+const memberToolDefs = []
 let currentCriterion = 'setup'
 let mock = null
 let instance = null // registered BEFORE start (fourth-window ⑩)
@@ -492,6 +493,11 @@ async function main() {
   } catch { /* identity best-effort; window verdict never depends on it */ }
   // the governed target file, under the fsInstance rootDir = THIS world
   writeFileSync(join(FSROOT, 'notes.txt'), 'alpha\nbeta\ngamma\n', 'utf8')
+  // [batch E4] alias/symlink leg: a relative spelling that ESCAPES via symlink to a file outside the instance root; the anchor/classify law must refuse it and the external target must stay byte-frozen.
+  const SYMLINK = join(FSROOT, 'link.txt')
+  const SYM_TARGET = '/etc/hostname'
+  try { symlinkSync(SYM_TARGET, SYMLINK) } catch { /* existing evidence world */ }
+  const symTargetShaBefore = sha256(SYM_TARGET)
 
   // ── ②③ REAL entry resolution from the f86 fixture (READ-ONLY: no install,
   // no lockfile-only, no chmod — root FS narrow-audit order) ──────────────
@@ -539,6 +545,7 @@ async function main() {
       for (const t of tools) {
         const n = typeof t === 'string' ? t : t?.function?.name ?? t?.name ?? t?.id
         if (typeof n === 'string') memberToolsSeen.push(n)
+        memberToolDefs.push(t)
       }
       TRANSCRIPT.push({ channel: 'receipt', kind: 'member-tool-surface', tools: memberToolsSeen })
     }
@@ -582,6 +589,7 @@ async function main() {
           return mk(stepFor(marker), spec.name, spec.args)
         })()))
     if (text.startsWith('A5M2-EDITHW-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `ehw-create-${NONCE}`, delegationTemplateId: 'edit-worker', label: 'edit1' } }))
+    if (text.startsWith('EDIT-SYMLINK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'link.txt', old_string: 'x', new_string: 'y' } })) // batch E4: alias escape attempt via the symlink (relative spelling, law must refuse)
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
     if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } })) // root ruling: the EDIT row's anchor contract is RELATIVE-to-root (edit.mjs :89-94 path.isAbsolute refuses); workspace/FSROOT stay aligned so the relative spelling resolves to the SAME target via canonicalLocator :233-236
     if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } })) // same single-variable ruling as the allow arm
@@ -635,6 +643,25 @@ async function main() {
   const stepOuter = (marker) => `member:${marker}`
 
   // E1: ALLOW chain — real PA consumption, real bytes, real facts
+  // [batch E-pending0] the M0-B index pending-0 law: a clean slate before the
+  // first governed call (the "new pending" diff-set logic alone only proved
+  // freshness of the new row, not global emptiness).
+  currentCriterion = 'E-pending0'
+  const pend0 = await pendingRequestIds()
+  check('E-pending0', 'no pending control requests before the first governed call', pend0.length === 0, `pending=${JSON.stringify(pend0)}`)
+
+  // [batch E0-schema] public-schema correctness of the governed edit row: the
+  // CLOSED six-property schema + the closed three required fields (the row's
+  // own input_schema object as carried on the model request face).
+  currentCriterion = 'E0-schema'
+  const editDef = memberToolDefs.find((t) => (typeof t === 'string' ? t : t?.function?.name ?? t?.name) === 'edit') ?? null
+  const editParams = editDef?.function?.parameters ?? editDef?.parameters ?? null
+  const propKeys = editParams && typeof editParams.properties === 'object' ? Object.keys(editParams.properties).sort().join(',') : 'ABSENT'
+  const reqKeys = Array.isArray(editParams?.required) ? [...editParams.required].sort().join(',') : 'ABSENT'
+  check('E0-schema', 'edit row carries the CLOSED public schema (six properties, three required)',
+    propKeys === 'file_path,justification,new_string,old_string,replace_all,sandbox_permissions' && reqKeys === 'file_path,new_string,old_string',
+    `props=${propKeys} required=${reqKeys}`)
+
   currentCriterion = 'E1'
   const shaBefore = sha256(target)
   const stBefore = statSync(target)
@@ -676,6 +703,38 @@ async function main() {
     && String(denyRes).includes(`durable Control request ${denyReq} answered deny`)
     && denyDecision !== false && denyConsumed === false,
     `requestId=${denyReq} consumed=${JSON.stringify(denyConsumed)} decisionFact=${denyDecision === false ? 'ABSENT' : JSON.stringify({ sequence: denyDecision.sequence, keys: Object.keys(denyDecision.payload ?? {}).slice(0, 10) })} shaBefore=${denyShaBefore} shaAfter=${denyShaAfter} mtimeBeforeMs=${denyStBefore.mtimeMs} mtimeAfterMs=${denyMtimeAfterMs} result=${String(denyRes).slice(0, 300)}`)
+
+  // [batch E3 one-shot] the allow grant is CONSUMED and never reusable:
+  // re-emitting the same EDIT-ALLOW must ask a FRESH approval (a NEW pending
+  // row with a DIFFERENT requestId) — if the grant leaked, the row would
+  // execute WITHOUT any new pending. The fresh row is then denied (cleanup)
+  // and the target bytes must still equal the post-E2 state.
+  currentCriterion = 'E3'
+  const pendBefore3 = new Set(await pendingRequestIds())
+  const replayReq = await driveGoverned(memberSession, 'EDIT-ALLOW', 'deny', 'ehw-e3')
+  const replayRes = await resultFor(stepOuter('EDIT-ALLOW'))
+  const e3BytesOk = sha256(target) === denyShaAfter
+  const e3NoConsume = (await hasFact(replayReq, 'control-allow-consumed')) === false
+  check('E3', 'allow grant is one-shot: re-run asks a NEW pending (different requestId), stays unconsumed after deny, bytes frozen',
+    replayReq !== allowReq && replayReq !== denyReq && e3BytesOk && e3NoConsume
+    && String(replayRes).includes('APPROVAL_DENIED'),
+    `newRequestId=${replayReq} allowReq=${allowReq} denyReq=${denyReq} shaNow=${sha256(target)} expectSha=${denyShaAfter} consumed=${JSON.stringify(e3NoConsume)} result=${String(replayRes).slice(0, 250)}`)
+
+  // [batch E4 alias/symlink] a relative spelling resolving through a symlink
+  // to OUTSIDE the instance root must refuse typed at the anchor/classify law
+  // (pre-dispatch: NO new pending row), the symlink must remain a symlink,
+  // the external target must be byte-frozen, and NO native fallback may have
+  // touched anything.
+  currentCriterion = 'E4'
+  const pendBefore4 = new Set(await pendingRequestIds())
+  const symRes = await resultFor(stepOuter('EDIT-SYMLINK'))
+  const pendAfter4 = (await pendingRequestIds()).filter((r) => !pendBefore4.has(r))
+  const symStillLink = (() => { try { return lstatSync(SYMLINK).isSymbolicLink() } catch { return false } })()
+  const symTargetFrozen = sha256(SYM_TARGET) === symTargetShaBefore
+  check('E4', 'symlink/alias escape refuses typed pre-dispatch (no pending row created), link stays a link, external target byte-frozen, no fallback effect',
+    /refused-edit|APPROVAL_DENIED|P_EDIT_ANCHOR_ESCAPE|ANCHOR/.test(String(symRes))
+    && pendAfter4.length === 0 && symStillLink && symTargetFrozen,
+    `result=${String(symRes).slice(0, 280)} newPending=${JSON.stringify(pendAfter4)} stillLink=${String(symStillLink)} targetFrozen=${String(symTargetFrozen)}`)
 
   await cleanup()
   finish(results.every((r) => r.ok) && cleanupOk ? 0 : 1)
