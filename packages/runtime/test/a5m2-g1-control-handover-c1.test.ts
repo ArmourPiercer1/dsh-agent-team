@@ -28,19 +28,23 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-
 const here = dirname(fileURLToPath(import.meta.url))
 const BINDINGS = resolve(here, '../src/plugin/live/agent-bindings.mjs')
 
-// The frozen closed CONTROL subset (83/84/87/88; 85 rides its OWN 03:05
-// hand-over — it is asserted UNTOUCHED below, never re-excluded here).
-const SUPPLY = [
-  { recordIndex: 83, name: 'team_list_pending_control' },
-  { recordIndex: 84, name: 'team_resolve_control' },
-  { recordIndex: 87, name: 'team_grant_permission' },
-  { recordIndex: 88, name: 'team_revoke_permission' },
-] as const
-const ANCHOR85 = { recordIndex: 85, name: 'team_request_control' }
+// DERIVED from the real frozen table (root constant-card ruling 2026-10-24:
+// hand-written name/record pairs reversed 83 and 85 — the truth is ONLY
+// what the shipped module answers). Loaded through a computed specifier:
+// the module's shipped d.mts does not yet declare the supply-arm exports
+// (a real type-surface gap disclosed to root, NOT patched under the
+// product-untouched ruling), so a static TS import would resolve the
+// declaration file, not the runtime table.
+const WIRING_MODULE = '../src/plugin/live/governed-families/g1-query-wiring.mjs'
+const wiring = await import(WIRING_MODULE) as {
+  g1ControlSupplySubset: () => readonly { name: string; recordIndex: number }[]
+  A5_G1_CONTROL85_HANDOVER: { name: string }
+}
+const SUPPLY = wiring.g1ControlSupplySubset().map((row) => ({ recordIndex: row.recordIndex, name: row.name }))
+const ANCHOR85 = { recordIndex: 85, name: wiring.A5_G1_CONTROL85_HANDOVER.name }
 const TEAM_OPS = ['team_delegate', 'team_follow_up', 'team_collect', 'team_send_message'] as const
 
 interface Def { name: string; marker: string; execute: () => string }
