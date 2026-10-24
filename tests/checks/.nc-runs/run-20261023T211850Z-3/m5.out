@@ -1,2 +1,0 @@
-FAIL check-install-manifest: 1 issue(s) over 5 graph visit(s); lock leg: PASS
-  - undeclared bare import (needs root dependency or peerDependency): @deepseek-ai/dsh-session (type-only/host first: entry-shim.js:2)

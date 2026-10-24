@@ -111,3 +111,4 @@ agent-sandbox-hotfix-*.sh
 # A5-M2: temporary package-extraction faces are DIAGNOSTIC ONLY — never a
 # release artifact, never tracked (they are re-derivable from the versioned .tgz).
 /pack/pack-*/
+tests/checks/.nc-runs/

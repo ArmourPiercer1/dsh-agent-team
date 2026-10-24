@@ -1,4 +1,0 @@
-FAIL check-install-manifest: 3 issue(s) over 5 graph visit(s); lock leg: FAILED (2 manifest/lock issue(s); negative control alive)
-  - @deepseek-ai/* peer must equal the declared @deepseek-ai/dsh peer version (0.2.0-rc.2): @deepseek-ai/dsh-session@0.2.0-rc.1
-  - pnpm-lock.yaml: @deepseek-ai/dsh-session specifier mismatch manifest=0.2.0-rc.1 lock=0.2.0-rc.2
-  - pnpm-lock.yaml: @deepseek-ai/dsh-session version is neither the manifest exact version nor its peer-context form: lock=0.2.0-rc.2

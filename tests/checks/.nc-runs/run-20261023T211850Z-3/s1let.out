@@ -1,2 +1,0 @@
-FAIL check-install-manifest: 1 issue(s) over 2 graph visit(s); lock leg: PASS
-  - computed import() rejected (no audited structural match) at packages/runtime/dist/packages/runtime/src/plugin/host.js:4 expr="candidate"

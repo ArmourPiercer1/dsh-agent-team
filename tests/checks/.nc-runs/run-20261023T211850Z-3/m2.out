@@ -1,2 +1,0 @@
-FAIL check-install-manifest: 1 issue(s) over 4 graph visit(s); lock leg: PASS
-  - missing local module: ./gone.js (host.js:1)

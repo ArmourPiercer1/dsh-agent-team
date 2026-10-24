@@ -1,2 +1,0 @@
-FAIL check-install-manifest: 1 issue(s) over 5 graph visit(s); lock leg: PASS
-  - parser syntax diagnostics (1) — fail-closed: entry-shim.js
