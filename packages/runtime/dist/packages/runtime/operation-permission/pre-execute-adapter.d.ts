@@ -621,6 +621,26 @@ export interface InstallParameterPermissionListenerParams {
      */
     readonly paImageHandoff?: PaReadHandoffPorts;
     /**
+     * A5-M2 PA-EDIT HAND-OFF (root 2026-10-26, the SECOND known blocker — an
+     * existing-blocker fix kept SEPARATE from the dense-rungs `e10` core): the
+     * SAME audited port shape, supplied only when THIS mount carries the
+     * verified + ACTIVE governed EDIT row. The ONE durable effect-set Ask
+     * belongs to PA (the :1407-1417 law restated): the pre-dispatch walk asks
+     * it over the real `exec.token` identity and this adapter opens NO
+     * `parameter-permission` row for the call — an Alpha4 row without a PA
+     * manifest is a record, never a credential. EDIT/SRE not being wired here
+     * before this card was an implementation-SCOPE choice, never a second
+     * approval to keep. ABSENT = today exactly; `no-match` for every other
+     * name — never this adapter guessing by name.
+     */
+    readonly paEditHandoff?: PaReadHandoffPorts;
+    /**
+     * A5-M2 PA-SRE HAND-OFF: the symmetric SRE port — identical law and
+     * shape to `paEditHandoff` (the governed `str_replace_editor` row);
+     * absent/unmounted keeps today byte-identically.
+     */
+    readonly paSreHandoff?: PaReadHandoffPorts;
+    /**
      * Strict-read + Core-spill (implementation guide §9) — the injected
      * artifact-grant authorization port: for `read` decisions only, it
      * consults the Team's durable artifact-read grants (the

@@ -8707,6 +8707,41 @@ export function createAgentBindings(deps) {
                   onTerminal: (observer) => agentCtx.on('tools/result', observer),
                 },
               }),
+          // A5-M2 EDIT/SRE HAND-OFF PORTS (root 2026-10-26, the SECOND known
+          // blocker — the ONE durable effect-set Ask for the governed EDIT /
+          // SRE rows belongs to PA, exactly as for read/write/image; wiring
+          // them was an implementation-SCOPE choice until this card, never a
+          // second approval to keep). The SAME audited forwarding law, one
+          // field at a time: forwarded ONLY when this mount's plane DECLARED
+          // the capability (`'paEditHandoff' in plane` false = omit the key,
+          // keeping today byte-for-byte, Alpha.4 Ask lane included for every
+          // other world); a DECLARED face passes `open`/`close` BY REFERENCE
+          // exactly as held — a declared-but-broken face is NOT laundered
+          // into absence and refuses the install (`pa-read-handoff-malformed`,
+          // R6 discipline). `onTerminal` rides the SAME 'tools/result'
+          // funnel and the SAME composite disposer.
+          ...(a5PlaneValue === undefined
+            || a5PlaneValue === null
+            || (typeof a5PlaneValue === 'object' && !('paEditHandoff' in a5PlaneValue))
+            ? {}
+            : {
+                paEditHandoff: {
+                  open: a5PlaneValue.paEditHandoff?.open,
+                  close: a5PlaneValue.paEditHandoff?.close,
+                  onTerminal: (observer) => agentCtx.on('tools/result', observer),
+                },
+              }),
+          ...(a5PlaneValue === undefined
+            || a5PlaneValue === null
+            || (typeof a5PlaneValue === 'object' && !('paSreHandoff' in a5PlaneValue))
+            ? {}
+            : {
+                paSreHandoff: {
+                  open: a5PlaneValue.paSreHandoff?.open,
+                  close: a5PlaneValue.paSreHandoff?.close,
+                  onTerminal: (observer) => agentCtx.on('tools/result', observer),
+                },
+              }),
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },

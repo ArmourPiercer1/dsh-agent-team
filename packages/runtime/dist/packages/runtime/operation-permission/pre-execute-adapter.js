@@ -797,7 +797,13 @@ export function installParameterPermissionListener(agentCtx, params) {
     // mounted name and returns 'no-match' for everything else, so an absent
     // port changes NOTHING and the old path stays untouched for every other
     // name and world.
-    const paHandoffPortsList = [params.paReadHandoff, params.paWriteHandoff, params.paImageHandoff]
+    // A5-M2 (root 2026-10-26, second existing blocker): the EDIT and SRE rows
+    // join the SAME list under the SAME law — supplied only when the mount
+    // carries the verified + ACTIVE row, each port owning exactly ONE name,
+    // 'no-match' elsewhere, absent changing nothing. The ORDER is
+    // read→write→image→edit→sre; ports never overlap names, so the order is
+    // documentation, not behavior.
+    const paHandoffPortsList = [params.paReadHandoff, params.paWriteHandoff, params.paImageHandoff, params.paEditHandoff, params.paSreHandoff]
         .filter((p) => p !== undefined);
     // The execs this install handed off, keyed by the exec OBJECT identity (the
     // same discipline as `authorizedExecutions`). GC is leak insurance, never

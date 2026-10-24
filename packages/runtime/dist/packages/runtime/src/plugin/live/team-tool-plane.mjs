@@ -4074,6 +4074,234 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // carries the paired READ effect (M-02 pre-booked law, quoted into the
   // approved readEffectLaw fact); the arm receipt {canonicalLocator,...}
   // projects onto the native spelling here and nowhere else.
+
+  // ── A5-M2 EDIT PA HAND-OFF (root 2026-10-26: the SECOND existing
+  // blocker; the audited WRITE hand-off law mirrored VERBATIM — one durable
+  // effect-set Ask per call at PA, single synchronous take, cancel/result/
+  // dispose reclamation; NOT a second approval, NO native fallback) ──
+  // The pre-dispatch leg of the governed EDIT row, built on the audited M1
+  // READ hand-off's laws and the SAME port shape — this is what the adapter's
+  // the mount's edit port (`paEditHandoff`) exists to receive. No
+  // new ledger is invented here:
+  //   * the token identity, the single-flight law and the terminal law ride
+  //     the SAME `governedTokenLedger` the todo and edit rows already share;
+  //   * `editPaHandoffs` is the flight record (the read row's `paHandoffs`
+  //     twin): a pending placeholder while Part A walks, the UNSPENT claim
+  //     after `approved`. The body takes it synchronously and ONCE; a close
+  //     or the teardown drops whatever is left.
+  // `open` runs the row's OWN Part A complete — owner-current leg, pure-lexical
+  // classify, the parsed effect set, the full PA walk (call-level facts, plan,
+  // the real Control ask when the policy asks, `issueApprovedGrant`) — asks the
+  // effect-set question at PA, resolves nothing, consumes nothing and writes
+  // no byte. The row's BODY re-classifies FRESH and redeems through
+  // `paAdmit.edge`, which runs the fresh recheck and the ONE consume; the
+  // pre-dispatch plan is settled zero-byte at the hold (the body prepares only
+  // a plan IT classified). The port answers only for the ONE name THIS mount
+  // placed — never a name guess, never a native fallback anywhere here.
+  const editPaHandoffs = new Map() // token(object|symbol) -> placeholder | unspent claim
+  let editHandoffSeq = 0
+  let editRowMounted = true
+  /** The `tools/result` terminal close (mirrors the read law): idempotent,
+   *  synchronous, terminal never re-armed. Returns the correlation whose plan
+   *  fact this close still owes the mount — only an UNSPENT flight or an
+   *  in-flight placeholder does; a redeemed one was closed by its own edge. */
+  const editHandoffClose = (token) => {
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) return undefined
+    const flight = editPaHandoffs.get(token)
+    editPaHandoffs.delete(token)
+    const prior = governedTokenLedger.get(token)
+    if (prior !== undefined && !prior.settled) {
+      governedTokenLedger.set(token, { correlation: prior.correlation, settled: true })
+    }
+    return flight?.callId
+  }
+  /** Mount teardown: no edit hand-off survives its mount, claimed or not —
+   *  the flight, the unspent grant and the plan fact die with the placement
+   *  (the read row's teardown law, independent of the terminal observer). */
+  const editHandoffCloseAll = () => {
+    editRowMounted = false
+    for (const token of [...editPaHandoffs.keys()]) {
+      const callId = editHandoffClose(token)
+      if (typeof callId === 'string') paAdmit.closePlan(callId)
+    }
+  }
+  const editHandoffOpen = async (exec) => {
+    if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
+    if (exec.name !== A5_EDIT_MOUNT_NAME) return { kind: 'no-match' }
+    const token = exec.token
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) {
+      // The name IS this mount's governed EDIT, so the effect-set question
+      // belongs to PA: with no execution identity the call REFUSES, it never
+      // falls back to the pre-hand-off lane.
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNBOUND', detail: 'this governed EDIT carries no execution token, so no PA hand-off can be opened or redeemed for it' }
+    }
+    if (!editRowMounted) {
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down before the hand-off opened; nothing is asked and nothing is authorized' }
+    }
+    const prior = governedTokenLedger.get(token)
+    if (prior !== undefined) {
+      // A TERMINAL token is never re-armed, and a token that already owns a
+      // flight never takes a second open: a side-effect-free refusal that
+      // reuses nothing (an authorization is not transferable, and the first
+      // leg's state is not touched).
+      return {
+        kind: 'refused',
+        ownsHandoff: false,
+        code: prior.settled === true ? 'PA_HANDOFF_TERMINAL' : 'PA_HANDOFF_IN_FLIGHT',
+        detail: prior.settled === true
+          ? 'this execution token is already terminal, so no PA hand-off may be opened on it again'
+          : 'a governed flight already owns this execution token; a second open is refused without touching the in-flight state and no answer is reused',
+      }
+    }
+    const arm = editInject.arm
+    const signal = exec.signal
+    editCorrSeq += 1
+    const correlation = `plane-edit:${realmId}-${String(editCorrSeq)}`
+    editHandoffSeq += 1
+    const mySeq = editHandoffSeq
+    // The ledger entry and the pending placeholder are taken BEFORE the first
+    // await: a close landing mid-walk must find this leg, and the re-check
+    // after the walk must find it GONE. (The placeholder carries its own
+    // callId so a close can still drop this call's plan fact.)
+    governedTokenLedger.set(token, { correlation, settled: false })
+    editPaHandoffs.set(token, Object.freeze({ pending: true, seq: mySeq, callId: correlation }))
+    const releasePlaceholder = () => {
+      if (editPaHandoffs.get(token)?.seq === mySeq) editPaHandoffs.delete(token)
+    }
+    const settleToken = () => {
+      const now = governedTokenLedger.get(token)
+      if (now !== undefined && !now.settled) governedTokenLedger.set(token, { correlation: now.correlation, settled: true })
+    }
+    let abortListener
+    try {
+      // OWNER-CURRENT BEFORE THE FREEZE (the fix-4 leg VERBATIM from the row
+      // body): Part A asks the whole question, including the fresh-authority
+      // walk; a faulting leg is OBSERVED, never absorbed.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-edit pa-handoff: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the walk continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
+      let classified
+      try {
+        classified = arm.classify(exec.arguments, exec, correlation)
+      } catch (error) {
+        releasePlaceholder()
+        settleToken()
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `the governed EDIT arm could not classify this call at the pre-dispatch leg (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to` }
+      }
+      if (classified.ok !== true || classified.plan === undefined) {
+        releasePlaceholder()
+        settleToken()
+        return { kind: 'refused', ownsHandoff: true, code: String(classified.code ?? 'P_EDIT_CLASSIFY_INVALID_ARGUMENTS'), detail: String(classified.detail ?? 'the governed classify refused this call before admission') }
+      }
+      if (signal !== undefined && typeof signal.addEventListener === 'function') {
+        abortListener = () => {
+          try { arm.cancel(classified.plan) } catch { /* best-effort settle; the refusals below carry the verdict */ }
+        }
+        signal.addEventListener('abort', abortListener, { once: true })
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        releasePlaceholder()
+        settleToken()
+        return { kind: 'refused', ownsHandoff: true, code: 'EFFECTS_UNPARSABLE', detail: `the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})` }
+      }
+      const walk = {
+        realmId,
+        callId: correlation,
+        parametersFingerprint: classified.parametersFingerprint,
+        requestedEffects: parsedEffects.value,
+        toolName: A5_EDIT_MOUNT_NAME,
+        family: Object.freeze({
+          familyId: classified.reviewPayload.familyId,
+          adapterRevision: classified.reviewPayload.adapterRevision,
+          providerIdentity: classified.reviewPayload.providerIdentity,
+          targetManifest: classified.reviewPayload.targetManifest,
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      }
+      let opened
+      try {
+        opened = await paAdmit.open(walk)
+      } catch (error) {
+        // A Part A that THREW handed nothing off (its own finally closed the
+        // plan fact); the placeholder is released only if it is still this
+        // leg's, then the call refuses in place.
+        releasePlaceholder()
+        settleToken()
+        paAdmit.closePlan(correlation)
+        try { arm.cancel(classified.plan) } catch { /* best-effort */ }
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `Part A threw and is never treated as an authorization: ${String(error?.message ?? error).slice(0, 180)}` }
+      }
+      // AFTER the await the world is RE-CHECKED, not assumed: the mount must
+      // still stand and this leg must still own its placeholder — a close or a
+      // teardown landing while PA was being asked voids the leg; its grant, if
+      // one landed, is dropped and NOTHING is registered.
+      const held = editPaHandoffs.get(token)
+      if (!editRowMounted) {
+        releasePlaceholder()
+        settleToken()
+        paAdmit.closePlan(correlation)
+        const settled = arm.cancel(classified.plan)
+        observe('a5m2-edit pa-handoff dropped — mount torn down during the walk')
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_MOUNT_GONE', detail: `the mount was torn down while PA was being asked; the answer is dropped and nothing is authorized (arm settle: ${String(settled?.settled ?? settled?.code ?? 'n/a')})` }
+      }
+      if (held === undefined || held.seq !== mySeq) {
+        settleToken()
+        paAdmit.closePlan(correlation)
+        const settled = arm.cancel(classified.plan)
+        observe('a5m2-edit pa-handoff dropped — the leg was closed while PA was being asked')
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_CLOSED', detail: `this hand-off leg was closed while PA was being asked; the answer is dropped and nothing is authorized (arm settle: ${String(settled?.settled ?? settled?.code ?? 'n/a')})` }
+      }
+      if (opened.cancelled === true) {
+        // CANCELLATION IS NOT PERMISSION: zero consumption, zero body, and the
+        // adapter's cancelled branch denies without ever reaching the row.
+        releasePlaceholder()
+        settleToken()
+        const settled = arm.cancel(classified.plan)
+        return { kind: 'cancelled', detail: `the PA walk answered this invocation cancelled before dispatch (arm settle: ${String(settled?.editOutcome ?? settled?.settled ?? 'zero edit')})` }
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        releasePlaceholder()
+        settleToken()
+        const settled = arm.cancel(classified.plan)
+        observe(`a5m2-edit pa-handoff refused code=${String(opened.code ?? opened.kind ?? 'unknown')}`)
+        return { kind: 'refused', ownsHandoff: true, code: String(opened.code ?? 'PA_HANDOFF_REFUSED'), detail: `${String(opened.detail ?? 'the pre-dispatch PA walk refused this EDIT call')} (arm settle: ${String(settled?.settled ?? settled?.code ?? 'n/a')})` }
+      }
+      // THE HOLD. 'approved' says ONLY that the full PA effect-set question
+      // was answered and a real Control guard consumed the Ask — it is NOT a
+      // consumption: the grant stays UNSPENT and rides the flight to the body,
+      // which still owes the whole fresh recheck and the single edge. The
+      // plan fact STAYS (the redemption edge re-reads it; its finally closes
+      // it, idempotent with the terminal close). The pre-dispatch PLAN settles
+      // zero-byte here — the arm never prepares a plan the body did not
+      // classify fresh.
+      editPaHandoffs.set(token, Object.freeze({
+        callId: correlation,
+        parametersFingerprint: String(classified.parametersFingerprint),
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      }))
+      governedTokenLedger.set(token, { correlation, settled: false, handedOff: true })
+      try { arm.cancel(classified.plan) } catch { /* best-effort: never prepared, never writes */ }
+      observe(`a5m2-edit pa-handoff OPEN call=${correlation}`)
+      return { kind: 'authorized', correlation }
+    } finally {
+      if (abortListener !== undefined && typeof signal?.removeEventListener === 'function') {
+        signal.removeEventListener('abort', abortListener)
+      }
+    }
+  }
+
   const editDefs = editInject === null ? [] : [Object.freeze({
     name: A5_EDIT_MOUNT_NAME,
     // The CAPTURED native description bytes (Gate EDIT) — same-name,
@@ -4104,12 +4332,32 @@ export function createTeamToolPlaneAssembly(input = {}) {
         throw new Error('refused-edit exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token')
       }
       const priorFlight = governedTokenLedger.get(tokenKey)
-      if (priorFlight !== undefined) {
-        throw new Error(`refused-edit exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (the shared token ledger: one token runs one governed flight; a settled token is never re-armed). The edit row carries NO pre-dispatch hand-off lane (disclosed M-02 scope): a handed-off write/read flight never serves an edit and vice versa`)
+      // A5-M2 EDIT HAND-OFF redemption (root 2026-10-26, the audited WRITE
+      // law verbatim): the ONE in-flight HANDED-OFF flight on this token IS
+      // this body's redemption — it was opened FOR this exact execution at
+      // pre-dispatch, so the ledger's single-flight law holds. The take is
+      // SYNCHRONOUS and SINGLE: a re-entrant second redemption finds no
+      // flight and refuses there (Part A is never re-run, and no fallback
+      // lane serves this edit). Any other prior stays the typed replay
+      // refusal — a settled token is never re-armed.
+      let editClaim
+      let correlation
+      if (priorFlight !== undefined && !priorFlight.settled && priorFlight.handedOff === true) {
+        editClaim = editPaHandoffs.get(tokenKey)
+        editPaHandoffs.delete(tokenKey)
+        if (editClaim === undefined) {
+          throw new Error('refused-edit PA_HANDOFF_LOST — the pre-dispatch PA hand-off of this execution is gone (closed, voided by a mid-walk close, or already taken); nothing is asked again and no byte is written')
+        }
+        // ONE correlation per token for its whole life: the redemption runs
+        // under the ORIGINAL id Part A asked with, never a fresh one.
+        correlation = priorFlight.correlation
+      } else if (priorFlight !== undefined) {
+        throw new Error(`refused-edit exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (the shared token ledger: one token runs one governed flight; a settled token is never re-armed)`)
+      } else {
+        editCorrSeq += 1
+        correlation = `plane-edit:${realmId}-${String(editCorrSeq)}`
+        governedTokenLedger.set(tokenKey, { correlation, settled: false })
       }
-      editCorrSeq += 1
-      const correlation = `plane-edit:${realmId}-${String(editCorrSeq)}`
-      governedTokenLedger.set(tokenKey, { correlation, settled: false })
       const signal = exec?.signal
       let abortListener
       try {
@@ -4157,7 +4405,36 @@ export function createTeamToolPlaneAssembly(input = {}) {
           }),
           ...(signal === undefined ? {} : { signal }),
         }
-        const opened = await paAdmit.open(walk)
+        if (editClaim !== undefined) {
+          // BODY FRESH RECHECK (exact-match law, the write row's, verbatim):
+          // the redemption must answer the SAME question Part A asked — the
+          // same call identity and the same full-values digest over the
+          // body's OWN fresh classify. Drift is a REFUSAL, never a
+          // re-approval: the front door opened NOTHING for this call.
+          if (editClaim.parametersFingerprint !== classified.parametersFingerprint || editClaim.callId !== correlation) {
+            // the refused redemption closes its plan fact (the write row's
+            // net: idempotent with the terminal close, never a leak).
+            paAdmit.closePlan(correlation)
+            arm.cancel(classified.plan)
+            throw new Error(`refused-edit PA_HANDOFF_MISMATCH — the redemption does not ask the question the pre-dispatch walk asked (call identity or the full-values digest drifted); the front door opened nothing for this call, so nothing is asked again and no byte is written`)
+          }
+        }
+        // A redeemed walk SKIPS its own Part A — a second walk would be a
+        // second question (a second Ask waiting on the human). The unspent
+        // grant and its construction tuple ride to the execution edge
+        // exactly as Part A handed them over; the edge re-reads the facts
+        // FRESH and performs the ONE consume. The non-hand-off path keeps
+        // the walk below byte-for-byte.
+        const opened = editClaim !== undefined
+          ? {
+              kind: 'approved',
+              grant: editClaim.grant,
+              paDurableMint: editClaim.paDurableMint,
+              request: editClaim.request,
+              placementName: editClaim.placementName,
+              paConstructionBinding: editClaim.paConstructionBinding,
+            }
+          : await paAdmit.open(walk)
         if (opened.kind === 'deny') {
           const settled = arm.cancel(classified.plan)
           throw new Error(`refused-edit ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
@@ -4277,6 +4554,234 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // item for item (real token, shared ledger, owner-current-before-freeze,
   // ONE PA walk with the family block, kernel-grant prepare, real edge,
   // consumed-proof witness, fix-3 abort race, risk facts IN-BAND).
+
+  // ── A5-M2 SRE PA HAND-OFF (root 2026-10-26: the SECOND existing
+  // blocker; the audited WRITE hand-off law mirrored VERBATIM — one durable
+  // effect-set Ask per call at PA, single synchronous take, cancel/result/
+  // dispose reclamation; NOT a second approval, NO native fallback) ──
+  // The pre-dispatch leg of the governed SRE row, built on the audited M1
+  // READ hand-off's laws and the SAME port shape — this is what the adapter's
+  // the mount's SRE port (`paSreHandoff`) exists to receive. No
+  // new ledger is invented here:
+  //   * the token identity, the single-flight law and the terminal law ride
+  //     the SAME `governedTokenLedger` the todo and SRE rows already share;
+  //   * `srePaHandoffs` is the flight record (the read row's `paHandoffs`
+  //     twin): a pending placeholder while Part A walks, the UNSPENT claim
+  //     after `approved`. The body takes it synchronously and ONCE; a close
+  //     or the teardown drops whatever is left.
+  // `open` runs the row's OWN Part A complete — owner-current leg, pure-lexical
+  // classify, the parsed effect set, the full PA walk (call-level facts, plan,
+  // the real Control ask when the policy asks, `issueApprovedGrant`) — asks the
+  // effect-set question at PA, resolves nothing, consumes nothing and writes
+  // no byte. The row's BODY re-classifies FRESH and redeems through
+  // `paAdmit.edge`, which runs the fresh recheck and the ONE consume; the
+  // pre-dispatch plan is settled zero-byte at the hold (the body prepares only
+  // a plan IT classified). The port answers only for the ONE name THIS mount
+  // placed — never a name guess, never a native fallback anywhere here.
+  const srePaHandoffs = new Map() // token(object|symbol) -> placeholder | unspent claim
+  let sreHandoffSeq = 0
+  let sreRowMounted = true
+  /** The `tools/result` terminal close (mirrors the read law): idempotent,
+   *  synchronous, terminal never re-armed. Returns the correlation whose plan
+   *  fact this close still owes the mount — only an UNSPENT flight or an
+   *  in-flight placeholder does; a redeemed one was closed by its own edge. */
+  const sreHandoffClose = (token) => {
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) return undefined
+    const flight = srePaHandoffs.get(token)
+    srePaHandoffs.delete(token)
+    const prior = governedTokenLedger.get(token)
+    if (prior !== undefined && !prior.settled) {
+      governedTokenLedger.set(token, { correlation: prior.correlation, settled: true })
+    }
+    return flight?.callId
+  }
+  /** Mount teardown: no SRE hand-off survives its mount, claimed or not —
+   *  the flight, the unspent grant and the plan fact die with the placement
+   *  (the read row's teardown law, independent of the terminal observer). */
+  const sreHandoffCloseAll = () => {
+    sreRowMounted = false
+    for (const token of [...srePaHandoffs.keys()]) {
+      const callId = sreHandoffClose(token)
+      if (typeof callId === 'string') paAdmit.closePlan(callId)
+    }
+  }
+  const sreHandoffOpen = async (exec) => {
+    if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
+    if (exec.name !== A5_SRE_MOUNT_NAME) return { kind: 'no-match' }
+    const token = exec.token
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) {
+      // The name IS this mount's governed SRE, so the effect-set question
+      // belongs to PA: with no execution identity the call REFUSES, it never
+      // falls back to the pre-hand-off lane.
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNBOUND', detail: 'this governed SRE carries no execution token, so no PA hand-off can be opened or redeemed for it' }
+    }
+    if (!sreRowMounted) {
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down before the hand-off opened; nothing is asked and nothing is authorized' }
+    }
+    const prior = governedTokenLedger.get(token)
+    if (prior !== undefined) {
+      // A TERMINAL token is never re-armed, and a token that already owns a
+      // flight never takes a second open: a side-effect-free refusal that
+      // reuses nothing (an authorization is not transferable, and the first
+      // leg's state is not touched).
+      return {
+        kind: 'refused',
+        ownsHandoff: false,
+        code: prior.settled === true ? 'PA_HANDOFF_TERMINAL' : 'PA_HANDOFF_IN_FLIGHT',
+        detail: prior.settled === true
+          ? 'this execution token is already terminal, so no PA hand-off may be opened on it again'
+          : 'a governed flight already owns this execution token; a second open is refused without touching the in-flight state and no answer is reused',
+      }
+    }
+    const arm = sreInject.arm
+    const signal = exec.signal
+    sreCorrSeq += 1
+    const correlation = `plane-sre:${realmId}-${String(sreCorrSeq)}`
+    sreHandoffSeq += 1
+    const mySeq = sreHandoffSeq
+    // The ledger entry and the pending placeholder are taken BEFORE the first
+    // await: a close landing mid-walk must find this leg, and the re-check
+    // after the walk must find it GONE. (The placeholder carries its own
+    // callId so a close can still drop this call's plan fact.)
+    governedTokenLedger.set(token, { correlation, settled: false })
+    srePaHandoffs.set(token, Object.freeze({ pending: true, seq: mySeq, callId: correlation }))
+    const releasePlaceholder = () => {
+      if (srePaHandoffs.get(token)?.seq === mySeq) srePaHandoffs.delete(token)
+    }
+    const settleToken = () => {
+      const now = governedTokenLedger.get(token)
+      if (now !== undefined && !now.settled) governedTokenLedger.set(token, { correlation: now.correlation, settled: true })
+    }
+    let abortListener
+    try {
+      // OWNER-CURRENT BEFORE THE FREEZE (the fix-4 leg VERBATIM from the row
+      // body): Part A asks the whole question, including the fresh-authority
+      // walk; a faulting leg is OBSERVED, never absorbed.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-sre pa-handoff: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the walk continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
+      let classified
+      try {
+        classified = arm.classify(exec.arguments, exec, correlation)
+      } catch (error) {
+        releasePlaceholder()
+        settleToken()
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `the governed SRE arm could not classify this call at the pre-dispatch leg (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to` }
+      }
+      if (classified.ok !== true || classified.plan === undefined) {
+        releasePlaceholder()
+        settleToken()
+        return { kind: 'refused', ownsHandoff: true, code: String(classified.code ?? 'P_SRE_CLASSIFY_INVALID_ARGUMENTS'), detail: String(classified.detail ?? 'the governed classify refused this call before admission') }
+      }
+      if (signal !== undefined && typeof signal.addEventListener === 'function') {
+        abortListener = () => {
+          try { arm.cancel(classified.plan) } catch { /* best-effort settle; the refusals below carry the verdict */ }
+        }
+        signal.addEventListener('abort', abortListener, { once: true })
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        releasePlaceholder()
+        settleToken()
+        return { kind: 'refused', ownsHandoff: true, code: 'EFFECTS_UNPARSABLE', detail: `the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})` }
+      }
+      const walk = {
+        realmId,
+        callId: correlation,
+        parametersFingerprint: classified.parametersFingerprint,
+        requestedEffects: parsedEffects.value,
+        toolName: A5_SRE_MOUNT_NAME,
+        family: Object.freeze({
+          familyId: classified.reviewPayload.familyId,
+          adapterRevision: classified.reviewPayload.adapterRevision,
+          providerIdentity: classified.reviewPayload.providerIdentity,
+          targetManifest: classified.reviewPayload.targetManifest,
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      }
+      let opened
+      try {
+        opened = await paAdmit.open(walk)
+      } catch (error) {
+        // A Part A that THREW handed nothing off (its own finally closed the
+        // plan fact); the placeholder is released only if it is still this
+        // leg's, then the call refuses in place.
+        releasePlaceholder()
+        settleToken()
+        paAdmit.closePlan(correlation)
+        try { arm.cancel(classified.plan) } catch { /* best-effort */ }
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `Part A threw and is never treated as an authorization: ${String(error?.message ?? error).slice(0, 180)}` }
+      }
+      // AFTER the await the world is RE-CHECKED, not assumed: the mount must
+      // still stand and this leg must still own its placeholder — a close or a
+      // teardown landing while PA was being asked voids the leg; its grant, if
+      // one landed, is dropped and NOTHING is registered.
+      const held = srePaHandoffs.get(token)
+      if (!sreRowMounted) {
+        releasePlaceholder()
+        settleToken()
+        paAdmit.closePlan(correlation)
+        const settled = arm.cancel(classified.plan)
+        observe('a5m2-sre pa-handoff dropped — mount torn down during the walk')
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_MOUNT_GONE', detail: `the mount was torn down while PA was being asked; the answer is dropped and nothing is authorized (arm settle: ${String(settled?.settled ?? settled?.code ?? 'n/a')})` }
+      }
+      if (held === undefined || held.seq !== mySeq) {
+        settleToken()
+        paAdmit.closePlan(correlation)
+        const settled = arm.cancel(classified.plan)
+        observe('a5m2-sre pa-handoff dropped — the leg was closed while PA was being asked')
+        return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_CLOSED', detail: `this hand-off leg was closed while PA was being asked; the answer is dropped and nothing is authorized (arm settle: ${String(settled?.settled ?? settled?.code ?? 'n/a')})` }
+      }
+      if (opened.cancelled === true) {
+        // CANCELLATION IS NOT PERMISSION: zero consumption, zero body, and the
+        // adapter's cancelled branch denies without ever reaching the row.
+        releasePlaceholder()
+        settleToken()
+        const settled = arm.cancel(classified.plan)
+        return { kind: 'cancelled', detail: `the PA walk answered this invocation cancelled before dispatch (arm settle: ${String(settled?.sreOutcome ?? settled?.settled ?? 'zero SRE')})` }
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        releasePlaceholder()
+        settleToken()
+        const settled = arm.cancel(classified.plan)
+        observe(`a5m2-sre pa-handoff refused code=${String(opened.code ?? opened.kind ?? 'unknown')}`)
+        return { kind: 'refused', ownsHandoff: true, code: String(opened.code ?? 'PA_HANDOFF_REFUSED'), detail: `${String(opened.detail ?? 'the pre-dispatch PA walk refused this SRE call')} (arm settle: ${String(settled?.settled ?? settled?.code ?? 'n/a')})` }
+      }
+      // THE HOLD. 'approved' says ONLY that the full PA effect-set question
+      // was answered and a real Control guard consumed the Ask — it is NOT a
+      // consumption: the grant stays UNSPENT and rides the flight to the body,
+      // which still owes the whole fresh recheck and the single edge. The
+      // plan fact STAYS (the redemption edge re-reads it; its finally closes
+      // it, idempotent with the terminal close). The pre-dispatch PLAN settles
+      // zero-byte here — the arm never prepares a plan the body did not
+      // classify fresh.
+      srePaHandoffs.set(token, Object.freeze({
+        callId: correlation,
+        parametersFingerprint: String(classified.parametersFingerprint),
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      }))
+      governedTokenLedger.set(token, { correlation, settled: false, handedOff: true })
+      try { arm.cancel(classified.plan) } catch { /* best-effort: never prepared, never writes */ }
+      observe(`a5m2-sre pa-handoff OPEN call=${correlation}`)
+      return { kind: 'authorized', correlation }
+    } finally {
+      if (abortListener !== undefined && typeof signal?.removeEventListener === 'function') {
+        signal.removeEventListener('abort', abortListener)
+      }
+    }
+  }
+
   const sreDefs = sreInject === null ? [] : [Object.freeze({
     name: A5_SRE_MOUNT_NAME,
     // The CAPTURED native description bytes (Gate SRE) — same-name,
@@ -4301,12 +4806,27 @@ export function createTeamToolPlaneAssembly(input = {}) {
         throw new Error('refused-sre exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token')
       }
       const priorFlight = governedTokenLedger.get(tokenKey)
-      if (priorFlight !== undefined) {
-        throw new Error(`refused-sre exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (the shared token ledger: one token runs one governed flight; a settled token is never re-armed). The str_replace_editor row carries NO pre-dispatch hand-off lane (disclosed M-02 scope): a handed-off write/read flight never serves an editor call and vice versa`)
+      // A5-M2 SRE HAND-OFF redemption (root 2026-10-26, the audited WRITE
+      // law verbatim): the single synchronous take of the pre-dispatch claim,
+      // under the ORIGINAL correlation; a lost flight refuses, a re-entrant
+      // redemption finds no flight, any other prior stays the typed replay
+      // refusal. Part A is never re-run and there is no fallback lane.
+      let sreClaim
+      let correlation
+      if (priorFlight !== undefined && !priorFlight.settled && priorFlight.handedOff === true) {
+        sreClaim = srePaHandoffs.get(tokenKey)
+        srePaHandoffs.delete(tokenKey)
+        if (sreClaim === undefined) {
+          throw new Error('refused-sre PA_HANDOFF_LOST — the pre-dispatch PA hand-off of this execution is gone (closed, voided by a mid-walk close, or already taken); nothing is asked again and no byte is written')
+        }
+        correlation = priorFlight.correlation
+      } else if (priorFlight !== undefined) {
+        throw new Error(`refused-sre exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (the shared token ledger: one token runs one governed flight; a settled token is never re-armed)`)
+      } else {
+        sreCorrSeq += 1
+        correlation = `plane-sre:${realmId}-${String(sreCorrSeq)}`
+        governedTokenLedger.set(tokenKey, { correlation, settled: false })
       }
-      sreCorrSeq += 1
-      const correlation = `plane-sre:${realmId}-${String(sreCorrSeq)}`
-      governedTokenLedger.set(tokenKey, { correlation, settled: false })
       const signal = exec?.signal
       let abortListener
       try {
@@ -4352,7 +4872,31 @@ export function createTeamToolPlaneAssembly(input = {}) {
           }),
           ...(signal === undefined ? {} : { signal }),
         }
-        const opened = await paAdmit.open(walk)
+        if (sreClaim !== undefined) {
+          // BODY FRESH RECHECK (exact-match law, the write row's, verbatim):
+          // same call identity, same full-values digest over the body's OWN
+          // fresh classify; drift REFUSES, never re-approves.
+          if (sreClaim.parametersFingerprint !== classified.parametersFingerprint || sreClaim.callId !== correlation) {
+            // the refused redemption closes its plan fact (the write row's
+            // net: idempotent with the terminal close, never a leak).
+            paAdmit.closePlan(correlation)
+            arm.cancel(classified.plan)
+            throw new Error(`refused-sre PA_HANDOFF_MISMATCH — the redemption does not ask the question the pre-dispatch walk asked (call identity or the full-values digest drifted); the front door opened nothing for this call, so nothing is asked again and no byte is written`)
+          }
+        }
+        // A redeemed walk SKIPS its own Part A (one Ask per call); the
+        // unspent grant rides to the execution edge, which re-reads FRESH
+        // and performs the ONE consume. Non-hand-off keeps the walk below.
+        const opened = sreClaim !== undefined
+          ? {
+              kind: 'approved',
+              grant: sreClaim.grant,
+              paDurableMint: sreClaim.paDurableMint,
+              request: sreClaim.request,
+              placementName: sreClaim.placementName,
+              paConstructionBinding: sreClaim.paConstructionBinding,
+            }
+          : await paAdmit.open(walk)
         if (opened.kind === 'deny') {
           const settled = arm.cancel(classified.plan)
           throw new Error(`refused-sre ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
@@ -6643,6 +7187,30 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
           if (typeof correlation === 'string') livePaPlan.delete(correlation)
         },
       }) }),
+      /** A5-M2 EDIT/SRE HAND-OFF (root 2026-10-26, the SECOND existing
+       *  blocker): the governed EDIT / SRE hand-off faces for THIS mount —
+       *  the SAME audited port shape and the SAME presence law as
+       *  `paWriteHandoff`/`paImageHandoff`: a mount with NO governed edit /
+       *  str_replace_editor row does not declare the field at all (omitted,
+       *  NOT `undefined`); a declared one rides fail-closed to the adapter
+       *  and a broken one refuses the install. Each port answers ONLY for
+       *  the ONE name its own mount placed ('no-match' for everything
+       *  else — never a name guess, never a native fallback), and its
+       *  close still owes the mount the plan fact of an unredeemed leg. */
+      ...(editInject === null ? {} : { paEditHandoff: Object.freeze({
+        open: (exec) => editHandoffOpen(exec),
+        close: (exec) => {
+          const correlation = editHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
+          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+        },
+      }) }),
+      ...(sreInject === null ? {} : { paSreHandoff: Object.freeze({
+        open: (exec) => sreHandoffOpen(exec),
+        close: (exec) => {
+          const correlation = sreHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
+          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+        },
+      }) }),
       /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
       livePaPlan,
       /** 9e fix-3: the CONFIRMED durable generation reader (the root's
@@ -6764,6 +7332,11 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // SAME ordering — before the arm's drain, so a late leg's
             // after-await re-check drops any answer that lands after this.
             if (imageInject !== null) imageHandoffCloseAll()
+            // A5-M2 EDIT/SRE hand-off (root 2026-10-26): the SAME teardown
+            // law, the SAME ordering — before the arm's drain, so a late
+            // leg's after-await re-check drops any answer that lands after.
+            if (editInject !== null) editHandoffCloseAll()
+            if (sreInject !== null) sreHandoffCloseAll()
             // A5-M2 B-SESSION: DRAINING is the arm's teardown half — after it,
             // no NEW call reaches any body (an entered body is not rewound,
             // and there is no native to fall back to; the row mask is disposed
@@ -6781,6 +7354,14 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // The arm is the placement-moment construction (central-card ②),
             // so the drain reaches the SAME arm the rows drove.
             if (imageArm !== null) imageArm.drain()
+            // A5-M2 EDIT/SRE HAND-OFF (root 2026-10-26): the SAME drain law —
+            // without it a LATE post-dispose call is a NEW identity (the
+            // ledger release) entering a DEAD mount, where the ask walk never
+            // settles; the drain makes it a typed refusal at classify
+            // (P_EDIT_DRAINING / P_SRE_DRAINING) before any walk, exactly as
+            // write and image.
+            if (editInject !== null) editInject.arm.drain()
+            if (sreInject !== null) sreInject.arm.drain()
             // A5M2-G6 B-SESSION-QUERY: the SAME teardown law — DRAINING is
             // the wiring's new-call prohibition (an entered body is not
             // rewound, no native fallback exists); the issued-identity
