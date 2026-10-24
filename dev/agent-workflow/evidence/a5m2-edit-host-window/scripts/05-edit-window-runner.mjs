@@ -37,7 +37,7 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // root-accepted minimal release fix (direct child of 5c313418: 3 dist + placement only)
+const COMPOSED_SHA = '37646ac288dbd0ee3c998343dc91fd1a8da7a2d5' // root-accepted minimal release fix (direct child of 5c313418: 4 paths, 3 same-blob mirror placements only)
 const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // dist arm blob this tree measured
 const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35'
 const PACK_BYTES_MAX = 8_000_000
