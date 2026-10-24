@@ -116,6 +116,21 @@ export const A5_G1_CONTROL_ADAPTER_REVISION = 8
 // identity pairing obligation. Every OTHER G1 family keeps 7 (the B-INSPECT
 // pair's bytes did not move); earlier B-CONTROL-era approvals are NOT
 // translated - the kernel's own comparison refuses a stale pair.
+//
+// The B-DEPENDENCY family's OWN revision (center 14575 advance order, M0
+// 1-record): its durable target moved from the nested `installFacts`/`armLaw`
+// draft to the closed FLAT-LEAF rule (PA_FAMILY_TARGET_RULES['B-DEPENDENCY'],
+// target per M0-B-FAMILY-TARGET-CONTRACTS.md) — an EXPLICIT invalidation on the
+// B-CONTROL precedent: stored revision-7 dependency claims are stale, nothing
+// translates. Every OTHER G1 family's bytes did not move; the B-INSPECT pair
+// still carries 7.
+export const A5_G1_DEPENDENCY_ADAPTER_REVISION = 8
+// The ONE controlled install path the B-DEPENDENCY `installPathRef` leaf names
+// (reviewed encoding, source-anchored to the pinned baseline: the EXPORTED
+// installPrimaryRuntime at skill/tool-workspace-dependencies/src/index.ts:204
+// of 639ed01539). The mount + the delegate's bind-check enforce the path
+// itself; this leaf records WHICH path the approval covered.
+export const A5_G1_DEPENDENCY_INSTALL_PATH_REF = 'dsh-tool-workspace-dependencies#installPrimaryRuntime@639ed01539:204'
 
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
@@ -493,9 +508,19 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         { kind: 'write', resource: dirRes(realmId, facts.rootLocator, ['write', 'list']) },
         { kind: 'write', resource: pathRes(realmId, `${facts.rootLocator}.previous`, ['write', 'meta']) },
       )
+      /* A5M2 (center 14575 advance order): the durable claim reads as FLAT
+       * LEAVES — the closed PA_FAMILY_TARGET_RULES['B-DEPENDENCY'] grammar.
+       * The three locators ride at FULL VALUE (F envelope: payload source,
+       * fixed runtime root, staging parent); the reused controlled path rides
+       * as the reviewed-encoding constant below (the delegate's bind-check
+       * refuses a moved mount instead of re-running a stale plan). The arm
+       * law text stays in the effectDeltaNotes — the target carries FACTS,
+       * never law prose. */
       built.target = {
-        installFacts: { sourceLocator: facts.sourceLocator, rootLocator: facts.rootLocator, parentLocator: parent },
-        armLaw: 'the REUSED path is the EXPORTED installPrimaryRuntime(source, root): compatibleManifest gate, fs.cp-dereference staging copy under the parent, validatePayloadEntries entry-shape checks, previous-slot swap, rename-commit; the delegate runs that mounted path or FAILS CLOSED before any fs of its own and before native entry — it never stages/hashes of its own, never labels an executed copy BLOCKED, and reports the reused-path residual (no ControlledFs, no full-payload digest, no owner single-flight, no cancel) instead of letting the port name imply a closed contract',
+        sourceLocator: facts.sourceLocator,
+        rootLocator: facts.rootLocator,
+        parentLocator: parent,
+        installPathRef: A5_G1_DEPENDENCY_INSTALL_PATH_REF,
       }
       break
     }
@@ -800,7 +825,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
      * each, the pairing law's mint side. Every other family keeps the nested
      * `trusted` envelope BYTE-IDENTICAL (its rule has not landed; its claim
      * still fails closed at the table — no drift either way). */
-    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT'
+    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT' || spec.family === 'B-DEPENDENCY'
     const targetManifest = deepFreeze(flatTrustedLeaves
       ? {
           ...built.target,
@@ -838,7 +863,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       effects,
       serviceObligations,
       targetManifest,
-      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
+      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : spec.family === 'B-DEPENDENCY' ? A5_G1_DEPENDENCY_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
       generations,
       parametersFingerprint: `sha256:${sha256(canonical(args ?? {}))}`,
     })
@@ -927,7 +952,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       case 'B-DEPENDENCY': {
         const facts = typeof ports?.dependencyFacts?.current === 'function' ? ports.dependencyFacts.current() : undefined
         if (!isRecord(facts)) return stale('the install facts source is gone')
-        if (facts.sourceLocator !== stored.installFacts.sourceLocator || facts.rootLocator !== stored.installFacts.rootLocator) {
+        if (facts.sourceLocator !== stored.sourceLocator || facts.rootLocator !== stored.rootLocator) {
           return stale(`install facts now answer ${String(facts.sourceLocator)} → ${String(facts.rootLocator)}`)
         }
         return null
@@ -1011,7 +1036,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         entry.state = 'FAILED-UNKNOWN'
         return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the mounted controlled path moved after bind; the stale plan is not re-run`)
       }
-      const facts = plan.targetManifest.installFacts
+      const facts = plan.targetManifest
       const paths = await controlledInstall.installPrimaryRuntime(facts.sourceLocator, facts.rootLocator)
       entry.state = 'CONTROLLED_RESOLVED'
       entry.facts.controlledPaths = paths
