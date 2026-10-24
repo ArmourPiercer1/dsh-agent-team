@@ -237,9 +237,9 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     SERVICE_STARTS.length = 0
     paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire()
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
-    const row = wiring.rowOf('subagent')
+    const row = wiring.rowOf('subagent_codex')
     if (row === undefined) throw new Error('no row')
     const classified = row.classify({ description: 'wire-me', prompt: 'go', run_in_background: false })
     if (classified.ok !== true || classified.plan === undefined) throw new Error('classify failed')
@@ -248,8 +248,8 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     const req = PA_CALLS[0] as Required<PaRequest>
     expect(req.realmId).toBe('a5-realm-wire')
     expect(req.callId).toBe('call-wire-9') // the REAL public exec.callId, never synthesized
-    expect(req.toolName).toBe('subagent')
-    expect(req.requestedEffects.effects).toEqual([{ kind: 'tool-invoke', toolName: 'subagent', resource: null }])
+    expect(req.toolName).toBe('subagent_codex')
+    expect(req.requestedEffects.effects).toEqual([{ kind: 'tool-invoke', toolName: 'subagent_codex', resource: null }])
     // THE CANONICAL DIGEST rides the parsed envelope (domain algebra, G6
     // precedent; the kernel reads request.requestedEffects.fingerprint at
     // admission-kernel.ts:215 — a hand-spelled envelope dies deeper in the
@@ -265,7 +265,7 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     // placement identity — the very key the registration (and the PA gate's
     // binding lookup at pa-control-bridge :427) resolves — never the
     // capture-side constant.
-    expect(req.family?.definitionIdentity).toBe(PLANE_FEED('subagent').definitionIdentity)
+    expect(req.family?.definitionIdentity).toBe(PLANE_FEED('subagent_codex').definitionIdentity)
     // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; encoding per root
     // 21:01): the entry in PA_FAMILY_TARGET_RULES['B-SUBAGENT'] pairs exactly
     // these keys — childClaim rides the SIGNED 'nullableString' leaf, so the
@@ -304,7 +304,7 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
     SERVICE_STARTS.length = 0
     paAnswer = { kind: 'deny', code: 'PA_TEST_DENY', detail: 'the envelope does not cover this spawn' }
     const wiring = wire()
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
     const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-deny-1', signal: CONTROLLER.signal })
       .then(() => undefined, (e: unknown) => e as Error)
@@ -315,7 +315,7 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
     SERVICE_STARTS.length = 0
     paAnswer = { kind: 'allow', cancelled: true }
     const wiring = wire()
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
     const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-cancel-1', signal: CONTROLLER.signal })
       .then(() => undefined, (e: unknown) => e as Error)
@@ -326,7 +326,7 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
     SERVICE_STARTS.length = 0
     paAnswer = { kind: 'allow' } // the plane's non-witness branch: the governed row DEMANDS the proof
     const wiring = wire()
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
     const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-noproof-1', signal: CONTROLLER.signal })
       .then(() => undefined, (e: unknown) => e as Error)
@@ -338,7 +338,7 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
     SERVICE_STARTS.length = 0
     paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire()
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
     const noId = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, signal: CONTROLLER.signal })
       .then(() => undefined, (e: unknown) => e as Error)
@@ -355,7 +355,7 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
     const wiring = wire({
       paAdmit: async () => { throw new Error('durable leg offline') },
     })
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
     await expect(def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-throw-1', signal: CONTROLLER.signal }))
       .rejects.toThrow(/^durable leg offline$/)
@@ -369,7 +369,7 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     PA_CALLS.length = 0
     paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire({ placementFeed: () => undefined }) // the row dispatches; its placement no longer stands
-    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    const def = wiring.definitions.find((d) => d.name === 'subagent_codex')
     if (def === undefined) throw new Error('no def')
     const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-noplacement-1', signal: CONTROLLER.signal })
       .then(() => undefined, (e: unknown) => e as Error)
@@ -377,7 +377,7 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     expect(PA_CALLS).toHaveLength(0)
     expect(SERVICE_STARTS).toHaveLength(0)
   })
-  it('the JOINT encoding through the REAL eight-op table (root 21:20/22:02): five REAL minted manifests ACCEPT; crossed action and the pre-joint manifest deny with the grammar\u2019s measured bytes; revision 1\u21922 refusal-then-accept; CURRENTFIELDS restated; eight-op cross-check output', async () => {
+  it('the JOINT encoding through the REAL eight-op table (root 21:20/22:02): the three UNBLOCKED REAL minted manifests ACCEPT (39/40 refuse pre-PA at the joint call site); crossed action and the pre-joint manifest deny with the grammar\u2019s measured bytes; revision 1\u21922 refusal-then-accept; CURRENTFIELDS restated; eight-op cross-check output', async () => {
     SERVICE_STARTS.length = 0
     PA_CALLS.length = 0
     paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
@@ -394,6 +394,16 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     for (const [name, op] of ROWS) {
       const def = wiring.definitions.find((d) => d.name === name)
       if (def === undefined) throw new Error(`no def ${name}`)
+      if (name === 'subagent' || name === 'subagent_fork') {
+        // THE BLOCK AT THE JOINT CALL SITE too: child-bearing rows refuse
+        // before the PA walk — the joint manifest is never minted, never
+        // consumed (zero approval for a refusal that precedes it).
+        const pBefore = PA_CALLS.length
+        await expect(def.execute({ ...tricky }, { agent: AGENT_REF, callId: `call-joint-${name}`, signal: CONTROLLER.signal }))
+          .rejects.toThrow(/P_B_SPAWN_CHILD_GOVERNANCE_UNGOVERNED/)
+        expect(PA_CALLS.length, `zero PA for ${name}`).toBe(pBefore)
+        continue
+      }
       await def.execute(name === 'list_subagent_models' ? {} : { ...tricky }, { agent: AGENT_REF, callId: `call-joint-${name}`, signal: CONTROLLER.signal })
       const manifest = PA_CALLS[PA_CALLS.length - 1]?.family?.targetManifest as Record<string, unknown>
       expect(manifest.operation, name).toBe(op)
@@ -402,8 +412,12 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
       expect(validatePaFamilyTarget('B-SUBAGENT', manifest), name).toBeUndefined()
       byOp.set(op, manifest)
     }
-    expect(PA_CALLS).toHaveLength(5)
-    const m0 = byOp.get('subagent-spawn') as Record<string, unknown>
+    expect(PA_CALLS).toHaveLength(3) // the two child-bearing rows refused BEFORE the walk (zero approval consumed)
+    // THE SAMPLE MANIFEST rides an UNBLOCKED row (record 41, same family,
+    // same twelve-key table law) — the blocked 39/40 mint NOTHING (their
+    // refusal precedes the walk; a minted-by-hand stand-in would be exactly
+    // the transcription the handoff law forbids).
+    const m0 = byOp.get('subagent-spawn-external-codex') as Record<string, unknown>
     // REVISION CONSISTENCY (root 22:02): registration, every PA block and
     // the wiring face carry the mount\u2019s ACTUAL generation \u2014 the value
     // the real paths carry, not a bumped-but-unused constant.
@@ -433,7 +447,7 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     // action BOUND to the row\u2019s own operation; a crossed binding denies
     // with the REAL table\u2019s measured bytes (error-class pairing leg):
     expect(m0.action).toBe(m0.operation)
-    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...m0, action: 'subagent-fork-spawn' }))).toBe("action: not the 'subagent-spawn' variant constant of the B-SUBAGENT typed plan")
+    expect(String(validatePaFamilyTarget('B-SUBAGENT', { ...m0, action: 'subagent-fork-spawn' }))).toBe("action: not the 'subagent-spawn-external-codex' variant constant of the B-SUBAGENT typed plan")
     // FULL VALUES, not digests: argsCanonical parses back to the WHOLE call
     // (prompt whole, unknown-but-legal keys whole, null and \'\' distinct);
     // re-canonicalizing reproduces the string byte-for-byte; the named-gaps
@@ -469,7 +483,7 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     // dispatch-time constants of the row (record-spec identity, never model
     // text); a fresh classify restates them identically and the manifest
     // binds them equal.
-    const rowS = wiring.rowOf('subagent')
+    const rowS = wiring.rowOf('subagent_codex')
     if (rowS === undefined) throw new Error('no row')
     const restated = rowS.classify({ ...tricky })
     if (restated.ok !== true || restated.plan === undefined) throw new Error('restate classify failed')

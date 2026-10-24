@@ -3562,6 +3562,25 @@ export function createAgentBindings(deps) {
         // shipped disabled) absent is carried as the adapter's honest
         // DECLARED-INACTIVE. Zero-flip: planeCfg.spawnGoverned absent =
         // byte-identical world (no capture, no injection, no registration).
+        // NO CONFIG VALUE REOPENS THE SPAWN ROWS (urgent center card
+        // 2026-10-25, ③): 'spawnGoverned: false' is a BYPASS ATTEMPT against
+        // the child-governance fail-closed block — with the key false (or
+        // any non-boolean value) the native 39/40 rows would execute with no
+        // child closed-world proof (M0-B121-123). Such mounts REFUSE at
+        // setup (fail-closed by refusal, never silently open). The ABSENT
+        // key stays the recorded zero-flip world (no plane spawn arm) and is
+        // itself under the standing release/Host prohibition until the full
+        // pairing — named bounded adjudication, not a value bypass.
+        if (planeCfg.spawnGoverned !== undefined && typeof planeCfg.spawnGoverned !== 'boolean') {
+          const bypassError = new Error(`agent-bindings: alpha.5 spawn mount refused for '${sessionId}': planeCfg.spawnGoverned must be a boolean — '${String(planeCfg.spawnGoverned).slice(0, 40)}' is not an accepted value, and NO config value reopens the child-bearing spawn rows`)
+          bypassError.code = 'alpha5-spawn-wiring-mount-refused'
+          throw bypassError
+        }
+        if (planeCfg.spawnGoverned === false) {
+          const bypassError = new Error(`agent-bindings: alpha.5 spawn mount refused for '${sessionId}': planeCfg.spawnGoverned=false is FORBIDDEN (urgent child-governance audit 2026-10-25, M0-B121-123) — 'false' would leave native subagent/subagent_fork executable with no child closed-world proof; no config value may bypass the fail-closed block. Set the key true (masked, fail-closed rows) or omit it entirely (the recorded zero-flip world under the standing release/Host prohibition)`)
+          bypassError.code = 'alpha5-spawn-wiring-mount-refused'
+          throw bypassError
+        }
         if (planeCfg.spawnGoverned === true) {
           const refuseSpawn = (why) => {
             const error = new Error(
