@@ -866,6 +866,33 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
     }),
+    // A5-M2 B-EDIT (root FS-EDIT card 2026-10-25, the write leaf's sibling):
+    // the edit plan is the M-02 pre-booked shape — the approved target carries
+    // the PAIRED read law ("edit/replace 另需 read effect；配对 read effect
+    // 走同一受治理读臂, 不得另起弱读面", quoted verbatim into the arm's
+    // readEffectLaw law-fact) plus the existence-honest `creationPossible:
+    // false` (the edit NEVER creates; an absent target is a typed closure
+    // refusal) and the echo law (before/after ride ONLY under the paired read
+    // effect — M-02's condition on the before/after face). Producing module:
+    // src/plugin/live/governed-families/edit.mjs. No new kinds, no new
+    // ledger; currentFields is the write leaf's trusted trio, unmoved.
+    'B-EDIT': Object.freeze({
+        required: Object.freeze({
+            familyId: 'string',
+            adapterRevision: 'nonNegativeInt',
+            operation: 'string',
+            realmId: 'string',
+            canonicalTarget: 'string',
+            oldFingerprint: 'string',
+            newFingerprint: 'string',
+            replaceAll: 'boolean',
+            creationPossible: 'boolean',
+            editFileLaw: 'string',
+            readEffectLaw: 'string',
+            echoLaw: 'string',
+        }),
+        currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
+    }),
     // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten; the lane
     // module that produces this claim is
     // src/plugin/live/governed-families/g1-surface-adapters.mjs, records

@@ -448,8 +448,11 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // fourteen families now (A5M2-G3-PTC root 04:4x card: B-PTC 闭表补齐
     // rides directly after B-TERMINAL, the lane block's own position); nothing
     // else about the census law changed.
+    // A5M2-G3 FS-EDIT card 2026-10-25 (this lane): B-EDIT (the write leaf's
+    // sibling, M-02 pre-booked paired-read shape) rides directly after
+    // B-WRITE, the lane block's own insertion position — fifteen families.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
