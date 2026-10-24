@@ -1502,6 +1502,53 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
   }),
+  // A5M2 FS-EDIT card 2026-10-25 PART D (root continuation card): the
+  // str_replace_editor family rides the B-INSPECT variants/discriminant
+  // template — ONE command-keyed closed map, four groups. The discriminant
+  // `sreVariant` is a required 'string' leaf (the validator's own law);
+  // each group adds ONLY the law-facts its shipped closure branch actually
+  // carries (post-consume-sre.ts). creationPossible is the existence-honest
+  // required leaf every branch states; the card law "creationPossible 仅
+  // create 组 true" rides GRAMMAR-side as a BOUND law leaf per group (the
+  // validator only lets adds leaves bind, so the literal is a string law:
+  // exactly ONE group binds a creation law, the other three bind the
+  // never-creates law — paired constants, not arbitrary strings). The
+  // read-carrying groups (view/str_replace/insert) carry M-02's pre-booked
+  // paired-read line and the echo law; the create group asks NO read and
+  // echoes NOTHING.
+  'B-SRE': Object.freeze({
+    required: Object.freeze({
+      familyId: 'string',
+      adapterRevision: 'nonNegativeInt',
+      operation: 'string',
+      realmId: 'string',
+      canonicalTarget: 'string',
+      sreVariant: 'string',
+      creationPossible: 'boolean',
+    }),
+    variant: Object.freeze({
+      leaf: 'sreVariant',
+      by: Object.freeze({
+        view: Object.freeze({
+          adds: Object.freeze({ viewRange: 'string', maxOutputChars: 'nonNegativeInt', viewLaw: 'string', readEffectLaw: 'string', echoLaw: 'string', neverCreatesLaw: 'string' }),
+          binds: Object.freeze({ neverCreatesLaw: 'this B-SRE branch never creates: an absent target is a typed refusal inside the closure, zero creation (the write row existence-honest law); creationPossible false' }),
+        }),
+        create: Object.freeze({
+          adds: Object.freeze({ fileTextFingerprint: 'string', createFileLaw: 'string', creationLaw: 'string' }),
+          binds: Object.freeze({ creationLaw: 'create is the ONLY B-SRE branch whose reviewed law can bring a file into being (O_EXCL through the verified final-parent fd); a present target loses with zero bytes; creationPossible true' }),
+        }),
+        str_replace: Object.freeze({
+          adds: Object.freeze({ oldFingerprint: 'string', newFingerprint: 'string', strReplaceLaw: 'string', readEffectLaw: 'string', echoLaw: 'string', neverCreatesLaw: 'string' }),
+          binds: Object.freeze({ neverCreatesLaw: 'this B-SRE branch never creates: an absent target is a typed refusal inside the closure, zero creation (the write row existence-honest law); creationPossible false' }),
+        }),
+        insert: Object.freeze({
+          adds: Object.freeze({ newStrFingerprint: 'string', insertLine: 'nonNegativeInt', insertLaw: 'string', readEffectLaw: 'string', echoLaw: 'string', neverCreatesLaw: 'string' }),
+          binds: Object.freeze({ neverCreatesLaw: 'this B-SRE branch never creates: an absent target is a typed refusal inside the closure, zero creation (the write row existence-honest law); creationPossible false' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
+  }),
   'B-CONTROL': Object.freeze({
     required: Object.freeze({
       controlRecord: 'string',

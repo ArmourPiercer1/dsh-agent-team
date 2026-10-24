@@ -477,8 +477,13 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     // A5M2-G3 FS-EDIT card 2026-10-25 (this lane): B-EDIT (the write leaf's
     // sibling, M-02 pre-booked paired-read shape) rides directly after
     // B-WRITE, the lane block's own insertion position — fifteen families.
+    // A5M2 FS-EDIT card PART D (root continuation card 2026-10-25): B-SRE
+    // (the str_replace_editor four-branch family, B-INSPECT variants template
+    // with a command-keyed closed map) rides directly after B-EDIT, the lane
+    // block's own insertion position — SEVENTEEN… sixteen→seventeen with the
+    // root's own count of the table; the enumeration below is the authority.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-BROWSER', 'B-WEB', 'B-WRITE', 'B-EDIT', 'B-SRE', 'B-CONTROL', 'B-INSPECT', 'B-TERMINAL', 'B-LSP', 'B-PTC', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-TERMINAL (operation, root 20:38), B-SESSION-QUERY, B-MCP (root
     // 19:28), B-TEAM (root 19:4x card), B-SUBAGENT, and — FLIPPED by the
@@ -492,7 +497,7 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
       // signed entries — added to the carrier set; nothing else moved.
       // B-CONTROL joins the carrier set (root 2026-10-25 LIMITED BUILD ORDER:
       // the §5 full-pairing change uses the existing closed variant grammar).
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL'
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-TERMINAL' || familyId === 'B-LSP' || familyId === 'B-PTC' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION' || familyId === 'B-BROWSER' || familyId === 'B-WEB' || familyId === 'B-CONTROL' || familyId === 'B-SRE'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
