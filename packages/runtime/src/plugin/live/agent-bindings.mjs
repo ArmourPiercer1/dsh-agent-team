@@ -3110,6 +3110,12 @@ export function createAgentBindings(deps) {
           }
           a5G2Mount = g2Built
           observations.push(`a5m2-g2: TEAM MOUNT assembled for ${sessionId} (lanes: ${Object.keys(g2Built.backends).join('+') || 'none'}; WEB: ${String(g2Built.webRouteGap.code)})`)
+          if (typeof g2Supply.webSearchNotReady === 'string') {
+            // root 03:5x: the search gap stays NAMED at every assembly —
+            // provider selected, credential absent: no lane, row unmounted,
+            // nothing waived, nothing invented.
+            observations.push(`a5m2-g2: ${g2Supply.webSearchNotReady.slice(0, 240)} for ${sessionId}`)
+          }
         }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge

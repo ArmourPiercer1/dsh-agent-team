@@ -2504,6 +2504,69 @@ async function buildG2TeamSupply(
   // provider id or env, and noTeam never reads this path (row-scoped
   // config + per-instance plugin, cited law). Transport resolution stays
   // the constructor's public default (publicHttpNetwork.resolve).
+  // ROOT 03:5x (search 必交 CLOSED to the exact external gap): the consumer
+  // wiring for a USER-SELECTED public search provider — the choice names ONE
+  // of the three public roots shipped by the fixed host; nothing is
+  // auto-selected, no credential is invented, persisted or logged. The
+  // construction mirrors each plugin's OWN apply (public Config parse + the
+  // plugin's own env fallback). A resolved-absent credential is the NAMED
+  // NOT-READY state: no search lane is minted, web_search stays honestly
+  // unmounted (the lane-pairing law), and the reason rides the supply for
+  // the bindings to observe. Real external-network acceptance waits on the
+  // USER's config — a recorded tier, never a waiver.
+  const webSearchCfg = (g2Mount as { webSearchFixed?: { enabled?: boolean; provider?: string; config?: Record<string, unknown>; declared?: Record<string, unknown> } } | undefined | null)?.webSearchFixed
+  let buildSearchLane: () => { fixedSearchProvider: object; declared: Record<string, unknown>; readMountFacts: () => Record<string, unknown> } | null = () => null
+  if (webSearchCfg?.enabled === true) {
+    const publicRoots: Record<string, { specifier: string; env: string }> = {
+      exa: { specifier: '@deepseek-ai/dsh-web-search-exa', env: 'EXA_API_KEY' },
+      perplexity: { specifier: '@deepseek-ai/dsh-web-search-perplexity', env: 'PERPLEXITY_API_KEY' },
+      'deepseek-official': { specifier: '@deepseek-ai/dsh-web-search-deepseek', env: 'DEEPSEEK_API_KEY' },
+    }
+    // launch-environment read at the SAME layer the plugins themselves use
+    // for their env fallback (launchEnvironmentOf wraps exactly this); the
+    // host's typed process shim here carries cwd() only, so the launch env
+    // is reached through globalThis — READ ONLY, nothing is stored/logged.
+    const launchEnv = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}
+    const choice = webSearchCfg.provider
+    if (typeof choice !== 'string' || publicRoots[choice] === undefined) {
+      return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webSearchFixed.provider must name ONE of exa|perplexity|deepseek-official — the user selects; nothing is auto-selected, nothing is invented' }
+    }
+    try {
+      const mod = (await import(publicRoots[choice].specifier)) as Record<string, unknown>
+      const cfgIn = webSearchCfg.config ?? {}
+      const declaredSearch = webSearchCfg.declared ?? {}
+      let fixedSearch: object | null = null
+      let keyPresent = false
+      if (choice === 'exa' || choice === 'perplexity') {
+        const m = mod as { Config: { parse: (v: unknown) => Record<string, unknown> }; ExaSearchProvider?: new (o: Record<string, unknown>) => object; PerplexitySearchProvider?: new (o: Record<string, unknown>) => object }
+        const resolved = m.Config.parse(cfgIn)
+        const apiKey = typeof resolved.apiKey === 'string' && resolved.apiKey.length > 0 ? resolved.apiKey : (launchEnv[publicRoots[choice].env] ?? '')
+        keyPresent = apiKey.length > 0
+        const Ctor = choice === 'exa' ? m.ExaSearchProvider : m.PerplexitySearchProvider
+        if (typeof Ctor !== 'function') throw new Error(`${publicRoots[choice].specifier} answered no ${choice === 'exa' ? 'ExaSearchProvider' : 'PerplexitySearchProvider'} constructor`)
+        if (keyPresent) fixedSearch = new Ctor({ ...resolved, apiKey })
+      } else {
+        // deepseek-official: the PUBLIC ctor takes a LIVE options reader and
+        // resolves the env REFERENCE per search (provider.ts:203/:327) — the
+        // supply resolves the same reference once, for READINESS ONLY (no
+        // secret is kept, persisted or logged).
+        const m = mod as { Config: { parse: (v: unknown) => Record<string, unknown> }; DeepSeekSearchProvider?: new (r: () => Record<string, unknown>) => object }
+        const resolved = m.Config.parse(cfgIn)
+        const envRef = typeof resolved.apiKeyEnv === 'string' && resolved.apiKeyEnv.length > 0 ? resolved.apiKeyEnv : publicRoots[choice].env
+        keyPresent = (launchEnv[envRef] ?? '').length > 0
+        if (typeof m.DeepSeekSearchProvider !== 'function') throw new Error(`${publicRoots[choice].specifier} answered no DeepSeekSearchProvider constructor`)
+        fixedSearch = new m.DeepSeekSearchProvider(() => ({ ...resolved, apiKeyEnv: envRef }))
+        if (!keyPresent) fixedSearch = null
+      }
+      if (fixedSearch !== null && keyPresent) {
+        buildSearchLane = () => ({ fixedSearchProvider: fixedSearch as object, declared: declaredSearch, readMountFacts: () => declaredSearch })
+      } else {
+        out.webSearchNotReady = `G2_WEB_SEARCH_NOT_READY: provider "${choice}" selected but its credential is absent (config apiKey unset and $${publicRoots[choice].env} is not set in the launch environment) — no search lane minted; web_search stays unmounted (fail-closed law); awaiting the USER's configuration (exact external gap, not waived)`
+      }
+    } catch (error) {
+      return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed declared but the PUBLIC search root (${String(choice)}) refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no stand-in provider, no credential invented` }
+    }
+  }
   const webFixedCfg = (g2Mount as { webFixedProvider?: { enabled?: boolean; config?: Record<string, unknown> } } | undefined | null)?.webFixedProvider
   if (webFixedCfg?.enabled === true) {
     const webFetchSpecifier = '@deepseek-ai/dsh-web-fetch-http'
@@ -2554,6 +2617,7 @@ async function buildG2TeamSupply(
         seamMod: webSeamMod as unknown as Record<string, unknown>,
         declared: (webFixedCfg as { declared?: Record<string, unknown> }).declared ?? {},
         readMountFacts: () => (webFixedCfg as { declared?: Record<string, unknown> }).declared ?? {},
+        ...(buildSearchLane() !== null ? { search: buildSearchLane() as { fixedSearchProvider: object; declared: Record<string, unknown>; readMountFacts: () => Record<string, unknown> } } : {}),
       })
     } catch (error) {
       return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` }

@@ -342,7 +342,7 @@ export async function createG2TeamAssemblySupply(input = {}) {
   if (typeof makeTransport !== 'function') {
     return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'makeTransport is REQUIRED — the transport factory\'s real producer is the host mcp connection layer over the APPROVED config (stdio/http); minting one here would copy host transport internals into this lane')
   }
-  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
+  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(typeof input?.webSearchNotReady === 'string' ? { webSearchNotReady: input.webSearchNotReady } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
   // browser supply is ALL-OR-NOTHING (the loader always carries the two
   // public entry functions; arming them WITHOUT the Team PA approval face +
   // the stagehand method mapping would arm a row whose door nobody opened):
@@ -454,7 +454,7 @@ export function createG2ConsumedProofApproval () {
  * this is the named slot the plane already fail-closes on, supplied
  * with the fixed face this root's config declared.
  */
-export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts, observe = () => {}, seamMod } = {}) {
+export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts, observe = () => {}, seamMod, search } = {}) {
   if (fixedProvider === null || typeof fixedProvider !== 'object') {
     throw new Error('G2_SUPPLY_ENTRY_INVALID: createG2WebFixedLanes needs the REAL fixed provider object (the public HttpFetchProvider instance); nothing pins around an absence')
   }
@@ -472,12 +472,35 @@ export function createG2WebFixedLanes ({ fixedProvider, declared, readMountFacts
     readMountFacts,
     observe,
   })
+  // ROOT 03:5x search consumer: the SAME reviewed seam wraps the
+  // user-SELECTED public search provider (kind 'search' — the provider's
+  // own public search method is pinned, current endpoint/config identity
+  // re-verified per dispatch). The half is PRESENT ONLY when the supply
+  // built a REAL selected provider over real config; absent search is the
+  // named NOT-READY gap, never a stand-in — and the lane-pairing law then
+  // keeps the web_search row honestly unmounted.
+  const webSearchLane = search === null || typeof search !== 'object' ? null : (() => {
+    const sp = search.fixedSearchProvider
+    if (sp === null || typeof sp !== 'object' || typeof sp.id !== 'string' || sp.id.length === 0) {
+      throw new Error('G2_SUPPLY_ENTRY_INVALID: the search half needs the REAL selected provider object with its own public id (exa|perplexity|deepseek-official); nothing pins around an absence or a stand-in')
+    }
+    const wrappedSearch = seamMod.createG2WebProviderSeam({
+      kind: 'search',
+      providerId: sp.id,
+      getRealProvider: () => sp,
+      declared: search.declared ?? {},
+      readMountFacts: search.readMountFacts,
+      observe,
+    })
+    return Object.freeze({ provider: wrappedSearch.provider, registrationLaw: wrappedSearch.registrationLaw, stats: wrappedSearch.stats })
+  })()
   return Object.freeze({
     web_fetch: Object.freeze({
       provider: wrapped.provider,
       registrationLaw: wrapped.registrationLaw,
       stats: wrapped.stats,
     }),
+    ...(webSearchLane === null ? {} : { web_search: webSearchLane }),
   })
 }
 
@@ -561,8 +584,12 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
       // model fields never enter the lane either — the ONE consume stays
       // g2RowExecute's final edge upstream of this invoke.
       const lane = lanes?.[row.toolName]
-      const laneFetch = lane?.provider?.fetch
-      if (typeof laneFetch !== 'function' || lane.provider?.available?.() !== true) {
+      // the row's OWN kind rides the lane's pinned method: web_fetch ->
+      // provider.fetch, web_search -> provider.search (the seam pinned
+      // exactly one kind per lane; a search row fetching would be a
+      // substitution and is refused here as a mount defect).
+      const laneMethod = row.toolName === 'web_search' ? lane?.provider?.search : lane?.provider?.fetch
+      if (typeof laneMethod !== 'function' || lane.provider?.available?.() !== true) {
         throw new Error('G2_WEB_LANE_DISPATCH_ABSENT: the seam-branded fixed lane (provider + current-facts law) is the ONLY dispatch route for a governed web row; nothing dispatches around it')
       }
       const closer = announced.ports.beginCall({
@@ -575,9 +602,28 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
         proof: exec?.g2ConsumedProof,
       })
       try {
-        const url = args?.url
-        if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
-        const out = await lane.provider.fetch({ url }, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
+        if (row.toolName === 'web_fetch') {
+          const url = args?.url
+          if (typeof url !== 'string' || url.length === 0) throw new Error('G2_WEB_FETCH_URL_INVALID: classify already pinned the url; invoke rides it verbatim')
+        }
+        // The provider's PUBLIC request (web/src/types.ts:16-27) carries ONE
+        // query; the closed row args carry queries[] (the gateway merge lane
+        // is the relay's law, not the fixed lane's). Honest fixed-lane
+        // subset (the web_fetch url-only precedent): exactly one query
+        // dispatches verbatim; multi-query is the NAMED gap, refused typed
+        // before the provider — never silently first-picked, never looped
+        // into a second consume-shaped dispatch.
+        let request
+        if (row.toolName === 'web_search') {
+          const queries = Array.isArray(args?.queries) ? args.queries : []
+          if (queries.length !== 1 || typeof queries[0] !== 'string' || queries[0].length === 0) {
+            throw new Error('G2_WEB_SEARCH_MULTI_QUERY_GAP: the fixed single-provider lane dispatches the public one-query request; a multi-query row belongs to the gateway merge relay — refused typed, zero provider calls (named subset, not a waiver)')
+          }
+          request = { query: queries[0] }
+        } else {
+          request = { url: args?.url }
+        }
+        const out = await laneMethod.call(lane.provider, request, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
         // the row-body answer law (measured at the consumption edge): the
         // edge returns the invoke answer and the plane reads ran.value —
         // the same {ok,value} struct the g2Mcp bound body answers with.
