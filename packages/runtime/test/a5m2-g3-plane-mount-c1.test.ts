@@ -13,8 +13,10 @@
  *  (a) ZERO FLIP: no `backends.terminal` = no wiring face (omitted, not
  *      undefined), no terminal_* placement — the ordinary mount is
  *      byte-identical to the pre-G3 plane;
- * (a2) the policy grammar pins terminal_* to the durable-approval lane: an
- *      allow entry outside the fs/shell family refuses at the projection;
+ * (a2) the policy grammar ACCEPTS the six terminal_* any-allow rows once the
+ *      six names joined the closed vocabulary (root 2026-10-24; the old enum
+ *      refusal is history — grammar only, the execution proof stays in leg (e)),
+ *      while an un-listed name still refuses at the same enum;
  *  (b) the inject law: defective owner evidence refuses the MOUNT with the
  *      typed code (config is law, not wiring);
  *  (c) REAL placement: `mount()` registers the placed defs (complete
@@ -345,13 +347,27 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     for (const name of TOOLS) expect(built.value.placementNames).not.toContain(name)
   })
 
-  it('(a2) the policy grammar pins terminal_* to the durable-approval lane: an allow entry outside the fs/shell family is refused at the projection', () => {
+  it('(a2) the policy grammar ACCEPTS the six terminal_* any-allow rows (root 2026-10-24: the six names joined the closed vocabulary — the old enumeration refusal is history), while an un-listed name still refuses at the enum', () => {
     const w = makeInject()
     const built = buildPlane({ backends: { terminal: w.inject } }, [], POLICY_TERMINAL_ALLOW_ATTEMPT)
-    expect(built.ok).toBe(false)
-    if (built.ok === true) return
-    expect(built.code).toBe('TOOL_BINDING_UNVERIFIED')
-    expect(built.message).toContain('must be one of')
+    // GRAMMAR law ONLY: the six terminal names are MEMBERS of the enumerated
+    // vocabulary and terminal is not shell-class, so the projection accepts
+    // the rows and the plane mounts. This leg asserts NOTHING about
+    // durable-approval EXECUTION — the kernel leg (e) owns that proof; a
+    // grammar acceptance is never dressed up as an approval-run result.
+    expect(built.ok).toBe(true)
+    // The enum itself is NOT loosened: a name OUTSIDE the vocabulary still
+    // refuses with the same typed word — the flip is membership, not a gate.
+    const stranger = buildPlane({ backends: { terminal: w.inject } }, [], Object.freeze({
+      default: 'ask',
+      allow: [{ tool: 'terminal_nonexistent', resource: { kind: 'any' } }],
+      ask: [] as unknown[],
+      deny: [] as unknown[],
+    }))
+    expect(stranger.ok).toBe(false)
+    if (stranger.ok === true) return
+    expect(stranger.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(stranger.message).toContain('must be one of')
   })
 
   it('(b) defective owner evidence refuses the MOUNT (config is law, not wiring)', () => {
