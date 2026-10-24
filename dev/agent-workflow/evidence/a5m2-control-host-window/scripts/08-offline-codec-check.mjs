@@ -112,8 +112,12 @@ A('generic TOOLS-CHECK still ACKs on its own branch and fills memberToolsSeen ON
   String(t0?.content) === `ACK-C0 ${N}` && boot.memberToolsSeen.includes('team_request_control'), `ack=${String(t0?.content)}`)
 
 // (9) permissionMutatedWitness on the REAL 2fb result family (root shape card)
-A('witness: structured permission-mutated grant + isError=false passes', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'grant', changed: true }) }) === true)
-A('witness: revoke verb + changed=false (rule-set-equal no-op) still a REAL structured return', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'revoke', changed: false }) }) === true)
+const expG = { rootSessionId: 'r', targetInstanceId: 'i', verb: 'grant' }
+A('witness: exact expected triple grant passes', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'grant', changed: true }) }, expG) === true)
+A('witness: exact expected triple revoke passes (changed=false no-op still REAL)', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'revoke', changed: false }) }, { rootSessionId: 'r', targetInstanceId: 'i', verb: 'revoke' }) === true)
+A('witness: FOREIGN rootSessionId fails (root 76eba review)', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'other-root', targetInstanceId: 'i', verb: 'grant', changed: true }) }, expG) === false)
+A('witness: foreign targetInstanceId fails', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'other-inst', verb: 'grant', changed: true }) }, expG) === false)
+A('witness: verb swap fails (grant leg shown a revoke row and vice versa)', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'permission-mutated', rootSessionId: 'r', targetInstanceId: 'i', verb: 'revoke', changed: true }) }, expG) === false)
 A('witness: status:rejected never passes', boot.permissionMutatedWitness({ isError: false, text: JSON.stringify({ status: 'rejected', code: 'X', message: 'm' }) }) === false)
 A('witness: isError=true never passes; unstructured never passes', boot.permissionMutatedWitness({ isError: true, text: '{"status":"permission-mutated","verb":"grant","changed":true}' }) === false && boot.permissionMutatedWitness({ isError: false, text: 'mutated ok' }) === false)
 

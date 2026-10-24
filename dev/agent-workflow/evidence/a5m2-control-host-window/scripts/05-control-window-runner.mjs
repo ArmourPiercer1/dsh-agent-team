@@ -184,11 +184,15 @@ const memberToolsSeen = []   // filled ONLY from the member's real TOOLS-CHECK r
 const leaderToolsSeen = []  // filled ONLY from the LEADER's real TOOLS-CHECK-L request — parse pass is NOT visibility (root)
 const readOkWitness = (res, nonce) => res !== null && res.isError !== true
   && String(res?.text ?? '').includes(`A5M2-CTLHW-PROBE-${nonce}`) // SAME-call structured success AND window-unique probe content (name-only NOT enough)
-const permissionMutatedWitness = (res) => { // REAL 2fb 87/88 result (tools.js): {status:'permission-mutated',rootSessionId,targetInstanceId,verb,changed}
-  if (res === null || res.isError !== false) return false // root ruling: acceptance = structured parse AND isError===false
+const permissionMutatedWitness = (res, expected) => { // REAL 2fb 87/88 result (tools.js) — root 76eba review: exact-match THIS call's identity
+  if (res === null || res.isError !== false) return false // acceptance = structured parse AND isError===false
   try {
     const j = JSON.parse(String(res.text ?? ''))
-    return j?.status === 'permission-mutated' && (j.verb === 'grant' || j.verb === 'revoke') && typeof j.changed === 'boolean'
+    return j?.status === 'permission-mutated'
+      && j?.rootSessionId === expected.rootSessionId // THIS window's root — a foreign root row never passes
+      && j?.targetInstanceId === expected.targetInstanceId // THIS member instance, exact
+      && j?.verb === expected.verb // grant leg proves grant; revoke leg proves revoke
+      && typeof j?.changed === 'boolean'
   } catch { return false }
 }
 const explicitRefusalWitness = (res, nonce) => {
@@ -915,21 +919,16 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   await apiPrompt(currentRoot, `A5M2-CTLHW-GRANT87 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-grant87')
   const grantRes = await waitFor('team_grant_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:grant87') ?? null)
   const grantText = String(grantRes?.text ?? '')
-  check('L6-87', 'grant REAL return = the REAL 2fb result family: structured {status:"permission-mutated",verb:"grant",changed} AND isError===false (no invented ledger-fact gate — root ruling)', permissionMutatedWitness(grantRes), `isError=${String(grantRes?.isError)} text=${grantText.slice(0, 400)}`)
-  const grantGrantId = `perm-grant-ctlhw-grant-${NONCE}` // provenance.mutationId template per source (tools.js:1266): perm-<verb>-<requestToken>
-  const ovG = await waitFor('durable overlay snapshot carrying the grant mutation (read-only attachment)', 60_000, () => {
+  check('L6-87', 'grant REAL return = the REAL 2fb result family: structured {status:"permission-mutated",verb:"grant",changed} AND isError===false (no invented ledger-fact gate — root ruling)', permissionMutatedWitness(grantRes, { rootSessionId: currentRoot, targetInstanceId: member.instanceId, verb: 'grant' }), `isError=${String(grantRes?.isError)} text=${grantText.slice(0, 400)}`)
+  const grantGrantId = `perm-grant-ctlhw-grant-${NONCE}` // provenance.mutationId per source (tools.js:1266): perm-<verb>-<requestToken>
+  { // ONE read-only sampling (root ruling): attachment NEVER gates the main legs — no wait, no timeout, no fabricated event.
     const f = overlaySnapshotFacts()
-    if (f.status === 'NOT_VERIFIED') return f
-    return f.rows.some((r) => r?.provenance?.mutationId === grantGrantId) ? f : null
-  })
-  if (ovG.status === 'NOT_VERIFIED') console.log(`[ctlhw] durable overlay attachment: NOT_VERIFIED — ${ovG.reason} (disclosed, NOT dressed as proof; behavioral read below stays the hard gate)`)
-  else {
-    const snap = overlaySnapshotFacts().rows.filter((r) => r?.provenance?.mutationId === grantGrantId).pop()
-    const rules = snap?.state?.rules ?? []
-    check('L6-87', 'durable overlay snapshot (READ-ONLY): grant mutation row + identity pair + PERSISTED rule shape {operation,resource,effect} carrying the fixture resource (NOT the input {operationClass,matcher} spelling)',
+    const snap = f.status === 'FOUND' ? f.rows.filter((r) => r?.provenance?.mutationId === grantGrantId).pop() : null
+    if (snap === null || snap === undefined) console.log(`[ctlhw] durable overlay attachment (grant): NOT_VERIFIED — ${f.status === 'NOT_VERIFIED' ? f.reason : `no ${grantGrantId} row at single sampling`} (disclosed; the nonce READ below stays the hard gate)`)
+    else check('L6-87', 'durable overlay snapshot (READ-ONLY single sampling): grant mutation row + identity pair + PERSISTED rule {operation,resource,effect} carrying the fixture (not the input spelling)',
       snap?.identity?.memberInstanceId === member.instanceId && typeof snap?.identity?.teamSessionId === 'string'
-      && rules.some((r) => JSON.stringify(r).includes('package.json') && r?.effect === 'allow' && 'operation' in r && 'resource' in r && !('operationClass' in r) && !('matcher' in r))
-      && typeof snap?.metadata?.generation === 'number', `gen=${String(snap?.metadata?.generation)} rules=${JSON.stringify(rules).slice(0, 300)}`)
+      && (snap?.state?.rules ?? []).some((r) => JSON.stringify(r).includes('package.json') && r?.effect === 'allow' && 'operation' in r && 'resource' in r && !('operationClass' in r) && !('matcher' in r))
+      && typeof snap?.metadata?.generation === 'number', `gen=${String(snap?.metadata?.generation)} rules=${JSON.stringify(snap?.state?.rules ?? []).slice(0, 300)}`)
   }
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ2 ${NONCE}`, 'ctlhw-consume')
   const read2 = await waitFor('consumption read result (same-call structured success + window-unique probe expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe2') ?? null)
@@ -938,22 +937,18 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   await apiPrompt(currentRoot, `A5M2-CTLHW-REVOKE88 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-revoke88')
   const revokeRes = await waitFor('team_revoke_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:revoke88') ?? null)
   const revokeText = String(revokeRes?.text ?? '')
-  check('L7-88', 'revoke REAL return = structured {status:"permission-mutated",verb:"revoke",changed} AND isError===false', permissionMutatedWitness(revokeRes), `isError=${String(revokeRes?.isError)} text=${revokeText.slice(0, 400)}`)
+  check('L7-88', 'revoke REAL return = structured {status:"permission-mutated",verb:"revoke",changed} AND isError===false', permissionMutatedWitness(revokeRes, { rootSessionId: currentRoot, targetInstanceId: member.instanceId, verb: 'revoke' }), `isError=${String(revokeRes?.isError)} text=${revokeText.slice(0, 400)}`)
   const revokeMutId = `perm-revoke-ctlhw-revoke-${NONCE}`
-  const ovR = await waitFor('durable overlay snapshot carrying the revoke mutation (read-only attachment)', 60_000, () => {
+  { // ONE read-only sampling; NOT_VERIFIED never interrupts the revoke->read chain-back.
     const f = overlaySnapshotFacts()
-    if (f.status === 'NOT_VERIFIED') return f
-    return f.rows.some((r) => r?.provenance?.mutationId === revokeMutId) ? f : null
-  })
-  if (ovR.status === 'NOT_VERIFIED') console.log(`[ctlhw] durable overlay attachment (revoke): NOT_VERIFIED — ${ovR.reason} (disclosed; behavioral chain-back below stays the hard gate)`)
-  else {
-    const rowsR = overlaySnapshotFacts().rows.filter((r) => r?.identity?.memberInstanceId === member.instanceId)
-    const latest = rowsR.slice().sort((a, b) => (a?.metadata?.generation ?? 0) - (b?.metadata?.generation ?? 0)).pop()
+    const rowsR = f.status === 'FOUND' ? f.rows.filter((r) => r?.identity?.memberInstanceId === member.instanceId) : []
     const revSnap = rowsR.filter((r) => r?.provenance?.mutationId === revokeMutId).pop()
-    check('L7-88', 'durable overlay chain (READ-ONLY): revoke mutation row with generation/previousSnapshotId chain AND the LATEST snapshot for this member no longer carries the allow rule pair',
-      typeof revSnap?.metadata?.previousSnapshotId === 'string' && typeof latest?.metadata?.generation === 'number'
+    const latest = rowsR.slice().sort((a, b) => (a?.metadata?.generation ?? 0) - (b?.metadata?.generation ?? 0)).pop()
+    if (revSnap === undefined) console.log(`[ctlhw] durable overlay attachment (revoke): NOT_VERIFIED — ${f.status === 'NOT_VERIFIED' ? f.reason : `no ${revokeMutId} row at single sampling`} (disclosed; the behavioral chain-back read below stays the hard gate)`)
+    else check('L7-88', 'durable overlay chain (READ-ONLY single sampling): revoke row carries previousSnapshotId chain AND the LATEST snapshot for this member no longer carries the allow rule',
+      typeof revSnap?.metadata?.previousSnapshotId === 'string'
       && latest?.provenance?.mutationId === revokeMutId
-      && !(latest?.state?.rules ?? []).some((r) => JSON.stringify(r).includes('package.json') && r?.effect === 'allow'), `chain=${JSON.stringify((rowsR).map((r) => [r?.metadata?.generation, r?.provenance?.mutationId]))}`.slice(0, 300))
+      && !(latest?.state?.rules ?? []).some((r) => JSON.stringify(r).includes('package.json') && r?.effect === 'allow'), `chain=${JSON.stringify(rowsR.map((r) => [r?.metadata?.generation, r?.provenance?.mutationId]))}`.slice(0, 300))
   }
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ3 ${NONCE}`, 'ctlhw-read-back')
   const read3 = await waitFor('chain-back read result (explicit refusal again expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe3') ?? null)
