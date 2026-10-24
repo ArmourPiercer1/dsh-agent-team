@@ -49,6 +49,13 @@ FIX_LOCK_BEFORE=$(sha256sum "$A5M2_EDIT_INSTALL_DIR/pnpm-lock.yaml" | cut -d' ' 
 FIX_PKG_BEFORE=$(sha256sum "$A5M2_EDIT_INSTALL_DIR/package.json" | cut -d' ' -f1) || fail "fixture package.json unreadable" 3
 echo "fixture before: lock=${FIX_LOCK_BEFORE:0:16}… pkg=${FIX_PKG_BEFORE:0:16}…"
 
+# [1.5] static-import placement audit (f86 cold-import-RC1 class: a static
+#       import whose target was never placed in the pack). Pure read, zero
+#       import, zero spawn; missing list => NOT_RUN rc3, window NOT spent.
+node dev/agent-workflow/evidence/a5m2-edit-host-window/scripts/07-static-import-audit.mjs \
+  "$A5M2_EDIT_INSTALL_DIR/node_modules/dsh-agent-team" || fail "static-import audit refuses the pack (missing placements named above) — no boot, report to f86/root" 3
+echo "static-import audit: OK"
+
 # [2] capacity: df avail (bytes) on the workspace filesystem
 AVAIL=$(df -B1 --output=avail /srv/workspace/dsh-plugins/dsh-agent-team | tail -1 | tr -d ' ')
 echo "df avail: ${AVAIL} B (min ${DF_MIN})"
