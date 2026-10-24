@@ -363,6 +363,7 @@ import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { callResourceViaWorkerExecute, createG2ConsumedProofApproval, createG2TeamMount } from './governed-families/g2-team-mount.mjs'
+import { createG2WebCenterPorts } from './governed-families/g2-web-supply.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
@@ -3396,8 +3397,24 @@ export function createAgentBindings(deps) {
         // installed after this mount still reaches the row; no agentCtx property proxy
         // is read here (the V1 live matrix topology lesson).
         if (!liveWebGatewayAssemblies.has(gatewayRootKey)) {
+          // ROOT 03:0x production ports: the center-edge trio rides the
+          // EXISTING real faces — the durable ControlService via
+          // controlServiceRef (call-time lazy), the plane overlay
+          // generation reader (readAuthorityGeneration, the same live
+          // reader the Guard awaits — never a constant), and the search
+          // origin ONLY from the row-declared fixed web config (fetch
+          // mounts carry no search origin => typed refusal per call).
+          const g2WebCenterPorts = createG2WebCenterPorts({
+            getService: () => (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? controlServiceRef.current : undefined),
+            teamRoot: gatewayRootKey,
+            readGenerations: (teamSessionId, memberInstanceId) => readAuthorityGeneration(teamSessionId, memberInstanceId),
+            searchOriginFacts: typeof config?.webGateway?.searchOrigin === 'string' ? { origin: config.webGateway.searchOrigin } : undefined,
+          })
           liveWebGatewayAssemblies.set(gatewayRootKey, createLiveWebGatewayAssembly({
             webEnabledRaw: config?.webGateway?.enabled,
+            grantAuthority: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.grantAuthority,
+            factsSource: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.factsSource,
+            resolveSearchOrigin: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.resolveSearchOrigin,
             ctxWeb: typeof deps.web === 'function'
               ? {
                 fetch: (request) => { const seam = deps.web(); return seam?.fetch?.(request) },

@@ -1364,3 +1364,35 @@ describe('A5M2-G2-WIRE round-34: register rollback, disposer truth, capture+bind
     expect((seen[seen.length - 1] as unknown[])[2]).toBe(sig)
   })
 })
+
+/* ROOT 03:0x — the center-edge trio on REAL public query shapes
+ * (durable-control vocabulary verbatim: status 'decided', decision
+ * 'allow'). The service stand-in is DISCLOSED; the arms/declines are
+ * the adapters' real behavior. */
+describe('A5M2-G2-WIRE round-35: web center-edge trio — capture/consume/origin on the real shapes', () => {
+  const ports = (svc: Record<string, unknown>, extra?: Record<string, unknown>) => import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href).then((mm) => (mm as { createG2WebCenterPorts: (i: Record<string, unknown>) => { grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: unknown; error?: { code?: string; message?: string } }> }; factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }; resolveSearchOrigin: () => string } }).createG2WebCenterPorts({ getService: () => svc, teamRoot: 'rt-web', readGenerations: async () => ({ bindingRevision: 3, authorityGeneration: 7, policyGeneration: 11 }), ...extra }))
+  const decided = { requests: [{ requestId: 'req-1', correlation: 'grant-9', status: 'decided', reviewPayload: { callId: 'grant-9', instanceId: 'mi-1', effects: [{ kind: 'connect', resource: { origin: 'https://target.example.invalid' } }] } }], awaitControlDecision: async () => ({ requestId: 'req-1', decision: 'allow' }) }
+  const svc = (rec: Record<string, unknown> | null) => ({ listControlState: async () => ({ requests: rec === null ? [] : [rec] }), awaitControlDecision: decided.awaitControlDecision })
+  it('capture reads ONLY the durable record + the injected REAL generation reader (no constants); unknown grant and missing effects decline typed; consume performs its judgement only on a DECIDED+allow record and passes deny verbatim; search origin refuses per call when the config carries none', async () => {
+    const p = await ports(svc(decided.requests[0] as Record<string, unknown>))
+    const cap = await p.factsSource.capture({ realmId: 'rl', grantId: 'grant-9', bindingId: 'b-1' })
+    expect(cap.ok).toBe(true)
+    expect((cap.value?.member as Record<string, unknown>).teamSessionId).toBe('rt-web')
+    expect(cap.value?.authorityGeneration).toBe(7) // REAL reader value
+    expect(cap.value?.callId).toBe('grant-9')
+    const unknown = await ports(svc(null)).then((x) => x.factsSource.capture({ grantId: 'nope' }))
+    expect(unknown.ok).toBe(false)
+    expect(unknown.error?.code).toBe('G2_WEB_FACTS_UNKNOWN_GRANT')
+    const noEffects = await ports(svc({ requestId: 'r', correlation: 'g2', status: 'decided', reviewPayload: { callId: 'g2' } })).then((x) => x.factsSource.capture({ grantId: 'g2' }))
+    expect(noEffects.error?.code).toBe('G2_WEB_FACTS_INCOMPLETE')
+    const con = await p.grantAuthority.consume({ facts: cap.value, correlation: { grantId: 'grant-9', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
+    expect(con.ok).toBe(true)
+    const pend = await ports(svc({ requestId: 'r', correlation: 'g3', status: 'pending', reviewPayload: { callId: 'g3', effects: [] } })).then((x) => x.grantAuthority.consume({ correlation: { grantId: 'g3' }, isCancelled: () => false }))
+    expect(pend.error?.code).toBe('G2_WEB_GRANT_NOT_ALLOWED')
+    const denied = await ports({ listControlState: async () => ({ requests: [{ requestId: 'r', correlation: 'g4', status: 'decided', reviewPayload: { callId: 'g4', effects: [] } }] }), awaitControlDecision: async () => ({ decision: 'deny' }) }).then((x) => x.grantAuthority.consume({ correlation: { grantId: 'g4' }, isCancelled: () => false }))
+    expect(denied.error?.code).toBe('G2_WEB_GRANT_NOT_ALLOWED')
+    expect(() => p.resolveSearchOrigin()).toThrow(/G2_WEB_SEARCH_ORIGIN_ABSENT/)
+    const pw = await ports(svc(decided.requests[0] as Record<string, unknown>), { searchOriginFacts: { origin: 'https://search.example.invalid' } })
+    expect(pw.resolveSearchOrigin()).toBe('https://search.example.invalid')
+  })
+})
