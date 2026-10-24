@@ -93,7 +93,12 @@ const SAVED_BP_V3_YAML = [
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 EDIT window A team."',
   'members:', '  - templateId: edit-worker',
   '    persona: "You are the edit worker. Follow the marker instructions literally and only."',
-  '    capabilities:', '      teamTools:', '        kind: deny', '      builtinToolDeny: []',
+  '    capabilities:', '      teamTools:', '        kind: deny',
+  '      builtinToolDeny:', // coverage gate law (permission-coverage.js:200-202): these host builtins are NOT in the closed PERMISSION_TOOL_NAMES vocabulary — permissions CANNOT manage them; the reviewed remediation is capability-layer REMOVAL. Window-2's refusal named exactly these 15 (code alpha2-permission-coverage-unmanaged-tools). 'edit' is vocabulary-managed via the ask lane below and stays.
+  '        - ask_user_question', '        - create_goal', '        - exit_plan_mode',
+  '        - get_goal', '        - glob', '        - grep', '        - job_kill',
+  '        - job_list', '        - job_output', '        - present', '        - skill',
+  '        - update_goal', '        - web_fetch', '        - web_search', '        - workflow',
   '      skills:', '        kind: deny', '      mcp:', '        kind: deny',
   '      permissions:', '        default: deny', '        allow: []', '        ask:',
   '          - tool: edit', '            resource:', '              kind: any',
