@@ -39,6 +39,28 @@
  * fact set and the arm refuses EVERY run typed (P_PTC_ENVELOPE_UNEVIDENCED
  * / P_PTC_TARGET_UNEVIDENCED naming the missing fact) — the bridge never
  * launders a half-fed fact set into a mount.
+ *
+ * MOUNT STATUS — UNMOUNTED, P1 (root independent review, consolidated
+ * run_code card): the HOST 639 UNCONDITIONALLY reserves the name —
+ * registering or shadowing `run_code` THROWS (core/tools/src/index.ts:
+ * 1080-1081 "reserved for the PTC mode presentation transport and cannot
+ * be registered or shadowed"), so a definition-placement arm would hit the
+ * plane's PLANE_PLACEMENT_CONFLICT and roll back the ENTIRE plane, not
+ * just the run. The plane/bindings placement path was therefore REVERTED
+ * (forward commits); this module and `createGovernedRunCodeArm` stay
+ * PRESENT UNMOUNTED under the declared-inactive discipline as the audited
+ * evidence of the discovered conflict. The legitimate shape (root-allowed,
+ * NEXT card) interposes the EXISTING Guard/PA over the REAL public seams
+ * (`tools/pre-execute`, `tools.guard`, `tools/execute` next-waterfall —
+ * core/tools/src/index.ts:153/164/1136/1605), consumes the ONE grant, and
+ * then lets the RESERVED native `next()` run with its OWN guarantees
+ * mirrored by NOTHING (concurrency ptc.ts:334/495/660; cancellation
+ * rootCallId/parentToken/agent/signal :538-555; timeout+sandbox prepare
+ * :622, schemas :689, runtime.resolve/run :697-708). Zero shadow
+ * registration, zero new scheduling accounts. OBLIGATION LAW: the total
+ * dispatch budget (`runDispatchBudget`) STAYS a listed functional gap
+ * (zero face anywhere in the 639 tree) — its absence removes no native
+ * guarantee and no obligation is silently deleted.
  */
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 import {
@@ -48,6 +70,22 @@ import {
 } from './g3-fsproc-adapters.mjs'
 
 export const A5_G3_PTC_WIRING_REVISION = 1
+
+/** THE MOUNT CENSUS (root consolidated run_code card, P1): this bridge is
+ *  PRESENT UNMOUNTED — the host reserves `run_code` against registration
+ *  or shadowing (639 core/tools/src/index.ts:1080-1081), so the
+ *  definition-placement path would roll back the WHOLE plane at the
+ *  unified registration (PLANE_PLACEMENT_CONFLICT), and the mount status
+ *  rides EVERY census observation of this module so no consumer can read a
+ *  quiet "mounted" story. The obligation law (total dispatch budget
+ *  listed as the real functional gap, native guarantees untouched) is in
+ *  the header. */
+export const A5_G3_PTC_MOUNT_STATUS = Object.freeze({
+  mounted: false,
+  code: 'P1-HOST-FORBIDDEN-REGISTRATION',
+  evidence: '639 core/tools/src/index.ts:1080-1081 — "reserved for the PTC mode presentation transport and cannot be registered or shadowed"; unified-registration whole-plane rollback via PLANE_PLACEMENT_CONFLICT',
+  nextShape: 'scope-filtered tools/pre-execute + tools.guard + tools/execute(next) interposition, one consume, then the reserved native next() (root-allowed, next card)',
+})
 
 /** The one row this bridge mounts (the PLANE_RESERVED_NATIVE spelling,
  *  team-tool-plane.mjs C-16; this bridge places NOTHING under any other
@@ -185,9 +223,17 @@ export function buildG3RunCodeWiring (input = {}) {
   if (typeof bindingFacts !== 'function') return wiringRefuse(A5_G3_PTC_WIRING_CODES.INPUT_INVALID, "bindingFacts (toolName) => {bindingId, bindingRevision, policyGeneration, authorityGeneration} is REQUIRED — the CURRENT dispatcher binding of THAT tool's entry, read LIVE (the todo/write arm reader law)")
   if (typeof identityOf !== 'function') return wiringRefuse(A5_G3_PTC_WIRING_CODES.INPUT_INVALID, 'identityOf (placedDef) => string | null is REQUIRED — the plane\'s definitionIdentityOf seam; the arm binds the identity of the definition THIS mount places')
   if (typeof placementFeed !== 'function') return wiringRefuse(A5_G3_PTC_WIRING_CODES.INPUT_INVALID, 'placementFeed (name) => {definitionIdentity, realmId} | undefined is REQUIRED — the LAZY placement read; the entry re-verify and the registration key both ride it')
-  const paSeatOk = isRecord(pa) && typeof pa.open === 'function' && typeof pa.edge === 'function' && typeof pa.closePlan === 'function'
+  // THE REAL PA SEAT (P1 fix, root consolidated card): the plane's own
+  // `paAdmit` is an async FUNCTION carrying open / edge / closePlan as
+  // properties, passed through AS-IS on every row mount (`pa: paAdmit` —
+  // the plane types and hands it exactly so). A typeof-object check would
+  // trip RUNCODE_WIRE_INPUT_INVALID on the GENUINE seat and block the
+  // whole plane BEFORE any other law applies. The check therefore mirrors
+  // the real callable shape — never a fake plain object, never a duck,
+  // and the PA subject itself is never altered.
+  const paSeatOk = typeof pa === 'function' && typeof pa.open === 'function' && typeof pa.edge === 'function' && typeof pa.closePlan === 'function'
   if (!paSeatOk) {
-    return wiringRefuse(A5_G3_PTC_WIRING_CODES.INPUT_INVALID, 'pa is REQUIRED in its published shape — the plane\'s paAdmit face (callable or plain object) with open / edge / closePlan methods; with no admission seat no governed call may enter the body — never a duck, never input.admit{ok:true}')
+    return wiringRefuse(A5_G3_PTC_WIRING_CODES.INPUT_INVALID, 'pa is REQUIRED in the REAL published shape — the plane\'s paAdmit: a CALLABLE seat carrying open / edge / closePlan (typeof function + the three members; a plain-object duck or a memberless function is garbage and refuses); with no admission seat no governed call may enter the body — never input.admit{ok:true}')
   }
   const correlationOf = input.correlationOf === undefined
     ? (exec) => (isRecord(exec) && typeof exec.callId === 'string' && exec.callId.length > 0 ? exec.callId : null)
@@ -229,7 +275,7 @@ export function buildG3RunCodeWiring (input = {}) {
       status: 'DECLARED-INACTIVE',
       reason: native === undefined ? 'capture-absent' : 'registration-face-incomplete',
     }))
-    observe({ event: 'g3-ptc-wire:declared', name: A5_G3_RUN_CODE_TOOL_NAME, reason: native === undefined ? 'capture-absent' : 'registration-face-incomplete' })
+    observe({ event: 'g3-ptc-wire:declared', name: A5_G3_RUN_CODE_TOOL_NAME, reason: native === undefined ? 'capture-absent' : 'registration-face-incomplete', mount: A5_G3_PTC_MOUNT_STATUS })
   } else {
     const execute = async (args, exec) => {
       if (arm === null) {
@@ -361,7 +407,7 @@ export function buildG3RunCodeWiring (input = {}) {
     })
     rows.set(A5_G3_RUN_CODE_TOOL_NAME, Object.freeze({ status: 'ACTIVE', definition, definitionIdentity: identity }))
     definitions.push(definition)
-    observe({ event: 'g3-ptc-wire:mounted', name: A5_G3_RUN_CODE_TOOL_NAME })
+    observe({ event: 'g3-ptc-wire:mounted', name: A5_G3_RUN_CODE_TOOL_NAME, mount: A5_G3_PTC_MOUNT_STATUS })
   }
 
   // THE MOUNT-MOMENT REGISTRATION (the terminal law verbatim): the key is
