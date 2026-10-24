@@ -1,0 +1,44 @@
+{
+  "runner": "05-control-window-runner.mjs",
+  "scenario": "control-slice-83-85-84-identity",
+  "dry": false,
+  "booted": true,
+  "verdict": "FAIL",
+  "scopeNote": "consumption/EDIT leg NOT covered this window (explicitly UNTESTED, root a738 scope) — full C2 is NOT claimed by this receipt",
+  "ports": {
+    "host": 3184,
+    "mock": 3499
+  },
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T12-13-10-373ZZ",
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T12-13-10-373Z",
+  "checks": [
+    {
+      "criterion": "cleanup",
+      "name": "host port 3184 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "mock port 3499 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "host stop completed without error",
+      "ok": true,
+      "detail": "host stopped | mock closed"
+    },
+    {
+      "criterion": "fatal",
+      "name": "runner completed",
+      "ok": false,
+      "detail": "team.create: {\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5m2ctlhw-p-2026-10-24T12-13-10-373Z' failed: agent-bindings: alpha.5 governed spawn mount refused for 'session-a5m2ctlhw-p-2026-10-24T12-13-10-373Z': no native 'subagent' definition with an execute body is visible to this member scope — census 'always' records are"
+    }
+  ],
+  "stamps": {
+    "nonce": "9n541n",
+    "runStamp": "2026-10-24T12-13-10-373Z"
+  }
+}
