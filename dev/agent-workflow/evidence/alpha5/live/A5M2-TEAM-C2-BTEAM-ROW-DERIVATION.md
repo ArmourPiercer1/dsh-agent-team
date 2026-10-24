@@ -95,3 +95,24 @@ My kit has `validateRow()` (row-record level: family/rev/criteria/world/port/cei
 for the patch `config` is the packed `host.js` validator, which runs **only inside a booting Host** — so the draft
 above is validated against the validator's *code* (line-cited), not by executing it. `MOUNT-ASSEMBLY-INCOMPLETE`
 stays open until the six gaps above are answered by root/center; nothing here is booted, and no world was written.
+
+## 7) CLOSURE (same round, after center's six answers) — all six gaps resolved; `MOUNT-ASSEMBLY-INCOMPLETE` CLOSED
+
+| gap | resolution | evidence |
+|---|---|---|
+| `GAP-STATIC-MODEL` | **closed** — local scripted mock only (`provider: 'deepseek-official'`, `model: 'a5m2team-c2h1-gate-model'`), host pointed at `http://127.0.0.1:<mockPort>` with a **non-secret dummy** `DEEPSEEK_API_KEY`; localhost only, no external/paid LLM | boot body in the runner (`C-MOCK-MODEL` leg); decide = `makeLeaderMembersDecide` (exactly one `team_list_members` call, then done) |
+| `GAP-ENV-FACTS` | **closed as legal-empty** — `environmentFacts: []`, nothing asserted as available; `externalPolicyFacts: { hard: {}, capabilityExists: {} }` | center answer (2); row assembly `bteamRowConfig` |
+| `GAP-FS-ROOT` | **closed** — `fsInstance.rootDir` = THIS window HOME (`tests/homes/a5m2-team-c2-h1-<stamp>`) and nothing else, `kind: 'absolute-path'`, fs name `a5m2-team-c2-h1-governed`; r17's worktree-test-use root is NOT copied | `validateMountLayer` refuses any other rootDir and any path outside `tests/homes/` |
+| `GAP-REALM-NAMING` | **closed** — `realmId = a5m2-team-c2-h1--<stamp-suffix>` minted with the stamp, used identically at plane and `fsInstance` | `validateMountLayer` refuses a mismatch |
+| `GAP-PERMISSION-POLICY` | **closed from packed code** — the row declares **no** `permissionPolicy`; the glue supplies it from the blueprint's own template lanes: `live/agent-bindings.mjs:2310` `const permissionPolicy = boundTemplate.capabilities?.permissions`, and the plane refuses `NOT_GOVERNED` without it: `live/team-tool-plane.mjs:886-887`. The v3 blueprint's allow/ask/deny lanes keep REAL approvals; **no allow-all anywhere** (`validateMountLayer` refuses a leaked lane, `ATODO_PLANE_KEYS` also blocks a row-level `permissionPolicy`) | both cited lines + the validator |
+| `GAP-LEADER-SESSION-DERIVATION` | **closed from packed code** — the leader IS the team root session: `live/agent-bindings.mjs:4744` `role: sessionId === String(teamRoot) ? 'leader' : 'member'`, restated at `:7612` ("the leader IS the root session"); the driver therefore takes the leader session from THIS create answer's `rootSessionId` at runtime and never hard-fills an older id | both cited lines; `C-LEADER-BINDING` leg |
+
+Executed without a Host (`--window-replay`, direct `REPLAY_RC_DIRECT=0`, 13/13 legs green, saved as
+`A5M2-TEAM-C2-WINDOW1-REPLAY.json`): fresh-home path+stamp, ceilings 300000 ms / 67108864 B, mount from the
+package's own exports, artifact gate (`gate_status=ok id=team.a5nx-main revision=1`), identity preflight,
+row assembled, mount-layer validated, profile layer rendered (34 lines, `blueprintSource` inlined per the r17
+mechanism), permission source, leader binding, mock decide. `node --check` 0, cold import 0, selftest 0
+(`contractTrueCount: 37, contractFalse: []`).
+**Still Host-gated and NOT executed:** `C-BOOT`, `C-READINESS-BARRIER`, `C-CREATE-ONCE`, `C-LEADER-MEMBERS`,
+`teardown` — the layer is written only inside the window, and the profile patch file has still never been read
+by a booting Host, so `C-MOUNT-BOOTED` is asserted nowhere. Nothing booted, no world written by this round.
