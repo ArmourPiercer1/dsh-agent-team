@@ -1,0 +1,33 @@
+// forks/dsh-schedule/tsconfig.json — the fork PACKAGE boundary (root
+// c925 CI correction 2026-10-26): the fork compiles under the SAME
+// conventions the upstream 639 monorepo uses for this package
+// (allowImportingTsExtensions + rewriteRelativeImportExtensions — the
+// upstream tsconfig.base.json facts), scoped to THIS package only. No
+// repo-wide tsconfig is touched; no ts-ignore; dynamic string hiding is
+// absent — every dependency is declared in package.json and supplied
+// from the existing pnpm store (scripts/provision-store-deps.mjs).
+{
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2024"],
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": false,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}
