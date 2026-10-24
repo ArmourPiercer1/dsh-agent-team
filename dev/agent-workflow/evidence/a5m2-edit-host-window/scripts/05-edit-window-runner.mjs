@@ -14,9 +14,12 @@
  *
  * PRODUCT is an EXPLICIT INPUT, never an old pin (root: no 161e4/699cc/874f
  * masquerading as the new pack):
- *   A5M2_EDIT_PACK_TGZ      path to the f86-produced tgz (sole pack owner)
- *   A5M2_EDIT_PACK_SHA256   its exact sha256 (measured and compared here)
- *   A5M2_EDIT_COMPOSED_SHA  MUST equal 5c31341803318ab35465908bf93b1f77f5cad16a
+ *   A5M2_EDIT_INSTALL_DIR   the f86-built fixture install dir (READ-ONLY
+ *                           reuse; default is f86's named path below). The
+ *                           runner NEVER installs, lock-updates or chmods —
+ *                           root FS narrow-audit order (a recursive chmod
+ *                           would reach the shared store's hardlinks).
+ *   A5M2_EDIT_COMPOSED_SHA  optional; when given MUST equal the pinned product
  * This runner's own full SHA is recorded separately (runner-identity.json).
  *
  * Evidence law: RUN_DIR keeps raw transcripts/instance logs; the HOME world is
@@ -27,7 +30,7 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../../../tests/paths.mjs'
 import { DshInstance } from '../../../../../tests/characterization/lib/instance.mjs'
@@ -44,37 +47,26 @@ const WORLD_PREFIX = 'a5m2-edit-hw-a'
 const BP_ID = 'team.a5m2-edit-hw'
 const WINDOW_GO = process.env.A5M2_EDIT_WINDOW === 'GRANTED'
 const DRY = process.env.A5M2_EDIT_DRY === '1'
-const PACK_TGZ = process.env.A5M2_EDIT_PACK_TGZ ?? null
-const PACK_SHA = process.env.A5M2_EDIT_PACK_SHA256 ?? null
+const INSTALL_DIR = process.env.A5M2_EDIT_INSTALL_DIR ?? '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2/'
 const PACK_COMPOSED = process.env.A5M2_EDIT_COMPOSED_SHA ?? null
+const EXPECTED_PACK_SHA = 'sha256:0a3f11b2c07178cd5377debb11c221fac23d963c666a7a2688ba446168d50b6b' // the f86 tgz of 5c313418, pinned
+const EXPECTED_TGZ_NAME = 'dsh-agent-team-0.1.1-alpha.2.tgz'
+const EXPECTED_TGZ_DIR = 'out-5c313418-20261024T082308Z'
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
   process.exit(3) // NOT_RUN is NON-ZERO by root order
 }
 if (!WINDOW_GO && !DRY) notRun('window env A5M2_EDIT_WINDOW not GRANTED (root ruling pending) — nothing booted')
-if (PACK_TGZ === null || PACK_SHA === null) notRun('explicit product inputs missing: A5M2_EDIT_PACK_TGZ + A5M2_EDIT_PACK_SHA256 are REQUIRED (no old pins)')
 if (PACK_COMPOSED !== null && PACK_COMPOSED !== COMPOSED_SHA) notRun(`A5M2_EDIT_COMPOSED_SHA ${PACK_COMPOSED} is not the pinned product ${COMPOSED_SHA}`)
-if (!PACK_SHA.startsWith('sha256:')) notRun('A5M2_EDIT_PACK_SHA256 must carry the sha256: prefix')
 
 const ROOT_DIR = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
 if (ROOT_DIR === null) { console.error('findTestRepoRoot returned null'); process.exit(3) }
 const HOST_TREE = join(ROOT_DIR, 'tests', 'deepseek-harness-test-use')
 if (!existsSync(HOST_TREE)) notRun(`639 host checkout absent at ${HOST_TREE}`)
 
-// fixture + warm store: this tree first, main checkout fallback (both are the
-// SAME fs; the reused trees are verified read-only and never written).
-function fixtureHomes() {
-  for (const base of [join(ROOT_DIR, 'tests', 'homes'), '/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes']) {
-    if (existsSync(join(base, '.a5m2-bf4-fixture-20261023T20-55-19Z', 'install', 'pnpm-lock.yaml'))) return base
-  }
-  return null
-}
-const HOMES_BASE = fixtureHomes()
-if (HOMES_BASE === null) notRun('bf4 fixture install absent in both candidate tests/homes')
-const FIXTURE_DIR = join(HOMES_BASE, '.a5m2-bf4-fixture-20261023T20-55-19Z', 'install')
-const FIXTURE_LOCK_SHA256 = '163ed8991902f7dc07fd828181c0184cb09377a1aa28cbb0fff0cc6bd788310c'
-const STORE = join(HOMES_BASE, '.pnpmm-r18-store')
+// (root FS narrow-audit: the old bf4 fixture/lock/store preconditions are REMOVED;
+// the only install face is the f86 fixture below, read-only.)
 
 const ANCHOR_V3_YAML = [
   '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}.boot-anchor`, 'revision: "1"',
@@ -160,15 +152,23 @@ async function cleanup() {
 }
 
 // ── explicit product pin (fail closed) ─────────────────────────────────────
-const tgzPath = PACK_TGZ.startsWith('/') ? PACK_TGZ : join(ROOT_DIR, PACK_TGZ)
-if (!existsSync(tgzPath)) notRun(`f86 pack tgz absent: ${tgzPath}`)
-if (!existsSync(tgzPath) || !/^dsh-agent-team-.*\.tgz$/.test(tgzPath.split('/').pop() ?? '')) { console.error('pack tgz name mismatch'); process.exit(3) }
-if (statSync(tgzPath).size > PACK_BYTES_MAX) { console.error('pack bytes exceed the bound'); process.exit(3) }
-if (`sha256:${sha256(tgzPath)}` !== PACK_SHA) { console.error(`pack sha256 drifted from the explicit input ${PACK_SHA}`); process.exit(2) }
-const fixtureLockPath = join(FIXTURE_DIR, 'pnpm-lock.yaml')
-const fixtureManifestPath = join(FIXTURE_DIR, 'package.json')
-if (sha256(fixtureLockPath) !== FIXTURE_LOCK_SHA256) { console.error('bf4 fixture lock drifted'); process.exit(3) }
-if (!existsSync(STORE)) { console.error(`warm store absent: ${STORE}`); process.exit(3) }
+// ── ② explicit f86 fixture reuse (READ-ONLY; absent => fail-closed rc3) ───
+if (!existsSync(INSTALL_DIR)) notRun(`f86 fixture install dir absent (f86 step-0 pending; this runner does NOT create or install it): ${INSTALL_DIR}`)
+{
+  const fixManifestPath = join(INSTALL_DIR, 'package.json')
+  if (!existsSync(fixManifestPath)) { console.error(`fixture manifest absent: ${fixManifestPath}`); process.exit(3) }
+  const fixDeps = JSON.parse(readFileSync(fixManifestPath, 'utf8'))?.dependencies?.['dsh-agent-team']
+  if (typeof fixDeps !== 'string' || !fixDeps.startsWith('file:')) { console.error(`fixture manifest plugin file: entry missing (got ${JSON.stringify(fixDeps)})`); process.exit(3) }
+  const fileTarget = fixDeps.slice('file:'.length)
+  const resolvedTgz = fileTarget.startsWith('/') ? fileTarget : resolve(INSTALL_DIR, fileTarget)
+  if (basename(resolvedTgz) !== EXPECTED_TGZ_NAME || basename(dirname(resolvedTgz)) !== EXPECTED_TGZ_DIR) { console.error(`fixture file: target is NOT the new pack: ${resolvedTgz}`); process.exit(3) }
+  if (!existsSync(resolvedTgz)) { console.error(`new pack tgz absent behind the fixture pointer: ${resolvedTgz}`); process.exit(3) }
+  if (statSync(resolvedTgz).size > PACK_BYTES_MAX) { console.error('pack bytes exceed the bound'); process.exit(3) }
+  if (`sha256:${sha256(resolvedTgz)}` !== EXPECTED_PACK_SHA) { console.error(`pack sha256 drifted from the pinned ${EXPECTED_PACK_SHA}`); process.exit(2) }
+  var tgzPath = resolvedTgz
+}
+const PKG_DIR_READ = join(INSTALL_DIR, 'node_modules', 'dsh-agent-team')
+if (!existsSync(PKG_DIR_READ)) notRun(`f86 fixture not yet installed (node_modules/dsh-agent-team absent): ${PKG_DIR_READ}`)
 
 function writePatch(patchPath, hostEntryHref) {
   mkdirSync(dirname(patchPath), { recursive: true })
@@ -340,74 +340,26 @@ async function main() {
   if (hostBusy || mockBusy) throw new Error(`ports busy at start: host=${hostBusy} mock=${mockBusy} (plan: 3183/3498; 3080 stable, 3180/3181 durable never touched)`)
   if (existsSync(HOME) && readdirSync(HOME).length > 0) throw new Error(`home ${HOME} exists non-empty — fail closed`)
   for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), FSROOT, RUN_DIR]) mkdirSync(p, { recursive: true })
-  writeFileSync(join(HOME, 'a5m2-edit-hw-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, runner: '05-edit-window-runner.mjs', composedSha: COMPOSED_SHA, packSha256: PACK_SHA, stamp: RUN_STAMP }, null, 2))
+  writeFileSync(join(HOME, 'a5m2-edit-hw-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, runner: '05-edit-window-runner.mjs', composedSha: COMPOSED_SHA, packSha256: EXPECTED_PACK_SHA, stamp: RUN_STAMP }, null, 2))
   try {
     const selfSha = execFileSync('git', ['-C', ROOT_DIR, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-    writeFileSync(join(RUN_DIR, 'runner-identity.json'), JSON.stringify({ runnerFullSha: selfSha, runnerFileSha256: sha256(fileURLToPath(import.meta.url)), composedSha: COMPOSED_SHA, packTgz: tgzPath, packSha256: PACK_SHA, armBlobExpectations: { edit: EDIT_BLOB_EDIT, sre: EDIT_BLOB_SRE } }, null, 2))
+    writeFileSync(join(RUN_DIR, 'runner-identity.json'), JSON.stringify({ runnerFullSha: selfSha, runnerFileSha256: sha256(fileURLToPath(import.meta.url)), composedSha: COMPOSED_SHA, packTgz: tgzPath, packSha256: EXPECTED_PACK_SHA, installDir: INSTALL_DIR, armBlobExpectations: { edit: EDIT_BLOB_EDIT, sre: EDIT_BLOB_SRE } }, null, 2))
   } catch { /* identity best-effort; window verdict never depends on it */ }
   // the governed target file, under the fsInstance rootDir = THIS world
   writeFileSync(join(FSROOT, 'notes.txt'), 'alpha\nbeta\ngamma\n', 'utf8')
 
-  // install: fixture manifest/lock + ONLY the file: entry (fourth-window chain)
-  const INSTALL = join(HOME, `install-${PACK_SHA.slice('sha256:'.length, 'sha256:'.length + 9)}`)
-  mkdirSync(INSTALL, { recursive: true })
-  const fixtureManifest = JSON.parse(readFileSync(fixtureManifestPath, 'utf8'))
-  writeFileSync(join(INSTALL, 'package.json'), JSON.stringify({
-    name: fixtureManifest.name, version: fixtureManifest.version, private: true,
-    dependencies: { ...fixtureManifest.dependencies, 'dsh-agent-team': `file:${tgzPath}` },
-  }, null, 2))
-  writeFileSync(join(INSTALL, 'pnpm-lock.yaml'), readFileSync(fixtureLockPath, 'utf8'))
-  const lockLogFd = openSync(join(RUN_DIR, 'lockupdate.log'), 'a')
-  execFileSync('pnpm', ['install', '--lockfile-only', '--ignore-workspace', `--store-dir=${STORE}`], { cwd: INSTALL, stdio: ['ignore', lockLogFd, lockLogFd] })
+  // ── ②③ REAL entry resolution from the f86 fixture (READ-ONLY: no install,
+  // no lockfile-only, no chmod — root FS narrow-audit order) ──────────────
   {
-    // fourth-window substance diff gate: no base package may be REMOVED, no
-    // base edge BROKEN, no base package NAME may move VERSION; additions are
-    // recorded (only the file: entry plus base-referenced material).
-    const yaml = (await import('yaml')).default ?? (await import('yaml'))
-    const baseLock = yaml.parse(readFileSync(fixtureLockPath, 'utf8'))
-    const newLock = yaml.parse(readFileSync(join(INSTALL, 'pnpm-lock.yaml'), 'utf8'))
-    const strip = (key) => key.split('(')[0]
-    const edgeSet = (lock) => {
-      const out = new Set()
-      for (const [k, v] of Object.entries(lock?.snapshots ?? {})) {
-        const self = strip(k)
-        for (const [name, ver] of Object.entries({ ...(v?.dependencies ?? {}), ...(v?.optionalDependencies ?? {}) })) out.add(`${self} -> ${name}@${String(ver).split('(')[0]}`)
-      }
-      return out
-    }
-    const pkgSet = (lock) => new Set(Object.keys(lock?.snapshots ?? {}).map(strip))
-    const versionsByName = (set) => {
-      const m = new Map()
-      for (const p of set) {
-        const at = p.lastIndexOf('@')
-        if (!m.has(p.slice(0, at))) m.set(p.slice(0, at), new Set())
-        m.get(p.slice(0, at)).add(p.slice(at + 1))
-      }
-      return m
-    }
-    const basePkgs = pkgSet(baseLock); const newPkgs = pkgSet(newLock)
-    const baseEdges = edgeSet(baseLock); const newEdges = edgeSet(newLock)
-    const removedPkgs = [...basePkgs].filter((p) => !newPkgs.has(p))
-    const brokenEdges = [...baseEdges].filter((e) => !newEdges.has(e))
-    const baseV = versionsByName(basePkgs); const newV = versionsByName(newPkgs)
-    const movedNames = [...baseV.keys()].filter((n) => [...(baseV.get(n) ?? [])].some((v) => !(newV.get(n) ?? new Set()).has(v)))
-    writeFileSync(join(RUN_DIR, 'lock-diff.json'), JSON.stringify({ removedPkgs, movedNames, brokenEdges, addedCount: [...newPkgs].filter((p) => !basePkgs.has(p)).length }, null, 2))
-    if (removedPkgs.length > 0 || brokenEdges.length > 0 || movedNames.length > 0) throw new Error(`lock update NOT minimal: removed=${removedPkgs.length} moved=${movedNames.join(',') || '-'} brokenEdges=${brokenEdges.length}`)
-    log('lock diff gate: base packages/edges preserved, zero version moves — minimal update verified')
+    const installedManifest = JSON.parse(readFileSync(join(PKG_DIR_READ, 'package.json'), 'utf8'))
+    const hostExport = installedManifest?.exports?.['./host']
+    if (typeof hostExport !== 'string') throw new Error('fixture plugin exports["./host"] missing')
+    var HOST_ENTRY = resolve(PKG_DIR_READ, hostExport.replace(/^\.\//, ''))
+    if (!existsSync(HOST_ENTRY)) throw new Error(`host entry absent: ${HOST_ENTRY}`)
+    var distArm = join(PKG_DIR_READ, 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/edit.mjs')
+    if (!existsSync(distArm)) throw new Error(`the f86 fixture carries NO dist edit arm: ${distArm}`)
+    log(`plugin entry resolved from the f86 fixture exports['./host']: ${HOST_ENTRY}; dist edit arm present`)
   }
-  const installLogFd = openSync(join(RUN_DIR, 'install.log'), 'a')
-  execFileSync('pnpm', ['install', '--frozen-lockfile', '--offline', '--ignore-workspace', '--ignore-scripts', `--store-dir=${STORE}`], { cwd: INSTALL, stdio: ['ignore', installLogFd, installLogFd] })
-  execFileSync('chmod', ['-R', 'a-w', INSTALL], { stdio: 'ignore' })
-  const PKG_DIR = join(INSTALL, 'node_modules', 'dsh-agent-team')
-  const installedManifest = JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8'))
-  const hostExport = installedManifest?.exports?.['./host']
-  if (typeof hostExport !== 'string') throw new Error('installed exports["./host"] missing')
-  const HOST_ENTRY = join(PKG_DIR, hostExport.replace(/^\.\//, ''))
-  if (!existsSync(HOST_ENTRY)) throw new Error(`host entry absent: ${HOST_ENTRY}`)
-  // the DIST ARM actually inside the new pack (same-blob release law)
-  const distArm = join(PKG_DIR, 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/edit.mjs')
-  if (!existsSync(distArm)) throw new Error(`the installed pack carries NO dist edit arm: ${distArm}`)
-  log(`plugin entry via exports['./host']; dist edit arm present in pack: ${distArm}`)
   writeFileSync(join(HOME, 'blueprints', 'a5m2-edit-hw.yaml'), SAVED_BP_V3_YAML)
 
   if (DRY) {
