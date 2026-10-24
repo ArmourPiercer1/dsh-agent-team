@@ -76,7 +76,11 @@ export declare function createG2TeamMount (input?: G2TeamMountInput): Promise<G2
  *  `entries` when ARMED is the PRODUCER-RESOLVED browser pair — THE single
  *  source per the root final card (identity-consumed, never re-resolved);
  *  `entriesProvenance` records the ACTUAL source and rides the supply.
- *  `entryPaths` is a deployment input for the un-armed loader world. */
+ *  `entryPaths` is a deployment input: when ARMED the old browser loader
+ *  NEVER runs (root 05:27 residual — the old launchEntry/workerEntry are
+ *  preconditions of nothing; only `sdkClientEntry` may load the SDK Client
+ *  independently, typed refusal on a no-Client answer); un-armed the SIGNED
+ *  loader path is byte-identical to before. */
 export interface G2AssemblySupplyInput {
   entryPaths?: { launchEntry?: string, workerEntry?: string, sdkClientEntry?: string } | null
   entries?: { launchChromium?: unknown, openBrowserWorker?: unknown, Client?: unknown, [key: string]: unknown } | null
