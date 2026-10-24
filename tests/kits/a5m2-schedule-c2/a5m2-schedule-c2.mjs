@@ -545,12 +545,31 @@ async function main() {
       TRANSCRIPT.push({ channel: 'receipt', kind: 'member-tool-surface', tools: memberToolsSeen })
     }
     for (const m of req?.messages ?? req?.body?.messages ?? []) { // ⑨ role:tool correlation
-      if (m?.role !== 'tool') continue
-      const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
-      const txt = typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '')
-      if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
+      if (m?.role === 'tool') {
+        const callId = typeof m?.tool_call_id === 'string' ? m.tool_call_id : ''
+        const txt = typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '')
+        if (callId.length > 0 && !callResults.some((r) => r.callId === callId)) {
+          const known = steps.get(callId)
+          callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: txt })
+        }
+        continue
+      }
+      // Root reviewer card (388 harvest only knew role:tool): the real Host
+      // Messages are NATIVE shape — assistant.content carries {type:'tool_use',
+      // id} blocks and user.content carries {type:'tool_result', tool_use_id,
+      // content, is_error} blocks (image b811 proven block shapes, helper
+      // :725-775). Pair ONLY against ids this mock issued (steps map = same
+      // call), feeding the SAME callResults sink so resultFor/emitOrClose see
+      // them. Otherwise later resultFor would time out.
+      if (!Array.isArray(m?.content)) continue
+      for (const b of m.content) {
+        if (b?.type !== 'tool_result') continue
+        const callId = typeof b.tool_use_id === 'string' ? b.tool_use_id : ''
+        if (callId.length === 0 || callResults.some((r) => r.callId === callId)) continue
         const known = steps.get(callId)
-        callResults.push({ callId, step: known?.step ?? null, toolName: known?.tool ?? 'unknown', text: txt })
+        if (known === undefined) continue // same-call pairing only
+        const txt = typeof b.content === 'string' ? b.content : JSON.stringify(b.content ?? '')
+        callResults.push({ callId, step: known.step, toolName: known.tool, text: txt, isError: b.is_error === true })
       }
     }
   }
