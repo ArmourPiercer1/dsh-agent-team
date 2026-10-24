@@ -7420,6 +7420,14 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             const disposer = agentCtx.tools.register(def)
             disposers.push(disposer)
           } catch (error) {
+            // THE mount is DEAD from THIS first statement (root limited
+            // ruling 2026-10-24): every rollback disposer fires
+            // tools/change SYNCHRONOUSLY, so the terminal flag lands
+            // BEFORE any disposer or observe runs — a pending arm woken
+            // inside the rollback can no longer complete an attach
+            // against a surface that is being torn down.
+            spawnMountTerminal = true
+            spawnMountMounted = false
             for (const d of disposers.reverse()) {
               try {
                 if (typeof d === 'function') d()
@@ -7429,10 +7437,6 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
               }
             }
             observe(`a5-plane: placement-REFUSED name=${def.name} (${String(error?.message ?? error).slice(0, 160)}) — unknown attribution fails closed`)
-            // the mount is DEAD: no late attach may arm against a
-            // rolled-back placement surface (root narrow review).
-            spawnMountTerminal = true
-            spawnMountMounted = false
             return { ok: false, code: 'PLANE_PLACEMENT_CONFLICT', name: def.name, message: String(error?.message ?? error) }
           }
         }
@@ -7445,6 +7449,15 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // typed refusal, never a governance arming against a dead mount.
             spawnMountTerminal = true
             spawnMountMounted = false
+            // The ATTACHED wiring's new calls END with the mount (root
+            // terminal card 2026-10-24): the adapter's own drain law
+            // refuses them typed, and the face stops answering — the ONE
+            // live fact the owner's hook reads before AND after its PA
+            // walk. The hook is never removed to leave a live native
+            // running bare: the refusal gate stays until the ctx itself
+            // dies (root ruling: 不可仅移除hook让native裸跑).
+            try { spawnAttachedWiring?.drain?.() } catch { /* best-effort; the refusal stands */ }
+            spawnAttachedWiring = null
             // A5-M2: no hand-off survives its mount — claimed or not, the
             // flight, the unspent grant and the plan fact die with the
             // placement (teardown law, independent of the terminal observer).

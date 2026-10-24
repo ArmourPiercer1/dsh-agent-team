@@ -381,8 +381,10 @@ function mirrorBind(ctx: MemberCtx, plane: PlaneValue): { wiring: SpawnWiringVal
       if (live === undefined || capturedFace === undefined || live !== capturedFace) {
         throw new Error(`a5m2-spawn: the live '${exec.name}' face is not the captured ORIGINAL — DRIFT refuses before the body`)
       }
+      if (plane.backends['spawn'] !== wiring) throw new Error('DEAD-MOUNT refuses before the PA walk — the native body does not execute unmanaged')
       await wiring.admitOnly(exec.name, exec as unknown as Record<string, unknown>)
       if (!governed.value) throw new Error('the lane closed during the PA walk — the body is not entered')
+      if (plane.backends['spawn'] !== wiring) throw new Error('the mount carrying this wiring died during the PA walk — the body is entered ZERO times and next is never called')
       if (exec.signal?.aborted === true) throw new Error('aborted after the PA walk — the consumption stands as ledger truth, the body is entered zero times')
       const after = ctx.layerFace(exec.name)
       if (after === undefined || capturedFace === undefined || after !== capturedFace) {
@@ -542,7 +544,7 @@ describe('a5m2-spawn-bind-after-def ② the preset world: natives occupy the lay
 })
 
 describe('a5m2-spawn-bind-after-def ③ TERMINAL and one-shot attach law', () => {
-  it('a FAILED mount and a DISPOSED mount both end attach legality (TERMINAL, checked FIRST); a spent arm answers DONE', () => {
+  it('a FAILED mount and a DISPOSED mount both end attach legality (TERMINAL, checked FIRST); a spent arm answers DONE', async () => {
     // failed mount: the placement surface refuses every register.
     const dead = buildPlane({ backends: { spawnPending: { names: [...NAMES] } } })
     if (dead.ok !== true) throw new Error('pending build refused')
@@ -568,6 +570,51 @@ describe('a5m2-spawn-bind-after-def ③ TERMINAL and one-shot attach law', () =>
     expect(live.value.attachSpawn(wiring).code).toBe('SPAWN_ATTACH_MOUNT_TERMINAL')
     // attach registered NOTHING (the layer still holds exactly the natives).
     for (const name of NAMES) expect(ctx.layerFace(name)).toBe(REAL_NATIVES[name])
+    // TERMINAL drains the ATTACHED wiring (root terminal card): the face
+    // stops answering and NEW calls meet the adapter's own drain refusal.
+    expect(live.value.backends['spawn']).toBeUndefined()
+    const late = await wiring.admitOnly('list_subagent_models', { callId: 'call-late-bad' }).then(() => null, (error: unknown) => error as Error)
+    expect(late).toBeInstanceOf(Error)
+    expect(late?.message ?? '').toContain('DRAINING')
+  })
+})
+
+describe('a5m2-spawn-bind-after-def ③b the REFUSAL GATE survives mount.dispose (terminal card)', () => {
+  it('mount.dispose mid-PA: the flight that returns AFTER the dispose enters NO body; the next call meets DEAD-MOUNT at the gate — the hook is never removed to leave the native bare', async () => {
+    SERVICE_STARTS.length = 0
+    CONTINUABLE.length = 0
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    let openGate!: () => void
+    const gate = new Promise<void>((resolve) => { openGate = resolve })
+    const inner = mintingControlLeg(seen)
+    const plane = buildPlane({
+      backends: { spawnPending: { names: [...NAMES] } },
+      controlLeg: async (input: Parameters<typeof inner>[0]) => { await gate; return await inner(input) },
+    })
+    if (plane.ok !== true) throw new Error('pending build refused')
+    const ctx = memberCtx()
+    const mounted = plane.value.mount(ctx)
+    expect(mounted.ok).toBe(true)
+    for (const name of NAMES) ctx.tools.register(nativeOf(name))
+    mirrorBind(ctx, plane.value)
+    // ONE flight in flight while the control leg holds the PA walk open.
+    const inflight = ctx.dispatch('subagent_codex', { description: 'd', prompt: 'p' }, { id: 'tok-inflight' })
+    await new Promise((resolve) => { setTimeout(resolve, 0) })
+    await new Promise((resolve) => { setTimeout(resolve, 0) })
+    if (mounted.dispose === undefined) throw new Error('the mount carries no disposer')
+    mounted.dispose()
+    openGate()
+    const outcome = await inflight
+    expect(outcome.error).toBeInstanceOf(Error)
+    expect(outcome.nextCalls).toBe(0)
+    expect(SERVICE_STARTS.length + CONTINUABLE.length).toBe(0)
+    // A NEW call after the dispose: the hook STILL listens and the SAME
+    // live fact refuses at the gate (拒绝门保留 — a bare native never runs).
+    const after = await ctx.dispatch('subagent_codex', { description: 'd', prompt: 'p' }, { id: 'tok-after-dispose' })
+    expect(after.error).toBeInstanceOf(Error)
+    expect(after.error?.message ?? '').toContain('DEAD-MOUNT')
+    expect(after.nextCalls).toBe(0)
+    expect(SERVICE_STARTS.length + CONTINUABLE.length).toBe(0)
   })
 })
 
@@ -620,8 +667,21 @@ describe('a5m2-spawn-bind-after-def ④ the production lane carries the same law
     const mount = PLANE.slice(PLANE.indexOf('mount: (agentCtx) =>'), PLANE.indexOf('observe(`a5-plane: placed'))
     expect(mount).toContain('spawnMountTerminal = true')
     expect(mount).toContain('spawnMountMounted = false')
+    // CATCH ENTRY FIRST (root limited ruling 2026-10-24): the terminal flag
+    // lands BEFORE any rollback disposer fires tools/change synchronously.
+    expect(PLANE.indexOf('spawnMountTerminal = true')).toBeLessThan(PLANE.indexOf('disposers.reverse()'))
     const dispose = PLANE.slice(PLANE.indexOf('observe(`a5-plane: placed'))
     expect(dispose.indexOf('spawnMountTerminal = true')).toBeLessThan(dispose.indexOf('A5-M2: no hand-off survives'))
+    // TERMINAL drains the ATTACHED wiring and flips the live face the hook
+    // reads (root terminal card): the refusal gate stays, never a bare run.
+    expect(dispose).toContain('spawnAttachedWiring?.drain?.()')
+    expect(dispose.indexOf('spawnMountTerminal = true')).toBeLessThan(dispose.indexOf('spawnAttachedWiring?.drain?.()'))
+    expect(dispose).toContain('spawnAttachedWiring = null')
+    // the hook reads the SAME live fact before AND after the PA walk.
+    const hookBlock = lane.slice(lane.indexOf("ctx.on('tools/execute'"), lane.indexOf('THE FAMILY CLAIM'))
+    expect(hookBlock.split('backends?.spawn !== wiring').length - 1).toBe(2)
+    expect(hookBlock).toContain('DEAD-MOUNT refuses before the PA walk')
+    expect(hookBlock).toContain('died during the PA walk')
   })
 
   it('the plane build keeps the single conjunct + the pending arm row; the family fill stays SINGLE', () => {

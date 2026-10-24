@@ -3946,6 +3946,16 @@ export function createAgentBindings(deps) {
                     if (liveFace === undefined || liveFace !== spawnCaptured[exec?.name]?.native) {
                       throw new Error(`a5m2-spawn: the live '${String(exec?.name)}' face is not the captured ORIGINAL — DRIFT refuses before the body`)
                     }
+                    // THE SAME LIVE FACT, read BEFORE and AFTER the PA walk
+                    // (root terminal card 2026-10-24): the backends face is
+                    // exactly what the mount's dispose flips (drain + null).
+                    // A disposed or rolled-back mount therefore refuses —
+                    // the hook is NEVER removed to leave the live native
+                    // running bare (拒绝门保留), and no new ledger/face is
+                    // invented for this check.
+                    if (spawnDeferPlane?.backends?.spawn !== wiring) {
+                      throw new Error(`a5m2-spawn: '${String(exec?.name)}' is not carried by a live mount (disposed or rolled back) — DEAD-MOUNT refuses before the PA walk, the native body does not execute unmanaged`)
+                    }
                     await wiring.admitOnly(exec?.name, exec)
                     // POST-AWAIT rechecks (the schedule law): the lane still
                     // governs, the caller never aborted, the face stands. A
@@ -3956,6 +3966,9 @@ export function createAgentBindings(deps) {
                     }
                     if (exec?.signal?.aborted === true) {
                       throw new Error(`a5m2-spawn: '${String(exec?.name)}' aborted after the PA walk — the consumption stands as ledger truth, the body is entered zero times`)
+                    }
+                    if (spawnDeferPlane?.backends?.spawn !== wiring) {
+                      throw new Error(`a5m2-spawn: the mount carrying this wiring died during the PA walk — the body is entered ZERO times and next is never called`)
                     }
                     const faceAfter = readSpawnFace(String(exec?.name))
                     if (faceAfter === undefined || faceAfter !== spawnCaptured[exec?.name]?.native) {
