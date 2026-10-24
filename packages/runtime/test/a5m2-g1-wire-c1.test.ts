@@ -50,7 +50,22 @@
  *    at the validator, measured but never claimed as a consumption event);
  *  - the three pre-existing target rules (B-SESSION/B-WRITE/B-IMAGE) are
  *    byte-identical: their own targets still pass, the B-INSPECT leaves are
- *    refused as foreign keys there.
+ *    refused as foreign keys there;
+ *  - the MOUNT-ARM section (center 01:1x/01:4x; agent-bindings `g1PureQuery`
+ *    block) drives the G1-WIRE lane's REAL production assembly module
+ *    (`createG1QueryAssembly` → `place()` → `registerAfterPublish()`) through
+ *    a seam bag that MIRRORS the block's seams one-for-one (live scoped
+ *    registry reads, the per-row live binding-facts reader law, the five
+ *    trusted TARGETS facts, the placement feed answering the RUNTIME identity
+ *    of the placed def, the plane's REAL paAdmit funnel): the minted
+ *    `def#N`-class identities are the REAL `definitionIdentityOf` mints, the
+ *    family rows are written through the PRODUCTION registry table, and the
+ *    wired def then walks the SAME real ControlService chain end to end. The
+ *    arm block itself lives inside `createAgentBindings`, which no in-repo
+ *    spec has ever driven (it needs a live Host agent ctx — the
+ *    a5m2-provider-identity-c1 FP-B disclosure, verbatim law): so the block's
+ *    OWN code is pinned at source level there, and its runtime behavior on a
+ *    real Host mount stays a Host verification point, never a claim here.
  *
  * Disclosure (the lane/bridge specs own the REAL halves): the native
  * definitions are host-`defineTool` products whose bodies mirror the pinned
@@ -65,7 +80,7 @@
  * @module @dsh-agent-team/runtime/test/a5m2-g1-wire-c1
  */
 import { describe, it, expect, afterAll } from 'vitest'
-import { mkdirSync, rmSync, existsSync } from 'node:fs'
+import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -90,7 +105,7 @@ import type { ControlRequestRecord, ControlService } from '../control/index.js'
 import { parsePaControlManifest, validatePaFamilyTarget } from '../control/types.js'
 import type { PaCallFactsCeilingSlot } from '../control/types.js'
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
-import { untestedAssurance } from '../tool-dispatch/index.js'
+import { definitionIdentityOf, installScopedToolGuard, type ScopedGuardAgentCtx, untestedAssurance } from '../tool-dispatch/index.js'
 import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
 import {
@@ -247,6 +262,9 @@ const registryModule = (await import(new URL('../src/plugin/live/pa-mount-regist
   A5_GOVERNED_FAMILIES: Record<string, { familyId: string; adapterRevision: number; providerIdentity: string }>
   a5GovernedFamilyFor: (definitionIdentity: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
   registerA5GovernedFamily: (definitionIdentity: string, entry: { familyId: string; adapterRevision: number; providerIdentity: string }) => void
+  readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<{ kind: string; facts: Record<string, unknown> } | undefined>
+  publishPaMount: (teamRoot: string, instanceId: string, mount: Record<string, unknown>) => unknown
+  resolvePaMount: (teamRoot: string, instanceId: string) => Record<string, unknown> | undefined
 }
 const familyTable = registryModule.A5_GOVERNED_FAMILIES
 const a5GovernedFamilyFor = registryModule.a5GovernedFamilyFor
@@ -1221,5 +1239,511 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
       return m
     })()
     expect(String(other?.parametersFingerprint)).not.toBe(String(manifest?.parametersFingerprint))
+  })
+})
+// ── MOUNT-ARM (center 01:1x/01:4x; root 841 card rewrite): the agent-
+// bindings G1 block's production half. The block itself lives inside
+// `createAgentBindings` and needs a live Host agent ctx — no in-repo spec
+// has ever driven that (the a5m2-provider-identity-c1 FP-B disclosure,
+// verbatim law) — so this section (a) drives the G1-WIRE lane's PRODUCTION
+// assembly module through a seam bag that MIRRORS the fixed block's seams
+// one-for-one — the ONE owner-held placed-definition ledger feeding the
+// Guard's bindingFeed, the registration feed and the plane's placement
+// attribution; a REAL `installScopedToolGuard` over the public seams (the
+// provider-identity law); the PRODUCTION `readPaCallFactsForCall` resolving
+// through the PUBLISHED mount index; the real plane with the arm's
+// `backends.g1Arm` attribution row — and (b) pins the block's own code at
+// source level. No hand-filled binding fixtures on this section: every
+// binding fact a call consumes is the REAL verified dispatcher entry the
+// Guard minted from the owner's feed. Disclosed harness stands: the ctx
+// double enforces the 639 single-placement law over a two-layer read
+// (scoped-then-native, the takeover law); the pair's a5m2-g1-query-assembly
+// spec pins the REAL host registration entry. 接线未测 pending Host; these
+// assembly legs never mint 已测试.
+const ARM_ASM = (await import(new URL('../src/plugin/live/governed-families/g1-query-assembly.mjs', import.meta.url).href)) as {
+  A5_G1_QUERY_ASSEMBLY_CODES: Record<string, string>
+  createG1QueryAssembly: (mount: Record<string, unknown>) => ArmAssembly
+}
+const ARM_WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as {
+  g1PureQuerySubset: () => ReadonlyArray<{ name: string; recordIndex: number; familyId: string }>
+}
+interface ArmRegistration { name: string; recordIndex: number; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }
+interface ArmAssembly {
+  ok: boolean
+  code?: string
+  message?: string
+  wiring?: { definitions: Array<{ name: string; execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown> }>; declared: Array<{ name: string; status: string; reason: string }>; placementNames: readonly string[]; rowOf?: (name: string) => { familyId: string } | undefined }
+  captures?: Record<string, { status: string; definitionIdentity: string; recordIndex: number; familyId: string }>
+  place: () => Array<() => void>
+  registerAfterPublish: () => ArmRegistration[]
+}
+interface ArmDef { name: string; execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>; output?: { schema?: unknown; render?: unknown } }
+interface ArmEntry { verified?: boolean; binding?: { status?: string; bindingId?: string; definitionIdentity?: string; providerId?: string; revision?: number; policyGeneration?: number; authorityGeneration?: number } }
+interface ArmWorld {
+  plane: PlaneAssemblyValue
+  nativeCalls: TrioBag<NativeCall[]>
+  topology: { current: InspectTopology }
+  observations: string[]
+  legInputs: Record<string, unknown>[]
+  assemblies: ArmAssembly[]
+  ledger: Map<string, ArmDef>
+  scopeLayer: Map<string, ArmDef>
+  keys: Map<string, string>
+  publish: () => ArmRegistration[]
+  entryOf: (name: string) => ArmEntry | undefined
+  revise: (name: string, change: Record<string, unknown>) => boolean
+}
+const ARM_TUPLE = Object.freeze({
+  blueprintId: 'bp-a5m2-g1-wire',
+  revision: String(blueprint.revision),
+  contentHash: String(blueprint.contentHash),
+  templateId: 'a5m2-g1-wire-tpl',
+  cwd: CHAIN_WORLD,
+  providerVersion: PROVIDER_ID,
+})
+let armSeq = 0
+async function mountArmWorld(opts: { cfgTopology?: boolean; armRow?: boolean } = {}): Promise<ArmWorld> {
+  const label = `arm-${String(++armSeq)}`
+  const realmId = `a5m2-g1-arm-${label}`
+  const topology = { current: structuredClone(TOPOLOGY_BASE) }
+  const { defs: nativeDefs, nativeCalls } = makeCaptures(() => topology.current)
+  const nativeLayer = new Map<string, HostNativeDef>(Object.entries(nativeDefs))
+  const scopeLayer = new Map<string, ArmDef>()
+  // THE ONE owner-held placed-definition ledger (block law mirrored): only
+  // this world's registration seam writes it, and the Guard's bindingFeed,
+  // the registration feed and the plane's attribution row all read THIS map.
+  const ledger = new Map<string, ArmDef>()
+  const ownedNames: string[] = []
+  const observations: string[] = []
+  const legInputs: Record<string, unknown>[] = []
+  // The Guard-installable ctx (the provider-identity makeCtx shape): one
+  // name, one placement; reads resolve the scoped layer first, then the
+  // global native (the takeover law the production scoped registry obeys).
+  const surface: string[] = []
+  const raw = {
+    tools: {
+      guard: (_guard: unknown) => () => {},
+      schemas: () => surface.map((name) => ({ name })),
+      get: (name: string) => (scopeLayer.get(name) ?? nativeLayer.get(name)) as never,
+      register: (definition: ArmDef) => {
+        if (scopeLayer.has(definition.name)) throw new Error(`refused: '${definition.name}' is already registered in this layer (one name, one placement)`)
+        if (typeof definition?.execute !== 'function' || definition.output?.schema === undefined || typeof definition.output?.render !== 'function') {
+          throw new Error(`refused: '${definition.name}' is not registration-ready (the minimum-entry law)`)
+        }
+        scopeLayer.set(definition.name, definition)
+        surface.push(definition.name)
+        return () => {
+          scopeLayer.delete(definition.name)
+          const i = surface.indexOf(definition.name)
+          if (i >= 0) surface.splice(i, 1)
+        }
+      },
+    },
+    on: () => () => {},
+  }
+  // ── the REAL plane: no g1 rows on this route (one placement, one ledger),
+  //    plus the arm's placement-attribution row (root ①) — the owner's live
+  //    ledger reader, consulted by paPlacementNameOf per call.
+  const mountRecord: Record<string, unknown> = {
+    instanceId: WORKER,
+    get guard() { return guardLive() },
+    plane: undefined as unknown,
+    beneficiaryAuthority: 'member',
+    readers: {
+      permissionPlane: () => ({ currentCallFacts: () => ({ tuple: ARM_TUPLE, blueprintId: 'bp-a5m2-g1-wire', providerVersion: PROVIDER_ID, healthy: true }) }),
+      overlayGeneration: async () => 0,
+      authorityGeneration: async () => 0,
+      policySnapshot: () => DIRECT_POLICY,
+      overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+      teamHardEnvelope: async () => ({ status: 'absent' }),
+      permissionEnvelope: async () => ({ rules: [], scope: 'x' }),
+    },
+  }
+  const built = planeModule.createTeamToolPlaneAssembly({
+    permissionPolicy: DIRECT_POLICY,
+    realmId,
+    templateId: 'a5m2-g1-wire-tpl',
+    role: 'member',
+    instanceId: WORKER,
+    teamSessionId: P6T4_ROOT,
+    plane: {},
+    ...(opts.armRow === false ? {} : { backends: { g1Arm: { isPlaced: (name: string) => ledger.has(name) } } }),
+    authorityFacts: { overlayGeneration: async () => 0, ensureAuthorityCurrent: async () => {} },
+    controlLeg: async (legInput: unknown) => {
+      legInputs.push(legInput as Record<string, unknown>)
+      return createPaControlLeg({
+        controlService: service,
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        beneficiaryAuthority: 'member',
+        governedFamilies: familyTable,
+      })(legInput as PaControlLegInput)
+    },
+    // THE PRODUCTION call-level reader, wired EXACTLY as agent-bindings
+    // wires it (the bare shared entry; the mount resolves through the
+    // published (teamRoot, instanceId) index — no fixture binding anywhere).
+    readCallFacts: (input: Record<string, unknown>) => registryModule.readPaCallFactsForCall(input),
+    onObserve: (row: string) => { observations.push(String(row)) },
+  })
+  if (built.ok !== true || built.value === undefined) {
+    throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
+  }
+  const plane = built.value
+  realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
+  ;(mountRecord as { plane: unknown }).plane = plane
+  // ── the REAL Guard (provider-identity law): installed over the public
+  //    seams, with the fixed block's bindingFeed shape — owner ledger first,
+  //    the plane's own feed byte-for-byte for every other name.
+  let guardHandle: { dispatcher: { surface: { entryOf: (name: string) => unknown }; revise: (name: string, change: Record<string, unknown>) => { ok: boolean } } } | undefined = undefined
+  const guardLive = () => guardHandle
+  const installed = installScopedToolGuard({
+    agentCtx: raw as unknown as ScopedGuardAgentCtx,
+    runtimeAgent: { id: WORKER, session: { header: { id: HEADER_ID } } } as never,
+    agentScopeKey: `scope-${realmId}`,
+    trustedIdentities: [WORKER, HEADER_ID],
+    nativeNames: [],
+    assemblyOwnedNames: ownedNames,
+    realmId,
+    bindingFeed: (name: string) => {
+      const placedG1 = ledger.get(name)
+      if (placedG1 !== undefined) {
+        const placedIdentity = definitionIdentityOf(placedG1 as never)
+        return placedIdentity === null ? undefined : Object.freeze({ definitionIdentity: placedIdentity, realmId })
+      }
+      return plane.placementFeed(name) as never
+    },
+    onObserve: (row: Record<string, unknown>) => { observations.push(`a5p1-guard: ${String(row?.event ?? '')} ${String(row?.tool ?? '')}`) },
+  })
+  if (!installed.ok) throw new Error(`the Guard install refused: ${String(installed.error?.message ?? 'unknown')}`)
+  const guard = installed.value
+  guardHandle = guard as never
+  // ── THE BLOCK'S LOOP, mirrored: derive the subset, supply ONLY the
+  //    enabled families, one assembly per row, ledger write on the host's
+  //    accepted registration, ledger-fed placement feed, live per-row
+  //    binding-facts reader over the Guard dispatcher's OWN surface.
+  const assemblies: ArmAssembly[] = []
+  const keys = new Map<string, string>()
+  const cfgTopology = opts.cfgTopology !== false
+  const trusted = { memberAgentId: WORKER, sessionHeaderId: HEADER_ID, realmId, owner: P6T4_ROOT, profileId: 'profile-a5m2-g1' }
+  const g1PlaneSeam = {
+    placementFeed: (name: string) => {
+      const placed = ledger.get(name)
+      if (placed === undefined) return undefined
+      const identity = definitionIdentityOf(placed as never)
+      return identity === null || identity === undefined
+        ? undefined
+        : Object.freeze({ definitionIdentity: identity, realmId })
+    },
+    paAdmit: (walk: unknown) => (plane as unknown as { paAdmit: (w: unknown) => Promise<unknown> }).paAdmit(walk),
+  }
+  const bindingFactsFor = (name: string) => (): Record<string, unknown> => {
+    const entry = guard.dispatcher.surface.entryOf(name) as ArmEntry | undefined
+    const binding = entry?.binding
+    if (entry?.verified !== true || binding?.status !== 'ACTIVE'
+      || typeof binding.bindingId !== 'string' || binding.bindingId.length === 0
+      || !Number.isInteger(binding.revision) || !Number.isInteger(binding.policyGeneration) || !Number.isInteger(binding.authorityGeneration)) {
+      throw new Error(`refused-g1 binding-facts-unreadable — '${name}' answers no verified ACTIVE dispatcher binding (status=${String(binding?.status ?? 'none')}); the G1 row fails closed, a stale tuple is never acceptable`)
+    }
+    return { bindingId: binding.bindingId, bindingRevision: binding.revision, policyGeneration: binding.policyGeneration, authorityGeneration: binding.authorityGeneration }
+  }
+  for (const entry of ARM_WIRE.g1PureQuerySubset()) {
+    if (entry.familyId !== 'B-INSPECT') {
+      observations.push(`a5m2-g1: row '${entry.name}' (record ${String(entry.recordIndex)}, ${entry.familyId}) SUPPLY-GATED — family enablement not authorized (root 17:55: B-INSPECT only)`)
+      continue
+    }
+    const assembly = ARM_ASM.createG1QueryAssembly({
+      providerId: PROVIDER_ID,
+      registry: {
+        get: (name: string) => (name === entry.name ? raw.tools.get(name) : undefined),
+        register: (definition: ArmDef) => {
+          const dispose = raw.tools.register(definition)
+          ledger.set(definition.name, definition)
+          return () => {
+            if (ledger.get(definition.name) === definition) ledger.delete(definition.name)
+            dispose()
+          }
+        },
+      },
+      runtimeAgent: { id: WORKER, session: { header: { id: HEADER_ID } } },
+      plane: () => g1PlaneSeam,
+      trusted,
+      bindingFacts: bindingFactsFor(entry.name),
+      ...(cfgTopology ? { topology: { current: () => topology.current } } : {}),
+      observe: (row: Record<string, unknown>) => { observations.push(`a5m2-g1: ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')}`) },
+    })
+    if (assembly.ok !== true) {
+      throw Object.assign(new Error(`alpha5-g1-arm-mount-refused: ${String(assembly.code)} — ${String(assembly.message)}`), { code: 'alpha5-g1-arm-mount-refused' })
+    }
+    const disposers = assembly.place()
+    void disposers
+    for (const name of assembly.wiring?.placementNames ?? []) ownedNames.push(name)
+    assemblies.push(assembly)
+  }
+  // The Guard's own bind of the mount's own-tool list (production:
+  // bindOwnTools over the SAME live array the arm appended to — the GLUE-5
+  // ordering), then publish, then the family registration at the fill point.
+  const bound = guard.bindOwnTools([...ownedNames])
+  if (!bound.ok) throw new Error(`the real Guard refused to bind the arm's placed rows: ${String(bound.error?.message ?? 'unknown')}`)
+  const published = guard.publish()
+  if (!published.ok) throw new Error(`the real Guard publish refused: ${String(published.error?.message ?? 'unknown')}`)
+  const publish = (): ArmRegistration[] => {
+    const out: ArmRegistration[] = []
+    for (const assembly of assemblies) {
+      for (const registration of assembly.registerAfterPublish()) {
+        if (registration.entry.familyId !== 'B-INSPECT') {
+          throw new Error(`arm law broken: a SUPPLY-GATED family reached the table (${registration.name})`)
+        }
+        // provider authority evidence (the image lane's Guard.entryOf law):
+        // the LIVE authority answer, recorded beside the row identity.
+        const liveBinding = (guard.dispatcher.surface.entryOf(registration.name) as ArmEntry | undefined)?.binding
+        observations.push(`a5m2-g1: family REGISTERED name=${registration.name} placement=${registration.definitionIdentity} bindingProvider=${String(liveBinding?.providerId ?? 'none')}`)
+        keys.set(registration.name, registration.definitionIdentity)
+        out.push(registration)
+      }
+    }
+    return out
+  }
+  const mountIdentity = registryModule.publishPaMount(P6T4_ROOT, WORKER, mountRecord)
+  if (mountIdentity === undefined || mountIdentity === null) throw new Error('the mount publish refused')
+  return {
+    plane, nativeCalls, topology, observations, legInputs, assemblies, ledger, scopeLayer, keys, publish,
+    entryOf: (name: string) => guard.dispatcher.surface.entryOf(name) as ArmEntry | undefined,
+    revise: (name: string, change: Record<string, unknown>) => guard.dispatcher.revise(name, change as never).ok === true,
+  }
+}
+
+describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies the enabled rows, the production module mints and registers, and the wired defs walk the ONE PA chain (assembly legs: 接线未测 pending Host, never 已测试)', () => {
+  it('arm supply law: the enabled family set arms only the B-INSPECT pair; the derived subset stays DECLARED-INACTIVE; 85 (B-CONTROL) is never assembled, placed or registered', async () => {
+    const arm = await mountArmWorld()
+    expect(arm.assemblies).toHaveLength(2)
+    const subset = ARM_WIRE.g1PureQuerySubset()
+    expect(subset.map((e) => e.name)).toContain('team_list_pending_control')
+    expect(subset.find((e) => e.name === 'team_list_pending_control')?.familyId).toBe('B-CONTROL')
+    expect(arm.observations.some((o) => o.includes("row 'team_list_pending_control'") && o.includes('SUPPLY-GATED'))).toBe(true)
+    for (const assembly of arm.assemblies) {
+      const declaredNames = (assembly.wiring?.declared ?? []).map((d) => `${d.name}:${d.status}:${d.reason}`)
+      expect(declaredNames.some((d) => d.startsWith('team_list_pending_control:DECLARED-INACTIVE:'))).toBe(true)
+    }
+    expect([...arm.ledger.keys()].sort()).toEqual(['cordis_inspect_list', 'cordis_inspect_query'])
+    const registrations = arm.publish()
+    expect(registrations.map((r) => r.name).sort()).toEqual(['cordis_inspect_list', 'cordis_inspect_query'])
+    for (const registration of registrations) {
+      expect(registration.entry.familyId).toBe('B-INSPECT')
+      expect(registration.entry.adapterRevision).toBe(G1.A5_G1_ADAPTER_REVISION)
+      expect(registration.entry.providerIdentity).toBe(PROVIDER_ID)
+    }
+    expect(Object.keys(familyTable).some((k) => String(k).includes('team_list_pending_control'))).toBe(false)
+  })
+
+  it('REAL mint, PRODUCTION registration: the keys are the real definitionIdentityOf mints the GUARD pins (owner ledger = feed = binding, never the g1-capture@ strings), the ONE table answers verbatim, and the write is idempotent', async () => {
+    const arm = await mountArmWorld()
+    const registrations = arm.publish()
+    expect(registrations).toHaveLength(2)
+    for (const registration of registrations) {
+      const placed = arm.ledger.get(registration.name)
+      expect(placed).toBeDefined()
+      // ONE mint, THREE consumers: the owner ledger, the registration key
+      // and the REAL Guard binding (pinned through the block's bindingFeed
+      // branch, continuity-proven against the live scoped read at bind).
+      expect(registration.definitionIdentity).toBe(String(definitionIdentityOf(placed as never)))
+      const liveEntry = arm.entryOf(registration.name)
+      expect(liveEntry?.verified).toBe(true)
+      expect(liveEntry?.binding?.status).toBe('ACTIVE')
+      expect(liveEntry?.binding?.definitionIdentity).toBe(registration.definitionIdentity)
+      expect(registration.definitionIdentity.startsWith('g1-capture@')).toBe(false)
+      const readBack = a5GovernedFamilyFor(registration.definitionIdentity)
+      expect(readBack).toEqual({
+        familyId: 'B-INSPECT',
+        adapterRevision: G1.A5_G1_ADAPTER_REVISION,
+        providerIdentity: PROVIDER_ID,
+      })
+      // the capture-side identity stays visible, namespaced and reversible —
+      // and never a table key.
+      const captureEntry = arm.assemblies.flatMap((a) => Object.values(a.captures ?? {})).find((c) => c.definitionIdentity.includes(registration.name))
+      expect(captureEntry?.definitionIdentity.startsWith(`g1-capture@${PROVIDER_ID}@${registration.name}#`)).toBe(true)
+      expect(JSON.parse(captureEntry!.definitionIdentity.slice(captureEntry!.definitionIdentity.indexOf('#') + 1)) as Record<string, unknown>).toMatchObject({ familyId: 'B-INSPECT' })
+      expect(Object.keys(familyTable).includes(captureEntry!.definitionIdentity)).toBe(false)
+    }
+    // idempotent by the registry's own law (same three fields re-register).
+    const again = arm.publish()
+    expect(again.map((r) => r.definitionIdentity)).toEqual(registrations.map((r) => r.definitionIdentity))
+  })
+
+  it('the wired def walks the SAME real chain through the PRODUCTION reader: durable row carries the rev-7 family block at FULL VALUE, the row binding IS the live Guard entry (provider authority evidence recorded, never aliased), leader allow, ONE consumption, the captured native entered ONCE', async () => {
+    const arm = await mountArmWorld()
+    arm.publish()
+    const def = arm.scopeLayer.get('cordis_inspect_list')
+    expect(def).toBeDefined()
+    const callId = 'toolu-call-arm-list'
+    const running = def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol(callId), callId })
+    const row = await waitRowForCall(callId)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(String(manifest?.callId)).toBe(callId)
+    expect(manifest?.familyId).toBe('B-INSPECT')
+    expect(manifest?.adapterRevision).toBe(G1.A5_G1_ADAPTER_REVISION)
+    expect(manifest?.providerIdentity).toBe(PROVIDER_ID)
+    expect(manifest?.targetManifest).toMatchObject({
+      inspectVariant: 'list',
+      trustedMemberAgentId: WORKER,
+      trustedSessionHeaderId: HEADER_ID,
+      trustedRealmId: arm.plane.realmId,
+      trustedOwner: P6T4_ROOT,
+      trustedProfileId: 'profile-a5m2-g1',
+    })
+    // The row's binding came THROUGH the production reader off the REAL
+    // dispatcher surface: identity, family key and provider authority are
+    // the LIVE entry's fields (the image lane's Guard.entryOf evidence law
+    // — the provider value is observed, not aliased or renamed anywhere).
+    const liveEntry = arm.entryOf('cordis_inspect_list')
+    expect(String((manifest?.binding as Record<string, unknown> | undefined)?.definitionIdentity)).toBe(arm.keys.get('cordis_inspect_list'))
+    expect(String((manifest?.binding as Record<string, unknown> | undefined)?.bindingId)).toBe(String(liveEntry?.binding?.bindingId))
+    expect(arm.observations.some((o) => o.includes('family REGISTERED name=cordis_inspect_list') && /bindingProvider=\S/.test(o))).toBe(true)
+    expect(row.status).toBe('pending')
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as { providers: Array<{ id: string }>; excludedUnauthorizedProviders: number }
+    expect(value.providers.map((p) => p.id)).toEqual(['dsh_compute'])
+    expect(value.excludedUnauthorizedProviders).toBe(1)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(1)
+    const state = await stateNow()
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(1)
+  })
+
+  it('the query row on the arm: an authorized triple answers through the consumed plan; an unauthorized triple refuses at classify with zero row and zero native entry', async () => {
+    const arm = await mountArmWorld()
+    arm.publish()
+    const def = arm.scopeLayer.get('cordis_inspect_query')
+    const before = (await stateNow()).requests.length
+    const refused = await def!.execute(
+      { platform: 'host', provider: 'rogue-provider', method: 'anything' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-q-bad'), callId: 'toolu-call-arm-q-bad' },
+    ).then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refused)).toContain('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
+    expect(String(refused)).toContain('54·B-INSPECT')
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(0)
+    const callId = 'toolu-call-arm-q-ok'
+    const running = def!.execute(
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol(callId), callId },
+    )
+    const row = await waitRowForCall(callId)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as { answer: string }
+    expect(value.answer).toBe('provider-answer')
+    expect(arm.nativeCalls.cordis_inspect_query).toHaveLength(1)
+  })
+
+  it('root ① RED control (no attribution row): the same place/bind/register lands, but with no g1Arm row the production reader answers NO placementName — every call fails closed with zero row and zero native entry', async () => {
+    const arm = await mountArmWorld({ armRow: false })
+    const registrations = arm.publish()
+    expect(registrations).toHaveLength(2)
+    const def = arm.scopeLayer.get('cordis_inspect_list')
+    const before = (await stateNow()).requests.length
+    const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-norow'), callId: 'toolu-call-arm-norow' })
+      .then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refusal)).not.toBe('undefined')
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
+  })
+
+  it('root ③ directed verification: a REAL dispatcher revise (verified=false) breaks the live binding-facts law mid-flight — the row refuses with the block fail-closed wording, zero row, zero native entry', async () => {
+    const arm = await mountArmWorld()
+    arm.publish()
+    expect(arm.revise('cordis_inspect_list', { verified: false })).toBe(true)
+    const def = arm.scopeLayer.get('cordis_inspect_list')
+    const before = (await stateNow()).requests.length
+    const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-stale'), callId: 'toolu-call-arm-stale' })
+      .then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refusal)).toContain('binding-facts-unreadable')
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
+  })
+
+  it('topology absent (no integrator supply): the rows still mount, place and register, but every call refuses the module\u2019s OWN trusted-topology posture before admission — zero native entry, zero row', async () => {
+    const arm = await mountArmWorld({ cfgTopology: false })
+    const registrations = arm.publish()
+    expect(registrations).toHaveLength(2)
+    const def = arm.scopeLayer.get('cordis_inspect_list')
+    const before = (await stateNow()).requests.length
+    const refusal = await def!.execute({}, { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol('arm-notopo'), callId: 'toolu-call-arm-notopo' })
+      .then(() => undefined, (error: unknown) => String((error as Error).message))
+    expect(String(refusal)).toMatch(/TRUSTED_TOPOLOGY/)
+    expect(arm.nativeCalls.cordis_inspect_list).toHaveLength(0)
+    expect((await stateNow()).requests.length).toBe(before)
+  })
+
+  it('the block at source level: closed gate and refusal code, B-INSPECT-only supply, the ONE owner-held ledger feeding Guard/registration/attribution, place before the Guard bind, registration after publish, no plane g1 injection, no fabricated topology', () => {
+    const src = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+    const start = src.indexOf("A5M2-G1-WIRE MOUNT-ARM (this lane's block; center")
+    const end = src.indexOf('(B-SUBAGENT-CONTROL-WIRING: the wiring section stands BEFORE the plane build', start)
+    expect(start).toBeGreaterThan(-1)
+    expect(end).toBeGreaterThan(start)
+    const block = src.slice(start, end)
+    expect(block).toContain('planeCfg?.g1PureQuery')
+    expect(block).toContain('alpha5-g1-arm-mount-refused')
+    expect(block).toContain("entry.familyId !== 'B-INSPECT'")
+    expect(block).toContain('SUPPLY-GATED')
+    expect(block).toContain('createG1QueryAssembly({')
+    expect(block).toContain('g1PureQuerySubset()')
+    // one assembly per supplied row; the registry seam answers ONLY this row.
+    expect(block).toContain('name === entry.name ? agentCtx.tools.get(name, agent) : undefined')
+    // the todo arm's live binding-facts law, per row, fail closed.
+    expect(block).toContain('dispatcher?.surface?.entryOf?.(entry.name)')
+    expect(block).toContain('binding-facts-unreadable')
+    // root 841 ②: the ONE owner-held ledger — written by the registration
+    // seam on the host's accepted registration, and the placement feed reads
+    // THE LEDGER, never a live scoped get (an arbitrary current read may not
+    // impersonate owner placement).
+    expect(src).toContain('const a5G1PlacedByName = new Map()')
+    expect(src).toContain('a5G1PlacedByName.set(definition.name, definition)')
+    expect(block).toContain('a5G1PlacedByName.get(name)')
+    expect(block).not.toContain('agentCtx.tools.get(name, runtimeAgent)')
+    // the Guard's provider owner-held feed carries the arm's names through
+    // the SAME ledger (the B-TEAM feed branch shape).
+    const feedAt = src.indexOf('const placedG1 = a5G1PlacedByName.get(name)')
+    expect(feedAt).toBeGreaterThan(src.indexOf('const placedTeamOps = a5TeamOpsPlacedByName.get(name)'))
+    expect(feedAt).toBeLessThan(src.indexOf('return a5PlaneValue === null'))
+    // root 841 ①: the plane's attribution row for the arm route, fed by the
+    // SAME ledger, forwarded at the shared backends union.
+    expect(src).toContain('g1Arm: { isPlaced: (name) => a5G1PlacedByName.has(name) }')
+    // no plane g1 row injection in this block; the plane's own route untouched
+    // (code-level law: the block's prose may NAME the plane's own seam, it
+    // never FORWARDS it).
+    expect(block).not.toMatch(/g1Enabled\s*[:=]/)
+    expect(block).not.toMatch(/backends\s*[:=]\s*\{[^}]*g1[^A]/)
+    // the trusted TARGETS five facts, all real; the seam bag stays minimal.
+    for (const fact of ['memberAgentId: g1MemberAgentId', 'sessionHeaderId: g1SessionHeaderId', 'realmId: a5PlaneRealmId', 'owner: String(teamRoot)', 'profileId: g1ProfileId']) {
+      expect(block).toContain(fact)
+    }
+    expect(block).toContain('trustedTopology')
+    // placement feeds the Guard's own-tool bind list BEFORE the bind runs.
+    expect(block).toContain('a5PlaneOwnNames.push(name)')
+    expect(block).toContain('a5PlaneOwnedNames.push(name)')
+    expect(src.indexOf('const ownNames = [...selectedTeamToolNames, ...a5PlaneOwnNames]'))
+      .toBeGreaterThan(src.indexOf('const g1Disposers'))
+    // the registration rides the shared post-publish fill point, before the
+    // mount publish, with the refusal-not-guess law, and records the LIVE
+    // provider authority from the Guard entry (evidence, never an alias).
+    const pub = src.indexOf('const published = a5p1Guard.publish()')
+    const reg = src.indexOf('g1Assembly.registerAfterPublish()')
+    const mountPub = src.indexOf('paMountIdentity = publishPaMount(')
+    expect(pub).toBeGreaterThan(-1)
+    expect(reg).toBeGreaterThan(pub)
+    expect(reg).toBeLessThan(mountPub)
+    expect(src.slice(reg, mountPub)).toContain('dispatcher?.surface?.entryOf?.(registration.name)')
+    expect(src.slice(reg, mountPub)).toContain('bindingProvider=')
+    // the assembly module is imported, never restated; the adapter module is
+    // never reached directly from this file.
+    expect(src).toContain("import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'")
+    expect(src).toContain("import { g1PureQuerySubset } from './governed-families/g1-query-wiring.mjs'")
+    expect(src).not.toContain("from './governed-families/g1-surface-adapters.mjs'")
+    // the plane's own block (root ①): the arm attribution is closed-keyed
+    // (frozen pure-query spellings) AND ledger-gated (actually placed) —
+    // never an arbitrary-name wildcard.
+    const planeSrc = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
+    expect(planeSrc).toContain('input.backends?.g1Arm')
+    expect(planeSrc).toContain("code: 'G1_ARM_INJECT_INVALID'")
+    expect(planeSrc).toContain('g1ArmInject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)')
+    expect(planeSrc).toContain('g1ArmInject.isPlaced(spelling)')
   })
 })

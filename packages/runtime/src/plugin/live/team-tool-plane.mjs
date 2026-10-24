@@ -1175,6 +1175,39 @@ export function createTeamToolPlaneAssembly(input = {}) {
     g1Inject = Object.freeze({ rows: Object.freeze(g1Entries) })
   }
 
+  // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the arm route places the
+  // B-INSPECT pure-query rows through the ASSEMBLY OWNER's own scoped
+  // registration, so the plane injects no rows (`backends.g1` stays absent —
+  // the two routes are mutually exclusive by construction here). What the
+  // arm route DOES supply is the owner's live placement-ledger reader: a
+  // truth about names the owner has ACTUALLY placed and still holds.
+  // `paPlacementNameOf` consults it ONLY inside the frozen pure-query
+  // spelling set and ONLY while the ledger says the name is currently
+  // placed — never a wildcard for arbitrary names (the spawn row's
+  // actually-placed law, same shape). ABSENT = byte-for-byte zero flip.
+  const g1ArmInjectRaw = input.backends?.g1Arm
+  let g1ArmInject = null
+  if (g1ArmInjectRaw !== undefined && g1ArmInjectRaw !== null) {
+    const g1ArmBad = (typeof g1ArmInjectRaw !== 'object' || Array.isArray(g1ArmInjectRaw))
+      ? 'the injected arm-placement face is not { isPlaced }'
+      : typeof g1ArmInjectRaw.isPlaced !== 'function'
+        ? 'the arm-placement face carries no isPlaced(name) live reader — the owner holds the placement ledger, this plane only consults it per name'
+        : undefined
+    if (g1ArmBad !== undefined) {
+      return { ok: false, code: 'G1_ARM_INJECT_INVALID', message: `backends.g1Arm: ${g1ArmBad}` }
+    }
+    g1ArmInject = Object.freeze({ isPlaced: (name) => {
+      try {
+        return g1ArmInjectRaw.isPlaced(name) === true
+      } catch {
+        // A faulting owner reader answers NOTHING for every name: the
+        // placement attribution fails closed (no placementName → the shared
+        // reader's no-placement-name refusal), never a wildcard pass.
+        return false
+      }
+    } })
+  }
+
   // A5M2-G6 B-SESSION-QUERY (root 18:2x, the lifted block scope): the five
   // governed session-query rows ride THIS plane's placement pipeline, the
   // REAL paAdmit seat and the shared placement feed. The injection is the
@@ -1675,6 +1708,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // A5-M2 G1 PURE-QUERY: the three fixed spellings resolve to themselves,
     // ONLY when this mount actually placed them (zero flip otherwise).
     if (g1Inject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)) return spelling
+    // A5M2-G1-WIRE MOUNT-ARM root ① (841 card): the arm route places the row
+    // through the OWNER's scoped registration, so `g1Inject` stays null — the
+    // name resolves ONLY while the owner's placement ledger CURRENTLY holds
+    // this very name (the actually-placed law, never an arbitrary-name
+    // wildcard). No ledger entry = no placementName = the shared reader's
+    // no-placement-name fail-closed, exactly as before.
+    if (g1ArmInject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)
+      && g1ArmInject.isPlaced(spelling)) return spelling
     // A5M2-B-TEAM-WIRE (root 19:53 ①): a claimed member-operation name mounts
     // at its OWN native spelling — but the row is placed by the registration
     // owner, not by this plane's `names` map, so it resolves HERE through the
