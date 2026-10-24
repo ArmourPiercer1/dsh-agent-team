@@ -177,3 +177,12 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 - **8722 卡③完成，无剩余**。cf8=cf8e0202-…（id 已纠）收根 17:59 卡 + 中心 G3A 候选提交卡（e2 leg 文本 int 侧胜出已注明）。
 - **E1**：四镜精确修 `b644a28f8459204a2c0d220ffc10faa0e305471f` 入账，原交付不重开。
 - **电池快照（非分派前置，根令）**：int@a23ad83e3 全 runtime 13F/5927P（a3p3/a5g6-render/a5p4/a5p7/a5w/alpha5-search-M4/p6t3×7）——preexisting-candidate，未逐条定性，E2 类红针不得再凭快照扩案。
+
+## 01:0x–01:3x 批次（多路入账；合流批已推 eb858b750）
+
+- **f28c0273fc4796cd9a316209b5b85784e3e5abff 源签取得（根01:07，@e1a 组合）**：P1/P2 两 BLOCK 源关闭；provider a5p5-plane/dsh-agent-team 各比不同字段、勿机械照 image；44ece 不重跑旧两口。tier 照旧接线未测，85 维持 SUPPLY-GATED。
+- **G3A 合入** = FF `760364998`（cf8 16 冲突决议、993/993、drift=0；其 round-1 --theirs 误删自拆披露在案）；**44ece 接线合入** = `0e80cec41`（trustedTopology mount-arm 消费：inspect=live ctx.cordisInspect、authorized=三真源现读交集、cfg seam 优先、零字面量块）；**glue 裁决更正**：静态清单无 import-closure、tsc 不 emit .mjs → supply placement 行补加（34 行），"build 自然出"前提作废。G1 家族 int 64/64。
+- **8722 卡③代签 `6002dc60c`**（B-SESSION 闭表 closed-variant 四组、零新 kind、flat targetManifest、fixture 虚构值 'todo-list'→'replace-list'、245/245）——**int 合入待做**（types.ts/glue/family-rules 三处 vs G3A 重锚）。
+- **e78**：r41 `a7862b587`/r42 `7d8a5305e`/r43 `d5862786e`（{name,execute} 三违规自拆；合法路径=createG2WebAdapters(:554) 乘 backends.g2Web 经 g2RowExecute 唯一 edge）。中心真签名确认书已发。**int 侧 plane 零 G2 面（r15 从未入 int）**——合入批按 G3A 法则重锚，int/lane plane 差 ~1000 行。
+- **9c**：`8524081ef`（帧 reader，**坐标纠正：多帧读正源=tests/mock/scripts/tool-lines.mjs，Schedule kit 329a8b830 零 zstd**）/`1293fb9e8`（宿主树路径参数化=中心已核主树 test-use @639ed015…porcelain0+NM，precheck 8/8 转绿零复制；**clone 方案经根01:01撤销，任何新复制均禁**）/`dac13ddf3`（team.create v1/v2 闭集从已构建 contract import）。GAPS=BLUEPRINT-IDENTITY+DURABLE-REPLAY 两条真账。
+- **tsc=0 实测**：int@e1a 全包 tsconfig scope 0 错误（44ece "86" 为文件口径）。**E1** 四镜 `b644a28f8459204a2c0d220ffc10faa0e305471f`；E1 census 新唯一红=注释 literal 误中，根已送原 owner。**a356 容量边界账**已交根（6 棵 porcelain=0 闭树 evidence 首批 ~2.68GB 表观；在跑/待续排除名单照列；不按后缀/年龄/同名）。**child 完整会话无公开路由**（本 checkout 核无）——9c compact 候根操作。
