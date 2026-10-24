@@ -30,8 +30,15 @@ is a delivered negative control, exercised by
 ## What this does not replace
 
 `dev/agent-workflow/graph.yaml#current_contract` remains the current execution
-authority. This bridge **reads** it and mirrors `current_phase` plus the
-`current_contract` baseline into the generated view as read-only data. There is
+authority. This bridge **reads** it and mirrors three of its fields -- `phase_id`,
+`active_plan`, `baseline`, plus two derived proofs (`baseline_exists`,
+`baseline_is_ancestor_of_head`) -- into `current-state.json` under `legacy_authority`,
+read-only. It does **not** mirror `backlog`, `matrix` or `baseline_collected`, and
+`current_phase` never lands in the view at all (an earlier sentence here claimed it did;
+the code does not, and the field-level map is in
+`dev/agent-workflow/evidence/EB-E0-E1/eb0-baseline-from-receipts-20261024.md`). That
+gap is not cosmetic: `scripts/ci-pr-gate.mjs` Q2 requires `backlog` and `matrix` targets
+to exist, so the view cannot answer what the gate answers today. There is
 no path by which this generator writes `graph.yaml`, and switching the old
 consumers is a separate, coordinated migration (E1 exit condition), not a
 consequence of these files existing.

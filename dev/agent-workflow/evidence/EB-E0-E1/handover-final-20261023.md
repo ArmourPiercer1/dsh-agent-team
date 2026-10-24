@@ -10,7 +10,7 @@ file.** No new checker, no new review round, no Host run, no PR #361 merge, no E
 | branch | `task/eb-e0-e1-doc-baseline-20261029` |
 | worktree | `.worktrees/eb-e0-e1` (exclusive to this line) |
 | last SHA before this file | `cab9dba3908d1d7dab796f4047646d0b40bf881a` |
-| final SHA | **this file's own commit** — read `git rev-parse HEAD` on the branch; it is also the pushed `refs/heads/task/eb-e0-e1-doc-baseline-20261029` tip and is printed in the closing report |
+| tip SHA | read `git rev-parse HEAD` on the branch (this file has been amended since round 1; the tip is also the pushed `refs/heads/task/eb-e0-e1-doc-baseline-20261029` head). Round-1 tip `00e13e9ca…`; delivery-CI closure tips `b644a28f8…` then `9d8e24f9d…`, at which pr-gate / candidate-protection / census-runtime all completed success |
 | PR | **#362**, open, draft — the line's vehicle; never merged by this line |
 | base of the line | `929fc4af23725a1de4cda9206eb7abb149b1bf12` |
 | PR #361 (untouched) | open, draft, **unmerged**, head `b97ffdafdceeb73d58a06fe5fb6563820d063d28`; its two plans unmigrated |
@@ -45,6 +45,10 @@ file.** No new checker, no new review round, no Host run, no PR #361 merge, no E
 - `exit-evidence-sources.md` — §§7–13: the CI/C1 ruling and its retraction, acceptance levels read
   from source, the cold-read result with its 11-row gap table and disposition
 - `baseline-inventory.md` — EB0-1…EB0-5 **read-only tree census**, each fact labelled by its source
+- `eb0-baseline-from-receipts-20261024.md` — EB0-1…EB0-5 **completed from receipts that already
+  existed**: the field-level authority reconciliation, hosted CI durations with their queue caveat,
+  the shipped-package attribution sample, install/cleanup/capacity receipts with the shared-volume
+  disclaimer, and the window-4 timing decomposition whose unattributed ~14.9 s tail is left UNKNOWN
 - `integration-freeze.md` — satisfied vs unsatisfied freeze conditions, in its own words
 - `controls-run-1.log` … `controls-run-26.log`, `controls-failures-1.log`,
   `mutation-control-1.log`, `probe-run-1.log`, `contracts-field-agreement-{1,2}.log`,
@@ -106,6 +110,74 @@ file.** No new checker, no new review round, no Host run, no PR #361 merge, no E
   controls on that SHA → reconcile old vs new by hand once → change the consumer(s) in one commit
   → keep the generated view read-only afterwards. Any switch commit must cite the candidate SHA it
   was verified on.
+
+## Three states, stated separately (added 2026-10-24)
+
+The line's own vocabulary insists that implementation, verification and adoption are different
+axes, so the handover says them separately instead of averaging them into "done":
+
+| axis | state | the evidence for that word |
+| --- | --- | --- |
+| **Implementation** | built and in the tree | `docs:sync` / `docs:probe` / `doc-checks` / `contracts-field-agreement` / `generated-write` / 94 controls in `scripts/`; `dev/engineering/` data set; 9 package READMEs; 38 tracked evidence files |
+| **Verification** | measured, author-run, externally confirmed on the delivery itself | 94/0 controls (author runs, never independently re-run); cold read 7/7 with caveats; `a5p5-dormant-audit` 9/9 after the token fix; **hosted CI at `9d8e24f9d…` all three green** -- pr-gate 87 s, candidate-protection 14 s, census-runtime 1042 s (verified by reading the check-runs API, not by assertion) |
+| **Adoption** | **zero consumers switched** | `view.migration.migration_of_legacy_consumers = not_started_requires_coordination`; every executable consumer of `current_contract` still reads `graph.yaml`; the only reader of the generated view reads a *mirror of the old*, so treating it as the switched consumer would be circular |
+
+Adoption is the axis that keeps this line from claiming an E1/E0 exit, and no amount of green on the
+other two changes it.
+
+## The actual consumers of the old pointer, and the one-to-one map
+
+Executable consumers found by reading the code (not by guessing from file names):
+
+| consumer | what it does with `current_contract` | new candidate entry | verdict for a switch |
+| --- | --- | --- | --- |
+| `scripts/ci-pr-gate.mjs` (Q1–Q8, shared file, not this line's) | grades the block: exactly-one block, `phase_id` grammar, all three doc targets must exist, baseline exactly 40 hex and an ancestor; Q6 forbids any other file re-declaring a baseline and pins `REF_CANON = dev/agent-workflow/graph.yaml#current_contract` | nothing equivalent -- the registry validates *claims*, not the current pointer | **cannot switch**; the gate would have to grade the new relation, which is a shared-file change outside this line |
+| `packages/testkit/test/a5-current-contract.test.ts` | pins the production path and its negatives (missing block must FAIL, duplicate baseline inside the block fails, `phase-baseline-ref` marker grammar) | nothing equivalent | **cannot switch** for the same reason |
+> Read exactly, from `ci-pr-gate.mjs`: **Q3** requires all six fields (`phase_id`, `active_plan`,
+> `backlog`, `matrix`, `baseline`, `baseline_collected`) to appear exactly once inside the block, and
+> **Q2** additionally requires the three document targets to exist. So `backlog` and `matrix` are
+> switch-blocking (a view without them cannot answer Q2), `baseline_collected` is presence-blocking
+> only (its value feeds `info.contract`, no verdict uses it), and the gate reads `graph.yaml`, never
+> the view.
+
+| `scripts/gen-current-state.mjs` | reads the block, emits `legacy_authority` (3 of 6 fields) into the view | *is* the bridge | already migrated in the read-only direction; extending it is the only cheap prep step |
+| `scripts/docs-probe.mjs` | prints the view's mirror as `viewMirror`, and states it complements rather than re-implements the gate | consumes the bridge | no switch needed; would become circular if called the new consumer |
+| `scripts/doc-checks.mjs` | `PLAN_CITATION_CONFLICT`: plan `phase_id` must agree with the pointer | could read the registry later | keep on the old store until the registry carries `phase_id` with equal force |
+| marker prose: `AGENTS.md` + the three `docs/plans/active/alpha5-tool-io-governance/` files (`phase-baseline-ref` markers) | the human/agent-facing "where is current" entry, enforced by the gate's Q6/`REF_CANON` and the testkit marker tests | the entry order in `README.md` → `dev/engineering/README.md` | **this is the only surface a small window could actually move**, and even then only its wording, not the store |
+
+## The one parallel-run reconciliation that was actually performed (2026-10-24, read-only)
+
+Field-by-field, at `9d8e24f9d…`: `phase_id`, `active_plan`, `baseline` **equal**; `backlog`, `matrix`,
+`baseline_collected` **not mirrored**; view adds `baseline_exists` / `baseline_is_ancestor_of_head` =
+true. Full table, the consumer column, and the two parser mistakes made on the way (one of them mine,
+in an ad-hoc script, which disagreed with the shipped generator and was wrong) are in
+[`eb0-baseline-from-receipts-20261024.md`](eb0-baseline-from-receipts-20261024.md).
+
+So: **the parallel run is evidenced as agreement on the three fields that exist, and as absence on
+three that do not.** It is *not* evidence that parallel running is proven in general -- the existence
+of a generated file was never the standard, and two of the missing three fields are required by a
+live CI leg.
+
+## A small switch window main could actually run (proposal, not action)
+
+Scope deliberately small, reversible in one commit, and it does not touch `AGENTS.md`, `graph.yaml`
+or the gate's semantics:
+
+1. **Prep (one generator commit, still read-only):** mirror the two missing required fields
+   (`backlog`, `matrix`) and `baseline_collected` into `legacy_authority`. No authority moves;
+   `ci-pr-gate` stays green because it never reads the view.
+2. **Reconcile once at a pinned SHA:** re-run the field table above on that SHA and commit the output
+   as evidence. Acceptance: all six fields equal, plus the two derived proofs true.
+3. **Move one narrative consumer, not the store:** have `docs/STATUS.md`'s "current" line generated
+   from `legacy_authority` instead of hand-written, keeping the `phase-baseline-ref` marker pointed at
+   `graph.yaml#current_contract`. One consumer, non-authoritative, and if it misbehaves the rollback
+   is that one commit.
+4. **Only after 1–3 sit for a phase** does a real question arise about the gate and the testkit test
+   reading the new relation -- and that is a Workflow/Doc owner decision with a shared-file change,
+   i.e. not something a docs branch proposes in advance.
+
+Never in this sequence do two editable "current"s exist: the graph block stays the store, the view
+stays derived, and the marker grammar stays canonical.
 
 ## Explicit non-claims
 
