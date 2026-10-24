@@ -40,16 +40,19 @@
  */
 import { describe, expect, it } from 'vitest'
 import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { findTestRepoRoot } from '../../../tests/paths.mjs'
+import { findTestRepoRoot, testUsePath } from '../../../tests/paths.mjs'
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
 import { isLosslessJsonValue, validatePaFamilyTarget } from '../control/types.js'
 
 const repoRoot = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
 if (repoRoot === null) throw new Error('no repo root carrying tests/deepseek-harness-test-use — failing closed')
-const HOST_LIB = join(repoRoot, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+// the pinned checkout resolves through tests/paths.mjs (the unique path
+// source): the canonical repo-relative location, or the read-only 639 base
+// when the run supplies DSH_TEST_USE_ROOT (root 02:04 handling).
+const HOST_LIB = testUsePath(dirname(fileURLToPath(import.meta.url)), 'packages', 'core', 'tools', 'lib', 'index.js')
 if (!existsSync(HOST_LIB)) throw new Error(`pristine host lib absent; failing closed (${HOST_LIB})`)
 const hostTools = () => import(pathToFileURL(HOST_LIB).href) as Promise<{
   defineTool: (options: Record<string, unknown>) => Record<string, unknown>

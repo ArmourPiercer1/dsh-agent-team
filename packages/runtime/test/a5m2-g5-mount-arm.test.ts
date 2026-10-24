@@ -28,11 +28,16 @@
  *    supplied stand-in can never be called production-complete.
  *  - SUPPLY: the goals port rides the Host's lazy public `goals` accessor
  *    (`ctx.get('goals')`) end to end — no mirror, no second store, no cache.
- *  - ABSENCE IS NOT FALSE: `readExecutionFacts` is deliberately NOT supplied
- *    (no binding dependency reaches the session event log / live agent graph
- *    the host's authority law reads); the adapter rejects a non-function
- *    SUPPLY and, absent one, the rows report the dimension UNOBSERVED with
- *    their named gap.
+ *  - FACTS ARE READ, NEVER ASSUMED: `readExecutionFacts` IS supplied — a
+ *    trusted per-member producer that mirrors the host's own derivation
+ *    (tool-goal/src/authority.ts:33-118 @639) over public faces the arm
+ *    already holds (the live `agents` service, the `turnBoundary`
+ *    projection, the public `snapshotEvents()`, the member's own `goals`
+ *    service). It answers ONLY the adapter's closed kinds; every unreadable
+ *    face or fact-free window lands as the adapter's honest UNOBSERVED —
+ *    never a guessed kind, never a silent pass. The port-side law (the
+ *    native requireDirectHuman/completionAuthority re-checks) is untouched:
+ *    this pre-admission mirror never REPLACES a native check.
  * @module @dsh-agent-team/runtime/test/a5m2-g5-mount-arm
  */
 import { describe, expect, it } from 'vitest'
@@ -121,9 +126,47 @@ describe('A5M2-G5 mount-arm — zero literal goal facts, gate shape, and the rea
     for (const supplied of ['providerId:', 'readNative:', 'goals:', 'registrationOf:']) {
       expect(arm).toContain(supplied)
     }
-    // the two facts this seam must NOT carry are absent from the bag:
-    expect(arm).not.toContain('readExecutionFacts:')
+    // The facts producer IS carried now (root 02:51 P2): the arm mints the
+    // per-member reader and hands it over. The config must NOT carry the
+    // threshold (the host config law is the adapter's own default):
+    expect(arm).toContain('readExecutionFacts: g5ReadExecutionFacts,')
     expect(arm).not.toContain('blockedAfterConsecutiveRounds:')
+  })
+
+  it('the arm mints a TRUSTED per-member facts producer that mirrors authority.ts:33-118 over public faces — and never invents a kind', () => {
+    const mint = arm.slice(arm.indexOf('const g5ReadExecutionFacts'))
+    expect(mint.length).toBeGreaterThan(0)
+    // driver gate (authority.ts:48-58): live-agent identity + running status
+    // + the CURRENT initiator — ambient presence is never authority.
+    expect(mint).toContain("runtimeAgent.status !== 'running'")
+    expect(mint).toContain('agents.get(runtimeAgent.id) !== runtimeAgent')
+    expect(mint).toContain('agents.currentInitiator() !== runtimeAgent')
+    // the open-turn boundary (authority.ts:33-41): the host's OWN
+    // 'turnBoundary' projection read, same face authority.ts reads.
+    expect(mint).toContain("'turnBoundary'")
+    expect(mint).toContain('stateOf(runtimeAgent.session')
+    expect(mint).toContain('goal tools require an open model turn')
+    // the window loop is the host's own (authority.ts:64-70): the snapshot
+    // read from openTurnStartSeq + 1, the SAME two event predicates.
+    expect(mint).toContain('for (let seq = g5Boundary.openTurnStartSeq + 1; seq < g5Events.length; seq += 1)')
+    expect(mint).toContain("event.type === 'user/message' && event.data?.source?.kind === 'user'")
+    expect(mint).toContain("event.data?.source?.kind === 'goal'")
+    expect(mint).toContain('event.data.source.round === g5Goal.roundsStarted')
+    // direct-human needs ROOT membership too (authority.ts:80-86).
+    expect(mint).toContain('agents.roots().includes(runtimeAgent)')
+    // a driver-less / boundary-less read THROWS (the adapter lands honest
+    // UNOBSERVED); a fact-free window answers NO closed kind — `{}` — which
+    // the adapter reports as unobserved, never as a pass.
+    expect(mint).toContain("throw new Error('GOAL_TOOL_DRIVER_REQUIRED mirror")
+    expect(mint).toContain('return {}\n            }')
+    // the ZERO-LITERAL law still holds across the mint (no goal vocabulary):
+    for (const forbidden of ['get_goal', 'create_goal', 'update_goal', 'goal-read', 'goal-create', 'goal-action-dispatch', 'B-SESSION', 'A5_G5_GOAL']) {
+      expect(mint).not.toContain(forbidden)
+    }
+    // …and the ONLY closed kinds the producer can answer are the contract's
+    // two bytes, each returned as a bare {kind} with nothing invented:
+    const kinds = mint.match(/return \{ kind: '([a-z-]+)' \}/g) ?? []
+    expect(kinds).toEqual(["return { kind: 'direct-human' }", "return { kind: 'goal-round' }"])
   })
 
   it('the goals port is the Host public `goals` service, read lazily end to end', () => {
@@ -158,7 +201,7 @@ describe('A5M2-G5 mount-arm — zero literal goal facts, gate shape, and the rea
     expect(WIRING_SRC).toContain('current.adapterRevision !== A5_G5_ADAPTER_REVISION || current.providerIdentity !== providerId')
   })
 
-  it('ABSENCE IS NOT FALSE: the arm supplies no execution-facts reader, and the adapter refuses a non-function one rather than reading it as unchecked-but-passed', async () => {
+  it('ABSENCE IS NOT FALSE (the port law the arm\'s supply must satisfy): the adapter ACCEPTS a missing facts reader (rows then report UNOBSERVED) and refuses a non-function supply rather than reading it as unchecked-but-passed', async () => {
     const adapter = await import(new URL('../src/plugin/live/governed-families/g5-goal-service.mjs', import.meta.url).href) as {
       createG5GoalServiceAdapter: (input: Record<string, unknown>) => unknown
     }
