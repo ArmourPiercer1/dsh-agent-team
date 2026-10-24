@@ -37,9 +37,9 @@ import { DshInstance } from '../../../../../tests/characterization/lib/instance.
 import { portInUse, waitForPortFree } from '../../../../../tests/characterization/lib/util.mjs'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
 
-const COMPOSED_SHA = '4a26ac9a904dc6ad1cef56b8b1c096ab88e131de' // SYNC CARD 2026-10-24b (root prep GO): int tip carrying EDIT/SRE PA handoff 87245b1ba + vocabulary 0c15d1448 + the 2676 fix; constants-only sync, d66 execution logic untouched
-const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // dist arm blob MEASURED (git hash-object) against the NEW install-e3e845f0: identical — the handoff did not touch the arm file
-const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35' // likewise RE-MEASURED against install-e3e845f0: identical
+const COMPOSED_SHA = '694b0c0eb8d38511ba3322e786c4daefcc378628' // SYNC CARD 2026-10-24c (root pin GO): int 694b0c0e (parent a27f1a46, descends 4a26ac9a; release surface = 4 dist .mjs agent-bindings/team-tool-plane/subagent-spawn-adapters/subagent-spawn-wiring); constants-only sync, d66 execution logic untouched
+const EDIT_BLOB_EDIT = '5a6db608a4043793e8569998bbe1c8fa5a0695be' // RE-MEASURED (git hash-object) against install-d703affb at this sync: identical (spawn-face changes did not touch the edit arm)
+const EDIT_BLOB_SRE = '6a1ec67f062dd77ee7110a6d4d6e3781376f4f35' // likewise RE-MEASURED against install-d703affb: identical
 const PACK_BYTES_MAX = 8_000_000
 const HOST_PORT = 3183
 const MOCK_PORT = 3498
@@ -57,7 +57,7 @@ const INSTALL_DIR = process.env.A5M2_EDIT_INSTALL_DIR ?? null // f86's NEW final
 const PACK_COMPOSED = process.env.A5M2_EDIT_COMPOSED_SHA ?? null
 const EXPECTED_PACK_SHA = process.env.A5M2_EDIT_PACK_SHA256 ?? null // REQUIRED: full hash from f86's new receipt (sha256: prefix)
 const EXPECTED_TGZ_NAME = process.env.A5M2_EDIT_TGZ_NAME ?? 'dsh-agent-team-0.1.1-alpha.2.tgz' // same tree -> same name unless the receipt says otherwise
-const EXPECTED_TGZ_DIR_PREFIX = 'out-4a26ac9a-' // receipt names out-4a26ac9a-20261024T120122Z; the NAME only saves a glob — the fail-closed field check (:225 class) stays the authority
+const EXPECTED_TGZ_DIR_PREFIX = 'out-694b0c0e-' // receipt names out-694b0c0e-20261024T130252Z; the NAME only saves a glob — the fail-closed field check (:225 class) stays the authority
 
 function notRun(reason) {
   console.log(JSON.stringify({ implemented: true, booted: false, dry: DRY, verdict: 'NOT_RUN', reason }, null, 2))
