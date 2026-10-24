@@ -283,6 +283,7 @@ async function run () {
   const killTimer = setTimeout(() => { try { process.kill(-child.pid, 'SIGKILL') } catch {} }, 320_000)
   // HOME monitor: fresh HOME ≤64MiB DURING the run (this window's law).
   let homeViolation = null
+  let dfRunBelowFloor = false
   const homeTimer = setInterval(() => {
     if (child.exitCode !== null || child.signalCode !== null) return
     try {
@@ -291,6 +292,12 @@ async function run () {
         process.kill(-child.pid, 'SIGKILL')
       }
     } catch {}
+    // 6GiB floor checked on the SAME live 5s loop for the WHOLE 0-320s run
+    // (root final diff: not only in the drain).
+    try {
+      const d = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]
+      if (Number(d) < PINS.dfFloor) dfRunBelowFloor = true
+    } catch { dfRunBelowFloor = true }
   }, 5_000)
   const code = await new Promise((res) => child.once('exit', (c) => res(c)))
   clearInterval(homeTimer)
@@ -300,7 +307,10 @@ async function run () {
   let pgidGone = false
   let pgidDrainMs = 0
   let dfDuringDrainFloor = true
-  for (;;) {
+  // FINITE short verification after the absolute KILL (root final diff):
+  // three 5s checks; NEVER an unbounded wait. Still-alive after = violation,
+  // scene retained.
+  for (let i = 0; i < 3; i += 1) {
     try { process.kill(-child.pid, 0); pgidGone = false } catch { pgidGone = true; break }
     try {
       const d = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]
@@ -319,6 +329,7 @@ async function run () {
   const violations = []
   if (pgidGone !== true) violations.push(`own PGID ${child.pid} still alive after drain (descendants not cleaned)`)
   if (dfDuringDrainFloor !== true) violations.push('df dropped below the 6GiB floor during group drain')
+  if (dfRunBelowFloor === true) violations.push('df dropped below the 6GiB floor during the LIVE 5s run loop')
   if (after.portsFree.includes(false)) violations.push(`ports ${ports.host}/${ports.mock} not free post-run (our cleanup incomplete)`)
   if (post.lockSha !== before.lockSha || post.pkgSha !== before.pkgSha) violations.push('fixture lock/pkg bytes CHANGED during run (install-freeze violated)')
   if (homeViolation !== null) violations.push(`HOME exceeded 64MiB mid-run (${String(homeViolation)}B) — killed`)
@@ -435,23 +446,23 @@ function evaluateErEvidence (kitDir) {
       const search = c3 !== null ? parseEventSearch(c3.toolResult) : null
       if (search === null) why = 'C3 text is NOT the delivered formatEventSearch shape — no trustworthy expected seq/marker source'
       else {
-        const markerHits = search.hits.filter((h) => /G6_MARKER_\S+/.test(h.snippet))
-        if (markerHits.length !== 1) why = `C3 marker-Snippet hits=${String(markerHits.length)} (must be EXACTLY one to pin the marker+seq)`
-        else {
-          const token = markerHits[0].snippet.match(/(G6_MARKER_\S+)/)[1]
-          const expectedSeq = markerHits[0].seq
-          const okSession = read.session === search.session
-          const okSeq = read.targetSeq === expectedSeq && read.event?.seq === expectedSeq
-          const okMarker = stringsIn(read.event).some((s) => s.includes(token))
-          if (okSession && okSeq && okMarker) {
-            positive = {
-              tool: CASE_TOOL.C2b,
-              toolUseId: c2b.toolUseId,
-              kitVerdict: 'PASS',
-              structured: { format: 'formatEventRead+formatEventSearch', session: read.session, targetSeq: read.targetSeq, eventSeqField: read.event?.seq ?? null, markerToken: token, markerFrom: 'C3 Snippet (exact)' },
-            }
-          } else why = `structured: sessionMatch=${String(okSession)} (read=${read.session} search=${search.session}) seqMatch=${String(okSeq)} (target=${String(read.targetSeq)} event.seq=${String(read.event?.seq)} expected=${String(expectedSeq)}) markerMatch=${String(okMarker)}`
-        }
+        // multi-seed SHARED markers are the kit's design (root final diff
+        // 2026-10-24): NO exactly-one-marker gate. The C2b side carries the
+        // ROOT + SELECTED seq (Target event seq line); we find that EXACT seq
+        // among C3's many hits and take the marker token(s) pinned there.
+        const hitsAtTarget = search.hits.filter((h) => h.seq === read.targetSeq)
+        const tokens = [...new Set(hitsAtTarget.flatMap((h) => (h.snippet.match(/G6_MARKER_\S+/g) ?? [])))]
+        const okSession = read.session === search.session
+        const okSeq = read.event?.seq === read.targetSeq
+        const okMarker = tokens.length > 0 && stringsIn(read.event).some((sv) => tokens.some((tk) => sv.includes(tk)))
+        if (okSession && okSeq && okMarker) {
+          positive = {
+            tool: CASE_TOOL.C2b,
+            toolUseId: c2b.toolUseId,
+            kitVerdict: 'PASS',
+            structured: { format: 'formatEventRead+formatEventSearch', session: read.session, targetSeq: read.targetSeq, eventSeqField: read.event?.seq ?? null, markerTokens: tokens, markerFrom: 'C3 hits at the EXACT selected seq (multi-hit tolerant)' },
+          }
+        } else why = `structured: sessionMatch=${String(okSession)} (read=${read.session} search=${search.session}) seqMatch=${String(okSeq)} (event.seq=${String(read.event?.seq)} target=${String(read.targetSeq)}) markerTokens=${JSON.stringify(tokens)} hitsAtTarget=${String(hitsAtTarget.length)}`
       }
     }
   }
@@ -498,7 +509,7 @@ async function selftest () {
   const good = readText('session-team-g6-abc', 7, GOOD_EVENT, 'Before:\n- seq 6 | message | leader | 2026-10-24 14:00:00')
   mk('good', good)
   const g = evaluateErEvidence(join(tmp, 'good'))
-  t('shape: real read/search text, exact ROOT+seq 7+marker -> green', g.verdict === 'PASS' && g.positive?.structured?.markerToken === 'G6_MARKER_xyz123' && g.positive?.toolUseId === 'tu-c2b' && g.familyNegatives.every((x) => x.role.includes('FAMILY negative')))
+  t('shape: real read/search text, exact ROOT+seq 7+marker -> green', g.verdict === 'PASS' && JSON.stringify(g.positive?.structured?.markerTokens) === JSON.stringify(['G6_MARKER_xyz123']) && g.positive?.toolUseId === 'tu-c2b' && g.familyNegatives.every((x) => x.role.includes('FAMILY negative')))
   mk('bad1', 'This session cannot read that target')
   t('shape: refusal text (not the read format) -> NOT green', evaluateErEvidence(join(tmp, 'bad1')).verdict === 'FAIL')
   mk('bad2', readText('session-team-g6-abc', 8, GOOD_EVENT, ''))
@@ -511,7 +522,7 @@ async function selftest () {
   t('shape: exact marker token absent from target event -> NOT green', evaluateErEvidence(join(tmp, 'bad5')).verdict === 'FAIL')
   mk('bad6', good, 'FAIL')
   t('shape: verdicts[C2b]=FAIL -> NOT green', evaluateErEvidence(join(tmp, 'bad6')).verdict === 'FAIL')
-  mk('bad7', good, 'PASS', [
+  const MULTI = [
     'Session session-team-g6-abc — Team G6 root',
     '',
     'Event search results (2):',
@@ -519,8 +530,17 @@ async function selftest () {
     '   Snippet: delegated G6_MARKER_xyz123 task',
     '2. seq 9 | message | leader | 2026-10-24 14:00:02',
     '   Snippet: follow-up G6_MARKER_xyz123 note',
+  ].join('\n')
+  mk('multi', good, 'PASS', MULTI)
+  t('shape: SHARED marker over multiple seeds, exact selected seq 7 among many hits -> green (kit design)', evaluateErEvidence(join(tmp, 'multi')).verdict === 'PASS')
+  mk('bad7', readText('session-team-g6-abc', 7, '{\n  \"seq\": 7,\n  \"type\": \"message\",\n  \"data\": {\n    \"text\": \"G6_MARKER_other9\",\n    \"note\": \"delegated G6_MARKER_other9 task\"\n  }\n}', ''), 'PASS', [
+    'Session session-team-g6-abc — Team G6 root',
+    '',
+    'Event search results (1):',
+    '1. seq 9 | message | leader | 2026-10-24 14:00:02',
+    '   Snippet: follow-up G6_MARKER_other9 note',
   ].join('\n'))
-  t('shape: TWO marker hits (ambiguous seq pin) -> NOT green', evaluateErEvidence(join(tmp, 'bad7')).verdict === 'FAIL')
+  t('shape: no marker-carrying C3 hit AT the exact selected seq 7 (marker only at 9) -> NOT green', evaluateErEvidence(join(tmp, 'bad7')).verdict === 'FAIL')
   t('shape: absent evidence -> NOT green', evaluateErEvidence(join(tmp, 'none')).verdict === 'FAIL')
   const { source } = deriveKit()
   const line = source.split('\n').find((l) => l.includes("id: 'C2b'")) ?? ''
