@@ -18,7 +18,8 @@
  * every unverified leg is listed in `GAPS` and hard-fails if reached.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { createConnection } from 'node:net'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -715,103 +716,241 @@ export function teamCreateParams ({ version, blueprintId, blueprintRevision, roo
 }
 
 export function gateBlueprintSource (source) {
+  // Evidence-based shape (measured on the real artifact and matched by
+  // blueprintArtifactSupply below): the production gate answers
+  // `{ status: 'ok', identity: { schemaVersion, blueprintId, revision } }`.
+  // The old `ok`/`valid` spelling matched NOTHING on that return, so a
+  // legitimately-valid source used to be refused. No broadening: an absent
+  // status or a missing identity stays refused.
   const report = inspectBlueprintSource(source)
-  const ok = report?.ok === true || report?.valid === true
-  return { ok, report }
+  const ok = report?.status === 'ok' && report?.identity !== undefined && report?.identity !== null
+  return { ok, report, blueprintId: report?.identity?.blueprintId, revision: report?.identity?.revision }
+}
+
+/** A FRESH stamped home per window (root card [1]); the path must not exist. */
+export function freshWorld (stamp, prefix = ROW_CONFIG.worldPrefix) {
+  if (!/^[0-9TZ-]{8,}$/.test(String(stamp))) throw new Error(`run stamp is not a usable stamp: ${String(stamp)}`)
+  return `${prefix}-${stamp}`
+}
+
+/** Root card [4]: a REAL port probe, not a narration. */
+export function portIsFree (port, host = '127.0.0.1') {
+  return new Promise((resolve) => {
+    const socket = createConnection({ port, host })
+    const done = (free) => { socket.destroy(); resolve(free) }
+    socket.setTimeout(2_000, () => done(false))
+    socket.once('connect', () => done(false))
+    socket.once('timeout', () => done(false))
+    socket.once('error', () => done(true))
+    socket.once('close', () => {})
+  })
+}
+
+/** Root card [2]: the mount identity comes from the PACKAGE'S OWN exports map. */
+export function candidateMount (packageRoot) {
+  const manifestPath = join(packageRoot, 'package.json')
+  if (!existsSync(manifestPath)) return { ok: false, error: `no package.json under the candidate face: ${packageRoot}` }
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  const hostLeg = manifest?.exports?.['./host']
+  if (typeof hostLeg !== 'string') return { ok: false, error: 'the candidate manifest declares no exports["./host"] leg' }
+  const hostRow = resolve(packageRoot, hostLeg)
+  const glue = resolve(packageRoot, 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs')
+  const seam = resolve(packageRoot, 'packages/runtime/root-binding/harness/seam.mjs')
+  const missing = [hostRow, glue, seam].filter((path) => !existsSync(path))
+  if (missing.length > 0) return { ok: false, error: `candidate legs missing: ${missing.join(', ')}` }
+  return {
+    ok: true, packageRoot, name: manifest.name, version: manifest.version,
+    exports: Object.keys(manifest.exports ?? {}), rowName: `file://${hostRow}`,
+    glueUrl: `file://${glue}`, seamUrl: `file://${seam}`,
+    adapterMarker: readFileSync(hostRow, 'utf8').length > 0,
+  }
+}
+
+/** Root card [2]: fixed-SHA + package sha256 + precheck, fail-closed, BEFORE any live leg. */
+export function identityPreflight ({ productCommit, packageSha256, packageTgz, mount }) {
+  const problems = []
+  const sha = spawnSync('git', ['-C', REPO, 'cat-file', '-t', productCommit], { encoding: 'utf8' })
+  if (sha.status !== 0 || String(sha.stdout).trim() !== 'commit') problems.push(`product commit ${productCommit} is not a commit object in this repo (rc=${String(sha.status)})`)
+  if (!existsSync(packageTgz)) problems.push(`candidate tgz absent: ${packageTgz}`)
+  else if (createHash('sha256').update(readFileSync(packageTgz)).digest('hex') !== packageSha256) problems.push(`candidate tgz sha256 does not equal ${packageSha256}`)
+  if (mount?.ok !== true) problems.push(`candidate mount identity unresolved: ${String(mount?.error)}`)
+  const pre = precheck()
+  // Evidence-based scoping (root card [2]): the window boots from the INSTALLED
+  // candidate face, so the checks that measure the lane's SOURCE product tree
+  // (accepted source heads, tracked source modifications) cannot gate a run that
+  // never imports it. They are reported as DISCLOSED facts, never swallowed, and
+  // never re-labelled green. Everything else in precheck stays blocking.
+  const SOURCE_SURFACE = ['product HEAD', 'product package has TRACKED']
+  const blocking = pre.problems.filter((text) => !SOURCE_SURFACE.some((prefix) => text.startsWith(prefix)))
+  const disclosed = pre.problems.filter((text) => SOURCE_SURFACE.some((prefix) => text.startsWith(prefix)))
+  if (blocking.length > 0) problems.push(`precheck refused: ${blocking.join('; ')}`)
+  return { ok: problems.length === 0, problems, sourceSurfaceDisclosed: disclosed, mount, precheckOk: pre.ok }
 }
 
 /**
  * The boot path: verified calls only, cleanup awaited. Any case that needs a
  * `GAPS` leg stops before touching it. Requires the window GO env.
  */
-export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, go = process.env.A5M2_TEAM_C2_BOOT_GO }) {
+/**
+ * Window-1 entry (root's concentrated card). Boot path only, cleanup PROVEN,
+ * overall wall + per-step first-error-stop. Requires the window GO env.
+ */
+const worldBytes = (path) => {
+  if (!existsSync(path)) return 0
+  const probe = spawnSync('du', ['-sb', path], { encoding: 'utf8' })
+  return probe.status === 0 ? Number(String(probe.stdout).split('\t')[0]) : Number.MAX_SAFE_INTEGER
+}
+
+export async function runTeamC2 ({
+  port = ROW_CONFIG.port, world, blueprintSource = '', logDir, live, mount,
+  optionalProbes = false, wallMs = ROW_CONFIG.window.wallMs,
+  worldCeilingBytes = ROW_CONFIG.window.worldCeilingBytes,
+  go = process.env.A5M2_TEAM_C2_BOOT_GO,
+} = {}) {
   if (go !== '1') throw new Error('A5M2_TEAM_C2_BOOT_GO is not set: boot is a window decision, this driver never boots by default')
   const trace = []
-  const rec = (leg, ok, detail) => { trace.push({ leg, ok, detail }); return ok }
+  const rec = (leg, ok, detail) => { trace.push({ leg, ok: ok === true, detail }); return ok === true }
+  const homeAbs = join(REPO, world)
+  if (existsSync(homeAbs)) { rec('C-FRESH-HOME', false, `${world} already exists — a world is never reused`); return { trace, ok: false } }
+  rec('C-FRESH-HOME', true, world)
+  const wall = Date.now() + wallMs
+  const within = (budget) => {
+    const left = wall - Date.now()
+    if (left <= 0) throw new Error(`WINDOW_WALL_EXHAUSTED after ${String(wallMs)}ms`)
+    return Math.min(budget, left)
+  }
   const instance = new DshInstance({
-    hostTree: hostTree(),
-    dshHome: join(REPO, world),
-    port,
-    clientCommitHash: CLIENT_COMMIT_HASH,
+    hostTree: hostTree(), dshHome: homeAbs, port, clientCommitHash: CLIENT_COMMIT_HASH,
     logDir: logDir ?? join(REPO, 'dev/agent-workflow/evidence/a5m2-team-c2/runs'),
   })
-  let url = null
-  try {
-    url = await instance.start({ timeoutMs: 120_000 })
+
+  const flow = async () => {
+    // [2] The candidate must be the thing that mounts — resolved from its own
+    // exports map, fail-closed, before any Team leg touches the Host.
+    if (mount?.ok !== true) { rec('C-MOUNT-CANDIDATE', false, `candidate mount unresolved: ${String(mount?.error)}`); return { trace, ok: false } }
+    rec('C-MOUNT-CANDIDATE', true, `${mount.name}@${mount.version} row=…/${mount.rowName.slice(mount.rowName.lastIndexOf('/') + 1)} exports=${mount.exports.join(',')}`)
+    if (await portIsFree(port) !== true) { rec('C-PORT-FREE', false, `port ${String(port)} busy before boot`); return { trace, ok: false } }
+    rec('C-PORT-FREE', true, `port=${String(port)} probe refused a connect`)
+    const url = await instance.start({ timeoutMs: within(120_000) })
     const match = BOOT_MARKER.exec(String(readFileSync(instance.logPath, 'utf8'))) ?? BOOT_MARKER.exec(String(url))
-    if (match === null) { rec('C-READINESS', false, 'no launch line parsed'); throw new Error('launch line never appeared') }
+    if (match === null) { rec('C-BOOT', false, 'no launch line parsed'); return { trace, ok: false } }
     const origin = `http://127.0.0.1:${match[1]}`
-    const token = match[2]
-    const exchange = await jsonFetch(`${origin}/?token=${token}`, { redirect: 'manual' }, 30_000)
+    rec('C-BOOT', true, redactLaunchToken(`${origin}/?token=${match[2]}`))
+    if (Number(match[1]) !== port) { rec('C-PORT-EXPLICIT', false, `launch answered ${String(match[1])}, window pinned ${String(port)}`); return { trace, ok: false } }
+    rec('C-PORT-EXPLICIT', true, `port=${String(port)}`)
+    const exchange = await jsonFetch(`${origin}/?token=${match[2]}`, { redirect: 'manual' }, within(30_000))
     const cookie = exchange.headers.getSetCookie?.().map((c) => c.split(';')[0]).join('; ') ?? ''
-    rec('boot', true, redactLaunchToken(`${origin}/?token=${token}`))
     if (blueprintSource.length > 0) {
       const gate = gateBlueprintSource(blueprintSource)
-      rec('C-BLUEPRINT-SOURCE-GATE', gate.ok, 'production inspectBlueprintSource answered before any write')
+      rec('C-BLUEPRINT-SOURCE-GATE', gate.ok, `production gate status=${String(gate.report?.status)} id=${String(gate.blueprintId)}`)
       if (!gate.ok) return { trace, ok: false }
     }
-    const barrier = await teamReadyBarrier({ origin, cookie })
+    const barrier = await teamReadyBarrier({ origin, cookie, budgetMs: within(90_000), log: () => {} })
     rec('C-READINESS-BARRIER', barrier.ready, `polls=${String(barrier.polls)}`)
-    if (live !== undefined) {
-      const root = await createUniqueTeamRoot({ origin, cookie, ...live })
-      rec('C-CREATE-ONCE', root.ok, `${root.stage} root=${root.rootSessionId}${root.error === undefined ? '' : ` error=${JSON.stringify(root.error).slice(0, 160)}`}`)
-      if (!root.ok) return { trace, ok: false, root }
-      const liveRoot = await ensureTeamRootLive({ origin, cookie, teamSessionId: root.rootSessionId })
-      rec('C-ROOT-LIVE', liveRoot.ok, `state=${liveRoot.state} root=${liveRoot.teamSessionId}${liveRoot.error === null ? '' : ` error=${JSON.stringify(liveRoot.error).slice(0, 160)}`}`)
-      const readState = await teamReadState({ origin, cookie, sessionId: root.rootSessionId })
-      rec('C-READ-STATE', readState.ok, `state=${readState.state}${readState.error === null ? '' : ` error=${JSON.stringify(readState.error).slice(0, 160)}`}`)
-      const query = await teamFirstQuery({ origin, cookie, teamSessionId: root.rootSessionId })
-      rec('C-TEAM-QUERY', query.ok, `${query.method} fields=${query.closedFields.join(',')} ${query.error === null ? 'answered' : `error=${JSON.stringify(query.error).slice(0, 160)}`}`)
-      const leaderSession = live.leaderSessionId ?? collectStrings(root.createValue).find((value) => value.startsWith('session-'))
-      if (leaderSession === undefined) {
-        rec('C-LEADER-PROMPT', false, 'no leader session derivable from the create answer and none passed with --leader-session: the members case is NOT attempted (never faked)')
-        return { trace, ok: false, root, query }
-      }
-      const ledger = await teamLedgerPage({ origin, cookie, teamSessionId: root.rootSessionId })
-      rec('C-LEDGER-PAGE', ledger.ok, `state=${ledger.state}${ledger.error === null ? '' : ` error=${JSON.stringify(ledger.error).slice(0, 160)}`}`)
-      const members = await runLeaderMembersCase({ origin, cookie, home: join(REPO, world), runStamp: live.runStamp, sessionId: leaderSession, expectContains: live.expectContains })
-      rec('C-LEADER-MEMBERS', members.ok, `same-call pairs=${String(members.pairCount)} calls=${String(members.callCount)} missing=${members.missing.join(',') || 'none'}`)
-      return { trace, ok: trace.every((row) => row.ok), root, liveRoot, readState, query, ledger, members }
+    if (!barrier.ready) return { trace, ok: false }
+    if (live === undefined) return { trace, ok: trace.every((row) => row.ok), gaps: Object.keys(GAPS) }
+
+    const root = await createUniqueTeamRoot({ origin, cookie, ...live })
+    rec('C-CREATE-ONCE', root.ok, `initialize-only ${root.stage} root=${root.rootSessionId}${root.error === undefined ? '' : ` error=${JSON.stringify(root.error).slice(0, 160)}`}`)
+    if (!root.ok) return { trace, ok: false, root }
+    // [1] optional probes do NOT run in window-1; they stay available by flag.
+    const probes = {}
+    if (optionalProbes) {
+      probes.liveRoot = await ensureTeamRootLive({ origin, cookie, teamSessionId: root.rootSessionId })
+      rec('C-ROOT-LIVE', probes.liveRoot.ok, `state=${probes.liveRoot.state}`)
+      if (!probes.liveRoot.ok) return { trace, ok: false, root, probes }
+      probes.readState = await teamReadState({ origin, cookie, sessionId: root.rootSessionId })
+      rec('C-READ-STATE', probes.readState.ok, `state=${probes.readState.state}`)
+      if (!probes.readState.ok) return { trace, ok: false, root, probes }
+      probes.query = await teamFirstQuery({ origin, cookie, teamSessionId: root.rootSessionId })
+      rec('C-TEAM-QUERY', probes.query.ok, `${probes.query.method} fields=${probes.query.closedFields.join(',')}`)
+      if (!probes.query.ok) return { trace, ok: false, root, probes }
+      probes.ledger = await teamLedgerPage({ origin, cookie, teamSessionId: root.rootSessionId })
+      rec('C-LEDGER-PAGE', probes.ledger.ok, `state=${probes.ledger.state}`)
+      if (!probes.ledger.ok) return { trace, ok: false, root, probes }
+    } else {
+      rec('C-OPTIONAL-PROBES', true, 'NOT RUN by window-1 scope (root card [1]): initialize + the target query only')
     }
-    // Team cases run against a NEW unique root created directly through the
-    // public Team API (never by hijacking an ordinary session writer).
-    // Log-frame assertions: never attempted here — see GAPS['GAP-FRAME-READER'].
-    return { trace, ok: trace.every((row) => row.ok), gaps: Object.keys(GAPS) }
-  } finally {
-    await instance.stop()
-    rec('teardown', true, 'instance.stop() awaited')
+    const leaderSession = live.leaderSessionId ?? collectStrings(root.createValue).find((value) => value.startsWith('session-'))
+    if (leaderSession === undefined) { rec('C-LEADER-MEMBERS', false, 'no leader session derivable from the create answer and none passed with --leader-session: the members case is NOT attempted (never faked)'); return { trace, ok: false, root } }
+    const members = await runLeaderMembersCase({ origin, cookie, home: homeAbs, runStamp: live.runStamp, sessionId: leaderSession, expectContains: live.expectContains, budgetMs: within(90_000) })
+    rec('C-LEADER-MEMBERS', members.ok, `same-call pairs=${String(members.pairCount)} outcomes=${JSON.stringify(members.outcomeCounts)} missing=${members.missing.join(',') || 'none'}`)
+    return { trace, ok: trace.every((row) => row.ok), root, members, probes }
   }
+
+  let outcome
+  try { outcome = await flow() } catch (error) { outcome = { trace, ok: false, error: error instanceof Error ? error.message : String(error) } }
+  // [4] teardown truth: stop OUR child, wait for close, then a REAL port probe
+  // and the world ceiling. An external signal can never make this narrate green.
+  await instance.stop()
+  let closed = false
+  for (let waited = 0; waited < 15_000 && closed !== true; waited += 500) { closed = await portIsFree(port); if (closed !== true) await new Promise((r) => setTimeout(r, 500)) }
+  const free = await portIsFree(port)
+  const used = worldBytes(homeAbs)
+  const withinCeiling = used <= worldCeilingBytes
+  const teardownOk = closed === true && free === true && withinCeiling
+  rec('teardown', teardownOk, `waitClose=${String(closed)} portFree=${String(free)} worldBytes=${String(used)}/${String(worldCeilingBytes)}`)
+  outcome.ok = outcome.ok === true && teardownOk
+  outcome.teardown = { waitClose: closed, portFree: free, worldBytes: used, worldCeilingBytes }
+  return outcome
+}
+
+/** NO-BOOT replay of the fixed paths: identity, mount, artifact gate, budget, kit row. */
+export function windowReplay ({ productCommit, packageSha256, packageTgz, installFace, blueprintPath }) {
+  const legs = []
+  const run = (name, value) => { legs.push({ leg: name, ...value }); return value.ok === true }
+  const supply = blueprintArtifactSupply(blueprintPath)
+  run('C-FRESH-HOME-PATH', { ok: ROW_CONFIG.world.includes('<stamp>'), detail: `${ROW_CONFIG.world} port=${String(ROW_CONFIG.port)}` })
+  const stamp = new Date().toISOString().replace(/[:.]/g, '')
+  run('C-FRESH-HOME-STAMP', { ok: freshWorld(stamp).endsWith(stamp), detail: freshWorld(stamp) })
+  run('C-WINDOW-CEILINGS', { ok: ROW_CONFIG.window.wallMs === 300_000 && ROW_CONFIG.window.worldCeilingBytes === 64 * 1024 * 1024, detail: `wall=${String(ROW_CONFIG.window.wallMs)}ms ceiling=${String(ROW_CONFIG.window.worldCeilingBytes)}B` })
+  const mount = candidateMount(installFace)
+  run('C-MOUNT-CANDIDATE', { ok: mount.ok === true, detail: mount.ok === true ? `${mount.name}@${mount.version} exports=${mount.exports.join(',')} adapter_leg_readable=${String(mount.adapterMarker)}` : String(mount.error) })
+  const gate = blueprintPath === undefined ? { ok: false } : gateBlueprintSource(supply.source ?? '')
+  run('C-BLUEPRINT-SOURCE-GATE', { ok: supply.ok === true && gate.ok === true, detail: `supply=${String(supply.ok)} gate_status=${String(gate.report?.status)} id=${String(gate.blueprintId)} revision=${String(gate.revision)}` })
+  const pre = identityPreflight({ productCommit, packageSha256, packageTgz, mount })
+  run('C-IDENTITY-PREFLIGHT', { ok: pre.ok, detail: pre.ok ? `commit=${productCommit.slice(0, 9)} sha256=${packageSha256.slice(0, 9)} precheck=${String(pre.precheckOk)} sourceSurfaceDisclosed=${String(pre.sourceSurfaceDisclosed.length)}` : pre.problems.join('; ') })
+  if (pre.sourceSurfaceDisclosed.length > 0) run('C-SOURCE-SURFACE-DISCLOSED', { ok: true, detail: `reported, never swallowed: ${pre.sourceSurfaceDisclosed.join(' | ')}` })
+  return { mode: 'window-replay', booted: false, hostGated: ['C-BOOT', 'C-READINESS-BARRIER', 'C-CREATE-ONCE', 'C-LEADER-MEMBERS', 'teardown'], legs, ok: legs.every((row) => row.ok === true) }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2)
   const flag = (name) => args.includes(name)
   const valueOf = (name) => { const i = args.indexOf(name); return i === -1 ? undefined : args[i + 1] }
-  if (flag('--live')) {
-    // A real round needs the row/blueprint the lane owner owns; nothing is
-    // invented here, and the host tree is the reused read-only package.
-    const artifact = valueOf('--blueprint-artifact') === undefined ? undefined : blueprintArtifactSupply(valueOf('--blueprint-artifact'))
-    if (artifact !== undefined && artifact.ok !== true) {
-      console.error(`--blueprint-artifact refused: ${String(artifact.error)} (${valueOf('--blueprint-artifact')})`)
-      process.exit(2)
-    }
-    const blueprintId = artifact?.blueprintId ?? valueOf('--blueprint-id')
-    const expectContains = (valueOf('--expect-contains') ?? '').split(',').map((value) => value.trim()).filter((value) => value.length > 0)
-    const runStamp = valueOf('--run-stamp') ?? new Date().toISOString().replace(/[:.]/g, '')
-    if (blueprintId === undefined) {
-      console.error('--live needs --blueprint-id (and optionally --blueprint-revision, --run-stamp, --initial-work-prompt): no blueprint is invented here')
-      process.exitCode = 2
-    } else {
-      const outcome = await runTeamC2({
-        port: Number(valueOf('--port') ?? 3188),
-        world: ROW_CONFIG.world,
-        blueprintSource: artifact?.source ?? (valueOf('--blueprint-file') === undefined ? '' : readFileSync(valueOf('--blueprint-file'), 'utf8')),
-        live: { runStamp, blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt'), leaderSessionId: valueOf('--leader-session'), expectContains },
-      })
-      console.log(JSON.stringify(outcome, null, 2))
-      process.exitCode = outcome.ok ? 0 : 1
-    }
-  } else if (flag('--precheck') || true) {
+  const FROZEN = {
+    productCommit: '699cc4fb7a27941b19c1550c42d45d45520535da',
+    packageSha256: 'c8dd3f07b940efec03ec69173a3f98a9ded6106ccf725e0bda88efa74c754b0e',
+    packageTgz: '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-699cc4fb7a27941b19c1550c42d45d45520535da-20261024T043040Z/dsh-agent-team-0.1.1-alpha.2.tgz',
+    installFace: '/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-c8dd3f07b/node_modules/dsh-agent-team',
+    blueprint: join(REPO, 'dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml'),
+  }
+  if (flag('--window-replay')) {
+    const out = windowReplay({ ...FROZEN, blueprintPath: valueOf('--blueprint-artifact') ?? FROZEN.blueprint })
+    console.log(JSON.stringify(out, null, 2))
+    process.exitCode = out.ok ? 0 : 1
+  } else if (flag('--live')) {
+    const artifact = blueprintArtifactSupply(valueOf('--blueprint-artifact') ?? FROZEN.blueprint)
+    if (artifact.ok !== true) { console.error(`--blueprint-artifact refused: ${String(artifact.error)}`); process.exit(2) }
+    const stamp = valueOf('--run-stamp') ?? new Date().toISOString().replace(/[:.]/g, '')
+    const mount = candidateMount(valueOf('--install-face') ?? FROZEN.installFace)
+    // Root card [2]: fixed-SHA + package sha256 + precheck ACTUALLY run here,
+    // fail-closed, before anything can reach the Host.
+    const pre = identityPreflight({ productCommit: FROZEN.productCommit, packageSha256: FROZEN.packageSha256, packageTgz: FROZEN.packageTgz, mount })
+    if (pre.ok !== true) { console.error(`identity preflight refused: ${pre.problems.join('; ')}`); process.exit(2) }
+    const runStamp = stamp
+    process.on('SIGTERM', () => { console.error('SIGTERM: window aborted, exit non-zero (teardown truth is not narrated)'); process.exitCode = 1; process.exit(1) })
+    const outcome = await runTeamC2({
+      port: Number(valueOf('--port') ?? ROW_CONFIG.port),
+      world: freshWorld(stamp),
+      blueprintSource: artifact.source,
+      mount,
+      optionalProbes: flag('--optional-probes'),
+      live: { runStamp, blueprintId: artifact.blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt'), leaderSessionId: valueOf('--leader-session'), expectContains: (valueOf('--expect-contains') ?? '').split(',').map((v) => v.trim()).filter((v) => v.length > 0) },
+    })
+    console.log(JSON.stringify(outcome, null, 2))
+    process.exitCode = outcome.ok ? 0 : 1
+  } else {
     const result = precheck()
     console.log(JSON.stringify({ mode: 'precheck', booted: false, ...result }, null, 2))
     process.exitCode = result.ok ? 0 : 1
