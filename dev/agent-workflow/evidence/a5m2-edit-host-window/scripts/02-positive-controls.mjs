@@ -1,14 +1,15 @@
 /**
- * A5M2 EDIT/SRE host-window prep — 02 POSITIVE CONTROLS (WRITTEN, NOT RUN).
+ * A5M2 EDIT/SRE host-window — 02 ASSERT LIBRARY (NOT RUN; fed ONLY by the
+ * REAL evidence of 05-edit-window-runner.mjs). Root final card: this stays a
+ * library, not an entry. The runner's boot/drive chain is the FOURTH-
+ * successful Team-window runner (tests/kits/a5m2-schedule-c2) public chain —
+ * NOT an import of c1-leader-approval-smoke (unexported boot/remoteCall + a
+ * tail main that runs its whole suite). The assertions below consume
+ * callResults / public-ledger facts / on-disk measurements produced by 05 in
+ * a granted window.
  *
- * 载体 = tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs 的同款
- * 真调用形（实核锚点：bootHost spawn `HOST_BIN web --port <p> --no-open` +
- * env DSH_HOME=:695-:734；批准 = remoteCall 'team.resolveControl' 契约 v4
- * :1175；稳定实例零触探针 :1203 —— 本窗口只用规划端口 3183，预探针先跑）。
- * 窗口 owner 用该 kit 的 boot/驱动形起 Host，把下面的断言函数按序接上。
- *
- * 每条正控的共享前置：member 模板 permissions.default='ask'（真实 ControlService
- * 批准链）；blueprint 成员 allow 列 edit + str_replace_editor；世界按 README §3。
+ * Window A reality (root narrowed): ONE boot, the EDIT allow chain (P1 below
+ * is its law); P2-P4 (SRE) stay library law for the later SRE/race windows.
  */
 import { createHash } from 'node:crypto'
 import { readFileSync, statSync } from 'node:fs'
