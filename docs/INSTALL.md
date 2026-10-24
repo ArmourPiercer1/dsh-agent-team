@@ -477,12 +477,24 @@ wiring 刷新（`ptyService.premintOpenPlan`）；预 mint 失败答 NOTHING，a
 @639ed01539）mint 的 per-open one-shot backend（adapter :684/:953，私有
 type `dsh-g3-po-<callId>-<seq>`）——身份答
 `{ registrationId: "dsh-g3-po:<type>", incarnation: <挂载世代> }`：世代 =
-capture 时刻 mint 的每 mount 一个值，**被替换/已卸载的世代即刻作废其旧批准**
-（挂载 disposer 与 mount 撤销同一行翻转 revoked；此后一切读取答 NOTHING，
-in-flight 调用在 adapter 入口 recheck 处以 `P_TERM_TARGET_DRIFT` 命名
-old→unresolvable 拒绝，零端口进入；不追踪任何无关公共 backend，也不为其
-新设注册 API）。declared ∩ live 律保留：`listBackends()`（index.ts:143）
-不再含该类型即答 NOTHING → `P_TERM_TARGET_UNRESOLVED`。
+ capture 时刻 mint 的每 mount 一个值，**被替换/已作废的世代即刻失效其旧批准**
+ （Agent 作用域撤销走既有公开生命周期事件 `agent/disposed`——Host
+ core/agent runtime-types.ts:270 声明、index.ts:514 在每次 handle dispose
+ 时发射，即 dropResidency 所 await 的那条路——订阅回调即翻转 revoked，与行级
+ mount 撤销双保险；此后一切读取答 NOTHING，in-flight 调用在 adapter 入口
+ recheck 处以 `P_TERM_TARGET_DRIFT` 命名 old→unresolvable 拒绝，零端口进入；
+ 不追踪任何无关公共 backend，也不为其新设注册 API）。
+ **当前发布配对（root consolidated 1b）**：`backend` 每次作答都重读
+ `resolvePaMount(teamRoot, instanceId)`，捕获身份 ≠ 当前发布身份即**具名拒答**
+ （新 mount 覆盖发布无需通知旧闭包——新 randomUUID 本身不失效旧读者，配对
+ 才失效；未发布同样 NOTHING）。C1 (l) 腿以**真实替换路径**钉死：publish A →
+ publish B 覆盖 → A 的下一个作答即 null（B 自己作答，配对不是关停）。
+ **每类型真实覆盖（root consolidated 2）**：身份只绑本装配**真实实现的受控
+ 路由类型**——即物化 Config 自家 `backendType`（唯一实现）；declared ∩ live
+ 但非 covered 的类型一律拒答，并在挂载 census 观测中列为
+ `UNCOVERED-declared=[…]`（Host 侧名字存在从不证明实现）。live 律保留：
+ `listBackends()`（index.ts:143）不再含该类型即答 NOTHING →
+ `P_TERM_TARGET_UNRESOLVED`。
 **公开面证据（裁决 (d)）**：上述 imports 全部走包自家 exports map——
 `@deepseek-ai/dsh-terminal-bash/package.json` 与 `@deepseek-ai/dsh-terminal/package.json`
 均显式发布 `"./src/*": "./src/*"`（两包 package.json **:21**

@@ -197,7 +197,7 @@ function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | unde
   }
 }
 
-function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown>; route?: { reads: number, revokeAfter: number, generation: { value: string, revoked: boolean } } } = {}) {
+function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number }; jobs?: Record<string, unknown>; ownerSessionId?: (ownerAgentId: string) => string; sendOperation?: () => Record<string, unknown>; route?: { reads: number, revokeAfter: number, generation: { value: string, revoked: boolean } }; mount?: { box: { captured: unknown }, current: () => unknown } } = {}) {
   const portCalls = opts.portCalls ?? []
   const absent = new Set(opts.absent ?? [])
   // THE MOUNT GENERATION (ruling 2 (a)) in spec shape: one value per
@@ -205,6 +205,11 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
   // on the read AFTER the Nth - the classify-vs-entry window the adapter's
   // entry recheck polices.
   const route = opts.route ?? { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-spec-1', revoked: false } }
+  // THE PUBLICATION PAIRING (consolidated card 1b): the spec-mount box pairs
+  // trivially by default; a test can drive the REAL registry through it
+  // (captured = the identity publishPaMount returned; current = a fresh
+  // resolvePaMount read at every answer).
+  const mount = opts.mount ?? { box: { captured: 'spec-mount' as unknown }, current: () => 'spec-mount' as unknown }
   // THE LIVE SNAPSHOT SOURCE (root 21:36: the CONTROL/QUERY rows ride live
   // facts): one mutable snapshot list feeds BOTH the terminals face's list()
   // and the producer-shaped session() resolution (pid-derived incarnation,
@@ -244,11 +249,21 @@ function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { r
       backend: (type: string) => {
         // ROUTE-LEG MODE (ruling 2 (k)-route): when a mount-generation route is
         // supplied, backend() answers through the PRODUCTION helper exactly as
-        // agent-bindings does; otherwise the legacy spec stub stays byte-kept.
+        // agent-bindings does (consolidated card 1b/2: the covered leg + the
+        // CAPTURED-vs-CURRENT publication pairing ride the real call);
+        // otherwise the legacy spec stub stays byte-kept.
         if (opts.route !== undefined) {
           route.reads += 1
           if (route.reads > route.revokeAfter) route.generation.revoked = true
-          return G3W.a5G3RouteIdentity({ type, declared: ['shell'], live: ['shell'], generation: route.generation })
+          return G3W.a5G3RouteIdentity({
+            type,
+            declared: ['shell'],
+            live: ['shell'],
+            covered: ['shell'],
+            generation: route.generation,
+            capturedIdentity: mount.box.captured,
+            currentIdentity: mount.current(),
+          })
         }
         return type === 'shell' ? { registrationId: 'reg-shell-1', incarnation: 'inc-1', processEnvelope: { sandbox: 'landlock' } } : null
       },
@@ -1338,5 +1353,40 @@ describe('A5M2-G3-PTC-GUARD-PLANE — run_code placement through the ORIGINAL PA
     expect(face?.onExecute).toBeNull()
     expect((face?.declared ?? []).map((d) => d.name)).toEqual(['run_code'])
     expect(built.value.placementNames).not.toContain('run_code')
+  })
+
+  it('(n) the REAL REPLACEMENT path (consolidated card 1b): publish A, publish B over it while A\'s reader is LIVE — A\'s very next answer refuses (no boolean flip, no hand-swap: the pairing against resolvePaMount does it), and B answers', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      resolvePaMount: (root: string, instance: string) => { identity: unknown } | undefined
+    }
+    const box: { captured: unknown } = { captured: undefined }
+    const w = makeInject({
+      route: { reads: 0, revokeAfter: Number.POSITIVE_INFINITY, generation: { value: 'mount-gen-l', revoked: false } },
+      mount: { box, current: () => registry.resolvePaMount('g3-plane-team', 'g3-instance')?.identity },
+    })
+    const pty = w.inject.ptyService as { backend: (t: string) => unknown }
+    const expectAnswer = { registrationId: 'dsh-g3-po:shell', incarnation: 'mount-gen-l' }
+    let idB: Record<string, unknown> | undefined
+    try {
+      // A is not yet published: even with a LIVE generation, NOTHING is answered.
+      expect(pty.backend('shell'), 'unpublished mount answers nothing').toBeNull()
+      const idA = registry.publishPaMount('g3-plane-team', 'g3-instance', { instanceId: 'g3-instance', plane: 'A' })
+      box.captured = idA
+      expect(pty.backend('shell'), 'A, freshly published, answers the route identity').toEqual(expectAnswer)
+      // THE REAL REPLACE: publishPaMount over the SAME pair — the registry
+      // swaps the live record without notifying A. A's reader is untouched
+      // (same generation object, never flipped) — yet its very next answer
+      // MUST refuse, because the CURRENTLY published identity is no longer
+      // A's captured one.
+      idB = registry.publishPaMount('g3-plane-team', 'g3-instance', { instanceId: 'g3-instance', plane: 'B' })
+      expect(pty.backend('shell'), 'A refuses the moment a newer publication exists — pairing, not notification, is the authority').toBeNull()
+      // B's own reader answers — the law is a PAIRING, not a shutdown:
+      box.captured = idB
+      expect(pty.backend('shell'), 'B answers as the current publication').toEqual(expectAnswer)
+    } finally {
+      if (idB !== undefined) registry.revokePaMount('g3-plane-team', 'g3-instance', idB)
+    }
   })
 })

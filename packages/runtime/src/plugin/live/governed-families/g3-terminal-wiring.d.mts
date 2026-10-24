@@ -151,13 +151,16 @@ export declare function a5G3PaTargetFlat (
   manifest: Readonly<Record<string, unknown>>,
 ): Readonly<Record<string, unknown>>
 
-/** THE ROUTE IDENTITY LAW (user ruling 2): the terminal_open target is THIS
- *  mount's Team controlled route (per-open one-shot registration family)
- *  bound to the MOUNT GENERATION — never a public backend identity, and a
- *  revoked/replaced generation answers null (no stale approval pairs). */
+/** THE ROUTE IDENTITY LAW (ruling 2 + consolidated card 1b/2): declared ∩
+ *  live ∩ COVERED only; generation alive; captured publication identity MUST
+ *  equal the currently published one — a superseded mount reader answers
+ *  nothing without being told. Never a public-backend identity. */
 export declare function a5G3RouteIdentity (input: {
   type?: unknown
   declared?: readonly string[]
   live?: readonly string[]
+  covered?: readonly string[]
   generation?: { value: string, revoked?: boolean } | null
+  capturedIdentity?: unknown
+  currentIdentity?: unknown
 }): Readonly<{ registrationId: string, incarnation: string }> | null
