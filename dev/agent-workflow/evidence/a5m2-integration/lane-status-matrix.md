@@ -207,3 +207,7 @@ E2单腿+修 / G1 merge / G3A merge → 中心 a5-m2-int（跨SHA用 git fetch o
 - **int 实测缺口**：derived supply 现**默认 ON**（agent-bindings :4727-4756），违"未签不得生产启用"——纠正卡已送 44ece（默认 OFF+显式 opt-in+spec 翻正），SHA 到即合。合入前 int 上该路径**不得用于任何 Host 启用**。
 - tuple JSON 修（`0e5645d9d`）独立可签；旧 f28 两口已签不动。
 - 6002/G3A 7603 增量已交根窄审（源 scope≠全已签）；e78 实为 idle、根已直接续 g2Web 注入+PA 纵切（中心前文"在途"口径按此更正）；pinbuild tgz/E1 保护不变，四树精确 HEAD 候 a356 现状复核。
+
+## 01:4x G3A760 独审回归修复（中心块）
+- **确定回归**：G3A 合入的 backends union 带 a5G3TerminalInject **guard** 漏 **条件 spread**（:4458–4482）→ plane :1402 永读 undefined → :5421 后 terminal 会话全 mount-refused。**中心修复**=补 spread 一行（dated 注）+ dist 重生 cmp 等值 + **transport 回归钉两腿**（bindings 源含精确 spread 行 / plane 读 exactly backends?.terminal；a5p7 pinned-edge 先例形——createAgentBindings 需 live Host ctx，真启用腿属 live kit，接线未测维持）。g3 18 + family-rules 28 = 46/46。
+- 9c `c918c4944` leader-members 正文腿入账；e78 r45 `d5edd944d`；新分派：8722=G5 mount 臂（plane 有面 bindings 零挂载实测）、cf8=Jobs/表离线验证 driver；44ece=G1 topologyScope 默认拒绝供给（根G1最终裁决形）——四 slot 全活，各树唯一 owner，无新树/安装。

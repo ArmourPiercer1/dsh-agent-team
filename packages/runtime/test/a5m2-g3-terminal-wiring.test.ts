@@ -43,6 +43,8 @@
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g3-terminal-wiring
  */
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
@@ -551,5 +553,29 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
     // the six-verb leaf sets are CLOSED: a smuggled leaf denies with its own name:
     expect(validatePaFamilyTarget('B-TERMINAL', { ...common('output-read', 'terminal_read'), ptySessionId: 'pty-1', ptyIncarnation: 'pid:4242', offsetJson: 'absent', countJson: 'absent', smuggled: 'x' }))
       .toBe('smuggled: not part of the B-TERMINAL typed plan')
+  })
+})
+
+// center (root G3A760 narrow review): REGRESSION PINS for the backends
+// transport. The merge that landed B-TERMINAL carried the a5G3TerminalInject
+// GUARD condition but dropped the conditional SPREAD from the backends
+// literal, so plane:1402 read `input.backends?.terminal === undefined` and
+// the post-mount wiring-face check (:5421 region) refused EVERY terminal
+// session (alpha5-g3-terminal-mount-refused). createAgentBindings needs a
+// live Host agent ctx (a5m2-g1-wire-c1 header, same disclosure), so the
+// in-repo guard is the pinned-edge class (a5p7 precedent): the binding must
+// carry the EXACT transport line, and the plane must keep reading EXACTLY
+// that key. A true end-to-end enablement leg rides the live kit — this pin
+// is not a substitute for it and nothing here claims 已测试.
+describe('B-TERMINAL backends transport — regression pins (root G3A760)', () => {
+  it('the bindings backends union carries the terminal spread (not just the guard)', () => {
+    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url)), 'utf8')
+    expect(src).toContain('...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),')
+    // the guard alone (without the spread) was the regression shape:
+    expect(src).toContain('a5SpawnWiring === null && a5G3TerminalInject === null')
+  })
+  it('the plane reads exactly input.backends?.terminal', () => {
+    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url)), 'utf8')
+    expect(src).toContain('const terminalInjectRaw = input.backends?.terminal')
   })
 })
