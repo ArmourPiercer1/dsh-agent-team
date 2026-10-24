@@ -1643,7 +1643,11 @@ export async function apply(ctx, config) {
          * then refuse typed exactly as before — no behavior change for worlds
          * without the block).
          */
-        async function buildG2TeamSupply(cfg) {
+        async function buildG2TeamSupply(cfg, 
+        // root 05:0x: the supply runs INSIDE the plugin's apply(), so the REAL
+        // cordis ctx is in scope — the launch-environment layering is reached
+        // through its OWN public read-only face (see the block below).
+        hostCtx) {
             const g2Mount = cfg.teamToolPlane?.g2Mount;
             if (g2Mount === null || typeof g2Mount !== 'object')
                 return undefined;
@@ -1809,13 +1813,21 @@ export async function apply(ctx, config) {
                     perplexity: { specifier: '@deepseek-ai/dsh-web-search-perplexity', env: 'PERPLEXITY_API_KEY' },
                     'deepseek-official': { specifier: '@deepseek-ai/dsh-web-search-deepseek', env: 'DEEPSEEK_API_KEY' },
                 };
-                // Credential/env reads are LIMITED to the PROCESS layer, named as
-                // such. launchEnvironmentOf(ctx) composes a multi-LAYER snapshot on
-                // the cordis ctx store (process + project/user .env) — NOT reachable
-                // at this boot-supply layer, and we do NOT claim equivalence; keys
-                // carried only on higher layers surface as NOT-READY, with config
-                // apiKey as the supported alternative. READ ONLY, nothing stored.
-                const launchEnv = globalThis.process?.env ?? {};
+                // ROOT 05:0x CLOSURE OF THE SUBSET LIMIT: the credential/env reads
+                // ride the PUBLIC launch-environment layering itself —
+                // launchEnvironmentOf(ctx) is the SAME read-only face the official
+                // plugin applies use (exa index.ts:61), reachable here because the
+                // supply is built inside apply() where ctx lives. No new credential
+                // service, no key copies: snapshot get(name) reads only, nothing
+                // stored or logged.
+                // HOST-GRAPH-ONLY module (the 15-peer set does not carry it): the
+                // specifier rides a TYPED VARIABLE - the same discipline the PUBLIC
+                // web-search roots above use - so tsc compiles honestly while the
+                // installed host resolves the module at runtime. No ts-ignore, no any.
+                const launchEnvSpecifier = '@deepseek-ai/dsh-launch-environment';
+                const launchEnvMod = (await import(launchEnvSpecifier));
+                const launchEnvSnapshot = launchEnvMod.launchEnvironmentOf(hostCtx);
+                const launchEnv = { get: (name) => launchEnvSnapshot.get(name)?.value ?? '' };
                 const choice = webSearchCfg.provider;
                 if (typeof choice !== 'string' || publicRoots[choice] === undefined) {
                     return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: 'webSearchFixed.provider must name ONE of exa|perplexity|deepseek-official — the user selects; nothing is auto-selected, nothing is invented' };
@@ -1839,7 +1851,7 @@ export async function apply(ctx, config) {
                         // baseURL/searchType/highlightsPerResult via ?? with the ROOT's
                         // exported defaults; numResults rides only when configured.
                         const m = mod;
-                        const apiKey = undef('apiKey') ? (launchEnv[publicRoots[choice].env] ?? '') : parse.apiKey;
+                        const apiKey = undef('apiKey') ? (launchEnv.get(publicRoots[choice].env)) : parse.apiKey;
                         const options = {
                             apiKey,
                             baseURL: undef('baseURL') ? m.EXA_DEFAULT_BASE_URL : parse.baseURL,
@@ -1857,7 +1869,7 @@ export async function apply(ctx, config) {
                         // index.ts:52-61 VERBATIM (same ?? law; model/maxTokens defaults
                         // from the root's constants; searchRecency only when configured).
                         const m = mod;
-                        const apiKey = undef('apiKey') ? (launchEnv[publicRoots[choice].env] ?? '') : parse.apiKey;
+                        const apiKey = undef('apiKey') ? (launchEnv.get(publicRoots[choice].env)) : parse.apiKey;
                         const options = {
                             apiKey,
                             baseURL: undef('baseURL') ? m.PERPLEXITY_DEFAULT_BASE_URL : parse.baseURL,
@@ -1891,12 +1903,12 @@ export async function apply(ctx, config) {
                         const snap = mod.Config.parse(cfgIn);
                         const apiKeyEnv = snap.apiKeyEnv !== undefined ? String(snap.apiKeyEnv) : 'DEEPSEEK_API_KEY';
                         const literal = typeof snap.apiKey === 'string' && snap.apiKey.length > 0 ? snap.apiKey : undefined;
-                        const envKey = launchEnv[apiKeyEnv];
-                        const resolvedKey = literal ?? ((envKey ?? '').length > 0 ? envKey : undefined);
+                        const envKey = launchEnv.get(apiKeyEnv);
+                        const resolvedKey = literal ?? (envKey.length > 0 ? envKey : undefined);
                         const snapshot = {
                             ...(resolvedKey !== undefined ? { apiKey: resolvedKey } : {}),
                             apiKeyEnv,
-                            baseURL: snap.baseURL !== undefined ? String(snap.baseURL) : (launchEnv.DEEPSEEK_SEARCH_BASE_URL ?? m.DEEPSEEK_DEFAULT_BASE_URL),
+                            baseURL: snap.baseURL !== undefined ? String(snap.baseURL) : (launchEnv.get('DEEPSEEK_SEARCH_BASE_URL') || m.DEEPSEEK_DEFAULT_BASE_URL),
                             model: snap.model, apiVersion: snap.apiVersion, maxTokens: snap.maxTokens, maxUses: snap.maxUses,
                         };
                         resolvedBaseURL = String(snapshot.baseURL);
@@ -1904,7 +1916,7 @@ export async function apply(ctx, config) {
                         if (resolvedKey !== undefined)
                             fixedSearch = new m.DeepSeekSearchProvider(() => snapshot);
                         else
-                            readyDetail = `neither a config apiKey nor the PROCESS-layer $${apiKeyEnv} resolves (supported sources at this layer, named; higher launch-snapshot layers are not reachable here — not an equivalence claim)`;
+                            readyDetail = `neither a config apiKey nor $${apiKeyEnv} resolves through the public launch-environment layering (the same read-only face the official applies use)`;
                     }
                     if (fixedSearch !== null) {
                         // ONE config -> ALL facts: the seam envelope AND the classify
@@ -1925,7 +1937,20 @@ export async function apply(ctx, config) {
                         // re-resolution through the SAME code path per dispatch — endpoint
                         // movement since assembly is CONFIG_DRIFT refusal inside the seam,
                         // not a second same-origin blessing.
-                        buildSearchLane = () => ({ fixedSearchProvider: fixedSearch, declared: { endpointOrigin: origin, configIdentity: identity }, readMountFacts: () => {
+                        // THE DEPLOYMENT CAP (root 05:0x): searchMaxResults is SUPPLIED on
+                        // every lane — the value comes from the SAME config face the tool-web
+                        // gateway reads (its public Config field searchMaxResults, default
+                        // the EXPORTED WEB_SEARCH_MAX_RESULTS constant from the tool-web
+                        // root), validated by the gateway's own positive-integer law
+                        // (index.ts:67-70). Nothing new is invented; absence takes the
+                        // deployment DEFAULT, never "uncapped".
+                        const toolWebSpecifier = '@deepseek-ai/dsh-tool-web'; // same host-graph-only typing discipline
+                        const capMod = (await import(toolWebSpecifier));
+                        const laneCap = webSearchCfg.searchMaxResults ?? capMod.WEB_SEARCH_MAX_RESULTS;
+                        if (!Number.isInteger(laneCap) || laneCap < 1) {
+                            return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webSearchFixed.searchMaxResults must be a positive integer (the gateway's own law, tool-web/src/index.ts:67-70) — got ${JSON.stringify(laneCap)}` };
+                        }
+                        buildSearchLane = () => ({ fixedSearchProvider: fixedSearch, searchMaxResults: laneCap, declared: { endpointOrigin: origin, configIdentity: identity }, readMountFacts: () => {
                                 const liveOrigin = (() => { try {
                                     const u = new URL(liveBaseURL());
                                     return u.origin;
@@ -2049,7 +2074,7 @@ export async function apply(ctx, config) {
                 const g2Cfg = resolvedRowConfig.teamToolPlane?.g2Mount;
                 if (typeof g2Cfg !== 'object' || g2Cfg === null)
                     return undefined;
-                const built = await buildG2TeamSupply(resolvedRowConfig);
+                const built = await buildG2TeamSupply(resolvedRowConfig, ctx);
                 return built?.supply?.webFixedTransport;
             },
             // A5-M2 B-IMAGE: the same lazy shape for the 639 public `attachments` service
@@ -2061,7 +2086,7 @@ export async function apply(ctx, config) {
             // buildG2TeamSupply). Absent `teamToolPlane.g2Mount` config answers
             // undefined — the bindings then refuse typed; NOTHING changes for
             // worlds without the block (additive optional, never a hard inject).
-            g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig)),
+            g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig, ctx)),
             // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
             // `llm` service — the SAME token native read-image.ts:119-130 answers
             // `resolveModelInfo` through for its image-capability route gate. Resolved
