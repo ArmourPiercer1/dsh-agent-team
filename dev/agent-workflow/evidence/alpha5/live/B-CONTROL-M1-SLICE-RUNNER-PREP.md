@@ -7,7 +7,49 @@
 > 旧 kit 大改 → 直接复用 A 已启动公共 runner 替 Control 场景，不新通用框架 ✓（§5）；
 > 端口 3184/mock 3499/fresh 显式 HOME 保 ✓；不 11-legs 扩展 ✓。
 
-## 2'. 产品挂载合同（真实包，非源码冒包）
+## 2''. 挂载更正（根 2026-10-29 裁决；取代 §2'，§2' 的 `--testuse=<install>` 说法作废）
+
+- **`--testuse` 是 Host CLI 树**：真实 Host639 = `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use`
+  （`apps/cli/lib/bin.js` 已实证存在）；**npm install 目录绝不作 Host**。
+- **真实产品 = 37646 INSTALL_DIR 内 host/dist 挂进 Host 的 profile-patch seam（A 法）**，
+  本 namespace 只读可见性**已实测**（2026-10-29）：
+  - `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2` 可读
+    （`package.json`/`pnpm-lock.yaml`/`node_modules/dsh-agent-team` 在位）；
+  - lock sha256 **实测 = `7685317ff1ba675f6d3f6b012907360579c3c85bd1bc3319d0248483bde3c659`**（与根数一致）；
+  - tgz `/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-37646ac2-20261024T085726Z/dsh-agent-team-0.1.1-alpha.2.tgz`
+    sha256 **实测 = `3652b2ce19025d0d25d8b661fc08f0a3cb0737bb7b4fbc339fd61a12e2b5fd7c`**（与根数一致）。
+- **A 现行挂载链逐位复用**（`a5m2-job-family` 树 `evidence/a5m2-edit-host-window/scripts/05-edit-window-runner.mjs`，
+  行号实测）：install `package.json` `file:` 指针→tgz 名/目录前缀/sha256 三重钉（:165-178）→
+  `PKG_DIR_READ = install/node_modules/dsh-agent-team`（:179）→ `exports['./host']` 解析
+  **host/dist 入口**（:366-367）→ `writePatch(patchPath, pathToFileURL(HOST_ENTRY).href)`
+  经公开 cordis profile-patch seam 插入 Host（:182-207，`- insert: - id: dsh-agent-team`，
+  bootPhase create）；`HOST_TREE = ROOT_DIR/tests/deepseek-harness-test-use`（:74 = 639 独立指 Host）。
+  driver/product **双钉** = `runner-identity.json`（runnerFullSha/runnerFileSha256 vs
+  composedSha/packSha256/installDir，:355）。GO 门 + `*_DRY=1` 到界预检（install→入口解析→patch，
+  spawn 前停）同件复用。
+- **旧 kit 的产品输入不合规且改造=大改**：kit 现状把 `--worktree` 构建 dist 当插件
+  （:193-195 `PRODUCTION_ROW_PATH=WORKTREE/.../host.js`，:1374 自述"THIS branch's build"）——
+  正是根禁止的"以 --worktree 源码冒包"；给 kit 换 install 挂载属大改 → **按裁走 A-runner
+  派生：复制其 mount/preflight/identity/GO/dry 骨架，替 Control 场景**，不新通用框架。
+  kit 的 `--scenario` selector 保留（本分支全量腿与 C3 等仍有效），不再作为 37646 产品载体。
+
+## 3''. C1 工具面核验（根问"是否真走工具 registry 调 83/84"——核毕，答：一半）
+
+- **84/85 = 真 registry 调用 ✓**：kit mock 程序（:975-1000）在 leader 通知轮发
+  `toolCall('team_list_pending_control')` + `toolCall('team_resolve_control')` ——模型面工具
+  经工具注册表进真实面。
+- **83 ≠ registry 调用 ✗**：C1 的请求由 **member ask-lane 的 pre-execute adapter 内部创建**
+  （WIRE_NOTES.C1 原文 "member ask-lane (real pre-execute adapter...)"；注释 :1195-1197
+  "the ask's control-request creation is an admitted..."），模型从未 toolCall `team_request_control`。
+- 结论照根口径：**C1 通过 ≠ `team_request_control` C2**；且 C2 段是 RPC v4 `team.resolveControl`，
+  同样不算两工具。**最小纵切因此必须含 83 的真实 registry 腿**：member 模型轮
+  `toolCall('team_request_control', {rootSessionId, targetInstanceId(自身相关), actionName, summary})`
+  （member envelope `allow:[request-control]` :1291-1293 恰好放行，deny:[]），Leader 通知轮
+  list+resolve（84/85），**同 call/同 requestToken 消费**（B-CONTROL variant 叶 requestToken
+  配对律 `control/types.ts:1492+`）+ durable 双对账（`team.getLedgerPage` 产品 wire +
+  只读 `team_domain.json` 扫描）。三腿一 boot，即最小纵切，不再加腿。
+
+
 
 - 启动链实测契约：`tests/characterization/lib/instance.mjs:89` 以
   `<hostTree>/apps/cli/lib/bin.js web --port` 拉起 —— 故挂载点 =
