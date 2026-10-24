@@ -569,13 +569,13 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
 // is not a substitute for it and nothing here claims 已测试.
 describe('B-TERMINAL backends transport — regression pins (root G3A760)', () => {
   it('the bindings backends union carries the terminal spread (not just the guard)', () => {
-    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url)), 'utf8')
+    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href), 'utf8')
     expect(src).toContain('...(a5G3TerminalInject === null ? {} : { terminal: a5G3TerminalInject }),')
     // the guard alone (without the spread) was the regression shape:
     expect(src).toContain('a5SpawnWiring === null && a5G3TerminalInject === null')
   })
   it('the plane reads exactly input.backends?.terminal', () => {
-    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url)), 'utf8')
+    const src = readFileSync(fileURLToPath(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href), 'utf8')
     expect(src).toContain('const terminalInjectRaw = input.backends?.terminal')
   })
 })

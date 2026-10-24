@@ -29,10 +29,10 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-const pkgRoot = new URL('../', import.meta.url)
-const BINDINGS_SRC = fileURLToPath(new URL('src/plugin/live/agent-bindings.mjs', pkgRoot))
-const BINDINGS_DIST = fileURLToPath(new URL('dist/packages/runtime/src/plugin/live/agent-bindings.mjs', pkgRoot))
-const PLANE_SRC = fileURLToPath(new URL('src/plugin/live/team-tool-plane.mjs', pkgRoot))
+const pkgRoot = new URL('../', import.meta.url).href
+const BINDINGS_SRC = fileURLToPath(new URL('src/plugin/live/agent-bindings.mjs', pkgRoot).href)
+const BINDINGS_DIST = fileURLToPath(new URL('dist/packages/runtime/src/plugin/live/agent-bindings.mjs', pkgRoot).href)
+const PLANE_SRC = fileURLToPath(new URL('src/plugin/live/team-tool-plane.mjs', pkgRoot).href)
 
 const backendsAssembly = (text: string) => {
   const guardLine = text.split('\n').find((line) => line.includes('? {} : { backends: {'))
@@ -43,11 +43,12 @@ const backendsAssembly = (text: string) => {
   // comment-only lines are not rows (a commented-out spread must read as LOST)
   const slice = text.slice(from, close).split('\n').filter((line) => !line.trim().startsWith('//')).join('\n')
   const rows: Array<{ condVar: string | null; cond: string; key: string }> = []
-  for (const match of slice.matchAll(/\.\.\.\(([\s\S]*?)\? \{\} : \{ ([A-Za-z0-9]+):/g)) {
-    if (match[2] === 'backends') continue // the guard line itself opens with ...( and hands over `backends:` itself
-    const cond = match[1].trim()
-    const vars = [...cond.matchAll(/a5[A-Za-z0-9]+/g)].map((v) => v[0])
-    rows.push({ condVar: vars.length === 1 ? vars[0] : null, cond, key: match[2] })
+  for (const [, condRaw, keyRaw] of slice.matchAll(/\.\.\.\(([\s\S]*?)\? \{\} : \{ ([A-Za-z0-9]+):/g)) {
+    if (keyRaw === undefined || condRaw === undefined) continue // groups participate by construction; the skip is belt-and-braces, never a silent accept
+    if (keyRaw === 'backends') continue // the guard line itself opens with ...( and hands over `backends:` itself
+    const cond = condRaw.trim()
+    const vars = [...cond.matchAll(/a5[A-Za-z0-9]+/g)].map((v) => v[0]).filter((v): v is string => v !== undefined)
+    rows.push({ condVar: vars.length === 1 ? vars[0] ?? null : null, cond, key: keyRaw })
   }
   // A5M2-CENTER (2026-10-24, e78 re-anchor merge): the WHOLE-BACKENDS spread
   // class — `...(a5X === null ? {} : a5X.backends)` — hands over MANY keys
@@ -56,8 +57,8 @@ const backendsAssembly = (text: string) => {
   // pattern above cannot see it; recognizing it here keeps the lost-row law
   // TOTAL, and the key pairing moves to the dedicated center leg below.
   const wholeSpreads: string[] = []
-  for (const match of slice.matchAll(/\.\.\.\((a5[A-Za-z0-9]+) === null \? \{\} : \1\.backends\)/g)) {
-    wholeSpreads.push(match[1])
+  for (const [, varRaw] of slice.matchAll(/\.\.\.\((a5[A-Za-z0-9]+) === null \? \{\} : \1\.backends\)/g)) {
+    if (varRaw !== undefined) wholeSpreads.push(varRaw)
   }
   return { guardLine, slice, rows, wholeSpreads }
 }
@@ -118,7 +119,7 @@ describe('A5M2-G3A-BINDINGS-UNION-C1 — guard/spread/plane-read pairing on the 
   // above uses; a builder key renamed/added without the matching surface
   // row is RED, and the spread silently losing its row is RED through the
   // guard-carrier law above.
-  const G2_MOUNT_SRC = fileURLToPath(new URL('src/plugin/live/governed-families/g2-team-mount.mjs', pkgRoot))
+  const G2_MOUNT_SRC = fileURLToPath(new URL('src/plugin/live/governed-families/g2-team-mount.mjs', pkgRoot).href)
   it('the whole-backends spread class stays gated and its key set equals the plane G2 surface injectKey table (center 2026-10-24)', () => {
     for (const text of [src, dist]) {
       const { wholeSpreads } = backendsAssembly(text)
