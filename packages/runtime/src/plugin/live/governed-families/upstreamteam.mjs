@@ -36,11 +36,12 @@
  *
  * STATUS DISCIPLINE: the index marks all nine
  * `targetStatus: PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED`. Writing a row here is
- * implementation progress, never an acceptance claim. Only record 66
- * (`list_agents`) carries a completed row in this revision; the other eight
- * names are typed DECLARED-not-yet-rowed entries in
- * `A5_B_UPSTREAMTEAM_NAMED_GAPS` with their frozen record index, so a missing
- * port law can never be papered over by an invented one.
+ * implementation progress, never an acceptance claim. This revision rows SIX
+ * records (65/66/67/70/71/73) whose host port law is transcribed line by line;
+ * the remaining three (68/69/72) stay typed DECLARED-not-yet-rowed entries in
+ * `A5_B_UPSTREAMTEAM_NAMED_GAPS` with their frozen record index and the exact
+ * host-side law still missing, so a gap can never be papered over by an
+ * invented signature.
  */
 
 export const A5_B_UPSTREAMTEAM_FAMILY_ID = 'B-UPSTREAMTEAM'
@@ -69,25 +70,46 @@ export const A5_B_UPSTREAMTEAM_TOOL_NAMES = Object.freeze([
 ])
 
 /**
- * THE PORT LAW of the ONE rowed name, taken from the captured 639 body rather
- * than invented (`packages/experimental/tool-agent-team/src/index.ts`; built
- * face `lib/index.js:323-328`):
- *   list_agents → ctx.agentTeams.listMembers(callingAgent(exec.agent, 'list_agents'))
- *                 .map(modelMember)
- * so the seam is `agentTeams.listMembers(callerAgent) -> member[]`, the caller
- * identity is derived from the exec agent (never from an argument the model can
- * forge), and the value side is the host's own member model. `parameters: {}`
- * means the row accepts NO model-supplied argument at all. The port object is
- * INJECTED by the paired registration writer (production: the live
- * `ctx.agentTeams` plus the host's caller-resolution and member-modeling
- * helpers); this module implements none of it.
+ * THE PORT LAW, transcribed name by name from the captured 639 bodies of
+ * `packages/experimental/tool-agent-team/lib/index.js` (fixed host 639ed01539) —
+ * every entry states the host method the native execute actually calls and its
+ * real arity. The caller identity is ALWAYS the exec-derived agent from
+ * `callingAgent(exec.agent, <name>)`, never a model-supplied field, so member
+ * visibility is unchanged: a row can only ever see the caller's own team. The
+ * port OBJECT is injected by the paired registration writer (production: the
+ * live `ctx.agentTeams` plus the host's `TeamTaskId` brand); this module
+ * implements none of it and registers nothing.
+ *
+ *   66 list_agents      :328  listMembers(caller).map(modelMember)
+ *   65 interrupt_agent  :363  interrupt(caller, args.target)
+ *   67 send_message     :312  sendMessage(caller, { target, message })
+ *   70 team_task_create :393  createTask(caller, { subject, description,
+ *                              ...blockedBy = blocked_by.map(TeamTaskId),
+ *                              ...writeScopes = write_scopes })
+ *   71 team_task_get    :455  getTask(caller, TeamTaskId(args.task_id))
+ *   73 team_task_update :512  updateTask(caller, { taskId: TeamTaskId(task_id),
+ *                              expectedRevision, action, ...subject,
+ *                              ...description, ...blockedBy, ...writeScopes, ...owner })
+ * `listMembers` and `getTask` answers are additionally modelled host-side by
+ * `modelMember` / the task view (:73, :455); the value-side modelling stays
+ * with the captured native face, which the paired writer re-attaches.
  */
 export const A5_B_UPSTREAMTEAM_SERVICE_METHODS = Object.freeze({
   list_agents: Object.freeze({ service: 'agentTeams', method: 'listMembers', arity: 1 }),
+  interrupt_agent: Object.freeze({ service: 'agentTeams', method: 'interrupt', arity: 2 }),
+  send_message: Object.freeze({ service: 'agentTeams', method: 'sendMessage', arity: 2 }),
+  team_task_create: Object.freeze({ service: 'agentTeams', method: 'createTask', arity: 2 }),
+  team_task_get: Object.freeze({ service: 'agentTeams', method: 'getTask', arity: 2 }),
+  team_task_update: Object.freeze({ service: 'agentTeams', method: 'updateTask', arity: 2 }),
 })
 
 export const A5_B_UPSTREAMTEAM_EFFECT_LABELS = Object.freeze({
-  list_agents: Object.freeze({ effect: 'read', label: 'roster-read: no durable write' }),
+  list_agents: Object.freeze({ effect: 'read', label: 'roster-read: caller-scoped, no durable write' }),
+  team_task_get: Object.freeze({ effect: 'read', label: 'task-read: one task of the caller\'s team' }),
+  interrupt_agent: Object.freeze({ effect: 'control', label: 'cancellation request on one teammate' }),
+  send_message: Object.freeze({ effect: 'write', label: 'mailbox write to one teammate' }),
+  team_task_create: Object.freeze({ effect: 'write', label: 'durable shared-task create' }),
+  team_task_update: Object.freeze({ effect: 'write', label: 'durable shared-task mutation, revision-checked' }),
 })
 
 /** Typed refusal codes of this family (never a generic internal error). */
@@ -96,23 +118,79 @@ export const A5_B_UPSTREAMTEAM_CODES = Object.freeze({
   callerUnresolved: 'P_UPSTREAMTEAM_CALLER_UNRESOLVED',
   mountNotDeclared: 'P_UPSTREAMTEAM_MOUNT_NOT_DECLARED',
   paSeatMissing: 'P_UPSTREAMTEAM_PA_SEAT_MISSING',
+  portMethodMissing: 'P_UPSTREAMTEAM_PORT_METHOD_MISSING',
 })
 
 /**
- * The eight names this revision does NOT row, with the reason a row is not
- * possible yet (their captured port law has not been read from the 639 source
- * and transcribed name by name). Each keeps its frozen record index so the
- * next increment extends this table instead of re-deriving the census.
+ * Model-facing parameter faces, copied from the captured tool definitions — a
+ * row accepts ONLY these keys and drops everything else, so a row can never
+ * widen what the model may pass (`list_agents` has no arguments at all).
+ */
+export const A5_B_UPSTREAMTEAM_PARAM_FACES = Object.freeze({
+  list_agents: Object.freeze([]),
+  interrupt_agent: Object.freeze(['target']),
+  send_message: Object.freeze(['target', 'message']),
+  team_task_create: Object.freeze(['subject', 'description', 'blocked_by', 'write_scopes']),
+  team_task_get: Object.freeze(['task_id']),
+  team_task_update: Object.freeze(['task_id', 'expected_revision', 'action', 'subject', 'description', 'blocked_by', 'write_scopes', 'owner']),
+})
+
+/**
+ * Argument marshalling, one entry per rowed name, mirroring the captured
+ * `execute` bodies exactly (same key renames: snake_case model face ->
+ * camelCase service face; same optional-spread behaviour; the same
+ * `TeamTaskId` branding through the injected `brandTaskId`).
+ */
+function marshalArgs(name, args, caller, port) {
+  const optional = (key, value) => (value === undefined ? {} : { [key]: value })
+  const brandList = (list) => (list === undefined ? undefined : list.map((item) => port.brandTaskId(item)))
+  if (name === 'list_agents') return [caller]
+  if (name === 'interrupt_agent') return [caller, args.target]
+  if (name === 'team_task_get') return [caller, port.brandTaskId(args.task_id)]
+  if (name === 'send_message') return [caller, { target: args.target, message: args.message }]
+  if (name === 'team_task_create') {
+    return [caller, {
+      subject: args.subject,
+      description: args.description,
+      ...optional('blockedBy', brandList(args.blocked_by)),
+      ...optional('writeScopes', args.write_scopes),
+    }]
+  }
+  return [caller, {
+    taskId: port.brandTaskId(args.task_id),
+    expectedRevision: args.expected_revision,
+    action: args.action,
+    ...optional('subject', args.subject),
+    ...optional('description', args.description),
+    ...optional('blockedBy', brandList(args.blocked_by)),
+    ...optional('writeScopes', args.write_scopes),
+    ...optional('owner', args.owner),
+  }]
+}
+
+/**
+ * Names this revision does NOT row, with the exact host-side law that still has
+ * to be transcribed before a row can be honest about it (each citation is a
+ * line range of the captured 639 body):
+ *   68 spawn_teammate — the native composes a <system-reminder> teammate brief
+ *     into `prompt` and calls spawnTeammate(agent, { name, description,
+ *     prompt: [ … ], context: args.context ?? 'fresh' }) (lib/index.js:268-296);
+ *     restating that brief here would fork host copy instead of reusing the
+ *     captured native face, so the row waits for a ruling on reuse.
+ *   69 wait_agent — value-side law is a guard chain before the port call:
+ *     timeout_ms must be a safe integer in 10000..3600000, and an inactive-peer
+ *     check over listMembers with ACTIVE_WAIT_STATUSES answers
+ *     NO_ACTIVE_PEER_MESSAGE; only then waitForChange(caller, timeoutMs,
+ *     exec.signal) (lib/index.js:338-350). The signal is an exec face, not a
+ *     model face, and the status set has not been transcribed yet.
+ *   72 team_task_list — post-call filter over listTasks(caller) on
+ *     status/owner/ready plus cursor/limit paging (lib/index.js:430-440); the
+ *     predicate tail and paging law are not fully transcribed yet.
  */
 export const A5_B_UPSTREAMTEAM_NAMED_GAPS = Object.freeze({
-  interrupt_agent: Object.freeze({ recordIndex: 65, reason: 'port law not yet transcribed from the 639 body' }),
-  send_message: Object.freeze({ recordIndex: 67, reason: 'port law not yet transcribed from the 639 body' }),
-  spawn_teammate: Object.freeze({ recordIndex: 68, reason: 'port law not yet transcribed from the 639 body' }),
-  wait_agent: Object.freeze({ recordIndex: 69, reason: 'port law not yet transcribed (timed wait: 10000..3600000 ms)' }),
-  team_task_create: Object.freeze({ recordIndex: 70, reason: 'port law not yet transcribed from the 639 body' }),
-  team_task_get: Object.freeze({ recordIndex: 71, reason: 'port law not yet transcribed from the 639 body' }),
-  team_task_list: Object.freeze({ recordIndex: 72, reason: 'port law not yet transcribed from the 639 body' }),
-  team_task_update: Object.freeze({ recordIndex: 73, reason: 'port law not yet transcribed from the 639 body' }),
+  spawn_teammate: Object.freeze({ recordIndex: 68, reason: 'native composes the teammate brief into prompt (lib/index.js:268-296); reuse ruling pending before a row forks that copy' }),
+  wait_agent: Object.freeze({ recordIndex: 69, reason: 'guard chain + exec.signal face and ACTIVE_WAIT_STATUSES not transcribed (lib/index.js:338-350)' }),
+  team_task_list: Object.freeze({ recordIndex: 72, reason: 'filter predicate tail and cursor/limit paging not transcribed (lib/index.js:430-440)' }),
 })
 
 /**
@@ -141,22 +219,40 @@ export function upstreamTeamPlacementEntry(name) {
  * plane's PA funnel exactly as the row paths do (`pa: paAdmit`). A missing PA
  * seat or an unresolved caller is a typed refusal, never a silent read.
  */
+/**
+ * Build one row. Governance is never decided here: the operation, the census
+ * recordIndex and the value-side thunk are handed to the plane's OWN PA funnel
+ * (`paAdmitBody`, team-tool-plane.mjs:1610-1614), exactly as the row paths of the
+ * other families do. Only the frozen parameter face survives the trim, so a row
+ * cannot widen the model-facing surface.
+ */
 export function createUpstreamTeamRow(name, input = {}) {
   const entry = upstreamTeamPlacementEntry(name)
   if (entry === null) return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.rowNotRowed, name }
-  const { port, callerAgent, pa } = input
+  const { port, callerAgent, pa, args = {} } = input
   if (typeof pa?.admit !== 'function' && typeof pa !== 'function') {
     return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.paSeatMissing, name }
   }
   if (typeof callerAgent !== 'string' || callerAgent.length === 0) {
     return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.callerUnresolved, name }
   }
+  const method = A5_B_UPSTREAMTEAM_SERVICE_METHODS[name]?.method
+  if (typeof port?.[method] !== 'function' || (method !== 'listMembers' && typeof port.brandTaskId !== 'function' && (name === 'team_task_get' || name === 'team_task_create' || name === 'team_task_update'))) {
+    return { ok: false, code: A5_B_UPSTREAMTEAM_CODES.portMethodMissing, name }
+  }
+  const face = A5_B_UPSTREAMTEAM_PARAM_FACES[name]
+  const trimmed = {}
+  for (const key of face) if (args[key] !== undefined) trimmed[key] = args[key]
   const admit = typeof pa === 'function' ? pa : pa.admit
   return {
     ok: true,
     entry,
     invoke() {
-      return admit({ operation: entry.operation, recordIndex: entry.recordIndex, run: () => port.listMembers(callerAgent) })
+      return admit({
+        operation: entry.operation,
+        recordIndex: entry.recordIndex,
+        run: () => port[method](...marshalArgs(name, trimmed, callerAgent, port)),
+      })
     },
   }
 }
