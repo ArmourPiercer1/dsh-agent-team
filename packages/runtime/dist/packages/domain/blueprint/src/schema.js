@@ -443,6 +443,25 @@ export const PERMISSION_TOOL_NAMES = [
     'cordis_inspect_list',
     'cordis_inspect_query',
     'team_list_pending_control',
+    // B-TEAM self-governance four (records 83/84/87/88; root 2026-10-26
+    // limited card: the mount takeover is PRODUCTION fact — tools.ts
+    // team_request_control / team_resolve_control / team_grant_permission /
+    // team_revoke_permission — and the old declared-INACTIVE comment was
+    // stale). Registered on the team_list_pending_control (85) pattern:
+    // invocation-only, rule = tool-invoke arm, resource 'any', exact
+    // realm|tool:name matcher. No new effect/matcher/ledger; the
+    // request/resolve envelope and the native resolver identity are
+    // UNTOUCHED — naming pre-wires the NAMED CHANNEL only.
+    'team_request_control',
+    'team_resolve_control',
+    'team_grant_permission',
+    'team_revoke_permission',
+    // B-SRE (root 2026-10-26): the str_replace_editor INVOCATION registers
+    // invocation-only so the I rule is expressible at all. R/F stay exact
+    // read/write rules on their own: an invocation-only rule projects NO
+    // file arm (exact/subtree refuse for this class), so this is never a
+    // whole-file IO authorization.
+    'str_replace_editor',
     'interrupt_agent',
     'list_agents',
     'send_message',
@@ -520,7 +539,9 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES = [
     // rule IS the invocation authority on the `tool-invoke` arm. The four
     // self-governance controls (team_request_control / team_resolve_control
     // / team_grant_permission / team_revoke_permission) stay OUT: declared
-    // INACTIVE, Gate 0f refuses their mount.
+    // INACTIVE, Gate 0f refuses their mount.// self-governance controls' old stay-OUT/INACTIVE disclosure (same
+    // names) is RETIRED by the 2026-10-26 registration below: the takeover
+    // is production fact, records 83/84/87/88.
     'team_list_members',
     'team_list_templates',
     'team_inspect_config',
@@ -540,6 +561,17 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES = [
     'cordis_inspect_list',
     'cordis_inspect_query',
     'team_list_pending_control',
+    // B-TEAM self-governance four (records 83/84/87/88, root 2026-10-26):
+    // registered on the 85 pattern — tool-invoke arm, 'any' resource, the
+    // exact realm|tool:name projection; the envelope and native resolver
+    // identity UNCHANGED. B-SRE str_replace_editor registers on the same
+    // pattern: the I rule ONLY — R/F stay independent exact read/write
+    // rules (no file arm projects from an invocation-only rule).
+    'team_request_control',
+    'team_resolve_control',
+    'team_grant_permission',
+    'team_revoke_permission',
+    'str_replace_editor',
     // B-SUBAGENT controls trio (A5_B_SUBAGENT_TOOL_NAMES at the root-named
     // source-signed production branch 7c6869879 — family landing pending;
     // listing them pre-wires the NAMED channel only). Adjacency/ancestor

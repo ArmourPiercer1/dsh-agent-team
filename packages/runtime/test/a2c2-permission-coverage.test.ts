@@ -91,7 +91,9 @@ const STRICT_DENY: TemplatePermissionPolicy = { default: 'deny', allow: [], ask:
  *  controls stay OUT of the vocabulary (Gate 0f refuses their mount):
  *  `team_request_control` keeps the OTHER_MANAGED_TEAM_TOOL class alive
  *  and pins the exclusion boundary. */
-const TEAM_TOOLS = ['team_delegate', 'team_follow_up', 'team_inspect_config', 'team_request_control']
+// The FOUR self-governance controls joined the vocabulary 2026-10-26 — the
+  // non-vocabulary control example is a synthetic still-outside name.
+const TEAM_TOOLS = ['team_delegate', 'team_follow_up', 'team_inspect_config', 'team_future_control']
 
 /** The synthetic unknown tool name (the §7.3-F unknown-semantics case). */
 const UNKNOWN_TOOL = 'foo_magic'
@@ -566,7 +568,6 @@ const R: Record<string, unknown> = await (async () => {
   {
     const good = [
       ...PERMISSION_TOOL_NAMES,
-      'team_request_control',
       MCP_TOOL,
       'todo_write',
     ]
@@ -826,10 +827,10 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
     ])
   })
 
-  it('P3 · grep/ralph/web_fetch escape the thirty-five-name managed vocabulary (root 22:32: subagent joined — the unwired orchestration example ralph keeps the class proof) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
+  it('P3 · grep/ralph/web_fetch escape the forty-name managed vocabulary (root 22:32: subagent joined — the unwired orchestration example ralph keeps the class proof) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
     const p3 = R['p3'] as Record<string, any>
     // stable characterization of the pre-fix gap (both trees):
-    expect(p3.managedSet).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'edit', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_send_message', 'write'])
+    expect(p3.managedSet).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'edit', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'str_replace_editor', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_grant_permission', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_request_control', 'team_resolve_control', 'team_revoke_permission', 'team_send_message', 'write'])
     expect(p3.inVocabulary).toEqual([false, false, false])
     expect(p3.classifyKinds).toEqual(['unsupported', 'unsupported', 'unsupported'])
     // the post-fix gate leg (RED on base):
@@ -862,7 +863,7 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
 })
 
 describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
-  it('G1 · the thirty-five-name managed vocabulary (root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed classes) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
+  it('G1 · the forty-name managed vocabulary (root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed classes) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
     const g1 = R['g1'] as Record<string, any>
     expect(g1.present).toBe(true)
     expect(g1.ok).toBe(true)
@@ -886,6 +887,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'session_event_trace', classification: 'managed-operation-permission' },
       { name: 'session_search', classification: 'managed-operation-permission' },
       { name: 'session_trace', classification: 'managed-operation-permission' },
+      { name: 'str_replace_editor', classification: 'managed-operation-permission' },
       { name: 'subagent', classification: 'managed-operation-permission' },
       { name: 'subagent_claude_code', classification: 'managed-operation-permission' },
       { name: 'subagent_codex', classification: 'managed-operation-permission' },
@@ -895,11 +897,15 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'team_create_member', classification: 'managed-operation-permission' },
       { name: 'team_delegate', classification: 'managed-operation-permission' },
       { name: 'team_follow_up', classification: 'managed-operation-permission' },
+      { name: 'team_grant_permission', classification: 'managed-operation-permission' },
       { name: 'team_inspect_config', classification: 'managed-operation-permission' },
       { name: 'team_list_members', classification: 'managed-operation-permission' },
       { name: 'team_list_pending_control', classification: 'managed-operation-permission' },
       { name: 'team_list_templates', classification: 'managed-operation-permission' },
       { name: 'team_report_progress', classification: 'managed-operation-permission' },
+      { name: 'team_request_control', classification: 'managed-operation-permission' },
+      { name: 'team_resolve_control', classification: 'managed-operation-permission' },
+      { name: 'team_revoke_permission', classification: 'managed-operation-permission' },
       { name: 'team_send_message', classification: 'managed-operation-permission' },
       { name: 'write', classification: 'managed-operation-permission' },
     ])
@@ -914,8 +920,8 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g2.tools).toEqual([
       { name: 'team_delegate', classification: 'managed-operation-permission' },
       { name: 'team_follow_up', classification: 'managed-operation-permission' },
+      { name: 'team_future_control', classification: 'other-managed-team-tool' },
       { name: 'team_inspect_config', classification: 'managed-operation-permission' },
-      { name: 'team_request_control', classification: 'other-managed-team-tool' },
     ])
     expect(g2.unmanaged).toEqual([])
   })
@@ -1078,6 +1084,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'session_event_trace', classification: 'managed-operation-permission' },
       { name: 'session_search', classification: 'managed-operation-permission' },
       { name: 'session_trace', classification: 'managed-operation-permission' },
+      { name: 'str_replace_editor', classification: 'managed-operation-permission' },
       { name: 'subagent', classification: 'managed-operation-permission' },
       { name: 'subagent_claude_code', classification: 'managed-operation-permission' },
       { name: 'subagent_codex', classification: 'managed-operation-permission' },
@@ -1087,12 +1094,15 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'team_create_member', classification: 'managed-operation-permission' },
       { name: 'team_delegate', classification: 'managed-operation-permission' },
       { name: 'team_follow_up', classification: 'managed-operation-permission' },
+      { name: 'team_grant_permission', classification: 'managed-operation-permission' },
       { name: 'team_inspect_config', classification: 'managed-operation-permission' },
       { name: 'team_list_members', classification: 'managed-operation-permission' },
       { name: 'team_list_pending_control', classification: 'managed-operation-permission' },
       { name: 'team_list_templates', classification: 'managed-operation-permission' },
       { name: 'team_report_progress', classification: 'managed-operation-permission' },
-      { name: 'team_request_control', classification: 'other-managed-team-tool' },
+      { name: 'team_request_control', classification: 'managed-operation-permission' },
+      { name: 'team_resolve_control', classification: 'managed-operation-permission' },
+      { name: 'team_revoke_permission', classification: 'managed-operation-permission' },
       { name: 'team_send_message', classification: 'managed-operation-permission' },
       { name: 'todo_write', classification: 'safe-unmanaged' },
       { name: 'write', classification: 'managed-operation-permission' },

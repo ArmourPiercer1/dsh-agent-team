@@ -4341,6 +4341,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // lane serves this edit). Any other prior stays the typed replay
       // refusal — a settled token is never re-armed.
       let editClaim
+      let editEdgeRan = false
       let correlation
       if (priorFlight !== undefined && !priorFlight.settled && priorFlight.handedOff === true) {
         editClaim = editPaHandoffs.get(tokenKey)
@@ -4459,6 +4460,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
           paAdmit.closePlan(walk.callId)
           throw new Error(`refused-edit ${prepared.code ?? 'P_EDIT_NOT_ADMITTED'} — ${prepared.detail ?? 'the arm refused the kernel grant'}`)
         }
+        // From this line on, the call's plan fact belongs to the edge's own
+        // finally (it closes on every outcome); before it, the net below closes.
+        editEdgeRan = true
         const edge = await paAdmit.edge({
           ...walk,
           grant: opened.grant,
@@ -4519,6 +4523,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
         }
         // Every path settles the token (shared ledger; the map dies with
         // the mount).
+        // A redeemed call owns the plan fact the pre-dispatch Part A left
+        // standing; the edge's finally closes it once the edge RAN, and this net
+        // closes it on every exit BEFORE the edge. Idempotent with the
+        // explicit closes above — never a leak, never a double verdict.
+        if (editClaim !== undefined && !editEdgeRan) paAdmit.closePlan(correlation)
         governedTokenLedger.set(tokenKey, { correlation, settled: true })
       }
     },
@@ -4812,6 +4821,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // redemption finds no flight, any other prior stays the typed replay
       // refusal. Part A is never re-run and there is no fallback lane.
       let sreClaim
+      let sreEdgeRan = false
       let correlation
       if (priorFlight !== undefined && !priorFlight.settled && priorFlight.handedOff === true) {
         sreClaim = srePaHandoffs.get(tokenKey)
@@ -4921,6 +4931,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
           paAdmit.closePlan(walk.callId)
           throw new Error(`refused-sre ${prepared.code ?? 'P_SRE_NOT_ADMITTED'} — ${prepared.detail ?? 'the arm refused the kernel grant'}`)
         }
+        // From this line on, the call's plan fact belongs to the edge's own
+        // finally (it closes on every outcome); before it, the net below closes.
+        sreEdgeRan = true
         const edge = await paAdmit.edge({
           ...walk,
           grant: opened.grant,
@@ -4977,6 +4990,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
         }
         // Every path settles the token (shared ledger; the map dies with
         // the mount).
+        // A redeemed call owns the plan fact the pre-dispatch Part A left
+        // standing; the edge's finally closes it once the edge RAN, and this net
+        // closes it on every exit BEFORE the edge. Idempotent with the
+        // explicit closes above — never a leak, never a double verdict.
+        if (sreClaim !== undefined && !sreEdgeRan) paAdmit.closePlan(correlation)
         governedTokenLedger.set(tokenKey, { correlation, settled: true })
       }
     },

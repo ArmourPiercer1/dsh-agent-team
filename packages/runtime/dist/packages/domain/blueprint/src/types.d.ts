@@ -73,7 +73,7 @@ import type { V4ToolBindingAuthoring } from './blueprint-v4.js';
  * channel only; an invocation permission is NEVER an I/O exemption and
  * each name is a DISTINCT authority.
  */
-export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read' | 'team_list_members' | 'team_list_templates' | 'team_inspect_config' | 'team_create_member' | 'team_delegate' | 'team_follow_up' | 'team_collect' | 'team_send_message' | 'team_report_progress' | 'team_archive_member' | 'cordis_inspect_list' | 'cordis_inspect_query' | 'team_list_pending_control' | 'interrupt_agent' | 'list_agents' | 'send_message' | 'subagent' | 'subagent_fork' | 'subagent_codex' | 'subagent_claude_code' | 'list_subagent_models';
+export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read' | 'team_list_members' | 'team_list_templates' | 'team_inspect_config' | 'team_create_member' | 'team_delegate' | 'team_follow_up' | 'team_collect' | 'team_send_message' | 'team_report_progress' | 'team_archive_member' | 'cordis_inspect_list' | 'cordis_inspect_query' | 'team_list_pending_control' | 'team_request_control' | 'team_resolve_control' | 'team_grant_permission' | 'team_revoke_permission' | 'str_replace_editor' | 'interrupt_agent' | 'list_agents' | 'send_message' | 'subagent' | 'subagent_fork' | 'subagent_codex' | 'subagent_claude_code' | 'list_subagent_models';
 /**
  * The resource a permission rule addresses (alpha.2 plan §6.2):
  *

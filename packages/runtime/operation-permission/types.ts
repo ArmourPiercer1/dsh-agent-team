@@ -83,6 +83,11 @@ export type PermissionTool =
   | 'cordis_inspect_list'
   | 'cordis_inspect_query'
   | 'team_list_pending_control'
+  | 'team_request_control'
+  | 'team_resolve_control'
+  | 'team_grant_permission'
+  | 'team_revoke_permission'
+  | 'str_replace_editor'
   | 'interrupt_agent'
   | 'list_agents'
   | 'send_message'
@@ -121,6 +126,11 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'cordis_inspect_list',
   'cordis_inspect_query',
   'team_list_pending_control',
+  'team_request_control',
+  'team_resolve_control',
+  'team_grant_permission',
+  'team_revoke_permission',
+  'str_replace_editor',
   'interrupt_agent',
   'list_agents',
   'send_message',
@@ -235,6 +245,11 @@ export type InvocationOnlyPermissionTool =
   | 'cordis_inspect_list'
   | 'cordis_inspect_query'
   | 'team_list_pending_control'
+  | 'team_request_control'
+  | 'team_resolve_control'
+  | 'team_grant_permission'
+  | 'team_revoke_permission'
+  | 'str_replace_editor'
   | 'interrupt_agent'
   | 'list_agents'
   | 'send_message'
@@ -271,6 +286,11 @@ export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPerm
   'cordis_inspect_list',
   'cordis_inspect_query',
   'team_list_pending_control',
+  'team_request_control',
+  'team_resolve_control',
+  'team_grant_permission',
+  'team_revoke_permission',
+  'str_replace_editor',
   'interrupt_agent',
   'list_agents',
   'send_message',

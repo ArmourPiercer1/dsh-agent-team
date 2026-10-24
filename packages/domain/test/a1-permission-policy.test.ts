@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (35 = seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five; root 20:05/22:13/22:4x/22:32)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (40 = 35 (seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five; root 20:05/22:13/22:4x/22:32) + Team self-governance four + B-SRE one; root 2026-10-26 registration)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -969,6 +969,11 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'cordis_inspect_list',
       'cordis_inspect_query',
       'team_list_pending_control',
+      'team_request_control',
+      'team_resolve_control',
+      'team_grant_permission',
+      'team_revoke_permission',
+      'str_replace_editor',
       'interrupt_agent',
       'list_agents',
       'send_message',
@@ -1373,18 +1378,28 @@ describe('invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13)',
 // WIRING_REVISION 3, and A5_B_SUBAGENT_SPAWN_TOOL_NAMES records 39-43;
 // both files' closed effect envelope is `tool-invoke` ONLY, resource
 // null; NOT in int — root review in flight, naming pre-wires the channel
-// only). The FOUR Team self-governance controls stay OUT (declared
-// INACTIVE, Gate 0f refuses their mount) — pinned absent. No prefix, no
+// only). (The FOUR Team self-governance controls' stay-OUT/INACTIVE line
+// is RETIRED by the 2026-10-26 registration below — the takeover is
+// production fact, records 83/84/87/88; B-SRE str_replace_editor joins on
+// the same 85 invocation-only pattern.) No prefix, no
 // whole-native sweep, no I/O exemption: the tool-invoke arm is the entire
 // authority for every name; provider/model/maxDepth constraints stay
 // service-side.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const CONFIRMED_SETS_22 = [
+const CONFIRMED_SETS_26 = [
   'team_list_members', 'team_list_templates', 'team_inspect_config',
   'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
   'team_send_message', 'team_report_progress', 'team_archive_member',
   'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
+  // root 2026-10-26 limited card: the FOUR Team self-governance controls'
+  // mount takeover is production fact (tools.ts; records 83/84/87/88) — the
+  // old stay-OUT/INACTIVE disclosure retired; B-SRE str_replace_editor
+  // registers invocation-only so its I rule is expressible (R/F stay exact
+  // read/write rules; no file arm projects from an invocation-only rule).
+  'team_request_control', 'team_resolve_control',
+  'team_grant_permission', 'team_revoke_permission',
+  'str_replace_editor',
   'interrupt_agent', 'list_agents', 'send_message',
   'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code',
   'list_subagent_models',
@@ -1415,15 +1430,15 @@ describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:
     ]
   }
 
-  it('membership: all twenty-one confirmed names are in; the four INACTIVE controls and the un-adjudicated orchestration names stay OUT', () => {
-    for (const name of CONFIRMED_SETS_22) expect(PERMISSION_TOOL_NAMES).toContain(name)
-    for (const out of ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission', 'workflow', 'ralph', 'web_fetch', 'todo_write']) {
+  it('membership: all twenty-six confirmed names are in (the four controls + B-SRE REGISTERED 2026-10-26); the un-adjudicated orchestration names stay OUT', () => {
+    for (const name of CONFIRMED_SETS_26) expect(PERMISSION_TOOL_NAMES).toContain(name)
+    for (const out of ['workflow', 'ralph', 'web_fetch', 'todo_write']) {
       expect(PERMISSION_TOOL_NAMES.includes(out)).toBe(false)
     }
   })
 
-  it('twenty-one names × three lanes × both roles parse (whole-tool any) under default:deny — the named rule is the ONLY exception', () => {
-    for (const tool of CONFIRMED_SETS_22) {
+  it('twenty-six names × three lanes × both roles parse (whole-tool any) under default:deny — the named rule is the ONLY exception', () => {
+    for (const tool of CONFIRMED_SETS_26) {
       for (const lane of ['allow', 'ask', 'deny'] as const) {
         for (const role of ['leader', 'member'] as const) {
           const blueprint = parseBlueprint(s2Source(role, s2Lanes(lane, tool, '            kind: any'), 'team.s2'))
@@ -1439,7 +1454,7 @@ describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:
   })
 
   it('exact/subtree refused for every confirmed name, every lane, both roles (no resource space to project; no cross-name borrowing)', () => {
-    for (const tool of CONFIRMED_SETS_22) {
+    for (const tool of CONFIRMED_SETS_26) {
       for (const lane of ['allow', 'ask', 'deny'] as const) {
         for (const role of ['leader', 'member'] as const) {
           for (const kind of ['exact', 'subtree']) {

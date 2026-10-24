@@ -340,9 +340,10 @@ function bindingOf(label: string): ToolBinding | undefined {
 interface Mounted {
   fam: Fam
   /** true when THIS world answers the effect-set question through the ONE
-   *  durable PA row (SRE: `str_replace_editor` is not in the closed
-   *  permission vocabulary, so no named rule may pre-allow its tool-invoke
-   *  — the ASK lane is its only lawful zero-fallback path). */
+   *  durable PA row. `str_replace_editor` JOINED the closed vocabulary as an
+   *  invocation-only tool (root 2026-10-26 registration): SRE all-allow and
+   *  deny are now expressible, so the row is no longer forced by a vocabulary
+   *  gap — it is chosen per world (`ask: true`), exactly like EDIT. */
   withRow: boolean
   plane: PlaneAssemblyValue
   port: HandoffPort
@@ -365,21 +366,37 @@ async function mountWorld(fam: Fam, label: string, opts: { ask?: boolean } = {})
   const fsRoot = worldDir(`root-${fam.key}-${label}`)
   writeFileSync(join(fsRoot, 'notes.txt'), 'alpha\nbeta\ngamma\n', 'utf8')
   const target = join(fsRoot, 'notes.txt')
-  const withRow = opts.ask === true || fam.key === 'sre'
+  const withRow = opts.ask === true
   const policy: TemplatePermissionPolicy = withRow
     ? DIRECT_POLICY
-    : Object.freeze({
-        default: 'deny',
-        allow: [
-          // B-EDIT's tool-invoke arm is named by the 'edit' rule (the closed
-          // vocabulary spells the invoke matcher tool:edit); the paired READ
-          // effect is named by the 'read' rule, the WRITE+meta pair by 'edit'.
-          Object.freeze({ tool: 'edit', resource: Object.freeze({ kind: 'exact', path: target }) }),
-          Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'exact', path: target }) }),
-        ],
-        ask: [],
-        deny: [],
-      } as unknown as TemplatePermissionPolicy)
+    : fam.key === 'edit'
+      ? Object.freeze({
+          default: 'deny',
+          allow: [
+            // B-EDIT's tool-invoke arm is named by the 'edit' rule (the closed
+            // vocabulary spells the invoke matcher tool:edit); the paired READ
+            // effect is named by the 'read' rule, the WRITE+meta pair by 'edit'.
+            Object.freeze({ tool: 'edit', resource: Object.freeze({ kind: 'exact', path: target }) }),
+            Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'exact', path: target }) }),
+          ],
+          ask: [],
+          deny: [],
+        } as unknown as TemplatePermissionPolicy)
+      : Object.freeze({
+          default: 'deny',
+          allow: [
+            // B-SRE after the 2026-10-26 registration: the INVOCATION is
+            // named by the invocation-only str_replace_editor rule (kind
+            // 'any' — the rule IS the invoke authority, projecting NO file
+            // arm); R/F stay EXACT independent read/write rules. Together
+            // they cover the closed effect set with zero ask, zero fallback.
+            Object.freeze({ tool: 'str_replace_editor', resource: Object.freeze({ kind: 'any' }) }),
+            Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'exact', path: target }) }),
+            Object.freeze({ tool: 'write', resource: Object.freeze({ kind: 'exact', path: target }) }),
+          ],
+          ask: [],
+          deny: [],
+        } as unknown as TemplatePermissionPolicy)
   const realmId = `a5m2-edit-sre-handoff-${fam.key}-${label}`
   const arm = fam.makeArm(label, fsRoot, realmId)
   const observed: string[] = []
@@ -716,5 +733,45 @@ describe('A5-M2 EDIT/SRE PA HAND-OFF — ONE durable effect-set Ask per call at 
     const finalRow = finalState.requests.find((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === correlation)
     expect(finalRow, 'the approval row stands (durable fact, never erased)').toBeDefined()
     expect(String(finalRow?.status ?? ''), 'the row settled to its terminal decided state').toMatch(/decided|allow|consumed|resolved|approved|closed/i)
+  })
+
+  it('SRE ASK lane: the pre-dispatch open waits on the REAL durable PA row (B-SRE family block field-for-field), the human answer authorizes the FULL effect set ONCE', async () => {
+    const world = await mountWorld(FAM_SRE, 'a2', { ask: true })
+    const { base, landing } = FAM_SRE.args(world.fsRoot)
+    const token = Symbol('a5m2-handoff-sre-a2')
+    const exec = execLike(FAM_SRE, token)
+    const correlation = `plane-sre:${world.plane.realmId}-1`
+    const leg = world.port.open(exec)
+    const row = await waitRowForCall(correlation)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(manifest, 'the row is a strict PA manifest carrying the family block').toBeDefined()
+    expect(manifest?.familyId).toBe(A5_SRE_FAMILY_ID)
+    expect(manifest?.adapterRevision).toBe(A5_SRE_ADAPTER_REVISION)
+    expect(manifest?.providerIdentity).toBe(ARM_PROVIDER)
+    expect(manifest?.targetManifest).toMatchObject({
+      operation: 'sre-str_replace',
+      sreVariant: 'str_replace',
+      canonicalTarget: world.target,
+      creationPossible: false,
+    })
+    const effectJson = JSON.stringify(manifest?.effects)
+    expect(effectJson, 'the approved effect set is read AND write on the ONE exact locator').toContain('"read"')
+    expect(effectJson).toContain('"write"')
+    expect(effectJson).toContain('notes.txt')
+    expect(world.legInputs.length, 'exactly ONE durable ask for this call — the same-call unique Ask').toBe(1)
+    expect(readFileSync(world.target, 'utf8'), 'while the row PENDINGs the open has written nothing').toBe('alpha\nbeta\ngamma\n')
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const opened = await leg
+    expect(opened.kind, 'the FULL effect-set question was answered at PA by the human allow').toBe('authorized')
+    expect(opened.correlation).toBe(correlation)
+    const ran = await world.def.execute(base, exec)
+    expect(JSON.stringify(ran)).toContain('notes.txt')
+    expect(readFileSync(world.target, 'utf8'), 'the approved bytes landed through the reviewed closure').toBe(landing)
+    expect(world.plane.livePaPlan.size, 'the redemption closed the approval plan fact').toBe(0)
+    expect(world.legInputs.length, 'the redemption asked NOTHING a second time').toBe(1)
+    const finalState = await service.listControlState(P6T4_ROOT)
+    const finalRow = finalState.requests.find((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === correlation)
+    expect(finalRow, 'the approval row stands (durable fact, never erased)').toBeDefined()
+    expect(String(finalRow?.status ?? ''), 'the row settled to its terminal decided state').toMatch(/decided|allow|con/)
   })
 })
