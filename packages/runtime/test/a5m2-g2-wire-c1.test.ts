@@ -1701,7 +1701,9 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-r55' }) as { beginCall: (c: Record<string, unknown>) => () => void }
     const seen: Array<Record<string, unknown>> = []
     const declared = { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-s55' }
-    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); return { results: [{ title: 't', url: 'https://r.invalid/1', snippet: 's' }] } } }
+    // the REAL public WebSearchResult shape (web/src/types.ts:35-42):
+    // {content?, sources, truncated} — the double answers under THAT schema.
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); const n = seen.length; return { content: 'answer-' + String(n), sources: [{ url: 'https://r.invalid/' + String(n), title: 't' + String(n) }, { url: 'https://r.invalid/shared', title: 'shared' }], truncated: n > 1 } } }
     const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared, readMountFacts: () => declared })
     const fetchLane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) })
     const backend = MOUNT.createG2WebBackend({
@@ -1723,17 +1725,27 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     expect(out).toMatchObject({ ok: true })
     expect(seen).toEqual([{ query: 'governed one query' }]) // the PUBLIC one-query request, verbatim
     expect(lane.stats().dispatchCount).toBe(1)
+    {
+      const v = (out as { value: { sources?: unknown[]; truncated?: boolean; content?: string } }).value
+      expect(v.sources?.length).toBe(2) // the REAL result schema rides through, nothing lost
+      expect(v.truncated).toBe(false)
+      expect(v.content).toBe('answer-1')
+    }
     // e51-final ③: multi-query is CONSUMED, not exempted — bounded
     // per-query single dispatches of the PUBLIC request inside the ONE
     // already-consumed call (no second PA), same grant, same signal.
     const signals: Array<unknown> = []
     const ac = new AbortController()
-    const merged = await search.invoke({ queries: ['a', 'b'] }, { g2ApprovedCallId: 'c56', g2ConsumedProof: { grant: { grantId: 'g56' } }, signal: ac.signal }) as { value: { results: Array<Record<string, unknown>> } }
+    const merged = await search.invoke({ queries: ['a', 'b'] }, { g2ApprovedCallId: 'c56', g2ConsumedProof: { grant: { grantId: 'g56' } }, signal: ac.signal }) as { value: { sources: Array<Record<string, unknown>>; truncated: boolean; content: string } }
     void signals
     expect(seen.slice(1)).toEqual([{ query: 'a' }, { query: 'b' }]) // per-query PUBLIC requests, order kept
     expect(lane.stats().dispatchCount).toBe(3) // 1 + 2: the bounded list was the CLOSED approved one
-    expect(merged.value.results.length).toBe(2) // aggregated
-    expect(merged.value.results.map((r) => r.url)).toEqual(['https://r.invalid/1', 'https://r.invalid/1'])
+    // faithful aggregate per mergeSearchResults (search.ts:258-292): dedupe
+    // by url, round-robin by rank, content joined under query headers,
+    // truncated = OR of the per-query answers.
+    expect(merged.value.sources.map((src) => src.url)).toEqual(['https://r.invalid/2', 'https://r.invalid/3', 'https://r.invalid/shared'])
+    expect(merged.value.truncated).toBe(true) // OR: query 'b' answered truncated
+    expect(merged.value.content).toBe('### a\n\nanswer-2\n\n### b\n\nanswer-3')
     // the ONE announce covered all dispatches; it settled once (finally):
     const closer = trio.beginCall({ grant: { grantId: 'g56' }, call: { callId: 'c57' }, assemblyId: 'asm-r55' }) // EMPTY ledger post-call
     closer()
@@ -1750,7 +1762,7 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     const trio = WS.createG2WebCenterPorts({ assemblyId: 'asm-r55c' }) as { beginCall: (c: Record<string, unknown>) => () => void }
     let live = 'cfg-live'
     const seen: Array<Record<string, unknown>> = []
-    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); return { results: [] } } }
+    const exa = { id: 'exa', available: () => true, search: async (r: Record<string, unknown>) => { seen.push(r); return { sources: [], truncated: false } } } // the REAL WebSearchResult schema
     const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared: { endpointOrigin: 'https://api.exa.ai', configIdentity: 'cfg-live' }, readMountFacts: () => ({ endpointOrigin: 'https://api.exa.ai', configIdentity: live }) })
     const backend = MOUNT.createG2WebBackend({
       webAdaptersMod: adapters, realmId: 'r-55c', providerId: 'a5p5-plane',
@@ -1780,12 +1792,17 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     expect((made.supply as Record<string, unknown>).webSearchNotReady).toBe('G2_WEB_SEARCH_NOT_READY: provider "exa" selected — $EXA_API_KEY unset')
     const clean = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}) })
     expect('webSearchNotReady' in (clean.supply as Record<string, unknown>)).toBe(false)
+    // root 04:3x ①: the DERIVED endpoint origin rides the supply too (lane +
+    // supply end to end — nothing downstream re-derives the target).
+    const withOrigin = await MOUNT.createG2TeamAssemblySupply({ entryPaths: { launchEntry: LAUNCH, workerEntry: WORKER }, makeTransport: () => ({}), webSearchEndpointOrigin: 'https://api.exa.ai' })
+    expect((withOrigin.supply as Record<string, unknown>).webSearchEndpointOrigin).toBe('https://api.exa.ai')
+    expect('webSearchEndpointOrigin' in (clean.supply as Record<string, unknown>)).toBe(false)
   })
   it('e51-final ②: a searchOrigin that CONTRADICTS the lane endpoint origin refuses the mount (approval A never carries credentials to B)', async () => {
     const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as unknown as { createG2WebBackend: (i: Record<string, unknown>) => unknown }
     const adapters = (await import(new URL('../src/plugin/live/governed-families/g2-connector-adapters.mjs', import.meta.url).href)) as unknown as Record<string, unknown>
     const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: Record<string, unknown>; registrationLaw: unknown; stats: () => Record<string, number> } }
-    const exa = { id: 'exa', available: () => true, search: async () => ({ results: [] }) }
+    const exa = { id: 'exa', available: () => true, search: async () => ({ sources: [], truncated: false }) }
     const lane = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'exa', getRealProvider: () => exa, declared: { endpointOrigin: 'https://api.exa.ai', configIdentity: 'i' }, readMountFacts: () => ({ endpointOrigin: 'https://api.exa.ai', configIdentity: 'i' }) })
     const fetchLane = seams.createG2WebProviderSeam({ kind: 'fetch', providerId: 'fetchp', getRealProvider: () => ({ id: 'fetchp', available: () => true, fetch: async () => ({}) }), declared: { endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }, readMountFacts: () => ({ endpointOrigin: 'https://f.invalid', configIdentity: 'cf' }) })
     expect(() => MOUNT.createG2WebBackend({
@@ -1808,5 +1825,21 @@ describe('A5M2-WIRE round-55: fixed SEARCH lane consumer wiring (contract tier)'
     // host mirror VERBATIM shape: literal absent + resolveApiKey closure + resolved base + schema-defaulted numerics
     const dsp = new ds.DeepSeekSearchProvider(() => ({ apiKeyEnv: 'DEEPSEEK_API_KEY', resolveApiKey: async () => 'from-env', baseURL: 'https://api.deepseek.com/anthropic/v1', model: 'deepseek-v4-flash', apiVersion: '2023-06-01', maxTokens: 4096, maxUses: 5 }))
     expect(dsp.available()).toBe(true) // env EXISTING is not enough by itself — the closure RESOLVES; the provider reads no env itself
+  })
+  it('root 04:3x ② snapshot law at the seam contract: CONSTANT resolved frame (provider options and seam facts read the SAME frozen snapshot) — facts recomputed per dispatch always equal the pin; a MOVING frame is the drift leg above; both together make endpoint drift unbuildable', async () => {
+    const seams = (await import(new URL('../src/plugin/live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as { createG2WebProviderSeam: (i: Record<string, unknown>) => { provider: { search: (r: Record<string, unknown>) => Promise<unknown> }; stats: () => Record<string, number> } }
+    const declared = { endpointOrigin: 'https://api.deepseek.com', configIdentity: 'g2-web-search:deepseek-official|https://api.deepseek.com' }
+    // the host's snapshot shape: base captured ONCE; the facts closure
+    // re-runs against the SAME frozen frame (not a live env/config source).
+    const snapshotBase = 'https://api.deepseek.com/anthropic/v1'
+    const facts = () => { const u = new URL(snapshotBase); return { endpointOrigin: u.origin, configIdentity: 'g2-web-search:deepseek-official|' + u.origin } }
+    expect(facts()).toEqual(declared)
+    let reached = 0
+    const pinned = { id: 'deepseek-official', available: () => true, search: async () => { reached += 1; return { sources: [], truncated: false } } } // ONE object: the seam's provider-identity pin law (its own drift guard) applies to the legs too
+    const seam = seams.createG2WebProviderSeam({ kind: 'search', providerId: 'deepseek-official', getRealProvider: () => pinned, declared, readMountFacts: facts })
+    await seam.provider.search({ query: 'q1' })
+    await seam.provider.search({ query: 'q2' })
+    expect(reached).toBe(2)
+    expect(seam.stats().driftRejects ?? 0).toBe(0)
   })
 })

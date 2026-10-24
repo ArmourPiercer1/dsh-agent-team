@@ -342,7 +342,7 @@ export async function createG2TeamAssemblySupply(input = {}) {
   if (typeof makeTransport !== 'function') {
     return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'makeTransport is REQUIRED — the transport factory\'s real producer is the host mcp connection layer over the APPROVED config (stdio/http); minting one here would copy host transport internals into this lane')
   }
-  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(typeof input?.webSearchNotReady === 'string' ? { webSearchNotReady: input.webSearchNotReady } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
+  const supply = { ...(input?.webFixedLanes !== null && typeof input?.webFixedLanes === 'object' ? { webFixedLanes: input.webFixedLanes } : {}), ...(typeof input?.webSearchNotReady === 'string' ? { webSearchNotReady: input.webSearchNotReady } : {}), ...(typeof input?.webSearchEndpointOrigin === 'string' ? { webSearchEndpointOrigin: input.webSearchEndpointOrigin } : {}), ...(input?.webFixedTransport !== null && typeof input?.webFixedTransport === 'object' ? { webFixedTransport: input.webFixedTransport } : {}), ...(mcpResources !== null && typeof mcpResources === 'object' && typeof mcpResources.register === 'function' ? { mcpResources } : {}), makeTransport, ...(entries.Client === undefined ? {} : { entries: { Client: entries.Client } }) }
   // browser supply is ALL-OR-NOTHING (the loader always carries the two
   // public entry functions; arming them WITHOUT the Team PA approval face +
   // the stagehand method mapping would arm a row whose door nobody opened):
@@ -636,13 +636,49 @@ export function createG2WebBackend ({ webAdaptersMod, realmId, providerId, readN
             throw new Error('G2_WEB_SEARCH_QUERY_ARGS_INVALID: classify pinned a non-empty queries list; the body rides it verbatim and never grows it (empty/shape-broken here is a mount defect, zero dispatches)')
           }
           const signal = (exec?.signal) ?? undefined
-          const merged = []
+          // gateway law (search.ts:237-238): ONE query rides the provider's
+          // PUBLIC answer VERBATIM — no re-shaping; the merge below is the
+          // multi-query law only.
+          if (queries.length === 1) {
+            out = Object.freeze(await laneMethod.call(lane.provider, { query: queries[0] }, signal))
+          } else {
+          const per = []
           for (const query of queries) {
-            const one = await laneMethod.call(lane.provider, { query }, signal) // the PUBLIC one-query request, verbatim, per query
-            const results = one?.results
-            if (Array.isArray(results)) merged.push(...results)
+            // the PUBLIC one-query request, verbatim, per query; the answer
+            // is the PUBLIC WebSearchResult (web/src/types.ts:35-42):
+            // {content?, sources, truncated} — read under THAT schema.
+            per.push({ query, res: await laneMethod.call(lane.provider, { query }, signal) })
           }
-          out = Object.freeze({ results: Object.freeze(merged) })
+          // mergeSearchResults (tool-web/src/search.ts:258-292) VERBATIM:
+          // dedupe by url, round-robin by rank across the per-query results,
+          // content joined under '### <query>' headers, truncated = OR of the
+          // per-query answers (plus dropped-at-cap; the CLOSED row schema
+          // carries no maxResults so the lane caps nothing — the deployment
+          // cap is the relay's config face, disclosed, never invented here).
+          const seen = new Set()
+          const sources = []
+          let sourceRanks = 0
+          for (const entry of per) {
+            if (Array.isArray(entry.res?.sources)) sourceRanks = Math.max(sourceRanks, entry.res.sources.length)
+          }
+          for (let rank = 0; rank < sourceRanks; rank++) {
+            for (const entry of per) {
+              const source = Array.isArray(entry.res?.sources) ? entry.res.sources[rank] : undefined
+              if (source !== undefined && !seen.has(source.url)) {
+                seen.add(source.url)
+                sources.push(source)
+              }
+            }
+          }
+          const contents = per.flatMap((entry) => typeof entry.res?.content === 'string' && entry.res.content.length > 0
+            ? [`### ${entry.query}\n\n${entry.res.content}`]
+            : [])
+          out = Object.freeze({
+            ...(contents.length > 0 ? { content: contents.join('\n\n') } : {}),
+            sources: Object.freeze(sources),
+            truncated: per.some((entry) => entry.res?.truncated === true),
+          })
+          }
         } else {
           out = await laneMethod.call(lane.provider, { url: args?.url }, (exec?.signal) ?? undefined) // VERIFIED LANE dispatch, request verbatim
         }
