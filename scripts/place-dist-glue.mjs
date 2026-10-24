@@ -143,6 +143,22 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/write.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/write.mjs',
   },
+  // A5M2 FS-EDIT card (root 2026-10-25): the B-EDIT and B-SRE arms are
+  // STATICALLY imported by the live agent-bindings glue (same closure law
+  // as write/image above): a dist agent-bindings.mjs that imports
+  // ./governed-families/edit.mjs without an entry placing it dies at
+  // ERR_MODULE_NOT_FOUND — the todo.mjs lesson, re-earned. edit.mjs and
+  // sre.mjs land on tsc's OWN emits of the controlled-fs ports
+  // (post-consume-edit.js / post-consume-create.js / post-consume-sre.js),
+  // all already inside the mirror.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/edit.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/edit.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/sre.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/sre.mjs',
+  },
   // A5-M2 B-IMAGE (root-authorized 实际接线): the live glue now imports the
   // image arm family by relative specifier too — same closure law as the two
   // entries above. `image-attachment.mjs` imports NOTHING but node builtins;
