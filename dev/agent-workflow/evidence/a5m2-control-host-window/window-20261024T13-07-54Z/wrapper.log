@@ -1,0 +1,6 @@
+control window wrapper 20261024T13-07-54Z driver=86d0e00c7094d2a12ce5a0264db6ebe96f682789
+driver law: HEAD carries 86d0e00c7094d2a12ce5a0264db6ebe96f682789; runner file sha256 c167f5691a13be5afa2b927ff511801090c1f7878f5ef597e7653c2e73b6e624
+fixture before: lock=d23fe07ca7d79355… pkg=a435be5587907ed3…
+df avail: 17530929152 B (min 6442450944)
+ports 3184/3499 free (pre-check)
+fixture file: target is NOT the pinned pack (want out-694b0c0e-*/dsh-agent-team-0.1.1-alpha.2.tgz): /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-4a26ac9a-20261024T120122Z/dsh-agent-team-0.1.1-alpha.2.tgz
