@@ -41,6 +41,7 @@
 import { describe, expect, it, afterAll } from 'vitest'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { fileURLToPath, URL as NodeURL } from 'node:url'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
@@ -62,7 +63,7 @@ const PLANE = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', im
 
 // 639 read-only base: the family law this record carries is stated in the
 // committed glue as an observable fact — read it from disk (fail closed).
-const GLUE_SOURCE = readFileSync(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href, 'utf8')
+const GLUE_SOURCE = readFileSync(fileURLToPath(new NodeURL('../src/plugin/live/agent-bindings.mjs', import.meta.url)), 'utf8')
 
 const TRUSTED = {
   memberAgentId: 'agent-member-n4',
