@@ -1,151 +1,151 @@
 /**
- * schedule-trigger-governance.mjs — the B-SCHEDULE TRIGGER-GOVERNANCE
- * SEMANTICS BLOCK (center card 2026-10-26; frozen law ALPHA5-EFFECTIVE-
- * BACKLOG.md :67 verbatim: "create/update 触发缺口未闭不可启用亦必交不删;
- * TRIGGER_GOVERNANCE (runtime.ts:101 resolveAgent→:123 followup 无公开
- * pre-delivery 治理 seam) / PLAN_ONCE_MEMO 逐字携带; delete/update =
- * revocation path 注释 ≠ policy 自动撤销").
+ * schedule-trigger-governance.mjs — the B-SCHEDULE TRIGGER-GOVERNANCE gap
+ * record + dispatch gate (root correction 2026-10-26: NO invented seam /
+ * root-GO boolean proof; this module carries the MEASURED 639 source gap
+ * and gates the delivered create/update arms on it — closure requires a
+ * root ruling (public seam vs fork), not a flag flip here).
  *
- * WHAT THE MEASURED 639 SOURCE SAYS (read-only evidence, pinned by spec):
- * the firing path is `sessionController.resolveAgent(task.sessionId)`
- * (packages/schedule/schedule/src/runtime.ts:101) straight into
- * `resolved.agent.followup(message)` (:123) — clock admission and framing
- * sit between, and NO PUBLIC pre-delivery governance seam exists on that
- * path. The TOOL path (registerScheduleTools: tools.ts:408; schedule_create
- * :417, schedule_update :493; caller law: agent.session.id binds the
- * ORIGINAL Session, update pre-reads ownership via list :515-522, create
- * validates EXACTLY ONE selector :250-253) is governable with the family's
- * PROVEN laws — the trigger path is not, until a public seam exists.
+ * MEASURED SOURCE GAP (639 pristine baseline, read-only; spec pins lines):
+ *  G1 FIRING PATH, provider-internal, NO hook:
+ *     packages/schedule/schedule/src/runtime.ts:51  drive runs inside
+ *       ctx.agents.withoutInitiator(...) — the authority plane sees NO
+ *       initiator for a firing task;
+ *     runtime.ts:101  ctx.sessionController.resolveAgent(task.sessionId)
+ *       (public controller read, allowed);
+ *     runtime.ts:123  resolved.agent.followup(message) DIRECTLY —
+ *       core/agent-loop/src/agent.ts:163-165: followup -> send(input,
+ *       'next-turn', true) -> this.inbox.splice(...) + wakeDriver():
+ *       NO event emitted, NO middleware, NO next, NO signal, NO return.
+ *       There is no `workspace/session-activity`-style middleware
+ *       (schedule's own index.ts:211 rides that pattern) around delivery.
+ *  G2 THE API ADMISSION IS UNREACHABLE AND IS NOT PERMISSION GOVERNANCE:
+ *     packages/api/session-controller/src/commands.ts:338-365 — the RPC
+ *     prompt path admits via ctx.attachments.admitPromptContent +
+ *     fileUploads receipts + disposal re-check, THEN agent.followup.
+ *     That seam is (a) RPC-only (a provider firing internally cannot
+ *     route through it), (b) attachment/liveness admission, NOT PA /
+ *     permission admission. No public PA seam exists on any trigger path.
+ *  G3 ATTRIBUTION: the task row binds the ORIGINAL Session (tools.ts:437
+ *     create via agent.session.id; update pre-reads ownership :515-522);
+ *     at firing, source={kind:'schedule'} is a label only — the message
+ *     is delivered as a USER message with no initiator (G1).
+ *  G4 PARENT CANCELLATION: agent.cancel (agent-loop agent.ts:176-183)
+ *     clears the inbox (!keepInbox) — a queued-but-unconsumed reminder is
+ *     SILENTLY DROPPED, no governance trace; not-yet-fired rows die at
+ *     workspace/session-stop (schedule index.ts:221 -> stopSessionTasks,
+ *     the archive-stop law the source comment itself states). Neither is
+ *     a pre-delivery decision point.
+ *  G5 PERMISSION SUPPLY: the woken Agent's TOOL CALLS ride the existing
+ *     governed tools/execute path (the family's tested law) — what is NOT
+ *     governed anywhere is the injection decision itself (may this
+ *     reminder enter this Session at this moment).
  *
- * THE FROZEN DECISION THIS BLOCK ENCODES (never re-decided here, never
- * loosened by inference):
- *  - CONTRACT DELIVERED: schedule_create/schedule_update governance rows
- *    are BUILT and WIRED (the pair rides the list/delete tested law:
- *    bind-after-def + per-name facade capture, same-Agent native hook, PA
- *    final consume, native body verbatim with its original scheduling
- *    validation and caller constraints).
- *  - NOT ENABLED: while the public seam face answers ABSENT (the measured
- *    today), every create/update dispatch refuses with the typed
- *    TRIGGER_GOVERNANCE_OPEN refusal BEFORE any admission or body entry.
- *    Enabling requires a PUBLIC pre-delivery seam fact plus explicit root
- *    GO — the block never infers enablement, never defaults to allow,
- *    never caches across generations.
- *  - NEVER DELETE: the rows, this block and their wiring are contractual
- *    deliverables (必交不删); removal is out of scope for every future card.
- *  - PLAN_ONCE_MEMO (逐字携带, verbatim carry): one-shot delivery records
- *    commit status inactive + appendDelivery at the delivery moment
- *    (runtime.ts:124-128) — a governance row never re-plans a once memo;
- *    recurring framing/occurrence law stays with the native runtime.
- *  - delete/update revocation-path annotations are comments about a code
- *    path, NOT policy auto-revocation.
+ * CONSEQUENCE (frozen law ALPHA5-EFFECTIVE-BACKLOG.md :67 verbatim:
+ * "create/update 触发缺口未闭不可启用亦必交不删; TRIGGER_GOVERNANCE
+ * (runtime.ts:101 resolveAgent→:123 followup 无公开 pre-delivery 治理
+ * seam) / PLAN_ONCE_MEMO 逐字携带; delete/update=revocation path 注释
+ * ≠policy自动撤销"): the create/update governance ARMS are BUILT and
+ * WIRED (the pair rides the list/delete tested law: same-Agent native
+ * hook, PA final consume, per-name facade capture, native body verbatim
+ * with its original scheduling validation + caller constraints) while
+ * dispatch refuses with the typed TRIGGER_GOVERNANCE_OPEN citing G1-G5.
+ * This block offers NO enablement flag: closure is a ROOT ruling (upstream
+ * public seam vs fork of the provider) recorded by a FUTURE card with the
+ * chosen public/fork facts — never a boolean flipped here.
  *
- * REUSED LAWS (原样复用, my family's own proven semantics): the generation
- * epoch (the provider GENERATION is the currentness law — inject-callback
- * boundary id, host scheduleLifecycle), the ACTIVE gate (answer only while
- * the lifecycle says so; unknown = CLOSED, fail-closed, never allow), and
- * the token discipline (no dispatch without the final consume — the same
- * PA one-shot witness the list/delete pair rides). Zero private unwrap;
- * the block reads only the PUBLIC seam/lifecycle faces the host publishes.
+ * REUSED LAWS (原样复用): generation epoch + ACTIVE gate read through the
+ * SAME public lifecycle face the facade feed rides (host
+ * scheduleLifecycle.currentGeneration() shape); epoch unobservable or
+ * non-ACTIVE refuses BEFORE the gap fact is even consulted (fail closed);
+ * nothing is cached across dispatches. PLAN_ONCE_MEMO 逐字携带: one-shot
+ * records commit status inactive + appendDelivery at delivery
+ * (runtime.ts:124-128); a governed row never re-plans a once memo.
+ * delete/update revocation-path annotations remain comments, NOT policy
+ * auto-revocation.
  *
- * Tier: 接线未测 (no boot/Host here). win32-irrelevant.
+ * Tier: 接线未测 (no boot/Host). win32-irrelevant.
  */
 
 export const A5_SCHEDULE_TRIGGER_CODES = Object.freeze({
   INPUT_INVALID: 'A5_TRIG_INPUT_INVALID',
-  SEAM_ABSENT: 'A5_TRIG_SEAM_ABSENT',
   LIFECYCLE_UNOBSERVABLE: 'A5_TRIG_LIFECYCLE_UNOBSERVABLE',
   NOT_ACTIVE: 'A5_TRIG_NOT_ACTIVE',
+  OPEN: 'TRIGGER_GOVERNANCE_OPEN',
 })
 
-/** The frozen law strings the block carries VERBATIM (spec pins them). */
+/** The measured gap, as PUBLIC SOURCE FACTS (file:line, verified read-only
+ *  against the pinned baseline by the paired spec; skip != pass where the
+ *  checkout is absent). */
+export const A5_SCHEDULE_TRIGGER_GAP = Object.freeze({
+  G1_firing_no_hook: Object.freeze({
+    drive: 'packages/schedule/schedule/src/runtime.ts:51 (ctx.agents.withoutInitiator)',
+    resolve: 'packages/schedule/schedule/src/runtime.ts:101 (sessionController.resolveAgent)',
+    followup: 'packages/schedule/schedule/src/runtime.ts:123 (resolved.agent.followup)',
+    impl: 'packages/core/agent-loop/src/agent.ts:163-165 (followup->send->inbox.splice+wakeDriver; no event/middleware/next/signal)',
+  }),
+  G2_api_admission_not_permission: Object.freeze({
+    seam: 'packages/api/session-controller/src/commands.ts:338-365 (attachments.admitPromptContent + receipts + disposal re-check)',
+    law: 'RPC-only path; attachment/liveness admission, NOT PA permission admission; unreachable from a provider firing internally',
+  }),
+  G3_attribution: Object.freeze({
+    row_binding: 'packages/schedule/schedule/src/tools.ts:437 create via agent.session.id; update pre-reads ownership :515-522',
+    firing: 'source={kind:schedule} label only; delivery is a USER message with no initiator',
+  }),
+  G4_parent_cancellation: Object.freeze({
+    queued_drop: 'packages/core/agent-loop/src/agent.ts:176-183 (cancel clears inbox silently unless keepInbox)',
+    armed_drop: 'packages/schedule/schedule/src/index.ts:221 (workspace/session-stop -> stopSessionTasks deletes rows)',
+    law: 'neither is a pre-delivery decision point',
+  }),
+  G5_permission_supply: Object.freeze({
+    woken_tools: 'governed via the existing tools/execute PA path (family law)',
+    ungoverned: 'the injection decision itself (may this reminder enter this Session now)',
+  }),
+  PLAN_ONCE_MEMO: 'one-shot delivery commits status inactive + appendDelivery (runtime.ts:124-128); governed rows never re-plan a once memo',
+  REVOCATION: 'delete/update=revocation path 注释≠policy自动撤销',
+  GATED_NAMES: Object.freeze(['schedule_create', 'schedule_update']),
+})
+
+/** Frozen Chinese law strings carried VERBATIM (spec pins vs the backlog). */
 export const A5_SCHEDULE_TRIGGER_LAWS = Object.freeze({
   FROZEN_DECISION: 'create/update 触发缺口未闭不可启用亦必交不删',
   TRIGGER_GOVERNANCE: 'TRIGGER_GOVERNANCE（runtime.ts:101 resolveAgent→:123 followup 无公开 pre-delivery 治理 seam）',
   PLAN_ONCE_MEMO: 'PLAN_ONCE_MEMO 逐字携带',
-  REVOCATION: 'delete/update=revocation path 注释≠policy自动撤销',
-  /** The measured public facts of the firing path (639 source, read-only). */
-  TRIGGER_PATH: Object.freeze({
-    resolveAgent: 'packages/schedule/schedule/src/runtime.ts:101',
-    followup: 'packages/schedule/schedule/src/runtime.ts:123',
-    publicPreDeliveryGovernanceSeam: null, // MEASURED ABSENT — not a TODO guess
-  }),
-  /** The tool path the pair mounts (639 source, read-only). */
-  TOOL_PATH: Object.freeze({
-    register: 'packages/schedule/schedule/src/tools.ts:408',
-    create: 'packages/schedule/schedule/src/tools.ts:417',
-    update: 'packages/schedule/schedule/src/tools.ts:493',
-    callerLaw: 'agent.session.id binds the ORIGINAL Session; update pre-reads ownership via list; create validates EXACTLY ONE selector',
-  }),
-  /** The two names this block governs activation for (the delivered pair). */
-  GATED_NAMES: Object.freeze(['schedule_create', 'schedule_update']),
 })
 
 /**
- * The block. deps (ALL public faces; anything else refuses at build):
- *  - seamFace(): unknown — the PUBLIC pre-delivery governance seam the host
- *    would publish. The measured 639 world answers ABSENT; the block never
- *    fabricates one. A FUTURE public seam (root-GO'd) answers a function
- *    and the enablement law below evaluates it.
+ * The gate. deps (public faces only):
  *  - lifecycleFace(): { id: number, active: boolean } | null | undefined —
- *    the same GENERATION epoch the family's facade feed rides (host
- *    scheduleLifecycle.currentGeneration() shape: id + observability);
- *    null/undefined = unobservable = CLOSED (fail-closed, never allow).
+ *    the SAME public generation face the family facade feed rides; unknown
+ *    = CLOSED (never allow), non-ACTIVE = CLOSED.
+ * There is deliberately NO seam face, NO enablement flag, NO root-GO boolean input:
+ * while the measured gap stands, evaluateDispatch ALWAYS refuses the gated
+ * pair with TRIGGER_GOVERNANCE_OPEN citing G1-G5; when root rules (public
+ * seam vs fork), a FUTURE card replaces this gate with the ruled public
+ * facts — this file never self-closes.
  */
 export function createScheduleTriggerGovernance (deps = {}) {
-  if (deps === null || typeof deps !== 'object' || Array.isArray(deps)) {
-    return { ok: false, code: A5_SCHEDULE_TRIGGER_CODES.INPUT_INVALID, detail: 'deps object required' }
+  if (deps === null || typeof deps !== 'object' || Array.isArray(deps) || typeof deps.lifecycleFace !== 'function') {
+    return { ok: false, code: A5_SCHEDULE_TRIGGER_CODES.INPUT_INVALID, detail: 'lifecycleFace (the public generation face) is REQUIRED — the block never mounts without its observation point' }
   }
-  const seamFace = deps.seamFace
-  const lifecycleFace = deps.lifecycleFace
-  if (typeof seamFace !== 'function' || typeof lifecycleFace !== 'function') {
-    return { ok: false, code: A5_SCHEDULE_TRIGGER_CODES.INPUT_INVALID, detail: 'seamFace and lifecycleFace are REQUIRED public faces — the block never mounts without the public observation points its law reads' }
-  }
-
-  // EVALUATION IS PER-CALL, PER-GENERATION: nothing is cached across the
-  // epoch (the facade-feed law); each dispatch re-reads BOTH public faces.
   function evaluateDispatch (name) {
-    if (typeof name !== 'string' || !A5_SCHEDULE_TRIGGER_LAWS.GATED_NAMES.includes(name)) {
-      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.INPUT_INVALID, detail: `evaluateDispatch answers only the gated pair (${A5_SCHEDULE_TRIGGER_LAWS.GATED_NAMES.join('/')}); every other name rides its own family law` }
+    if (typeof name !== 'string' || !A5_SCHEDULE_TRIGGER_GAP.GATED_NAMES.includes(name)) {
+      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.INPUT_INVALID, detail: `this gate answers only ${A5_SCHEDULE_TRIGGER_GAP.GATED_NAMES.join('/')} (the delivered pair); every other name rides its own family law` }
     }
-    const gen = lifecycleFace()
+    const gen = deps.lifecycleFace()
     if (gen === null || gen === undefined || typeof gen.id !== 'number') {
-      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.LIFECYCLE_UNOBSERVABLE, detail: `the provider generation epoch is unobservable — unknowable NEVER becomes allow (${A5_SCHEDULE_TRIGGER_LAWS.FROZEN_DECISION})` }
+      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.LIFECYCLE_UNOBSERVABLE, detail: 'the provider generation epoch is unobservable — unknowable never becomes allow' }
     }
     if (gen.active !== true) {
-      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.NOT_ACTIVE, detail: `generation ${String(gen.id)} is not ACTIVE — rows never serve off a non-ACTIVE capture (the family ACTIVE gate, 原样复用)` }
+      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.NOT_ACTIVE, detail: `generation ${String(gen.id)} is not ACTIVE — rows never serve off a non-ACTIVE capture (family ACTIVE gate, 原样复用)` }
     }
-    const seam = seamFace()
-    if (seam === undefined || seam === null) {
-      // THE MEASURED TODAY (the frozen law's fact): no public pre-delivery
-      // governance seam on runtime.ts:101→:123. Contract delivered, NOT
-      // enabled — the typed refusal stands BEFORE any admission/body entry.
-      return {
-        enabled: false,
-        generationId: gen.id,
-        code: 'TRIGGER_GOVERNANCE_OPEN',
-        detail: `${A5_SCHEDULE_TRIGGER_LAWS.TRIGGER_GOVERNANCE}: the ${name} governance row is CONTRACT-DELIVERED (必交不删) but NOT ENABLED while the public seam face answers absent — dispatch refuses before any admission or native entry. Enabling requires a public seam fact plus explicit root GO; this block never infers either.`,
-        law: A5_SCHEDULE_TRIGGER_LAWS.FROZEN_DECISION,
-      }
+    return {
+      enabled: false,
+      generationId: gen.id,
+      code: A5_SCHEDULE_TRIGGER_CODES.OPEN,
+      detail: `the ${name} governed arm is BUILT and WIRED, but the trigger gap G1-G5 stands: firing delivers agent.followup (runtime.ts:123 -> agent-loop agent.ts:163) with no event/middleware/PA seam, the API admission (commands.ts:338-365) is RPC-only and non-permission, parent cancellation drops reminders silently (agent.ts:176-183 / index.ts:221), and the injection decision itself is ungoverned. Closure is a ROOT ruling (public seam vs fork) recorded by a future card with those facts — never a flag here.`,
+      gap: A5_SCHEDULE_TRIGGER_GAP,
+      law: A5_SCHEDULE_TRIGGER_LAWS.FROZEN_DECISION,
     }
-    if (typeof seam !== 'function') {
-      return { enabled: false, code: A5_SCHEDULE_TRIGGER_CODES.SEAM_ABSENT, detail: `the seam face answered a non-function (${String(seam)}) — a malformed seam is CLOSED, never a duck (the family never-silent-allow law)` }
-    }
-    // A REAL public seam fact is present: enablement additionally requires
-    // the explicit root GO carried as a public dep fact (never inferred),
-    // and even then dispatch keeps the FULL pair law (same-Agent native
-    // hook + PA final consume + native body verbatim) — this block gates,
-    // it never executes.
-    const rootGo = typeof deps.rootGo === 'function' ? deps.rootGo() : undefined
-    if (rootGo !== true) {
-      return { enabled: false, generationId: gen.id, code: 'TRIGGER_GOVERNANCE_OPEN', detail: `a public seam exists but the explicit root GO fact is absent — ${A5_SCHEDULE_TRIGGER_LAWS.FROZEN_DECISION} stands until both public facts are observed in the SAME generation (${String(gen.id)})` }
-    }
-    return { enabled: true, generationId: gen.id, seam, detail: `public seam + root GO observed in generation ${String(gen.id)} — the pair law (same-Agent hook + PA final consume + native verbatim) governs the dispatch; this block never executes and never re-plans (PLAN_ONCE_MEMO 逐字携带)` }
   }
-
-  return {
-    ok: true,
-    evaluateDispatch,
-    /** The frozen law face for observers/receipts (read-only strings). */
-    laws: A5_SCHEDULE_TRIGGER_LAWS,
-  }
+  return { ok: true, evaluateDispatch, gap: A5_SCHEDULE_TRIGGER_GAP, laws: A5_SCHEDULE_TRIGGER_LAWS }
 }
