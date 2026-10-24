@@ -1,0 +1,170 @@
+# A5M2-G6 kit patch layer: the production dsh-agent-team row (APPROVED INSTALLED 874 pack) mounted ONLY through the public profile-patch seam.
+- insert:
+  - id: dsh-agent-team
+    name: file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js
+    config:
+      bootPhase: create
+      rootSessionId: session-team-g6-2026-10-24T15-2
+      blueprintSource: "---\nschemaVersion: 3\nblueprintId: g6-query-bp\nrevision: \"1\"\ndisplayName: \"G6 session-query acceptance world\"\ndescription: \"One boot; leader + archivable worker w1 + fresh worker w2 (C8 shape).\"\nleader:\n  templateId: leader\n  persona: \"You lead this team. Follow the scripted instructions literally; never improvise extra tool calls.\"\n  capabilities:\n    teamTools:\n      kind: allow\n      items:\n        - team_list_members\n        - team_list_templates\n        - team_inspect_config\n        - team_create_member\n        - team_delegate\n        - team_follow_up\n        - team_collect\n        - team_send_message\n        - team_report_progress\n        - team_request_control\n        - team_resolve_control\n        - team_list_pending_control\n        - team_archive_member\n    builtinToolDeny:\n      - subagent_fork\n      - ask_user_question\n      - create_goal\n      - exit_plan_mode\n      - get_goal\n      - glob\n      - grep\n      - job_kill\n      - job_list\n      - job_output\n      - present\n      - skill\n      - update_goal\n      - web_fetch\n      - web_search\n      - workflow\n    skills:\n      kind: deny\n    mcp:\n      kind: deny\n    permissions:\n      default: ask\n      allow: []\n      ask: []\n      deny: []\nteamEnvelope:\n  allow:\n    - assign-task\n    - create-member\n    - send-message\n    - report-progress\n    - request-control\n    - resolve-control\n    - archive-member\n    - restore-member\n  deny: []\nmembers:\n  - templateId: worker\n    displayName: \"Worker\"\n    persona: \"You are a worker. Do exactly what each prompt says and answer briefly.\"\n    capabilities:\n      teamTools:\n        kind: deny\n      builtinToolDeny:\n        - subagent_fork\n        - ask_user_question\n        - create_goal\n        - exit_plan_mode\n        - get_goal\n        - glob\n        - grep\n        - job_kill\n        - job_list\n        - job_output\n        - present\n        - skill\n        - update_goal\n        - web_fetch\n        - web_search\n        - workflow\n      skills:\n        kind: deny\n      mcp:\n        kind: deny\n      permissions:\n        default: ask\n        allow: []\n        ask: []\n        deny: []\nmemberEnvelopes: []\nrequirements:\n  - domain: persona\n    name: standard\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates:\n  - id: default\n    description: \"Default state.\"\nquotas:\n  team:\n    maxInstances: 4\n    maxConcurrent: 3\n  members:\n    maxInstances: 2\n    maxConcurrent: 2\nmetadata: {}\n---\n"
+      generation: 1
+      seedMembers: []
+      staticModel: {"provider":"deepseek-official","model":"g6-model-v1"}
+      glueUrl: file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+      seamUrl: file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/.pnpm/dsh-agent-team@file+..+out-2fb129cf-20261024T135732Z+dsh-agent-team-0.1.1-alpha.2.tgz_b_8d04c42487f7a0f27498dd6c83f498ae/node_modules/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs
+      defaultWorkspace: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/tests/homes/.a5m2-g6host-2026-10-24T15-28-27-537ZZ
+      teamToolPlane: {"sessionQuery":true}
+      deniedSelection: null
+      mcpServer: null
+      environmentFacts: []
+      externalPolicyFacts: {"hard":{},"capabilityExists":{}}
+
+- id: preset-standard
+  name: '@deepseek-ai/dsh-agent-preset'
+  config:
+    id: standard
+    order: 1
+    plugins:
+      - id: tool-session-query
+        name: '@deepseek-ai/dsh-tool-session-query'
+      - id: persona
+        name: '@deepseek-ai/dsh-persona'
+        config:
+          suffix: Your working directory is {{cwd}}.
+          prefix: You are a coding agent powered by the {{model}} model.
+      - id: agent-instructions
+        name: '@deepseek-ai/dsh-agent-instructions'
+        config:
+          maxBytes: 65536
+      - id: tool-bash
+        name: '@deepseek-ai/dsh-tool-bash'
+        disabled: !!js process.platform === 'win32'
+      - id: tool-pwsh
+        name: '@deepseek-ai/dsh-tool-pwsh'
+        disabled: !!js process.platform !== 'win32'
+      - id: tool-fs
+        name: '@deepseek-ai/dsh-tool-fs'
+      - id: tool-fs-search
+        name: '@deepseek-ai/dsh-tool-fs-search'
+        config:
+          sampleOverCapGlobResults: false
+      - id: tool-jobs
+        name: '@deepseek-ai/dsh-tool-jobs'
+      - id: skill-filesystem
+        name: '@deepseek-ai/dsh-skill-filesystem'
+      - id: tool-skill
+        name: '@deepseek-ai/dsh-tool-skill'
+      - id: command-goal
+        name: '@deepseek-ai/dsh-command-goal'
+      - id: tool-goal
+        name: '@deepseek-ai/dsh-tool-goal'
+      - id: planning
+        name: cordis:group
+        group: true
+        isolate:
+          planMode: true
+        config:
+          - id: plan-mode
+            name: '@deepseek-ai/dsh-plan-mode'
+            config:
+              section: |
+                You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+                Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
+
+                The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+                Resolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.
+
+                Make the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.
+
+                When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+      - id: compaction
+        name: cordis:group
+        group: true
+        isolate:
+          compaction: true
+          toolResultPruner: true
+        config:
+          - id: compaction-basic
+            name: '@deepseek-ai/dsh-compaction-basic'
+          - id: command-compact
+            name: '@deepseek-ai/dsh-command-compact'
+          - id: tool-result-pruner
+            name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+            config:
+              thresholdChars: 8192
+              headChars: 4096
+              tailChars: 1024
+      - id: delegation
+        name: cordis:group
+        group: true
+        isolate:
+          workflowEngine: true
+        config:
+          - id: tool-subagent-control
+            name: '@deepseek-ai/dsh-tool-subagent-control'
+          - id: tool-subagent-list-agents
+            name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+          - id: tool-subagent
+            name: '@deepseek-ai/dsh-tool-subagent'
+            config:
+              provider: spawn
+              toolName: subagent
+              modelSelectionSettings: true
+              backgroundMode: continuable
+          - id: tool-subagent-fork
+            name: '@deepseek-ai/dsh-tool-subagent'
+            config:
+              provider: fork
+              toolName: subagent_fork
+              backgroundMode: continuable
+          - id: tool-subagent-codex
+            name: '@deepseek-ai/dsh-tool-subagent'
+            disabled: true
+            config:
+              provider: codex
+              toolName: subagent_codex
+              backgroundMode: one-shot
+              maxDepth: provider-managed
+          - id: tool-subagent-claude-code
+            name: '@deepseek-ai/dsh-tool-subagent'
+            disabled: true
+            config:
+              provider: claude-code
+              toolName: subagent_claude_code
+              backgroundMode: one-shot
+              maxDepth: provider-managed
+          - id: workflow-ptc
+            name: '@deepseek-ai/dsh-workflow-ptc'
+            config:
+              provider: spawn
+          - id: tool-workflow
+            name: '@deepseek-ai/dsh-tool-workflow'
+          - id: tool-ralph
+            name: '@deepseek-ai/dsh-tool-ralph'
+            disabled: true
+            config:
+              subagentProvider: spawn
+              maxRounds: 64
+      - id: tool-ask-user
+        name: '@deepseek-ai/dsh-tool-ask-user'
+      - id: tool-todo
+        name: '@deepseek-ai/dsh-tool-todo'
+        config:
+          allowParallelInProgress: true
+      - id: tool-web
+        name: '@deepseek-ai/dsh-tool-web'
+        config:
+          fetch: true
+          searchTimeoutMs: 60000
+      - id: present
+        name: '@deepseek-ai/dsh-tool-present'
+      - id: tool-plugin-manager
+        name: '@deepseek-ai/dsh-plugin-manager/tools'
+        disabled: true
+
+- id: session-query-sqlite
+  name: '@deepseek-ai/dsh-session-query-sqlite'
+  config:
+    path: ':memory:'
+    openAt: first-search

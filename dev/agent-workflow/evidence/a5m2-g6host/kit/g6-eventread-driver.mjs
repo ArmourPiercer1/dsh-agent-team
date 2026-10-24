@@ -38,12 +38,15 @@
  *   node g6-eventread-driver.mjs preflight [--world-name <basename>] [--port N] [--mock-port M]
  *   node g6-eventread-driver.mjs run --go     # GO window: ALSO requires env G6_EVENTREAD_GO=<token>
  */
-import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import net from 'node:net'
+import { erConfigPatches } from './g6-er-config-patches.mjs'
 
 const DRIVE_DIR = dirname(realpathSync(new URL(import.meta.url).pathname))
 const KIT = join(DRIVE_DIR, 'g6-host-kit.mjs')
@@ -69,6 +72,16 @@ const PINS = {
 }
 // 3183/3498 = A槽口 (root 2026-10-24): borrowable ONLY while A is not
 // running — the free-probe before spawn is the mechanical law. B + stable reserved.
+// Native tool-session-query supply (root config card, same-card supplements):
+// existence already evidenced by the 639 five-names check below (f67 reuse).
+// Resolution style: bare package name ONLY IF the fixed 639 tree resolves it
+// (loader-visible); otherwise the loader-supported file-URL form pointing at
+// the SAME fixed lib — never a private patch, never new software, never an
+// invented supply.
+const TSQ_LIB = join(PINS.hostTree, 'packages/session-query/tool-session-query/lib/index.js')
+const TSQ_BARE_OK = (() => { try { createRequire(join(PINS.hostTree, 'package.json')).resolve('@deepseek-ai/dsh-tool-session-query'); return true } catch { return false } })()
+const TSQ_SPEC = TSQ_BARE_OK ? "'@deepseek-ai/dsh-tool-session-query'" : `"'" + pathToFileURL(TSQ_LIB).href + "'"`
+
 const RESERVED_PORTS = new Set([3080, 3180, 3181, 3182, 3184, 3497, 3499])
 const A_SLOT_PORTS = new Set([3183, 3498])
 
@@ -119,6 +132,8 @@ const PATCHES = [
   ['blueprint-deny-15-worker',
     "      builtinToolDeny:\n        - subagent_fork\n      skills:",
     "      builtinToolDeny:\n        - subagent_fork\n        - ask_user_question\n        - create_goal\n        - exit_plan_mode\n        - get_goal\n        - glob\n        - grep\n        - job_kill\n        - job_list\n        - job_output\n        - present\n        - skill\n        - update_goal\n        - web_fetch\n        - web_search\n        - workflow\n      skills:"],
+  // config-card patches (preset append + sqlite first-search + tool-visibility + emit-patch)
+  ...erConfigPatches(TSQ_SPEC),
 ]
 
 function deriveKit () {
@@ -232,6 +247,46 @@ async function collectPreflight (outDir) {
   }
   const df = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]
   ck('df-floor-6GiB', Number(df) >= PINS.dfFloor, `avail=${df} floor=${PINS.dfFloor}`)
+
+  // native tool-session-query supply: Loader-style resolution + normal import
+  // of the SAME fixed lib the patch mounts (existence reused from the
+  // 639-five-names check above; no build/install).
+  ck('er-tool-resolution-style', true, `bare-name-resolves=${String(TSQ_BARE_OK)} — patch mounts via ${TSQ_BARE_OK ? 'bare package name' : 'loader-supported file URL to the same fixed lib'}`)
+  try {
+    const mod = await import(pathToFileURL(TSQ_LIB).href)
+    ck('er-tool-lib-normal-import', mod?.name === 'tool-session-query' && typeof mod?.apply === 'function', `exports name=${String(mod?.name)} apply=${typeof mod?.apply}`)
+  } catch (e) { ck('er-tool-lib-normal-import', false, String(e?.message ?? e)) }
+
+  // ACTUAL emitted patch layer: derived runner --emit-patch (offline, no boot,
+  // no port, no world), parsed with the fixed tree's own yaml package.
+  try {
+    const tmp = mkdtempSync(join(tmpdir(), 'g6er-patch-'))
+    // derived lives in the KIT dir so its own repo-relative imports resolve exactly as at run time
+    const derived = join(DRIVE_DIR, 'er-patch-probe.derived.mjs')
+    writeFileSync(derived, deriveKit().source)
+    execFileSync(process.execPath, [derived, '--emit-patch', join(tmp, 'cordis.patch.yml'), '--evidence-dir', join(tmp, 'kit')], { encoding: 'utf8', timeout: 60_000 })
+    const emitted = readFileSync(join(tmp, 'cordis.patch.yml'), 'utf8')
+    const neutralized = emitted.split('\n').map((l) => l.replace(/:\s*!!js\s+.*$/, ': "!!js-expr"')).join('\n')
+    const yreq = createRequire(join(PINS.hostTree, 'package.json'))
+    const { parse } = yreq('yaml')
+    const doc = parse(neutralized)
+    const rows = Array.isArray(doc) ? doc : []
+    const presetRow = rows.find((x) => x?.id === 'preset-standard')
+    const sqliteRow = rows.find((x) => x?.id === 'session-query-sqlite')
+    const origLayer = readFileSync(join(PINS.hostTree, 'packages/bundle/web-app/presets/standard.patch.yml'), 'utf8').split('\n')
+    const ps = origLayer.findIndex((l) => l === '    - id: preset-standard')
+    let pe = origLayer.length
+    for (let i = ps + 1; i < pe; i += 1) if (/^    - id: /.test(origLayer[i])) { pe = i; break }
+    const origPlugins = origLayer.slice(ps, pe).filter((l) => /^          - id: /.test(l)).length
+    const plugins = presetRow?.config?.plugins ?? []
+    const toolRow = plugins.find((x) => x?.id === 'tool-session-query')
+    const fullConfig = presetRow?.config?.id === 'standard' && presetRow?.config?.order !== undefined && plugins.length === origPlugins + 1
+    ck('er-patch-layer-actual-parse', fullConfig === true && toolRow !== undefined && sqliteRow?.config?.path === ':memory:' && sqliteRow?.config?.openAt === 'first-search',
+      `preset-standard: id=${String(presetRow?.config?.id)} order=${String(presetRow?.config?.order)} plugins=${String(plugins.length)}/${String(origPlugins)}+1 tool-row=${toolRow !== undefined} name=${String(toolRow?.name).slice(0, 70)}; sqlite=${String(sqliteRow?.config?.path)}/${String(sqliteRow?.config?.openAt)}`)
+    rmSync(tmp, { recursive: true, force: true })
+    rmSync(derived, { force: true })
+  } catch (e) { try { rmSync(join(DRIVE_DIR, 'er-patch-probe.derived.mjs'), { force: true }) } catch {}
+    ck('er-patch-layer-actual-parse', false, String(e?.message ?? e).slice(0, 200)) }
   // root evidence card: the tool defs AS PRESENTED to the model on the live
   // wire cannot be verified offline — independent NOT_VERIFIED, deliberately
   // NOT a halt-gate for the other behavior legs.
