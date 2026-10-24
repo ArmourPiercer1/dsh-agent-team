@@ -115,6 +115,7 @@ import { A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION, A5_B_TEAM_TOOL_NAMES }
 // Center keep-both (root 23:17 full-chain merge): the lane's WIRING_REVISION
 // import joins the B-SUBAGENT frozen-census import that landed earlier.
 import { A5_B_TEAM_WIRING_REVISION, buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
+import { A5_B_ORCHESTRATION_FAMILY_ID, A5_B_ORCHESTRATION_TOOL_NAMES } from './governed-families/workflow-adapters.mjs'
 // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the family's FROZEN census
 // facts are the single source of the trio's closed spellings — the plane
 // never carries a second name list.
@@ -1537,6 +1538,77 @@ export function createTeamToolPlaneAssembly(input = {}) {
       placementNames: Object.freeze(subagentControlPlacementNames.slice()),
       familyRegistrations: subagentControlInjectRaw.familyRegistrations,
       dispose: subagentControlInjectRaw.dispose,
+    })
+  }
+
+  // A5M2-WIRE-G2 B-ORCHESTRATION execution arms (records 47 workflow ALWAYS
+  // / 48 ralph conditional): the gate is config law exactly like the control
+  // trio's — enabled WITHOUT the wiring inject would mask the reserved native
+  // names with nothing behind them (refused, no fallback row, no silent
+  // disable); an inject WITHOUT the gate is a config contradiction (refused);
+  // the inject carries the closed key set and NOTHING else. ralph rides the
+  // inject ONLY when the member scope actually sees the native (host-preset-
+  // off worlds carry the adapter's honest DECLARED row — zero-flip law, this
+  // table never flips anything).
+  const bOrchestrationEnabledRaw = input.plane?.bOrchestrationEnabled
+  if (bOrchestrationEnabledRaw !== undefined && typeof bOrchestrationEnabledRaw !== 'boolean') {
+    return { ok: false, code: 'B_ORCHESTRATION_INJECT_INVALID', message: `planeCfg.bOrchestrationEnabled must be a boolean when present - got ${JSON.stringify(bOrchestrationEnabledRaw) ?? String(bOrchestrationEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)` }
+  }
+  const bOrchestrationEnabled = bOrchestrationEnabledRaw === true
+  const bOrchestrationInjectRaw = input.backends?.bOrchestration
+  const bOrchestrationInjectInvalid = (why) => ({ ok: false, code: 'B_ORCHESTRATION_INJECT_INVALID', message: `backends.bOrchestration: ${why}` })
+  if (bOrchestrationEnabled && bOrchestrationInjectRaw === undefined) {
+    return bOrchestrationInjectInvalid('bOrchestrationEnabled is true but the execution wiring injects nothing - the mount would mask the reserved native names workflow/ralph with nothing behind them; there is no fallback row and no silent disable')
+  }
+  if (!bOrchestrationEnabled && bOrchestrationInjectRaw !== undefined) {
+    return bOrchestrationInjectInvalid('a B-ORCHESTRATION wiring is injected while bOrchestrationEnabled is off - the gate is config law, not wiring: refuse the mount instead of mounting around its own key')
+  }
+  let bOrchestrationInject = null
+  if (bOrchestrationInjectRaw !== undefined) {
+    if (!isRecord(bOrchestrationInjectRaw)) {
+      return bOrchestrationInjectInvalid('the inject must be a record with exactly the closed keys {definitions, familyId, providerId, placementNames, familyRegistrations, dispose}')
+    }
+    const orchInjectKeys = Object.keys(bOrchestrationInjectRaw).slice().sort()
+    const orchWant = ['definitions', 'dispose', 'familyId', 'familyRegistrations', 'placementNames', 'providerId']
+    if (orchInjectKeys.length !== orchWant.length || orchInjectKeys.some((k, i) => k !== orchWant[i])) {
+      return bOrchestrationInjectInvalid(`the inject carries the closed key set {${orchWant.join(', ')}} and NOTHING else - answered [${Object.keys(bOrchestrationInjectRaw).join(', ')}]`)
+    }
+    if (bOrchestrationInjectRaw.familyId !== A5_B_ORCHESTRATION_FAMILY_ID) {
+      return bOrchestrationInjectInvalid(`the inject claims familyId '${String(bOrchestrationInjectRaw.familyId)}' - the execution arms' frozen family is ${A5_B_ORCHESTRATION_FAMILY_ID}`)
+    }
+    if (typeof bOrchestrationInjectRaw.providerId !== 'string' || bOrchestrationInjectRaw.providerId.length === 0) {
+      return bOrchestrationInjectInvalid('the inject needs the wiring providerId (the trusted owner fact rides the family registrations)')
+    }
+    const bOrchDefsRaw = bOrchestrationInjectRaw.definitions
+    if (!Array.isArray(bOrchDefsRaw) || bOrchDefsRaw.length === 0 || bOrchDefsRaw.length > A5_B_ORCHESTRATION_TOOL_NAMES.length) {
+      return bOrchestrationInjectInvalid(`the inject carries one ACTIVE definition per captured record - between 1 and ${A5_B_ORCHESTRATION_TOOL_NAMES.length} (workflow is the always record; ralph rides only when its native is visible) - answered ${Array.isArray(bOrchDefsRaw) ? bOrchDefsRaw.length : 'no array'}`)
+    }
+    const bOrchDefNames = bOrchDefsRaw.map((d) => (isRecord(d) ? d.name : undefined)).slice().sort()
+    if (bOrchDefNames.some((n) => !A5_B_ORCHESTRATION_TOOL_NAMES.includes(String(n))) || new Set(bOrchDefNames).size !== bOrchDefNames.length) {
+      return bOrchestrationInjectInvalid(`the definitions' names ride the frozen census spellings [${A5_B_ORCHESTRATION_TOOL_NAMES.join(', ')}] exactly once each - answered [${bOrchDefNames.join(', ')}]`)
+    }
+    if (!bOrchDefNames.includes('workflow')) {
+      return bOrchestrationInjectInvalid('record 47 workflow is the always record - an armed B-ORCHESTRATION mount without the workflow row would mask nothing or mask the wrong thing; refuse')
+    }
+    for (const d of bOrchDefsRaw) {
+      if (!isRecord(d) || typeof d.name !== 'string' || typeof d.execute !== 'function' || !isRecord(d.parameters)) {
+        return bOrchestrationInjectInvalid(`definition '${String(isRecord(d) ? d.name : '?')}' is not a full placed face (name + execute + parameters schema) - the same-name governed mount IS the definition face`)
+      }
+    }
+    const bOrchPlacementNames = bOrchestrationInjectRaw.placementNames
+    if (!Array.isArray(bOrchPlacementNames) || bOrchPlacementNames.slice().sort().join(',') !== bOrchDefNames.join(',')) {
+      return bOrchestrationInjectInvalid('placementNames must name exactly the injected definitions (one name, one placement, one family claim)')
+    }
+    if (typeof bOrchestrationInjectRaw.familyRegistrations !== 'function' || typeof bOrchestrationInjectRaw.dispose !== 'function') {
+      return bOrchestrationInjectInvalid('familyRegistrations and dispose must be the wiring faces (the mount writer registers AFTER publish; the drain rides THIS mount\'s teardown law)')
+    }
+    bOrchestrationInject = Object.freeze({
+      definitions: Object.freeze(bOrchDefsRaw.slice()),
+      familyId: bOrchestrationInjectRaw.familyId,
+      providerId: bOrchestrationInjectRaw.providerId,
+      placementNames: Object.freeze(bOrchPlacementNames.slice()),
+      familyRegistrations: bOrchestrationInjectRaw.familyRegistrations,
+      dispose: bOrchestrationInjectRaw.dispose,
     })
   }
 
@@ -4921,6 +4993,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // install pass like every other row; zero-flip law holds (gate off = the
   // empty list = baseDefs shape untouched).
   const subagentControlDefs = subagentControlInject === null ? [] : [...subagentControlInject.definitions]
+  const bOrchestrationDefs = bOrchestrationInject === null ? [] : [...bOrchestrationInject.definitions]
 
   // ── A5-M2 G2 WIRING (root ruling 15:28, G2 lane; the center integrates) ──
   // THE PLACEMENT MOMENT (central-card ②, carried to the G2 rows): the rowset
@@ -5167,9 +5240,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && g3Defs.length === 0 && g2Defs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && g5Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0 && bOrchestrationDefs.length === 0 && g3Defs.length === 0 && g2Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...g3Defs, ...g2Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...g5Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs, ...bOrchestrationDefs, ...g3Defs, ...g2Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -5300,6 +5373,16 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         providerId: subagentControlInject.providerId,
         placementNames: subagentControlInject.placementNames,
         familyRegistrations: subagentControlInject.familyRegistrations,
+      }) }),
+      // A5M2-WIRE-G2 — the B-ORCHESTRATION claim face: same shape, same law
+      // (the post-publish writer in agent-bindings hands each entry to
+      // registerA5GovernedFamily AT THE SHARED FILL POINT; nothing on the
+      // plane registers anything).
+      ...(bOrchestrationInject === null ? {} : { bOrchestration: Object.freeze({
+        familyId: bOrchestrationInject.familyId,
+        providerId: bOrchestrationInject.providerId,
+        placementNames: bOrchestrationInject.placementNames,
+        familyRegistrations: bOrchestrationInject.familyRegistrations,
       }) }),
       // A5M2-B-TEAM-WIRE — THE B-TEAM CLAIM FACE (this lane's block): the
       // rows the registration owner PLACES (each the complete captured face
@@ -5566,6 +5649,9 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
             // DISPOSED after); the placed defs' own disposers run with the
             // mount like every other row. Idempotent (the wiring's law).
             if (subagentControlInject !== null) subagentControlInject.dispose()
+            // A5M2-WIRE-G2: the B-ORCHESTRATION drain rides THIS mount's teardown
+            // law too — new-call prohibition FIRST, placed rows never re-run.
+            if (bOrchestrationInject !== null) bOrchestrationInject.dispose()
             // A5M2-B-TEAM-WIRE (this lane's block): the same drain semantics
             // the G6 row obeys — a NEW-CALL PROHIBITION only (the adapter's
             // own DRAIN_SEMANTICS: durable lane commits stay durable, no
