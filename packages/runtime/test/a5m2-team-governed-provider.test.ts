@@ -8,7 +8,7 @@
  * single leg proves the whole causal chain.
  */
 import { describe, it, expect } from 'vitest'
-import { createTeamGovernedSubagentProvider, A5_TGP_CODES } from '../src/plugin/live/governed-families/team-governed-provider.mjs'
+import { createTeamGovernedSubagentProvider, mapWorkDeliveryResult, A5_TGP_CODES } from '../src/plugin/live/governed-families/team-governed-provider.mjs'
 import type { G2TgpInput, G2TgpProvider, G2TgpParentContext } from '../src/plugin/live/governed-families/team-governed-provider.d.mts'
 
 // NARROWING HELPER (a branch, never an as-any): the factory answers a union
@@ -25,6 +25,7 @@ const mkHarness = (opts: {
   announced?: { value: boolean }
   laneRecheck?: () => boolean
   createThrows?: Error
+  settlement?: G2TgpInput['settlement'] | null
 } = {}) => {
   const order: Step[] = []
   const announced = opts.announced ?? { value: false }
@@ -32,6 +33,7 @@ const mkHarness = (opts: {
   const activeCalls = new WeakMap<object, G2TgpParentContext>()
   activeCalls.set(parent, { callId: 'orch-call-9', parametersFingerprint: 'fp-parent-plan', realmId: 'realm-orch', toolName: 'workflow', ordinal: 0, providerIdentity: 'a5p5-plane' })
   const created: Record<string, unknown>[] = []
+  const delivered: Record<string, unknown>[] = []
   const provider = mustProvider(createTeamGovernedSubagentProvider({
     name: 'team-governed-spawn',
     agents: {
@@ -72,11 +74,22 @@ const mkHarness = (opts: {
       wrapSetup: (_sid: string, setup: (c: unknown, a: unknown) => unknown) => async (c: unknown, a: unknown): Promise<unknown> => await setup(c, a),
     },
     laneResolver: opts.laneResolver ?? (() => ({ deny: ['bash', 'terminal_open'] })),
+    ...(opts.settlement === null ? {} : { settlement: opts.settlement ?? {
+      rootSessionId: 'team-root-1',
+      instanceId: 'member-inst-1',
+      workDelivery: {
+        async deliver (args: Record<string, unknown>) {
+          delivered.push(args)
+          order.push(`deliver:${String(args.childSessionId).length > 0 ? 'bound' : 'unbound'}`)
+          return { requestToken: String(args.requestToken), status: 'succeeded', body: 'child settled' }
+        },
+      },
+    } }),
     activeCalls,
     ...(opts.laneRecheck === undefined ? {} : { laneRecheck: opts.laneRecheck }),
   }))
   const request = { parent, signal: new AbortController().signal, prompt: [{ type: 'text', text: 'go' }] }
-  return { provider, order, created, activeCalls, announced, request, parent }
+  return { provider, order, created, delivered, activeCalls, announced, request, parent }
 }
 
 describe('A5M2 TGP: admission-before-create, restrict-before-publish, throw-publishes-nothing, real attribution', () => {
@@ -148,6 +161,37 @@ describe('A5M2 TGP: admission-before-create, restrict-before-publish, throw-publ
     const cancelled = mkHarness()
     await expect(cancelled.provider.start({ parent: cancelled.parent, signal: ac.signal, prompt: [] })).rejects.toThrow(A5_TGP_CODES.CANCELLED)
     expect(cancelled.created.length).toBe(0)
+  })
+  it('C1 SETTLEMENT rides the REAL workDelivery chain: bound facts in, frozen DTO normalized (succeeded+body -> completed ContentBlocks); failed/unavailable NEVER map to success; the token echo is verified; the child publishes only with a bound settlement (unbound = typed refuse BEFORE create)', async () => {
+    const h = mkHarness()
+    const run = await h.provider.start(h.request)
+    const d = h.delivered[0] as Record<string, unknown>
+    expect([d.rootSessionId, d.instanceId]).toEqual(['team-root-1', 'member-inst-1'])
+    expect(d.childSessionId).toBe(run.id)
+    expect(typeof d.requestToken).toBe('string')
+    expect(d.prompt).toBe('go')
+    expect(await run.result).toEqual({ output: [{ type: 'text', text: 'child settled' }], isError: false, stopReason: 'completed' })
+    const unbound = mkHarness({ settlement: null })
+    await expect(unbound.provider.start(unbound.request)).rejects.toThrow(A5_TGP_CODES.DELIVERY_UNBOUND)
+    expect(unbound.created.length, 'a child whose result cannot ride the real chain is never created').toBe(0)
+    expect(() => mapWorkDeliveryResult({ requestToken: 't1', status: 'succeeded', body: '' }, 't1')).toThrow(A5_TGP_CODES.DELIVERY_UNAVAILABLE)
+    expect(() => mapWorkDeliveryResult({ requestToken: 't1', status: 'succeeded' }, 't1')).toThrow(A5_TGP_CODES.DELIVERY_UNAVAILABLE)
+    let e1: Error | undefined
+    try { mapWorkDeliveryResult({ requestToken: 't1', status: 'failed', error: { code: 'TURN_FAILED', message: 'boom' } }, 't1') } catch (e) { e1 = e as Error }
+    expect(String(e1?.message)).toContain('TURN_FAILED')
+    expect(String(e1?.message)).toContain('boom')
+    expect(() => mapWorkDeliveryResult({ requestToken: 't1', status: 'unavailable', error: { code: 'NO_BODY', message: 'unreadable' } }, 't1')).toThrow(A5_TGP_CODES.DELIVERY_UNAVAILABLE)
+    expect(() => mapWorkDeliveryResult({ requestToken: 't1', status: 'settled' }, 't1')).toThrow(A5_TGP_CODES.DELIVERY_STATUS_UNKNOWN)
+    expect(() => mapWorkDeliveryResult({ requestToken: 'other', status: 'succeeded', body: 'x' }, 't1')).toThrow(A5_TGP_CODES.DELIVERY_UNCORRELATED)
+    expect(mapWorkDeliveryResult({ requestToken: 't1', status: 'succeeded', body: 'ok' }, 't1')).toMatchObject({ stopReason: 'completed' })
+  })
+  it('CAPABILITIES HONESTY: undeclared capabilities are typed-REFUSED (not silently ignored) with zero PA and zero create', async () => {
+    const h = mkHarness()
+    expect(h.provider.capabilities.outputSchema).toBe(false)
+    expect(h.provider.capabilities.depthLimit).toBe(false)
+    await expect(h.provider.start({ ...h.request, outputSchema: { type: 'object' } })).rejects.toThrow(A5_TGP_CODES.UNSUPPORTED_CAPABILITY)
+    expect(h.created.length).toBe(0)
+    expect(h.order.length, 'refused before any create/deliver ran').toBe(0)
   })
   it('the governed factory refuses stand-ins for its real seams (agents/pa/teamActivation/laneResolver/activeCalls all REQUIRED)', () => {
     for (const key of ['agents', 'pa', 'teamActivation', 'laneResolver', 'activeCalls']) {

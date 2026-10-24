@@ -30,8 +30,41 @@ export interface G2TgpInput {
   activeCalls: WeakMap<object, G2TgpParentContext>
   laneRecheck?: () => boolean
   observe?: (row: Record<string, unknown>) => void
+  /**
+   * C1 (root ruling): the ACTIVATION-COMMITTED settlement binding carried
+   * by the PER-RUN provider closure (root C2 ruling) — the real
+   * rootSessionId, the admitted member's durable instanceId
+   * (durableMemberInstance, committed by activation; never invented), and
+   * the REAL workDelivery port whose deliver() is the existing consumer
+   * chain. Absent/incomplete = typed refusal BEFORE creation (a child
+   * whose result cannot ride the real chain is never published).
+   */
+  settlement?: {
+    rootSessionId: string
+    instanceId: string
+    workDelivery: { deliver (args: Record<string, unknown>): Promise<Record<string, unknown>> }
+  }
   [key: string]: unknown
 }
+
+/** The frozen WorkDeliveryResult (admission/types.ts:559) of one delivered turn. */
+export interface G2TgpWorkDeliveryResult {
+  readonly requestToken: string
+  readonly status: 'succeeded' | 'failed' | 'unavailable'
+  readonly body?: string
+  readonly error?: { readonly code: string, readonly message: string }
+}
+
+/**
+ * C1 normalization: the frozen DTO -> the run settlement. succeeded maps
+ * ONLY with a readable non-empty body; failed/unavailable/unknown NEVER
+ * map to success (typed throws carrying the DTO's own bytes); the
+ * requestToken echo is verified, never re-mapped.
+ */
+export declare function mapWorkDeliveryResult (
+  result: G2TgpWorkDeliveryResult | unknown,
+  expectedRequestToken: string,
+): { output: readonly { type: 'text', text: string }[], isError: false, stopReason: 'completed' }
 
 export interface G2TgpProvider {
   readonly name: string

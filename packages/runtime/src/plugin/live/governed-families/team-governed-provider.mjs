@@ -67,6 +67,12 @@ export const A5_TGP_CODES = Object.freeze({
   DENIED: 'P_TGP_DENIED',
   LANE_ABSENT: 'P_TGP_LANE_ABSENT',
   CREATE_FAULT: 'P_TGP_CREATE_FAULT',
+  UNSUPPORTED_CAPABILITY: 'P_TGP_UNSUPPORTED_CAPABILITY',
+  DELIVERY_UNBOUND: 'P_TGP_DELIVERY_UNBOUND',
+  DELIVERY_UNCORRELATED: 'P_TGP_DELIVERY_UNCORRELATED',
+  DELIVERY_FAILED: 'P_TGP_DELIVERY_FAILED',
+  DELIVERY_UNAVAILABLE: 'P_TGP_DELIVERY_UNAVAILABLE',
+  DELIVERY_STATUS_UNKNOWN: 'P_TGP_DELIVERY_STATUS_UNKNOWN',
   LANE_MOVED_AT_COMMIT: 'P_TGP_LANE_MOVED_AT_COMMIT',
 })
 
@@ -77,6 +83,40 @@ const isRecord = (value) => typeof value === 'object' && value !== null && !Arra
 const tgpThrow = (code, detail) => Object.assign(new Error(`team-governed-provider refused: ${code} — ${detail}`), { code, tgpRefusal: { code, detail } })
 
 export const A5_TGP_DEFAULT_PROVIDER_NAME = 'team-governed-spawn'
+
+/**
+ * C1 (root ruling 2026-10-25): the FROZEN WorkDeliveryResult (admission/
+ * types.ts:559 — { requestToken, status: succeeded|failed|unavailable,
+ * body?, error? }) maps to the run's settlement through THIS function and
+ * nothing else. 'settled' alone never maps (the DTO law). succeeded maps
+ * ONLY with a readable NON-EMPTY body (ContentBlock text); failed and
+ * unavailable NEVER produce success — they throw carrying the DTO's own
+ * error bytes. The requestToken echo is verified (corruption of the
+ * correlation is fail-closed, not re-mapping). No runner is invented:
+ * this is normalization of the real chain's answer (the existing consumer
+ * at agent-bindings :8012-8095: prepare -> followup([team-work
+ * requestToken=…]) -> whenIdle -> ensureMaterialized -> readDeliveredWorkTurn).
+ */
+export function mapWorkDeliveryResult (result, expectedRequestToken) {
+  if (!isRecord(result) || typeof result.requestToken !== 'string' || typeof expectedRequestToken !== 'string' || result.requestToken !== expectedRequestToken) {
+    throw tgpThrow(CODES.DELIVERY_UNCORRELATED, 'the WorkDeliveryResult requestToken does not echo the delivered request verbatim — correlation is broken and is NEVER re-mapped')
+  }
+  if (result.status === 'succeeded') {
+    if (typeof result.body !== 'string' || result.body.length === 0) {
+      // a 'succeeded' WITHOUT a readable non-empty body is not business
+      // success (the DTO's own definition) — it must not map to success.
+      throw tgpThrow(CODES.DELIVERY_UNAVAILABLE, 'the DTO answered succeeded with no readable non-empty body — business success requires the delivered turn\'s text; nothing is claimed')
+    }
+    return Object.freeze({ output: Object.freeze([Object.freeze({ type: 'text', text: result.body })]), isError: false, stopReason: 'completed' })
+  }
+  if (result.status === 'failed') {
+    throw tgpThrow(CODES.DELIVERY_FAILED, `the delivered turn FAILED (durable): ${String(result.error?.code ?? 'unspecified')} — ${String(result.error?.message ?? 'no message').slice(0, 240)}`)
+  }
+  if (result.status === 'unavailable') {
+    throw tgpThrow(CODES.DELIVERY_UNAVAILABLE, `the delivered turn is UNAVAILABLE (no readable body / seam undeterminable): ${String(result.error?.code ?? 'unspecified')} — ${String(result.error?.message ?? 'no message').slice(0, 240)}`)
+  }
+  throw tgpThrow(CODES.DELIVERY_STATUS_UNKNOWN, `status '${String(result.status)}' is outside the closed WorkDeliveryStatus set — an unknown settlement is fail-closed, never guessed`)
+}
 
 /**
  * Build the Team-governed provider. Input (all REQUIRED unless noted):
@@ -106,7 +146,12 @@ export function createTeamGovernedSubagentProvider (input = {}) {
     name,
     // one-shot delegation only; the truthful descriptive facts: the child
     // world is the RESTRICTED composition, not the parent's completed prefix.
-    capabilities: Object.freeze({ agentOptions: true, outputSchema: true, depthLimit: true, toolFilter: false, persona: false }),
+    // CAPABILITIES HONESTY (root ruling): a provider declares ONLY what its
+    // start() actually enforces — outputSchema/depthLimit are NOT
+    // implemented, so they are declared FALSE and any request touching them
+    // is typed-refused below (the functional gaps stay on the MUST-DELIVER
+    // list, not on the capabilities face).
+    capabilities: Object.freeze({ agentOptions: true, outputSchema: false, depthLimit: false, toolFilter: false, persona: false }),
     inheritsParentContext: false,
     /** PIN 1 — admission before creation; PIN 4 — attribution from the request. */
     async start (request) {
@@ -119,6 +164,10 @@ export function createTeamGovernedSubagentProvider (input = {}) {
         throw tgpThrow(CODES.NO_PARENT_CONTEXT, 'the parent Agent carries no governed call context — children start only under an admitted B-ORCHESTRATION call on this exact parent')
       }
       const signal = request.signal
+      if (request.outputSchema !== undefined || request.maxDepth !== undefined || request.toolFilter !== undefined || request.persona !== undefined) {
+        // undeclared capability demanded: refuse BEFORE anything exists
+        throw tgpThrow(CODES.UNSUPPORTED_CAPABILITY, 'this provider declares outputSchema/depthLimit/toolFilter/persona FALSE and enforces them nowhere — a request touching them is refused typed (the capability gap is a MUST-DELIVER item, never a silent ignore)')
+      }
       if (signal?.aborted === true) throw tgpThrow(CODES.CANCELLED, 'the caller signal was already aborted before the child admission opened')
       entry.ordinal = (entry.ordinal ?? 0) + 1
       const childCallId = `${entry.callId}#child-${entry.ordinal}`
@@ -160,6 +209,27 @@ export function createTeamGovernedSubagentProvider (input = {}) {
       observe({ event: 'tgp:child-admit-allow', callId: childCallId })
       // PIN 4: the lane comes from the Team's own permission facts; without
       // lane facts there is NO publish (no unrestricted child, ever).
+      // SETTLEMENT PRECHECK (C1 + root C2 ruling 2026-10-25): publish only
+      // when the settlement chain is real and bound. The per-run closure
+      // (registered per exec.token, reclaimed at the run's settlement /
+      // dispose - NEVER at the outer tool return) carries the
+      // ACTIVATION-COMMITTED facts: rootSessionId, the admitted member s
+      // durable instanceId (durableMemberInstance is committed by activation
+      // - nothing here may invent one), and the real workDelivery port (the
+      // existing consumer chain: prepare, followup [team-work requestToken],
+      // whenIdle, ensureMaterialized, readDeliveredWorkTurn). Unbound means
+      // typed refusal BEFORE creation: no invented runner, no handle.result
+      // fiction, no fabricated instanceId direct to childFactory.
+      const binding = isRecord(input.settlement) ? input.settlement : null
+      if (binding === null || typeof binding.workDelivery?.deliver !== 'function' || typeof binding.rootSessionId !== 'string' || binding.rootSessionId.length === 0 || typeof binding.instanceId !== 'string' || binding.instanceId.length === 0) {
+        closePlan(childCallId)
+        throw tgpThrow(CODES.DELIVERY_UNBOUND, 'the settlement binding (activation-committed rootSessionId + durable member instanceId + the real workDelivery port) is unanswerable for this run - a child whose result cannot ride the REAL chain is never published')
+      }
+      const promptText = Array.isArray(request.prompt) ? request.prompt.filter((b) => isRecord(b) && b.type === 'text').map((b) => String(b.text ?? '')).join('\n') : ''
+      if (promptText.length === 0) {
+        closePlan(childCallId)
+        throw tgpThrow(CODES.DELIVERY_UNBOUND, 'the delegation carried no model-visible text prompt - nothing can be delivered, so nothing is claimed')
+      }
       const lane = input.laneResolver(parent)
       if (!isRecord(lane) || !Array.isArray(lane.deny) || lane.deny.some((n) => typeof n !== 'string' || n.length === 0)) {
         closePlan(childCallId)
@@ -210,17 +280,25 @@ export function createTeamGovernedSubagentProvider (input = {}) {
         throw tgpThrow(CODES.CREATE_FAULT, `the governed create failed and published nothing: ${String(error?.message ?? error).slice(0, 180)}`)
       }
       observe({ event: 'tgp:child-published', callId: childCallId, sessionId })
-      // The run surface (SubagentRun, types.ts:308-334): result is mapped
-      // VERBATIM (the seam's own law); dispose owns cleanup; cancellation
-      // rides the caller signal the run already carries (no cancel face —
-      // measured).
+      // SETTLEMENT (C1): the frozen WorkDeliveryResult of the REAL chain,
+      // normalized by mapWorkDeliveryResult; the token is minted from THIS
+      // run's own closure and echoed-verified, never re-mapped.
+      const requestToken = `tgp:${childCallId}:${sessionId}`
+      const settlement = binding.workDelivery.deliver({
+        rootSessionId: binding.rootSessionId,
+        instanceId: binding.instanceId,
+        childSessionId: sessionId,
+        requestToken,
+        prompt: promptText,
+        ...(signal === undefined ? {} : { signal }),
+      }).then((dto) => mapWorkDeliveryResult(dto, requestToken))
       return Object.freeze({
         runId: sessionId,
         provider: name,
         id: sessionId,
         local: true,
         localAgent: isRecord(handle) ? handle.agent : undefined,
-        result: Promise.resolve(handle?.result).then((value) => (isRecord(value) && 'isError' in value ? value : { output: value, isError: false })),
+        result: settlement,
         dispose: async () => {
           for (const d of laneDisposers.splice(0).reverse()) { try { d?.() } catch { /* best-effort, exactly once */ } }
           if (typeof handle?.dispose === 'function') await handle.dispose()
