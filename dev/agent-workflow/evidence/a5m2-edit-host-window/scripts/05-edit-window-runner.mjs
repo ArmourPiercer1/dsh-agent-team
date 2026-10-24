@@ -29,7 +29,7 @@
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { appendFileSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../../../tests/paths.mjs'
@@ -506,6 +506,21 @@ async function main() {
   writeFileSync(CANARY, 'CANARY-SENTINEL\n', 'utf8')
   const canaryShaBefore = sha256(CANARY)
   const canaryMtimeBeforeMs = statSync(CANARY).mtimeMs
+  // [E6 symlink fixture] own-HOME symlink whose NAME is lawfully under the
+  // instance root (no '..', not absolute): the pure-lexical anchor law PASSES
+  // it; the write must then be refused POST-CONSUME by O_NOFOLLOW
+  // (edit.mjs :250/260 region) — allow happens, bytes must not move.
+  const SYM_LINK = join(FSROOT, 'link2.txt')
+  const SYM_TARGET = join(HOME, 'own-target.txt')
+  writeFileSync(SYM_TARGET, 'TARGET-SENTINEL\n', 'utf8')
+  try { symlinkSync(SYM_TARGET, SYM_LINK) } catch { /* existing evidence world */ }
+  const symTargetShaBefore = sha256(SYM_TARGET)
+  // [E7 cross-envelope fixture] a SECOND lawful file in the root that this
+  // member's envelope does NOT name (envelope level only — a true second
+  // OWNER needs per-session mock routing, declared absent, NOT faked).
+  const XB = join(FSROOT, 'notes-b.txt')
+  writeFileSync(XB, 'bravo\n', 'utf8')
+  const xbShaBefore = sha256(XB)
 
   // ── ②③ REAL entry resolution from the f86 fixture (READ-ONLY: no install,
   // no lockfile-only, no chmod — root FS narrow-audit order) ──────────────
@@ -599,6 +614,9 @@ async function main() {
     if (text.startsWith('A5M2-EDITHW-LEADER')) return emitOrClose(text, () => ({ name: 'team_create_member', args: { rootSessionId: currentRoot, requestToken: `ehw-create-${NONCE}`, delegationTemplateId: 'edit-worker', label: 'edit1' } }))
     if (text.startsWith('EDIT-REASK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'BETA-ALLOWED', new_string: 'BETA-REASKED' } })) // E3: INDEPENDENT marker/callId — proves a new call does NOT inherit the old allow; NOT a same-token replay claim
     if (text.startsWith('EDIT-ESCAPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: '../outside-canary.txt', old_string: 'C', new_string: 'X' } })) // E4: lexical '..' escape to the HOME canary
+    if (text.startsWith('EDIT-REPLAY')) return { kind: 'tool-call', toolCalls: [{ id: `call-ehw-${NONCE}-member:EDIT-ALLOW`, name: 'edit', arguments: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } }] } // E5: SAME wire call id as E1 — a REAL replay attempt on the public model wire (mock controls toolCalls[].id); the dispatcher/execute layer must not re-execute
+    if (text.startsWith('EDIT-SYMLINK')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'link2.txt', old_string: 'T', new_string: 'X' } })) // E6: lexical-passing symlink; refusal is expected POST-CONSUME at the write (O_NOFOLLOW)
+    if (text.startsWith('EDIT-XENVELOPE')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes-b.txt', old_string: 'bravo', new_string: 'BRAVO-B' } })) // E7: lawful in-root path OUTSIDE this member's envelope (envelope-level cross check; NOT a second owner)
     if (text.startsWith('TOOLS-CHECK')) return { kind: 'text', content: `ACK-C0 ${NONCE}` }
     if (text.startsWith('EDIT-ALLOW')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'beta', new_string: 'BETA-ALLOWED' } })) // root ruling: the EDIT row's anchor contract is RELATIVE-to-root (edit.mjs :89-94 path.isAbsolute refuses); workspace/FSROOT stay aligned so the relative spelling resolves to the SAME target via canonicalLocator :233-236
     if (text.startsWith('EDIT-DENY')) return emitOrClose(text, () => ({ name: 'edit', args: { file_path: 'notes.txt', old_string: 'alpha', new_string: 'ALPHA-DENIED' } })) // same single-variable ruling as the allow arm
@@ -768,6 +786,72 @@ async function main() {
   check('E4', "lexical '../outside-canary.txt' escape refuses typed at the anchor law; HOME canary byte-frozen (sha + <1ms mtime tolerance) and still a regular file",
     /ANCHOR|P_EDIT|refused-edit|APPROVAL_DENIED/.test(String(escapeRes)) && canaryFrozen && canaryStillRegular,
     `result=${String(escapeRes).slice(0, 280)} canarySha=${sha256(CANARY)} canaryShaBefore=${canaryShaBefore} canaryMtimeMs=${statSync(CANARY).mtimeMs}/${canaryMtimeBeforeMs} stillRegular=${String(canaryStillRegular)}`)
+
+  // [E5 real same-id replay] after E1's grant was consumed, the mock re-emits
+  // the PUBLIC wire tool call with the IDENTICAL id. Evidence form (honest):
+  // the same-id second result is deduped by the observer harvest, so this leg
+  // is judged by EFFECTS + LEDGER, not by a tool_result text: target frozen,
+  // no NEW pending row within the settle window, and the allow-consumed fact
+  // count for allowReq stays exactly 1.
+  currentCriterion = 'E5'
+  const replayShaBefore = sha256(target)
+  const pendBefore5 = new Set(await pendingRequestIds())
+  const consumeCountBefore = (await controlFacts())['control-allow-consumed'].filter((e) => e.payload?.requestId === allowReq).length
+  await apiPrompt(memberSession, 'EDIT-REPLAY', 'ehw-e5')
+  let replayNewPending = []
+  try {
+    await waitFor('replay settle', 6_000, async () => {
+      const fresh = (await pendingRequestIds()).filter((r) => !pendBefore5.has(r))
+      if (fresh.length > 0) { replayNewPending = fresh; return true }
+      return null
+    })
+  } catch { /* no new pending inside the settle window = expected shape */ }
+  await new Promise((res) => setTimeout(res, 2_000)) // let any async effect land before measuring
+  const consumeCountAfter = (await controlFacts())['control-allow-consumed'].filter((e) => e.payload?.requestId === allowReq).length
+  check('E5', 'real same-id wire replay after consumption: target frozen, NO new pending in settle, allow-consumed count stays 1 (effects+ledger evidence form)',
+    replayShaBefore === sha256(target) && replayNewPending.length === 0 && consumeCountBefore === 1 && consumeCountAfter === 1,
+    `shaBefore=${replayShaBefore} shaNow=${sha256(target)} newPending=${JSON.stringify(replayNewPending)} consumeCount=${consumeCountBefore}->${consumeCountAfter}`)
+
+  // [E6 symlink POST-CONSUME] the lexical law passes this path (name under the
+  // root, no '..', not absolute), so PA asks and the operator ALLOWS; the
+  // write must then refuse via O_NOFOLLOW (edit :250/260 region) with ZERO
+  // bytes on the own-HOME target. consumed-fact existence is EXPECTED here —
+  // this leg must NOT demand zero pending/consume.
+  currentCriterion = 'E6'
+  const dr6 = await driveGoverned(memberSession, 'EDIT-SYMLINK', 'allow', 'ehw-e6', SYM_TARGET)
+  const sym6Res = await resultFor(stepOuter('EDIT-SYMLINK'))
+  const sym6Consumed = (await hasFact(dr6.requestId, 'control-allow-consumed')) !== false
+  const symTargetFrozen = sha256(SYM_TARGET) === symTargetShaBefore
+  const symStillLink = (() => { try { return lstatSync(SYM_LINK).isSymbolicLink() } catch { return false } })()
+  check('E6', 'symlink under root passes lexical law, ALLOW consumes, the WRITE refuses post-consume (O_NOFOLLOW) with own-target bytes frozen and the link intact',
+    sym6Consumed && symTargetFrozen && symStillLink && /refused|P_EDIT|ANCHOR|EBADF|denied|not-a-regular|symlink/i.test(String(sym6Res)),
+    `requestId=${dr6.requestId} consumed=${String(sym6Consumed)} targetFrozen=${String(symTargetFrozen)} stillLink=${String(symStillLink)} result=${String(sym6Res).slice(0, 300)}`)
+
+  // [E7 cross-ENVELOPE (level 1, named honestly)] a lawful in-root file that
+  // this member's envelope does NOT name must be refused (pre-dispatch refuse
+  // OR ask-then-deny), target frozen, no allow-consumed. NOT a second owner:
+  // true cross-owner needs per-session mock routing — declared ABSENT below,
+  // no internal side-channel was built.
+  currentCriterion = 'E7'
+  const pendBefore7 = new Set(await pendingRequestIds())
+  await apiPrompt(memberSession, 'EDIT-XENVELOPE', 'ehw-e7')
+  let xReq = null
+  try {
+    xReq = await waitFor('x-envelope pending', 8_000, async () => {
+      const fresh = (await pendingRequestIds()).filter((r) => !pendBefore7.has(r))
+      return fresh.length > 0 ? fresh[0] : null
+    })
+  } catch { xReq = null }
+  let xPath = 'pre-dispatch-refuse (no pending row)'
+  if (xReq !== null) {
+    xPath = 'ask-lane (pending created) -> deny'
+    await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId: xReq, decision: 'deny', note: 'edit-hw e7 cleanup' }, 'ehw-e7d', 4)
+  }
+  const xRes = await resultFor(stepOuter('EDIT-XENVELOPE'))
+  const xConsumed = xReq === null ? false : (await hasFact(xReq, 'control-allow-consumed')) !== false
+  check('E7', "cross-envelope in-root path 'notes-b.txt' refused (either lane recorded honestly), target-b frozen, no allow-consumed",
+    /refused|P_EDIT|ANCHOR|denied|APPROVAL_DENIED/.test(String(xRes)) && sha256(XB) === xbShaBefore && xConsumed === false,
+    `lane=${xPath} requestId=${String(xReq)} consumed=${String(xConsumed)} xbSha=${sha256(XB)} xbShaBefore=${xbShaBefore} result=${String(xRes).slice(0, 280)}`)
 
   await cleanup()
   // non-blocking probe rows (ok:null, blocking:false) never decide the rc; real criteria (ok true/false) do.
