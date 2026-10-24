@@ -1703,6 +1703,103 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
   }),
+  /* A5M2-G3-LSP-WIRE B-LSP (root 2026-10-24 LSP REAL-OWNER card via center;
+   * the lane module is packages/runtime/src/plugin/live/governed-families/
+   * g3-lsp-wiring.mjs — its a5LspPaTargetFlat is this entry's counterpart,
+   * the delegate arm is the COMMITTED fsproc adapter createGovernedLspArm
+   * (681568c84, imported as-is; the 8e62 untouchable law).
+   * THE FIXED SCOPE (root ruling, zero-code refusal not accepted): EXACTLY
+   * the four navigation operations at the tool-lsp pin (LSP_OPERATIONS) —
+   * goToDefinition / findReferences / goToImplementation / hover — with the
+   * model-facing ONE-BASED UTF-16 coordinates, the host workspace handling
+   * and the capability ceilings PRESERVED (the captured native body owns
+   * them; nothing here degrades them) and explicitly NO diagnostics /
+   * executeCommand: the closed `by` set IS the refusal — a fifth spelling
+   * selects no group and denies at the discriminant law.
+   * The §5.2 target facts ride as reviewed-encoding leaves per the root
+   * 21:07 全值契约: canonical-JSON string leaves ('absent' = null/missing)
+   * at FULL VALUE — server binary identity + policy generation (a realm
+   * disposes on policy change; the arm's recheck names the movement), the
+   * document kind/canonical-locator/revision (the approval-window snapshot
+   * law: a moved revision refuses at the entry), the bound workspace root,
+   * and the coordinates at full value as nonNegativeInt (the arm's ONE-BASED
+   * classify law keeps them >= 1 — 'absent'/zero never passes the arm).
+   * All four groups carry the SAME shape and the empty binding: navigation
+   * is READ-only (the effect grammar carries the one read leg; there is no
+   * write, no launch, no diagnostics lane to bind). currentFields restates
+   * exactly what THIS call's binding/member/realm facts can re-check. */
+  'B-LSP': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      toolName: 'string',
+      realmId: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      paramFingerprint: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'goToDefinition': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'findReferences': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'goToImplementation': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'hover': Object.freeze({
+          adds: Object.freeze({
+            docKind: 'string',
+            canonicalLocator: 'string',
+            documentRevisionJson: 'string',
+            serverBinaryIdentity: 'string',
+            serverGeneration: 'string',
+            workspaceCwd: 'string',
+            oneBasedLine: 'nonNegativeInt',
+            oneBasedCharacter: 'nonNegativeInt',
+            policyGenerationJson: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'agentId', 'sessionHeaderId']),
+  }),
   /* A5M2-G3 B-PTC run_code (root 04:4x throughput card; 闭表补齐 for this
    * family — the counterpart of the wiring-side flat view
    * src/plugin/live/governed-families/g3-ptc-wiring.mjs a5G3PtcPaTargetFlat,
