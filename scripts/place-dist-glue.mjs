@@ -266,6 +266,15 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-lsp-wiring.mjs',
   },
+  // A5M2-G3-LSP-SUPPLY (center CONTINUATION 1; root 限施工裁决): the realm
+  // supply takes the REAL LspRealmAssembly through its PUBLISHED face (no
+  // import of sandbox-provider at all — the mount round builds the assembly
+  // itself), so its only closure legs are node builtins. Placed for the
+  // same invisible-absence lesson; drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/lsp-realm-supply.mjs',
+  },
   // A5M2-G1-WIRE mount-arm (this branch's g1PureQuery block): the mirrored
   // `agent-bindings.mjs` now imports the G1-WIRE lane's two production
   // modules by RELATIVE specifier STATICALLY (at module load, gate or no
