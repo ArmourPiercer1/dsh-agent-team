@@ -191,6 +191,91 @@ export function pairToolResults (messages, issuedIds) {
   return results
 }
 
+
+/**
+ * The proven readiness law, reused verbatim in shape: `team.listRoots` is the
+ * existing public **v3-only** read method (params `{}`, no root addressed, no
+ * writes, no agent effects). The product answers the first "starting" refusal
+ * at the readiness gate BEFORE the business dispatcher, so nothing executes
+ * during the wait. Only the EXACT runtime-not-ready envelope whose message
+ * says `state: starting` is waited on (bounded, 1.5s polls); any other error,
+ * a failed state, or a transport/shape anomaly stops immediately.
+ */
+export async function teamReadyBarrier ({ origin, cookie, budgetMs = 180_000, pollMs = 1_500, log = () => {} }) {
+  const deadline = Date.now() + budgetMs
+  let polls = 0
+  for (;;) {
+    polls += 1
+    const res = await remoteCall(origin, cookie, 'team.listRoots', {}, 'bteam-ready', 3)
+    const err = resultError(res.body)
+    if (err === null) return { ready: true, polls, body: res.body }
+    const starting = err.code === 'internal-error'
+      && err.details?.reason === 'runtime-not-ready'
+      && String(err.message).includes('state: starting')
+    if (!starting) throw new Error(`readiness barrier STOP (polls=${String(polls)}): ${JSON.stringify(err).slice(0, 400)}`)
+    if (Date.now() > deadline) throw new Error(`readiness budget exhausted (polls=${String(polls)})`)
+    log(`starting… poll ${String(polls)}`)
+    await new Promise((resolve) => setTimeout(resolve, pollMs))
+  }
+}
+
+/** Pull the typed error out of a Remote result body (null when the call
+ *  succeeded) — the same envelope shape the proven kits read. */
+export function resultError (body) {
+  if (body?.ok === true) return null
+  if (body?.type === 'client-response' && body.payload?.ok === true) return null
+  const err = body?.error ?? body?.payload?.error ?? body
+  if (!isRemoteError(err)) return null
+  return err
+}
+
+function isRemoteError (value) {
+  return typeof value === 'object' && value !== null && typeof value.code === 'string'
+}
+
+/**
+ * ONE new unique Team root, created directly through the public write method
+ * (never by hijacking an ordinary session writer), named per the lane law
+ * `session-a5m2c2-p-<RUN_STAMP>`. The request is issued EXACTLY ONCE — write
+ * requests are never retried — with params built by the closed-set builder, and
+ * the result is asserted on the REAL return: the call must succeed AND a
+ * following read-only v3 `team.listRoots` must contain the new root.
+ */
+export async function createUniqueTeamRoot ({ origin, cookie, runStamp, blueprintId, blueprintRevision, initialWorkPrompt, version = 1 }) {
+  const rootSessionId = `session-a5m2c2-p-${runStamp}`
+  const params = teamCreateParams({
+    version,
+    blueprintId,
+    blueprintRevision,
+    rootSessionId,
+    ...(initialWorkPrompt === undefined ? {} : { initialWork: { prompt: initialWorkPrompt } }),
+  })
+  const created = await remoteCall(origin, cookie, 'team.create', params, `bteam-create-${runStamp}`, version)
+  const createError = resultError(created.body)
+  if (createError !== null) {
+    return { ok: false, rootSessionId, params, stage: 'create', error: createError }
+  }
+  const after = await remoteCall(origin, cookie, 'team.listRoots', {}, `bteam-readback-${runStamp}`, 3)
+  const afterError = resultError(after.body)
+  const listed = collectStrings(after.body)
+  return {
+    ok: afterError === null && listed.includes(rootSessionId),
+    rootSessionId,
+    params,
+    stage: 'readback',
+    createBody: created.body,
+    readbackListed: listed.includes(rootSessionId),
+  }
+}
+
+/** Every string in a nested Remote payload (read-back containment check). */
+function collectStrings (value, out = []) {
+  if (typeof value === 'string') out.push(value)
+  else if (Array.isArray(value)) for (const item of value) collectStrings(item, out)
+  else if (typeof value === 'object' && value !== null) for (const item of Object.values(value)) collectStrings(item, out)
+  return out
+}
+
 /** Prechecks only: source-level, no host, no world, no install. */
 export function precheck () {
   const problems = [...validateRow().problems]
@@ -271,7 +356,7 @@ export function gateBlueprintSource (source) {
  * The boot path: verified calls only, cleanup awaited. Any case that needs a
  * `GAPS` leg stops before touching it. Requires the window GO env.
  */
-export async function runTeamC2 ({ port, world, blueprintSource, logDir, go = process.env.A5M2_TEAM_C2_BOOT_GO }) {
+export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, go = process.env.A5M2_TEAM_C2_BOOT_GO }) {
   if (go !== '1') throw new Error('A5M2_TEAM_C2_BOOT_GO is not set: boot is a window decision, this driver never boots by default')
   const trace = []
   const rec = (leg, ok, detail) => { trace.push({ leg, ok, detail }); return ok }
@@ -292,12 +377,18 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, go = pr
     const exchange = await jsonFetch(`${origin}/?token=${token}`, { redirect: 'manual' }, 30_000)
     const cookie = exchange.headers.getSetCookie?.().map((c) => c.split(';')[0]).join('; ') ?? ''
     rec('boot', true, redactLaunchToken(`${origin}/?token=${token}`))
-    // C-READINESS: v3 read-only barrier before any case.
-    const roots = await remoteCall(origin, cookie, 'team.listRoots', {}, 'bteam-ready', 3)
-    rec('C-READINESS', roots.status === 200, `status=${String(roots.status)}`)
-    if (roots.status !== 200) return { trace, ok: false }
-    const gate = gateBlueprintSource(blueprintSource)
-    rec('C-BLUEPRINT-SOURCE-GATE', gate.ok, 'production inspectBlueprintSource answered before any write')
+    if (blueprintSource.length > 0) {
+      const gate = gateBlueprintSource(blueprintSource)
+      rec('C-BLUEPRINT-SOURCE-GATE', gate.ok, 'production inspectBlueprintSource answered before any write')
+      if (!gate.ok) return { trace, ok: false }
+    }
+    const barrier = await teamReadyBarrier({ origin, cookie })
+    rec('C-READINESS-BARRIER', barrier.ready, `polls=${String(barrier.polls)}`)
+    if (live !== undefined) {
+      const root = await createUniqueTeamRoot({ origin, cookie, ...live })
+      rec('C-CREATE-ONCE', root.ok, `${root.stage} root=${root.rootSessionId}${root.error === undefined ? '' : ` error=${JSON.stringify(root.error).slice(0, 160)}`}`)
+      return { trace, ok: trace.every((row) => row.ok), root }
+    }
     // Team cases run against a NEW unique root created directly through the
     // public Team API (never by hijacking an ordinary session writer).
     // Log-frame assertions: never attempted here — see GAPS['GAP-FRAME-READER'].
@@ -309,14 +400,30 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, go = pr
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const boot = process.argv.includes('--boot')
-  if (!boot) {
+  const args = process.argv.slice(2)
+  const flag = (name) => args.includes(name)
+  const valueOf = (name) => { const i = args.indexOf(name); return i === -1 ? undefined : args[i + 1] }
+  if (flag('--live')) {
+    // A real round needs the row/blueprint the lane owner owns; nothing is
+    // invented here, and the host tree is the reused read-only package.
+    const blueprintId = valueOf('--blueprint-id')
+    const runStamp = valueOf('--run-stamp') ?? new Date().toISOString().replace(/[:.]/g, '')
+    if (blueprintId === undefined) {
+      console.error('--live needs --blueprint-id (and optionally --blueprint-revision, --run-stamp, --initial-work-prompt): no blueprint is invented here')
+      process.exitCode = 2
+    } else {
+      const outcome = await runTeamC2({
+        port: Number(valueOf('--port') ?? 3188),
+        world: ROW_CONFIG.world,
+        blueprintSource: valueOf('--blueprint-file') === undefined ? '' : readFileSync(valueOf('--blueprint-file'), 'utf8'),
+        live: { runStamp, blueprintId, blueprintRevision: valueOf('--blueprint-revision'), initialWorkPrompt: valueOf('--initial-work-prompt') },
+      })
+      console.log(JSON.stringify(outcome, null, 2))
+      process.exitCode = outcome.ok ? 0 : 1
+    }
+  } else if (flag('--precheck') || true) {
     const result = precheck()
     console.log(JSON.stringify({ mode: 'precheck', booted: false, ...result }, null, 2))
     process.exitCode = result.ok ? 0 : 1
-  } else {
-    const out = await runTeamC2({ port: 3188, world: ROW_CONFIG.world, blueprintSource: '' })
-    console.log(JSON.stringify(out, null, 2))
-    process.exitCode = out.ok ? 0 : 1
   }
 }
