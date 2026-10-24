@@ -377,10 +377,17 @@ async function remoteMountGate({ readLog, childGone = () => false, budgetMs = 12
     if (childGone() === true) throw new Error('HOST_CHILD_EXITED before the Team Remote mounted: no team RPC was attempted')
     const text = String(readLog() ?? '')
     // observation timestamps (root 2026-10-24): first-seen arrival of each
-    // new Host-log line — OBSERVATION time at <=pollMs granularity, honest
-    // about not being the writer's own timestamp.
+    // new TERMINATED Host-log line — OBSERVATION time at <=pollMs
+    // granularity, honest about not being the writer's own timestamp.
+    // Cursor law (root single-point fix): consume complete lines only.
+    // split('\n') ends with an empty artifact when the text ends in a
+    // newline (the normal case that the old condition wrongly skipped
+    // ENTIRELY — zero lines recorded), and with a PARTIAL fragment when it
+    // does not. Terminated-line count is lines.length-1 in both cases; the
+    // unfinished tail stays unconsumed (cursor does not advance) for the
+    // next poll — a partially-observed line is never recorded.
     const lines = text.split('\n')
-    while (seenLines < lines.length && lines[lines.length - 1] !== '') {
+    while (seenLines < lines.length - 1) {
       const line = lines[seenLines]
       if (line.length > 0) tl(`HOSTLOG-observed L${String(seenLines + 1)}: ${line}`)
       seenLines += 1
