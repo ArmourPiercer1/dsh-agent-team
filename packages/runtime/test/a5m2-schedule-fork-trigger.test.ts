@@ -14,6 +14,17 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+// The timer-law baseline is the PINNED pristine host's ORIGINAL runtime.ts.
+// CI correction (official 4ab CI, census NEW1): the read walked FIVE levels
+// above packages/runtime/test - a worktree-local coincidence that lands on
+// the main repo's host tree, but on CI resolves above the checkout (ENOENT,
+// never reaching the comparison). The repo's declared single source of truth
+// for the host location is tests/paths.mjs (findTestRepoRoot + TEST_USE_REL,
+// honoring DSH_TEST_USE_ROOT), and CI provisions exactly that tree from the
+// pin (census-runtime.yml "Provision the pinned pristine test host"). The
+// comparison itself is UNCHANGED: same baseline file, same setTimeout count.
+import { findTestRepoRoot, TEST_USE_REL } from '../../../tests/paths.mjs'
+
 import { ScheduleRuntime } from '../../../forks/dsh-schedule/lib/runtime.js'
 import type { ScheduleTriggerIntent } from '../../../forks/dsh-schedule/lib/runtime.js'
 
@@ -96,7 +107,9 @@ describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
     expect(runtime).toContain('forkDeferredUntil')
     // NO second timer: setTimeout appears in the fork only where the ORIGINAL
     // timer law already had it (the file gained ZERO new timer constructions).
-    const original = readFileSync(join(here, '..', '..', '..', '..', '..', 'tests', 'deepseek-harness-test-use', 'packages', 'schedule', 'schedule', 'src', 'runtime.ts'), 'utf8')
+    const repo = findTestRepoRoot(here)
+    expect(repo, 'no repo root carrying the test-use tree - failing closed, never a silent skip').not.toBeNull()
+    const original = readFileSync(join(repo!, TEST_USE_REL, 'packages', 'schedule', 'schedule', 'src', 'runtime.ts'), 'utf8')
     const count = (s: string, needle: string) => s.split(needle).length - 1
     expect(count(runtime, 'setTimeout(')).toBe(count(original, 'setTimeout('))
     const index = readFileSync(join(forkRoot, 'src', 'index.ts'), 'utf8')
