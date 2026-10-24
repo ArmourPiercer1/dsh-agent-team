@@ -1,0 +1,5 @@
+real mirror fields: present,file,phase_id,active_plan,backlog,matrix,baseline,baseline_collected,baseline_exists,baseline_is_ancestor_of_head,note
+M0 real mirror, no mutation: []
+M1 emitter drops matrix: [{"code":"LEGACY_MIRROR_INCOMPLETE","detail":"matrix is not emitted into legacy_authority"},{"code":"LEGACY_MIRROR_VALUE","detail":"matrix: mirror=undefined graph=docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md"}]
+M2 baseline_collected emitted empty: [{"code":"LEGACY_MIRROR_INCOMPLETE","detail":"baseline_collected is emitted but empty — the graph records it, so the mirror dropped it"},{"code":"LEGACY_MIRROR_VALUE","detail":"baseline_collected: mirror= graph=2026-10-22T07:20:56Z"}]
+M3 mirror swaps the frozen baseline for another SHA: ["LEGACY_MIRROR_VALUE | baseline: mirror=0000000000000000000000000000000000000000 graph=9b2ee5"]
