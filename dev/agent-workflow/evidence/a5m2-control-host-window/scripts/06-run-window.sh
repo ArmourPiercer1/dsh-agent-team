@@ -10,7 +10,7 @@
 #              wrapper/evidence, never touch the runner logic — same law as A)
 #   product  = 4a26ac9a904dc6ad1cef56b8b1c096ab88e131de pack (pins live in
 #              the runner; INSTALL_DIR via env or the runner's pinned default
-#              install-c5a36a6a)
+#              install-8077defc)
 #   host     = 639ed01539 checkout (tests/deepseek-harness-test-use)
 #   HOME     = tests/homes/a5m2-ctl-hw-<UTC>Z  budget 64 MiB (new bytes, links==1)
 #   ports    = 3184 host + 3499 mock; PRE-CHECK ONLY, occupied => refuse (NEVER kill foreign)
@@ -43,7 +43,7 @@ if [ -n "${A5M2_CONTROL_RUNNER_SHA256:-}" ]; then [ "$A5M2_CONTROL_RUNNER_SHA256
 echo "driver law: HEAD carries ${DRIVER_SHA}; runner file sha256 ${RUNNER_NOW}"
 
 # [1] fixture present (f86 receipt product; read-only reuse; NEVER installed here)
-: "${A5M2_CONTROL_INSTALL_DIR:=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-c5a36a6a}"
+: "${A5M2_CONTROL_INSTALL_DIR:=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc}"
 [ -d "$A5M2_CONTROL_INSTALL_DIR" ] || fail "fixture absent at ${A5M2_CONTROL_INSTALL_DIR} — NOT booting, NOT installing" 3
 FIX_LOCK_BEFORE=$(sha256sum "$A5M2_CONTROL_INSTALL_DIR/pnpm-lock.yaml" | cut -d' ' -f1) || fail "fixture pnpm-lock unreadable" 3
 FIX_PKG_BEFORE=$(sha256sum "$A5M2_CONTROL_INSTALL_DIR/package.json" | cut -d' ' -f1) || fail "fixture package.json unreadable" 3
