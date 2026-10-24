@@ -973,7 +973,7 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
   })
 
-  it('the grammar facts at rev 7 are MEASURED at the validator: the rev-7 payloads PASS, the retired shapes deny with the pinned wordings, the three existing rules stay byte-identical', () => {
+  it('the grammar facts at rev 7 are MEASURED at the validator: the rev-7 payloads PASS, the retired shapes deny with the pinned wordings, the other rules stay byte-identical (B-CONTROL re-pinned at the full-pairing grammar, root 2026-10-25)', () => {
     // GRAMMAR facts at the validator — structure checks only. NOTHING here
     // is empirical consumption evidence (that is the two fixed-point legs);
     // per root the old source-shape refusal is named exactly as what it is.
@@ -1015,8 +1015,19 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
       trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
     })).toBe("queryPlatform: not the 'query-host' variant constant of the B-INSPECT typed plan")
     expect(validatePaFamilyTarget('B-CONTROL', { trusted: { memberAgentId: 'i', sessionHeaderId: 'h', realmId: 'r', owner: 'o', profileId: 'p' } }))
-      .toBe('trustedMemberAgentId: required by the B-CONTROL typed plan, absent')
+      // (root 2026-10-25 full pairing): the retired nested shape now denies
+      // on the discriminant first; the five trusted leaves still deny behind
+      // it — the closed law is unchanged, the measured first violation moved.
+      .toBe('controlRecord: required by the B-CONTROL typed plan, absent')
+    // (root 2026-10-25 LIMITED BUILD ORDER): the flat five-leaf shape is now
+    // the RETIRED encoding (family revision moved to 8) — it denies on the
+    // discriminant, translated by nothing; the admitted claim is the full
+    // pairing. The B-INSPECT pair and every other family stay byte-identical.
     expect(validatePaFamilyTarget('B-CONTROL', {
+      trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
+    })).toContain('controlRecord')
+    expect(validatePaFamilyTarget('B-CONTROL', {
+      controlRecord: 'list-pending', requestRootSessionId: 'root-1', requestToken: 'tok-1', requestLimit: 'absent',
       trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
     })).toBeUndefined()
     // B-SESSION's own law still accepts its OWN todo target and refuses the
@@ -1270,6 +1281,7 @@ const ARM_ASM = (await import(new URL('../src/plugin/live/governed-families/g1-q
 }
 const ARM_WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as {
   g1PureQuerySubset: () => ReadonlyArray<{ name: string; recordIndex: number; familyId: string }>
+  g1ControlSupplySubset: () => ReadonlyArray<{ name: string; recordIndex: number; familyId: string }>
   claimG1Control85Handover: (input: { catalog: unknown; allowedNames?: unknown; definitionIdentityOf?: unknown }) => { names: string[]; census: Array<{ name: string; recordIndex: number; reason: string }> }
   A5_G1_CONTROL85_HANDOVER: { name: string; recordIndex: number }
 }
@@ -1335,12 +1347,18 @@ async function mountArmWorld(opts: {
   // under the SAME name the scoped read would otherwise resolve.
   c85Selection?: ArmDef[]
   c85Decoy?: ArmDef
+  // ROOT 2026-10-25 LIMITED BUILD ORDER: the CONTROL supply opt-in key
+  // (g1PureQuery.control) and the REAL B-CONTROL natives this world's scoped
+  // registry answers (a leader world carries them; a member world does not).
+  control?: boolean
+  controlNatives?: ArmDef[]
 } = {}): Promise<ArmWorld> {
   const label = `arm-${String(++armSeq)}`
   const realmId = `a5m2-g1-arm-${label}`
   const topology = { current: structuredClone(TOPOLOGY_BASE) }
   const { defs: nativeDefs, nativeCalls } = makeCaptures(() => topology.current)
   const nativeLayer = new Map<string, HostNativeDef>(Object.entries(nativeDefs))
+  for (const def of opts.controlNatives ?? []) nativeLayer.set(def.name, def as never)
   const scopeLayer = new Map<string, ArmDef>()
   // THE ONE owner-held placed-definition ledger (block law mirrored): only
   // this world's registration seam writes it, and the Guard's bindingFeed,
@@ -1470,7 +1488,7 @@ async function mountArmWorld(opts: {
     instanceId: WORKER,
     teamSessionId: P6T4_ROOT,
     plane: {},
-    ...(opts.armRow === false ? {} : { backends: { g1Arm: { isPlaced: (name: string) => ledger.has(name) } } }),
+    ...(opts.armRow === false ? {} : { backends: { g1Arm: { isPlaced: (name: string) => ledger.has(name), ...(opts.control === true ? { names: ARM_WIRE.g1ControlSupplySubset().map((row) => row.name) } : {}) } } }),
     authorityFacts: { overlayGeneration: async () => 0, ensureAuthorityCurrent: async () => {} },
     controlLeg: async (legInput: unknown) => {
       legInputs.push(legInput as Record<string, unknown>)
@@ -1612,6 +1630,49 @@ async function mountArmWorld(opts: {
     }
     assemblies.push(assembly)
   }
+  // ── THE CONTROL SUPPLY LOOP MIRRORED (root LIMITED BUILD ORDER
+  // 2026-10-25): same block law as agent-bindings — the deployer's
+  // g1PureQuery.control key is the ONLY producer of the armed state; the
+  // derived B-CONTROL row set rides the SAME assembly, the SAME owner-held
+  // ledger, the SAME live binding-facts law and the SAME after-publish fill.
+  const controlSubsetNames = new Set(ARM_WIRE.g1ControlSupplySubset().map((row) => row.name))
+  if (opts.control === true) {
+    for (const entry of ARM_WIRE.g1ControlSupplySubset()) {
+      const controlAssembly = ARM_ASM.createG1QueryAssembly({
+        providerId: PROVIDER_ID,
+        subset: [entry],
+        registry: {
+          get: (name: string) => (name !== entry.name ? undefined : raw.tools.get(name)),
+          register: (definition: ArmDef) => {
+            const dispose = raw.tools.register(definition)
+            ledger.set(definition.name, definition)
+            return () => {
+              if (ledger.get(definition.name) === definition) ledger.delete(definition.name)
+              dispose()
+            }
+          },
+        },
+        runtimeAgent: { id: WORKER, session: { header: { id: HEADER_ID } } },
+        plane: () => g1PlaneSeam,
+        trusted,
+        bindingFacts: bindingFactsFor(entry.name),
+        observe: (row: Record<string, unknown>) => { observations.push(`a5m2-g1: ${String(row?.event ?? 'observe')} ${String(row?.name ?? '')}`) },
+      })
+      if (controlAssembly.ok !== true) {
+        throw Object.assign(new Error(`alpha5-g1-arm-mount-refused: ${String(controlAssembly.code)} — ${String(controlAssembly.message)}`), { code: 'alpha5-g1-arm-mount-refused' })
+      }
+      const controlDisposers = controlAssembly.place()
+      void controlDisposers
+      for (const name of controlAssembly.wiring?.placementNames ?? []) {
+        observations.push(`a5m2-g1: governed B-CONTROL row PLACED ${name} for ${label}; takeover mount over the global native`)
+        ownedNames.push(name)
+      }
+      assemblies.push(controlAssembly)
+    }
+    observations.push(`a5m2-g1: control supply ARMED for ${label} (deployer key only; the ruling never auto-enables)`)
+  } else {
+    observations.push(`a5m2-g1: control supply DARK for ${label} (g1PureQuery.control not configured)`)
+  }
   // The Guard's own bind of the mount's own-tool list (production:
   // bindOwnTools over the SAME live array the arm appended to — the GLUE-5
   // ordering), then publish, then the family registration at the fill point.
@@ -1625,7 +1686,9 @@ async function mountArmWorld(opts: {
       for (const registration of assembly.registerAfterPublish()) {
         if (registration.entry.familyId !== 'B-INSPECT'
           && !(registration.recordIndex === 85 && registration.entry.familyId === 'B-CONTROL'
-            && c85Names.has(registration.name) && c85Native !== undefined)) {
+            && c85Names.has(registration.name) && c85Native !== undefined)
+          && !(opts.control === true && registration.entry.familyId === 'B-CONTROL'
+            && controlSubsetNames.has(registration.name))) {
           throw new Error(`arm law broken: a family outside the closed enablement reached the table (${registration.name})`)
         }
         // provider authority evidence (the image lane's Guard.entryOf law):
@@ -2006,6 +2069,124 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(code).toContain('registration-ready')
   })
 
+  // ── ROOT 2026-10-25 LIMITED BUILD ORDER: the four self-governance
+  // records (83/84/87/88) leave the HOLD under exactly two constraints the
+  // legs below pin: the deployer's config key is the ONLY producer of the
+  // armed state (dark by default, closed grammar otherwise), and the supply
+  // never widens visibility past the native the scoped registry already
+  // answers. The wire format answers the FULL-PAIRING closed table at the
+  // B-CONTROL family revision 8 (control/types.ts; the family-rules spec
+  // pins the grammar, these legs pin the supply).
+  const controlNativesBuild = (bag: Array<{ args: Record<string, unknown> }>): ArmDef[] => {
+    const control = {
+      async listControlState() { return { requests: [] } },
+      async listOpenApprovalCases() { return [] },
+      async requestControl(input: Record<string, unknown>) {
+        bag.push({ args: input })
+        return { requestId: 'req-arm-83', rootSessionId: input.rootSessionId, kind: input.kind, targetInstanceId: input.targetInstanceId, actionName: input.actionName, decision: null, status: 'pending', createdAt: 0 }
+      },
+      async resolveControl() { return { requestId: 'req-arm-83', status: 'resolved' } },
+    }
+    const { tools } = createTeamTools({
+      teamRuntime: {},
+      controlService: control,
+      messaging: {},
+      activity: {},
+      resolveCaller: async () => ({ caller: { kind: 'instance', instanceId: WORKER }, rootSessionId: P6T4_ROOT }),
+    } as never)
+    return tools.filter((tool) => ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission'].includes(tool.name)) as unknown as ArmDef[]
+  }
+
+  it('CONTROL supply opt-in law (root 2026-10-25): WITHOUT the deployer key nothing of the B-CONTROL supply world is constructed — dark observation, zero placement, zero registration', async () => {
+    const arm = await mountArmWorld({ scope: SCOPE_OK })
+    arm.publish()
+    expect(arm.observations.some((o) => o.includes('control supply DARK'))).toBe(true)
+    for (const name of ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission']) {
+      expect(arm.ledger.has(name), name).toBe(false)
+      expect(arm.scopeLayer.has(name), name).toBe(false)
+      expect(arm.keys.has(name), name).toBe(false)
+    }
+    expect(arm.observations.some((o) => o.includes('B-CONTROL row PLACED'))).toBe(false)
+  })
+
+  it('CONTROL supply armed on a leader world (deployer key only): the B-CONTROL rows mount over the REAL team-tool natives, placed through the ONE owner-held ledger and registered at family revision 8 with the provider pairing; the B-INSPECT pair does not move', async () => {
+    const bag: Array<{ args: Record<string, unknown> }> = []
+    const arm = await mountArmWorld({ scope: SCOPE_OK, control: true, controlNatives: controlNativesBuild(bag) })
+    const regs = arm.publish()
+    const armed = regs.filter((r) => r.entry.familyId === 'B-CONTROL' && r.recordIndex !== 85)
+    expect(armed.map((r) => r.name).sort()).toEqual(['team_grant_permission', 'team_request_control', 'team_resolve_control', 'team_revoke_permission'])
+    for (const reg of armed) {
+      expect(reg.entry.adapterRevision, `family revision for ${reg.name} (the full pairing moved it; nothing translates)`).toBe(8)
+      expect(reg.entry.providerIdentity).toBe(PROVIDER_ID)
+      expect(arm.observations.some((o) => o.includes(`B-CONTROL row PLACED ${reg.name}`)), reg.name).toBe(true)
+      expect(arm.ledger.has(reg.name), reg.name).toBe(true)
+      expect(arm.scopeLayer.has(reg.name), reg.name).toBe(true)
+    }
+    expect(arm.observations.some((o) => o.includes('control supply ARMED'))).toBe(true)
+    // the pairing law runs ACROSS families: B-INSPECT keeps its own revision.
+    expect(regs.find((r) => r.name === 'cordis_inspect_list')?.entry.adapterRevision).toBe(7)
+  })
+
+  it('CONTROL supply on a member world (no legal visibility for the Leader-side natives): capture-absent census only for those rows — zero placement, zero registration, visibility never widens past the native the scoped registry answers', async () => {
+    const bag: Array<{ args: Record<string, unknown> }> = []
+    const onlyRequest = controlNativesBuild(bag).filter((def) => def.name === 'team_request_control')
+    expect(onlyRequest).toHaveLength(1)
+    const arm = await mountArmWorld({ scope: SCOPE_OK, control: true, controlNatives: onlyRequest })
+    const regs = arm.publish()
+    expect(arm.observations.some((o) => o.includes('B-CONTROL row PLACED team_request_control'))).toBe(true)
+    for (const name of ['team_resolve_control', 'team_grant_permission', 'team_revoke_permission']) {
+      expect(arm.observations.some((o) => o.includes(`g1-asm:declared ${name}`)), name).toBe(true)
+      expect(arm.ledger.has(name), name).toBe(false)
+      expect(arm.scopeLayer.has(name), name).toBe(false)
+      expect(regs.find((r) => r.name === name), name).toBeUndefined()
+    }
+  })
+
+  it('CONTROL row end to end (assembly leg: 接线未测 pending Host, never 已测试): the governed team_request_control def walks the ONE PA chain — the durable row carries the B-CONTROL revision-8 FULL-PAIRING block at FULL VALUE (request identity + action facts; the omitted optional lane rides reviewed-encoding absent), leader allow, ONE consumption, the captured native entered ONCE', async () => {
+    const bag: Array<{ args: Record<string, unknown> }> = []
+    const arm = await mountArmWorld({ scope: SCOPE_OK, control: true, controlNatives: controlNativesBuild(bag) })
+    arm.publish()
+    const def = arm.scopeLayer.get('team_request_control')
+    expect(def).toBeDefined()
+    const callId = 'toolu-call-arm-83'
+    const running = def!.execute(
+      { rootSessionId: P6T4_ROOT, requestToken: 'tok-arm-83', kind: 'leader-approval', targetInstanceId: 'inst-target', actionName: 'tool-invoke:bash', toolName: 'bash' },
+      { agent: { id: WORKER, session: { header: { id: HEADER_ID } } }, token: Symbol(callId), callId },
+    )
+    const row = await waitRowForCall(callId)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(String(manifest?.callId)).toBe(callId)
+    expect(manifest?.familyId).toBe('B-CONTROL')
+    expect(manifest?.adapterRevision, 'the walk carries the FAMILY revision the pairing moved (8), not the shared 7').toBe(8)
+    expect(manifest?.providerIdentity).toBe(PROVIDER_ID)
+    // THE §5 GAP, CLOSED at full value on the DURABLE row:
+    expect(manifest?.targetManifest).toMatchObject({
+      controlRecord: 'request-control',
+      requestRootSessionId: P6T4_ROOT,
+      requestToken: 'tok-arm-83',
+      requestKind: 'leader-approval',
+      requestTargetInstanceId: 'inst-target',
+      requestActionName: 'tool-invoke:bash',
+      requestToolName: 'bash',
+      requestSummary: 'absent',
+      trustedMemberAgentId: WORKER,
+      trustedSessionHeaderId: HEADER_ID,
+      trustedRealmId: arm.plane.realmId,
+      trustedOwner: P6T4_ROOT,
+      trustedProfileId: 'profile-a5m2-g1',
+    })
+    expect(row.status).toBe('pending')
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as Record<string, unknown>
+    // the captured NATIVE ran ONCE behind its own inner legitimacy (the stub
+    // service answers it; the outer PA never substituted the inner check).
+    expect(bag).toHaveLength(1)
+    expect(String(bag[0]?.args.correlation), 'the request token rides the native as the correlation fact').toBe('tok-arm-83')
+    expect(JSON.stringify(value)).toContain('req-arm-83')
+    const state = await stateNow()
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(1)
+  })
+
   it('the block at source level: closed gate and refusal code, B-INSPECT-only supply, the ONE owner-held ledger feeding Guard/registration/attribution, place before the Guard bind, registration after publish, no plane g1 injection, no fabricated topology', () => {
     const src = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
     const start = src.indexOf("A5M2-G1-WIRE MOUNT-ARM (this lane's block; center")
@@ -2019,6 +2200,13 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(block).toContain('SUPPLY-GATED')
     expect(block).toContain('createG1QueryAssembly({')
     expect(block).toContain('g1PureQuerySubset()')
+    // CONTROL supply (root 2026-10-25 LIMITED BUILD ORDER): a CLOSED opt-in
+    // key arms the derived B-CONTROL row set through the SAME assembly, the
+    // SAME owner-held ledger and the SAME after-publish fill; unconfigured is
+    // DARK — the ruling never auto-enables the tools or widens visibility.
+    expect(block).toContain('g1ControlSupplySubset()')
+    expect(block).toContain('g1Cfg.control !== undefined && g1Cfg.control !== true')
+    expect(block).toContain('control supply DARK')
     // one assembly per supplied row; the registry seam answers ONLY this row.
     // ROOT P1: the B-INSPECT pair keeps the LIVE scoped takeover read; the
     // record-85 row captures ONLY the exact selection instance the claim took
@@ -2047,7 +2235,12 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     expect(feedAt).toBeLessThan(src.indexOf('return a5PlaneValue === null'))
     // root 841 ①: the plane's attribution row for the arm route, fed by the
     // SAME ledger, forwarded at the shared backends union.
-    expect(src).toContain('g1Arm: { isPlaced: (name) => a5G1PlacedByName.has(name) }')
+    expect(src).toContain('g1Arm: a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames }')
+    expect(src).toContain('isPlaced: (name) => a5G1PlacedByName.has(name),')
+    // CONTROL attribution (root 2026-10-25): the plane learns the DERIVED
+    // CONTROL names ONLY beside an armed deployer key — never a wildcard.
+    expect(src).toContain('a5G1ControlArmNames === null ? { isPlaced: (name) => a5G1PlacedByName.has(name) } : { isPlaced: (name) => a5G1PlacedByName.has(name), names: a5G1ControlArmNames }')
+    expect(src).toContain('? g1ControlSupplySubset().map((row) => row.name)')
     // no plane g1 row injection in this block; the plane's own route untouched
     // (code-level law: the block's prose may NAME the plane's own seam, it
     // never FORWARDS it).
@@ -2077,7 +2270,7 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     // the assembly module is imported, never restated; the adapter module is
     // never reached directly from this file.
     expect(src).toContain("import { createG1QueryAssembly } from './governed-families/g1-query-assembly.mjs'")
-    expect(src).toContain("import { g1PureQuerySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'")
+    expect(src).toContain("import { g1PureQuerySubset, g1ControlSupplySubset, claimG1Control85Handover, A5_G1_CONTROL85_HANDOVER } from './governed-families/g1-query-wiring.mjs'")
     // ROOT G1 FINAL LIMITED RULING: the production factory is imported and
     // reachable ONLY through the explicit deployer cfg — `topologyScope`
     // (closed-grammar triples handed over as the hard boundary, fresh-
@@ -2116,7 +2309,8 @@ describe('A5M2-G1-WIRE MOUNT-ARM: the agent-bindings g1PureQuery block supplies 
     const planeSrc = readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
     expect(planeSrc).toContain('input.backends?.g1Arm')
     expect(planeSrc).toContain("code: 'G1_ARM_INJECT_INVALID'")
-    expect(planeSrc).toContain('g1ArmInject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)')
+    expect(planeSrc).toContain('if (g1ArmInject !== null')
+    expect(planeSrc).toContain('(g1ArmInject.names !== undefined && g1ArmInject.names.includes(spelling))')
     expect(planeSrc).toContain('g1ArmInject.isPlaced(spelling)')
   })
 })

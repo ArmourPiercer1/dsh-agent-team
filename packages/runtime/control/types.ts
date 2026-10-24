@@ -1453,21 +1453,104 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
   }),
-  // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten; the lane
-  // module that produces this claim is
-  // src/plugin/live/governed-families/g1-surface-adapters.mjs, records
-  // 83/84/85/87/88 - every B-CONTROL target is the trusted TARGETS config
-  // envelope, minted as FLAT LEAVES one-for-one at classify). These fields are
-  // CONFIG facts the mount provides and the model can never supply
-  // (closedRootCheck law); no resource-derived truth rides here, so
-  // currentFields is what THIS call's binding/member/realm facts can restate.
+  // A5-M2 B-CONTROL (root ruling, pure-equivalence leaf flatten, then the
+  // root LIMITED BUILD ORDER 2026-10-25: the four self-governance records
+  // 83/84/87/88 (plus the 85 read row) proceed under the authorized Alpha5
+  // tool scope - the strict variant 7529218e5 §5 named the closing change
+  // explicitly ("request identity + action facts INTO the target"); this
+  // entry IS that change, closed at the ORIGINAL REAL TARGET'S FULL VALUES
+  // - no dropped values, no digest/summary work-around. The lane module that
+  // produces this claim is
+  // src/plugin/live/governed-families/g1-surface-adapters.mjs (records
+  // 83/84/85/87/88; the B-CONTROL mint side). The five trusted TARGETS
+  // config leaves ride FLAT one-for-one (the signed 7529218e5 floor -
+  // CONFIG facts the mount provides and the model can never supply); the
+  // request identity and action facts now ride the DISCRIMINATED variant
+  // group, keyed by the minted own-key leaf `controlRecord` (the B-INSPECT
+  // variant grammar, reused - no new table kind). Optional argument leaves
+  // ride the sanctioned REVIEWED ENCODING: the full value's canonical JSON,
+  // or the literal 'absent' when the caller omitted it - never a removed
+  // key, never a hash. The mint side stamps the B-CONTROL family adapter
+  // revision 8 (A5_G1_CONTROL_ADAPTER_REVISION): the encoding digest moved,
+  // so any earlier B-CONTROL-era approval is EXPLICITLY stale - retired
+  // encodings are never translated, and the other G1 families keep 7.
+  // currentFields: what THIS call's binding/member/realm facts restate.
   'B-CONTROL': Object.freeze({
     required: Object.freeze({
+      controlRecord: 'string',
       trustedMemberAgentId: 'string',
       trustedSessionHeaderId: 'string',
       trustedRealmId: 'string',
       trustedOwner: 'string',
       trustedProfileId: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'controlRecord',
+      by: Object.freeze({
+        // 83 team_request_control - the request identity (requestToken) and
+        // the action facts (kind/targetInstanceId/actionName) ride the
+        // target at full value; toolName/summary are OPTIONAL on the lane
+        // face (packages/tools requestControlSpec), so they ride as the
+        // reviewed-encoding string ('absent' when omitted).
+        'request-control': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            requestKind: 'string',
+            requestTargetInstanceId: 'string',
+            requestActionName: 'string',
+            requestToolName: 'string',
+            requestSummary: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        // 84 team_resolve_control - the case identity (requestId) and the
+        // decision ride the target; note is OPTIONAL (reviewed encoding).
+        'resolve-control': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            requestCaseId: 'string',
+            requestDecision: 'string',
+            requestNote: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        // 85 team_list_pending_control (the read row the 03:05 closed-key
+        // hand-over arms): the requestToken identity rides the target;
+        // limit is OPTIONAL (reviewed encoding).
+        'list-pending': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            requestLimit: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        // 87 team_grant_permission / 88 team_revoke_permission - the
+        // permission-subject instance and the rules structure ride the
+        // target: rules is REQUIRED on the lane face and rides the full
+        // value's canonical JSON under the reviewed encoding (no new table
+        // kind, no digest).
+        'grant-permission': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            permissionTargetInstanceId: 'string',
+            permissionRules: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+        'revoke-permission': Object.freeze({
+          adds: Object.freeze({
+            requestRootSessionId: 'string',
+            requestToken: 'string',
+            permissionTargetInstanceId: 'string',
+            permissionRules: 'string',
+          }),
+          binds: Object.freeze({}),
+        }),
+      }),
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),

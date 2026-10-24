@@ -98,7 +98,7 @@ type AssemblyModule = {
 
 const ASM = (await import(new URL('../src/plugin/live/governed-families/g1-query-assembly.mjs', import.meta.url).href)) as AssemblyModule
 const WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url).href)) as { A5_G1_QUERY_WIRING_CODES: typeof A5_G1_QUERY_WIRING_CODES }
-const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as { A5_G1_ADAPTER_REVISION: number }
+const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as { A5_G1_ADAPTER_REVISION: number; A5_G1_CONTROL_ADAPTER_REVISION: number }
 const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
   a5GovernedFamilyFor: (key: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
 }
@@ -491,7 +491,10 @@ describe('a5m2-g1-query-assembly: the mount-side PA production line over the wir
         expect(registration.definitionIdentity).not.toBe(assembly.captures[registration.name]?.definitionIdentity)
         expect(registration.entry).toEqual({
           familyId: registration.name === 'team_list_pending_control' ? 'B-CONTROL' : 'B-INSPECT',
-          adapterRevision: G1.A5_G1_ADAPTER_REVISION,
+          // FAMILY revision (root LIMITED BUILD ORDER 2026-10-25): the
+          // B-CONTROL wire format moved with the full pairing — the record-
+          // 85 row's registration answers 8 beside its mint; B-INSPECT stays 7.
+          adapterRevision: registration.name === 'team_list_pending_control' ? G1.A5_G1_CONTROL_ADAPTER_REVISION : G1.A5_G1_ADAPTER_REVISION,
           providerIdentity: world.providerId,
         })
         // the PRODUCTION table read-back (single fill point)

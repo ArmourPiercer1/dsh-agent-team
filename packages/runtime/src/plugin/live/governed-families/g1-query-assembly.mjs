@@ -65,7 +65,7 @@
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g1-query-assembly
  */
-import { createG1QueryWiring, g1PureQuerySubset } from './g1-query-wiring.mjs'
+import { createG1QueryWiring, g1PureQuerySubset, g1ValidateSupplySubset } from './g1-query-wiring.mjs'
 import { a5GovernedFamilyFor, registerA5GovernedFamily } from '../pa-mount-registry.mjs'
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 
@@ -173,7 +173,21 @@ export function createG1QueryAssembly(mount = {}) {
   const observe = typeof mount.observe === 'function' ? mount.observe : () => {}
 
   // ── 1. CAPTURES: live reads, honest declared rows, minted capture identities
-  const subset = g1PureQuerySubset()
+  // The DEFAULT row set is the pure-query subset (the signed supply line).
+  // A caller may mount ANOTHER derived set — today exactly one exists:
+  // g1ControlSupplySubset() for the B-CONTROL write rows (root LIMITED BUILD
+  // ORDER 2026-10-25). The CLOSED subset law runs at the door
+  // (g1ValidateSupplySubset): every row must answer the FROZEN dispatch
+  // table name/recordIndex/family exactly; a guessed or hand-edited row set
+  // refuses the assembly, it never narrows or widens silently.
+  let subset = g1PureQuerySubset()
+  if (mount.subset !== undefined) {
+    const subsetViolation = g1ValidateSupplySubset(mount.subset)
+    if (subsetViolation !== undefined) {
+      return refuseAssembly(CODES.EVIDENCE_ABSENT, `mounted subset is not a frozen-table row set: ${subsetViolation}`)
+    }
+    subset = Object.freeze([...mount.subset].map((row) => Object.freeze({ name: row.name, recordIndex: row.recordIndex, familyId: row.familyId })))
+  }
   const captured = {}
   const captures = {}
   for (const entry of subset) {
@@ -246,6 +260,7 @@ export function createG1QueryAssembly(mount = {}) {
   // ── the wiring candidate over the live supplies (its refusals pass through)
   const wiring = createG1QueryWiring({
     providerId: mount.providerId,
+    subset,
     captured,
     placementFeed,
     trusted: mount.trusted,

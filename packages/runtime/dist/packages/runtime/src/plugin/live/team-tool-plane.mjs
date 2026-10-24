@@ -1236,10 +1236,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
   let g1ArmInject = null
   if (g1ArmInjectRaw !== undefined && g1ArmInjectRaw !== null) {
     const g1ArmBad = (typeof g1ArmInjectRaw !== 'object' || Array.isArray(g1ArmInjectRaw))
-      ? 'the injected arm-placement face is not { isPlaced }'
+      ? 'the injected arm-placement face is not { isPlaced, names? }'
       : typeof g1ArmInjectRaw.isPlaced !== 'function'
         ? 'the arm-placement face carries no isPlaced(name) live reader — the owner holds the placement ledger, this plane only consults it per name'
-        : undefined
+        // A5M2-G1-WIRE (root LIMITED BUILD ORDER 2026-10-25): the owner may
+        // carry the DERIVED CONTROL row names (g1ControlSupplySubset) beside
+        // isPlaced — the CLOSED list the supply itself derived from the
+        // frozen table, never a wildcard. Absent = today's face byte-for-byte.
+        : (g1ArmInjectRaw.names !== undefined && (!Array.isArray(g1ArmInjectRaw.names) || g1ArmInjectRaw.names.length === 0 || g1ArmInjectRaw.names.some((n) => typeof n !== 'string' || n.length === 0) || new Set(g1ArmInjectRaw.names).size !== g1ArmInjectRaw.names.length))
+          ? 'the arm-placement face carries names but not a closed, duplicate-free array of non-empty strings (the owner passes the DERIVED subset names, never a wildcard)'
+          : undefined
     if (g1ArmBad !== undefined) {
       return { ok: false, code: 'G1_ARM_INJECT_INVALID', message: `backends.g1Arm: ${g1ArmBad}` }
     }
@@ -1252,7 +1258,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // reader's no-placement-name refusal), never a wildcard pass.
         return false
       }
-    } })
+    }, ...(g1ArmInjectRaw.names === undefined ? {} : { names: Object.freeze([...g1ArmInjectRaw.names]) }) })
   }
 
   // A5M2-G6 B-SESSION-QUERY (root 18:2x, the lifted block scope): the five
@@ -1988,7 +1994,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // this very name (the actually-placed law, never an arbitrary-name
     // wildcard). No ledger entry = no placementName = the shared reader's
     // no-placement-name fail-closed, exactly as before.
-    if (g1ArmInject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)
+    if (g1ArmInject !== null
+      && (A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)
+        || (g1ArmInject.names !== undefined && g1ArmInject.names.includes(spelling)))
       && g1ArmInject.isPlaced(spelling)) return spelling
     // A5M2-B-TEAM-WIRE (root 19:53 ①): a claimed member-operation name mounts
     // at its OWN native spelling — but the row is placed by the registration
