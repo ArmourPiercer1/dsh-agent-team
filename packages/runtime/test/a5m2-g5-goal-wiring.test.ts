@@ -170,7 +170,7 @@ const OUTPUT_SCHEMA = { oneOf: [
 ] }
 
 interface CapturedNative { def: Record<string, unknown>; entered: () => number }
-async function captureNative(name: string): Promise<CapturedNative> {
+async function captureNative(name: string, executeOverride?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown): Promise<CapturedNative> {
   const host = await hostTools()
   let entered = 0
   const def = host.defineTool({
@@ -181,10 +181,18 @@ async function captureNative(name: string): Promise<CapturedNative> {
       schema: JSON.parse(JSON.stringify(OUTPUT_SCHEMA)) as Record<string, unknown>,
       render: (_args: unknown, value: unknown) => [{ type: 'text', text: JSON.stringify(value ?? null) }],
     },
-    execute: async () => {
-      entered += 1
-      throw new Error('NATIVE BODY MUST NOT BE ENTERED by a governed G5 row')
-    },
+    execute: executeOverride === undefined
+      ? async () => {
+        entered += 1
+        throw new Error('NATIVE BODY MUST NOT BE ENTERED by a governed G5 row')
+      }
+      // THE BRIDGE-LEVEL DELEGATE DOUBLE (root 06:5x): entered ONLY by the
+      // goal-round-blocked-under-untrusted-threshold arm; records the args
+      // and the exec identity the walk handed through.
+      : async (args: Record<string, unknown>, exec: Record<string, unknown>) => {
+        entered += 1
+        return executeOverride(args, exec)
+      },
   })
   return { def: def as Record<string, unknown>, entered: () => entered }
 }
@@ -271,6 +279,7 @@ interface WorldOpts {
   current?: Record<string, unknown> | undefined
   nextViews?: Record<string, Record<string, unknown>>
   placementFeedAbsent?: boolean
+  nativeExecute?: Partial<Record<string, (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown>>
 }
 async function world(opts: WorldOpts = {}): Promise<{
   asm: Assembly
@@ -283,7 +292,7 @@ async function world(opts: WorldOpts = {}): Promise<{
 }> {
   const natives = {} as Record<string, CapturedNative>
   const seamReads: Record<string, number> = { get_goal: 0, create_goal: 0, update_goal: 0 }
-  for (const name of ADAPTER.A5_G5_GOAL_TOOL_NAMES) natives[name] = await captureNative(name)
+  for (const name of ADAPTER.A5_G5_GOAL_TOOL_NAMES) natives[name] = await captureNative(name, opts.nativeExecute?.[name])
   const port = fakeGoals(opts.current ?? VIEW(), opts.nextViews ?? {}, opts.portOmit ?? [])
   const seat = opts.seat === undefined ? makeSeat() : makeSeat(opts.seat)
   let drifted = false
@@ -580,6 +589,31 @@ describe('a5m2-g5 wiring — row law survives the bridge (agent law, authority U
     const def = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
     await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'complete' }, execWithCall('call-complete'))
     expect(callAt(w.port.calls, 0).method).toBe('complete')
+  })
+
+  it('THE DELEGATE THROUGH THE BRIDGE (root 06:5x): goal-round blocked under NO trusted threshold — one PA admission, the walk executes the captured native body ONCE with the exec verbatim, zero port, serves the native value; the walk still closes exactly once', async () => {
+    const seen: Array<{ args: Record<string, unknown>, exec: Record<string, unknown> }> = []
+    const nativeView = { goal: { id: 'goal-w1', revision: 2, objective: 'govern the goal tools', phase: 'blocked', roundsStarted: 3, maxGoalRounds: 4, blockedReason: { code: 'model-reported', message: 'x' } }, activation: 'disarmed' }
+    const w = await world({
+      readExecutionFacts: () => ({ kind: 'goal-round' }),
+      current: VIEW({ roundsStarted: 3 }),
+      nativeExecute: {
+        update_goal: (args, exec) => {
+          seen.push({ args, exec })
+          return nativeView
+        },
+      },
+    })
+    const def = (w.asm.definitions ?? []).find((d) => d.name === 'update_goal') as { execute: (a: Record<string, unknown>, e: Record<string, unknown>) => Promise<unknown> }
+    const exec = execWithCall('call-delegate')
+    const served = await def.execute({ goal_id: 'goal-w1', revision: 1, action: 'blocked', blocked_reason: 'x' }, exec)
+    expect(served).toEqual(nativeView) // the native body's projection rides the walk verbatim
+    expect(seen.length).toBe(1) // ONE body, entered exactly once per ONE admission
+    expect(seen[0].exec).toBe(exec) // the dispatch exec VERBATIM through the bridge
+    expect(w.port.calls.length).toBe(0) // zero port entry for the delegate arm
+    expect(w.nativeEntered()).toBe(1)
+    const walks = w.seat.openWalks()
+    expect(walks.length).toBe(1) // one PA admission serves the delegated call (no second walk, no second consume)
   })
 
   it('drain is the row law verbatim: new calls refuse P_G5_DRAINING, committed state untouched', async () => {

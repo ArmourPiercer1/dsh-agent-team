@@ -131,8 +131,9 @@ describe('A5M2-G5 mount-arm — zero literal goal facts, gate shape, and the rea
     // by the arm (root 05:5x): the blocked floor is the HOST TOOL's CONFIG
     // VALUE (tool-goal Config :32-40,:126-131 — the default 3 is the tool's
     // own fallback, not a fact this assembly read), the arm never read it,
-    // and the adapter never defaults it: absent = UNTRUSTED, which closes
-    // ONLY the goal-round blocked arm (pinned in the service spec).
+    // and the adapter never defaults it: absent = UNTRUSTED, which routes
+    // ONLY the goal-round blocked arm to the captured native delegate
+    // (pinned in the service spec; a non-executable capture closes it).
     expect(arm).toContain('readExecutionFacts: g5ReadExecutionFacts,')
     expect(arm).not.toContain('blockedAfterConsecutiveRounds:')
   })

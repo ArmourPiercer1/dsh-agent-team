@@ -98,6 +98,7 @@ interface RowResult {
   plan?: RowPlan
   dispatch?: Array<{ method: string, source: string }>
   authorityObserved?: boolean
+  nativeDelegated?: boolean
 }
 interface G5Row {
   familyId: string
@@ -126,7 +127,7 @@ interface G5Adapter {
   create_goal: G5Row
   update_goal: G5Row
   adapterLaw: Record<string, unknown>
-  stats(): { dispatches: number, refuses: number, driftRejects: number }
+  stats(): { dispatches: number, refuses: number, driftRejects: number, nativeDelegations: number }
   drain(): void
   draining(): boolean
 }
@@ -257,7 +258,7 @@ const requiredMarker = (node: unknown): boolean => {
  *  at the pin (g3 fixed-point idiom). execute is a NEVER-ENTERED tripwire:
  *  these rows are real-service rows, they do not run the native body. */
 type GoalToolName = 'get_goal' | 'create_goal' | 'update_goal'
-async function captureNativeGoalTool(name: GoalToolName): Promise<{ def: Record<string, unknown>; entered: () => number }> {
+async function captureNativeGoalTool(name: GoalToolName, executeOverride?: (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown): Promise<{ def: Record<string, unknown>; entered: () => number }> {
   const host = await hostTools()
   let entered = 0
   const description = name === 'get_goal' ? GET_DESCRIPTION : name === 'create_goal' ? CREATE_DESCRIPTION : UPDATE_DESCRIPTION
@@ -269,10 +270,19 @@ async function captureNativeGoalTool(name: GoalToolName): Promise<{ def: Record<
       schema: JSON.parse(JSON.stringify(AUTHORED_OUTPUT_SCHEMA)) as Record<string, unknown>,
       render: (_args: unknown, value: unknown) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    execute: async () => {
-      entered += 1
-      throw new Error('NATIVE BODY MUST NOT BE ENTERED by a G5 real-service row')
-    },
+    execute: executeOverride === undefined
+      ? async () => {
+        entered += 1
+        throw new Error('NATIVE BODY MUST NOT BE ENTERED by a G5 real-service row')
+      }
+      // THE DELEGATE TEST DOUBLE (root 06:5x): the ONLY arms that may enter
+      // a captured body are goal-round blocked under an UNTRUSTED threshold
+      // (the native-delegate route). The double records what the row hands
+      // it and answers like the native body would.
+      : async (args: Record<string, unknown>, exec: Record<string, unknown>) => {
+        entered += 1
+        return executeOverride(args, exec)
+      },
   })
   return { def: def as unknown as Record<string, unknown>, entered: () => entered }
 }
@@ -344,7 +354,8 @@ async function world(opts: {
   current?: Record<string, unknown>
   nextViews?: Record<string, Record<string, unknown>>
   missingNative?: readonly string[]
-  foreignNative?: readonly string[]
+  foreignNative?: readonly string[]  nativeExecute?: Partial<Record<'get_goal' | 'create_goal' | 'update_goal', (args: Record<string, unknown>, exec: Record<string, unknown>) => unknown>>
+  noNativeExecute?: readonly string[]
   portOmit?: readonly string[]
   blockedAfterConsecutiveRounds?: number
   executionFacts?: () => unknown
@@ -361,13 +372,15 @@ async function world(opts: {
   const natives = {} as Record<'get_goal' | 'create_goal' | 'update_goal', NativeCaptured>
   const slot = {} as Record<'get_goal' | 'create_goal' | 'update_goal', unknown>
   for (const name of G5.A5_G5_GOAL_TOOL_NAMES) {
-    const captured = await captureNativeGoalTool(name)
+    const captured = await captureNativeGoalTool(name, opts.nativeExecute?.[name])
     natives[name] = captured
     slot[name] = opts.missingNative?.includes(name)
       ? undefined
       : opts.foreignNative?.includes(name)
         ? { name: `other_${name}`, description: 'x', parameters: {}, output: { schema: {} } }
-        : captured.def
+        : opts.noNativeExecute?.includes(name)
+          ? { ...captured.def as Record<string, unknown>, execute: undefined }
+          : captured.def
   }
   const fake = fakeGoals(opts.current, opts.nextViews ?? {})
   const goals: Record<string, unknown> = { ...fake.port }
@@ -846,18 +859,78 @@ describe('a5m2-g5 delegation — recorded tuples match the real signatures', () 
     expect(String(gPlan.targetManifest?.executionAuthority?.reason)).toContain('unobserved is NOT a pass')
   })
 
-  it('P2 THRESHOLD TRUST (root 05:5x): with NO trusted threshold ONLY the goal-round blocked arm closes before the port — completes, direct-human paths and reads keep serving; a TRUSTED supply reopens it with the verbatim native check', async () => {
-    // UNTRUSTED goal-round BLOCKED: refused BEFORE the port (not even the
-    // completionAuthority get runs — the refusal needs no goal fact):
+  it('P2 THRESHOLD TRUST (root 05:5x + 06:5x DELEGATE): goal-round blocked with NO trusted threshold runs EXACTLY ONE captured native body — zero port, zero row wrap-up, verbatim decisions; only a NON-EXECUTABLE capture falls back to refuse-before-port', async () => {
+    const delegated: Array<{ args: Record<string, unknown>, exec: Record<string, unknown> }> = []
+    const wraps: unknown[] = []
     const untrusted = await world({
       current: VIEW({ roundsStarted: 3 }),
       nextViews: { block: VIEW({ phase: 'blocked', blockedReason: { code: 'model-reported', message: 'x' } }) },
       executionFacts: () => ({ kind: 'goal-round' }),
+      nativeExecute: {
+        update_goal: (args, exec) => {
+          delegated.push({ args, exec })
+          // the native body's OWN single wrap-up, as the host would:
+          const defer = exec.deferContext as (m: unknown) => void
+          defer({ role: 'user', nativeWrapUp: true })
+          return { goal: VIEW({ phase: 'blocked', revision: 2 }), activation: 'disarmed' }
+        },
+      },
     })
-    const closed = await untrusted.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' }, EXEC)
+    const execWithWrap = Object.freeze({ agent: EXEC.agent, deferContext: (m: unknown): void => { wraps.push(m) } })
+    const served = await untrusted.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' }, execWithWrap)
+    expect(served.ok).toBe(true)
+    expect(served.nativeDelegated).toBe(true)
+    // ONE body, entered EXACTLY once, with the plan's args and the dispatch's
+    // exec VERBATIM (same object — the public deferContext the native
+    // wrap-up needs rides it):
+    expect(delegated.length).toBe(1)
+    expect(delegated[0].args).toEqual({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' })
+    expect(delegated[0].exec).toBe(execWithWrap)
+    // ZERO port entry — the delegate answers BEFORE any goals.get (the
+    // native re-reads the goal through ITS OWN ctx.goals inside its body;
+    // the trusted facts reader may also read it — neither is the row's port):
+    expect(untrusted.port.calls.length).toBe(0)
+    // WRAP-UP OWNERSHIP pinned: the ONE wrap-up came from the NATIVE body
+    // only; the row added NOTHING second (a row mirror wrap would make 2):
+    expect(wraps).toEqual([{ role: 'user', nativeWrapUp: true }])
+    // The native projection rides VERBATIM — no second goalValue pass:
+    expect((served.value as { activation?: string }).activation).toBe('disarmed')
+    expect((served.dispatch as Array<{ method: string }>)[0].method).toBe('native-execute(update_goal)')
+    expect(untrusted.adapter.update_goal.stats().nativeDelegations).toBe(1)
+    // DELEGATE IDENTITY (capture-drift is REFUSED, never delegated): swap the
+    // face behind the seam and the SAME call refuses at the identity
+    // re-verify — no second body entry, nothing forwarded.
+    untrusted.slot.update_goal = { name: 'other_update_goal', description: 'x', parameters: {}, output: { schema: {} } }
+    const drifted = await untrusted.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' }, execWithWrap)
+    expect(drifted.code).toBe(CODES.CAPTURE_DRIFT)
+    expect(delegated.length).toBe(1)
+    expect(untrusted.port.calls.length).toBe(0)
+    untrusted.slot.update_goal = untrusted.natives.update_goal.def
+    // A native THRESHOLD refusal propagates VERBATIM (L5 discipline): the
+    // row never re-labels, swallows, or answers a second time:
+    const denying = await world({
+      current: VIEW({ roundsStarted: 3 }),
+      executionFacts: () => ({ kind: 'goal-round' }),
+      nativeExecute: {
+        update_goal: () => { throw new Error('blocked requires at least 5 consecutive goal rounds; current round is 3 [GOAL_TOOL_BLOCK_THRESHOLD]') },
+      },
+    })
+    await expect(denying.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' }, execWithWrap))
+      .rejects.toThrow('blocked requires at least 5 consecutive goal rounds; current round is 3')
+    expect(denying.port.calls.length).toBe(0)
+    // NEGATIVE CONTROL (capture absent to execute): NO executable captured
+    // identity + untrusted threshold ⇒ refuse BEFORE the port (the P2 8d83
+    // wording survives exactly for this case); other arms keep serving:
+    const inert = await world({
+      current: VIEW({ roundsStarted: 3 }),
+      nextViews: { complete: VIEW({ revision: 2, phase: 'complete', activation: 'disarmed' }) },
+      executionFacts: () => ({ kind: 'goal-round' }),
+      noNativeExecute: ['update_goal'],
+    })
+    const closed = await inert.adapter.update_goal.invoke({ goal_id: 'goal-9b2', revision: 1, action: 'blocked', blocked_reason: 'x' }, EXEC)
     expect(closed.code).toBe(CODES.BLOCK_THRESHOLD)
     expect(String(closed.detail)).toContain('NEVER defaults')
-    expect(untrusted.port.calls.length).toBe(0)
+    expect(inert.port.calls.length).toBe(0)
     // The SAME dispatch TRUSTED (the assembly supplies the host's real value):
     // the verbatim below-floor law is back — get runs, mutation does not.
     const trusted = await world({

@@ -486,7 +486,7 @@ function staticParameterLaw(toolName, args) {
  *   readNative: (name: string) => object | undefined,   // capture seam
  *   goals: object,   // the GoalService-shaped port: the seven methods of
  *                    // A5_G5_GOAL_SERVICE_METHODS (extra methods may ride)
- *   blockedAfterConsecutiveRounds?: number,   // host tool Config VALUE — trusted ONLY when supplied; absent = the goal-round blocked arm alone closes (root 05:5x; NEVER defaulted here)
+ *   blockedAfterConsecutiveRounds?: number,   // host tool Config VALUE — trusted ONLY when supplied; absent = the goal-round blocked arm alone DELEGATES to the captured native body, host threshold/authority/wrap-up verbatim (root 05:5x + 06:5x; NEVER defaulted here; only a non-executable capture closes it)
  *   readExecutionFacts?: () => { kind: 'direct-human' } | { kind: 'goal-round' },
  *   observe?: (event) => void
  * }}
@@ -563,7 +563,7 @@ export function createG5GoalServiceAdapter({
   }
 
   const rows = {}
-  const stats = { dispatches: 0, refuses: 0, driftRejects: 0 }
+  const stats = { dispatches: 0, refuses: 0, driftRejects: 0, nativeDelegations: 0 }
   let draining = false
 
   const callExecutionFacts = () => {
@@ -747,18 +747,39 @@ export function createG5GoalServiceAdapter({
         && plan.targetManifest.executionAuthority.kind === 'goal-round'
       if (goalRoundCompletion) {
         const getCall = { method: 'get', source: 'tool-goal/src/authority.ts:113 ctx.goals.get(execution.agent) inside completionAuthority' }
-        // P2 THRESHOLD TRUST (root 05:5x ruling; 639 tool-goal Config :32-40/:126-131):
-        // the threshold is a HOST CONFIG VALUE (default 3 is the tool's own
-        // fallback, NOT a fact this row may assume — a host configured 5
-        // would see a too-early blocked under a guessed 3, a host configured
-        // 1 an over-refusal). With NO trusted supply the goal-round BLOCKED
-        // arm alone stays closed (this refusal; zero port entry); every other
-        // arm — direct-human completions, goal-round completes, edit/pause/
-        // resume under direct human, get_goal reads — keeps serving exactly
-        // as repaired. Trusted supply (assembly passes the real config value)
-        // runs the verbatim native check below.
+        // P2 THRESHOLD TRUST (root 05:5x ruling + 06:5x DELEGATE; 639
+        // tool-goal Config :32-40/:126-131): the threshold is a HOST CONFIG
+        // VALUE (default 3 is the tool's own fallback, NOT a fact this row
+        // may assume — a host configured 5 would see a too-early blocked
+        // under a guessed 3, a host configured 1 an over-refusal). With NO
+        // trusted supply the goal-round BLOCKED arm alone hands the decision
+        // to the CAPTURED NATIVE BODY (below): the host's real resolved
+        // number, its own completionAuthority and its own single wrap-up,
+        // verbatim. Every other arm — direct-human completions, goal-round
+        // completes, edit/pause/resume under direct human, get_goal reads —
+        // keeps serving exactly as repaired, and trusted supply (the assembly
+        // passing the real config value) runs the verbatim mirror check below.
         if (action === 'blocked' && !thresholdTrusted) {
-          return { refusal: refuseWith(CODES.BLOCK_THRESHOLD, `${toolName}: the goal-round blocked floor is the tool's CONFIG VALUE (tool-goal/src/index.ts:305-312 reads the resolved Config, default 3 at :126-132 — a host value this assembly never read); the row NEVER defaults it, so the goal-round blocked arm stays closed until a trusted threshold rides the supply (or the check delegates to the native tool) — zero port entry; other arms unaffected`) }
+          if (typeof bound.def.execute !== 'function') {
+            // NEGATIVE CONTROL (root 06:5x): with NO executable captured
+            // identity there is nothing to delegate to, and the row NEVER
+            // defaults the host's config value — this arm refuses BEFORE
+            // the port (every other arm keeps serving).
+            return { refusal: refuseWith(CODES.BLOCK_THRESHOLD, `${toolName}: the goal-round blocked floor is the tool's CONFIG VALUE (tool-goal/src/index.ts:305-312 reads the resolved Config, default 3 at :126-132 — a host value this assembly never read); no executable captured native exists to delegate the decision to and the row NEVER defaults it — zero port entry; other arms unaffected`) }
+          }
+          // THE NATIVE DELEGATE (root 06:5x signed route, per the P2 supply
+          // evidence): no trusted threshold exists, so the DECISION rides
+          // the CAPTURED NATIVE BODY — bound.def, the very object the
+          // per-dispatch identity re-verify just confirmed (a re-lookup
+          // would be a different object; there is none). Its closure holds
+          // resolveConfig's REAL number (:126-132 @639), and its execute
+          // runs the host's OWN driver gate, completionAuthority (:291 →
+          // authority.ts:111-118), the :305-312 threshold and its OWN
+          // single exec.deferContext wrap-up (:319-329) — verbatim. The
+          // row reads NO port for this arm (the delegate is returned
+          // BEFORE the goals.get below), adds no second check, and wraps
+          // up NOT at all (runPlan returns before the wrap-up mirror).
+          return { delegate: { method: 'native-execute(update_goal)', source: 'tool-goal/src/index.ts:257-331 the CAPTURED native body, PA-admitted + identity-verified this dispatch: real threshold :305-312, completionAuthority :291, wrap-up :319-329 — zero port entry, zero row-side wrap-up' } }
         }
         const current = goals.get(ctx.agent)
         if (action === 'blocked' && current !== undefined && current.roundsStarted < blockedAfterConsecutiveRounds) {
@@ -804,6 +825,36 @@ export function createG5GoalServiceAdapter({
       }
       const built = dispatchCalls(fresh, { agent, toolName })
       if (built.refusal !== undefined) return built.refusal
+      if (built.delegate !== undefined) {
+        // THE NATIVE DELEGATE ARM (root 06:5x): PA already admitted (the
+        // bridge runs runPlan only on the approved plan), the captured
+        // identity was re-verified above (identityProblem), and the exec is
+        // THIS dispatch's, verbatim — the public deferContext the native
+        // wrap-up needs rides it. ONE call to ONE body (bound.def — the
+        // captured registration identity, never a re-lookup); the body's
+        // own HarnessErrors (GOAL_TOOL_DRIVER_REQUIRED / COMPLETION_* /
+        // BLOCK_THRESHOLD at the REAL resolved number) propagate VERBATIM,
+        // exactly like port throws (L5) — never swallowed, re-labelled or
+        // answered twice. Drain semantics: a NEW call against a draining
+        // row refused at the runPlan edge above; a delegated body already
+        // running is the native tool's own execution and is never
+        // interrupted, rewritten or answered a second time by this row.
+        stats.dispatches += 1
+        stats.nativeDelegations += 1
+        observe({ event: 'native-delegate-commit', toolName, correlation: fresh.correlation, detail: 'goal-round blocked under an UNTRUSTED threshold: the captured native body decides — host resolveConfig number, native completionAuthority, native single wrap-up; zero port entry, zero row wrap-up' })
+        const nativeAnswer = await bound.def.execute(fresh.actualArgs, exec)
+        return deepFreeze({
+          ok: true,
+          nativeDelegated: true,
+          // The native body's OWN goalValue projection, verbatim — the row
+          // does NOT re-project (that would be a second transformation of
+          // host bytes).
+          value: nativeAnswer,
+          plan: fresh,
+          dispatch: [built.delegate],
+          authorityObserved: true,
+        })
+      }
       const ctx = { agent, toolName }
       const results = runPortCalls(built.list, ctx)
       const finalView = results[results.length - 1]
