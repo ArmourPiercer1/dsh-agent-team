@@ -1,0 +1,116 @@
+---
+schemaVersion: 3
+blueprintId: team.a5q-queryonly
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5nx v3 team. A5NX_20261018T033207_L0 is your directive marker. Follow it exactly."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+    builtinToolDeny:
+      - ask_user_question
+      - create_goal
+      - exit_plan_mode
+      - get_goal
+      - present
+      - skill
+      - update_goal
+      - workflow
+      - glob
+      - grep
+      - job_kill
+      - job_list
+      - job_output
+      - web_fetch
+      - web_search
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: team_list_members
+          resource:
+            kind: any
+      ask: []
+      deny: []
+members:
+  - templateId: wa
+    displayName: "a5q worker A (bash ask)"
+    persona: "You are worker A of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T033207_TASK_A"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+  - templateId: wd
+    displayName: "a5q worker D (bash denied)"
+    persona: "You are worker D of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T033207_TASK_D"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask: []
+        deny:
+          - tool: bash
+            resource:
+              kind: any
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+  - templateId: wd
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+requirements:
+  - domain: persona
+    name: standard
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

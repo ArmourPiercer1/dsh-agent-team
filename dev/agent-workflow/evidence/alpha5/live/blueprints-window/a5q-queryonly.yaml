@@ -1,17 +1,10 @@
 ---
-# A5M2 B-TEAM window query-only blueprint (root's limited config-fix ruling).
-# Leader capabilities: teamTools narrowed to the ONE target query; the 15 native
-# tools named by THIS run's raw line 6 are masked through the real
-# applyBuiltInToolDeny scope (packed agent-bindings.mjs:2785, selective-mode
-# maskedNames :2738/:4295; closed shape static-capability-source.d.ts:28-32).
-# Coverage/Guard/default-ask stay exactly as the host resolves them; NO allow-all,
-# no fake managed, no enum/safelist change. a5nx-main.yaml is untouched history.
 schemaVersion: 3
 blueprintId: team.a5q-queryonly
 revision: "1"
 leader:
   templateId: leader
-  persona: "You are the leader of the a5q query-only team. Follow the directive marker exactly and call the named team tool exactly once."
+  persona: "You are the leader of the a5nx v3 team. A5NX_20261018T033207_L0 is your directive marker. Follow it exactly."
   capabilities:
     teamTools:
       kind: allow
@@ -42,41 +35,20 @@ leader:
     permissions:
       default: ask
       allow:
-        # The ONLY explicit allow in this window: the target query, whole-tool
-        # `any` resource, syntax copied from real gate-passed artifacts
-        # (natexe a5nx-main.yaml:47-50 and alpha5-pr1r kit-r1r main.yaml:26-30,
-        # both `- tool: <name>` + `resource: {kind: any}`). PA is untouched: the
-        # final consume law still runs on the guarded mutation path, this only
-        # states the lane. No allow-all, no wildcard tool.
         - tool: team_list_members
           resource:
             kind: any
       ask: []
       deny: []
 members:
-  - templateId: obs
-    displayName: "a5q member (no team tools, native masked)"
-    persona: "You are a5q member obs. You perform no team operations in window-1."
+  - templateId: wa
+    displayName: "a5q worker A (bash ask)"
+    persona: "You are worker A of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T033207_TASK_A"
     capabilities:
       teamTools:
         kind: allow
         items: []
-      builtinToolDeny:
-        - ask_user_question
-        - create_goal
-        - exit_plan_mode
-        - get_goal
-        - present
-        - skill
-        - update_goal
-        - workflow
-        - glob
-        - grep
-        - job_kill
-        - job_list
-        - job_output
-        - web_fetch
-        - web_search
+      builtinToolDeny: []
       skills:
         kind: allow
         items: []
@@ -85,7 +57,60 @@ members:
         items: []
       permissions:
         default: ask
-        allow: []
-        ask: []
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask:
+          - tool: bash
+            resource:
+              kind: any
         deny: []
+  - templateId: wd
+    displayName: "a5q worker D (bash denied)"
+    persona: "You are worker D of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T033207_TASK_D"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask: []
+        deny:
+          - tool: bash
+            resource:
+              kind: any
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+  - templateId: wd
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+requirements:
+  - domain: persona
+    name: standard
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
 ---

@@ -1,0 +1,66 @@
+--- /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/dev/agent-workflow/evidence/alpha5/natexe/runs/live-2026-10-18T03-32-07/blueprints-v3/a5nx-main.yaml	2026-10-23 18:38:46.299240175 +0000
++++ a5q-queryonly.yaml	2026-10-24 05:46:14.592307101 +0000
+@@ -1,6 +1,6 @@
+ ---
+ schemaVersion: 3
+-blueprintId: team.a5nx-main
++blueprintId: team.a5q-queryonly
+ revision: "1"
+ leader:
+   templateId: leader
+@@ -10,12 +10,22 @@
+       kind: allow
+       items:
+         - team_list_members
+-        - team_list_templates
+-        - team_create_member
+-        - team_delegate
+-        - team_collect
+-        - team_follow_up
+-    builtinToolDeny: []
++    builtinToolDeny:
++      - ask_user_question
++      - create_goal
++      - exit_plan_mode
++      - get_goal
++      - present
++      - skill
++      - update_goal
++      - workflow
++      - glob
++      - grep
++      - job_kill
++      - job_list
++      - job_output
++      - web_fetch
++      - web_search
+     skills:
+       kind: allow
+       items: []
+@@ -24,12 +34,15 @@
+       items: []
+     permissions:
+       default: ask
+-      allow: []
++      allow:
++        - tool: team_list_members
++          resource:
++            kind: any
+       ask: []
+       deny: []
+ members:
+   - templateId: wa
+-    displayName: "a5nx worker A (bash ask)"
++    displayName: "a5q worker A (bash ask)"
+     persona: "You are worker A of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T033207_TASK_A"
+     capabilities:
+       teamTools:
+@@ -54,7 +67,7 @@
+               kind: any
+         deny: []
+   - templateId: wd
+-    displayName: "a5nx worker D (bash denied)"
++    displayName: "a5q worker D (bash denied)"
+     persona: "You are worker D of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T033207_TASK_D"
+     capabilities:
+       teamTools:

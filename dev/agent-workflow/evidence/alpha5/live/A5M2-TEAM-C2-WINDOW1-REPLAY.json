@@ -17,7 +17,7 @@
     {
       "leg": "C-FRESH-HOME-STAMP",
       "ok": true,
-      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T053351010Z"
+      "detail": "tests/homes/a5m2-team-c2-h1-2026-10-24T054626156Z"
     },
     {
       "leg": "C-WINDOW-CEILINGS",
@@ -31,7 +31,7 @@
     },
     {
       "leg": "C-QUERY-ONLY-BLUEPRINT",
-      "ok": true,
+      "ok": false,
       "detail": "id=team.a5q-queryonly builtinToolDeny entries=15 (raw line 6: unknown-unmanaged 7 + known-sensitive-unmanaged 8), teamTools=team_list_members only, permissions.default stays ask, exactly one explicit allow rule (- tool: team_list_members + resource.kind any, syntax from a5nx-main.yaml:47-50 / kit-r1r main.yaml:26-30), no allow-all"
     },
     {
@@ -47,7 +47,7 @@
     {
       "leg": "C-ROW-ASSEMBLED",
       "ok": true,
-      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T053351010Z realm=a5m2-team-c2-h1--4T053351010Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T053351010Z"
+      "detail": "root=session-a5m2team-c2h1-boot-2026-10-24T054626156Z realm=a5m2-team-c2-h1--4T054626156Z fsRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team/tests/homes/a5m2-team-c2-h1-2026-10-24T054626156Z"
     },
     {
       "leg": "C-MOUNT-VALIDATE",
@@ -82,7 +82,7 @@
     {
       "leg": "C-WORLD-GUARD-ABORTS",
       "ok": true,
-      "detail": "WORLD_CEILING_EXCEEDED at replay: 1180276812 > 1"
+      "detail": "WORLD_CEILING_EXCEEDED at replay: 1180304687 > 1"
     },
     {
       "leg": "C-MOCK-DECIDE",
@@ -97,8 +97,8 @@
     {
       "leg": "C-SOURCE-SURFACE-DISCLOSED",
       "ok": true,
-      "detail": "reported, never swallowed: product HEAD 11272b1e9a5b is not an accepted head (pin ced9e7dbb63b / tip 5062988f0626)"
+      "detail": "reported, never swallowed: product HEAD 3b55935e3204 is not an accepted head (pin ced9e7dbb63b / tip 5062988f0626)"
     }
   ],
-  "ok": true
+  "ok": false
 }

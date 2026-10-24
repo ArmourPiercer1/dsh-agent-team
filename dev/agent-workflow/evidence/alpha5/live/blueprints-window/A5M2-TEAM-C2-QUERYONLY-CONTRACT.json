@@ -1,0 +1,143 @@
+{
+  "parser": "packages/domain/blueprint/src/validate.js#validateBlueprintDocument (699cc packed runtime contract)",
+  "note": "offline only, no Host",
+  "results": {
+    "BASELINE_a5nx": {
+      "status": "CONTRACT_OK",
+      "fields": [
+        "blueprintId",
+        "leader",
+        "memberEnvelopes",
+        "members",
+        "metadata",
+        "permissionMutationEnvelope",
+        "policyStates",
+        "requirements",
+        "revision",
+        "schemaVersion",
+        "teamHardEnvelope"
+      ],
+      "id": "team.a5nx-main",
+      "rev": "1",
+      "schemaVersion": 3,
+      "permissionMutationEnvelope": {
+        "rules": []
+      },
+      "teamHardEnvelope": {
+        "rules": []
+      },
+      "policyStates": [],
+      "metadata": {},
+      "memberEnvelopeTemplates": [
+        "wa",
+        "wd"
+      ],
+      "requirements": [
+        {
+          "domain": "persona",
+          "name": "standard",
+          "optional": false
+        }
+      ],
+      "members": [
+        "wa",
+        "wd"
+      ],
+      "leaderTeamTools": [
+        "team_list_members",
+        "team_list_templates",
+        "team_create_member",
+        "team_delegate",
+        "team_collect",
+        "team_follow_up"
+      ],
+      "leaderBuiltinDeny": [],
+      "leaderPermissions": {
+        "default": "ask",
+        "allow": [],
+        "ask": [],
+        "deny": []
+      }
+    },
+    "CARRIER_a5q": {
+      "status": "CONTRACT_OK",
+      "fields": [
+        "blueprintId",
+        "leader",
+        "memberEnvelopes",
+        "members",
+        "metadata",
+        "permissionMutationEnvelope",
+        "policyStates",
+        "requirements",
+        "revision",
+        "schemaVersion",
+        "teamHardEnvelope"
+      ],
+      "id": "team.a5q-queryonly",
+      "rev": "1",
+      "schemaVersion": 3,
+      "permissionMutationEnvelope": {
+        "rules": []
+      },
+      "teamHardEnvelope": {
+        "rules": []
+      },
+      "policyStates": [],
+      "metadata": {},
+      "memberEnvelopeTemplates": [
+        "wa",
+        "wd"
+      ],
+      "requirements": [
+        {
+          "domain": "persona",
+          "name": "standard",
+          "optional": false
+        }
+      ],
+      "members": [
+        "wa",
+        "wd"
+      ],
+      "leaderTeamTools": [
+        "team_list_members"
+      ],
+      "leaderBuiltinDeny": [
+        "ask_user_question",
+        "create_goal",
+        "exit_plan_mode",
+        "get_goal",
+        "present",
+        "skill",
+        "update_goal",
+        "workflow",
+        "glob",
+        "grep",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "web_fetch",
+        "web_search"
+      ],
+      "leaderPermissions": {
+        "default": "ask",
+        "allow": [
+          {
+            "tool": "team_list_members",
+            "resource": {
+              "kind": "any"
+            }
+          }
+        ],
+        "ask": [],
+        "deny": []
+      }
+    },
+    "NO_DESCRIPTOR_PROBE": {
+      "status": "CONTRACT_THREW",
+      "name": "TeamContractError",
+      "message": "blueprint is missing required field 'ask' at $.leader.capabilities.permissions"
+    }
+  }
+}
