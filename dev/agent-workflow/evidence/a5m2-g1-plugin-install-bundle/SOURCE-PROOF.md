@@ -102,8 +102,19 @@ Every assertion = raw RC + log path; tier stays 接线未测 until this plan has
   re-read live from the manager's @Remote registries() (@:324-331) snapshot over the config pair.
 - Matrix honesty: the internal installer's pnpm/IO stays the HOST's sandbox domain — the entry PA
   governs the Agent install ACTION only and never claims internal isolation.
-- Dependency DECLARATION (minimal actual plan, NOT installed — 勿自行安装): add
-  `"@deepseek-ai/dsh-sandbox": "0.2.0-rc.2"` to packages/runtime/package.json dependencies + pnpm
-  install (lock churn). Until then the dynamic import resolves inside the live Host (same precedent
-  class as the existing dsh-launch-environment/dsh-tool-web TS2307 lines) and answers undefined in
-  the workspace test world, where install stays fail-closed at the adapter edge.
+- Dependency DECLARATION — EXECUTED under the root R22 limited-dependency card (2026-10-25):
+  packages/runtime/package.json now declares `"@deepseek-ai/dsh-sandbox": "0.2.0-rc.2"` (the exact
+  version of the pinned Host639 package, public face exports["."]→lib/index.js + lib/types/index.d.ts,
+  approveEscalation in the public export list). Lock update was the SURGICAL pnpm path
+  (`pnpm add @deepseek-ai/dsh-sandbox@0.2.0-rc.2 --filter @dsh-agent-team/runtime --lockfile-only
+  --prefer-offline --ignore-scripts --store-dir=<workspace .gate store>` because the global store's
+  sqlite index is unopenable under this workspace sandbox): pnpm-lock.yaml diff = +3 lines (the
+  packages/runtime importer entry only — the 0.2.0-rc.2 snapshots pre-existed the graph), ZERO other
+  versions drifted, zero downloads, zero scripts, the global store untouched (workspace-local store
+  dir; files hardlink-shared). The same pnpm run materialized this tree's node_modules from the
+  committed lock (this worktree previously had none; no other environment was rebuilt). Side effect,
+  disclosed: the tsc build now emits ZERO errors — the nine "foreign" TS2307/TS2322/TS4112/TS2339
+  were missing-node_modules artifacts of this tree and were fixed by aligning it to its own lock;
+  the a5m2-schedule-production spec (needs @deepseek-ai/dsh-schedule, declared all along) now runs:
+  battery 56/56 files 1095/1095. NO dynamic-string trick: host.ts keeps the literal-specifier
+  dynamic import, and its types resolve for real.
