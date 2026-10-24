@@ -116,29 +116,29 @@ export function createG2FixedWebFace (provider, { searchProvider } = {}) {
  * undefined and every port refuses TYPED (the kept honest refusal; no
  * effects/grantId constants, no stand-in facts).
  */
-export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, consumeEdge, searchOriginFacts } = {}) {
+export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, consumeEdge, searchOriginFacts, assemblyId } = {}) {
   const decline = (code, message) => ({ ok: false, error: { code, message, sideEffectUnknown: false } })
-  // CALL-SCOPED in-flight relay (root 06:0x follow-through): the row's
-  // execution entry announces the REAL current call while it runs and
-  // clears it in `finally` — a transient slot, not a ledger (nothing
-  // persists, nothing is judged here). resolveCallContext still wins if
-  // the entry prefers a resolver of its own.
+  // ROOT 23bc-CARD ②: a REAL grantId is NOT a callId. The plane context
+  // carries grant / call / placement / member / effects / assembly
+  // SEPARATELY; facts and consume ride the REAL call. Lookup keys the
+  // presented GRANT; the call is the context's own truth.
   const inFlight = new Map()
   const beginCall = (context) => {
-    const callId = String(context?.callId ?? '')
-    if (callId.length === 0) throw new TypeError('beginCall: the REAL current call identity is required; nothing announces an absent call')
-    if (inFlight.has(callId)) throw new Error(`G2_WEB_CALL_INFLIGHT: call ${JSON.stringify(callId)} is already announced; one live context per call, never overwritten`)
-    inFlight.set(callId, Object.freeze({ ...context }))
+    const grantId = String(context?.grant?.grantId ?? '')
+    if (grantId.length === 0 || typeof context?.call?.callId !== 'string' || context.call.callId.length === 0) {
+      throw new TypeError('beginCall: the REAL grant AND the REAL current call must be announced separately (grant.grantId + call.callId); never conflated')
+    }
+    if (typeof assemblyId === 'string' && assemblyId.length > 0 && String(context?.assemblyId ?? '') !== assemblyId) {
+      throw new Error('G2_WEB_ASSEMBLY_MISMATCH: the announced context belongs to a different gateway assembly than the one owning these ports; pairing is exact or it is refused')
+    }
+    if (inFlight.has(grantId)) throw new Error(`G2_WEB_GRANT_INFLIGHT: grant ${JSON.stringify(grantId)} is already announced; one live context per grant, never overwritten`)
+    inFlight.set(grantId, Object.freeze({ ...context }))
     let closed = false
-    return () => { if (!closed) { closed = true; inFlight.delete(callId) } }
+    return () => { if (!closed) { closed = true; inFlight.delete(grantId) } }
   }
   const resolve = (grantId) => {
-    // grant -> call identity: the presented grantId IS the call identity
-    // on this plane (the read's own law); a context whose callId ever
-    // disagrees is refused, never trusted.
-    const ctx = typeof resolveCallContext === 'function' ? (() => { try { return resolveCallContext(String(grantId)) } catch { return undefined } })() : inFlight.get(String(grantId))
-    if (ctx !== undefined && ctx !== null && typeof ctx.callId === 'string' && ctx.callId !== String(grantId)) return undefined
-    return ctx
+    if (typeof resolveCallContext === 'function') { try { return resolveCallContext(String(grantId)) } catch { return undefined } }
+    return inFlight.get(String(grantId))
   }
   const resolveSearchOrigin = () => {
     const origin = searchOriginFacts === null || typeof searchOriginFacts !== 'object' ? undefined : searchOriginFacts.origin
@@ -148,60 +148,76 @@ export function createG2WebCenterPorts ({ resolveCallContext, readCallFacts, con
     return origin
   }
   const factsSource = Object.freeze({
-    capture: async ({ realmId, grantId, bindingId } = {}) => {
+    capture: async ({ realmId, grantId } = {}) => {
       if (typeof readCallFacts !== 'function') return decline('G2_WEB_FACTS_UNAVAILABLE', 'no readPaCallFactsForCall-shaped reader injected; declining, never assembling facts from anywhere else')
       const ctx = resolve(grantId)
-      if (ctx === undefined || ctx === null) return decline('G2_WEB_CALL_CONTEXT_ABSENT', `no live call context resolves grant ${JSON.stringify(String(grantId))} on this entry: the row's own plane walk must feed it; kept typed refusal, zero stand-in`)
+      if (ctx === undefined || ctx === null) return decline('G2_WEB_CALL_CONTEXT_ABSENT', `no live context announces grant ${JSON.stringify(String(grantId))}: kept typed refusal, zero stand-in`)
       const read = await readCallFacts({
-        rootSessionId: String(ctx.rootSessionId), instanceId: String(ctx.instanceId),
-        realmId: String(realmId ?? ctx.realmId ?? ''), callId: String(grantId),
-        requestedEffects: ctx.requestedEffects, placementName: ctx.placementName,
+        rootSessionId: String(ctx.member?.teamSessionId ?? ''),
+        instanceId: String(ctx.member?.instanceId ?? ''),
+        realmId: String(realmId ?? ctx.call?.realmId ?? ''),
+        callId: String(ctx.call?.callId ?? ''),
+        requestedEffects: ctx.effects,
+        placementName: ctx.placement?.name,
       })
       if (read === undefined) return decline('G2_WEB_FACTS_INCOMPLETE', 'readPaCallFactsForCall answered undefined (the facts law: any missing/unhealthy/contradicting source fails closed; no defaulted shape)')
+      // ROOT 23bc-CARD ③: BOTH legal answers ride — `call-facts` AND
+      // `no-approval-question`; the all-allow call has no planSnapshot
+      // SOURCE and is never forced to synthesize one.
+      if (read.kind !== 'call-facts' && read.kind !== 'no-approval-question') return decline('G2_WEB_FACTS_INCOMPLETE', `the read answered ${JSON.stringify(String(read.kind))}; only the two lawful answers are accepted`)
       const facts = read.facts
-      if (read.kind !== 'call-facts') return decline('G2_WEB_FACTS_INCOMPLETE', `the read answered ${JSON.stringify(read.kind)}: planSnapshot source does not exist on this call; the gateway law demands the complete 12-field contract, never a synthesized 12th field`)
-      const presented = String(bindingId ?? '')
-      if (presented.length > 0 && typeof facts?.binding?.bindingId === 'string' && facts.binding.bindingId !== presented) {
-        return decline('G2_WEB_BINDING_IDENTITY_MISMATCH', 'the row-carried bindingId contradicts the call\'s own binding identity — compared, never trusted')
+      // ROOT 23bc-CARD ④: the REAL field names — policy generation is the
+      // durable overlay's OWN overlayGeneration (:281-289/:368), NOT a
+      // nonexistent facts.policyGeneration.
+      const value = {
+        member: facts.member,
+        callId: String(facts.callId ?? ctx.call?.callId ?? ''),
+        bindingRevision: facts.binding?.revision,
+        authorityGeneration: facts.authorityGeneration,
+        policyGeneration: facts.overlayGeneration,
+        effects: facts.effects ?? ctx.effects,
+        bindingId: String(ctx.binding?.bindingId ?? facts.binding?.bindingId ?? ''),
       }
-      return {
-        ok: true,
-        value: Object.freeze({
-          member: facts.member,
-          callId: String(grantId),
-          bindingRevision: facts.binding.revision,
-          authorityGeneration: facts.authorityGeneration,
-          policyGeneration: facts.policyGeneration,
-          effects: facts.effects,
-          bindingId: presented,
-        }),
-      }
+      if (read.kind === 'call-facts') value.planSnapshot = facts.planSnapshot
+      return { ok: true, value: Object.freeze(value) }
     },
   })
   const grantAuthority = Object.freeze({
     consume: async ({ facts, correlation, isCancelled } = {}) => {
-      if (typeof consumeEdge !== 'function') return decline('G2_WEB_CONSUME_EDGE_ABSENT', 'no plane consumeForExecution edge injected; ONE consume is never simulated')
+      // ROOT 23bc-CARD ⑤: THE ONE consumption layer — the injected edge
+      // IS the production plane wrapper around assembly.consumeForExecution
+      // answering the wrapper's REAL shape ({ kind: allow, consumedProof,
+      // cancelled? }). The raw { ok, value } assembly layer is NEVER
+      // called here as a SECOND consumption; one call, one consume.
+      if (typeof consumeEdge !== 'function') return decline('G2_WEB_CONSUME_EDGE_ABSENT', 'no production consume wrapper injected; ONE consume is never simulated')
       if (typeof isCancelled === 'function' && isCancelled() === true) return decline('G2_WEB_CANCELLED', 'cancelled at the consume boundary — zero consume performed (C3 law)')
       const ctx = resolve(correlation?.grantId)
-      if (ctx === undefined || ctx === null || ctx.grant === undefined) return decline('G2_WEB_CALL_CONTEXT_ABSENT', 'the consume edge needs the call\'s REAL grant from the live context; absent, no consume happens')
+      if (ctx === undefined || ctx === null || ctx.grant === undefined) return decline('G2_WEB_CALL_CONTEXT_ABSENT', 'the consume wrapper needs the announced REAL grant; absent, no consume happens')
       const edge = await consumeEdge(ctx.grant, {
         ...(typeof isCancelled === 'function' ? { cancelRequested: isCancelled() === true } : {}),
         currentAuthorityGeneration: facts?.authorityGeneration,
-        member: facts?.member,
-        callId: String(correlation?.grantId),
-        realmId: String(ctx.realmId ?? ''),
-        bindingId: String(correlation?.bindingId ?? facts?.bindingId ?? ''),
+        member: facts?.member ?? ctx.member,
+        callId: String(ctx.call?.callId ?? ''),
+        realmId: String(ctx.call?.realmId ?? correlation?.realmId ?? ''),
+        bindingId: String(correlation?.bindingId ?? ctx.binding?.bindingId ?? ''),
         bindingRevision: facts?.bindingRevision,
         parametersFingerprint: correlation?.payloadFingerprint,
-        requestedEffects: ctx.requestedEffects,
+        requestedEffects: ctx.effects,
       })
-      if (edge === undefined || edge === null || edge.kind !== 'allow') return decline('G2_WEB_GRANT_NOT_ALLOWED', 'the execution edge did not answer allow; refusals pass through verbatim, never re-judged open')
-      if (edge.cancelled === true) return decline('G2_WEB_CANCELLED', 'the edge answered allow WITH cancellation at the decision point — treated as cancelled, not consumed')
+      if (edge === undefined || edge === null || edge.kind !== 'allow') return decline('G2_WEB_GRANT_NOT_ALLOWED', 'the production wrapper did not answer allow; refusals pass through verbatim, never re-judged open')
+      if (edge.cancelled === true) return decline('G2_WEB_CANCELLED', 'the wrapper answered allow WITH cancellation at the decision point — treated as cancelled, not consumed')
       const proof = edge.consumedProof
       if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
-        return decline('G2_WEB_CONSUME_PROOF_MISSING', 'the edge answered allow WITHOUT its one-shot consume witness — the row never self-attests; body does not run')
+        return decline('G2_WEB_CONSUME_PROOF_MISSING', 'the wrapper answered allow WITHOUT its one-shot consume witness — the row never self-attests; body does not run')
       }
-      return { ok: true, value: Object.freeze({ effects: Object.freeze({ effects: [...(facts?.effects?.effects ?? [])] }), consumedProof: proof }) }
+      // ROOT 23bc-CARD ⑥: success IS a WebConsumedGrant — the REAL
+      // grantId (from the announced grant, not the callId) with its
+      // corresponding proof + effects.
+      return { ok: true, value: Object.freeze({
+        grantId: String(ctx.grant.grantId),
+        effects: Object.freeze({ effects: [...(facts?.effects?.effects ?? ctx.effects?.effects ?? [])] }),
+        consumedProof: proof,
+      }) }
     },
   })
   return Object.freeze({ grantAuthority, factsSource, resolveSearchOrigin, beginCall })

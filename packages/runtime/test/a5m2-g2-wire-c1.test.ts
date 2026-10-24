@@ -1336,35 +1336,63 @@ describe('A5M2-WIRE round-37: trio v2 — real call-facts read, plane consume ed
   })
 })
 
-/* ROOT 06:0x follow-through — the CALL-SCOPED relay feeding the real
- * read (transient slot cleared in finally; grant->call identity enforced). */
-describe('A5M2-WIRE round-38: call-scoped relay — announce/resolve/identity/cleanup', () => {
+/* ROOT 23bc six-item card — trio v3 verification (real-shape reader
+ * stand-in WHERE THE READER IS THE SUBJECT only; the real-reader round
+ * trip stays pinned above. Relay: grant/call SEPARATE identities, both
+ * lawful read answers, real overlayGeneration, ONE consumption layer,
+ * WebConsumedGrant carrying the REAL grantId. */
+describe('A5M2-WIRE round-39: six-item card — v3 relay facts/consume', () => {
   const MOD = async () => (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as {
     createG2WebCenterPorts: (i: Record<string, unknown>) => {
-      factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; error?: { code?: string } }> }
-      grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; error?: { code?: string } }> }
+      factsSource: { capture: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
+      grantAuthority: { consume: (i: Record<string, unknown>) => Promise<{ ok: boolean; value?: Record<string, unknown>; error?: { code?: string } }> }
       beginCall: (c: Record<string, unknown>) => () => void
     }
-    readPaCallFactsForCall?: unknown
   }
-  const REG = async () => (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as { readPaCallFactsForCall: (i: Record<string, unknown>) => Promise<unknown> }
-  const ctx = { callId: 'call-1', rootSessionId: 'rt', instanceId: 'mi-1', realmId: 'r', placementName: 'web_fetch', requestedEffects: { effects: [], fingerprint: 'fp-1' } }
-  it('beginCall announces the REAL current call; capture resolves THROUGH it into the real reader; double-announce and missing identity throw; end (finally) clears; a context whose callId contradicts the presented grant is refused', async () => {
-    const m = await MOD(); const reg = await REG()
-    const ports = m.createG2WebCenterPorts({ readCallFacts: reg.readPaCallFactsForCall })
-    expect((await ports.factsSource.capture({ realmId: 'r', grantId: 'call-1' })).error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT')
-    const end = ports.beginCall(ctx)
-    const cap = await ports.factsSource.capture({ realmId: 'r', grantId: 'call-1', bindingId: 'b' })
-    expect(cap.error?.code).toBe('G2_WEB_FACTS_INCOMPLETE') // THROUGH the relay into the REAL reader (no mount -> undefined law)
-    expect(() => ports.beginCall(ctx)).toThrow(/G2_WEB_CALL_INFLIGHT/)
+  const baseFacts = { member: { teamSessionId: 'rt', instanceId: 'mi' }, callId: 'call-77', binding: { revision: 5, bindingId: 'b-1' }, authorityGeneration: 9, overlayGeneration: 12, effects: { effects: [{ kind: 'connect', resource: { origin: 'https://t.example.invalid' } }] } }
+  const ctxOf = (kind: string, planSnapshot?: unknown) => ({
+    grant: { grantId: 'grant-9' }, call: { callId: 'call-77', realmId: 'r' }, binding: { bindingId: 'b-1' },
+    member: baseFacts.member, effects: baseFacts.effects, placement: { name: 'web_fetch' }, assemblyId: 'asm-1',
+    _kind: kind, _snap: planSnapshot,
+  })
+  const reader = ((i: Record<string, unknown>) => reader.next(i)) as { (i: Record<string, unknown>): Promise<unknown>; next: (i: Record<string, unknown>) => Promise<unknown> }
+  it('grantId is NOT callId: capture resolves by the PRESENTED GRANT and rides the REAL call identity into the reader; both lawful answers are accepted (no planSnapshot forced on all-allow); policy generation maps from the real overlayGeneration', async () => {
+    const m = await MOD()
+    const seen: Record<string, unknown>[] = []
+    reader.next = ((i: Record<string, unknown>) => { seen.push(i); return Promise.resolve({ kind: 'no-approval-question', facts: baseFacts }) }) as never
+    const p = m.createG2WebCenterPorts({ readCallFacts: reader, assemblyId: 'asm-1' })
+    const end = p.beginCall(ctxOf('no-approval-question'))
+    expect((await p.factsSource.capture({ realmId: 'r', grantId: 'grant-WRONG' })).error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT')
+    const cap = await p.factsSource.capture({ realmId: 'r', grantId: 'grant-9' })
+    expect(cap.ok).toBe(true)
+    expect(((seen[0] ?? {}) as Record<string, unknown>).callId).toBe('call-77') // the REAL call rode, not the grant
+    expect(((seen[0] ?? {}) as Record<string, unknown>).instanceId).toBe('mi')
+    expect(cap.value?.policyGeneration).toBe(12) // real overlayGeneration
+    expect(cap.value?.bindingRevision).toBe(5)
+    expect('planSnapshot' in (cap.value as object)).toBe(false) // all-allow never forced
+    reader.next = ((i: Record<string, unknown>) => { seen.push(i); return Promise.resolve({ kind: 'call-facts', facts: { ...baseFacts, planSnapshot: { plan: 'p' } } }) }) as never
+    const cap2 = await p.factsSource.capture({ realmId: 'r', grantId: 'grant-9' })
+    expect(cap2.ok).toBe(true)
+    expect((cap2.value as Record<string, unknown>).planSnapshot).toEqual({ plan: 'p' })
     end()
-    expect((await ports.factsSource.capture({ realmId: 'r', grantId: 'call-1' })).error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT')
-    expect(() => ports.beginCall({})).toThrow(/REAL current call/)
-    let edgeRan = false
-    const p2 = m.createG2WebCenterPorts({ consumeEdge: () => { edgeRan = true; return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'x' } } }) } })
-    const end2 = p2.beginCall({ ...ctx, callId: 'call-2', grant: { grantId: 'call-2' }, requestedEffects: ctx.requestedEffects })
-    const mismatch = await p2.grantAuthority.consume({ facts: { authorityGeneration: 1, member: {}, bindingRevision: 1, effects: { effects: [] } }, correlation: { grantId: 'call-OTHER' }, isCancelled: () => false })
-    expect(mismatch.error?.code).toBe('G2_WEB_CALL_CONTEXT_ABSENT'); expect(edgeRan).toBe(false) // identity enforced BEFORE any consume
-    end2()
+    expect(() => p.beginCall({ ...ctxOf('x'), assemblyId: 'asm-OTHER' })).toThrow(/G2_WEB_ASSEMBLY_MISMATCH/)
+    expect(() => p.beginCall({ grant: { grantId: 'g' }, call: { callId: '' }, assemblyId: 'asm-1' })).toThrow(/REAL grant AND the REAL current call/)
+  })
+  it('ONE consumption layer: the production wrapper runs EXACTLY once and success is a WebConsumedGrant with the REAL grantId + its proof + effects', async () => {
+    const m = await MOD()
+    let calls = 0
+    const p = m.createG2WebCenterPorts({
+      assemblyId: 'asm-1',
+      consumeEdge: () => { calls += 1; return Promise.resolve({ kind: 'allow', consumedProof: { grant: { grantId: 'grant-9' } } }) },
+    })
+    const end = p.beginCall(ctxOf('call-facts'))
+    const facts = { authorityGeneration: 9, member: baseFacts.member, bindingRevision: 5, effects: baseFacts.effects }
+    const con = await p.grantAuthority.consume({ facts, correlation: { grantId: 'grant-9', bindingId: 'b-1', payloadFingerprint: 'fp' }, isCancelled: () => false })
+    expect(con.ok).toBe(true)
+    expect(calls).toBe(1)
+    expect(con.value?.grantId).toBe('grant-9') // REAL grant identity, not the call
+    expect((con.value?.consumedProof as Record<string, unknown>)).toEqual({ grant: { grantId: 'grant-9' } })
+    expect(((con.value?.effects as Record<string, unknown>).effects as unknown[]).length).toBe(1)
+    end()
   })
 })

@@ -3421,28 +3421,38 @@ export function createAgentBindings(deps) {
             grantAuthority: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.grantAuthority,
             factsSource: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.factsSource,
             resolveSearchOrigin: (typeof controlServiceRef !== 'undefined' && controlServiceRef !== null ? g2WebCenterPorts : null)?.resolveSearchOrigin,
-            // ROOT 06:0x: fetch rides the FIXED capture+bind transport when
-            // this root's Team declared one (the host-resolved public
-            // HttpFetchProvider face) — NOT the old dynamic deps.web
-            // method re-read; no fixed transport declared keeps the seam
-            // path for the fetch lane. search stays independently
-            // disclosed (absent origin refuses per call).
-            ctxWeb: typeof deps.web === 'function' || typeof deps.webFixed === 'function'
-              ? {
-                fetch: (request, signal) => {
-                  const fixed = typeof deps.webFixed === 'function' ? deps.webFixed() : undefined
-                  if (fixed !== null && typeof fixed === 'object' && typeof fixed.fetch === 'function') return fixed.fetch(request, signal)
-                  const seam = typeof deps.web === 'function' ? deps.web() : undefined
+            // ROOT 23bc-CARD ①: the fixed face is ASYNC (deps.webFixed);
+            // it is awaited and FIXED-held for this root's lifetime (one
+            // hold, not a re-read per call). A DECLARED webFixedProvider
+            // whose supply failed REFUSES the call — the row NEVER falls
+            // back to the shared deps.web seam behind a declared fixed.
+            // With no fixed declared the seam path stands. search is
+            // independently disclosed (absent origin refuses per call).
+            ctxWeb: (() => {
+              const declaredFixed = config?.teamToolPlane?.g2Mount?.webFixedProvider?.enabled === true
+              const fixedHold = typeof deps.webFixed === 'function' ? deps.webFixed() : undefined
+              const fixedOrRefuse = async () => {
+                const fixed = fixedHold === undefined ? undefined : await fixedHold
+                if (fixed !== null && typeof fixed === 'object' && typeof fixed.fetch === 'function') return fixed
+                if (declaredFixed) {
+                  throw Object.assign(new Error('G2_WEB_FIXED_SUPPLY_FAILED: webFixedProvider is DECLARED for this root but the fixed face did not resolve; the row refuses — it never degrades to the shared web seam'), { code: 'G2_WEB_FIXED_SUPPLY_FAILED' })
+                }
+                return undefined
+              }
+              const seam = typeof deps.web === 'function' ? deps.web() : undefined
+              return {
+                fetch: async (request, signal) => {
+                  const fixed = await fixedOrRefuse()
+                  if (fixed !== undefined) return fixed.fetch(request, signal)
                   return seam?.fetch?.(request, signal)
                 },
-                search: (request, signal) => {
-                  const fixed = typeof deps.webFixed === 'function' ? deps.webFixed() : undefined
-                  if (fixed !== null && typeof fixed === 'object' && typeof fixed.search === 'function') return fixed.search(request, signal)
-                  const seam = typeof deps.web === 'function' ? deps.web() : undefined
+                search: async (request, signal) => {
+                  const fixed = await fixedOrRefuse()
+                  if (fixed !== undefined && typeof fixed.search === 'function') return fixed.search(request, signal)
                   return seam?.search?.(request, signal)
                 },
               }
-              : undefined,
+            })(),
             // NO search-origin resolver is passed here (root product-closure
             // ruling): the group-4 law needs the provider's OWN three
             // real-plane readers injected by the entry, which this entry does
