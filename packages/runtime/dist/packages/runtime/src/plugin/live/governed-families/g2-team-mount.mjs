@@ -324,16 +324,46 @@ export async function createG2TeamMount(input = {}) {
  * family region; obligation recorded, not silently CENTER-dumped).
  */
 export async function createG2TeamAssemblySupply(input = {}) {
-  const { entryPaths, mcpResources, makeTransport, consumeBrowserApproval, callResource } = input
-  if (entryPaths === null || typeof entryPaths !== 'object') {
-    return refuse(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'entryPaths {launchEntry, workerEntry, sdkClientEntry} are REQUIRED — the loader pins the PUBLIC entry files; paths are approved config, never guessed here')
+  // ROOT final browser card (single-source law): the producer-resolved
+  // PUBLIC pair, when armed, is THE source — producer -> assembly ->
+  // execution carries ONE pair; this assembly must never let the
+  // loader-pinned pair shadow it (the r75 break: input.entries was
+  // dropped and the lease ran on a different function pair).
+  // DEPLOYMENT-FACT DISCIPLINE (stated as law here):
+  //  (a) a bare import resolves in the ACTUAL host.ts install graph; it
+  //     does NOT automatically anchor to the fixed-639 root — the
+  //     probe RC=0 evidenced ONLY that environment;
+  //  (b) production from the new fixture resolves via LEGAL PUBLIC
+  //     SUBPATHS from the TRUSTED FIXED HOST ANCHOR, and the ACTUAL
+  //     source used is RECORDED (entriesProvenance rides the supply);
+  //     never a private-lib absolute-path workaround bypassing exports;
+  //  (c) entryPaths is a DEPLOYMENT INPUT, not a model, and FUNCTION
+  //     SHAPE IS NOT 639 IDENTITY VERIFICATION — acceptance requires the
+  //     REAL source with provenance RECORDED (the producer records the
+  //     resolved URLs), never a mere shape check; a half armed pair is
+  //     refused outright;
+  //  (d) when source conditions are unmet the typed refusal is CORRECT:
+  //     no fallback to shared supply, and the signed lifecycle stays shut.
+  const { entryPaths, entries: producerEntries, entriesProvenance, mcpResources, makeTransport, consumeBrowserApproval, callResource } = input
+  const pairArmed = producerEntries !== null && producerEntries !== undefined
+  if (pairArmed && (typeof producerEntries.launchChromium !== 'function' || typeof producerEntries.openBrowserWorker !== 'function')) {
+    return refuse('G2_BROWSER_SUPPLIER_UNRESOLVED', 'input.entries was ARMED but is not the resolved PUBLIC pair (launchChromium/openBrowserWorker) — refusing; a half pair never reaches the lease, and shape would not prove 639 identity anyway: the producer records provenance for the REAL source it resolved')
   }
-  let entries
-  try {
-    entries = await loadG2TeamAssemblyEntries(entryPaths)
-  } catch (error) {
-    return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE), `the SIGNED entry loader refused: ${String(error?.message ?? error).slice(0, 300)}`)
+  if (!pairArmed && (entryPaths === null || typeof entryPaths !== 'object')) {
+    return refuse(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'entryPaths {launchEntry, workerEntry, sdkClientEntry} are REQUIRED when no producer-resolved pair is armed — the loader pins the PUBLIC entry files; paths are approved config, never guessed here')
   }
+  let entries = pairArmed && (entryPaths === null || entryPaths === undefined) ? {} : undefined
+  if (entries === undefined) {
+    try {
+      entries = await loadG2TeamAssemblyEntries(entryPaths)
+    } catch (error) {
+      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE), `the SIGNED entry loader refused: ${String(error?.message ?? error).slice(0, 300)}`)
+    }
+  }
+  // single-source selection: armed producer pair WINS verbatim (identity,
+  // not copy); the loader-pinned pair exists only in worlds the producer
+  // did not arm — there is no third path and no silent substitution.
+  const browserSourcePair = pairArmed ? producerEntries : entries
   // ROOT 21:30: face-absent is a LEGITIMATE host-producer answer — the
   // scoped face is minted per member at the REAL scope (bindings
   // state.mcpMountCtx, createScope(agentCtx, runtimeAgent)) and augmented
@@ -354,7 +384,15 @@ export async function createG2TeamAssemblySupply(input = {}) {
     return refuse(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, 'browser supply is PARTIAL: consumeBrowserApproval (the Team PA face) and callResource (the stagehand method mapping) arrive together or not at all — the B-BROWSER target rule and its approval pairing are their own lane\'s landing; naming the gap, refusing the half-supply')
   }
   if (hasApproval && hasMapping) {
-    supply.browserEntries = { launchChromium: entries.launchChromium, openBrowserWorker: entries.openBrowserWorker }
+    supply.browserEntries = { launchChromium: browserSourcePair.launchChromium, openBrowserWorker: browserSourcePair.openBrowserWorker }
+    if (pairArmed) {
+      // (b)/(c) recorded source: WHERE this pair actually came from — the
+      // producer's own resolved targets (public subpaths or the approved
+      // deployment entryPaths), never inferred here.
+      supply.entriesProvenance = (entriesProvenance !== null && typeof entriesProvenance === 'object')
+        ? Object.freeze({ ...entriesProvenance, carrier: 'producer-resolved-pair' })
+        : Object.freeze({ carrier: 'producer-resolved-pair', recorded: false, note: 'the producer armed the pair WITHOUT provenance — recorded as such; downstream acceptance must not treat shape as 639 identity' })
+    }
     supply.consumeBrowserApproval = consumeBrowserApproval
     supply.callResource = callResource
   }
