@@ -33,6 +33,9 @@ import {
   ROW_CONFIG, CRITERIA, CRITERIA_IDS, REUSE_INSTALL, validateRow,
 } from './a5m2-team-c2-kit.mjs'
 import {
+  REMOTE_TEAM_CREATE_FIELDS, REMOTE_TEAM_CREATE_FIELDS_V2,
+} from '../../../../../packages/runtime/dist/packages/remote/src/contracts/params.js'
+import {
   A5_B_TEAM_TOOL_NAMES, A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION,
 } from '../../../../../packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs'
 
@@ -128,7 +131,7 @@ export function runProvenReader (script, ...args) {
 /** Unverified wire shapes. A case touching one stops with this id instead of
  *  guessing the protocol. */
 export const GAPS = Object.freeze({
-  'GAP-TEAM-CREATE-PARAMS': 'the version-aware closed param set of `team.create` (params.ts, v1 and v2 differ) is unread here, so the Team case bodies do not mint a create request yet — this is the next slice, not a silent skip.',
+  'GAP-BLUEPRINT-IDENTITY': 'a `team.create` case needs a real `blueprintId` + `blueprintRevision` (v3 blueprint generation). The param shape is verified and built below, and the source is gated by the production `inspectBlueprintSource`, but no blueprint is minted here — the create call is therefore not issued yet.',
   'GAP-DURABLE-REPLAY': 'C-DUR-1 needs a durable approval composed under the PREVIOUS adapter revision; without such a row the leg is not attempted (and never "proved" by a file revision or by two refusals).',
 })
 
@@ -217,6 +220,18 @@ export function precheck () {
   // under `tests/homes` per TEST_METHODS §7. The assertions below are identity
   // checks — existence, the exact baseline SHA, and a clean work tree — not
   // provisioning steps.
+  if (!REMOTE_TEAM_CREATE_FIELDS.includes('initialWork') || REMOTE_TEAM_CREATE_FIELDS_V2.includes('initialWork') || !REMOTE_TEAM_CREATE_FIELDS_V2.includes('workspace')) {
+    problems.push('the team.create closed field sets drifted from the verified v1/v2 law')
+  }
+  try {
+    teamCreateParams({ version: 2, blueprintId: 'bp', blueprintRevision: 1, rootSessionId: 'r', workspace: { kind: 'ephemeral' } })
+    teamCreateParams({ version: 1, blueprintId: 'bp', blueprintRevision: 1, rootSessionId: 'r', initialWork: 'w' })
+    let refused = false
+    try { teamCreateParams({ version: 2, blueprintId: 'bp', blueprintRevision: 1, rootSessionId: 'r', initialWork: 'w' }) } catch { refused = true }
+    if (!refused) problems.push('a v2 request carrying v1-only `initialWork` must be refused before the wire')
+  } catch (error) {
+    problems.push(`team.create builder broke: ${String(error?.message ?? error)}`)
+  }
   const host = hostTree()
   if (!existsSync(host)) problems.push(`host tree absent: ${host}`)
   else {
@@ -231,6 +246,21 @@ export function precheck () {
 
 /** Validate a Team blueprint source through the PRODUCTION source gate before
  *  any write (fail fast, per the proven kit discipline). */
+/**
+ * `team.create` params, built against the CLOSED version-aware field sets read
+ * from the built contract module (never a remembered literal): v1 =
+ * `blueprintId | blueprintRevision | initialWork | rootSessionId`, v2 = the same
+ * minus `initialWork` plus `workspace`; anything else is a typed
+ * `unknown-field` refusal server-side, so this builder refuses locally first.
+ */
+export function teamCreateParams ({ version, blueprintId, blueprintRevision, rootSessionId, initialWork, workspace }) {
+  const closed = version === 2 ? [...REMOTE_TEAM_CREATE_FIELDS_V2] : [...REMOTE_TEAM_CREATE_FIELDS]
+  const provided = { blueprintId, blueprintRevision, rootSessionId, ...(initialWork === undefined ? {} : { initialWork }), ...(workspace === undefined ? {} : { workspace }) }
+  const unknown = Object.keys(provided).filter((key) => !closed.includes(key))
+  if (unknown.length > 0) throw new Error(`team.create v${String(version)}: unknown field(s) ${unknown.join(', ')} — the closed set is ${closed.join(', ')}`)
+  return provided
+}
+
 export function gateBlueprintSource (source) {
   const report = inspectBlueprintSource(source)
   const ok = report?.ok === true || report?.valid === true
