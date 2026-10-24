@@ -13,6 +13,23 @@ The current runner rules are the honest OLD-product interim (vocabulary cannot
 name 83/84). When the main's NEW product SHA receipt lands, apply exactly the
 delta below — nothing else.
 
+## Registration SHA verified (2026-10-24, read-only)
+
+Int tip `0c15d1448c1a90f8df550d2eb263c7e06adc8370` (origin/feat/a5-m2-integration,
+ls-remote verified) carries the closed-vocabulary registration this delta waits
+on: blueprint `schema.ts` rule vocabulary now lists `team_request_control` /
+`team_resolve_control` / `team_grant_permission` / `team_revoke_permission`
+(:493-496) behind `team_list_pending_control`, on the 85 invocation-only
+pattern (tool-invoke arm, resource `any`, exact realm|tool:name matcher; the
+"stays OUT" list at :579 is the EFFECT-arm set — no exact/subtree for these
+four, matching the a1 suite's refusal legs; envelope + native resolver
+identity UNTOUCHED — naming pre-wires the named channel only). The main's a1
+87/87 covers my two future rule shapes (26 names x three lanes x both roles
+whole-tool `any` under default:deny parse; exact/subtree refused per name).
+This is the SOURCE-side registration — §0's PIN swap still waits for the
+actual NEW PRODUCT receipt (composed/pack/lock/tgz/INSTALL_DIR), never for
+this SHA alone.
+
 ## 0. Pin swap (same change, from the main's receipt — never from memory)
 
 `05-control-window-runner.mjs` constants:
