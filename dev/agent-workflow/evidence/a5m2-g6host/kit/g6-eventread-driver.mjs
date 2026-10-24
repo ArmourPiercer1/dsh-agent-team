@@ -273,6 +273,8 @@ async function run () {
 
   const { spawn } = await import('node:child_process')
   const child = spawn(process.execPath, [runnerPath, '--boot', '--port', String(ports.host), '--mock-port', String(ports.mock), '--world-name', worldName, '--evidence-dir', join(outDir, 'kit')], { detached: true, stdio: ['ignore', 'inherit', 'inherit'] })
+  const launchedAt = Date.now()
+  writeFileSync(join(outDir, 'pgid-receipt.json'), JSON.stringify({ pgid: child.pid, launchedAt: new Date(launchedAt).toISOString(), ports, world: worldPath, note: 'written IMMEDIATELY at spawn IN THIS WINDOW\'S OWN namespace — the group truth of THIS window; a later foreign-namespace empty read never substitutes' }, null, 2))
 
   // supervision on OUR PGID: TERM@300s; KILL only if the group still lives
   // 20s later; both timers CANCELLED when the runner exits first.
@@ -304,22 +306,31 @@ async function run () {
   // parent exit ≠ group empty: the 300/320 timers STAY ARMED and we drain OUR
   // PGID on a 5s loop (df floor re-asserted every loop) until the group is
   // EMPTY; ports are re-checked only AFTER the group cleared (root law).
+  // ROOT FINAL RULING (2026-10-24): timers may be cleared EARLY ONLY when
+  // the PGID is CONFIRMED EMPTY. If the group is non-empty the absolute
+  // 320s KILL is KEPT; the finite <=15s verification happens ONLY AFTER the
+  // KILL actually fired (elapsed >= 320s). No earlier clearing, no unbounded
+  // wait, no new loop framework.
   let pgidGone = false
   let pgidDrainMs = 0
   let dfDuringDrainFloor = true
-  // FINITE short verification after the absolute KILL (root final diff):
-  // three 5s checks; NEVER an unbounded wait. Still-alive after = violation,
-  // scene retained.
-  for (let i = 0; i < 3; i += 1) {
-    try { process.kill(-child.pid, 0); pgidGone = false } catch { pgidGone = true; break }
-    try {
-      const d = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]
-      if (Number(d) < PINS.dfFloor) dfDuringDrainFloor = false
-    } catch { dfDuringDrainFloor = false }
+  const alive = () => { try { process.kill(-child.pid, 0); return true } catch { return false } }
+  const dfTick = () => { try { const d = execFileSync('df', ['-B1', REPO_ROOT], { encoding: 'utf8' }).trim().split('\n').pop().split(/\s+/)[3]; if (Number(d) < PINS.dfFloor) dfDuringDrainFloor = false } catch { dfDuringDrainFloor = false } }
+  while (alive()) {
+    const elapsed = Date.now() - launchedAt
+    if (elapsed < 321_000) {
+      dfTick()
+      await new Promise((r) => setTimeout(r, Math.min(5000, 321_000 - elapsed)))
+      continue
+    }
+    // the absolute KILL has FIRED (>=320s, timer ran); verify <=15s only now.
+    if (pgidDrainMs >= 15_000) break // ours-alive after KILL+15s: FAIL, scene RETAINED
+    dfTick()
     await new Promise((r) => setTimeout(r, 5000))
     pgidDrainMs += 5000
   }
-  clearTimeout(termTimer); clearTimeout(killTimer)
+  if (!alive()) pgidGone = true
+  clearTimeout(termTimer); clearTimeout(killTimer) // reached only once group empty OR KILL fired+15s
 
   // postflight: REAL enforcement facts (any violation fails the RC).
   const after = { portsFree: await Promise.all([portFree(ports.host), portFree(ports.mock)]) }
