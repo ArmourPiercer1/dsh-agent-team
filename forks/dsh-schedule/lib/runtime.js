@@ -1,4 +1,5 @@
 /** Host timer over stored tasks; Session activation is a delivery operation. */
+import { createHash, randomUUID } from 'node:crypto';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { isRecurringScheduleRecord, renderReminderFraming, renderRecurringReminderBatchFraming, resolveRecurringOccurrence } from "./domain.js";
 import { appendDelivery } from "./delivery-history.js";
@@ -108,15 +109,25 @@ export class ScheduleRuntime {
             // due group. Consumer absent or refusing = no wake at all; the group
             // is deferred in memory and the row stays active (no fake delivery).
             const admit = this.admitTrigger();
-            const admitIntent = (phase) => ({
-                ownerSessionId: task.sessionId,
-                taskId: task.record.id,
-                revision: null,
-                occurrence: { scheduledAt: task.record.scheduledAt, occurrenceAt: task.record.scheduledAt },
-                destination: { sessionId: task.sessionId },
-                groupSize: group.length,
+            const firingId = randomUUID();
+            const recordsFingerprint = createHash('sha256').update(JSON.stringify(group.map(member => member.record).sort((a, b) => a.id.localeCompare(b.id)))).digest('hex');
+            const admitIntent = (phase, nowFor) => ({
+                firingId,
                 phase,
+                ownerSessionId: task.sessionId,
+                destination: { sessionId: task.sessionId },
+                group: {
+                    size: group.length,
+                    recordsFingerprint,
+                    occurrences: group.map(member => ({
+                        taskId: member.record.id,
+                        occurrenceAt: isRecurringScheduleRecord(member.record)
+                            ? resolveRecurringOccurrence(member.record, nowFor).occurrenceAt
+                            : member.record.scheduledAt,
+                    })),
+                },
             });
+            let followupReached = false;
             if (admit === undefined) {
                 this.ctx.logger.warn(`schedule[fork]: trigger admission consumer ABSENT — refusing wake for ${task.record.id} (fail closed; row stays active)`);
                 for (const member of group)
@@ -125,7 +136,7 @@ export class ScheduleRuntime {
             }
             let preResolveOk;
             try {
-                preResolveOk = await admit(admitIntent('pre-resolve'));
+                preResolveOk = await admit(admitIntent('pre-resolve', scanNow));
             }
             catch {
                 preResolveOk = false;
@@ -166,7 +177,9 @@ export class ScheduleRuntime {
                 // never happened and nothing claims it did.
                 let preFollowupOk;
                 try {
-                    preFollowupOk = await admit(admitIntent('pre-followup'));
+                    // REAL occurrence instants at the decision instant (restoration
+                    // may have crossed the scan): occurrences recomputed with now.
+                    preFollowupOk = await admit(admitIntent('pre-followup', now));
                 }
                 catch {
                     preFollowupOk = false;
@@ -178,6 +191,7 @@ export class ScheduleRuntime {
                     continue;
                 }
                 // followup synchronously appends the inbox splice before flush observes the Session.
+                followupReached = true;
                 resolved.agent.followup(message);
                 const flushed = await this.ctx.sessions.flush(resolved.agent.session);
                 if (!flushed)
@@ -210,6 +224,18 @@ export class ScheduleRuntime {
                 }
                 const ids = pending.map(member => member.record.id);
                 this.ctx.logger.warn(`schedule: reminders ${JSON.stringify(ids)} were not acknowledged: ${String(error)}`);
+            }
+            finally {
+                // FORK(dsh-schedule a5m2.1): FLIGHT RECLAIM — a firing that ended
+                // before the real followup tells the consumer (same firingId) so
+                // its taken token/flight is never left armed. No-op when there is
+                // no consumer or the followup was reached.
+                if (admit !== undefined && !followupReached) {
+                    try {
+                        await admit(admitIntent('aborted', scanNow));
+                    }
+                    catch { /* reclaim is best-effort; the consumer's own settle law stands */ }
+                }
             }
         }
         if (this.stopping)

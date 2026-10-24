@@ -4057,20 +4057,97 @@ export function createAgentBindings(deps) {
           const scheduleMount = probeScheduleMount()
           observations.push(`a5m2-schedule: mount-probe mount=${scheduleMount} law: one provider slot schedule = one timer owner (original XOR fork, never both; replacement is the assembly decision)`)
           if (scheduleMount === 'fork-mounted') {
-            // NAMED CONSUMER-CARRIER BREAKPOINT (root: 遇具体安全接口断点源证
-            // 升级): the fork's admission consumer must be a REAL governed
-            // non-tool consumption on the EXISTING plane, but every PA walk
-            // here is keyed by an ISSUED tool-call identity + a registered
-            // arm (consumePaAtBody above refuses without exec.callId and
-            // without a5ScheduleArms.get(name)); a firing reminder has
-            // neither, and synthesizing one would extend the persisted row
-            // schema / mint a parallel ledger — forbidden without a root
-            // ruling. Until that ruling, NO consumer is registered: the
-            // fork stays fail-closed (never wakes on absence), the ② arms
-            // keep refusing (TRIGGER_GOVERNANCE_OPEN), and the fact is
-            // audited through the EXISTING carrier below — not a silent
-            // allow, not a fake consumer.
-            observations.push(`a5m2-schedule: TRIGGER_CONSUMER_CARRIER_BREAKPOINT mount=${scheduleMount} detail: PA consumption is keyed by ISSUED callId + registered arm name (agent-bindings consumePaAtBody law); a schedule firing has no tool-exec — governed non-tool consumption needs a root ruling on the row schema; fork fail-closed stays in force meanwhile`)
+            // THE REAL TRIGGER CONSUMER (root consolidated card 2026-10-26:
+            // PA open/edge + the SAME paTokenLedger may be issued
+            // INTERNALLY; no new schema, no second ledger). Laws honored:
+            //  - OWN verified ACTIVE binding: the provider GENERATION face
+            //    (ACTIVE + service present) — never the create/delete tool
+            //    bindings (不借create/delete binding);
+            //  - one flight per firing on the SAME plane paTokenLedger,
+            //    taken at phase 1, settled in the finally (flight 回收),
+            //    reclaimed on phase 'aborted' from the runtime;
+            //  - ONE consume at the FINAL PA edge immediately before the
+            //    real followup (root ③: zero wake != zero resolve — the
+            //    cold resolve/setup the runtime may do delivers nothing;
+            //    the edge gates the delivery);
+            //  - real inputs only: full group-record fingerprint + real
+            //    per-member occurrences + firingId (models/callers cannot
+            //    fake events: the seam is provider-internal);
+            //  - every fault/uncertainty answers FALSE — never allow.
+            const triggerFlights = new Map()
+            const settleTriggerFlight = (firingId) => {
+              const flight = triggerFlights.get(firingId)
+              if (flight === undefined || flight.settled) return
+              flight.settled = true
+              try {
+                const ledger = a5PlaneValue?.paTokenLedger
+                if (typeof ledger?.settle === 'function') ledger.settle(flight.token)
+              } catch { /* the plane ledger owns the settle law; the flight stays closed here */ }
+              triggerFlights.delete(firingId)
+            }
+            const triggerConsumer = async (intent) => {
+              try {
+                if (intent === null || typeof intent !== 'object' || typeof intent.firingId !== 'string' || typeof intent.phase !== 'string') return false
+                const firingId = intent.firingId
+                const phase = intent.phase
+                if (phase === 'aborted') return false // reclaim only — the finally settles
+                const gen = typeof deps.scheduleLifecycle?.currentGeneration === 'function' ? deps.scheduleLifecycle.currentGeneration() : null
+                if (gen === null || gen === undefined || typeof gen.id !== 'number' || gen.active !== true || gen.service === null || gen.service === undefined) return false
+                if (typeof intent.group?.recordsFingerprint !== 'string' || !/^[0-9a-f]{64}$/.test(intent.group.recordsFingerprint)) return false
+                if (phase === 'pre-resolve') {
+                  const ledger = a5PlaneValue?.paTokenLedger
+                  if (typeof ledger?.take !== 'function') return false
+                  const token = Object.freeze({ triggerFiring: firingId })
+                  if (ledger.take(token, `plane-schedule-trigger:${a5PlaneRealmId}:${String(intent.ownerSessionId)}:${firingId}`) !== true) return false
+                  triggerFlights.set(firingId, { token, settled: false })
+                  return true // maintenance admission; NO consume yet
+                }
+                if (phase !== 'pre-followup') return false
+                const flight = triggerFlights.get(firingId)
+                if (flight === undefined || flight.settled) return false
+                const pa = a5PlaneValue?.paAdmit
+                if (typeof pa?.open !== 'function' || typeof pa?.edge !== 'function') return false
+                const familyPayload = a5ScheduleArms.get('schedule_list')?.reviewPayload // family identity CONSTANTS only — no binding borrow
+                if (familyPayload === null || familyPayload === undefined) return false
+                const parsedEffects = parseRequestedEffectSet(['meta'])
+                if (parsedEffects?.ok !== true) return false
+                const walk = Object.freeze({
+                  realmId: a5PlaneRealmId,
+                  callId: firingId, // the internal firing identity — never a model-issued call
+                  parametersFingerprint: intent.group.recordsFingerprint,
+                  requestedEffects: parsedEffects.value,
+                  toolName: 'schedule_trigger',
+                  family: Object.freeze({
+                    familyId: familyPayload.familyId,
+                    adapterRevision: familyPayload.adapterRevision,
+                    providerIdentity: familyPayload.providerIdentity,
+                    targetManifest: familyPayload.targetManifest,
+                  }),
+                })
+                const opened = await pa.open(walk)
+                if (opened?.cancelled === true || opened?.kind !== 'approved' || opened?.grant === undefined || opened?.grant === null) return false
+                const edged = await pa.edge(Object.freeze({
+                  ...walk,
+                  grant: opened.grant,
+                  ...(opened.paDurableMint === undefined ? {} : { paDurableMint: opened.paDurableMint }),
+                  ...(opened.request === undefined ? {} : { request: opened.request }),
+                  ...(opened.placementName === undefined ? {} : { placementName: opened.placementName }),
+                  ...(opened.paConstructionBinding === undefined ? {} : { paConstructionBinding: opened.paConstructionBinding }),
+                }))
+                // THE PROOF IS NEVER A BOOLEAN (family law, verbatim):
+                return edged?.kind === 'allow' && typeof edged?.consumedProof?.grant?.grantId === 'string'
+              } catch {
+                return false // a consumer fault is a REFUSAL, never an allow
+              } finally {
+                if (typeof intent?.phase === 'string' && intent.phase !== 'pre-resolve') settleTriggerFlight(String(intent?.firingId ?? ''))
+              }
+            }
+            try {
+              deps.scheduleServiceFeed?.().registerTriggerAdmission(triggerConsumer)
+              observations.push(`a5m2-schedule: TRIGGER CONSUMER registered on the fork seam (own ACTIVE-generation binding; one flight per firing on the plane paTokenLedger; ONE consume at the final PA edge before followup; aborted-reclaim wired; fail-closed on every fault)`)
+            } catch (error) {
+              observations.push(`a5m2-schedule: TRIGGER CONSUMER registration FAULT ${String(error?.message ?? error).slice(0, 120)} — the fork stays fail-closed (absence of a consumer never wakes)`)
+            }
           }
           a5ScheduleBind.start(runtimeAgent)
           const a5ScheduleBindDispose = agentCtx.on('agent/disposed', (payload) => {

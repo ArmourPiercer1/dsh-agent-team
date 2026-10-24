@@ -1,4 +1,5 @@
 /** Host timer over stored tasks; Session activation is a delivery operation. */
+import { createHash, randomUUID } from 'node:crypto'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 declare module '@deepseek-ai/dsh-llm' {
@@ -27,13 +28,28 @@ export const MAX_TIMER_DELAY_MS = 2_147_483_647
 // state change). `revision` is null because the durable row schema has NO
 // revision field at 639 — never fabricated.
 export interface ScheduleTriggerIntent {
+  /** ONE internal flight identity per firing: the consumer keys its PA
+   *  token (the SAME plane paTokenLedger) with it across BOTH phases.
+   *  Minted HERE (provider-internal): callers/models cannot fake events. */
+  readonly firingId: string
+  /** pre-resolve = maintenance admission (may resolve cold context to set
+   *  up the PA/binding; delivers nothing); pre-followup = THE FINAL PA
+   *  EDGE (the one consume, immediately before the real followup);
+   *  aborted = the flight reclaim when the firing ended before the edge. */
+  readonly phase: 'pre-resolve' | 'pre-followup' | 'aborted'
   readonly ownerSessionId: string
-  readonly taskId: string
-  readonly revision: null
-  readonly occurrence: { readonly scheduledAt: string, readonly occurrenceAt: string }
   readonly destination: { readonly sessionId: string }
-  readonly groupSize: number
-  readonly phase: 'pre-resolve' | 'pre-followup'
+  readonly group: {
+    readonly size: number
+    /** sha256 over the FULL canonical member records of this due group
+     *  (sorted by record id) — the complete governed fingerprint, never a
+     *  count substitute. */
+    readonly recordsFingerprint: string
+    /** REAL per-member occurrences at the phase's decision instant:
+     *  recurring rows through resolveRecurringOccurrence(record, nowFor),
+     *  single rows their one target instant. */
+    readonly occurrences: readonly { readonly taskId: string, readonly occurrenceAt: string }[]
+  }
 }
 export type ScheduleTriggerAdmission = (intent: ScheduleTriggerIntent) => boolean | Promise<boolean>
 
@@ -132,15 +148,27 @@ export class ScheduleRuntime {
       // due group. Consumer absent or refusing = no wake at all; the group
       // is deferred in memory and the row stays active (no fake delivery).
       const admit = this.admitTrigger()
-      const admitIntent = (phase: ScheduleTriggerIntent['phase']): ScheduleTriggerIntent => ({
-        ownerSessionId: task.sessionId,
-        taskId: task.record.id,
-        revision: null,
-        occurrence: { scheduledAt: task.record.scheduledAt, occurrenceAt: task.record.scheduledAt },
-        destination: { sessionId: task.sessionId },
-        groupSize: group.length,
+      const firingId = randomUUID()
+      const recordsFingerprint = createHash('sha256').update(JSON.stringify(
+        group.map(member => member.record).sort((a, b) => a.id.localeCompare(b.id)),
+      )).digest('hex')
+      const admitIntent = (phase: ScheduleTriggerIntent['phase'], nowFor: number): ScheduleTriggerIntent => ({
+        firingId,
         phase,
+        ownerSessionId: task.sessionId,
+        destination: { sessionId: task.sessionId },
+        group: {
+          size: group.length,
+          recordsFingerprint,
+          occurrences: group.map(member => ({
+            taskId: member.record.id,
+            occurrenceAt: isRecurringScheduleRecord(member.record)
+              ? resolveRecurringOccurrence(member.record, nowFor).occurrenceAt
+              : member.record.scheduledAt,
+          })),
+        },
       })
+      let followupReached = false
       if (admit === undefined) {
         this.ctx.logger.warn(`schedule[fork]: trigger admission consumer ABSENT — refusing wake for ${task.record.id} (fail closed; row stays active)`)
         for (const member of group) this.forkDeferredUntil.set(member.record.id, scanNow + ScheduleRuntime.FORK_REJECT_BACKOFF_MS)
@@ -148,7 +176,7 @@ export class ScheduleRuntime {
       }
       let preResolveOk: boolean
       try {
-        preResolveOk = await admit(admitIntent('pre-resolve'))
+        preResolveOk = await admit(admitIntent('pre-resolve', scanNow))
       } catch {
         preResolveOk = false
       }
@@ -185,7 +213,9 @@ export class ScheduleRuntime {
         // never happened and nothing claims it did.
         let preFollowupOk: boolean
         try {
-          preFollowupOk = await admit(admitIntent('pre-followup'))
+          // REAL occurrence instants at the decision instant (restoration
+          // may have crossed the scan): occurrences recomputed with now.
+          preFollowupOk = await admit(admitIntent('pre-followup', now))
         } catch {
           preFollowupOk = false
         }
@@ -195,6 +225,7 @@ export class ScheduleRuntime {
           continue
         }
         // followup synchronously appends the inbox splice before flush observes the Session.
+        followupReached = true
         resolved.agent.followup(message)
         const flushed = await this.ctx.sessions.flush(resolved.agent.session)
         if (!flushed) throw new Error('Session persistence did not acknowledge the reminder')
@@ -224,6 +255,14 @@ export class ScheduleRuntime {
         }
         const ids = pending.map(member => member.record.id)
         this.ctx.logger.warn(`schedule: reminders ${JSON.stringify(ids)} were not acknowledged: ${String(error)}`)
+      } finally {
+        // FORK(dsh-schedule a5m2.1): FLIGHT RECLAIM — a firing that ended
+        // before the real followup tells the consumer (same firingId) so
+        // its taken token/flight is never left armed. No-op when there is
+        // no consumer or the followup was reached.
+        if (admit !== undefined && !followupReached) {
+          try { await admit(admitIntent('aborted', scanNow)) } catch { /* reclaim is best-effort; the consumer's own settle law stands */ }
+        }
       }
     }
     if (this.stopping) return

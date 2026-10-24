@@ -82,9 +82,9 @@ describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
     const buildConfig = readFileSync(join(forkRoot, 'tsconfig.build.json'), 'utf8')
     expect(buildConfig).toContain('"outDir": "lib"')
     const runtime = readFileSync(join(forkRoot, 'src', 'runtime.ts'), 'utf8')
-    const pre = runtime.indexOf("admitIntent('pre-resolve')")
+    const pre = runtime.indexOf("admit(admitIntent('pre-resolve'")
     const resolveAt = runtime.indexOf('this.ctx.sessionController.resolveAgent')
-    const preFollow = runtime.indexOf("admitIntent('pre-followup')")
+    const preFollow = runtime.indexOf("admit(admitIntent('pre-followup'")
     const follow = runtime.indexOf('resolved.agent.followup(message)')
     const flushAt = runtime.indexOf('this.ctx.sessions.flush')
     expect(pre).toBeGreaterThan(-1)
@@ -150,11 +150,42 @@ describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
       expect(counters.followup).toBe(1)
       expect(counters.flush).toBe(1)
       expect(counters.commit).toBe(1)
+      // REAL INPUTS (root consolidated card): same firingId across BOTH
+      // phases; full group-record fingerprint; real per-member occurrence;
+      // NO revision/taskId/groupSize/scheduledAt stand-ins.
       expect(intents.map((i) => i.phase)).toEqual(['pre-resolve', 'pre-followup'])
-      expect(intents[0]?.ownerSessionId).toBe('s-1')
-      expect(intents[0]?.taskId).toBe('T-1')
-      expect(intents[0]?.revision).toBeNull()
-      expect(intents[0]?.destination.sessionId).toBe('s-1')
+      const i0 = intents[0]
+      const i1 = intents[1]
+      expect(i0).toBeDefined()
+      expect(i1).toBeDefined()
+      expect(typeof i0?.firingId).toBe('string')
+      expect(i0?.firingId.length).toBeGreaterThan(10)
+      expect(i1?.firingId).toBe(i0?.firingId)
+      expect(i0?.ownerSessionId).toBe('s-1')
+      expect(i0?.destination.sessionId).toBe('s-1')
+      expect(i0?.group.size).toBe(1)
+      expect(i0?.group.recordsFingerprint).toMatch(/^[0-9a-f]{64}$/)
+      expect(i1?.group.recordsFingerprint).toBe(i0?.group.recordsFingerprint)
+      expect(i0?.group.occurrences.map((o) => o.taskId)).toEqual(['T-1'])
+      expect(Date.parse(String(i0?.group.occurrences[0]?.occurrenceAt))).toBeLessThan(Date.now())
+      expect('revision' in (i0 ?? {})).toBe(false)
+      expect('taskId' in (i0 ?? {})).toBe(false)
+      expect('groupSize' in (i0 ?? {})).toBe(false)
+    })
+
+    it('(e) FLIGHT RECLAIM: a firing that dies AFTER pre-resolve (resolve faults) tells the consumer phase:"aborted" with the SAME firingId — the taken flight is never left armed; nothing delivered', async () => {
+      const counters: Counters = { resolve: 0, followup: 0, flush: 0, commit: 0, warns: [] }
+      const phases: Array<{ phase: string, firingId: string }> = []
+      const { args } = harness(counters, (intent: ScheduleTriggerIntent) => { phases.push({ phase: intent.phase, firingId: intent.firingId }); return intent.phase !== 'aborted' })
+      // FAULT AFTER PHASE 1: resolveAgent explodes (cold-restoration fault).
+      const ctx = args[0] as unknown as { sessionController: { resolveAgent: (id: string) => Promise<unknown> } }
+      ctx.sessionController.resolveAgent = async (_id: string) => { throw new Error('restoration exploded') }
+      const rt = new ScheduleRuntime(...args)
+      rt.requestDrive()
+      await settle()
+      expect(phases.map((x) => x.phase)).toEqual(['pre-resolve', 'aborted'])
+      expect(phases[1]?.firingId).toBe(phases[0]?.firingId)
+      expect(counters).toMatchObject({ resolve: 0, followup: 0, flush: 0, commit: 0 })
     })
   })
 })

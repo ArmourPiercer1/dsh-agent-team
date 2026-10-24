@@ -13,18 +13,33 @@ import type { ScheduleTask } from './storage.ts';
 export declare const MAX_TIMER_DELAY_MS = 2147483647;
 /** Owns at most one timer across recomputations; delivery and management share the serialized operation. */
 export interface ScheduleTriggerIntent {
+    /** ONE internal flight identity per firing: the consumer keys its PA
+     *  token (the SAME plane paTokenLedger) with it across BOTH phases.
+     *  Minted HERE (provider-internal): callers/models cannot fake events. */
+    readonly firingId: string;
+    /** pre-resolve = maintenance admission (may resolve cold context to set
+     *  up the PA/binding; delivers nothing); pre-followup = THE FINAL PA
+     *  EDGE (the one consume, immediately before the real followup);
+     *  aborted = the flight reclaim when the firing ended before the edge. */
+    readonly phase: 'pre-resolve' | 'pre-followup' | 'aborted';
     readonly ownerSessionId: string;
-    readonly taskId: string;
-    readonly revision: null;
-    readonly occurrence: {
-        readonly scheduledAt: string;
-        readonly occurrenceAt: string;
-    };
     readonly destination: {
         readonly sessionId: string;
     };
-    readonly groupSize: number;
-    readonly phase: 'pre-resolve' | 'pre-followup';
+    readonly group: {
+        readonly size: number;
+        /** sha256 over the FULL canonical member records of this due group
+         *  (sorted by record id) — the complete governed fingerprint, never a
+         *  count substitute. */
+        readonly recordsFingerprint: string;
+        /** REAL per-member occurrences at the phase's decision instant:
+         *  recurring rows through resolveRecurringOccurrence(record, nowFor),
+         *  single rows their one target instant. */
+        readonly occurrences: readonly {
+            readonly taskId: string;
+            readonly occurrenceAt: string;
+        }[];
+    };
 }
 export type ScheduleTriggerAdmission = (intent: ScheduleTriggerIntent) => boolean | Promise<boolean>;
 export declare class ScheduleRuntime {
