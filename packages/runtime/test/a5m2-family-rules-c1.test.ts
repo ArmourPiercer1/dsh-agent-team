@@ -442,10 +442,12 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
       .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
-    // B-SESSION-QUERY, B-MCP (root 19:28) and B-TEAM (root 19:4x card) -
-    // and nothing else:
+    // B-SESSION-QUERY, B-MCP (root 19:28) and B-TEAM (root 19:4x card),
+    // B-SUBAGENT, and — FLIPPED by root 01:01 card — B-SESSION (the G5
+    // goal-face supply: one signed entry, todo `replace-list` preserved
+    // byte-for-byte beside the three census goal groups) - and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT'
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT' || familyId === 'B-SESSION'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
@@ -734,15 +736,20 @@ describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArra
       expect(() => assertPaFamilyTargetRuleLegality(familyId, rule)).not.toThrow()
     }
     // NO LEAK on the ORIGINAL five families: they keep the original five
-    // kinds exactly (the two NEW kinds appear only in the two RULES root
-    // 19:06 landed - their own legs are the round-6 describe below):
+    // kinds exactly (the two NEW kinds appear only where the root ruled
+    // them in). Root 01:01 ruling scoped: B-SESSION's todo `replace-list`
+    // group stays strictly ORIGINAL-five (byte-preserved claim law); its
+    // goal-face groups ride the SIGNED seven (closed variant/nullable
+    // supply, the G5 lane card) — nowhere else may the two NEW kinds appear:
     const ORIGINAL = new Set<string>(['string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations'])
+    const SIGNED_SEVEN = new Set<string>([...ORIGINAL, 'nullableString', 'stringArray'])
     for (const familyId of ['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT']) {
       const rule = PA_FAMILY_TARGET_RULES[familyId]
       if (rule === undefined) throw new Error(`signed family ${familyId} disappeared`)
       for (const kind of Object.values(rule.required)) expect(ORIGINAL.has(kind), kind).toBe(true)
-      for (const group of Object.values(rule.variant?.by ?? {})) {
-        for (const kind of Object.values(group.adds)) expect(ORIGINAL.has(kind), kind).toBe(true)
+      for (const [groupName, group] of Object.entries(rule.variant?.by ?? {})) {
+        const allowed = familyId === 'B-SESSION' && groupName !== 'replace-list' ? SIGNED_SEVEN : ORIGINAL
+        for (const kind of Object.values(group.adds)) expect(allowed.has(kind), `${familyId}/${groupName}:${kind}`).toBe(true)
       }
     }
     // a still-UNREGISTERED family denies with the wire-pinned string (the

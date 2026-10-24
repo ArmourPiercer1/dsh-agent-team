@@ -56,15 +56,17 @@
  *  3. CALLING-AGENT AUTHENTICATION — goalToolExecution + GoalService.
  *     assertLive stay native/port-side; the row hands the Agent object by
  *     reference and mirrors only the observable presence law.
- *  4. THE SIGNED B-SESSION RULES TABLE — the production PA bridge validates
- *     a family's typed plan against the REGISTERED signed structure for
- *     'B-SESSION' (pa-control-bridge law). That table is the rules lane's
- *     closed map and does NOT yet carry the three goal-tool variants; until
- *     the rules lane extends it, production paAdmit refuses these plans at
- *     the family-target check. That refusal is the EXPECTED production
- *     behavior of this wiring today and is disclosed, never bypassed: the
- *     walk, the seat and the census below are real; the table entry is the
- *     named gap the rules lane owns. No Host enablement, no C2 claim.
+ *  4. THE SIGNED B-SESSION RULES TABLE — supplied (root 01:01 card): the
+ *     closed variant grammar now carries the goal leaves under the ONE
+ *     B-SESSION entry (control/types.ts, leaf 'operation' →
+ *     'goal-read'/'goal-create'/'goal-action-dispatch', already-signed kinds
+ *     only, zero new kind, todo verdicts preserved byte-for-byte). This
+ *     bridge mints the family targetManifest as the FLAT measured projection
+ *     the table types (the B-TEAM bridge's flat-projection law), never the
+ *     adapter's nested carrier — the adapter's own plan/targetManifest facts
+ *     stay its canonical bytes inside the plan. The durable/production PA
+ *     half of this pairing stays 接线未测 until a Host acceptance; the spec
+ *     pins acceptance through the REAL published validator.
  *
  * STATUS: wiring bridge; NOT C2 — no Host, no ports beyond the injected
  * live GoalService face, no tests/homes, no network. The adapter spec
@@ -257,6 +259,47 @@ export function buildG5GoalWiring (input = {}) {
       continue
     }
 
+    // THE FLAT TARGET PROJECTION (root 01:01 card; the B-TEAM bridge's flat
+    // measured-projection law): the durable family targetManifest is the
+    // table-typed FLAT leaf set, minted ONLY from this row's measured plan
+    // facts — nothing invented, nothing dropped, every measured leaf riding
+    // at full value or the walk refuses with the row-integrity code. The
+    // adapter's own nested plan.targetManifest stays canonical INSIDE the
+    // plan (its law, its bytes); this projection is the grammar face.
+    const GOAL_TARGET_OPERATIONS = new Map([['get_goal', 'goal-read'], ['create_goal', 'goal-create'], ['update_goal', 'goal-action-dispatch']])
+    const goalTargetProblem = (why) => refusalToThrow(wiringRefuse(A5_G5_GOAL_WIRING_CODES.PLAN_INTEGRITY, `${toolName}: the measured plan cannot mint the flat target — ${why} (zero port entry)`))
+    const mintGoalTarget = (plan) => {
+      const carrier = plan.targetManifest
+      if (!isRecord(carrier)) return { refusal: goalTargetProblem('the plan carries no targetManifest carrier') }
+      const authority = carrier.executionAuthority
+      if (!isRecord(authority) || typeof authority.observed !== 'boolean') {
+        return { refusal: goalTargetProblem('the executionAuthority fact is not the measured {observed: boolean, ...} leaf') }
+      }
+      const gaps = Object.entries(isRecord(carrier.namedGaps) ? carrier.namedGaps : {})
+        .map(([, text]) => text)
+      if (gaps.length === 0 || gaps.some((text) => typeof text !== 'string' || text.length === 0)) {
+        return { refusal: goalTargetProblem('the namedGaps leaves are not the adapter\'s verbatim non-empty strings') }
+      }
+      const portMethods = Array.isArray(carrier.portMethods) ? [...carrier.portMethods] : null
+      if (portMethods === null || portMethods.length === 0 || portMethods.some((m) => typeof m !== 'string')) {
+        return { refusal: goalTargetProblem('portMethods is not the measured non-empty string array') }
+      }
+      const authorityKind = authority.observed === true && typeof authority.kind === 'string' ? authority.kind : null
+      const authorityReason = authority.observed === true ? null : (typeof authority.reason === 'string' ? authority.reason : null)
+      if (authority.observed === false && authorityReason === null) {
+        return { refusal: goalTargetProblem('the UNOBSERVED authority carries no verbatim reason string — unobserved must stay sayable, never a silent pass') }
+      }
+      return { value: Object.freeze({
+        operation: plan.operation,
+        toolName: carrier.toolName,
+        recordIndex: plan.recordIndex,
+        portMethods: Object.freeze(portMethods),
+        authorityObserved: authority.observed,
+        authorityKind,
+        authorityReason,
+        namedGaps: Object.freeze(gaps),
+      }) }
+    }
     const execute = async (args, exec) => {
       // ① the row's OWN classify — typed plan products verbatim (captured
       // parameter law, per-tool dispatch set, targetManifest with the
@@ -296,6 +339,14 @@ export function buildG5GoalWiring (input = {}) {
         }
       }
       const signal = isRecord(exec) ? exec.signal : undefined
+      const minted = mintGoalTarget(approvedPlan)
+      if (minted.refusal !== undefined) {
+        observe({ event: 'g5-wire:target-MINT-REFUSED', name: toolName, code: minted.refusal.code })
+        throw minted.refusal
+      }
+      if (GOAL_TARGET_OPERATIONS.get(toolName) !== minted.value.operation) {
+        throw goalTargetProblem(`operation '${String(minted.value.operation)}' is not the census operation of this row`)
+      }
       const walk = Object.freeze({
         realmId,
         callId,
@@ -307,7 +358,7 @@ export function buildG5GoalWiring (input = {}) {
           familyId: approvedPlan.familyId,
           adapterRevision: approvedPlan.adapterRevision,
           providerIdentity: providerId,
-          targetManifest: approvedPlan.targetManifest,
+          targetManifest: minted.value,
         }),
         ...(signal === undefined ? {} : { signal }),
       })

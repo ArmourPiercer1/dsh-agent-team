@@ -193,6 +193,18 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
   },
+  // A5M2 G5 B-SESSION GOAL SERVICE (G5 lane, root 01:01 card): the plane's
+  // G5 block statically imports BOTH modules (team-tool-plane.mjs G5 import
+  // rows), so the strict `files: ["dist"]` face needs them placed — the
+  // documented ERR_MODULE_NOT_FOUND class; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g5-goal-service.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-service.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g5-goal-wiring.mjs',
+  },
   // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
   // production blocks added STATIC relative imports that no placement
   // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
