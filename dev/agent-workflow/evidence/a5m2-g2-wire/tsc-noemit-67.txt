@@ -1,0 +1,15 @@
+src/plugin/host.ts(2632,40): error TS2307: Cannot find module '@deepseek-ai/dsh-launch-environment' or its corresponding type declarations.
+src/plugin/host.ts(2741,38): error TS2307: Cannot find module '@deepseek-ai/dsh-tool-web' or its corresponding type declarations.
+src/plugin/host.ts(2904,5): error TS2353: Object literal may only specify known properties, and 'ptcRuntime' does not exist in type '{ readonly agents: unknown; readonly sessionPersistence: unknown; readonly domain: TeamDomain & { readonly consumption: DomainConsumption; }; readonly config: TeamPluginConfig; ... 31 more ...; readonly goals?: (() => unknown) | undefined; }'.
+src/plugin/team-spill-local.ts(46,30): error TS2307: Cannot find module '@deepseek-ai/cordis' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(47,33): error TS2307: Cannot find module '@deepseek-ai/dsh-spill-local' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(48,29): error TS2307: Cannot find module '@deepseek-ai/dsh-spill-local' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(49,46): error TS2307: Cannot find module '@deepseek-ai/dsh-spill' or its corresponding type declarations.
+src/plugin/team-spill-local.ts(83,13): error TS2322: Type 'SaveTextSpill' is not assignable to type 'never'.
+src/plugin/team-spill-local.ts(116,18): error TS4112: This member cannot have an 'override' modifier because its containing class 'TeamAwareLocalSpillStore' does not extend another class.
+src/plugin/team-spill-local.ts(118,25): error TS2339: Property 'ctx' does not exist on type 'TeamAwareLocalSpillStore'.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
