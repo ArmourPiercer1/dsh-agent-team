@@ -224,11 +224,19 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
       },
     })
     // The bind-ONCE facade law (mirrors host.ts bindOnceScheduleFacade):
-    // child.get bound ONCE at the generation boundary, functions bound ONCE.
-    const bindOnceFacade = (svc: Record<string, unknown>): Record<string, unknown> => Object.freeze(Object.fromEntries(Object.keys(svc).map((key) => {
-      const v = svc[key]
-      return [key, typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(svc) : v]
-    })))
+    // child.get bound ONCE at the generation boundary; the CLOSED public
+    // surface is captured EXPLICITLY (root ca3 final residual — the real
+    // 639 service is a CLASS, see leg (l)) and each method bound ONCE to
+    // the stable source receiver.
+    const bindOnceFacade = (svc: Record<string, unknown>): Record<string, unknown> | null => {
+      const facade: Record<string, unknown> = {}
+      for (const key of ['list', 'delete'] as const) {
+        const v = svc[key]
+        if (typeof v !== 'function') return null
+        facade[key] = (v as (...a: unknown[]) => unknown).bind(svc)
+      }
+      return Object.freeze(facade)
+    }
     let generation: { id: number, service: unknown } | null = Object.freeze({ id: 1, service: bindOnceFacade(rawRead()) })
     // ANTI-FAKE-GREEN: the tracker world NEVER answers the same object twice,
     // while the generation facade's method handles ARE stable bound handles —
@@ -271,6 +279,69 @@ describe('a5m2 schedule bind-after-def (card #2 + root residuals)', () => {
     expect(host).toContain('bindOnceScheduleFacade')
     expect(host).toContain('scheduleServiceFeed: (): unknown => scheduleLifecycle.currentGeneration()?.service')
     expect(host).toContain('state !== 2')
+  })
+
+  it('(l) THE REAL CLASS-PROTOTYPE SERVICE SHAPE (root ca3 final residual, 2026-10-25): the 639 ScheduleService is a CLASS whose list/delete are PROTOTYPE methods (packages/schedule/schedule/src/index.ts:100; list :289-295, delete :342-356; Remote carries only prototype metadata) and the Cordis tracker proxy has NO ownKeys trap — an Object.keys facade (own enumerable ONLY) misses both methods and service-shape refuses EVERY mount. The host facade captures the closed PUBLIC SURFACE explicitly and binds each to the stable source receiver; the harness here is the real shape, not a plain object', async () => {
+    // THE REAL SHAPE: methods live on the PROTOTYPE; own fields are the
+    // constructor's state (exactly what ScheduleService's class emits).
+    class RealScheduleService {
+      runtimeState = 'own-field-1'
+      listCount = 0
+      async list (req: { sessionId: string }): Promise<Array<{ id: string, sessionId: string }>> { this.listCount += 1; return [{ id: 'T-1', sessionId: req.sessionId }] }
+      async delete (req: { id: string }): Promise<{ id: string, deleted: boolean }> { return { id: req.id, deleted: true } }
+    }
+    const instance = new RealScheduleService()
+    const rawRead = (): Record<string, unknown> => new Proxy(instance, {}) as unknown as Record<string, unknown>
+    // THE ABSENCE FACT the old law hid (P1): prototype methods are NOT own
+    // enumerable — Object.keys (raw OR proxy, no ownKeys trap to change it)
+    // sees only constructor state, never list/delete:
+    expect(Object.keys(instance)).toEqual(['runtimeState', 'listCount'])
+    expect(Object.keys(rawRead())).not.toContain('list')
+    expect(Object.keys(rawRead())).not.toContain('delete')
+    // THE HOST LAW (mirror, must match host.ts bindOnceScheduleFacade):
+    // explicit closed public surface, bound to the STABLE SOURCE RECEIVER.
+    const bindOnceFacade = (svc: Record<string, unknown>): Record<string, unknown> | null => {
+      const facade: Record<string, unknown> = {}
+      for (const key of ['list', 'delete'] as const) {
+        const v = svc[key]
+        if (typeof v !== 'function') return null
+        facade[key] = (v as (...a: unknown[]) => unknown).bind(svc)
+      }
+      return Object.freeze(facade)
+    }
+    let generation: { id: number, service: unknown } | null = Object.freeze({ id: 1, service: bindOnceFacade(rawRead()) })
+    const facade1 = generation?.service as Record<string, unknown>
+    // the facade carries BOTH methods and NOTHING else (public surface only
+    // — own private-ish state is not paraded through the mount):
+    expect(Object.keys(facade1).sort()).toEqual(['delete', 'list'])
+    expect(facade1.runtimeState).toBeUndefined()
+    // bound calls REACH the real prototype methods with `this` intact (the
+    // bind receiver is the generation's source, not a per-read fresh face):
+    const rows = await (facade1.list as (r: { sessionId: string }) => Promise<Array<{ id: string, sessionId: string }>>)({ sessionId: 's-1' })
+    expect(rows[0]?.sessionId).toBe('s-1')
+    expect(instance.listCount).toBe(1)
+    // END TO END against the harness: fresh proxy per read (no ownKeys
+    // trap), generation currentness law — bind GREEN, dispatch through the
+    // class-shaped service, zero phantom drift inside one generation.
+    const { h } = await bindOk({ feed: () => generation?.service, serviceGeneration: () => generation })
+    const exec = listener<ExecHandler>(h, 'tools/execute')
+    expect(await exec({ name: 'schedule_list', agent: AGENT, callId: 'l-1', token: {} }, async () => 'DISPATCHED')).toBe('DISPATCHED')
+    expect(h.notes.map((n) => n.event)).not.toContain('post-boundary-service-drift')
+    // A generation whose service LACKS the surface answers NULL — the
+    // typed lifecycle refusal rides (never a half facade, never blind).
+    expect(bindOnceFacade({ list: () => undefined } as Record<string, unknown>)).toBeNull()
+    // (and the replacement generation rides the generation law's typed
+    // refusal — the null facade never gets to serve either way)
+    generation = Object.freeze({ id: 2, service: null })
+    await expect(exec({ name: 'schedule_list', agent: AGENT, callId: 'l-2', token: {} }, async () => 'DISPATCHED'))
+      .rejects.toMatchObject({ breakpoint: { kind: 'service-generation-drift' } })
+    // SOURCE LAW: the host captures the CLOSED surface explicitly and no
+    // longer scans the object.
+    const here = dirname(fileURLToPath(import.meta.url))
+    const host = readFileSync(join(here, '..', 'src', 'plugin', 'host.ts'), 'utf8')
+    expect(host).toContain("SCHEDULE_PUBLIC_SURFACE = ['list', 'delete']")
+    expect(host).toContain("if (typeof value !== 'function') return null")
+    expect(host).not.toContain('for (const key of Object.keys(source))')
   })
 
   it('(b) look-alike copy at the bind-moment re-read refuses the whole bind BEFORE the gate', async () => {
