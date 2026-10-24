@@ -33,7 +33,10 @@ the final pairing must be production-supplied, not an absent hook.
 
 ## ③ MEASURED HOST FACES (verified 2026-10-25 at the pin @639ed01539)
 - `AgentHandle` = `{ agent: Agent, dispose(): Promise<void> }`
-  (core/agent/src/index.ts:160-163) — NO result face. The candidate's
+  (core/agent/src/index.ts:160-163) — the HANDLE itself carries no result
+  and no whenIdle face; the whenIdle semantics live on `handle.agent` (the
+  Agent face), NOT on the handle (correction per root 2026-10-25: never say
+  "the host has none"). The candidate's
   `handle?.result` read undefined and wrapped it into a fake SubagentResult.
   Real settlement must ride the SUBAGENTS service run law: foreground settle
   via the service's own start() run (stopReason semantics, settleForegroundRun
