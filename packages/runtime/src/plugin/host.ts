@@ -2371,9 +2371,13 @@ async function buildG2TeamSupply(
   const g2MountModuleUrl = new URL('./live/governed-families/g2-team-mount.mjs', import.meta.url).href
   const mountMod = (await import(g2MountModuleUrl)) as unknown as {
     createG2TeamAssemblySupply: (input: Record<string, unknown>) => Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string }>
+    createG2WebFixedLanes: (i: Record<string, unknown>) => unknown
   }
   const webSupplyMod = (await import(new URL('./live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as unknown as {
     createG2FixedWebFace: (provider: object, opts?: Record<string, unknown>) => unknown
+  }
+  const webSeamMod = (await import(new URL('./live/governed-families/g2-provider-seams.mjs', import.meta.url).href)) as unknown as {
+    createG2WebProviderSeam: (i: Record<string, unknown>) => Record<string, unknown>
   }
   const entryPaths = g2Mount.entryPaths as { launchEntry?: string; workerEntry?: string; sdkClientEntry?: string } | undefined
   const transportEntry = g2Mount.transportEntry
@@ -2540,6 +2544,17 @@ async function buildG2TeamSupply(
       // and fetch never impersonates it).
       const fixedProvider = new webMod.HttpFetchProvider(limits)
       out.webFixedTransport = webSupplyMod.createG2FixedWebFace(fixedProvider as object)
+      // ROOT card pairing: the Team-only FIXED lane for the plane's B-WEB
+      // closed face is supplied HERE over the SAME real provider (the
+      // reviewed seam pins it; declared envelope + current reader ride the
+      // row-declared config — nothing constant, lane THROW = typed refusal
+      // through the catch below).
+      out.webFixedLanes = mountMod.createG2WebFixedLanes({
+        fixedProvider: fixedProvider as object,
+        seamMod: webSeamMod as unknown as Record<string, unknown>,
+        declared: (webFixedCfg as { declared?: Record<string, unknown> }).declared ?? {},
+        readMountFacts: () => (webFixedCfg as { declared?: Record<string, unknown> }).declared ?? {},
+      })
     } catch (error) {
       return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `webFixedProvider declared but the PUBLIC web-fetch-http root refused: ${String((error as { message?: unknown })?.message ?? error).slice(0, 200)} — typed refusal, no fallback transport, no default invented` }
     }
