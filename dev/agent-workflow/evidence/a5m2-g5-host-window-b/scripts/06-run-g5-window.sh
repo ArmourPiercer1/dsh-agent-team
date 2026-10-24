@@ -42,8 +42,8 @@ RUNNER=dev/agent-workflow/evidence/a5m2-g5-host-window-b/scripts/05-g5-window-ru
 TS=$(date -u +%Y%m%dT%H-%M-%SZ)
 OUT=dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-${TS}
 DF_MIN=6442450944   # TEMPORARY: the root ruling shared from the A monitor (g3 38b81fff, root 09:31Z: 18e9 -> 6 GiB); the 18e9 decimal law returns when root says so
-HOME_BUDGET=67108864   # 64 MiB of NEW bytes (nlink==1) — enforced IN FLIGHT by the watchdog (root budget card), not only post-exit
-SAMPLE_EVERY=10        # watchdog sampling cadence: explicit HOME pointer + df, every 10s
+HOME_BUDGET=67108864   # 64 MiB, unique-dev:inode bytes in this HOME — enforced IN FLIGHT by the watchdog (root budget card), not only post-exit
+SAMPLE_EVERY=10        # DISCLOSURE (root card): 10s sampling is a STOP-LOSS — writes between samples are unchecked, so the window can transiently exceed the 64 MiB line before the breach fires; it is NOT a hard quota and was never claimed as one. Exact accounting is the post-exit figure.
 PIN_TGZ_SHA=8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a
 PIN_LOCK_SHA=5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088
 PIN_PKG_SHA=4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722

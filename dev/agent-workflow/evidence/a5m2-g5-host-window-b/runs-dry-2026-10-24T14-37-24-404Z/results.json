@@ -1,0 +1,32 @@
+{
+  "stamp": "2026-10-24T14-37-24-404Z",
+  "dry": true,
+  "rc": 3,
+  "composedSha": "2fb129cfa23e138248fecc834a42c92238af95fe",
+  "slot": "B",
+  "results": [],
+  "harvest": {
+    "anthropicToolResults": 0,
+    "openAiToolMessages": 0,
+    "requestsSeen": 0,
+    "toolsCounts": []
+  },
+  "transcript": [
+    {
+      "channel": "receipt",
+      "kind": "blueprint-validated",
+      "document": "anchor",
+      "blueprintId": "team.a5m2-g5-hw.boot-anchor",
+      "schemaVersion": 3,
+      "contentHash": "sha256:c850f701f659d3b002f6a16fd7205237121f8abd0bdd0f43d7fa399cd64524c1"
+    },
+    {
+      "channel": "receipt",
+      "kind": "blueprint-validated",
+      "document": "saved",
+      "blueprintId": "team.a5m2-g5-hw",
+      "schemaVersion": 3,
+      "contentHash": "sha256:5a244672e7735d9f45f4b16cb4ad986dfc56e2cb97da805d9bff47690a19f011"
+    }
+  ]
+}

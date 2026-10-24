@@ -1,0 +1,17 @@
+{
+  "dry": true,
+  "verdict": "NOT_RUN",
+  "reachedBootBoundary": true,
+  "booted": false,
+  "law": "root order 2026-10-24: DRY is NOT_RUN (rc3), never a business PASS — it proves pin/identity/validator/patch facts up to the boot boundary and nothing beyond it",
+  "slot": "B",
+  "portsAwaited": {
+    "host": 3184,
+    "hostIdle": true,
+    "mock": 3499,
+    "mockIdle": true
+  },
+  "manifestEntry": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+  "fsRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-35-32-109ZZ/fsroot",
+  "patchWritten": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-35-32-109ZZ/dry-patch.yml"
+}

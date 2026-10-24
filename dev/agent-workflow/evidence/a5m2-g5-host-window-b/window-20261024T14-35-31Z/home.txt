@@ -1,0 +1,1 @@
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-35-32-109ZZ

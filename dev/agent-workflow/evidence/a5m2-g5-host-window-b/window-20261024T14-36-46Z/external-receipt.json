@@ -1,0 +1,12 @@
+{
+  "stamp": "20261024T14-36-46Z", "runnerSha256": "2ad92a07d14a8ed4278def6d72ee40f0e3998bcfa53dd5037f5ca3fd110811cb", "headAtRun": "e1d508e51ea712384d242b17f0335fc66680b85e",
+  "composedSha": "2fb129cfa23e138248fecc834a42c92238af95fe", "installDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc",
+  "packTgzSha256": "8077defca120247f3f73dc61867c0b85d4fedfbf84a145284b2a165a2ee8958a", "packTgzPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz",
+  "fixtureLockSha256Before": "5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088", "fixtureLockSha256After": "5dffdafaebfc691b26d6e3c2d1124c8a11d0bb919b784738ddbfb0d962e90088",
+  "fixturePkgSha256Before": "4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722", "fixturePkgSha256After": "4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722",
+  "dfAvailBytes": 17256198144, "dfMin": 6442450944, "runnerRc": 3, "dry": "1",
+  "borrowedSlot": "B", "slotPorts": [3184, 3499],
+  "fixturePkgShaPin": "4ef112fb43f058bc5d75293b7c2a0ec37ad8da8691383314c28683355ef5b722", "coldImportAuthority": "logs-2fb129cf-20261024T135732Z (19-cold-* + 20-cold-necessary RC=0; read-only)",
+  "portsFreePost": true, "worldRetained": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-36-46-691ZZ", "homeNewBytes": 3601,
+  "homeBudget": 67108864
+}

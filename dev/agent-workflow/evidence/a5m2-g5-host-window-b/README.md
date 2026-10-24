@@ -89,9 +89,12 @@ ruling (paths.mjs :43-63): never used, never recreated, never deleted by this wi
 
 
 HOME `tests/homes/a5m2-g5-hw-b-<UTCts>Z` never deleted, explicit pointer hand-off (no globbing);
-the 64 MiB new-bytes budget + the 6442450944 B df bar are enforced **IN FLIGHT** by the ONE
-watchdog: every 10s it samples the explicit HOME pointer (nlink==1 bytes) and df; a breach OR a
-sampling error terminates the OWN PGID (`budget-breach.json`, window FAILED regardless of rc) — no
+the 64 MiB budget (unique dev:inode bytes in this HOME, no symlink-deref — read-only shared
+dependency targets never counted, this run's links>1 files counted once) + the 6442450944 B df
+bar are enforced **IN FLIGHT** by the ONE watchdog: every 10s it samples the explicit HOME pointer
+and df — disclosed as STOP-LOSS, not a hard quota (between-samples writes can transiently exceed;
+exact accounting is post-exit); a breach, a non-decimal sample, or any sampling error terminates
+the OWN PGID (`budget-breach.json`, window FAILED regardless of rc) — no
 separate monitoring system. TERM@300 remains; once any termination is ARMED the parent NEVER
 cancels the escalation — the watchdog drains the OWN PGID until the group is empty or 20s elapse,
 then KILL (the old kill-watchdog-on-runner-exit that swallowed the follow-up KILL is gone); an

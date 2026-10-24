@@ -1,0 +1,18 @@
+g5 window B wrapper 20261024T09-47-33Z
+driver: runner file sha256 d5b84a45b6ebf37f0f12f4a8211aaf4755ac3ebf44dff7a4cceefbbea10c84ef @ HEAD 6916ad5d760aa46f24f79d3782071991034c1366
+fixture before: lock=7685317ff1ba675f… pkg=f17e6a0f5d6e6068… tgz=3652b2ce19025d0d… target=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-37646ac2-20261024T085726Z/dsh-agent-team-0.1.1-alpha.2.tgz
+static-import audit: rc=0, report at dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T09-47-33Z/static-import-audit.json
+df avail: 17752195072 B (min 6442450944)
+ports 3184/3499 free (pre-check)
+[g5-hw] plugin entry resolved from the pinned fixture exports['./host']: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-0a3f11b2/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js; G5 dist trio byte-identical to the pinned blobs; fixture lock verified read-only
+[g5-hw] blueprint anchor validated by the REAL validator: team.a5m2-g5-hw.boot-anchor v3 hash=sha256:c850f701f…
+[g5-hw] blueprint saved validated by the REAL validator: team.a5m2-g5-hw v3 hash=sha256:5a244672e…
+[g5-hw] cleanup (OK): port 3184 free=true | port 3499 free=true | world lock retained (evidence)
+spawn receipt written: pid=41 pgid=41
+runner rc=0 (143/137 = outer 300s/320s bound fired on the OWN group)
+ports 3184/3499 free (post)
+HOME (explicit pointer): /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T09-47-34-238ZZ
+world lock retained: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T09-47-34-238ZZ
+HOME new bytes (nlink==1): 3546 (budget 67108864)
+fixture byte-stable across the window (lock/pkg hashes equal)
+WRAPPER VERDICT: OK — raw + HOME retained at dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T09-47-33Z and /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T09-47-34-238ZZ

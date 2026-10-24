@@ -226,9 +226,15 @@ function finish(rc) {
     // ROOT LESSON ①: minimal per-call record — callId/step/tool/isError/text<=800/
     // args<=800 — written on EVERY exit path (the negative-control face: any
     // mirror/driver-required refusal text lands here VERBATIM).
+    // rawContainer (null when the wire carried a plain string or a pure text-block
+    // array — both are the serialize.ts :64-65/:121 normal path) preserves the
+    // untouched original Messages block residue whenever it differs from the
+    // extracted TEXT law (root card 2026-10-24): evidence stays lossless even
+    // though criteria only ever read `text`.
     writeFileSync(join(RUN_DIR, 'toolcalls.jsonl'), callResults.map((r) => JSON.stringify({
       callId: r.callId, step: r.step, tool: r.toolName, isError: r.isError === true,
       text: String(r.text ?? '').slice(0, 800), args: JSON.stringify(steps.get(r.callId)?.args ?? null).slice(0, 800),
+      rawContainer: typeof r.rawContainer === 'string' ? r.rawContainer.slice(0, 800) : null,
     })).join('\n') + (callResults.length > 0 ? '\n' : ''))
   } finally { process.exit(rc) }
 }

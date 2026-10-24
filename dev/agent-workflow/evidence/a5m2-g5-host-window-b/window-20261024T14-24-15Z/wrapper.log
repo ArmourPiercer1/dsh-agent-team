@@ -1,0 +1,3 @@
+g5 window B wrapper 20261024T14-24-15Z
+driver: runner file sha256 04ab64d7627daf96baad9e362e0675cb58d42a9957d6c12a20132c3a65cb8758 @ HEAD a8b48a56ce5adaaaa0753cca1d0b4f550210c228
+dev/agent-workflow/evidence/a5m2-g5-host-window-b/scripts/06-run-g5-window.sh: line 58: A5M2_G5_INSTALL_DIR: A5M2_G5_INSTALL_DIR must be the pinned fixture path

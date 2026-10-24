@@ -1,0 +1,20 @@
+g5 window B wrapper 20261024T14-36-46Z
+driver: runner file sha256 2ad92a07d14a8ed4278def6d72ee40f0e3998bcfa53dd5037f5ca3fd110811cb @ HEAD e1d508e51ea712384d242b17f0335fc66680b85e
+fixture before: lock=5dffdafaebfc691b… pkg=4ef112fb43f058bc… tgz=8077defca120247f… target=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-2fb129cf-20261024T135732Z/dsh-agent-team-0.1.1-alpha.2.tgz
+df avail: 17256198144 B (min 6442450944)
+borrowed slot B ports 3184/3499 free (pre-check)
+[g5-hw] host door: /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use (testUseTree, DSH_TEST_USE_ROOT honored), HEAD = pinned 639 639ed01539, read-only reuse
+[g5-hw] borrowed slot B verified idle pre-boot (host=3184 mock=3499); exclusivity is the main scheduler's grant, this check is the local proof
+[g5-hw] plugin entry resolved from the pinned fixture exports['./host']: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/install-8077defc/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js; G5 dist quartet byte-identical (identity by EXACT blob hashes — no keyword-supply gate per root review); fixture lock+pkg verified read-only
+[g5-hw] blueprint anchor validated by the REAL validator: team.a5m2-g5-hw.boot-anchor v3 hash=sha256:c850f701f…
+[g5-hw] blueprint saved validated by the REAL validator: team.a5m2-g5-hw v3 hash=sha256:5a244672e…
+[g5-hw] cleanup (OK): port 3184 free=true | port 3499 free=true | world lock retained (evidence)
+[g5-hw] DRY ends as NOT_RUN (rc3) by root order — cleanupOk is reported inside results.json, never as a business PASS
+spawn receipt written: pid=33 pgid=33
+runner rc=3 (143/137 = outer 300s bound or an in-flight budget/capacity breach fired on the OWN group)
+borrowed slot B ports 3184/3499 free (post)
+HOME (explicit pointer): /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-36-46-691ZZ
+world lock retained: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-36-46-691ZZ
+HOME new bytes (nlink==1): 3601 (budget 67108864)
+fixture byte-stable across the window (lock/pkg hashes equal)
+WRAPPER VERDICT: NOT_RUN (dry pre-proof rc3: pins/identity/validator/patch to the boot boundary; NO boot, NO business claim) — raw + HOME retained at dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T14-36-46Z and /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5/tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-36-46-691ZZ
