@@ -4060,6 +4060,39 @@ export function createAgentBindings(deps) {
             },
             observe: (row) => observations.push(`a5m2-schedule-bind: ${String(row?.event ?? 'event')} for ${sessionId}`),
           })
+          // MOUNT PROBE (root 2026-10-26 fork ruling; the single-timer law
+          // observer): the provider slot 'schedule' holds ONE plugin per
+          // assembly — the original OR the ruled fork, never both, so the
+          // durable timer obligation has exactly one owner. The measured
+          // discriminator is public and cheap: only the FORK answers
+          // registerTriggerAdmission (facade-captured by name when present).
+          const probeScheduleMount = () => {
+            try {
+              const live = deps.scheduleServiceFeed?.()
+              if (live === null || live === undefined || typeof live !== 'object') return 'unobserved'
+              return typeof live.registerTriggerAdmission === 'function' ? 'fork-mounted' : 'original-mounted'
+            } catch {
+              return 'unobserved'
+            }
+          }
+          const scheduleMount = probeScheduleMount()
+          observations.push(`a5m2-schedule: mount-probe mount=${scheduleMount} law: one provider slot schedule = one timer owner (original XOR fork, never both; replacement is the assembly decision)`)
+          if (scheduleMount === 'fork-mounted') {
+            // NAMED CONSUMER-CARRIER BREAKPOINT (root: 遇具体安全接口断点源证
+            // 升级): the fork's admission consumer must be a REAL governed
+            // non-tool consumption on the EXISTING plane, but every PA walk
+            // here is keyed by an ISSUED tool-call identity + a registered
+            // arm (consumePaAtBody above refuses without exec.callId and
+            // without a5ScheduleArms.get(name)); a firing reminder has
+            // neither, and synthesizing one would extend the persisted row
+            // schema / mint a parallel ledger — forbidden without a root
+            // ruling. Until that ruling, NO consumer is registered: the
+            // fork stays fail-closed (never wakes on absence), the ② arms
+            // keep refusing (TRIGGER_GOVERNANCE_OPEN), and the fact is
+            // audited through the EXISTING carrier below — not a silent
+            // allow, not a fake consumer.
+            observations.push(`a5m2-schedule: TRIGGER_CONSUMER_CARRIER_BREAKPOINT mount=${scheduleMount} detail: PA consumption is keyed by ISSUED callId + registered arm name (agent-bindings consumePaAtBody law); a schedule firing has no tool-exec — governed non-tool consumption needs a root ruling on the row schema; fork fail-closed stays in force meanwhile`)
+          }
           a5ScheduleBind.start(runtimeAgent)
           const a5ScheduleBindDispose = agentCtx.on('agent/disposed', (payload) => {
             if (payload?.agent === runtimeAgent) a5ScheduleBind.dispose()

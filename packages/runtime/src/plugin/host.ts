@@ -3027,6 +3027,15 @@ async function buildG2TeamSupply(
       if (typeof value !== 'function') return null
       facade[key] = (value as (...args: unknown[]) => unknown).bind(source)
     }
+    // OPTIONAL FORK SEAM (root 2026-10-26 fork ruling): the ruled fork
+    // publishes registerTriggerAdmission as a public assembly method; the
+    // original plugin does NOT and must mount byte-identically. Captured
+    // BY NAME only when this generation answers it — never required, never
+    // invented, same stable source receiver.
+    const forkSeam = (source as Record<string, unknown>)['registerTriggerAdmission']
+    if (typeof forkSeam === 'function') {
+      facade['registerTriggerAdmission'] = (forkSeam as (...args: unknown[]) => unknown).bind(source)
+    }
     return Object.freeze(facade)
   }
 
