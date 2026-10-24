@@ -88,6 +88,11 @@ f86 本次 fixture 准备成功（真实冷 import + 新 hash/lock/path 收据�
 `5c31341803318ab35465908bf93b1f77f5cad16a`、tgz
 `sha256:0a3f11b2c07178cd5377debb11c221fac23d963c666a7a2688ba446168d50b6b`、
 Host 639；`A5M2_EDIT_INSTALL_DIR` 显式传 f86 最终完整路径。
+**[1.5] 包内容前置 = `scripts/07-static-import-audit.mjs`**（f86 冷 import
+RC1 同因类：静态 import 目标从未入包——与本 lane 早前 dist 镜像 P1 同族）。纯读、
+零 import、零 spawn；递归解析 plugin 树 exports['./host'] 可达的全部相对静态
+import/export-from 目标，缺位即点名并 rc3（窗口不消耗）。双向实测：874-era 真实
+install 树正例 OK（344 文件全解析）；注入缺失的 mini 负例正确点名。
 包装界：外层 300s（`timeout --group --kill-after=20s`，TERM/必要 KILL **只及
 本自有组**，wait 收尸；他 world/3080 不触）、df avail ≥ 18,000,000,000B、
 HOME 新字节（nlink==1）≤ 64 MiB、3183/3498 预检空闲（占用即拒，**绝不杀
