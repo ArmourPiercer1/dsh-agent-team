@@ -2888,7 +2888,7 @@ export function createAgentBindings(deps) {
           // coverage PASS. No finally, no drain, no early lift.
           if (permissionPolicy !== undefined) {
             if (typeof agentCtx?.tools?.guard !== 'function') {
-              observations.push(`alpha2-perm: coverage-barrier-UNAVAILABLE for ${sessionId} (strict policy without the public ctx.tools.guard seam) — setup fails closed`)
+              observations.push(`alpha2-coverage: coverage-barrier-UNAVAILABLE for ${sessionId} (strict policy without the public ctx.tools.guard seam) — setup fails closed`)
               const barrierError = new Error(
                 `agent-bindings: alpha.5 permission coverage barrier unavailable for '${sessionId}': the public ctx.tools.guard seam is missing while a strict permission policy is active (code: alpha2-permission-coverage-surface-unavailable)`,
               )
@@ -2901,7 +2901,7 @@ export function createAgentBindings(deps) {
                 ? `alpha2-permission-coverage-final-verification-pending: setup-time refusal for '${String(exec?.name)}' — the FINAL post-install coverage truth of this Agent is not verified yet`
                 : undefined))
             } catch (error) {
-              observations.push(`alpha2-perm: coverage-barrier-UNAVAILABLE for ${sessionId} (the guard seam threw: ${String(error?.message ?? error).slice(0, 160)}) — setup fails closed`)
+              observations.push(`alpha2-coverage: coverage-barrier-UNAVAILABLE for ${sessionId} (the guard seam threw: ${String(error?.message ?? error).slice(0, 160)}) — setup fails closed`)
               const barrierError = new Error(
                 `agent-bindings: alpha.5 permission coverage barrier could not install for '${sessionId}': ${String(error?.message ?? error)} (code: alpha2-permission-coverage-surface-unavailable)`,
               )
@@ -2909,7 +2909,7 @@ export function createAgentBindings(deps) {
               throw barrierError
             }
             if (typeof coverageBarrierDisposer !== 'function') {
-              observations.push(`alpha2-perm: coverage-barrier-UNAVAILABLE for ${sessionId} (the guard seam answered no valid disposer) — setup fails closed`)
+              observations.push(`alpha2-coverage: coverage-barrier-UNAVAILABLE for ${sessionId} (the guard seam answered no valid disposer) — setup fails closed`)
               const barrierError = new Error(
                 `agent-bindings: alpha.5 permission coverage barrier could not install for '${sessionId}': the ctx.tools.guard seam answered no valid disposer (code: alpha2-permission-coverage-surface-unavailable)`,
               )
@@ -2917,7 +2917,7 @@ export function createAgentBindings(deps) {
               throw barrierError
             }
             a5CoverageBarrierDispose = coverageBarrierDisposer
-            observations.push(`alpha2-perm: coverage-barrier ARMED for ${sessionId} (public guard seam, canonical-agent scoped; released only at the FINAL same-producer coverage PASS)`)
+            observations.push(`alpha2-coverage: coverage-barrier ARMED for ${sessionId} (public guard seam, canonical-agent scoped; released only at the FINAL same-producer coverage PASS)`)
           }
         } else {
           // FAIL CLOSED, the AgentSetup contract: an agent whose Tool Guard
@@ -8232,7 +8232,7 @@ export function createAgentBindings(deps) {
             )
           }
           for (const row of verdict.unmanagedTools) {
-            observations.push(`alpha2-perm: coverage PRECHECK-GAP for ${sessionId} (tool='${row.name}' class=${String(row.classification)}; record-only while the barrier is armed — the FINAL gate enforces)`)
+            observations.push(`alpha2-coverage: coverage PRECHECK-GAP for ${sessionId} (tool='${row.name}' class=${String(row.classification)}; record-only while the barrier is armed — the FINAL gate enforces)`)
           }
         }
         for (const safe of verdict.safeUnmanaged) {
@@ -9575,7 +9575,7 @@ export function createAgentBindings(deps) {
           ),
         })
         if (!finalVerificationVerdict.ok) {
-          observations.push(`alpha2-perm: coverage FINAL-REFUSED for ${sessionId} (a late install changed the governed truth after the precheck)`)
+          observations.push(`alpha2-coverage: coverage FINAL-REFUSED for ${sessionId} (a late install changed the governed truth after the precheck)`)
           throw new PermissionCoverageUnmanagedError(
             buildPermissionCoverageErrorDetail(finalVerificationVerdict, {
               instanceId,
@@ -9583,7 +9583,7 @@ export function createAgentBindings(deps) {
             }),
           )
         }
-        observations.push(`alpha2-perm: coverage FINAL-PASS for ${sessionId} (post-install truth)`)
+        observations.push(`alpha2-coverage: coverage FINAL-PASS for ${sessionId} (post-install truth)`)
         // THE barrier release (root option B — the ONE legal lift point):
         // the FINAL verification just passed on the same producer's truth
         // with every install complete; from here the scoped closed-world
@@ -9593,7 +9593,7 @@ export function createAgentBindings(deps) {
         if (a5CoverageBarrierDispose !== undefined) {
           a5CoverageBarrierDispose()
           a5CoverageBarrierDispose = undefined
-          observations.push(`alpha2-perm: coverage-barrier RELEASED for ${sessionId} (FINAL-PASS; scoped guard-owned)`)
+          observations.push(`alpha2-coverage: coverage-barrier RELEASED for ${sessionId} (FINAL-PASS; scoped guard-owned)`)
         }
       }
       }
