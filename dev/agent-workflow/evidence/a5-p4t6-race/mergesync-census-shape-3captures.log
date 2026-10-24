@@ -1,0 +1,6 @@
+# census-shape 3 captures, merged tree (master d5de7497 x a5-p4t6-race e658e931), concurrent with the a4p7 scratch-isolation leg (-t filter, exit=0)
+# merged-tree scanner direct measure: filesScanned = 1206, excludedSelf = 2, quarantine hits = 15 (equal to master's own measured tie, re-counted here, nothing copied)
+# p4t6 vitest on the merged tree: 10 passed (10), pin line read 1206 (Test Files 1 passed, Tests 10 passed, 578ms)
+capture-1: 10 passed (10) | root-controls=0 packages-controls=0
+capture-2: 10 passed (10) | root-controls=0 packages-controls=0
+capture-3: 10 passed (10) | root-controls=0 packages-controls=0
