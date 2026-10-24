@@ -35,6 +35,7 @@ import {
 import {
   REMOTE_TEAM_CREATE_FIELDS, REMOTE_TEAM_CREATE_FIELDS_V2,
   REMOTE_TEAM_GET_PROJECTION_FIELDS, REMOTE_TEAM_GET_READ_STATE_FIELDS,
+  REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS, REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS,
 } from '../../../../../packages/runtime/dist/packages/remote/src/contracts/params.js'
 import {
   A5_B_TEAM_TOOL_NAMES, A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION,
@@ -509,6 +510,45 @@ export async function runLeaderMembersCase ({ origin, cookie, home, runStamp, se
   }
 }
 
+
+/**
+ * The remaining public Team legs the case needs, each built from the CLOSED
+ * field set imported from the contract module (no new vocabulary, no local
+ * guess): `team.ensureRootLive` = `['teamSessionId']` (params.ts:593),
+ * `team.getReadState` = `['sessionId']` (:601), `team.getLedgerPage` =
+ * `['afterSequence','limit','teamSessionId']` (:603). Every one asserts on the
+ * REAL answer through `remoteOutcome`, and an `unknown` answer is never
+ * recorded as a pass.
+ */
+const closedParams = (method, closed, provided) => {
+  const keys = Object.keys(provided)
+  const unknown = keys.filter((key) => !closed.includes(key))
+  const missing = closed.filter((key) => !keys.includes(key))
+  if (unknown.length > 0 || missing.length > 0) throw new Error(`${method}: field set mismatch (unknown=${unknown.join(',') || 'none'} missing=${missing.join(',') || 'none'}; closed=${closed.join(',')})`)
+  return provided
+}
+
+export async function ensureTeamRootLive ({ origin, cookie, teamSessionId }) {
+  const res = await remoteCall(origin, cookie, 'team.ensureRootLive', closedParams('team.ensureRootLive', [...REMOTE_TEAM_ENSURE_ROOT_LIVE_FIELDS], { teamSessionId }), 'bteam-live', 3)
+  const outcome = remoteOutcome(res)
+  return { ok: outcome.state === 'ok' && collectStrings(outcome.value).includes(teamSessionId), state: outcome.state, teamSessionId, error: outcome.error ?? null, value: outcome.state === 'ok' ? outcome.value : null }
+}
+
+export async function teamReadState ({ origin, cookie, sessionId }) {
+  const res = await remoteCall(origin, cookie, 'team.getReadState', closedParams('team.getReadState', [...REMOTE_TEAM_GET_READ_STATE_FIELDS], { sessionId }), 'bteam-readstate', 3)
+  const outcome = remoteOutcome(res)
+  return { ok: outcome.state === 'ok', state: outcome.state, sessionId, error: outcome.error ?? null, value: outcome.state === 'ok' ? outcome.value : null }
+}
+
+export async function teamLedgerPage ({ origin, cookie, teamSessionId, afterSequence = 0, limit = 50 }) {
+  for (const [name, value] of [['afterSequence', afterSequence], ['limit', limit]]) {
+    if (!Number.isSafeInteger(value) || value < 0 || (name === 'limit' && value < 1)) throw new Error(`team.getLedgerPage: ${name} must be a safe integer (${name === 'limit' ? '>= 1' : '>= 0'}), got ${String(value)}`)
+  }
+  const res = await remoteCall(origin, cookie, 'team.getLedgerPage', closedParams('team.getLedgerPage', [...REMOTE_TEAM_GET_LEDGER_PAGE_FIELDS], { afterSequence, limit, teamSessionId }), 'bteam-ledger', 3)
+  const outcome = remoteOutcome(res)
+  return { ok: outcome.state === 'ok', state: outcome.state, teamSessionId, error: outcome.error ?? null, value: outcome.state === 'ok' ? outcome.value : null }
+}
+
 /** Prechecks only: source-level, no host, no world, no install. */
 export function precheck () {
   const problems = [...validateRow().problems]
@@ -660,6 +700,10 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, g
       const root = await createUniqueTeamRoot({ origin, cookie, ...live })
       rec('C-CREATE-ONCE', root.ok, `${root.stage} root=${root.rootSessionId}${root.error === undefined ? '' : ` error=${JSON.stringify(root.error).slice(0, 160)}`}`)
       if (!root.ok) return { trace, ok: false, root }
+      const liveRoot = await ensureTeamRootLive({ origin, cookie, teamSessionId: root.rootSessionId })
+      rec('C-ROOT-LIVE', liveRoot.ok, `state=${liveRoot.state} root=${liveRoot.teamSessionId}${liveRoot.error === null ? '' : ` error=${JSON.stringify(liveRoot.error).slice(0, 160)}`}`)
+      const readState = await teamReadState({ origin, cookie, sessionId: root.rootSessionId })
+      rec('C-READ-STATE', readState.ok, `state=${readState.state}${readState.error === null ? '' : ` error=${JSON.stringify(readState.error).slice(0, 160)}`}`)
       const query = await teamFirstQuery({ origin, cookie, teamSessionId: root.rootSessionId })
       rec('C-TEAM-QUERY', query.ok, `${query.method} fields=${query.closedFields.join(',')} ${query.error === null ? 'answered' : `error=${JSON.stringify(query.error).slice(0, 160)}`}`)
       const leaderSession = live.leaderSessionId ?? collectStrings(root.createBody).find((value) => value.startsWith('session-'))
@@ -667,9 +711,11 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, g
         rec('C-LEADER-PROMPT', false, 'no leader session derivable from the create answer and none passed with --leader-session: the members case is NOT attempted (never faked)')
         return { trace, ok: false, root, query }
       }
+      const ledger = await teamLedgerPage({ origin, cookie, teamSessionId: root.rootSessionId })
+      rec('C-LEDGER-PAGE', ledger.ok, `state=${ledger.state}${ledger.error === null ? '' : ` error=${JSON.stringify(ledger.error).slice(0, 160)}`}`)
       const members = await runLeaderMembersCase({ origin, cookie, home: join(REPO, world), runStamp: live.runStamp, sessionId: leaderSession, expectContains: live.expectContains })
       rec('C-LEADER-MEMBERS', members.ok, `same-call pairs=${String(members.pairCount)} calls=${String(members.callCount)} missing=${members.missing.join(',') || 'none'}`)
-      return { trace, ok: trace.every((row) => row.ok), root, query, members }
+      return { trace, ok: trace.every((row) => row.ok), root, liveRoot, readState, query, ledger, members }
     }
     // Team cases run against a NEW unique root created directly through the
     // public Team API (never by hijacking an ordinary session writer).
