@@ -823,13 +823,13 @@ export function installParameterPermissionListener(agentCtx, params) {
     // answers 'no-match'; if NO port claims the call the walk is a no-op and
     // every other name, mount without the governed row, and no-Team world
     // keeps the pre-hand-off path byte-for-byte.
-    const paHandoffWalk = async (exec, next) => {
+    const paHandoffWalk = async (exec, next, canonical) => {
         const callId = typeof exec.callId === 'string' ? exec.callId : String(exec.callId);
         const name = typeof exec.name === 'string' ? exec.name : String(exec.name);
         for (const paHandoffPorts of paHandoffPortsList) {
             let handoff;
             try {
-                handoff = await paHandoffPorts.open(exec);
+                handoff = await paHandoffPorts.open(exec, canonical);
             }
             catch (error) {
                 // A leg that never handed off closes what it may have opened.
@@ -974,7 +974,16 @@ export function installParameterPermissionListener(agentCtx, params) {
         // still runs the fresh recheck and the single consume, refusing there.
         // (2c') THE HAND-OFF WALK (paHandoffWalk): any port owning THIS name
         // decides here; 'no-match' everywhere falls through unchanged.
-        const paDecision = await paHandoffWalk(exec, next);
+        // A5M2 overlay-strict-b: on THIS canonical path the walk carries the
+        // adapter's own canonical operation (trusted context, same exec/call) —
+        // the unsupported pass-through above calls the walk WITHOUT it and
+        // stays byte-identical (no fake op there, ever).
+        const paDecision = await paHandoffWalk(exec, next, {
+            tool: operation.tool,
+            resourceKind: operation.resource.kind,
+            resourceKey: operation.resource.key,
+            fingerprint: operation.fingerprint,
+        });
         if (paDecision !== undefined)
             return paDecision;
         // (3) resolve the static decision (A3 — pure, synchronous).

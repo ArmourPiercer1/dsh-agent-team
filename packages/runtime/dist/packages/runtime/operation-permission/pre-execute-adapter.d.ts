@@ -462,10 +462,38 @@ export type PaReadHandoffOutcome = {
      *  the backstop for the exec that really ran. */
     readonly ownsHandoff?: boolean;
 };
+/**
+ * A5M2 overlay-strict-b — the TRUSTED canonical context the adapter hands
+ * a port on the canonical path: the adapter's OWN CanonicalOperation facts
+ * for THIS exec (post-canonicalization, fail-closed upstream). It is an
+ * identity pair, never a substitute key: `fingerprint` is the OPERATION
+ * fingerprint and is NOT the parametersFingerprint the PA request carries
+ * — the two bind together for the same exec, never as each other. Ports
+ * must not widen it (no arguments, no paths: the canonical facts only).
+ */
+export interface PaCanonicalHandoffContext {
+    readonly tool: string;
+    readonly resourceKind: string;
+    readonly resourceKey: string;
+    readonly fingerprint: string;
+}
 /** The A5-M2 hand-off ports, supplied by the glue from ONE plane mount. */
 export interface PaReadHandoffPorts {
-    /** Run the plane's full PA admission (Part A) for THIS exec, pre-dispatch. */
-    readonly open: (exec: object) => Promise<PaReadHandoffOutcome>;
+    /**
+     * Run the plane's full PA admission (Part A) for THIS exec, pre-dispatch.
+     *
+     * A5M2 overlay-strict-b (root 2026-10-25) — the OPTIONAL second argument:
+     * the adapter's OWN canonicalized operation, supplied on the canonical
+     * hand-off path ONLY (after canonicalization succeeded — the same exec,
+     * the same call, one identity pair). A port that receives it may treat it
+     * as the TRUSTED operation identity of this exec; a port that receives
+     * `undefined` (an old port-facing call, or a non-canonical path such as
+     * the unsupported pass-through) must NOT synthesize an operation — the
+     * old template closed refusal runs byte-for-byte there (no fake op: an
+     * SRE-style unsupported name never gets a stand-in canonical here).
+     * The context must be readable BEFORE the port's first admitCall.
+     */
+    readonly open: (exec: object, canonical?: PaCanonicalHandoffContext) => Promise<PaReadHandoffOutcome>;
     /** Void everything this exec still holds (idempotent, synchronous). */
     readonly close: (exec: object) => void;
     /** The terminal leg: `'tools/result'` — the one funnel every pipeline
