@@ -715,7 +715,7 @@ export async function runTeamC2 ({ port, world, blueprintSource, logDir, live, g
       rec('C-READ-STATE', readState.ok, `state=${readState.state}${readState.error === null ? '' : ` error=${JSON.stringify(readState.error).slice(0, 160)}`}`)
       const query = await teamFirstQuery({ origin, cookie, teamSessionId: root.rootSessionId })
       rec('C-TEAM-QUERY', query.ok, `${query.method} fields=${query.closedFields.join(',')} ${query.error === null ? 'answered' : `error=${JSON.stringify(query.error).slice(0, 160)}`}`)
-      const leaderSession = live.leaderSessionId ?? collectStrings(root.createBody).find((value) => value.startsWith('session-'))
+      const leaderSession = live.leaderSessionId ?? collectStrings(root.createValue).find((value) => value.startsWith('session-'))
       if (leaderSession === undefined) {
         rec('C-LEADER-PROMPT', false, 'no leader session derivable from the create answer and none passed with --leader-session: the members case is NOT attempted (never faked)')
         return { trace, ok: false, root, query }
