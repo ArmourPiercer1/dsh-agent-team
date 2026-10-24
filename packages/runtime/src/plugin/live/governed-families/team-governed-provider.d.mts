@@ -20,13 +20,13 @@ export interface G2TgpRunContext {
 
 /** The arm's wrapper over the EXISTING durable fresh-member chain faces. */
 export interface G2TgpChildChain {
+  // THE REAL accepted request of childFactory.createChildSession (root
+  // interface card): exactly these fields; the wrapper typed-refuses any
+  // extra rather than silently dropping it.
   ensureChild (args: {
     rootSessionId: string
     instanceId: string
     templateId: string
-    parentAgent: unknown
-    agentOptions?: Record<string, unknown>
-    signal?: unknown
   }): Promise<{ childSessionId: string, handle: { agent: unknown, dispose?: () => Promise<void> } }>
 }
 

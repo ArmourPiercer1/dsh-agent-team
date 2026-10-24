@@ -4531,6 +4531,17 @@ export function createAgentBindings(deps) {
           // child: no admitted call context exists behind it (children
           // are established only under the PER-RUN closures the runner
           // registers) — its chain face refuses by construction.
+          // RALPH IS NOT CLOSED (honest word, root card 2026-10-26): the
+          // ralph row's captured body starts the SAME public
+          // ctx.workflowEngine with the FIXED Config.subagentProvider name
+          // (tool-ralph/src/index.ts :34/:186-191/:219/:445); a per-run
+          // override is impossible without vendoring RALPH_SCRIPT/RALPH_META
+          // (upstream internals — forbidden). So ralph children land on
+          // THIS static holder and fail closed (children refused). Named
+          // minimal contract diff for a real ralph seam (for root, NOT
+          // done here): a per-call provider-name arg on the ralph tool OR
+          // published RALPH_SCRIPT/META constants. Until then NO closure
+          // claim is made anywhere for ralph.
           const bOrchTgp = createTeamGovernedSubagentProvider({
             name: bOrchRoutedName,
             pa: bOrchPa,
@@ -4597,6 +4608,15 @@ export function createAgentBindings(deps) {
           // same chain boot seeds and delegation ride; nothing invented).
           const bOrchChildChain = {
             async ensureChild (args) {
+              // THE REAL ACCEPTED REQUEST of childFactory.createChildSession
+              // is { rootSessionId, instanceId, templateId, workspace? };
+              // ANY extra field (parentAgent / agentOptions / signal) is
+              // REFUSED typed here — forwarding-then-dropping or dropping
+              // silently would pretend a support the seam does not have
+              // (root interface card 2026-10-26).
+              for (const extra of ['parentAgent', 'agentOptions', 'signal']) {
+                if (args?.[extra] !== undefined) throw new Error(`P_B_ORCH_CHAIN_FIELD_UNSUPPORTED: createChildSession takes no '${extra}' — refusing typed instead of silently dropping it`)
+              }
               const created = await childFactory.createChildSession({
                 rootSessionId: args.rootSessionId,
                 instanceId: args.instanceId,
@@ -4630,7 +4650,9 @@ export function createAgentBindings(deps) {
             let templateId = null
             try {
               const located = locateTemplate(sid, instanceId, undefined, undefined, undefined)
-              if (typeof located?.id === 'string' && located.id.length > 0) templateId = located.id
+              // The REAL located-template field is `templateId` (root
+              // interface card 2026-10-26) — not `id`.
+              if (typeof located?.templateId === 'string' && located.templateId.length > 0) templateId = located.templateId
             } catch { /* unresolved below, typed */ }
             if (templateId === null) {
               throw new Error(`P_B_ORCH_TEMPLATE_UNRESOLVED: the activated template of member '${instanceId.slice(0, 24)}' is unanswerable — governed children never spawn under an unlocated template (no native fallback)`)
@@ -4691,7 +4713,9 @@ export function createAgentBindings(deps) {
                 throw new Error('P_B_ORCH_BG_UNWIRED: the jobs registry face is absent — the background governed run is REFUSED typed (honest absence; never silently demoted to foreground, never native)')
               }
               let run = null
-              const jobId = registry.start({
+              let jobId
+              try {
+                jobId = registry.start({
                 kind: 'workflow',
                 label: metaName,
                 owner: parent.id,
@@ -4706,13 +4730,21 @@ export function createAgentBindings(deps) {
                     try { await run.dispose() } catch (error) { observations.push(`a5m2-b-orchestration-run: bg-dispose-fault ${String(error?.message ?? error).slice(0, 120)}`) }
                     reclaim() // THE SETTLEMENT POINT (never the outer return)
                     return bOrchJobOutcomeOf(result, metaName)
-                  }, (error) => {
+                  }, async (error) => {
+                    // A REJECTED run is still a real run ENDING: dispose to
+                    // quiescence (the run's own dispose law), THEN reclaim,
+                    // then let the rejection ride (root interface card).
+                    try { await run.dispose() } catch { /* quiescence, best-effort */ }
                     reclaim()
                     throw error
                   })
                   return { cancel: (reason) => { run.cancel(reason ?? 'governed workflow job killed') }, done }
                 },
-              })
+                })
+              } catch (error) {
+                reclaim() // the registry itself refused: the per-run provider never runs unclaimed
+                throw error
+              }
               return Object.freeze({ kind: 'background', jobId, runId: run.id })
             }
             let fgRun
