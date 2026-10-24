@@ -1,37 +1,30 @@
 /**
  * a5m2-schedule-fork-trigger.test.ts — the FORK's trigger-admission contract
- * (root ruling 2026-10-26: full feature-plugin fork; the fork runtime adds
- * real trigger admission consuming the Team PA/Guard carrier; NO second
- * timer, NO parallel ledger, NO persisted schema change; absent/REFUSING
- * consumer = no wake and never a fake delivery).
- *
- * Load law: the fork's runtime closes over host packages (@js-temporal/
- * polyfill and friends) that may be absent in a unit environment — when the
- * module cannot load, the RUNTIME legs are recorded as an honest SKIP
- * (skip != pass) and the STATIC fork-law pins still run (they are the same
- * bytes the assembly will ship).
+ * (root ruling 2026-10-26; c925 CI correction: the spec imports the fork's
+ * REAL BUILT SURFACE (forks/dsh-schedule/lib, emitted by the fork's own
+ * package tsconfig) with its real d.ts types — no .ts-extension imports, no
+ * dynamic string hiding, no fabricated constructor shape, no lazy casts.
+ * The fork's package deps are declared in its package.json and supplied
+ * from the existing pnpm store (scripts/provision-store-deps.mjs), so the
+ * RUNTIME legs run for real here; only the static-source pins need no
+ * provisioning at all.
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { ScheduleRuntime } from '../../../forks/dsh-schedule/lib/runtime.js'
+import type { ScheduleTriggerIntent } from '../../../forks/dsh-schedule/lib/runtime.js'
+
 const here = dirname(fileURLToPath(import.meta.url))
 const forkRoot = join(here, '..', '..', '..', 'forks', 'dsh-schedule')
 
-let ScheduleRuntime: (new (...args: unknown[]) => { requestDrive: () => void }) | undefined
-let _loadError: string = ''
-try {
-  const mod = await import('../../../forks/dsh-schedule/src/runtime.ts')
-  ScheduleRuntime = mod.ScheduleRuntime
-} catch (error: unknown) {
-  _loadError = String(error)
-}
-const LOADABLE = ScheduleRuntime !== undefined
+type Ctor = ConstructorParameters<typeof ScheduleRuntime>
 
 interface Counters { resolve: number, followup: number, flush: number, commit: number, warns: string[] }
 
-function harness (counters: Counters) {
+function harness (counters: Counters, admission?: (intent: ScheduleTriggerIntent) => boolean | Promise<boolean>) {
   const agent = {
     session: { id: 's-1' },
     followup: (_msg: unknown) => { counters.followup += 1 },
@@ -47,13 +40,27 @@ function harness (counters: Counters) {
     sessionId: 's-1',
     status: 'active',
     record: { id: 'T-1', sessionId: 's-1', kind: 'at', scheduledAt: past, prompt: 'p', title: 't' },
-  } as never
-  return { ctx, task }
+  }
+  const transact = async (work: () => Promise<void>) => { await work() }
+  // THE COMMIT STUB MUTATES LIKE THE REAL ONE: a one-shot delivery commits
+  // status inactive, and the due filter then excludes the row (an inert
+  // commit stub would re-drive the still-active row — a harness lie).
+  const commit = async (committed: unknown) => { counters.commit += 1; const status = (committed as { status?: string }).status; if (typeof status === 'string') { (task as { status: string }).status = status } }
+  const retention = { days: 7, records: 50 }
+  return {
+    // The stubs answer the PUBLIC constructor face structurally; the cast
+    // only silences the parts of the Host Context type the runtime never
+    // touches (agents/logger/sessionController/sessions ARE its real use).
+    // ONE honest tuple for the PUBLIC constructor face (5 or 6 params —
+    // the optional admission consumer joins INSIDE the tuple, never as an
+    // extra spread argument).
+    args: (admission === undefined
+      ? [ctx, () => [task], transact, commit, retention]
+      : [ctx, () => [task], transact, commit, retention, () => admission]) as unknown as Ctor,
+  }
 }
 
 const settle = () => new Promise<void>((resolve) => { setTimeout(resolve, 40) })
-
-const Rt = ScheduleRuntime as NonNullable<typeof ScheduleRuntime>
 
 describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
   it('(s) STATIC FORK LAW: complete fork provenance present; both gates land at the RIGHT points (pre-resolve BEFORE resolveAgent, pre-followup BEFORE followup and before flush/commit); fail-closed absent-consumer; in-memory-only backoff; the fork adds NO second timer', () => {
@@ -66,37 +73,42 @@ describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
     expect(lic.length).toBeGreaterThan(100)
     const pkg = readFileSync(join(forkRoot, 'package.json'), 'utf8')
     expect(pkg).toContain('0.2.0-rc.2+fork.a5m2.1')
+    // the package boundary: tsconfig (upstream-639 conventions, scoped) +
+    // store provisioning + declared deps (zero installs)
+    const tsconfig = readFileSync(join(forkRoot, 'tsconfig.json'), 'utf8')
+    expect(tsconfig).toContain('"allowImportingTsExtensions": true')
+    expect(tsconfig).toContain('"rewriteRelativeImportExtensions": true')
+    expect(tsconfig).toContain('"noEmit": true')
+    const buildConfig = readFileSync(join(forkRoot, 'tsconfig.build.json'), 'utf8')
+    expect(buildConfig).toContain('"outDir": "lib"')
     const runtime = readFileSync(join(forkRoot, 'src', 'runtime.ts'), 'utf8')
     const pre = runtime.indexOf("admitIntent('pre-resolve')")
     const resolveAt = runtime.indexOf('this.ctx.sessionController.resolveAgent')
     const preFollow = runtime.indexOf("admitIntent('pre-followup')")
     const follow = runtime.indexOf('resolved.agent.followup(message)')
-    const flush = runtime.indexOf('this.ctx.sessions.flush')
+    const flushAt = runtime.indexOf('this.ctx.sessions.flush')
     expect(pre).toBeGreaterThan(-1)
     expect(pre).toBeLessThan(resolveAt) // admission BEFORE resolveAgent
     expect(preFollow).toBeGreaterThan(resolveAt)
     expect(preFollow).toBeLessThan(follow) // re-check BEFORE followup
-    expect(follow).toBeLessThan(flush) // flush stays after followup (original law)
+    expect(follow).toBeLessThan(flushAt) // flush stays after followup (original law)
     expect(runtime).toContain('trigger admission consumer ABSENT') // fail closed
     expect(runtime).toContain('forkDeferredUntil')
     // NO second timer: setTimeout appears in the fork only where the ORIGINAL
     // timer law already had it (the file gained ZERO new timer constructions).
     const original = readFileSync(join(here, '..', '..', '..', '..', '..', 'tests', 'deepseek-harness-test-use', 'packages', 'schedule', 'schedule', 'src', 'runtime.ts'), 'utf8')
     const count = (s: string, needle: string) => s.split(needle).length - 1
-    if (existsSyncish(original)) {
-      expect(count(runtime, 'setTimeout(')).toBe(count(original, 'setTimeout('))
-    }
-    // index.ts threads the consumer lazily (late registration) and nothing else changed structurally:
+    expect(count(runtime, 'setTimeout(')).toBe(count(original, 'setTimeout('))
     const index = readFileSync(join(forkRoot, 'src', 'index.ts'), 'utf8')
     expect(index).toContain('registerTriggerAdmission')
     expect(index).toContain('() => this.triggerAdmission')
   })
 
-  describe.runIf(LOADABLE)('runtime legs (module loaded)', () => {
+  describe('runtime legs (real built surface, real store supply)', () => {
     it('(a) consumer ABSENT => no resolve, no followup, no flush, no commit; warn; row untouched', async () => {
       const counters: Counters = { resolve: 0, followup: 0, flush: 0, commit: 0, warns: [] }
-      const { ctx, task } = harness(counters)
-      const rt = new Rt(ctx, () => [task], async (work: () => Promise<void>) => { await work() }, async () => { counters.commit += 1 }, { days: 7, records: 50 })
+      const { args } = harness(counters)
+      const rt = new ScheduleRuntime(...args)
       rt.requestDrive()
       await settle()
       expect(counters).toMatchObject({ resolve: 0, followup: 0, flush: 0, commit: 0 })
@@ -105,22 +117,22 @@ describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
 
     it('(b) pre-resolve REFUSAL => zero resolve entries, no wake, no fake success', async () => {
       const counters: Counters = { resolve: 0, followup: 0, flush: 0, commit: 0, warns: [] }
-      const { ctx, task } = harness(counters)
-      const rt = new Rt(ctx, () => [task], async (work: () => Promise<void>) => { await work() }, async () => { counters.commit += 1 }, { days: 7, records: 50 }, () => async () => false)
+      const { args } = harness(counters, () => false)
+      const rt = new ScheduleRuntime(...args)
       rt.requestDrive()
       await settle()
       expect(counters).toMatchObject({ resolve: 0, followup: 0, flush: 0, commit: 0 })
       expect(counters.warns.join('\n')).toContain('REFUSED (pre-resolve)')
     })
 
-    it('(c) pre-followup REFUSAL => resolve happened (allowed once) but NO followup, NO flush, NO commit (never a fake delivery)', async () => {
+    it('(c) pre-followup REFUSAL => resolve happened (allowed once) but NO followup, NO flush, NO commit (never a fake delivery); NEW consumption per phase, not once-cached', async () => {
       const counters: Counters = { resolve: 0, followup: 0, flush: 0, commit: 0, warns: [] }
-      const { ctx, task } = harness(counters)
       let calls = 0
-      const rt = new Rt(ctx, () => [task], async (work: () => Promise<void>) => { await work() }, async () => { counters.commit += 1 }, { days: 7, records: 50 }, () => async () => { calls += 1; return calls === 1 })
+      const { args } = harness(counters, () => { calls += 1; return calls === 1 })
+      const rt = new ScheduleRuntime(...args)
       rt.requestDrive()
       await settle()
-      expect(calls).toBeGreaterThanOrEqual(2) // NEW consumption per phase, not once-cached
+      expect(calls).toBeGreaterThanOrEqual(2)
       expect(counters.resolve).toBe(1)
       expect(counters.followup).toBe(0)
       expect(counters.flush).toBe(0)
@@ -130,23 +142,19 @@ describe('a5m2 dsh-schedule FORK trigger admission (fork law)', () => {
 
     it('(d) BOTH PHASES ALLOW => exactly one wake + flush + commit, and the intent carries the REAL owner/task/destination with revision:null (never fabricated)', async () => {
       const counters: Counters = { resolve: 0, followup: 0, flush: 0, commit: 0, warns: [] }
-      const { ctx, task } = harness(counters)
-      const intents: Array<Record<string, unknown>> = []
-      const rt = new Rt(ctx, () => [task], async (work: () => Promise<void>) => { await work() }, async () => { counters.commit += 1 }, { days: 7, records: 50 }, () => async (intent: Record<string, unknown>) => { intents.push(intent); return true })
+      const intents: ScheduleTriggerIntent[] = []
+      const { args } = harness(counters, (intent: ScheduleTriggerIntent) => { intents.push(intent); return true })
+      const rt = new ScheduleRuntime(...args)
       rt.requestDrive()
       await settle()
       expect(counters.followup).toBe(1)
       expect(counters.flush).toBe(1)
       expect(counters.commit).toBe(1)
       expect(intents.map((i) => i.phase)).toEqual(['pre-resolve', 'pre-followup'])
-      const i0 = intents[0] as Record<string, string>
-      expect(i0.ownerSessionId).toBe('s-1')
-      expect(i0.taskId).toBe('T-1')
-      expect(i0.revision).toBeNull()
-      expect((i0.destination as Record<string, string>).sessionId).toBe('s-1')
+      expect(intents[0]?.ownerSessionId).toBe('s-1')
+      expect(intents[0]?.taskId).toBe('T-1')
+      expect(intents[0]?.revision).toBeNull()
+      expect(intents[0]?.destination.sessionId).toBe('s-1')
     })
   })
-
 })
-
-function existsSyncish (s: string): boolean { return s.length > 0 }
