@@ -23,7 +23,8 @@
  *    scheduler confirms A idle + ports free before GO; before-spawn probe
  *    is the mechanical law). B (3184/3499) and stable stay reserved.
  *  - HOME: a FRESH stamped empty HOME for THIS window (driver mkdirs it,
- *    driver removes it after evidence); HOME ≤64MiB is MONITORED DURING the
+ *    RETAINED after the run per root ruling — deletion forbidden, never a
+ *    gate); HOME ≤64MiB is MONITORED DURING the
  *    run (old kit 5GiB/250MiB/200MiB budgets do NOT substitute).
  *  - one-window-one-GO: the GO env token is CONSUMED on first run — a second
  *    run with the same token refuses (marker file, real, not a comment).
@@ -203,7 +204,7 @@ async function collectPreflight (outDir) {
     ck('world-borrowed-empty', existsSync(w) && readdirSync(w).length === 0, w)
     ck('world-lockfile-absent', !existsSync(join(REPO_ROOT, 'tests/homes', `${worldName.replace(/^\./, '')}.lock`)), `${worldName}.lock`)
   } else {
-    checks.push({ name: 'home-law', verdict: 'PASS', detail: 'default law: FRESH stamped empty HOME this window (driver mkdirs+monitors <=64MiB+removes after evidence); no copies of dirs/deps/store' })
+    checks.push({ name: 'home-law', verdict: 'PASS', detail: 'default law: FRESH stamped empty HOME this window (driver mkdirs+monitors <=64MiB; RETAINED after run — no self-deletion, deletion never a gate); no copies of dirs/deps/store' })
   }
   for (const p of [Number(arg('port', 3183)), Number(arg('mock-port', 3498))]) {
     const free = await portFree(p)
@@ -259,7 +260,7 @@ async function run () {
   const before = { portsFree: await Promise.all([portFree(ports.host), portFree(ports.mock)]), lockSha: sha256(join(PINS.install, 'pnpm-lock.yaml')), pkgSha: sha256(join(PINS.install, 'package.json')) }
   if (before.portsFree.includes(false)) { console.error(`run REFUSED: port not free before-spawn — if A-slot, A IS RUNNING; borrow allowed ONLY while A idle`); process.exit(20) }
 
-  // FRESH stamped HOME this window: driver mkdirs, monitors, removes after.
+  // FRESH stamped HOME this window: driver mkdirs + monitors; RETAINED after the run.
   const worldName = arg('world-name', `.g6er-${stamp}Z`)
   const worldPath = join(REPO_ROOT, 'tests/homes', worldName)
   if (existsSync(worldPath) && readdirSync(worldPath).length > 0) { console.error('run REFUSED: world exists non-empty (no long-lived reuse)'); process.exit(20) }
@@ -298,8 +299,18 @@ async function run () {
 
   // postflight: REAL enforcement facts (any violation fails the RC).
   const after = { portsFree: await Promise.all([portFree(ports.host), portFree(ports.mock)]) }
+  // parent exit ≠ group empty (root ruling 2026-10-24): KEEP DRAINING our own
+  // PGID until it is EMPTY, bounded at 20s. Group still non-empty at 20s =
+  // violation — a non-empty group can never PASS.
   let pgidGone = false
-  try { process.kill(-child.pid, 0); pgidGone = false } catch { pgidGone = true }
+  let pgidDrainMs = 0
+  while (pgidDrainMs <= 20_000) {
+    try { process.kill(-child.pid, 0); pgidGone = false } catch { pgidGone = true; break }
+    // sustained wind-down on OUR PGID only: re-TERM every 2s while it lives.
+    if (pgidDrainMs % 2000 === 0) { try { process.kill(-child.pid, 'SIGTERM') } catch {} }
+    await new Promise((r) => setTimeout(r, 500))
+    pgidDrainMs += 500
+  }
   const post = { lockSha: sha256(join(PINS.install, 'pnpm-lock.yaml')), pkgSha: sha256(join(PINS.install, 'package.json')) }
   let homeBytes = null
   try { if (existsSync(worldPath)) homeBytes = dirBytes(worldPath) } catch {}
@@ -324,20 +335,20 @@ async function run () {
   try {
     const resultsPath = findFirstFile(join(outDir, 'kit'), 'results.json', 3)
     if (resultsPath !== null) {
-      const results = JSON.parse(readFileSync(resultsPath, 'utf8')).results ?? []
-      for (const r of results.filter((x) => ['session_event_read', 'session_event_trace', 'session_event_search'].includes(x?.tool))) {
-        minimalLines.push(JSON.stringify({ step: r.id ?? null, tool: r.tool, callId: r.callId ?? null, sessionId: r.sessionId ?? 'own(ROOT_G6)', seq: r.seq ?? 'S.eventSeq (runtime)', marker: 'G6_MARKER_<NONCE> (same correlated face)', resultCorrelated: r.faceFound ?? null, verdict: r.verdict ?? null }))
+      const doc = JSON.parse(readFileSync(resultsPath, 'utf8'))
+      const verdictById = new Map((doc.verdicts ?? []).map((v) => [v?.id, v?.verdict]))
+      for (const r of (doc.results ?? []).filter((x) => ['C2', 'C2b', 'C3'].includes(x?.id))) {
+        minimalLines.push(JSON.stringify({ case: r.id, tool: CASE_TOOL[r.id] ?? null, toolUseId: r.toolUseId ?? null, faceFound: r.faceFound ?? null, isError: r.isError ?? null, verdict: verdictById.get(r.id) ?? null }))
       }
     }
   } catch { /* absence recorded below, never faked */ }
   try { writeFileSync(join(outDir, 'toolcalls.jsonl'), minimalLines.join('\n') + (minimalLines.length > 0 ? '\n' : '')) } catch {}
   const toolcallsWritten = minimalLines.length > 0
   if (toolcallsWritten !== true) violations.push('toolcalls.jsonl not produced (kit evidence missing? no fake green)')
-  // own fresh HOME cleanup AFTER evidence closed (no long-lived world)
-  let worldRemoved = false
-  try { rmSync(worldPath, { recursive: true, force: true }); worldRemoved = !existsSync(worldPath) } catch {}
-  if (worldRemoved !== true) violations.push(`own world ${worldPath} not removed at close (fresh-HOME law)`)
-  writeFileSync(join(outDir, 'postflight.json'), JSON.stringify({ code, before, after, post, pgid: child.pid, pgidGone, homeBytes, homeCapBytes: PINS.homeCap, toolcallsWritten, worldRemoved, violations }, null, 2))
+  // RAW/HOME RETENTION (root ruling 2026-10-24, binding): the window's raw
+  // HOME and evidence are RETAINED — deletion is FORBIDDEN here and can
+  // NEVER be a success gate. Nothing below removes anything.
+  writeFileSync(join(outDir, 'postflight.json'), JSON.stringify({ code, before, after, post, pgid: child.pid, pgidGone, pgidDrainMs, homeBytes, homeCapBytes: PINS.homeCap, toolcallsWritten, homeRetained: true, retentionNote: 'raw HOME/evidence retained per root ruling; no self-deletion, deletion is not a gate', violations }, null, 2))
   console.log(`driver run exit=${code}; violations=${violations.length === 0 ? 'NONE' : violations.join(' | ')}; evidence ${outDir}`)
   process.exit(violations.length === 0 ? (code ?? 1) : 2)
 }
@@ -352,51 +363,113 @@ function findFirstFile (dir, name, depth) {
   return null
 }
 
+// ── REAL kit evidence shape (root review 2026-10-24): results.json =
+// { results, verdicts, transcript }. results rows are
+// { id, status, faceFound, isError, toolResult, toolUseId, expect, ... };
+// verdicts rows are { id, verdict, why?, expect?, observed? }. Correlation
+// by STABLE case id + toolUseId; tool names come from the STABLE case table
+// (never a fabricated field). The business oracle PARSES the readEvent JSON
+// payload — same session id / EXACT seq (expected seq taken from the C3 row's
+// parsed marker hit) / self-planted marker INSIDE the parsed row content.
+// Unparseable shapes FAIL; no substring-of-blob green. ─────────────────────
+const CASE_TOOL = { C1: 'session_trace', C2: 'session_event_trace', C2b: 'session_event_read', C3: 'session_event_search', C4: 'session_event_search', C5: 'session_trace', C6: 'session_trace', C7: 'session_trace', C8: 'session_event_search', C10: 'session_trace', C11: 'session_search' }
+
+const parseRows = (text) => {
+  if (typeof text !== 'string') return null
+  const attempts = [text, (text.match(/\[[\s\S]*\]/) ?? [null])[0], (text.match(/\{[\s\S]*\}/) ?? [null])[0]]
+  for (const a of attempts) {
+    if (a === null) continue
+    try {
+      const v = JSON.parse(a)
+      const rows = Array.isArray(v) ? v : Array.isArray(v?.rows) ? v.rows : Array.isArray(v?.events) ? v.events : Array.isArray(v?.data) ? v.data : null
+      if (Array.isArray(rows)) return rows
+    } catch { /* next attempt */ }
+  }
+  return null
+}
+const rowField = (row, names) => { for (const n of names) { if (row?.[n] !== undefined) return row[n] } return undefined }
+
 function evaluateErEvidence (kitDir) {
   const p = findFirstFile(kitDir, 'results.json', 3)
   if (p === null) return { verdict: 'FAIL', why: 'kit results.json absent — the positive control cannot be evidenced (never silently green)', positive: null, familyNegatives: [] }
-  const results = (JSON.parse(readFileSync(p, 'utf8')).results ?? [])
-  const byId = (id) => results.find((r) => r?.id === id) ?? null
-  const c2b = byId('C2b')
-  const positive = c2b === null
-    ? null
-    : {
-        tool: c2b.tool ?? null,
-        verdict: c2b.verdict ?? null,
-        sameToolUseIdCorrelated: c2b.faceFound ?? null,
-        strictContent: 'ROOT_G6 + exact runtime seq + self-planted G6_MARKER content, all in the SAME correlated tool_result face (patched kit law); unknown refusal text fails expect:ok',
+  const doc = JSON.parse(readFileSync(p, 'utf8'))
+  const results = Array.isArray(doc.results) ? doc.results : []
+  const verdicts = Array.isArray(doc.verdicts) ? doc.verdicts : []
+  const row = (id) => results.find((r) => r?.id === id) ?? null
+  const verdictOfId = (id) => verdicts.find((v) => v?.id === id)?.verdict ?? 'MISSING'
+  const c2b = row('C2b')
+  const c3 = row('C3')
+  let positive = null
+  let why = null
+  if (c2b === null) {
+    why = 'C2b result row missing'
+  } else if (verdictOfId('C2b') !== 'PASS') {
+    why = `verdicts[C2b]=${verdictOfId('C2b')}`
+  } else if (c2b.status !== 'DONE' || c2b.faceFound !== true || c2b.isError === true || typeof c2b.toolUseId !== 'string') {
+    why = 'C2b row not DONE/faceFound/correlated-by-toolUseId'
+  } else {
+    const readRows = parseRows(c2b.toolResult)
+    if (readRows === null) {
+      why = 'readEvent payload NOT parseable JSON — structured oracle refuses (no substring green)'
+    } else {
+      const c3rows = c3 !== null ? parseRows(c3.toolResult) : null
+      const expectedSeq = c3rows?.map((r) => Number(rowField(r, ['seq', 'eventSeq', 'sequence']))).find((n) => Number.isFinite(n)) ?? null
+      const markerRe = /G6_MARKER_[a-z0-9]+/i
+      const hits = readRows.filter((r) => markerRe.test(String(rowField(r, ['content', 'text', 'payload']) ?? '')))
+      const sameSeq = expectedSeq === null ? [] : hits.filter((r) => Number(rowField(r, ['seq', 'eventSeq', 'sequence'])) === expectedSeq)
+      const sessions = [...new Set(sameSeq.map((r) => String(rowField(r, ['sessionId', 'session_id', 'session']) ?? '')))].filter((s) => s !== '')
+      const ownOnly = sessions.length === 1 && sessions[0].startsWith('session-team-g6-')
+      const pass = expectedSeq !== null && sameSeq.length > 0 && ownOnly
+      if (pass) {
+        positive = {
+          tool: CASE_TOOL.C2b,
+          toolUseId: c2b.toolUseId,
+          kitVerdict: 'PASS',
+          structured: { parsedRows: readRows.length, expectedSeq, markerHits: hits.length, exactSeqHits: sameSeq.length, session: sessions[0] },
+        }
+      } else {
+        why = `structured oracle: expectedSeq=${String(expectedSeq)} exactSeqHits=${String(sameSeq.length)} sessions=${JSON.stringify(sessions)}`
       }
-  const positiveGreen = positive !== null && positive.verdict === 'PASS' && positive.sameToolUseIdCorrelated !== false
-  const familyNegatives = ['C6', 'C7', 'C10'].map((id) => {
-    const r = byId(id)
-    return { id, tool: r?.tool ?? 'session_trace', verdict: r?.verdict ?? 'MISSING', role: 'FAMILY negative (session_trace lane) — NOT event_read-specific negative-control coverage (root clarification 2026-10-24)' }
-  })
-  return { verdict: positiveGreen ? 'PASS' : 'FAIL', why: positiveGreen ? null : (c2b?.why ?? 'C2b missing or not PASS'), positive, familyNegatives }
+    }
+  }
+  const familyNegatives = ['C6', 'C7', 'C10'].map((id) => ({ id, tool: CASE_TOOL[id], toolUseId: row(id)?.toolUseId ?? null, verdict: verdictOfId(id), role: 'FAMILY negative (session_trace lane) — NOT event_read-specific negative-control coverage (root clarification 2026-10-24)' }))
+  return { verdict: positive !== null ? 'PASS' : 'FAIL', why, positive, familyNegatives }
 }
 
-// TARGETED OFFLINE SHAPE CONTROL (no boot, no spawn, no world): synthetic kit
-// evidence drives evaluateErEvidence + the patched C2b row's presence.
+// ── TARGETED OFFLINE SHAPE CONTROL: REAL minimal kit shapes only (results
+// rows {id,status,faceFound,isError,toolResult,toolUseId,expect}; verdicts
+// rows {id,verdict}) — no invented fields. ─────────────────────────────────
 async function selftest () {
   const out = []
   const t = (name, ok) => out.push(`${ok ? 'PASS' : 'FAIL'} ${name}`)
   const tmp = join(EVIDENCE_BASE, `selftest-${new Date().toISOString().replace(/[:.]/g, '-')}Z`)
-  mkdirSync(join(tmp, 'good/kit'), { recursive: true })
-  writeFileSync(join(tmp, 'good/kit/results.json'), JSON.stringify({ results: [
-    { id: 'C2b', tool: 'session_event_read', verdict: 'PASS', faceFound: true },
-    { id: 'C6', tool: 'session_trace', verdict: 'PASS' },
-    { id: 'C7', tool: 'session_trace', verdict: 'PASS' },
-    { id: 'C10', tool: 'session_trace', verdict: 'PASS' },
-  ] }))
+  const mk = (dir, c2bToolResult, c2bVerdict) => {
+    mkdirSync(join(tmp, dir, 'kit'), { recursive: true })
+    const results = [
+      { id: 'C3', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c3', expect: 'ok', toolResult: JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 7, content: 'delegated G6_MARKER_xyz123 task' }]) },
+      { id: 'C2b', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c2b', expect: 'ok', toolResult: c2bToolResult },
+      { id: 'C6', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c6', expect: 'deny', toolResult: 'CEILING denied' },
+      { id: 'C7', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c7', expect: 'deny', toolResult: 'CEILING denied' },
+      { id: 'C10', status: 'DONE', faceFound: true, isError: false, toolUseId: 'tu-c10', expect: 'deny', toolResult: 'CEILING denied' },
+    ]
+    const verdicts = [{ id: 'C3', verdict: 'PASS' }, { id: 'C2b', verdict: c2bVerdict }, { id: 'C6', verdict: 'PASS' }, { id: 'C7', verdict: 'PASS' }, { id: 'C10', verdict: 'PASS' }]
+    writeFileSync(join(tmp, dir, 'kit', 'results.json'), JSON.stringify({ results, verdicts, transcript: [] }))
+  }
+  mk('good', JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 7, content: 'event with G6_MARKER_xyz123' }]), 'PASS')
   const g = evaluateErEvidence(join(tmp, 'good'))
-  t('shape: structured PASS face -> positive column green + negatives labeled FAMILY', g.verdict === 'PASS' && g.familyNegatives.every((x) => x.role.includes('FAMILY negative')))
-  mkdirSync(join(tmp, 'bad/kit'), { recursive: true })
-  writeFileSync(join(tmp, 'bad/kit/results.json'), JSON.stringify({ results: [{ id: 'C2b', tool: 'session_event_read', verdict: 'FAIL', why: 'no tool_result face correlated to the case tool_use_id' }] }))
-  t('shape: uncorrelated/refusal text face -> NOT green', evaluateErEvidence(join(tmp, 'bad')).verdict === 'FAIL')
+  t('shape: parsed rows, exact seq 7 (from C3), marker, own session -> green', g.verdict === 'PASS' && g.positive?.structured?.exactSeqHits === 1 && g.positive?.toolUseId === 'tu-c2b' && g.familyNegatives.every((x) => x.role.includes('FAMILY negative')))
+  mk('bad1', 'CEILING denied (unknown refusal text)', 'PASS')
+  t('shape: unparseable/refusal payload -> NOT green', evaluateErEvidence(join(tmp, 'bad1')).verdict === 'FAIL')
+  mk('bad2', JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 8, content: 'event with G6_MARKER_xyz123' }]), 'PASS')
+  t('shape: marker at WRONG seq (8!=7) -> NOT green', evaluateErEvidence(join(tmp, 'bad2')).verdict === 'FAIL')
+  mk('bad3', JSON.stringify([{ sessionId: 'session-other-9999', seq: 7, content: 'G6_MARKER_xyz123' }]), 'PASS')
+  t('shape: foreign session rows -> NOT green', evaluateErEvidence(join(tmp, 'bad3')).verdict === 'FAIL')
+  mk('bad4', JSON.stringify([{ sessionId: 'session-team-g6-abc', seq: 7, content: 'G6_MARKER_xyz123' }]), 'FAIL')
+  t('shape: verdicts[C2b]=FAIL -> NOT green', evaluateErEvidence(join(tmp, 'bad4')).verdict === 'FAIL')
   t('shape: absent evidence -> NOT green', evaluateErEvidence(join(tmp, 'none')).verdict === 'FAIL')
   const { source } = deriveKit()
   const line = source.split('\n').find((l) => l.includes("id: 'C2b'")) ?? ''
   t('shape: derived C2b row demands ROOT_G6+seq+marker in the same face', line.includes('ROOT_G6') && line.includes('G6_MARKER_') && line.includes('S.eventSeq'))
-  // argv shape law
   t('shape: --flag parsing matches argv exactly', flag('go') === process.argv.includes('--go') && arg('port', 'D') === (process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : 'D'))
   rmSync(tmp, { recursive: true, force: true })
   for (const l of out) console.log(l)
