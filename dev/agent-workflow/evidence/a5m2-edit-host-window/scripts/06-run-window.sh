@@ -76,9 +76,24 @@ echo "ports 3183/3498 free (pre-check)"
 
 # [4] ONE bounded run: own process group, 300s outer TERM to the GROUP, 20s
 #     grace, then KILL the GROUP only, then wait. Foreign trees untouched.
+#     REAL-SPAWN receipt (root order: no longer pure preparation): the actual
+#     spawned PID/PGID (+ the node runner child) land in
+#     $OUT/spawn-receipt.json BEFORE the wait; wait carries the real rc.
+#     setsid -w with a non-leader background child EXECs in place: $! IS the
+#     session/group leader (PGID == PID) running timeout; the node runner is
+#     its child. Measured shape before this run: parent pid == pgid, child
+#     found via pgrep -P.
+setsid -w timeout --group --kill-after=20s 300s \
+  env A5M2_EDIT_WINDOW=GRANTED node "$RUNNER" &
+SPAWN_PID=$!
+sleep 1
+SPAWN_PGID=$(ps -o pgid= -p "$SPAWN_PID" 2>/dev/null | tr -d '[:space:]'); [ -n "$SPAWN_PGID" ] || SPAWN_PGID=UNKNOWN
+NODE_PID=$(pgrep -P "$SPAWN_PID" 2>/dev/null | head -1); [ -n "$NODE_PID" ] || NODE_PID=pending
+printf '{ "spawnPid": %s, "spawnPgid": "%s", "nodeChildPid": "%s", "outerBound": "setsid -w timeout --group --kill-after=20s 300s", "startedUtc": "%s" }\n' \
+  "$SPAWN_PID" "$SPAWN_PGID" "$NODE_PID" "$(date -u +%FT%TZ)" > "$OUT/spawn-receipt.json"
+echo "spawn receipt written: pid=${SPAWN_PID} pgid=${SPAWN_PGID} nodeChild=${NODE_PID}"
 RC=0
-A5M2_EDIT_WINDOW=GRANTED setsid timeout --group --kill-after=20s 300s \
-  node "$RUNNER" || RC=$?
+wait "$SPAWN_PID" || RC=$?
 echo "runner rc=${RC} (124/137 = outer 300s bound fired on the OWN group)"
 
 # [5] post facts: ports free, this window's HOME + lock retained, fixture
