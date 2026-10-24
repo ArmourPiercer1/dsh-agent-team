@@ -1,0 +1,44 @@
+{
+  "runner": "05-control-window-runner.mjs",
+  "scenario": "control-slice-83-85-84-identity",
+  "dry": false,
+  "booted": true,
+  "verdict": "FAIL",
+  "scopeNote": "consumption/EDIT leg NOT covered this window (explicitly UNTESTED, root a738 scope) — full C2 is NOT claimed by this receipt",
+  "ports": {
+    "host": 3184,
+    "mock": 3499
+  },
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/tests/homes/a5m2-ctl-hw-2026-10-24T13-35-50-276ZZ",
+  "runDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T13-35-50-276Z",
+  "checks": [
+    {
+      "criterion": "cleanup",
+      "name": "host port 3184 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "mock port 3499 free after stop",
+      "ok": true,
+      "detail": "free=true"
+    },
+    {
+      "criterion": "cleanup",
+      "name": "host stop completed without error",
+      "ok": true,
+      "detail": "host stopped | mock closed"
+    },
+    {
+      "criterion": "fatal",
+      "name": "runner completed",
+      "ok": false,
+      "detail": "timeout waiting for member binding in team_domain"
+    }
+  ],
+  "stamps": {
+    "nonce": "gpqc3i",
+    "runStamp": "2026-10-24T13-35-50-276Z"
+  }
+}
