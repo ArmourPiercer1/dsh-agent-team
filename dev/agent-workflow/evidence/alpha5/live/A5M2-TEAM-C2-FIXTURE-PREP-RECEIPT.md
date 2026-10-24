@@ -164,3 +164,20 @@ per-path and not df-based.
   → `sha512-Te3Wu7CmzPMYPA0a9V287uYV37WJ/S8wgFBTk2UWsk8xLOAiuPLbkNjtAxekmnCYSLGpct557unOIQlBByL3wg==`;
 * the remaining hunks are peer-context string rewrites of snapshots that reference our package, caused by that
   peer-set change — no other package version moved, and `resolution` entries for all peers are byte-identical.
+
+## ADDENDUM 2 — registry-call facts (root: the count is not a new blocker)
+
+From the log lines I hold, nothing added:
+* **Registry**: `https://registry.npmjs.org` only. **Call type**: package **metadata** requests issued by pnpm
+  11.7.0's supply-chain-policy verification leg, printed as
+  `[WARN] Request took <27,8xx–28,5xx>ms: https://registry.npmjs.org/@deepseek-ai%2F<package>` — 48–50 distinct
+  `@deepseek-ai/dsh-*` package names (`dsh-session-persistence … dsh-permission-presets`), all inside step 12.
+* **No package bodies fetched**: the exception run printed `reused 1, downloaded 0`; b2 printed
+  `Packages: +532 … reused 532, downloaded 0`. Everything materialised came from the local store via hardlinks.
+* **No outbound secrets**: the held lines carry only host + package name + duration. The repo `.npmrc` face is
+  `auto-install-peers=false` and nothing else (no auth/registry-token keys measured), and no token, cookie or
+  integrity value appears in any captured output line.
+* **No writes elsewhere**: per-path table in ADDENDUM §(2) (repo tracked 0; root / both package / test-use
+  `node_modules` 0 newer files); the only store growth is our own `file:` import of the candidate tgz
+  (+3,366,905 B); the pnpm metadata cache under `$HOME` is not writable from my sandbox (`touch` →
+  `Read-only file system`), so nothing there came from my side.
