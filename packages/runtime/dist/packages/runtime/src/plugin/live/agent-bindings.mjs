@@ -3569,10 +3569,34 @@ export function createAgentBindings(deps) {
               : { on: (event, handler) => { const d = agentCtx.on(event, handler, { global: true }); return typeof d === 'function' ? d : () => {} } }),
             registerGuardFor: (agent) => (fn) => (typeof agent?.ctx?.tools?.guard === 'function' ? agent.ctx.tools.guard(fn) : undefined),
             scheduleServiceFeed: () => deps.scheduleServiceFeed(),
-            // Root residual 1/2: the safe point is ONLY complete when the
-            // live dispatcher surface carries the ORIGINAL def as the REAL
-            // ACTIVE tuple (the same entry the PA trust read will resolve);
-            // the created handler itself never blocks the serial queue.
+            // ROOT b4 终裁: the tuple is ESTABLISHED, never waited for. The
+            // safe point runs this ONCE the ORIGINAL defs are visible: the
+            // Team Guard assembly's OWN bind/verification (bindOwnTools =
+            // bindAll(names,'team-own'): pins the live definition read at
+            // the PUBLIC seam, install.ts bindAll — an establishment of
+            // verification over the real native body, NOT a claim of Team
+            // physical registration, and no global trusted list is touched).
+            // The dispatcher is already published, so the write lands ACTIVE
+            // for dispatch at once; the module's tuple check right after is
+            // immediate — the bounded poll stays only for def visibility.
+            establishNative: (entries) => {
+              if (typeof a5p1Guard?.bindOwnTools !== 'function') {
+                return { ok: false, detail: 'the Team Guard assembly exposes no bindOwnTools — no ORIGINAL dispatcher bind/verification path exists on this agent' }
+              }
+              let outcome
+              try {
+                outcome = a5p1Guard.bindOwnTools(entries.map((entry) => entry.name))
+              } catch (error) {
+                return { ok: false, detail: `bindOwnTools threw ${String(error?.message ?? error).slice(0, 140)}` }
+              }
+              if (outcome === null || typeof outcome !== 'object' || outcome.ok !== true) {
+                return { ok: false, detail: `bindOwnTools answered ${String(outcome?.error?.code ?? 'refused').slice(0, 140)}` }
+              }
+              return { ok: true }
+            },
+            // Root residual 1/2: the tuple check reads the live dispatcher
+            // surface (the same entry the PA trust read will resolve); the
+            // created handler itself never blocks the serial queue.
             nativeReady: (name, definition) => a5ScheduleBound.size > 0
               ? a5ScheduleSurfaceEntry(name) !== undefined
               : (a5p1Guard?.dispatcher?.surface?.entryOf?.(name)?.binding?.status === 'ACTIVE'

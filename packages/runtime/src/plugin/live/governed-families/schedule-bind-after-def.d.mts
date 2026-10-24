@@ -40,6 +40,11 @@ export interface ScheduleBindDeps {
    *  true for BOTH pair names — the wiring reads the REAL Guard dispatcher
    *  surface (entryOf → ACTIVE binding of the bound def identity). */
   nativeReady?: (name: string, definition: unknown) => boolean
+  /** ROOT b4: establish the tuple ONCE, explicitly, through the assembly's
+   *  ORIGINAL dispatcher bind/verification — called by the safe point after
+   *  the defs appear and before the tuple check; failure is a typed refusal
+   *  (native-bind-refused), never a stretched poll. */
+  establishNative?: (entries: Array<{ name: string, definition: unknown }>) => { ok: boolean, detail?: string } | Promise<{ ok: boolean, detail?: string }>
   /** Root residual 3: the plane's existing governedTokenLedger narrow face.
    *  take BEFORE any PA entry; settle in the flight's finally. false take =
    *  token replay, refused with zero PA entry. */
