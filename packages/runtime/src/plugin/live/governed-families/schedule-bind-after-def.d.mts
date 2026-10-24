@@ -36,6 +36,15 @@ export interface ScheduleBindDeps {
   registerGuardFor?: (agent: unknown) => ((guard: (exec: unknown) => string | undefined) => (() => void) | undefined) | undefined
   registerGuard?: ((guard: (exec: unknown) => string | undefined) => (() => void) | undefined) | undefined
   scheduleServiceFeed?: () => unknown
+  /** Root residuals 1/2: the safe point is only complete when this answers
+   *  true for BOTH pair names — the wiring reads the REAL Guard dispatcher
+   *  surface (entryOf → ACTIVE binding of the bound def identity). */
+  nativeReady?: (name: string, definition: unknown) => boolean
+  /** Root residual 3: the plane's existing governedTokenLedger narrow face.
+   *  take BEFORE any PA entry; settle in the flight's finally. false take =
+   *  token replay, refused with zero PA entry. */
+  takePaToken?: (exec: unknown) => boolean | Promise<boolean>
+  settlePaToken?: (exec: unknown) => void
   /** CANONICAL gate: family registration + REAL arm build. ONLY an
    *  {ok:true} answer lets the bind proceed (card #2 law A). */
   onBinded?: (input: ScheduleBindGateInput) => { ok: boolean } | Promise<{ ok: boolean }>
