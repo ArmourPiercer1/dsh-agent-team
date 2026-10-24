@@ -107,6 +107,15 @@ export const A5_G1_FAMILY_GROUP = 'G1'
 // silently translated: classify mints only revision 7 and the edge re-verify
 // refuses any stored target outside the closed variants.
 export const A5_G1_ADAPTER_REVISION = 7
+export const A5_G1_CONTROL_ADAPTER_REVISION = 8
+// The B-CONTROL family's OWN revision (root LIMITED BUILD ORDER 2026-10-25):
+// the family's wire format moved with the FULL target pairing (variant
+// 7529218e5 §5's closing change - request identity + action facts INTO the
+// target), so descriptor (the reviewPayload family claim), registration (the
+// pa-mount-registry row) and claim (the walk) ALL answer 8 - the format-
+// identity pairing obligation. Every OTHER G1 family keeps 7 (the B-INSPECT
+// pair's bytes did not move); earlier B-CONTROL-era approvals are NOT
+// translated - the kernel's own comparison refuses a stale pair.
 
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
@@ -680,6 +689,49 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       }
       break
     }
+    case 'B-CONTROL': {
+      // THE FULL TARGET PAIRING (the root LIMITED BUILD ORDER 2026-10-25;
+      // the closing change the strict variant 7529218e5 §5 named: request
+      // identity + action facts INTO the target). Every leaf rides the
+      // ORIGINAL REAL VALUE at FULL VALUE under the sanctioned REVIEWED
+      // ENCODING (the B-TERMINAL law: a string leaf carrying the value -
+      // verbatim for a string, canonical JSON for a structure - and the
+      // literal 'absent' for an OPTIONAL lane the caller omitted; never a
+      // removed key, never a digest). The five trusted config leaves merge
+      // in below exactly as the 7529218e5 floor signs them; the native
+      // behind bindBody keeps enforcing its OWN inner legitimacy (the outer
+      // PA never replaces it).
+      const reviewed = (value) => (value === undefined || value === null
+        ? 'absent'
+        : typeof value === 'string' ? value : canonical(value))
+      const controlRecord = spec.recordIndex === 83 ? 'request-control'
+        : spec.recordIndex === 84 ? 'resolve-control'
+          : spec.recordIndex === 85 ? 'list-pending'
+            : spec.recordIndex === 87 ? 'grant-permission'
+              : 'revoke-permission'
+      built.target = {
+        controlRecord,
+        requestRootSessionId: reviewed(rawArgs.rootSessionId),
+        requestToken: reviewed(rawArgs.requestToken),
+      }
+      if (spec.recordIndex === 83) {
+        built.target.requestKind = reviewed(rawArgs.kind)
+        built.target.requestTargetInstanceId = reviewed(rawArgs.targetInstanceId)
+        built.target.requestActionName = reviewed(rawArgs.actionName)
+        built.target.requestToolName = reviewed(rawArgs.toolName)
+        built.target.requestSummary = reviewed(rawArgs.summary)
+      } else if (spec.recordIndex === 84) {
+        built.target.requestCaseId = reviewed(rawArgs.requestId)
+        built.target.requestDecision = reviewed(rawArgs.decision)
+        built.target.requestNote = reviewed(rawArgs.note)
+      } else if (spec.recordIndex === 85) {
+        built.target.requestLimit = reviewed(rawArgs.limit)
+      } else {
+        built.target.permissionTargetInstanceId = reviewed(rawArgs.targetInstanceId)
+        built.target.permissionRules = reviewed(rawArgs.rules)
+      }
+      break
+    }
     default:
       break
   }
@@ -786,7 +838,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       effects,
       serviceObligations,
       targetManifest,
-      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
+      reviewPayload: Object.freeze({ familyId: spec.family, adapterRevision: spec.family === 'B-CONTROL' ? A5_G1_CONTROL_ADAPTER_REVISION : A5_G1_ADAPTER_REVISION, providerIdentity: providerId, definitionIdentity: definitionIdentity ?? null, targetManifest }),
       generations,
       parametersFingerprint: `sha256:${sha256(canonical(args ?? {}))}`,
     })
