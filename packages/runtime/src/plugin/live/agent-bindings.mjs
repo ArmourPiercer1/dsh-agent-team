@@ -4253,89 +4253,124 @@ export function createAgentBindings(deps) {
           })
           // The trusted CURRENT topology supply (B-INSPECT's classify + edge
           // fact). The seam is a live reader, never a frozen snapshot.
-          // ROOT 01:01 SUPPLY WIRING (a067 `g1-trusted-topology-supply.mjs`,
-          // int 12c850c6a; center 01:01 card ①): the block now WIRES the
-          // REAL supply over the faces THIS mount actually holds —
-          //   inspect    = the PUBLIC `ctx.cordisInspect` face the native
-          //                cordis_inspect_list itself reads (host.ts:18
-          //                mount law), read live per call;
-          //   authorized = the owner-held LIVE scope, itself the fresh
-          //                intersection of this mount's THREE real
-          //                authorization sources — the row's configured
-          //                MCP servers (`configuredMcpServers(config)`), the
-          //                bound template's `capabilities.mcp` allow
-          //                (selective mode, `filterMcpServers`), and the
-          //                durable facet's allowed bit (`mcpViews[name]
-          //                .allowed`, boundary-applied) — the SAME law the
-          //                MCP mount target below computes, re-read per
-          //                call, NEVER a constant triple set. Publicly
-          //                VISIBLE stays NOT authorized: the supply
-          //                intersects the directory with this scope; an
-          //                unreadable source answers undefined and the
-          //                module's OWN fail-closed refusal stands.
-          // An integrator-supplied `g1PureQuery.trustedTopology` is still
-          // honored (the signed seam, validated below) and wins — explicit
-          // config over derived supply, never the reverse. Absent every
-          // source = NOT mounted: the rows keep the module's own
-          // call-time refusal (P_G1_TRUSTED_TOPOLOGY_ABSENT verbatim) —
-          // mounted, placed, registered, and zero native entry. This arm
-          // still never fabricates a topology.
+          // ROOT G1 FINAL LIMITED RULING + center 纠正卡增补 (topology14575):
+          // THREE closed shapes on this cfg, nothing else —
+          //   ① `g1Cfg.trustedTopology = { current }` — the signed explicit
+          //      trusted injection (f28 law UNCHANGED, HIGHEST priority; a
+          //      `topologyScope` beside it stays INERT, never consulted);
+          //   ② `g1Cfg.topologyScope: readonly { platform: 'host'|'client',
+          //      provider: string, method: string }[]` — the DEPLOYER's
+          //      explicitly configured scope, the existing Provider HARD
+          //      BOUNDARY, handed to the supply as
+          //      `authorized = () => Object.freeze(configured.map(copy))`;
+          //      the a067 supply keeps its PROVEN law of a FRESH same-read
+          //      intersection with the real public `ctx.cordisInspect`
+          //      directory. There is NO intersection with capabilities /
+          //      mcpViews / MCP names (no crosswalk literals), no allow-all
+          //      state (wildcard, missing field, non-string, or platform
+          //      outside host|client -> the MOUNT refuses typed; malformed =
+          //      refused, never degraded), no new permission ledger, no
+          //      Blueprint field, no Host auto-authorization and no
+          //      visible-directory authorization. Explicit `[]` is a legal
+          //      ZERO AUTHORIZATION face — an empty constraint set, not an
+          //      absent one: a query triple is refused by the membership
+          //      law at classify (nothing is in the face) while the list
+          //      row still WALKS and answers the zero-constrained face;
+          //      the two rows keep their distinct laws and neither is
+          //      generalized into the other. The scope is never widened.
+          //      EXPERIMENTAL 状态上限: 接线未测
+          //      (无 Host) — until the 接线 window this path lacks even
+          //      接线 evidence.
+          //   ③ ABSENT (default) — OFF, NOTHING IS CONSTRUCTED and the
+          //      inspect face is not even read. Absence is deny, never
+          //      allow-all: the rows keep the module's OWN fail-closed
+          //      call-time refusal (P_G1_TRUSTED_TOPOLOGY_ABSENT verbatim).
+          // WITHDRAWN WHOLESALE (root ruling): the derived scope from the
+          // MCP three sources (configuredMcpServers / capabilities.mcp /
+          // mcpViews) — the server-name domain (tool mount, products
+          // `mcp__<server>__<tool>`) and the inspect provider-id domain
+          // (Host closed first-party set tool-cordis providers.ts:41-81;
+          // Client plugin-chosen manifest ids, client-runner index.ts:200)
+          // are SEPARATE identity domains with NO proven crosswalk, and the
+          // setup-captured caps/mcpViews are not boundary-fresh anyway. The
+          // matcher is REMOVED, not narrowed; no half of the law stays.
           let g1Topology
-          if (g1IsRecord && g1Cfg.trustedTopology !== undefined) {
-            g1Topology = typeof g1Cfg.trustedTopology?.current === 'function'
-              ? Object.freeze({ current: () => g1Cfg.trustedTopology.current() })
-              : null
-            if (g1Topology === null) {
-              observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (g1PureQuery.trustedTopology supplied without a current() reader — a CURRENT-facts source must be a live reader, never a frozen snapshot)`)
+          const g1TopologyCfg = g1IsRecord ? g1Cfg.trustedTopology : undefined
+          const g1ScopeCfg = g1IsRecord ? g1Cfg.topologyScope : undefined
+          const g1ScopeTriples = []
+          let g1ScopeBad = null
+          if (g1ScopeCfg !== undefined) {
+            if (!Array.isArray(g1ScopeCfg)) {
+              g1ScopeBad = 'must be an array of closed { platform, provider, method } triples (no other shape; absence, not a loose value, is the deny default)'
+            } else {
+              for (const entry of g1ScopeCfg) {
+                const keys = entry !== null && typeof entry === 'object' && !Array.isArray(entry) ? Object.keys(entry) : null
+                if (keys === null
+                  || keys.length !== 3
+                  || !(keys.includes('platform') && keys.includes('provider') && keys.includes('method'))) {
+                  g1ScopeBad = 'every entry carries EXACTLY platform/provider/method (closed grammar, no extras, no model-shaped fields)'
+                  break
+                }
+                if (typeof entry.platform !== 'string' || (entry.platform !== 'host' && entry.platform !== 'client')) {
+                  g1ScopeBad = 'platform is the closed Host/Client plane, never a wildcard'
+                  break
+                }
+                if (typeof entry.provider !== 'string' || entry.provider.length === 0 || entry.provider === '*'
+                  || typeof entry.method !== 'string' || entry.method.length === 0 || entry.method === '*') {
+                  g1ScopeBad = 'provider/method are exact non-empty ids — there is NO allow-all state'
+                  break
+                }
+                g1ScopeTriples.push(Object.freeze({ platform: entry.platform, provider: entry.provider, method: entry.method }))
+              }
+            }
+            if (g1ScopeBad !== null) {
+              observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (g1PureQuery.topologyScope ${g1ScopeBad})`)
               throw Object.assign(new Error(
-                `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': trustedTopology must be { current: () => unknown } (a CURRENT-facts reader) when supplied`,
+                `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': topologyScope ${g1ScopeBad}`,
               ), { code: 'alpha5-g1-arm-mount-refused' })
             }
-          } else {
+          }
+          if (g1TopologyCfg !== undefined) {
+            if (typeof g1TopologyCfg?.current === 'function') {
+              // ① the signed injection wins; a configured scope stays INERT.
+              g1Topology = Object.freeze({ current: () => g1TopologyCfg.current() })
+              if (g1ScopeCfg !== undefined) {
+                observations.push(`a5m2-g1: topologyScope-INERT for ${sessionId} (the signed trustedTopology injection is the ONE face; the deployer scope is never consulted beside it)`)
+              }
+            } else {
+              observations.push(`a5m2-g1: arm-REFUSED for ${sessionId} (g1PureQuery.trustedTopology must be { current: () => unknown } — a CURRENT-facts source is a live reader, never a frozen snapshot; the deployer hard boundary lives in topologyScope, not here)`)
+              throw Object.assign(new Error(
+                `agent-bindings: alpha.5 governed G1 pure-query mount refused for '${sessionId}': trustedTopology must be { current: () => unknown } (a CURRENT-facts reader) when supplied; deployer scope belongs in topologyScope`,
+              ), { code: 'alpha5-g1-arm-mount-refused' })
+            }
+          } else if (g1ScopeCfg !== undefined) {
+            // ② the deployer's hard boundary over the REAL public directory.
+            const g1ScopeFrozen = Object.freeze(g1ScopeTriples)
             const g1InspectFace = agentCtx?.cordisInspect
             if (g1InspectFace === null || typeof g1InspectFace !== 'object' || typeof g1InspectFace.list !== 'function') {
-              // No public inspect directory on this mount: there is NO
-              // topology to supply — the rows fail closed at call time,
-              // they never run on a snapshot or a guess.
+              // ② needs the REAL public directory to intersect; no face = no
+              // topology to supply — rows fail closed at call time.
               observations.push(`a5m2-g1: topology-supply-ABSENT for ${sessionId} (no public ctx.cordisInspect face on this mount — rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
             } else {
-              // THE OWNER-HELD SCOPE: three real sources, read live per
-              // call (no constants, no cache — a facet that moved between
-              // calls moves the scope, and the supply's digest with it).
-              const g1AuthorizedScope = () => {
-                const directory = g1InspectFace.list()
-                if (!Array.isArray(directory)) return undefined
-                const configuredNames = configuredMcpServers(config).map((server) => server.name)
-                const templateAllowed = capabilities.mode === 'selective'
-                  ? filterMcpServers(configuredNames, capabilities.mcp)
-                  : configuredNames
-                const permitted = new Set(templateAllowed.filter((name) => mcpViews[name]?.allowed === true))
-                const triples = []
-                for (const view of directory) {
-                  // A half-known directory is not a scope fact: answer
-                  // undefined (the supply's fail-closed path), never skip
-                  // the broken entry and call the rest a scope.
-                  if (view === null || typeof view !== 'object' || typeof view.platform !== 'string' || typeof view.id !== 'string' || !Array.isArray(view.methods)) return undefined
-                  if (!permitted.has(view.id)) continue
-                  for (const method of view.methods) {
-                    if (method === null || typeof method !== 'object' || typeof method.name !== 'string') return undefined
-                    triples.push(Object.freeze({ platform: view.platform, provider: view.id, method: method.name }))
-                  }
-                }
-                return triples
-              }
               const g1Supply = createG1TrustedTopologySupply({
                 inspect: Object.freeze({ list: () => g1InspectFace.list() }),
-                authorized: g1AuthorizedScope,
+                // the deployer's configured hard boundary per read; the
+                // supply itself keeps the fresh same-read intersection with
+                // the live directory (a067 proven law).
+                authorized: () => Object.freeze(g1ScopeFrozen.map((triple) => Object.freeze({ ...triple }))),
                 observe: (row) => { observations.push(`a5m2-g1: topo ${String(row?.event ?? 'observe')} for ${sessionId}`) },
               })
               if (g1Supply.ok === true) {
                 g1Topology = Object.freeze({ current: () => g1Supply.supply.current() })
-                observations.push(`a5m2-g1: topology-SUPPLIED for ${sessionId} (public ctx.cordisInspect face x live configured/capabilities/facet scope — fresh per read, no constants)`)
+                observations.push(`a5m2-g1: topology-SUPPLIED for ${sessionId} (EXPERIMENTAL deployer-configured hard boundary x live public directory — fresh per read, never allow-all)`)
               } else {
                 observations.push(`a5m2-g1: topology-supply-REFUSED for ${sessionId} (${String(g1Supply.code)} — rows keep the module's OWN fail-closed posture)`)
               }
             }
+          } else {
+            // ③ DEFAULT OFF: nothing is constructed, the face is not even
+            // read. Absence is deny, never allow-all.
+            observations.push(`a5m2-g1: topology-supply-ABSENT for ${sessionId} (no trustedTopology/topologyScope configured — default OFF per root topology14575, allow-all is never the default; rows keep the module's OWN P_G1_TRUSTED_TOPOLOGY_ABSENT fail-closed; nothing fabricated)`)
           }
           let g1PlacedCount = 0
           for (const entry of g1PureQuerySubset()) {
