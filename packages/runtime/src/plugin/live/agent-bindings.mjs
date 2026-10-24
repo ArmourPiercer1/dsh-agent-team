@@ -378,7 +378,14 @@ import { A5_B_SUBAGENT_RECORD_SPECS } from './governed-families/subagent-adapter
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { createScheduleBindAfterDef } from './governed-families/schedule-bind-after-def.mjs'
 import { a5G3RouteIdentity } from './governed-families/g3-terminal-wiring.mjs'
-import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
+import { A5_B_SCHEDULE_ADAPTER_REVISION, A5_B_SCHEDULE_FAMILY_ID } from './governed-families/schedule-adapters.mjs'
+// A5M2 B-SCHEDULE card #2 REAL SUPPLY: the EXISTING family wiring (the
+// 11-leaf claim: classify → mintTargetManifest → closed effects → payload)
+// and the REAL published Host error-class identity it validates against —
+// reused at the bind moment, never re-authored, never a look-alike class.
+import { createScheduleWiring, createGovernedScheduleArm } from './governed-families/schedule-wiring.mjs'
+import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
+import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
 // A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
 // CORRECTS the supply route): the pinned-639 terminal faces must NOT be
 // top-level imports. A top-level `@deepseek-ai/*` import loads on EVERY
@@ -3521,6 +3528,13 @@ export function createAgentBindings(deps) {
           if (typeof deps.scheduleServiceFeed !== 'function') {
             throw refuseSchedule('the entry answers no schedule service feed — the production port has no supply face (the native TOOL face is NOT a service stand-in, root 19:17); mount the host schedule service or keep the gate closed')
           }
+          // Bind-scope state for the REAL supply (card #2): the arms the
+          // canonical gate builds, the bind-time placement feed it answers,
+          // and exactly the family keys the gate wrote (pair-close ledger-
+          // free bookkeeping — the durable ONE ledger stays the plane's).
+          const a5ScheduleArms = new Map()
+          const a5SchedulePlacement = new Map()
+          const a5ScheduleWrittenKeys = []
           const a5ScheduleBind = createScheduleBindAfterDef({
             readToolDefinition: (name, agent) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, agent) : undefined),
             subscribeAgentCreated: (fn) => {
@@ -3532,46 +3546,147 @@ export function createAgentBindings(deps) {
               : { on: (event, handler) => { const d = agentCtx.on(event, handler, { global: true }); return typeof d === 'function' ? d : () => {} } }),
             registerGuardFor: (agent) => (fn) => (typeof agent?.ctx?.tools?.guard === 'function' ? agent.ctx.tools.guard(fn) : undefined),
             scheduleServiceFeed: () => deps.scheduleServiceFeed(),
-            consumePaAtBody: typeof deps.schedulePaConsumeAtBody === 'function'
-              ? (exec, definition) => deps.schedulePaConsumeAtBody(exec, definition, { sessionId, instanceId, teamRoot: String(teamRoot) })
-              : undefined,
-            onBinded: ({ definitions }) => {
-              // CANONICAL family registration at the bind moment (root 00:3x:
-              // the ORIGINAL paPlacementNameOf/readPaCallFacts paths + the
-              // family registration — NO parallel placement source). Keys are
-              // the runtime identities of the ORIGINAL definitions just bound
-              // (root 308 law verbatim: never a capture-side string);
-              // PREFLIGHT first, then the writes; an unexpected throw unwinds
-              // exactly the keys this bind wrote (never a half family).
-              const registrations = []
-              for (const entry of definitions) {
+            // REAL plane-edge supply (root limited-fix card #2): the SAME
+            // a5PlaneValue.paAdmit closure the sibling families consume, the
+            // EXISTING 11-leaf claim (adapter classify → mintTargetManifest →
+            // closed effects → reviewPayload) and the run_code D1-D4
+            // reference shape (g3-ptc-wiring.mjs:299-378): pa.open → pa.edge
+            // → consumedProof. NEVER a boolean, NEVER a second ledger — the
+            // ONE token/one-flight/grant ledger stays the plane's own.
+            consumePaAtBody: async (exec) => {
+              const arm = a5ScheduleArms.get(exec?.name)
+              if (arm === undefined) return Object.freeze({ kind: 'deny', code: 'P_A5_ARM_ABSENT', detail: 'no real arm is bound for this name — the canonical gate never opened; the body never runs' })
+              const callId = typeof exec?.callId === 'string' && exec.callId.length > 0 ? exec.callId : null
+              if (callId === null) return Object.freeze({ kind: 'deny', code: 'P_A5_CALL_ID_ABSENT', detail: 'the execution answered no ISSUED call identity — the PA walk has no single-flight key; a guessed correlation is forbidden (zero port entry)' })
+              const classified = arm.classify(exec?.arguments ?? {})
+              if (classified?.ok !== true) return Object.freeze({ kind: 'deny', code: String(classified?.code ?? 'P_A5_CLASSIFY_REFUSED'), detail: String(classified?.detail ?? 'the adapter classify refused this call') })
+              const parsedEffects = parseRequestedEffectSet(classified.effects)
+              if (parsedEffects.ok !== true) return Object.freeze({ kind: 'deny', code: 'P_A5_EFFECTS_UNPARSABLE', detail: `the arm's effect set is not the closed vocabulary (${String(parsedEffects?.problems?.[0]?.detail ?? 'parse refused')}) (zero port entry)` })
+              const pa = a5PlaneValue
+              if (typeof pa?.paAdmit?.open !== 'function' || typeof pa?.paAdmit?.edge !== 'function') {
+                return Object.freeze({ kind: 'deny', code: 'P_A5_PLANE_EDGE_ABSENT', detail: 'the mounted plane answers no paAdmit.open/.edge — the schedule pair has no admission edge (this wiring ships no stub walk)' })
+              }
+              const payload = classified.reviewPayload
+              const walk = Object.freeze({
+                realmId: a5PlaneRealmId,
+                callId,
+                parametersFingerprint: classified.plan.parametersFingerprint,
+                requestedEffects: parsedEffects.value,
+                toolName: exec.name,
+                // 载荷法: the four P-adds at FULL VALUE from the arm's own
+                // payload — the plane composes the durable question from these.
+                family: Object.freeze({
+                  familyId: payload.familyId,
+                  adapterRevision: payload.adapterRevision,
+                  providerIdentity: payload.providerIdentity,
+                  targetManifest: payload.targetManifest,
+                }),
+                ...(exec.signal === undefined ? {} : { signal: exec.signal }),
+              })
+              const opened = await pa.paAdmit.open(walk)
+              if (opened?.cancelled === true) return Object.freeze({ ...opened, stage: 'open' })
+              if (opened?.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+                return opened ?? Object.freeze({ kind: 'deny', code: 'P_A5_APPROVAL_NOT_LANDED', detail: 'the admission answered without any kernel answer — internal state never substitutes' })
+              }
+              return await pa.paAdmit.edge(Object.freeze({
+                ...walk,
+                grant: opened.grant,
+                ...(opened.paDurableMint === undefined ? {} : { paDurableMint: opened.paDurableMint }),
+                ...(opened.request === undefined ? {} : { request: opened.request }),
+                // D2 lesson honored: the COMPLETE construction binding the
+                // OPEN answered rides the edge verbatim — never an edge that
+                // omits placementName/paConstructionBinding (that silently
+                // skipped the real PA validation).
+                ...(opened.placementName === undefined ? {} : { placementName: opened.placementName }),
+                ...(opened.paConstructionBinding === undefined ? {} : { paConstructionBinding: opened.paConstructionBinding }),
+              }))
+            },
+            onBinded: async ({ definitions, service }) => {
+              // CANONICAL GATE (addendum A): identity preflight → REAL arms
+              // (pure builds, zero writes) → the family registration on the
+              // ORIGINAL paths (definitionIdentityOf of the ORIGINAL defs +
+              // a5GovernedFamilyFor + registerA5GovernedFamily, root 308
+              // ATOMICITY). Every failure answers BEFORE any key exists or
+              // any face opened — the module never half-binds. An {ok:true}
+              // answer is the ONLY way the bind proceeds.
+              const identities = definitions.map((entry) => {
                 const identity = definitionIdentityOf(entry.definition)
                 if (typeof identity !== 'string' || identity.length === 0) {
-                  observations.push(`a5m2-schedule: family-registration-REFUSED for ${sessionId} (the original ${entry.name} def answers no runtime identity — nothing written)`)
-                  return
+                  throw new Error(`a5m2-schedule gate: the original ${entry.name} def answers no runtime identity — nothing written`)
                 }
                 const prior = a5GovernedFamilyFor(identity)
                 if (prior !== undefined) {
-                  observations.push(`a5m2-schedule: family-registration-REFUSED for ${sessionId} (conflicting prior claim ${String(prior.familyId)} on ${entry.name} — nothing written)`)
-                  return
+                  throw new Error(`a5m2-schedule gate: conflicting prior claim ${String(prior.familyId)} on ${entry.name} — nothing written`)
                 }
-                registrations.push({ name: entry.name, identity })
+                return { name: entry.name, identity, definition: entry.definition }
+              })
+              const assembly = createScheduleWiring({
+                providerId: 'a5p5-plane',
+                declaredService: Object.freeze({ present: true }),
+                captured: Object.freeze(Object.fromEntries(identities.map((entry) => [entry.name, Object.freeze({
+                  native: entry.definition,
+                  definitionIdentity: entry.identity,
+                })]))),
+                liveNative: (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined),
+                scheduleService: service,
+                liveScheduleService: () => deps.scheduleServiceFeed(),
+                capturedAgent: runtimeAgent,
+                ScheduleInputError,
+                placementFeed: (name) => a5SchedulePlacement.get(name),
+                admit: async () => {
+                  throw new Error('P_B_SCHEDULE_PRODUCTION_ADMIT_INERT — production B-SCHEDULE consumption is the bind-after-def plane-edge walk at the execute body boundary; a call reaching this seat is drift, not a route')
+                },
+                observe: (row) => observations.push(`a5m2-schedule-wire: ${String(row?.event ?? 'event')}`),
+              })
+              if (assembly?.ok !== true) {
+                throw new Error(`a5m2-schedule gate: the family wiring assembly refused (${String(assembly?.code ?? 'n/a')}: ${String(assembly?.message ?? 'no answer').slice(0, 140)}) — nothing written`)
               }
-              const written = []
-              try {
-                for (const registration of registrations) {
-                  registerA5GovernedFamily(registration.identity, {
-                    familyId: 'B-SCHEDULE',
+              const arms = new Map()
+              for (const entry of identities) {
+                const built = createGovernedScheduleArm({
+                  name: entry.name,
+                  assembly,
+                  nativeDefinition: entry.definition,
+                  capturedAgent: runtimeAgent,
+                  ScheduleInputError,
+                  definitionIdentity: entry.identity,
+                  providerId: 'a5p5-plane',
+                  observe: (row) => observations.push(`a5m2-schedule-arm: ${String(row?.event ?? 'event')}`),
+                })
+                if (built.ok !== true) {
+                  throw new Error(`a5m2-schedule gate: the ${entry.name} arm refused (${String(built.code)}: ${String(built.message).slice(0, 140)}) — nothing written`)
+                }
+                arms.set(entry.name, built.arm)
+              }
+              for (const entry of identities) {
+                try {
+                  registerA5GovernedFamily(entry.identity, {
+                    familyId: A5_B_SCHEDULE_FAMILY_ID,
                     adapterRevision: A5_B_SCHEDULE_ADAPTER_REVISION,
                     providerIdentity: 'a5p5-plane',
                   })
-                  written.push(registration.identity)
+                  a5ScheduleWrittenKeys.push(entry.identity)
+                } catch (error) {
+                  for (const key of a5ScheduleWrittenKeys) delete A5_GOVERNED_FAMILIES[key]
+                  a5ScheduleWrittenKeys.length = 0
+                  throw new Error(`a5m2-schedule gate: the family write threw for ${entry.name} (${String(error?.message ?? error).slice(0, 120)}); the keys this gate already wrote unwound, nothing else touched`)
                 }
-                observations.push(`a5m2-schedule: family REGISTERED for ${sessionId} at the bind moment (runtime identities of the ORIGINAL defs; create/update NOT registered)`)
-              } catch {
-                for (const key of written) delete A5_GOVERNED_FAMILIES[key]
-                if (written.length > 0) observations.push(`a5m2-schedule: family-registration ROLLED BACK for ${sessionId} (${String(written.length)} key(s) unwound)`)
               }
+              for (const [name, arm] of arms) a5ScheduleArms.set(name, arm)
+              for (const entry of identities) a5SchedulePlacement.set(entry.name, Object.freeze({ definitionIdentity: entry.identity, realmId: a5PlaneRealmId }))
+              observations.push(`a5m2-schedule: REAL ARMS bound + family REGISTERED for ${sessionId} at the bind moment (runtime identities of the ORIGINAL defs; create/update NOT registered)`)
+              return Object.freeze({ ok: true, arms: arms.size, families: identities.length })
+            },
+            onBindClose: ({ reason }) => {
+              // pair-close law (addendum A): delete EXACTLY the keys this gate
+              // wrote — the table never keeps a half family.
+              if (a5ScheduleWrittenKeys.length > 0) {
+                for (const key of a5ScheduleWrittenKeys) delete A5_GOVERNED_FAMILIES[key]
+                observations.push(`a5m2-schedule: pair CLOSED for ${sessionId} (${String(reason)}); ${String(a5ScheduleWrittenKeys.length)} gate key(s) deleted`)
+                a5ScheduleWrittenKeys.length = 0
+              }
+              a5ScheduleArms.clear()
+              a5SchedulePlacement.clear()
             },
             onBindRefused: (error) => {
               // Typed, zero-effect refusal (gate a/e law): the DENY lane only,
@@ -3604,7 +3719,7 @@ export function createAgentBindings(deps) {
           if (typeof a5ScheduleBindDispose !== 'function') {
             observations.push(`a5m2-schedule: the dispose listener answered no disposer for ${sessionId}`)
           }
-          observations.push(`a5m2-schedule: bind-after-def STARTED for ${sessionId} (zero registration; PA body-boundary lane ${typeof deps.schedulePaConsumeAtBody === 'function' ? 'wired' : 'FAIL-CLOSED — no canonical consume funnel reachable for the unplaced native pair yet (interface breakpoint reported); body refuses, never silent'}; create/update untouched — TRIGGER_GOVERNANCE gap open)`)
+          observations.push(`a5m2-schedule: bind-after-def STARTED for ${sessionId} (zero registration; REAL plane-edge consume wired on the sibling a5PlaneValue.paAdmit closure (open→edge→consumedProof); create/update untouched — TRIGGER_GOVERNANCE gap open)`)
         }
         // A5-M2 G2 WIRING (root 19:31 item 1, live as of this round): the
         // SIGNED Team assembly mount is CALLED here — the closed gate keys
