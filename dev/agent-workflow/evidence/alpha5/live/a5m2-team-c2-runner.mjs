@@ -46,6 +46,20 @@ const LIST_ROOTS_CONTRACT_VERSION = 3
  *  place, zero copy). Overridable by parameter, never cloned or installed. */
 const SHARED_HOST_TREE = '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use'
 const hostTree = () => process.env.A5M2_TEAM_C2_HOST_TREE ?? SHARED_HOST_TREE
+/**
+ * The SIGNED Team candidate PRODUCT package (center-supplied) — deliberately a
+ * DIFFERENT path from the host runtime package above: the host tree is the
+ * upstream test runtime, the product tree is this repository's plugin package
+ * (`files: ['dist']`). READ-ONLY here as well; the pin records the commit whose
+ * `check-artifacts-at-head` measurement was `verdict=ok drift=0 compared=1806`
+ * (measured by the center; the driver records the attribution, it does not
+ * re-run a build).
+ */
+const SHARED_PRODUCT_TREE = '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int'
+const PRODUCT_PIN = 'ced9e7dbb63bcb06e2c93a7cb077b96dfcaedd5d'
+const PRODUCT_TIP = '5062988f0626bff3aea77a2cb98247dd96c0afa4'
+const productTree = () => process.env.A5M2_TEAM_C2_PRODUCT_TREE ?? SHARED_PRODUCT_TREE
+const PRODUCT_ACCEPTED_HEADS = [PRODUCT_PIN, PRODUCT_TIP, ...(process.env.A5M2_TEAM_C2_PRODUCT_HEAD ? [process.env.A5M2_TEAM_C2_PRODUCT_HEAD] : [])]
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/
 
 /**
@@ -301,6 +315,7 @@ function collectStrings (value, out = []) {
 /** Prechecks only: source-level, no host, no world, no install. */
 export function precheck () {
   const problems = [...validateRow().problems]
+  const notes = []
   const row = ROW_CONFIG
   if (!row.world.startsWith(`${TEST_HOME_ROOT_REL}/`)) problems.push('world must live under tests/homes')
   if (existsSync(join(REPO, row.world))) problems.push(`the preparation must not create or reuse a world directory: ${row.world}`)
@@ -339,6 +354,25 @@ export function precheck () {
   } catch (error) {
     problems.push(`team.create builder broke: ${String(error?.message ?? error)}`)
   }
+  // Product package: same three identity assertions, separate path, still
+  // read-only. Tracked dirtiness is fatal; untracked entries are REPORTED (the
+  // supplied tree currently carries `packages-pins/` and
+  // `tests/checks/.nc-runs/` untracked — center stated porcelain-empty, which
+  // holds for tracked content but not literally, so the precheck says so
+  // instead of asserting a falsehood).
+  const product = productTree()
+  if (!existsSync(product)) problems.push(`product package absent: ${product}`)
+  else {
+    const pHead = spawnSync('git', ['-C', product, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim()
+    if (!PRODUCT_ACCEPTED_HEADS.includes(pHead)) problems.push(`product HEAD ${pHead.slice(0, 12)} is not an accepted head (pin ${PRODUCT_PIN.slice(0, 12)} / tip ${PRODUCT_TIP.slice(0, 12)})`)
+    const pTracked = spawnSync('git', ['-C', product, 'status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8' }).stdout.trim()
+    if (pTracked !== '') problems.push('product package has TRACKED modifications — never write it, report it')
+    const pUntracked = spawnSync('git', ['-C', product, 'status', '--porcelain'], { encoding: 'utf8' }).stdout.trim().split('\n').filter((line) => line.startsWith('?? '))
+    if (pUntracked.length > 0) notes.push(`product package carries ${String(pUntracked.length)} untracked entr(ies): ${pUntracked.map((l) => l.slice(3)).join(', ')}`)
+    const distAdapters = join(product, 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs')
+    if (!existsSync(distAdapters)) problems.push('product package has no built B-TEAM adapter mirror')
+    else if (!readFileSync(distAdapters, 'utf8').includes(`A5_B_TEAM_ADAPTER_REVISION = ${String(A5_B_TEAM_ADAPTER_REVISION)}`)) problems.push('product package mirror does not answer the signed adapter revision')
+  }
   const host = hostTree()
   if (!existsSync(host)) problems.push(`host tree absent: ${host}`)
   else {
@@ -348,7 +382,7 @@ export function precheck () {
     if (dirty !== '') problems.push('host tree is not pristine (porcelain non-empty) — never write it, report it')
     if (!existsSync(join(host, 'node_modules'))) problems.push('host tree has no node_modules (reuse requires the existing install; nothing is installed here)')
   }
-  return Object.freeze({ ok: problems.length === 0, problems, criteria: CRITERIA_IDS, reuse: REUSE_INSTALL.baselineVersion, gaps: Object.keys(GAPS) })
+  return Object.freeze({ ok: problems.length === 0, problems, notes, productPin: PRODUCT_PIN, productAcceptedHeads: PRODUCT_ACCEPTED_HEADS, criteria: CRITERIA_IDS, reuse: REUSE_INSTALL.baselineVersion, gaps: Object.keys(GAPS) })
 }
 
 /** Validate a Team blueprint source through the PRODUCTION source gate before
