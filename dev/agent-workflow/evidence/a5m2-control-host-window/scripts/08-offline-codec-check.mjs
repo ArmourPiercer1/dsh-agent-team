@@ -28,7 +28,7 @@ const boot = new Function(...mods.keys(), '__SELF_URL__', `
   const window = { location: { origin: 'http://127.0.0.1:0' } };
   ${region}
   currentRoot = 'session-offline-root'
-  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, NONCE }
+  return { harvest, decide, callResults, steps, toolsAfterMarker, toolMsgsAfter, lastUserText, createGate, readOkWitness, explicitRefusalWitness, NONCE }
 `)(...mods.values(), new URL('./05-control-window-runner.mjs', import.meta.url).href)
 const results = []
 const A = (name, ok, detail) => { results.push({ name, ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`) }
@@ -70,6 +70,31 @@ A('gate: is_error=true -> abort-refusal (binding wait NEVER entered)', boot.crea
 A('gate: arrival WITHOUT isError -> proceed-bind only (NO business-success claim)', boot.createGate({ isError: false, text: '{}' }).action === 'proceed-bind')
 A('gate: null -> fail-timeout (honest, never fake)', boot.createGate(null).action === 'fail-timeout')
 A('gate: isError=false BUT status:rejected -> abort-refusal (never success, no 120s)', boot.createGate({ isError: false, text: '{"status":"rejected","code":"X","message":"m"}' }).action === 'abort-refusal')
+
+// (6) 87/88 witnesses (root final card): success needs SAME-call structured
+// success AND the window-unique probe; refusal needs typed code/status —
+// an arbitrary 'permission' string NEVER passes, any probe leak NEVER passes.
+const P = `A5M2-CTLHW-PROBE-${N}`
+A('readOk: structured success + probe content passes; name-only does NOT', boot.readOkWitness({ isError: false, text: `1\t{ "probe": "${P}" }` }, N) === true && boot.readOkWitness({ isError: false, text: '{"name":"a5m2-ctlhw-fixture"}' }, N) === false)
+A('readOk: isError success-text does NOT count as consumption', boot.readOkWitness({ isError: true, text: P }, N) === false)
+A('refusal: typed status:denied passes', boot.explicitRefusalWitness({ isError: false, text: '{"status":"denied","code":"PERMISSION_DENIED"}' }, N) === true)
+A('refusal: typed code:rejected passes', boot.explicitRefusalWitness({ isError: false, text: '{"code":"TOOL_DENY_NOT_AUTHORIZED"}' }, N) === true)
+A('refusal: BARE "permission" wording (no code/status, no error) FAILS — arbitrary strings never accepted', boot.explicitRefusalWitness({ isError: false, text: 'you need permission for that' }, N) === false)
+A('refusal: ANY probe leak in the text fails, even with a denied code', boot.explicitRefusalWitness({ isError: true, text: `denied ${P}` }, N) === false)
+A('refusal: explicit harness error + refusal wording passes', boot.explicitRefusalWitness({ isError: true, text: 'Error: the operation was denied by the permission lane' }, N) === true)
+
+// (7) GRANT87 marker emits team_grant_permission over the Messages protocol
+// with the closed required set + WIRE matcher {kind,value} (one-shot fixture pin)
+const reqG = { body: { messages: [
+  { role: 'user', content: [{ type: 'text', text: `A5M2-CTLHW-GRANT87 ${N} tinst=inst-offline-1` }] },
+] } }
+const outG = boot.decide({ req: reqG })
+const tG = outG?.toolCalls?.[0]
+A('GRANT87 marker emits team_grant_permission with required closed set + WIRE {kind,value}', tG?.name === 'team_grant_permission'
+  && typeof tG?.arguments?.rootSessionId === 'string' && typeof tG?.arguments?.requestToken === 'string'
+  && tG?.arguments?.targetInstanceId === 'inst-offline-1' && Array.isArray(tG?.arguments?.rules)
+  && tG?.arguments?.rules?.[0]?.matcher?.kind === 'exact' && typeof tG?.arguments?.rules?.[0]?.matcher?.value === 'string'
+  && tG?.arguments?.rules?.[0]?.matcher?.value.endsWith('/read-fixture/package.json'), `emitted=${tG?.name ?? 'none'} value=${String(tG?.arguments?.rules?.[0]?.matcher?.value ?? '')}`)
 
 const failed = results.filter((r) => !r.ok).length
 console.log(JSON.stringify({ verdict: failed === 0 ? 'OFFLINE-DECODER-OK' : 'OFFLINE-DECODER-FAIL', checks: results.length, failed }))

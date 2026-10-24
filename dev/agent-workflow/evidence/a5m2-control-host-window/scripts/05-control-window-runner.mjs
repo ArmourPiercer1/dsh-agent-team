@@ -97,12 +97,18 @@ const ANCHOR_V3_YAML = [
   'teamHardEnvelope:', '  rules: []',
   'policyStates: []', 'metadata: {}', '---', '',
 ].join('\n')
+const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-')
+const HOME = join(ROOT_DIR, 'tests', 'homes', `${WORLD_PREFIX}-${DRY ? 'dry-' : ''}${RUN_STAMP}Z`) // fresh EXPLICIT home (root-pinned law)
+const FIXTURE_DIR = join(HOME, 'read-fixture') // root final card: instance cwd was HostTree — the fixture lives in THIS run's HOME
+const FIXTURE_POSIX = (x) => String(x).replace(/\\/g, '/')
+const FIXTURE_FILE = FIXTURE_POSIX(FIXTURE_DIR) + '/package.json' // fs canonical: SAME absolute literal in carrier path, WIRE value, tool input
 const SAVED_BP_V3_YAML = [
   '---', 'schemaVersion: 3', `blueprintId: ${BP_ID}`, 'revision: "1"',
   'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 CONTROL window team. Resolve member control requests through your team tools when instructed; keep answers brief."',
   '  capabilities:', '    teamTools:', '      kind: allow', '      items:', // LeaderTemplate capabilities REQUIRE teamTools (validate.ts:967 — the real parse
   '        - team_create_member', '        - team_list_pending_control', // caught its absence): the closed leader face for THIS scenario, exact three.
   '        - team_resolve_control',
+  '        - team_grant_permission', '        - team_revoke_permission', // root one-shot fix delta #1: the two approved CONTROL tools, leader-only
   '    builtinToolDeny:', // capabilities is ALL-OR-NOTHING once present (validate.ts:966-970) —
   '      - ask_user_question', '      - create_goal', '      - exit_plan_mode', // full closed shape, kit leaderBlock law: teamTools/builtinToolDeny/skills/mcp/(permissions).
   '      - get_goal', '      - glob', '      - grep', '      - job_kill',
@@ -114,6 +120,8 @@ const SAVED_BP_V3_YAML = [
   '          - tool: team_create_member', '            resource:', '              kind: any', // exact kind:any SINGLE-TOOL rules (exact realm|tool:name projections,
   '          - tool: team_list_pending_control', '            resource:', '              kind: any', // NOT alltools). 83 stays OFF the leader (it does not request); the rest deny.
   '          - tool: team_resolve_control', '            resource:', '              kind: any',
+  '          - tool: team_grant_permission', '            resource:', '              kind: any', // delta #2: single-tool exact invocation allows;
+  '          - tool: team_revoke_permission', '            resource:', '              kind: any', // member/envelopes/ceilings otherwise UNTOUCHED
   '      ask: []', '      deny: []',
   'members:', '  - templateId: ctl-worker',
   '    persona: "You are the control worker. Follow the marker instructions literally and only."',
@@ -154,26 +162,33 @@ const SAVED_BP_V3_YAML = [
   'permissionMutationEnvelope:', '  rules:', // L6/L7 CARRIER — the GRAMMAR TRIO, each spelled per its ORIGINAL SOURCE:
   '    - operationClass: read', // (1) BLUEPRINT carrier matcher = {kind, path} (schema.js:213-216 FILE_MATCHER_FIELDS) —
   '      matcher:', '        kind: exact', //     what THIS block below uses, validated by parseBlueprint OFFLINE.
-  '        path: package.json', // (2) WIRE grant rule matcher = {kind, value} (tools.js parsePermissionRules, value<=4096).
+  `        path: ${FIXTURE_FILE}`, // THREE-WAY CONSISTENT absolute canonical: carrier path == WIRE value == tool input (root 三处一致) // (2) WIRE grant rule matcher = {kind, value} (tools.js parsePermissionRules, value<=4096).
   // (3) RUNTIME overlay matcher = {kind, resource} (permission-mutation.js validateMatcher).
   '      maximumEffect: allow',
   'teamHardEnvelope:', '  rules:', // schemaVersion-3 CEILING-2 (never merged with the carrier; both must cover).
   '    - operationClass: read',
   '      matcher:', '        kind: exact',
-  '        path: package.json',
+  `        path: ${FIXTURE_FILE}`, // THREE-WAY CONSISTENT absolute canonical: carrier path == WIRE value == tool input (root 三处一致)
   '      maximumEffect: allow',
   'policyStates: []', 'metadata: {}', '---', '',
 ].join('\n')
 
 const NONCE = Math.random().toString(36).slice(2, 8)
-const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-')
-const HOME = join(ROOT_DIR, 'tests', 'homes', `${WORLD_PREFIX}-${DRY ? 'dry-' : ''}${RUN_STAMP}Z`) // fresh EXPLICIT home (root-pinned law)
 const RUN_DIR = join(ROOT_DIR, 'dev', 'agent-workflow', 'evidence', 'a5m2-control-host-window', `runs-${DRY ? 'dry-' : ''}${RUN_STAMP}`)
 const TRANSCRIPT = []
 const checks = []
 const steps = new Map()      // callId -> {step, tool} — callIds UNIQUE per emission (root a738: no dedupe/mixing)
 const callResults = []       // harvested tool results (THE registry-execution witness)
 const memberToolsSeen = []   // filled ONLY from the member's real TOOLS-CHECK request (root a738 ②)
+const leaderToolsSeen = []  // filled ONLY from the LEADER's real TOOLS-CHECK-L request — parse pass is NOT visibility (root)
+const readOkWitness = (res, nonce) => res !== null && res.isError !== true
+  && String(res?.text ?? '').includes(`A5M2-CTLHW-PROBE-${nonce}`) // SAME-call structured success AND window-unique probe content (name-only NOT enough)
+const explicitRefusalWitness = (res, nonce) => {
+  const t = String(res?.text ?? '')
+  if (t.includes(`A5M2-CTLHW-PROBE-${nonce}`)) return false // ANY leak of the expected read result means this was not a refusal
+  if (/"(code|status)"\s*:\s*"[^"]*(denied|deny|rejected|refused|blocked)/i.test(t)) return true // explicit typed refusal code/status
+  return res?.isError === true && /\b(denied|deny|refus\w*|blocked|not authorized|no authority)\b/i.test(t) // harness-level explicit error wording
+} // arbitrary 'permission' strings NEVER pass (root final card)
 const member2ToolsSeen = []  // L5 canary: the ctl-resolver member's OWN surface (TOOLS-CHECK2)
 let callSeq = 0
 let currentCriterion = 'setup'
@@ -567,6 +582,16 @@ function decide({ req }) {
     memberToolsSeen.push(...seen)
     return { kind: 'text', content: `ACK-C0 ${NONCE}` }
   }
+  if (text.startsWith(`TOOLS-CHECK-L ${NONCE}`)) { // L6 witness: the LEADER's REAL request surface (87/88 exposure before any grant)
+    const seen = new Set(leaderToolsSeen)
+    for (const t of body.tools ?? []) {
+      const name = t?.function?.name ?? t?.name ?? (typeof t === 'string' ? t : null)
+      if (typeof name === 'string' && name.length > 0) seen.add(name)
+    }
+    leaderToolsSeen.length = 0
+    leaderToolsSeen.push(...seen)
+    return { kind: 'text', content: `ACK-C0L ${NONCE}` }
+  }
   if (text.startsWith(`TOOLS-CHECK2 ${NONCE}`)) { // L5 witness: member2's REAL surface proves the op IS bound
     const seen2 = new Set(member2ToolsSeen)
     for (const t of body.tools ?? []) {
@@ -603,29 +628,29 @@ function decide({ req }) {
     const inst = /tinst=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
     if (inst === null) return { kind: 'text', content: `CTLHW_NO_TINST ${NONCE}` }
     return toolsAfterMarker(msgs, `A5M2-CTLHW-GRANT87 ${NONCE}`) === 0
-      ? mk('leader:grant87', 'team_grant_permission', { rootSessionId: currentRoot, requestToken: `ctlhw-grant-${NONCE}`, targetInstanceId: inst, rules: [{ operationClass: 'read', matcher: { kind: 'exact', value: 'package.json' }, effect: 'allow' }] })
+      ? mk('leader:grant87', 'team_grant_permission', { rootSessionId: currentRoot, requestToken: `ctlhw-grant-${NONCE}`, targetInstanceId: inst, rules: [{ operationClass: 'read', matcher: { kind: 'exact', value: FIXTURE_FILE }, effect: 'allow' }] })
       : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-REVOKE88 ${NONCE} tinst=`)) { // 88 revoke the allow — where nothing looser remains to answer this is TIGHTENING (tools.js:1177 semantics), applies immediately
     const inst = /tinst=([A-Za-z0-9_-]+)/.exec(text)?.[1] ?? null
     if (inst === null) return { kind: 'text', content: `CTLHW_NO_TINST ${NONCE}` }
     return toolsAfterMarker(msgs, `A5M2-CTLHW-REVOKE88 ${NONCE}`) === 0
-      ? mk('leader:revoke88', 'team_revoke_permission', { rootSessionId: currentRoot, requestToken: `ctlhw-revoke-${NONCE}`, targetInstanceId: inst, rules: [{ operationClass: 'read', matcher: { kind: 'exact', value: 'package.json' }, effect: 'allow' }] })
+      ? mk('leader:revoke88', 'team_revoke_permission', { rootSessionId: currentRoot, requestToken: `ctlhw-revoke-${NONCE}`, targetInstanceId: inst, rules: [{ operationClass: 'read', matcher: { kind: 'exact', value: FIXTURE_FILE }, effect: 'allow' }] })
       : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-MEMBER-READ1 ${NONCE}`)) { // baseline consumption witness BEFORE the grant (deny side)
     return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-READ1 ${NONCE}`) === 0
-      ? mk('member:readProbe1', 'read', { file_path: 'package.json' })
+      ? mk('member:readProbe1', 'read', { file_path: FIXTURE_FILE })
       : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-MEMBER-READ2 ${NONCE}`)) { // business consumption UNDER the granted allow (executes)
     return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-READ2 ${NONCE}`) === 0
-      ? mk('member:readProbe2', 'read', { file_path: 'package.json' })
+      ? mk('member:readProbe2', 'read', { file_path: FIXTURE_FILE })
       : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-MEMBER-READ3 ${NONCE}`)) { // chain-back witness AFTER the revoke (deny side again)
     return toolsAfterMarker(msgs, `A5M2-CTLHW-MEMBER-READ3 ${NONCE}`) === 0
-      ? mk('member:readProbe3', 'read', { file_path: 'package.json' })
+      ? mk('member:readProbe3', 'read', { file_path: FIXTURE_FILE })
       : { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
   if (text.startsWith(`A5M2-CTLHW-LEADER-CREATE2 ${NONCE}`)) { // second member from ctl-resolver (L5 native-identity canary)
@@ -727,7 +752,9 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   currentCriterion = 'setup'
   currentRoot = `session-a5m2ctlhw-p-${RUN_STAMP}`
   await teamReadyBarrier()
-  const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'ctlhw-create', 1)
+  mkdirSync(FIXTURE_DIR, { recursive: true }) // synthetic HOME-owned fixture BEFORE boot: unique window nonce inside
+  writeFileSync(join(FIXTURE_DIR, 'package.json'), JSON.stringify({ name: 'a5m2-ctlhw-fixture', probe: `A5M2-CTLHW-PROBE-${NONCE}` }, null, 2))
+  const team = await remoteCall('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID, defaultWorkspace: FIXTURE_POSIX(FIXTURE_DIR) }, 'ctlhw-create', 1) // W1: member with no explicit workspace INHERITS defaultWorkspace (member/src/workspace.js) — team+member anchor both = fixture dir
   if (resultError(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultError(team.body))}`) // full typed error, uncut
   await apiPrompt(currentRoot, `A5M2-CTLHW-LEADER-CREATE ${NONCE}`, 'ctlhw-leader-create')
   // root 2026-10-24: CHECK THE REAL RETURN FIRST — the create's tool_result
@@ -838,27 +865,26 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   // Grammar is reported from ORIGINAL SOURCES: wire matcher {kind,value}
   // (tools.js parsePermissionRules) vs carrier matcher {kind,resource}
   // (permission-mutation.js validateMatcher). PREPARED — first fires in a GO window. ──
+  await apiPrompt(currentRoot, `TOOLS-CHECK-L ${NONCE}`, 'ctlhw-tools-leader')
+  await waitFor('LEADER real request surface (visibility, not parse)', 60_000, () => (leaderToolsSeen.length > 0 ? true : null))
+  check('L6-87', 'LEADER surface REALLY exposes team_grant_permission (TOOLS-CHECK-L real-request witness; delta #1/#2 landed)', leaderToolsSeen.includes('team_grant_permission'), `visible=${leaderToolsSeen.join(',')}`)
+  check('L6-87', 'LEADER surface REALLY exposes team_revoke_permission', leaderToolsSeen.includes('team_revoke_permission'), `visible=${leaderToolsSeen.join(',')}`)
   currentCriterion = 'L6-grant87'
-  const READ_OK = (t) => t.includes('"name"')
-  const DENY_SHAPED = (t) => /denied|deny|not authorized|blocked|permission/i.test(t)
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ1 ${NONCE}`, 'ctlhw-read-base')
-  const read1 = await waitFor('baseline read result (pre-grant deny side expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe1') ?? null)
-  const read1Text = String(read1?.text ?? '')
-  check('L6-87', 'baseline: member read BEFORE the grant does NOT execute (member lane default:deny holds; success here would mean the overlay was never needed)', !READ_OK(read1Text), `isError=${String(read1?.isError)} text=${read1Text.slice(0, 240)}`)
-  check('L6-87', 'baseline refusal carries an explicit deny/permission-shaped text (unknown shape FAILS, never dressed)', DENY_SHAPED(read1Text), `text=${read1Text.slice(0, 240)}`)
+  const read1 = await waitFor('baseline read result (pre-grant refusal expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe1') ?? null)
+  check('L6-87', 'baseline: member read of the FIXTURE file BEFORE the grant is EXPLICITLY REFUSED (typed code/status or explicit error + ZERO probe leak; default:deny holds)', explicitRefusalWitness(read1, NONCE), `isError=${String(read1?.isError)} text=${String(read1?.text ?? '').slice(0, 300)}`)
   await apiPrompt(currentRoot, `A5M2-CTLHW-GRANT87 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-grant87')
   const grantRes = await waitFor('team_grant_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:grant87') ?? null)
   const grantText = String(grantRes?.text ?? '')
   check('L6-87', 'grant REAL return harvested and it EXECUTED (expansion PASSED carrier+both ceilings; typed business rejection FAILS with verbatim raw — never dressed)', grantRes !== null && grantRes.isError !== true && !/"status"\s*:\s*"rejected"/.test(grantText), `isError=${String(grantRes?.isError)} text=${grantText.slice(0, 400)}`)
-  const mut1 = await waitFor('grant LEDGER proof: permission-mutated fact whose payload carries the rule', 60_000, async () => {
+  const mut1 = await waitFor('grant LEDGER proof: permission-mutated fact whose payload carries the FIXTURE rule', 60_000, async () => {
     const bt = await controlFacts()
-    return bt['permission-mutated'].find((e) => JSON.stringify(e.payload ?? '').includes('package.json')) ?? null
+    return bt['permission-mutated'].find((e) => JSON.stringify(e.payload ?? '').includes(FIXTURE_FILE)) ?? null
   })
-  check('L6-87', 'member-side rule change PROVEN durably: permission-mutated ledger fact carries the package.json rule', mut1 !== null, `fact seq=${String(mut1?.sequence)}`)
+  check('L6-87', 'member-side rule change PROVEN durably: permission-mutated ledger fact carries the fixture-absolute rule', mut1 !== null, `fact seq=${String(mut1?.sequence)}`)
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ2 ${NONCE}`, 'ctlhw-consume')
-  const read2 = await waitFor('consumption read result (executes under the granted allow)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe2') ?? null)
-  const read2Text = String(read2?.text ?? '')
-  check('L6-consume', 'BUSINESS CONSUMPTION: read EXECUTES under the granted overlay — REAL file content returned through the governed pre-execute path', read2 !== null && read2.isError !== true && READ_OK(read2Text), `isError=${String(read2?.isError)} text=${read2Text.slice(0, 240)}`)
+  const read2 = await waitFor('consumption read result (same-call structured success + window-unique probe expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe2') ?? null)
+  check('L6-consume', 'BUSINESS CONSUMPTION: SAME-CALL structured success AND result CONTAINS this window’s unique probe content (READ via the granted overlay; name-only would NOT pass)', readOkWitness(read2, NONCE), `isError=${String(read2?.isError)} text=${String(read2?.text ?? '').slice(0, 300)}`)
   currentCriterion = 'L7-revoke88'
   await apiPrompt(currentRoot, `A5M2-CTLHW-REVOKE88 ${NONCE} tinst=${member.instanceId}`, 'ctlhw-revoke88')
   const revokeRes = await waitFor('team_revoke_permission REAL return', 60_000, () => callResults.find((r) => r.step === 'leader:revoke88') ?? null)
@@ -870,9 +896,8 @@ if (process.env.A5M2_CONTROL_HOME_POINTER) { // explicit HOME hand-off to the OU
   })
   check('L7-88', 'revoke left its own durable mutation fact (mutated=2)', factsMut !== null && factsMut['permission-mutated'].length === 2, `mutated=${String(factsMut['permission-mutated'].length)}`)
   await apiPrompt(member.sessionId, `A5M2-CTLHW-MEMBER-READ3 ${NONCE}`, 'ctlhw-read-back')
-  const read3 = await waitFor('chain-back read result (denied again expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe3') ?? null)
-  const read3Text = String(read3?.text ?? '')
-  check('L7-88', 'chain back with NO RESIDUE: post-revoke read is DENIED again (behavioral proof no leftover allow answers)', !READ_OK(read3Text) && DENY_SHAPED(read3Text), `isError=${String(read3?.isError)} text=${read3Text.slice(0, 240)}`)
+  const read3 = await waitFor('chain-back read result (explicit refusal again expected)', 120_000, () => callResults.find((r) => r.step === 'member:readProbe3') ?? null)
+  check('L7-88', 'chain back with NO RESIDUE: post-revoke read EXPLICITLY REFUSED (typed code/status + zero probe leak) — no leftover allow answers', explicitRefusalWitness(read3, NONCE), `isError=${String(read3?.isError)} text=${String(read3?.text ?? '').slice(0, 300)}`)
   const factsEnd = await controlFacts()
   check('V', 'ledger: recorded=2 decided=1 permission-mutated=2 for slice+canary+87/88 chain (NO C2 claim: five-tool C2 needs the full M0-B171-173 matrix incl. cross-root/partial per source ruling)', factsEnd['control-request-recorded'].length === 2 && factsEnd['control-decision-recorded'].length === 1 && factsEnd['permission-mutated'].length === 2, `recorded=${String(factsEnd['control-request-recorded'].length)} decided=${String(factsEnd['control-decision-recorded'].length)} mutated=${String(factsEnd['permission-mutated'].length)}`)
   check('V', 'decisions were NOT RPC-driven (transcript carries NO RPC resolveControl write — observation reads only)', !TRANSCRIPT.some((t) => t.channel === 'team-remote' && t.method === 'team.resolveControl'), 'observation-only transcript verified')
