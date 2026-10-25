@@ -15,6 +15,7 @@ const REPO = resolve(here, '../..');
 const PARENT = '3d6f6aad8b3042d4ce6ff2a844ff2778e200a5db';
 const EXAMPLE = JSON.parse(readFileSync(join(here, 'snapshot-example.json'), 'utf8'));
 const BASE = EXAMPLE.current_contract.baseline;
+const CC = EXAMPLE.current_contract;
 const PHASE = EXAMPLE.current_contract.phase_id;
 const REF_LEGACY = 'dev/agent-workflow/graph.yaml#current_contract';
 const REF_SNAP = 'dev/engineering/current-authority.json';
@@ -42,9 +43,9 @@ const graph = (o = {}) => [
   'blocked: []',
   'current_contract:',
   `  phase_id: ${o.phase_id ?? PHASE}`,
-  '  active_plan: docs/plans/active/p.md',
-  '  backlog: docs/backlog.md',
-  '  matrix: docs/matrix.md',
+  `  active_plan: ${CC.active_plan}`,
+  `  backlog: ${CC.backlog}`,
+  `  matrix: ${CC.matrix}`,
   `  baseline: ${o.baseline ?? BASE}`,
   '  baseline_collected: 2026-10-25T00:00:00Z',
   'after: y',
@@ -56,7 +57,6 @@ const providers = (o = {}) => ({
   baselineCurrent: o.baselineCurrent ?? (() => true),
   driftProvider: o.driftProvider ?? (() => []),
 });
-const CC = EXAMPLE.current_contract;
 const FILES_DEFAULT = new Map([
   ['AGENTS.md', carrier(REF_LEGACY)],
   [CC.active_plan, carrier(REF_LEGACY)],
@@ -71,15 +71,26 @@ const snapFiles = (ref = REF_SNAP, row = GOOD_ROW) => new Map([
 ]);
 const snapProviders = (o = {}) => { const { ref, row, files, ...rest } = o; return providers({ ...rest, files: files ?? snapFiles(ref, row) }); };
 
-t('S1 legacy default behavior byte-equal to fixed parent on clean / Q8-absent / bad-enum inputs', async () => {
+t('S1 legacy default: three states first graded honestly, then byte-compared to fixed parent 3d6f', async () => {
   const tmp = join(REPO, 'scripts', '.tmp-gate-baseline.mjs');
   writeFileSync(tmp, execFileSync('git', ['show', `${PARENT}:scripts/ci-pr-gate.mjs`], { cwd: REPO, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }));
   try {
     const P = await import(pathToFileURL(tmp).href + '?v=' + Date.now());
-    for (const g of [graph(), 'top: x\nno contract here\n', graph().replace('LIVE-CONFIRMED', 'ALMOST-DONE')]) {
-      const a = JSON.stringify(P.checkCurrentContract({ graphText: g, ...providers() }));
-      const b = JSON.stringify(gate.checkCurrentContract({ graphText: g, ...providers() }));
-      assert(a === b, `findings/info differ:\nparent ${a}\ncurrent ${b}`);
+    const badMatrix = new Map(FILES_DEFAULT);
+    badMatrix.set(CC.matrix, carrier(REF_LEGACY) + '\n' + matrix(GOOD_ROW.replace('LIVE-CONFIRMED', 'ALMOST-DONE')));
+    const cases = [
+      ['clean', { graphText: graph(), ...providers() }],
+      ['q8-absent', { graphText: 'top: x\nno contract here\n', ...providers() }],
+      ['bad-enum', { graphText: graph(), ...providers({ files: badMatrix }) }],
+    ];
+    const clean = gate.checkCurrentContract(cases[0][1]);
+    assert(clean.findings.length === 0, `clean fixture must grade ZERO findings — got ${JSON.stringify(clean.findings)}`);
+    const be = gate.checkCurrentContract(cases[2][1]);
+    assert(be.findings.some((f) => f.includes('Q5') && /closed enum/.test(f)), `bad-enum fixture must carry the Q5 enum finding — got ${JSON.stringify(be.findings.map((f) => f.slice(0, 40)))}`);
+    for (const [label, args] of cases) {
+      const a = JSON.stringify(P.checkCurrentContract(args));
+      const b = JSON.stringify(gate.checkCurrentContract(args));
+      assert(a === b, `${label}: parent/current findings+info differ:\nparent ${a}\ncurrent ${b}`);
     }
   } finally { rmSync(tmp, { force: true }); }
 });
@@ -145,6 +156,20 @@ t('S8 half-given CLI pair: named refusal exit 2 before any leg runs', () => {
   try { execFileSync('node', ['scripts/ci-pr-gate.mjs', '--authority-candidate', '/tmp/nonexistent.json'], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }); }
   catch (e) { out = (e.stdout ?? '') + (e.stderr ?? ''); code = e.status; }
   assert(code === 2 && /AUTHORITY_CANDIDATE_ARGS_INCOMPLETE/.test(out), `exit=${code} out=${out.slice(0, 160)}`);
+});
+
+t('S9 correct-digest statement with an embedded revision: shared loader refuses CANDIDATE_STATEMENT_SEMANTICS, grades nothing', () => {
+  const bad = withStmt({ current_phase_statement: 'ALPHA.5 TOOL-IO-GOVERNANCE PHASE — master=abcdef1 integration' });
+  const r = gate.checkSnapshotCurrentContract({ snapshotPath: snapFile(bad), expectedDigest: bad.content_digest, graphText: graph(), ...snapProviders() });
+  assert(r.findings.length === 1 && /CANDIDATE_STATEMENT_SEMANTICS/.test(r.findings[0]) && /revision/.test(r.findings[0]), JSON.stringify(r.findings));
+  assert(r.info.contract === undefined, 'graded a snapshot whose statement is banned');
+});
+
+t('S10 correct-digest statement with PR census: refused the same way (a correct digest is not absolution)', () => {
+  const bad = withStmt({ current_phase_statement: 'ALPHA.5 TOOL-IO-GOVERNANCE PHASE — PR #353 merged integration' });
+  const r = gate.checkSnapshotCurrentContract({ snapshotPath: snapFile(bad), expectedDigest: bad.content_digest, graphText: graph(), ...snapProviders() });
+  assert(r.findings.length === 1 && /CANDIDATE_STATEMENT_SEMANTICS/.test(r.findings[0]) && /PR census/.test(r.findings[0]), JSON.stringify(r.findings));
+  assert(r.info.contract === undefined, 'graded a snapshot whose statement is banned');
 });
 
 await Promise.all(pending);

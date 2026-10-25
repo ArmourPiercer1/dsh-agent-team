@@ -9,7 +9,7 @@
 // (CANDIDATE_*) so the consumer can refuse without ever reaching graph or
 // current-state as a fallback.
 import { existsSync, lstatSync, readFileSync } from 'node:fs';
-import { validateShape, snapshotDigest } from './authority-snapshot.mjs';
+import { validateShape, snapshotDigest, checkSnapshotObject } from './authority-snapshot.mjs';
 import { LEGACY_MIRROR_KEYS } from './authority-contract-fields.mjs';
 
 const DIGEST_RE = /^sha256:[0-9a-f]{64}$/;
@@ -34,6 +34,13 @@ export function loadCandidateAuthority(options) {
   if (!shape.ok) return { ok: false, refused: 'CANDIDATE_SHAPE', detail: shape.errors.join('; ') };
   if (obj.content_digest !== expectedDigest) return { ok: false, refused: 'CANDIDATE_EXPECTED_VS_RECORDED', detail: `expected ${expectedDigest} recorded ${obj.content_digest}` };
   if (snapshotDigest(obj) !== expectedDigest) return { ok: false, refused: 'CANDIDATE_DIGEST_MISMATCH', detail: `expected ${expectedDigest} recomputed ${snapshotDigest(obj)} (F0 canonical, content_digest excluded)` };
+  // Statement SEMANTICS ride the EXISTING publisher-side checker — no third regex set
+  // lives here. Shape and digests were just verified above, so any remaining error is a
+  // statement-level semantic failure (PHASE_STATEMENT_BAN / PHASE_STATEMENT_DIGIT_MISMATCH):
+  // a correct digest proves integrity, not content law. Existing reject codes unchanged;
+  // this adds CANDIDATE_STATEMENT_SEMANTICS only.
+  const sem = checkSnapshotObject(obj);
+  if (!sem.ok) return { ok: false, refused: 'CANDIDATE_STATEMENT_SEMANTICS', detail: sem.errors.join('; ') };
   const six = {};
   for (const key of LEGACY_MIRROR_KEYS) six[key] = obj.current_contract[key];
   // The statement travels bound to the SAME verified digest — consumers read it here
