@@ -145,15 +145,28 @@ t('C9 helper with null/array/string options: structured refusal, no TypeError', 
 });
 // C10: default compatibility vs the REAL 5f0d0e58 parent — git-show baseline into a
 // task-owned adjacent temp module; same fixture; full structure + rendered bytes.
+// ownership-guarded exclusive staging: cleanup ONLY for a file this call created.
+// The finally-less-ownership bug (delete-on-EEXIST) is exactly what this guards.
+function stageExclusiveModule(dest, src) {
+  let owned = false;
+  try {
+    const fd = openSync(dest, 'wx');
+    owned = true;
+    try { writeSync(fd, src); } finally { closeSync(fd); }
+    return { owned };
+  } catch (e) { return { owned: false, error: e.code }; }
+}
 ran += 1;
 {
   const root = mkRoot({ mirror: true });
   // incident-correction 2026-10-25: EXCLUSIVE unique creation inside scripts/ so the
   // baseline module's './x.mjs' relative imports resolve against their real siblings.
   const tmpMod = join(REPO, 'scripts', `.tmp-gcs-baseline-5f0d0e58-${process.pid}-${Math.random().toString(36).slice(2, 10)}.mjs`);
+  let staged = { owned: false };
   try {
     const src = execFileSync('git', ['show', '5f0d0e58e11c193087ad8918ef2c8f0c33d5446c:scripts/gen-current-state.mjs'], { cwd: REPO, maxBuffer: 64 * 1024 * 1024 });
-    { const fd = openSync(tmpMod, 'wx'); try { writeSync(fd, src); } finally { closeSync(fd); } }
+    staged = stageExclusiveModule(tmpMod, src);
+    if (!staged.owned) throw new Error(`could not stage baseline module (${staged.error}); the comparison needs a private copy`);
     const OLD = await import(pathToFileURL(tmpMod).href);
     const a = OLD.build(root);
     const b = build(root);
@@ -168,8 +181,19 @@ ran += 1;
       console.log(`FAIL C10 structure_same=${structA === structB} bytes_same=${bytesSame}`);
     }
   } catch (e) { fails += 1; console.log(`FAIL C10: ${e.message}`); }
-  finally { rmSync(tmpMod, { force: true }); clean(root); }
+  finally { if (staged && staged.owned) rmSync(tmpMod, { force: true }); clean(root); }
 }
+
+t('C10 collision on the REAL staging path: pre-existing sentinel survives (no delete on EEXIST)', () => {
+  const d = mkdtempSync(join(REPO, '.tmp-s2-cw-'));
+  const dest = join(d, 'sentinel.mjs');
+  writeFileSync(dest, 'SENTINEL-CONTENT');
+  const st = stageExclusiveModule(dest, 'ATTACKER-SRC');
+  if (st.owned) rmSync(dest, { force: true }); // cleanup only if WE created it — the guard itself
+  assert(!st.owned && st.error === 'EEXIST', `expected EEXIST refusal, got ${JSON.stringify(st)}`);
+  assert(readFileSync(dest, 'utf8') === 'SENTINEL-CONTENT', 'the foreign file was modified or deleted — ownership guard failed');
+  rmSync(d, { recursive: true, force: true });
+});
 
 console.log(fails === 0 ? `ALL GREEN (${ran} cases, actual count)` : `RED (${fails}/${ran} failing)`);
 process.exit(fails === 0 ? 0 : 1);

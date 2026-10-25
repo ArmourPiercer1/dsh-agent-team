@@ -75,7 +75,9 @@ t('S1 legacy default: three states first graded honestly, then byte-compared to 
   // incident-correction 2026-10-25: EXCLUSIVE unique creation, kept inside scripts/ so the
   // module's own './x.mjs' relative imports still resolve to their real siblings.
   const tmp = join(REPO, 'scripts', `.tmp-gate-baseline-${PARENT.slice(0, 8)}-${process.pid}-${Math.random().toString(36).slice(2, 10)}.mjs`);
-  { const fd = openSync(tmp, 'wx'); try { writeSync(fd, execFileSync('git', ['show', `${PARENT}:scripts/ci-pr-gate.mjs`], { cwd: REPO, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' })); } finally { closeSync(fd); } }
+  // ownership guard: the finally may only delete a file THIS run created
+  let owned = false;
+  { const fd = openSync(tmp, 'wx'); owned = true; try { writeSync(fd, execFileSync('git', ['show', `${PARENT}:scripts/ci-pr-gate.mjs`], { cwd: REPO, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' })); } finally { closeSync(fd); } }
   try {
     const P = await import(pathToFileURL(tmp).href + '?v=' + Date.now());
     const badMatrix = new Map(FILES_DEFAULT);
@@ -94,7 +96,7 @@ t('S1 legacy default: three states first graded honestly, then byte-compared to 
       const b = JSON.stringify(gate.checkCurrentContract(args));
       assert(a === b, `${label}: parent/current findings+info differ:\nparent ${a}\ncurrent ${b}`);
     }
-  } finally { rmSync(tmp, { force: true }); }
+  } finally { if (owned) rmSync(tmp, { force: true }); }
 });
 
 const tmpDir = mkdtempSync(join(REPO, '.tmp-s2-cir-'));
