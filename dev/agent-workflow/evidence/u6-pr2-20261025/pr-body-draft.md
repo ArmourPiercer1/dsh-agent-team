@@ -169,3 +169,14 @@ Bookkeeping round: p4t6 13 files / tie `1253−1240` (measured `expected 1253`);
 typecheck exit 0; docs gates blocking=0; check:artifacts:head drift=0; full
 runtime+fs-family+p4t6 vitest re-run on the final tree (disclosed baseline
 reds only); C2 u6-fs twice, 1 boot each (`u6fsb10`/`u6fsb11`), 10/10 PASS.
+
+Disclosed fix rounds on this branch after the first round-1 push: (1) the
+new spec's TS surface (`fileURLToPath(href)` + non-literal `.mjs` import —
+the earlier background typecheck wrapper's echoed exit code masked the real
+log; the local gate caught it and the evidence now carries the clean rerun);
+(2) fence-key preservation — the B1 ledger-holder insertion in
+`a5-m1-auth-bridge.test.ts` was relocated BELOW the line-anchored
+`::L1264::v2` fence adjudication (pre-site bytes restored, fence answers
+ADJUDICATED, unknown 0); (3) lint identities of the new spec to 0. Local
+`ci-pr-gate --allow-refused census` final state: pass=7 fail=0 skip=1
+(census, CI-graded).
