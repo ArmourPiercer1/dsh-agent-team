@@ -431,9 +431,18 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
   // ---- teardown + leak check ---------------------------------------------------
   if (collect !== null) {
     // Capture BEFORE teardown deletes the World home (the ledgers live there).
+    // Normalization (documented, U6 C2): volatile KEYS stripped (`at`, `world`,
+    // shadow: `scope`/`callId`) AND the per-world home path inside any value
+    // replaced by `<HOME>` — the canary's `marker-ran` row carries the absolute
+    // marker path, which is the world identity wearing a field costume.
+    const homeNorm = (rows, keys) => {
+      const stripped = stripKeys(rows, keys)
+      if (stripped === null) return null
+      return stripped.map((row) => JSON.parse(JSON.stringify(row).replaceAll(world.home, '<HOME>')))
+    }
     collect.effects = effects
-    collect.canaryRowsNormalized = stripKeys(world.ledgerRows(), CANARY_VOLATILE)
-    collect.shadowRowsNormalized = stripKeys(world.shadowLedgerRows(), SHADOW_VOLATILE)
+    collect.canaryRowsNormalized = homeNorm(world.ledgerRows(), CANARY_VOLATILE)
+    collect.shadowRowsNormalized = homeNorm(world.shadowLedgerRows(), SHADOW_VOLATILE)
     collect.canaryDigest = sha256Text(JSON.stringify(collect.canaryRowsNormalized))
     collect.markerFiles = oracle.observe({ tag: `pos-${nonce}` }).channels.markers.files.slice()
   }
