@@ -111,3 +111,8 @@ agent-sandbox-hotfix-*.sh
 # A5-M2: temporary package-extraction faces are DIAGNOSTIC ONLY — never a
 # release artifact, never tracked (they are re-derivable from the versioned .tgz).
 /pack/pack-*/
+
+# U3 evidence relocation (2026-10-25): local temporary content-addressed evidence store
+# (.artifacts/evidence/blobs/... indexed by dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv).
+# Local + temporary only; git history remains the durable fallback (see the manifest header).
+.artifacts/
