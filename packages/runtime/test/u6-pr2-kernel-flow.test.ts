@@ -48,9 +48,13 @@ interface KernelPlaneValue {
   readonly centerKernel?: {
     readonly kernel: {
       state(): string
-      approvalFor(name: string): { definitionIdentity: string; addedGeneration: number } | undefined
+      mode(): string
+      approvalFor(scopeKey: string, name: string):
+        { definitionIdentity: string; familyId: string; scopeKey: string; addedGeneration: number } | undefined
     }
     readonly registry: { view(): { candidates: ReadonlyArray<{ familyId: string }> }; generation(): number }
+    readonly scopeKey: string
+    readonly familyId: string
   }
   readonly kernelGuard?: {
     owns(name: string): boolean
@@ -114,9 +118,19 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     if (center === undefined) throw new Error('center kernel absent')
     const guard = value.kernelGuard
     if (guard === undefined) throw new Error('kernelGuard absent')
-    const entry = center.kernel.approvalFor('read')
+    // R-REM-2.1/2 on the mount face: ENFORCING mode, and the entry is
+    // (scopeKey, name)-keyed AND candidate-bound (owning familyId).
+    expect(center.kernel.mode()).toBe('enforcing')
+    expect(center.scopeKey).toBe('u6-pr2-test-team-root:u6pr2-instance')
+    expect(center.familyId).toBe('dsh.fs-family')
+    const entry = center.kernel.approvalFor(center.scopeKey, 'read')
     expect(entry?.definitionIdentity).toBe(identity)
+    expect(entry?.familyId).toBe('dsh.fs-family')
+    expect(entry?.scopeKey).toBe(center.scopeKey)
     expect(entry?.addedGeneration).toBe(center.registry.generation())
+    // name-only reads no longer exist (K4: two-arg only); a foreign scope
+    // sees NOTHING for the same name (R-REM-2.1 cross-scope law, mount face).
+    expect(center.kernel.approvalFor('other-scope:inst', 'read')).toBeUndefined()
     // The guard's answer IS the table's answer.
     expect(guard.identityFor('read')).toBe(identity)
     // And it never re-binds on re-consult: the table is mounted truth.
@@ -126,7 +140,7 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     const trioName = (value.ownNames as string[]).find((n) => n !== 'read')
     expect(trioName, 'the plane places trio rows besides read').toBeDefined()
     expect(value.placementFeed(trioName!)).toEqual({ definitionIdentity: expect.stringMatching(/^def#\d+$/), realmId: REALM })
-    expect(center.kernel.approvalFor(trioName!)).toBeUndefined()
+    expect(center.kernel.approvalFor(center.scopeKey, trioName!)).toBeUndefined()
   })
 
   it('K3 a plane WITHOUT the read row omits the kernel faces entirely (presence = capability)', async () => {

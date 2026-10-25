@@ -1636,7 +1636,26 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // `fs-family/src/read-row.mjs` (name/description/parameters/execute
   // transport/presentation face all come from the family lane; the
   // takeover-spelling law keeps the Gate 0b-validated native name).
-  const readRowDef = readExecutor === null ? null : buildReadRowDefinition({ readName, readExecutor })
+  // U6 PR2 / FIX-K K3 (R-REM-2.2): the row's body window is the kernel
+  // lane's SELF-COUNTED in-flight set. When the assembly point injects the
+  // dispatcher's lifecycle port (`dispatcherLifecycle`, production: the
+  // Guard handle's pendingCalls ledger), that count rules; otherwise the
+  // kernel mounts over THIS counter — a real count of this lane's executing
+  // bodies, never a faked zero (an enforcing kernel without any port cannot
+  // be constructed at all: the kernel factory throws).
+  let kernelLaneInflight = 0
+  const rowReadExecutor = readExecutor === null ? null : Object.assign(
+    async (raw, corr) => {
+      kernelLaneInflight += 1
+      try {
+        return await readExecutor(raw, corr)
+      } finally {
+        kernelLaneInflight -= 1
+      }
+    },
+    readExecutor,
+  )
+  const readRowDef = rowReadExecutor === null ? null : buildReadRowDefinition({ readName, readExecutor: rowReadExecutor })
   const baseDefs = readRowDef === null ? defs : Object.freeze([...defs, readRowDef])
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
@@ -1689,29 +1708,50 @@ export function createTeamToolPlaneAssembly(input = {}) {
         message: `the read family contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center read path does not come back)`,
       }
     }
-    const kernel = createGovernanceKernel({
-      registry,
-      ports: {
-        grantConsume: {
-          // THE PR2 PORT BINDING (PR1-open-1): kernel → tool-admission
-          // one-shot face. Synchronous under the wrapper (no await between
-          // reading facts and consuming — the one-shot + cancel-first laws
-          // depend on run-to-completion); the FULL legacy answer is captured
-          // beside the call so the live deny codes/messages survive the
-          // kernel's narrower verdict shape (the kernel only reads ok/reason).
-          consumeForExecution: async (grant, facts) => {
-            const answer = assembly.consumeForExecution(grant, facts)
-            kernelPortAnswer.current = answer
-            return answer.ok === true
-              ? { ok: true }
-              : {
-                  ok: false,
-                  reason: `${String(answer.error?.code ?? 'GRANT_CONSUMPTION_REFUSED')}:${String(answer.error?.details?.refusal ?? '')}`,
-                }
+    // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
+    // mount's scopeKey — the scoped resolution this plane IS (the same
+    // `teamRoot:instanceId` law the shadow row audits under). Name-only
+    // authority no longer exists anywhere on this path.
+    const kernelScopeKey = `${String(input.teamSessionId ?? '')}:${String(input.instanceId ?? templateId ?? '')}`
+    let kernel
+    try {
+      kernel = createGovernanceKernel({
+        registry,
+        // R-REM-2.2: ENFORCING, with the dispatcher's lifecycle port when
+        // the assembly point wires one (production: the Guard handle's
+        // pendingCalls ledger — the dispatcher's own in-flight count);
+        // without any port the kernel FACTORY throws (FIX-K K3) and this
+        // mount fails closed below — it never degrades to a shadow.
+        mode: 'enforcing',
+        ports: {
+          lifecycle: input.dispatcherLifecycle ?? { inflight: () => kernelLaneInflight },
+          grantConsume: {
+            // THE PR2 PORT BINDING (PR1-open-1): kernel → tool-admission
+            // one-shot face. Synchronous under the wrapper (no await between
+            // reading facts and consuming — the one-shot + cancel-first laws
+            // depend on run-to-completion); the FULL legacy answer is captured
+            // beside the call so the live deny codes/messages survive the
+            // kernel's narrower verdict shape (the kernel only reads ok/reason).
+            consumeForExecution: async (grant, facts) => {
+              const answer = assembly.consumeForExecution(grant, facts)
+              kernelPortAnswer.current = answer
+              return answer.ok === true
+                ? { ok: true }
+                : {
+                    ok: false,
+                    reason: `${String(answer.error?.code ?? 'GRANT_CONSUMPTION_REFUSED')}:${String(answer.error?.details?.refusal ?? '')}`,
+                  }
+            },
           },
         },
-      },
-    })
+      })
+    } catch (buildError) {
+      return {
+        ok: false,
+        code: 'PLANE_READ_KERNEL_UNAVAILABLE',
+        message: `the read kernel refused to build (an enforcing kernel requires the lifecycle port — FIX-K K3): ${String(buildError?.message ?? buildError)} — no governed read mounts (fail closed; the retired center read path does not come back)`,
+      }
+    }
     const published = kernel.publish()
     if (published.ok !== true) {
       return {
@@ -1723,6 +1763,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     readKernel = {
       registry,
       kernel,
+      scopeKey: kernelScopeKey,
       guard: Object.freeze({
         owns: (name) => typeof name === 'string' && name === readName,
         identityFor: (name) => {
@@ -1734,19 +1775,40 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
 
+  // The bind-ONCE law, scope- and candidate-bound (FIX-K K1/K4, R-REM-2.1):
+  // the entry binds at the FIRST lookup-time consult (the pb §6 mint law is
+  // untouched) as a (scopeKey, nativeName) entry bound to the live
+  // 'dsh.fs-family' candidate — the kernel snapshots the binding's
+  // generation + source digest and revalidates it on EVERY read. The attempt
+  // is never repeated within a mount: when that revalidation later
+  // invalidates the binding (revoke, re-registration, generation or
+  // source-digest drift), `approvalFor` reads the entry as GONE, this feed
+  // goes SILENT, and the Guard's no-feed refusal lands BEFORE the body. A
+  // lookup never re-mints authority and a re-registration never resurrects
+  // one — only the next reviewed assembly mount (a fresh kernel) approves.
+  let readEntryAttempted = false
   const ensureReadApprovalEntry = () => {
     if (readKernel === null) return null
-    const existing = readKernel.kernel.approvalFor(readName)
+    const existing = readKernel.kernel.approvalFor(readKernel.scopeKey, readName)
     if (existing !== undefined) return existing
+    if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
     const d = placedByName.get(readName)
     if (d === undefined) return null
     const identity = definitionIdentityOf(d)
     // Not minted yet (never installed through the seam's fingerprint pass):
     // NO entry — the feed stays silent and the Guard's no-feed refusal lands.
+    // (This does NOT latch the attempt: the def#N mint lands during the same
+    // install flow, and a later consult inside the lookup window may bind.)
     if (identity === null) return null
-    const added = readKernel.kernel.addApprovalEntry({ nativeName: readName, definitionIdentity: identity })
-    if (added.ok !== true) return null // dup/non-ACTIVE — fail closed, never rebind
-    return readKernel.kernel.approvalFor(readName) ?? null
+    readEntryAttempted = true
+    const added = readKernel.kernel.addApprovalEntry({
+      scopeKey: readKernel.scopeKey,
+      nativeName: readName,
+      definitionIdentity: identity,
+      familyId: 'dsh.fs-family',
+    })
+    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
+    return readKernel.kernel.approvalFor(readKernel.scopeKey, readName) ?? null
   }
 
   const placementFeed = (name) => {
@@ -1852,7 +1914,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       ...(readKernel === null ? {} : { kernelGuard: readKernel.guard }),
       /** U6 PR2 diagnostics/tests: the plane's center assembly (kernel +
        *  registry faces; observation only — no authority crosses here). */
-      ...(readKernel === null ? {} : { centerKernel: Object.freeze({ kernel: readKernel.kernel, registry: readKernel.registry }) }),
+      ...(readKernel === null ? {} : { centerKernel: Object.freeze({ kernel: readKernel.kernel, registry: readKernel.registry, scopeKey: readKernel.scopeKey, familyId: 'dsh.fs-family' }) }),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the
@@ -1894,6 +1956,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
                 readKernel.kernel.beginDrain()
                 readKernel.kernel.tombstone()
                 readKernel.registry.revoke('dsh.fs-family', 'the governed read mount was disposed')
+                // FIX-K K1 owner surface: dropping the family's approvals next
+                // to the revoke is the deterministic invalidation the mount
+                // owes — a later re-registration never resurrects them.
+                readKernel.kernel.dropApprovalsForFamily('dsh.fs-family')
                 readKernel.kernel.release()
               } catch {
                 /* idempotent drain best-effort — the plane tears down anyway */

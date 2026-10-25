@@ -1003,6 +1003,30 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
           `team tool guard: "${name}" cannot be made cancellable at the dispatch door: its definition became unreadable (${pinned.detail}); a call this lane cannot re-verify is not a call it may let through [refused at the dispatch door, the stage nearest the Body]`,
         )
       }
+      if (input.kernelGuard?.owns(name) === true) {
+        // U6 PR2 / FIX-K K1 (R-REM-2.1): BEFORE the Body, the center TABLE
+        // must still back this exact definition. The kernel's answer is
+        // candidate-revalidating (revoke / re-registration / generation /
+        // source drift all read it as silent), so an approval invalidated
+        // since the bind refuses HERE — before any effect — not only as a
+        // post-success veto. A table identity that disagrees with the live
+        // Body is the same condition-6 class the bind check refuses.
+        const tableIdentity = input.kernelGuard.identityFor(name)
+        if (tableIdentity === null || tableIdentity !== pinned.fingerprint) {
+          observe({
+            event: 'kernel-pre-body-table-refusal',
+            callId,
+            tool: name,
+            pinned: pinned.fingerprint,
+            table: tableIdentity ?? 'unbound',
+            note: 'the kernel approval table no longer backs this definition (revoked, rebound, or moved source); the call is refused before its Body (U6 PR2, FIX-K K1)',
+          })
+          dispatcher.endCallById(callId, 'refused')
+          throw new Error(
+            `team tool guard: "${name}" is kernel-owned and the center approval table no longer backs its live definition (table ${tableIdentity ?? 'unbound'}, resolving ${pinned.fingerprint}); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]`,
+          )
+        }
+      }
       const { record, reentry } = pendingCalls.arm({
         callId,
         scopeKey: input.agentScopeKey,
@@ -1048,9 +1072,16 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
           if (!settledIsError && !settledIsCancelled) {
             const now = readDefinition(name)
             const tableIdentity = input.kernelGuard.identityFor(name)
+            // FIX-K K1 (R-REM-2.1): the table answer is scope- and
+            // candidate-revalidated by the kernel — a NULL here means the
+            // binding was invalidated WHILE this call ran (revoke /
+            // re-registration / generation or source drift). A settled
+            // success no longer backed by the table is the same
+            // unbacked-result class as a moved Body: veto fail-closed.
             const drifted = !now.ok
               || now.fingerprint !== pinned.fingerprint
-              || (tableIdentity !== null && tableIdentity !== now.fingerprint)
+              || tableIdentity === null
+              || tableIdentity !== now.fingerprint
             if (drifted) {
               observe({
                 event: 'kernel-post-success-drift-veto',
@@ -1062,7 +1093,7 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
                 note: 'the kernel-owned definition moved while this call executed; its successful result is vetoed fail-closed (U6 PR2) — the table no longer backs the Body that answered',
               })
               throw new Error(
-                `team tool guard: "${name}" is kernel-owned and its definition moved while the call ran (pinned ${pinned.fingerprint}, resolving ${now.ok ? now.fingerprint : `unreadable (${now.detail})`}${tableIdentity === null ? '' : `, table ${tableIdentity}`}); the result is refused fail-closed — an unverified Body's success is never delivered [refused at the dispatch gate, after execution]`,
+                `team tool guard: "${name}" is kernel-owned and its definition moved while the call ran (pinned ${pinned.fingerprint}, resolving ${now.ok ? now.fingerprint : `unreadable (${now.detail})`}${tableIdentity === null ? ', table unbound (invalidated mid-call)' : `, table ${tableIdentity}`}); the result is refused fail-closed — an unverified Body's success is never delivered [refused at the dispatch gate, after execution]`,
               )
             }
           }
