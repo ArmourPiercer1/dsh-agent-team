@@ -286,7 +286,10 @@ export function validateRegistry(doc, root) {
   return findings;
 }
 
-function readLegacyAuthority(root) {
+// Exported for the S2 step-3 read-only dual-read diagnostic (scripts/authority-dual-read.mjs).
+// Semantics unchanged for every existing caller in this module: same signature, same
+// return shape, still a read-only mirror that never writes graph.yaml.
+export function readLegacyAuthority(root) {
   const file = join(root, 'dev/agent-workflow/graph.yaml');
   if (!existsSync(file)) return { present: false };
   const text = readFileSync(file, 'utf8');
