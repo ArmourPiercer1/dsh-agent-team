@@ -45,7 +45,7 @@ function canonicalValue(v) {
   if (typeof v === 'string') return v;
   if (Array.isArray(v)) return v.map(canonicalValue);
   if (typeof v === 'object') {
-    const out = {};
+    const out = Object.create(null); // no prototype: a "__proto__" data key stays an OWN property, never swallowed into the prototype chain
     for (const k of Object.keys(v).sort()) out[k] = canonicalValue(v[k]); // default sort = UTF-16 code-unit order = code-point order
     return out;
   }
@@ -115,16 +115,18 @@ function validateNode(value, schema, path, errors) {
     if (!typeOk(value, 'object')) return;
     if (schema.additionalProperties === false) {
       for (const key of Object.keys(value)) {
-        if (!(key in schema.properties)) errors.push(`UNEXPECTED_KEY ${path === '$' ? key : `${path}.${key}`}`);
+        // hasOwn, never `in`: a prototype name (constructor/toString/…) must not
+        // masquerade as a declared property and slip past additionalProperties.
+        if (!Object.hasOwn(schema.properties, key)) errors.push(`UNEXPECTED_KEY ${path === '$' ? key : `${path}.${key}`}`);
       }
     } else if (schema.additionalProperties !== undefined) {
       throw new Error(`VALIDATOR_UNSUPPORTED_SCHEMA_CONSTRUCT: ${path}.additionalProperties`);
     }
     for (const key of schema.required ?? []) {
-      if (!(key in value)) errors.push(`MISSING_KEY ${path === '$' ? key : `${path}.${key}`}`);
+      if (!Object.hasOwn(value, key)) errors.push(`MISSING_KEY ${path === '$' ? key : `${path}.${key}`}`);
     }
     for (const [key, sub] of Object.entries(schema.properties)) {
-      if (key in value) validateNode(value[key], sub, path === '$' ? key : `${path}.${key}`, errors);
+      if (Object.hasOwn(value, key)) validateNode(value[key], sub, path === '$' ? key : `${path}.${key}`, errors);
     }
   }
 }
@@ -159,6 +161,16 @@ export function checkSnapshotObject(obj, schema = loadFrozenSchema()) {
     if (/\b[0-9a-f]{7,40}\b/.test(s)) all.push('PHASE_STATEMENT_BAN: embedded revision (ci-pr-gate.mjs:192)');
     if (/PR\s*#?\d/.test(s)) all.push('PHASE_STATEMENT_BAN: PR census (ci-pr-gate.mjs:195)');
     if (/ALPHA\.?4|A4-PR7/i.test(s)) all.push('PHASE_STATEMENT_BAN: names Alpha.4 (ci-pr-gate.mjs:343)');
+    // Frozen legacy Q1 digit-agreement check (ci-pr-gate.mjs:343-345), publisher-side
+    // per the schema. Only when the OPTIONAL statement is present; its presence is
+    // never made required here.
+    const pid = obj?.current_contract?.phase_id;
+    if (typeof pid === 'string') {
+      const pm = /^alpha(\d+)/i.exec(pid);
+      if (pm && !(new RegExp(`ALPHA\\.?${pm[1]}`, 'i')).test(s)) {
+        all.push(`PHASE_STATEMENT_DIGIT_MISMATCH: phase_id "${pid}" requires ALPHA.?.${pm[1]} in the statement (Q1 digit agreement)`);
+      }
+    }
   }
   return { ok: all.length === 0, errors: all };
 }

@@ -53,6 +53,34 @@ export function runCheck(argv) {
   return { code: 0 };
 }
 
+/**
+ * Create the parent chain ONE COMPONENT AT A TIME, validating before and after each
+ * mkdir: every existing component must be a real directory (a symlink is refused at
+ * first sight, so a mid-level link like dev/engineering -> <external real dir> can
+ * never have children created inside the external target). A recursive mkdir that
+ * runs before the checks is exactly what this replaces — creation never precedes
+ * verification. The full boundary re-check below still governs the final component.
+ */
+function safeMkdirParentsNoSymlink(realRoot, relDir) {
+  let cursor = realRoot;
+  for (const part of relDir.split('/').filter(Boolean)) {
+    cursor = join(cursor, part);
+    let st = null;
+    try { st = lstatSync(cursor); } catch (e) { if (e.code !== 'ENOENT') return { ok: false, why: `STAT_ERROR: ${cursor}: ${e.code}` }; }
+    if (st) {
+      if (st.isSymbolicLink()) return { ok: false, why: `SYMLINK_ANCESTOR: ${cursor}` };
+      if (!st.isDirectory()) return { ok: false, why: `NOT_DIRECTORY_ANCESTOR: ${cursor}` };
+      continue;
+    }
+    try { mkdirSync(cursor); } catch (e) { return { ok: false, why: `MKDIR_FAILED: ${cursor}: ${e.code || e.message}` }; }
+    let re;
+    try { re = lstatSync(cursor); } catch { return { ok: false, why: `POST_CREATE_VANISHED: ${cursor}` }; }
+    if (re.isSymbolicLink()) return { ok: false, why: `SYMLINK_ANCESTOR: ${cursor} (post-create)` };
+    if (!re.isDirectory()) return { ok: false, why: `NOT_DIRECTORY_ANCESTOR: ${cursor} (post-create)` };
+  }
+  return { ok: true };
+}
+
 export function runPublish(argv) {
   const file = argv[0];
   const rootIdx = argv.indexOf('--root');
@@ -72,10 +100,11 @@ export function runPublish(argv) {
   if (!VERSION_RE.test(version)) return refuse(`PATH_VERSION_ILLEGAL: "${version}" is not asYYYYMMDDrN (placeholders such as v3 are not legal versions)`);
 
   const rel = join(PUBLISH_REL_PATH, `${version}.json`);
-  // Same order as writeGenerated: create the parent chain, then consult the
-  // boundary (a symlinked ancestor is still caught by the walk, below).
-  const parentAbs = join(realpathSync(root), PUBLISH_REL_PATH);
-  if (!existsSync(parentAbs)) mkdirSync(parentAbs, { recursive: true });
+  // Check-before-create, component by component (review fix 1): no recursive mkdir
+  // may run before the ancestors were verified symlink-free and inside the root.
+  const realRoot = realpathSync(root);
+  const made = safeMkdirParentsNoSymlink(realRoot, PUBLISH_REL_PATH);
+  if (!made.ok) return refuse(made.why);
   const boundary = checkLocationBoundary(root, rel, { mustBeAbsent: true });
   if (!boundary.ok) return refuse(boundary.why);
 

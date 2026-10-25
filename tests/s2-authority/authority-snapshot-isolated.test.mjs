@@ -27,7 +27,9 @@ const EXAMPLE_BYTES = readFileSync(EXAMPLE_PATH);
 const EXAMPLE = JSON.parse(EXAMPLE_BYTES.toString('utf8'));
 
 let fails = 0;
+let ran = 0;
 const t = (name, fn) => {
+  ran += 1;
   try { fn(); console.log(`PASS ${name}`); }
   catch (e) { fails += 1; console.log(`FAIL ${name}: ${e.message}`); }
 };
@@ -119,11 +121,12 @@ t('P1 publish writes only the whitelisted immutable snapshot (canonical bytes + 
   const rr = checkSnapshotObject(JSON.parse(body.toString('utf8')));
   assert(rr.ok, `re-check on disk failed: ${rr.errors.join(';')}`);
 });
-t('P2 republish of an existing version refused (immutable)', () => {
+t('P2 republish refused (immutable); bytes verbatim before/after', () => {
+  const before = readFileSync(snapAbs); // captured BEFORE the refused attempt
   const r = runPublish([goodFile, '--root', root]);
   assert(r.code === 2 && /OVERWRITE_REFUSED/.test(r.why || ''), JSON.stringify(r));
   const after = readFileSync(snapAbs);
-  assert(after.length === readFileSync(snapAbs).length);
+  assert(Buffer.compare(before, after) === 0, 'snapshot bytes changed across a refused republish');
 });
 t('P3 symlinked snapshots dir refused; outside target untouched', () => {
   const r2 = mkdtempSync(join(REPO, '.tmp-s2-iso-'));
@@ -177,6 +180,54 @@ t('P7 check CLI exits 0 on example, 2 on digest-corrupted copy', () => {
   assert(code === 2, `expected exit 2, got ${code}`);
 });
 
+// ---------- review-fix negatives (must be RED at 291165d79a) ----------
+const ownKey = (obj, key, val) => { // guaranteed OWN enumerable key, bypassing __proto__ setters
+  Object.defineProperty(obj, key, { value: val, enumerable: true, writable: true, configurable: true });
+  return obj;
+};
+t('P8 symlinked dev/engineering ancestor: refused BEFORE any mkdir; external dir gains nothing', () => {
+  const r4 = mkdtempSync(join(REPO, '.tmp-s2-iso-'));
+  const outside = mkdtempSync(join(REPO, '.tmp-s2-iso-')); // external REAL dir
+  mkdirSync(join(r4, 'dev'), { recursive: true });
+  symlinkSync(outside, join(r4, 'dev', 'engineering')); // mid-level link, lower level absent
+  const before = readdirSync(outside).join('|');
+  const r = runPublish([goodFile, '--root', r4]);
+  const gained = readdirSync(outside).join('|');
+  assert(r.code === 2 && /SYMLINK_ANCESTOR/.test(r.why || ''), JSON.stringify(r));
+  assert(gained === before, `external dir gained entries: "${before}" -> "${gained}"`);
+  rmSync(r4, { recursive: true, force: true }); rmSync(outside, { recursive: true, force: true });
+});
+t('N10 own "constructor" key at root rejected (hasOwn, not in)', () => {
+  const r = validateShape(ownKey(clone(EXAMPLE), 'constructor', 1));
+  assert(!r.ok && r.errors.some((e) => e.includes('UNEXPECTED_KEY constructor')), r.errors.join(';') || 'ACCEPTED');
+});
+t('N11 own "__proto__" key: rejected; canonical must not swallow it', () => {
+  const polluted = ownKey(clone(EXAMPLE), '__proto__', 1);
+  assert(Object.hasOwn(polluted, '__proto__'), 'fixture lost its own key');
+  const r = validateShape(polluted);
+  assert(!r.ok && r.errors.some((e) => e.includes('UNEXPECTED_KEY __proto__')), r.errors.join(';') || 'ACCEPTED');
+  const canon = canonicalBytes(JSON.parse('{"__proto__":1}')).toString('utf8');
+  assert(canon === '{"__proto__":1}', `canonical swallowed the key: ${canon}`);
+  assert(snapshotDigest(polluted) !== snapshotDigest(EXAMPLE), 'digest ignored the own __proto__ key');
+});
+t('N12 own "toString" key in current_contract rejected', () => {
+  const m = clone(EXAMPLE);
+  ownKey(m.current_contract, 'toString', 1);
+  const r = validateShape(m);
+  assert(!r.ok && r.errors.some((e) => e.includes('UNEXPECTED_KEY current_contract.toString')), r.errors.join(';') || 'ACCEPTED');
+});
+t('V7 current_phase_statement digit INCONSISTENT with phase_id refused (frozen Q1 check)', () => {
+  const m = clone(EXAMPLE);
+  m.current_phase_statement = 'ALPHA.6 TOOL-IO-GOVERNANCE PHASE'; // phase_id says alpha5
+  m.content_digest = snapshotDigest(m); // shape+digest ok; only the digit check may fire
+  const r = checkSnapshotObject(m);
+  assert(!r.ok && r.errors.some((e) => e.startsWith('PHASE_STATEMENT_DIGIT_MISMATCH')), r.errors.join(';') || 'ACCEPTED');
+});
+t('V8 current_phase_statement digit CONSISTENT positive (ALPHA.5 vs alpha5-*, still optional)', () => {
+  const r = checkSnapshotObject(EXAMPLE); // example carries a consistent statement
+  assert(r.ok, r.errors.join(';'));
+});
+
 rmSync(root, { recursive: true, force: true });
-console.log(fails === 0 ? 'ALL GREEN' : `RED (${fails} failing)`);
+console.log(fails === 0 ? `ALL GREEN (${ran} cases, actual count)` : `RED (${fails}/${ran} failing, actual count)`);
 process.exit(fails === 0 ? 0 : 1);
