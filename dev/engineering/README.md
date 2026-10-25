@@ -29,8 +29,21 @@ is a delivered negative control, exercised by
 
 ## What this does not replace
 
-`dev/agent-workflow/graph.yaml#current_contract` remains the current execution
-authority. This bridge **reads** it and mirrors **all six** of its fields -- `phase_id`,
+**Current execution authority (since 2026-10-25, G2 switchover):** the pointer
+`dev/engineering/current-authority.json` -- exactly two keys, `{snapshot_version,
+content_digest}` -- resolving to an immutable snapshot under
+`dev/engineering/authority-snapshots/`. The pointer is moved **only** by
+`scripts/switch-authority.mjs` (byte precondition on the old pointer or its absence, atomic
+temp+fsync+rename, full-loader re-verification, exact restore of bytes or absence on any
+failure); snapshots are written **only** by `scripts/publish-authority.mjs`; every consumer
+reads **only** through `scripts/current-authority.mjs` (frozen schema + F0 canonical digest;
+fail closed -- a present-but-invalid pointer is a named RED, never a reason to fall back to
+graph.yaml or to this generated view). The old `dev/agent-workflow/graph.yaml#current_contract`
+block was removed at the switch (commit `f44ca07dd23a62ee67d891afd02d1e1413dd0f3a`, snapshot
+`as20261025r1`); pointer + block coexisting = TWO_CURRENT_AUTHORITY, RED by name everywhere;
+rollback is `git revert` of the switch commit set. `dev/agent-workflow/graph.yaml` remains the
+source of orchestration state (current_phase / state_pointers / ready/blocked / round records).
+This bridge mirrors **all six** fields -- `phase_id`,
 `active_plan`, `backlog`, `matrix`, `baseline`, `baseline_collected` -- plus two derived proofs
 (`baseline_exists`, `baseline_is_ancestor_of_head`) into `current-state.json` under
 `legacy_authority`, read-only. Two things about that are load-bearing. The mirror **copies, it does
@@ -42,28 +55,26 @@ emitter and the schema cannot drift apart silently. `current_phase` is deliberat
 view: its grammar is `scripts/ci-pr-gate.mjs`'s business, and re-checking it here would put a second
 authority over one rule. The field-level reconciliation against a pinned SHA is in
 `dev/agent-workflow/evidence/EB-E0-E1/legacy-mirror-reconciliation-01640829.md`. There is
-no path by which this generator writes `graph.yaml`, and switching the old
-consumers is a separate, coordinated migration (E1 exit condition), not a
-consequence of these files existing.
+no path by which this generator writes `graph.yaml`. The coordinated switch of the old
+consumers happened on **2026-10-25** (U2 / G2, switch commit `f44ca07dd23a62ee67d891afd02d1e1413dd0f3a`):
+every machine consumer now resolves the pointer through the single loader, and the generated
+view records an `authority_source_binding` stating, in its own bytes, that it may not reverse-decide
+authority.
 
-**Boundary of what this entry surface can resolve** -- written because a reader followed a pointer
-out of here and found nothing behind it. The four 20260829 frozen documents (Architecture / UI /
-Development Plan / Task Decomposition) **were not found in the commit history visible from this
-checkout** -- a statement about the refs this working tree can see, not a claim that they were
-never committed anywhere. `git log --all --diff-filter=A --name-only` over `docs/plans/` lists
-only alpha.1-era files there. The directory itself **is** tracked here -- four alpha.1-era files,
-`git check-ignore` says it is not ignored -- so this is not a "gitignored local dir" situation, and
-the two AGENTS.md revisions in this environment disagree about it: the one in this tree says the
-directory has been git-tracked since 2026-10-07 and that the four frozen documents remain the sole
-semantic authority, while the older revision in the main checkout still calls it local and
-gitignored. That disagreement is reported, not resolved here (`AGENTS.md` is not this line's to
-edit), and no remote search was run: the claim above is only about the refs this checkout can see. So citations of the form `TaskDoc §11`,
-`Development Plan §17.2` or "the Architecture document" -- which appear in package code headers,
-and in the package READMEs that quote those headers faithfully -- are **historical references with
-no resolvable target in this checkout**. Read them as provenance, not as something to open. Do not
-close the gap by reconstructing them: a document written from memory while wearing an old
-citation would be worse than the dangling pointer it replaced. Where a rule actually binds
-behaviour, the live text is the `docs/plans/active/alpha5-tool-io-governance/` set named above.
+**Boundary of what this entry surface can resolve -- corrected 2026-10-25 (u1d cold-read defect
+4).** An earlier revision of this section claimed the four 20260829 frozen documents (Architecture
+/ UI / Development Plan / Task Decomposition) "were not found in the commit history visible from
+this checkout". That claim was **wrong**: the four documents are tracked under
+`docs/plans/finished/` -- moved there from `docs/plans/paused/` in the 2026-10-07 archival
+reorganization (`b5c8d1dab`), together with the G8 audit report and the P8-S closure plan -- while
+`docs/plans/paused/` now holds only alpha.1-era files. The cold read had searched the pre-move
+`paused/` path, found unrelated files, and reported "not found"; `AGENTS.md` and
+`docs/ROUTER_RULES.md` cited the same stale path (defects 1-2, fixed in this commit set).
+Citations of the form `TaskDoc §11`, `Development Plan §17.2` or "the Architecture document"
+therefore resolve: `docs/plans/finished/DSH_Agent_Team_vNext_*_20260829.md`, still the read-only
+semantic authority per the documentation order in `AGENTS.md`. The lesson stands as written then:
+a claim of absence must name the paths actually searched. Where a rule binds current behaviour,
+the live text remains the `docs/plans/active/alpha5-tool-io-governance/` set named above.
 
 Regenerate: `pnpm docs:sync --write` (or the generator directly).
 The command that verifies freshness: `pnpm docs:sync --check` (run it before review; it is the
@@ -237,15 +248,16 @@ into a task.
 Read the green checks above as checks, not as an exit. What is still open, kept in its own words
 so nothing is quietly dropped:
 
-- **The one-time switch has not started, and this branch cannot perform it alone.** The execution
-  plan of PR #361 requires the new fact relation to **run in parallel** with the old entry first
-  (`execution-plan` :53, EB1-C: "先并跑旧 `current_contract`" with "旧/current 对账" as its
-  acceptance), and only then to switch **the single consumption entry of the old current state in
-  one move** (:56: "先建新事实关系，再一次性切换旧当前态的唯一消费入口 … 不能出现'两处可编辑的
-  current'"). The parallel half exists -- `current-state.json` mirrors `graph.yaml#current_contract`
-  read-only and no consumer treats the generated view as authority -- but the switch itself is
-  `not_started_requires_coordination`: it moves a shared consumption entry, so it belongs to a
-  coordinated window, not to a docs branch.
+- **The one-time switch: EXITED 2026-10-25 (U2 / G2).** The plan of PR #361 required the new fact
+  relation to **run in parallel** with the old entry first (`execution-plan` :53), and only then to
+  switch **the single consumption entry of the old current state in one move** (:56: "先建新事实关系，
+  再一次性切换旧当前态的唯一消费入口 … 不能出现'两处可编辑的 current'"). The parallel half ran through
+  S2 (candidate flags + dual-read diagnostics); the switch landed as its own commit set: snapshot
+  `as20261025r1` published by the existing publisher, pointer created by the transaction script,
+  `current_contract` block removed in the same commit (no dual-write moment ever existed), machine
+  consumers migrated to one shared pointer loader with unchanged Q1-Q8 grading semantics.
+  `migration_of_legacy_consumers` in `registry.yaml` records the switched state; the pointer is the
+  sole current, and TWO_CURRENT_AUTHORITY guards against the old and new ever coexisting.
 - **EB0-1 … EB0-5 performance and resource baselines are incomplete.**
   `evidence/EB-E0-E1/baseline-inventory.md` is a **read-only census of a tree** (five sub-censuses,
   labelled by the source they were measured on). It is not a performance or resource baseline, and

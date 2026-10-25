@@ -1,12 +1,25 @@
 # dev/engineering/registry.yaml — hand-maintained decisions only.
 # Generated view: current-state.json (do not edit that file here or anywhere).
-# Statuses describe THIS branch's facts as of 2026-10-23. Nothing here claims
-# product delivery: nothing in this set is merged to master or released.
+# Statuses describe branch facts as of 2026-10-23, with the U2 authority fields re-anchored
+# 2026-10-25. EB-ADR-0003 (EB1-D) merge status = merged via PR #362 @ 4aaaa7b2 (merge fact only:
+# verification stays C1 local, adoption not asserted; see the EB1-D entry below). Nothing here
+# claims product delivery or release.
 
 schema_version: 1
 generated_view: dev/engineering/current-state.json
-legacy_execution_authority: dev/agent-workflow/graph.yaml#current_contract
-migration_of_legacy_consumers: not_started_requires_coordination
+# RETIRED AT THE G2 SWITCHOVER (2026-10-25, U2). The block this field named was removed from
+# graph.yaml by switch commit f44ca07dd23a62ee67d891afd02d1e1413dd0f3a (snapshot as20261025r1,
+# byte-identical six fields, carried by the same commit set). Current authority now = the pointer
+# dev/engineering/current-authority.json resolving to an immutable snapshot under
+# dev/engineering/authority-snapshots/; read it ONLY through scripts/current-authority.mjs.
+# Rollback = git revert of the switch commit set, never re-adding the block beside the pointer.
+legacy_execution_authority: retired_at_switch_f44ca07dd__now_dev/engineering/current-authority.json_pointer
+# Machine consumers MC-01..MC-10 and MC-13..MC-15 read the pointer-resolved snapshot as of the
+# switch commit (ci-pr-gate state-freshness, gen-current-state + mirror checks, docs-probe,
+# docs-sync, census-runtime precheck pin, pre-commit fence, a5 testkit controls); explicit
+# --authority-candidate flags remain an optional override. MC-11/MC-12 are test fixtures that
+# construct their own roots and need no switch.
+migration_of_legacy_consumers: switched_at_f44ca07dd_machine_consumers_read_pointer
 
 entries:
   - id: EB0-1

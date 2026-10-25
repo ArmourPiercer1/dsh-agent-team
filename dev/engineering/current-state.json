@@ -2,7 +2,7 @@
   "generated_by": "scripts/gen-current-state.mjs",
   "schema_version": 1,
   "source_registry": "dev/engineering/registry.yaml",
-  "source_registry_sha": "751f93308c48c84cb9d5138fb60f6196320809d0",
+  "source_registry_sha": "3c32d59b72746eb48b59db2bbe585e6a2e97765f",
   "source_catalog": "docs/contracts/engineering-baseline/ids.yaml",
   "source_catalog_sha": "23bc9c596e43a5e060cd8326c0e1d553d5bbeb16",
   "axes_legend": {
@@ -373,7 +373,7 @@
     }
   ],
   "migration": {
-    "migration_of_legacy_consumers": "not_started_requires_coordination",
-    "legacy_execution_authority": "dev/agent-workflow/graph.yaml#current_contract"
+    "migration_of_legacy_consumers": "switched_at_f44ca07dd_machine_consumers_read_pointer",
+    "legacy_execution_authority": "retired_at_switch_f44ca07dd__now_dev/engineering/current-authority.json_pointer"
   }
 }
