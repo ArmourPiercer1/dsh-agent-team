@@ -180,6 +180,7 @@ export function finalToken(verdict, counts) {
  * @param isAncestor - (sha) => boolean, whether that revision is reachable from HEAD.
  */
 import { loadCandidateAuthority } from './authority-candidate-source.mjs'
+import { dualReadReport } from './authority-dual-read.mjs'
 
 // Set once by main() from BOTH CLI flags together (or not at all); the state-freshness
 // leg reads it. No pointer file, no scan — the operator names the candidate.
@@ -405,7 +406,7 @@ export function checkContractValues({ phaseId, activePlan, backlogPath, matrixPa
  * six; nothing is reverse-derived). ready/blocked/state_convergence grade against the REAL
  * graphText passed by the caller — absent graph FAILS. Default entry points untouched.
  */
-export function checkSnapshotCurrentContract({ snapshotPath, expectedDigest, graphText, readFile, fileExists, revExists, baselineCurrent, driftProvider }) {
+export function checkSnapshotCurrentContract({ snapshotPath, expectedDigest, graphText, readFile, fileExists, revExists, baselineCurrent, driftProvider, root }) {
   const c = loadCandidateAuthority({ file: snapshotPath, expectedDigest })
   if (!c.ok) return { findings: [`SNAPSHOT_CANDIDATE_REFUSED: ${c.refused}${c.detail ? ` (${c.detail})` : ''} — a bad candidate is a failure, never a skip and never a fallback to the legacy source`], info: {}, refused: c.refused }
   if (c.current_phase_statement === undefined || c.current_phase_statement === null || String(c.current_phase_statement) === '') {
@@ -414,7 +415,18 @@ export function checkSnapshotCurrentContract({ snapshotPath, expectedDigest, gra
   if (typeof graphText !== 'string' || graphText === '') {
     return { findings: ['SNAPSHOT_GRAPH: ready/blocked/state_convergence are graded against the real graph; it is absent — FAIL, never defaulted to empty (a swallowed BL-999 is the failure this line exists for)'], info: {}, refused: 'SNAPSHOT_GRAPH_ABSENT' }
   }
+  // The candidate entry ALSO dual-reads: the six snapshot values are compared against the
+  // real legacy source read from `root` (same diagnostics as docs:probe/sync — one report,
+  // never a second classifier). Divergence is red here: a candidate that disagrees with the
+  // old current must turn the whole CI red, it is never silently preferred or ignored.
+  const dual = []
+  if (typeof root === 'string' && root !== '') {
+    const dr = dualReadReport(snapshotPath, root)
+    if (dr.io) dual.push(`DUAL_READ_IO: ${dr.io}`)
+    else for (const v of dr.verdicts) if (v.red) dual.push(`DUAL_READ_${v.code}: ${v.detail}`)
+  }
   const core = checkContractValues({ phaseId: c.six.phase_id, activePlan: c.six.active_plan, backlogPath: c.six.backlog, matrixPath: c.six.matrix, baseline: c.six.baseline, collected: c.six.baseline_collected, graphText, phaseStatement: String(c.current_phase_statement), readFile, fileExists, revExists, baselineCurrent, driftProvider, expectedBaselineRef: 'dev/engineering/current-authority.json' })
+  if (dual.length) return { findings: [...dual], info: {}, refused: 'SNAPSHOT_VS_LEGACY_DIVERGENT' }
   const info = { ...core.info, contract: { phase_id: c.six.phase_id, active_plan: c.six.active_plan, backlog: c.six.backlog, matrix: c.six.matrix, baseline: c.six.baseline, baseline_collected: c.six.baseline_collected } }
   return { findings: core.findings, info }
 }
@@ -1235,7 +1247,7 @@ const LEGS = {
     // §7.4 reader candidate: the explicit candidate replaces ONLY the source of the six
     // values; providers, drift law and the leg's fail-closed posture are unchanged.
     const cc = AUTHORITY_CANDIDATE
-      ? checkSnapshotCurrentContract({ ...ccProviders, snapshotPath: AUTHORITY_CANDIDATE.file, expectedDigest: AUTHORITY_CANDIDATE.expectedDigest })
+      ? checkSnapshotCurrentContract({ ...ccProviders, root: REPO_ROOT, snapshotPath: AUTHORITY_CANDIDATE.file, expectedDigest: AUTHORITY_CANDIDATE.expectedDigest })
       : checkCurrentContract(ccProviders)
     if (cc.findings.length > 0) return { verdict: 'fail', detail: cc.findings.join(' ; ') }
     return {

@@ -3,7 +3,7 @@
 // Semantics follow packages/testkit/test/a5-current-contract.test.ts (template read via
 // git show; packages/ is absent from this sparse cone). All providers are mocks; the only
 // filesystem touch is one small task-owned snapshot file plus one temp parent-module copy.
-import { writeFileSync, readFileSync, rmSync, mkdtempSync } from 'node:fs';
+import { writeFileSync, readFileSync, rmSync, mkdtempSync, openSync, writeSync, closeSync, mkdirSync} from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -72,8 +72,10 @@ const snapFiles = (ref = REF_SNAP, row = GOOD_ROW) => new Map([
 const snapProviders = (o = {}) => { const { ref, row, files, ...rest } = o; return providers({ ...rest, files: files ?? snapFiles(ref, row) }); };
 
 t('S1 legacy default: three states first graded honestly, then byte-compared to fixed parent 3d6f', async () => {
-  const tmp = join(REPO, 'scripts', '.tmp-gate-baseline.mjs');
-  writeFileSync(tmp, execFileSync('git', ['show', `${PARENT}:scripts/ci-pr-gate.mjs`], { cwd: REPO, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }));
+  // incident-correction 2026-10-25: EXCLUSIVE unique creation, kept inside scripts/ so the
+  // module's own './x.mjs' relative imports still resolve to their real siblings.
+  const tmp = join(REPO, 'scripts', `.tmp-gate-baseline-${PARENT.slice(0, 8)}-${process.pid}-${Math.random().toString(36).slice(2, 10)}.mjs`);
+  { const fd = openSync(tmp, 'wx'); try { writeSync(fd, execFileSync('git', ['show', `${PARENT}:scripts/ci-pr-gate.mjs`], { cwd: REPO, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' })); } finally { closeSync(fd); } }
   try {
     const P = await import(pathToFileURL(tmp).href + '?v=' + Date.now());
     const badMatrix = new Map(FILES_DEFAULT);
@@ -170,6 +172,39 @@ t('S10 correct-digest statement with PR census: refused the same way (a correct 
   const r = gate.checkSnapshotCurrentContract({ snapshotPath: snapFile(bad), expectedDigest: bad.content_digest, graphText: graph(), ...snapProviders() });
   assert(r.findings.length === 1 && /CANDIDATE_STATEMENT_SEMANTICS/.test(r.findings[0]) && /PR census/.test(r.findings[0]), JSON.stringify(r.findings));
   assert(r.info.contract === undefined, 'graded a snapshot whose statement is banned');
+});
+
+t('S11 collision negative: a fixed-name second exclusive create fails; unique names + mkdtemp do not', () => {
+  const d = mkdtempSync(join(REPO, '.tmp-s2-cir-'));
+  const fixed = join(d, 'same.mjs');
+  const fd = openSync(fixed, 'wx'); closeSync(fd);
+  let threw = null;
+  try { openSync(fixed, 'wx'); } catch (e) { threw = e.code; }
+  assert(threw === 'EEXIST', `second wx open on a fixed name must throw EEXIST (the collision this fix exists for), got ${threw}`);
+  const a = mkdtempSync(join(REPO, '.tmp-s2-cir-')); const b = mkdtempSync(join(REPO, '.tmp-s2-cir-'));
+  assert(a !== b, 'mkdtemp must hand out distinct paths');
+  rmSync(d, { recursive: true, force: true }); rmSync(a, { recursive: true, force: true }); rmSync(b, { recursive: true, force: true });
+});
+
+t('S12 CI candidate dual-reads the graph SIX fields vs the real legacy source; divergence is its own red', () => {
+  // a legacy-source root holding the REAL six-field graph block + registry (pure reads; no git needed)
+  const lroot = mkdtempSync(join(REPO, '.tmp-s2-cir-'));
+  const lw = (rel, txt) => { mkdirSync(join(lroot, ...rel.split('/').slice(0, -1)), { recursive: true }); writeFileSync(join(lroot, rel), txt); };
+  lw('dev/agent-workflow/graph.yaml', `top: x\ncurrent_contract:\n${Object.entries(EXAMPLE.current_contract).map(([k, v]) => `  ${k}: ${v}`).join('\n')}\nafter: y\n`);
+  lw('dev/engineering/registry.yaml', 'schema_version: 1\ngenerated_view: dev/engineering/current-state.json\nlegacy_execution_authority: dev/agent-workflow/graph.yaml#current_contract\nmigration_of_legacy_consumers: not_started\n\nentries: []\n');
+  const clean = gate.checkSnapshotCurrentContract({ snapshotPath: snapFile(EXAMPLE), expectedDigest: EXAMPLE.content_digest, graphText: graph(), root: lroot, ...snapProviders() });
+  assert(clean.findings.length === 0, `aligned legacy source must add no dual findings: ${JSON.stringify(clean.findings.map((f) => f.slice(0, 50)))}`);
+  const div = withStmt({ current_contract: { ...EXAMPLE.current_contract, phase_id: 'alpha5-divergent-slug' } });
+  const r = gate.checkSnapshotCurrentContract({ snapshotPath: snapFile(div), expectedDigest: div.content_digest, graphText: graph(), root: lroot, ...snapProviders() });
+  rmSync(lroot, { recursive: true, force: true });
+  assert(r.refused === 'SNAPSHOT_VS_LEGACY_DIVERGENT', `refused=${r.refused} findings=${JSON.stringify(r.findings.map((f) => f.slice(0, 50)))}`);
+  assert(r.findings.length === 1 && r.findings[0].startsWith('DUAL_READ_SNAPSHOT_VS_LEGACY_VALUE'), JSON.stringify(r.findings.map((f) => f.slice(0, 60))));
+  assert(r.info.contract === undefined, 'divergent candidate graded anyway');
+});
+
+t('S13 state-pointers continuity: the historical current_phase requirement still fires (retirement must be a coordinated later transaction, not silent)', () => {
+  const r = gate.checkStatePointers({ graphText: 'top: x\nno_phase_here: 1\n', logText: '', isAncestor: () => true });
+  assert(r.findings.some((f) => /current_phase/.test(f)), JSON.stringify(r.findings));
 });
 
 await Promise.all(pending);

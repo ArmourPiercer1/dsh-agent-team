@@ -2,6 +2,7 @@
 // S2 §7.4 docs:sync explicit-candidate --check + census baseline resolver — ISOLATED test.
 // Real CLI exits captured directly; async cases awaited (no fake-green counters).
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,7 +50,7 @@ const mkRoot = ({ planPhase = CC.phase_id, graphOver = {}, mirrorFromCandidate =
   if (mirrorFromCandidate) writeFileSync(join(root, 'dev/engineering/current-state.json'), renderView(buildStateView(root, { authorityCandidate: { file: join(root, 'candidate.json'), expectedDigest: EXAMPLE.content_digest } })));
   return root;
 };
-const walk = (d) => readdirSync(d, { recursive: true, encoding: 'utf8' }).filter((p) => statSync(join(d, p)).isFile() && !p.startsWith('.git')).sort().join('\n');
+const walk = (d) => readdirSync(d, { recursive: true, encoding: 'utf8' }).filter((p) => statSync(join(d, p)).isFile() && !p.startsWith('.git')).sort().map((p) => `${p}:${createHash('sha256').update(readFileSync(join(d, p))).digest('hex')}`).join('\n');
 const candArgs = (root, extra = []) => ['--root', root, '--check', '--authority-candidate', join(root, 'candidate.json'), '--authority-expected-digest', EXAMPLE.content_digest, ...extra];
 
 t('T1 default --check byte-identical to fixed parent 61df closure on same fixture', async () => {

@@ -162,6 +162,15 @@ jobs:
       # identity, it only moves the clock, and the value in force is printed on the census leg line so a
       # pass states the clock it passed under. The right end of this is in the leg's own hands (give the
       # walk the budget it needs, or narrow it); when that lands, take this flag off.
+      # S2 §7.4: the authority-docs checks already maintained in-tree now ride the SAME
+      # required pr-gate job — no second "Required" system. docs:sync --check is the full
+      # static law (links/ids/anchors/claims/registry/plan-citation/derived-view);
+      # docs:probe is the T0 authority probe. Any blocking finding reddens the gate.
+      - name: Authority docs checks (docs:sync --check + docs:probe)
+        run: |
+          set -euo pipefail
+          node scripts/docs-sync.mjs --check
+          node scripts/docs-probe.mjs
       - name: Gate — every leg, two captures, any skip is a failure
         # DECLARED, not silent: a hosted runner has no tests/deepseek-harness-test-use (gitignored
         # pristine host, TEST_METHODS sec 2), so the census leg REFUSES rather than reporting the

@@ -127,6 +127,21 @@ jobs:
           set -euo pipefail
           MASTER_SHA=$(awk '/^state_pointers:/{f=1} f&&/master_sha:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
           BASELINE=$(awk '/^current_contract:/{f=1;next} f&&/^[^[:space:]#]/{f=0} f&&/^[[:space:]]*baseline:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
+          # S2 §7.4 candidate CONSUMPTION — integration, NOT the entry switch. When a
+          # versioned authority snapshot AND its expected digest exist, the thin resolver
+          # (scripts/authority-baseline-resolver.mjs: explicit path+digest, frozen schema,
+          # F0 digest, no fallbacks) must AGREE with the legacy graph value read above.
+          # Old and new currents DISAGREEING turns the whole job red; nothing is ever
+          # auto-picked. Files absent = pre-migration: legacy awk values stand, and the
+          # existing presence/ancestry checks below run unchanged over BOTH of them.
+          if [ -f dev/engineering/current-authority.json ] && [ -f dev/engineering/current-authority.expected-digest ]; then
+            if ! CAND=$(node scripts/authority-baseline-resolver.mjs --snapshot dev/engineering/current-authority.json --expected-digest "$(cat dev/engineering/current-authority.expected-digest)" 2>&1 | tr -d '[:space:]'); then
+              echo "::error::AUTHORITY CANDIDATE REFUSED: the named snapshot failed validation — ${CAND}"; exit 1
+            fi
+            if [ -z "$CAND" ]; then echo "::error::AUTHORITY CANDIDATE: resolver printed an empty baseline"; exit 1; fi
+            if [ "$CAND" != "$BASELINE" ]; then echo "::error::AUTHORITY CANDIDATE CONFLICT: snapshot baseline ${CAND} != legacy graph baseline ${BASELINE} — old and new current disagree; the job is red, nothing is auto-picked"; exit 1; fi
+            echo "authority candidate AGREES with the legacy graph baseline (${CAND}); legacy remains the operative source until the approved entry switch"
+          fi
           for pair in "state_pointers.master_sha=$MASTER_SHA" "current_contract.baseline=$BASELINE"; do
             NAME=${pair%%=*}
             OBJ=${pair#*=}

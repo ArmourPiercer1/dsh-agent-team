@@ -4,7 +4,7 @@
 // only: candidate path + expected digest, validated against the frozen schema and the
 // canonical digest path. Default mode (no options) must stay on the legacy reader with
 // unchanged output. A refused candidate NEVER falls back to graph or current-state.
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, openSync, writeSync, closeSync} from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { join, resolve } from 'node:path';
@@ -148,10 +148,12 @@ t('C9 helper with null/array/string options: structured refusal, no TypeError', 
 ran += 1;
 {
   const root = mkRoot({ mirror: true });
-  const tmpMod = join(REPO, 'scripts', '.tmp-gcs-baseline-5f0d0e58.mjs');
+  // incident-correction 2026-10-25: EXCLUSIVE unique creation inside scripts/ so the
+  // baseline module's './x.mjs' relative imports resolve against their real siblings.
+  const tmpMod = join(REPO, 'scripts', `.tmp-gcs-baseline-5f0d0e58-${process.pid}-${Math.random().toString(36).slice(2, 10)}.mjs`);
   try {
     const src = execFileSync('git', ['show', '5f0d0e58e11c193087ad8918ef2c8f0c33d5446c:scripts/gen-current-state.mjs'], { cwd: REPO, maxBuffer: 64 * 1024 * 1024 });
-    writeFileSync(tmpMod, src);
+    { const fd = openSync(tmpMod, 'wx'); try { writeSync(fd, src); } finally { closeSync(fd); } }
     const OLD = await import(pathToFileURL(tmpMod).href);
     const a = OLD.build(root);
     const b = build(root);
