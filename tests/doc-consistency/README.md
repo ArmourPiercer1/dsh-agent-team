@@ -54,6 +54,7 @@ output only: it proves nothing about product acceptance and switches nothing.
 | write authority | `--write` regenerates only the view | `--write` leaves normative files byte-identical; `isWriteAllowed()` refuses contract paths |
 | terminology (`TERMINOLOGY_DEPRECATED`) | clean fixture | deprecated token in a current-state doc |
 | links (`LINK_DANGLING`) | clean fixture | relative link to a missing file |
+| cited design/evidence paths (`CITED_PATH_MISSING`) | source under a scanned root citing a `docs/**.md` that exists (`POS-16`) | source under a scanned root citing a design document that is not in the tree — blocking on BOTH `docs:sync --check` and `docs:probe` (`NEG-80`) |
 | claims need evidence (`CLAIM_WITHOUT_EVIDENCE`) | claim citing an existing artifact | same claim with the citation removed |
 | proposal exemption (AC-EB-0001 positive) | Idea + Proposed describing future behaviour → no findings | — |
 | base resolution | `--base <sha>` sees committed, staged and untracked changes | unresolvable `--base` → `REFUSED`, exit 2 (never "no changes") |

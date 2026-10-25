@@ -920,6 +920,28 @@ control('NEG-79 the map must lead an effect-law change to a permission contract,
   ];
 });
 
+control('POS-16 a source citing an existing design document is not a finding', (d) => {
+  // FIX-D (D4) positive leg: the cited-path rule must stay silent when the citation
+  // resolves — a rule that fires on good input is worse than no rule.
+  writeFile(d, 'packages/runtime/governance-center/index.ts', '/** design: docs/terminology.md exists in this fixture */\nexport const lane = 1;\n');
+  const res = run(SYNC, ['--check', '--root', d]);
+  return [{ ok: !res.out.includes('CITED_PATH'), why: 'CITED_PATH must not appear when the citation resolves; observed: ' + (res.out.match(/^\S+ CITED_PATH[^\n]*/gm) || ['absent']).join(' | ') }];
+});
+
+control('NEG-80 a source citing a non-existent design document blocks', (d) => {
+  // FIX-D (D4) negative leg: exactly the class the external audit found on master — a
+  // governance-lane header citing a design document that lives only on an unmerged
+  // branch. Document-side link checks never see it (the citation is CODE), so this rule
+  // owns it, and it must be BLOCKING on both gates, not advisory.
+  writeFile(d, 'packages/runtime/governance-center/index.ts', '/** target architecture docs/plans/memo/gone/design.md */\nexport const lane = 1;\n');
+  const res = run(SYNC, ['--check', '--root', d]);
+  const probe = run(PROBE, ['--worktree-only', '--root', d]);
+  return [
+    expectBlocking('sync --check', res, 'CITED_PATH_MISSING', { detailIncludes: 'docs/plans/memo/gone/design.md' }),
+    { ok: probe.code === 1 && /^FAIL CITED_PATH_MISSING/gm.test(probe.out), why: 'probe must grade the same input blocking too (one classification, both gates); probe exit=' + probe.code },
+  ];
+});
+
 control('NEG-76 docs:probe names and refuses a flag it does not implement', (d) => {
   // `--strict` used to be parsed from argv, passed to probe(), destructured and dropped on
   // the floor: the command ran the ordinary check and its exit was read as the strict

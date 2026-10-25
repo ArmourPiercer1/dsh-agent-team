@@ -1,5 +1,11 @@
 # Alpha.5 工具 IO 治理 — 当前执行计划（current-execution-plan）
 
+> **Status banner (2026-10-26, FIX-D):** **Superseded as implementation plan by PR #364** (user ruling
+> 2026-10-25: "PR #364 merged = the sole implementation plan" — `docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md`).
+> This file is **retained for backlog/matrix context** (its `ALPHA5-EFFECTIVE-BACKLOG.md` / `TOOL-CAPABILITY-MATRIX-9b2.md`
+> stay the effective entry points). Machine `active_plan` moved 2026-10-26 to the carrier
+> `docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md` (snapshot `as20261026r1`; BLOCKED-D1 path 2).
+
 <!-- phase-baseline-ref: dev/engineering/current-authority.json — 基线唯一权威=该指针解析到的快照 baseline；本文件禁 SHA 副本 -->
 <!-- phase-identity: alpha5-tool-io-governance -->
 
