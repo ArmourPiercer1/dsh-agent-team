@@ -50,3 +50,11 @@ PR #364's plan the machine `active_plan` is blocked by the frozen snapshot schem
 `dev/agent-workflow/evidence/u6-fixd-20261026/BLOCKED-D1.md` for the refusals and the two compliant unblock
 paths. The user ruling (PR #364 = sole implementation plan) is recorded in `AGENTS.md` and the closeout log
 entry; this ledger records the gate side.
+
+**Update 2026-10-26 (main agent, BLOCKED-D1 resolved via path 2):** the main agent (user-delegated
+authority, user ruling 2026-10-25 "PR #364 = sole implementation plan") placed the carrier
+`docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md` (Q6 carriers, links to the #364
+plan, copies no plan content), published snapshot `as20261026r1`
+(`sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4`, supersedes `as20261025r1`)
+with the existing publisher and moved the pointer with `switch-authority.mjs` (byte precondition =
+previous pointer `sha256:5356e8de…725ee`). No schema or Q2 change. Rollback = `git revert` of this commit.
