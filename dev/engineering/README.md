@@ -20,7 +20,7 @@ verification_status    not_verified | verified_local | verified_ci | verified_ho
 release_status         not_released | candidate | released
 ```
 
-None implies another. `accepted + merged + not_verified + release_blocked` is a
+None implies another. `accepted + merged + not_verified + not_released` is a (`release_blocked` was a non-enum token: the release enum is not_released|candidate|released; the Alpha.5 *release gate* being blocked is a phase fact, not this field's value)
 legal, common combination. `verified_*` requires at least one path in
 `verification_artifacts` that **exists**; the generator refuses (exit 1, code
 `FAKE_VERIFICATION`) rather than passing a claim with no artifact. That refusal

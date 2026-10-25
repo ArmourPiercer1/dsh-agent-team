@@ -2,7 +2,7 @@
   "generated_by": "scripts/gen-current-state.mjs",
   "schema_version": 1,
   "source_registry": "dev/engineering/registry.yaml",
-  "source_registry_sha": "460038c9aff40acf850a5e3c8b7ee109cc13c7a6",
+  "source_registry_sha": "751f93308c48c84cb9d5138fb60f6196320809d0",
   "source_catalog": "docs/contracts/engineering-baseline/ids.yaml",
   "source_catalog_sha": "23bc9c596e43a5e060cd8326c0e1d553d5bbeb16",
   "axes_legend": {
@@ -32,17 +32,7 @@
     ]
   },
   "legacy_authority": {
-    "present": true,
-    "file": "dev/agent-workflow/graph.yaml",
-    "phase_id": "alpha5-tool-io-governance",
-    "active_plan": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
-    "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
-    "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
-    "baseline": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
-    "baseline_collected": "2026-10-22T07:20:56Z",
-    "baseline_exists": true,
-    "baseline_is_ancestor_of_head": true,
-    "note": "read-only mirror; this generator never writes graph.yaml and does not become an execution authority"
+    "present": false
   },
   "entries": [
     {
@@ -147,7 +137,7 @@
       "kind": "implementation-pr",
       "title": "Agent Notes directory, format checks, ideas inbox",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -163,11 +153,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": true
+            "exists": false
           }
         ]
       }
@@ -177,7 +167,7 @@
       "kind": "implementation-pr",
       "title": "Glossary, terminology, stable REQ/INV/AC id index",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -195,11 +185,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": true
+            "exists": false
           }
         ]
       }
@@ -209,7 +199,7 @@
       "kind": "implementation-pr",
       "title": "Registry plus derived read-only current-state view",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -225,19 +215,19 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log",
-            "exists": true
+            "exists": false
           }
         ]
       }
@@ -247,7 +237,7 @@
       "kind": "implementation-pr",
       "title": "Phase-plan citation interface and Idea-to-Contract rules",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -261,11 +251,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": true
+            "exists": false
           }
         ]
       }
@@ -275,7 +265,7 @@
       "kind": "implementation-pr",
       "title": "docs:probe fast document probe with negative controls",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -291,11 +281,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": true
+            "exists": false
           }
         ]
       }
@@ -305,7 +295,7 @@
       "kind": "implementation-pr",
       "title": "docs:sync complete check and explicit write",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -320,15 +310,15 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log",
-            "exists": true
+            "exists": false
           }
         ]
       }
@@ -338,7 +328,7 @@
       "kind": "implementation-pr",
       "title": "Contracts shape vs runtime field-set agreement check (read-only)",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -353,11 +343,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log",
-            "exists": true
+            "exists": false
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log",
-            "exists": true
+            "exists": false
           }
         ]
       }

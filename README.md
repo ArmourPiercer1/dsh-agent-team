@@ -194,8 +194,8 @@ gitignored) — this section is a pointer summary, not the authority:
   for current state is `dev/agent-workflow/graph.yaml#current_contract`. It records phase
   `alpha5-tool-io-governance`, with `active_plan` / `backlog` / `matrix` under
   `docs/plans/active/alpha5-tool-io-governance/` and
-  `baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912`
-  (`baseline_collected "2026-10-22T07:20:56Z"`). That baseline was checked here rather than
+  `baseline` and `baseline_collected` read live from the graph at check time
+  (values deliberately not copied here: the pointer owns them; a copy here would be a second baseline). That baseline was checked here rather than
   copied: on `task/eb-e0-e1-doc-baseline-20261029`,
   `git merge-base --is-ancestor 9b2ee57bc5afd30e89855e09d1769d2e5ec83912 HEAD` returned RC=0.
   Reading order for a new agent: those three current-state plan files → `AGENTS.md` →

@@ -63,7 +63,8 @@ entries:
     kind: implementation-pr
     title: Agent Notes directory, format checks, ideas inbox
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc Owner]
@@ -73,7 +74,8 @@ entries:
     kind: implementation-pr
     title: Glossary, terminology, stable REQ/INV/AC id index
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc/Contract Owner]
@@ -83,7 +85,8 @@ entries:
     kind: implementation-pr
     title: Registry plus derived read-only current-state view
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Tooling Owner]
@@ -101,7 +104,8 @@ entries:
     kind: implementation-pr
     title: Phase-plan citation interface and Idea-to-Contract rules
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Workflow Owner]
@@ -111,7 +115,8 @@ entries:
     kind: implementation-pr
     title: docs:probe fast document probe with negative controls
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc/Tooling Owner]
@@ -121,7 +126,8 @@ entries:
     kind: implementation-pr
     title: docs:sync complete check and explicit write
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc/Contract Owner]
@@ -130,7 +136,7 @@ entries:
     # Sub-item bound here: the write surface now carries a second derivative
     # (docs/contracts/engineering-baseline/INDEX.md) through the same boundary helper,
     # with the exact-file rule ahead of the area rule and a hard-link target refused
-    # (run-9). C1 = Adapter-local level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree), no C2/C3 claimed; not merged, not released.
+    # (run-9). C1 = Adapter-local level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree), no C2/C3 claimed; merged via PR #362 at 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (merge fact only — verification stays C1 local, adoption not asserted), not released.
     # Narrow review pending as of the 2026-10-23 21:38 instruction.
     verified_tier: C1
     verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
@@ -138,7 +144,8 @@ entries:
     kind: implementation-pr
     title: Contracts shape vs runtime field-set agreement check (read-only)
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     # No catalog REQ covers this card; refs cite the code and its matrix instead of
