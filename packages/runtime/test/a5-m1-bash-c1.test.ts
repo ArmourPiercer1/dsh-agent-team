@@ -16,6 +16,14 @@ import { fileURLToPath } from 'node:url'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
 import type { ControlLegInput, ControlLegResult } from './a5-m1-control-legs.mjs'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
@@ -55,6 +63,8 @@ const POLICY_BASH_ALLOW = Object.freeze({
 })
 function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input: ControlLegInput) => Promise<ControlLegResult>) {
   const built = row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: policy,
     realmId: REALM, templateId: 'a5m1-tpl', role: 'member', instanceId: 'a5m1-instance',

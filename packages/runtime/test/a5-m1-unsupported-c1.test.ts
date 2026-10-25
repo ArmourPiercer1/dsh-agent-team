@@ -13,6 +13,14 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DSH_BASELINE_VERSION, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
@@ -40,6 +48,7 @@ const confinedProvider = () => ({
 })
 const POLICY = Object.freeze({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [] as unknown[], deny: [] as unknown[] })
 const baseInput = (extra: Record<string, unknown> = {}) => ({
+        dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
   permissionPolicy: POLICY, realmId: REALM, templateId: 't', role: 'member', instanceId: 'i',
   plane: { fsInstance: { fs: 'c', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' }, confinedProvider: confinedProvider() },
   teamSessionId: 'a5m1-test-team-root',
@@ -78,6 +87,8 @@ describe('a5-m1-unsupported-c1 — closed world: unknown names never mount, neve
 
   it('U-C1-6 no-fs-root world: without a governed fsInstance the fs-class row is NOT MOUNTED at all (the closed world invents no root — the STRONGER shut landing: absent face, never a native fallback)', async () => {
     const built = row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
       permissionPolicy: POLICY, realmId: REALM, templateId: 't', role: 'member', instanceId: 'i',
       plane: { confinedProvider: confinedProvider() },

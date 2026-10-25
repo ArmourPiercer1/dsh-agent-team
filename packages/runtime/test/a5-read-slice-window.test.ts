@@ -48,6 +48,14 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse as parseYaml } from 'yaml'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 // ---------------------------------------------------------------------------
 // Injection state (hoisted above vi.mock — the factory closes over this).
 // ---------------------------------------------------------------------------
@@ -229,6 +237,8 @@ function buildPlane(input: {
 }): { built: ReturnType<PlaneRow['createTeamToolPlaneAssembly']>; rows: string[] } {
   const rows: string[] = []
   const built = row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
     controlLeg: approvingControlLeg(),
     ...(input.noSeam === true ? {} : { fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') } }),

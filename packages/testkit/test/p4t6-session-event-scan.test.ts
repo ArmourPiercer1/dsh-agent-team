@@ -359,6 +359,10 @@ const SCANNED_PATHS_U6PR2: readonly string[] = [
   'packages/runtime/test/u6-pr2-kernel-flow.test.ts',
   'packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts',
   'packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts',
+  // review-r1 (this round): the B1/B2 mount-law suite + the extracted B4
+  // golden-corpus generator (canonicalizer injected, zero imports).
+  'packages/runtime/test/u6-pr2-review-r1.test.ts',
+  'packages/runtime/test/u6-pr2-golden-corpus.mts',
 ]
 
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
@@ -3536,8 +3540,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // SCANNED_PATHS_U6PR2 files above are exactly the scanned-total delta
     // 1240 -> 1251, MEASURED on the merged + migrated tree (the resumed
     // round's scanner run reported `expected 1251 to be 1250`; the R-REM-2
+    // REVIEW ROUND 1 (this round) adds the two scannable paths above: the
+    // measured run on THIS tree reads `expected 1253 to be 1251` — booked,
+    // no chain value copied.
     // read-lane C1 file is the last increment; no chain value copied).
-    expect(SCANNED_PATHS_U6PR2.length).toBe(1251 - 1240)
+    expect(SCANNED_PATHS_U6PR2.length).toBe(1253 - 1240)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

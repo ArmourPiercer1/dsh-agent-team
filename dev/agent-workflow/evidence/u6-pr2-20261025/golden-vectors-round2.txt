@@ -1,0 +1,27 @@
+U6 PR2 golden-vector gate — ROUND 2 (review-r1 B4) recording protocol:
+
+1. Generator extracted UNCHANGED (round-1 grid first, indices 0..874) and
+   EXTENDED with 14 path shape classes (NFC/NFD, non-BMP astral, leading +
+   climbing `..`, `./`, trailing slash, `//`, absolute inside/outside,
+   symlink-name with resolver-disclosed in-root and OUTSIDE targets) into
+   packages/runtime/test/u6-pr2-golden-corpus.mts (canonicalizer INJECTED,
+   zero imports).
+2. Master-side reference: the SAME module, run against the master
+   canonicalizer loaded from a DETACHED `origin/master` git worktree
+   (.artifacts/tmp/u6pr2-golden-master @ c6cfec890; master's inline
+   `case 'read'`, never the family normalizer). Master tree NOT modified;
+   worktree removed after recording.
+3. RESULTS (both runs, same generator, same injected resolver):
+     vectors: 2893 / ok 614 / err 2279
+     FAMILY sha256(JSON.stringify(vectors)) =
+       bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf
+     MASTER sha256(JSON.stringify(vectors)) =
+       bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf
+     => BYTE-IDENTICAL full-corpus (not just digests: golden-vectors-round2-
+        family.json and golden-vectors-round2-master.json are byte-equal).
+4. ROUND-1 PRESERVATION: every one of the 877 round-1 vectors
+   (golden-vectors-after-pr2.json, digest 7fbb3ab9ae48451fc8ab41489491dfcf
+   4d0420bfaa0f596dd09c949124a7987c, 300556 bytes) is byte-identical inside
+   the extended corpus (0..874 + the two trailing extras at 2891/2892).
+5. Sizes: old corpus 300556 B (877) -> new 750899 B (2893).
+   New pin in u6-pr2-read-golden-vectors.test.ts: bfa69f58…, count 2893.

@@ -1116,12 +1116,29 @@ async function runU6Fs({ factory, record, rc, log, line, worlds, keepHome, evide
     // spent — its claim answering proves the governed lane kept working on
     // a capped audit channel.
     const postCapRead = claimOccurrences(F.s4.claim) > 0
+    // Review-r1 B5: the post-cap proof must NOT lean on the capped ledger
+    // itself nor on the tool return. The probe's tools/post-execute oracle
+    // reads the S4 FILE ITSELF at the fs boundary (leg: 'oracle-read-effect'
+    // — bytes/sha256/claimSeen from the oracle's own readFileSync) and the
+    // timestamp tie below binds one such observation to the post-cap window
+    // (at >= the last capped marker's at). All three witnesses — transcript,
+    // oracle, ledger marker — must agree.
+    const capAt = String(markers[markers.length - 1]?.at ?? '')
+    const oracleRows = probeLedger().filter((r) => r?.leg === 'oracle-read-effect' && r.pathTail === 'u6fs-s4.txt')
+    const postCapOracle = oracleRows.filter((r) => r.claimSeen === true && capAt !== '' && String(r.at ?? '') >= capAt)
     add('fs:shadow-ledger-cap',
-      markers.length > 0 && hostAlive() && postCapRead ? 'PASS' : 'FAIL',
+      markers.length > 0 && hostAlive() && postCapRead && postCapOracle.length > 0 ? 'PASS' : 'FAIL',
       { rows: rows.length, cappedMarkers: markers.length, installs: installs.length,
         budgets: markers[0] ? { maxLedgerRows: markers[0].maxLedgerRows, maxLedgerBytes: markers[0].maxLedgerBytes } : null,
         hostAlive: hostAlive(), postCapReadSucceeded: postCapRead,
-        detail: 'K5 terminal marker present, flow unaffected (R-REM-3 cap-hit evidence)' })
+        oraclePostCapRows: postCapOracle.length,
+        oracleReceipt: postCapOracle.length > 0 ? {
+          at: postCapOracle[postCapOracle.length - 1].at, pathTail: 'u6fs-s4.txt',
+          bytes: postCapOracle[postCapOracle.length - 1].bytes,
+          sha256: postCapOracle[postCapOracle.length - 1].sha256,
+          claimSeen: true, capAt,
+        } : null,
+        detail: 'K5 terminal marker present, flow unaffected; post-cap read proven by an INDEPENDENT oracle observation of the read effect (oracle bytes/sha256, timestamped after the cap marker) (R-REM-3 cap-hit evidence)' })
   }
 
   // ── leak-check: teardown, then the factory's owned-resources audit ───────

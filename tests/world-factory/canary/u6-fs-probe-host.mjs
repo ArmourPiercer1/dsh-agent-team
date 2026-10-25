@@ -34,7 +34,8 @@
  *
  * @module tests/world-factory/canary/u6-fs-probe-host
  */
-import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
 
 export const name = 'u6-fs-probe-host'
@@ -349,6 +350,29 @@ export function apply(ctx) {
           path: execLabel(exec),
           agent: safeLabel(() => exec?.agent?.id ?? exec?.agent?.session?.header?.id),
         })
+        // R-REM-3 / review-r1 B5: INDEPENDENT oracle observation of the
+        // read EFFECT. The probe reads the target file ITSELF at the fs
+        // boundary — the marker is derived from what the ORACLE read off
+        // disk, not from the tool return above and not from the shadow
+        // audit ledger. The runner ties it to the post-cap window by
+        // timestamp and carries it in the verdict-cleaning receipt.
+        try {
+          const fp = exec?.arguments?.file_path ?? exec?.args?.file_path
+          const tail = String(fp ?? '').split('/').pop() ?? ''
+          if (typeof fp === 'string' && fp.startsWith('/') && /^u6fs-[a-z0-9-]+\.txt$/.test(tail)) {
+            const raw = readFileSync(fp)
+            record({
+              leg: 'oracle-read-effect',
+              pathTail: tail,
+              bytes: raw.length,
+              sha256: createHash('sha256').update(raw).digest('hex'),
+              claimSeen: /U6FS_S\d_CLAIM_/.test(raw.toString('utf8')),
+              agent: safeLabel(() => exec?.agent?.id ?? exec?.agent?.session?.header?.id),
+            })
+          }
+        } catch (error) {
+          record({ leg: 'oracle-read-effect-error', path: execLabel(exec), error: String(error?.message ?? error).slice(0, 160) })
+        }
       }
       return typeof next === 'function' ? next() : undefined
     })

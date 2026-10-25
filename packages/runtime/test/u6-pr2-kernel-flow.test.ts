@@ -16,6 +16,14 @@ import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
 import { createGovernanceKernel, createGovernedFamilyRegistry } from '../governance-center/index.js'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const REALM = 'u6-pr2-kernel-unit-realm'
 
 /* The live plane row and the family contribution builder are untyped .mjs
@@ -65,6 +73,8 @@ const planeFace = (v: unknown): KernelPlaneValue => v as KernelPlaneValue
 
 async function planeValue(over: Record<string, unknown> = {}): Promise<KernelPlaneValue> {
   const built = (await planeModule()).createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
     teamSessionId: 'u6-pr2-test-team-root',
     controlLeg: approvingControlLeg(),
     fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
@@ -143,8 +153,10 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     expect(center.kernel.approvalFor(center.scopeKey, trioName!)).toBeUndefined()
   })
 
-  it('K3 a plane WITHOUT the read row omits the kernel faces entirely (presence = capability)', async () => {
+  it('K3 a plane WITHOUT the read row carries NO kernel — and (review-r1 B2) a REJECTING read face, never native fallback', async () => {
     const built = (await planeModule()).createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'u6-pr2-test-team-root',
       controlLeg: approvingControlLeg(),
       permissionPolicy: { default: 'deny', allow: [], ask: [], deny: [] },
@@ -158,8 +170,17 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
     const value = planeFace(built.value)
-    expect(value.centerKernel).toBeUndefined()
-    expect(value.kernelGuard).toBeUndefined()
+    expect(value.centerKernel, 'no read row, no kernel').toBeUndefined()
+    // REVIEW-R1 B2 (CI-05): the guard face is NOT omitted — the governed
+    // mount keeps ownership of `read` with a table that answers NULL
+    // forever, so the door refuses every read before its Body instead of
+    // letting the native definition ride (agent-bindings forwards this
+    // face lazily; the full zero-body proof is R2b/R2c in
+    // u6-pr2-review-r1.test.ts).
+    expect(value.kernelGuard, 'rejecting face, not absence').toBeDefined()
+    expect(value.kernelGuard!.owns('read')).toBe(true)
+    expect(value.kernelGuard!.owns('grep')).toBe(false)
+    expect(value.kernelGuard!.identityFor('read')).toBeNull()
     expect(value.definitions.find((d: { name: string }) => d.name === 'read')).toBeUndefined()
   })
 

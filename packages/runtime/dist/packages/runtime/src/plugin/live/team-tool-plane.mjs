@@ -1636,26 +1636,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // `fs-family/src/read-row.mjs` (name/description/parameters/execute
   // transport/presentation face all come from the family lane; the
   // takeover-spelling law keeps the Gate 0b-validated native name).
-  // U6 PR2 / FIX-K K3 (R-REM-2.2): the row's body window is the kernel
-  // lane's SELF-COUNTED in-flight set. When the assembly point injects the
-  // dispatcher's lifecycle port (`dispatcherLifecycle`, production: the
-  // Guard handle's pendingCalls ledger), that count rules; otherwise the
-  // kernel mounts over THIS counter — a real count of this lane's executing
-  // bodies, never a faked zero (an enforcing kernel without any port cannot
-  // be constructed at all: the kernel factory throws).
-  let kernelLaneInflight = 0
-  const rowReadExecutor = readExecutor === null ? null : Object.assign(
-    async (raw, corr) => {
-      kernelLaneInflight += 1
-      try {
-        return await readExecutor(raw, corr)
-      } finally {
-        kernelLaneInflight -= 1
-      }
-    },
-    readExecutor,
-  )
-  const readRowDef = rowReadExecutor === null ? null : buildReadRowDefinition({ readName, readExecutor: rowReadExecutor })
+  // REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the lifecycle count is ONLY ever
+  // the dispatcher's own ledger, injected as `dispatcherLifecycle`
+  // (production: the Guard handle's pendingCalls). The mount does NOT keep
+  // a self-counted fallback — with no port the kernel factory throws and
+  // this mount fails closed below (typed refusal); a family-local wrapper
+  // count is not a dispatcher count and is not offered.
+  const readRowDef = readExecutor === null ? null : buildReadRowDefinition({ readName, readExecutor })
   const baseDefs = readRowDef === null ? defs : Object.freeze([...defs, readRowDef])
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
@@ -1724,7 +1711,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // mount fails closed below — it never degrades to a shadow.
         mode: 'enforcing',
         ports: {
-          lifecycle: input.dispatcherLifecycle ?? { inflight: () => kernelLaneInflight },
+          lifecycle: input.dispatcherLifecycle,
           grantConsume: {
             // THE PR2 PORT BINDING (PR1-open-1): kernel → tool-admission
             // one-shot face. Synchronous under the wrapper (no await between
@@ -1911,7 +1898,21 @@ export function createTeamToolPlaneAssembly(input = {}) {
        * A plane without the governed read row OMITS the field entirely —
        * presence is the capability signal, same law as paReadHandoff.
        */
-      ...(readKernel === null ? {} : { kernelGuard: readKernel.guard }),
+      ...(readKernel !== null
+        ? { kernelGuard: readKernel.guard }
+        // REVIEW-R1 B2 (CI-05): the governed mount is live but the read row
+        // did NOT mount (no usable fsInstance). `read` must then NEVER ride
+        // the native body: the plane value owns the name with a table that
+        // answers NULL forever, so the Guard's pre-body table gate (and the
+        // post-success veto, if a body were ever reached) refuse every read
+        // BEFORE any effect. The name stays OUT of placementFeed (no
+        // identity exists to bind) and OUT of ownNames (no row).
+        : {
+            kernelGuard: Object.freeze({
+              owns: (name) => typeof name === 'string' && name === readName,
+              identityFor: () => null,
+            }),
+          }),
       /** U6 PR2 diagnostics/tests: the plane's center assembly (kernel +
        *  registry faces; observation only — no authority crosses here). */
       ...(readKernel === null ? {} : { centerKernel: Object.freeze({ kernel: readKernel.kernel, registry: readKernel.registry, scopeKey: readKernel.scopeKey, familyId: 'dsh.fs-family' }) }),

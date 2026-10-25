@@ -428,7 +428,7 @@ test('u6-fs: SUITE_CASES entry and parseArgs wiring', async () => {
   const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
   assert.deepEqual(SUITE_CASES['u6-fs'], [
     'fs:mounted', 'fs:governed-read-positive', 'fs:refusal-zero-effect', 'fs:ctl-native-read',
-    'fs:identity-swap', 'fs:identity-swap-sensitivity', 'fs:toctou-abort', 'fs:leak-check',
+    'fs:identity-swap', 'fs:identity-swap-sensitivity', 'fs:toctou-abort', 'fs:shadow-ledger-cap', 'fs:leak-check',
   ])
   const opts = parseArgs(['--suite', 'u6-fs', '--line', 'u6fsx', '--evidence', '/tmp/ev'])
   assert.equal(opts.suite, 'u6-fs')

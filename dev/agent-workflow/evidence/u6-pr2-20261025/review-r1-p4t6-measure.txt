@@ -1,0 +1,5 @@
+p4t6 pre-booking measurement (review round 1): scanner run on this tree
+reported `expected 1253 to be 1251` (the two new scannable paths:
+packages/runtime/test/u6-pr2-review-r1.test.ts +
+packages/runtime/test/u6-pr2-golden-corpus.mts). Booked to
+SCANNED_PATHS_U6PR2 (11 -> 13, tie 1253 - 1240); the booked run is GREEN.

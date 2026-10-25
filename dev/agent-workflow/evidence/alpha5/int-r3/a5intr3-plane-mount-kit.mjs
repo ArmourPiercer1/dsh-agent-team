@@ -108,7 +108,13 @@ try {
     ask: [],
     deny: [],
   })
+  // REVIEW-R1 B1 (K3): the kernel lifecycle port is ONLY the dispatcher
+  // ledger (production: the Guard's pendingCalls). This kit drives rows
+  // directly — no dispatcher installs a handle here, so the ref stays empty
+  // and the port reads the honest zero of that wiring. No self-count.
+  const dispatchLedger = {}
   const build = (extra = {}) => plane.createTeamToolPlaneAssembly({
+    dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
     // THE PA durable attribution identity: the REAL host TeamSession root this
     // kit world stands for (same `a5intr3-kit-*` keying as REALM/instanceId —
     // never a synthetic `plane:<template>` stand-in, which the mount refuses).

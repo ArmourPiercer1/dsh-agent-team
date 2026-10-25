@@ -134,6 +134,14 @@ import {
   p6t4Seed,
 } from './p6t4-helpers.js'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
@@ -1851,6 +1859,8 @@ directAssembly(undefined, PLANE_REALM)
 
 function buildPlane(controlLeg: (input: PaControlLegInput) => Promise<PaControlLegResult>) {
   const built = planeRow.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
     permissionPolicy: Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }),
     realmId: PLANE_REALM,
     templateId: 'a5m1-auth-tpl',
