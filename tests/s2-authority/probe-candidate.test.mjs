@@ -4,6 +4,8 @@
 // Candidate mode must be EXPLICIT (path + expected digest); a bad/missing/empty
 // configuration is refused with named blocking and NEVER silently falls back to the
 // legacy reader. Default mode must match the fixed parent 09fd39464 byte-for-byte.
+// Re-anchor 2026-10-26 (FIX-D D4): default mode additionally runs the cited-paths rule;
+// P4 now pins the parent bytes modulo exactly that one added selected_rules entry.
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
@@ -92,14 +94,22 @@ t('P3 corrupt candidate: named DUAL_READ/CANDIDATE blocking, no fallback view fr
   rmSync(root, { recursive: true, force: true });
 });
 
-t('P4 default mode CLI byte-identical to fixed parent 09fd39464 closure (same fixture, same flags)', () => {
+t('P4 default mode CLI equals fixed parent 09fd39464 closure, bounded re-anchor 2026-10-26: cited-paths rule added (FIX-D D4)', () => {
   const { root } = mkFixture();
   const tmp = mkdtempSync(join(REPO, '.tmp-s2-pcp-'));
   for (const m of CLOSURE) writeFileSync(join(tmp, `${m}.mjs`), gitShow(`scripts/${m}.mjs`));
   const a = runCli(join(tmp, 'docs-probe.mjs'), root, []);
   const b = runCli('scripts/docs-probe.mjs', root, []);
   assert(a.code === b.code, `exit ${a.code} vs ${b.code}`);
-  assert(a.out === b.out, `bytes differ:\n--parent--\n${a.out.slice(0, 400)}\n--current--\n${b.out.slice(0, 400)}`);
+  // RE-ANCHOR (2026-10-26, FIX-D): the cited-paths rule (external-audit D4) was added to
+  // default mode on purpose — a code-cited design document that resolves nowhere must stop
+  // the fast gate, and that promise requires the rule to run by default. The byte-identity
+  // claim survives for everything else: removing exactly the added selected_rules entry
+  // `"cited-paths"` must restore the parent bytes, and the entry must be the ONLY delta.
+  assert(b.out.includes('"cited-paths"') && !a.out.includes('"cited-paths"'),
+    'the only sanctioned delta is the cited-paths rule name entering selected_rules');
+  const stripped = b.out.split('\n').filter((l) => l.trim() !== '"cited-paths",' && l.trim() !== '"cited-paths"').join('\n');
+  assert(stripped === a.out, `beyond the cited-paths entry the bytes must match the parent exactly:\n--parent--\n${a.out.slice(0, 400)}\n--current(stripped)--\n${stripped.slice(0, 400)}`);
   rmSync(root, { recursive: true, force: true }); rmSync(tmp, { recursive: true, force: true });
 });
 
