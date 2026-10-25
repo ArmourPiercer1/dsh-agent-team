@@ -1,3 +1,0 @@
-{
-  "error": "session/follow stream error: {\"code\":\"gateway/arguments-invalid\",\"message\":\"typert gateway: session/follow: args fields do not match the descriptor: missing \\\"request\\\"; unexpected \\\"address\\\"\",\"details\":{\"endpoint\":\"session/follow\"}}"
-}

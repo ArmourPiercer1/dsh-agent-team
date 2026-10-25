@@ -1,6 +1,0 @@
-seq=undefined n=1 roles=user head=[{"type":"text","text":"PROBEMK_2026-10-15T22-38-23"},{"type":"text","text":"Current runti
-seq=undefined n=1 roles=user head=[{"type":"text","text":"Generate the session title from this JSON array of human messages:
-seq=undefined n=3 roles=user,assistant,user head=[{"type":"text","text":"PROBEMK_2026-10-15T22-38-23"},{"type":"text","text":"Current runti
-seq=undefined n=1 roles=user head=[{"type":"text","text":"PROBEMK_2026-10-15T22-39-34"},{"type":"text","text":"Current runti
-seq=undefined n=1 roles=user head=[{"type":"text","text":"Generate the session title from this JSON array of human messages:
-seq=undefined n=3 roles=user,assistant,user head=[{"type":"text","text":"PROBEMK_2026-10-15T22-39-34"},{"type":"text","text":"Current runti

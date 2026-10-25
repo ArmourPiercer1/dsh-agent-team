@@ -1,3 +1,0 @@
-PRE  compileFdPlan(fd=3) ok = true <-- declared fd3 ACCEPTED at the declaration face (silent-override enabled: review L3d tension)
-POST compileFdPlan(fd=3) ok = false <-- problem codes: fd-launcher-owned
-POST legal fd=4 still ok = true

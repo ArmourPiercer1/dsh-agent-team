@@ -1,6 +1,0 @@
-# census pair-1 @319a60d7 merged tree:
-DSH-CI-LEG leg=census verdict=pass seconds=249.2 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-067225df.md = 9 titled reds + 0 collection files; captured 551f/6941l, 551f/6941l vs baseline-declared 549 / 6936; 2 captures, ident
-# census pair-2 @319a60d7 merged tree:
-DSH-CI-LEG leg=census verdict=pass seconds=224 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-067225df.md = 9 titled reds + 0 collection files; captured 551f/6941l, 551f/6941l vs baseline-declared 549 / 6936; 2 captures, identic
-tests/homes/a5w-runs/census-M1.txt:DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=249.2
-tests/homes/a5w-runs/census-M2.txt:DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=224

@@ -1,4 +1,0 @@
-{
-  "message": "FATAL: audit worktree HEAD b6d7c48a9730d230758749dc05abad87cea5e41f != ls-remote master 5885e46ec2bcbfa7bfa58882d835801ec8b79e1f",
-  "stack": "Error: FATAL: audit worktree HEAD b6d7c48a9730d230758749dc05abad87cea5e41f != ls-remote master 5885e46ec2bcbfa7bfa58882d835801ec8b79e1f\n    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/release-candidate-r1/rc-trial-kit.mjs:93:30)\n    at file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/release-candidate-r1/rc-trial-kit.mjs:337:37\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
-}

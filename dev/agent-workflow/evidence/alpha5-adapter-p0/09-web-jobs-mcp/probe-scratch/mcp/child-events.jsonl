@@ -1,9 +1,0 @@
-{"at":1792102523597,"pid":107,"ev":"spawn"}
-{"at":1792102523601,"pid":107,"ev":"sigterm"}
-{"at":1792102523637,"pid":115,"ev":"spawn"}
-{"at":1792102523638,"pid":115,"ev":"initialize","client_protocol":"2025-11-25"}
-{"at":1792102523640,"pid":115,"ev":"initialized"}
-{"at":1792102523640,"pid":115,"ev":"tools/list"}
-{"at":1792102523644,"pid":115,"ev":"tools/call","name":"echo","message":"ping-42"}
-{"at":1792102523650,"pid":115,"ev":"tools/call","name":"echo","message":"from-B"}
-{"at":1792102523651,"pid":115,"ev":"stdin-end"}

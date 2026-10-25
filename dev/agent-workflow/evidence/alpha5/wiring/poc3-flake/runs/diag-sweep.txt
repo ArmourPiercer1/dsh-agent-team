@@ -1,8 +1,0 @@
-$ A5P3F_REPO=<worktree> node a5p3f-diag.mjs --churn 0 --trials 200
-{"head":"a53ca348","node":"v24.21.0","trials":200,"churn":false,"reserve":0,"answeredFdClosed":200,"answeredFdRecycled":0,"otherReasons":0,"driftWindows":0,"labelInconsistentWithOwnView":0,"worstWindowNs":0,"capturedFdRange":[25,25],"pid":7}
-$ A5P3F_REPO=<worktree> node a5p3f-diag.mjs --churn 1 --trials 400
-{"head":"a53ca348","node":"v24.21.0","trials":400,"churn":true,"reserve":0,"answeredFdClosed":389,"answeredFdRecycled":11,"otherReasons":0,"driftWindows":21,"labelInconsistentWithOwnView":0,"worstWindowNs":59572,"capturedFdRange":[30,31],"pid":21}
-$ A5P3F_REPO=<worktree> node a5p3f-diag.mjs --churn 1 --trials 400 --reserve 16
-{"head":"a53ca348","node":"v24.21.0","trials":400,"churn":true,"reserve":16,"answeredFdClosed":400,"answeredFdRecycled":0,"otherReasons":0,"driftWindows":1,"labelInconsistentWithOwnView":0,"worstWindowNs":44742,"capturedFdRange":[39,47],"pid":36}
-$ A5P3F_REPO=<worktree> node a5p3f-diag.mjs --churn 1 --trials 400 --reserve 64
-{"head":"a53ca348","node":"v24.21.0","trials":400,"churn":true,"reserve":64,"answeredFdClosed":400,"answeredFdRecycled":0,"otherReasons":0,"driftWindows":0,"labelInconsistentWithOwnView":0,"worstWindowNs":0,"capturedFdRange":[83,95],"pid":51}

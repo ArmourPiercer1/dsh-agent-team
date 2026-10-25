@@ -1,4 +1,0 @@
-{"at":"2026-10-17T06:53:32.357Z","leg":"plugin-apply","pid":108,"testUse":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use","run":"a5ptc3-outer-2026-10-17T06-53-28Z"}
-{"at":"2026-10-17T06:53:32.496Z","leg":"assembly-complete","label":"session-f85a5e5e-43f4-45e4-934b-240619030ed8","legs":["ptc-runtime-census","sandbox-mode-census-pre","witness-only-assembly","team-guard-witness-installed","presentAs-ptc","around-seam-installed","seam-census"]}
-{"at":"2026-10-17T06:53:32.796Z","leg":"disclosed-mode-switch","label":"session-f85a5e5e-43f4-45e4-934b-240619030ed8","to":"danger-full-access","calls":1}
-{"at":"2026-10-17T06:53:33.344Z","leg":"assembly-complete","label":"session-3a294cd9-b30c-4448-b005-4c57731f5f0a","legs":["ptc-runtime-census","sandbox-mode-census-pre","witness-only-assembly","team-guard-witness-installed","presentAs-ptc","around-seam-installed","seam-census"]}

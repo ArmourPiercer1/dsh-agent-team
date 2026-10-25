@@ -1,4 +1,0 @@
-{"at":"2026-10-17T05:41:05.535Z","tag":"g0-baseline","hostPid":46,"hostFdCount":37,"hostChildPids":[135,194],"selfFdCount":31}
-{"at":"2026-10-17T05:41:05.842Z","tag":"c1","hostPid":46,"hostFdCount":40,"hostChildPids":[194,279,288],"selfFdCount":31}
-{"at":"2026-10-17T05:41:06.158Z","tag":"c2","hostPid":46,"hostFdCount":41,"hostChildPids":[194,364,373],"selfFdCount":31}
-{"at":"2026-10-17T05:41:06.178Z","tag":"final","hostPid":46,"hostFdCount":35,"hostChildPids":[395],"selfFdCount":31}

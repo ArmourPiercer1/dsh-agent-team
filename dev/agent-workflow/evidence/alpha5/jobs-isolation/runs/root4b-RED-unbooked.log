@@ -1,6 +1,0 @@
-     × ROOT④b-②a PRE-CANCELLED: a signal already aborted at execute entry never touches svc.wait (host calls ZERO), typed wait-aborted carries the string reason verbatim 5007ms
-     × ROOT④b-②b MID-SUSPENSION: abort while the wait is parked → typed wait-aborted with the reason; wait entered ONCE, svc.read call count 0, zero bytes 5005ms
-     × ROOT④b-②c RACE AT SETTLE: the settling edge fires and the abort lands before the re-check → the read leg is NEVER reached (re-check BEFORE read is the arm that holds) 6ms
-     × ROOT④b-② DEFINITION-REPLACEMENT/UNLOAD abort shape: an Error-reason abort (what the plane mints when the lane definition moves under the call) answers typed with the CAUSE verbatim, read ③ zero 5006ms
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
-      Tests  4 failed | 18 passed (22)

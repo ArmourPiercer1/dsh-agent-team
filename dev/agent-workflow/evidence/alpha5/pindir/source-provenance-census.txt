@@ -1,7 +1,0 @@
-TEMPLATE stagehand_act -> stagehand_${method} @ packages/experimental/browser-use-stagehand-native/src/index.ts
-TEMPLATE stagehand_extract -> stagehand_${method} @ packages/experimental/browser-use-stagehand-native/src/index.ts
-TEMPLATE stagehand_navigate -> stagehand_${method} @ packages/experimental/browser-use-stagehand-native/src/index.ts
-TEMPLATE stagehand_observe -> stagehand_${method} @ packages/experimental/browser-use-stagehand-native/src/index.ts
-TEMPLATE stagehand_screenshot -> stagehand_${method} @ packages/experimental/browser-use-stagehand-native/src/index.ts
-TEMPLATE stagehand_tabs -> stagehand_${method} @ packages/experimental/browser-use-stagehand-native/src/index.ts
-checked 66 names

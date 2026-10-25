@@ -1,7 +1,0 @@
-# local census RED pair @788db2fd (typecheck TS2554 window) — leg line:
-DSH-CI-LEG leg=census verdict=fail seconds=194.7 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md = 9 titled reds + 0 collection files; captured 549f/6936l, 549f/6936l vs baseline-declared 508 / 6373; 2 captures, identical identity sets — clock: --testTimeout=90000 ms, an operator override above the 5000 ms default — COUNTS ALSO MOVED (549f/6936l, 549f
-
-# local census GREEN pair @pointer=067225df baseline (six prior pairs identical, this is the seventh with the new pointer):
-DSH-CI-LEG leg=census verdict=pass seconds=194.2 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-067225df.md = 9 titled reds + 0 collection files; captured 549f/6936l, 549f/6936l vs baseline-declared 549 / 6936; 2 captures, identical identity sets — clock: --testTimeout=90000 ms, an operator override above the 5000 ms default — identity set IDENTICAL to the publi
-
-DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=194.2

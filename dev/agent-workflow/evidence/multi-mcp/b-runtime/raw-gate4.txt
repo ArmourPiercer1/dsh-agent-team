@@ -1,3 +1,0 @@
-# Gate 4 typecheck
-$ tsc -p tsconfig.json
-typecheck exit=0

@@ -1,3 +1,0 @@
-     × every deferred path is still dirty (a migrated path must leave the list) 4ms
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-      Tests  1 failed | 47 passed (48)

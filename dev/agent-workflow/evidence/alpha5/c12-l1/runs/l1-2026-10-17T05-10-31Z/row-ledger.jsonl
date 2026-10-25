@@ -1,9 +1,0 @@
-{"at":"2026-10-17T05:10:32.620Z","leg":"plugin-apply","pid":60,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-l1/packages/runtime/dist/packages","hasWebServer":true}
-{"at":"2026-10-17T05:10:32.644Z","leg":"install-import","ok":true}
-{"at":"2026-10-17T05:10:32.791Z","leg":"register","name":"a5l1_probe","ok":true}
-{"at":"2026-10-17T05:10:32.792Z","leg":"subscribe","event":"tools/change","form":"forwarder-into-real-table","disposerType":"function"}
-{"at":"2026-10-17T05:10:32.794Z","leg":"guard-assembled","label":"session-4fae72f4-34bb-4852-8020-7191e4c9b305","installOk":true,"bindOwnOk":true,"publishedOk":true,"channel":"armed"}
-{"at":"2026-10-17T05:10:41.341Z","leg":"reregister","mode":"reregister-noop","name":"a5l1_probe","controlEvents":2,"laneDeliveries":2,"absorbed":0,"channel":"proven"}
-{"at":"2026-10-17T05:10:44.853Z","leg":"swallow-engaged","via":"G-7 forwarder-stop (entry stays in the real listener table; the disposer the install received was never called)","channel":"proven"}
-{"at":"2026-10-17T05:10:44.855Z","leg":"reregister","mode":"reregister-drift","name":"a5l1_probe","controlEvents":4,"laneDeliveries":2,"absorbed":2,"channel":"proven"}
-{"at":"2026-10-17T05:10:47.435Z","leg":"probe-result","isError":true,"text":"Error: team tool guard: \"a5l1_probe\" now resolves to a different ToolDefinition than the one its Binding pinned (definit","verifiedAtCallEdge":false}

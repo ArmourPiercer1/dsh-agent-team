@@ -1,3 +1,0 @@
-tests/kits/exec-contract-live-smoke/blueprint.mjs :: scenario/exec-token-false: v3; probe(v9) refused=true
-tests/kits/exec-contract-live-smoke/blueprint.mjs :: scenario/exec-token-true: v3; probe(v9) refused=true
-tests/kits/exec-contract-live-smoke/blueprint.mjs :: anchor: v3; probe(v9) refused=true

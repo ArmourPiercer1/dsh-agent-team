@@ -1,6 +1,0 @@
-{"at":"2026-10-16T21:51:13.446Z","leg":"plugin-apply","pid":39,"mode":"s1s2","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-live-pr3/packages/runtime/dist/packages"}
-{"at":"2026-10-16T21:51:13.465Z","leg":"lanes-imported","ok":true}
-{"at":"2026-10-16T21:51:13.465Z","leg":"listen","event":"agent/created","ok":true}
-{"at":"2026-10-16T21:51:13.615Z","leg":"surface-probe","label":"session-926b339e-fa89-4256-a3d0-cc3788e71bc6","hasTools":true,"hasGuard":true,"hasGet":true,"hasSchemas":true,"globalSchemaNames":0,"scopedSchemaNames":26}
-{"at":"2026-10-16T21:51:13.626Z","leg":"assembly-s1s2","label":"session-926b339e-fa89-4256-a3d0-cc3788e71bc6","unboundOk":true,"boundStage":"flow-complete","boundReadOk":true}
-{"at":"2026-10-16T21:51:13.626Z","leg":"register","label":"session-926b339e-fa89-4256-a3d0-cc3788e71bc6","name":"a5live_fs_read","ok":false,"error":"tool \"a5live_fs_read\" must declare output { schema, render, presentationMeta? }"}

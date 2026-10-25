@@ -1,3 +1,0 @@
-lint-GREEN (fix bodies, zero config change): eslint on both files exits 0 with zero findings:
-  packages/runtime/controlled-fs/test/poc3-probes.test.ts  -> clean (unused readSync import removed)
-  packages/runtime/controlled-fs/test/poc3-fd-recycling-leg.mjs -> clean (Buffer via node:buffer, process via node:process explicit imports)

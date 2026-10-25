@@ -1,2 +1,0 @@
-CONVERGED
-pins=6

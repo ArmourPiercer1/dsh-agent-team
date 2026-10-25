@@ -1,3 +1,0 @@
-﻿tsc -p packages/runtime/tsconfig.json
-exit: 0
-output: (none)

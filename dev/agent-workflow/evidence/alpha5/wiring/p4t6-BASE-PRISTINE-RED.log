@@ -1,1 +1,0 @@
-pristine master@fc9f4a07 (untouched control worktree): p4t6 coverage FAIL AssertionError: expected 1153 to be 1109 (44 merged-but-unledgered lane files; baseline root-vitest JSON: tests/homes/.a5w-base-root.json)

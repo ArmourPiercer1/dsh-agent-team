@@ -1,1 +1,0 @@
-      await deps.writer.writeAcknowledged(input.teamSessionId, {

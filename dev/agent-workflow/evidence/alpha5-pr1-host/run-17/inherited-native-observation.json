@@ -1,5 +1,0 @@
-{
-  "note": "PR1 binds publish-time native names as inherited; refusing them is the permission layer's job and is unchanged by PR1. Recorded per lane so the claim is visible, not argued.",
-  "governedLaneWriteRan": true,
-  "legacyLaneWriteRan": true
-}

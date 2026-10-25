@@ -1,8 +1,0 @@
-[
-  "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read] realm=a5nx-realm-2026-10-18",
-  "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read] realm=a5nx-realm-2026-10-18",
-  "[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5nx-realm-2026-10-18 rows=6",
-  "[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5nx-realm-2026-10-18 call=team-inst-1dowh6m1ph0l-bash-1 pid=137 exit=0 timedOut=false",
-  "[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5nx-realm-2026-10-18 call=team-inst-1dowh6m1ph0l-bash-2 pid=140 exit=0 timedOut=false",
-  "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read] realm=a5nx-realm-2026-10-18"
-]

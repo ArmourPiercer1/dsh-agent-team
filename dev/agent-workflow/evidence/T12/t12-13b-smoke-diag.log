@@ -1,3 +1,0 @@
-﻿PASS host plugin (packages/runtime) @ actual post-P8-S5A path: name="dsh-agent-team", apply callable, side-effect-free
-PASS client plugin (packages/client) @ actual path: name="dsh-agent-team-client", apply callable, side-effect-free
-DIAG PASS (actual-path composition shape OK)

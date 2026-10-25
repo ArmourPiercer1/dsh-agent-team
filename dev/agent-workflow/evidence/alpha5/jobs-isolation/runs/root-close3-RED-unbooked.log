@@ -1,5 +1,0 @@
-     × zero process-level unhandledRejection/uncaughtException across EVERY leg of this file (the unconsumed-rejection shape must not exist) 58ms
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-AssertionError: expected [ 'unhandledRejection: wait aborted' ] to deeply equal []
-+   "unhandledRejection: wait aborted",
-      Tests  1 failed | 24 passed (25)

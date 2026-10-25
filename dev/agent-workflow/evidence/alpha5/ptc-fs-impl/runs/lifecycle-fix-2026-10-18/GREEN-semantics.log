@@ -1,5 +1,0 @@
-tree face                 -> FIXED (agent/disposed mirror present)
-baseline drive            -> allowed-once (controls=1)
-disposed mirror           -> onAgentDisposed=true liveCount=0
-post-drop drive (U-1/1b)  -> PASSTHROUGH (controls=1)  seenByRow=false
-re-mount (U-2)            -> registered (no throw); membersLive=1

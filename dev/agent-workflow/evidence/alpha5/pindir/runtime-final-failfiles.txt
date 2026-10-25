@@ -1,4 +1,0 @@
-FAIL  test/a4pr0a-fact-type-closed-set.test.ts [ test/a4pr0a-fact-type-closed-set.test.ts ]
-FAIL  test/p6t3-mediation.test.ts
-FAIL  test/p6t3-restart.test.ts
-FAIL  test/rc2-persona-probe.test.ts

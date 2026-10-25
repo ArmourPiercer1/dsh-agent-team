@@ -1,7 +1,0 @@
-{
-  "strict": [
-    "1:Cannot open file '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-real-lsp/tests/homes/a5reallsp-kit-2026-10-17T10-50-20-653Z/ws/clangd-member-strict/../../secret/hidden.h': Permission denied",
-    "1:Call to undeclared function 'hidden_answer'; ISO C99 and later do not support implicit function declarations"
-  ],
-  "open": []
-}
