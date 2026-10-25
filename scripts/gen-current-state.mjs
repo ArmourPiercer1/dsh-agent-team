@@ -14,6 +14,9 @@
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { writeGenerated } from './generated-write.mjs';
+// ESM cycle with authority-candidate-source is safe by design: both sides only use each
+// other's bindings at call time (hoisted function / const initialized before any call).
+import { loadCandidateAuthority } from './authority-candidate-source.mjs';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -440,7 +443,10 @@ export function checkSchemaAgreement(root) {
   return out;
 }
 
-export function build(root) {
+// opts.authorityCandidate = { file, expectedDigest } — S2 §7.4 controlled migration prep (explicit
+// versioned snapshot as this view's source; DEFAULT with no opts stays the legacy reader,
+// byte-for-byte; a refused candidate NEVER falls back to graph or current-state).
+export function build(root, opts = {}) {
   const registryFile = join(root, 'dev/engineering/registry.yaml');
   if (!existsSync(registryFile)) return { refused: 'REGISTRY_MISSING' };
   if (git(root, ['rev-parse', '--git-dir']) === null) return { refused: 'NOT_A_GIT_REPO' };
@@ -449,8 +455,38 @@ export function build(root) {
   findings.push(...validateRegistry(doc, root));
   findings.push(...checkSchemaAgreement(root));
   findings.push(...checkContractIndex(root));
-  const legacyAuthority = readLegacyAuthority(root);
-  findings.push(...checkLegacyMirror(legacyAuthority, root));
+  let legacyAuthority;
+  let sourceBinding;
+  if (opts.authorityCandidate) {
+    const c = loadCandidateAuthority(opts.authorityCandidate);
+    if (!c.ok) return { refused: c.refused, ...(c.detail ? { detail: c.detail } : {}) };
+    legacyAuthority = {
+      present: true,
+      file: relative(root, c.file),
+      ...c.six,
+      baseline_exists: git(root, ['cat-file', '-t', c.six.baseline]) === 'commit',
+      baseline_is_ancestor_of_head: git(root, ['merge-base', '--is-ancestor', c.six.baseline, 'HEAD']) !== null,
+      note: 'source = explicit versioned snapshot candidate (recorded strings); this view never decides authority itself',
+    };
+    const graphAuth = readLegacyAuthority(root); // compared ONLY to record divergence — never to auto-select source
+    const legacy_divergence = [];
+    if (graphAuth.present) for (const key of LEGACY_MIRROR_KEYS) {
+      if (graphAuth[key] !== c.six[key]) legacy_divergence.push({ key, snapshot: c.six[key], legacy: graphAuth[key] });
+    }
+    sourceBinding = {
+      kind: 'authority-snapshot-candidate',
+      candidate_file: c.file,
+      snapshot_version: c.snapshot_version,
+      content_digest: c.content_digest,
+      expected_digest: opts.authorityCandidate.expectedDigest,
+      expected_digest_verified: true,
+      view_may_not_reverse_decide_authority: true,
+      legacy_divergence,
+    };
+  } else {
+    legacyAuthority = readLegacyAuthority(root);
+    findings.push(...checkLegacyMirror(legacyAuthority, root));
+  }
 
   const dirty = (git(root, ['status', '--porcelain']) || '').split('\n').filter(Boolean);
   // The persisted view carries ONLY facts that are stable between commits. Live
@@ -471,6 +507,7 @@ export function build(root) {
     source_catalog_sha: git(root, ['hash-object', 'docs/contracts/engineering-baseline/ids.yaml']),
     axes_legend: ENUMS,
     legacy_authority: legacyAuthority,
+    ...(sourceBinding ? { authority_source_binding: sourceBinding } : {}),
     entries: doc.entries.map((e) => {
       const artifacts = Array.isArray(e.verification_artifacts) ? e.verification_artifacts : [];
       return {
