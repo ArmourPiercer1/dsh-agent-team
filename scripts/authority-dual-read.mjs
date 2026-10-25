@@ -25,11 +25,10 @@ import { readLegacyAuthority, LEGACY_MIRROR_KEYS } from './gen-current-state.mjs
 
 const DIGEST_RE = /^sha256:[0-9a-f]{64}$/;
 
-export function runDualRead(argv) {
-  const snapPath = argv.indexOf('--snapshot') >= 0 ? argv[argv.indexOf('--snapshot') + 1] : null;
-  const root = argv.indexOf('--root') >= 0 ? argv[argv.indexOf('--root') + 1] : null;
-  if (!snapPath || !root) return { code: 1, why: 'usage: authority-dual-read.mjs --snapshot <candidate.json> --root <dir> (read-only; no pointer exists or is consulted)' };
-
+// Pure report (same semantics, no console): returns {verdicts, compared, anyRed} or
+// {io: '...'} for an IO failure. The CLI wrapper and the docs:probe consumer share it —
+// one diagnostic, one behavior; extraction changed no verdict logic.
+export function dualReadReport(snapPath, root) {
   const verdicts = [];
   const red = (code, detail) => verdicts.push({ code, detail, red: true });
   const note = (code, detail) => verdicts.push({ code, detail, red: false });
@@ -50,7 +49,7 @@ export function runDualRead(argv) {
   } catch (e) {
     if (e.code === 'ENOENT') red('SNAPSHOT_MISSING', `candidate snapshot ${snapPath} does not exist`);
     else if (e instanceof SyntaxError) red('SNAPSHOT_PARSE', e.message);
-    else return { code: 1, why: `IO_ERROR: ${e.message}` };
+    else return { io: `IO_ERROR: ${e.message}` };
   }
   if (candidateParsed) {
     const shape = validateShape(candidate);
@@ -91,9 +90,18 @@ export function runDualRead(argv) {
   }
 
   const anyRed = verdicts.some((v) => v.red);
-  const out = { ok: !anyRed, compared, verdicts };
+  return { verdicts, compared, anyRed };
+}
+
+export function runDualRead(argv) {
+  const snapPath = argv.indexOf('--snapshot') >= 0 ? argv[argv.indexOf('--snapshot') + 1] : null;
+  const root = argv.indexOf('--root') >= 0 ? argv[argv.indexOf('--root') + 1] : null;
+  if (!snapPath || !root) return { code: 1, why: 'usage: authority-dual-read.mjs --snapshot <candidate.json> --root <dir> (read-only; no pointer exists or is consulted)' };
+  const r = dualReadReport(snapPath, root);
+  if (r.io) return { code: 1, why: r.io };
+  const out = { ok: !r.anyRed, compared: r.compared, verdicts: r.verdicts };
   console.log(JSON.stringify(out, null, 2));
-  return { ...out, code: anyRed ? 2 : 0 };
+  return { ...out, code: r.anyRed ? 2 : 0 };
 }
 
 export function main(argv) {

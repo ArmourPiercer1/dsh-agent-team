@@ -20,6 +20,24 @@ gets its own throwaway fixture Git repository under the gitignored
 `.worktrees/eb1-controls-scratch/` path of this worktree. Nothing is written into
 `docs/`, `.agents/` or `dev/` by a control.
 
+### docs:probe explicit authority candidate (T0, controlled migration preparation)
+
+`node scripts/docs-probe.mjs --root <dir> --worktree-only [--json]
+--authority-candidate <snapshot.json> --authority-expected-digest sha256:<64hex>`
+builds the derived view from the named versioned snapshot instead of the legacy graph
+block. Both flags are required together and are the only source selection there is:
+there is no live pointer and no "latest snapshot" scan, and a missing, empty, corrupt,
+wrong-digest or half-given candidate is refused with named `CANDIDATE_*` /
+`DUAL_READ_*` blocking findings — the probe never falls back to the legacy reader in
+that mode. The successful view records a structured `authority_source_binding` (path,
+`snapshot_version`, `content_digest`) and the same `scripts/authority-dual-read.mjs`
+comparison runs over the six `current_contract` fields; divergences are blocking
+(`DUAL_READ_SNAPSHOT_VS_LEGACY_VALUE`) and are only reported, never auto-resolved.
+Without both flags the probe behaves exactly as before (legacy reader, unchanged
+output, byte-checked against the fixed parent). The derived mirror `current-state.json`
+is never consulted as an authority source, and the candidate view is T0 diagnostic
+output only: it proves nothing about product acceptance and switches nothing.
+
 ## Rule × scenario matrix
 
 | rule (code) | positive case | negative case (must fail) |

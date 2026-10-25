@@ -36,8 +36,12 @@ import {
 } from './doc-checks.mjs';
 import { run as runNotes } from './verify-agent-notes.mjs';
 import { build as buildStateView, renderView } from './gen-current-state.mjs';
+import { dualReadReport } from './authority-dual-read.mjs';
 
-const BLOCKING = BLOCKING_PREFIXES; // single source of truth, shared with docs:sync --write
+// Minimal classification wiring for this consumer ONLY (doc-checks' shared list is not
+// edited): explicit-candidate diagnostics are blocking by definition — a named candidate
+// that is missing, corrupt, digest-wrong, or divergent must stop the run, never rank.
+const BLOCKING = [...BLOCKING_PREFIXES, 'CANDIDATE_', 'DUAL_READ_'];
 const LIMITS = [
   'T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour',
   'no C1/C2/C3 substitution and no security negative control here',
@@ -91,7 +95,11 @@ function classify(paths) {
   return out;
 }
 
-export function probe(root, { base = null, worktreeOnly = false } = {}) {
+export function probe(root, opts = {}) {
+  const { base = null, worktreeOnly = false } = opts;
+  // Presence, not truthiness (same discipline as build): an explicitly provided
+  // authorityCandidate that is null/empty/one-sided is a refusal, never a quiet legacy run.
+  const candidateMode = Object.hasOwn(opts, 'authorityCandidate');
   if (!existsSync(join(root, '.git')) && git(root, ['rev-parse', '--git-dir']) === null) {
     return { refused: 'NOT_A_GIT_REPO' };
   }
@@ -105,6 +113,7 @@ export function probe(root, { base = null, worktreeOnly = false } = {}) {
   let shapes = { findings: [], applicable: false, coverage: null };
   const advisories = [];
   const selectedRules = [];
+  let sourceBinding; let dualRead;
 
   // R1 notes (id / status-dir / reference / evidence integrity)
   if (buckets.notes.length) {
@@ -124,13 +133,32 @@ export function probe(root, { base = null, worktreeOnly = false } = {}) {
   // hand-edited or stale view is the highest-value drift this bridge prevents.
   {
     selectedRules.push('derived-view');
-    const built = buildStateView(root);
-    viewMirror = built.refused ? null : built.view.legacy_authority;
-    if (built.refused) {
+    const built = buildStateView(root, candidateMode ? { authorityCandidate: opts.authorityCandidate } : {});
+    if (candidateMode) {
+      // Candidate chain: the view (when the candidate validates) carries a recorded
+      // source binding, and the SAME dual-read diagnostic compares candidate vs graph.
+      // Nothing here falls back: no binding + named CANDIDATE_*/DUAL_READ_* blocking IS
+      // the refusal. Derived-mirror freshness is a legacy-chain property and is checked
+      // by the default path (and by docs:sync); this T0 diagnostic never consults it.
+      if (built.refused) {
+        findings.push({ code: 'CANDIDATE_VIEW_REFUSED', detail: `explicit authority candidate refused: ${built.refused}${built.detail ? ` (${built.detail})` : ''}; no fallback to the legacy source was attempted` });
+      } else {
+        sourceBinding = built.view.authority_source_binding;
+        findings.push(...built.findings.map((f) => ({ code: f.code, detail: f.detail })));
+        const dr = dualReadReport(opts.authorityCandidate?.file ?? '', root);
+        if (dr.io) findings.push({ code: 'DUAL_READ_IO', detail: dr.io });
+        else {
+          dualRead = { ok: !dr.anyRed, compared: dr.compared };
+          for (const v of dr.verdicts) if (v.red) findings.push({ code: `DUAL_READ_${v.code}`, detail: v.detail });
+        }
+        advisories.push({ code: 'CANDIDATE_MODE_T0', detail: 'explicit-candidate probe is T0 controlled-migration preparation: it records the source binding and dual-read divergences, selects nothing automatically, reads no live pointer or derived mirror, writes nothing, and does not change what the default (legacy) path serves' });
+      }
+    } else if (built.refused) {
       // A missing or unreadable registry/view is never a green run: the probe would
       // otherwise report "no findings" exactly when the record it checks has gone.
       findings.push({ code: 'STATE_BRIDGE_UNAVAILABLE', detail: `derived view cannot be built (${built.refused}); a probe without registry + derived view cannot report green` });
     } else {
+      viewMirror = built.view.legacy_authority;
       findings.push(...built.findings.map((f) => ({ code: f.code, detail: f.detail })));
       const viewPath = join(root, 'dev/engineering/current-state.json');
       if (!existsSync(viewPath)) {
@@ -222,6 +250,8 @@ export function probe(root, { base = null, worktreeOnly = false } = {}) {
     selected_rules: selectedRules,
     blocking,
     non_blocking: nonBlocking,
+    ...(sourceBinding ? { authority_source_binding: sourceBinding } : {}),
+    ...(dualRead ? { dual_read: dualRead } : {}),
     shapes_applicable: shapes.applicable,
     shapes_compared: shapes.coverage ? shapes.coverage.pairs_compared : 0,
     advisories,
@@ -246,13 +276,19 @@ if (invokedDirectly) {
   // that, advertised by nothing and honoured by nothing, so `docs:probe --strict` reported
   // the ordinary verdict while pretending otherwise. Unknown flags are named and refused;
   // the CLI has no behaviour a typo can switch on.
-  const known = new Set(['--root', '--base', '--worktree-only', '--json']);
+  const known = new Set(['--root', '--base', '--worktree-only', '--json', '--authority-candidate', '--authority-expected-digest']);
   const unknown = args.filter((a) => a.startsWith('--') && !known.has(a));
   if (unknown.length) {
     console.log(`REFUSED UNKNOWN_FLAG: ${unknown.join(', ')} is not a flag of docs:probe (known: ${[...known].join(', ')})`);
     process.exit(2);
   }
-  const result = probe(root, { base, worktreeOnly: args.includes('--worktree-only') });
+  const probeOpts = { base, worktreeOnly: args.includes('--worktree-only') };
+  // Either flag turns candidate mode ON (key present) — a half-given pair then gets the
+  // structured CANDIDATE_* refusal downstream instead of a silent legacy run.
+  if (args.includes('--authority-candidate') || args.includes('--authority-expected-digest')) {
+    probeOpts.authorityCandidate = { file: flagValue('--authority-candidate'), expectedDigest: flagValue('--authority-expected-digest') };
+  }
+  const result = probe(root, probeOpts);
   if (result.refused) {
     console.log(`REFUSED ${result.refused}`);
     process.exit(2);
