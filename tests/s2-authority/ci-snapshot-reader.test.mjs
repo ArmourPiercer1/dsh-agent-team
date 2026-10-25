@@ -50,8 +50,8 @@ const graph = (o = {}) => [
   'after: y',
 ].join('\n');
 const providers = (o = {}) => ({
-  readFile: (rel) => (o.files ?? FILES_DEFAULT).has(rel) ? o.files.get(rel) ?? FILES_DEFAULT.get(rel) : (FILES_DEFAULT.has(rel) ? FILES_DEFAULT.get(rel) : null),
-  fileExists: (rel) => (o.files ?? FILES_DEFAULT).has(rel) || FILES_DEFAULT.has(rel),
+  readFile: (rel) => { const m = o.files ?? FILES_DEFAULT; return m.has(rel) ? m.get(rel) : null; },
+  fileExists: (rel) => (o.files ?? FILES_DEFAULT).has(rel),
   revExists: (sha) => /^[0-9a-f]{40}$/.test(sha),
   baselineCurrent: o.baselineCurrent ?? (() => true),
   driftProvider: o.driftProvider ?? (() => []),
