@@ -315,6 +315,22 @@ const SCANNED_PATHS_U6PR1: readonly string[] = [
   'packages/runtime/test/u6-pr1-kernel.test.ts',
   'packages/runtime/test/u6-pr1-shadow-inert.test.ts',
 ]
+// FIX-K (U6 kernel safety, external-audit remediation off master 2db321f63)
+// adds TWO scannable files: the kernel-safety suite (K1 revoke-bound
+// approvals + K2 synchronous in-flight consume reservation + K3 required
+// lifecycle port + K4 scope-keyed approvals) and the bounded-shadow-ledger
+// suite (K5). Every production change of this round is an EDIT to files this
+// ledger already counts (kernel.ts / index.ts / center-shadow-row.mjs joined
+// with U6PR1), no denylist vocabulary is added, and dist mirrors, docs/** and
+// dev-evidence stay outside the scan. Taking the scanned total on THIS tree
+// to 1240 — MEASURED, not copied: the unbooked scanner run reads
+// `expected 1240 to be 1238`
+// (dev/agent-workflow/evidence/u6-fixk-20261026/logs/p4t6-RED-unbooked.log),
+// U6 PR1's booked 1238 plus exactly the two new paths on disk.
+const SCANNED_PATHS_FIXK: readonly string[] = [
+  'packages/runtime/test/u6-fixk-kernel-safety.test.ts',
+  'packages/runtime/test/u6-fixk-shadow-ledger.test.ts',
+]
 
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
@@ -2909,7 +2925,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
-        SCANNED_PATHS_U6PR1.length,
+        SCANNED_PATHS_U6PR1.length +
+        SCANNED_PATHS_FIXK.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2976,7 +2993,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
-        SCANNED_PATHS_U6PR1.length,
+        SCANNED_PATHS_U6PR1.length +
+        SCANNED_PATHS_FIXK.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3064,6 +3082,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5DOCSREALIGN,
       ...SCANNED_PATHS_A5M1,
       ...SCANNED_PATHS_U6PR1,
+      ...SCANNED_PATHS_FIXK,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3475,6 +3494,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `expected 1238 to be 1228`, and the whole 10-file gap is exactly the
     // named SCANNED_PATHS_U6PR1 list asserted present by path above.
     expect(SCANNED_PATHS_U6PR1.length).toBe(1238 - 1228)
+    // FIX-K (U6 kernel safety), same tie form: the measured unbooked scanner
+    // run on THIS tree reported `expected 1240 to be 1238`
+    // (dev/agent-workflow/evidence/u6-fixk-20261026/logs/p4t6-RED-unbooked.log),
+    // and the whole 2-file gap is exactly the named SCANNED_PATHS_FIXK list
+    // asserted present by path above.
+    expect(SCANNED_PATHS_FIXK.length).toBe(1240 - 1238)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

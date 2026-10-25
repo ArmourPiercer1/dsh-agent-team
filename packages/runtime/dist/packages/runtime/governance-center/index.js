@@ -36,11 +36,14 @@ import { createHostSurfaceAdapter } from './host-adapter.js';
  * Compose one center skeleton over injected ports. The registry exists
  * before the kernel (the kernel reads candidate provenance); the adapter is
  * optional because shadow may legitimately observe a surface without
- * registering anything on it.
+ * registering anything on it. `mode` (FIX-K K3) passes through to the
+ * kernel factory and defaults to `'shadow'` — the lane ships NO enforcing
+ * composition; an `enforcing` assembly without the lifecycle port throws
+ * at this point, before any state exists.
  */
 export function createCenterAssembly(deps) {
     const registry = createGovernedFamilyRegistry({ kernelManifest: deps.kernelManifest });
-    const kernel = createGovernanceKernel({ registry, ports: deps.ports });
+    const kernel = createGovernanceKernel({ registry, ports: deps.ports, mode: deps.mode });
     const adapter = createHostSurfaceAdapter({ tools: deps.tools, on: deps.on, identityOf: deps.identityOf });
     return { registry, kernel, adapter };
 }

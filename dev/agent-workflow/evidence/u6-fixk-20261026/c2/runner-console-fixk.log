@@ -1,0 +1,5 @@
+[u6-shadow] shadow-parity world 1/2: assembly=off
+U5-IN-RUN u5fixkoff-20261025T17-00-53Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-fixk/tests/homes/u5fixkoff-20261025T17-00-53Z 39
+[u6-shadow] shadow-parity world 2/2: assembly=shadow
+U5-IN-RUN u5fixkshd-20261025T17-00-58Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-fixk/tests/homes/u5fixkshd-20261025T17-00-58Z 131
+RUN-SUMMARY run=u5-u6-shadow-fixk-2026-10-25T17-00-53-643Z suite=u6-shadow overall=PASS cases=16 PASS:16 worlds=u5fixkoff-20261025T17-00-53Z|u5fixkshd-20261025T17-00-58Z
