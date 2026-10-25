@@ -1,0 +1,302 @@
+{
+  "schema": "u5-lease-race/1",
+  "at": "2026-10-25T16:44:33.770Z",
+  "lib": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-fixt-20261026/red/scratch/tests/world-factory/lib/port-lease-old-patched.mjs",
+  "inject": "stale",
+  "procs": 8,
+  "trialsRequested": 15,
+  "trialsCompleted": 15,
+  "violations": 15,
+  "portAborts": 0,
+  "winnersDist": {
+    "2": 4,
+    "3": 4,
+    "4": 1,
+    "5": 2,
+    "6": 3,
+    "7": 1
+  },
+  "violationDetails": [
+    {
+      "trial": 1,
+      "port": 3500,
+      "winners": [
+        13,
+        15,
+        18,
+        23,
+        30
+      ],
+      "displaced": [
+        13,
+        15,
+        23,
+        30
+      ],
+      "claimCollisions": [],
+      "held": 3,
+      "violation": true
+    },
+    {
+      "trial": 2,
+      "port": 3500,
+      "winners": [
+        77,
+        80
+      ],
+      "displaced": [
+        77
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    },
+    {
+      "trial": 3,
+      "port": 3500,
+      "winners": [
+        141,
+        156,
+        163
+      ],
+      "displaced": [
+        141,
+        163
+      ],
+      "claimCollisions": [
+        "ENOENT"
+      ],
+      "held": 4,
+      "violation": true
+    },
+    {
+      "trial": 4,
+      "port": 3500,
+      "winners": [
+        205,
+        207,
+        208,
+        210,
+        227
+      ],
+      "displaced": [
+        205,
+        208,
+        210,
+        227
+      ],
+      "claimCollisions": [
+        "ENOENT"
+      ],
+      "held": 2,
+      "violation": true
+    },
+    {
+      "trial": 5,
+      "port": 3500,
+      "winners": [
+        269,
+        270,
+        273,
+        292
+      ],
+      "displaced": [
+        269,
+        270,
+        292
+      ],
+      "claimCollisions": [],
+      "held": 4,
+      "violation": true
+    },
+    {
+      "trial": 6,
+      "port": 3500,
+      "winners": [
+        333,
+        335,
+        337
+      ],
+      "displaced": [
+        333,
+        335
+      ],
+      "claimCollisions": [
+        "ENOENT"
+      ],
+      "held": 4,
+      "violation": true
+    },
+    {
+      "trial": 7,
+      "port": 3500,
+      "winners": [
+        397,
+        398,
+        406,
+        417,
+        418,
+        420
+      ],
+      "displaced": [
+        397,
+        398,
+        406,
+        417,
+        420
+      ],
+      "claimCollisions": [],
+      "held": 2,
+      "violation": true
+    },
+    {
+      "trial": 8,
+      "port": 3500,
+      "winners": [
+        461,
+        462,
+        464
+      ],
+      "displaced": [
+        461,
+        462
+      ],
+      "claimCollisions": [],
+      "held": 5,
+      "violation": true
+    },
+    {
+      "trial": 9,
+      "port": 3500,
+      "winners": [
+        525,
+        529
+      ],
+      "displaced": [
+        525
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    },
+    {
+      "trial": 10,
+      "port": 3500,
+      "winners": [
+        589,
+        590,
+        591,
+        592,
+        593,
+        601,
+        611
+      ],
+      "displaced": [
+        589,
+        590,
+        591,
+        592,
+        593,
+        601
+      ],
+      "claimCollisions": [],
+      "held": 1,
+      "violation": true
+    },
+    {
+      "trial": 11,
+      "port": 3500,
+      "winners": [
+        653,
+        654,
+        655,
+        658,
+        663,
+        680
+      ],
+      "displaced": [
+        653,
+        654,
+        658,
+        663,
+        680
+      ],
+      "claimCollisions": [
+        "ENOENT",
+        "ENOENT"
+      ],
+      "held": 0,
+      "violation": true
+    },
+    {
+      "trial": 12,
+      "port": 3500,
+      "winners": [
+        717,
+        719,
+        720,
+        722,
+        730,
+        736
+      ],
+      "displaced": [
+        717,
+        719,
+        720,
+        722,
+        730
+      ],
+      "claimCollisions": [],
+      "held": 2,
+      "violation": true
+    },
+    {
+      "trial": 13,
+      "port": 3500,
+      "winners": [
+        781,
+        786
+      ],
+      "displaced": [
+        781
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    },
+    {
+      "trial": 14,
+      "port": 3500,
+      "winners": [
+        845,
+        851
+      ],
+      "displaced": [
+        845
+      ],
+      "claimCollisions": [
+        "ENOENT"
+      ],
+      "held": 5,
+      "violation": true
+    },
+    {
+      "trial": 15,
+      "port": 3500,
+      "winners": [
+        911,
+        913,
+        915
+      ],
+      "displaced": [
+        913,
+        915
+      ],
+      "claimCollisions": [],
+      "held": 5,
+      "violation": true
+    }
+  ],
+  "seconds": 6.3,
+  "verdict": "DOUBLE_OWNERSHIP"
+}
