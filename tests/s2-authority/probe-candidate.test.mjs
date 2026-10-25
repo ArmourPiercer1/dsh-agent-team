@@ -103,5 +103,46 @@ t('P4 default mode CLI byte-identical to fixed parent 09fd39464 closure (same fi
   rmSync(root, { recursive: true, force: true }); rmSync(tmp, { recursive: true, force: true });
 });
 
+
+// R8 mirror-parameter controls: the candidate view, once validated, feeds the EXISTING
+// checkPlanCitationBlocks mirror parameter — a plan whose eb-plan.phase_id contradicts
+// the snapshot must still get PLAN_CITATION_CONFLICT (fixture is its own git repo so
+// the R8 scope trigger — changed glossary — is real, not simulated).
+const mkGitFixture = ({ planPhase }) => {
+  const root = mkdtempSync(join(REPO, '.tmp-s2-pc-'));
+  const w = (rel, txt) => { mkdirSync(join(root, ...rel.split('/').slice(0, -1)), { recursive: true }); writeFileSync(join(root, rel), txt); };
+  w('dev/agent-workflow/graph.yaml', `top: x\ncurrent_contract:\n${Object.entries(CC).map(([k, v]) => `  ${k}: ${v}`).join('\n')}\nafter: y\n`);
+  w('dev/engineering/registry.yaml', 'schema_version: 1\ngenerated_view: dev/engineering/current-state.json\nlegacy_execution_authority: dev/agent-workflow/graph.yaml#current_contract\nmigration_of_legacy_consumers: not_started\n\nentries:\n  - id: T-001\n');
+  w('docs/glossary.md', '# glossary\nbaseline word\n');
+  w('docs/plans/active/p.md', `# plan\n\ntarget exists\n\n\`\`\`yaml eb-plan\nphase_id: ${planPhase}\nactive_plan: docs/plans/active/p.md\nbacklog: docs/plans/active/p.md\nmatrix: docs/plans/active/p.md\nevidence_root: dev/agent-workflow\n\`\`\`\n`);
+  w('candidate.json', JSON.stringify(EXAMPLE));
+  const g = (...a) => execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  g('init', '-q', '-b', 'main');
+  g('add', '-A');
+  g('-c', 'user.name=t', '-c', 'user.email=t@l', 'commit', '-q', '-m', 'base');
+  writeFileSync(join(root, 'docs/glossary.md'), '# glossary\nbaseline word\nchanged line (R8 trigger: glossary moved)\n');
+  return root;
+};
+const citationOf = (j) => j.blocking.concat(j.non_blocking ?? []).filter((f) => f.code === 'PLAN_CITATION_CONFLICT');
+
+t('P5 candidate success feeds R8 mirror: plan phase_id != snapshot phase_id -> PLAN_CITATION_CONFLICT (blocking)', () => {
+  const root = mkGitFixture({ planPhase: 'alpha6-other-phase' });
+  const r = runCli('scripts/docs-probe.mjs', root, ['--authority-candidate', join(root, 'candidate.json'), '--authority-expected-digest', EXAMPLE.content_digest]);
+  const j = JSON.parse(r.out);
+  assert(j.authority_source_binding, `candidate chain did not even succeed (exit ${r.code}): ${JSON.stringify(j.blocking?.map((f) => f.code))}`);
+  const c = citationOf(j);
+  assert(c.length === 1 && /alpha6-other-phase/.test(c[0].detail) && /alpha5-tool-io-governance/.test(c[0].detail), `PLAN_CITATION_CONFLICT missing despite contradicting plan: blocking=${JSON.stringify(j.blocking.map((f) => f.code))}`);
+  rmSync(root, { recursive: true, force: true });
+});
+
+t('P6 candidate success, plan phase_id == snapshot phase_id: no PLAN_CITATION_CONFLICT (rule wired, not inverted)', () => {
+  const root = mkGitFixture({ planPhase: CC.phase_id });
+  const r = runCli('scripts/docs-probe.mjs', root, ['--authority-candidate', join(root, 'candidate.json'), '--authority-expected-digest', EXAMPLE.content_digest]);
+  const j = JSON.parse(r.out);
+  assert(j.authority_source_binding, `candidate chain did not succeed (exit ${r.code})`);
+  assert(citationOf(j).length === 0, JSON.stringify(citationOf(j)));
+  rmSync(root, { recursive: true, force: true });
+});
+
 console.log(fails === 0 ? `ALL GREEN (${ran} cases, actual count)` : `RED (${fails}/${ran} failing)`);
 process.exit(fails === 0 ? 0 : 1);

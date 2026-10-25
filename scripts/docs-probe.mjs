@@ -144,6 +144,12 @@ export function probe(root, opts = {}) {
         findings.push({ code: 'CANDIDATE_VIEW_REFUSED', detail: `explicit authority candidate refused: ${built.refused}${built.detail ? ` (${built.detail})` : ''}; no fallback to the legacy source was attempted` });
       } else {
         sourceBinding = built.view.authority_source_binding;
+        // The validated candidate IS this run's recorded authority for every rule that
+        // consumes the mirror parameter (checkPlanCitationBlocks' PLAN_CITATION_CONFLICT
+        // included): a plan citing a phase_id that contradicts the snapshot conflicts
+        // exactly as it would against the graph. No new rule, no new parser — the same
+        // existing rule reads the same six verified values through the existing parameter.
+        viewMirror = built.view.legacy_authority;
         findings.push(...built.findings.map((f) => ({ code: f.code, detail: f.detail })));
         const dr = dualReadReport(opts.authorityCandidate?.file ?? '', root);
         if (dr.io) findings.push({ code: 'DUAL_READ_IO', detail: dr.io });
