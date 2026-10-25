@@ -23,7 +23,7 @@
 // graph.yaml must be GONE; `twoCurrentFindings()` is the named finding every gate shares.
 //
 // PURE READ module: it never writes, never creates, never repairs.
-import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

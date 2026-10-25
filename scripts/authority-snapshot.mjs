@@ -64,7 +64,7 @@ export function canonicalDigest(obj) {
 /** The snapshot content digest: canonical digest with content_digest itself removed;
  *  every other key — published_utc included — is covered. */
 export function snapshotDigest(snapshot) {
-  const { content_digest, ...rest } = snapshot;
+  const { content_digest: _content_digest, ...rest } = snapshot; // excluded from its own digest by construction
   return canonicalDigest(rest);
 }
 
@@ -146,7 +146,7 @@ export function validateShape(obj, schema = loadFrozenSchema()) {
 
 /** Shape + digest + publisher-side machine bans on current_phase_statement. */
 export function checkSnapshotObject(obj, schema = loadFrozenSchema()) {
-  const { ok, errors } = validateShape(obj, schema);
+  const { errors } = validateShape(obj, schema);
   const all = [...errors];
   if (typeof obj?.content_digest === 'string' && /^sha256:[0-9a-f]{64}$/.test(obj.content_digest)) {
     const computed = snapshotDigest(obj);

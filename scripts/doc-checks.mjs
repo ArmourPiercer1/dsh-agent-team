@@ -185,7 +185,6 @@ export const BLOCKING_PREFIXES = [
   'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG', 'STATE_BRIDGE', 'REGISTRY',
   'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_', 'SCHEMA_',
   'CONTRACT_FIELD_', 'CONTRACT_PAIR_', 'CONTRACT_V1_', 'CONTRACT_OPTIONAL_',
-,
   // S2 candidate-mode codes classify in the ONE shared list (docs:probe's local
   // extension removed 2026-10-25 — no second classification exists now).
   // U2 (G2 switchover): POINTER_* names the live pointer's own refusals (invalid pointer,

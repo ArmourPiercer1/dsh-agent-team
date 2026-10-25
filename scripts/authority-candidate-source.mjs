@@ -8,7 +8,7 @@
 // snapshotDigest); symlink inputs are refused. Every failure is structured
 // (CANDIDATE_*) so the consumer can refuse without ever reaching graph or
 // current-state as a fallback.
-import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import { validateShape, snapshotDigest, checkSnapshotObject } from './authority-snapshot.mjs';
 import { LEGACY_MIRROR_KEYS } from './authority-contract-fields.mjs';
 

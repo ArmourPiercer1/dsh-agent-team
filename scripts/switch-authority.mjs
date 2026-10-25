@@ -43,14 +43,12 @@ import { fileURLToPath } from 'node:url';
 import { createHash, randomBytes } from 'node:crypto';
 import { canonicalBytes } from './authority-snapshot.mjs';
 import { loadCandidateAuthority } from './authority-candidate-source.mjs';
-import { POINTER_REL, SNAPSHOTS_REL, loadPointerAuthority, pointerExists, graphBlockPresent } from './current-authority.mjs';
+import { POINTER_REL, SNAPSHOTS_REL, loadPointerAuthority, graphBlockPresent } from './current-authority.mjs';
 
 const DIGEST_RE = /^sha256:[0-9a-f]{64}$/;
 const VERSION_RE = /^as[0-9]{8}r[0-9]{1,3}$/;
 
 const sha256 = (buf) => `sha256:${createHash('sha256').update(buf).digest('hex')}`;
-function refuse(why) { return { code: 2, why }; }
-
 /** Serialize THE pointer: canonical F0 bytes of exactly the two keys + one trailing LF
  *  (the same "digest covers content, file carries one LF" convention as the publisher). */
 export function pointerBytes(snapshotVersion, contentDigest) {

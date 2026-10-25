@@ -16,8 +16,8 @@
 //     refuse overwrite of an existing version, refuse symlink/hardlink targets.
 // Exit codes: 0 ok, 1 usage/IO/parse failure, 2 policy refusal (printed as a reason).
 
-import { constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, writeSync, closeSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { constants, lstatSync, mkdirSync, openSync, readFileSync, writeSync, closeSync } from 'node:fs';
+import { join } from 'node:path';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { checkSnapshotObject, canonicalBytes, snapshotDigest } from './authority-snapshot.mjs';
