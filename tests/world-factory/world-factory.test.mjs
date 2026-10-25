@@ -270,3 +270,211 @@ test('host-base guard: HEAD drift and dirty porcelain both fail closed', () => {
   assert.notEqual(dirty.stdout.trim(), '', 'fixture tree is dirty now; the guard consults exactly this output')
   rmSync(dir, { recursive: true, force: true })
 })
+
+// ── u6-fs (U6 PR2 C2) offline pieces ────────────────────────────────────────
+test('u6-fs: SUITE_CASES entry and parseArgs wiring', async () => {
+  const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
+  assert.deepEqual(SUITE_CASES['u6-fs'], [
+    'fs:mounted', 'fs:governed-read-positive', 'fs:refusal-zero-effect', 'fs:ctl-native-read',
+    'fs:identity-swap', 'fs:identity-swap-sensitivity', 'fs:toctou-abort', 'fs:leak-check',
+  ])
+  const opts = parseArgs(['--suite', 'u6-fs', '--line', 'u6fsx', '--evidence', '/tmp/ev'])
+  assert.equal(opts.suite, 'u6-fs')
+  assert.throws(() => parseArgs(['--suite', 'u6-fs', '--evidence', '/tmp/ev', '--only', 'nope']))
+})
+
+test('u6-fs: the patch-layer emitter produces one parseable insert layer', async () => {
+  const { emitPatchLayer } = await import('./lib/world-factory.mjs')
+  const { createFsAssembly } = await import('./lib/u6-fs-assembly.mjs')
+  const yaml = await import('yaml')
+  const a = createFsAssembly({ repoRoot: '/repo', home: '/home/x', runStamp: 'u5-u6fs-T', reportDir: '/rep' })
+  const rows = [
+    { id: 'u5-canary', name: './u5-canary-plugin.mjs' },
+    { id: 'u6-fs-probe-host', name: './u6-fs-probe-host.mjs' },
+    ...a.teamRows(),
+  ]
+  const doc = yaml.default.parse(emitPatchLayer(['hdr'], rows))
+  assert.equal(doc.length, 1)
+  assert.ok(Array.isArray(doc[0].insert))
+  assert.deepEqual(doc[0].insert.map((r) => r.id), [
+    'u5-canary', 'u6-fs-probe-host', 'dsh-agent-team', 'p6t6-team-tools', doc[0].insert[4].id,
+  ])
+  const team = doc[0].insert.find((r) => r.id === 'dsh-agent-team')
+  assert.equal(team.config.bootPhase, 'create')
+  assert.equal(team.config.rootSessionId, 'session-u6fs-team-u5-u6fs-t'.replace('-team-', '-root-'))
+  assert.ok(String(team.name).startsWith('file:///repo/packages/runtime/dist/'))
+  const preset = doc[0].insert[4]
+  assert.ok(Array.isArray(preset.config.plugins) && preset.config.plugins.length >= 2)
+})
+
+test('u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface', async () => {
+  const { createFsAssembly } = await import('./lib/u6-fs-assembly.mjs')
+  const a = createFsAssembly({ repoRoot: '/repo', home: '/home/x', runStamp: 'u5-u6fs-T2', reportDir: '/rep' })
+  const yamlText = a.mainBlueprintYaml(['u5_canary', 'u6fs_probe', 'pwsh_extra'])
+  // b2 MEASUREMENT: the A2C-2 coverage gate refuses member start unless EVERY
+  // unmanaged surface name (probe included) is declared in builtinToolDeny.
+  assert.ok(yamlText.includes('- u6fs_probe'), 'probe must be declared in builtinToolDeny (coverage gate)')
+  assert.ok(yamlText.includes('- u5_canary'))
+  assert.ok(yamlText.includes('kind: exact'))
+  // MEASURED LAW (offline repro on the current dist): a NAMED deny rule on
+  // `read` poisons the tool-invoke class and routes EVERY read into the Ask
+  // lane. The refusal leg therefore rides the kernel's default-deny typed
+  // refusal — so the denied file must NOT be named anywhere in the blueprint.
+  assert.ok(!yamlText.includes('u6fs-denied'), 'denied file must never be named (default-deny leg)')
+  assert.ok(yamlText.includes('deny: []'), 'strict template must carry an empty deny lane')
+  // the legacy lane carries NO capabilities block (CI-03 population)
+  const ctlIdx = yamlText.indexOf('templateId: ctl')
+  assert.equal(yamlText.slice(ctlIdx).indexOf('capabilities'), -1)
+})
+
+const nudgeInto = (dec) => dec({ req: { body: { messages: [{ role: 'user', content: 'U6FS_PHASE_9' }], tools: [] } } })
+
+test('u6-fs: the decide script discriminates lanes by request token', async () => {
+  const { createFsAssembly, makeFsDecide } = await import('./lib/u6-fs-assembly.mjs')
+  const a = createFsAssembly({ repoRoot: '/repo', home: '/home/x', runStamp: 'u5-u6fs-T3', reportDir: '/rep' })
+  const dec = makeFsDecide({ assembly: a })
+  const req = (tok) => ({ body: { messages: [{ role: 'user', content: `[team-work requestToken=${a.tokens(tok)}] go` }], tools: [] } })
+  assert.equal(dec({ req: req('d1') }).toolCalls[0].arguments.file_path, a.files.s1.path)
+  assert.equal(dec({ req: req('d1') }).toolCalls[0].arguments.file_path, a.files.denied.path)
+  assert.equal(dec({ req: req('d1') }).kind, 'text')
+  assert.equal(dec({ req: req('d2') }).toolCalls[0].arguments.file_path, a.files.c1.path)
+  // one-shot plant lanes: d3 reads the pre-swap sensitivity file, d4 the
+  // under-swap file, d5 the post-restore file, d6 the in-window target
+  assert.equal(dec({ req: req('d3') }).toolCalls[0].arguments.file_path, a.files.s2.path)
+  assert.equal(dec({ req: req('d4') }).toolCalls[0].arguments.file_path, a.files.s3.path)
+  assert.equal(dec({ req: req('d5') }).toolCalls[0].arguments.file_path, a.files.s4.path)
+  assert.equal(dec({ req: req('d6') }).toolCalls[0].arguments.file_path, a.files.s5.path)
+  // NO governed lane ever issues the probe tool (closed managed enum):
+  const issued = []
+  for (const t of ['d1', 'd1', 'd1', 'd2', 'd2', 'd3', 'd3', 'd4', 'd4', 'd5', 'd5', 'd6', 'd6']) {
+    const r = dec({ req: req(t) })
+    for (const tc of r.toolCalls ?? []) issued.push(tc.name)
+  }
+  assert.ok(!issued.includes('u6fs_probe'))
+  // triggers ride the boot-root session: the LAST user message discriminates
+  const trig = (marker) => dec({ req: { body: { messages: [
+    { role: 'user', content: `earlier ${a.markers.T_SWAP}` },
+    { role: 'user', content: marker },
+  ], tools: [] } } })
+  assert.equal(trig(a.markers.T_SWAP).toolCalls[0].arguments.action, 'swap')
+  assert.equal(trig(a.markers.T_RESTORE).toolCalls[0].arguments.action, 'restore')
+  assert.equal(trig(a.markers.T_TOCTOU).toolCalls[0].arguments.action, 'toctou')
+  // the SECOND swap-trigger request (after its tool result) closes the turn
+  assert.equal(trig(a.markers.T_SWAP).kind, 'text')
+  // leader chain: first leader request creates the governed member
+  const lead = dec({ req: { body: { messages: [{ role: 'user', content: `[team-root-work] ${a.tokens('c1')}` }], tools: [] } } })
+  assert.equal(lead.toolCalls[0].name, 'team_create_member')
+  assert.equal(lead.toolCalls[0].arguments.delegationTemplateId, 'strict')
+  // the runner's phase nudge re-enters the leader machine (NOT a NOOP) —
+  // AFTER the leader-first check: the phase machine is one shared sequence,
+  // a nudge consumes a step just like any leader turn.
+  const nudged = nudgeInto(dec)
+  assert.equal(nudged.kind, 'tool-call')
+  assert.ok(String(nudged.toolCalls[0].name).startsWith('team_'), 'nudge must continue the phase machine')
+  // blueprint: the probe tool is NEVER a permission rule (closed enum, b1)
+  assert.ok(!a.mainBlueprintYaml([]).includes('tool: u6fs_probe'))
+})
+
+test('u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim)', async () => {
+  const { createFsAssembly, makeFsDecide } = await import('./lib/u6-fs-assembly.mjs')
+  const a = createFsAssembly({ repoRoot: '/repo', home: '/home/x', runStamp: 'u5-u6fs-S1', reportDir: '/rep' })
+  const ledger = []
+  const dec = makeFsDecide({ assembly: a, readProbeLedger: () => ledger })
+  const msgs = []
+  const ask = () => dec({ req: { body: { messages: [...msgs], tools: [] } } })
+  const userText = (text) => msgs.push({ role: 'user', content: text })
+  const push = (o) => {
+    msgs.push({ role: 'assistant', content: o.kind === 'tool-call'
+      ? o.toolCalls.map((tc) => ({ type: 'tool_use', id: 'x', name: tc.name }))
+      : [{ type: 'text', text: o.content }] })
+    return o
+  }
+  const toolResult = (name, text) => {
+    msgs.push({ role: 'user', content: [{ type: 'tool_result', tool_use_id: 'x', content: [{ type: 'text', text }] }] })
+  }
+  const name0 = (o) => o.toolCalls[0].name
+  const T = (k) => a.tokens(k)
+
+  userText('[team-root-work] kick ' + T('c1'))
+  let o = push(ask()); assert.equal(name0(o), 'team_create_member')
+  toolResult('team_create_member', '{"instanceId":"inst-strictmember01"}')
+  o = push(ask()); assert.equal(name0(o), 'team_create_member')
+  toolResult('team_create_member', '{"instanceId":"inst-ctlmember0001"}')
+  o = push(ask()); assert.equal(name0(o), 'team_delegate')
+  assert.equal(o.toolCalls[0].arguments.requestToken, T('d1'))
+  toolResult('team_delegate', '{"status":"admitted"}')
+  // fence: rounds collect the ORIGINAL token (wake protocol — never a
+  // fabricated token/instance addressing, which is what starved b5/b6).
+  for (let i = 0; i < 8; i += 1) {
+    o = push(ask()); assert.equal(name0(o), 'team_collect')
+    assert.deepEqual(o.toolCalls[0].arguments.requestTokens, [T('d1')])
+    toolResult('team_collect', '[]')
+  }
+  o = ask(); assert.equal(o.kind, 'text'); assert.match(o.content, /FENCE_HOLD/) // no silent overrun
+  // the runtime's settled notice → collect on the ORIGINAL token → the
+  // durable answer carries DONE → the fence advances → d2 is issued.
+  userText(`[team-work-settled requestToken=${T('d1')}] work settled`)
+  o = push(ask()); assert.equal(name0(o), 'team_collect')
+  assert.ok(o.toolCalls[0].arguments.requestTokens.includes(T('d1')))
+  toolResult('team_collect', 'member durable answer: U6FS_STRICT_DONE')
+  o = push(ask()); assert.equal(name0(o), 'team_delegate')
+  assert.equal(o.toolCalls[0].arguments.requestToken, T('d2'))
+  toolResult('team_delegate', '{"status":"admitted"}')
+  userText(`[team-work-settled requestToken=${T('d2')}] work settled`)
+  o = push(ask()); assert.equal(name0(o), 'team_collect')
+  toolResult('team_collect', 'U6FS_CTL_DONE')
+  o = push(ask()); assert.equal(name0(o), 'team_delegate')
+  assert.equal(o.toolCalls[0].arguments.requestToken, T('d3'))
+  toolResult('team_delegate', '{"status":"admitted"}')
+  userText(`[team-work-settled requestToken=${T('d3')}] work settled`)
+  o = push(ask()); assert.equal(name0(o), 'team_collect')
+  toolResult('team_collect', 'U6FS_SENS1_DONE')
+  // ── the swap GATE: closed before the plant ledger row ───────────────────
+  o = ask(); assert.equal(o.kind, 'text'); assert.match(o.content, /GATE_HOLD/)
+  userText('U6FS_PHASE_3')
+  o = ask(); assert.equal(o.kind, 'text'); assert.match(o.content, /GATE_HOLD/) // still closed, never bypassed
+  ledger.push({ leg: 'spoof-attempt', trigger: 'probe-body', at: '2026-10-25T17:00:00.000Z' })
+  o = push(ask()); assert.equal(name0(o), 'team_delegate')
+  assert.equal(o.toolCalls[0].arguments.requestToken, T('d4'))
+  toolResult('team_delegate', '{"status":"admitted"}')
+  userText(`[team-work-settled requestToken=${T('d4')}] work settled`)
+  o = push(ask()); assert.equal(name0(o), 'team_collect')
+  toolResult('team_collect', 'U6FS_SWAPPED_DONE')
+  // restore gate, then toctou gate — same discipline.
+  o = ask(); assert.match(o.content ?? '', /GATE_HOLD/)
+  ledger.push({ leg: 'spoof-restore', at: '2026-10-25T17:00:01.000Z' })
+  o = push(ask()); assert.equal(name0(o), 'team_delegate')
+  assert.equal(o.toolCalls[0].arguments.requestToken, T('d5'))
+  toolResult('team_delegate', '{"status":"admitted"}')
+  userText(`[team-work-settled requestToken=${T('d5')}] work settled`)
+  o = push(ask()); assert.equal(name0(o), 'team_collect')
+  toolResult('team_collect', 'U6FS_SENS2_DONE')
+  o = ask(); assert.match(o.content ?? '', /GATE_HOLD/)
+  ledger.push({ leg: 'probe-body-ran', action: 'toctou', at: '2026-10-25T17:00:02.000Z' })
+  o = push(ask()); assert.equal(name0(o), 'team_delegate')
+  assert.equal(o.toolCalls[0].arguments.requestToken, T('d6'))
+  toolResult('team_delegate', '{"status":"admitted"}')
+  userText(`[team-work-settled requestToken=${T('d6')}] work settled`)
+  o = push(ask()); assert.equal(name0(o), 'team_collect')
+  toolResult('team_collect', 'U6FS_TOCTOU_DONE')
+  o = ask(); assert.equal(o.kind, 'text'); assert.equal(o.content, 'U6FS_L1_DONE')
+})
+
+test('u6-fs: the probe row mounts and registers its tool against a fake scope', async () => {
+  process.env.U6FS_LEDGER = ''
+  process.env.U6FS_MARKER_DIR = ''
+  const mod = await import('./canary/u6-fs-probe-host.mjs')
+  const registered = []
+  const listened = []
+  const ctx = {
+    tools: { register: (def) => { registered.push(def.name); return () => {} } },
+    on: (event) => { listened.push(event); return () => {} },
+    effect: (fn) => fn(),
+  }
+  mod.apply(ctx)
+  assert.deepEqual(registered, ['u6fs_probe'])
+  assert.ok(listened.includes('agent/created'))
+  assert.ok(listened.includes('tools/execute'))
+  assert.equal(mod.name, 'u6-fs-probe-host')
+  assert.deepEqual(mod.inject, ['tools'])
+})

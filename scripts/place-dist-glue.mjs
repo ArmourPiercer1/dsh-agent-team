@@ -161,6 +161,39 @@ export const PLACEMENTS = [
     src: 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
     dist: 'packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
   },
+  // U6 PR2 PACKING: the FS family lane's .mjs runtime modules. Same law as
+  // every entry above — tsc never emits `.mjs`, so the lane's runtime face
+  // (barrel + mechanics + executor + presentation + row + contribution)
+  // rides the byte-copy mirror; check D compares src vs dist. The lane's ONE
+  // TypeScript module (`read-normalizer.ts`, the pure projection the
+  // canonicalizer statically imports) is EMITTED by tsc through the runtime
+  // build include, so it is deliberately NOT listed here. The relative edges
+  // (`../../..` up to `packages/…`) resolve identically in src and in the
+  // mirror because the mirror sits at `dist/packages/…`.
+  {
+    src: 'packages/tools/fs-family/src/index.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/index.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/fs-mechanics.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-mechanics.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/read-presentation.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/read-presentation.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/read-executor.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/read-executor.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/read-row.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/read-row.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/fs-read-contribution.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-read-contribution.mjs',
+  },
 ]
 
 // Direct-invocation guard: the placement runs only when this file IS the

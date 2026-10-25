@@ -1,12 +1,18 @@
 # `packages/runtime/governance-center/` — the U6 center-assembly lane
 
-**State: INERT / SHADOW ONLY, NO AUTHORITY** (U6 PR1, 2026-10-25).
-Nothing in this lane enforces anything. The single production consumer is the
-config-gated SHADOW mount in `src/plugin/live/agent-bindings.mjs`
-(`teamToolPlane.centerAssembly: 'off' | 'shadow'`, default `'off'`): in
-`shadow` the kernel computes its per-call verdict into an audit-only ledger
-and ALWAYS takes `next()` — zero behavior change, zero authority
-(U6-SLICE-PLAN PR1; sup-a §5 conditions 1/3/7/10, shadow form).
+**State (U6 PR2, 2026-10-25): ENFORCING for kernel-owned names; SHADOW for the
+rest.** The governed `read` name is now KERNEL-OWNED: `src/plugin/live/team-tool-plane.mjs`
+mounts the center assembly for the read family (approval table = the pb §6
+feed for `read`; one-shot consume routed through `kernel.consumeOnce` bound to
+the existing tool-admission face; the Guard's `kernelGuard` port carries the
+post-success-drift fail-closed veto), and the old center-built read row is
+REMOVED (U6-SLICE-PLAN PR2; the golden-vector gate
+`packages/runtime/test/u6-pr2-read-golden-vectors.test.ts` pins the
+fingerprint corpus byte-identical across the move). Every other name keeps
+the config-gated SHADOW posture of PR1 — the kernel computes per-call
+verdicts into an audit-only ledger and ALWAYS takes `next()` (zero authority,
+sup-a §5 conditions 1/3/7/10, shadow form); that mount stays opt-in config
+`teamToolPlane.centerAssembly: 'shadow'`, unset = no shadow.
 
 **Owner: Center Integrator** (five-stage plan §S4: the Kernel/Registry/Host
 Adapter are modified ONLY by the independent center-refactor owner; Family
@@ -40,7 +46,13 @@ row; dist-mirrored via `scripts/place-dist-glue.mjs`).
   `scripts/audit-a5-tool-governance-imports.mjs`). PR1 deliberately registers
   this lane as **zero** new tool-governance import edges: the binding of the
   kernel's ports to the concrete `tool-admission` / `tool-dispatch` faces is
-  a PR2 reviewed consumer registration, not an accident here.
+  a PR2 reviewed consumer registration, not an accident here. PR2 LANDED
+  that binding at the trusted assembly point (`team-tool-plane.mjs` mounts
+  the read family's kernel: consume port = the tool-admission one-shot face,
+  approval table = the pb §6 feed; `agent-bindings.mjs` forwards the
+  `kernelGuard` port into the ALREADY-LISTED `installScopedToolGuard` seam —
+  no new production consumer file beyond the fs-family lane's single booked
+  effect-grammar edge).
 * CORE PATCH BUDGET: 0 — public seams of the pinned Host only
   (`tests/paths.mjs`).
 

@@ -777,7 +777,44 @@ export function installScopedToolGuard(input) {
             throw new Error(`team tool guard: "${name}" cannot be made cancellable on this execution (${handoff.detail}); without a cancellable signal a Definition that moves after this door could not be refused before its Body, and this lane does not run calls it cannot stop [refused at the dispatch door, the stage nearest the Body]`);
         }
         try {
-            return await next();
+            const settled = await next();
+            // U6 PR2 (kernel-enforcing delta at this door — see the `kernelGuard`
+            // input): for a KERNEL-OWNED name, re-resolve the live definition
+            // after the settle. If the Body moved away from the identity this
+            // door pinned OR from the identity the center table binds, the
+            // result is not table-backed and a SUCCESS-shaped settle is
+            // converted into a fail-closed refusal (sup-a §1.2 post-check, §5
+            // cond 8/10). Error- and cancelled-shaped settles keep their native
+            // shape — they are refusals already, never successes wearing a moved
+            // Body; an unchanged Body keeps the native success shape untouched.
+            // The settled edge's alarm + armed-once withdrawal law stays as the
+            // settled edge's law for EVERY other name (no dual identity: the
+            // Guard's live-vs-feed comparison remains the one identity law —
+            // this door only consumes the table's answer and vetoes).
+            if (input.kernelGuard?.owns(name) === true) {
+                const settledIsError = settled?.isError === true;
+                const settledIsCancelled = settled?.cancelled === true;
+                if (!settledIsError && !settledIsCancelled) {
+                    const now = readDefinition(name);
+                    const tableIdentity = input.kernelGuard.identityFor(name);
+                    const drifted = !now.ok
+                        || now.fingerprint !== pinned.fingerprint
+                        || (tableIdentity !== null && tableIdentity !== now.fingerprint);
+                    if (drifted) {
+                        observe({
+                            event: 'kernel-post-success-drift-veto',
+                            callId,
+                            tool: name,
+                            pinned: pinned.fingerprint,
+                            current: now.ok ? now.fingerprint : now.detail,
+                            table: tableIdentity ?? 'unbound',
+                            note: 'the kernel-owned definition moved while this call executed; its successful result is vetoed fail-closed (U6 PR2) — the table no longer backs the Body that answered',
+                        });
+                        throw new Error(`team tool guard: "${name}" is kernel-owned and its definition moved while the call ran (pinned ${pinned.fingerprint}, resolving ${now.ok ? now.fingerprint : `unreadable (${now.detail})`}${tableIdentity === null ? '' : `, table ${tableIdentity}`}); the result is refused fail-closed — an unverified Body's success is never delivered [refused at the dispatch gate, after execution]`);
+                    }
+                }
+            }
+            return settled;
         }
         finally {
             handoff.restore();

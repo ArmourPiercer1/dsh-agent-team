@@ -2468,6 +2468,18 @@ export function createAgentBindings(deps) {
             a5PlaneValue === null
               ? undefined
               : a5PlaneValue.placementFeed(name),
+          // U6 PR2: the kernel guard port for the center-owned read name
+          // (sup-a §5 ENFORCE posture). The plane's center assembly answers
+          // `owns`/`identityFor` from its approval TABLE, and the SAME feed
+          // above already answers from that table for the owned name — the
+          // identity law itself stays install.ts's alone (bind-time feed
+          // check + tools/change abort). install.ts adds the one PR2 delta:
+          // post-success drift for an owned name becomes a fail-closed veto.
+          // A plane without the governed read row omits the field → today's
+          // behavior byte-for-byte for every name.
+          ...(a5PlaneValue?.kernelGuard === undefined || a5PlaneValue.kernelGuard === null
+            ? {}
+            : { kernelGuard: a5PlaneValue.kernelGuard }),
           // A5-M1 replaced "Generation 0 until PR2 feeds the overlay /
           // authority generations into the Binding": the awaited durable
           // overlay generation rides the install above, and a later advance is

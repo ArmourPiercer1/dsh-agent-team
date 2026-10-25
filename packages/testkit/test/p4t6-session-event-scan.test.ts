@@ -316,6 +316,34 @@ const SCANNED_PATHS_U6PR1: readonly string[] = [
   'packages/runtime/test/u6-pr1-shadow-inert.test.ts',
 ]
 
+// U6 PR2 (branch task/u6-pr2-fs-read-family-20261025 off master 2db321f63,
+// the FS-family read slice 2/6) adds its TEN scannable files: the fs-family
+// lane's runtime .mjs face (barrel + fs-mechanics + read-executor +
+// read-presentation + read-row + fs-read-contribution — the governed read
+// row's Family halves moved VERBATIM out of team-tool-plane /
+// plane-effect-backends, owner role: that lane's README) plus its ONE
+// TypeScript module (read-normalizer.ts, the pure projection now statically
+// imported by canonical-operation.ts under the golden-vector gate) and the
+// three C1 suites (golden vectors 877-corpus digest pin, center-assembly
+// kernel flow, identity/TOCTOU/post-success plants). The plane/backends
+// EDITS ride already-counted paths; dist mirrors, tests/**, docs/** and
+// dev-evidence stay outside the scan; zero new denylist vocabulary. Taking
+// the scanned total on THIS tree to 1248 — MEASURED by the pre-booking
+// scanner run on this exact tree (1248 measured against the 1238 booked; no
+// chain value copied).
+const SCANNED_PATHS_U6PR2: readonly string[] = [
+  'packages/tools/fs-family/src/index.mjs',
+  'packages/tools/fs-family/src/fs-mechanics.mjs',
+  'packages/tools/fs-family/src/read-executor.mjs',
+  'packages/tools/fs-family/src/read-presentation.mjs',
+  'packages/tools/fs-family/src/read-row.mjs',
+  'packages/tools/fs-family/src/fs-read-contribution.mjs',
+  'packages/tools/fs-family/src/read-normalizer.ts',
+  'packages/runtime/test/u6-pr2-read-golden-vectors.test.ts',
+  'packages/runtime/test/u6-pr2-kernel-flow.test.ts',
+  'packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -2909,7 +2937,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
-        SCANNED_PATHS_U6PR1.length,
+        SCANNED_PATHS_U6PR1.length +
+        SCANNED_PATHS_U6PR2.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2976,7 +3005,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
-        SCANNED_PATHS_U6PR1.length,
+        SCANNED_PATHS_U6PR1.length +
+        SCANNED_PATHS_U6PR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3064,6 +3094,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5DOCSREALIGN,
       ...SCANNED_PATHS_A5M1,
       ...SCANNED_PATHS_U6PR1,
+      ...SCANNED_PATHS_U6PR2,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3475,6 +3506,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `expected 1238 to be 1228`, and the whole 10-file gap is exactly the
     // named SCANNED_PATHS_U6PR1 list asserted present by path above.
     expect(SCANNED_PATHS_U6PR1.length).toBe(1238 - 1228)
+    // U6 PR2 tie pin: the ten files of the named SCANNED_PATHS_U6PR2 list
+    // above are exactly the scanned-total delta 1238 -> 1248 (measured).
+    expect(SCANNED_PATHS_U6PR2.length).toBe(1248 - 1238)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

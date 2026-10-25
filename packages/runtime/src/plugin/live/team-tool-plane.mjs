@@ -77,8 +77,20 @@ import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '.
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
+import { createAnchoredSearchBackend, createConfinedShellBackend } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
+// U6 PR2 (U6 slice plan PR2 — the read family moves): the governed `read`
+// row's Family halves live in `packages/tools/fs-family/` (owner role: that
+// lane's README). The plane stays the TRUSTED ASSEMBLY POINT: it places the
+// family row, feeds the Kernel's table with the placement identity, and
+// routes the one-shot consume through the Kernel's consumeOnce port binding.
+import { buildReadRowDefinition, buildFsReadContribution, createGovernedReadExecutor } from '../../../../tools/fs-family/src/index.mjs'
+import * as fsFamilyReadMechanics from '../../../../tools/fs-family/src/fs-mechanics.mjs'
+import * as fsFamilyReadPresentation from '../../../../tools/fs-family/src/read-presentation.mjs'
+import {
+  createGovernanceKernel,
+  createGovernedFamilyRegistry,
+} from '../../../governance-center/index.js'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -133,148 +145,15 @@ const PLANE_PRESENTATION_FACE = Object.freeze({
   }],
 })
 
-// ── The read row's OWN presentation face (Alpha.5 READ slice, plan T1) ─────
-// The trio face above is untouched; the `read` row moves to the pin639
-// native result contract, mirrored LOCALLY (no host import — the same law the
-// host `read` tool carries at packages/fs/tool-fs/src/read.ts:86-105 (schema),
-// :107-120 (render-state recomputation), :173-192 (presentResult), :230-245
-// (readMetaFromMeta) and read-render.ts:152-170 (formatReadOutput footers)).
-// Mirror, not import: the host module sits behind its own public tool, and
-// the governed row's face must stay a plugin-local artifact.
-const READ_ROW_ENVELOPE = /^<path>[^\n]*<\/path>\n<type>file<\/type>\n<content>\n([\s\S]*)\n<\/content>$/u
-
-/** Mirror of formatReadOutput (read-render.ts:152-170), byte-verbatim
- *  footers: the capped state carries NO "of Z"; partial shows "of T"; EOF
- *  says "End of file - total T lines". */
-function formatReadRowOutput(displayPath, outcome) {
-  const endLine = outcome.lines.at(-1)?.number ?? Math.max(0, outcome.offset - 1)
-  let footer
-  if (outcome.truncatedByBytes === true) {
-    footer = `(Output capped. Showing lines ${String(outcome.offset)}-${String(endLine)}. Use offset=${String(endLine + 1)} to continue.)`
-  } else if (endLine < outcome.totalLines) {
-    footer = `(Showing lines ${String(outcome.offset)}-${String(endLine)} of ${String(outcome.totalLines)}. Use offset=${String(endLine + 1)} to continue.)`
-  } else {
-    footer = `(End of file - total ${String(outcome.totalLines)} lines)`
-  }
-  const body = outcome.lines.length > 0
-    ? `${outcome.lines.map((line) => `${String(line.number)}: ${line.text}`).join('\n')}\n\n${footer}`
-    : footer
-  return `<path>${displayPath}</path>\n<type>file</type>\n<content>\n${body}\n</content>`
-}
-
-/** The render-side effective limit (replay-tolerant mirror of the executor's
- *  E2 law clamped to the cap; NEVER throws on a hostile replay — the refusal
- *  law was the executor's at call time; the face only re-derives display
- *  state). */
-function readRowEffectiveLimit(args) {
-  const raw = args?.limit
-  if (typeof raw === 'number' && Number.isFinite(raw) && Number.isInteger(raw) && raw >= 1 && raw <= READ_ROW_LINE_CAP) return raw
-  return READ_ROW_LINE_CAP
-}
-
-/** Mirror of readMetaFromMeta (read.ts:230-245): every malformed shape —
- *  non-object, bad scalars, non-increasing or out-of-range line numbers, a
- *  non-string lang — DECLINES to undefined. Never throws. */
-function readRowMetaFromMeta(meta) {
-  if (typeof meta !== 'object' || meta === null || Array.isArray(meta)) return undefined
-  const { path, offset, lines, totalLines, lang } = meta
-  if (typeof path !== 'string' || typeof offset !== 'number' || typeof totalLines !== 'number') return undefined
-  if (!Number.isInteger(offset) || offset < 1) return undefined
-  if (!Number.isInteger(totalLines) || totalLines < 0) return undefined
-  if (!Array.isArray(lines) || !lines.every((line) => typeof line === 'object' && line !== null && !Array.isArray(line)
-    && typeof line.number === 'number' && Number.isInteger(line.number) && line.number >= 1
-    && typeof line.text === 'string')) return undefined
-  if (lang !== undefined && typeof lang !== 'string') return undefined
-  let previous = offset - 1
-  for (const { number } of lines) {
-    if (number <= previous || number > totalLines) return undefined
-    previous = number
-  }
-  return { path, offset, lines, totalLines, ...(lang === undefined ? {} : { lang }) }
-}
-
-const READ_ROW_PRESENTATION_FACE = Object.freeze({
-  schema: Object.freeze({
-    type: 'object',
-    properties: Object.freeze({
-      path: Object.freeze({ type: 'string' }),
-      offset: Object.freeze({ type: 'integer' }),
-      lines: Object.freeze({
-        type: 'array',
-        items: Object.freeze({
-          type: 'object',
-          properties: Object.freeze({
-            number: Object.freeze({ type: 'integer' }),
-            text: Object.freeze({ type: 'string' }),
-          }),
-          required: Object.freeze(['number', 'text']),
-          additionalProperties: false,
-        }),
-      }),
-      totalLines: Object.freeze({ type: 'integer' }),
-    }),
-    required: Object.freeze(['path', 'offset', 'lines', 'totalLines']),
-    additionalProperties: false,
-  }),
-  /** Render the four-field window into the pin639 read envelope. The
-   *  capped/partial/EOF state is RECOMPUTED here exactly as the host render
-   *  does (read.ts:107-120): `truncatedByBytes = lines.length <
-   *  effectiveLimit && endLine < totalLines` — the executor's result never
-   *  carries the flag (S6), so a stale flag can never lie. */
-  render: (args, value) => {
-    const lines = Array.isArray(value?.lines) ? value.lines : []
-    const offset = typeof value?.offset === 'number' ? value.offset : 1
-    const totalLines = typeof value?.totalLines === 'number' ? value.totalLines : 0
-    const path = typeof value?.path === 'string' ? value.path : ''
-    const effectiveLimit = readRowEffectiveLimit(args)
-    const endLine = lines.length > 0 ? Number(lines[lines.length - 1]?.number ?? offset) : Math.max(0, offset - 1)
-    const truncatedByBytes = lines.length < effectiveLimit && endLine < totalLines
-    return [{
-      type: 'text',
-      text: formatReadRowOutput(path, {
-        offset, lines, totalLines, ...(truncatedByBytes ? { truncatedByBytes: true } : {}),
-      }),
-    }]
-  },
-  /** The card meta (read.ts presentationMeta): exactly the four fields —
-   *  NO lang (the governed row never sniffs a language; honest elision,
-   *  plan S7). */
-  presentationMeta: (_args, value) => ({
-    path: value.path,
-    offset: value.offset,
-    lines: value.lines.map(({ number, text }) => ({ number, text })),
-    totalLines: value.totalLines,
-  }),
-})
-
-/** The read row's presentResult (mirror of read.ts:173-192): declines
- *  (undefined) on an error result, a malformed meta, anything but ONE text
- *  content block, or text outside the read envelope — so legacy `{text}`
- *  refusals and foreign replays fall back to the generic card instead of a
- *  lying read card. Never throws. */
-function readRowPresentResult(_args, result) {
-  if (result?.isError === true) return undefined
-  // PR358-A2: the cancelled read carries NO path/line card — it is not a
-  // read result; the generic card renders its honest cancelled line instead
-  // of a lying zero-lines read card.
-  if (result?.cancelled === true) return undefined
-  const meta = readRowMetaFromMeta(result?.meta)
-  if (meta === undefined) return undefined
-  const only = Array.isArray(result.content) && result.content.length === 1 ? result.content[0] : undefined
-  const text = only?.type === 'text' && typeof only.text === 'string' ? only.text : undefined
-  if (text === undefined) return undefined
-  const body = READ_ROW_ENVELOPE.exec(text)?.[1]
-  if (body === undefined) return undefined
-  return {
-    card: 'read',
-    path: meta.path,
-    offset: meta.offset,
-    lines: meta.lines,
-    totalLines: meta.totalLines,
-    ...(meta.lang === undefined ? {} : { lang: meta.lang }),
-    content: [{ type: 'text', text: body }],
-  }
-}
+// ── The read row's OWN presentation face MOVED (U6 PR2) ─────────────────
+// The Alpha.5 READ-slice presentation law (the pin639 read-envelope mirror,
+// the render/presentationMeta contract, the decline-on-anything-dishonest
+// presentResult) now lives in the FS family lane —
+// `packages/tools/fs-family/src/read-presentation.mjs` — placed through the
+// family row builder at the mount (and re-exported by plane-effect-backends
+// for its pinned consumers). Mirror-not-import still holds: the host module
+// sits behind its own public tool; the governed row's face is a
+// family-owned plugin artifact.
 
 /**
  * pb-CONTRACT §1.3 fail-closed pairing check. Returns { ok: true } when the
@@ -1218,6 +1097,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: true, grant, paDurableMint, request, placementName, paConstructionBinding }
   }
 
+  // U6 PR2: the plane's center assembly for the read family (filled AFTER
+  // construction, before any call — the edge/guard closures below read the
+  // binding at CALL time). `kernelPortAnswer` is the one-slot capture beside
+  // the consume port (see the port wrapper).
+  let readKernel = null
+  const kernelPortAnswer = { current: null }
+
   const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, signal }) => {
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
@@ -1403,7 +1289,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (signal?.aborted === true) {
       return { kind: 'allow', cancelled: true }
     }
-    const edge = assembly.consumeForExecution(grant, {
+    const consumeFacts = {
       ...(signal === undefined ? {} : { cancelRequested: signal.aborted === true }),
       currentAuthorityGeneration: freshGeneration,
       member: paMember,
@@ -1413,7 +1299,33 @@ export function createTeamToolPlaneAssembly(input = {}) {
       bindingRevision: freshRevision,
       parametersFingerprint,
       requestedEffects,
-    })
+    }
+    // U6 PR2 (port binding, PR1-open-1): a KERNEL-OWNED placement consumes
+    // its one-shot grant through the kernel's consumeOnce — replay-guarded
+    // BEFORE the port (double replay: kernel set + durable ledger, both
+    // refusals, neither ever un-spends), and a kernel outside ACTIVE refuses
+    // the edge outright (drain/tombstone semantics). The port wrapper
+    // captured the FULL legacy answer, so every live deny code
+    // (APPROVAL_STALE / TOOL_BINDING_UNVERIFIED / …) rides the unchanged
+    // mapping below. A name the kernel does not own keeps the direct edge
+    // byte-for-byte.
+    let edge
+    if (readKernel !== null && placementName === readName) {
+      const grantId = typeof grant?.grantId === 'string' ? grant.grantId : ''
+      kernelPortAnswer.current = null
+      const verdict = await readKernel.kernel.consumeOnce(grant, grantId, consumeFacts)
+      edge = verdict.portCalled && kernelPortAnswer.current !== null
+        ? kernelPortAnswer.current
+        : {
+            ok: false,
+            error: {
+              code: String(verdict.code ?? 'GRANT_CONSUMPTION_REFUSED'),
+              message: String(verdict.detail ?? 'the kernel refused the one-shot consumption'),
+            },
+          }
+    } else {
+      edge = assembly.consumeForExecution(grant, consumeFacts)
+    }
     if (edge.ok !== true) {
       return { kind: 'deny', code: String(edge.error?.code ?? 'GRANT_CONSUMPTION_REFUSED'), detail: String(edge.error?.message ?? '') }
     }
@@ -1720,63 +1632,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }),
   ] : []
 
-  const baseDefs = readExecutor === null ? defs : Object.freeze([
-    ...defs,
-    Object.freeze({
-      name: readName,
-      description: 'Read one governed text file inside this member\'s admitted file root. Paths resolve against that root; escaping targets are refused.',
-      parameters: {
-        type: 'object',
-        // The native spelling, on purpose: the frozen operation-permission
-        // canonicalizer keys `read` to its `file_path` extractor (live run-8
-        // measured 'canonicalization failed for tool "read":
-        // file-path-missing' on a {path} schema — the takeover row must
-        // satisfy the same canonical law the native name carries).
-        // offset/limit ride the SAME canonical projection
-        // (canonical-operation.ts:674-675) and are now truly CONSUMED by the
-        // executor (plan T2/E2); descriptions mirror the pin639 read schema.
-        properties: {
-          file_path: { type: 'string', description: 'path relative to the governed root, or an absolute path inside it' },
-          offset: { type: 'number', description: 'The line number to start reading from. Only provide if the file is too large to read at once.' },
-          limit: { type: 'number', description: `The number of lines to read. Only provide if the file is too large to read at once. Defaults to ${String(READ_ROW_LINE_CAP)}.` },
-        },
-        required: ['file_path'],
-      },
-      // S2 transfer law: SUCCESS hands the native four-field window through
-      // untouched; a refusal (the executor's tagged union object) becomes a
-      // THROW of its verbatim refusal text — the same transport the host
-      // read row uses, so the envelope/decline contract downstream stays
-      // honest. The trio rows keep their `{ text }` face unchanged.
-      execute: async (raw, exec) => {
-        // fix-2b: read RECEIVES the host exec. 9e fix-1: the REAL token
-        // rides (object | symbol, exactly like the shell row) — the plane
-        // NEVER stringifies it (`String(symbol)` throws; stringify was the
-        // A1 violation). The correlation is the a5p5 LEDGER's allocated
-        // string (`exec.tokenKey`), the same identity the trio rows carry.
-        const corr = {
-          ...(exec?.token === undefined ? {} : { token: exec.token }),
-          ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
-          ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
-        }
-        const outcome = await readExecutor(raw, corr)
-        if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'ok') {
-          return { path: outcome.path, offset: outcome.offset, lines: outcome.lines, totalLines: outcome.totalLines }
-        }
-        if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'cancelled') {
-          // PR358-A2: the cancelled read is a PRESENTED row-form fact, not
-          // a refusal — zero byte read, honest word carried (mirrors the
-          // shell row's own `· cancelled` law; no resolver ever ran).
-          return { cancelled: true, content: [{ type: 'text', text: 'read · cancelled' }], meta: { cancelled: true } }
-        }
-        const text = outcome !== null && typeof outcome === 'object' && typeof outcome.text === 'string'
-          ? outcome.text
-          : 'refused-io executor-unavailable — the governed read executor produced no outcome'
-        throw new Error(text)
-      },
-      output: READ_ROW_PRESENTATION_FACE,
-      presentResult: readRowPresentResult,
-    }),
-  ])
+  // U6 PR2: the read row DEFINITION is the family's — moved VERBATIM to
+  // `fs-family/src/read-row.mjs` (name/description/parameters/execute
+  // transport/presentation face all come from the family lane; the
+  // takeover-spelling law keeps the Gate 0b-validated native name).
+  const readRowDef = readExecutor === null ? null : buildReadRowDefinition({ readName, readExecutor })
+  const baseDefs = readRowDef === null ? defs : Object.freeze([...defs, readRowDef])
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
@@ -1795,9 +1656,115 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // through it) has NO feed row — the Guard then lands its verbatim
   // no-feed refusal: fail closed, never a guessed identity.
   const placedByName = new Map(allDefs.map((d) => [d.name, d]))
+
+  // ── U6 PR2: the CENTER ASSEMBLY for the read family (ENFORCING) ─────────
+  // The kernel (governance-center lane) owns this placement's approval entry:
+  // ONE table, center-side, binding native name → placement definition
+  // identity (sup-a §5 cond 1/2). The FAMILY registers through the PR1
+  // closed schema (origin 'reviewed-manifest' — this plane is a reviewed
+  // assembly point, not a dynamic source; cond 9); a registration refusal
+  // means the read row is NOT verifiable and the whole assembly FAILS CLOSED
+  // (no row mounts — the old center path is gone, dual-keep is forbidden).
+  // The kernel's ports are bound HERE at the trusted seam (PR1's open item):
+  // grantConsume wraps the existing tool-admission face — composed, never
+  // re-implemented; the family lane never sees any of it (familyFace carries
+  // no authority, CI-06).
+  const readNameOwned = readRowDef !== null
+  if (readNameOwned) {
+    const registry = createGovernedFamilyRegistry({
+      kernelManifest: { capabilities: { 'fs-read': { backsExecution: 'family-body' } } },
+    })
+    const contribution = buildFsReadContribution({
+      definition: readRowDef,
+      executorFactory: createGovernedReadExecutor,
+      mechanics: fsFamilyReadMechanics,
+      presentation: fsFamilyReadPresentation,
+      cancelBoundary: 'the governed read body checks the injected signal at every await edge; the dispatcher-side arm + tools/change watcher lands ABORTED_BEFORE_DISPATCH before the body runs (install.ts seams, U6 PR2)',
+    })
+    const registered = registry.register(contribution, { origin: 'reviewed-manifest' })
+    if (registered.ok !== true) {
+      return {
+        ok: false,
+        code: 'PLANE_READ_REGISTRATION_REFUSED',
+        message: `the read family contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center read path does not come back)`,
+      }
+    }
+    const kernel = createGovernanceKernel({
+      registry,
+      ports: {
+        grantConsume: {
+          // THE PR2 PORT BINDING (PR1-open-1): kernel → tool-admission
+          // one-shot face. Synchronous under the wrapper (no await between
+          // reading facts and consuming — the one-shot + cancel-first laws
+          // depend on run-to-completion); the FULL legacy answer is captured
+          // beside the call so the live deny codes/messages survive the
+          // kernel's narrower verdict shape (the kernel only reads ok/reason).
+          consumeForExecution: async (grant, facts) => {
+            const answer = assembly.consumeForExecution(grant, facts)
+            kernelPortAnswer.current = answer
+            return answer.ok === true
+              ? { ok: true }
+              : {
+                  ok: false,
+                  reason: `${String(answer.error?.code ?? 'GRANT_CONSUMPTION_REFUSED')}:${String(answer.error?.details?.refusal ?? '')}`,
+                }
+          },
+        },
+      },
+    })
+    const published = kernel.publish()
+    if (published.ok !== true) {
+      return {
+        ok: false,
+        code: 'PLANE_READ_KERNEL_UNAVAILABLE',
+        message: `the read kernel could not enter ACTIVE (${published.code}: ${published.detail}) — no approval entry can back the governed read`,
+      }
+    }
+    readKernel = {
+      registry,
+      kernel,
+      guard: Object.freeze({
+        owns: (name) => typeof name === 'string' && name === readName,
+        identityFor: (name) => {
+          if (typeof name !== 'string' || name !== readName) return null
+          const entry = ensureReadApprovalEntry()
+          return entry === null ? null : entry.definitionIdentity
+        },
+      }),
+    }
+  }
+
+  const ensureReadApprovalEntry = () => {
+    if (readKernel === null) return null
+    const existing = readKernel.kernel.approvalFor(readName)
+    if (existing !== undefined) return existing
+    const d = placedByName.get(readName)
+    if (d === undefined) return null
+    const identity = definitionIdentityOf(d)
+    // Not minted yet (never installed through the seam's fingerprint pass):
+    // NO entry — the feed stays silent and the Guard's no-feed refusal lands.
+    if (identity === null) return null
+    const added = readKernel.kernel.addApprovalEntry({ nativeName: readName, definitionIdentity: identity })
+    if (added.ok !== true) return null // dup/non-ACTIVE — fail closed, never rebind
+    return readKernel.kernel.approvalFor(readName) ?? null
+  }
+
   const placementFeed = (name) => {
     const d = placedByName.get(name)
     if (d === undefined) return undefined
+    if (readKernel !== null && name === readName) {
+      // U6 PR2 (cond 1/2/6): for the kernel-OWNED name the approval TABLE is
+      // the identity source. The entry binds ONCE, lazily, at first consult
+      // — the def#N mint still rides the seam's install pass (the pb §6
+      // lookup-time law is untouched). It is NEVER silently re-bound: when a
+      // later live resolution disagrees with the table, this feed keeps
+      // answering the TABLE identity and the Guard's own live-vs-feed
+      // comparison refuses (cond 6: an identity mismatch never executes).
+      const entry = ensureReadApprovalEntry()
+      return entry === null
+        ? undefined
+        : Object.freeze({ definitionIdentity: entry.definitionIdentity, realmId })
+    }
     const identity = definitionIdentityOf(d)
     return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
   }
@@ -1868,6 +1835,25 @@ export function createTeamToolPlaneAssembly(input = {}) {
       placementFeed,
       placementNames: Object.freeze(allDefs.map((d) => d.name)),
       /**
+       * U6 PR2 ENFORCEMENT WIRING (install.ts seam, no new Host hook): the
+       * kernel guard port for kernel-owned names. The Guard's IDENTITY law
+       * is NOT restated here — install.ts already (a) binds the placement
+       * identity from the §6 feed (which for the owned name now answers from
+       * the kernel's approval TABLE), (b) re-verifies live resolution against
+       * the binding before dispatch, and (c) aborts in-flight calls on a
+       * tools/change drift. This port adds exactly the two table-backed
+       * verdicts the seam asks for: `owns(name)` selects the enforcing
+       * posture (post-success drift becomes a fail-closed veto instead of the
+       * armed-once alarm), `identityFor(name)` answers the ONE identity the
+       * table binds (null = unbound name → nothing may execute under it).
+       * A plane without the governed read row OMITS the field entirely —
+       * presence is the capability signal, same law as paReadHandoff.
+       */
+      ...(readKernel === null ? {} : { kernelGuard: readKernel.guard }),
+      /** U6 PR2 diagnostics/tests: the plane's center assembly (kernel +
+       *  registry faces; observation only — no authority crosses here). */
+      ...(readKernel === null ? {} : { centerKernel: Object.freeze({ kernel: readKernel.kernel, registry: readKernel.registry }) }),
+      /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the
        * typed failure — the caller MUST fail the assembly.
@@ -1899,6 +1885,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // flight, the unspent grant and the plan fact die with the
             // placement (teardown law, independent of the terminal observer).
             readExecutor?.paHandoffCloseAll?.()
+            // U6 PR2: the kernel's lifecycle rides its mount — drain,
+            // tombstone, revoke the candidate, release (observations of the
+            // §5 state machine; every transition is best-effort and each
+            // refusal leaves the state machine honest, never throws).
+            if (readKernel !== null) {
+              try {
+                readKernel.kernel.beginDrain()
+                readKernel.kernel.tombstone()
+                readKernel.registry.revoke('dsh.fs-family', 'the governed read mount was disposed')
+                readKernel.kernel.release()
+              } catch {
+                /* idempotent drain best-effort — the plane tears down anyway */
+              }
+            }
             livePaPlan.clear()
             for (const d of disposers) {
               try {

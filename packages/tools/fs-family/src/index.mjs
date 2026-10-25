@@ -1,0 +1,63 @@
+/**
+ * `packages/tools/fs-family` — the FS Family lane (U6 PR2 of the U6 slice
+ * plan; center-assembly-architecture §4 "six boundaries" owned by a Family).
+ *
+ * WHAT LIVES HERE: the governed `read` row's FAMILY-owned halves, moved
+ * VERBATIM out of the center files at master 2db321f63 —
+ *   - `fs-mechanics.mjs`      the anchor/window law (shared with the
+ *                             search/glob rows through the center's
+ *                             re-export — one home, no copy);
+ *   - `read-presentation.mjs` the Result-boundary presentation face;
+ *   - `read-normalizer.mjs`   the PURE operation-projection normalizer the
+ *                             center's canonicalizer consumes (the Kernel
+ *                             computes the fingerprint from what it returns;
+ *                             condition 7: the family part is pure);
+ *   - `read-executor.mjs`     the effect body (every authority force —
+ *                             decide/PA/policy/containment — arrives
+ *                             injected; § Execution boundary);
+ *   - `read-row.mjs`          the row Definition the trusted assembly places
+ *                             under the validated native name (§ CI-04);
+ *   - `fs-read-contribution.mjs` the §4/§10.3 contribution descriptor
+ *                             (admission/grantMint/grantConsume declared
+ *                             `kernel` — § CI-06).
+ *
+ * OWNER ROLE: the Family owns the Definition, the argument/window contract,
+ * the effect BODY and the result SHAPE. It owns NO authority: it never
+ * admits, never mints a grant, never consumes one, never decides (the
+ * contribution's `obligations` block states that as data and the Kernel's
+ * closed schema refuses any other value). Authority forces are injected at
+ * the trusted assembly point (`src/plugin/live/*` plane); nothing under this
+ * directory may import the plane, the Kernel lane, or Host internals — the
+ * only outward edges are repo lanes (contracts, controlled-fs, the frozen
+ * tool-governance vocabulary face, read by reviewed consumer registration).
+ *
+ * THE FINGERPRINT GOLDEN LAW: `read-normalizer` + the center's fingerprint
+ * computation must reproduce master's `canonicalizeOperation('read', …)`
+ * fingerprint BYTE-IDENTICALLY (the pinned-corpus gate in
+ * `packages/runtime/test/u6-pr2-read-golden-vectors.test.ts`). Durable
+ * grants/rules keyed by that fingerprint survive the move unchanged.
+ *
+ * DIST MIRROR: every file here is a plain .mjs tracked as a BYTE COPY under
+ * `packages/runtime/dist/packages/tools/fs-family/src/` via the PLACEMENTS
+ * list in `scripts/place-dist-glue.mjs` (tsc never emits .mjs). The relative
+ * import depths resolve identically from `src` and from the dist mirror.
+ *
+ * @module fs-family
+ */
+export {
+  buildGovernedReadWindow,
+  lexicalAnchor,
+  MAX_READ_BYTES,
+  parseGovernedReadWindow,
+  READ_ROW_CHUNK_BYTES,
+  READ_ROW_LINE_CAP,
+  READ_ROW_MAX_LINE_LENGTH,
+  READ_ROW_MAX_OUTPUT_BYTES,
+  resolveAnchored,
+  resolveAnchoredPath,
+} from './fs-mechanics.mjs'
+export { READ_ROW_PRESENTATION_FACE, readRowPresentResult } from './read-presentation.mjs'
+export { normalizeReadProjection } from './read-normalizer.js'
+export { createGovernedReadExecutor } from './read-executor.mjs'
+export { buildReadRowDefinition } from './read-row.mjs'
+export { buildFsReadContribution } from './fs-read-contribution.mjs'

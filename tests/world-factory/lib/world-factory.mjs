@@ -67,6 +67,15 @@ export const WORLD_PREFIX = 'u5'
  */
 export const U6_SHADOW_HOST_SRC = resolve(HERE, '..', 'canary', 'u6-shadow-host.mjs')
 export const U6_SHADOW_ROW_ID = 'u6-shadow-host'
+/**
+ * U6 PR2 C2 (`u6-fs` suite): the probe row the factory mounts when a World is
+ * created with `u6Fs` set. It observes the governed `read` lane and performs
+ * the identity-swap / re-registration-window PLANTS on command (never
+ * spontaneously); its ledger/markers are evidence channels independent of the
+ * model transcript. See the file's header for the measured mount law.
+ */
+export const U6FS_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-fs-probe-host.mjs')
+export const U6FS_PROBE_ROW_ID = 'u6-fs-probe-host'
 export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
@@ -236,11 +245,19 @@ export class TestWorldFactory {
    * @param {'off'|'shadow'|null} [spec.centerAssembly] U6 PR1 shadow-parity:
    *        mount the `u6-shadow-host` row (identically in BOTH modes; only
    *        'shadow' installs the center-assembly row) and pass the U6_* env
+   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6Fs]
+   *        U6 PR2 C2: mount the `u6-fs-probe-host` row and compose the extra
+   *        patch rows (production Team row + presets — rows carrying
+   *        `config:`, which the plain mountRows cannot express) into the SAME
+   *        `- insert:` layer; sets U6FS_* env for the probe before spawn.
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null }) {
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
+    }
+    if (u6Fs !== null && !(typeof u6Fs === 'object' && Array.isArray(u6Fs.rows))) {
+      throw new Error('invalid u6Fs (expected {rows: [...]} | null)')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -267,7 +284,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs })
     this.worlds.push(world)
     return world
   }
@@ -283,6 +300,45 @@ function lstatSafe(path) {
 
 /** JSONL reader for in-home ledger files (null = file absent: mounted-but-
  *  never-loaded is itself evidence). */
+/**
+ * Minimal YAML emitter for the profile-patch layer: one `- insert:` list item
+ * carrying rows {id, name, config?}. Scalars are JSON scalars (valid YAML
+ * flow scalars for the string/number/boolean/null shapes the patch uses);
+ * nesting covers the Team row `config` object (maps, string lists, empty
+ * map/list). The a5p1 kit emits the identical shape through the same seam.
+ */
+function yamlScalar(v) { return v === null ? 'null' : typeof v === 'string' ? JSON.stringify(v) : String(v) }
+function yamlEmit(key, value, indent) {
+  const pad = '  '.repeat(indent)
+  if (value !== null && typeof value === 'object') {
+    const empty = Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0
+    if (empty) return [`${pad}${key}: ${Array.isArray(value) ? '[]' : '{}'}`]
+    if (Array.isArray(value)) {
+      const lines = [`${pad}${key}:`]
+      for (const item of value) {
+        if (item !== null && typeof item === 'object') {
+          const inner = Object.entries(item).flatMap(([k, v]) => yamlEmit(k, v, indent + 2))
+          lines.push(`${pad}  - ${inner[0].trimStart()}`, ...inner.slice(1))
+        } else {
+          lines.push(`${pad}  - ${yamlScalar(item)}`)
+        }
+      }
+      return lines
+    }
+    return [`${pad}${key}:`, ...Object.entries(value).flatMap(([k, v]) => yamlEmit(k, v, indent + 1))]
+  }
+  return [`${pad}${key}: ${yamlScalar(value)}`]
+}
+export function emitPatchLayer(headerLines, rows) {
+  const lines = [...(headerLines ?? []).map((l) => `# ${l}`), '- insert:']
+  for (const row of rows) {
+    // item keys align at column 6 (the '- ' sits at column 4) — indent 3.
+    const inner = Object.entries(row).flatMap(([k, v]) => yamlEmit(k, v, 3))
+    lines.push(`    - ${inner[0].trimStart()}`, ...inner.slice(1))
+  }
+  return lines.join('\n')
+}
+
 function rowsFrom(path) {
   try {
     return readFileSync(path, 'utf8')
@@ -317,10 +373,13 @@ export class TestWorld {
     this.badMount = spec.badMount
     this.extContributors = spec.extContributors ?? 'disable'
     this.centerAssembly = spec.centerAssembly ?? null
+    this.u6Fs = spec.u6Fs ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
     this.shadowLedgerPath = join(spec.home, 'center-shadow-ledger.jsonl')
+    this.u6fsLedgerPath = join(spec.home, 'u6fs-probe-ledger.jsonl')
+    this.u6fsMarkerDir = join(spec.workspaceDir, 'u6fs-markers')
     this.instance = null
     this.mock = null
     this.hostLease = null
@@ -394,6 +453,11 @@ export class TestWorld {
     return rowsFrom(this.shadowLedgerPath)
   }
 
+  /** U6 PR2 C2: the probe row's ledger (null = the probe never recorded). */
+  u6fsLedgerRows() {
+    return rowsFrom(this.u6fsLedgerPath)
+  }
+
   /**
    * Boot the Host for this World through the SHARED launcher (DshInstance).
    * The caller binds world.child into its run-control BEFORE awaiting (same
@@ -432,6 +496,17 @@ export class TestWorld {
       delete process.env.U6_CENTER_ROW_URL
       delete process.env.U6_CENTER_SHADOW_LEDGER
     }
+    // U6 PR2 C2 probe env (only on u6Fs Worlds; the probe row is mounted by
+    // the patch composition below — env names the ledger/markers it writes).
+    if (this.u6Fs !== null) {
+      process.env.U6FS_LEDGER = this.u6fsLedgerPath
+      process.env.U6FS_MARKER_DIR = this.u6fsMarkerDir
+      process.env.U6FS_WORLD = this.id
+    } else {
+      delete process.env.U6FS_LEDGER
+      delete process.env.U6FS_MARKER_DIR
+      delete process.env.U6FS_WORLD
+    }
 
     this.instance = new DshInstance({
       hostTree: this.factory.hostTree,
@@ -462,10 +537,29 @@ export class TestWorld {
       copyFileSync(U6_SHADOW_HOST_SRC, join(this.instance.profileDir, 'u6-shadow-host.mjs'))
       rows.push({ id: U6_SHADOW_ROW_ID, name: './u6-shadow-host.mjs' })
     }
-    this.instance.mountRows(
-      rows,
-      ['U5 canary World — one test-only plugin row via the public profile-patch seam.'],
-    )
+    if (this.u6Fs !== null) {
+      // U6 PR2 C2: the probe row mounts beside the canary (same measured
+      // shape); the CALLER-provided rows (production Team row, p6t6 observer,
+      // preset declarations — rows carrying `config:`) join the SAME insert
+      // layer through the emitter below, which writes the whole patch file.
+      copyFileSync(U6FS_PROBE_SRC, join(this.instance.profileDir, 'u6-fs-probe-host.mjs'))
+      rows.push({ id: U6FS_PROBE_ROW_ID, name: './u6-fs-probe-host.mjs' })
+      for (const row of this.u6Fs.rows) rows.push(row)
+      mkdirSync(this.instance.profileDir, { recursive: true })
+      writeFileSync(
+        this.instance.patchFile,
+        emitPatchLayer(
+          ['U6-fs World: canary + probe rows + the production Team row, p6t6',
+           'observer and preset declarations, one public profile-patch layer.'],
+          rows,
+        ) + '\n',
+      )
+    } else {
+      this.instance.mountRows(
+        rows,
+        ['U5 canary World — one test-only plugin row via the public profile-patch seam.'],
+      )
+    }
     if (this.extContributors !== 'keep') {
       // Public profile-patch composition (see EXT_CONTRIBUTOR_DISABLE header).
       appendFileSync(this.instance.patchFile, EXT_CONTRIBUTOR_DISABLE)
