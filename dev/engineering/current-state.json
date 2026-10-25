@@ -2,7 +2,7 @@
   "generated_by": "scripts/gen-current-state.mjs",
   "schema_version": 1,
   "source_registry": "dev/engineering/registry.yaml",
-  "source_registry_sha": "460038c9aff40acf850a5e3c8b7ee109cc13c7a6",
+  "source_registry_sha": "3c32d59b72746eb48b59db2bbe585e6a2e97765f",
   "source_catalog": "docs/contracts/engineering-baseline/ids.yaml",
   "source_catalog_sha": "23bc9c596e43a5e060cd8326c0e1d553d5bbeb16",
   "axes_legend": {
@@ -33,7 +33,7 @@
   },
   "legacy_authority": {
     "present": true,
-    "file": "dev/agent-workflow/graph.yaml",
+    "file": "dev/engineering/authority-snapshots/as20261025r1.json",
     "phase_id": "alpha5-tool-io-governance",
     "active_plan": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
     "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
@@ -42,7 +42,16 @@
     "baseline_collected": "2026-10-22T07:20:56Z",
     "baseline_exists": true,
     "baseline_is_ancestor_of_head": true,
-    "note": "read-only mirror; this generator never writes graph.yaml and does not become an execution authority"
+    "note": "source = snapshot resolved by dev/engineering/current-authority.json (recorded strings); this view never decides authority itself"
+  },
+  "authority_source_binding": {
+    "kind": "authority-pointer",
+    "pointer_file": "dev/engineering/current-authority.json",
+    "snapshot_file": "dev/engineering/authority-snapshots/as20261025r1.json",
+    "snapshot_version": "as20261025r1",
+    "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+    "pointer_digest_verified": true,
+    "view_may_not_reverse_decide_authority": true
   },
   "entries": [
     {
@@ -147,7 +156,7 @@
       "kind": "implementation-pr",
       "title": "Agent Notes directory, format checks, ideas inbox",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -177,7 +186,7 @@
       "kind": "implementation-pr",
       "title": "Glossary, terminology, stable REQ/INV/AC id index",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -209,7 +218,7 @@
       "kind": "implementation-pr",
       "title": "Registry plus derived read-only current-state view",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -247,7 +256,7 @@
       "kind": "implementation-pr",
       "title": "Phase-plan citation interface and Idea-to-Contract rules",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -275,7 +284,7 @@
       "kind": "implementation-pr",
       "title": "docs:probe fast document probe with negative controls",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -305,7 +314,7 @@
       "kind": "implementation-pr",
       "title": "docs:sync complete check and explicit write",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -338,7 +347,7 @@
       "kind": "implementation-pr",
       "title": "Contracts shape vs runtime field-set agreement check (read-only)",
       "decision_status": "proposed",
-      "implementation_status": "implemented_in_branch",
+      "implementation_status": "merged",
       "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
@@ -364,7 +373,7 @@
     }
   ],
   "migration": {
-    "migration_of_legacy_consumers": "not_started_requires_coordination",
-    "legacy_execution_authority": "dev/agent-workflow/graph.yaml#current_contract"
+    "migration_of_legacy_consumers": "switched_at_f44ca07dd_machine_consumers_read_pointer",
+    "legacy_execution_authority": "retired_at_switch_f44ca07dd__now_dev/engineering/current-authority.json_pointer"
   }
 }

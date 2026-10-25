@@ -9,6 +9,13 @@
 #
 # What it checks is the INDEX, not the working tree: the bytes that are about to be committed,
 # not the bytes someone happened to leave on disk ("run the fence after git add", generalised).
+#
+# U2 (G2 switchover): the single editable CURRENT authority is now dev/engineering/current-authority.json
+# (a two-key pointer) resolving to an immutable snapshot under dev/engineering/authority-snapshots/.
+# graph.yaml keeps its YAML-parse fence (it is still orchestration state); the pointer/snapshot get
+# their own fence here so a commit that stages authority bytes cannot land with a pointer that names a
+# missing or unparsable snapshot. The FULL verification (canonical digest, statement semantics, carriers)
+# is the ci-pr-gate state-freshness leg and docs:sync --check; this hook is the pre-commit syntax fence.
 set -u
 
 if git diff --cached --name-only | grep -qx 'dev/agent-workflow/graph.yaml'; then
@@ -19,6 +26,45 @@ if git diff --cached --name-only | grep -qx 'dev/agent-workflow/graph.yaml'; the
     exit 1
   fi
   printf '%s\n' 'pre-commit: graph.yaml parses in the index.'
+fi
+
+# U2 authority fence: when the pointer or any snapshot is staged, the pointer must be a two-key
+# JSON object whose snapshot_version names a snapshot that (a) is present in the index and (b) parses
+# as JSON. A pointer to a snapshot that is not in this commit is refused unless that snapshot already
+# exists on disk (an unchanged published-history file), which the loader resolves independently.
+STAGED=$(git diff --cached --name-only | grep -E '^dev/engineering/(current-authority\.json|authority-snapshots/.*\.json)$' || true)
+if [ -n "$STAGED" ]; then
+  if git show :dev/engineering/current-authority.json >/dev/null 2>&1; then
+    PTR_JSON=$(git show :dev/engineering/current-authority.json)
+  elif [ -f dev/engineering/current-authority.json ]; then
+    PTR_JSON=$(cat dev/engineering/current-authority.json)
+  else
+    printf '%s\n' 'pre-commit REFUSED: a snapshot is staged but no current-authority.json is present in the index or on disk.' >&2
+    exit 1
+  fi
+  if ! printf '%s' "$PTR_JSON" | node -e '
+    const fs = require("node:fs");
+    let raw = ""; process.stdin.on("data", (d) => raw += d); process.stdin.on("end", () => {
+      let p; try { p = JSON.parse(raw); } catch (e) { console.error("pointer JSON unparsable: " + e.message); process.exit(1); }
+      const keys = Object.keys(p).sort().join(",");
+      if (keys !== "content_digest,snapshot_version") { console.error("pointer keys are [" + keys + "], exactly [content_digest,snapshot_version] allowed"); process.exit(1); }
+      if (!/^as[0-9]{8}r[0-9]{1,3}$/.test(String(p.snapshot_version))) { console.error("snapshot_version not asYYYYMMDDrN: " + p.snapshot_version); process.exit(1); }
+      if (!/^sha256:[0-9a-f]{64}$/.test(String(p.content_digest))) { console.error("content_digest not sha256:<64hex>: " + p.content_digest); process.exit(1); }
+      const snap = "dev/engineering/authority-snapshots/" + p.snapshot_version + ".json";
+      let sTxt = null;
+      try { sTxt = require("node:child_process").execSync("git show :" + snap, { stdio: ["ignore", "pipe", "ignore"] }).toString(); }
+      catch { try { sTxt = fs.readFileSync(snap, "utf8"); } catch { console.error("pointer names " + snap + " which is neither staged/indexed nor present on disk"); process.exit(1); } }
+      try { const s = JSON.parse(sTxt); if (s.snapshot_version !== p.snapshot_version) { console.error("snapshot at " + snap + " says version " + s.snapshot_version + ", pointer says " + p.snapshot_version); process.exit(1); } }
+      catch (e) { console.error(snap + " JSON unparsable: " + e.message); process.exit(1); }
+      process.exit(0);
+    });
+  ' ; then
+    printf '%s\n' 'pre-commit REFUSED: the staged current-authority.json pointer is malformed or names an' >&2
+    printf '%s\n' 'unparsable/absent snapshot. Publish via scripts/publish-authority.mjs and switch via' >&2
+    printf '%s\n' 'scripts/switch-authority.mjs, then re-stage. Malformed authority bytes must not commit.' >&2
+    exit 1
+  fi
+  printf '%s\n' 'pre-commit: authority pointer + named snapshot parse in the index.'
 fi
 
 exit 0

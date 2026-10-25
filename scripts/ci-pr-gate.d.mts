@@ -45,3 +45,24 @@ export declare function checkCurrentContract(input: {
   baselineCurrent: (sha: string) => boolean
   driftProvider: (sha: string) => string[] | null
 }): CheckResult
+
+/**
+ * U2 (G2 switchover) POINTER entry — the post-switch default production source. Resolves
+ * dev/engineering/current-authority.json through scripts/current-authority.mjs (frozen
+ * schema + F0 digest + fail closed, never a fallback to graph.yaml or the derived mirror),
+ * grades the SAME core as checkCurrentContract against the real graphText, and enforces the
+ * two-current guard (a reappearing graph `current_contract:` block beside the pointer is RED
+ * by name). Refusals return named findings plus `refused` for test-level assertions.
+ */
+export interface PointerCheckResult extends CheckResult {
+  refused?: string
+}
+export declare function checkPointerCurrentContract(input: {
+  root: string
+  graphText: string
+  readFile: (relPath: string) => string | null
+  fileExists: (relPath: string) => boolean
+  revExists: (sha: string) => boolean
+  baselineCurrent: (sha: string) => boolean
+  driftProvider: (sha: string) => string[] | null
+}): PointerCheckResult

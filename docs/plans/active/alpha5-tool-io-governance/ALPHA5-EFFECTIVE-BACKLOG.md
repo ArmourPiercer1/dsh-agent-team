@@ -1,6 +1,6 @@
 # ALPHA5-EFFECTIVE-BACKLOG — 有效待办唯一当前入口
 
-<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 基线以此字段为准；本文件禁 SHA 副本 -->
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 基线以该指针解析到的快照为准；本文件禁 SHA 副本 -->
 <!-- phase-identity: alpha5-tool-io-governance -->
 
 - 性质：**当前指令**（非快照）。逐项状态=`carried-forward / closed-by<证据> / superseded / needs-revalidation`；逐项标源行，**禁抄旧 OPEN、禁批量关闭**。历史正文仍以 PENDING-GATES.md / CURRENT-STATE / ACCEPTANCE-STATUS / COORDINATION 为正本（只追加不改写）。

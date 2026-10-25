@@ -23,9 +23,11 @@
 
 import { describe, expect, it } from 'vitest'
 import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'node:path'
-import { checkStatePointers, checkCurrentContract } from '../../../scripts/ci-pr-gate.mjs'
+import { dirname, join, resolve } from 'node:path'
+import { checkStatePointers, checkCurrentContract, checkPointerCurrentContract } from '../../../scripts/ci-pr-gate.mjs'
+import { canonicalBytes, snapshotDigest } from '../../../scripts/authority-snapshot.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
@@ -406,5 +408,112 @@ describe('checkCurrentContract — production path (current_contract is the only
     expect(out).toContain('DSH-CI-LEG leg=state-freshness verdict=pass')
     expect(out).toContain('DSH-CI-VERDICT pass')
     expect(r.status).toBe(0)
+  })
+})
+
+// ─────────────────────────── U2 pointer-mode production entry ──────────────────────────
+// After the G2 switchover the production SOURCE of the six values is the snapshot the live
+// pointer resolves to; this block pins that entry with the same fixture philosophy as the
+// legacy block above (in-memory docs, tmp-dir authority files, real loader). The controls
+// here are the MC-10 set: pointer green through the SAME core (all six surfaced), forged
+// snapshot RED, two-current RED, absent pointer RED. Full transaction/restore semantics are
+// pinned in tests/s2-authority/current-authority-pointer.test.mjs (plain-node suite).
+describe('checkPointerCurrentContract — U2 pointer-mode production entry (the post-switch default)', () => {
+  const snapshotSix = {
+    phase_id: 'alpha5-tool-io-governance',
+    active_plan: 'docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md',
+    backlog: 'docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md',
+    matrix: 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md',
+    baseline: BASELINE,
+    baseline_collected: '2026-10-22T07:20:56Z',
+  }
+  const POINTER_REF = 'dev/engineering/current-authority.json'
+  // Post-switch carriers cite the POINTER — the same Q6 law, the moved target (control C5
+  // in the plain-node suite pins that the retired block citation now grades red).
+  const pdocs = (extra = '') =>
+    `<!-- phase-baseline-ref: ${POINTER_REF} -->\n<!-- phase-identity: alpha5-tool-io-governance -->\n# doc\n${extra}`
+  const pmatrix = () => matrixText().replace('dev/agent-workflow/graph.yaml#current_contract', POINTER_REF)
+  const pfiles = () => {
+    const map: Record<string, string | null> = {
+      'AGENTS.md': pdocs(),
+      [snapshotSix.active_plan]: pdocs(),
+      [snapshotSix.backlog]: pdocs(),
+      [snapshotSix.matrix]: pmatrix(),
+      'dev/agent-workflow/evidence/alpha5/x': '',
+    }
+    return { readFile: (p: string) => map[p] ?? null, fileExists: (p: string) => map[p] !== undefined && map[p] !== null }
+  }
+  const POINTER_GRAPH = 'current_phase: "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — EXECUTION (authority = current_contract)"\nblocked: []\n'
+
+  /** Real tmp root with a PUBLISHED snapshot + pointer (same bytes the transaction writes).
+   *  `noPointer: true` publishes the snapshot only — the absent-pointer control. */
+  const ptrRoot = ({ noPointer = false, ...sixOver }: { noPointer?: boolean } & Record<string, unknown> = {}) => {
+    const root = mkdtempSync(join(REPO, '.tmp-a5-ptr-'))
+    try {
+      mkdirSync(join(root, 'dev', 'engineering', 'authority-snapshots'), { recursive: true })
+      const snap: Record<string, unknown> = {
+        schema_version: 1,
+        snapshot_version: 'as20261025r9',
+        supersedes: null,
+        authored_from: `dev/agent-workflow/graph.yaml#current_contract@${'1'.repeat(40)}`,
+        published_by: 'fixture:a5-pointer-test',
+        published_utc: '2026-10-25T10:00:00Z',
+        current_phase_statement: 'ALPHA.5 TOOL-IO-GOVERNANCE PHASE — EXECUTION (authority = current_contract)',
+        current_contract: { ...snapshotSix, ...sixOver },
+      }
+      snap.content_digest = snapshotDigest(snap)
+      writeFileSync(join(root, 'dev/engineering/authority-snapshots/as20261025r9.json'), JSON.stringify(snap, null, 2) + '\n')
+      if (!noPointer) {
+        writeFileSync(join(root, POINTER_REF), Buffer.concat([canonicalBytes({ snapshot_version: 'as20261025r9', content_digest: snap.content_digest as string }), Buffer.from('\n')]))
+      }
+    } catch (e) { rmSync(root, { recursive: true, force: true }); throw e }
+    return root
+  }
+  const gradePtr = (root: string, graphText = POINTER_GRAPH): ContractGrade & { refused?: string } =>
+    checkPointerCurrentContract({
+      root, graphText, ...pfiles(),
+      revExists: () => true, baselineCurrent: () => true, driftProvider: () => [],
+    }) as ContractGrade & { refused?: string }
+
+  it('P1 the pointer tree grades green through the SAME core, with all six values and the source recorded', () => {
+    const root = ptrRoot()
+    try {
+      const r = gradePtr(root)
+      expect(r.findings).toEqual([])
+      expect(r.info.contract).toEqual({ ...snapshotSix })
+      const src = r.info.authority_source as { kind: string; content_digest: string }
+      expect(src.kind).toBe('pointer')
+      expect(String(src.content_digest)).toMatch(/^sha256:[0-9a-f]{64}$/)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it('N1 forged snapshot bytes after publish → named RED, never a fallback to any other source', () => {
+    const root = ptrRoot()
+    try {
+      const f = join(root, 'dev/engineering/authority-snapshots/as20261025r9.json')
+      const snap = JSON.parse(readFileSync(f, 'utf8'))
+      snap.current_contract.baseline = '8'.repeat(40)
+      writeFileSync(f, JSON.stringify(snap, null, 2) + '\n')
+      const r = gradePtr(root)
+      expect(r.findings.some((x) => x.startsWith('AUTHORITY_POINTER_') && x.includes('never re-derived from graph.yaml'))).toBe(true)
+      expect(r.info.contract).toBeUndefined()
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it('N2 two-current: a current_contract block reappearing beside the pointer is RED by name', () => {
+    const root = ptrRoot()
+    try {
+      const r = gradePtr(root, `${POINTER_GRAPH}current_contract:\n  phase_id: alpha5-tool-io-governance\n  baseline: ${BASELINE}\n`)
+      expect(r.refused).toBe('TWO_CURRENT_AUTHORITY')
+      expect(r.findings[0]).toContain('TWO_CURRENT_AUTHORITY')
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it('N3 absent pointer + absent block = RED: the pointer entry has no graph fallback', () => {
+    const root = ptrRoot({ noPointer: true })
+    try {
+      const r = gradePtr(root)
+      expect(r.findings.some((x) => x.startsWith('AUTHORITY_POINTER_ABSENT'))).toBe(true)
+    } finally { rmSync(root, { recursive: true, force: true }) }
   })
 })
