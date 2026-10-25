@@ -37,6 +37,7 @@
  */
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
+import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
 
 function appendLedgerRow(ledgerPath, row) {
   if (typeof ledgerPath !== 'string' || ledgerPath.length === 0) return
@@ -49,26 +50,16 @@ function appendLedgerRow(ledgerPath, row) {
   }
 }
 
-/**
- * The proven identity law, injected (same algebra as tool-dispatch's
- * `definitionIdentityOf`: WeakMap over the resolved object, no stringify, no
- * clock). PR1 owns a local minter because the shadow must not import the
- * center file it will later replace; the REBIND to the shared minter is part
- * of the PR2 wiring.
+/*
+ * THE SHARED MINTER (U6 PR2 rebind, the PR1-disclosed plan): the shadow's
+ * identity answer IS tool-dispatch's `definitionIdentityOf` — the ONE minter
+ * the Guard binds through (pb §6). PR1 shipped a local `gc-def#N` stand-in
+ * precisely so the shadow's audit identities could never be mistaken for
+ * authority; PR2's kernel mount makes the comparison REAL (the read table
+ * binds `def#N` from the same minter), so the shadow now audits the SAME
+ * identities the Guard sees — an audit that lies about identity is no audit.
+ * The row still holds no authority: it imports a pure function, not state.
  */
-function createIdentityMinter() {
-  const minted = new WeakMap()
-  let counter = 0
-  return (target) => {
-    if (target === null || (typeof target !== 'object' && typeof target !== 'function')) return null
-    const seen = minted.get(target)
-    if (seen !== undefined) return seen
-    counter += 1
-    const mint = `gc-def#${String(counter)}`
-    minted.set(target, mint)
-    return mint
-  }
-}
 
 /**
  * Install one shadow assembly for one agent scope.
@@ -103,7 +94,7 @@ export async function installCenterShadowRow({ agentCtx, scopeKey, ledgerPath, o
     kernelManifest: { capabilities: {} },
     tools: agentCtx?.tools,
     on: typeof agentCtx?.on === 'function' ? (event, listener) => agentCtx.on(event, listener) : undefined,
-    identityOf: createIdentityMinter(),
+    identityOf: definitionIdentityOf,
   })
   const published = kernel.publish()
   record({ leg: 'shadow-installed', published: published.ok === true, state: kernel.state(), generation: registry.generation() })

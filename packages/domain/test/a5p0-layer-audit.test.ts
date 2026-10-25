@@ -74,6 +74,10 @@ describe('the tool-governance lane audit', () => {
       // LADDER edge is booked on the a3p3 rows, not here.
       'runtime/operation-permission/pa-control-bridge.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
+      // U6 PR2 (the PR1-disclosed minter rebind): the shadow row consumes
+      // the ONE §6 feed face (`definitionIdentityOf`) so its audit identities
+      // are the identities the Guard binds; pure function, zero authority.
+      'runtime/src/plugin/live/center-shadow-row.mjs',
       // A5-M1's plane-effect-backends booking RETIRED at U6 PR2: its one
       // lane edge (`parseRequestedEffectSet`, the READ row's effect
       // vocabulary) MOVED with the read executor to

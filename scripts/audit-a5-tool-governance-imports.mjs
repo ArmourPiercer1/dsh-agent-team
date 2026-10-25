@@ -72,6 +72,14 @@ const PR1_CONSUMERS = Object.freeze([
   // (`definitionIdentityOf` from tool-dispatch) to mint placement-binding
   // rows for the Guard — the #313 入参面's first production caller.
   'runtime/src/plugin/live/team-tool-plane.mjs',
+  // U6 PR2 (the PR1-disclosed minter rebind): the SHADOW row now consumes
+  // the SAME §6 feed face — `definitionIdentityOf` — so its audit identities
+  // are the identities the Guard binds (PR1's local `gc-def#N` stand-in was
+  // deliberate inertness; with the read kernel mounted, a shadow auditing a
+  // DIFFERENT identity than the Guard sees would be a lying audit). One
+  // pure function imported, zero state, zero authority (the row still only
+  // records and takes next()).
+  'runtime/src/plugin/live/center-shadow-row.mjs',
   // alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879; review
   // provenance 独审 PASS — the round's 独审 id 7f0e5d6e, booked by the
   // integration coordinator on the #334 census red): the PTC fs escalation
