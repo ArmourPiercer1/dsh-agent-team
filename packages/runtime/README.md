@@ -73,7 +73,7 @@ barrels were read, `composition-smoke` was not executed. Sibling packages are ad
 | production entry (mounted) | `src/plugin/host.ts` → `dist/packages/runtime/src/plugin/host.js` |
 | declared package entry | `src/index.ts` (marker only — see layout fact 1) |
 | plugin surface | `src/plugin/`, `src/plugin/live/` |
-| lane facades | `<lane>/index.ts` for each of the 30 lanes |
+| lane facades | `<lane>/index.ts` for each of the 34 lanes |
 | tests | `test/` — 422 `*.test.ts` plus ~40 helpers, flat; families `a2*`, `a3*`, `a4*`, `a5*`, `p5t*`…`p8t*`, `t12*`, `control-*`, `permission-overlay*`, `recovery-*`, `s6t*` |
 | bounded harnesses | `member-residency/harness/`, `root-binding/harness/` (`bounded-run.mjs`, `mini-mcp.mjs`, `*.regression.test.mjs`) |
 | lane-local tests / docs | `controlled-fs/test/` (+ its own README), `member-residency/README.md` |

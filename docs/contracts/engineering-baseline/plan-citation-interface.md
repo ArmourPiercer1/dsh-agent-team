@@ -37,7 +37,7 @@ evidence_root: dev/agent-workflow/evidence/alpha5/
 | --- | --- | --- |
 | every cited path exists | `PLAN_CITATION_MISSING` | a dead citation is how a plan stops being checkable |
 | `baseline` resolves as a commit in this repository | `PLAN_CITATION_UNKNOWN_COMMIT` | the EB0-1 pattern was a "current" SHA nobody could open |
-| `phase_id` equals `graph.yaml#current_contract.phase_id` | `PLAN_CITATION_CONFLICT` | two editable "current" states is the drift this baseline removes (INV-EB-0012 mirror; the checker reads the mirror, it never writes the graph) |
+| `phase_id` equals `graph.yaml#current_contract.phase_id` | `PLAN_CITATION_CONFLICT` | two editable "current" states is the drift this baseline removes (the arrangement REQ-EB-0003 describes; the checker reads the mirror, it never writes the graph. The former "INV-EB-0012" cite is a dangling id — ERRATA-20261025 keeps it citation-to-correct and creates no new invariant; correcting it names no approved id that does not exist) |
 | `phase_id` present | `PLAN_CITATION_INCOMPLETE` | a block that identifies no phase cannot be reconciled with anything |
 
 `docs:sync --check` scans every non-historical `docs/plans/**` document and reports

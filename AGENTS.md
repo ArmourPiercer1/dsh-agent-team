@@ -1,5 +1,5 @@
 # AGENTS.md — dsh-agent-team 仓库代理规则
-<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 当前基线唯一权威=该块 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
 <!-- phase-identity: alpha5-tool-io-governance -->
 
 
@@ -17,9 +17,9 @@
 
 ## 文档权威序
 
-upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划 → `docs/ROUTER_RULES.md`（执行协议；其 **§0 = 当期计划优先**裁决）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
+upstream 公开契约 → `docs/plans/finished/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，2026-10-07 归档整理时随 G8 审计报告与 P8-S 收束计划一并移入 `docs/plans/finished/`（tracked，@ b5c8d1dab），冻结基线地位不变；路径引用以本行为准）→ `docs/plans/active/` 当期执行计划 → `docs/ROUTER_RULES.md`（执行协议；其 **§0 = 当期计划优先**裁决）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
 
-**当前阶段（2026-10-22）**：**Alpha.5 工具 IO 治理阶段**（实施/生产集成与验收；release BLOCKED = 全工具审批未达，见矩阵）。权威指针唯一 = `dev/agent-workflow/graph.yaml` `current_contract`（本文件不保留 SHA 副本）。以下为前一阶段 **Alpha.4 硬治理阶段（2026-10-07，历史记录）**：当期计划集 = `docs/plans/active/alpha4-permission-governance/`（`ADR-alpha4-hard-governance.md` + `alpha4-permission-governance-spec.md` + `alpha4-implementation-plan.md`，A4-PR0…A4-PR7 串行（PR0 = 耐久治理提案基座，无产品行为变更），仅 PR4∥PR5 在 PR3 接口冻结后可并行）。**该计划自带的执行协议优先于 ROUTER_RULES 的过时条款**（用户 2026-10-07 明确裁决：模型路由解绑、每 Gate 三 reviewer 与每任务 ≤3 次上限由计划的 PR 级审查循环取代；见 `docs/ROUTER_RULES.md` §0）。CORE PATCH BUDGET = 0 与红线不受该裁决影响。实现机制按 superpowers 技能族执行（`subagent-driven-development` / `executing-plans` / `dispatching-parallel-agents` / `test-driven-development` / `using-git-worktrees` / `requesting-code-review` / `receiving-code-review` / `verification-before-completion`，2026-10-07 装入全局技能根 `$DSH_HOME/skills`）。
+**当前阶段（2026-10-22）**：**Alpha.5 工具 IO 治理阶段**（实施/生产集成与验收；release BLOCKED = 全工具审批未达，见矩阵）。**当前合同六字段（phase_id / active_plan / backlog / matrix / baseline / baseline_collected）的唯一可编辑当前权威 = `dev/engineering/current-authority.json`**——两键指针 `{snapshot_version, content_digest}`，解析到 `dev/engineering/authority-snapshots/<version>.json` 不可变快照；读取唯一入口 `scripts/current-authority.mjs`（冻结 schema + F0 摘要校验，失败即关闭，绝不回退 graph.yaml 或派生视图），写指针唯一入口 `scripts/switch-authority.mjs`（旧指针字节前置条件 + 原子写 + 失败精确恢复）。原 `dev/agent-workflow/graph.yaml#current_contract` 块已于 2026-10-25 G2 switchover（同 commit set 移除）退役为历史引用；指针与该块并存 = TWO_CURRENT_AUTHORITY，各 gate 点名红；回滚 = `git revert` switch commit set（详见 `dev/engineering/README.md`）。本文件不保留 SHA 副本。**当期唯一实施计划 = PR #364（`docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md`）；用户 2026-10-25 裁决：PR #364 合并 = 唯一实现计划正本。**以下为前一阶段 **Alpha.4 硬治理阶段（2026-10-07，历史记录）**：当期计划集 = `docs/plans/active/alpha4-permission-governance/`（`ADR-alpha4-hard-governance.md` + `alpha4-permission-governance-spec.md` + `alpha4-implementation-plan.md`，A4-PR0…A4-PR7 串行（PR0 = 耐久治理提案基座，无产品行为变更），仅 PR4∥PR5 在 PR3 接口冻结后可并行）。**该计划自带的执行协议优先于 ROUTER_RULES 的过时条款**（用户 2026-10-07 明确裁决：模型路由解绑、每 Gate 三 reviewer 与每任务 ≤3 次上限由计划的 PR 级审查循环取代；见 `docs/ROUTER_RULES.md` §0）。CORE PATCH BUDGET = 0 与红线不受该裁决影响。实现机制按 superpowers 技能族执行（`subagent-driven-development` / `executing-plans` / `dispatching-parallel-agents` / `test-driven-development` / `using-git-worktrees` / `requesting-code-review` / `receiving-code-review` / `verification-before-completion`，2026-10-07 装入全局技能根 `$DSH_HOME/skills`）。
 
 **逐轮历史指针不再写在本文件**：原先在此行逐轮堆积的 current 指针（T12 关闭 / P9 UI GO / PR #26–#35 / pre-alpha3 收口 F.1–F.6 / PR #37–#56 / test-infra #51 / **Alpha.3 权限面 PR #57–#61** / **DSH 0.2.0-rc.2 宿主升级轮 PR #62**）已停止在此维护；逐轮事实唯一来源 = `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加）+ `dev/agent-workflow/graph.yaml`，快照见 `docs/STATUS.md`；已完成计划归档于 `docs/plans/finished/`。
 
@@ -29,15 +29,16 @@ upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Ar
 | --- | --- |
 | `docs/plans/active/` | 当期执行计划（**2026-10-07 起纳入 git 跟踪**；当前 = `alpha5-tool-io-governance/` 三份当前态文件：current-execution-plan.md / ALPHA5-EFFECTIVE-BACKLOG.md / TOOL-CAPABILITY-MATRIX-9b2.md；用户/主 Agent 产物，禁 worker 改动；阶段完成即移入 `finished/`） |
 | `docs/plans/memo/` | 阶段设计/选型 memo 集（tracked）：现期 = `alpha5-tool-io-governance/`（S0 选型/ADR/实施计划 = 设计需求历史正本，各文件顶部 dated banner；当前态见 `active/alpha5-tool-io-governance/` 入口） |
-| `docs/plans/finished/` | 已完成/已关闭计划与指南归档（tracked，2026-10-07 起；只追加历史，不再作为当期需求来源） |
+| `docs/plans/finished/` | 已完成/已关闭计划与指南归档（tracked，2026-10-07 起；只追加历史，不再作为当期需求来源。**20260829 冻结四份 + G8 审计报告 + P8-S 收束计划现居此目录**——只读冻结基线，四份冻结文档仍为语义唯一权威） |
 | `docs/plans/issue-fix/` | 单点缺陷修复计划与复盘（tracked，2026-10-07 起） |
 | `docs/plans/third-party/` | 第三方外部建议文档（tracked，2026-10-07 起；非需求来源，仅参考） |
-| `docs/plans/paused/` | 20260829 冻结四份 + G8 审计报告 + P8-S 收束计划（**2026-10-07 起纳入 git 跟踪**；只读冻结基线，四份冻结文档仍为语义唯一权威） |
+| `docs/plans/paused/` | 历史暂停计划目录（tracked；现仅存 alpha.1 时代四份文件。20260829 冻结四份 + G8 审计报告 + P8-S 收束计划已于 2026-10-07 归档移入 `docs/plans/finished/`，只读冻结基线语义不变） |
 | `docs/ROUTER_RULES.md` / `docs/TEST_METHODS.md` | 执行协议 / 测试约束（用户裁决可改，改动需记录） |
 | `docs/STATUS.md` | 当前状态总览（living 快照，非权威源；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`） |
 | `docs/contracts/` | contracts v1 冻结确认记录（P3-T6） |
 | `docs/migration/` | legacy 行为清单、reuse map |
-| `dev/agent-workflow/` | 编排状态 `graph.yaml`、只追加日志 `SESSION_ROUTER_LOG.md`、证据 `evidence/<task>/` |
+| `dev/agent-workflow/` | 编排状态 `graph.yaml`（current_phase / state_pointers / ready / blocked / 轮次记录；其 `current_contract` 块已于 2026-10-25 switchover 退役，见文档权威序）、只追加日志 `SESSION_ROUTER_LOG.md`、证据 `evidence/<task>/` |
+| `dev/engineering/` | **当前合同六字段唯一权威 = `current-authority.json` 指针 → `authority-snapshots/<version>.json` 不可变快照**（publisher 唯一写入快照，switch-authority 唯一移动指针，current-authority 唯一读取）；`registry.yaml` 决策登记 + `current-state.json` 生成视图（只读镜像，不得反推权威）；详见其 `README.md` |
 | `references/deepseek-harness/` | 冻结 legacy fork 参考（只读；冻结点 = 分支 `feat/team-vnext-integration-20260829` tip 与 tag `legacy-agent-team-pre-vnext`，均锁 `a3ab319927...`（2026-09-05 复核未移动；2026-09-12 本环境再复核未移动；2026-09-17 rc2-repair 轮再复核未移动；2026-09-24 推送 stable-2 轮 ls-remote 再复核未移动；2026-09-28 文档系统对齐轮本地 tag peel + 远端 ls-remote 再复核未移动）；工作树 HEAD 现于 `stable-1-0.1.5-rc.2 @ fb2c4b9e69`（0.1.5-rc.2 官方发布点，2026-09-17 由用户切至本轮 rc.2 契约参考基线；此前本环境为 `master @ c291e7961a`（0.1.5 sync 迁移状态）；原 Windows 机为 `cd5ef814...` 基线对比检出）；**2026-09-24 用户指令**：新建分支 `stable-2-0.1.7-rc.1` @ `46a7f68b09`（upstream `deepseek-ai/deepseek-harness` 的 `dsh-v0.1.7-rc.1` 官方发布点，PR #5073；未 checkout，工作树 HEAD 不变）并连同 23 个官方 `dsh-v*` release tag 推送 origin（一次性授权，零 force-push；evidence `dev/agent-workflow/evidence/stable2-0.1.7-rc.1-sync/`）；禁止任何 vNext 开发；冻结锚点**不得移动**。**2026-10-03 复核（0.2.0-rc.2 宿主升级轮）**：`references/deepseek-harness` 在本环境不存在（`references/` 为 gitignored，环境迁移缺口，STATUS 2026-10-01 行已登记）→ 改以远端复核：`refs/heads/feat/team-vnext-integration-20260829` = `a3ab319927…` 且 tag `legacy-agent-team-pre-vnext` peel = 同 SHA，**未移动**；0.2.0-rc.2 的宿主源由**只读共享 baseline** `/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`（分支 `stable-3-0.2.0-rc.2` @ `639ed01539`，porcelain 空）承载，各 worktree 各自 `clone --local --no-hardlinks` 出独立 pristine 运行时，共享 baseline 从不被写入） |
 | `tests/` | 测试基础设施（2026-09-12 标准化，test-infra-standardization）：`characterization/`（P2 harness）、`mock/`（mock model 部署 + 证据）、`kits/`（可复用 kit 归位，tracked）、`paths.mjs`（**测试路径、宿主版本与基线 pin 唯一来源**；kit 一律从此取基线，禁硬编码代次）、`deepseek-harness-test-use/`（pristine upstream 测试运行时 checkout，**gitignored**，自身 git 仓，detached @ `639ed015397290b3745d163aafe02ffee4aa3f84` = 0.2.0-rc.2 发布点（2026-10-03 起，宿主升级轮；此前 46a7f68b09 = 0.1.7-rc.1（2026-09-24 … 2026-10-03）、fb2c4b9e69 = 0.1.5-rc.2（2026-09-17 起）；0.1.2 不再支持）；唯一允许的运行时源码；基线代差注记与 home 协议见 TEST_METHODS.md §4.2/§7）、`homes/`（一切 DSH_HOME 世界，**gitignored**）；旧 `references/.dsh-test*` 世界不迁移 |
 | `.worktrees/` | 任务 worktree（gitignored；一个任务一个） |
@@ -54,6 +55,6 @@ upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Ar
 
 ## 状态与恢复
 
-- 编排状态唯一来源：`dev/agent-workflow/graph.yaml`（不依赖会话记忆）；执行日志只追加：`dev/agent-workflow/SESSION_ROUTER_LOG.md`。
+- 编排状态（阶段语句、恢复指针、ready/blocked、轮次记录）唯一来源：`dev/agent-workflow/graph.yaml`（不依赖会话记忆）；当前合同六字段唯一权威：`dev/engineering/current-authority.json` 指针解析到的不可变快照（读取经 `scripts/current-authority.mjs`，失败即关闭，不回退）；执行日志只追加：`dev/agent-workflow/SESSION_ROUTER_LOG.md`。
 - 会话恢复后：先读 graph.yaml 定位 current_phase 与 ready 任务，再读 SESSION_ROUTER_LOG.md 末尾若干条目，然后继续；不要重建已完成的工作。
 - 文档系统（`AGENTS.md` / `README.md` / `docs/STATUS.md` / `docs/ROUTER_RULES.md` / `docs/TEST_METHODS.md`）是快照而非权威：与 graph.yaml + 日志最新条目冲突时，以 graph.yaml + 日志为准，并在当轮修正文档（R123 文档对齐先例）。

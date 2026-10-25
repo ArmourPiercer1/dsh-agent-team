@@ -113,21 +113,40 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Precheck — the graph's two git pins are present and HEAD-ancestors
+      - name: Precheck — the authority's two git pins are present and HEAD-ancestors
         # Why this step exists (root ruling, 2026-10-22): the census grades claims ABOUT history —
         # state_pointers.master_sha (the round-58 pointer) must be reachable and an ancestor, and
-        # current_contract.baseline likewise. The fetch-depth fix above is what makes that true;
-        # this step is what makes it FAIL LOUDLY AND BY NAME, before minutes of provisioning and
-        # build, if the checkout ever again arrives too shallow for the claim. Local git only:
+        # the current contract's baseline likewise. The fetch-depth fix above is what makes that
+        # true; this step is what makes it FAIL LOUDLY AND BY NAME, before minutes of provisioning
+        # and build, if the checkout ever again arrives too shallow for the claim. Local git only:
         # NO network top-up fetch — a precheck that silently deepens the clone would grade a tree
-        # Actions never handed the job. Both values are READ from graph.yaml (read, never copied —
-        # same rule as the host pin up there), so this step cannot drift from the contract.
+        # Actions never handed the job. Both values are READ, never copied (same rule as the host
+        # pin up there), so this step cannot drift from the contract.
+        # U2 (G2 switchover) SOURCE LAW for the baseline pin (MC-08):
+        #   pointer present  → the baseline comes from the POINTER-RESOLVED SNAPSHOT through the
+        #     shared loader (scripts/current-authority.mjs --print-baseline: frozen schema + F0
+        #     digest + fail closed, and it goes RED on the two-current state). The old awk over
+        #     the graph's current_contract block is GONE — that block was retired at the switch,
+        #     and a second regex reader over it would be a second current.
+        #   pointer absent   → pre-switch tree, or a tree that reverted the switch commit set:
+        #     the legacy awk over graph.yaml keeps the rollback drill green. Exactly one reader
+        #     is operative in any given tree; this branch never mixes sources.
         shell: bash
         run: |
           set -euo pipefail
           MASTER_SHA=$(awk '/^state_pointers:/{f=1} f&&/master_sha:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
-          BASELINE=$(awk '/^current_contract:/{f=1;next} f&&/^[^[:space:]#]/{f=0} f&&/^[[:space:]]*baseline:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
-          for pair in "state_pointers.master_sha=$MASTER_SHA" "current_contract.baseline=$BASELINE"; do
+          if [ -e dev/engineering/current-authority.json ]; then
+            if ! PINOUT=$(node scripts/current-authority.mjs --print-baseline --root . 2>&1); then
+              echo "::error::AUTHORITY PIN REFUSED: the live pointer failed to resolve a verified baseline — ${PINOUT}"; exit 1
+            fi
+            BASELINE=$(printf '%s' "$PINOUT" | tr -d '[:space:]')
+            if [ -z "$BASELINE" ]; then echo "::error::AUTHORITY PIN REFUSED: the pointer resolver printed an empty baseline"; exit 1; fi
+            echo "baseline pin read from the pointer-resolved snapshot"
+          else
+            BASELINE=$(awk '/^current_contract:/{f=1;next} f&&/^[^[:space:]#]/{f=0} f&&/^[[:space:]]*baseline:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
+            echo "baseline pin read from graph.yaml#current_contract (pre-switch/rolled-back tree)"
+          fi
+          for pair in "state_pointers.master_sha=$MASTER_SHA" "authority.baseline=$BASELINE"; do
             NAME=${pair%%=*}
             OBJ=${pair#*=}
             if [ -z "$OBJ" ]; then

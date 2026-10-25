@@ -1,12 +1,25 @@
 # dev/engineering/registry.yaml — hand-maintained decisions only.
 # Generated view: current-state.json (do not edit that file here or anywhere).
-# Statuses describe THIS branch's facts as of 2026-10-23. Nothing here claims
-# product delivery: nothing in this set is merged to master or released.
+# Statuses describe branch facts as of 2026-10-23, with the U2 authority fields re-anchored
+# 2026-10-25. EB-ADR-0003 (EB1-D) merge status = merged via PR #362 @ 4aaaa7b2 (merge fact only:
+# verification stays C1 local, adoption not asserted; see the EB1-D entry below). Nothing here
+# claims product delivery or release.
 
 schema_version: 1
 generated_view: dev/engineering/current-state.json
-legacy_execution_authority: dev/agent-workflow/graph.yaml#current_contract
-migration_of_legacy_consumers: not_started_requires_coordination
+# RETIRED AT THE G2 SWITCHOVER (2026-10-25, U2). The block this field named was removed from
+# graph.yaml by switch commit f44ca07dd23a62ee67d891afd02d1e1413dd0f3a (snapshot as20261025r1,
+# byte-identical six fields, carried by the same commit set). Current authority now = the pointer
+# dev/engineering/current-authority.json resolving to an immutable snapshot under
+# dev/engineering/authority-snapshots/; read it ONLY through scripts/current-authority.mjs.
+# Rollback = git revert of the switch commit set, never re-adding the block beside the pointer.
+legacy_execution_authority: retired_at_switch_f44ca07dd__now_dev/engineering/current-authority.json_pointer
+# Machine consumers MC-01..MC-10 and MC-13..MC-15 read the pointer-resolved snapshot as of the
+# switch commit (ci-pr-gate state-freshness, gen-current-state + mirror checks, docs-probe,
+# docs-sync, census-runtime precheck pin, pre-commit fence, a5 testkit controls); explicit
+# --authority-candidate flags remain an optional override. MC-11/MC-12 are test fixtures that
+# construct their own roots and need no switch.
+migration_of_legacy_consumers: switched_at_f44ca07dd_machine_consumers_read_pointer
 
 entries:
   - id: EB0-1
@@ -63,7 +76,8 @@ entries:
     kind: implementation-pr
     title: Agent Notes directory, format checks, ideas inbox
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc Owner]
@@ -73,7 +87,8 @@ entries:
     kind: implementation-pr
     title: Glossary, terminology, stable REQ/INV/AC id index
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc/Contract Owner]
@@ -83,7 +98,8 @@ entries:
     kind: implementation-pr
     title: Registry plus derived read-only current-state view
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Tooling Owner]
@@ -101,7 +117,8 @@ entries:
     kind: implementation-pr
     title: Phase-plan citation interface and Idea-to-Contract rules
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Workflow Owner]
@@ -111,7 +128,8 @@ entries:
     kind: implementation-pr
     title: docs:probe fast document probe with negative controls
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc/Tooling Owner]
@@ -121,7 +139,8 @@ entries:
     kind: implementation-pr
     title: docs:sync complete check and explicit write
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     owners: [Doc/Contract Owner]
@@ -130,7 +149,7 @@ entries:
     # Sub-item bound here: the write surface now carries a second derivative
     # (docs/contracts/engineering-baseline/INDEX.md) through the same boundary helper,
     # with the exact-file rule ahead of the area rule and a hard-link target refused
-    # (run-9). C1 = Adapter-local level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree), no C2/C3 claimed; not merged, not released.
+    # (run-9). C1 = Adapter-local level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree), no C2/C3 claimed; merged via PR #362 at 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (merge fact only — verification stays C1 local, adoption not asserted), not released.
     # Narrow review pending as of the 2026-10-23 21:38 instruction.
     verified_tier: C1
     verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
@@ -138,7 +157,8 @@ entries:
     kind: implementation-pr
     title: Contracts shape vs runtime field-set agreement check (read-only)
     decision_status: proposed
-    implementation_status: implemented_in_branch
+    implementation_status: merged
+    merged_commit: 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
     verification_status: verified_local
     release_status: not_released
     # No catalog REQ covers this card; refs cite the code and its matrix instead of

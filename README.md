@@ -31,8 +31,7 @@ must not be created without a separate architecture decision.
 
 ## vNext object model (summary)
 
-Details live in the frozen Detailed Architecture doc (`docs/plans/paused/`, local,
-gitignored) — this section is a pointer summary, not the authority:
+Details live in the frozen Detailed Architecture doc (`docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md`, tracked) — this section is a pointer summary, not the authority:
 
 - A **TeamBlueprint** must contain **exactly one complete LeaderTemplate** (plus member
   templates / policy / quota definitions); a blueprint that only defines teammates is
@@ -190,12 +189,16 @@ gitignored) — this section is a pointer summary, not the authority:
   §1/§4.2). History: 0.1.2-rc.1 @ `76fda72979` (2026-09-04, R122) →
   0.1.5-rc.2 @ `fb2c4b9e` (2026-09-17, rc2-repair) → 0.1.7-rc.1 (2026-09-24) →
   0.2.0-rc.2 @ `639ed01539` (2026-10-03).
-- **CURRENT navigation (2026-10-23, this checkout, EB-E0/E1 docs line):** the only authority
-  for current state is `dev/agent-workflow/graph.yaml#current_contract`. It records phase
-  `alpha5-tool-io-governance`, with `active_plan` / `backlog` / `matrix` under
-  `docs/plans/active/alpha5-tool-io-governance/` and
-  `baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912`
-  (`baseline_collected "2026-10-22T07:20:56Z"`). That baseline was checked here rather than
+- **CURRENT navigation (2026-10-23 EB-E0/E1 docs line; authority re-anchored 2026-10-25):** the
+  only authority for the current contract's six fields is the pointer
+  `dev/engineering/current-authority.json`, resolving to an immutable snapshot under
+  `dev/engineering/authority-snapshots/`. It records phase `alpha5-tool-io-governance`, with
+  `active_plan` / `backlog` / `matrix` under `docs/plans/active/alpha5-tool-io-governance/` and
+  `baseline` / `baseline_collected` read live from the pointer-resolved snapshot at check time
+  (values deliberately not copied here: the pointer owns them; a copy here would be a second
+  baseline). `dev/agent-workflow/graph.yaml` remains the source of orchestration state
+  (current_phase / state_pointers / ready / blocked); its old `current_contract` block was
+  retired at the 2026-10-25 switch. Read the authority through `scripts/current-authority.mjs`. That baseline was checked here rather than
   copied: on `task/eb-e0-e1-doc-baseline-20261029`,
   `git merge-base --is-ancestor 9b2ee57bc5afd30e89855e09d1769d2e5ec83912 HEAD` returned RC=0.
   Reading order for a new agent: those three current-state plan files → `AGENTS.md` →
@@ -210,22 +213,23 @@ gitignored) — this section is a pointer summary, not the authority:
   draft, unmerged at head `8f84a7845944964ef17e167aebfde8e2d9617570`** (state verified
   2026-10-23 23:03) — that PR is where the C1/C2/C3 acceptance-level definitions are written, so
   a reader who wants them reads them there. Boundary, because a pointer that cannot be followed
-  is worse than a missing one: the four 20260829 frozen documents (Architecture / UI /
-  Development Plan / Task Decomposition) **were not found in the commit history visible from this
-  checkout** — that is the extent of what was searched: `git log --all --diff-filter=A
-  --name-only` over `docs/plans/` shows only alpha.1-era files under `docs/plans/paused/`, and
-  the directory itself is tracked and not ignored (it holds four alpha.1-era files), and the two
-  AGENTS.md revisions here disagree about whether it should be — reported, not resolved; nothing
-  about refs elsewhere is claimed. `TaskDoc §11` / `Development Plan §17.2` style
-  citations in code and package docs are therefore historical references that no reader in this
-  checkout can resolve; nothing has been reconstructed, and none should be invented here.
+  is worse than a missing one: an earlier revision of this block claimed the four 20260829
+  frozen documents (Architecture / UI / Development Plan / Task Decomposition) "were not found in
+  the commit history visible from this checkout". That claim was **wrong and is corrected here**:
+  the four frozen documents are tracked at `docs/plans/finished/` (moved there from
+  `docs/plans/paused/` in the 2026-10-07 archival reorganization @ `b5c8d1dab`), and
+  `docs/plans/paused/` now holds only alpha.1-era files. The earlier "not found" reading searched
+  the pre-move `docs/plans/paused/` path and mistook its alpha.1-era contents for the whole set.
+  `TaskDoc §11` / `Development Plan §17.2` style citations therefore resolve to
+  `docs/plans/finished/DSH_Agent_Team_vNext_*_20260829.md`. Nothing is reconstructed here — only
+  the path is fixed to match what git already tracks.
 
 - Push: origin/master updated through 2026-10-01 under per-round one-shot user
   push authorizations — PRs #16–#21 and #23–#35 merged, then the pre-alpha3
   series PRs #37–#45 merged (latest: PR #45 (PR-F) merged @ `365f635c`,
   2026-09-30); **PR #22 CLOSED as superseded (2026-09-30, plan §8.6)**.
   2026-10-02 snapshot — **not CURRENT as of 2026-10-23; kept as history** — origin/master was `3262fbc88cecf5b389e4ed83e3c5d5613779f106` (2026-10-01 23:13:34Z = PR #56 guarded SQUASH @ approved head `284169779ec3be4a113fc2c4c47d7be9ff742ee1`; tree `f889abbb…` == pre-merge simulation; 36 files == reviewed diff; frozen blobs css `35d884486d18…` / client-bundle `38b136f8fc76…` byte-equal to the reviewed head) ← `57c044e3a91be24e8b119ded29cfc890a273eae1` (23:13:05Z = PR #54 guarded SQUASH @ `ac603c28c5ce77ce5830b8bac27be1626ad319e4` = reviewed source `034b7418…` + evidence-only import [non-evidence diff = 0]; tree `40ad8743…` == simulation; 63 files == reviewed diff) ← `d8953d6a…` (#57–#59) ← `1385f1ee…` (#53). Post-merge `check-artifacts-committed` = **OK 1392 files, real rc=0 (pipefail)**. **Browser lane CLOSED (2026-10-02): stage-2 LIVE run-7** (dedicated env session, MEMBER_MODE=1, real member perspective `session-team-child-6a296fb…`): observer **40/40**; kit **VERDICT PASS 16/16 criteria (59 PASS / 0 FAIL)**; runner=0 kit=0 paired=0; signals=0; runtime-restore proof captured; tested carrier `e63da125…`/tree `da83b95b…` is **local acceptance-carrier environment evidence, never pushed — not a remote-review object**; raw kept at carrier `dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27/`; tracked import = `ac603c28` (semantics in its `IMPORT-MANIFEST.md`). Semantics kept exact: observer only observed and **never clicked Allow/Deny** (`decisions[]` untouched); the marker = observation claim, **never HumanAllow**; the scripted `team.resolveControl` = a separate pre-planned kit step executed AFTER marker verification. Recorded constraints kept: DoD-20 **E4 remains historical unit/E2E — no new browser run of E4 and none claimed**; full-suite pre-existing baseline failures stand (not re-run this round; **no all-green claim**); (A) legacy control requests lacking payload+digest fields = accepted limitation; (B) backend-frozen-context hardening = deferred (no normally-reachable trigger), non-blocking. **DoD #20 (b) real-browser-rendering dimension = CLOSED** ((a) closed via landlock acceptance; (c) PR-B gate-meaning closed with #53). PR #52 (this branch) = **no merge authority** — this closure delta awaits parent doc review; PR #60 = **no merge authority** (sole writer implementing the ruled fix batch). Superseded 14:30Z snapshot, kept as history: origin/master was `1385f1ee060830bb0f550860d4bd81901c319063` (2026-10-01 14:30:21Z = PR #53 guarded SQUASH @ approved head `4200c4b6`, tree-identity verified; test-infra only); browser lane then: Chromium-1228 + headless-shell present under `tests/homes/.playwright-browsers/`; two sandbox:true probes failed (observed: AppArmor unprivileged_userns DENIED CAP_SYS_ADMIN); official-Chrome install lane in progress with no result claimed; real UI rendering pending. The line below is the 12:27Z snapshot, kept as history:
-  **origin/master = `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27Z = PR #51 guarded SQUASH; history: `31ad828d` → 07:07Z `8e18819c…` (#47+#46) → 08:07Z `621fdba1…` (#48) → 10:0xZ `26c48c87…` (#49) → 11:02Z `c19af195…` (#50) → 12:27Z `427219e4…` (#51));
+  [HISTORY — 12:27Z snapshot; not a current pointer — current state = the authority pointer (`dev/engineering/current-authority.json` → snapshot) + SESSION_ROUTER_LOG, never a SHA copy in this file] origin/master was `427219e443ece4d57ac8558f13850c5f42ff8330` (2026-10-01 12:27Z = PR #51 guarded SQUASH; history: `31ad828d` → 07:07Z `8e18819c…` (#47+#46) → 08:07Z `621fdba1…` (#48) → 10:0xZ `26c48c87…` (#49) → 11:02Z `c19af195…` (#50) → 12:27Z `427219e4…` (#51));
   **origin/stable @ `b0e5aeb4`** (0.1.0-rc.1 freeze, unchanged). Zero force-push
   on gated history; each push verified via ls-remote.
 - [HISTORY — 2026-10-01 morning snapshot; superseded 12:3xZ — see CURRENT block below] Next (2026-10-01 handoff closure round): five fix PRs for findings
@@ -292,7 +296,7 @@ production-host vertical (real browser, port 3180).
   `dev/agent-workflow/evidence/provenance/`.
 - Legacy is reference-only: `docs/migration/` (reuse map, behavior inventory).
 - Task graph, gates, and the package-boundary rule: Task Decomposition §11 in the frozen
-  plan set (`docs/plans/paused/`, local, gitignored).
+  plan set (`docs/plans/finished/`, tracked).
 - Current status, pending items and evidence pointers: **`docs/STATUS.md`** (snapshot;
   authority = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`).
 - Pre-release Git branch and RC promotion policy: **`docs/BRANCHING.md`**.

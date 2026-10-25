@@ -162,6 +162,51 @@ jobs:
       # identity, it only moves the clock, and the value in force is printed on the census leg line so a
       # pass states the clock it passed under. The right end of this is in the leg's own hands (give the
       # walk the budget it needs, or narrow it); when that lands, take this flag off.
+      # S2 §7.4: the authority-docs checks already maintained in-tree now ride the SAME
+      # required pr-gate job — no second "Required" system. docs:sync --check is the full
+      # static law (links/ids/anchors/claims/registry/plan-citation/derived-view);
+      # docs:probe is the T0 authority probe. Any blocking finding reddens the gate.
+      - name: Authority docs checks (docs:sync --check + docs:probe)
+        # G2-R1 defect fix: docs:probe REFUSES a missing base (scripts/docs-probe.mjs CLI:
+        # "REFUSED BASE_REQUIRED"), so the previous bare `node scripts/docs-probe.mjs` line made
+        # this required step DETERMINISTICALLY RED as written — the change scope (which docs the
+        # probe is allowed to grade) is defined BY a base, and treating "no base" as "no changes"
+        # is precisely what the CLI forbids. It is now wired to the workflow's own verified ref:
+        #   pull_request     -> github.event.pull_request.base.sha (the PR's verified base commit)
+        #   push             -> github.event.before (the previous tip of the pushed branch)
+        # Both are guaranteed present because this job's Checkout is `fetch-depth: 0` — the probe
+        # needs the base object to compute merge-base, and a shallow clone would make it refuse
+        # with BASE_UNRESOLVABLE. workflow_dispatch has no event base and no previous tip, so the
+        # one remaining honest mode is `--worktree-only` (grade the working tree against itself);
+        # a manual dispatch has no PR to diff against, and inventing a base would be a fiction.
+        # This stays the SAME required pr-gate job — no new required workflow is introduced.
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          node scripts/docs-sync.mjs --check
+          case "$EVENT_NAME" in
+            pull_request)
+              [ -n "$PR_BASE_SHA" ] || { echo "::error::docs:probe: pull_request event has no base.sha"; exit 1; }
+              echo "docs:probe base = pull_request.base.sha ${PR_BASE_SHA}"
+              node scripts/docs-probe.mjs --base "$PR_BASE_SHA"
+              ;;
+            push)
+              if [ -n "$PUSH_BEFORE_SHA" ] && ! printf '%s' "$PUSH_BEFORE_SHA" | grep -q '^0\+$'; then
+                echo "docs:probe base = push event.before ${PUSH_BEFORE_SHA}"
+                node scripts/docs-probe.mjs --base "$PUSH_BEFORE_SHA"
+              else
+                echo "docs:probe: push event.before is absent/zeroed (first tip); grading working tree with --worktree-only"
+                node scripts/docs-probe.mjs --worktree-only
+              fi
+              ;;
+            *)
+              echo "docs:probe: ${EVENT_NAME} has no event base; grading working tree with --worktree-only"
+              node scripts/docs-probe.mjs --worktree-only
+              ;;
+          esac
       - name: Gate — every leg, two captures, any skip is a failure
         # DECLARED, not silent: a hosted runner has no tests/deepseek-harness-test-use (gitignored
         # pristine host, TEST_METHODS sec 2), so the census leg REFUSES rather than reporting the
