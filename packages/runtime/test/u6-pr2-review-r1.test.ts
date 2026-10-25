@@ -24,6 +24,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { installScopedToolGuard, definitionIdentityOf } from '../tool-dispatch/index.js'
 import {
   createGovernedFamilyRegistry,
@@ -32,7 +33,7 @@ import {
 import { scopedRegistryDouble, type ScopedRegistryDouble } from './a5p1r-scoped-registry-double.js'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 
-const REPO = new URL('../../../', import.meta.url).pathname
+const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const WORLD = join(REPO, 'tests', 'homes', `u6pr2-r1-${Date.now().toString(36)}`)
 const ROOT_DIR = join(WORLD, 'root')
 const REALM = 'u6pr2-r1-realm'
@@ -62,7 +63,7 @@ type Guard = {
 let row: PlaneRow
 beforeAll(async () => {
   mkdirSync(ROOT_DIR, { recursive: true })
-  row = (await import('../src/plugin/live/team-tool-plane.mjs')) as unknown as PlaneRow
+  row = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as unknown as PlaneRow
 })
 afterAll(() => {
   try { rmSync(WORLD, { recursive: true, force: true }) } catch { /* best effort */ }

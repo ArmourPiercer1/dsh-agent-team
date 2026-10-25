@@ -12,9 +12,6 @@ packages/tools typecheck$ tsc -p tsconfig.json
 packages/storage typecheck: Done
 packages/testkit typecheck: Done
 packages/tools typecheck: Done
-packages/runtime typecheck: test/u6-pr2-review-r1.test.ts(35,52): error TS2339: Property 'pathname' does not exist on type 'URL'.
-packages/runtime typecheck: test/u6-pr2-review-r1.test.ts(65,23): error TS7016: Could not find a declaration file for module '../src/plugin/live/team-tool-plane.mjs'. '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/packages/runtime/src/plugin/live/team-tool-plane.mjs' implicitly has an 'any' type.
-packages/runtime typecheck: Failed
-/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/packages/runtime:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
-Exit status 2
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
