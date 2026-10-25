@@ -50,6 +50,14 @@ const { approvingControlLeg } = await import(new URL('./a5-m1-control-legs.mjs',
 // shape the guard stamps (tool-dispatch/install.ts:1150-1163), never a hand-made one.
 import { untestedAssurance } from '../tool-dispatch/index.js'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const ASK_ALL = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
 
 function fixtureShell() {
@@ -73,6 +81,8 @@ async function planeWith(leg: unknown) {
   const scratch = mkdtempSync(join(tmpdir(), 'a5m1-seam-'))
   const shell = fixtureShell()
   const built = mounted(row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: ASK_ALL,
     realmId: 'a5m1-seam-realm',
@@ -160,6 +170,8 @@ describe('A5M1-SEAM — fix-5/A2 read row', () => {
     fsProbe.armed = true
     try {
       const built = mounted(row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
         teamSessionId: 'a5m1-test-team-root',
         permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
         realmId: 'a5m1-e6-realm', templateId: 'e6-tpl', role: 'member', instanceId: 'e6-instance',
@@ -340,6 +352,8 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
         : { ...(result as Record<string, unknown>), manifest: { binding: opts.rowManifestBinding } }
     }
     const plane = planeOf(row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
       permissionPolicy: policy,
       realmId: 'a5m1-c-realm', templateId: 'c-tpl', role: 'member', instanceId: 'c-instance',
@@ -607,6 +621,8 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
     writeFileSync(target, 'alpha5-m1-seam-bytes\n')
     const observe: string[] = []
     const plane = planeOf(row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
       permissionPolicy: { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'subtree', path: scratch } }] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
       realmId: 'a5m1-c8-realm', templateId: 'c8-tpl', role: 'member', instanceId: 'c8-instance',
@@ -846,6 +862,8 @@ describe('A5M1-SEAM — fix-5 pending ordering', () => {
     fsProbe.armed = true
     try {
       const built = mounted(row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
         teamSessionId: 'a5m1-test-team-root',
         permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
         realmId: 'a5m1-e5-realm',

@@ -19,7 +19,7 @@ booting.
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
-| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
+| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
 
 C1 is the ONLY tier CI runs. C2/C3 require a built Host tree and lease ports
@@ -45,6 +45,36 @@ read-only before/after and never signalled).
   never PASS), `timeout-classified` (tool outlives its case budget → verdict
   **TIMEOUT**), `interrupt-classified` (`session/cancel` mid-call →
   classified, cancel accepted, result never returns clean).
+
+* `u6-fs` (U6 PR2 C2, one governed Team World, one boot): the kernel-owned
+  governed `read` lane on the REAL pinned Host — `fs:mounted` (production Team
+  row + p6t6 state + probe row registered), `fs:governed-read-positive` (a
+  permissions-carrying member's read answered by the host Body, content claim
+  proven outside the transcript via the probe ledger), `fs:refusal-zero-effect`
+  (deny-lane read: call reached the dispatcher, result errored, the denied
+  file's unique claim appears NOWHERE), `fs:ctl-native-read` (CI-03: the
+  permissions-less template's native read unchanged), `fs:identity-swap` +
+  `fs:toctou-abort` (the probe row's SPOOF re-registration of the governed
+  name between-calls and inside a call's execute window — PASS requires zero
+  spoof-Body effect; the ledger records which host law refused the plant:
+  dispatch-time identity refusal or the registry's own scope law),
+  `fs:identity-swap-sensitivity` (reads run immediately before the swap and
+  after restore — the plant verdict cannot be explained by a dead lane),
+  `fs:shadow-ledger-cap` (R-REM-3: the inert PRODUCT shadow row mounts
+  alongside the enforcing lane with a 5-row K5 ledger budget — the run is
+  REQUIRED to hit the bounded-ledger terminal marker `shadow-ledger-capped`
+  while the governed lane keeps answering post-cap reads: cap is an
+  audit-channel event, never a flow event. The post-cap read is proven by
+  THREE agreeing witnesses — the transcript claim, the ledger marker, and
+  an INDEPENDENT oracle row (probe `tools/post-execute` reads the target
+  file itself at the fs boundary: bytes/sha256/claimSeen, never the tool
+  return), timestamped after the capped marker and carried in the receipt),
+  `fs:leak-check` (as everywhere).
+  Plant disclosure: on the live Host the spoof row is accepted only in
+  member/row scopes and NEVER dispatched (the boot-root scope's re-register
+  throws the Host's own `already registered in this scope`), so the swap
+  arms judge `registration-refused` with zero spoof effects; the kernel-
+  table swap law itself is pinned offline (C1 plants + RR legs).
 
 `negatives` carries honest worst-of semantics: that record's overall is
 TIMEOUT/START_FAILED **by design** — the classification is the demonstrated

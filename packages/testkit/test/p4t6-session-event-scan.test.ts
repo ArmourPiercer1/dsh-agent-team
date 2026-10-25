@@ -332,6 +332,39 @@ const SCANNED_PATHS_FIXK: readonly string[] = [
   'packages/runtime/test/u6-fixk-shadow-ledger.test.ts',
 ]
 
+// U6 PR2 (branch task/u6-pr2-fs-read-family-20261025 off master 2db321f63,
+// the FS-family read slice 2/6) adds its TEN scannable files: the fs-family
+// lane's runtime .mjs face (barrel + fs-mechanics + read-executor +
+// read-presentation + read-row + fs-read-contribution — the governed read
+// row's Family halves moved VERBATIM out of team-tool-plane /
+// plane-effect-backends, owner role: that lane's README) plus its ONE
+// TypeScript module (read-normalizer.ts, the pure projection now statically
+// imported by canonical-operation.ts under the golden-vector gate) and the
+// three C1 suites (golden vectors 877-corpus digest pin, center-assembly
+// kernel flow, identity/TOCTOU/post-success plants). The plane/backends
+// EDITS ride already-counted paths; dist mirrors, tests/**, docs/** and
+// dev-evidence stay outside the scan; zero new denylist vocabulary. Taking
+// the scanned total on THIS tree to 1248 — MEASURED by the pre-booking
+// scanner run on this exact tree (1248 measured against the 1238 booked; no
+// chain value copied).
+const SCANNED_PATHS_U6PR2: readonly string[] = [
+  'packages/tools/fs-family/src/index.mjs',
+  'packages/tools/fs-family/src/fs-mechanics.mjs',
+  'packages/tools/fs-family/src/read-executor.mjs',
+  'packages/tools/fs-family/src/read-presentation.mjs',
+  'packages/tools/fs-family/src/read-row.mjs',
+  'packages/tools/fs-family/src/fs-read-contribution.mjs',
+  'packages/tools/fs-family/src/read-normalizer.ts',
+  'packages/runtime/test/u6-pr2-read-golden-vectors.test.ts',
+  'packages/runtime/test/u6-pr2-kernel-flow.test.ts',
+  'packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts',
+  'packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts',
+  // review-r1 (this round): the B1/B2 mount-law suite + the extracted B4
+  // golden-corpus generator (canonicalizer injected, zero imports).
+  'packages/runtime/test/u6-pr2-review-r1.test.ts',
+  'packages/runtime/test/u6-pr2-golden-corpus.mts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -2926,7 +2959,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
         SCANNED_PATHS_U6PR1.length +
-        SCANNED_PATHS_FIXK.length,
+        SCANNED_PATHS_FIXK.length +
+        SCANNED_PATHS_U6PR2.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2994,7 +3028,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
         SCANNED_PATHS_U6PR1.length +
-        SCANNED_PATHS_FIXK.length,
+        SCANNED_PATHS_FIXK.length +
+        SCANNED_PATHS_U6PR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3083,6 +3118,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5M1,
       ...SCANNED_PATHS_U6PR1,
       ...SCANNED_PATHS_FIXK,
+      ...SCANNED_PATHS_U6PR2,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3500,6 +3536,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // and the whole 2-file gap is exactly the named SCANNED_PATHS_FIXK list
     // asserted present by path above.
     expect(SCANNED_PATHS_FIXK.length).toBe(1240 - 1238)
+    // U6 PR2 (fs/read family), chained on top of FIX-K's 1240: the booked
+    // SCANNED_PATHS_U6PR2 files above are exactly the scanned-total delta
+    // 1240 -> 1251, MEASURED on the merged + migrated tree (the resumed
+    // round's scanner run reported `expected 1251 to be 1250`; the R-REM-2
+    // REVIEW ROUND 1 (this round) adds the two scannable paths above: the
+    // measured run on THIS tree reads `expected 1253 to be 1251` — booked,
+    // no chain value copied.
+    // read-lane C1 file is the last increment; no chain value copied).
+    expect(SCANNED_PATHS_U6PR2.length).toBe(1253 - 1240)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

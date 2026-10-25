@@ -34,6 +34,14 @@ import { mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
@@ -88,6 +96,8 @@ async function run(fn: () => Promise<unknown>): Promise<{ resolved: true; value:
 
 function mount(policy: unknown, extra: Record<string, unknown> = {}, observe: string[] = []) {
   const built = row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: policy,
     realmId: REALM,

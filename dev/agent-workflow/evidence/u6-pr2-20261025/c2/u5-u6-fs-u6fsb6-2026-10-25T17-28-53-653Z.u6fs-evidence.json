@@ -1,0 +1,130 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "claims": {
+    "s1": 4,
+    "c1": 1,
+    "s2": 1,
+    "s3": 0,
+    "s4": 0,
+    "s5": 0,
+    "denied": 0
+  },
+  "spoofBodyMarkers": [],
+  "restoreRows": [],
+  "toctouArms": [],
+  "swapAttempts": [],
+  "registerAttempts": [],
+  "readExecutes": [
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-v5okkn58 rootCallId=call-u6fs-v5okkn58 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s1.txt}",
+      "agent": "session-team-child-0f292e008503cfa8b8845cdbafd651df"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-eojj21s5 rootCallId=call-u6fs-eojj21s5 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/secret/u6fs-denied.txt}",
+      "agent": "session-team-child-0f292e008503cfa8b8845cdbafd651df"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-mwp9c8zy rootCallId=call-u6fs-mwp9c8zy name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-c1.txt}",
+      "agent": "session-team-child-6fbe4e641812987e9f110047ac975153"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-udi1f8bs rootCallId=call-u6fs-udi1f8bs name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s2.txt}",
+      "agent": "session-team-child-0f292e008503cfa8b8845cdbafd651df"
+    }
+  ],
+  "readResults": [
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s1.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: template-default-deny — undefined"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-c1.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s2.txt</path>\n<type>file</type>\n<"
+    }
+  ],
+  "kernelHits": {
+    "kernel-post-success-drift-veto": {
+      "count": 0,
+      "sample": null
+    },
+    "a5g7: placement-feed rows=": {
+      "count": 2,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsb6-20261025t17-28-53z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5m1-authority-leg": {
+      "count": 0,
+      "sample": null
+    },
+    "ABORTED_BEFORE_DISPATCH": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "laneDone": {
+    "strict": false,
+    "ctl": false,
+    "sens1": false,
+    "swapped": false,
+    "sens2": false,
+    "toctou": false,
+    "swapTrigger": false,
+    "restoreTrigger": false,
+    "toctouTrigger": false,
+    "leader": true
+  }
+}

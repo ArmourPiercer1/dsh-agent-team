@@ -74,11 +74,17 @@ describe('the tool-governance lane audit', () => {
       // LADDER edge is booked on the a3p3 rows, not here.
       'runtime/operation-permission/pa-control-bridge.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
-      // A5-M1: the governed effect backends row — `parseRequestedEffectSet`
-      // (plane-effect-backends.mjs:64) resolving the READ row's requested
-      // effects into the frozen closed resource vocabulary at :1050, before
-      // any backend is reached.
-      'runtime/src/plugin/live/plane-effect-backends.mjs',
+      // U6 PR2 (the PR1-disclosed minter rebind): the shadow row consumes
+      // the ONE §6 feed face (`definitionIdentityOf`) so its audit identities
+      // are the identities the Guard binds; pure function, zero authority.
+      'runtime/src/plugin/live/center-shadow-row.mjs',
+      // A5-M1's plane-effect-backends booking RETIRED at U6 PR2: its one
+      // lane edge (`parseRequestedEffectSet`, the READ row's effect
+      // vocabulary) MOVED with the read executor to
+      // `tools/fs-family/src/read-executor.mjs` (booked at the tail of this
+      // list); the plane file now imports nothing from the lane. Consumer
+      // SET unchanged in count — the location moved, and this list is the
+      // map of locations.
       // alpha5-ptc-fs (branch `alpha5-ptc-pr`; review provenance 独审 PASS,
       // id 7f0e5d6e, booked by the integration coordinator on the #334 census
       // red): the PTC fs escalation row — direct lane edge = the effect-grammar
@@ -108,6 +114,11 @@ describe('the tool-governance lane audit', () => {
       'tools/a5p5-tools/src/render.ts',
       'tools/a5p5-tools/src/spill.ts',
       'tools/a5p5-tools/src/types.ts',
+      // U6 PR2: the FS family's governed read executor consumes the ONE
+      // effect-grammar face (`parseRequestedEffectSet`, domain/tool-governance)
+      // — the same thin face plane-effect-backends was booked for; the lane
+      // IS that file's moved read section (owner role: fs-family README).
+      'tools/fs-family/src/read-executor.mjs',
     ])
   })
 

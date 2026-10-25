@@ -1,0 +1,216 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "claims": {
+    "s1": 0,
+    "c1": 1,
+    "s2": 0,
+    "s3": 0,
+    "s4": 0,
+    "s5": 0,
+    "denied": 0
+  },
+  "spoofBodyMarkers": [],
+  "swapAttempts": [
+    {
+      "at": "2026-10-25T17:14:05.878Z",
+      "world": "u5u6fsb4-20261025T17-13-58Z",
+      "leg": "spoof-attempt",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "placedScopes": [
+        "agent:session-u6fs-root-u5u6fsb4-20261025t17-13-58z",
+        "agent:session-team-child-42bbbb0cd15af2ef178ac5382b385a2f",
+        "row"
+      ]
+    }
+  ],
+  "registerAttempts": [
+    {
+      "at": "2026-10-25T17:14:05.875Z",
+      "world": "u5u6fsb4-20261025T17-13-58Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6fs-root-u5u6fsb4-20261025t17-13-58z",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T17:14:05.876Z",
+      "world": "u5u6fsb4-20261025T17-13-58Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6fs-team-u5u6fsb4-20261025t17-13-58z",
+      "tag": "trigger-swap",
+      "ok": false,
+      "error": "tool \"read\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-25T17:14:05.876Z",
+      "world": "u5u6fsb4-20261025T17-13-58Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309",
+      "tag": "trigger-swap",
+      "ok": false,
+      "error": "tool \"read\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-25T17:14:05.877Z",
+      "world": "u5u6fsb4-20261025T17-13-58Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-42bbbb0cd15af2ef178ac5382b385a2f",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T17:14:05.878Z",
+      "world": "u5u6fsb4-20261025T17-13-58Z",
+      "leg": "spoof-register",
+      "scope": "row",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "ok": true
+    }
+  ],
+  "readExecutes": [
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309"
+    },
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309"
+    },
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-42bbbb0cd15af2ef178ac5382b385a2f"
+    },
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309"
+    },
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309"
+    },
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309"
+    },
+    {
+      "path": "unreadable((intermediate value)(intermediate value)(intermediate value))",
+      "agent": "session-team-child-6d25d3ddb982d4a49b3b2ca04ae6a309"
+    }
+  ],
+  "readResults": [
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: APPROVAL_DENIED — durable Control request uncreated answered deny"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: template-deny-lane — undefined"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb4-20261025T17-13-58Z/workspace/notes/u6fs-c1.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: APPROVAL_DENIED — durable Control request uncreated answered deny"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: APPROVAL_DENIED — durable Control request uncreated answered deny"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: APPROVAL_DENIED — durable Control request uncreated answered deny"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: APPROVAL_DENIED — durable Control request uncreated answered deny"
+    }
+  ],
+  "kernelHits": {
+    "kernel-post-success-drift-veto": {
+      "count": 0,
+      "sample": null
+    },
+    "a5g7: placement-feed rows=": {
+      "count": 2,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsb4-20261025t17-13-58z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5m1-authority-leg": {
+      "count": 0,
+      "sample": null
+    },
+    "ABORTED_BEFORE_DISPATCH": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "laneDone": {
+    "strict": true,
+    "ctl": true,
+    "sens1": true,
+    "swapped": true,
+    "sens2": true,
+    "toctou": true,
+    "swapTrigger": true,
+    "restoreTrigger": true,
+    "toctouTrigger": true,
+    "leader": true
+  }
+}

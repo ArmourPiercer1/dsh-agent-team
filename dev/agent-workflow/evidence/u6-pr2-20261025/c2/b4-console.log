@@ -1,0 +1,10 @@
+[u6-fs] case fs:mounted: PASS {"teamSession":true,"probeRegister":{"at":"2026-10-25T17:14:00.099Z","world":"u5u6fsb4-20261025T17-13-58Z","leg":"register","kind":"probe-tool","ok":true},"hostAlive":true,"listenLegs":["agent/created:true","tools/execut
+[u6-fs] case fs:governed-read-positive: FAIL {"claimOccurrences":0,"probeObserved":false,"hostAlive":true,"note":"SOUND = claim-in-result (only the file is its source) AND probe-row observation of the answered content AND host alive"}
+[u6-fs] case fs:refusal-zero-effect: FAIL {"deniedClaimOccurrences":0,"denyExecuted":false,"denyRefusedObserved":true,"hostAlive":true}
+[u6-fs] case fs:ctl-native-read: PASS {"claimOccurrences":1,"probeObserved":true,"hostAlive":true}
+[u6-fs] case fs:identity-swap: FAIL {"arm":null,"why":"target read never reached the dispatcher (no probe observation of the call) — the plant verdict is unresolvable, never guessed","registerAttempts":[{"scope":"agent","trigger":"probe-body:session-u6fs-r
+[u6-fs] case fs:identity-swap-sensitivity: FAIL {"s2Occurrences":0,"s4Occurrences":0,"hostAlive":true}
+[u6-fs] case fs:toctou-abort: FAIL {"arm":null,"why":"no spoof-attempt ledger row for trigger=execute-window (the plant never ran)","inWindowRegisters":[],"spoofBodyMarkers":[]}
+[u6-fs] case fs:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":null,"notes":[]}
+RUN-SUMMARY run=u5-u6-fs-u6fsb4-2026-10-25T17-13-58-438Z suite=u6-fs overall=FAIL cases=9 FAIL:5 PASS:4 worlds=u5u6fsb4-20261025T17-13-58Z
+EXIT=1

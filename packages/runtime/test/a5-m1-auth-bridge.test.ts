@@ -1849,8 +1849,20 @@ const PLANE_REALM = 'a5m1-auth-plane-realm'
 // the resolve/guard gates re-derive coverage through EXACTLY these facts.
 directAssembly(undefined, PLANE_REALM)
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). This leg never installs a dispatcher, so this holder
+// never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number. PLACEMENT
+// LAW: declared BELOW the L1264 fence-adjudicated site so the pre-site
+// region stays byte-identical (the fence re-keys on drift; see its
+// ADJUDICATED row for this file).
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
 function buildPlane(controlLeg: (input: PaControlLegInput) => Promise<PaControlLegResult>) {
   const built = planeRow.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
     permissionPolicy: Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }),
     realmId: PLANE_REALM,
     templateId: 'a5m1-auth-tpl',

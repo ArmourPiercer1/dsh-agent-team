@@ -262,6 +262,32 @@ export interface InstallScopedGuardInput extends ScopedDispatcherOptions {
    */
   readonly bindingFeed?: BindingFeed
   /**
+   * U6 PR2 — THE KERNEL-OWNED NAME GUARD (center-assembly enforcing seam;
+   * a PORT, not a second identity law). For every name this port answers
+   * `owns(name) === true`, the dispatch gate adds exactly one delta over
+   * the armed-once law the settled edge still applies to every other name:
+   * after `next()` resolves, the gate RE-RESOLVES the live definition and
+   * compares it against BOTH the identity this door pinned and the identity
+   * the center's approval table binds; a SUCCESS-shaped result whose Body
+   * moved is converted into a fail-closed refusal (the settled edge's
+   * alarm-only law would deliver a result the table no longer backs). A
+   * cancelled or error-shaped settle keeps its native shape, and a
+   * kernel-owned SUCCESS whose Body did NOT move keeps the native success
+   * shape untouched (sup-a §5 cond 10). Identity questions stay owned by
+   * the Guard's existing live-vs-feed law — this port only feeds it the
+   * table's answer and consumes the veto. ABSENT = today's behavior
+   * byte-for-byte for every name.
+   */
+  readonly kernelGuard?: {
+    /** Does the center kernel own this name (table-backed enforcing set)? */
+    readonly owns: (name: string) => boolean
+    /** The ONE identity the center table binds for the name; null = the
+     *  table holds no entry — the pb §6 feed stays silent for that name, so
+     *  no call of it ever binds, and the door refuses it before this check
+     *  is reached (the refusal lives in the bind path, not here). */
+    readonly identityFor: (name: string) => string | null
+  }
+  /**
    * The restriction this assembly installed (design §4.1 step 2). The Handle
    * owns its lifetime: an armed Guard means the mask is NEVER lifted by the
    * ordinary disposer drain, because "lift the restriction, then drop the
@@ -977,6 +1003,30 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
           `team tool guard: "${name}" cannot be made cancellable at the dispatch door: its definition became unreadable (${pinned.detail}); a call this lane cannot re-verify is not a call it may let through [refused at the dispatch door, the stage nearest the Body]`,
         )
       }
+      if (input.kernelGuard?.owns(name) === true) {
+        // U6 PR2 / FIX-K K1 (R-REM-2.1): BEFORE the Body, the center TABLE
+        // must still back this exact definition. The kernel's answer is
+        // candidate-revalidating (revoke / re-registration / generation /
+        // source drift all read it as silent), so an approval invalidated
+        // since the bind refuses HERE — before any effect — not only as a
+        // post-success veto. A table identity that disagrees with the live
+        // Body is the same condition-6 class the bind check refuses.
+        const tableIdentity = input.kernelGuard.identityFor(name)
+        if (tableIdentity === null || tableIdentity !== pinned.fingerprint) {
+          observe({
+            event: 'kernel-pre-body-table-refusal',
+            callId,
+            tool: name,
+            pinned: pinned.fingerprint,
+            table: tableIdentity ?? 'unbound',
+            note: 'the kernel approval table no longer backs this definition (revoked, rebound, or moved source); the call is refused before its Body (U6 PR2, FIX-K K1)',
+          })
+          dispatcher.endCallById(callId, 'refused')
+          throw new Error(
+            `team tool guard: "${name}" is kernel-owned and the center approval table no longer backs its live definition (table ${tableIdentity ?? 'unbound'}, resolving ${pinned.fingerprint}); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]`,
+          )
+        }
+      }
       const { record, reentry } = pendingCalls.arm({
         callId,
         scopeKey: input.agentScopeKey,
@@ -1002,7 +1052,53 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
         )
       }
       try {
-        return await next()
+        const settled = await next()
+        // U6 PR2 (kernel-enforcing delta at this door — see the `kernelGuard`
+        // input): for a KERNEL-OWNED name, re-resolve the live definition
+        // after the settle. If the Body moved away from the identity this
+        // door pinned OR from the identity the center table binds, the
+        // result is not table-backed and a SUCCESS-shaped settle is
+        // converted into a fail-closed refusal (sup-a §1.2 post-check, §5
+        // cond 8/10). Error- and cancelled-shaped settles keep their native
+        // shape — they are refusals already, never successes wearing a moved
+        // Body; an unchanged Body keeps the native success shape untouched.
+        // The settled edge's alarm + armed-once withdrawal law stays as the
+        // settled edge's law for EVERY other name (no dual identity: the
+        // Guard's live-vs-feed comparison remains the one identity law —
+        // this door only consumes the table's answer and vetoes).
+        if (input.kernelGuard?.owns(name) === true) {
+          const settledIsError = (settled as { isError?: boolean } | null | undefined)?.isError === true
+          const settledIsCancelled = (settled as { cancelled?: boolean } | null | undefined)?.cancelled === true
+          if (!settledIsError && !settledIsCancelled) {
+            const now = readDefinition(name)
+            const tableIdentity = input.kernelGuard.identityFor(name)
+            // FIX-K K1 (R-REM-2.1): the table answer is scope- and
+            // candidate-revalidated by the kernel — a NULL here means the
+            // binding was invalidated WHILE this call ran (revoke /
+            // re-registration / generation or source drift). A settled
+            // success no longer backed by the table is the same
+            // unbacked-result class as a moved Body: veto fail-closed.
+            const drifted = !now.ok
+              || now.fingerprint !== pinned.fingerprint
+              || tableIdentity === null
+              || tableIdentity !== now.fingerprint
+            if (drifted) {
+              observe({
+                event: 'kernel-post-success-drift-veto',
+                callId,
+                tool: name,
+                pinned: pinned.fingerprint,
+                current: now.ok ? now.fingerprint : now.detail,
+                table: tableIdentity ?? 'unbound',
+                note: 'the kernel-owned definition moved while this call executed; its successful result is vetoed fail-closed (U6 PR2) — the table no longer backs the Body that answered',
+              })
+              throw new Error(
+                `team tool guard: "${name}" is kernel-owned and its definition moved while the call ran (pinned ${pinned.fingerprint}, resolving ${now.ok ? now.fingerprint : `unreadable (${now.detail})`}${tableIdentity === null ? ', table unbound (invalidated mid-call)' : `, table ${tableIdentity}`}); the result is refused fail-closed — an unverified Body's success is never delivered [refused at the dispatch gate, after execution]`,
+              )
+            }
+          }
+        }
+        return settled
       } finally {
         handoff.restore()
       }

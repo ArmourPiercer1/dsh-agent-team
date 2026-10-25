@@ -72,6 +72,14 @@ const PR1_CONSUMERS = Object.freeze([
   // (`definitionIdentityOf` from tool-dispatch) to mint placement-binding
   // rows for the Guard — the #313 入参面's first production caller.
   'runtime/src/plugin/live/team-tool-plane.mjs',
+  // U6 PR2 (the PR1-disclosed minter rebind): the SHADOW row now consumes
+  // the SAME §6 feed face — `definitionIdentityOf` — so its audit identities
+  // are the identities the Guard binds (PR1's local `gc-def#N` stand-in was
+  // deliberate inertness; with the read kernel mounted, a shadow auditing a
+  // DIFFERENT identity than the Guard sees would be a lying audit). One
+  // pure function imported, zero state, zero authority (the row still only
+  // records and takes next()).
+  'runtime/src/plugin/live/center-shadow-row.mjs',
   // alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879; review
   // provenance 独审 PASS — the round's 独审 id 7f0e5d6e, booked by the
   // integration coordinator on the #334 census red): the PTC fs escalation
@@ -91,6 +99,17 @@ const PR1_CONSUMERS = Object.freeze([
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.
   'runtime/controlled-fs/src/',
   'tools/a5p5-tools/src/',
+  // U6 PR2 (FS family lane) booked FILE-BY-FILE, single thin face:
+  // `tools/fs-family/src/read-executor.mjs` imports
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) — the
+  // same face `runtime/src/plugin/live/plane-effect-backends.mjs` carried
+  // until this move (its booking retired with the retirement note below).
+  // The file IS that plane file's moved governed-read executor (U6
+  // slice plan PR2: the Family owns the read body; the effect grammar stays
+  // the domain's); zero lane edits. The lane's other modules import only
+  // contracts/controlled-fs mechanics, and the plane re-exports nothing of
+  // the governance lane onward (owner role: packages/tools/fs-family/README.md).
+  'tools/fs-family/src/read-executor.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:
@@ -130,15 +149,15 @@ const PR1_CONSUMERS = Object.freeze([
   // `RuntimeAuthority`); that edge is booked on the a3p3 governance-lane rows
   // and this list says nothing about it.
   'runtime/operation-permission/pa-control-bridge.ts',
-  // The governed effect backends row: src/plugin/live/plane-effect-backends
-  // .mjs:64 imports `parseRequestedEffectSet` (VALUE) and uses it at :1050 to
-  // parse the READ row's requested effects into the frozen closed resource
-  // vocabulary BEFORE any backend is reached — the read face's effect
-  // resolution (its window caps are its own READ_ROW_* constants, no lane
-  // symbol). One named symbol, not a barrel-wide reach; the sibling live rows
-  // (agent-bindings / team-tool-plane / ptc-escalation-row) were booked the
-  // same way by their own rounds.
-  'runtime/src/plugin/live/plane-effect-backends.mjs',
+  // The governed effect backends row's booking RETIRED at U6 PR2: its one
+  // lane edge (`parseRequestedEffectSet`, used by the governed READ row's
+  // effect parsing) MOVED with the read executor to
+  // `tools/fs-family/src/read-executor.mjs` (booked just above); the file
+  // itself now imports nothing from the lane (the read sections are family
+  // imports/re-exports, the surviving search/glob/shell backends never had
+  // a lane edge). Retiring the entry is the honest state, not a widening:
+  // the symbol's consumer SET is unchanged in count, only in location.
+
 ])
 
 const SPECIFIER_PATTERNS = [

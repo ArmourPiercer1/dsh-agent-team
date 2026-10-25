@@ -35,6 +35,14 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync }
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). These executor-level legs never install a dispatcher, so
+// this holder never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number.
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
@@ -164,6 +172,8 @@ describe('a5-pindir C-16 reserved-native registry vs the authoritative catalog h
 
   it('assembly-level injection: a full governed plane refuses names.glob=run_code BEFORE any mount (the C-16 repro leg)', () => {
     const built = row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       permissionPolicy: ALLOW_ALL,
       realmId: 'a5pd-unit-realm',
       templateId: 'a5pd-tpl',
@@ -187,6 +197,8 @@ describe('a5-pindir C-16 reserved-native registry vs the authoritative catalog h
 
   it('assembly-level injection: names.bash=schedule_list is refused the same way', () => {
     const built = row.createTeamToolPlaneAssembly({
+          dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+
       permissionPolicy: ALLOW_ALL,
       realmId: 'a5pd-unit-realm',
       templateId: 'a5pd-tpl',

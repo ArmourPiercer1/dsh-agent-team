@@ -156,6 +156,13 @@
  */
 import { canonicalJsonStringify, toRemoteSafeDetail } from '../../contracts/src/index.js';
 import { sha256Hex } from '../../domain/blueprint/src/index.js';
+// U6 PR2 (center-interface change, disclosed in the PR body): the `read`
+// projection is the FS family's PURE normalizer. The edge is CENTER →
+// family-pure-module (`read-normalizer.ts` has zero imports — no cycle is
+// expressable); the lane's TypeScript face rides the runtime build include,
+// so the relative `.js` specifier resolves identically in `src` and in the
+// committed dist mirror.
+import { normalizeReadProjection } from '../../tools/fs-family/src/read-normalizer.js';
 import { canonicalizationFailed } from './errors.js';
 import { FILE_PERMISSION_TOOL_VALUES, PERMISSION_TOOL_VALUES, SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 /**
@@ -272,38 +279,15 @@ function isPositiveInteger(value) {
     return typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 1;
 }
 /**
- * The `read` window identity (A2C-5, plan §8.2 — the module header's
- * conservative identity): `offset` = the tool's own FIXED defaulting
- * (omitted → 1, one-based — the pinned-upstream `parseReadArgs`
- * default, unchanged by A2C-5); `limit` = the EXPLICIT value only —
- * omitted → **null** (the caller gave no limit: the projection carries
- * the ABSENCE, never a substituted deployment constant — this is what
- * makes `read(file)` and `read(file, limit: 2000)` distinct
- * identities), explicit N → N. A present-but-invalid value fails
- * closed — the tool would reject it, so there is no effective window
- * to authorize (the mirrored validation is unchanged).
+ * The `read` window identity MOVED (U6 PR2) to the FS family's pure
+ * normalizer — `packages/tools/fs-family/src/read-normalizer.ts`
+ * (`normalizeReadProjection`): the A2C-5 conservative identity (omitted
+ * `offset` → 1; omitted `limit` → **null**, never the deployment constant;
+ * present-but-invalid fails closed with the same closed reasons). The
+ * `case 'read'` arm above calls it and computes the fingerprint from the
+ * returned projection; the golden-vector gate pins the whole corpus
+ * byte-identical against the pre-move recording.
  */
-function effectiveReadWindow(tool, args) {
-    const offset = args['offset'];
-    const limit = args['limit'];
-    if (offset !== undefined && !isPositiveInteger(offset)) {
-        throw canonicalizationFailed(tool, 'read-offset-invalid', {
-            value: toRemoteSafeDetail(offset),
-        });
-    }
-    if (limit !== undefined && !isPositiveInteger(limit)) {
-        throw canonicalizationFailed(tool, 'read-limit-invalid', {
-            value: toRemoteSafeDetail(limit),
-        });
-    }
-    return {
-        offset: offset ?? READ_OFFSET_DEFAULT,
-        // A2C-5 (plan §8.2): the omission is an IDENTITY — null, not the
-        // deployment constant (pre-A2C-5: `limit ?? READ_LIMIT_DEFAULT`,
-        // the documented pseudo-equivalence residual, now removed).
-        limit: limit ?? null,
-    };
-}
 /** The `write` content (required string; an EMPTY string is legitimate). */
 function extractWriteContent(tool, args) {
     const value = args['content'];
@@ -581,13 +565,23 @@ export async function canonicalizeOperation(input) {
     let projection;
     switch (tool) {
         case 'read': {
-            const window = effectiveReadWindow(tool, args);
-            projection = {
-                tool: 'read',
-                resourceKey: '',
-                offset: window.offset,
-                limit: window.limit,
-            };
+            // U6 PR2 (center-interface change, disclosed in the PR body): the read
+            // PROJECTION is now the FS family's pure normalizer
+            // (`packages/tools/fs-family/src/read-normalizer.ts` — the moved
+            // `effectiveReadWindow` law verbatim, A2C-5 conservative identity);
+            // the authority computes the FINGERPRINT from the returned projection
+            // exactly as before, and path authority stays with the injected
+            // resolver seam below. The golden-vector gate
+            // (`u6-pr2-read-golden-vectors.test.ts`) pins the whole 877-vector
+            // corpus byte-identical against master's output recorded BEFORE the
+            // move — durable grants/rules keyed by this fingerprint survive.
+            const projected = normalizeReadProjection(tool, args);
+            if (projected.ok !== true) {
+                throw canonicalizationFailed(tool, projected.reason, {
+                    value: toRemoteSafeDetail(projected.value),
+                });
+            }
+            projection = projected.projection;
             break;
         }
         case 'read_image': {

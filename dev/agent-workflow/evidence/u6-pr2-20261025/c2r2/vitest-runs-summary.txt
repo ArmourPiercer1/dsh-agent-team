@@ -1,0 +1,15 @@
+# root vitest (worktree, merged+migrated head) — 2026-10-25
+
+## run A (JSON reporter) + run B — serial, job bash-10991
+ Test Files  6 failed | 608 passed (614)
+      Tests  11 failed | 7826 passed (7837)
+FAIL files (B): t2-blueprint-hash, p6t3-mediation, p6t3-restart, a4p7-merge-gate, p4t6-session-event-scan, p6t6-actions
+p4t6 in A/B: 'expected 1253 to be 1251' — the scan saw 2 TRANSIENT scannable files; these two runs overlapped this session's concurrent census-gate + receipt-assembly work on the same tree.
+
+## run D (clean, after all work paused, 1s watcher armed)
+ Test Files  5 failed | 609 passed (614)
+      Tests  10 failed | 7827 passed (7837)
+FAIL files (D, baseline set only): t2-blueprint-hash, p6t3-mediation, p6t3-restart, a4p7-merge-gate, p6t6-actions
+watcher deltas: 0 transient packages/** scannables across the whole run; p4t6 GREEN at the booked 1251.
+
+Verdict: NO NEW REDS. The A/B p4t6 movement was a concurrent-activity race (disclosed); the CI census grades the clean checkout.

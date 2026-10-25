@@ -1,0 +1,40 @@
+    203|     const refused = await double.runCall({ callId: 'refused', name: 'r…
+    204|     expect(refused.bodies).toEqual([])
+    205|     expect(String(refused.threw)).toContain('kernel approval table no …
+       |                                   ^
+    206|     expect(guardRef.pendingCalls(), 'the refused call never entered th…
+    207|     tableLive = true
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/u6-pr2-review-r1.test.ts > review-r1 B2 — a governed mount without read governance refuses read before the Body > R2b: governed, no fsInstance ⇒ assembly stands, read is NOT owned, guard face refuses read
+AssertionError: the rejecting face exists for the governed name (B2): expected undefined to be defined
+ ❯ packages/runtime/test/u6-pr2-review-r1.test.ts:250:87
+    248|     expect(value.ownNames).not.toContain('read')
+    249|     expect(value.centerKernel, 'no kernel without a read row').toBeUnd…
+    250|     expect(value.kernelGuard, 'the rejecting face exists for the gover…
+       |                                                                                       ^
+    251|     expect(value.kernelGuard!.owns('read')).toBe(true)
+    252|     expect(value.kernelGuard!.owns('grep')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/u6-pr2-review-r1.test.ts > review-r1 B2 — a governed mount without read governance refuses read before the Body > R2c: the read call is refused BEFORE its Body — zero native body, typed refusal (CI-05 closed)
+Error: bind refused: cannot bind "team_grep" as team-own: its current definition is unreadable at the public seam (tools.get("team_grep") resolved to no definition on this scope), and a Binding that cannot be re-verified is not a verification
+ ❯ pairGuard packages/runtime/test/u6-pr2-review-r1.test.ts:112:26
+    110|   if (owned.length > 0) {
+    111|     const bound = guard.bindOwnTools([...owned])
+    112|     if (!bound.ok) throw new Error(`bind refused: ${String(bound.error…
+       |                          ^
+    113|   }
+    114|   const pub = guard.publish()
+ ❯ packages/runtime/test/u6-pr2-review-r1.test.ts:261:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  20:48:14
+   Duration  853ms (transform 517ms, setup 0ms, import 339ms, tests 370ms, environment 0ms)
+

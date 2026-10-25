@@ -214,6 +214,32 @@ export interface InstallScopedGuardInput extends ScopedDispatcherOptions {
      */
     readonly bindingFeed?: BindingFeed;
     /**
+     * U6 PR2 — THE KERNEL-OWNED NAME GUARD (center-assembly enforcing seam;
+     * a PORT, not a second identity law). For every name this port answers
+     * `owns(name) === true`, the dispatch gate adds exactly one delta over
+     * the armed-once law the settled edge still applies to every other name:
+     * after `next()` resolves, the gate RE-RESOLVES the live definition and
+     * compares it against BOTH the identity this door pinned and the identity
+     * the center's approval table binds; a SUCCESS-shaped result whose Body
+     * moved is converted into a fail-closed refusal (the settled edge's
+     * alarm-only law would deliver a result the table no longer backs). A
+     * cancelled or error-shaped settle keeps its native shape, and a
+     * kernel-owned SUCCESS whose Body did NOT move keeps the native success
+     * shape untouched (sup-a §5 cond 10). Identity questions stay owned by
+     * the Guard's existing live-vs-feed law — this port only feeds it the
+     * table's answer and consumes the veto. ABSENT = today's behavior
+     * byte-for-byte for every name.
+     */
+    readonly kernelGuard?: {
+        /** Does the center kernel own this name (table-backed enforcing set)? */
+        readonly owns: (name: string) => boolean;
+        /** The ONE identity the center table binds for the name; null = the
+         *  table holds no entry — the pb §6 feed stays silent for that name, so
+         *  no call of it ever binds, and the door refuses it before this check
+         *  is reached (the refusal lives in the bind path, not here). */
+        readonly identityFor: (name: string) => string | null;
+    };
+    /**
      * The restriction this assembly installed (design §4.1 step 2). The Handle
      * owns its lifetime: an armed Guard means the mask is NEVER lifted by the
      * ordinary disposer drain, because "lift the restriction, then drop the
