@@ -1,0 +1,19 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-fixk
+
+ ✓ packages/runtime/test/u6-fixk-shadow-ledger.test.ts > FIX-K K5 — the shadow ledger is bounded and released on dispose > RED K5: the file stops at maxLedgerRows with ONE terminal marker; later calls only reach the sink (flow unchanged) 69ms
+ ✓ packages/runtime/test/u6-fixk-shadow-ledger.test.ts > FIX-K K5 — the shadow ledger is bounded and released on dispose > RED K5: the byte budget caps too, with the same single terminal marker 6ms
+ ✓ packages/runtime/test/u6-fixk-shadow-ledger.test.ts > FIX-K K5 — the shadow ledger is bounded and released on dispose > RED K5: dispose RELEASES the writer — after dispose nothing more appends (and dispose itself is audited) 7ms
+ ✓ packages/runtime/test/u6-fixk-shadow-ledger.test.ts > FIX-K K5 — the shadow ledger is bounded and released on dispose > regression: under the default budget the ledger behaves exactly like PR1 (no cap marker, every row present) 4ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  16:42:40
+   Duration  290ms (transform 81ms, setup 0ms, import 37ms, tests 87ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

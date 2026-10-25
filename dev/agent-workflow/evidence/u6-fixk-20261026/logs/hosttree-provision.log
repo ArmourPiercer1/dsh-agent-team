@@ -1,0 +1,26 @@
+Cloning into 'tests/deepseek-harness-test-use'...
+warning: source repository is shallow, ignoring --local
+warning: --local is ignored
+Note: switching to '639ed015397290b3745d163aafe02ffee4aa3f84'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+Updating files:  78% (11032/14104)Updating files:  79% (11143/14104)Updating files:  80% (11284/14104)Updating files:  81% (11425/14104)Updating files:  82% (11566/14104)Updating files:  83% (11707/14104)Updating files:  84% (11848/14104)Updating files:  85% (11989/14104)Updating files:  86% (12130/14104)Updating files:  87% (12271/14104)Updating files:  88% (12412/14104)Updating files:  89% (12553/14104)Updating files:  90% (12694/14104)Updating files:  91% (12835/14104)Updating files:  92% (12976/14104)Updating files:  93% (13117/14104)Updating files:  94% (13258/14104)Updating files:  95% (13399/14104)Updating files:  96% (13540/14104)Updating files:  97% (13681/14104)Updating files:  98% (13822/14104)Updating files:  99% (13963/14104)Updating files: 100% (14104/14104)Updating files: 100% (14104/14104), done.
+HEAD is now at 639ed01539 Merge pull request #5479 from deepseek-harness/worktree/release-dsh-0.2.0-rc.2
+639ed015397290b3745d163aafe02ffee4aa3f84
++ vitest 4.1.8
+
+Done in 15.9s using pnpm v11.7.0
