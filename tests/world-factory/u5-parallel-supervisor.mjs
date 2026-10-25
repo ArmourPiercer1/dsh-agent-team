@@ -30,16 +30,39 @@
  *
  * Usage:
  *   node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> \
- *     [--budget-ledger <jsonl>] [--max-host-starts 15] [--kill-after ms]
+ *     [--mode parallel|crash-reclaim] [--survivor-suite core|core-restart] \
+ *     [--budget-ledger <jsonl>] [--max-host-starts 15] [--kill-after ms] \
+ *     [--inflight-timeout ms] [--reconstruct <run-record.json>]
+ *
+ * MODES
+ *   parallel (default, G3 shape) — A core-restart ∥ B core, B's RUNNER killed.
+ *   crash-reclaim (FIX-T T2 — closes the G3 SKIP gap): B runs the
+ *   `crash-victim` suite: the victim World boots, authenticates and holds a
+ *   canary tool call IN FLIGHT (tool body blocked on its gate file, canary
+ *   plugin marker `<tag>.pre` written, `<tag>.post` never). Only after the
+ *   runner prints U5-IN-FLIGHT does the supervisor SIGKILL the victim's WHOLE
+ *   OWNED PROCESS GROUP (B spawned detached → group = victim runner + its
+ *   host + mock; nobody else can be in a group we created). The reclaim then
+ *   runs while survivor A keeps working, and PASS requires the conjunction:
+ *   in-flight marker present + completion marker absent + no victim RUN
+ *   record (the kill provably landed mid-tool), every stale lease (host AND
+ *   mock port) reclaimed with `reclaimedFrom` provenance naming the killed
+ *   runner, victim host pid dead (killed by the reclaim with /proc environ
+ *   proof if it survived the group kill), zero refusals, home deleted via its
+ *   ownership marker, ports free. If the in-flight gate fails the case FAILS
+ *   — this mode has no SKIP. A (`--survivor-suite`, default `core` = one
+ *   boot) proves the surviving parallel World is unaffected. Total host
+ *   starts this mode: 2.
  *
  * Opt-in only (live Host children): never collected by vitest/CI.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { mkdirSync, openSync, closeSync, readFileSync, writeFileSync, writeSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, closeSync, readdirSync, readFileSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TestWorldFactory, reclaimWorld, homesCensus, stableInstanceProbe } from './lib/world-factory.mjs'
-import { pidAlive, scanStaleLeases } from './lib/port-lease.mjs'
+import { pidAlive, scanAllLeases, scanStaleLeases } from './lib/port-lease.mjs'
+import { portInUse } from '../characterization/lib/util.mjs'
 import { createRunRecord, exitCodeFor, formatSummary } from './lib/run-record.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -51,17 +74,22 @@ const RUNNER = process.env.DSH_U5_RUNNER ?? join(HERE, 'u5-canary-runner.mjs')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 export function parseArgs(argv) {
-  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null }
+  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000 }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--evidence') out.evidence = String(argv[++i])
     else if (a === '--budget-ledger') out.budgetLedger = String(argv[++i])
     else if (a === '--max-host-starts') out.maxHostStarts = Number(argv[++i])
     else if (a === '--kill-after') out.killAfterMs = Number(argv[++i])
+    else if (a === '--inflight-timeout') out.inflightTimeoutMs = Number(argv[++i])
+    else if (a === '--mode') out.mode = String(argv[++i])
+    else if (a === '--survivor-suite') out.survivorSuite = String(argv[++i])
     else if (a === '--reconstruct') out.reconstruct = String(argv[++i])
     else throw new Error(`unknown argument: ${a}`)
   }
   if (out.evidence === null) throw new Error('--evidence is required')
+  if (!['parallel', 'crash-reclaim'].includes(out.mode)) throw new Error(`unknown --mode ${out.mode}`)
+  if (out.survivorSuite !== null && !['core', 'core-restart'].includes(out.survivorSuite)) throw new Error(`unknown --survivor-suite ${out.survivorSuite}`)
   return out
 }
 
@@ -75,8 +103,18 @@ function git(args) {
  * Start one runner child with file-fd stdout (the characterization sandbox
  * mechanism — no piped stdio); stderr inherited for operator visibility; a
  * memory buffer of stdout lets the supervisor watch for U5-IN-RUN.
+ *
+ * FIX-T T3 (bounded logs): the runner log file is byte-capped — a runaway
+ * (looping/spamming runner, e.g. a crash victim's fork bomb of errors) can
+ * never grow evidence without bound. On reaching the cap the file gets ONE
+ * notice row and no further bytes; the watch buffer rolls instead of growing.
+ * `detached: true` makes the child a PROCESS GROUP LEADER — the crash-reclaim
+ * mode's kill target scope (a group only our spawn ever created).
  */
-function startRunner({ tag, args, logDir }) {
+const RUNNER_LOG_CAP_BYTES = 32 * 1024 * 1024
+const WATCH_BUFFER_MAX_CHARS = 2_000_000
+
+function startRunner({ tag, args, logDir, detached = false }) {
   mkdirSync(logDir, { recursive: true })
   const outPath = join(logDir, `runner-${tag}.log`)
   const outFd = openSync(outPath, 'a')
@@ -84,13 +122,28 @@ function startRunner({ tag, args, logDir }) {
     cwd: REPO_ROOT,
     stdio: ['ignore', 'pipe', 'inherit'],
     env: process.env,
+    detached,
   })
   const buffer = { text: '' }
+  let writtenBytes = 0
+  let cappedNoticed = false
   child.stdout.on('data', (chunk) => {
     const s = chunk.toString('utf8')
     buffer.text += s
+    if (buffer.text.length > WATCH_BUFFER_MAX_CHARS) buffer.text = buffer.text.slice(-WATCH_BUFFER_MAX_CHARS / 2)
+    if (writtenBytes >= RUNNER_LOG_CAP_BYTES) {
+      if (!cappedNoticed) {
+        cappedNoticed = true
+        try {
+          writeSync(outFd, `\n[RUNNER-LOG-CAP-REACHED bytes=${RUNNER_LOG_CAP_BYTES} further bytes dropped — FIX-T T3]\n`)
+        } catch {
+          /* nothing more we can do */
+        }
+      }
+      return
+    }
     try {
-      writeSync(outFd, s)
+      writtenBytes += writeSync(outFd, s).bytesWritten ?? s.length
     } catch {
       /* log write must never break the watch */
     }
@@ -150,9 +203,12 @@ async function crashSimulationControl({ factory }) {
   // the LEASE by releasing-and-rewriting it as a dead pid (what a dead runner
   // leaves behind).
   lease.release()
-  writeFileSync(join(factory.leaseRoot, `${lease.port}.lease`), JSON.stringify({ pid: 4_194_303, startedAt: new Date().toISOString(), world: world.id, purpose: 'sim-host' }))
+  // FIX-T T1 slot layout: a stale lease is an attempt FILE inside the
+  // `<port>.lease/` slot dir — exactly what a dead runner leaves behind.
+  mkdirSync(lease.slotPath, { recursive: true })
+  writeFileSync(join(lease.slotPath, 'c-000000000001-w-4194303-simcontrol.json'), JSON.stringify({ pid: 4_194_303, startedAt: new Date().toISOString(), world: world.id, purpose: 'sim-host', token: 'simcontrol', seq: 1 }, null, 2) + '\n')
   const stale = scanStaleLeases(factory.leaseRoot).filter((s) => s.by?.world === world.id)
-  const reclaim = await reclaimWorld({ home: world.home, worldId: world.id, leasePaths: stale.map((s) => ({ path: s.leasePath, port: s.port })) })
+  const reclaim = await reclaimWorld({ home: world.home, worldId: world.id, leasePaths: stale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })) })
   await sleep(1_200)
   const checks = {
     orphanPid: orphan.pid,
@@ -230,7 +286,7 @@ export async function runParallelSupervisor(opts) {
   const reclaim = await reclaimWorld({
     home: bHome,
     worldId: bWorld,
-    leasePaths: bStale.map((s) => ({ path: s.leasePath, port: s.port })),
+    leasePaths: bStale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })),
   })
   await sleep(1_500)
   const orphanDead = !pidAlive(bHostPid)
@@ -334,13 +390,436 @@ export async function runParallelSupervisor(opts) {
 }
 
 
+/** readdir that never throws (missing dir = empty). */
+function readdirSafe(dir) {
+  try {
+    return readdirSync(dir)
+  } catch {
+    return []
+  }
+}
+
+function safeReadJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * pids of live processes whose /proc/<pid>/environ still names
+ * DSH_HOME=<home> — even after the home directory was deleted the env block
+ * survives in the process, so this is the strongest post-reclaim leak scan:
+ * ANY survivor claiming a destroyed World home is residue reclaim owns.
+ * Reads only: never touches processes, reads only /proc. On non-Linux the
+ * scan is unavailable and returns null — callers treat null as
+ * 'unavailable', NEVER as proof of zero.
+ */
+function scanPidsClaimingHome(home) {
+  const needle = `DSH_HOME=${home}`
+  const out = []
+  let pids
+  try {
+    pids = readdirSync('/proc')
+  } catch {
+    return null
+  }
+  for (const name of pids) {
+    if (!/^\d+$/.test(name)) continue
+    const pid = Number(name)
+    if (pid === process.pid) continue
+    try {
+      const env = readFileSync(`/proc/${name}/environ`)
+      if (env.includes(needle)) out.push(pid)
+    } catch {
+      /* vanished or not ours to read: not a provable claim */
+    }
+  }
+  return out
+}
+
+/**
+ * FIX-T T2 — LIVE abnormal-kill crash reclaim. The victim World is killed
+ * (whole owned process group, SIGKILL) with a canary tool call PROVABLY in
+ * flight; the reclaim scan must clear every residue with provenance while a
+ * survivor World keeps running. The in-flight gate is what the G3 run lacked:
+ * PASS is computed ONLY from receipts that the kill landed mid-tool
+ * (`<tag>.pre` exists, `<tag>.post` does NOT, victim RUN record absent).
+ * No SKIP in this mode — an unlanded kill is a FAIL.
+ */
+export async function runCrashReclaimSupervisor(opts) {
+  const { evidence, budgetLedger, maxHostStarts, killAfterMs, survivorSuite, inflightTimeoutMs } = opts
+  const aSuite = survivorSuite ?? 'core'
+  mkdirSync(evidence, { recursive: true })
+  const factory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: evidence })
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const runId = `u5-crash-${stamp}`
+  const teamSha = git(['rev-parse', 'HEAD'])
+  const hostBasePre = factory.assertHostBase('pre')
+  const stablePre = await stableInstanceProbe()
+  const homesPre = homesCensus(join(REPO_ROOT, 'tests', 'homes'))
+  const record = createRunRecord({
+    runId,
+    suite: 'parallel',
+    selectedCases: ['abnormal-kill-reclaim', 'crash-simulation-reclaim', 'other-world-unaffected', 'pristine-host-and-stable-untouched', 'sibling-homes-untouched'],
+    ledgerPath: budgetLedger,
+    bindings: {
+      teamSha,
+      hostSha: hostBasePre.head,
+      worldIds: [],
+      leaseRoot: factory.leaseRoot,
+      mode: 'crash-reclaim',
+      note: `A = ${aSuite} runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group once A signals U5-IN-RUN (survivor straddles kill+reclaim); reclaim = factory crash recovery with provenance`,
+    },
+  })
+
+  const runnerLogDir = join(evidence, 'logs', 'runners')
+  const recA = join(evidence, `run-${runId}-A.json`)
+  const recB = join(evidence, `run-${runId}-B.json`)
+  const common = ['--evidence', evidence, '--max-host-starts', String(maxHostStarts), ...(budgetLedger !== null ? ['--budget-ledger', budgetLedger] : [])]
+  // FIX-T T2 (run-3 lesson): the survivor starts only AFTER the victim has
+  // proven its held in-flight call, and the kill waits until the survivor
+  // itself signals U5-IN-RUN — otherwise the fast core suite finishes long
+  // before the kill and 'other-world-unaffected' can never be proven live.
+  // The victim's gate holds the call up to capMs, so the survivor's boot
+  // fits inside the held window.
+  // The victim runs as its OWN process group leader: the kill below targets
+  // exactly the group OUR spawn created (runner + its host child + mock
+  // threads), never a pattern, a port owner, or anybody else's tree.
+  const B = startRunner({ tag: 'B', args: ['--suite', 'crash-victim', '--line', 'cb', '--run-record', recB, ...common], logDir: runnerLogDir, detached: true })
+  record.record.runners = { B: { pid: B.child.pid, pgid: B.child.pid, record: recB, detachedGroup: true } }
+
+  const finish = async (rec) => {
+    record.record.bindings.hostBasePost = (() => {
+      try {
+        return factory.assertHostBase('post')
+      } catch (error) {
+        return { error: String(error?.message ?? error) }
+      }
+    })()
+    const stablePost = await stableInstanceProbe()
+    record.addCase('pristine-host-and-stable-untouched', record.record.bindings.hostBasePost.error === undefined && stablePost.status === stablePre.status ? 'PASS' : 'FAIL', {
+      hostBasePre,
+      hostBasePost: record.record.bindings.hostBasePost,
+      stableInstance: { pre: stablePre, post: stablePost },
+    })
+    const homesPost = homesCensus(join(REPO_ROOT, 'tests', 'homes'))
+    const foreign = []
+    for (const [name, mtime] of Object.entries(homesPost)) {
+      if (name.startsWith('u5')) continue
+      if (!(name in homesPre)) foreign.push(`${name}:+created`)
+      else if (homesPre[name] !== mtime) foreign.push(`${name}:~touched`)
+    }
+    for (const name of Object.keys(homesPre)) {
+      if (name in homesPost) continue
+      if (!name.startsWith('u5')) foreign.push(`${name}:-removed`)
+    }
+    record.addCase('sibling-homes-untouched', foreign.length === 0 ? 'PASS' : 'FAIL', { foreignChanges: foreign })
+    const final = record.finalize()
+    record.write(join(evidence, `run-${runId}.json`))
+    return final
+  }
+
+  // ── wait for the victim to prove the call is IN FLIGHT ─────────────────────
+  const inflight = await waitForLine(B.buffer, /^U5-IN-FLIGHT (\S+) (\S+) (\d+) (\S+)$/m, inflightTimeoutMs)
+  if (inflight === null) {
+    record.addCase('abnormal-kill-reclaim', 'FAIL', {
+      reason: 'victim runner never printed U5-IN-FLIGHT (boot, auth, session or in-flight marker failed) — the crash kill was NOT exercised on a held call; no PASS possible',
+      bTail: tailFile(join(runnerLogDir, 'runner-B.log')),
+    })
+    await killOwnChild(B.child)
+    record.addCase('crash-simulation-reclaim', 'FAIL', { reason: 'skipped-by-fail-closed: live crash case already failed; the offline control would not repair it' })
+    record.addCase('other-world-unaffected', 'FAIL', { reason: 'live crash case failed before survivor proof' })
+    return finish(record.record)
+  }
+  const [, bWorld, bHome, bHostPidRaw, bTag] = inflight
+  const bHostPid = Number(bHostPidRaw)
+  record.record.bWorld = { id: bWorld, home: bHome, hostPid: bHostPid, inFlightTag: bTag }
+  record.record.bindings.worldIds.push(bWorld)
+
+  // The victim is now HELD mid-call (gate closed, capMs budget keeps it
+  // alive). Start the survivor and wait until it is provably mid-suite —
+  // THEN land the kill, so the survivor straddles kill+reclaim, which is
+  // exactly what 'other-world-unaffected' must prove.
+  const A = startRunner({ tag: 'A', args: ['--suite', aSuite, '--line', 'ca', '--run-record', recA, ...common], logDir: runnerLogDir })
+  record.record.runners.A = { pid: A.child.pid, record: recA }
+  const aInRun = await waitForLine(A.buffer, /^U5-IN-RUN (\S+) (\S+) (\d+)$/m, 300_000)
+  if (aInRun === null) {
+    record.addCase('abnormal-kill-reclaim', 'FAIL', { reason: 'survivor runner never reached U5-IN-RUN inside its budget — the kill was withheld rather than landed against a half-booted World; the crash path was NOT exercised against a live survivor', aTail: tailFile(join(runnerLogDir, 'runner-A.log')) })
+    await killOwnChild(B.child)
+    await killOwnChild(A.child)
+    record.addCase('crash-simulation-reclaim', 'FAIL', { reason: 'fail-closed: live crash case failed; the offline control cannot recolour it' })
+    record.addCase('other-world-unaffected', 'FAIL', { reason: 'fail-closed: live crash case failed before survivor proof' })
+    return finish(record.record)
+  }
+  record.record.aWorld = { id: aInRun[1], home: aInRun[2], hostPid: Number(aInRun[3]) }
+  record.record.bindings.worldIds.push(aInRun[1])
+  await sleep(killAfterMs) // a beat inside the held window, not at its boundary
+
+  // ── the abnormal kill: SIGKILL the victim's OWNED PROCESS GROUP ────────────
+  const pgid = B.child.pid // detached spawn → the runner IS the group leader
+  const groupKill = { at: new Date().toISOString(), pgid, runnerPid: B.child.pid, signal: 'SIGKILL', scope: 'process-group' }
+  const exitedP = new Promise((r) => B.child.once('close', (code, signal) => r({ code, signal })))
+  if (B.child.exitCode === null && B.child.signalCode === null) {
+    try {
+      process.kill(-pgid, 'SIGKILL')
+      groupKill.delivered = 'process-group'
+    } catch (error) {
+      if (error.code === 'ESRCH') groupKill.delivered = 'already-exited-group'
+      else throw error
+    }
+  } else {
+    groupKill.delivered = 'already-exited'
+  }
+  // Belt for OUR direct child handle (the group kill normally got it first).
+  if (B.child.exitCode === null && B.child.signalCode === null) {
+    try {
+      B.child.kill('SIGKILL')
+    } catch {
+      /* group kill raced us */
+    }
+  }
+  const exited = await Promise.race([exitedP, sleep(10_000).then(() => ({ timedOut: true }))])
+  groupKill.runnerCloseReceipt = exited
+  const victimRecordBefore = existsSync(recB)
+
+  // ── crash-state proofs BEFORE reclaim (they need the home on disk) ────────
+  await sleep(1_500) // let the kernel finish tearing the group down
+  const markerDir = join(bHome, 'workspace', 'markers')
+  const markers = readdirSafe(markerDir)
+  const ownership = safeReadJson(join(bHome, '.u5-ownership.json'))
+  const preMarker = markers.includes(`${bTag}.pre`)
+  const postMarker = markers.includes(`${bTag}.post`)
+  const victimRecordPresent = existsSync(recB)
+
+  // ── reclaim scan (the production crash-recovery path) ──────────────────────
+  const staleLeases = scanStaleLeases(factory.leaseRoot)
+  const bStale = staleLeases.filter((s) => String(s.by?.world) === bWorld)
+  const reclaim = await reclaimWorld({
+    home: bHome,
+    worldId: bWorld,
+    leasePaths: bStale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })),
+  })
+  // Captured IMMEDIATELY after reclaim: a peer World's next boot may sweep
+  // the victim's stale claim itself (measured in run 2: the survivor's boot
+  // claimed 3180 one second before this scan ran). The protocol's
+  // reclaimedFrom provenance then lives in the PEER's claim instead of the
+  // reclaim receipt — both paths prove the identical fact. Snapshot NOW:
+  // when the peer later releases, the consumed proof vanishes with its file.
+  const leasesAfterReclaim = scanAllLeases(factory.leaseRoot)
+  // Survivor liveness AT the reclaim instant — the only honest moment to
+  // observe it (captured here, not reconstructed after the verdict plumbing).
+  const aAliveAtReclaim = A.child.exitCode === null && A.child.signalCode === null
+  const sweptByPeer = leasesAfterReclaim
+    .filter((l) => String(l.by?.reclaimedFrom?.world) === bWorld)
+    .map((l) => ({ port: l.port, claimPid: l.by?.pid, reclaimedFrom: l.by?.reclaimedFrom }))
+  await sleep(1_000)
+  const hostGone = !pidAlive(bHostPid)
+  const hostKilledByReclaim = reclaim.killed.includes(bHostPid)
+  // The group kill normally reaps runner+host+mock together; reclaim then
+  // finds them dead and has nothing to kill. Both resolutions are honest as
+  // long as (a) any reclaim kill names ONLY ownership-recorded pids (those
+  // kills are /proc-environ-proof-gated by construction, and the simcontrol
+  // sub-case exercises that live-kill path with a real orphan), and (b) NO
+  // live process anywhere still claims the destroyed home.
+  const hostKillPath = hostKilledByReclaim
+    ? 'reclaim-environ-proof'
+    : hostGone && ownership?.hostPid === bHostPid
+      ? 'process-group-kill'
+      : 'unresolved'
+  const reclaimKillsOnlyRecordedPids = reclaim.killed.every((pid) => pid === ownership?.hostPid || pid === ownership?.runnerPid)
+  const homeClaimants = scanPidsClaimingHome(bHome)
+  const zeroProcessesClaimVictimHome = homeClaimants !== null && homeClaimants.length === 0
+  const hostPort = ownership?.hostPort ?? null
+  const mockPort = ownership?.mockPort ?? null
+  const hostPortIdle = hostPort !== null && !(await portInUse(hostPort))
+  const mockPortIdle = mockPort === null || !(await portInUse(mockPort))
+  const provenanceFor = (port) => reclaim.leaseProvenance.find((p) => p.port === port) ?? null
+  const hostProv = provenanceFor(hostPort)
+  const mockProv = provenanceFor(mockPort)
+  const killLandedInFlight = groupKill.delivered === 'process-group' && preMarker === true && postMarker === false && victimRecordPresent === false && victimRecordBefore === false
+  // A lease of the dead World counts as reclaimed-with-provenance when the
+  // reclaim scan took it (provenance in the receipt) OR when a live peer's
+  // sweep consumed it first (provenance in the peer's claim, snapshotted in
+  // sweptByPeer). 'missing' = nobody ever reclaimed it with proof: FAIL.
+  const peerProvFor = (port) => sweptByPeer.find((p) => p.port === port && p.reclaimedFrom?.pid === B.child.pid) ?? null
+  const hostProvenancePath = hostProv?.reclaimedFrom?.pid === B.child.pid ? 'reclaim-scan' : peerProvFor(hostPort) !== null ? 'swept-by-live-peer' : 'missing'
+  const mockProvenancePath = mockPort === null ? 'no-mock' : mockProv?.reclaimedFrom?.pid === B.child.pid ? 'reclaim-scan' : peerProvFor(mockPort) !== null ? 'swept-by-live-peer' : 'missing'
+  const conditions = {
+    killLandedInFlight,
+    inFlightMarkerPresent: preMarker,
+    completionMarkerAbsent: !postMarker,
+    victimRunRecordAbsent: !victimRecordPresent,
+    // NOTE: a non-zero bStale scan count is NOT required — a live peer's own
+    // boot may legitimately sweep the victim's claims first (measured, run 2:
+    // the survivor claimed the victim's host port one second before this
+    // scan ran, provenance in its own claim). The per-port provenance
+    // conditions below are the real requirement.
+    reclaimProvenanceForEveryReleasedLease: reclaim.leaseProvenance.length === reclaim.leasesReleased.length && reclaim.leaseProvenance.every((p) => p.reclaimedFrom?.pid === B.child.pid),
+    hostLeaseReclaimedWithProvenance: hostProvenancePath !== 'missing',
+    mockLeaseReclaimedWithProvenance: mockProvenancePath !== 'missing',
+    victimHostDead: hostGone,
+    hostKillPathResolved: hostKillPath === 'reclaim-environ-proof' || hostKillPath === 'process-group-kill',
+    reclaimKillsOnlyRecordedPids,
+    zeroProcessesClaimVictimHome,
+    zeroRefusals: reclaim.refused.length === 0,
+    homeDeletedViaOwnershipMarker: reclaim.homeDeleted === bHome,
+    hostPortIdle,
+    mockPortIdle,
+  }
+  record.record.abnormalKill = {
+    at: groupKill.at,
+    ...groupKill,
+    killedWhat: "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn",
+    bWorld: { id: bWorld, home: bHome, hostPid: bHostPid, tag: bTag },
+    ownershipFile: ownership,
+    markersAtKill: markers,
+    hostKillPath,
+    hostProvenancePath,
+    mockProvenancePath,
+    sweptByPeer,
+    homeClaimantsAfterReclaim: homeClaimants,
+    reclaimReceipts: { killed: reclaim.killed, refused: reclaim.refused, leasesReleased: reclaim.leasesReleased, leaseProvenance: reclaim.leaseProvenance, leaseNotes: reclaim.leaseNotes, homeDeleted: reclaim.homeDeleted },
+  }
+  const killVerdict = Object.values(conditions).every((v) => v === true) ? 'PASS' : 'FAIL'
+  record.addCase('abnormal-kill-reclaim', killVerdict, {
+    conditions,
+    verdictRule: 'PASS ONLY with the full conjunction — the in-flight trio (pre marker present, post marker absent, no victim RUN record) proves the SIGKILL landed mid-tool; the host is resolved dead either by the group kill or by a proof-gated reclaim kill, no live process anywhere claims the destroyed home, and reclaim REFUSED nothing; anything else FAILs (this mode has no SKIP)',
+    ownershipVerification: 'reclaimWorld kills ONLY pids recorded in .u5-ownership.json re-verified via /proc/<pid>/environ DSH_HOME == victim home (no pattern/name kills)',
+    windowsProcessTreeCleanup: process.platform === 'win32' ? 'ENV_BLOCK — descendant-tree cleanup beyond recorded pids is not implemented on Windows; not claimed' : 'n/a (Linux)',
+  })
+  if (killVerdict === 'FAIL') {
+    // fail-closed: do not spend the survivor/global checks pretending; kill
+    // both children, honest reds.
+    await killOwnChild(B.child)
+    await killOwnChild(A.child)
+    record.addCase('crash-simulation-reclaim', 'FAIL', { reason: 'live crash case failed; offline control cannot recolour it' })
+    record.addCase('other-world-unaffected', 'FAIL', { reason: 'live crash case failed before survivor proof' })
+    return finish(record.record)
+  }
+
+  // ── offline control still runs: the proof-gated kill stays live-fired ─────
+  record.record.crashSimulationControl = await crashSimulationControl({ factory })
+  record.addCase('crash-simulation-reclaim', record.record.crashSimulationControl.ok ? 'PASS' : 'FAIL', record.record.crashSimulationControl)
+
+  // ── A (survivor World) unaffected while B was crashed + reclaimed ──────────
+  // Run-3 lesson: the child 'close' event can lag arbitrarily (a stdio fd
+  // kept open by a descendant outlives the exited runner), so completion is
+  // settled by the RUN RECORD + a dead pid, with 'close' as the fast path
+  // and the 9-minute window only as the backstop kill for true stragglers.
+  const aDone = new Promise((resolve) => {
+    const tick = setInterval(() => {
+      if (!existsSync(recA)) return
+      const rec = safeReadJson(recA)
+      if (rec !== null && (A.child.exitCode !== null || A.child.signalCode !== null || !pidAlive(A.child.pid))) {
+        clearInterval(tick)
+        resolve({ via: 'record+dead' })
+      }
+    }, 500)
+    A.child.once('close', (code, signal) => {
+      clearInterval(tick)
+      resolve({ code, signal, via: 'close' })
+    })
+  })
+  const aExit = await Promise.race([aDone, sleep(9 * 60_000).then(() => ({ timeout: true }))])
+  if (aExit.timeout === true) await killOwnChild(A.child)
+  const aRecord = safeReadJson(recA)
+  record.addCase('other-world-unaffected', aExit.timeout !== true && aAliveAtReclaim === true && aRecord?.overall === 'PASS' ? 'PASS' : 'FAIL', {
+    aSuite,
+    aWorld: record.record.aWorld,
+    aAliveWhileBCrashedAndReclaimed: aAliveAtReclaim,
+    aExit,
+    aOverall: aRecord?.overall ?? 'record-missing',
+    aCases: aRecord?.cases?.map((c) => `${c.id}=${c.verdict}`) ?? [],
+  })
+
+  return finish(record.record)
+}
+
+/**
+ * Reconstruct mode for CRASH-RECLAIM records: zero spawns; re-judges the
+ * stored conjunction (no re-timing, no re-verdicts beyond recomputing the
+ * stored booleans) plus fresh global untouched checks.
+ */
+export async function reconstructCrash(opts) {
+  const { evidence, reconstruct, budgetLedger } = opts
+  const live = JSON.parse(readFileSync(reconstruct, 'utf8'))
+  const factory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: evidence })
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const runId = `u5-crash-recon-${stamp}`
+  const teamSha = git(['rev-parse', 'HEAD'])
+  const hostBasePre = factory.assertHostBase('pre')
+  const stablePre = await stableInstanceProbe()
+  const homesPre = homesCensus(join(REPO_ROOT, 'tests', 'homes'))
+  const record = createRunRecord({
+    runId,
+    suite: 'parallel',
+    selectedCases: ['abnormal-kill-reclaim', 'crash-simulation-reclaim', 'other-world-unaffected', 'pristine-host-and-stable-untouched', 'sibling-homes-untouched'],
+    ledgerPath: budgetLedger,
+    bindings: {
+      teamSha,
+      hostSha: hostBasePre.head,
+      worldIds: live.bWorld ? [live.bWorld.id] : [],
+      leaseRoot: factory.leaseRoot,
+      mode: 'crash-reclaim',
+      reconstruction: { sourceRecord: resolve(reconstruct), sourceOverall: live.overall, spawns: 0, note: 're-judgement of a completed crash-reclaim run from stored receipts; global checks probed fresh' },
+    },
+  })
+  const stored = (live.cases ?? []).find((c) => c.id === 'abnormal-kill-reclaim') ?? {}
+  const conds = stored.conditions ?? {}
+  const storedPass = Object.values(conds).every((v) => v === true)
+  record.addCase('abnormal-kill-reclaim', storedPass ? 'PASS' : 'FAIL', { fromLiveRecord: conds, killReceipt: live.abnormalKill ?? null })
+  const simStored = (live.cases ?? []).find((c) => c.id === 'crash-simulation-reclaim') ?? {}
+  // The offline control ran DURING the live record (real orphan process,
+  // real reclaimWorld); replaying its stored verdict with zero spawns is a
+  // faithful reconstruction — labelled as such, never recomputed optimistically.
+  record.addCase('crash-simulation-reclaim', simStored.verdict === 'PASS' ? 'PASS' : 'FAIL', { fromLiveRecord: simStored.verdict ?? 'absent' })
+  const aPath = live.runners?.A?.record
+  const aRecord = safeReadJson(aPath)
+  const otherStored = (live.cases ?? []).find((c) => c.id === 'other-world-unaffected') ?? {}
+  // No recoloring: reconstruction PASSes this case ONLY if the LIVE record
+  // already proved the survivor straddled kill+reclaim and finished green;
+  // a survivor that merely "was green but ended before the kill" stays FAIL.
+  const otherStoredOk = aRecord?.overall === 'PASS'
+    && otherStored.aOverall === 'PASS'
+    && otherStored.aAliveWhileBCrashedAndReclaimed === true
+    && otherStored.aExit?.timeout !== true
+  record.addCase('other-world-unaffected', otherStoredOk ? 'PASS' : 'FAIL', {
+    aOverall: aRecord?.overall ?? 'record-missing',
+    aAliveWhileBCrashedAndReclaimed: otherStored.aAliveWhileBCrashedAndReclaimed ?? 'not-recorded',
+    aExit: otherStored.aExit ?? 'not-recorded',
+  })
+  let hostBaseOk = false
+  let hostBasePost = null
+  try {
+    hostBasePost = factory.assertHostBase('post')
+    hostBaseOk = true
+  } catch (error) {
+    hostBasePost = { error: String(error?.message ?? error) }
+  }
+  const stablePost = await stableInstanceProbe()
+  record.addCase('pristine-host-and-stable-untouched', hostBaseOk && stablePost.status === stablePre.status ? 'PASS' : 'FAIL', { hostBasePre, hostBasePost, stableInstance: { pre: stablePre, post: stablePost } })
+  const homesPost = homesCensus(join(REPO_ROOT, 'tests', 'homes'))
+  const foreign = []
+  for (const [name, mtime] of Object.entries(homesPost)) {
+    if (name.startsWith('u5')) continue
+    if (!(name in homesPre)) foreign.push(`${name}:+created`)
+    else if (homesPre[name] !== mtime) foreign.push(`${name}:~touched`)
+  }
+  for (const name of Object.keys(homesPre)) if (!(name in homesPost) && !name.startsWith('u5')) foreign.push(`${name}:-removed`)
+  record.addCase('sibling-homes-untouched', foreign.length === 0 ? 'PASS' : 'FAIL', { foreignChanges: foreign })
+  const rec = record.finalize()
+  record.write(join(evidence, `run-${runId}.json`))
+  return rec
+}
+
+
 /**
  * Reconstruct mode — ZERO spawns (live budget stays untouched): re-evaluate a
- * finished live parallel run with the corrected case logic plus the offline
+ * finished live PARALLEL run with the corrected case logic plus the offline
  * crash-simulation control, and emit a NEW RUN record that binds to (does
- * not overwrite) the live record. Facts are re-read from the live artifacts
- * (A/B RUN records, the live parallel record's stored receipts); global
- * untouched-checks are probed fresh. Honesty rule unchanged: a race the live
+ * not overwrite) the live record. Honesty rule unchanged: a race the live
  * run lost stays SKIP here too — reconstruction re-judges evidence, it never
  * manufactures verdicts.
  */
@@ -441,7 +920,14 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2))
   let rec
   try {
-    rec = opts.reconstruct !== null ? await reconstructParallel(opts) : await runParallelSupervisor(opts)
+    if (opts.reconstruct !== null) {
+      const live = safeReadJson(opts.reconstruct)
+      rec = live?.bindings?.mode === 'crash-reclaim' ? await reconstructCrash(opts) : await reconstructParallel(opts)
+    } else if (opts.mode === 'crash-reclaim') {
+      rec = await runCrashReclaimSupervisor(opts)
+    } else {
+      rec = await runParallelSupervisor(opts)
+    }
   } catch (error) {
     console.error(`SUPERVISOR FAILED: ${String(error?.stack ?? error)}`)
     process.exit(2)

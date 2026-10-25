@@ -19,11 +19,19 @@
  * ENV (set by the TestWorldFactory before spawn):
  *   U6_CENTER_ASSEMBLY        'shadow' | 'off'
  *   U6_CENTER_ROW_URL         file URL of the DIST center-shadow-row.mjs
- *   U6_CENTER_SHADOW_LEDGER   audit JSONL inside the World home
+ *   U6_CENTER_SHADOW_LEDGER   audit JSONL inside the World home (CAPPED)
  *   U5_CANARY_WORLD           world id (provenance in the skipped row)
  */
-import { appendFileSync, mkdirSync } from 'node:fs'
+import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
+// FIX-T T3: every ledger write goes through the byte-capped appender
+// (ledger-cap.mjs is copied beside this row by TestWorldFactory.startHost).
+// The PRODUCT shadow row is handed `ledgerPath: ''` and its `observe` sink
+// instead: the sink receives the SAME stamped rows the row would have
+// appended and writes them here, so the ledger file content stays
+// byte-identical while EVERY append — including the row's own — respects the
+// cap. (product rows are never modified from test infra — red line.)
+import { appendCappedLine } from './ledger-cap.mjs'
 
 export const name = 'u6-shadow-host'
 export const inject = ['tools']
@@ -37,7 +45,7 @@ function record(row) {
   if (LEDGER === '') return
   try {
     mkdirSync(dirname(LEDGER), { recursive: true })
-    appendFileSync(LEDGER, JSON.stringify({ at: new Date().toISOString(), world: WORLD, ...row }) + '\n')
+    appendCappedLine(LEDGER, { at: new Date().toISOString(), world: WORLD, ...row })
   } catch {
     /* best-effort append; a dead audit channel must never break the boot */
   }
@@ -64,8 +72,20 @@ export function apply(ctx) {
       try {
         const { installCenterShadowRow } = await import(ROW_URL)
         // The product row reads no env (live-row law): this harness resolves
-        // the audit destination and hands it down.
-        const handle = await installCenterShadowRow({ agentCtx: ctx, scopeKey: `u6-shadow:${WORLD}`, ledgerPath: LEDGER })
+        // the audit destination and hands it down. FIX-T T3: we route it
+        // through the public `observe` sink and hand `ledgerPath: ''` — the
+        // row stamps each entry itself, then hands it to the sink, so the
+        // SAME entries land in the SAME file, every append now byte-capped.
+        // (The product module is untouched: `observe` is its public seam.)
+        const handle = await installCenterShadowRow({
+          agentCtx: ctx,
+          scopeKey: `u6-shadow:${WORLD}`,
+          ledgerPath: '',
+          observe: (stamped) => {
+            mkdirSync(dirname(LEDGER), { recursive: true })
+            appendCappedLine(LEDGER, stamped)
+          },
+        })
         disposers = handle.disposers
         record({ leg: 'center-mounted', row: ROW_URL })
       } catch (error) {
