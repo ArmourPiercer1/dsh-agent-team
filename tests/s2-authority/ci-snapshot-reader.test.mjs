@@ -20,7 +20,15 @@ const REF_LEGACY = 'dev/agent-workflow/graph.yaml#current_contract';
 const REF_SNAP = 'dev/engineering/current-authority.json';
 
 let fails = 0, ran = 0;
-const t = (n, f) => { ran += 1; try { f(); console.log(`PASS ${n}`); } catch (e) { fails += 1; console.log(`FAIL ${n}: ${e.message}`); } };
+const pending = [];
+const t = (n, f) => {
+  ran += 1;
+  try {
+    const r = f();
+    if (r && typeof r.then === 'function') pending.push(r.then(() => console.log(`PASS ${n}`), (e) => { fails += 1; console.log(`FAIL ${n}: ${e.message}`); }));
+    else console.log(`PASS ${n}`);
+  } catch (e) { fails += 1; console.log(`FAIL ${n}: ${e.message}`); }
+};
 const assert = (c, m) => { if (!c) throw new Error(m); };
 
 const carrier = (ref) => `<!-- phase-baseline-ref: ${ref} -->\n<!-- phase-identity: ${PHASE} -->\n# doc\n`;
@@ -139,6 +147,7 @@ t('S8 half-given CLI pair: named refusal exit 2 before any leg runs', () => {
   assert(code === 2 && /AUTHORITY_CANDIDATE_ARGS_INCOMPLETE/.test(out), `exit=${code} out=${out.slice(0, 160)}`);
 });
 
+await Promise.all(pending);
 rmSync(tmpDir, { recursive: true, force: true });
 console.log(fails === 0 ? `ALL GREEN (${ran} cases, actual count)` : `RED (${fails}/${ran} failing)`);
 process.exit(fails === 0 ? 0 : 1);
