@@ -22,7 +22,7 @@
  * (a5-read-slice-window / plants pairing).
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, realpathSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { installScopedToolGuard, definitionIdentityOf } from '../tool-dispatch/index.js'
@@ -144,12 +144,12 @@ describe('review-r1 B1 — no lifecycle port, no enforcing mount', () => {
     const tableIdentity = definitionIdentityOf(liveDef)!
     let tableLive = true
     const registry = createGovernedFamilyRegistry({ kernelManifest: { capabilities: {} } })
-    let guardRef!: Guard
+    const guardRef: { current?: Guard } = {}
     const kernel = createGovernanceKernel({
       registry,
       mode: 'enforcing',
       // PRODUCTION SHAPE: the port IS the dispatcher ledger, not a copy.
-      ports: { lifecycle: { inflight: () => guardRef.pendingCalls().length } },
+      ports: { lifecycle: { inflight: () => guardRef.current?.pendingCalls().length ?? 0 } },
     })
     expect(kernel.publish().ok).toBe(true)
     const outcome = installScopedToolGuard({
@@ -169,15 +169,15 @@ describe('review-r1 B1 — no lifecycle port, no enforcing mount', () => {
     })
     expect(outcome.ok).toBe(true)
     if (!outcome.ok) return
-    guardRef = outcome.value as unknown as Guard
-    expect(guardRef.bindOwnTools(['read']).ok).toBe(true)
-    expect(guardRef.publish().ok).toBe(true)
+    guardRef.current = outcome.value as unknown as Guard
+    expect(guardRef.current.bindOwnTools(['read']).ok).toBe(true)
+    expect(guardRef.current.publish().ok).toBe(true)
     const samples: Array<{ path: string; mid: number; port: number }> = []
     let hold: (() => void) | undefined
     const list = double.listeners.get('tools/execute') ?? []
     list.push((async (exec: { callId?: unknown }, next: () => Promise<unknown>) => {
-      const mid = guardRef.pendingCalls().length
-      samples.push({ path: String(exec?.callId), mid, port: guardRef.pendingCalls().length })
+      const mid = guardRef.current!.pendingCalls().length
+      samples.push({ path: String(exec?.callId), mid, port: guardRef.current!.pendingCalls().length })
       if (String(exec?.callId) === 'throw') throw new Error('planted execute-throw')
       if (String(exec?.callId) === 'hang') {
         await new Promise<void>((resolve) => {
@@ -191,24 +191,23 @@ describe('review-r1 B1 — no lifecycle port, no enforcing mount', () => {
     // path: success — the ledger holds the call mid-Body, drains after.
     const okRun = await double.runCall({ callId: 'success', name: 'read' })
     expect(okRun.bodies).toEqual(['V1.read'])
-    expect(guardRef.pendingCalls()).toHaveLength(0)
+    expect(guardRef.current!.pendingCalls()).toHaveLength(0)
     // path: throw — the entry drains on the throwing settle too.
     await double.runCall({ callId: 'throw', name: 'read' })
-    expect(guardRef.pendingCalls()).toHaveLength(0)
+    expect(guardRef.current!.pendingCalls()).toHaveLength(0)
     // path: refusal — the table goes silent; the door refuses BEFORE the
     // Body; the ledger never holds it (zero, and the port says zero).
     tableLive = false
-    expect(guardRef.pendingCalls()).toHaveLength(0)
+    expect(guardRef.current!.pendingCalls()).toHaveLength(0)
     const refused = await double.runCall({ callId: 'refused', name: 'read' })
     expect(refused.bodies).toEqual([])
     expect(String(refused.threw)).toContain('center approval table no longer backs')
-    expect(guardRef.pendingCalls(), 'the refused call never entered the ledger').toHaveLength(0)
+    expect(guardRef.current!.pendingCalls(), 'the refused call never entered the ledger').toHaveLength(0)
     tableLive = true
     // path: abort — hang mid-Body, prove the KERNEL sees the live count,
     // cancel from the caller, the entry drains.
     // Abort shape: the caller signal is raised WHILE the body hangs; the
     // innermost dispatch fuse settles the call ABORTED and the entry drains.
-    let releaseHold!: () => void
     const controller = new AbortController()
     const hanging = double.runCall({
       callId: 'hang',
@@ -218,17 +217,16 @@ describe('review-r1 B1 — no lifecycle port, no enforcing mount', () => {
       raiseCaller: () => controller.abort(),
     })
     await new Promise((resolve) => setTimeout(resolve, 30))
-    expect(guardRef.pendingCalls().length, `the ledger holds the hung call (samples=${JSON.stringify(samples)})`).toBeGreaterThanOrEqual(1)
+    expect(guardRef.current!.pendingCalls().length, `the ledger holds the hung call (samples=${JSON.stringify(samples)})`).toBeGreaterThanOrEqual(1)
     kernel.beginDrain()
     kernel.tombstone()
     const blocked = kernel.release()
     expect(blocked.ok, 'release while the dispatcher ledger holds work').toBe(false)
     if (blocked.ok === false) expect(blocked.code).toBe('LEASE_OPEN')
-    releaseHold = hold!
-    releaseHold()
+    hold!()
     // the hung body completes; the raised caller signal settles the call
     await hanging.catch(() => undefined)
-    expect(guardRef.pendingCalls(), 'every path drains the ledger').toHaveLength(0)
+    expect(guardRef.current!.pendingCalls(), 'every path drains the ledger').toHaveLength(0)
     expect(kernel.release().ok).toBe(true)
     // the port WAS the ledger at every mid-Body sample:
     const mid = samples.filter((s) => s.path !== 'refused')

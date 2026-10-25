@@ -134,14 +134,6 @@ import {
   p6t4Seed,
 } from './p6t4-helpers.js'
 
-// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
-// dispatcher's ledger — production passes the Guard handle's pendingCalls
-// (agent-bindings). These executor-level legs never install a dispatcher, so
-// this holder never settles a handle: the port reads the same wiring's honest
-// empty-ledger zero. No family-local counter, no faked number.
-const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
-
-
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
@@ -1856,6 +1848,16 @@ const PLANE_REALM = 'a5m1-auth-plane-realm'
 // same policy object, realm, template, role, generation, beneficiary) —
 // the resolve/guard gates re-derive coverage through EXACTLY these facts.
 directAssembly(undefined, PLANE_REALM)
+
+// REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the kernel lifecycle port is ONLY the
+// dispatcher's ledger — production passes the Guard handle's pendingCalls
+// (agent-bindings). This leg never installs a dispatcher, so this holder
+// never settles a handle: the port reads the same wiring's honest
+// empty-ledger zero. No family-local counter, no faked number. PLACEMENT
+// LAW: declared BELOW the L1264 fence-adjudicated site so the pre-site
+// region stays byte-identical (the fence re-keys on drift; see its
+// ADJUDICATED row for this file).
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
 
 function buildPlane(controlLeg: (input: PaControlLegInput) => Promise<PaControlLegResult>) {
   const built = planeRow.createTeamToolPlaneAssembly({
