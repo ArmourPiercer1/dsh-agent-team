@@ -65,10 +65,36 @@ export const SUITE_CASES = {
   core: ['token-gate', 'positive-control', 'error-return-with-effect', 'planted-defect-detected', 'oracle-blinding-divergence', 'leak-check'],
   'core-restart': ['token-gate', 'positive-control', 'error-return-with-effect', 'planted-defect-detected', 'oracle-blinding-divergence', 'restart-persistence', 'leak-check'],
   negatives: ['wrong-scope-no-effect', 'start-failure-classified', 'timeout-classified', 'interrupt-classified'],
+  // U6 PR1 shadow-parity (slice-plan "C2 via tests/world-factory ONLY"): the
+  // SAME core canary case matrix runs on two Worlds whose only delta is the
+  // mounted center-assembly SHADOW (off vs shadow), plus the parity cases.
+  'u6-shadow': [
+    'off:token-gate', 'off:positive-control', 'off:error-return-with-effect', 'off:planted-defect-detected', 'off:oracle-blinding-divergence', 'off:leak-check',
+    'shd:token-gate', 'shd:mounted', 'shd:positive-control', 'shd:error-return-with-effect', 'shd:planted-defect-detected', 'shd:oracle-blinding-divergence', 'shd:leak-check',
+    'shadow-parity-ledger', 'shadow-verdicts-observed',
+  ],
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const sha256Text = (s) => createHash('sha256').update(s).digest('hex')
+
+/**
+ * U6 parity normalization: the canary ledger carries per-world volatile
+ * stamps (`at` wall-clock, `world` id; boot ports appear nowhere in the
+ * rows). Stripping EXACTLY those keys and comparing the rest byte-identically
+ * is the documented normalization of "identical native result ledger"
+ * (U6-SLICE-PLAN PR1 C2). The shadow ledger additionally carries `scope`
+ * (world-tagged), `callId` (host-minted) and `row` (mount URL identity, kept)
+ * — verdict ROWS are only asserted within the ON world, never across worlds,
+ * so they shed the volatile keys for readable evidence only.
+ */
+function stripKeys(rows, keys) {
+  if (rows === null || rows === undefined) return null
+  const drop = new Set(keys)
+  return rows.map((row) => Object.fromEntries(Object.entries(row).filter(([k]) => !drop.has(k))))
+}
+const CANARY_VOLATILE = ['at', 'world']
+const SHADOW_VOLATILE = ['at', 'world', 'scope', 'callId']
 
 export function parseArgs(argv) {
   const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: 15, keepHome: false, only: null }
@@ -187,10 +213,12 @@ function diffCensus(pre, post) {
  * binding the owned child into run-control BEFORE awaiting (s1-h0-m1 capture
  * pattern). Returns { world, nonce, queue, issued, boot } once booted.
  */
-async function bootWorld({ factory, record, rc, worldOpts, phase }) {
+async function bootWorld({ factory, record, rc, worldOpts, phase, nonce: nonceIn }) {
   const world = await factory.createWorld(worldOpts)
   record.record.bindings.worldIds.push(world.id)
-  const nonce = Math.random().toString(36).slice(2, 8)
+  // U6 parity: a FIXED nonce makes the two worlds' canary tags identical, so
+  // the ledger comparison is meaningful; every other suite keeps a random one.
+  const nonce = nonceIn ?? Math.random().toString(36).slice(2, 8)
   const queue = []
   const issued = []
   const decide = makeCanaryDecide({ queue, nonce, onCallIssued: (e) => issued.push(e), control: { budget: rc.budget, runControl: rc } })
@@ -249,16 +277,20 @@ async function evaluateLeak({ world, receipts, factory }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // core: one World, one boot (plus optional restart leg)
 // ─────────────────────────────────────────────────────────────────────────────
-async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome }) {
-  const ctx = await bootWorld({ factory, record, rc, worldOpts: { line }, phase: 'boot1' })
+async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome, casePrefix = '', nonce: nonceIn = undefined, afterBoot = null, collect = null, extraWorldOpts = {} }) {
+  const ctx = await bootWorld({ factory, record, rc, worldOpts: { line, ...extraWorldOpts }, phase: `${casePrefix}boot1`, nonce: nonceIn })
   worlds.push(ctx.world)
   const { world, nonce, queue, issued } = ctx
   const origin = `http://127.0.0.1:${ctx.boot.port}`
   const oracle = createOracle({ ...oraclePaths(world), hostLogPath: ctx.boot.logPath })
+  // U6 parity: per-case effect digests collected for the cross-world check.
+  const effects = {}
+
+  if (afterBoot !== null) await afterBoot({ world, boot: ctx.boot, nonce })
 
   const noToken = await probeNoToken(origin)
-  record.addCase('token-gate', noToken === 401 ? 'PASS' : 'FAIL', { status: noToken })
-  record.record.boot1Evidence = {
+  record.addCase(casePrefix + 'token-gate', noToken === 401 ? 'PASS' : 'FAIL', { status: noToken })
+  record.record[`${casePrefix}boot1Evidence`] = {
     ledgerRowsAfterBoot: world.ledgerRows(),
     patchFile: (() => {
       try {
@@ -274,7 +306,7 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
   if (createRes.status !== 200) throw new Error(`session/create ${String(createRes.status)}: ${JSON.stringify(createRes.body ?? '').slice(0, 300)}`)
   const sessionId = findFirstKey(createRes.body, 'sessionId')
   if (typeof sessionId !== 'string') throw new Error('sessionId missing from session/create response')
-  record.record.session = { sessionId, workspace: world.workspaceDir }
+  record.record[`${casePrefix}session`] = { sessionId, workspace: world.workspaceDir }
   console.log(`U5-IN-RUN ${world.id} ${world.home} ${String(world.instance?.child?.pid ?? '?')}`)
 
   // ---- positive control -------------------------------------------------------
@@ -292,7 +324,8 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
     const effect = oracle.effect(obs, { returnedRan: result.found && resultClaimsRan(result.text), resultErrored: result.found && result.isError })
     if (resultWait.hit) rc.budget.noteWaitHit()
     else rc.budget.noteWaitMiss('positive-control')
-    record.addCase('positive-control', effect.effect && resultWait.hit && !result.isError ? 'PASS' : 'FAIL', {
+    effects['positive-control'] = { effect: effect.effect, roundTripped: resultWait.hit, resultErrored: result.found && result.isError }
+    record.addCase(casePrefix + 'positive-control', effect.effect && resultWait.hit && !result.isError ? 'PASS' : 'FAIL', {
       tag,
       promptStatus: promptRes.status,
       promptBodyHead: JSON.stringify(promptRes.body ?? '').slice(0, 200),
@@ -321,7 +354,8 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
     // Oracle input deliberately carries NO successful claim: return said error.
     const effect = oracle.effect(obs, { returnedRan: false, resultErrored: result.isError === true })
     if (!resultWait.hit) rc.budget.noteWaitMiss('error-after-effect')
-    record.addCase('error-return-with-effect', effect.effect && resultWait.hit && result.isError ? 'PASS' : 'FAIL', {
+    effects['error-return-with-effect'] = { effect: effect.effect, resultErrored: result.isError === true, roundTripped: resultWait.hit }
+    record.addCase(casePrefix + 'error-return-with-effect', effect.effect && resultWait.hit && result.isError ? 'PASS' : 'FAIL', {
       tag,
       oracleReportedEffectDespiteError: effect.effect,
       resultErrored: result.isError === true,
@@ -346,7 +380,8 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
     const sound = oracle.effect(obs, { returnedRan })
     const blinded = createOracle({ ...oraclePaths(world), hostLogPath: ctx.boot.logPath }, { broken: 'ignore-marker' }).effect(obs, { returnedRan })
     const caught = sound.effect === false && returnedRan === true
-    record.addCase('planted-defect-detected', caught ? 'PASS' : 'FAIL', {
+    effects['planted-defect-detected'] = { toolClaimedRan: returnedRan, soundOracleEffect: sound.effect, blindedOracleEffect: blinded.effect }
+    record.addCase(casePrefix + 'planted-defect-detected', caught ? 'PASS' : 'FAIL', {
       tag,
       toolClaimedRan: returnedRan,
       soundOracleEffect: sound.effect,
@@ -354,7 +389,7 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
       observation: summarizeObs(obs),
       resultWaitedMs: resultWait.waitedMs,
     })
-    record.addCase('oracle-blinding-divergence', sound.effect !== blinded.effect && blinded.effect === true ? 'PASS' : 'FAIL', {
+    record.addCase(casePrefix + 'oracle-blinding-divergence', sound.effect !== blinded.effect && blinded.effect === true ? 'PASS' : 'FAIL', {
       soundEffect: sound.effect,
       blindedEffect: blinded.effect,
       note: 'the ignore-marker Oracle variant turns the planted defect GREEN — proving the sound Oracle is what catches it (fault-planting sensitivity)',
@@ -394,10 +429,106 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
   }
 
   // ---- teardown + leak check ---------------------------------------------------
+  if (collect !== null) {
+    // Capture BEFORE teardown deletes the World home (the ledgers live there).
+    collect.effects = effects
+    collect.canaryRowsNormalized = stripKeys(world.ledgerRows(), CANARY_VOLATILE)
+    collect.shadowRowsNormalized = stripKeys(world.shadowLedgerRows(), SHADOW_VOLATILE)
+    collect.canaryDigest = sha256Text(JSON.stringify(collect.canaryRowsNormalized))
+    collect.markerFiles = oracle.observe({ tag: `pos-${nonce}` }).channels.markers.files.slice()
+  }
   await rc.stopChild()
   const receipts = await world.teardown({ keepHome })
   const leak = await evaluateLeak({ world, receipts, factory })
-  record.addCase('leak-check', leak.ok ? 'PASS' : 'FAIL', leak.detail)
+  record.addCase(casePrefix + 'leak-check', leak.ok ? 'PASS' : 'FAIL', leak.detail)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// u6-shadow (U6 PR1 C2): the core canary matrix on TWO Worlds whose only
+// delta is the mounted center-assembly shadow (off vs shadow). Reuses runCore
+// unchanged in mechanics — same boot helper, same script, same Oracle.
+// Parity law (slice plan): identical NATIVE result ledger (canary ledger
+// rows, documented normalization — `at`/`world` stripped, fixed nonce makes
+// tags world-independent) AND the Oracle sees the same external effects
+// (marker file names + per-case effect verdicts). The shadow audit ledger is
+// asserted ONLY inside the ON world (verdict rows exist, none allows; the
+// OFF world's row proves mounted-but-installed-nothing).
+// ─────────────────────────────────────────────────────────────────────────────
+const PARITY_NONCE = 'u6px'
+
+async function runShadowParity({ factory, record, rc, log, line, worlds, keepHome, evidence }) {
+  const off = {}
+  const shd = {}
+  log('shadow-parity world 1/2: assembly=off')
+  await runCore({
+    factory, record, rc, log, line: `${line}off`, suite: 'core', worlds, keepHome,
+    casePrefix: 'off:', nonce: PARITY_NONCE, collect: off,
+    extraWorldOpts: { centerAssembly: 'off' },
+  })
+  log('shadow-parity world 2/2: assembly=shadow')
+  await runCore({
+    factory, record, rc, log, line: `${line}shd`, suite: 'core', worlds, keepHome,
+    casePrefix: 'shd:', nonce: PARITY_NONCE, collect: shd,
+    extraWorldOpts: { centerAssembly: 'shadow' },
+    afterBoot: async ({ world }) => {
+      // Deterministic install: the mount row appends center-mounted (or
+      // center-error) once its async import settles — never race the cases.
+      const w = await waitUntil(
+        () => (world.shadowLedgerRows() ?? []).some((r) => r.leg === 'center-mounted' || r.leg === 'center-error'),
+        { timeoutMs: 20_000, signal: rc.signal },
+      )
+      const mounted = (world.shadowLedgerRows() ?? []).some((r) => r.leg === 'center-mounted')
+      record.addCase('shd:mounted', w.hit && mounted ? 'PASS' : 'FAIL', {
+        waitedMs: w.waitedMs,
+        rows: stripKeys(world.shadowLedgerRows(), SHADOW_VOLATILE),
+      })
+    },
+  })
+
+  record.record.shadowParity = { nonce: PARITY_NONCE, off, shd }
+  try {
+    writeFileSync(join(evidence, 'u6-shadow-parity.json'), JSON.stringify({ nonce: PARITY_NONCE, off, shd }, null, 2) + '\n')
+  } catch (error) {
+    log(`parity evidence write failed: ${String(error?.message ?? error)}`)
+  }
+
+  // ── case 1: native-path parity ────────────────────────────────────────────
+  const ledgerParity = typeof off.canaryDigest === 'string' && off.canaryDigest === shd.canaryDigest
+  const comparedCases = ['token-gate', 'positive-control', 'error-return-with-effect', 'planted-defect-detected', 'oracle-blinding-divergence']
+  const caseParity = comparedCases.every((id) => {
+    const a = record.getCase(`off:${id}`)
+    const b = record.getCase(`shd:${id}`)
+    return a?.verdict === 'PASS' && b?.verdict === 'PASS'
+  })
+  const effectParity = JSON.stringify(off.effects ?? null) === JSON.stringify(shd.effects ?? null)
+  const markersParity = JSON.stringify(off.markerFiles ?? null) === JSON.stringify(shd.markerFiles ?? null)
+  record.addCase('shadow-parity-ledger', ledgerParity && caseParity && effectParity && markersParity ? 'PASS' : 'FAIL', {
+    canaryLedgerShaOff: off.canaryDigest ?? null,
+    canaryLedgerShaShadow: shd.canaryDigest ?? null,
+    ledgerParity, caseParity, effectParity, markersParity,
+    markerFiles: off.markerFiles ?? null,
+    offEffects: off.effects ?? null,
+    shadowEffects: shd.effects ?? null,
+    note: 'normalization: canary rows minus at/world (fixed nonce); marker NAMES not bytes; oracle channels independent of tool returns',
+  })
+
+  // ── case 2: the shadow actually observed the calls (and only audited) ─────
+  const shdRows = shd.shadowRowsNormalized ?? []
+  const offRows = off.shadowRowsNormalized ?? []
+  const mounted = shdRows.some((r) => r.leg === 'center-mounted')
+  const verdicts = shdRows.filter((r) => r.leg === 'shadow-verdict')
+  const canaryVerdicts = verdicts.filter((r) => r.name === 'u5_canary')
+  const noAuthority = canaryVerdicts.every((r) => r.outcome === 'defer' || r.outcome === 'refuse')
+  const offInert = offRows.length >= 1 && offRows.every((r) => r.leg === 'center-skipped')
+  record.addCase('shadow-verdicts-observed', mounted && offInert && canaryVerdicts.length >= 3 && noAuthority ? 'PASS' : 'FAIL', {
+    mounted,
+    offInert,
+    canaryVerdictCount: canaryVerdicts.length,
+    verdictOutcomes: canaryVerdicts.map((r) => `${r.outcome}:${r.code ?? 'n/a'}`),
+    anyAllow: verdicts.some((r) => r.outcome === 'allow'),
+    shadowErrorRows: shdRows.filter((r) => r.leg === 'shadow-error').length,
+    note: 'PR1 truth: table fed NOTHING -> every verdict defers (NO_APPROVAL_ENTRY); a non-defer outcome or any allow here would mean authority leaked into the shadow',
+  })
 }
 
 /** Restart boot: reuse the World (held port lease) with a fresh boot phase. */
@@ -675,6 +806,8 @@ export async function runSuite(opts) {
   try {
     if (suite === 'core' || suite === 'core-restart') {
       await runCore({ factory, record, rc, log, line, suite, worlds, keepHome })
+    } else if (suite === 'u6-shadow') {
+      await runShadowParity({ factory, record, rc, log, line, worlds, keepHome, evidence })
     } else {
       if (selected.includes('wrong-scope-no-effect')) await caseWrongScope({ factory, record, rc, line, worlds, keepHome })
       if (selected.includes('start-failure-classified')) await caseStartFailure({ factory, record, rc, line, worlds, keepHome })

@@ -29,6 +29,7 @@
     "requirements",
     "root-binding",
     "tool-admission",
+    "governance-center",
     "tool-dispatch",
     "controlled-fs/src",
     "sandbox-provider",

@@ -42,7 +42,7 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, homeDir, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
 import { DshInstance, redactLaunchToken } from '../../characterization/lib/instance.mjs'
 import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/util.mjs'
@@ -55,6 +55,19 @@ export const CANARY_PLUGIN_SRC = resolve(HERE, '..', 'canary', 'u5-canary-plugin
 export const CANARY_ROW_ID = 'u5-canary'
 export const CANARY_TOOL_NAME = 'u5_canary'
 export const WORLD_PREFIX = 'u5'
+/**
+ * U6 PR1 shadow-parity support: the test-only row that mounts the PRODUCT
+ * shadow row (`packages/runtime/src/plugin/live/center-shadow-row.mjs`, from
+ * its DIST face) over the plugin-fiber context — the same public-seam shape
+ * the sealed sup-a `g1fa-center` fixture proved on this Host. Mounted ONLY
+ * when a World is created with `centerAssembly: 'off' | 'shadow'`; both
+ * worlds of the parity run mount the SAME row (the OFF world's row installs
+ * nothing and records `center-skipped`), so the only delta between the two
+ * Worlds is the shadow assembly itself.
+ */
+export const U6_SHADOW_HOST_SRC = resolve(HERE, '..', 'canary', 'u6-shadow-host.mjs')
+export const U6_SHADOW_ROW_ID = 'u6-shadow-host'
+export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
  * probe): on a FRESH unauthenticated DSH_HOME the two base-bundle
@@ -220,9 +233,15 @@ export class TestWorldFactory {
    * @param {boolean} [spec.visible] canary registration visibility (wrong-scope control)
    * @param {boolean} [spec.badMount] start-failure control: mount the row but
    *                                  do NOT copy the plugin file -> boot fails
+   * @param {'off'|'shadow'|null} [spec.centerAssembly] U6 PR1 shadow-parity:
+   *        mount the `u6-shadow-host` row (identically in BOTH modes; only
+   *        'shadow' installs the center-assembly row) and pass the U6_* env
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable' }) {
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
+    if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
+      throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
+    }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
     const home = homeDir(this.repoRoot, name)
@@ -248,7 +267,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly })
     this.worlds.push(world)
     return world
   }
@@ -257,6 +276,25 @@ export class TestWorldFactory {
 function lstatSafe(path) {
   try {
     return lstatSync(path)
+  } catch {
+    return null
+  }
+}
+
+/** JSONL reader for in-home ledger files (null = file absent: mounted-but-
+ *  never-loaded is itself evidence). */
+function rowsFrom(path) {
+  try {
+    return readFileSync(path, 'utf8')
+      .split('\n')
+      .filter((l) => l.trim() !== '')
+      .map((l) => {
+        try {
+          return JSON.parse(l)
+        } catch {
+          return { leg: 'UNPARSEABLE', raw: l.slice(0, 120) }
+        }
+      })
   } catch {
     return null
   }
@@ -278,9 +316,11 @@ export class TestWorld {
     this.visible = spec.visible
     this.badMount = spec.badMount
     this.extContributors = spec.extContributors ?? 'disable'
+    this.centerAssembly = spec.centerAssembly ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
+    this.shadowLedgerPath = join(spec.home, 'center-shadow-ledger.jsonl')
     this.instance = null
     this.mock = null
     this.hostLease = null
@@ -346,20 +386,12 @@ export class TestWorld {
 
   /** The canary ledger as seen on disk (register evidence after boot). */
   ledgerRows() {
-    try {
-      return readFileSync(this.ledgerPath, 'utf8')
-        .split('\n')
-        .filter((l) => l.trim() !== '')
-        .map((l) => {
-          try {
-            return JSON.parse(l)
-          } catch {
-            return { leg: 'UNPARSEABLE', raw: l.slice(0, 120) }
-          }
-        })
-    } catch {
-      return null // file absent: mounted-but-never-loaded is itself evidence
-    }
+    return rowsFrom(this.ledgerPath)
+  }
+
+  /** U6 PR1 shadow-parity: the audit-only shadow ledger of this World. */
+  shadowLedgerRows() {
+    return rowsFrom(this.shadowLedgerPath)
   }
 
   /**
@@ -388,6 +420,18 @@ export class TestWorld {
     process.env.U5_CANARY_MARKER_DIR = this.markerDir
     process.env.U5_CANARY_VISIBLE = this.visible ? '1' : '0'
     process.env.U5_CANARY_WORLD = this.id
+    // U6 PR1 shadow-parity env (set on EVERY boot of a centerAssembly World;
+    // DshInstance spreads process.env into the child).
+    const shadowWorld = this.centerAssembly === 'off' || this.centerAssembly === 'shadow'
+    if (shadowWorld) {
+      process.env.U6_CENTER_ASSEMBLY = this.centerAssembly
+      process.env.U6_CENTER_ROW_URL = pathToFileURL(join(this.factory.repoRoot, U6_CENTER_SHADOW_ROW_REL)).href
+      process.env.U6_CENTER_SHADOW_LEDGER = this.shadowLedgerPath
+    } else {
+      delete process.env.U6_CENTER_ASSEMBLY
+      delete process.env.U6_CENTER_ROW_URL
+      delete process.env.U6_CENTER_SHADOW_LEDGER
+    }
 
     this.instance = new DshInstance({
       hostTree: this.factory.hostTree,
@@ -408,8 +452,18 @@ export class TestWorld {
     } else {
       copyFileSync(CANARY_PLUGIN_SRC, join(this.instance.profileDir, 'u5-canary-plugin.mjs'))
     }
+    const rows = [{ id: CANARY_ROW_ID, name: './u5-canary-plugin.mjs' }]
+    if (shadowWorld) {
+      // U6 PR1 shadow-parity: the SAME test row mounts in BOTH worlds; the
+      // row itself installs the product shadow assembly only when
+      // U6_CENTER_ASSEMBLY='shadow' (the OFF world records `center-skipped`
+      // and installs nothing). The product row is imported from the DIST
+      // face — the exact file the shipped glue's dynamic import resolves to.
+      copyFileSync(U6_SHADOW_HOST_SRC, join(this.instance.profileDir, 'u6-shadow-host.mjs'))
+      rows.push({ id: U6_SHADOW_ROW_ID, name: './u6-shadow-host.mjs' })
+    }
     this.instance.mountRows(
-      [{ id: CANARY_ROW_ID, name: './u5-canary-plugin.mjs' }],
+      rows,
       ['U5 canary World — one test-only plugin row via the public profile-patch seam.'],
     )
     if (this.extContributors !== 'keep') {
