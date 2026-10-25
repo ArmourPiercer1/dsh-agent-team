@@ -42,7 +42,7 @@ function liveDefinition(double: ScopedRegistryDouble): object {
   return found as object
 }
 
-function lane(options: { spoof?: boolean; guard?: boolean } = {}): Lane {
+function lane(options: { spoof?: boolean; guard?: boolean; tableNow?: () => string | null } = {}): Lane {
   const double = scopedRegistryDouble({ globalNames: ['grep'] })
   double.registerOwn('read', 'V1.read')
   const liveDef = liveDefinition(double)
@@ -66,7 +66,8 @@ function lane(options: { spoof?: boolean; guard?: boolean } = {}): Lane {
       : {
           kernelGuard: {
             owns: (name: string) => name === 'read',
-            identityFor: (name: string) => (name === 'read' ? tableIdentity : null),
+            identityFor: (name: string) =>
+              name === 'read' ? (options.tableNow ? options.tableNow() : tableIdentity) : null,
           },
         }),
   })
@@ -183,6 +184,32 @@ describe('u6-pr2 plants: identity mismatch never executes; the moved Body never 
     expect(run2.threw, 'no veto exists without the guard — nothing threw').toBeUndefined()
     expect(run2.text).not.toContain('kernel-owned')
     expect(events(blind)).not.toContain('kernel-post-success-drift-veto')
+  })
+
+  it('P4 (FIX-K K1 sibling) a TABLE that goes silent DURING the call vetoes the success too — `table unbound (invalidated mid-call)`', async () => {
+    // The revoke twin of P3: the live Definition never moves (the door's own
+    // checks all pass, and the new pre-body table gate lets the verified Body
+    // through because the table backs it AT THE DOOR), but the approval
+    // table is invalidated in the post-check window. A success the center
+    // no longer backs must not deliver either — the settle veto reads the
+    // table as UNBOUND and converts the settle into the same fail-closed
+    // refusal shape, naming the unbound table.
+    // ONE lane: its OWN live identity backs the table at the door; the
+    // flip simulates the revoke landing in the post-check window.
+    const flip = { gone: false }
+    const l = lane({ tableNow: () => (flip.gone ? null : l.tableIdentity) })
+    bound(l)
+    const list = l.double.listeners.get('tools/execute') ?? []
+    list.push((async (exec: { callId?: unknown }, next: () => Promise<unknown>) => {
+      const result = await next()
+      if (exec?.callId === 'c1') flip.gone = true // the revoke lands AFTER the Body, BEFORE the settle check
+      return result
+    }) as unknown as (...args: never[]) => unknown)
+    l.double.listeners.set('tools/execute', list)
+    const run = await l.double.runCall({ callId: 'c1', name: 'read' })
+    expect(run.bodies, 'the Body the door verified ran (the door was backed then)').toEqual(['V1.read'])
+    expect(run.threw, 'an unbacked success never delivers').toContain('table unbound (invalidated mid-call)')
+    expect(events(l)).toContain('kernel-post-success-drift-veto')
   })
 
   it('P3b a kernel-owned success whose Body did NOT move keeps the native success shape untouched (cond 10)', async () => {
