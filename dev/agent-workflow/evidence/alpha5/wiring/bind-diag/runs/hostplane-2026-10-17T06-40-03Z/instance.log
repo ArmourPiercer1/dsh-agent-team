@@ -1,4 +1,0 @@
-[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-bind-diag/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
-dsh web: http://127.0.0.1:3186/?token=<REDACTED-42afeb32>
-[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
-[dsh-agent-team] durable permission authority ACTIVE for row session-a5bd-root-2026-10-17T06-40-03: anchor templates declaring capabilities.permissions = ["leader"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor team.a5bd.anchor@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)

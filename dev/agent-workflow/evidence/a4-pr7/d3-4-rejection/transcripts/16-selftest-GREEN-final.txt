@@ -1,1 +1,0 @@
-DSH-CI-SELFTEST pass 58 assertions (verdict algebra: identity sets, escalation, missing-token, fence refusal)

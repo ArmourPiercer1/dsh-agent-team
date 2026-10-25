@@ -1,3 +1,0 @@
-{"at":"2026-10-16T21:43:38.587Z","leg":"plugin-apply","pid":38,"mode":"s1s2","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-live-pr3/packages/runtime/dist/packages"}
-{"at":"2026-10-16T21:43:38.610Z","leg":"lanes-imported","ok":true}
-{"at":"2026-10-16T21:43:38.610Z","leg":"listen","event":"agent/created","ok":true}

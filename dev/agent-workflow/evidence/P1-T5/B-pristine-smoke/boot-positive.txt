@@ -1,5 +1,0 @@
-﻿positive boot line (from B boot.log):
-
-dsh web: http://127.0.0.1:3180/?token=ieUjTs2cfzDltbeZmzLPfE-OELqaJuqbDa0NYMLZxYE
-
-

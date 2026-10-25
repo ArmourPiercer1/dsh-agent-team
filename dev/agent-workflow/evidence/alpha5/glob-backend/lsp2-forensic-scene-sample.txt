@@ -1,7 +1,0 @@
-a5lsp2 FORENSIC world=a5lsp2-assembly-2026-10-18T05-43-06-389Z leg="PROBE: unconditional exercise of the scene renderer (a real failure would print exactly this)" expected=the scene must render with real /proc and world data
-  observed={"probe":true,"ceilingMs":30000}
-  loadavg="2.30 1.35 1.43 2/387 178" cpuPressure="some avg10=1.48 avg60=4.14 avg300=2.29 total=8045008887; full avg10=0.00 avg60=0.00 avg300=0.00 total=0" ceilingMs=30000
-  sampleLaneProcesses(world) = 0 live
-  watched pid=172 pidAlive=false state=? cmdline="<unreadable:ENOENT>"
-  watched pid=80 pidAlive=false state=? cmdline="<unreadable:ENOENT>"
-  world files=116 dirs=132 maxDepth=3 firstEntries=[<world>/fixtures , <world>/fixtures/ping.mjs , <world>/out , <world>/out/plan-mvdeg227-cn2epp , <world>/out/plan-mvdeg28x-8edu87 , <world>/out/plan-mvdeg2l9-2vwtk9 , <world>/out/plan-mvdeg2xl-6izg3s , <world>/out/plan-mvdeg3bj-phx4l7 , <world>/out/plan-mvdeg3iw-tu56nv , <world>/plans , <world>/plans/plan-mvdeg227-cn2epp.json , <world>/plans/plan-mvdeg28x-8edu87.json]

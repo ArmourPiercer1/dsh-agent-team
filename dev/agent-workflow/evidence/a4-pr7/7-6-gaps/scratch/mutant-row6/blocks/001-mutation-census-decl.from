@@ -1,2 +1,0 @@
-  const undeterminable: { readonly detail: Record<string, unknown> }[] = []
-  const rising: PermissionRiseRegion[] = []

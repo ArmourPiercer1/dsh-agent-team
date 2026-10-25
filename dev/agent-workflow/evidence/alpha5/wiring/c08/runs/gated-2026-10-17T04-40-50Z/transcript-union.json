@@ -1,7 +1,0 @@
-[
-  "A5C08-IMG ok chain=gated-fs attachment=attach/shot.png.b64 bytes=70 px=1x1 decoded_sha=sha256:c414cd0e204… grant=grant:06b25fb75240d77d57b7567c285a6355 edge_consumed=1 second_read=grant-consumed",
-  "A5C08-REFUSED kind=thumbnail-bypass code=effect-outside-grant payloadBytes=0 detail=admission refused at FS: no grant effect covers a read on this resource",
-  "A5C08-REFUSED kind=unbound code=admission-unbound payloadBytes=0 detail=exec-time admission recheck refused (admission-unbound)",
-  "A5C08-BINARY-FACT gated readText over raw PNG bytes: utf8-fidelity=false lane_bytes=94 disk_bytes=70 — the C-FS read face is TEXT; the byte-exact attachment transport form that survives it is base64",
-  "Error: team tool guard: the trusted global definition of \"read_image\" is unreadable at the public seam, so the name-vs-definition comparison the native rule needs cannot be made (refusing rather than crediting a name nobody could pin)"
-]

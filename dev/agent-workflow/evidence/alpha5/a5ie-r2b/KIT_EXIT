@@ -1,5 +1,0 @@
-KIT_EXIT=0  (GREEN: 43/43 graded + 2 booked)
-run=2026-10-18T12-14-43Z  recorded-run.log = its stdout
-install sha=0fa2cd76de2b48ef287ca3bf82ac6b03b30e3ab8  test-use head=639ed015397290b3745d163aafe02ffee4aa3f84 (porcelain 0 before/after)
-three zeros: missing=0 extra=0 sha-mismatch=0 (1772/1772 files, rootSha fd127dee31428d7d…)
-reproduce: node a5ie-r2b-kit.mjs   (exit 0 GREEN / 2 RED / 1 fatal)

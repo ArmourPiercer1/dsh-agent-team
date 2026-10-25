@@ -1,7 +1,0 @@
-{
-  "modelLegRan": false,
-  "modelLegGuardBlocked": true,
-  "guard_refusal_verbatim": "Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at dispatch time (no fallback to the native body)",
-  "anchor_probe_same_refusal": "Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at dispatch time (no fallback to the native body)",
-  "interpretation": "model-driven registration via bash run_in_background cannot reach ctx.jobs on ANY strict governed face of this host build (a5p1 Guard BINDING_UNVERIFIED for the preset bash on boot anchor AND created team); the registration trio therefore completes through the lane-assembly actuator on the governed members (T-allow-row). Registered as a missing item; not routed around."
-}

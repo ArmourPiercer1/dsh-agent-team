@@ -1,9 +1,0 @@
-a5g7 live runner stamp=2026-10-17T20-53-33Z ports=3183/3184 exp=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T20-53-33Z
-PASS H1 — the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539, porcelain clean before [head=639ed01539 porcelain=0]
-PASS H2 — ports 3183 AND 3184 self-proved free before the run + a mock port from the 349x family free [mock=3491]
-PASS H0 — the stable :3080 instance answers read-only before this run (probe only, never touched) [status=401]
-PASS E1 — STRICT public-manifest face: git archive HEAD of dist + package.json ONLY (GLUE-6 shipped the entry runtime .mjs INSIDE the mirror; the 4th glue placement plane-effect-backends.mjs present); nothing backfilled from the source tree [files=1733 a5p5=44 key={"host":true,"packageJson":true,"resolverInMirror":true,"seamInMirror":true,"backendsRow":true}]
-PASS E2 — the repo drift gate grades the committed dist at HEAD: exit 0 (this face is what the commit carries) [status=0]
-PASS E3 — the STRICT face + declared dependency closure imports the production rows clean (plane row, GLUE-7 backends row, bindings row, host entry) — the shipped face carries its own runtime [probe=OK miss=none]
-[assembled] host exited code=0 signal=null
-FATAL Error: FATAL: timeout waiting for assembled leader turn at the mock |     at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/dev/agent-workflow/evidence/alpha5/glue7/a5g7-live-kit.mjs:110:30) |     at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/dev/agent-workflow/evidence/alpha5/glue7/a5g7-live-kit.mjs:177:33) |     at async runWorld (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/dev/agent-workflow/evidence/alpha5/glue7/a5g7-live-kit.mjs:607:5) |     at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/dev/agent-workflow/evidence/alpha5/glue7/a5g7-live-kit.mjs:794:46)

@@ -1,2 +1,0 @@
-      census.push(cellCensusRow(cell, latestRules, plannedRules, staticFacts, subtreeContains))
-      const cellDetail = {

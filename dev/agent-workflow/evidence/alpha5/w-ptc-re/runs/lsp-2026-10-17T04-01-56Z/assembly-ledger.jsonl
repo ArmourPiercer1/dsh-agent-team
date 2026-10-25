@@ -1,4 +1,0 @@
-{"at":"2026-10-17T04:01:57.136Z","leg":"plugin-apply","pid":46,"mode":"lsp","testUse":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"}
-{"at":"2026-10-17T04:01:57.329Z","leg":"assembly-complete","label":"session-1015d4f8-ff41-4b9c-b715-07d56a2b9af7"}
-{"at":"2026-10-17T04:01:57.339Z","leg":"assembly-complete","label":"session-4682c883-0c07-4c1c-92db-2eb304cf5fb7"}
-{"at":"2026-10-17T04:01:57.461Z","leg":"realm-disposed","label":"session-1015d4f8-ff41-4b9c-b715-07d56a2b9af7","disposeMs":28}

@@ -1,1 +1,0 @@
-lint-identities: 160 identity lines, 76 distinct (target .)

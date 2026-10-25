@@ -1,4 +1,0 @@
-{
-  "message": "FATAL: timeout waiting for leader chain (create member -> list -> delegate -> collect -> final)",
-  "stack": "Error: FATAL: timeout waiting for leader chain (create member -> list -> delegate -> collect -> final)\n    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/release-candidate-r1/rc-trial-kit.mjs:93:30)\n    at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/release-candidate-r1/rc-trial-kit.mjs:135:33)\n    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/release-candidate-r1/rc-trial-kit.mjs:580:19"
-}

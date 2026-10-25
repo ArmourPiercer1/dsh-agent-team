@@ -1,1 +1,0 @@
-MEASURED_TOTAL=1203 pindir=true/true globoff=true

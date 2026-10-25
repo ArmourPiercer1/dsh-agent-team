@@ -1,6 +1,0 @@
-{"at":"2026-10-17T07:14:29.200Z","leg":"plugin-apply","pid":47,"assemble":false,"launcher":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run","testUse":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"}
-{"at":"2026-10-17T07:14:29.200Z","leg":"launcher-deploy","attempted":false,"ok":false,"note":"","selectedRunnerAtApply":null}
-{"at":"2026-10-17T07:14:29.338Z","leg":"assembly-complete","label":"session-a9d610bf-82ae-4fc6-bda6-5a1cb6c60fa8"}
-{"at":"2026-10-17T07:14:29.899Z","leg":"grant-fed","token":"t3","decision":"reject"}
-{"at":"2026-10-17T07:14:29.900Z","leg":"grant-fed","token":"t3b","decision":"no-answer"}
-{"at":"2026-10-17T07:14:29.901Z","leg":"grant-fed","token":"t4","decision":"allow"}

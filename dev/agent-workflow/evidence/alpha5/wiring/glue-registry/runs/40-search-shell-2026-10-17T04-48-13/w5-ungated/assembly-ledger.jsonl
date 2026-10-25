@@ -1,8 +1,0 @@
-{"at":"2026-10-17T04:48:18.433Z","leg":"plugin-apply","pid":275,"mode":"ungated","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/packages/runtime/dist/packages","lane":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/.a5w5-build"}
-{"at":"2026-10-17T04:48:18.465Z","leg":"lanes-imported","ok":true,"settlement0":"dispatcher-call-cancelled-before-body"}
-{"at":"2026-10-17T04:48:18.607Z","leg":"register","label":"session-9dff47ec-971c-45ac-b4d7-1e26edcc3227","names":["a5w5_search","a5w5_bash"],"ok":true}
-{"at":"2026-10-17T04:48:18.607Z","leg":"register","label":"session-9dff47ec-971c-45ac-b4d7-1e26edcc3227","name":"a5w5_unbound_probe","afterAssembly":false,"ok":true}
-{"at":"2026-10-17T04:48:18.608Z","leg":"lifecycle-complete","label":"session-9dff47ec-971c-45ac-b4d7-1e26edcc3227","legsOk":true}
-{"at":"2026-10-17T04:48:18.608Z","leg":"assembly-complete","label":"session-9dff47ec-971c-45ac-b4d7-1e26edcc3227"}
-{"at":"2026-10-17T04:48:18.882Z","leg":"probe-body-ran","label":"session-9dff47ec-971c-45ac-b4d7-1e26edcc3227"}
-{"at":"2026-10-17T04:48:18.896Z","leg":"probe-body-ran","label":"session-9dff47ec-971c-45ac-b4d7-1e26edcc3227"}

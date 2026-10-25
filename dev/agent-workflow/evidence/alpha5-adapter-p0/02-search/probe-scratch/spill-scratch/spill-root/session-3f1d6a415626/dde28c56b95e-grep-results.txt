@@ -1,8 +1,0 @@
-Found 3 matches
-
-notes.md
-Line 1: alpha appears here too
-
-src/alpha.ts
-Line 1: export const alpha = 1
-Line 2: // TODO: refit alpha

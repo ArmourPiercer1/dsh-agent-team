@@ -1,3 +1,0 @@
-tsc -p packages/client/tsconfig.build.json (build face: src only, emits packages/client/dist)
-
-EXIT=0 (no error output); packages/client/dist removed after the gate (gitignored, T7 convention)

@@ -1,8 +1,0 @@
-{"at":"2026-10-17T10:23:13.913Z","leg":"plugin-apply","pid":20,"assemble":true,"launcher":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run","testUse":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use","askTtlMs":6000}
-{"at":"2026-10-17T10:23:13.916Z","leg":"escalation-targets","source":"host-barrel:ESCALATION_TARGETS","targets":["workspace-write","danger-full-access"]}
-{"at":"2026-10-17T10:23:13.916Z","leg":"launcher-deploy","attempted":true,"ok":true,"note":"public `internals.landlockLauncher` test-hook property set before first confine()","osFloor":true,"assemble":true,"selectedRunnerAtApply":null}
-{"at":"2026-10-17T10:23:13.917Z","leg":"approval-hooks-at-apply","count":1,"shape":[{"global":false,"prepend":false}]}
-{"at":"2026-10-17T10:23:13.917Z","leg":"resolver-installed","ok":true,"faces":["plugin-ctx","plugin-ctx-global-outer"],"mirror":true,"disposersRetained":3}
-{"at":"2026-10-17T10:23:14.279Z","leg":"provision-complete","label":"session-4c62431e-6829-4f94-9095-3e1a85680d07","role":"lane"}
-{"at":"2026-10-17T10:23:14.282Z","leg":"provision-complete","label":"session-885b69d7-e4bf-4494-a4f2-b359a037af8d","role":"member"}
-{"at":"2026-10-17T10:23:14.287Z","leg":"provision-complete","label":"session-7b5392fa-dead-478f-9d88-9f8f5c31c5a3","role":"lane"}

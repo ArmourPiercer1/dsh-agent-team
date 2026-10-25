@@ -1,9 +1,0 @@
-PASS face ⊇ historical (byte-untouched old API surface) — execute,executeStreaming,prepare,probe,requestCancellation,settleTermination,spawn,spawnStreaming
-PASS face += spawnStreaming/executeStreaming (parallel-additive)
-PASS compiled assembly ensure(g0) — pid=33
-PASS compiled streaming ping round-trip
-PASS compiled policyChange g0→g1 (new pid) — old=33 new=57
-PASS old pid OS-gone after policyChange
-PASS new instance live
-PASS compiled disposeAll net-zero — [{"memberId":"smoke","generation":"g1","lastPid":57}]
-SMOKE: 8/8 PASS

@@ -1,3 +1,0 @@
-{
-  "error": "Error: FATAL: timeout waiting for row apply via /__a5pbr2/health\n    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pb-binding-feed/dev/agent-workflow/evidence/alpha5/pb-binding-feed/a5pbr2-kit.mjs:87:30)\n    at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pb-binding-feed/dev/agent-workflow/evidence/alpha5/pb-binding-feed/a5pbr2-kit.mjs:127:33)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pb-binding-feed/dev/agent-workflow/evidence/alpha5/pb-binding-feed/a5pbr2-kit.mjs:241:5)"
-}

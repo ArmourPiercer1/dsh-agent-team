@@ -1,4 +1,0 @@
-dsh: warning: 2 entries did not activate
-dsh-agent-team (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T20-41-12Z/packages/runtime/dist/packages/runtime/src/plugin/host.js): failed to import
-a5g7-observer (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/dev/agent-workflow/evidence/alpha5/install-entry/a5ie-observer-row.mjs): pending (waiting for service: teamRoot)
-dsh web: http://127.0.0.1:3183/?token=<REDACTED-ab548421>

@@ -1,9 +1,0 @@
-# pa-tsc.log — PR2/PR3 production-assembly round (branch alpha5-prod-pr23, base d714a941)
-# toolchain: node v24.21.0, typescript 6.0.3, vitest 4.1.11 (main-checkout node_modules symlinked into the worktree; base lockfile pins identical ranges)
-# (empty body + EXIT=0 = clean)
-## tsc -p packages/runtime/controlled-fs/tsconfig.lane.json
-tsc EXIT=0
-## tsc -p packages/runtime/tsconfig.json
-tsc EXIT=0
-## tsc -p packages/runtime/tsconfig.build.json --outDir tests/homes/.pa-smoke/out  (SCRATCH: committed packages/runtime/dist untouched)
-tsc EXIT=0

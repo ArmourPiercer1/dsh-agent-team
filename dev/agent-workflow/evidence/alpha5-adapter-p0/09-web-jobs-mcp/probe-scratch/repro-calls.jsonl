@@ -1,7 +1,0 @@
-{"at":1792102207778,"pid":13,"ev":"spawn"}
-{"at":1792102207782,"pid":13,"ev":"sigterm"}
-{"at":1792102207816,"pid":21,"ev":"spawn"}
-{"at":1792102207817,"pid":21,"ev":"initialize","client_protocol":"2025-11-25"}
-{"at":1792102207819,"pid":21,"ev":"initialized"}
-{"at":1792102207819,"pid":21,"ev":"tools/list"}
-{"at":1792102207826,"pid":21,"ev":"stdin-end"}

@@ -1,7 +1,0 @@
-{
-  "denyList": [],
-  "missingManaged": [
-    "lsp",
-    "pwsh"
-  ]
-}

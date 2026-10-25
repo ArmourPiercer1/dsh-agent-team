@@ -1,3 +1,0 @@
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-AssertionError: expected 1197 to be 1196 // Object.is equality
-      Tests  1 failed | 9 passed (10)

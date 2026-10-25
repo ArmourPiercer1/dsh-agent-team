@@ -1,4 +1,0 @@
-{"at":"2026-10-17T15:47:26.258Z","leg":"devkit-apply","on":true,"ipc":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-ptc-outerfs/tests/homes/a5ptc4d-rev-devkit-2026-10-17T15-47-24Z-on/.a5ptc4c/lane-channel.jsonl","note":"dev shape explicitly enabled"}
-{"at":"2026-10-17T15:47:26.259Z","leg":"devkit-faces","paths":["/__a5ptc4cdev/health","/__a5ptc4cdev/provision"],"canRegisterLane":false,"channelMode":"600"}
-{"at":"2026-10-17T15:47:26.513Z","leg":"devkit-queued","role":"member","sessionId":"session-2a8438c7-4eef-43a2-b5df-73e4f4680ca3","via":"devkit->trusted-lifecycle-channel"}
-{"at":"2026-10-17T15:47:26.726Z","leg":"devkit-refused","reason":"lane role is assembler-only","sessionId":"session-8cf79d57-2dce-47d8-bab8-31a070713f04"}

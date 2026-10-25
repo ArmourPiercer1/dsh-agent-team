@@ -1,1 +1,0 @@
-(stdio inherit — transcript in the calling job console; exit=0)

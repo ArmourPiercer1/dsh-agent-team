@@ -1,1 +1,0 @@
-        ? await containment(matcher.resource, { tool: operation.tool, key: operation.resource.key })

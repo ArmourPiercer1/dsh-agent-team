@@ -1,7 +1,0 @@
-[
-  "A5C08-IMG-UNGATED chain=host-direct bytes=70 px=1x1",
-  "A5C08-THUMB-UNGATED bytes=96 sha=sha256:e427046b906… (zero governance observation)",
-  "A5C08-UNBOUND-UNGATED bytes=96 (no gated lane installed; zero governance observation)",
-  "A5C08-BINARY-FACT ungated (no lane): disk_bytes=70",
-  "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-ungated-2026-10-17T04-40-41Z/workspace/repo/attach/shot.png</path> <type>image</type> <content> image/png image, 1x1 px, 70 bytes </content>Image \"shot.png\" (sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77); request preview 1x1px. Normalized copy (read-only; may be resized or re-encoded): \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-ungated-2026-10-17T04-40-41Z/attachments/v1/objects/c4/c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77\" (1x1px, image/png). Source dimensions, format, and byte size may differ. Copy to a writable path ending in .png before editing.{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==\"}}"
-]

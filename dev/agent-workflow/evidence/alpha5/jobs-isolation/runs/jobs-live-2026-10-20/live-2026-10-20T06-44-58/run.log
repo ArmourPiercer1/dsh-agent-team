@@ -1,9 +1,0 @@
-PASS A0.0 — pre-flight: head=515b3805, test-use pristine-at-baseline, sanctioned free ports, df recorded, stable :3080/:3180 probed read-only (ports=3186/3496 stable={"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":"unreachable"}})
-PASS A1.0 — real pristine host booted on the production row, jobsEnabled plane, probe row (public seam only) (origin=http://127.0.0.1:3186)
-PASS A1.1 — the probe row is mounted INSIDE the world and the REAL host jobs registry is present (ctx.get(jobs)) ({"ok":true,"jobsPresent":true,"node":"v24.21.0","pid":39})
-FAIL A1.2 — the four-boundary batch returned a machine receipt (receipt.json) (legs=0 ok=false)
-PASS A2.0 — process-level collectors: unhandledRejection=0 AND uncaughtException=0 over the whole batch ({"unhandled":[],"uncaught":[]})
-FAIL A2.1 — reap: every REAL spawned job exited (killed through the real svc cancel path) (reap=undefined aliveAfter=undefined)
-FAIL A3.0 — teardown to zero: world swept, no straggler producer processes (swept=true stragglers="52 bash -c pgrep -af A5ABORT_SPAWNMARK_20261020T064458 || true")
-PASS A4.0 — stable :3080/:3180 unchanged (same probe outcome before/after); test-use pristine AFTER; df recorded before and after (stable={"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":"unreachable"}} tuAfter={"rev":"639ed015397290b3745d163aafe02ffee4aa3f84","dirty":""})
-FAILED 3/8: A1.2, A2.1, A3.0

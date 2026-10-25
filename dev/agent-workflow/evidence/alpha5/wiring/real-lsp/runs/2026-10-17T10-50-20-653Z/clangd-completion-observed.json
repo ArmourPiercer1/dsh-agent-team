@@ -1,9 +1,0 @@
-{
-  "position": {
-    "line": 4,
-    "character": 16
-  },
-  "response": {
-    "error": "timeout textDocument/completion"
-  }
-}
