@@ -90,3 +90,9 @@ DSH_HOME=<repo>/tests/homes/<world> node apps/cli/lib/bin.js web --port 3180 --n
 - **锁文件**与 home 同处：`<home>.lock`。
 - 历史 home（旧布局 `references/.dsh-test*`，若存在）**不迁移**；新工作一律使用 `tests/homes/`。
 - 一切 home 均含 launch token 与世界状态：**永不提交**；删除世界属于影响面操作，须在 evidence 留痕。
+
+## 8. 历史证据存储与 worktree 布局（U3，2026-10-25 新增）
+
+- **已迁出的历史证据**：PR #366 将 20,148 个历史 tracked evidence 文件（约 498 MiB）`git rm` 出当前树（不改写历史）。索引 = `dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv`（tracked）；内容存于**本地临时**内容寻址库 `.artifacts/evidence/blobs/`（gitignored，与工作区同盘；用户裁决：临时方案，现存储体系后续废弃）。工具 = `node scripts/evidence-store.mjs verify | restore <path>… [--from-git] | ingest --from-commit <sha>`；本地库丢失时用 `--from-git` / `ingest --from-commit 95fbe95cf` 从 git 历史恢复。代码/CI 运行时读取的证据、文档链接目标与全部 evidence `*.md` 仍 tracked（keep-set，见 manifest 头注）。
+- **新 worktree 默认全量 checkout**：仓库曾在根 `.git/config.worktree` 启用 sparse-checkout，`git worktree add` 会继承 `.git/info/sparse-checkout` 模板并静默隐藏 manifest 等文件（U3 实测）。2026-10-25 起根 checkout 已 `git sparse-checkout disable`；如遇继承，在新 worktree 内执行 `git sparse-checkout disable`。需要稀疏时须显式声明并在 evidence 登记。
+- **空间纪律**：一任务一 worktree，合并即 `git worktree remove`；临时文件/日志放任务 evidence 或 `.artifacts/tmp/`，不得散落在 `.worktrees/` 根；`tests/homes/` 世界按 §7 用完即删。2026-10-25 U3 收口后实测：worktree 50→1（PR #360 头），df 可用 31 GiB→59 GiB。

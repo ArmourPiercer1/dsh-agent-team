@@ -6854,3 +6854,12 @@ net 半臂不在本单。
 （frozen precedence 正确，工单措辞序反；NC-1/NC-2 各单因腿各自绿）；③api-catalog 锚点行头
 注释改实测 :3921（纯注释，dist 镜像随动重放）。真跑配方维持等 int-r3（#333 合并后 ff 叠
 master 跑 production-run-recipe 全链）。
+
+## 2026-10-25 PR #364 U0–U3 收口（主 Agent = Claude Opus；执行体 qiyuan-self/qwen3.8-flash-next；独审 qiyuan-inter/gpt-6.1-sol）
+
+- **用户裁决（10:04Z–10:17Z）**：PR #364 = 唯一实施计划（已合并 @ `95fbe95cf`，guarded head `6e4ada1b`）；S1 已执行部分追认（G1-I PASS / G1-F NOT_PASSED ⇒ U6 仍锁）；不做原始数据备份（约 10h，损失可接受，恢复 = git）；push/merge 授权（无 force、无历史改写）；U3 证据库 = 工作区内本地临时目录。模型路由偏离 ROUTER_RULES §1 已按用户裁决记录。
+- **U0 = PASS（备份项 USER-WAIVED）**：新 F0 资产盘点（50 worktree / 24 本地独有分支 384 提交 / 1 stash / 161 根未跟踪 / 542 homes）；本地独有 refs 打包 `.artifacts/git/local-only-20261025.bundle`（25 refs，verify rc=0，sha256 `abf9ae3b…8f51`）。
+- **U1 = PASS**：九包 vitest ×2 同一 7733 pass / 20 red（9 = 既容忍 census 集，11 = 环境类，0 新产品红）；Root-22 旧红余 9；93 种子复核 86/86 名可解析，新名 `structured_output` = UNKNOWN；冷读 25 缺陷并入 U2。
+- **U2 / G2 = PASS**：R1 补充内容 → 定向实施 → R2 通过（gpt-6.1-sol 独立复跑 TWO_CURRENT / 指针损坏 / 缺失 / 回滚）。PR #365 合并 @ `2a8e53a6f`：当前合同唯一权威 = `dev/engineering/current-authority.json` → 快照 `as20261025r1`（content_digest `sha256:22042721…5195062`）；graph.yaml `current_contract` 块同 commit set 移除。
+- **U3 = PASS**：PR #366 合并 @ `ec7dc4df8`：20,148 文件 / 521,862,486 B 迁至本地内容寻址库（manifest sha256 `4f49b36b…ec7ecd`，993 文件留 tracked）；主 Agent 复核 verify pass、5 条随机三方哈希一致、缺 blob 负控 RED→恢复 GREEN、新 worktree 默认非稀疏可读 manifest。本地清理：worktree 50→1、homes 552 项删除（保留 8）、根 scratch 61 删、未知/证据/recovery 搬入 `.artifacts/evidence/`（不删）；执行脚本两次 fail-closed 中断后修复续跑（receipt 见 `.artifacts` 与本地 evidence `u3-local-cleanup-plan-20261025/EXECUTION-RECEIPT.md`）。df 可用 31 GiB → 59 GiB。根 checkout 由 `6259cf4b` ff 至 `ec7dc4df8`；其未提交事故条目（`SESSION_ROUTER_LOG` +17 行，patch sha256 `cf32496d…`）保存于 `.artifacts/evidence/root-untracked/root-checkout-uncommitted-20261025/`，未写入本日志正文（非原字节、不冒充原记录）。
+- **携带项**：G1-F NOT_PASSED（H0 = UNPROVEN/NEEDS-RULING）⇒ U4 起步；EB0-5 NOT_VERIFIED；docs:controls 8 个历史正控失败；无 owner 名册；常态 5–10 GiB 目标未达——剩余主要为 `.artifacts/evidence`（约 11 GiB，含未迁出历史 untracked 证据/恢复副本，同盘不可回收，待现存储体系废弃时处置）与 PR #360 头 worktree（3 GiB）。

@@ -61,7 +61,7 @@ exec_autonomy_contract_20260918:
   evidence: "dev/agent-workflow/evidence/exec-contract/（setup-install/baseline-fullsuite/typecheck/build/build-composition/fullsuite/gates 日志）+ live-smoke/exec-live-2026-09-19T11-16-48/（L1/L2/L3 live 三 case 完整 evidence：summary 15/15 + 每 case create/ledger/marker-file/tool-result + L2 resolve-response + blueprint YAML ×3 + instance 日志 + mock corpus + stable 探测）"
   red_lines: "member 契约零改动（H2 pin 字节级保真）；无隐式默认 allow；无 parse 层改动；A3 matcher 零行为改动；无 push（用户授权前禁止）；:3080/:3180 零触碰；冻结锚点未移动"
 
-current_phase: "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — PRODUCTION INTEGRATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval; authority = current_contract)"
+current_phase: "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — PRODUCTION INTEGRATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval; authority = dev/engineering/current-authority.json)"
 # state_pointers is the machine-graded recovery pointer, and it exists because the line above used
 # to carry a code revision inside prose: for four rounds and sixteen PRs `current_phase` asserted
 # `master = 606a0be7 (PR #65-#196 all merged)` while presenting itself as the recovery authority, and
