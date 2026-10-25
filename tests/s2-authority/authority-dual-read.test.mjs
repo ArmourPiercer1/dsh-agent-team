@@ -10,6 +10,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runDualRead } from '../../scripts/authority-dual-read.mjs';
+import { snapshotDigest } from '../../scripts/authority-snapshot.mjs';
 import { readLegacyAuthority, checkLegacyMirror, LEGACY_MIRROR_KEYS } from '../../scripts/gen-current-state.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
@@ -98,14 +99,28 @@ t('D5 invalid digest in candidate -> SNAPSHOT_INVALID_DIGEST red (fields still c
   rmSync(root, { recursive: true, force: true }); rmSync(snap.replace('/cand.json', ''), { recursive: true, force: true });
 });
 
-t('D6 missing snapshot field -> SNAPSHOT_SHAPE red with field name', () => {
+t('D6 missing snapshot field -> SNAPSHOT_SHAPE red with field name (digest recomputed via snapshotDigest, not ad-hoc stringify)', () => {
   const bad = JSON.parse(JSON.stringify(EXAMPLE)); delete bad.current_contract.matrix;
-  bad.content_digest = 'sha256:' + createHash('sha256').update(JSON.stringify((({ content_digest, ...rest }) => rest)(bad))).digest('hex');
+  bad.content_digest = snapshotDigest(bad); // the one canonical digest path, reused
   const root = mkRoot(); const snap = mkSnap(bad);
   const r = runDualRead(['--snapshot', snap, '--root', root]);
   const v = r.verdicts.find((x) => x.code === 'SNAPSHOT_SHAPE');
   assert(r.code === 2 && v && /matrix/.test(v.detail), JSON.stringify(r.verdicts));
+  assert(!r.verdicts.some((x) => x.code === 'SNAPSHOT_INVALID_DIGEST'), 'a digest-recomputed negative must not carry a spurious digest red');
   rmSync(root, { recursive: true, force: true }); rmSync(snap.replace('/cand.json', ''), { recursive: true, force: true });
+});
+
+t('D8 successfully-parsed falsy candidates (null/false/0/empty string) must NEVER read green', () => {
+  for (const txt of ['null', 'false', '0', '""']) {
+    const root = mkRoot(); // graph present and six fields consistent with the example
+    const sroot = mkdtempSync(join(REPO, '.tmp-s2-dr-'));
+    const f = join(sroot, 'cand.json');
+    writeFileSync(f, txt); // valid JSON whose VALUE is falsy
+    const r = runDualRead(['--snapshot', f, '--root', root]);
+    assert(r.code === 2 && !r.ok, `"${txt}": exit=${r.code} ok=${r.ok} compared=${r.compared} — falsy parse read as green`);
+    assert(r.verdicts.some((v) => v.code === 'SNAPSHOT_SHAPE' && v.red), `"${txt}": successful parse must run validateShape and report it`);
+    rmSync(root, { recursive: true, force: true }); rmSync(sroot, { recursive: true, force: true });
+  }
 });
 
 t('D7 read-only: zero new files, graph bytes identical after the diagnostic', () => {

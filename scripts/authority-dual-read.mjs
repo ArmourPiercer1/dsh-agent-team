@@ -35,22 +35,30 @@ export function runDualRead(argv) {
   const note = (code, detail) => verdicts.push({ code, detail, red: false });
 
   // ---- NEW side: explicit candidate snapshot (read-only, symlink input refused) ----
-  let candidate = null;
+  // A successful READ+PARSE is its own state: the parsed VALUE may be any JSON value,
+  // including falsy ones (null / false / 0 / ""). Truthiness of the value is never
+  // evidence of presence — every successful parse goes through validateShape, and
+  // without a valid candidate the run can never report green.
+  let candidateParsed = false;
+  let candidateShapeOk = false;
+  let candidate = undefined;
   try {
     const st = lstatSync(snapPath);
     if (st.isSymbolicLink()) red('SNAPSHOT_SYMLINK', `candidate ${snapPath} is a symlink; refusing to read through it`);
     else if (!st.isFile()) red('SNAPSHOT_NOT_REGULAR', `candidate ${snapPath} is not a regular file`);
-    else candidate = JSON.parse(readFileSync(snapPath, 'utf8'));
+    else { candidate = JSON.parse(readFileSync(snapPath, 'utf8')); candidateParsed = true; }
   } catch (e) {
     if (e.code === 'ENOENT') red('SNAPSHOT_MISSING', `candidate snapshot ${snapPath} does not exist`);
     else if (e instanceof SyntaxError) red('SNAPSHOT_PARSE', e.message);
     else return { code: 1, why: `IO_ERROR: ${e.message}` };
   }
-  if (candidate) {
+  if (candidateParsed) {
     const shape = validateShape(candidate);
+    candidateShapeOk = shape.errors.length === 0;
     for (const err of shape.errors) red('SNAPSHOT_SHAPE', err);
-    if (typeof candidate.content_digest !== 'string' || !DIGEST_RE.test(candidate.content_digest)) {
-      red('SNAPSHOT_INVALID_DIGEST', `content_digest is absent or not sha256 hex: ${JSON.stringify(candidate.content_digest)}`);
+    if (typeof candidate?.content_digest !== 'string' || !DIGEST_RE.test(candidate.content_digest)) {
+      if (candidateShapeOk) red('SNAPSHOT_INVALID_DIGEST', `content_digest is absent or not sha256 hex: ${JSON.stringify(candidate?.content_digest)}`);
+      // shape already reported for non-objects; the digest line is only meaningful once shape is otherwise clean
     } else if (snapshotDigest(candidate) !== candidate.content_digest) {
       red('SNAPSHOT_INVALID_DIGEST', `recorded ${candidate.content_digest} != recomputed ${snapshotDigest(candidate)} (F0 canonical, content_digest excluded, published_utc covered)`);
     }
@@ -66,8 +74,11 @@ export function runDualRead(argv) {
   }
 
   // ---- six-field comparison of recorded strings only (no selection, no repair) ----
+  // Gated on an explicit PARSED + SHAPE-CLEAN candidate (not on value truthiness) and
+  // on graph presence; a digest-invalid but shape-clean candidate is still compared
+  // (the digest red stands on its own), an unparseable/shape-dirty one is never.
   let compared = 0;
-  if (candidate && legacy.present) {
+  if (candidateParsed && candidateShapeOk && legacy.present) {
     const cc = candidate.current_contract ?? {};
     for (const key of LEGACY_MIRROR_KEYS) {
       const snapV = cc[key];
