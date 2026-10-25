@@ -108,8 +108,12 @@ t('P4 default mode CLI equals fixed parent 09fd39464 closure, bounded re-anchor 
   // `"cited-paths"` must restore the parent bytes, and the entry must be the ONLY delta.
   assert(b.out.includes('"cited-paths"') && !a.out.includes('"cited-paths"'),
     'the only sanctioned delta is the cited-paths rule name entering selected_rules');
-  const stripped = b.out.split('\n').filter((l) => l.trim() !== '"cited-paths",' && l.trim() !== '"cited-paths"').join('\n');
-  assert(stripped === a.out, `beyond the cited-paths entry the bytes must match the parent exactly:\n--parent--\n${a.out.slice(0, 400)}\n--current(stripped)--\n${stripped.slice(0, 400)}`);
+  // Compare the parsed reports with the one sanctioned entry removed: line-splicing the
+  // JSON would false-diff on the trailing comma of what used to be the array's last item.
+  const ja = JSON.parse(a.out), jb = JSON.parse(b.out);
+  jb.selected_rules = jb.selected_rules.filter((r) => r !== 'cited-paths');
+  assert(JSON.stringify(jb) === JSON.stringify(ja),
+    `beyond the cited-paths entry the report must equal the parent's exactly:\n--parent--\n${JSON.stringify(ja).slice(0, 400)}\n--current--\n${JSON.stringify(jb).slice(0, 400)}`);
   rmSync(root, { recursive: true, force: true }); rmSync(tmp, { recursive: true, force: true });
 });
 
