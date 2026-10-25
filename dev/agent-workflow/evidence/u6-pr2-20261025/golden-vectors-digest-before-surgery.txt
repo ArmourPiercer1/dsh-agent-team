@@ -1,0 +1,18 @@
+U6 PR2 golden-vector gate — recording protocol (honest chain):
+
+1. BEFORE any canonicalizer surgery (tree @ 2db321f63, canonical-operation.ts
+   untouched), the scratch recorder (z-u6pr2-golden-recorder.test.ts, deleted
+   after use) wrote .artifacts/tmp/u6pr2-read/golden-vectors.json and the
+   session transcript printed:
+     vectors: 877 / ok 110 / err 767 / distinct fingerprints 91
+     sha256(JSON.stringify(vectors)) =
+     7fbb3ab9ae48451fc8ab41489491dfcf4d0420bfaa0f596dd09c949124a7987c
+2. Surgery: `case 'read'` projection -> family pure normalizer
+   (packages/tools/fs-family/src/read-normalizer.ts); effectiveReadWindow
+   removed; everything else in the pipeline untouched.
+3. AFTER: same recorder, same generator, same resolver -> digest
+   7fbb3ab9ae48451fc8ab41489491dfcf4d0420bfaa0f596dd09c949124a7987c
+   => BYTE-IDENTICAL (all 877 fingerprints + typed-error details).
+The after-corpus is kept here byte-for-byte; the shipped test
+(u6-pr2-read-golden-vectors.test.ts) re-generates the corpus in-process and
+pins BOTH the digest and spot vectors, so the gate is CI-reproducible.

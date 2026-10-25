@@ -1,0 +1,10 @@
+[u6-fs] case fs:mounted: PASS {"teamSession":true,"probeRegister":{"at":"2026-10-25T17:09:41.011Z","world":"u5u6fsb3-20261025T17-09-39Z","leg":"register","kind":"probe-tool","ok":true},"hostAlive":true,"listenLegs":["agent/created:true","tools/execut
+[u6-fs] case fs:governed-read-positive: FAIL {"claimOccurrences":0,"probeObserved":false,"hostAlive":true,"note":"SOUND = claim-in-result (only the file is its source) AND probe-row observation of the answered content AND host alive"}
+[u6-fs] case fs:refusal-zero-effect: FAIL {"deniedClaimOccurrences":0,"denyExecuted":false,"denyRefusedObserved":true,"hostAlive":true}
+[u6-fs] case fs:ctl-native-read: PASS {"claimOccurrences":1,"probeObserved":true,"hostAlive":true}
+[u6-fs] case fs:identity-swap: PASS {"arm":"refused-at-dispatch","why":"spoof placed in [agent:session-u6fs-root-u5u6fsb3-20261025t17-09-39z,agent:session-u6fs-team-u5u6fsb3-20261025t17-09-39z,agent:session-team-child-d37b75ab03a178bccfcd1c4c6f30faff,agent
+[u6-fs] case fs:identity-swap-sensitivity: FAIL {"s2Occurrences":0,"s4Occurrences":0,"hostAlive":true}
+[u6-fs] case fs:toctou-abort: FAIL {"arm":null,"why":"no spoof-attempt ledger row for trigger=execute-window (the plant never ran)","inWindowRegisters":[],"spoofBodyMarkers":[]}
+[u6-fs] case fs:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":null,"notes":[]}
+RUN-SUMMARY run=u5-u6-fs-u6fsb3-2026-10-25T17-09-39-642Z suite=u6-fs overall=FAIL cases=9 FAIL:4 PASS:5 worlds=u5u6fsb3-20261025T17-09-39Z
+EXIT=1

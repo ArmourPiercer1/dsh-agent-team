@@ -1,0 +1,2 @@
+U5-IN-RUN u5u6cr3-20261025T19-45-02Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6cr3-20261025T19-45-02Z 43
+RUN-SUMMARY run=u5-core-u6cr3-2026-10-25T19-45-02-380Z suite=core overall=PASS cases=7 PASS:7 worlds=u5u6cr3-20261025T19-45-02Z

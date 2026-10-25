@@ -1,0 +1,3 @@
+CORE re-run console record (RUN-SUMMARY, from runner stdout 2026-10-25T17:52Z):
+RUN-SUMMARY run=u5-core-u6cr2-2026-10-25T17-51-53-751Z suite=core overall=PASS cases=7 PASS:7 worlds=u5u6cr2-20261025T17-51-53Z
+(exit 0; budget: 4 host starts, ledger c2/budget.jsonl core rows)

@@ -1,0 +1,331 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u6-fs-u6fsb6-2026-10-25T17-28-53-653Z",
+  "suite": "u6-fs",
+  "startedAt": "2026-10-25T17:28:53.757Z",
+  "selectedCases": [
+    "fs:mounted",
+    "fs:governed-read-positive",
+    "fs:refusal-zero-effect",
+    "fs:ctl-native-read",
+    "fs:identity-swap",
+    "fs:identity-swap-sensitivity",
+    "fs:toctou-abort",
+    "fs:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "2db321f631cc061685c2d5c6a46e054c95b9a321",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+        "snapshot_version": "as20261025r1"
+      },
+      "pointerSha256": "5356e8deabdcad5e6686208a8f3debe1113b56393d4a5c1c787e575c897725ee",
+      "snapshotDigest": "19b644b09af6026206137c10c86557562d5d62b871e7be5675af8d150df72391"
+    },
+    "canaryPluginSha256": "ffc17e7f2b435ade204de628d28b06ff45191684a56fb523eb76c8da992c696d",
+    "worldIds": [
+      "u5u6fsb6-20261025T17-28-53Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched."
+  },
+  "cases": [
+    {
+      "id": "fs:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:28:56.324Z",
+      "teamSession": true,
+      "probeRegister": {
+        "at": "2026-10-25T17:28:54.982Z",
+        "world": "u5u6fsb6-20261025T17-28-53Z",
+        "leg": "register",
+        "kind": "probe-tool",
+        "ok": true
+      },
+      "hostAlive": true,
+      "listenLegs": [
+        "agent/created:true",
+        "tools/execute:true",
+        "tools/post-execute:true"
+      ]
+    },
+    {
+      "id": "fs:governed-read-positive",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:44:47.937Z",
+      "claimOccurrences": 4,
+      "probeObserved": true,
+      "hostAlive": true,
+      "note": "SOUND = claim-in-result (only the file is its source) AND probe-row observation of the answered content AND host alive"
+    },
+    {
+      "id": "fs:refusal-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:44:47.938Z",
+      "deniedClaimOccurrences": 0,
+      "denyExecuted": true,
+      "denyRefusedObserved": true,
+      "hostAlive": true
+    },
+    {
+      "id": "fs:ctl-native-read",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:44:47.940Z",
+      "claimOccurrences": 1,
+      "probeObserved": true,
+      "hostAlive": true
+    },
+    {
+      "id": "fs:identity-swap",
+      "verdict": "FAIL",
+      "at": "2026-10-25T17:44:47.940Z",
+      "arm": null,
+      "why": "no spoof-attempt ledger row for trigger=probe-body (the plant never ran)",
+      "registerAttempts": [],
+      "spoofBodyMarkers": [],
+      "kernelGuardHits": {
+        "a5g7: placement-feed rows=": 2
+      }
+    },
+    {
+      "id": "fs:identity-swap-sensitivity",
+      "verdict": "FAIL",
+      "at": "2026-10-25T17:44:47.942Z",
+      "s2At": "2026-10-25T17:28:58.402Z",
+      "swapAt": "",
+      "s3At": "",
+      "restoreAt": "",
+      "s4At": "",
+      "orderOk": false,
+      "s2Occurrences": 1,
+      "s4Occurrences": 0,
+      "hostAlive": true
+    },
+    {
+      "id": "fs:toctou-abort",
+      "verdict": "FAIL",
+      "at": "2026-10-25T17:44:47.942Z",
+      "arm": null,
+      "why": "no spoof-attempt ledger row for trigger=execute-window (the plant never ran)",
+      "inWindowRegisters": [],
+      "spoofBodyMarkers": []
+    },
+    {
+      "id": "fs:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:45:16.081Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": null,
+      "notes": [
+        "home kept as evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z"
+      ]
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:44:48.232Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": ".artifacts/tmp/u6pr2-evidence/c2/budget.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-25T17:28:53.785Z",
+        "runId": "u5-u6-fs-u6fsb6-2026-10-25T17-28-53-653Z",
+        "suite": "u6-fs",
+        "world": "u5u6fsb6-20261025T17-28-53Z",
+        "phase": "u6fs-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "u6fs-boot1",
+      "world": "u5u6fsb6-20261025T17-28-53Z",
+      "port": 3182,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/.artifacts/tmp/u6pr2-evidence/c2/logs/u5u6fsb6-20261025T17-28-53Z/instance-port3182.log"
+    }
+  ],
+  "u6fsLanes": {
+    "strict": false,
+    "ctl": false,
+    "sens1": false,
+    "swapped": false,
+    "sens2": false,
+    "toctou": false,
+    "swapTrigger": false,
+    "restoreTrigger": false,
+    "toctouTrigger": false,
+    "leader": true
+  },
+  "u6fsDigest": {
+    "surface": [
+      "bash",
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "write"
+    ],
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary",
+      "u6fs_probe"
+    ],
+    "claims": {
+      "s1": 4,
+      "c1": 1,
+      "s2": 1,
+      "s3": 0,
+      "s4": 0,
+      "s5": 0,
+      "denied": 0
+    },
+    "spoofBodyMarkers": [],
+    "restoreRows": [],
+    "toctouArms": [],
+    "swapAttempts": [],
+    "registerAttempts": [],
+    "readExecutes": [
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-v5okkn58 rootCallId=call-u6fs-v5okkn58 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s1.txt}",
+        "agent": "session-team-child-0f292e008503cfa8b8845cdbafd651df"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-eojj21s5 rootCallId=call-u6fs-eojj21s5 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/secret/u6fs-denied.txt}",
+        "agent": "session-team-child-0f292e008503cfa8b8845cdbafd651df"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-mwp9c8zy rootCallId=call-u6fs-mwp9c8zy name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-c1.txt}",
+        "agent": "session-team-child-6fbe4e641812987e9f110047ac975153"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-udi1f8bs rootCallId=call-u6fs-udi1f8bs name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s2.txt}",
+        "agent": "session-team-child-0f292e008503cfa8b8845cdbafd651df"
+      }
+    ],
+    "readResults": [
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s1.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": true,
+        "cancelled": false,
+        "head": "Error: template-default-deny — undefined"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-c1.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb6-20261025T17-28-53Z/workspace/notes/u6fs-s2.txt</path>\n<type>file</type>\n<"
+      }
+    ],
+    "kernelHits": {
+      "kernel-post-success-drift-veto": {
+        "count": 0,
+        "sample": null
+      },
+      "a5g7: placement-feed rows=": {
+        "count": 2,
+        "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsb6-20261025t17-28-53z"
+      },
+      "a5-plane: mount-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "a5-plane: placement-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "a5m1-authority-leg": {
+        "count": 0,
+        "sample": null
+      },
+      "ABORTED_BEFORE_DISPATCH": {
+        "count": 0,
+        "sample": null
+      },
+      "cannot be verified at dispatch": {
+        "count": 0,
+        "sample": null
+      }
+    },
+    "laneDone": {
+      "strict": false,
+      "ctl": false,
+      "sens1": false,
+      "swapped": false,
+      "sens2": false,
+      "toctou": false,
+      "swapTrigger": false,
+      "restoreTrigger": false,
+      "toctouTrigger": false,
+      "leader": true
+    }
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": [
+      "u5u6fsb6-20261025T17-28-53Z:+created"
+    ]
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-25T17:44:48.232Z"
+}

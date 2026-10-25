@@ -1,0 +1,212 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "claims": {
+    "s1": 0,
+    "c1": 1,
+    "s2": 0,
+    "s3": 0,
+    "s4": 0,
+    "s5": 0,
+    "denied": 0
+  },
+  "spoofBodyMarkers": [],
+  "swapAttempts": [
+    {
+      "at": "2026-10-25T17:09:46.501Z",
+      "world": "u5u6fsb3-20261025T17-09-39Z",
+      "leg": "spoof-attempt",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "placedScopes": [
+        "agent:session-u6fs-root-u5u6fsb3-20261025t17-09-39z",
+        "agent:session-u6fs-team-u5u6fsb3-20261025t17-09-39z",
+        "agent:session-team-child-d37b75ab03a178bccfcd1c4c6f30faff",
+        "agent:session-team-child-1436645c9cf3ad3bf728dc179cd647d9",
+        "row"
+      ]
+    }
+  ],
+  "registerAttempts": [
+    {
+      "at": "2026-10-25T17:09:46.498Z",
+      "world": "u5u6fsb3-20261025T17-09-39Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6fs-root-u5u6fsb3-20261025t17-09-39z",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T17:09:46.499Z",
+      "world": "u5u6fsb3-20261025T17-09-39Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6fs-team-u5u6fsb3-20261025t17-09-39z",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T17:09:46.500Z",
+      "world": "u5u6fsb3-20261025T17-09-39Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-d37b75ab03a178bccfcd1c4c6f30faff",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T17:09:46.500Z",
+      "world": "u5u6fsb3-20261025T17-09-39Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-1436645c9cf3ad3bf728dc179cd647d9",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T17:09:46.501Z",
+      "world": "u5u6fsb3-20261025T17-09-39Z",
+      "leg": "spoof-register",
+      "scope": "row",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "ok": true
+    }
+  ],
+  "readExecutes": [
+    {
+      "path": "{}",
+      "agent": "session-team-child-d37b75ab03a178bccfcd1c4c6f30faff"
+    },
+    {
+      "path": "{}",
+      "agent": "session-team-child-d37b75ab03a178bccfcd1c4c6f30faff"
+    },
+    {
+      "path": "{}",
+      "agent": "session-team-child-1436645c9cf3ad3bf728dc179cd647d9"
+    },
+    {
+      "path": "{}",
+      "agent": "session-team-child-d37b75ab03a178bccfcd1c4c6f30faff"
+    },
+    {
+      "path": "{}",
+      "agent": "session-team-child-d37b75ab03a178bccfcd1c4c6f30faff"
+    },
+    {
+      "path": "{}",
+      "agent": "session-team-child-d37b75ab03a178bccfcd1c4c6f30faff"
+    },
+    {
+      "path": "{}",
+      "agent": "session-team-child-d37b75ab03a178bccfcd1c4c6f30faff"
+    }
+  ],
+  "readResults": [
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb3-20261025T17-09-39Z/workspace/secret/u6fs-denied."
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/tests/homes/u5u6fsb3-20261025T17-09-39Z/workspace/notes/u6fs-c1.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"
+    }
+  ],
+  "kernelHits": {
+    "kernel-post-success-drift-veto": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placed": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "team tool guard": {
+      "count": 0,
+      "sample": null
+    },
+    "ABORTED_BEFORE_DISPATCH": {
+      "count": 0,
+      "sample": null
+    },
+    "refused at the dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "laneDone": {
+    "strict": true,
+    "ctl": true,
+    "sens1": true,
+    "swapped": true,
+    "sens2": true,
+    "toctou": true,
+    "swapTrigger": true,
+    "restoreTrigger": true,
+    "toctouTrigger": true,
+    "leader": true
+  }
+}
