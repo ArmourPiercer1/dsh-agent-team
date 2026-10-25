@@ -14,8 +14,8 @@
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { writeGenerated } from './generated-write.mjs';
-// ESM cycle with authority-candidate-source is safe by design: both sides only use each
-// other's bindings at call time (hoisted function / const initialized before any call).
+// Dependency is one-way (consumer -> candidate source); the shared six-field list lives in
+// scripts/authority-contract-fields.mjs so the helper never imports this module back.
 import { loadCandidateAuthority } from './authority-candidate-source.mjs';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,7 +49,12 @@ const SCHEMA_PATH = 'dev/engineering/registry.schema.json';
 // only the first is a mirror. registry.schema.json documents the same list under
 // x-generated-view-mirror; checkLegacyMirror() pins the annotation, the emitter and the value
 // together so none of the three can drift alone.
-export const LEGACY_MIRROR_KEYS = ['phase_id', 'active_plan', 'backlog', 'matrix', 'baseline', 'baseline_collected'];
+// The list itself moved to scripts/authority-contract-fields.mjs (shared read-only with
+// the candidate source helper, which must not import this consumer module). Re-exported
+// here so every existing `import { LEGACY_MIRROR_KEYS } from './gen-current-state.mjs'`
+// keeps working: same name, same values, one single source list.
+import { LEGACY_MIRROR_KEYS } from './authority-contract-fields.mjs';
+export { LEGACY_MIRROR_KEYS };
 const MIRROR_ANNOTATION = 'x-generated-view-mirror';
 // A claim commit has to name a commit object, so abbreviated hex is not enough here;
 // 40 hex is what the checks below enforce. COMMIT_REX is used by those checks and
@@ -457,7 +462,10 @@ export function build(root, opts = {}) {
   findings.push(...checkContractIndex(root));
   let legacyAuthority;
   let sourceBinding;
-  if (opts.authorityCandidate) {
+  // Presence, not truthiness: ONLY a genuinely absent option keeps the legacy default.
+  // An explicitly provided authorityCandidate that is not a valid options object is a
+  // structured CANDIDATE_* refusal with no view — never a silent fall-through to legacy.
+  if (Object.hasOwn(opts, 'authorityCandidate')) {
     const c = loadCandidateAuthority(opts.authorityCandidate);
     if (!c.ok) return { refused: c.refused, ...(c.detail ? { detail: c.detail } : {}) };
     legacyAuthority = {

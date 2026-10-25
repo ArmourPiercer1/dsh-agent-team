@@ -10,11 +10,17 @@
 // current-state as a fallback.
 import { existsSync, lstatSync, readFileSync } from 'node:fs';
 import { validateShape, snapshotDigest } from './authority-snapshot.mjs';
-import { LEGACY_MIRROR_KEYS } from './gen-current-state.mjs';
+import { LEGACY_MIRROR_KEYS } from './authority-contract-fields.mjs';
 
 const DIGEST_RE = /^sha256:[0-9a-f]{64}$/;
 
-export function loadCandidateAuthority({ file, expectedDigest } = {}) {
+export function loadCandidateAuthority(options) {
+  // A non-object options argument is a structured refusal, never a thrown TypeError:
+  // the caller's refusal path must be the same for every bad input.
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    return { ok: false, refused: 'CANDIDATE_OPTIONS_INVALID', detail: `options must be { file, expectedDigest }, got ${options === null ? 'null' : Array.isArray(options) ? 'array' : typeof options}` };
+  }
+  const { file, expectedDigest } = options;
   if (!file || typeof file !== 'string') return { ok: false, refused: 'CANDIDATE_PATH_REQUIRED' };
   if (typeof expectedDigest !== 'string' || !DIGEST_RE.test(expectedDigest)) return { ok: false, refused: 'CANDIDATE_EXPECTED_DIGEST_REQUIRED' };
   let st;

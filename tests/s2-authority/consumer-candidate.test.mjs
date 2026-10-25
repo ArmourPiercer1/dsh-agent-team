@@ -5,9 +5,11 @@
 // canonical digest path. Default mode (no options) must stay on the legacy reader with
 // unchanged output. A refused candidate NEVER falls back to graph or current-state.
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { build } from '../../scripts/gen-current-state.mjs';
+import { build, renderView } from '../../scripts/gen-current-state.mjs';
 import { snapshotDigest } from '../../scripts/authority-snapshot.mjs';
 import { loadCandidateAuthority } from '../../scripts/authority-candidate-source.mjs';
 
@@ -109,6 +111,63 @@ t('C6 old/new divergence: explicit candidate mode keeps candidate (no auto sourc
   assert(Array.isArray(d) && d.some((x) => x.key === 'phase_id' && /alpha6-divergent/.test(x.legacy) && /alpha5-tool-io-governance/.test(x.snapshot)), JSON.stringify(d));
   clean(root, f.replace('/cand.json', ''));
 });
+
+// ---------- review-fix negatives (must be RED at bab57048) ----------
+t('C8 explicitly-provided falsy authorityCandidate refuses structured, never silently legacy', () => {
+  for (const v of [null, false, 0, '', undefined, 'x', []]) {
+    const root = mkRoot();
+    const opts = Object.defineProperty({}, 'authorityCandidate', { value: v, enumerable: true });
+    const r = build(root, opts); // OWN key present with a bad value = explicit provision
+    assert(r && typeof r.refused === 'string' && r.refused.startsWith('CANDIDATE_'), `${JSON.stringify(v)}: keys=${JSON.stringify(Object.keys(r || {}))} — fell through to legacy`);
+    assert(r.view === undefined, `${JSON.stringify(v)}: produced a view`);
+    clean(root);
+  }
+  // …while genuinely-not-provided options still take the legacy default
+  for (const opts of [undefined, {}]) {
+    const root = mkRoot();
+    const r = build(root, opts);
+    assert(!r.refused && r.view.legacy_authority.phase_id === CC.phase_id, `no-option case ${JSON.stringify(opts)} must stay legacy`);
+    clean(root);
+  }
+});
+t('C9 helper with null/array/string options: structured refusal, no TypeError', () => {
+  for (const v of [null, undefined, 'x', 42, []]) {
+    let r;
+    try { r = loadCandidateAuthority(v); } catch (e) { throw new Error(`${String(v)} threw ${e.constructor.name}: ${e.message}`); }
+    assert(r && r.ok === false && r.refused === 'CANDIDATE_OPTIONS_INVALID', `${String(v)}: ${JSON.stringify(r)}`);
+  }
+  const f = mkCand();
+  for (const partial of [{ file: f }, { expectedDigest: EXAMPLE.content_digest }]) {
+    const r = loadCandidateAuthority(partial);
+    assert(r && r.ok === false && (r.refused === 'CANDIDATE_PATH_REQUIRED' || r.refused === 'CANDIDATE_EXPECTED_DIGEST_REQUIRED'), JSON.stringify(r));
+  }
+  clean(f.replace('/cand.json', ''));
+});
+// C10: default compatibility vs the REAL 5f0d0e58 parent — git-show baseline into a
+// task-owned adjacent temp module; same fixture; full structure + rendered bytes.
+ran += 1;
+{
+  const root = mkRoot({ mirror: true });
+  const tmpMod = join(REPO, 'scripts', '.tmp-gcs-baseline-5f0d0e58.mjs');
+  try {
+    const src = execFileSync('git', ['show', '5f0d0e58e11c193087ad8918ef2c8f0c33d5446c:scripts/gen-current-state.mjs'], { cwd: REPO, maxBuffer: 64 * 1024 * 1024 });
+    writeFileSync(tmpMod, src);
+    const OLD = await import(pathToFileURL(tmpMod).href);
+    const a = OLD.build(root);
+    const b = build(root);
+    const structA = JSON.stringify({ view: a.view, findings: a.findings, runtime: a.runtime, topLevel: a.topLevel });
+    const structB = JSON.stringify({ view: b.view, findings: b.findings, runtime: b.runtime, topLevel: b.topLevel });
+    const rA = OLD.renderView(a); const rB = renderView(b);
+    const bytesSame = Buffer.compare(Buffer.from(rA, 'utf8'), Buffer.from(rB, 'utf8')) === 0;
+    if (structA === structB && bytesSame && rA.length > 0) {
+      console.log(`PASS C10 default == 5f0d0e58 baseline (structure equal; rendered ${rA.length} bytes byte-identical)`);
+    } else {
+      fails += 1;
+      console.log(`FAIL C10 structure_same=${structA === structB} bytes_same=${bytesSame}`);
+    }
+  } catch (e) { fails += 1; console.log(`FAIL C10: ${e.message}`); }
+  finally { rmSync(tmpMod, { force: true }); clean(root); }
+}
 
 console.log(fails === 0 ? `ALL GREEN (${ran} cases, actual count)` : `RED (${fails}/${ran} failing)`);
 process.exit(fails === 0 ? 0 : 1);
