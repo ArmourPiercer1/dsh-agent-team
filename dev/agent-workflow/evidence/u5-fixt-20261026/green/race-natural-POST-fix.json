@@ -1,0 +1,17 @@
+{
+  "schema": "u5-lease-race/1",
+  "at": "2026-10-25T17:19:27.714Z",
+  "lib": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/world-factory/lib/port-lease.mjs",
+  "inject": "none",
+  "procs": 8,
+  "trialsRequested": 300,
+  "trialsCompleted": 300,
+  "violations": 0,
+  "portAborts": 0,
+  "winnersDist": {
+    "1": 300
+  },
+  "violationDetails": [],
+  "seconds": 67,
+  "verdict": "CLEAN"
+}

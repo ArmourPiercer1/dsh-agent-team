@@ -1,0 +1,7 @@
+115a116,121
+>     // FIX-T RED DEMO HOOK — the ONLY deviation from @2db321f63 in this file
+>     // (test-only, env-gated, default OFF): pause AFTER the stale observation
+>     // and BEFORE acting on it, so a peer's full reclaim+create lands inside
+>     // the window — exactly the interleaving the finding describes.
+>     const __pauseMs = Number(process.env['DSH_U5_LEASE_PAUSE_AFTER_STALE_MS'])
+>     if (Number.isFinite(__pauseMs) && __pauseMs > 0) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Math.min(__pauseMs, 30000))
