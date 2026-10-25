@@ -64,6 +64,16 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
   },
+  {
+    // U6 PR1 center-assembly SHADOW row: the config-gated
+    // (`teamToolPlane.centerAssembly: 'shadow'`) mount that agent-bindings
+    // dynamically imports — production import edge from the glue (the gate),
+    // shipped through the same dist mirror law as every prior live row. Its
+    // own relative import of the governance-center lane resolves INSIDE the
+    // mirror (tsc emits the lane; this .mjs rides the byte-copy list).
+    src: 'packages/runtime/src/plugin/live/center-shadow-row.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs',
+  },
   // GLUE-7 production backend assembly row (byte-copied: tsc never emits
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).

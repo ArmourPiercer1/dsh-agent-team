@@ -14,6 +14,11 @@
     // A5-PR2: the tool-admission lane (Operation Admission + one-shot grant).
     // Same rationale as PR1's entry: typecheck coverage for the lane.
     "tool-admission",
+    // U6 PR1: the governance-center lane (closed contribution schema +
+    // read-only registry + §5 kernel + public-seam host adapter). Consumed
+    // by plain .mjs shadow glue only, so without this entry the lane would
+    // be typechecked by nothing at all (same rationale as the two above).
+    "governance-center",
     // A5 integration wiring (G-d, Scope-2): PR3 ControlledFs and PR4
     // sandbox-provider join the SHARED typecheck surface (their reviews'
     // "lane never entered a repo-wide tsc" condition). `controlled-fs` is

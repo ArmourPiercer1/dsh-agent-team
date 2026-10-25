@@ -2553,6 +2553,43 @@ export function createAgentBindings(deps) {
           toolDisposers.push(agentCtx.tools.register(def))
         }
       }
+      // U6 PR1 — center-assembly SHADOW mount (packages/runtime/
+      // governance-center/). config `teamToolPlane.centerAssembly`: 'off'
+      // (default; ABSENT config = this line never runs — every shipped world
+      // keeps today's shape byte-for-byte) | 'shadow'. In 'shadow' the row
+      // mounts the center skeleton (Registry + Kernel + HostSurfaceAdapter
+      // over injected ports), computes the kernel verdict of every call into
+      // an AUDIT-ONLY ledger and ALWAYS takes `next()`: zero behavior change,
+      // zero authority (U6-SLICE-PLAN PR1; sup-a §5 conditions 1/3/7/10,
+      // shadow form). No Family registers here, no approval feed, no
+      // consume, no admission call — the shadow verdicts are observations,
+      // never enforcement. A mount failure is LOUD on the observations
+      // channel and never changes the setup or the call flow.
+      if (config?.teamToolPlane?.centerAssembly === 'shadow') {
+        try {
+          const { installCenterShadowRow } = await import('./center-shadow-row.mjs')
+          const shadow = await installCenterShadowRow({
+            agentCtx,
+            scopeKey: `${String(teamRoot)}:${String(instanceId)}`,
+            // The audit destination is caller-supplied (live-row law: the
+            // product row reads no environment): the host row may name a
+            // JSONL path; absent = the observations channel below is the
+            // audit witness.
+            ledgerPath: typeof config?.teamToolPlane?.centerShadowLedger === 'string'
+              ? config.teamToolPlane.centerShadowLedger
+              : undefined,
+            observe: (row) => observations.push(
+              `u6-center-shadow: ${String(row?.leg ?? 'row')}`
+              + (row?.name === undefined || row.name === '' ? '' : ` name=${String(row.name)}`)
+              + (row?.code === undefined ? '' : ` code=${String(row.code)}`)
+              + (row?.outcome === undefined ? '' : ` outcome=${String(row.outcome)}`),
+            ),
+          })
+          for (const disposer of shadow.disposers) toolDisposers.push(disposer)
+        } catch (error) {
+          observations.push(`u6-center-shadow: mount failed (${String(error?.message ?? error).slice(0, 160)}) — shadow stays OFF for this agent; the governed flow is unaffected`)
+        }
+      }
       // ── GLUE-5: the governed Team TOOL PLANE (Q4 / R1 PLACEMENT lane) ──
       // Mounts ONLY here, ONLY for a governed agent (permissionPolicy), and
       // ONLY when the host row carries `teamToolPlane` in its config

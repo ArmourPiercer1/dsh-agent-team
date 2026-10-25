@@ -288,6 +288,34 @@ const SCANNED_PATHS_A5M1: readonly string[] = [
   'packages/runtime/test/a5-m1-seam-enforcement.test.ts',
 ]
 
+// U6 PR1 (branch task/u6-pr1-center-skeleton-20261025 off master f7fbc0f67,
+// the center-assembly skeleton slice 1/6) adds its TEN scannable files: the
+// governance-center lane (closed-world Family Contribution schema + the
+// read-only non-authorizing GovernedFamilyRegistry + the §5-state-machine
+// GovernanceKernel with the center-owned approval table and the ONE-SHOT
+// consume THROUGH the injected tool-admission port + the public-seams-only
+// HostSurfaceAdapter + the barrel), its shadow live row (the config-gated
+// `teamToolPlane.centerAssembly: 'shadow'` mount that ALWAYS takes next() —
+// inert by construction, audit ledger only), and the four C1 suites. The
+// agent-bindings.mjs + place-dist-glue.mjs + tsconfig EDITS ride
+// already-counted/outside-scan paths; dist mirrors, tests/**, docs/** and
+// dev-evidence are outside the scan; zero new denylist vocabulary. Taking the
+// scanned total on THIS tree to 1238 — MEASURED by the pre-booking scanner
+// run (dev/agent-workflow/evidence/u6-pr1-20261025/logs/p4t6-RED-unbooked.log
+// reading `expected 1238 to be 1228`; no chain value copied).
+const SCANNED_PATHS_U6PR1: readonly string[] = [
+  'packages/runtime/governance-center/contribution-schema.ts',
+  'packages/runtime/governance-center/registry.ts',
+  'packages/runtime/governance-center/kernel.ts',
+  'packages/runtime/governance-center/host-adapter.ts',
+  'packages/runtime/governance-center/index.ts',
+  'packages/runtime/src/plugin/live/center-shadow-row.mjs',
+  'packages/runtime/test/u6-pr1-contribution-schema.test.ts',
+  'packages/runtime/test/u6-pr1-registry.test.ts',
+  'packages/runtime/test/u6-pr1-kernel.test.ts',
+  'packages/runtime/test/u6-pr1-shadow-inert.test.ts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -2880,7 +2908,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5READSLICE.length +
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
-        SCANNED_PATHS_A5M1.length,
+        SCANNED_PATHS_A5M1.length +
+        SCANNED_PATHS_U6PR1.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2946,7 +2975,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5READSLICE.length +
         SCANNED_PATHS_A5CANCELEG.length +
         SCANNED_PATHS_A5DOCSREALIGN.length +
-        SCANNED_PATHS_A5M1.length,
+        SCANNED_PATHS_A5M1.length +
+        SCANNED_PATHS_U6PR1.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3033,6 +3063,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5CANCELEG,
       ...SCANNED_PATHS_A5DOCSREALIGN,
       ...SCANNED_PATHS_A5M1,
+      ...SCANNED_PATHS_U6PR1,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3440,6 +3471,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // scanner must be re-run on the finally integrated tree; if that round lands
     // or drops a scannable path, the sum goes RED and the list moves with it.
     expect(SCANNED_PATHS_A5M1.length).toBe(1228 - 1216)
+    // U6 PR1, same tie form: the measured unbooked scanner run reported
+    // `expected 1238 to be 1228`, and the whole 10-file gap is exactly the
+    // named SCANNED_PATHS_U6PR1 list asserted present by path above.
+    expect(SCANNED_PATHS_U6PR1.length).toBe(1238 - 1228)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
