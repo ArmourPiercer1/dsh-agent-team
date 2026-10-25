@@ -188,7 +188,10 @@ export const BLOCKING_PREFIXES = [
 ,
   // S2 candidate-mode codes classify in the ONE shared list (docs:probe's local
   // extension removed 2026-10-25 — no second classification exists now).
-  'CANDIDATE_', 'DUAL_READ_'];
+  // U2 (G2 switchover): POINTER_* names the live pointer's own refusals (invalid pointer,
+  // pointer+graph two-current); TWO_CURRENT_* is the shared two-current guard name. Both
+  // join this same list — no second classification exists here either.
+  'CANDIDATE_', 'DUAL_READ_', 'POINTER_', 'TWO_CURRENT'];
 /** Codes that name the *freshness of a derivative* rather than a defect in an input.
  *  Regenerating a derivative is precisely how these are repaired, so the write gates may
  *  act on them; every other blocking finding still refuses the write. The list is shared

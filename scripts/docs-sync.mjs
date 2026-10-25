@@ -76,10 +76,14 @@ export function check(root, opts = {}) {
   const built = buildStateView(root, candidateMode ? { authorityCandidate: opts.authorityCandidate } : {});
   if (built.refused) {
     if (candidateMode) findings.push({ code: 'CANDIDATE_VIEW_REFUSED', detail: `explicit authority candidate refused: ${built.refused}${built.detail ? ` (${built.detail})` : ''}; no fallback to the legacy source was attempted` });
+    // U2: an invalid live POINTER refuses the build with its own POINTER_* name, and that
+    // name is blocking (shared list) — in the tool whose job is keeping the derived view
+    // honest, "the authority cannot be resolved" is never a warning.
+    else if (String(built.refused).startsWith('POINTER')) findings.push({ code: String(built.refused), detail: `pointer-resolved authority refused the view build: ${built.refused}${built.detail ? ` (${built.detail})` : ''}; no fallback to graph or mirror was attempted` });
     else findings.push({ code: 'DERIVED_VIEW_UNAVAILABLE', detail: built.refused });
   } else {
+    if (built.view.authority_source_binding) sourceBinding = built.view.authority_source_binding;
     if (candidateMode) {
-      sourceBinding = built.view.authority_source_binding;
       const dr = dualReadReport(opts.authorityCandidate?.file ?? '', root);
       if (dr.io) findings.push({ code: 'DUAL_READ_IO', detail: dr.io });
       else {

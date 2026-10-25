@@ -162,9 +162,16 @@ export function probe(root, opts = {}) {
     } else if (built.refused) {
       // A missing or unreadable registry/view is never a green run: the probe would
       // otherwise report "no findings" exactly when the record it checks has gone.
-      findings.push({ code: 'STATE_BRIDGE_UNAVAILABLE', detail: `derived view cannot be built (${built.refused}); a probe without registry + derived view cannot report green` });
+      // U2: a PRESENT-but-invalid pointer refuses the build too — that refusal keeps its
+      // own POINTER_* name (blocking via the shared list), so the probe fails by name
+      // instead of laundering it into the generic bridge-unavailable line.
+      findings.push({
+        code: String(built.refused).startsWith('POINTER') ? String(built.refused) : 'STATE_BRIDGE_UNAVAILABLE',
+        detail: `derived view cannot be built (${built.refused}${built.detail ? `: ${built.detail}` : ''}); a probe without a buildable derived view cannot report green`,
+      });
     } else {
       viewMirror = built.view.legacy_authority;
+      if (built.view.authority_source_binding) sourceBinding = built.view.authority_source_binding;
       findings.push(...built.findings.map((f) => ({ code: f.code, detail: f.detail })));
       const viewPath = join(root, 'dev/engineering/current-state.json');
       if (!existsSync(viewPath)) {

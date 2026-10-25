@@ -181,6 +181,7 @@ export function finalToken(verdict, counts) {
  */
 import { loadCandidateAuthority } from './authority-candidate-source.mjs'
 import { dualReadReport } from './authority-dual-read.mjs'
+import { loadPointerAuthority, pointerExists, twoCurrentFindings, EXPECTED_BASELINE_REF, POINTER_REL } from './current-authority.mjs'
 
 // Set once by main() from BOTH CLI flags together (or not at all); the state-freshness
 // leg reads it. No pointer file, no scan — the operator names the candidate.
@@ -428,6 +429,46 @@ export function checkSnapshotCurrentContract({ snapshotPath, expectedDigest, gra
   const core = checkContractValues({ phaseId: c.six.phase_id, activePlan: c.six.active_plan, backlogPath: c.six.backlog, matrixPath: c.six.matrix, baseline: c.six.baseline, collected: c.six.baseline_collected, graphText, phaseStatement: String(c.current_phase_statement), readFile, fileExists, revExists, baselineCurrent, driftProvider, expectedBaselineRef: 'dev/engineering/current-authority.json' })
   if (dual.length) return { findings: [...dual], info: {}, refused: 'SNAPSHOT_VS_LEGACY_DIVERGENT' }
   const info = { ...core.info, contract: { phase_id: c.six.phase_id, active_plan: c.six.active_plan, backlog: c.six.backlog, matrix: c.six.matrix, baseline: c.six.baseline, baseline_collected: c.six.baseline_collected } }
+  return { findings: core.findings, info }
+}
+
+/**
+ * U2 POINTER entry (the post-switch DEFAULT): the six values come from the snapshot the
+ * live pointer resolves to — scripts/current-authority.mjs verifies pointer shape, then
+ * the snapshot's frozen schema, recorded digest, F0-canonical digest and statement
+ * semantics, with the pointer's own `content_digest` as the expected digest. There is no
+ * fallback: a missing pointer (status ABSENT), or any INVALID status — digest mismatch,
+ * schema refusal, symlink, wrong version — FAILS with a named finding, and neither
+ * graph.yaml nor the derived mirror is ever consulted for a value.
+ *
+ * The two-current guard rides here because this is the reader the switch leaves alive:
+ * if a `current_contract:` block reappears in graph.yaml while the pointer exists, the
+ * tree has two places claiming the six values — TWO_CURRENT_AUTHORITY, RED, by name
+ * (scripts/current-authority.mjs twoCurrentFindings; the same list every docs gate shares).
+ *
+ * Same core, same Q1–Q8 semantics as the legacy wrapper; only the SOURCE of the six
+ * values and of the Q1 statement differs. ready/blocked/state_convergence still grade
+ * against the REAL graphText (that block never moved), and Q6's expected phase-baseline-ref
+ * is now the pointer file itself — the carriers cite `dev/engineering/current-authority.json`.
+ */
+export function checkPointerCurrentContract({ root, graphText, readFile, fileExists, revExists, baselineCurrent, driftProvider }) {
+  const a = loadPointerAuthority(root)
+  if (!a.ok) {
+    return {
+      findings: [`AUTHORITY_POINTER_${a.status}: ${a.refused}${a.detail ? ` (${a.detail})` : ''} — after the U2 switch ${POINTER_REL} is the only source of the six current values; it is never re-derived from graph.yaml or the derived mirror`],
+      info: {}, refused: a.refused,
+    }
+  }
+  const two = twoCurrentFindings(root, typeof graphText === 'string' && graphText !== '' ? graphText : undefined)
+  if (two.length > 0) return { findings: two, info: {}, refused: 'TWO_CURRENT_AUTHORITY' }
+  if (a.current_phase_statement === null || a.current_phase_statement === undefined || String(a.current_phase_statement) === '') {
+    return { findings: ['POINTER_Q1: the pointer-resolved snapshot carries no current_phase_statement — wording is never borrowed from the graph (same rule as the candidate entry, and after the switch the graph no longer carries one at all)'], info: {}, refused: 'POINTER_PHASE_STATEMENT_MISSING' }
+  }
+  if (typeof graphText !== 'string' || graphText === '') {
+    return { findings: ['POINTER_GRAPH: ready/blocked/state_convergence are graded against the real graph; it is absent — FAIL, never defaulted to empty'], info: {}, refused: 'POINTER_GRAPH_ABSENT' }
+  }
+  const core = checkContractValues({ phaseId: a.six.phase_id, activePlan: a.six.active_plan, backlogPath: a.six.backlog, matrixPath: a.six.matrix, baseline: a.six.baseline, collected: a.six.baseline_collected, graphText, phaseStatement: String(a.current_phase_statement), readFile, fileExists, revExists, baselineCurrent, driftProvider, expectedBaselineRef: EXPECTED_BASELINE_REF })
+  const info = { ...core.info, contract: { phase_id: a.six.phase_id, active_plan: a.six.active_plan, backlog: a.six.backlog, matrix: a.six.matrix, baseline: a.six.baseline, baseline_collected: a.six.baseline_collected }, authority_source: { kind: 'pointer', pointer: POINTER_REL, snapshot: a.snapshot_file, snapshot_version: a.snapshot_version, content_digest: a.content_digest } }
   return { findings: core.findings, info }
 }
 
@@ -1246,9 +1287,18 @@ const LEGS = {
     }
     // §7.4 reader candidate: the explicit candidate replaces ONLY the source of the six
     // values; providers, drift law and the leg's fail-closed posture are unchanged.
+    // U2 (G2 switchover) SOURCE LAW, one entry, no selection logic beyond it:
+    //   explicit candidate flag  → the named snapshot (controlled-migration override, last);
+    //   pointer file present     → the POINTER is the current (post-switch default);
+    //   pointer file absent      → the legacy graph block (pre-switch, and the state a
+    //                              `git revert` of the switch commit set restores).
+    // A PRESENT-but-invalid pointer never reaches the legacy path — the pointer entry
+    // fails with its named AUTHORITY_POINTER_* finding, and graph.yaml is not a fallback.
     const cc = AUTHORITY_CANDIDATE
       ? checkSnapshotCurrentContract({ ...ccProviders, root: REPO_ROOT, snapshotPath: AUTHORITY_CANDIDATE.file, expectedDigest: AUTHORITY_CANDIDATE.expectedDigest })
-      : checkCurrentContract(ccProviders)
+      : pointerExists(REPO_ROOT)
+        ? checkPointerCurrentContract({ ...ccProviders, root: REPO_ROOT })
+        : checkCurrentContract(ccProviders)
     if (cc.findings.length > 0) return { verdict: 'fail', detail: cc.findings.join(' ; ') }
     return {
       verdict: 'pass',
@@ -1643,7 +1693,7 @@ function main(argv) {
     const hasFile = Object.hasOwn(opts, 'authorityCandidate')
     const hasDigest = Object.hasOwn(opts, 'authorityExpectedDigest')
     if (hasFile !== hasDigest) {
-      process.stdout.write('REFUSED AUTHORITY_CANDIDATE_ARGS_INCOMPLETE: --authority-candidate and --authority-expected-digest must be given together (explicit selection is never half-given; no flag keeps the legacy default)\n')
+      process.stdout.write('REFUSED AUTHORITY_CANDIDATE_ARGS_INCOMPLETE: --authority-candidate and --authority-expected-digest must be given together (explicit selection is never half-given; with NEITHER flag the default is the live pointer when it exists, else the legacy graph block)\n')
       return 2
     }
     if (hasFile) AUTHORITY_CANDIDATE = { file: opts.authorityCandidate, expectedDigest: opts.authorityExpectedDigest }

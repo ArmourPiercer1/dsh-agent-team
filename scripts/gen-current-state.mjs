@@ -17,6 +17,7 @@ import { writeGenerated } from './generated-write.mjs';
 // Dependency is one-way (consumer -> candidate source); the shared six-field list lives in
 // scripts/authority-contract-fields.mjs so the helper never imports this module back.
 import { loadCandidateAuthority } from './authority-candidate-source.mjs';
+import { loadPointerAuthority, pointerExists, twoCurrentFindings, POINTER_REL } from './current-authority.mjs';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -361,6 +362,43 @@ export function checkLegacyMirror(legacy, root) {
   return out;
 }
 
+/**
+ * U2 (G2 switchover) mirror contract for POINTER mode — the refusal mode MC-03's gap note
+ * asked for. The source is now the pointer-resolved snapshot, so:
+ *  - emission completeness is graded exactly as before (same three keys-list, same codes);
+ *  - the registry.schema.json annotation is pinned to the same list (same rule, same code);
+ *  - the NEW refusal: while the pointer is live, the legacy `current_contract:` block must
+ *    be GONE. A reappearing block is two places claiming the six current values —
+ *    POINTER_AND_GRAPH_BLOCK_BOTH_PRESENT, blocking, named (the graph is no longer read for
+ *    any value; its presence is graded, its content is not consulted, and the mirror is
+ *    never cross-repaired from it).
+ * The value cross-check against the SOURCE is by construction identity here (the mirror
+ * copies the snapshot's recorded strings through one load); byte drift between the
+ * committed view and this build is what docs:sync --check's STALE_GENERATED_VIEW grades.
+ */
+export function checkPointerMirror(legacy, root) {
+  const out = [];
+  if (!legacy || !legacy.present) return out;
+  for (const key of LEGACY_MIRROR_KEYS) {
+    const v = legacy[key];
+    if (v === undefined) out.push({ code: 'LEGACY_MIRROR_INCOMPLETE', detail: `${key} is not emitted into legacy_authority` });
+    else if (v === null || v === '') out.push({ code: 'LEGACY_MIRROR_INCOMPLETE', detail: `${key} is emitted but empty — the snapshot records it, so the mirror dropped it` });
+  }
+  const schemaFile = join(root, SCHEMA_PATH);
+  if (existsSync(schemaFile)) {
+    try {
+      const listed = JSON.parse(readFileSync(schemaFile, 'utf8'))?.[MIRROR_ANNOTATION]?.legacy_authority;
+      if (!Array.isArray(listed)) {
+        out.push({ code: 'LEGACY_MIRROR_SCHEMA_MISMATCH', detail: `${SCHEMA_PATH}: ${MIRROR_ANNOTATION}.legacy_authority is missing` });
+      } else if (listed.join(',') !== LEGACY_MIRROR_KEYS.join(',')) {
+        out.push({ code: 'LEGACY_MIRROR_SCHEMA_MISMATCH', detail: `${SCHEMA_PATH} documents [${listed.join(',')}] but the emitter writes [${LEGACY_MIRROR_KEYS.join(',')}]` });
+      }
+    } catch { /* SCHEMA_UNPARSEABLE is reported by checkSchemaAgreement, not twice here */ }
+  }
+  for (const f of twoCurrentFindings(root)) out.push({ code: 'POINTER_AND_GRAPH_BLOCK_BOTH_PRESENT', detail: f });
+  return out;
+}
+
 /** Compare the descriptive schema against the rules this file enforces. Only the
  *  keywords that schema actually uses are interpreted — required, enum, pattern,
  *  additionalProperties — so this is a comparison, not a half-written validator, and
@@ -449,8 +487,12 @@ export function checkSchemaAgreement(root) {
 }
 
 // opts.authorityCandidate = { file, expectedDigest } — S2 §7.4 controlled migration prep (explicit
-// versioned snapshot as this view's source; DEFAULT with no opts stays the legacy reader,
-// byte-for-byte; a refused candidate NEVER falls back to graph or current-state).
+// versioned snapshot as this view's source; a kept-optional OVERRIDE, last in the order below).
+// U2 SOURCE LAW for the DEFAULT (no opts): a live pointer (dev/engineering/current-authority.json)
+// IS the current — the mirror copies the pointer-resolved snapshot's six recorded strings and the
+// build REFUSES on an invalid pointer (no fallback anywhere). Only while the pointer is ABSENT
+// (pre-switch trees, and trees that reverted the switch) does the default read the legacy graph
+// block, byte-for-byte unchanged. A refused candidate never falls back to graph or current-state.
 export function build(root, opts = {}) {
   const registryFile = join(root, 'dev/engineering/registry.yaml');
   if (!existsSync(registryFile)) return { refused: 'REGISTRY_MISSING' };
@@ -491,6 +533,32 @@ export function build(root, opts = {}) {
       view_may_not_reverse_decide_authority: true,
       legacy_divergence,
     };
+  } else if (pointerExists(root)) {
+    // U2 (G2 switchover) DEFAULT: the live pointer is the current. The mirror copies the
+    // SIX RECORDED STRINGS of the pointer-resolved snapshot — exactly what it copied from
+    // the graph block before, from the file that replaced it. A present-but-invalid pointer
+    // refuses the whole build (no view, no fallback to graph or mirror); its absence means
+    // the pre-switch tree (or a reverted one) and keeps the legacy reader below.
+    const a = loadPointerAuthority(root);
+    if (!a.ok) return { refused: a.refused, ...(a.detail ? { detail: a.detail } : {}) };
+    legacyAuthority = {
+      present: true,
+      file: a.snapshot_file,
+      ...a.six,
+      baseline_exists: git(root, ['cat-file', '-t', a.six.baseline]) === 'commit',
+      baseline_is_ancestor_of_head: git(root, ['merge-base', '--is-ancestor', a.six.baseline, 'HEAD']) !== null,
+      note: 'source = snapshot resolved by dev/engineering/current-authority.json (recorded strings); this view never decides authority itself',
+    };
+    sourceBinding = {
+      kind: 'authority-pointer',
+      pointer_file: POINTER_REL,
+      snapshot_file: a.snapshot_file,
+      snapshot_version: a.snapshot_version,
+      content_digest: a.content_digest,
+      pointer_digest_verified: true,
+      view_may_not_reverse_decide_authority: true,
+    };
+    findings.push(...checkPointerMirror(legacyAuthority, root));
   } else {
     legacyAuthority = readLegacyAuthority(root);
     findings.push(...checkLegacyMirror(legacyAuthority, root));
