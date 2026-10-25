@@ -1,0 +1,4 @@
+checkCitedPaths(worktree with D2 files + tracked cited evidence) — run:
+2026-10-25T16:42:41Z
+findings=0
+green_exit=0

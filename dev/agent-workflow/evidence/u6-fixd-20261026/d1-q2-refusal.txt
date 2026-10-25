@@ -1,0 +1,5 @@
+checkContractValues findings for active_plan = docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md (all findings listed):
+ - Q2: active_plan must live under docs/plans/active/ (got docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md)
+ - Q6: active_plan lacks the phase-baseline-ref reference line
+ - Q6: active_plan lacks the phase-identity value line (compared by value against phase_id)
+total findings: 3
