@@ -48,8 +48,13 @@
  *                        distinguishable from not-mounted.
  *   U5_CANARY_WORLD      world id (provenance inside every effect)
  */
-import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+// FIX-T T3: the ledger is a CAPPED channel (byte cap; rows never rewritten).
+// ledger-cap.mjs is copied beside this plugin into the World profile dir by
+// TestWorldFactory.startHost, so the relative import resolves both in the
+// repo tree and in the mounted profile.
+import { appendCappedLine } from './ledger-cap.mjs'
 
 export const name = 'u5-canary'
 export const inject = ['tools']
@@ -65,7 +70,7 @@ function record(row) {
   if (LEDGER === '') return
   try {
     mkdirSync(dirname(LEDGER), { recursive: true })
-    appendFileSync(LEDGER, JSON.stringify({ at: new Date().toISOString(), world: WORLD, ...row }) + '\n')
+    appendCappedLine(LEDGER, { at: new Date().toISOString(), world: WORLD, ...row })
   } catch {
     /* best-effort append: a dead ledger means the Oracle loses a channel and
        fails — a broken observation must never read as a pass. */
@@ -81,7 +86,7 @@ function writeMarker(fileName, content) {
 
 const definition = {
   name: 'u5_canary',
-  description: 'U5 test-world canary. Arguments: { mode: "ok"|"error-after-effect"|"defect"|"sleep", tag: string, sleepMs?: number }. Writes effect markers + ledger rows in the test world; never touches anything outside.',
+  description: 'U5 test-world canary. Arguments: { mode: "ok"|"error-after-effect"|"defect"|"sleep"|"gate", tag: string, sleepMs?: number, gateFile?: string, capMs?: number }. Writes effect markers + ledger rows in the test world; never touches anything outside.',
   parameters: {
     type: 'object',
     properties: {
@@ -131,6 +136,35 @@ const definition = {
       const sleepMs = Number.isFinite(args?.sleepMs) ? Math.max(0, Math.min(Number(args.sleepMs), 120_000)) : 5_000
       await new Promise((resolve) => setTimeout(resolve, sleepMs))
       writeMarker(`${s}.post`, `u5_canary post tag=${tag} at ${stamp()}\n`)
+      record({ leg: 'post-marker', tool: 'u5_canary', mode, tag })
+      return { ran: true, tag, mode }
+    }
+    if (mode === 'gate') {
+      // HOLD-IN-FLIGHT (FIX-T T2): the body BLOCKS on a gate file, so the
+      // call is provably mid-flight between the two markers — `.pre` written,
+      // `.post` NOT yet — for as long as the gate stays shut (capped so a
+      // leaked World always terminates). The crash-reclaim supervisor kills
+      // the Host inside exactly this window.
+      writeMarker(`${s}.pre`, `u5_canary pre tag=${tag} at ${stamp()}\n`)
+      record({ leg: 'pre-marker', tool: 'u5_canary', mode, tag })
+      const gateFile = typeof args?.gateFile === 'string' && args.gateFile !== '' ? args.gateFile : ''
+      const capMs = Number.isFinite(args?.capMs) ? Math.max(1_000, Math.min(Number(args.capMs), 600_000)) : 300_000
+      const startedAt = Date.now()
+      let released = false
+      while (Date.now() - startedAt < capMs) {
+        if (gateFile !== '') {
+          try {
+            readFileSync(gateFile)
+            released = true
+            break
+          } catch {
+            /* gate still shut */
+          }
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+      record({ leg: 'gate-ended', tool: 'u5_canary', mode, tag, released, heldMs: Date.now() - startedAt })
+      writeMarker(`${s}.post`, `u5_canary post tag=${tag} released=${String(released)} at ${stamp()}\n`)
       record({ leg: 'post-marker', tool: 'u5_canary', mode, tag })
       return { ran: true, tag, mode }
     }

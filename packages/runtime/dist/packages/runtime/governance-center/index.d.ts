@@ -27,21 +27,25 @@
  */
 export { CONTRIBUTION_SCHEMA_MAJOR, validateFamilyContribution, type ContributionFailureCode, type ContributionValidation, type ContributionVersion, type FamilyContributionInput, type FrozenContribution, type KernelCapability, type KernelCapabilityManifest, } from './contribution-schema.js';
 export { createGovernedFamilyRegistry, type CandidateState, type GovernedFamilyRegistry, type RegisteredCandidate, type RegistrationOrigin, type RegistryRefusalCode, type RegistryResult, type RegistryView, } from './registry.js';
-export { KERNEL_STATES, createGovernanceKernel, type ApprovalEntry, type CallFacts, type DispatcherLifecyclePort, type FamilyFace, type GrantConsumePort, type GovernanceKernel, type KernelFailureCode, type KernelPorts, type KernelState, type KernelVerdict, type TransitionResult, } from './kernel.js';
+export { KERNEL_STATES, createGovernanceKernel, type ApprovalEntry, type CallFacts, type DispatcherLifecyclePort, type EntryWriteResult, type FamilyFace, type GrantConsumePort, type GovernanceKernel, type KernelFailureCode, type KernelMode, type KernelPorts, type KernelState, type KernelVerdict, type TransitionResult, } from './kernel.js';
 export { createHostSurfaceAdapter, type DefinitionRead, type HostAdapterRefusalCode, type HostSurfaceAdapter, type HostToolsSurface, } from './host-adapter.js';
 import { type GovernedFamilyRegistry } from './registry.js';
-import { type GovernanceKernel, type KernelPorts } from './kernel.js';
+import { type GovernanceKernel, type KernelMode, type KernelPorts } from './kernel.js';
 import { type HostSurfaceAdapter, type HostToolsSurface } from './host-adapter.js';
 import type { KernelCapabilityManifest } from './contribution-schema.js';
 /**
  * Compose one center skeleton over injected ports. The registry exists
  * before the kernel (the kernel reads candidate provenance); the adapter is
  * optional because shadow may legitimately observe a surface without
- * registering anything on it.
+ * registering anything on it. `mode` (FIX-K K3) passes through to the
+ * kernel factory and defaults to `'shadow'` — the lane ships NO enforcing
+ * composition; an `enforcing` assembly without the lifecycle port throws
+ * at this point, before any state exists.
  */
 export declare function createCenterAssembly(deps: {
     readonly kernelManifest: KernelCapabilityManifest;
     readonly ports?: KernelPorts;
+    readonly mode?: KernelMode;
     readonly tools?: HostToolsSurface | undefined;
     readonly on?: (event: string, listener: (...args: never[]) => unknown) => () => void;
     readonly identityOf: (target: unknown) => string | null;

@@ -18,9 +18,15 @@ booting.
 
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
+<<<<<<< HEAD
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe |
 | **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir>` (modes: `--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
+=======
+| **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
+| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
+| **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
+>>>>>>> origin/master
 
 C1 is the ONLY tier CI runs. C2/C3 require a built Host tree and lease ports
 3180–3186 / 3491–3500 — never 3080 (the stable dev instance is probed
@@ -77,9 +83,33 @@ non-PASS (`lib/run-record.mjs`, pinned by C1).
 * Cleanup deletes ONLY paths carrying this World's `.u5-created.json` marker;
   pid kills target ONLY pids listed in `.u5-ownership.json` AND verified via
   `/proc/<pid>/environ` (`DSH_HOME=<this home>`); a recorded-but-unverifiable
-  pid is REFUSED, never killed. Port leases are pid+start-time files with
-  crash-recoverable stale reclaim; a foreign listener on a free-leased port is
+  pid is REFUSED, never killed. A foreign listener on a free-leased port is
   `EXTERNAL_BIND` → refuse, never touch.
+* Port leases use APPEND-ORDERED CLAIMS (FIX-T T1 protocol, `lib/port-lease.mjs`
+  header has the full proof sketch): slot dir `<port>.lease/` + append-only
+  `seq` claim log; a creator's claim ORDER is the byte offset of its unique
+  token line (O_APPEND offsets are strictly unique — post-write `fstat` is
+  NOT, and the difference is what closed the double-ownership class); owner =
+  lowest live order whose claim file exists; later creators see the earlier
+  line BEFORE their decide, at any skew. Stale (dead-pid) claim files are
+  reclaimed BY NAME (`renameSync` that file, ENOENT=lost; identity+liveness
+  re-verified after the move) — a fresh claim can never be the object moved.
+  LEGACY pre-FIX-T bare-file slots (`<port>.lease`, possibly written by a
+  peer still running the old code) coexist: held while their pid lives; when
+  dead they are swept via the link-identity path (hard-link + inode match +
+  unlink — cannot move a directory) under a sweep sentinel. The `seq` log is
+  append-only (~90 B per start) and lives under the lease root
+  (`.artifacts/tmp/port-leases`), reclaimed wholesale with it.
+  Reproduce/rerate the race: `node tests/world-factory/lease-race.mjs
+  --trials N --procs 8 [--inject stale|reclaim]` (GREEN baseline: 460/460
+  single-owner trials; the same harness measured 193/300 double-ownerships on
+  the pre-fix protocol — see `dev/agent-workflow/evidence/u5-fixt-20261026/`).
+* Every ledger/log the factory or canary writes is BYTE-CAPPED (FIX-T T3,
+  `canary/ledger-cap.mjs`; 256 B reserved so the one `LEDGER-CAP-REACHED`
+  notice always fits; rows are never rewritten or truncated): canary ledger +
+  U6 shadow ledger 2 MiB (in-Host, inside the World home — `startHost` throws
+  if any ledger/marker path escapes the owned home), host-start budget ledger
+  1 MiB, supervisor runner logs 32 MiB (rolling, drop-with-notice).
 * Windows: descendant-process-TREE cleanup beyond the recorded pids is NOT
   implemented → `windows-process-tree-cleanup: ENV_BLOCK` (stated, not
   claimed). Linux is the graded platform.

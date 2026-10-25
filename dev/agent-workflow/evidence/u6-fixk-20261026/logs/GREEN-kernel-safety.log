@@ -1,0 +1,32 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-fixk
+
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: an existing approval entry must REFUSE after registry.revoke() (CANDIDATE_REVOKED) 3ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: re-registration at a new generation never resurrects the old entry (STALE_GENERATION until a NEW owner-surface approval) 1ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: dropApprovalsForFamily removes exactly that family entries (kernel-OWNER surface) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > regression: a live, reviewed candidate with a matching entry still allows (the positive control stays true) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > regression: a not_verified dynamic source still refuses even with a present entry (condition 9) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: an approval minted in scope A never reaches scope B 1ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: a call whose scoped resolution carries no scopeKey refuses SCOPE_UNVERIFIED 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: the same native name re-claimed by a DIFFERENT family does not inherit the old entry 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: addApprovalEntry refuses a name no live candidate claims — an entry without a bound candidate is dead authority (NO_CANDIDATE) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: two concurrent consumeOnce calls with the same grantId reach the port EXACTLY once 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: a FAILED port consume still burns the id — a presentation is one-shot, never re-presentable (fail-closed) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: a port that THROWS still burns the id and leaves no dangling reservation (unknown outcome = fail closed) 1ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > regression: sequential replay after SUCCESS still refuses without touching the port (PR1 law holds) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > RED K3: release() with NO lifecycle port refuses LIFECYCLE_PORT_MISSING and records UNCOUNTED (shadow mode too) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > RED K3: the factory REFUSES to build an enforcing kernel without the lifecycle port 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > regression: a counted zero releases, a counted non-zero refuses (CI-08 unchanged) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > regression: state legality still precedes the port check (PREPARING release = ILLEGAL_TRANSITION even without a port) 0ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  16:42:38
+   Duration  278ms (transform 73ms, setup 0ms, import 98ms, tests 12ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

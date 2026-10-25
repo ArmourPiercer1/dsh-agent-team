@@ -1,0 +1,2 @@
+REFUSED(2): PATTERN current_contract.active_plan: "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md" does not match ^docs/plans/active/
+check_exit=2

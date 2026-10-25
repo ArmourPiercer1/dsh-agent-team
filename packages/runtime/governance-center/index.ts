@@ -55,10 +55,12 @@ export {
   type ApprovalEntry,
   type CallFacts,
   type DispatcherLifecyclePort,
+  type EntryWriteResult,
   type FamilyFace,
   type GrantConsumePort,
   type GovernanceKernel,
   type KernelFailureCode,
+  type KernelMode,
   type KernelPorts,
   type KernelState,
   type KernelVerdict,
@@ -74,7 +76,7 @@ export {
 } from './host-adapter.js'
 
 import { createGovernedFamilyRegistry, type GovernedFamilyRegistry } from './registry.js'
-import { createGovernanceKernel, type GovernanceKernel, type KernelPorts } from './kernel.js'
+import { createGovernanceKernel, type GovernanceKernel, type KernelMode, type KernelPorts } from './kernel.js'
 import { createHostSurfaceAdapter, type HostSurfaceAdapter, type HostToolsSurface } from './host-adapter.js'
 import type { KernelCapabilityManifest } from './contribution-schema.js'
 
@@ -82,11 +84,15 @@ import type { KernelCapabilityManifest } from './contribution-schema.js'
  * Compose one center skeleton over injected ports. The registry exists
  * before the kernel (the kernel reads candidate provenance); the adapter is
  * optional because shadow may legitimately observe a surface without
- * registering anything on it.
+ * registering anything on it. `mode` (FIX-K K3) passes through to the
+ * kernel factory and defaults to `'shadow'` — the lane ships NO enforcing
+ * composition; an `enforcing` assembly without the lifecycle port throws
+ * at this point, before any state exists.
  */
 export function createCenterAssembly(deps: {
   readonly kernelManifest: KernelCapabilityManifest
   readonly ports?: KernelPorts
+  readonly mode?: KernelMode
   readonly tools?: HostToolsSurface | undefined
   readonly on?: (event: string, listener: (...args: never[]) => unknown) => () => void
   readonly identityOf: (target: unknown) => string | null
@@ -96,7 +102,7 @@ export function createCenterAssembly(deps: {
   readonly adapter: HostSurfaceAdapter
 } {
   const registry = createGovernedFamilyRegistry({ kernelManifest: deps.kernelManifest })
-  const kernel = createGovernanceKernel({ registry, ports: deps.ports })
+  const kernel = createGovernanceKernel({ registry, ports: deps.ports, mode: deps.mode })
   const adapter = createHostSurfaceAdapter({ tools: deps.tools, on: deps.on, identityOf: deps.identityOf })
   return { registry, kernel, adapter }
 }

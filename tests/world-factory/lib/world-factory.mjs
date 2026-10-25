@@ -41,17 +41,19 @@ import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, homeDir, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
 import { DshInstance, redactLaunchToken } from '../../characterization/lib/instance.mjs'
 import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/util.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
-import { acquireFirstFreeLease, pidAlive, releasePortLease } from './port-lease.mjs'
+import { acquireFirstFreeLease, pidAlive, reclaimStaleLease, sweepLegacyLease } from './port-lease.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
 export const CANARY_PLUGIN_SRC = resolve(HERE, '..', 'canary', 'u5-canary-plugin.mjs')
+/** Byte-capped ledger appender shipped beside every mounted World row (FIX-T T3). */
+export const LEDGER_CAP_SRC = resolve(HERE, '..', 'canary', 'ledger-cap.mjs')
 export const CANARY_ROW_ID = 'u5-canary'
 export const CANARY_TOOL_NAME = 'u5_canary'
 export const WORLD_PREFIX = 'u5'
@@ -464,6 +466,19 @@ export class TestWorld {
    * proven capture pattern as s1-h0-m1: start() spawns before its first await).
    */
   async startHost({ bootTimeoutMs = 90_000 } = {}) {
+    // FIX-T T3 (owned paths only): every ledger/marker the canary or the
+    // shadow row appends to INSIDE the host process must sit inside this
+    // World's owned home — a future edit that re-points one of these paths
+    // fails HERE instead of silently writing outside the World's ownership.
+    // (The instance log under <evidenceRoot>/logs is launcher stdout kept as
+    // RUN evidence — a disclosed, runner-owned path, byte-capped at the
+    // supervisor; it is not a World ledger and is not env-reachable.)
+    for (const [what, p] of [['ledgerPath', this.ledgerPath], ['markerDir', this.markerDir], ['shadowLedgerPath', this.shadowLedgerPath ?? null]]) {
+      if (p === null || p === undefined) continue
+      if (p !== this.home && !p.startsWith(this.home + sep)) {
+        throw new Error(`World ${this.id}: ${what} escapes the owned home (${this.home}): ${p}`)
+      }
+    }
     let lease = this.hostLease
     if (lease === null) {
       lease = await acquireFirstFreeLease({
@@ -527,6 +542,10 @@ export class TestWorld {
     } else {
       copyFileSync(CANARY_PLUGIN_SRC, join(this.instance.profileDir, 'u5-canary-plugin.mjs'))
     }
+    // FIX-T T3: both World-side rows append through the byte-capped ledger
+    // helper — copy it beside them so './ledger-cap.mjs' resolves in the
+    // mounted profile exactly as it does in the repo tree.
+    copyFileSync(LEDGER_CAP_SRC, join(this.instance.profileDir, 'ledger-cap.mjs'))
     const rows = [{ id: CANARY_ROW_ID, name: './u5-canary-plugin.mjs' }]
     if (shadowWorld) {
       // U6 PR1 shadow-parity: the SAME test row mounts in BOTH worlds; the
@@ -616,8 +635,12 @@ export class TestWorld {
       }
     }
     if (this.mockLease !== null) {
-      releasePortLease(this.mockLease.leasePath, process.pid)
-      this.receipts.releasedPorts.push(this.mockLease.port)
+      try {
+        this.mockLease.release() // token-guarded: deletes only the lease still naming US
+        this.receipts.releasedPorts.push(this.mockLease.port)
+      } catch (error) {
+        this.receipts.notes.push(`mock lease release refused: ${String(error?.message ?? error)}`)
+      }
       this.mockLease = null
     }
   }
@@ -634,8 +657,12 @@ export class TestWorld {
     const host = await this.stopHost()
     await this.stopMock()
     if (this.hostLease !== null) {
-      releasePortLease(this.hostLease.leasePath, process.pid)
-      this.receipts.releasedPorts.push(this.hostLease.port)
+      try {
+        this.hostLease.release() // token-guarded: deletes only the lease still naming US
+        this.receipts.releasedPorts.push(this.hostLease.port)
+      } catch (error) {
+        this.receipts.notes.push(`host lease release refused: ${String(error?.message ?? error)}`)
+      }
       this.hostLease = null
     }
     let homeDeleted = null
@@ -677,15 +704,20 @@ export function deleteWorldHomeIfMarked(home, worldId) {
  *  - kill the recorded host pid ONLY if (a) it is listed in the home's
  *    .u5-ownership.json, (b) it is alive, and (c) Linux /proc verification
  *    shows it carries DSH_HOME == this home (pid-recycling guard);
- *  - release the dead holder's leases (pid in lease file is dead);
+ *  - reclaim the dead holder's leases (pid in lease file is dead) through the
+ *    rename-claim protocol, recording `reclaimedFrom` provenance per port;
  *  - delete the home through the ownership marker.
  * Windows: process-TREE cleanup beyond the recorded direct pid is NOT
  * implemented — the caller must record ENV_BLOCK for descendant cleanup
  * (TEST_METHODS / plan U5: 需要 Windows 的完整子进程树清理时单独 ENV_BLOCK).
- * @returns {Promise<{killed:number[], refused:number[], leasesReleased:number[], homeDeleted:string|null}>}
+ * @param {{path:string, port:number, by?:object, legacy?:boolean}[]} leasePaths
+ *        leases naming this World; `by` is the dead holder the reclaim scan
+ *        observed; `legacy: true` marks a pre-FIX-T bare-file slot (its path
+ *        IS the slot path — reclaimed through the link-identity sweep).
+ * @returns {Promise<{killed:number[], refused:number[], leasesReleased:number[], leaseProvenance:object[], leaseNotes:object[], homeDeleted:string|null}>}
  */
 export async function reclaimWorld({ home, worldId, leasePaths = [] }) {
-  const out = { killed: [], refused: [], leasesReleased: [], homeDeleted: null }
+  const out = { killed: [], refused: [], leasesReleased: [], leaseProvenance: [], leaseNotes: [], homeDeleted: null }
   let ownership = null
   try {
     ownership = JSON.parse(readFileSync(join(home, '.u5-ownership.json'), 'utf8'))
@@ -709,12 +741,25 @@ export async function reclaimWorld({ home, worldId, leasePaths = [] }) {
       }
     }
   }
-  for (const { path, port } of leasePaths) {
-    try {
-      releasePortLease(path, Number.POSITIVE_INFINITY) // owner-mismatch guard inside; stale already proven
+  // Leases: reclaimed through the rename-claim protocol (port-lease.mjs),
+  // keyed on the dead holder the scan OBSERVED (`by`, from scanStaleLeases) —
+  // a plain unlink acting on a stale observation could delete a freshly
+  // created lease (the FIX-T T1 race) and is no longer expressible here.
+  // Every successful release carries provenance into the receipt:
+  //   {port, reclaimedFrom:{pid, startedAt, world, purpose}}.
+  for (const { path, port, by, legacy } of leasePaths) {
+    const expected = by ?? safeReadLeaseContent(path)
+    if (expected === null) {
+      out.leaseNotes.push({ port, note: 'lease content unreadable at reclaim time (never delete blind)' })
+      continue
+    }
+    const outcome = legacy === true ? sweepLegacyLease(path, expected) : reclaimStaleLease(path, expected)
+    if (outcome.ok) {
       out.leasesReleased.push(port)
-    } catch {
-      /* still-held: somebody re-leased it live */
+      out.leaseProvenance.push({ port, reclaimedFrom: outcome.reclaimedFrom })
+    } else {
+      // somebody re-leased it live mid-flight — never force
+      out.leaseNotes.push({ port, note: `not reclaimed: ${outcome.reason}` })
     }
   }
   // Ports proven-free check (bounded): a reclaimed host port should idle.
@@ -723,6 +768,15 @@ export async function reclaimWorld({ home, worldId, leasePaths = [] }) {
   }
   if (deleteWorldHomeIfMarked(home, worldId)) out.homeDeleted = home
   return out
+}
+
+/** Parse a lease file for the reclaim precondition; null when unreadable. */
+function safeReadLeaseContent(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return null
+  }
 }
 
 function range(lo, hi) {

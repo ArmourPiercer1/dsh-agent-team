@@ -1,0 +1,2 @@
+U5-IN-RUN u5ca-20261025T17-22-54Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/homes/u5ca-20261025T17-22-54Z 111
+RUN-SUMMARY run=u5-core-ca-2026-10-25T17-22-53-859Z suite=core overall=PASS cases=7 PASS:7 worlds=u5ca-20261025T17-22-54Z

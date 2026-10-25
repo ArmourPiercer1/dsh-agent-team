@@ -1,0 +1,236 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-fixk
+
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: an existing approval entry must REFUSE after registry.revoke() (CANDIDATE_REVOKED) 8ms
+   → expected 'allow' to be 'refuse' // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: re-registration at a new generation never resurrects the old entry (STALE_GENERATION until a NEW owner-surface approval) 1ms
+   → expected 'allow' not to be 'allow' // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: dropApprovalsForFamily removes exactly that family entries (kernel-OWNER surface) 1ms
+   → kernel.dropApprovalsForFamily is not a function
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > regression: a live, reviewed candidate with a matching entry still allows (the positive control stays true) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > regression: a not_verified dynamic source still refuses even with a present entry (condition 9) 0ms
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: an approval minted in scope A never reaches scope B 0ms
+   → expected 'allow' not to be 'allow' // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: a call whose scoped resolution carries no scopeKey refuses SCOPE_UNVERIFIED 1ms
+   → expected 'allow' to be 'refuse' // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: the same native name re-claimed by a DIFFERENT family does not inherit the old entry 1ms
+   → expected 'allow' not to be 'allow' // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: addApprovalEntry refuses a name no live candidate claims — an entry without a bound candidate is dead authority (NO_CANDIDATE) 1ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: two concurrent consumeOnce calls with the same grantId reach the port EXACTLY once 27ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: a FAILED port consume still burns the id — a presentation is one-shot, never re-presentable (fail-closed) 1ms
+   → expected undefined to be 'GRANT_REPLAY' // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: a port that THROWS still burns the id and leaves no dangling reservation (unknown outcome = fail closed) 2ms
+   → port exploded
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > regression: sequential replay after SUCCESS still refuses without touching the port (PR1 law holds) 0ms
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > RED K3: release() with NO lifecycle port refuses LIFECYCLE_PORT_MISSING and records UNCOUNTED (shadow mode too) 0ms
+   → expected true to be false // Object.is equality
+ × packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > RED K3: the factory REFUSES to build an enforcing kernel without the lifecycle port 1ms
+   → expected [Function] to throw an error
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > regression: a counted zero releases, a counted non-zero refuses (CI-08 unchanged) 0ms
+ ✓ packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > regression: state legality still precedes the port check (PREPARING release = ILLEGAL_TRANSITION even without a port) 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: an existing approval entry must REFUSE after registry.revoke() (CANDIDATE_REVOKED)
+AssertionError: expected 'allow' to be 'refuse' // Object.is equality
+
+Expected: "refuse"
+Received: "allow"
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:104:27
+    102|     expect(registry.revoke(familyId, 'fix-k: K1 revoke').ok).toBe(true)
+    103|     const after = kernel.decide({ scopeKey, nativeName: name, definiti…
+    104|     expect(after.outcome).toBe('refuse')
+       |                           ^
+    105|     if (after.outcome === 'refuse') expect(after.code).toBe('CANDIDATE…
+    106|     // the read surface reflects the invalidation too — a stale entry …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: re-registration at a new generation never resurrects the old entry (STALE_GENERATION until a NEW owner-surface approval)
+AssertionError: expected 'allow' not to be 'allow' // Object.is equality
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:120:31
+    118|     expect(reRegistered.ok).toBe(true)
+    119|     const stale = kernel.decide({ scopeKey, nativeName: name, definiti…
+    120|     expect(stale.outcome).not.toBe('allow')
+       |                               ^
+    121|     if (stale.outcome === 'refuse') expect(['CANDIDATE_REVOKED', 'STAL…
+    122|     // A NEW approval for the NEW candidate is a fresh owner-surface a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K1 — approval entries are bound to their owning candidate > RED K1: dropApprovalsForFamily removes exactly that family entries (kernel-OWNER surface)
+TypeError: kernel.dropApprovalsForFamily is not a function
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:138:28
+    136|     expect(kernel.addApprovalEntry({ scopeKey: 's1', nativeName: 'tool…
+    137|     expect(kernel.addApprovalEntry({ scopeKey: 's1', nativeName: 'tool…
+    138|     const dropped = kernel.dropApprovalsForFamily('u6.fixk.alpha')
+       |                            ^
+    139|     expect(dropped).toBe(1)
+    140|     expect(kernel.approvalFor('s1', 'tool_alpha')).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: an approval minted in scope A never reaches scope B
+AssertionError: expected 'allow' not to be 'allow' // Object.is equality
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:168:31
+    166|     expect(kernel.decide({ scopeKey: 'root-A:inst-1', nativeName: name…
+    167|     const other = kernel.decide({ scopeKey: 'root-B:inst-2', nativeNam…
+    168|     expect(other.outcome).not.toBe('allow')
+       |                               ^
+    169|     // no entry exists for (B, name): the kernel defers — the call sta…
+    170|     if (other.outcome === 'defer') expect(other.code).toBe('NO_APPROVA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: a call whose scoped resolution carries no scopeKey refuses SCOPE_UNVERIFIED
+AssertionError: expected 'allow' to be 'refuse' // Object.is equality
+
+Expected: "refuse"
+Received: "allow"
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:182:31
+    180|     ]) {
+    181|       const verdict = kernel.decide(unscoped)
+    182|       expect(verdict.outcome).toBe('refuse')
+       |                               ^
+    183|       if (verdict.outcome === 'refuse') expect(verdict.code).toBe('SCO…
+    184|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: the same native name re-claimed by a DIFFERENT family does not inherit the old entry
+AssertionError: expected 'allow' not to be 'allow' // Object.is equality
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:196:35
+    194|     // be by the bound candidate, not by the name string:
+    195|     const inherited = kernel.decide({ scopeKey, nativeName: name, defi…
+    196|     expect(inherited.outcome).not.toBe('allow')
+       |                                   ^
+    197|     // and beta can be approved only through a fresh owner-surface act…
+    198|     const drop = kernel.dropApprovalsForFamily(familyId)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K4 — approvals are keyed by (scopeKey, nativeName) with the bound source identity > RED K4: addApprovalEntry refuses a name no live candidate claims — an entry without a bound candidate is dead authority (NO_CANDIDATE)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:208:21
+    206|     const { kernel } = wired()
+    207|     const dead = kernel.addApprovalEntry({ scopeKey: 's1', nativeName:…
+    208|     expect(dead.ok).toBe(false)
+       |                     ^
+    209|     if (dead.ok === false) expect(dead.code).toBe('NO_CANDIDATE')
+    210|     // a wrong familyId (the candidate does not claim the name) is the…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: two concurrent consumeOnce calls with the same grantId reach the port EXACTLY once
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:239:31
+    237|     const PENDING = Symbol('still-pending')
+    238|     const raced: ConsumeResult | typeof PENDING = await Promise.race([…
+    239|     expect(raced === PENDING).toBe(false)
+       |                               ^
+    240|     if (raced !== PENDING) {
+    241|       expect(raced.ok).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: a FAILED port consume still burns the id — a presentation is one-shot, never re-presentable (fail-closed)
+AssertionError: expected undefined to be 'GRANT_REPLAY' // Object.is equality
+
+- Expected:
+"GRANT_REPLAY"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:271:24
+    269|     const retry = await kernel.consumeOnce({}, 'grant-x')
+    270|     expect(retry.ok).toBe(false)
+    271|     expect(retry.code).toBe('GRANT_REPLAY')
+       |                        ^
+    272|     expect(retry.portCalled).toBe(false)
+    273|     expect(portCalls).toBe(1) // the kernel NEVER re-presents a grant …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K2 — consumeOnce reserves the grant id IN FLIGHT before any await > RED K2: a port that THROWS still burns the id and leaves no dangling reservation (unknown outcome = fail closed)
+Error: port exploded
+ ❯ Object.consumeForExecution packages/runtime/test/u6-fixk-kernel-safety.test.ts:281:15
+    279|       async consumeForExecution() {
+    280|         portCalls += 1
+    281|         throw new Error('port exploded')
+       |               ^
+    282|       },
+    283|     }
+ ❯ Object.consumeOnce packages/runtime/governance-center/kernel.ts:222:31
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:287:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > RED K3: release() with NO lifecycle port refuses LIFECYCLE_PORT_MISSING and records UNCOUNTED (shadow mode too)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:325:20
+    323|     toTombstoned(kernel)
+    324|     const bad = kernel.release()
+    325|     expect(bad.ok).toBe(false)
+       |                    ^
+    326|     if (bad.ok === false) {
+    327|       expect(bad.code).toBe('LIFECYCLE_PORT_MISSING')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  packages/runtime/test/u6-fixk-kernel-safety.test.ts > FIX-K K3 — release() counts only what a lifecycle port actually counted > RED K3: the factory REFUSES to build an enforcing kernel without the lifecycle port
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/u6-fixk-kernel-safety.test.ts:335:75
+    333|   it('RED K3: the factory REFUSES to build an enforcing kernel without…
+    334|     const registry = createGovernedFamilyRegistry({ kernelManifest: { …
+    335|     expect(() => createGovernanceKernel({ registry, mode: 'enforcing' …
+       |                                                                           ^
+    336|     // shadow (the default) builds without it, and says so:
+    337|     const shadow = createGovernanceKernel({ registry })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 5 passed (17)
+   Start at  16:35:20
+   Duration  293ms (transform 57ms, setup 0ms, import 76ms, tests 47ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

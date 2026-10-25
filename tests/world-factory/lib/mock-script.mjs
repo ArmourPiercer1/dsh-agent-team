@@ -150,7 +150,13 @@ export function makeCanaryDecide({ queue, nonce, onCallIssued = () => {}, contro
         toolCalls: [{
           id: callId,
           name: CANARY_TOOL_NAME,
-          arguments: { mode: entry.mode, tag: entry.tag, ...(entry.sleepMs !== undefined ? { sleepMs: entry.sleepMs } : {}) },
+          arguments: {
+          mode: entry.mode,
+          tag: entry.tag,
+          ...(entry.sleepMs !== undefined ? { sleepMs: entry.sleepMs } : {}),
+          ...(entry.gateFile !== undefined ? { gateFile: entry.gateFile } : {}),
+          ...(entry.capMs !== undefined ? { capMs: entry.capMs } : {}),
+        },
         }],
       }
     }

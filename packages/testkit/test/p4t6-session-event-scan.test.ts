@@ -315,6 +315,22 @@ const SCANNED_PATHS_U6PR1: readonly string[] = [
   'packages/runtime/test/u6-pr1-kernel.test.ts',
   'packages/runtime/test/u6-pr1-shadow-inert.test.ts',
 ]
+// FIX-K (U6 kernel safety, external-audit remediation off master 2db321f63)
+// adds TWO scannable files: the kernel-safety suite (K1 revoke-bound
+// approvals + K2 synchronous in-flight consume reservation + K3 required
+// lifecycle port + K4 scope-keyed approvals) and the bounded-shadow-ledger
+// suite (K5). Every production change of this round is an EDIT to files this
+// ledger already counts (kernel.ts / index.ts / center-shadow-row.mjs joined
+// with U6PR1), no denylist vocabulary is added, and dist mirrors, docs/** and
+// dev-evidence stay outside the scan. Taking the scanned total on THIS tree
+// to 1240 — MEASURED, not copied: the unbooked scanner run reads
+// `expected 1240 to be 1238`
+// (dev/agent-workflow/evidence/u6-fixk-20261026/logs/p4t6-RED-unbooked.log),
+// U6 PR1's booked 1238 plus exactly the two new paths on disk.
+const SCANNED_PATHS_FIXK: readonly string[] = [
+  'packages/runtime/test/u6-fixk-kernel-safety.test.ts',
+  'packages/runtime/test/u6-fixk-shadow-ledger.test.ts',
+]
 
 // U6 PR2 (branch task/u6-pr2-fs-read-family-20261025 off master 2db321f63,
 // the FS-family read slice 2/6) adds its TEN scannable files: the fs-family
@@ -2938,6 +2954,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
         SCANNED_PATHS_U6PR1.length +
+        SCANNED_PATHS_FIXK.length +
         SCANNED_PATHS_U6PR2.length,
     )
     expect(scanResult.files.length).toBe(
@@ -3006,6 +3023,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5DOCSREALIGN.length +
         SCANNED_PATHS_A5M1.length +
         SCANNED_PATHS_U6PR1.length +
+        SCANNED_PATHS_FIXK.length +
         SCANNED_PATHS_U6PR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -3094,6 +3112,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5DOCSREALIGN,
       ...SCANNED_PATHS_A5M1,
       ...SCANNED_PATHS_U6PR1,
+      ...SCANNED_PATHS_FIXK,
       ...SCANNED_PATHS_U6PR2,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
@@ -3506,9 +3525,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `expected 1238 to be 1228`, and the whole 10-file gap is exactly the
     // named SCANNED_PATHS_U6PR1 list asserted present by path above.
     expect(SCANNED_PATHS_U6PR1.length).toBe(1238 - 1228)
-    // U6 PR2 tie pin: the ten files of the named SCANNED_PATHS_U6PR2 list
-    // above are exactly the scanned-total delta 1238 -> 1248 (measured).
-    expect(SCANNED_PATHS_U6PR2.length).toBe(1248 - 1238)
+    // FIX-K (U6 kernel safety), same tie form: the measured unbooked scanner
+    // run on THIS tree reported `expected 1240 to be 1238`
+    // (dev/agent-workflow/evidence/u6-fixk-20261026/logs/p4t6-RED-unbooked.log),
+    // and the whole 2-file gap is exactly the named SCANNED_PATHS_FIXK list
+    // asserted present by path above.
+    expect(SCANNED_PATHS_FIXK.length).toBe(1240 - 1238)
+    // U6 PR2 (fs/read family), chained on top of FIX-K's 1240: the booked
+    // SCANNED_PATHS_U6PR2 files above are exactly the scanned-total delta
+    // 1240 -> 1252 (MEASURED on the merged tree).
+    expect(SCANNED_PATHS_U6PR2.length).toBe(1252 - 1240)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

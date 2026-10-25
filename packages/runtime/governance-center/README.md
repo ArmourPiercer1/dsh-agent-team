@@ -14,6 +14,13 @@ verdicts into an audit-only ledger and ALWAYS takes `next()` (zero authority,
 sup-a §5 conditions 1/3/7/10, shadow form); that mount stays opt-in config
 `teamToolPlane.centerAssembly: 'shadow'`, unset = no shadow.
 
+**FIX-K (2026-10-26, external-audit remediation)** closed five kernel-safety
+findings (K1–K5) while keeping the lane inert and enforcement OFF-by-default.
+See the *Kernel safety contract (FIX-K)* section below for the state model,
+approval keying, consume semantics and the fail-closed list; RED-first test
+evidence per finding lives in
+`dev/agent-workflow/evidence/u6-fixk-20261026/logs/`.
+
 **Owner: Center Integrator** (five-stage plan §S4: the Kernel/Registry/Host
 Adapter are modified ONLY by the independent center-refactor owner; Family
 owners collaborate through the Contribution contract only).
@@ -28,12 +35,79 @@ as an inert skeleton over injected ports:
 | --- | --- | --- |
 | `contribution-schema.ts` | Family Contribution schema | §4 six boundaries as a CLOSED world; §10.3 failure law (unknown field / bad digest / duplicate / unknown capability / unsupported version fail closed); CI-06 self-approval is unexpressable |
 | `registry.ts` | `GovernedFamilyRegistry` | sup-b `g1fb-registry.mjs` law: closed schema + collision (foreign claim refused, owner kept) + generation checks; READ-ONLY candidate view; NON-AUTHORIZING (surface is exactly `register/revoke/view/candidateFor/generation`) |
-| `kernel.ts` | `GovernanceKernel` | §5 state machine PREPARING→ACTIVE→DRAINING→TOMBSTONED→RELEASED/FAILED; center-owned approval table (condition 1); one-shot consume THROUGH the injected `consumeForExecution` port — the existing tool-admission face is composed, never re-implemented; CI-08 release at self-counted zero |
+| `kernel.ts` | `GovernanceKernel` | §5 state machine PREPARING→ACTIVE→DRAINING→TOMBSTONED→RELEASED/FAILED; center-owned approval table (condition 1) keyed by (scopeKey, nativeName) AND bound to its owning candidate (FIX-K K1/K4); one-shot consume THROUGH the injected `consumeForExecution` port with a synchronous in-flight reservation (FIX-K K2) — the existing tool-admission face is composed, never re-implemented; CI-08 release at a SELF-COUNTED zero, absent port ⇒ `LIFECYCLE_PORT_MISSING`/`UNCOUNTED` (FIX-K K3) |
 | `host-adapter.ts` | `HostSurfaceAdapter` | public Host seams only (scoped `tools.get`, `tools.schemas`, event `on`); observations, never verdicts; identity mint is injected |
-| `index.ts` | composition | `createCenterAssembly()` over injected ports |
+| `index.ts` | composition | `createCenterAssembly()` over injected ports (passes the kernel `mode` through; default `'shadow'`) |
 
 Live-glue counterpart: `src/plugin/live/center-shadow-row.mjs` (the shadow
-row; dist-mirrored via `scripts/place-dist-glue.mjs`).
+row; dist-mirrored via `scripts/place-dist-glue.mjs`; K5 makes its ledger
+bounded and released on dispose).
+
+## Kernel safety contract (FIX-K, 2026-10-26)
+
+External-audit remediation; each law is RED-first test-pinned by
+`test/u6-fixk-kernel-safety.test.ts` / `test/u6-fixk-shadow-ledger.test.ts`.
+Enforcement stays OFF everywhere: the kernel factory defaults to
+`mode: 'shadow'`, the glue default stays `centerAssembly: 'off'`, and the
+shadow row still ALWAYS takes `next()`.
+
+* **State model (K3).** Same §5 matrix, plus: `release()` checks transition
+  legality first, then the lifecycle port — an ABSENT port refuses
+  `LIFECYCLE_PORT_MISSING` and its detail records `UNCOUNTED` (a kernel never
+  reports a clean in-flight zero it did not count, in ANY mode); a counted
+  non-zero refuses `LEASE_OPEN` (CI-08); a counted zero releases. The FACTORY
+  is stricter: `mode: 'enforcing'` without an injected
+  `DispatcherLifecyclePort` THROWS at construction (fail-fast at the trusted
+  assembly point). `mode()` reports what the factory built.
+* **Approval keying + source binding (K1 + K4).** Key =
+  `(scopeKey, nativeName)` — never the name alone. `CallFacts` carries the
+  `scopeKey` of the HostSurfaceAdapter's scoped resolution; absent ⇒
+  `SCOPE_UNVERIFIED` (refuse) both in `decide` and on the owner-write
+  surface. `addApprovalEntry` binds to a LIVE registry candidate
+  (`{scopeKey, nativeName, definitionIdentity, familyId}`; no live claiming
+  candidate ⇒ `NO_CANDIDATE`) and snapshots
+  `familyId + boundGeneration + boundSourceDigest`. `decide()` re-validates
+  the binding against the live registry on EVERY call: tombstoned/missing
+  owner (or the claim held by a different family) ⇒ `CANDIDATE_REVOKED`;
+  re-registration at a new generation / re-digest ⇒ `STALE_GENERATION`;
+  dynamic not-revalidated source ⇒ `NOT_VERIFIED_SOURCE` (condition 9).
+  `dropApprovalsForFamily(familyId)` is the owner-surface drop the assembly
+  point runs alongside `registry.revoke`; a re-registration NEVER resurrects
+  dropped entries (a new generation earns approval only through a fresh
+  `addApprovalEntry` or a generation-checked `replaceApprovalEntry`, which
+  re-binds to the current live candidate). There is deliberately no
+  registry→kernel event edge (PR1's zero-new-edge property is kept); the
+  per-decide re-validation is the fail-closed backstop even if a caller
+  forgets the drop.
+* **Consume semantics (K2).** `free → in flight → burned`: the grant id is
+  reserved SYNCHRONOUSLY before any `await`, so a second concurrent call
+  refuses `GRANT_IN_FLIGHT` without touching the port (exactly one
+  presentation can reach it — proven under `Promise.all` with a deferred
+  port). The burn is OUTCOME-INDEPENDENT: once presented, the id stays
+  burned — a port refusal (`GRANT_REPLAY` afterwards, never a
+  re-presentation) and even a port throw (error propagates, id stays burned)
+  do not re-arm it. JUSTIFICATION: the port owns the grant ledger and its
+  state is not observable from the kernel; a "failed" presentation may
+  already have committed there (or may commit after a timeout), so
+  re-presenting risks exactly the double-consume the one-shot law prevents.
+  This RETIRES the PR1 leg "a FAILED port consume does not burn the id".
+* **Bounded shadow ledger (K5).** `center-shadow-row.mjs`'s per-install JSONL
+  writer carries a row budget (`maxLedgerRows`, default 5000) and a byte
+  budget (`maxLedgerBytes`, default 1 MiB); at the first write that does not
+  fit it appends ONE terminal marker row (`leg: 'shadow-ledger-capped'`,
+  budgets + written counts) and stops appending to the file —
+  stop-with-marker, no rotation. The `observe` sink keeps every row (its
+  bound belongs to the caller) and the waterfall still takes `next()` once,
+  value untouched (capping is an audit-channel event, never a flow event).
+  `dispose()` CLOSES the writer; counters live in the install closure, so
+  nothing module-wide grows.
+* **Fail-closed refusal list.** `KERNEL_NOT_ACTIVE`, `SCOPE_UNVERIFIED`,
+  `NOT_VERIFIED_SOURCE`, `CANDIDATE_REVOKED`, `STALE_GENERATION`,
+  `NO_CANDIDATE`, `IDENTITY_UNVERIFIED`, `IDENTITY_MISMATCH`,
+  `DUP_APPROVAL_ENTRY`, `NO_APPROVAL_ENTRY`, `GRANT_REPLAY`,
+  `GRANT_IN_FLIGHT`, `NO_CONSUME_PORT`, `LIFECYCLE_PORT_MISSING`
+  (`UNCOUNTED`), `LEASE_OPEN`, `ILLEGAL_TRANSITION` — every one a typed
+  refusal that changes nothing; `decide` verdicts never mutate state.
 
 ## Layer law
 
@@ -44,15 +118,17 @@ row; dist-mirrored via `scripts/place-dist-glue.mjs`).
   packages. Every external force arrives as an injected port at the trusted
   assembly point (which IS an allow-listed consumer in
   `scripts/audit-a5-tool-governance-imports.mjs`). PR1 deliberately registers
-  this lane as **zero** new tool-governance import edges: the binding of the
-  kernel's ports to the concrete `tool-admission` / `tool-dispatch` faces is
-  a PR2 reviewed consumer registration, not an accident here. PR2 LANDED
-  that binding at the trusted assembly point (`team-tool-plane.mjs` mounts
-  the read family's kernel: consume port = the tool-admission one-shot face,
-  approval table = the pb §6 feed; `agent-bindings.mjs` forwards the
-  `kernelGuard` port into the ALREADY-LISTED `installScopedToolGuard` seam —
-  no new production consumer file beyond the fs-family lane's single booked
-  effect-grammar edge).
+  this lane as **zero** new tool-governance import edges and FIX-K KEEPS
+  that property: the kernel gained no new imports, the revoke-invalidation
+  path is a kernel-OWNER surface (no registry→kernel event edge). PR2 LANDED
+  the binding of the kernel's ports to the concrete `tool-admission` /
+  `tool-dispatch` faces at the trusted assembly point (`team-tool-plane.mjs`
+  mounts the read family's kernel: consume port = the tool-admission one-shot
+  face, approval table = the pb §6 feed — scope-keyed per FIX-K K4, every
+  call carrying the scoped-resolution scopeKey); `agent-bindings.mjs`
+  forwards the `kernelGuard` port into the ALREADY-LISTED
+  `installScopedToolGuard` seam — no new production consumer file beyond the
+  fs-family lane's single booked effect-grammar edge.
 * CORE PATCH BUDGET: 0 — public seams of the pinned Host only
   (`tests/paths.mjs`).
 
@@ -72,6 +148,13 @@ changes ride separate reviewed PRs (five-stage §S4 / fitness §10.5).
 generation + non-authorizing surface, kernel state machine + approval-table
 ownership + one-shot consume, and the shadow row's inertness (always-next,
 untouched exec/result, audit-only ledger, planted-bad-guard sensitivity).
+The kernel suite rides the FIX-K contract (scoped+bound entries, counted
+release, outcome-independent burn).
+`packages/runtime/test/u6-fixk-*.test.ts` (C1, FIX-K): RED-first legs for
+K1–K4 (revoke binding, consume reservation race under real concurrency,
+required lifecycle port, scope+source keying) and K5 (row/byte caps,
+stop-with-marker, release-on-dispose). RED/GREEN logs:
+`dev/agent-workflow/evidence/u6-fixk-20261026/logs/`.
 C2 parity (`tests/world-factory/u5-canary-runner.mjs --suite u6-shadow`)
 runs shadow ON vs OFF on the pinned Host and compares the native result
 ledger and oracle effects.

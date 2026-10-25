@@ -1,0 +1,119 @@
+{
+  "package": "FIX-K (U6 kernel safety, external audit remediation)",
+  "baseSha": "2db321f631cc061685c2d5c6a46e054c95b9a321",
+  "headSha": "c2ff22dcd0742b90fbcdd004de081ed360baa5dc",
+  "branch": "task/u6-fixk-kernel-safety-20261026",
+  "pr": 371,
+  "ciChecks": {
+    "pr-gate": "pass",
+    "candidate-protection": "pass",
+    "census-runtime": "pass"
+  },
+  "files": [
+    {
+      "path": "PR-BODY.md",
+      "sha256": "e859a3e6fe97371288ca609b7877ef75b96e0608e4c24cd2f23cef757dbc2d27",
+      "bytes": 9082
+    },
+    {
+      "path": "README.md",
+      "sha256": "62121853d45b0129b0b083aee3b16ae4af4522a6fa33e663815cca0365726921",
+      "bytes": 5234
+    },
+    {
+      "path": "logs/GREEN-kernel-safety.log",
+      "sha256": "9c8491198b2340fd0ed45cc553c96c3089d56d415ab94823a950abee8626562c",
+      "bytes": 4706
+    },
+    {
+      "path": "logs/GREEN-shadow-ledger.log",
+      "sha256": "e041256637cc7618bead4e5f7646157eff567ab5f448b41f7f7e706913493541",
+      "bytes": 1539
+    },
+    {
+      "path": "logs/GREEN-u6-pr1-suites-postfix.log",
+      "sha256": "bd4136121430d5aa6ca5ba1e054450acdb15c974fa8ea5fb1860264261925d5d",
+      "bytes": 699
+    },
+    {
+      "path": "logs/RED-kernel-safety.log",
+      "sha256": "209237fc9b99d1ccc11bfe9da3d6f2ee10c52eea2d18c585902f79f81f0c606c",
+      "bytes": 15463
+    },
+    {
+      "path": "logs/RED-shadow-ledger.log",
+      "sha256": "301c86dc3c99dd3ba2babfdc1b5aa4fbf0e90d90d35a9589000e22c2f2bc7845",
+      "bytes": 5707
+    },
+    {
+      "path": "logs/a4p7-static-legs-postcommit.log",
+      "sha256": "108ebd3558f125421459d2013480bd40f45f99b11f4eb4daf7dc0e65e6786102",
+      "bytes": 9806
+    },
+    {
+      "path": "logs/ci-pr-gate.log",
+      "sha256": "c5d6068e82291b2193f479f8062722de3fb585f6efbf932d90aa452f1d9b7238",
+      "bytes": 3470
+    },
+    {
+      "path": "logs/hosttree-build.log",
+      "sha256": "e2a98e4374ff5caa1d850030000a26491e85c0a9344db932493ac37e5df76310",
+      "bytes": 426913
+    },
+    {
+      "path": "logs/hosttree-provision.log",
+      "sha256": "c7139cbd6c1c4c245227a399a21b2ce1d072ea0071d492e7bffc0d72dbe51a43",
+      "bytes": 1756
+    },
+    {
+      "path": "logs/lint-identities.log",
+      "sha256": "fcc51bd3e7476df8cdad0af15dd9ac6bc7ac3228ca6510174bf9365d4074119f",
+      "bytes": 347
+    },
+    {
+      "path": "logs/p4t6-RED-unbooked.log",
+      "sha256": "fe888978c9ccd5882b083cf66e913068e8d4ec338b9e0ce4a4df53e5fe7ba0d6",
+      "bytes": 72891
+    },
+    {
+      "path": "logs/root-vitest.json",
+      "sha256": "ed64773c4dcace6e822cccd83c76b0de9dce244f55e7cef9012ad8bb5de2a81a",
+      "bytes": 3651711
+    },
+    {
+      "path": "logs/root-vitest.log",
+      "sha256": "6d2df18c20c860770e74cd348c6b0ab487b5bf5579f54b031a1897a71c31913f",
+      "bytes": 277092
+    },
+    {
+      "path": "c2/RUN-u6-shadow-fixk.json",
+      "sha256": "5c7cdd94a7f840658c415f1fe5ff1f183aba35bef8406560d4bdaa5185ab2102",
+      "bytes": 19569
+    },
+    {
+      "path": "c2/budget.jsonl",
+      "sha256": "d14c4a6411b9cd9321871845afaa8c1c5880c8487829415e1cd429a0c4f0c5b1",
+      "bytes": 332
+    },
+    {
+      "path": "c2/runner-console-fixk.log",
+      "sha256": "f3177940440275bf408118de819ee389308bca57d3ea23797253203fc9cef2b2",
+      "bytes": 562
+    },
+    {
+      "path": "c2/u6-shadow-parity.json",
+      "sha256": "d38893d2975b5b4cb6fb2d0a581b26bd756a09e311dfcff24ae53c160daf9e4e",
+      "bytes": 4554
+    },
+    {
+      "path": "c2/logs/u5fixkshd-20261025T17-00-58Z/instance-port3180.log",
+      "sha256": "86004e139229c8e70c2bb72deac61a204d30a12d9713e8bcdbbd57968a350a0d",
+      "bytes": 82
+    },
+    {
+      "path": "c2/logs/u5fixkoff-20261025T17-00-53Z/instance-port3180.log",
+      "sha256": "eff8066ae2a56a7018183626daf6dfdd24a8fc19a382f2981838b413203b02b9",
+      "bytes": 82
+    }
+  ]
+}

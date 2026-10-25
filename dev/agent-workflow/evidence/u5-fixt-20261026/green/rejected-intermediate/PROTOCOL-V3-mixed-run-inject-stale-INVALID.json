@@ -1,0 +1,79 @@
+{
+  "schema": "u5-lease-race/1",
+  "at": "2026-10-25T17:13:03.248Z",
+  "lib": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/world-factory/lib/port-lease.mjs",
+  "inject": "stale",
+  "procs": 8,
+  "trialsRequested": 60,
+  "trialsCompleted": 60,
+  "violations": 4,
+  "portAborts": 0,
+  "winnersDist": {
+    "1": 56,
+    "2": 4
+  },
+  "violationDetails": [
+    {
+      "trial": 12,
+      "port": 3496,
+      "winners": [
+        16086,
+        16094
+      ],
+      "displaced": [
+        16086,
+        16094
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    },
+    {
+      "trial": 21,
+      "port": 3496,
+      "winners": [
+        16662,
+        16664
+      ],
+      "displaced": [
+        16662,
+        16664
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    },
+    {
+      "trial": 42,
+      "port": 3496,
+      "winners": [
+        18006,
+        18021
+      ],
+      "displaced": [
+        18006,
+        18021
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    },
+    {
+      "trial": 52,
+      "port": 3496,
+      "winners": [
+        18646,
+        18668
+      ],
+      "displaced": [
+        18646,
+        18668
+      ],
+      "claimCollisions": [],
+      "held": 6,
+      "violation": true
+    }
+  ],
+  "seconds": 18.1,
+  "verdict": "DOUBLE_OWNERSHIP"
+}

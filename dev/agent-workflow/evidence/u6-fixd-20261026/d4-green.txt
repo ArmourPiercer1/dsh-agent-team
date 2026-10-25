@@ -1,0 +1,8 @@
+# D4 GREEN receipt — same check on this branch's tree (D2 design sources + stubs + tracked cited evidence present).
+# Generated 2026-10-25T16:54:22Z @ 175c68936.
+checkCitedPaths(worktree): findings=0 runtime_ms=48.0
+check_exit=0 (expected 0)
+# wired-gate receipts (same HEAD):
+docs:sync --check: docs=66 notes=4 plans=36(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:probe base=origin/master head=175c68936 changed=29 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared

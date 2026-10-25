@@ -1,0 +1,233 @@
+{
+  "task": "FIX-T (G3 risk closure): T1 lease-race protocol v5, T2 live abnormal-kill crash reclaim, T3 capped ledgers",
+  "branch": "task/u5-fixt-lease-crash-reclaim-20261026",
+  "base": "origin/master 2db321f631cc061685c2d5c6a46e054c95b9a321",
+  "generatedAt": "2026-10-25T18:17:20.969Z",
+  "files": [
+    {
+      "path": "PR_BODY.md",
+      "bytes": 5895,
+      "sha256": "068bc38b287a01d827cb451d4d61429ba0c9652f50ced7c302f43164a594678c"
+    },
+    {
+      "path": "gate/census-transcripts/census-capture-1.txt",
+      "bytes": 318147,
+      "sha256": "93e15e8faad29bd557d727996a528c97258e9914d22020f3e575c00108cd9735"
+    },
+    {
+      "path": "gate/transcripts/artifacts-at-head.txt",
+      "bytes": 1131,
+      "sha256": "58d63e175079a6fa16d85e75c2ce2290a617f04bf7dd78a3f4edfb43a5bc25d0"
+    },
+    {
+      "path": "gate/transcripts/blueprint-fence.txt",
+      "bytes": 24771,
+      "sha256": "3f047ff4de5b09fe206c26ff15c221d9b6952ce2f0665794f6f000350562701f"
+    },
+    {
+      "path": "gate/transcripts/census-capture-1.txt",
+      "bytes": 328165,
+      "sha256": "5619fd75a8dd9cf80ce646d4fa6802cb1df16330a6d15372236549b4da47c2e1"
+    },
+    {
+      "path": "gate/transcripts/lint-identities.txt",
+      "bytes": 583,
+      "sha256": "b8d9e105fc2aa423349e8a745f25e988e89c31a9f9634f1cad4da20aadafa2a5"
+    },
+    {
+      "path": "gate/transcripts/typecheck.txt",
+      "bytes": 802,
+      "sha256": "096a00099ffe32707d3a16f15bf882eaa57eab1aebda4b716845078aa772e431"
+    },
+    {
+      "path": "green/race-inject-reclaim-POST-fix.json",
+      "bytes": 410,
+      "sha256": "07f7f4037666b45f62a12c8c13f05f82e3884a4acd54976b7196f03a0fe5b99f"
+    },
+    {
+      "path": "green/race-inject-stale-POST-fix.json",
+      "bytes": 408,
+      "sha256": "a44abff726e28f4ec1f1a70fb05a431d2c1642c2faee4dbb68223cdc9dade05f"
+    },
+    {
+      "path": "green/race-natural-POST-fix.json",
+      "bytes": 408,
+      "sha256": "1d5d87d3031b0ff763c5d9e4a81f26697843ef5ac7f85e8da66b2fa3586da6d5"
+    },
+    {
+      "path": "green/rejected-intermediate/PROTOCOL-V1-rename-claim-race-natural.json",
+      "bytes": 1113,
+      "sha256": "a294c69f2a0a39d101a532c78a1c8a86b77f1b3df685d2557ebef36451e2eed5"
+    },
+    {
+      "path": "green/rejected-intermediate/PROTOCOL-V3-mixed-run-inject-reclaim-INVALID.json",
+      "bytes": 4585,
+      "sha256": "acabd5305f15cc25e7e6cfb1137e034ea1ab54cd3af0ebd13abd65f12ebdc55d"
+    },
+    {
+      "path": "green/rejected-intermediate/PROTOCOL-V3-mixed-run-inject-stale-INVALID.json",
+      "bytes": 1385,
+      "sha256": "539106ebed3bc836e079929d0e7948b3a7ad2cfa0c9a27a95d387e1833eb2297"
+    },
+    {
+      "path": "green/rejected-intermediate/PROTOCOL-V3-mixed-run-natural-INVALID.json",
+      "bytes": 11404,
+      "sha256": "bbbd12bbcd801625a83153db2b13f3dcab22cb7d1605e92fbbb8c73ff2525097"
+    },
+    {
+      "path": "green/rejected-intermediate/README.md",
+      "bytes": 935,
+      "sha256": "cce654aaf24cce9a7c139494523e74801d0af9ad1887604201ae854ebd985ec5"
+    },
+    {
+      "path": "live/README.md",
+      "bytes": 3612,
+      "sha256": "94d2211ac87bcfd9b4e494bb3a823939671b3ad0df651053633b31a849b65914"
+    },
+    {
+      "path": "live/budget.jsonl",
+      "bytes": 939,
+      "sha256": "84201b41a83827c1b18d0e41ba2d70d3012265ed7f91499efa4dcdfeae2e3020"
+    },
+    {
+      "path": "live/crash-reclaim-2/logs/runners/runner-A.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "live/crash-reclaim-2/logs/runners/runner-B.log",
+      "bytes": 293,
+      "sha256": "56ca17ceda84bf548d0fdcc76b5ecc7428e64a889680bd4cea09a4ae96a5569b"
+    },
+    {
+      "path": "live/crash-reclaim-2/logs/u5ca-20261025T17-25-10Z/instance-port3180.log",
+      "bytes": 82,
+      "sha256": "aad746c2044184658316d63de1108581c8d77f94b80ed0b732b520461dea21d8"
+    },
+    {
+      "path": "live/crash-reclaim-2/logs/u5cbv-20261025T17-25-10Z/instance-port3180.log",
+      "bytes": 82,
+      "sha256": "db3df7cd881790d6aeafae807be33c4ccfe2746ef027f610258cb61d7e4ba2a2"
+    },
+    {
+      "path": "live/crash-reclaim-2/run-u5-crash-2026-10-25T17-25-10-141Z.json",
+      "bytes": 6129,
+      "sha256": "6b0b37ef8fa9cbcc789fa605abe4f0a363e67108801c2698568cb84acddeb864"
+    },
+    {
+      "path": "live/crash-reclaim-3-reconstruct/run-u5-crash-recon-2026-10-25T17-39-48-328Z.json",
+      "bytes": 5323,
+      "sha256": "5c0defe1495b28f41cefc61cccb00e9599d2d3777398bf3fde9122a32de3353b"
+    },
+    {
+      "path": "live/crash-reclaim-3/logs/runners/runner-A.log",
+      "bytes": 257,
+      "sha256": "45f978a854b1ef4952a2798ba234891b3b76e3b500afc6c05215a86e903a2eb9"
+    },
+    {
+      "path": "live/crash-reclaim-3/logs/runners/runner-B.log",
+      "bytes": 293,
+      "sha256": "88ca7c22a453e457352372218336cab7b020f695f880258020ba4bf4961ca4fa"
+    },
+    {
+      "path": "live/crash-reclaim-3/logs/u5ca-20261025T17-27-10Z/instance-port3180.log",
+      "bytes": 82,
+      "sha256": "3a74be54cf8fc2d69772361dcf8b3324e7208acc5d14320451f7d717041e93df"
+    },
+    {
+      "path": "live/crash-reclaim-3/logs/u5cbv-20261025T17-27-10Z/instance-port3181.log",
+      "bytes": 82,
+      "sha256": "8918d98c0078d1134fec003b66115f47064865d5895dbef8cafeea9291f61b08"
+    },
+    {
+      "path": "live/crash-reclaim-3/run-u5-crash-2026-10-25T17-27-10-230Z-A.json",
+      "bytes": 7169,
+      "sha256": "eaeef4027f6ab9ac6eaa37e74168d34199fc41a56be089f519491a05e98a21c8"
+    },
+    {
+      "path": "live/crash-reclaim-3/run-u5-crash-2026-10-25T17-27-10-230Z.json",
+      "bytes": 7359,
+      "sha256": "bacf7bc39613d7c0154d205effde9beb8b692f43b4af9bc94038ff8ea79df626"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-failclosed/logs/runners/runner-A.log",
+      "bytes": 257,
+      "sha256": "e5b86317d1933fed47f686d264d58a53e07dc3d02811736db36c4c3aa87035ca"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-failclosed/logs/runners/runner-B.log",
+      "bytes": 293,
+      "sha256": "a67f8b40dc93bdb0edc12e6ed5a8b78b744e3df3053579012ce2d18edb953450"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-failclosed/logs/u5ca-20261025T17-22-54Z/instance-port3180.log",
+      "bytes": 82,
+      "sha256": "a34d7d752761937316504df3a569b06c7e19d413378e018b97fc670b91c360a9"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-failclosed/logs/u5cbv-20261025T17-22-54Z/instance-port3181.log",
+      "bytes": 82,
+      "sha256": "00850d0fd7641e8e5a6143500fb210159853988fa8fb5fefefdb26a909cd99c5"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-failclosed/run-u5-crash-2026-10-25T17-22-53-663Z-A.json",
+      "bytes": 7169,
+      "sha256": "55d7aea677f3aaa60df7bfd5b85342bd6d3e9dcdd371d97128ed1464c2ea0bd9"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-failclosed/run-u5-crash-2026-10-25T17-22-53-663Z.json",
+      "bytes": 6570,
+      "sha256": "edbec2bc2bb925fb339967c79933461406a5799c6991744ac08c62a34d6e8f9c"
+    },
+    {
+      "path": "live/crash-reclaim-attempt1-reconstruct/run-u5-crash-recon-2026-10-25T17-24-57-946Z.json",
+      "bytes": 5592,
+      "sha256": "6f41e51f0a39136531e7afccfc4741bc3f393cc2352687e140da6430f5430bee"
+    },
+    {
+      "path": "red/pre-fix-hook.diff",
+      "bytes": 549,
+      "sha256": "0b721030228066e2e83a116875cb02843ff507837621c576be11159b577ed54f"
+    },
+    {
+      "path": "red/race-inject-stale-PRE-fix-final-metric.json",
+      "bytes": 12914,
+      "sha256": "b62905a689ff65b57da60b2c00f1f22ce60769c6d9aa767516e5f25cf2fc043d"
+    },
+    {
+      "path": "red/race-inject-stale-PRE-fix.json",
+      "bytes": 4656,
+      "sha256": "f0038ee29cb36fae90afe39fc1c536efb3f48356ea748b05460e69121ffe8030"
+    },
+    {
+      "path": "red/race-natural-PRE-fix-final-metric.json",
+      "bytes": 44833,
+      "sha256": "57573b3358e8fc637c6e95d244b7e66981721d4fcad3ec4f43e9d6d1c804c766"
+    },
+    {
+      "path": "red/race-natural-PRE-fix.json",
+      "bytes": 37653,
+      "sha256": "ee89a32cdaeae7a1dc0ae89ef50c47e367e0d963e8e2856bfb1e2dcfdbee350f"
+    },
+    {
+      "path": "red/scratch/tests/characterization/lib/util.mjs",
+      "bytes": 5721,
+      "sha256": "7dd44280c8b03d7ea59e24d581c0d2430b407ca8a4e031c3feca30034c3fff71"
+    },
+    {
+      "path": "red/scratch/tests/paths.mjs",
+      "bytes": 6327,
+      "sha256": "ba922e50b3c2d03d40ab4dec73f2935a1168e9f496bef0690140a7584f4bc72b"
+    },
+    {
+      "path": "red/scratch/tests/world-factory/lib/port-lease-old-patched.mjs",
+      "bytes": 9333,
+      "sha256": "9d48ce532f4c9950368467165eec934798e1fc1a18ee270ffda822f9cd955251"
+    },
+    {
+      "path": "red/scratch/tests/world-factory/lib/port-lease-orig.mjs",
+      "bytes": 8808,
+      "sha256": "4e66349a375aba338cb510f899cda4dab44cfcc84cac22138e62058115a853d1"
+    }
+  ]
+}
