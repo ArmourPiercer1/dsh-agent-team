@@ -64,7 +64,11 @@ read-only before/after and never signalled).
   alongside the enforcing lane with a 5-row K5 ledger budget — the run is
   REQUIRED to hit the bounded-ledger terminal marker `shadow-ledger-capped`
   while the governed lane keeps answering post-cap reads: cap is an
-  audit-channel event, never a flow event),
+  audit-channel event, never a flow event. The post-cap read is proven by
+  THREE agreeing witnesses — the transcript claim, the ledger marker, and
+  an INDEPENDENT oracle row (probe `tools/post-execute` reads the target
+  file itself at the fs boundary: bytes/sha256/claimSeen, never the tool
+  return), timestamped after the capped marker and carried in the receipt),
   `fs:leak-check` (as everywhere).
   Plant disclosure: on the live Host the spoof row is accepted only in
   member/row scopes and NEVER dispatched (the boot-root scope's re-register
