@@ -1,5 +1,5 @@
 # AGENTS.md — dsh-agent-team 仓库代理规则
-<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 当前基线唯一权威=该块 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
 <!-- phase-identity: alpha5-tool-io-governance -->
 
 

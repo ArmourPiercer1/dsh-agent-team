@@ -1,6 +1,6 @@
 # TOOL-CAPABILITY-MATRIX — 逐工具能力矩阵（对 current_contract.baseline 复验轮首批实填）
 
-<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 基线以此字段为准；本文件禁"当前 baseline"SHA 副本（tested SHA 不受限） -->
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 基线以该指针解析到的快照为准；本文件禁"当前 baseline"SHA 副本（tested SHA 不受限） -->
 <!-- phase-identity: alpha5-tool-io-governance -->
 
 

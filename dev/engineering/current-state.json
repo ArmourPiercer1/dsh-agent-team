@@ -32,7 +32,26 @@
     ]
   },
   "legacy_authority": {
-    "present": false
+    "present": true,
+    "file": "dev/engineering/authority-snapshots/as20261025r1.json",
+    "phase_id": "alpha5-tool-io-governance",
+    "active_plan": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
+    "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+    "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+    "baseline": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
+    "baseline_collected": "2026-10-22T07:20:56Z",
+    "baseline_exists": true,
+    "baseline_is_ancestor_of_head": true,
+    "note": "source = snapshot resolved by dev/engineering/current-authority.json (recorded strings); this view never decides authority itself"
+  },
+  "authority_source_binding": {
+    "kind": "authority-pointer",
+    "pointer_file": "dev/engineering/current-authority.json",
+    "snapshot_file": "dev/engineering/authority-snapshots/as20261025r1.json",
+    "snapshot_version": "as20261025r1",
+    "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+    "pointer_digest_verified": true,
+    "view_may_not_reverse_decide_authority": true
   },
   "entries": [
     {
@@ -153,11 +172,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": false
+            "exists": true
           }
         ]
       }
@@ -185,11 +204,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": false
+            "exists": true
           }
         ]
       }
@@ -215,19 +234,19 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log",
-            "exists": false
+            "exists": true
           }
         ]
       }
@@ -251,11 +270,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": false
+            "exists": true
           }
         ]
       }
@@ -281,11 +300,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": false
+            "exists": true
           }
         ]
       }
@@ -310,15 +329,15 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log",
-            "exists": false
+            "exists": true
           }
         ]
       }
@@ -343,11 +362,11 @@
         "artifacts": [
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log",
-            "exists": false
+            "exists": true
           },
           {
             "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log",
-            "exists": false
+            "exists": true
           }
         ]
       }

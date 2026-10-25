@@ -88,14 +88,20 @@ state_pointers:
 # block above is Alpha.4 historical-integrity state feeding the legacy s7 checks in
 # scripts/ci-pr-gate.mjs; it is NOT the current phase and must never be repurposed as Alpha.5
 # progress (round is not a phase counter).
-current_contract:
-  phase_id: alpha5-tool-io-governance
-  active_plan: docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md
-  backlog: docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
-  matrix: docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
-  baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912   # exactly 40hex; must exist and be HEAD or an ancestor of HEAD. Equality with HEAD is legal and the checker must require neither equality nor inequality.
-  baseline_collected: "2026-10-22T07:20:56Z"
-
+# current_contract REMOVED HERE 2026-10-25 (U2 / G2 switchover; snapshot as20261025r1 carries the six
+# values byte-for-byte). The single editable current authority is now
+# dev/engineering/current-authority.json — a two-key pointer {snapshot_version, content_digest}
+# resolving to an immutable snapshot under dev/engineering/authority-snapshots/. Read it ONLY through
+# scripts/current-authority.mjs (frozen schema + F0 digest; fail closed — an invalid pointer is a
+# failure, never a reason to re-read this file); move it ONLY through scripts/switch-authority.mjs
+# (byte precondition on the old pointer, atomic write, exact restore on failure). A current_contract
+# key reappearing in this file while the pointer exists is TWO_CURRENT_AUTHORITY — RED by name in
+# every gate (ci-pr-gate state-freshness, docs gates, the census precheck); rollback is `git revert`
+# of the switch commit set, never re-adding the block beside the pointer. Q6 carriers now cite
+# dev/engineering/current-authority.json. Everything else here keeps its meaning: current_phase
+# above stays the phase statement (the snapshot mirrors it verbatim), state_pointers stays the
+# Alpha.4 historical-integrity recovery pointer, and ready/blocked below stay the backlog ID
+# references (graded against the snapshot's backlog, which the loader resolves).
 state_convergence: "HISTORICAL (Alpha.4 record, NOT current authority; current state = current_contract) — 2026-10-08 round 40, from an external review that caught this file being used as a recovery authority while its top-level pointer had aged: current_phase is refreshed above and is the live pointer; alpha4_governance_20261007.a4_pr7_task7 plus the tail of SESSION_ROUTER_LOG.md carry the per-round truth. The keys integration_branch / integration_sha / p8s_base_sha / p8s_int_tip are FROZEN HISTORICAL ANCHORS of the P8-S closure phase, NOT current integration pointers -- do not resume from them. Rule adopted: any phase-boundary refresh must rewrite current_phase in the same commit that moves the pointer it describes, because a stale authority pointer is worse than no pointer when an agent is resuming unattended."
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb

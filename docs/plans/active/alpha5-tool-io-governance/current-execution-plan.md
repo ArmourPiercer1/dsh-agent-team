@@ -1,6 +1,6 @@
 # Alpha.5 工具 IO 治理 — 当前执行计划（current-execution-plan）
 
-<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 基线唯一权威=该块 baseline；本文件禁 SHA 副本 -->
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 基线唯一权威=该指针解析到的快照 baseline；本文件禁 SHA 副本 -->
 <!-- phase-identity: alpha5-tool-io-governance -->
 
 <!-- historical-carriers: dev/agent-workflow/evidence/alpha5/ALPHA5-CURRENT-STATE.md / ALPHA5-ACCEPTANCE-STATUS.md / dev/agent-workflow/PENDING-GATES.md / docs/plans/memo/alpha5-tool-io-governance/* = historical 正本（只追加不改写），本文件为其当前态唯一执行入口 -->
