@@ -13,8 +13,14 @@
  * line format and exit code both derive from it. SKIP/REFUSED/ENV_BLOCK are
  * disclosures, never colours (plan §3: SKIP/REFUSED/ENV_BLOCK/UNKNOWN 不是 PASS).
  */
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { appendCappedLine } from '../canary/ledger-cap.mjs'
+
+/** FIX-T T3: the shared host-start budget ledger is a bounded artifact —
+ *  1 MiB is ~4k entries against a per-session budget of single digits; past
+ *  the cap rows are dropped with ONE in-file notice (never truncated). */
+const BUDGET_LEDGER_CAP_BYTES = 1024 * 1024
 
 export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REFUSED', 'ENV_BLOCK', 'SKIP', 'TIMEOUT', 'START_FAILED'])
 
@@ -72,7 +78,7 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
     record.hostStarts.thisRunEntries.push(e)
     if (ledgerPath !== undefined && ledgerPath !== null) {
       mkdirSync(dirname(ledgerPath), { recursive: true })
-      appendFileSync(ledgerPath, JSON.stringify(e) + '\n')
+      appendCappedLine(ledgerPath, e, BUDGET_LEDGER_CAP_BYTES)
     }
     return e
   }

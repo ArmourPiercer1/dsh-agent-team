@@ -1,0 +1,180 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-crash-recon-2026-10-25T17-24-57-946Z",
+  "suite": "parallel",
+  "startedAt": "2026-10-25T17:24:58.069Z",
+  "selectedCases": [
+    "abnormal-kill-reclaim",
+    "crash-simulation-reclaim",
+    "other-world-unaffected",
+    "pristine-host-and-stable-untouched",
+    "sibling-homes-untouched"
+  ],
+  "bindings": {
+    "teamSha": "2db321f631cc061685c2d5c6a46e054c95b9a321",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "worldIds": [
+      "u5cbv-20261025T17-22-54Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "mode": "crash-reclaim",
+    "reconstruction": {
+      "sourceRecord": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-fixt-20261026/live/crash-reclaim-1/run-u5-crash-2026-10-25T17-22-53-663Z.json",
+      "sourceOverall": "FAIL",
+      "spawns": 0,
+      "note": "re-judgement of a completed crash-reclaim run from stored receipts; global checks probed fresh"
+    }
+  },
+  "cases": [
+    {
+      "id": "abnormal-kill-reclaim",
+      "verdict": "FAIL",
+      "at": "2026-10-25T17:24:58.069Z",
+      "fromLiveRecord": {
+        "killLandedInFlight": true,
+        "inFlightMarkerPresent": true,
+        "completionMarkerAbsent": true,
+        "victimRunRecordAbsent": true,
+        "staleLeasesFound": 2,
+        "reclaimedLeasesWithProvenance": [
+          {
+            "port": 3181,
+            "reclaimedFrom": {
+              "pid": 42,
+              "startedAt": "2026-10-25T17:22:54.022Z",
+              "world": "u5cbv-20261025T17-22-54Z",
+              "purpose": "host"
+            }
+          },
+          {
+            "port": 3492,
+            "reclaimedFrom": {
+              "pid": 42,
+              "startedAt": "2026-10-25T17:22:54.012Z",
+              "world": "u5cbv-20261025T17-22-54Z",
+              "purpose": "mock-provider"
+            }
+          }
+        ],
+        "hostLeaseProvenanceNamesKilledRunner": true,
+        "mockLeaseProvenanceNamesKilledRunner": true,
+        "victimHostDead": true,
+        "hostKilledByReclaimWithProcProof": false,
+        "zeroRefusals": true,
+        "homeDeletedViaOwnershipMarker": true,
+        "hostPortIdle": true,
+        "mockPortIdle": true
+      },
+      "killReceipt": {
+        "at": "2026-10-25T17:22:58.296Z",
+        "pgid": 42,
+        "runnerPid": 42,
+        "signal": "SIGKILL",
+        "scope": "process-group",
+        "delivered": "process-group",
+        "runnerCloseReceipt": {
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "killedWhat": "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn",
+        "bWorld": {
+          "id": "u5cbv-20261025T17-22-54Z",
+          "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/homes/u5cbv-20261025T17-22-54Z",
+          "hostPid": 112,
+          "tag": "crashfly-gkghvu"
+        },
+        "ownershipFile": {
+          "worldId": "u5cbv-20261025T17-22-54Z",
+          "runnerPid": 42,
+          "runnerStartedAt": "2026-10-25T17:22:54.029Z",
+          "hostPid": 112,
+          "hostPort": 3181,
+          "mockPort": 3492
+        },
+        "markersAtKill": [
+          "crashfly-gkghvu.pre"
+        ],
+        "reclaimReceipts": {
+          "killed": [],
+          "refused": [],
+          "leasesReleased": [
+            3181,
+            3492
+          ],
+          "leaseProvenance": [
+            {
+              "port": 3181,
+              "reclaimedFrom": {
+                "pid": 42,
+                "startedAt": "2026-10-25T17:22:54.022Z",
+                "world": "u5cbv-20261025T17-22-54Z",
+                "purpose": "host"
+              }
+            },
+            {
+              "port": 3492,
+              "reclaimedFrom": {
+                "pid": 42,
+                "startedAt": "2026-10-25T17:22:54.012Z",
+                "world": "u5cbv-20261025T17-22-54Z",
+                "purpose": "mock-provider"
+              }
+            }
+          ],
+          "leaseNotes": [],
+          "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/homes/u5cbv-20261025T17-22-54Z"
+        }
+      }
+    },
+    {
+      "id": "crash-simulation-reclaim",
+      "verdict": "FAIL",
+      "at": "2026-10-25T17:24:58.069Z",
+      "reason": "reconstruction does not re-run the offline control (spawns=0); live verdict was bound into the live record"
+    },
+    {
+      "id": "other-world-unaffected",
+      "verdict": "FAIL",
+      "at": "2026-10-25T17:24:58.069Z",
+      "aOverall": "PASS"
+    },
+    {
+      "id": "pristine-host-and-stable-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:24:58.172Z",
+      "hostBasePre": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "pre"
+      },
+      "hostBasePost": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "post"
+      },
+      "stableInstance": {
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "sibling-homes-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-25T17:24:58.173Z",
+      "foreignChanges": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-25T17:24:58.173Z"
+}

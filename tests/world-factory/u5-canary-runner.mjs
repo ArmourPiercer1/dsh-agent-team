@@ -35,7 +35,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createRunControl } from '../kits/rc2-real-host-smoke/run-control.mjs'
@@ -51,7 +51,7 @@ import {
   scrubProviderEnv,
   stableInstanceProbe,
 } from './lib/world-factory.mjs'
-import { pidAlive } from './lib/port-lease.mjs'
+import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
 import { createRunRecord, exitCodeFor, formatSummary } from './lib/run-record.mjs'
 import { findIssuedResult, makeCanaryDecide, resultClaimsRan } from './lib/mock-script.mjs'
@@ -65,6 +65,13 @@ export const SUITE_CASES = {
   core: ['token-gate', 'positive-control', 'error-return-with-effect', 'planted-defect-detected', 'oracle-blinding-divergence', 'leak-check'],
   'core-restart': ['token-gate', 'positive-control', 'error-return-with-effect', 'planted-defect-detected', 'oracle-blinding-divergence', 'restart-persistence', 'leak-check'],
   negatives: ['wrong-scope-no-effect', 'start-failure-classified', 'timeout-classified', 'interrupt-classified'],
+  // FIX-T T2 crash victim: boot, authenticate, drive a canary call into a
+  // HELD-IN-FLIGHT state (plugin 'gate' mode: `.pre` written, blocked on a
+  // gate file that never appears), announce U5-IN-RUN + U5-IN-FLIGHT, then
+  // simply wait to be SIGKILLed (whole process group) by the crash-reclaim
+  // supervisor. This suite can never PASS by its own hand: writing its RUN
+  // record means the kill never landed — an honest FAIL.
+  'crash-victim': ['victim-in-flight'],
   // U6 PR1 shadow-parity (slice-plan "C2 via tests/world-factory ONLY"): the
   // SAME core canary case matrix runs on two Worlds whose only delta is the
   // mounted center-assembly SHADOW (off vs shadow), plus the parity cases.
@@ -250,25 +257,14 @@ async function evaluateLeak({ world, receipts, factory }) {
   checks.portsReleased = stillBound.length === 0
   checks.stillBound = stillBound
   checks.homeReleased = receipts.homeDeleted !== null || (receipts.notes ?? []).some((n) => String(n).includes('kept as evidence'))
-  // No lease file naming this world survives (scan, not path guess).
-  const heldLease = (() => {
-    try {
-      for (const name of readdirSync(factory.leaseRoot)) {
-        if (!name.endsWith('.lease')) continue
-        try {
-          const l = JSON.parse(readFileSync(join(factory.leaseRoot, name), 'utf8'))
-          if (l.world === world.id) return name
-        } catch {
-          /* unreadable — not ours to claim */
-        }
-      }
-    } catch {
-      /* no lease root = none held */
-    }
-    return null
-  })()
-  checks.leasesReleased = heldLease === null
-  checks.heldLease = heldLease
+  // No lease file naming this world survives (scan, not path guess). The
+  // slot layout keeps one attempt-file per acquisition inside
+  // `<port>.lease/` — scanAllLeases walks every slot and parses every file,
+  // so a live or leftover lease naming this world can never hide behind an
+  // unreadable-directory read (FIX-T T1 layout).
+  const heldLeaseEntries = scanAllLeases(factory.leaseRoot).filter((l) => l.by?.world === world.id)
+  checks.leasesReleased = heldLeaseEntries.length === 0
+  checks.heldLease = heldLeaseEntries.map((l) => `${l.port}:${l.fileName}:alive=${String(l.alive)}`)
   checks.notes = receipts.notes ?? []
   const conjuncts = ['ownedPidsDead', 'portsReleased', 'homeReleased', 'leasesReleased']
   return { ok: conjuncts.every((k) => checks[k] === true), detail: checks }
@@ -747,6 +743,66 @@ function readTail(logPath, lines = 12) {
   }
 }
 
+/**
+ * FIX-T T2 crash victim (suite `crash-victim`, driven by
+ * u5-parallel-supervisor --mode crash-reclaim). Boot → authenticate →
+ * session → drive ONE canary call into the plugin's `gate` mode: the tool
+ * body writes `<tag>.pre`, then BLOCKS on a gate file that is never created
+ * (capped at 300 s so a leaked World always terminates). Once the pre-marker
+ * is observed from outside, the runner prints
+ *   U5-IN-FLIGHT <worldId> <home> <hostPid> <tag>
+ * and simply waits for the call to complete. The supervisor SIGKILLs this
+ * runner's whole (detached, own) process group inside that window — the
+ * runner never reaches the lines below. Reaching them means the abnormal
+ * kill never landed, which is recorded as an honest FAIL: this suite can
+ * never write a PASS; the crash-reclaim PASS verdict lives in the
+ * supervisor's record, gated on the in-flight proofs read there.
+ */
+async function caseCrashVictim({ factory, record, rc, line, worlds, keepHome }) {
+  let ctx = null
+  try {
+    ctx = await bootWorld({ factory, record, rc, worldOpts: { line: `${line}v` }, phase: 'victim-boot' })
+    worlds.push(ctx.world)
+    const { world, nonce, queue, issued, boot } = ctx
+    const origin = `http://127.0.0.1:${boot.port}`
+    const cookie = await authenticate(origin, world.token)
+    const createRes = await apiSessionCreate(origin, cookie, world.workspaceDir, `u5${nonce}`)
+    const sessionId = findFirstKey(createRes.body, 'sessionId')
+    if (typeof sessionId !== 'string' || sessionId === '') throw new Error(`victim session create failed: ${JSON.stringify(createRes.body).slice(0, 200)}`)
+    const hostPid = boot.child?.pid ?? null
+    if (hostPid === null || hostPid === undefined) throw new Error('victim boot child pid missing')
+    console.log(`U5-IN-RUN ${world.id} ${world.home} ${String(hostPid)}`)
+    const tag = `crashfly-${nonce}`
+    const before = issued.length
+    rc.budget.beginScenario('crash-victim')
+    queue.push({ mode: 'gate', tag, gateFile: join(world.markerDir, `${tag}.gate`), capMs: 300_000 })
+    await apiPrompt(origin, cookie, sessionId, `u5 crash victim ${tag}`, `u5${nonce}`)
+    await waitForIssue(issued, before, { signal: rc.signal })
+    const oracle = createOracle({ ...oraclePaths(world), hostLogPath: boot.logPath })
+    const inFlight = await waitUntil(() => (oracle.observe({ tag }).channels.markers.files.includes(`${tag}.pre`) ? true : undefined), { timeoutMs: 60_000, signal: rc.signal })
+    if (inFlight.hit !== true) {
+      rc.budget.endScenario()
+      record.addCase('victim-in-flight', 'FAIL', { reason: 'held call never started (.pre marker absent within 60 s) — no in-flight state to be killed in', tag })
+      return
+    }
+    console.log(`U5-IN-FLIGHT ${world.id} ${world.home} ${String(hostPid)} ${tag}`)
+    const callId = issued[before]?.callId
+    const done = await waitUntil(() => (findIssuedResult(world.mock.requests, callId).found ? true : undefined), { timeoutMs: 8 * 60_000, signal: rc.signal })
+    rc.budget.endScenario()
+    record.addCase('victim-in-flight', 'FAIL', {
+      reason: done.hit === true
+        ? 'the held canary call COMPLETED — no abnormal kill landed in flight; the crash state was never created (supervisor misfire, not a crash-recovery result)'
+        : 'in-flight wait ended without completion through abort/watchdog — the supervisor group-SIGKILL did not land either (this runner wrote a record, so it survived)',
+      tag,
+      note: 'crash-reclaim PASS/FAIL is judged by the supervisor from crash-state proofs; this victim can only honestly report FAIL by surviving',
+    })
+  } catch (error) {
+    record.addCase('victim-in-flight', 'FAIL', { error: String(error?.message ?? error) })
+  } finally {
+    if (ctx !== null) await teardownAndNote({ ctx, record, caseId: 'victim-in-flight', keepHome, rc })
+  }
+}
+
 export async function runSuite(opts) {
   const { suite, line, evidence, runRecord: runRecordPath, budgetLedger, maxHostStarts, keepHome, only = null } = opts
   mkdirSync(evidence, { recursive: true })
@@ -817,6 +873,8 @@ export async function runSuite(opts) {
       await runCore({ factory, record, rc, log, line, suite, worlds, keepHome })
     } else if (suite === 'u6-shadow') {
       await runShadowParity({ factory, record, rc, log, line, worlds, keepHome, evidence })
+    } else if (suite === 'crash-victim') {
+      await caseCrashVictim({ factory, record, rc, line, worlds, keepHome })
     } else {
       if (selected.includes('wrong-scope-no-effect')) await caseWrongScope({ factory, record, rc, line, worlds, keepHome })
       if (selected.includes('start-failure-classified')) await caseStartFailure({ factory, record, rc, line, worlds, keepHome })
