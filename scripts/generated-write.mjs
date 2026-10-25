@@ -64,17 +64,20 @@ function assertNoSymlink(root, rel) {
  * Returns { ok:true, path } or { ok:false, why }. A policy refusal never throws, so
  * the caller can print the verdict and exit 2 the way the CLI contract expects.
  */
-/** Validate the location without writing. Splitting this out matters: a caller that
- *  compares content first ("already fresh") used to return success without ever
- *  consulting the boundary, so a symlinked target looked fine as long as the bytes
- *  happened to match. */
-export function checkGeneratedTarget(root, rel) {
+/**
+ * The underlying location safety boundary, shared by every writer in this module.
+ * Checks, in order: the root is canonicalised once (the workspace may sit under a
+ * symlinked mount), the target stays inside it, no component below the root is a
+ * symlink (the final component may be absent = to be created), the walked parent is
+ * real, and an existing target is a regular file with exactly one name.
+ * `mustBeAbsent` additionally refuses any existing target: an immutable publisher may
+ * never write through an existing name, whatever its nlink is.
+ * Extracted from checkGeneratedTarget without changing its checks, order or wording;
+ * the GENERATED_AREAS / GENERATED_FILES allow-list stays owned by checkGeneratedTarget
+ * alone — docs:sync's two-file whitelist is not widened by anything here.
+ */
+export function checkLocationBoundary(root, rel, { mustBeAbsent = false } = {}) {
   try {
-    if (!GENERATED_AREAS.some((a) => rel === a || rel.startsWith(`${a}/`))) throw new Refused(`NOT_GENERATED_AREA: ${rel}`);
-    if (!GENERATED_FILES.includes(rel)) throw new Refused(`NOT_GENERATED_FILE: ${rel}`);
-
-    // The workspace itself may sit under a symlinked mount, so the root is
-    // canonicalised once; what has to stay link-free is everything below it.
     const realRoot = realpathSync(root);
     const abs = join(realRoot, rel);
     const within = relative(realRoot, abs);
@@ -86,6 +89,7 @@ export function checkGeneratedTarget(root, rel) {
     // parent is real, but the bytes land in a file that something else also reads.
     const existing = lstatOrNull(abs);
     if (existing) {
+      if (mustBeAbsent) throw new Refused(`OVERWRITE_REFUSED: ${abs} already exists; this target is append-only`);
       if (!existing.isFile()) throw new Refused(`NOT_REGULAR_TARGET: ${abs} is neither a regular file nor absent`);
       if (existing.nlink !== 1) throw new Refused(`HARDLINK_TARGET: ${abs} has nlink=${existing.nlink}, refusing to write through a second name`);
     }
@@ -95,6 +99,20 @@ export function checkGeneratedTarget(root, rel) {
   } catch (e) {
     return { ok: false, why: e instanceof Refused ? e.message : `IO_ERROR: ${(e && e.message) || String(e)}` };
   }
+}
+
+/** Validate the location without writing. Splitting this out matters: a caller that
+ *  compares content first ("already fresh") used to return success without ever
+ *  consulting the boundary, so a symlinked target looked fine as long as the bytes
+ *  happened to match. */
+export function checkGeneratedTarget(root, rel) {
+  try {
+    if (!GENERATED_AREAS.some((a) => rel === a || rel.startsWith(`${a}/`))) throw new Refused(`NOT_GENERATED_AREA: ${rel}`);
+    if (!GENERATED_FILES.includes(rel)) throw new Refused(`NOT_GENERATED_FILE: ${rel}`);
+  } catch (e) {
+    return { ok: false, why: e instanceof Refused ? e.message : `IO_ERROR: ${(e && e.message) || String(e)}` };
+  }
+  return checkLocationBoundary(root, rel);
 }
 
 export function writeGenerated(root, rel, content) {
