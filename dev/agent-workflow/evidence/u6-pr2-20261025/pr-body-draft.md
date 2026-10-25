@@ -154,3 +154,18 @@ seam set. The old center-built read row is deleted in THIS PR — no dual-keep.
   booked tests/world-factory lane).
 - dist mirror co-committed: check-artifacts-committed OK (1786 files, 19
   glue placements), check:artifacts:head "HEAD carries its own build".
+
+## Review round 1 — B1–B5 (gpt-6.1-sol) → fix → evidence
+
+| Blocker | Fix | Proof |
+| --- | --- | --- |
+| B1 self-count lifecycle fallback (plane :1723-28) | Fallback DELETED: enforcing read mount without the real dispatcher port ⇒ typed `PLANE_READ_KERNEL_UNAVAILABLE`, no mount, no self-count. Production passes ONLY `a5p1Guard.pendingCalls`. | `u6-pr2-review-r1.test.ts` RED→GREEN: R1 refusal; R1c samples `port.inflight() === guard.pendingCalls().length` on success/throw/refusal/abort; kernel `release()` ⇒ `LEASE_OPEN` while the hung call is in the ledger, ok after drain (`review-r1-RED.log`). 15 suites + int-r3 kit re-wired to the ledger-ref shape; all GREEN. |
+| B2 native read fallback for governed agents (CI-05) | Governed plane without a mounted read row now exposes a REJECTING guard face (`owns('read')=true`, `identityFor⇒null`); the door's pre-body table gate refuses every read BEFORE its Body; glue forwards the face lazily (no glue edit). Non-Team native lane byte-unchanged. | R2b face shape; R2c production-shape negative: governed, no fsInstance ⇒ `bodies==[]`, `center approval table no longer backs`, observation `kernel-pre-body-table-refusal`; R2d CI-03 control GREEN. |
+| B3 stale world-factory SUITE_CASES | Pin updated with `fs:shadow-ledger-cap`. | `node --test tests/world-factory/world-factory.test.mjs` = 19 pass / 0 fail (was 18/1). |
+| B4 golden corpus path classes | `u6-pr2-golden-corpus.mts` (injected canonicalizer) +14 classes: NFC/NFD, non-BMP, leading/climbing `..`, `./`, trailing slash, `//`, absolute inside/outside, symlink-name w/ resolver-disclosed targets. Master reference regenerated from a detached `origin/master` worktree (c6cfec890, worktree removed after). | Full-corpus byte-equal on BOTH canonicalizers: digest `bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf`, 2893 vectors (old 877 / `7fbb3ab9…`; 300556 B → 750899 B). All 877 round-1 vectors byte-preserved inside (`golden-vectors-round2.{txt,family.json,master.json}`). |
+| B5 post-cap success without independent witness | Probe-host `tools/post-execute` oracle reads the S4 file ITSELF (`leg: oracle-read-effect`, bytes/sha256/claimSeen from the oracle's own `readFileSync` — not the tool return, not the shadow ledger); the cap verdict now requires one row timestamped after the capped marker and carries it in the receipt. | `c2r3/run-u6fsb11.json` `fs:shadow-ledger-cap` PASS: `oraclePostCapRows=1`, `oracleReceipt{at=20:57:45.275Z > capAt=20:57:45.247Z, sha256=3f747935…, claimSeen=true}`. |
+
+Bookkeeping round: p4t6 13 files / tie `1253−1240` (measured `expected 1253`);
+typecheck exit 0; docs gates blocking=0; check:artifacts:head drift=0; full
+runtime+fs-family+p4t6 vitest re-run on the final tree (disclosed baseline
+reds only); C2 u6-fs twice, 1 boot each (`u6fsb10`/`u6fsb11`), 10/10 PASS.
