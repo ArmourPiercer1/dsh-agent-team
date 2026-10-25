@@ -6873,3 +6873,9 @@ master 跑 production-run-recipe 全链）。
 - **D4 = 已交付**：`scripts/doc-checks.mjs` 新增有界检查 `checkCitedRepoPaths`——`packages/runtime/governance-center/**` 与 `tests/world-factory/**` 的源码/README 中引用的仓库相对路径（`docs/**/*.md` / `dev/agent-workflow/evidence/**`）必须解析（树内存在，或列于 `RELOCATED-MANIFEST.tsv`），否则 blocking（`CITED_PATH_MISSING` 入共享 BLOCKING 列表）；接入 `docs:sync --check` 与 `docs:probe`。RED（master 树）：4 条引用不解析；GREEN（本轮）：blocking=0。receipts `d4-red.txt` / `d4-green.txt`。
 - **验证**：current-authority status/print-baseline 绿（as20261025r1 / 9b2ee57bc…）；tests/s2-authority 7 套件 103/0；docs:sync --check blocking=0；docs:probe --base origin/master blocking=0；docs:controls 94 项失败 8（master 既有基线，零恶化）；docs:sync --write = no-op（生成视图无漂移）。
 - **本包边界**：零 `packages/**`、零 `tests/world-factory/**` 改动（FIX-K 所有）；指针/快照写路径零触碰（除 evidence 草稿）；SESSION_ROUTER_LOG 只追加。PR 由分支 `task/u6-fixd-authority-docs-20261026` 开出，**不合并**（DO NOT MERGE，等主 Agent 收口）。
+
+## 2026-10-26 外部审计整改（FIX-D/FIX-K/FIX-T）+ 整改门禁
+
+- 外部审计（用户转达）：(A) U6 PR1 开工时仓库记录仍为 G1-F NOT_PASSED（R2 投机通过仅存于未跟踪 evidence）；(B) governance-center kernel 四项缺陷 + shadow ledger 无界；(C) port-lease 回收竞争 + G3 实机崩溃回收 SKIP；(D) 机器 active_plan ≠ #364、U6 设计规范未入 master、docs 检查盲区。
+- 处置：中止 U6 PR2（#373 转 draft，未合并）；FIX-D #370 已合并（as20261026r1 经 docs/plans/active 载体指向 #364 计划；u6/ 规范与 gates/ 账本入库；cited-path 检查）；FIX-K #371（K1–K5，RED→GREEN）；FIX-T #372（租约协议 v5 460/460 无冲突；工厂侧崩溃回收实机 PASS；other-world-unaffected ×3 FAIL 归因 supervisor，已前向修复未复跑）。
+- 整改门禁 R1（gpt-6.1-sol 独审）= 投机通过 → 合并三 PR，U6 enforcing 在 R-REM-2 条件满足后恢复；风险 R-REM-1..3 见 docs/plans/memo/unified-baseline-alpha5-20261025/gates/GATE-LEDGER.md。

@@ -17,6 +17,7 @@
 | G2 (single current authority switchover) round 1 | 补充内容 | 2026-10-25 | gpt-6.1-sol (per closeout entry) | [G2-REVIEW-R1.md](./G2-REVIEW-R1.md) | `dev/agent-workflow/evidence/u2-g2-review-r1/`, `s2-*` candidate dirs | 6 "missing for switchover" items → implemented before R2 |
 | G2 round 2 (final, PR #365) | **通过 → GATE PASS** | 2026-10-25 (snapshot `as20261025r1` published 10:48:40Z) | gpt-6.1-sol | [G2-REVIEW-R2.md](./G2-REVIEW-R2.md), `dev/agent-workflow/SESSION_ROUTER_LOG.md` (U2/G2 entry) | pointer/snapshot in-tree: `dev/engineering/current-authority.json` → `dev/engineering/authority-snapshots/as20261025r1.json` | none open for G2 itself |
 | G3 (world-factory / test infra, PR #368) | **投机通过 → GATE PASS** | 2026-10-25 ~15:1xZ (same verdict record) | gpt-6.1-sol | [G1-F-G3-REVIEW-R2.md](./G1-F-G3-REVIEW-R2.md) (G3 section), [GATE-VERDICTS.md](./GATE-VERDICTS.md) | `dev/agent-workflow/evidence/u5-g3-20261025/` (untracked local; `FINDINGS-request-extension.md` now tracked there); PR #368 merged @ `f7fbc0f67` | R-G3-1 **live abnormal-kill crash-reclaim = SKIP — OPEN until FIX-T's live run**; R-G3-2 evidence re-bind on first U6 C2 run; R-G3-3 Windows cleanup ENV_BLOCK; R-G3-4 fresh-home request-extension → backlog |
+| Remediation gate R1 (audit 2026-10-26: FIX-D #370, FIX-K #371, FIX-T #372) | **投机通过 → GATE PASS** (merge + conditional U6 enforcing resume) | 2026-10-25 ~18:4xZ | gpt-6.1-sol (independent session) | [REMEDIATION-REVIEW-R1.md](./REMEDIATION-REVIEW-R1.md) | `dev/agent-workflow/evidence/remediation-review-r1/`, `u6-fixk-20261026/`, `u5-fixt-20261026/`, `u6-fixd-20261026/` | R-REM-1 = R-G3-1 narrowed: factory-side crash reclaim LIVE-PASSED; `other-world-unaffected` FAIL ×3 (supervisor sequencing, fixed forward, unrun) — does not block single-World U6 C2; R-REM-2 #373 resumes only after rebase onto merged FIX-K API (scopeKey on every call, enforcing only with lifecycle port, one-shot presentation burn, revoke/generation/source revalidation, no name-only authority) + targeted suites; R-REM-3 shadow-ledger cap-hit evidence in a U6 C2 run |
 
 U6 entry rule as run: U6 required G1-F PASS + G2 PASS + G3 PASS → OPEN after the round-2 verdicts
 (`dev/agent-workflow/evidence/u6-prep-20261025/U6-SLICE-PLAN.md` entry gates; versioned at
@@ -58,3 +59,8 @@ plan, copies no plan content), published snapshot `as20261026r1`
 (`sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4`, supersedes `as20261025r1`)
 with the existing publisher and moved the pointer with `switch-authority.mjs` (byte precondition =
 previous pointer `sha256:5356e8de…725ee`). No schema or Q2 change. Rollback = `git revert` of this commit.
+
+**Update 2026-10-26 (remediation gate):** finding A of the external audit (U6 started while the repo record
+still read G1-F NOT_PASSED) is closed administratively by this tracked ledger (G1-F round 2 = 投机通过, row
+above) and the remediation gate row. Merges: #370 (FIX-D) → `8ce8513cd`, #371 (FIX-K) next, #372 (FIX-T) after
+CI on the updated head. Draft #373 stays halted until the R-REM-2 conditions are met on a rebased head.
