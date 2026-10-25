@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25T20:10:00Z",
+ "generatedAt": "2026-10-25T20:42:00Z",
  "note": "sha256 of every receipt in this set (host instance logs excluded by mandate)",
  "files": [
   {
@@ -151,6 +151,11 @@
    "file": "c2r2/u6-fs-u6fsb9.out",
    "sha256": "0e35724d819dfa1f680fd2f791fecbfeff9444f40e8825498023c7ad78f7d923",
    "bytes": 2062
+  },
+  {
+   "file": "c2r2/vitest-runs-summary.txt",
+   "sha256": "59bdcec50f800efc0fe8f6df19437a4cf6a38f81342a1155108d43f1a4122303",
+   "bytes": 1012
   },
   {
    "file": "cut-presentation.mjs",
