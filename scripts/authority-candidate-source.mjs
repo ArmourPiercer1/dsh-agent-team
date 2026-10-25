@@ -36,5 +36,8 @@ export function loadCandidateAuthority(options) {
   if (snapshotDigest(obj) !== expectedDigest) return { ok: false, refused: 'CANDIDATE_DIGEST_MISMATCH', detail: `expected ${expectedDigest} recomputed ${snapshotDigest(obj)} (F0 canonical, content_digest excluded)` };
   const six = {};
   for (const key of LEGACY_MIRROR_KEYS) six[key] = obj.current_contract[key];
-  return { ok: true, file, six, snapshot_version: obj.snapshot_version, content_digest: obj.content_digest };
+  // The statement travels bound to the SAME verified digest — consumers read it here
+  // instead of re-reading/re-parsing the file (no third regex set anywhere).
+  const current_phase_statement = Object.hasOwn(obj, 'current_phase_statement') ? obj.current_phase_statement : null;
+  return { ok: true, file, six, current_phase_statement, snapshot_version: obj.snapshot_version, content_digest: obj.content_digest };
 }
