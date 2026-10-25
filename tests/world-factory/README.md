@@ -18,15 +18,9 @@ booting.
 
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
-<<<<<<< HEAD
-| **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe |
-| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
-| **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir>` (modes: `--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
-=======
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
-| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
+| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
->>>>>>> origin/master
 
 C1 is the ONLY tier CI runs. C2/C3 require a built Host tree and lease ports
 3180–3186 / 3491–3500 — never 3080 (the stable dev instance is probed
@@ -66,7 +60,17 @@ read-only before/after and never signalled).
   dispatch-time identity refusal or the registry's own scope law),
   `fs:identity-swap-sensitivity` (reads run immediately before the swap and
   after restore — the plant verdict cannot be explained by a dead lane),
+  `fs:shadow-ledger-cap` (R-REM-3: the inert PRODUCT shadow row mounts
+  alongside the enforcing lane with a 5-row K5 ledger budget — the run is
+  REQUIRED to hit the bounded-ledger terminal marker `shadow-ledger-capped`
+  while the governed lane keeps answering post-cap reads: cap is an
+  audit-channel event, never a flow event),
   `fs:leak-check` (as everywhere).
+  Plant disclosure: on the live Host the spoof row is accepted only in
+  member/row scopes and NEVER dispatched (the boot-root scope's re-register
+  throws the Host's own `already registered in this scope`), so the swap
+  arms judge `registration-refused` with zero spoof effects; the kernel-
+  table swap law itself is pinned offline (C1 plants + RR legs).
 
 `negatives` carries honest worst-of semantics: that record's overall is
 TIMEOUT/START_FAILED **by design** — the classification is the demonstrated
