@@ -88,7 +88,7 @@ export const SUITE_CASES = {
   // U6 PR1 shadow-parity (slice-plan "C2 via tests/world-factory ONLY"): the
   // SAME core canary case matrix runs on two Worlds whose only delta is the
   // mounted center-assembly SHADOW (off vs shadow), plus the parity cases.
-  'u6-fs': ['fs:mounted', 'fs:governed-read-positive', 'fs:refusal-zero-effect', 'fs:ctl-native-read', 'fs:identity-swap', 'fs:identity-swap-sensitivity', 'fs:toctou-abort', 'fs:leak-check'],
+  'u6-fs': ['fs:mounted', 'fs:governed-read-positive', 'fs:refusal-zero-effect', 'fs:ctl-native-read', 'fs:identity-swap', 'fs:identity-swap-sensitivity', 'fs:toctou-abort', 'fs:shadow-ledger-cap', 'fs:leak-check'],
   'u6-shadow': [
     'off:token-gate', 'off:positive-control', 'off:error-return-with-effect', 'off:planted-defect-detected', 'off:oracle-blinding-divergence', 'off:leak-check',
     'shd:token-gate', 'shd:mounted', 'shd:positive-control', 'shd:error-return-with-effect', 'shd:planted-defect-detected', 'shd:oracle-blinding-divergence', 'shd:leak-check',
@@ -1099,6 +1099,30 @@ async function runU6Fs({ factory, record, rc, log, line, worlds, keepHome, evide
     inWindowRegisters: registerAttempts.filter((r) => String(r.trigger ?? '').includes('execute-window')).map((r) => ({ scope: r.scope, ok: r.ok })),
     spoofBodyMarkers,
   })
+
+  // ── R-REM-3: the shadow audit LEDGER must have hit its K5 cap here ──────
+  // (the product row mounted with a 5-row budget; the cap is an
+  // audit-channel event — one terminal marker, then the appends stop while
+  // the OBSERVE channel keeps every row and the call flow never notices).
+  {
+    const shadowPath = join(world.home, 'u6fs-shadow-ledger.jsonl')
+    let rows = []
+    try {
+      rows = readFileSync(shadowPath, 'utf8').split('\n').filter((line) => line.trim() !== '').map((line) => JSON.parse(line))
+    } catch { /* absent = FAIL below with the read error stated */ }
+    const markers = rows.filter((r) => r?.leg === 'shadow-ledger-capped')
+    const installs = rows.filter((r) => r?.leg === 'shadow-installed')
+    // zero-flow proof: the S4 read happens LONG after the 5-row budget is
+    // spent — its claim answering proves the governed lane kept working on
+    // a capped audit channel.
+    const postCapRead = claimOccurrences(F.s4.claim) > 0
+    add('fs:shadow-ledger-cap',
+      markers.length > 0 && hostAlive() && postCapRead ? 'PASS' : 'FAIL',
+      { rows: rows.length, cappedMarkers: markers.length, installs: installs.length,
+        budgets: markers[0] ? { maxLedgerRows: markers[0].maxLedgerRows, maxLedgerBytes: markers[0].maxLedgerBytes } : null,
+        hostAlive: hostAlive(), postCapReadSucceeded: postCapRead,
+        detail: 'K5 terminal marker present, flow unaffected (R-REM-3 cap-hit evidence)' })
+  }
 
   // ── leak-check: teardown, then the factory's owned-resources audit ───────
   try {

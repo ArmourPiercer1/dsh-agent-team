@@ -358,6 +358,7 @@ const SCANNED_PATHS_U6PR2: readonly string[] = [
   'packages/runtime/test/u6-pr2-read-golden-vectors.test.ts',
   'packages/runtime/test/u6-pr2-kernel-flow.test.ts',
   'packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts',
+  'packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts',
 ]
 
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
@@ -3533,8 +3534,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     expect(SCANNED_PATHS_FIXK.length).toBe(1240 - 1238)
     // U6 PR2 (fs/read family), chained on top of FIX-K's 1240: the booked
     // SCANNED_PATHS_U6PR2 files above are exactly the scanned-total delta
-    // 1240 -> 1252 (MEASURED on the merged tree).
-    expect(SCANNED_PATHS_U6PR2.length).toBe(1252 - 1240)
+    // 1240 -> 1251, MEASURED on the merged + migrated tree (the resumed
+    // round's scanner run reported `expected 1251 to be 1250`; the R-REM-2
+    // read-lane C1 file is the last increment; no chain value copied).
+    expect(SCANNED_PATHS_U6PR2.length).toBe(1251 - 1240)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

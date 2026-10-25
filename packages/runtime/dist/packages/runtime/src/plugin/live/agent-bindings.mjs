@@ -2477,9 +2477,20 @@ export function createAgentBindings(deps) {
           // post-success drift for an owned name becomes a fail-closed veto.
           // A plane without the governed read row omits the field → today's
           // behavior byte-for-byte for every name.
-          ...(a5PlaneValue?.kernelGuard === undefined || a5PlaneValue.kernelGuard === null
-            ? {}
-            : { kernelGuard: a5PlaneValue.kernelGuard }),
+          // THE LOOKUP-TIME LAW APPLIES TO THE GUARD PORT TOO (the same
+          // run-5 lesson as bindingFeed above): this install runs BEFORE
+          // the plane assembly below fills a5PlaneValue, so the port is a
+          // STABLE LAZY WRAPPER — every owns/identityFor consult reads the
+          // LIVE plane value at CALL time. Before the plane exists (or for a
+          // plane without the governed read row) `owns` answers false for
+          // every name: byte-identical to the port being absent.
+          kernelGuard: {
+            owns: (name) => a5PlaneValue?.kernelGuard?.owns?.(name) === true,
+            identityFor: (name) => {
+              const guard = a5PlaneValue?.kernelGuard
+              return typeof guard?.identityFor === 'function' ? guard.identityFor(name) : null
+            },
+          },
           // A5-M1 replaced "Generation 0 until PR2 feeds the overlay /
           // authority generations into the Binding": the awaited durable
           // overlay generation rides the install above, and a later advance is
@@ -2590,6 +2601,18 @@ export function createAgentBindings(deps) {
             ledgerPath: typeof config?.teamToolPlane?.centerShadowLedger === 'string'
               ? config.teamToolPlane.centerShadowLedger
               : undefined,
+            // U6 PR2 C2 (R-REM-3): the K5 budgets are caller-tunable so an
+            // operator (and the U6 fs-suite acceptance) can make the cap
+            // path REACHABLE in a bounded session — the row keeps its own
+            // defaults (5000 rows / 1 MiB) when these are absent; a cap hit
+            // stays an audit-channel event (one terminal marker, flow
+            // untouched).
+            ...(Number.isFinite(config?.teamToolPlane?.centerShadowLedgerMaxRows)
+              ? { maxLedgerRows: Number(config.teamToolPlane.centerShadowLedgerMaxRows) }
+              : {}),
+            ...(Number.isFinite(config?.teamToolPlane?.centerShadowLedgerMaxBytes)
+              ? { maxLedgerBytes: Number(config.teamToolPlane.centerShadowLedgerMaxBytes) }
+              : {}),
             observe: (row) => observations.push(
               `u6-center-shadow: ${String(row?.leg ?? 'row')}`
               + (row?.name === undefined || row.name === '' ? '' : ` name=${String(row.name)}`)
@@ -2681,6 +2704,15 @@ export function createAgentBindings(deps) {
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
+          // U6 PR2 / FIX-K K3 (R-REM-2.2): the read kernel's lifecycle port.
+          // Production wires it to the GUARD's own in-flight ledger — the
+          // dispatcher's real count for THIS scope (pendingCalls().length).
+          // An enforcing kernel assembled with NO port is refused at the
+          // factory (it never reports an uncounted zero); here the port is
+          // always the live Guard ledger when a Guard was installed.
+          dispatcherLifecycle: a5p1Guard === undefined
+            ? undefined
+            : { inflight: () => a5p1Guard.pendingCalls().length },
           // PR358 fix-3: the plane's CURRENT facts readers — live policy,
           // activation/rollback epoch, published authority generation and
           // binding revision. The consume edge re-reads these AFTER any

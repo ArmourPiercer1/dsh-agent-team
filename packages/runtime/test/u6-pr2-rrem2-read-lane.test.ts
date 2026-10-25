@@ -267,10 +267,10 @@ describe('u6-pr2 R-REM-2 — the read lane on the FIXED kernel', () => {
     registry.register(contributionFor(FAMILY, ['read'], 'a'), { origin: 'reviewed-manifest' })
     const first = kernel.consumeOnce({ grantId: 'grant-rr4' }, 'grant-rr4', { name: 'read' })
     const second = kernel.consumeOnce({ grantId: 'grant-rr4' }, 'grant-rr4', { name: 'read' })
-    const PENDING = Symbol('pending')
-    const raced = await Promise.race([second, new Promise((r) => setTimeout(() => r(PENDING), 25))])
-    expect(raced === PENDING).toBe(false)
-    if (raced !== PENDING) {
+    const raced: Awaited<typeof second> | 'pending' =
+      await Promise.race([second, new Promise<'pending'>((r) => setTimeout(() => r('pending'), 25))])
+    expect(raced === 'pending', 'the second consume resolved without waiting for the port').toBe(false)
+    if (raced !== 'pending') {
       expect(raced.ok).toBe(false)
       expect(raced.code).toBe('GRANT_IN_FLIGHT')
       expect(raced.portCalled).toBe(false)

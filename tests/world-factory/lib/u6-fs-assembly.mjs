@@ -49,6 +49,7 @@ export function createFsAssembly({ repoRoot, home, runStamp, reportDir }) {
   const BP_MAIN_ID = 'team.u6fs.main'
   const ROOT = `session-u6fs-root-${rs}`
   const CREATE_ROOT = `session-u6fs-team-${rs}`
+  const SHADOW_LEDGER = join(home, 'u6fs-shadow-ledger.jsonl')
   const blueprintDir = join(home, 'blueprints')
   const workspaceDir = join(home, 'workspace')
 
@@ -111,6 +112,15 @@ export function createFsAssembly({ repoRoot, home, runStamp, reportDir }) {
       teamToolPlane: {
         realmId: PLANE_REALM_ID,
         fsInstance: { fs: 'team-ctl', rootDir: planeRootDir(), realmId: PLANE_REALM_ID, kind: 'absolute-path' },
+        // R-REM-3 (GATE-LEDGER remediation row): mount the PRODUCT shadow
+        // row IN ADDITION to the enforcing read lane (it is inert by law —
+        // audits every call, always takes next()), with a TINY K5 row budget
+        // so the bounded-ledger path is REACHED in this one-boot session.
+        // The terminal marker `shadow-ledger-capped` must appear while the
+        // governed lane keeps working: case `fs:shadow-ledger-cap`.
+        centerAssembly: 'shadow',
+        centerShadowLedger: SHADOW_LEDGER,
+        centerShadowLedgerMaxRows: 5,
       },
     }
   }
