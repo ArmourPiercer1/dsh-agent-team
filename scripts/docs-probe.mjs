@@ -29,6 +29,7 @@ import {
   checkIdUniqueness,
   checkContractAnchors,
   checkPlanCitationBlocks,
+  checkCitedPaths,
   selectOwningDocs,
   BLOCKING_PREFIXES,
   contractShapeFindings,
@@ -189,6 +190,13 @@ export function probe(root, opts = {}) {
   selectedRules.push('contracts-shape');
   shapes = contractShapeFindings(root);
   findings.push(...shapes.findings);
+
+  // Cited design/evidence paths from SOURCE code/READMEs (FIX-D D4). Unconditional for the
+  // same reason as contracts-shape: the citing files live under packages/ and tests/, which
+  // are outside every document bucket, so a document-scope filter would skip precisely the
+  // changes that break a citation. Bounded scope + plain existence: a few milliseconds.
+  selectedRules.push('cited-paths');
+  findings.push(...checkCitedPaths(root));
 
   // R6 terminology, R7 claims-without-evidence (current-state docs only)
   if (docTargets.length || buckets.contracts.length) {
