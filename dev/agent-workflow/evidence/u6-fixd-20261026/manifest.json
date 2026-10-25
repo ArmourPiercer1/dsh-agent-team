@@ -1,0 +1,53 @@
+{
+  "task": "FIX-D (external audit remediation: documentation authority + gate traceability)",
+  "branch": "task/u6-fixd-authority-docs-20261026",
+  "base": "origin/master @ 2db321f631cc061685c2d5c6a46e054c95b9a321",
+  "head_at_capture": "175c6893643d528fa1f7bc2bbbb6e64ecd84015b",
+  "commits": {
+    "857b98ab8": "D2 u6/ design sources (center-assembly verbatim + U6-SLICE-PLAN + conditions + stubs)",
+    "7ce70c23d": "D3 gates/ verdicts+reviews + GATE-LEDGER timeline correction + SESSION_ROUTER_LOG append",
+    "40f73c9e8": "D4 blocking cited-path resolution check (RED-first) + controls + owner doc + P4 re-anchor + tracked cited evidence",
+    "74ea58234": "D1 superseded-plan status banner + BLOCKED-D1 evidence (pointer NOT switched)",
+    "175c68936": "test(s2): P4 bounded re-anchor compares parsed reports"
+  },
+  "authority": {
+    "pointer_action": "NONE — stop-and-report per work package; pointer stays as20261025r1",
+    "pointer_snapshot": "as20261025r1",
+    "pointer_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+    "baseline": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
+    "draft_snapshot_never_published": "as20261026r1 (d1-draft-as20261026r1.json)",
+    "draft_content_digest": "sha256:189b1a7041efedda6ceef054b102a6433bbf08262c1a4bdee33dd0d018469184",
+    "refusals": ["d1-publisher-refusal.txt (schema pattern ^docs/plans/active/)", "d1-q2-refusal.txt (ci-pr-gate Q2 + Q6 findings)"],
+    "unblock_paths": "see BLOCKED-D1.md (schema amendment by ruling, or user-authored carrier under docs/plans/active/)"
+  },
+  "d4_red_green": {
+    "red": "d4-red.txt — checkCitedPaths over pure origin/master tree: 4 CITED_PATH_MISSING, exit 1",
+    "green": "d4-green.txt — this branch: findings=0 (~40-55ms), docs:sync --check blocking=0, docs:probe blocking=0 (cited-paths rule listed)"
+  },
+  "verification": {
+    "summary": "verification.txt",
+    "controls_full_transcript": "controls-head.txt (controls=96 failed=8; the same 8 environmental failures as the 94/8 baseline at origin/master)",
+    "s2_authority": "s2-head.txt (7 files, 103 PASS / 0 FAIL)",
+    "ci_pr_gate_local_legs": "graph-parse pass; state-freshness pass; self-test 77 assertions pass; heavy legs graded by the PR's ci-pr-gate job"
+  },
+  "newly_tracked_evidence_copies": {
+    "dev/agent-workflow/evidence/s1-h0-m1/probe-plugin.mjs": "sha256:c883ac3f80efcfe4a4fe462b137f32cbfc1724fafb0662d19c92848a8618f195 (byte-identical copy of the cited local evidence file; cited by tests/world-factory/canary/u5-canary-plugin.mjs:7)",
+    "dev/agent-workflow/evidence/u5-g3-20261025/FINDINGS-request-extension.md": "sha256:ad105b9b1c2e686e6bdb5d47aa98e6f8e64bbcdc944f949900c0bed72aeba9a3 (byte-identical copy; cited by tests/world-factory/README.md:81 and by the G1-F/G3 round-2 review)"
+  },
+  "residual_notes": [
+    "Gate source-of-record evidence dirs referenced as 'untracked local' (u4-h0-20261025, u4-g1f-sup-a-20261025, u4u5-gates-20261025, u2-g2-review-r1/r2, u6-prep-20261025, u5-g3 raw logs/runs) remain outside git by their lanes' design; their cited CONTENT is now versioned under docs/plans/memo/unified-baseline-alpha5-20261025/gates/ and u6/conditions.md, and the new CITED_PATH rule intentionally scans only packages/runtime/governance-center/** and tests/world-factory/** (audit scope), so prose citations inside docs/ are unaffected.",
+    "docs/plans/memo/alpha5-reset-20261025/center-assembly-architecture.md is a redirect stub (code-citation resolver), not the design body; canonical body = docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md.",
+    "scratch method for d4-red: git archive origin/master | tar -x into gitignored .artifacts/tmp/redtree; new check imported from this branch; no master files modified."
+  ],
+  "files_sha256": {
+    "BLOCKED-D1.md": "dee3ea61da831cb296590e08e2c53b17bdb8ff0c539ad03acd0062264d487339",
+    "controls-head.txt": "42fc09a960c41d8c72fc6dda843f542773d4040fdab91c5fc9b7f15f68d7cf66",
+    "d1-draft-as20261026r1.json": "bc3b95e9085c83f87d0e0576a4510197f1d2eb2216a3d1cdd40f370a974bb7f4",
+    "d1-publisher-refusal.txt": "71a34f801cb61d0c81638e4d4efd5723b805d1619deaf52832550bf79044b1c8",
+    "d1-q2-refusal.txt": "3aec1f35128a53c67fc94a61f73d70927b6dfd5e1fec503a939e2bac4a0fb582",
+    "d4-green.txt": "a0e14d187bbc2b35a9398220637be6bceaba4085ba038927463606adbc4932de",
+    "d4-red.txt": "aca31265c198d2388c5d8a7d15830d1304614f092d234597da7ebdb5c179099d",
+    "s2-head.txt": "2f572e09b3b5811bd0b8e7ada638a433050c8b65947c0ca02f7dbd8b48d30253",
+    "verification.txt": "73836eece07efe8b05047e29f3e8ae568ad3caf0dc71b44327548e34c01a3793"
+  }
+}

@@ -130,6 +130,100 @@ export function checkLinks(root, relFiles) {
   return findings;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────────
+// FIX-D (external-audit D4): cited design/evidence paths inside SOURCE code and
+// READMEs must resolve. The link checker above scans documents; the U6 governance
+// lane regressed exactly where documents are cited from CODE comments — a barrel
+// header can cite a design document that exists only on an unmerged branch, and
+// every docs gate stayed green while the citation pointed nowhere (a cold clone
+// cannot open it). This check closes that gap where it actually bit, bounded:
+//   scope   : files under CITED_PATH_ROOTS only (.ts/.tsx/.mts/.cts/.js/.mjs/.cjs/.json/.md)
+//   tokens  : repo-relative `docs/**/*.md` and `dev/agent-workflow/evidence/**`
+//             path-like citations, word-boundary anchored (no match mid-path or in URLs)
+//   resolve : the path exists in the tree, OR is listed in RELOCATED-MANIFEST.tsv
+//             (exact path, or the citation is a directory prefix of listed entries)
+//   cost    : a few dozen small files; no git, no network — safe to run on every
+//             docs:sync --check and every docs:probe.
+// A finding is blocking (code prefix CITED_PATH_ in the shared list): a source
+// comment that cites nothing is the same defect class as a claim that cites nothing.
+// ─────────────────────────────────────────────────────────────────────────────────
+export const CITED_PATH_ROOTS = ['packages/runtime/governance-center', 'tests/world-factory'];
+const CITED_PATH_EXT = /\.(?:ts|tsx|mts|cts|js|mjs|cjs|json|md)$/;
+const CITED_PATH_SKIP_DIRS = new Set(['node_modules', 'dist', '.git']);
+const RELOCATED_MANIFEST_REL = 'dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv';
+// `docs/…md` or `dev/agent-workflow/evidence/…`; NOT preceded by a char that would
+// make the match part of a longer path or URL (scheme, ../, another segment).
+const CITED_TOKEN_RE = /(^|[^A-Za-z0-9_./@-])((?:docs|dev\/agent-workflow\/evidence)\/[A-Za-z0-9_@./-]+)/g;
+
+function listCitationFiles(root, relDir, out) {
+  const abs = join(root, relDir);
+  let entries;
+  try { entries = readdirSync(abs); } catch { return out; }
+  for (const name of entries) {
+    const child = join(relDir, name);
+    if (CITED_PATH_SKIP_DIRS.has(name)) continue;
+    const st = statSync(join(root, child), { throwIfNoEntry: false });
+    if (!st) continue;
+    if (st.isDirectory()) listCitationFiles(root, child, out);
+    else if (st.isFile() && CITED_PATH_EXT.test(name)) out.push(child);
+  }
+  return out;
+}
+
+let relocatedCache = null; // { root, paths:Set<string> } — one read per process
+function relocatedManifestPaths(root) {
+  if (relocatedCache && relocatedCache.root === root) return relocatedCache.paths;
+  const paths = new Set();
+  try {
+    for (const line of readFileSync(join(root, RELOCATED_MANIFEST_REL), 'utf8').split(/\r?\n/)) {
+      if (!line || line.startsWith('#')) continue;
+      const col = line.split('\t')[0];
+      if (col) paths.add(col.trim());
+    }
+  } catch { /* absent manifest = empty list; the rule never reads it as "skip" */ }
+  relocatedCache = { root, paths };
+  return paths;
+}
+
+/** One finding per (file, token) that fails to resolve; first citing line is named. */
+export function checkCitedPaths(root, relRoots = CITED_PATH_ROOTS) {
+  const findings = [];
+  const manifest = relocatedManifestPaths(root);
+  for (const relRoot of relRoots) {
+    for (const rel of listCitationFiles(root, relRoot, [])) {
+      let text;
+      try { text = readFileSync(join(root, rel), 'utf8'); } catch { continue; }
+      const seen = new Set();
+      const lines = text.split(/\r?\n/);
+      for (let i = 0; i < lines.length; i++) {
+        CITED_TOKEN_RE.lastIndex = 0;
+        let m;
+        while ((m = CITED_TOKEN_RE.exec(lines[i]))) {
+          let tok = m[2].replace(/[.,;:)"'`\]]+$/, '');
+          const dirCite = tok.endsWith('/');
+          tok = tok.replace(/\/+$/, '');
+          if (!tok || seen.has(tok)) continue;
+          seen.add(tok);
+          if (tok.startsWith('docs/') && !tok.endsWith('.md')) continue; // rule scope: docs/**/*.md
+          const relNorm = tok.split(sep).join('/');
+          if (existsSync(join(root, relNorm))) continue;
+          const prefix = relNorm + '/';
+          let inManifest = manifest.has(relNorm);
+          if (!inManifest && (dirCite || !relNorm.includes('.'))) {
+            for (const p of manifest) if (p.startsWith(prefix)) { inManifest = true; break; }
+          }
+          if (inManifest) continue;
+          findings.push({
+            code: 'CITED_PATH_MISSING',
+            detail: `${rel}:${i + 1}: cites repo-relative path "${tok}" that exists neither in the tree nor in ${RELOCATED_MANIFEST_REL} — a design/evidence citation a cold clone cannot open`,
+          });
+        }
+      }
+    }
+  }
+  return findings;
+}
+
 /** Read the "do not write" column of docs/terminology.md as a derived rule set.
  *  The column is bare comma-separated tokens by contract (see that file); a cell
  *  containing a parenthesis is a data error and is reported, not guessed at. */
@@ -190,7 +284,8 @@ export const BLOCKING_PREFIXES = [
   // U2 (G2 switchover): POINTER_* names the live pointer's own refusals (invalid pointer,
   // pointer+graph two-current); TWO_CURRENT_* is the shared two-current guard name. Both
   // join this same list — no second classification exists here either.
-  'CANDIDATE_', 'DUAL_READ_', 'POINTER_', 'TWO_CURRENT'];
+  // FIX-D (D4): CITED_PATH_* names the cited-design/evidence-path resolution rule below.
+  'CANDIDATE_', 'DUAL_READ_', 'POINTER_', 'TWO_CURRENT', 'CITED_PATH'];
 /** Codes that name the *freshness of a derivative* rather than a defect in an input.
  *  Regenerating a derivative is precisely how these are repaired, so the write gates may
  *  act on them; every other blocking finding still refuses the write. The list is shared

@@ -1,0 +1,8 @@
+## tests/s2-authority (plain node, per file) @ 175c68936 2026-10-25T16:55:09Z
+authority-dual-read.test.mjs: exit=0 pass=9 fail=0
+authority-snapshot-isolated.test.mjs: exit=0 pass=30 fail=0
+ci-snapshot-reader.test.mjs: exit=0 pass=13 fail=0
+consumer-candidate.test.mjs: exit=0 pass=11 fail=0
+current-authority-pointer.test.mjs: exit=0 pass=25 fail=0
+probe-candidate.test.mjs: exit=0 pass=7 fail=0
+sync-candidate-resolver.test.mjs: exit=0 pass=8 fail=0

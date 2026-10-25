@@ -28,6 +28,7 @@ import {
   checkIdUniqueness,
   checkContractAnchors,
   checkPlanCitationBlocks,
+  checkCitedPaths,
   isBlockingFinding,
   SELF_UPDATE_CODES,
   contractShapeFindings,
@@ -67,6 +68,10 @@ export function check(root, opts = {}) {
   findings.push(...checkContractAnchors(root));
   findings.push(...checkDeprecatedTerms(root, docs));
   findings.push(...checkClaimsHaveEvidence(root, docs, { commitExists }));
+  // FIX-D (D4): design/evidence paths cited from SOURCE code and READMEs must resolve.
+  // Document-side links are covered by checkLinks above; this closes the code-cited
+  // blind spot the U6 governance lane regressed into (bounded, no git — see doc-checks).
+  findings.push(...checkCitedPaths(root));
 
   findings.push(...checkRatification(root));
   // Presence, not truthiness — an explicit candidate that is empty or one-sided refuses
