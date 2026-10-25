@@ -19,6 +19,7 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run as runNotes } from './verify-agent-notes.mjs';
 import { build as buildStateView, renderContractIndex, renderView, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
+import { dualReadReport } from './authority-dual-read.mjs';
 import {
   makeCommitExists,
   checkLinks,
@@ -54,7 +55,7 @@ export function isWriteAllowed(rel) {
   return false; // anything else is not a known derivative
 }
 
-export function check(root) {
+export function check(root, opts = {}) {
   const commitExists = makeCommitExists(root);
   const findings = [];
   const notes = runNotes(root);
@@ -68,10 +69,23 @@ export function check(root) {
   findings.push(...checkClaimsHaveEvidence(root, docs, { commitExists }));
 
   findings.push(...checkRatification(root));
-  const built = buildStateView(root);
+  // Presence, not truthiness — an explicit candidate that is empty or one-sided refuses
+  // downstream (CANDIDATE_*); nothing here ever falls back to the legacy source silently.
+  const candidateMode = Object.hasOwn(opts, 'authorityCandidate');
+  let sourceBinding = null;
+  const built = buildStateView(root, candidateMode ? { authorityCandidate: opts.authorityCandidate } : {});
   if (built.refused) {
-    findings.push({ code: 'DERIVED_VIEW_UNAVAILABLE', detail: built.refused });
+    if (candidateMode) findings.push({ code: 'CANDIDATE_VIEW_REFUSED', detail: `explicit authority candidate refused: ${built.refused}${built.detail ? ` (${built.detail})` : ''}; no fallback to the legacy source was attempted` });
+    else findings.push({ code: 'DERIVED_VIEW_UNAVAILABLE', detail: built.refused });
   } else {
+    if (candidateMode) {
+      sourceBinding = built.view.authority_source_binding;
+      const dr = dualReadReport(opts.authorityCandidate?.file ?? '', root);
+      if (dr.io) findings.push({ code: 'DUAL_READ_IO', detail: dr.io });
+      else {
+        for (const v of dr.verdicts) if (v.red) findings.push({ code: `DUAL_READ_${v.code}`, detail: v.detail });
+      }
+    }
     findings.push(...built.findings);
     const viewPath = join(root, 'dev/engineering/current-state.json');
     const rendered = renderView(built);
@@ -94,6 +108,7 @@ export function check(root) {
     plans_declaring: planCheck.declared,
     shapes_applicable: shapes.applicable,
     shapes_compared: shapes.coverage ? shapes.coverage.pairs_compared : 0,
+    ...(sourceBinding ? { authority_source_binding: sourceBinding } : {}),
   };
 }
 
@@ -107,7 +122,20 @@ if (invokedDirectly) {
   const write = args.includes('--write');
   const checkMode = args.includes('--check');
   if (!write && !checkMode) {
-    console.error('usage: docs-sync.mjs --check | --write [--root <dir>]');
+    console.error('usage: docs-sync.mjs --check | --write [--root <dir>] [--authority-candidate <file> --authority-expected-digest sha256:<hex>] (candidate pair: --check only, read-only)');
+    process.exit(2);
+  }
+  const ci = args.indexOf('--authority-candidate');
+  const di = args.indexOf('--authority-expected-digest');
+  if ((ci > -1) !== (di > -1)) {
+    console.log('REFUSED AUTHORITY_CANDIDATE_ARGS_INCOMPLETE: --authority-candidate and --authority-expected-digest must be given together; the default legacy path is chosen by giving NEITHER, never by a half pair');
+    process.exit(2);
+  }
+  const candidateMode = ci > -1;
+  // This phase the candidate reader is --check only. Refuse the combination BEFORE any
+  // build, gate or write: zero bytes touched, the ordinary --write path unchanged.
+  if (candidateMode && write) {
+    console.log('REFUSED CANDIDATE_WRITE_REFUSED: explicit-candidate mode is read-only --check this phase; --write stays on the legacy chain and nothing was written');
     process.exit(2);
   }
 
@@ -174,7 +202,7 @@ if (invokedDirectly) {
     process.exit(0);
   }
 
-  const result = check(root);
+  const result = check(root, candidateMode ? { authorityCandidate: { file: args[ci + 1] ?? '', expectedDigest: args[di + 1] ?? '' } } : {});
   // One finding set, one definition of a refusal, shared with docs:probe and the --write
   // gate. --check used to exit 1 on any finding whatsoever, so a fact worth recording
   // that is not a refusal (a derivative not generated yet) failed the check while the
@@ -183,6 +211,7 @@ if (invokedDirectly) {
   const blocking = result.findings.filter(isBlockingFinding);
   for (const f of result.findings) console.log(`${isBlockingFinding(f) ? 'FAIL' : 'WARN'} ${f.code}: ${f.detail}`);
   console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} plans=${result.plans_scanned}(${result.plans_declaring} declaring) findings=${result.findings.length} blocking=${blocking.length} contracts=${result.shapes_applicable ? result.shapes_compared + ' pairs compared' : 'not applicable'}`);
+  if (result.authority_source_binding) console.log(`AUTHORITY_SOURCE_BINDING ${JSON.stringify(result.authority_source_binding)}`);
   console.log('LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof');
   process.exit(blocking.length ? 1 : 0);
 }

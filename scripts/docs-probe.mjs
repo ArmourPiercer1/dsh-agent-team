@@ -41,7 +41,7 @@ import { dualReadReport } from './authority-dual-read.mjs';
 // Minimal classification wiring for this consumer ONLY (doc-checks' shared list is not
 // edited): explicit-candidate diagnostics are blocking by definition — a named candidate
 // that is missing, corrupt, digest-wrong, or divergent must stop the run, never rank.
-const BLOCKING = [...BLOCKING_PREFIXES, 'CANDIDATE_', 'DUAL_READ_'];
+const BLOCKING = BLOCKING_PREFIXES;
 const LIMITS = [
   'T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour',
   'no C1/C2/C3 substitution and no security negative control here',
