@@ -1,0 +1,60 @@
+# EB4-B receipts — 2026-10-26T13:11:33Z — base origin/master f71159648 (rebased) + this commit's working tree
+$ node scripts/diag-call-chain.mjs --self-test
+diag-call-chain --self-test: OK 48 codes, 5 kinds, every citation holds at this tree
+exit=0
+$ node --test tests/diag-call-chain/diag-call-chain.test.mjs
+✔ S1 --self-test: every FACE_TABLE / KIND_STAGES / shadow citation holds at this tree
+✔ S2 the self-test is not vacuous: a fixture tree without the emitters fails it
+✔ A1 refused-admission: attributed through the kind, fingerprint printed only in digest shape
+✔ A2 a code with several source emitters is AMBIGUOUS with every candidate named, never the first
+✔ A3 the same code on the backend kind narrows to the shut backend face
+✔ F1 unknown code → UNKNOWN_CODE, exit 1, no nearest match
+✔ F2 an invented spill-* code is UNKNOWN (the spill set is read from source, not a prefix)
+✔ F3 a vocabulary-only code (no production emitter) is not attributed: exit 1
+✔ F4 no refusal in the input → REFUSED exit 2 (empty is never "nothing wrong")
+✔ F5 shadow rows: only outcome=refuse counts; allow/defer rows are not refusals
+✔ F6 usage: zero or two inputs, unknown flag, --kind without --code → exit 2
+✔ B1 bound: an input file over 1 MiB is REFUSED before it is read
+✔ B2 bound: a symlinked --file is refused (regular files only)
+✔ B3 bound: more than 12 refusals → 12 reported, the rest counted, truncated=true
+✔ B4 bound: a free-text field is cut to the detail cap after redaction
+✔ N1 a credential in a backend-failed detail is redacted, the rest of the detail kept
+✔ N2 a non-digest detail on refused-admission is withheld entirely, not printed
+✔ N3 credentials inside a shadow-ledger row (scopeKey/callId/name) are redacted
+✔ N4 sensitivity: without redaction the same output would be caught by the backstop
+✔ N5 the tool never prints the input verbatim for an unknown code (no echo channel)
+ℹ tests 20
+ℹ pass 20
+ℹ fail 0
+$ node --test scripts/sanitize-evidence.regression.test.mjs   (unchanged behaviour after the pattern move)
+ℹ tests 25
+ℹ pass 25
+ℹ fail 0
+$ npx vitest run packages/testkit/test/rc2-sanitize-evidence.test.ts
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+$ node scripts/diag-call-chain.mjs --file dev/agent-workflow/evidence/u6-pr5-20261026/c2/run8-greper-tool-transcript.txt  (real C2 transcript; first refusal block)
+diag-call-chain: refusals=3 seen=3 truncated=false verdict=ATTRIBUTED_OR_NAMED_AMBIGUOUS
+[1] source=a5p5-refusal-line kind=refused-admission code=IO_POLICY_UNSUPPORTED attribution=AMBIGUOUS
+    stage: admission: lane decide verdict OR the PA (admission kernel / Control) edge — the line alone cannot say which (packages/tools/a5p5-tools/src/pipeline.ts:106, packages/tools/a5p5-tools/src/pipeline.ts:153, packages/tools/a5p5-tools/src/register.ts:269)
+    face: pa-default-deny-coverage [packages/runtime/tool-admission/admission-kernel.ts (refusal: 'template-default-deny')]
+    face: assurance [packages/runtime/tool-admission/assurance-runtime.ts]
+    face: admission-kernel [packages/runtime/tool-admission/admission-kernel.ts]
+    face: closed-world-guard [packages/runtime/tool-dispatch/install.ts]
+    faces: pa-default-deny-coverage = PA production admission default-deny COVERAGE gate (admitCall: template default=deny and no rule covers an effect arm) — refuses BEFORE the kernel and before any assurance check | assurance = runtime/tool-admission assurance runtime (H2: level vs derived demand, record vs probe) | admission-kernel = runtime/tool-admission admission kernel (finite clock, identity/realm/binding, expansion, grant mint/consume) | closed-world-guard = runtime/tool-dispatch closed-world Guard + scoped dispatcher
+    effectFingerprint: present sha256:0e370d8e024f9e6009806ec78db2b900d0519df26cc81ebbe286350c0eccc69f
+    chain: invocationCorrelation=NOT_OBSERVABLE_FROM_INPUT | binding=NOT_OBSERVABLE_FROM_INPUT | paControl=NOT_OBSERVABLE_FROM_INPUT | provider=NOT_OBSERVABLE_FROM_INPUT | settlement=NOT_OBSERVABLE_FROM_INPUT
+exit=0
+$ NEGATIVE CONTROL 1: refused-admission detail carrying a synthetic credential (must never render)
+exit=0
+[1] source=a5p5-refusal-line kind=refused-admission code=APPROVAL_STALE attribution=ATTRIBUTED
+    effectFingerprint: ABSENT_OR_MALFORMED (refused-admission should carry sha256:<64 hex>; not printed)
+LIMIT STATIC attribution over source vocabulary at this tree: no Host boot, no live ledger read beyond the given input, no re-run
+synthetic credential occurrences in stdout: 0
+$ NEGATIVE CONTROL 2: backend-failed detail carrying a boot token + a bearer-shaped value (must render redacted)
+exit=0
+    detail (redacted, ≤160): probe failed url http://127.0.0.1:3182/?token=<REDACTED-BOOT-TOKEN> auth Bearer <REDACTED>
+synthetic credential occurrences in stdout: 0
+$ NEGATIVE CONTROL 3: the backstop is sensitive — same string, un-redacted, is caught (test N4 does this in-process)
+un-redacted hits: ["boot-token","token-param","bearer"]
+redacted hits:   []

@@ -1,0 +1,107 @@
+# EB4-D / EB4-E receipts — 2026-10-26T14:04:42Z — base origin/master 94890f090 (rebased) + this commit's tree
+
+## EB4-D: the closed command table
+$ node scripts/devex.mjs --self-test
+devex --self-test: OK 9 entries
+exit=0
+$ node scripts/devex.mjs list
+bootstrap          fresh checkout → deps + build + install-surface freshness (the cold-start)
+verify-changed     T0 document/authority gates over THIS change (merge-base..HEAD + uncommitted)
+verify-gate        the PR merge gate, default mode (census skipped by name — CI runs --full)
+security           zero-core (no upstream patch) on the pristine host + lint identity diff + diagnostic self-test
+diag               attribute one refusal (pass the text after `--`): `devex run diag -- --text "<a5p5-refused …>"`
+state              what state am I in: authority pointer + evidence store integrity
+integration-order  EB4-E: does a family branch still rest on merged-head C2? (pass a branch after `--`)
+host               [refused] boot a test Host instance — NOT self-service here
+release            [refused] tag / promote / push — NOT self-service
+$ node scripts/devex.mjs describe verify-changed
+verify-changed — T0 document/authority gates over THIS change (merge-base..HEAD + uncommitted)
+  runs: node scripts/docs-sync.mjs --check
+  runs: node scripts/docs-probe.mjs --base origin/master
+  bounds: timeout 120 s · output cap 16384 B · scope: read-only
+  measured here: docs:sync 0.4 s / 581 B; docs:probe 0.45 s / 1.2 KiB
+  a red means: any FAIL line is blocking (LINK_DANGLING, CLAIM_WITHOUT_EVIDENCE, STALE_GENERATED_VIEW…); docs:probe REFUSED BASE_UNRESOLVABLE = fetch origin/master, never --worktree-only to dodge it
+  owner: Doc/Contract Owner · doc: tests/doc-consistency/README.md
+$ node scripts/devex.mjs describe host
+host — boot a test Host instance — NOT self-service here
+  REFUSED as self-service: booting a Host is a test-instance operation with its own red lines (ports 3180–3186/3491–3500 only, DSH_HOME under tests/homes/, never 3080 or ~/.dsh); use the WorldFactory / the documented chain in docs/TEST_METHODS.md §2. A wrapper here would be a second launcher.
+  bounds: timeout 0 s · output cap 0 B · scope: none (refused)
+  owner: Host/Test Maintainer · doc: docs/TEST_METHODS.md
+$ node scripts/devex.mjs describe release
+release — tag / promote / push — NOT self-service
+  REFUSED as self-service: release steps are approval-gated (user release decision + logged one-shot push authorization); see docs/RELEASE.md §3. Nothing here tags, pushes or moves stable.
+  bounds: timeout 0 s · output cap 0 B · scope: none (refused)
+  owner: Release Owner · doc: docs/RELEASE.md
+
+## EB4-D: routed commands really run (read-only entries)
+$ node scripts/devex.mjs run state
+{"ok":true,"status":"POINTER","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261026r1.json","snapshot_version":"as20261026r1","content_digest":"sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4","current_phase_statement":"ALPHA.5 TOOL-IO-GOVERNANCE PHASE - UNIFIED BASELINE IMPLEMENTATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval)","six":{"phase_id":"alpha5-tool-io-governance","active_plan":"docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md","backlog":"docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md","matrix":"docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md","baseline":"9b2ee57bc5afd30e89855e09d1769d2e5ec83912","baseline_collected":"2026-10-22T07:20:56Z"},"two_current_findings":[]}
+
+── node scripts/evidence-store.mjs verify → exit 0
+verify verdict=pass entries=20148 bytes_ok=521862486 findings=0 store=/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence
+
+DEVEX-RESULT name=state verdict=pass ms=1207
+exit=0
+$ node scripts/devex.mjs run diag -- --code GRANT_STALE
+── node scripts/diag-call-chain.mjs --code GRANT_STALE → exit 0
+diag-call-chain: refusals=1 seen=1 truncated=false verdict=ATTRIBUTED_OR_NAMED_AMBIGUOUS
+[1] source=code-argument kind=null code=GRANT_STALE attribution=ATTRIBUTED
+    face: pa-control-edge [packages/runtime/src/plugin/live/team-tool-plane.mjs]
+    faces: pa-control-edge = PA ↔ durable Control edge in the plane (approval plan, Control leg, grant staleness)
+    effectFingerprint: not carried by this refusal kind
+    chain: invocationCorrelation=NOT_OBSERVABLE_FROM_INPUT | binding=NOT_OBSERVABLE_FROM_INPUT | paControl=candidate face (see candidates) | provider=NOT_OBSERVABLE_FROM_INPUT | settlement=NOT_OBSERVABLE_FROM_INPUT
+LIMIT STATIC attribution over source vocabulary at this tree: no Host boot, no live ledger read beyond the given input, no re-run
+exit=0
+$ node scripts/devex.mjs run host   (must refuse, must not boot)
+REFUSED host: booting a Host is a test-instance operation with its own red lines (ports 3180–3186/3491–3500 only, DSH_HOME under tests/homes/, never 3080 or ~/.dsh); use the WorldFactory / the documented chain in docs/TEST_METHODS.md §2. A wrapper here would be a second launcher.
+DEVEX-RESULT name=host verdict=refused
+exit=2
+$ node scripts/devex.mjs run release   (must refuse)
+REFUSED release: release steps are approval-gated (user release decision + logged one-shot push authorization); see docs/RELEASE.md §3. Nothing here tags, pushes or moves stable.
+DEVEX-RESULT name=release verdict=refused
+exit=2
+$ node scripts/devex.mjs run verify-gate --full   (args refused for a non-passArgs entry)
+REFUSED: pass routed arguments after `--`
+exit=2
+
+## EB4-E: integration order against the candidate
+$ node scripts/integration-order.mjs --self-test
+integration-order --self-test: OK (six classes, fail-closed record checks)
+exit=0
+$ node scripts/integration-order.mjs --target origin/master
+integration-order: target=origin/master head=94890f090272 records=40
+MERGED_ANCESTOR (27) — teamSha is merged but BEHIND the candidate: it did not test the candidate (re-run)
+NO_TEAM_SHA (2) — the record binds no Team SHA at all
+INCOMPLETE_RECORD (11) — record never finished (no overall verdict, zero cases, or no finishedAt) — not delivery
+NOT GRADED (6):
+RULE branch-local C2 cannot substitute for merged-head C2: 27 record(s) do not bind the candidate; 0 do.
+LIMIT read-only evidence binding audit: no test run, no Host boot, no verdict on whether any C2 PASSED its own lanes
+exit=0
+$ node scripts/integration-order.mjs --target origin/master --strict
+exit=1 (1 = at least one record does not bind the candidate head)
+$ node scripts/integration-order.mjs --target refs/heads/no-such-branch-u7-3
+REFUSED TARGET_UNRESOLVABLE: target "refs/heads/no-such-branch-u7-3" does not resolve to a commit in this repository — refusing rather than reporting an empty answer
+exit=2
+
+## tests (C1, no Host, no port)
+$ node --test tests/diag-call-chain/diag-call-chain.test.mjs
+ℹ tests 21
+ℹ pass 21
+ℹ fail 0
+$ node --test tests/u7-3-devex/devex-integration.test.mjs
+ℹ tests 16
+ℹ pass 16
+ℹ fail 0
+
+## gates
+docs:sync --check: docs=86 notes=4 plans=49(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:probe base=origin/master head=30e280932 changed=15 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+lint-identities: universe: 1401 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+
+## EB4-E: BRANCH_LOCAL is reachable on real commits (not only in the synthetic self-test)
+# This branch tip is a DESCENDANT of origin/master, so a record bound to this branch is exactly
+# the "branch-local C2" case EB4-E forbids substituting for the merged head:
+$ classify({teamSha: HEAD}, candidate=origin/master)
+teamSha=30e280932762 candidate=94890f090272 -> BRANCH_LOCAL (ahead of the candidate by 2 commit(s))

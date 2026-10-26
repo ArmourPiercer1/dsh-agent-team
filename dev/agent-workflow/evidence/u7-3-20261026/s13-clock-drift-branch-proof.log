@@ -1,0 +1,55 @@
+S13 (rc2-sanitize-evidence) clock-drift — A/B control on the u7-3 branch, 2026-10-26T14:4xZ
+machine: same host as the u7-3 worktree; no concurrent lane was running during these captures.
+
+WHY THIS FILE EXISTS. The full `npx vitest run` in eb4c-receipts-r2.txt reported exactly one red:
+  FAIL packages/testkit/test/rc2-sanitize-evidence.test.ts > … > S13 … Error: Test timed out in 5000ms
+S13 is the ONE suite this branch touches a dependency of (the redaction pattern table moved out of
+scripts/sanitize-evidence.mjs), so "flake" cannot be assumed — it has to be measured both ways.
+
+LEG ANATOMY. S13 = spawnSync(node --test scripts/sanitize-evidence.regression.test.mjs): a node:test
+runner cold start (25 tests, each spawning the sanitizer several times), pinned against vitest's
+5000 ms default testTimeout (the declaration at rc2-sanitize-evidence.test.ts:224 sets no per-test
+budget; its inner spawnSync timeout of 60_000 protects the child, not the parent's clock).
+
+CONTROL 1 — S13 in isolation on THIS branch, three times:
+  npx vitest run packages/testkit/test/rc2-sanitize-evidence.test.ts
+  ✓ S13 … 3080ms   Tests 13 passed (13)
+  ✓ S13 … 3100ms   Tests 13 passed (13)
+  ✓ S13 … 3059ms   Tests 13 passed (13)
+
+CONTROL 2 — the S13 payload itself, timed directly (three times):
+  node --test scripts/sanitize-evidence.regression.test.mjs   exit=0
+  3074 ms / 3133 ms / 3093 ms  (25/25 pass each time)
+
+CONTROL 3 — A/B against the PRISTINE BASE implementation. The base scripts/sanitize-evidence.mjs and
+its regression test were extracted with `git show origin/master:…` into a scratch dir and timed with
+SANITIZE_EVIDENCE_TOOL pointing at each:
+  master sanitizer:  3043 / 3077 / 3042 ms   (exit 0, three runs)
+  branch sanitizer:  3055 / 3079 / 3043 ms   (exit 0, three runs)
+  => the extraction costs nothing measurable (all six runs inside one 36 ms band).
+
+CONTROL 4 — behavioural equivalence of the moved table (not just timing). Parsed the base's inline
+`const PATTERNS = [...]` out of the pristine file and compared it row by row with
+scripts/redaction-patterns.mjs:
+  rows 10 / 10 ; names equal true ; regex sources+flags equal true ; replacements equal true ;
+  appliesToSanitizedCopiesOnly flags equal true
+  => the move is verbatim; the sanitizer's behaviour cannot have changed with it.
+
+READING. The leg sits at ~3.0–3.1 s idle against a 5000 ms budget, i.e. inside ~1.9 s of the clock on
+an unloaded box, and the full-suite run adds parallel load. The same flake is already disclosed by the
+U7-4a lane as pre-existing at pristine base origin/master 2af64ead7 (5702 ms @ 5000 ms, see
+dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/s13-clock-drift-base-proof.log) — that lane
+touched neither the sanitizer nor the test either.
+
+VERDICT. NOT attributed to this branch: controls 3 and 4 exclude the only mechanism this branch could
+have introduced (a slower or changed sanitizer). It is a pre-existing environment-clock flake in a
+product test file. This branch does NOT patch it (CORE PATCH BUDGET = 0 covers packages/**, and
+re-baselining the census baseline is the Contract Owner / main-agent call, not taken here). Second
+full-suite run recorded below to show the flake is load-dependent rather than deterministic.
+
+CONTROL 5 — the same full suite on the SAME tree, immediately after control 1–4 (unloaded):
+  npx vitest run --reporter=dot   -> exit=0, 276 s
+  Test Files  628 passed (628)
+  Tests       7998 passed (7998)
+  i.e. ZERO reds. The earlier full run (eb4c-receipts-r2.txt) reported 1 failed / 7997 passed on the
+  same code, which is what "load-dependent" means: the failure follows the host's load, not the diff.
