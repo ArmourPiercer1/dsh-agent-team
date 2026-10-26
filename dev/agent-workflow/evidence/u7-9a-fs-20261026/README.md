@@ -146,7 +146,19 @@ boot without a new ruling. Post-boot-7: pristine host tree verified clean
 
 ## Gates (fix rounds R1+R2; numbers bound to the heads named below)
 
-* **MERGE (R2)**: origin/master @ 94890f090 merged at cf2c56fb8; the ONLY
+* **MERGE (R2, second and final)**: master moved again mid-round;
+  origin/master @ c5e43f1d5 merged at fd5c2b3d2 (#392 team-tool-plane
+  backgroundJobs key + CREATING-LANE pin + agent-bindings override,
+  eslint node-globals, p4t6 U74A booking). Conflicts: p4t6 booking lists
+  only — resolved keeping ALL THREE bookings (U74A + U70 + U79A ride
+  every sum; tie GREEN 10/10). team-tool-plane auto-merged BOTH sides
+  (verified: paPlacementNameOf arms + backgroundJobs/CREATING-LANE
+  present; kit 35/35 + C1 35/35 + fitness green on top; PLACEMENTS 38,
+  glue re-placed). The earlier 94890f090 merge (cf2c56fb8) stays as
+  history in the branch. CA-01 FINAL certificate re-issued vs c5e43f1d5:
+  branch contribution 0 AND HEAD==master 33/33 —
+  `ca01-zero-diff-proof-r2-final.txt` (the authoritative cert).
+* **MERGE (R2a)**: origin/master @ 94890f090 merged at cf2c56fb8; the ONLY
   conflicts were harness/p4t6 (`u5-canary-runner.mjs`, `lib/world-factory.mjs`,
   `p4t6-session-event-scan.test.ts`) — resolved keeping BOTH sides' intent
   (u6-arc-d extended row + u7-0 census World beside u7FsMut; both

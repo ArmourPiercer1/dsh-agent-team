@@ -42,3 +42,11 @@ itself is green on the merged tree (u7-9a-mutation-golden-vectors.test.ts,
 branch carry evidence/docs only (boot-7 records, README/PR-BODY,
 certificates) — zero canonicalization-file content, verified by
 git-diff blob comparison of the corpus/parser/center files.
+
+## §R2b second-merge re-record
+
+Binding head: fd5c2b3d2677f9a0979b8fd83868082bacf9d441 (merge of origin/master @ c5e43f1d5 — #392).
+Recorder re-run: vectors=1440 digest=91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b —
+UNCHANGED across base, R1, merge-1 (94890f090) and merge-2 (c5e43f1d5).
+Canonicalization surface untouched by #389-#393 (booked digest leg still
+a1746afc…); this remains the single digest binding for the PR head.

@@ -51,10 +51,16 @@ read_image honest-arm).
   8/8 for the run. No ENV_BLOCK claim was made: native member write is
   possible on this host (the boot-4 sandbox denial was a cross-workspace
   absolute path, not a law).
-- **origin/master @ 94890f090 merged**; conflicts were harness-only
-  (canary runner, world-factory lib, p4t6 bookings) resolved keeping both
-  sides' intent; CA-01 **re-issued against the new master: 33/33
-  byte-identical, mismatches 0** (`ca01-zero-diff-proof-r2.txt`).
+- **origin/master merged twice during the round** (94890f090 then
+  c5e43f1d5 incl. #392's plane/agent-bindings/eslint changes); every
+  conflict was harness-only (canary runner, world-factory lib, p4t6
+  bookings) resolved keeping ALL sides' intent (three p4t6 bookings ride
+  every sum; plane keeps both the #392 backgroundJobs/CREATING-LANE law
+  and this lane's paPlacementNameOf arms). CA-01 **re-issued against the
+  final master c5e43f1d5**: branch contribution to the 33 protected files
+  = **zero** (`git diff --name-only origin/master...HEAD` ∩ ledger = ∅,
+  merge-base = c5e43f1d5) AND HEAD==master 33/33 byte-identical
+  (`ca01-zero-diff-proof-r2-final.txt` — authoritative).
 - Merged-tree gates: ci-pr-gate 7/0; root vitest 628/629 with the single
   red being the OLD-REDS ENV-1 provisioning gap (client dist unbuilt —
   upstream's own record names the fix); after provisioning, a4p7 is
