@@ -118,7 +118,8 @@ zero that cannot name them.
    unconditional.
 5. **The census was not run in this session** (0 boots, no pristine host here). The
    `ci-full` layer is the wiring for it; its real result is hosted-only.
-6. **`eb3-trusted-sources` books 20 fixture MCP names, 0 product names.** A booking is
+6. **`eb3-trusted-sources` books 22 fixture MCP names, 0 product names** (2 were added on the
+   final rebase: PR #386's `u7-0-census-reconcile` plants, flagged by this very check). A booking is
    a visibility record, not an authorization: it does not bypass the Kernel.
 7. **Static import edges only.** `eb3-family-boundaries` sees imports, not runtime
    influence through the Kernel, durable state or a shared provider; those remain the
