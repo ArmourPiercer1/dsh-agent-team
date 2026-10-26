@@ -1,0 +1,219 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u6-proc-u6prc7-2026-10-26T01-03-29-810Z-recon-2026-10-26T01-11-00-258Z",
+  "suite": "u6-proc",
+  "startedAt": "2026-10-26T01:11:00.258Z",
+  "selectedCases": [
+    "proc:mounted",
+    "proc:exec-door-fail-closed",
+    "proc:member-ask-born-terminal",
+    "proc:deny-zero-spawn",
+    "proc:replay-settled-refusal",
+    "proc:spoof-refusal",
+    "proc:guard-off-channel",
+    "proc:late-call-refused",
+    "proc:ctl-native-untouched",
+    "proc:approve-spawn-once",
+    "proc:approve-replay-refused"
+  ],
+  "bindings": {
+    "mode": "reconstruct",
+    "reconstructedFrom": {
+      "runId": "u5-u6-proc-u6prc7-2026-10-26T01-03-29-810Z",
+      "evidence": "c2/u5-u6-proc-u6prc7-2026-10-26T01-03-29-810Z.u6proc-evidence.json",
+      "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r3.json"
+    },
+    "hostAliveReconstructed": true,
+    "disclosure": "offline re-judgment of run u6prc5 through the shared judgeU6Proc (the same function live runs use); no host start, ledger untouched; proc:mounted carried verbatim from the source record (boot-time-only inputs)."
+  },
+  "cases": [
+    {
+      "id": "proc:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.258Z",
+      "carriedFrom": "u5-u6-proc-u6prc7-2026-10-26T01-03-29-810Z",
+      "note": "boot-time-only inputs (placement-feed echo, launcher pin) cannot be recomputed offline; verdict + detail carried verbatim from the source run",
+      "source": {
+        "id": "proc:mounted",
+        "verdict": "PASS",
+        "at": "2026-10-26T01:05:57.540Z",
+        "teamSession": true,
+        "probeRegister": {
+          "at": "2026-10-26T01:03:41.044Z",
+          "world": "u5u6prc7-20261026T01-03-29Z",
+          "leg": "register",
+          "kind": "probe-tool",
+          "ok": true,
+          "handle": "function"
+        },
+        "listenLegs": [
+          "agent/created:true",
+          "tools/pre-execute:true",
+          "tools/post-execute:true"
+        ],
+        "launcherPin": {
+          "launcher": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+          "sha256": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+        },
+        "hostAlive": true,
+        "kernelHits": {
+          "a5g7: placement-feed rows=": {
+            "count": 4,
+            "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc7-20261026t01-03-29z"
+          },
+          "a5-plane: mount-REFUSED": {
+            "count": 0,
+            "sample": null
+          },
+          "a5-plane: placement-REFUSED": {
+            "count": 0,
+            "sample": null
+          },
+          "PLANE_KERNEL_UNAVAILABLE": {
+            "count": 0,
+            "sample": null
+          },
+          "PLANE_PROCESS_REGISTRATION_REFUSED": {
+            "count": 0,
+            "sample": null
+          },
+          "PLANE_READ_REGISTRATION_REFUSED": {
+            "count": 0,
+            "sample": null
+          },
+          "cannot be verified at dispatch": {
+            "count": 0,
+            "sample": null
+          }
+        },
+        "note": "ONE kernel for both families: the placement feed lists team_bash AND read (ARC-B visible from the Host log); a refused registration or an unbuildable kernel would name itself in the log (mount-wide law, PR3)"
+      }
+    },
+    {
+      "id": "proc:exec-door-fail-closed",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "spawnAttempts": [
+        {
+          "command": "printf 'U6PROC_POS_u5u6prc7-20261026t01-",
+          "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367"
+        },
+        {
+          "command": "printf 'U6PROC_SWAP_u5u6prc7-20261026t01",
+          "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367"
+        },
+        {
+          "command": "sleep 6; printf 'U6PROC_LATE_EMITTED\\n' ",
+          "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367"
+        }
+      ],
+      "effectFilesAbsent": true,
+      "note": "all three leader exec attempts answered typed APPROVAL_DENIED before any process, zero spawn effects on disk: the exec door is fail-closed on this world. The u6prc7 bridge forensics name the live refusal cause verbatim: the durable ask row was never opened (request-control outside the mutation envelope of this plane caller; the leader default also carries no exec token, so the allow lane downgrades to that same ask). Spawn mechanics are pinned at the C1 production seam (BL01-2)."
+    },
+    {
+      "id": "proc:member-ask-born-terminal",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "maskResults": [
+        "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      ],
+      "maskRequestId": null,
+      "notifTurns": 0,
+      "notifTurnsForMaskAsk": 0,
+      "note": "the shell-lane member ask settled as a synchronous terminal deny with zero spawn and no leader notification ever carrying this ask id. Measured live cause (u6prc7 forensics): the durable ask row was never opened — request-control is outside the declared envelope of this template (the declared allow list replaces the member base bounds). The shell fingerprint rung law remains a C1/offline claim, not what this live leg reached."
+    },
+    {
+      "id": "proc:deny-zero-spawn",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "denyResults": [
+        "a5p5-refused kind=refused-admission code=IO_POLICY_UNSUPPORTED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b5"
+      ],
+      "denyClaimOccurrences": 0
+    },
+    {
+      "id": "proc:replay-settled-refusal",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "replayArm": {
+        "requestId": "u6proc-unknown-request",
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"u6proc-replay-v7vaj8rusn\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no dura"
+      },
+      "openRequestsAtTeardown": 0,
+      "decisions": 0,
+      "consumptions": 0,
+      "note": "the team.resolveControl seam refused with a typed error and no control case was ever left open (a born-terminal world keeps nothing pendable); the grant-level exactly-once twin is C1 kernel-flow C-legs"
+    },
+    {
+      "id": "proc:spoof-refusal",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "spoofBodyMarkers": [],
+      "swapAttempts": 1,
+      "swapResults": [
+        "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc"
+      ],
+      "note": "either host law (registry scope or kernel identity) keeps the spoof body unrun; channel control proves the plant rides when ungoverned"
+    },
+    {
+      "id": "proc:guard-off-channel",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "channelMarkers": [
+        "channel-body-ran-trigger-channel"
+      ],
+      "channelRows": 2
+    },
+    {
+      "id": "proc:late-call-refused",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "lateResults": [
+        "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc"
+      ],
+      "lateFileAbsent": true,
+      "note": "the row-timeout command never reached a process (refused at admission); terminate mechanics carry their own offline pins (glue7 raceShellSettle, a5b3 cancel legs)"
+    },
+    {
+      "id": "proc:ctl-native-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-26T01:11:00.259Z",
+      "ctlRequestedOnNativeLane": true,
+      "ctlTeamLaneRows": 0,
+      "ctlEffect": false,
+      "note": "the model-facing close carried the NATIVE tool name; PR3 added zero mediation to the non-team lane (host-native permission posture is host-owned and disclosed)"
+    },
+    {
+      "id": "proc:approve-spawn-once",
+      "verdict": "FAIL",
+      "at": "2026-10-26T01:11:00.259Z",
+      "pendingSeen": false,
+      "pendingRequestId": "",
+      "pendingKind": null,
+      "resolveBody": "",
+      "firstCallResult": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+      "decisions": 0,
+      "consumptions": 0,
+      "markerLinesFromDisk": 0,
+      "effectOnDisk": null,
+      "note": "the ask lane opened a REAL pending row; the public seam approved it; consumeOnce fired once (consumption rows); the confined spawn left exactly ONE marker line on disk — read independently of the tool return; the tool result carried the body (host-native SUCCESS settlement)"
+    },
+    {
+      "id": "proc:approve-replay-refused",
+      "verdict": "FAIL",
+      "at": "2026-10-26T01:11:00.259Z",
+      "replayCallResult": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+      "markerLinesAfterReplayFromDisk": 0,
+      "decisions": 0,
+      "consumptions": 0,
+      "note": "the identical second call re-presents the SAME approval-case identity (one-shot already consumed): typed refusal, ZERO second spawn (disk still holds one line), one decision row, one consumption row — the exactly-once law measured live; the kernel-level GRANT_REPLAY twin sits at the C1 seam"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-26T01:11:00.259Z"
+}
