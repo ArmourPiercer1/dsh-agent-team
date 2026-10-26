@@ -6885,3 +6885,9 @@ master 跑 production-run-recipe 全链）。
 - PR2 (#373) = 首个 enforcing 切片：read 归 kernel 所有；R1 独审 阻塞（5 blockers：lifecycle 自计数回退、CI-05 native 回退、suite pin、golden 缺 unicode/symlink 路径类、cap receipt 缺独立 oracle）→ 一轮定点修复 → R2 独审 通过（0 findings）→ 合并 `cd54f3b7c`。
 - PR3 (#375) = ARC-B：process/bash family 与 read 共用同一 kernel 账本；golden 299 vectors byte-identical；BL-01 在生产 seam 关闭；受保护集零改动。R1 独审 补充内容（唯一缺口 = 授权正控）。4 次 boot 后由执行者取证定位：ask row 确实出生并阻塞（request-created + notifTurns 0→21），但 runner 的 control seam 指向 boot team 而非 governed team；且 lane-scoped ask grant 在 blueprint 数据中不可表达（leader 无 callerMember）。正控腿按既定 fallback 转 **U7 命名项 R-U6P3-1**，产品语义零改动 → 合并 `8337e52cf`。
 - 二者门禁记录 + 两份 review 正本入库（gates/），风险台账 R-U6P2-1..3 / R-U6P3-1..3 见 GATE-LEDGER.md。
+
+## 2026-10-26 U6 第四切片（PR4 Jobs bridge, ARC-C）
+
+- PR #377：`createGovernedJobsBridge` 逐字节迁出（sha 71705d6e…，独审复算一致），trio 经同一 closed schema / Registry / kernel decide+consumeOnce，无第二账本（boot 4 trioUses 7 / controlRows 0）；冻结 gateway 与 pa-mount-registry sha 未变。
+- R1 独审 补充内容：CI-05 —— governed mount 上无 Team 记录的 job id 原先 `corded:false` 透传 Host；修复 = 装配层 `ci05GovernedGatewayRow` 在 svc 前类型化拒绝（未动冻结文件与逐字节区）。授权第 7 次 boot：description 修复实机验证通过，但出现 Team-lane stall（boot 5 起，harness 层）与 ctl 读竞争。
+- R2 独审 投机通过；§10.6 裁定 **G4-CORE-PASS / BRIDGE-BLOCKED**（非 CORE BLOCKER）；boot 4→7 仅测试文件变化，非产品回归 → 合并 `269be49e4`。命名项 R-U6P4-1..3 入账；完整 G4 / 发布仍须补齐 attribution producer 与 Jobs 正向效果。
