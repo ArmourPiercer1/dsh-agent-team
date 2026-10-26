@@ -30,3 +30,15 @@ moved. Re-recorded at the FINAL CODE HEAD of fix round R1:
   booked digest equals current origin/master's blob — CA-01 certificate).
 * Any evidence/doc commits AFTER this binding head add no scannable or
   canonicalization file (disclosed by name in the evidence README).
+
+## §R2 merge-round re-record
+
+Code binding head: cf2c56fb8d905e5f33374d9f59c4c00d1dac4399 (merge of origin/master @ 94890f090 onto the
+R1 heads). Recorder re-run (same scratch pair): vectors=1440, digest
+91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b —
+UNCHANGED across base a0f3f610, R1 heads, and the merge. The golden test
+itself is green on the merged tree (u7-9a-mutation-golden-vectors.test.ts,
+4 tests, inside the 62/62 quick battery). Commits after this head on this
+branch carry evidence/docs only (boot-7 records, README/PR-BODY,
+certificates) — zero canonicalization-file content, verified by
+git-diff blob comparison of the corpus/parser/center files.

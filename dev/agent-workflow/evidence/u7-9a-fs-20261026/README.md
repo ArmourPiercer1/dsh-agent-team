@@ -76,7 +76,7 @@ disk, symlink/escape zero effect, edit receipt law, image honest-arm,
 per-path serialization races (final = one whole payload).
 Regression: u6-pr2/pr3/pr5 kernel-flow + a5-m1 + golden-vectors all green.
 
-## C2 (host boots, `--suite u7-fs-mut`) — 6 boots (budget 6, reviewer R1 grant +2), final run: 6/7 fsm cases PASS
+## C2 (host boots, `--suite u7-fs-mut`) — 7 boots (4 delivery + 2 R1 grant + 1 R2 grant), FINAL RUN: 8/8 PASS (overall=PASS)
 
 ONE boot per run; verdicts = the runner's OWN disk reads + host-log
 witnesses; boot 5+ additionally carries the FULL mock journal
@@ -90,7 +90,20 @@ head — the witness class pre-row deaths leave). `c2/` holds all six runs.
 | u7fsmut3 | 3/8 | same post-lane-fixes; transcript forensics added |
 | u7fsmut4 | 5/8 | `paPlacementNameOf` fix → **write/edit positives PASS on disk + RAN witnesses**; the three R1-open legs FAIL as disclosed |
 | u5x-12-45 (R1) | journal run | the three "pre-dispatch deaths" are NAMED (see below) — none was a product defect |
-| u5x-12-48 (R1, final) | **6/7** | `fsm:refusal-zero-effect` **PASS arm=template-layer-denied**; `fsm:image-lane-honest` **PASS arm=typed-refusal** with live host-log witness `governed-image pre-gate-refused code=IMAGE_MODEL_NOT_CAPABLE`; ctl cell recorded FAIL on a HARNESS oracle bug — its DISK truth PASSED (`run-6.ctl-native-disk-truth.txt`, byte-exact run-unique claim; journal seq 31 `Created file`) |
+| u5x-12-48 (R1) | 6/7 | refusal + image legs PASS on live layered arms; ctl cell FAIL on the harness oracle's wrong-tree bug (disk truth captured) |
+| **u5ctl7-14-11 (R2)** | **8/8 overall=PASS** | **`fsm:ctl-native-write` PASS on the runner's OWN disk read**: `oracleBytesEqual:true`, run-unique bytes `U7FSMUT_CTL_CLAIM_u5ctl7-…\nnative-control-write\n` read at `ctlFoundPath` (the member-native session root), governed RAN witnesses never name the ctl path (`governedRanSawCtlPath:false` — entailed by the PASS formula), `laneCtlDone:true`, host-log corroborated; the oracle then REMOVED its own file (pristine host tree verified clean post-run). All other seven cases PASS alongside it. `c2/run-7.log` + `run-7.json` + `<runId>.u7fsmut-evidence.json` + `logs/u5ctl7-…/`. |
+
+### R2 final C2 disposition (the exact tally the reviewer asked for)
+
+| cell | final |
+| --- | --- |
+| fsm:mounted | PASS (boot 4, re-proved boots 5–7) |
+| fsm:write-positive | PASS — disk bytes + `governed-write RAN` |
+| fsm:edit-positive | PASS — disk bytes + `governed-edit RAN` |
+| fsm:refusal-zero-effect | PASS arm=`template-layer-denied` — named host refusal layer, sha identical |
+| fsm:image-lane-honest | PASS arm=`typed-refusal` — row's own typed sentence + host-log witness, zero commit |
+| fsm:ctl-native-write | **PASS (boot 7, disk evidence recorded by the corrected oracle)** — the R1 recorded FAIL (boots 5/6) stands disclosed as history; the harness root cause was fixed in-kit and the cell RE-RAN as the R2 review directed. No ENV_BLOCK was needed: native member write is NOT impossible on this host — boot 4's sandbox denial was a cross-workspace absolute path; the member-native row writes its own session root. |
+| fsm:leak-check | PASS — pids dead, ports released, home/leases released |
 
 ### R1 finding 3 — what the boot-5 journal actually measured (nothing stays "silent")
 
@@ -119,35 +132,41 @@ head — the witness class pre-row deaths leave). `c2/` holds all six runs.
    the world HOME and missed the session root (harness bug). Kit fixed
    this round (oracle walks the factory hostTree + records + restores the
    pristine tree by removing its own run-unique file); NO budget remained
-   to re-boot the cell — it is disclosed exactly as measured, not flipped:
-   the case's DISK truth is proven, its recorded verdict is not re-run.
+   to re-boot the cell at R1 time. RESOLVED AT R2: the corrected oracle
+   RE-RAN (boot 7) and the cell records PASS on its own recorded disk
+   evidence — not a conversion of the old sidecar, a fresh verdict.
    Side effect found and fixed: boot-4's stray file had tripped boot-5/6's
    hidden `host-base-pristine-post` guard (RUN-SUMMARY FAIL:2 in run-6 =
    ctl oracle + that residue; both root-caused, residue removed).
 
-Budget law honored: 6/6 starts (4 delivery + 2 R1 grant), offline-verify
-before every boot, no seventh boot.
+Budget law honored: 7/7 starts (4 delivery + 2 R1 grant + 1 R2 grant —
+`c2/boot7-authorization.md`), offline-verify before every boot, no eighth
+boot without a new ruling. Post-boot-7: pristine host tree verified clean
+(oracle self-cleanup worked — the cell that dirtied it now restores it).
 
-## Gates (fix round R1; numbers bound to the heads named below)
+## Gates (fix rounds R1+R2; numbers bound to the heads named below)
 
-* `ci-pr-gate` @ evidence head 16e8daf7b (all code committed; quiet tree):
-  **7 pass / 0 fail** (census leg named-skip, opt-in law) —
-  `ci-pr-gate-fixround.log`. The docs-only commit that records this number
-  adds only evidence/text files (no scannable, no canonicalization, no
-  protected path).
-* quick battery @ fix heads: world-factory kit **34/34**;
-  fitness+C1+golden+unsupported-c1+a5p0-audit+p4t6 = **72/72**
-  (70 + the 2 new C1 tests I-12/I-13).
-* root vitest 628 files @ 16e8daf7b (quiet tree, recorded nothing running):
-  6 failed files = EXACTLY the env-dependent master baseline set
-  (t2-blueprint-hash, p6t3-mediation, p6t3-restart, a4p7-merge-gate,
-  rc2-sanitize-evidence, p6t6-actions) — **NEW reds = 0**
-  (`root-vitest-fixround.log`). An earlier mid-run pass showed 3 extra
-  reds: p4t6 raced a commit touching the index mid-run (self-inflicted,
-  discipline noted), and a5p4-lane-hygiene + alpha5-glob-backend are
-  concurrency flakes — all three GREEN solo, GREEN in this clean run.
-* CA-01 byte certificate R1: `ca01-zero-diff-proof-r1.txt` — 33/33, zero
-  drift vs base AND current origin/master, per-file git blob hashes.
+* **MERGE (R2)**: origin/master @ 94890f090 merged at cf2c56fb8; the ONLY
+  conflicts were harness/p4t6 (`u5-canary-runner.mjs`, `lib/world-factory.mjs`,
+  `p4t6-session-event-scan.test.ts`) — resolved keeping BOTH sides' intent
+  (u6-arc-d extended row + u7-0 census World beside u7FsMut; both
+  SCANNED_PATHS bookings ride every sum). CA-01 RE-ISSUED vs the new master:
+  33/33 byte-identical, mismatches 0 (`ca01-zero-diff-proof-r2.txt`).
+* `ci-pr-gate` @ merged tree: **7 pass / 0 fail** (census named-skip) —
+  `ci-pr-gate-merged.log`.
+* root vitest @ merged tree (629 files): **628 green + a4p7-merge-gate**,
+  whose red was the OLD-REDS ENV-1 provisioning gap (`packages/client/dist`
+  not built — upstream's own record names the provisioning step); after
+  `pnpm run build` in packages/client, a4p7 is **35/35 green solo**. The
+  five old env-dependent baseline reds are GONE (closed upstream by #393).
+  **NEW reds = 0 against a now-green baseline.** Final-head run recorded
+  in `root-vitest-merged.log` (plus the final-head addendum below).
+* quick battery @ merged tree: kit **35/35** (upstream +1),
+  fitness+C1+golden+unsupported-c1+a5p0 = **62/62**, p4t6 re-tied
+  **10/10** (both bookings), boot 7 recorded overall=PASS.
+* CA-01 certificates: `ca01-zero-diff-proof.txt` (delivery),
+  `ca01-zero-diff-proof-r1.txt` (+ appendix), `ca01-zero-diff-proof-r2.txt`
+  (bound to master 94890f090 — the merge).
 
 ## Bookings
 
