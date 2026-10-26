@@ -71,6 +71,12 @@ export interface ToolCallRequest {
     readonly exec?: {
         readonly tokenKey?: string;
     };
+    /** U7-6 GLUE-4 ADDITIVE: the governed root of an ANCHORED row (trusted,
+     *  assembly-injected — never model-visible). Present ⇒ the search arms of
+     *  the derived set claim the governed walk surface (`effects-schema`
+     *  anchored law); absent ⇒ the historical target-scoped derivation,
+     *  byte-identical. The pipeline just forwards it to the derivation. */
+    readonly effectAnchorRoot?: string;
 }
 export interface RunToolCallDeps {
     readonly request: ToolCallRequest;

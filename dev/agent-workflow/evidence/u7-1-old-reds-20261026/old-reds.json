@@ -1,0 +1,595 @@
+{
+  "task": "U7-1",
+  "backlogItem": "EB2-C",
+  "plan": "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md §U7 EB2-C",
+  "branch": "task/u7-1-old-red-closure-20261026",
+  "baseRef": "origin/master 97bbc2563",
+  "counts": {
+    "authoritativeIdentitySet": 22,
+    "ninePackageCensus": 9,
+    "stillRedWhenLaneOpened": 9,
+    "byExit": {
+      "FIXED_PRE": 13,
+      "FIXED_U7_1": 9,
+      "STILL_RED": 0,
+      "OBSOLETE": 0,
+      "ENV_BLOCK": 0
+    }
+  },
+  "authoritativeSources": {
+    "ninePackageCensus": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md",
+    "ninePackageCensusSha256": "f95ae921c23713e2bb1e236b49cbd61b40cbebebadbccc5861c29a70ea6d9ada",
+    "root22": "dev/agent-workflow/evidence/a4-pr0/baseline-closure/failing-identities-pr0-run2.txt",
+    "root22Sha256": "ed20c7776692104d5a1d9309c65bc81c1b661f17da4c75636f3ecb23049a91e3",
+    "root22Provenance": "relocated out of the tree by PR #366; restored from the content-addressed store, sha256 matches RELOCATED-MANIFEST.tsv",
+    "classificationLedger": "dev/agent-workflow/evidence/a4-pr7/baseline-classes/BASELINE-CLASSES.md",
+    "classificationLedgerSha256": "e95680f73fd98ad4411014610a62b56286df3ddf878617a760c335593cd14468",
+    "eb02Audit": "dev/agent-workflow/evidence/EB-E0-E1/baseline-inventory.md:75-84 (keeps the two red records separate)",
+    "u1bRun": "dev/agent-workflow/evidence/u1-closure-20261025/u1b/{SUMMARY.md,reds.json,vitest-run2.log}",
+    "u1bProvenance": "UNTRACKED in the main checkout; read from /srv/workspace/dsh-plugins/dsh-agent-team/, sha256 recorded in manifest.json",
+    "setRelationship": "the 9 is exactly the census-tolerated subset of the 22 (u1b SUMMARY: 'Now: 9/22 still failing (the 9 = the census-tolerated set)')"
+  },
+  "tierVocabulary": {
+    "source": "docs/plans/memo/engineering-baseline/architecture.md §6.1 @ PR #361 head b97ffdaf",
+    "T0": "static / contract",
+    "T1": "package unit",
+    "T2": "real assembly",
+    "T3": "real host",
+    "T4": "combined release"
+  },
+  "classVocabulary": {
+    "source": "docs/glossary.md:19 C-EB-0009 / docs/terminology.md:17",
+    "C1": "branch-local build/unit proof",
+    "C2": "real assembly for a candidate",
+    "C3": "release-section verification on a pinned source set"
+  },
+  "identities": [
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 3. Members can have different capabilities",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 3. Members can have different capabilities",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+      "kind": "TEST",
+      "file": "packages/domain/test/t1-capability-schema.test.ts",
+      "testName": "T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Domain Owner",
+      "priorRepairCommit": "94eeecf19",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+      "kind": "TEST",
+      "file": "packages/domain/test/t2-blueprint-hash.test.ts",
+      "testName": "t2 hash: hashable projection projects absent optional singles as explicit null",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Domain Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+      "kind": "TEST",
+      "file": "packages/runtime/test/d3-member-identity-context.test.ts",
+      "testName": "D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Runtime Owner",
+      "priorRepairCommit": "b9cc0a2d0",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "testName": "P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "testName": "P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "testName": "P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "testName": "P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "testName": "P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-restart.test.ts",
+      "testName": "P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+      "kind": "TEST",
+      "file": "packages/runtime/test/p6t3-restart.test.ts",
+      "testName": "P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Runtime/Messaging Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+      "kind": "TEST",
+      "file": "packages/tools/test/p6t6-actions.test.ts",
+      "testName": "P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_U7_1",
+      "owner": "Tools Owner",
+      "priorRepairCommit": null,
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED",
+      "kind": "FILE",
+      "file": "packages/runtime/test/p8s3b-result-effects.test.ts",
+      "testName": "COLLECTION-OR-UNHANDLED",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Runtime Owner",
+      "priorRepairCommit": "91087636e",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED",
+      "kind": "FILE",
+      "file": "packages/runtime/test/t12a-b2-child-identity.test.ts",
+      "testName": "COLLECTION-OR-UNHANDLED",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Runtime Owner",
+      "priorRepairCommit": "91087636e",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    },
+    {
+      "id": "FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED",
+      "kind": "FILE",
+      "file": "packages/runtime/test/t12a-glue-handoff-ports.test.ts",
+      "testName": "COLLECTION-OR-UNHANDLED",
+      "tier": "T1",
+      "evidenceClass": "C1",
+      "exit": "FIXED_PRE",
+      "owner": "Runtime Owner",
+      "priorRepairCommit": "91087636e",
+      "reproducedIn": "evidence/u7-1-old-reds-20261026/before-repair-full-suite.log (green there; last red before the named repair)",
+      "stillRed": false,
+      "obsolete": false,
+      "envBlock": false
+    }
+  ],
+  "auxiliaryIdentities": [
+    {
+      "id": "TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed two COMMITTED operations, two members, two distinct child Sessions",
+      "note": "appears only in the Alpha.4 run1 capture (failing-identities-pr0-run1.txt); disclosed p6t1-parallel load family, product-raced and repaired by de18a7bc, green on this tree"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t1-parallel.test.ts::P6-T1 P1: N=2 same-template parallel activations both succeed two activated results with distinct instance ids and child Sessions",
+      "note": "same as above (run1-only second identity)"
+    }
+  ],
+  "retirement": [
+    {
+      "id": "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    },
+    {
+      "id": "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+      "predecessor": "2b1099d7",
+      "restatedBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md"
+    }
+  ],
+  "rootCauses": [
+    {
+      "id": "RC-1",
+      "commit": "3be0de1f0e56f37db85e83334f361d401e1e70c6",
+      "title": "fix messaging relay to root leader",
+      "sanction": [
+        "dev/agent-workflow/SESSION_ROUTER_LOG.md 'Release 0.1.0-rc.1 (2026-09-08)' lists 'messaging relay to root leader 修复' in the user-ruled release content",
+        "docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md §9.1-§9.2 'LeaderInstance = Root Agent + Root Session', 'is root Agent/Session', 'has no childSessionId'; restated §41.1 and the object-model table"
+      ],
+      "affectsRows": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "nature": "observer of a moved premise; leg 18's fault injector also aimed at the dead session (0/12 assertions ran)",
+      "repair": "test code only: LEADER_SESSION = P6T3_ROOT / P6T2_ROOT; observers and injector re-aimed; leg 1 GAINS a check that the legacy child session stays silent"
+    },
+    {
+      "id": "RC-2",
+      "commit": "5ad6a4fe8ca2cbc97ad08bf28eaab62b3503bf16",
+      "title": "feat(domain): add blueprint capabilities schema and static capability source (T1)",
+      "sanction": [
+        "docs/plans/finished/0.1.1-alpha.1-minimal-capability-wiring-plan.md §5.6 '新 capability fields 必须进入 Blueprint normalized/hash representation'",
+        "the projection's own documented contract: absent optional singles project as explicit null"
+      ],
+      "affectsRows": [
+        10
+      ],
+      "nature": "stale expected literal (6 of 11 assertions dead)",
+      "repair": "test code only: literal completed, exact-key toEqual kept"
+    }
+  ],
+  "mutationControls": [
+    {
+      "id": "M0",
+      "planted": "none",
+      "result": "44 passed (44)",
+      "log": "mutation-logs/M0-unmutated.log"
+    },
+    {
+      "id": "M1",
+      "planted": "coordinator.ts leader delivery target reverted to String(target.childSessionId) (the pre-3be0de1f line)",
+      "result": "8 failed | 18 passed — exactly rows 12-19",
+      "log": "mutation-logs/M1-leader-target-child-session.log"
+    },
+    {
+      "id": "M2",
+      "planted": "mediation.ts grant check bypassed (member->member always direct)",
+      "result": "10 failed | 16 passed",
+      "log": "mutation-logs/M2-mediation-grant-bypassed.log"
+    },
+    {
+      "id": "M3",
+      "planted": "validate.ts capabilities key dropped from the hashable projection",
+      "result": "1 failed | 17 passed (row 10)",
+      "log": "mutation-logs/M3-hash-capabilities-key-dropped.log"
+    },
+    {
+      "id": "M4",
+      "planted": "validate.ts absent capabilities projected as {} instead of null",
+      "result": "1 failed | 17 passed (row 10)",
+      "log": "mutation-logs/M4-hash-capabilities-absent-as-object.log"
+    }
+  ],
+  "envBlocks": [
+    {
+      "id": "ENV-1",
+      "identity": "packages/testkit/test/a4p7-merge-gate.test.ts > the composition smoke leg",
+      "cause": "packages/client/dist is a gitignored build output; a fresh checkout has no client composition, so the arm answers 'refused'",
+      "clearedBy": "pnpm run build && pnpm build:composition (check-artifacts-committed verdict=ok compared=1799 glue=28)",
+      "historicalSet": false,
+      "toleratedSet": false
+    },
+    {
+      "id": "ENV-2",
+      "identity": "packages/testkit/test/rc2-sanitize-evidence.test.ts > S13 file aliases, quoted values, and capture formats pass the standalone regressions",
+      "cause": "S13 declares timeout: 60_000 for a nested node --test; the suite sets no global testTimeout, so at vitest's 5000 ms default the leg is forfeited, not measured",
+      "clearedBy": "run under the clocks CI uses (20000 pr-gate / 90000 census-runtime); green at both on this tree",
+      "historicalSet": false,
+      "toleratedSet": false
+    }
+  ],
+  "racesFoundAndFixed": [
+    {
+      "id": "RACE-1",
+      "identity": "p4t6-session-event-scan filesScanned",
+      "mechanism": "a4p7-merge-gate planted its two lint-universe control files in packages/testkit/test/, inside the corpus p4t6 walks at module load and pins exactly; parallel workers made it a scheduling-dependent red",
+      "measured": {
+        "p4t6Alone": "10/10 x3",
+        "withControlsInPackages": "1 failed | 9 passed, expected 1279 to be 1277, x2",
+        "afterRelocation": "10/10 x3",
+        "controlsStillBite": "lint universe 1385 -> 1387"
+      },
+      "fix": "relocate the control files to scripts/ (outside the packages/** walk, inside the lint universe); no assertion relaxed",
+      "log": "p4t6-race-repro-{RED,GREEN}.log, p4t6-with-scripts-control-{1,2,3}.log, mergegate-leg-after.log"
+    }
+  ],
+  "baselineRestatement": {
+    "newBaseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+    "newBaselineSha256": "6dd8e6b017a6b0ac3c8faac123ce9d7ea2f605ecc7f1db3bb485ec4b031deeb6",
+    "totals": {
+      "files": 626,
+      "legs": 7936,
+      "tolerated": 0,
+      "retired": 9,
+      "collectionFiles": 0
+    },
+    "sentinel": "# RETIRED-TO-EMPTY: 9 titled reds retired against predecessor 2b1099d7",
+    "predecessorKept": "nine-root-2b1099d7.md unedited as history",
+    "parserBinding": "parsePopulationBaseline refuses a zero set unless the retirement table EQUALS the predecessor's tolerated set (fewer = silent deletion, more = invented debt, swap = both), the count matches, the predecessor is readable and is not itself emptied; retired identities are never mined as load families",
+    "reportedAsResolved": "yes — the census leg prints 'resolved 9' and the comparison sidecar carries comparison.resolved; measured: census/regrade-vs-predecessor.log",
+    "selfTestAssertions": {
+      "before": 77,
+      "after": 94,
+      "mutationChecked": {
+        "bindingDisabled": "3 of 91 FAIL",
+        "noSentinelRefusalDisabled": "4 of 94 FAIL"
+      }
+    }
+  },
+  "gateState": {
+    "rootSuite": {
+      "captures": 2,
+      "files": 626,
+      "legs": 7936,
+      "redIdentities": 0,
+      "setsIdentical": true,
+      "clock": "--testTimeout=90000"
+    },
+    "censusLegRealCiConfig": {
+      "command": "node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 --census-test-timeout 20000",
+      "verdict": "pass",
+      "log": "census/ci-census-leg-20000.log"
+    },
+    "selfTest": "pass 94 assertions",
+    "lintIdentities": "universe 1385, new 0, resolved 0",
+    "docsSync": {
+      "blocking": 0
+    },
+    "docsProbe": {
+      "blocking": 0,
+      "advisories": 2
+    },
+    "boots": 0,
+    "protectedSetTouched": false,
+    "productSourceChanged": false
+  },
+  "filesOfRecord": [
+    "OLD-REDS.md",
+    "old-reds.json",
+    "mutation-controls.sh",
+    "mutation-logs/",
+    "census/",
+    "manifest.json"
+  ]
+}

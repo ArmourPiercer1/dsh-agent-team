@@ -1,0 +1,185 @@
+{
+  "$comment": "Closed-world schema for authoritative-tool-sources.v1.json (EB2-A three-way-diff third side). Same closed subset as the obligations schema (packages/testkit/census/schema-check.mjs).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "pins",
+    "inputs",
+    "note",
+    "static_sources",
+    "host_pin_provenance",
+    "team_pin_provenance",
+    "dynamic_source_classes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "u7-0/authoritative-tool-sources/v1"
+    },
+    "pins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host_version",
+        "host_sha",
+        "host_pin_source"
+      ],
+      "properties": {
+        "host_version": {
+          "type": "string"
+        },
+        "host_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "host_pin_source": {
+          "const": "tests/paths.mjs"
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_census_seed",
+        "source_census_seed_sha256"
+      ],
+      "properties": {
+        "source_census_seed": {
+          "type": "string"
+        },
+        "source_census_seed_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "unknown_dispositions_seed_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    },
+    "static_sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "team"
+      ],
+      "properties": {
+        "host": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "line",
+              "name"
+            ],
+            "properties": {
+              "authority": {
+                "type": "string",
+                "nullable": true
+              },
+              "file": {
+                "type": "string"
+              },
+              "gating": {
+                "type": "string",
+                "nullable": true
+              },
+              "line": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "team": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "kind",
+              "line",
+              "name"
+            ],
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "host_pin_provenance": {
+      "type": "string"
+    },
+    "team_pin_provenance": {
+      "type": "string"
+    },
+    "dynamic_source_classes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "class",
+          "rule"
+        ],
+        "properties": {
+          "class": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "package": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "register": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 5 failed) 13ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 8ms
+     ✓ 2. the sender holds the peer-direct grant → DIRECT to the peer session 1ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 0ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 0ms
+     × 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 1ms
+     ✓ 6. the confirmation facts record the path actually taken for both modes 0ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 0ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 2 failed) 9ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 2ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 3ms
+     ✓ 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 0ms
+     ✓ 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 1ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 12ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 2ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 1ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 1ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 5ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'session-child-p6t3-leader' to be 'session-root-p6t1' // Object.is equality
+
+Expected: "session-root-p6t1"
+Received: "session-child-p6t3-leader"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:350:36
+    348|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    349|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    350|     expect(o.deliveredToSessionId).toBe(LEADER_SESSION)
+       |                                    ^
+    351|
+    352|     // (a) the coordination fact addresses the INTENDED recipient —
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:416:31
+    414|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    415|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+    416|     expect(md.perSender.input.sessionId).toBe(
+       |                               ^
+    417|       LEADER_SESSION,
+    418|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:432:29
+    430|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    431|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+    432|     expect(md.revoked.input.sessionId).toBe(
+       |                             ^
+    433|       LEADER_SESSION,
+    434|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact
+AssertionError: expected 4 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:446:43
+    444|     expect(md.envelopeBlocked.errorName).toBe('TeamRuntimeError')
+    445|     expect(md.envelopeBlocked.newWrites).toBe(0)
+    446|     expect(md.envelopeBlocked.inputCount).toBe(
+       |                                           ^
+    447|       md.leaderInputs + md.scoutInputs,
+    448|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:488:18
+    486|     const scout = P6T3_SEEDS.scout
+    487|     const input = md.noGrant.input
+    488|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    489|     expect(input.attribution.fromInstanceId).toBe(
+    490|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+TypeError: Cannot read properties of undefined (reading 'sessionId')
+ ❯ packages/runtime/test/p6t3-restart.test.ts:417:18
+    415|
+    416|     const input = rt.inputMed
+    417|     expect(input.sessionId).toBe(LEADER_SESSION)
+       |                  ^
+    418|     expect(input.attribution).toEqual({
+    419|       kind: 'team-relay',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:373:11
+    371| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    372|   if (!isMessagingError(error)) {
+    373|     throw new Error(
+       |           ^
+    374|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    375|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:464:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-child-p6t2-leader' to be 'session-root-p6t1' // Object.is equality
+
+Expected: "session-root-p6t1"
+Received: "session-child-p6t2-leader"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:902:46
+    900|       expect(delivered.deliveryMode).toBe('direct')
+    901|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    902|       expect(delivered.deliveredToSessionId).toBe(LEADER_SESSION)
+       |                                              ^
+    903|     }
+    904|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  8 failed | 18 passed (26)
+   Start at  11:58:55
+   Duration  2.02s (transform 3.29s, setup 0ms, import 4.64s, tests 34ms, environment 0ms)
+

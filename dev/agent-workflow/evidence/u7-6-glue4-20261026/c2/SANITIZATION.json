@@ -1,0 +1,18 @@
+{
+  "run": "u5-u6-arc-a-u76r1-2026-10-26T11-57-28-224Z",
+  "files": {
+    "instance-port3183.sanitized.log": "host log verbatim except the one-shot session URL token: /token=[A-Za-z0-9_-]+/ -> 'token=REDACTED' (1 site, line 2; throwaway world token, world already torn down). Raw kept byte-identically under c2/.private-raw-evidence/ (gitignored class, never committed).",
+    "run1-console.log": "runner console verbatim (no token sites; internal workspace paths are permitted in in-repo evidence).",
+    "u5-u6-arc-a-u76r1-2026-10-26T11-57-28-224Z.evidence.json": "RUN record verbatim (no token sites).",
+    "budget-live.jsonl": "host-start budget ledger verbatim (1 entry; budget cap 4)."
+  },
+  "run2": {
+    "run": "u5-u6-arc-a-x-2026-10-26T12-44-28-788Z (R1 fix-round C2 re-run, boot 2 of 4)",
+    "files": {
+      "instance-port3183.rerun-sanitized.log": "host log verbatim except the one-shot session URL token (?token=... this run): -> 'token=REDACTED' (1 site, only site present; live-token count after redaction: 0). Raw byte-identical (sha256 30817ea4...) at .private-raw-evidence/instance-port3183.log.run2.raw (gitignored, never committed).",
+      "run2-console.log": "runner console verbatim (0 token sites).",
+      "u5-u6-arc-a-x-2026-10-26T12-44-28-788Z.evidence.json": "RUN record verbatim (0 token sites).",
+      "budget-live.jsonl": "budget ledger verbatim (2 entries; cap 4)."
+    }
+  }
+}

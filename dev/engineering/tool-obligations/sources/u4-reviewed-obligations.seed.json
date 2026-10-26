@@ -1,0 +1,1664 @@
+{
+ "meta": {
+  "package": "U4-B (G1-F ExpectedToolObligations export)",
+  "generated_utc": "2026-10-25",
+  "pins": {
+   "team_master": "master@3288567d36794394ce2af0401cee4fe218b11d03",
+   "host": "tests/deepseek-harness-test-use @639ed015397290b3745d163aafe02ffee4aa3f84 (0.2.0-rc.2, read-only)",
+   "wip_asset": "origin/feat/a5-m2-integration@bef38934f (PR #360, OPEN/DRAFT, NOT merged — WIP asset, evaluated by source only, never assumed assembled)",
+   "census": "dev/agent-workflow/evidence/u1-closure-20261025/u1c/ (U1-C)",
+   "seed": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json (93 records; historical seed, NOT a permanent whitelist)"
+  },
+  "required_rule": "source of 'required' = the active plan/backlog/matrix on master (docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md + ALPHA5-EFFECTIVE-BACKLOG.md). A name with a MAIN acceptance row (L21-L46, expansions included) is REQUIRED. A name listed only in Appendix A that is mounted in a shipped bundle/preset is REQUIRED (obligation attaches even though the matrix per-name status is UNKNOWN). Names the matrix/census flag disabled (preset disabled:true), default-disabled, experimental/unmounted opt-in are OUT_OF_SCOPE with that reason (obligation re-attaches if mounted/enabled — seed PB15 rule); names absent from the matrix entirely are OUT_OF_SCOPE. Dynamic sources are recorded as classes, never enumerated. The Domain family obligation (matrix M-13) has no names and is REQUIRED as an obligation with the enumeration gap recorded.",
+  "static_only": "no Host boot, no real-Host PASS claims; feasibility statuses are static classifications (execution-plan.md U4: 逐工具静态分类不得升级成真实 Host PASS)",
+  "counts": {
+   "entries": 91,
+   "required": 58,
+   "out_of_scope": 33
+  }
+ },
+ "obligations": [
+  {
+   "name": "read",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-fs/src/read.ts:77 @639ed015",
+   "scope_variant": "host base bundle (bundle/base/cordis.patch.yml:281-282) + Team plane takeover row at native spelling 'read'",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/read.ts:77 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill'])",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1726-1780 (governed read takeover row definition, native file_path shape)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2623 (createTeamToolPlaneAssembly), :2697 (built.value.mount(agentCtx))",
+    "packages/runtime/src/plugin/live/pa-mount-registry.mjs:1-15 (CURRENT mount index + call-level facts; NO name lookup believed)",
+    "packages/runtime/tool-admission/admission-kernel.ts (1132 lines, PA admission kernel; file present on master)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "row-level approval positive not re-verified on baseline (matrix L21)",
+    "H0 dispatch-identity property unproven"
+   ],
+   "matrix_row": "L21 main row M-01 (LIVE-CONFIRMED scope=@dad3, baseline NOT re-verified, V@B=no)"
+  },
+  {
+   "name": "write",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-fs/src/write.ts:72 @639ed015",
+   "scope_variant": "host base bundle; NO Team governance arm on master",
+   "effect_class": "write-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/write.ts:72 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:492-494 (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED: no same-name/same-meaning implementation assembled = mount refused; this is why write/edit/'todo' cannot take native names today) — native-name takeover for 'write' is refused today",
+    "WIP #360: origin/feat/a5-m2-integration@bef38934f packages/runtime/src/plugin/live/governed-families/write.mjs + packages/tools/a5p5-tools/src/write-slice.ts (unmerged, C2 pending)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no governed write row on master; #360 arm is WIP (PR body: 'NOT mounted', 'C2 pending')",
+    "pre-Body deny for a replaced write row depends on H0"
+   ],
+   "matrix_row": "L22 main row M-02 (NOT_IMPLEMENTED/NOT_WIRED)"
+  },
+  {
+   "name": "edit",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-fs/src/edit.ts:84 @639ed015",
+   "scope_variant": "host base bundle; no Team arm on master",
+   "effect_class": "write-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/edit.ts:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/edit.mjs (unmerged)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "read-before-edit semantics untested",
+    "no master implementation"
+   ],
+   "matrix_row": "L23 main row M-03 (NOT_IMPLEMENTED/NOT_WIRED)"
+  },
+  {
+   "name": "str_replace_editor",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-str-replace-editor/src/index.ts:429 @639ed015",
+   "scope_variant": "host catalog name; NOT mounted in any shipped bundle/preset (census gating line) — obligation attaches only if mounted",
+   "effect_class": "write-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-str-replace-editor/src/index.ts:429 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json record req=REQ-COND gap=NONE_SHIPPED"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "Host-side registration condition for shipped worlds unverified",
+    "subcommand-level mapping is design-only (matrix L24)"
+   ],
+   "matrix_row": "L24 main row M-04 (NOT_IMPLEMENTED); A-1 L62 '[独立包；装载条件待核（default 未证）]'"
+  },
+  {
+   "name": "read_image",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-fs/src/read-image.ts:209 @639ed015",
+   "scope_variant": "host base bundle; additionally mounted only with ctx.attachments (docs/tool-catalog.md note via census)",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/read-image.ts:209 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "attachment-write side effect identified in dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md §3 B-IMAGE (attachment-store create)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/image.mjs + image-attachment.mjs (unmerged)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "whole chain untested (matrix L25)",
+    "attachment-store write is not a pure read — dual effect"
+   ],
+   "matrix_row": "L25 main row M-05 (NOT_VERIFIED)"
+  },
+  {
+   "name": "grep",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-fs-search/src/grep.ts:284 @639ed015",
+   "scope_variant": "host base bundle (native name, unmasked on Team default plane: takeover grep=[])",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs-search/src/grep.ts:284 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill']) (grep/glob rows cannot take native names today)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:296-306,512 (host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath over confined rg)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "native row-level effect proof not done (matrix L26)"
+   ],
+   "matrix_row": "L26 main row M-06 native (NOT_VERIFIED; confined-rg backend belongs to alias/plane lane, not this native row)"
+  },
+  {
+   "name": "glob",
+   "obligation": "REQUIRED",
+   "source": "host packages/fs/tool-fs-search/src/glob.ts:306 @639ed015",
+   "scope_variant": "host base bundle (native name; independent shut key a5-globoff)",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs-search/src/glob.ts:306 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:759-767 (globEnabled closed consumption key)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "runtime re-verification of #342/#343/#354 judgement lines is open backlog BL-19 (docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L36)"
+   ],
+   "matrix_row": "L28 main row M-06 native (NOT_VERIFIED); A-1 L64"
+  },
+  {
+   "name": "team_grep",
+   "obligation": "REQUIRED",
+   "source": "host packages/runtime/src/plugin/live/team-tool-plane.mjs:84 @639ed015",
+   "scope_variant": "Team plane alias row (governed agents only)",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (DEFAULT_PLANE_NAMES team_grep/team_glob/team_bash)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:296-306,512 (host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath over confined rg)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2623 (createTeamToolPlaneAssembly), :2697 (built.value.mount(agentCtx))"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "approval loop for this row NOT_VERIFIED (matrix L27)"
+   ],
+   "matrix_row": "L27 main row M-06 alias (WIRED: production registration proven, row-level acceptance missing)"
+  },
+  {
+   "name": "team_glob",
+   "obligation": "REQUIRED",
+   "source": "host packages/runtime/src/plugin/live/team-tool-plane.mjs:84 @639ed015",
+   "scope_variant": "Team plane alias row",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (DEFAULT_PLANE_NAMES team_grep/team_glob/team_bash)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:759-767 (globEnabled closed consumption key)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "approval loop NOT_VERIFIED (matrix L29)"
+   ],
+   "matrix_row": "L29 main row M-06 alias (WIRED)"
+  },
+  {
+   "name": "bash",
+   "obligation": "REQUIRED",
+   "source": "host packages/shell/tool-bash/src/index.ts:373 @639ed015",
+   "scope_variant": "host base bundle (one-shot variant; persistent same-name only in minimal/sdk-minimal presets) + Team native takeover at 'bash'",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/shell/tool-bash/src/index.ts:373 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill'])",
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)",
+    "packages/runtime/tool-admission/admission-kernel.ts (1132 lines, PA admission kernel; file present on master)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "background producer arm not merged (backlog BL-17, docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L34)",
+    "host bash body itself not personally re-read (matrix L30)"
+   ],
+   "matrix_row": "L30 main row M-07 native (LIVE-CONFIRMED scope=@1fb14c4d front-takeover, baseline NOT re-run)"
+  },
+  {
+   "name": "team_bash",
+   "obligation": "REQUIRED",
+   "source": "host packages/runtime/src/plugin/live/team-tool-plane.mjs:84 @639ed015",
+   "scope_variant": "Team plane alias row; default-ask combination is the reproduced R2 breach",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L13 BL-01: OPEN RELEASE BLOCKER — approval penetration request=0/body=1 under real ToolRuntime+Guard isolation",
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "R2 must be closed before any G1-F PASS claim for this row (BL-01)",
+    "penetration diagnosis evidence not yet in git (BL-18)"
+   ],
+   "matrix_row": "L31 main row M-07 alias (BLOCKED-FOR-RELEASE)"
+  },
+  {
+   "name": "pwsh",
+   "obligation": "REQUIRED",
+   "source": "host packages/shell/tool-pwsh/src/index.ts:383 @639ed015",
+   "scope_variant": "host base bundle; presets platform-gate disabled-unless-win32 (seed reqSrc); win32-only parity",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/shell/tool-pwsh/src/index.ts:383 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/pwsh-arm.mjs + pwsh-wiring.mjs (unmerged; PR body marks the win32 leg ENV-NOT-AVAILABLE)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no win32 provider/environment on this Linux test host",
+    "cannot reuse bash acceptance (M0-B §3 B-PROCESS: pwsh must be really Windows-proven)"
+   ],
+   "matrix_row": "L32 main row M-07 (NOT_VERIFIED)"
+  },
+  {
+   "name": "job_list",
+   "obligation": "REQUIRED",
+   "source": "host packages/jobs/tool-jobs/src/index.ts:351 @639ed015",
+   "scope_variant": "host base bundle + Team governed jobs rows at FIXED spelling under jobsEnabled (default off)",
+   "effect_class": "process",
+   "candidate_route": "bridge:Jobs",
+   "supporting_evidence": [
+    "host registration: packages/jobs/tool-jobs/src/index.ts:351 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:775-783 (jobsEnabled default OFF: enabled only when === true)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "production JobRegistry body not diffed (matrix L33)",
+    "default-off = not default-published"
+   ],
+   "matrix_row": "L33 main row M-11 (LIVE-CONFIRMED scope=@efb5bb55 C3 24/24, baseline NOT re-run)"
+  },
+  {
+   "name": "job_output",
+   "obligation": "REQUIRED",
+   "source": "host packages/jobs/tool-jobs/src/index.ts:310 @639ed015",
+   "scope_variant": "same trio as job_list",
+   "effect_class": "process",
+   "candidate_route": "bridge:Jobs",
+   "supporting_evidence": [
+    "host registration: packages/jobs/tool-jobs/src/index.ts:310 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "full-dependency applicability NOT_VERIFIED (matrix L34)"
+   ],
+   "matrix_row": "L34 main row M-11 (LIVE-CONFIRMED)"
+  },
+  {
+   "name": "job_kill",
+   "obligation": "REQUIRED",
+   "source": "host packages/jobs/tool-jobs/src/index.ts:371 @639ed015",
+   "scope_variant": "same trio; kill-requested != terminated semantics kept",
+   "effect_class": "process",
+   "candidate_route": "bridge:Jobs",
+   "supporting_evidence": [
+    "host registration: packages/jobs/tool-jobs/src/index.ts:371 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "terminated-confirmation uncertainty on record (matrix L35)"
+   ],
+   "matrix_row": "L35 main row M-11 (LIVE-CONFIRMED)"
+  },
+  {
+   "name": "terminal_open",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/terminal/tool-terminal/src/index.ts:163 @639ed015",
+   "scope_variant": "opt-in package, zero rows in packages/bundle (census gating)",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:163 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND gap=OPTIN_UNMANAGED_IF_MOUNTED"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-2 L69-75 [opt-in] rows are UNKNOWN gap registrations, not acceptance rows",
+   "out_of_scope_reason": "not mounted in shipped bundle (opt-in package); obligation attaches only if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "terminal_close",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/terminal/tool-terminal/src/index.ts:359 @639ed015",
+   "scope_variant": "same as terminal_open",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:359 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-2",
+   "out_of_scope_reason": "opt-in; not mounted in shipped bundle"
+  },
+  {
+   "name": "terminal_list",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/terminal/tool-terminal/src/index.ts:390 @639ed015",
+   "scope_variant": "same as terminal_open",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:390 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-2",
+   "out_of_scope_reason": "opt-in; not mounted in shipped bundle"
+  },
+  {
+   "name": "terminal_read",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/terminal/tool-terminal/src/index.ts:301 @639ed015",
+   "scope_variant": "same as terminal_open",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:301 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-2",
+   "out_of_scope_reason": "opt-in; not mounted in shipped bundle"
+  },
+  {
+   "name": "terminal_send",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/terminal/tool-terminal/src/index.ts:198 @639ed015",
+   "scope_variant": "same as terminal_open",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:198 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap adds shell-rules-key-bash-pwsh-only(plane:519)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-2",
+   "out_of_scope_reason": "opt-in; not mounted in shipped bundle"
+  },
+  {
+   "name": "terminal_signal",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/terminal/tool-terminal/src/index.ts:334 @639ed015",
+   "scope_variant": "same as terminal_open",
+   "effect_class": "process",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:334 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-2",
+   "out_of_scope_reason": "opt-in; not mounted in shipped bundle"
+  },
+  {
+   "name": "lsp",
+   "obligation": "REQUIRED",
+   "source": "host packages/lsp/tool-lsp/src/index.ts:109 @639ed015",
+   "scope_variant": "opt-in host package (not in shipped bundle rows) + Team P-LSP production assembly face on master; runtime needs a registered ctx.lsp provider",
+   "effect_class": "process",
+   "candidate_route": "bridge:LSP",
+   "supporting_evidence": [
+    "host registration: packages/lsp/tool-lsp/src/index.ts:109 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/sandbox-provider/lsp-assembly.ts:174-191 (per-instance spawnStreaming assembly)",
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "not mounted in default shipped presets (census gating line)",
+    "Strict Profile/UI/family GO not reached (matrix L40)",
+    "applicability to baseline NOT_VERIFIED (matrix L40)"
+   ],
+   "matrix_row": "L40 main row M-09 (LIVE-CONFIRMED scope=@1d0d03d0 real clangd/tsserver minimal interaction; family-level GO not claimed)"
+  },
+  {
+   "name": "web_fetch",
+   "obligation": "REQUIRED",
+   "source": "host packages/web/tool-web/src/fetch.ts:456 @639ed015",
+   "scope_variant": "host base bundle; NO production Team provider assembly",
+   "effect_class": "network",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/web/tool-web/src/fetch.ts:456 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "fixture evidence @PR7: evidence/alpha5/pr7/ per matrix L37"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "real outbound endpoint never tested; no authorized outbound = ENV (matrix L37)",
+    "Web belongs to the MCP/Web Bridge candidate list (this-package refs/center-assembly-architecture.md §6 L135)"
+   ],
+   "matrix_row": "L37 main row M-10 (NOT_VERIFIED; loopback deny-list at fetch call site, fixture 10/10)"
+  },
+  {
+   "name": "web_search",
+   "obligation": "REQUIRED",
+   "source": "host packages/web/tool-web/src/search.ts:325 @639ed015",
+   "scope_variant": "host base bundle; no production provider assembly",
+   "effect_class": "network",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/web/tool-web/src/search.ts:325 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "search-target vs result-URL two-layer object unresolved (matrix L36)",
+    "no authorized network in test env = ENV"
+   ],
+   "matrix_row": "L36 main row M-10 (NOT_VERIFIED)"
+  },
+  {
+   "name": "skill",
+   "obligation": "REQUIRED",
+   "source": "host packages/skill/tool-skill/src/index.ts:81 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/skill/tool-skill/src/index.ts:81 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "host body resolves skill files by exec.agent cwd (tests/deepseek-harness-test-use/packages/skill/tool-skill/src/index.ts:133,186 — personally re-read)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no governance mount on master; no matrix acceptance row (gap registration)"
+   ],
+   "matrix_row": "A-3 L83 [分档未核] — matrix-listed; no acceptance row yet"
+  },
+  {
+   "name": "load_workspace_dependencies",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/skill/tool-workspace-dependencies/src/index.ts:249 @639ed015",
+   "scope_variant": "mounted only in sdk-app bundle (census gating line)",
+   "effect_class": "write-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/skill/tool-workspace-dependencies/src/index.ts:249 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND (sdk-app env-gate) gap=READ_KIND_MASKS_WRITE(index.ts:275)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-3 L84 [分档未核]",
+   "out_of_scope_reason": "not part of the shipped web/Team composition (sdk-app bundle only)"
+  },
+  {
+   "name": "todo_write",
+   "obligation": "REQUIRED",
+   "source": "host packages/todo/tool-todo/src/index.ts:135 @639ed015",
+   "scope_variant": "host base bundle; Team plane reserved name (governed-scope, not excluded)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/todo/tool-todo/src/index.ts:135 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:402-403 (PLANE_RESERVED_NATIVE, pinned host 0.2.0-rc.2@639ed01539; 68 names per U1-C seed-diff reservedNameTableVsHost) (todo_write in the 68-name reserved table)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/todo.mjs (unmerged; PR body: '未 mount')"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-tool approval/functionality never verified (matrix L45)"
+   ],
+   "matrix_row": "L45 main row M-14 (NOT_VERIFIED; static registration proven)"
+  },
+  {
+   "name": "create_goal",
+   "obligation": "REQUIRED",
+   "source": "host packages/goal/tool-goal/src/index.ts:207 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/goal/tool-goal/src/index.ts:207 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "host body persists a same-session goal (tests/deepseek-harness-test-use/packages/goal/tool-goal/src/index.ts:3 — personally re-read)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no governance mount on master; effect identity = session state write, no enumerated Bridge covers it"
+   ],
+   "matrix_row": "A-4 L88 [分档未核] — matrix-listed; UNKNOWN gap"
+  },
+  {
+   "name": "get_goal",
+   "obligation": "REQUIRED",
+   "source": "host packages/goal/tool-goal/src/index.ts:195 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/goal/tool-goal/src/index.ts:195 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no governance mount; no acceptance row"
+   ],
+   "matrix_row": "A-4 L89"
+  },
+  {
+   "name": "update_goal",
+   "obligation": "REQUIRED",
+   "source": "host packages/goal/tool-goal/src/index.ts:234 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/goal/tool-goal/src/index.ts:234 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no governance mount; no acceptance row"
+   ],
+   "matrix_row": "A-4 L90"
+  },
+  {
+   "name": "schedule_create",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/schedule/schedule/src/tools.ts:416 @639ed015",
+   "scope_variant": "NOT mounted as tool rows in shipped bundles; registers only while the Schedule service is loaded (census gating)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:416 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND shipped-off"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4 L91",
+   "out_of_scope_reason": "no shipped-bundle tool rows today; obligation attaches if a world loads the Schedule service"
+  },
+  {
+   "name": "schedule_delete",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/schedule/schedule/src/tools.ts:469 @639ed015",
+   "scope_variant": "same as schedule_create",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:469 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "no shipped-bundle tool rows"
+  },
+  {
+   "name": "schedule_list",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/schedule/schedule/src/tools.ts:451 @639ed015",
+   "scope_variant": "same as schedule_create",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:451 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "no shipped-bundle tool rows"
+  },
+  {
+   "name": "schedule_update",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/schedule/schedule/src/tools.ts:492 @639ed015",
+   "scope_variant": "same as schedule_create",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:492 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "no shipped-bundle tool rows"
+  },
+  {
+   "name": "session_search",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/session-query/tool-session-query/src/index.ts:65 @639ed015",
+   "scope_variant": "opt-in package: no row in packages/bundle (census gating)",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:65 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND shipped零挂载"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4 L95 [opt-in]",
+   "out_of_scope_reason": "not mounted in shipped bundle (opt-in; openAt:never per seed reqSrc)"
+  },
+  {
+   "name": "session_trace",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/session-query/tool-session-query/src/index.ts:85 @639ed015",
+   "scope_variant": "same as session_search",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:85 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "not mounted in shipped bundle"
+  },
+  {
+   "name": "session_event_read",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/session-query/tool-session-query/src/index.ts:108 @639ed015",
+   "scope_variant": "same as session_search",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:108 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap secrets-in-raw-events"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "not mounted in shipped bundle"
+  },
+  {
+   "name": "session_event_search",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/session-query/tool-session-query/src/index.ts:75 @639ed015",
+   "scope_variant": "same as session_search",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:75 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "not mounted in shipped bundle"
+  },
+  {
+   "name": "session_event_trace",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/session-query/tool-session-query/src/index.ts:95 @639ed015",
+   "scope_variant": "same as session_search",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:95 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-4",
+   "out_of_scope_reason": "not mounted in shipped bundle"
+  },
+  {
+   "name": "subagent",
+   "obligation": "REQUIRED",
+   "source": "host packages/subagent/tool-subagent/src/index.ts:379 @639ed015",
+   "scope_variant": "host base bundle toolName:subagent route; registers only when the provider route is live (census gating)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/tool-dispatch/install.ts:1-12 (documented order: tools.guard -> tools.restrict mask -> tools.register dispatcher -> validate -> PUBLISH) (mask/register seams are the generic route for inherited agent-control names)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no acceptance row; spawn-class effect identity (new agent sessions) has no enumerated Effects kind (dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md §1.1)",
+    "governance mount absent on master"
+   ],
+   "matrix_row": "A-5 L102 — matrix-listed; UNKNOWN gap"
+  },
+  {
+   "name": "subagent_fork",
+   "obligation": "REQUIRED",
+   "source": "host packages/subagent/tool-subagent/src/index.ts:379 @639ed015",
+   "scope_variant": "host base bundle second composed route (enabled)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "same class gaps as subagent"
+   ],
+   "matrix_row": "A-5 L103"
+  },
+  {
+   "name": "subagent_codex",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/subagent/tool-subagent/src/index.ts:379 @639ed015",
+   "scope_variant": "shipped preset routes disabled:true (standard.patch.yml:105 / ptc / cordis per census)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND preset disabled"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-5 L104 [disabled:true]",
+   "out_of_scope_reason": "shipped default DISABLED (preset disabled:true); enablement = preset config change, re-classify then"
+  },
+  {
+   "name": "subagent_claude_code",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/subagent/tool-subagent/src/index.ts:379 @639ed015",
+   "scope_variant": "shipped preset routes disabled:true (standard.patch.yml:113)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND preset disabled"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-5 L105 [disabled:true]",
+   "out_of_scope_reason": "shipped default DISABLED"
+  },
+  {
+   "name": "list_subagent_models",
+   "obligation": "REQUIRED",
+   "source": "host packages/subagent/tool-subagent/src/list-models.ts:87 @639ed015",
+   "scope_variant": "conditional registration iff model-selection policy configured; web-app mounts model-selection-settings (census gating)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/list-models.ts:87 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "conditional mount status must be pinned per profile; no governance mount"
+   ],
+   "matrix_row": "A-5 L106"
+  },
+  {
+   "name": "send_message",
+   "obligation": "REQUIRED",
+   "source": "host packages/subagent/tool-subagent-control/src/index.ts:28 @639ed015",
+   "scope_variant": "host base bundle (default subagent-control route). SECOND same-name registration route = experimental tool-agent-team (packages/experimental/tool-agent-team/src/index.ts:215) which is NOT mounted in shipped bundles -> that variant is OUT_OF_SCOPE inside this entry",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent-control/src/index.ts:28 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "collision-by-design per census gating line 'collides by design with the default tool-subagent-control route when both mounted'"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no governance mount; cross-agent addressing identity unproven",
+    "same-name two-route dispatch must be pinned by H0-style identity checks"
+   ],
+   "matrix_row": "A-5 L109 (subagent 族) + A-9 L138 (upstream team 族, same-name separate implementation)"
+  },
+  {
+   "name": "interrupt_agent",
+   "obligation": "REQUIRED",
+   "source": "host packages/subagent/tool-subagent-control/src/index.ts:74 @639ed015",
+   "scope_variant": "host base bundle; second (experimental, unmounted) route same-name — variant OUT_OF_SCOPE as with send_message",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent-control/src/index.ts:74 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "same-class gaps as send_message"
+   ],
+   "matrix_row": "A-5 L107 + A-9 L136"
+  },
+  {
+   "name": "list_agents",
+   "obligation": "REQUIRED",
+   "source": "host packages/subagent/tool-subagent-control/src/list-agents.ts:86 @639ed015",
+   "scope_variant": "host base bundle separate row; experimental same-name route unmounted",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent-control/src/list-agents.ts:86 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "same-class gaps"
+   ],
+   "matrix_row": "A-5 L108 + A-9 L137"
+  },
+  {
+   "name": "workflow",
+   "obligation": "REQUIRED",
+   "source": "host packages/workflow/tool-workflow/src/index.ts:328 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/workflow/tool-workflow/src/index.ts:328 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "body orchestrates subagents and appends session records (tests/deepseek-harness-test-use/packages/workflow/tool-workflow/src/index.ts:102 — personally re-read)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "nested fan-out effects: one model call -> N governed subagent dispatches; aggregation identity unmodeled (no acceptance row)"
+   ],
+   "matrix_row": "A-5 L110"
+  },
+  {
+   "name": "ralph",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/workflow/tool-ralph/src/index.ts:410 @639ed015",
+   "scope_variant": "mounted but disabled:true by default (bundle/base/cordis.patch.yml:447-449 per census)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/workflow/tool-ralph/src/index.ts:410 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap UNMANAGED_IF_ENABLED"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-5 L111 [默认 disabled]",
+   "out_of_scope_reason": "shipped default disabled; obligation attaches only if enabled"
+  },
+  {
+   "name": "ask_user_question",
+   "obligation": "REQUIRED",
+   "source": "host packages/interaction/tool-ask-user/src/index.ts:38 @639ed015",
+   "scope_variant": "mounted per preset; default mode legacy; a same-name timed variant registers only under config mode:timed (dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json (U1-C; every file:line build-time re-asserted) two rows)",
+   "effect_class": "ui/interaction",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/interaction/tool-ask-user/src/index.ts:38 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "interaction lane: pending-user wait inside a governed session interacts with Control ask lanes — unverified",
+    "timed-variant mount status per profile"
+   ],
+   "matrix_row": "A-5 L112 [分档未核]"
+  },
+  {
+   "name": "exit_plan_mode",
+   "obligation": "REQUIRED",
+   "source": "host packages/plan/plan-mode/src/index.ts:278 @639ed015",
+   "scope_variant": "host base bundle; execute refuses outside plan mode (docs note via census)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/plan/plan-mode/src/index.ts:278 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no acceptance row"
+   ],
+   "matrix_row": "A-5 L113"
+  },
+  {
+   "name": "present",
+   "obligation": "REQUIRED",
+   "source": "host packages/deliverables/tool-present/src/index.ts:38 @639ed015",
+   "scope_variant": "mounted per web preset (standard:142-143, cordis:150-151)",
+   "effect_class": "ui/interaction",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/deliverables/tool-present/src/index.ts:38 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "body stats/resolves files via ctx.fs (tests/deepseek-harness-test-use/packages/deliverables/tool-present/src/index.ts:81-89 — personally re-read)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/present.mjs + g1-present-arm.mjs (unmerged)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "fs-metadata read + deliverable publish side not in any acceptance row"
+   ],
+   "matrix_row": "A-5 L114"
+  },
+  {
+   "name": "plugin_manager",
+   "obligation": "REQUIRED",
+   "source": "host packages/boot/plugin-manager/src/tools.ts:19 @639ed015",
+   "scope_variant": "host base bundle; profile-global mutation + install may execute allowed build scripts (description text re-read at host file :21)",
+   "effect_class": "process",
+   "candidate_route": "other:plugin-manager",
+   "supporting_evidence": [
+    "host registration: packages/boot/plugin-manager/src/tools.ts:19 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md §2 PLUGIN role: profile-global change + script execution is its own scope"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "executes build scripts = process+fs+network compound; no acceptance row; highest-risk un-governed mounted name found in this static pass"
+   ],
+   "matrix_row": "A-6 L117 [默认 disabled/creator 条件] — matrix lists it; the census shows the tools row mounted at bundle/base/cordis.patch.yml:16-17"
+  },
+  {
+   "name": "cordis_inspect_list",
+   "obligation": "REQUIRED",
+   "source": "host packages/extensions/tool-cordis/src/index.ts:22 @639ed015",
+   "scope_variant": "mounted in cordis preset only (presets/cordis.patch.yml:141-142)",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/extensions/tool-cordis/src/index.ts:22 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "read-only inspect surface per description; governance row absent"
+   ],
+   "matrix_row": "A-6 L118 [creator]"
+  },
+  {
+   "name": "cordis_inspect_query",
+   "obligation": "REQUIRED",
+   "source": "host packages/extensions/tool-cordis/src/index.ts:41 @639ed015",
+   "scope_variant": "cordis preset only",
+   "effect_class": "read-fs",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/extensions/tool-cordis/src/index.ts:41 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "queries may reach live client surfaces (this session's own tool list shows client queries); scope unproven"
+   ],
+   "matrix_row": "A-6 L119"
+  },
+  {
+   "name": "list_mcp_resources",
+   "obligation": "REQUIRED",
+   "source": "host packages/mcp/mcp-resources/src/tools.ts:33 @639ed015",
+   "scope_variant": "host base bundle; static names (NOT dynamic mcp__ rows — matrix A-6 warns against mixing)",
+   "effect_class": "dynamic-mcp",
+   "candidate_route": "bridge:MCP",
+   "supporting_evidence": [
+    "host registration: packages/mcp/mcp-resources/src/tools.ts:33 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND gap=MCP_GOVERNANCE_DORMANT"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "reaches connected MCP servers; appears only when >=1 server connected (seed reqSrc)"
+   ],
+   "matrix_row": "A-6 L121 [分档未核]"
+  },
+  {
+   "name": "list_mcp_resource_templates",
+   "obligation": "REQUIRED",
+   "source": "host packages/mcp/mcp-resources/src/tools.ts:42 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "dynamic-mcp",
+   "candidate_route": "bridge:MCP",
+   "supporting_evidence": [
+    "host registration: packages/mcp/mcp-resources/src/tools.ts:42 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json MCP 三件同证"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "same as list_mcp_resources"
+   ],
+   "matrix_row": "A-6 L120"
+  },
+  {
+   "name": "read_mcp_resource",
+   "obligation": "REQUIRED",
+   "source": "host packages/mcp/mcp-resources/src/tools.ts:51 @639ed015",
+   "scope_variant": "host base bundle",
+   "effect_class": "dynamic-mcp",
+   "candidate_route": "bridge:MCP",
+   "supporting_evidence": [
+    "host registration: packages/mcp/mcp-resources/src/tools.ts:51 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json MCP 三件同证"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "same as list_mcp_resources"
+   ],
+   "matrix_row": "A-6 L122"
+  },
+  {
+   "name": "run_code",
+   "obligation": "REQUIRED",
+   "source": "host packages/core/tools/src/ptc.ts:335 @639ed015",
+   "scope_variant": "host lazy ToolRuntime registration in PTC mode (index.ts:945 createRunCodeTool per census); Team mode must mount on Team's PTC (matrix L38 note); outer+nested are two faces of one name (matrix L38/L39)",
+   "effect_class": "process",
+   "candidate_route": "bridge:PTC",
+   "supporting_evidence": [
+    "host registration: packages/core/tools/src/ptc.ts:335 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/ptc-escalation-row.mjs:1-14 (PTC fs escalation row on host public approval/request waterfall)",
+    "host tests/deepseek-harness-test-use/packages/core/tools/src/index.ts PTC sub-dispatch waterfall tools/ptc-dispatch-log (:179-190 — personally re-read)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "net/process-visibility partial gap registered upstream (#332, backlog BL-16)",
+    "whole-row effect guarantee unverified (matrix L38)"
+   ],
+   "matrix_row": "L38 outer (PROBE-GATED) + L39 nested (ENFORCE-PARTIAL scope=@8eb93ddd inner edge)"
+  },
+  {
+   "name": "spawn_teammate",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/tool-agent-team/src/index.ts:175 @639ed015",
+   "scope_variant": "opt-in experimental plugin; NOT mounted in any shipped bundle (test overlay only, census gating)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:175 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND 默认关"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-9 L139 — gap registration only",
+   "out_of_scope_reason": "experimental plugin not mounted in shipped bundles"
+  },
+  {
+   "name": "wait_agent",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/tool-agent-team/src/index.ts:242 @639ed015",
+   "scope_variant": "same experimental plugin (exclusive to it)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:242 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-9 L144",
+   "out_of_scope_reason": "experimental plugin not mounted in shipped bundles"
+  },
+  {
+   "name": "team_task_create",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/tool-agent-team/src/index.ts:289 @639ed015",
+   "scope_variant": "same experimental plugin",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:289 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-9 L140",
+   "out_of_scope_reason": "experimental plugin not mounted in shipped bundles"
+  },
+  {
+   "name": "team_task_list",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/tool-agent-team/src/index.ts:313 @639ed015",
+   "scope_variant": "same experimental plugin",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:313 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-9 L142",
+   "out_of_scope_reason": "experimental plugin not mounted in shipped bundles"
+  },
+  {
+   "name": "team_task_get",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/tool-agent-team/src/index.ts:345 @639ed015",
+   "scope_variant": "same experimental plugin",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:345 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-9 L141",
+   "out_of_scope_reason": "experimental plugin not mounted in shipped bundles"
+  },
+  {
+   "name": "team_task_update",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/tool-agent-team/src/index.ts:360 @639ed015",
+   "scope_variant": "same experimental plugin",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:360 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-9 L143",
+   "out_of_scope_reason": "experimental plugin not mounted in shipped bundles"
+  },
+  {
+   "name": "structured_output",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/subagent/subagent-in-process-driver/src/structured.ts:74 @639ed015",
+   "scope_variant": "internal child-session tool (structured-output capture); NOT in docs/tool-catalog.md; NOT in PLANE_RESERVED_NATIVE (flagged by U1-C for reviewer judgement, not asserted as drift)",
+   "effect_class": "session/agent-control",
+   "candidate_route": "ordinary-family",
+   "supporting_evidence": [
+    "host registration: packages/subagent/subagent-in-process-driver/src/structured.ts:74 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json (U1-C; every file:line build-time re-asserted); U1-C seed-diff newNames classification UNKNOWN/NOT_VERIFIED — never authorized"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "not listed in the matrix at all",
+   "out_of_scope_reason": "internal child-internal capture tool, never a shipped model-facing surface (U1-C); outside the matrix catalog — tracked in the U7 dynamic-census UNKNOWN queue"
+  },
+  {
+   "name": "stagehand_navigate",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/browser-use-stagehand-native/src/index.ts:179 @639ed015",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "effect_class": "network",
+   "candidate_route": "other:browser",
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-7 L124-130 [experimental] gap registrations",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles; obligation attaches if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "stagehand_tabs",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/browser-use-stagehand-native/src/index.ts:179 @639ed015",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "effect_class": "network",
+   "candidate_route": "other:browser",
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-7 L124-130 [experimental] gap registrations",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles; obligation attaches if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "stagehand_screenshot",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/browser-use-stagehand-native/src/index.ts:179 @639ed015",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "effect_class": "network",
+   "candidate_route": "other:browser",
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-7 L124-130 [experimental] gap registrations",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles; obligation attaches if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "stagehand_act",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/browser-use-stagehand-native/src/index.ts:179 @639ed015",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "effect_class": "network",
+   "candidate_route": "other:browser",
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-7 L124-130 [experimental] gap registrations",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles; obligation attaches if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "stagehand_observe",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/browser-use-stagehand-native/src/index.ts:179 @639ed015",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "effect_class": "network",
+   "candidate_route": "other:browser",
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-7 L124-130 [experimental] gap registrations",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles; obligation attaches if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "stagehand_extract",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "host packages/experimental/browser-use-stagehand-native/src/index.ts:179 @639ed015",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "effect_class": "network",
+   "candidate_route": "other:browser",
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [],
+   "matrix_row": "A-7 L124-130 [experimental] gap registrations",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles; obligation attaches if a Team config mounts it (seed PB15 rule)"
+  },
+  {
+   "name": "team_list_members",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:498 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_list_templates",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:520 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_inspect_config",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:542 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_create_member",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:572 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_delegate",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:614 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_follow_up",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:710 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_collect",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:772 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_send_message",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:817 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_report_progress",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:856 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_request_control",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:960 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_resolve_control",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:1017 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_list_pending_control",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:1119 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_archive_member",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:1197 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_grant_permission",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:1373 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "team_revoke_permission",
+   "obligation": "REQUIRED",
+   "source": "team packages/tools/src/tools.ts:1373 (master@3288567d36794394ce2af0401cee4fe218b11d03)",
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "effect_class": "team-coordination",
+   "candidate_route": "team-native",
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ],
+   "matrix_row": "L44 main row M-14 team_* (ENFORCE-PARTIAL scope=@0e0b605a real-Host approval-chain historical round) + A-10 L147-161 per-name lines"
+  },
+  {
+   "name": "mcp__<server>__<tool> (dynamic class)",
+   "obligation": "REQUIRED",
+   "source": "dynamic-class host packages/mcp/mcp-client/src/tools.ts:81-82 (name rule), :150 (syncTools per connected server) @639ed015",
+   "scope_variant": "every connected MCP server; per-server dynamic names, individual names NOT enumerable at build time (U1-C dynamicSourceClasses)",
+   "effect_class": "dynamic-mcp",
+   "candidate_route": "bridge:MCP",
+   "supporting_evidence": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:723-725 (GUARD_NATIVE_TRUST_EXCLUDED_MCP_PREFIX='mcp__'; mcp__ never inherits dsh-native guard trust)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (agent-scope prefix mcp__<server>__)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2927 (filterMcpServers), :3003 (bindOwnTools), :3017 (bindMcpTools), :3027 (publish)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:464 (PLANE_RESERVED_NATIVE_PREFIXES=['mcp__'])",
+    "matrix L41 (MCP stdio, WIRED-NOT-ACCEPTED) + L42 (MCP HTTP dynamic domain, NOT_VERIFIED)",
+    "seed surfaces surface:mcp_stdio / surface:mcp_http_dynamic map here (U1-C seed-diff)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "M0-B §2 CONNECTOR",
+   "unknowns": [
+    "guard binding-completeness for mcp__ names UNVERIFIED (matrix L41)",
+    "dynamic server addition -> guard bind effectiveness UNVERIFIED (matrix L42)",
+    "stdio subprocess confinement unproven (matrix L41: :1756-1768 evidence is the streamable-http/loopback path)",
+    "no runtime inventory snapshot exists for concrete server/tool names (matrix L42)"
+   ],
+   "matrix_row": "L41+L42 main rows M-12"
+  },
+  {
+   "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+   "obligation": "REQUIRED",
+   "source": "dynamic-class host packages/extensions/cordis-host-runner/src/guard.ts:495 (assertDynamicTool gate), :628 (registration passthrough) @639ed015",
+   "scope_variant": "client plugins register model-facing tools at runtime (e.g. browser_*); enumeration at build time impossible (U1-C)",
+   "effect_class": "dynamic-mcp",
+   "candidate_route": "other:client-plugin-registration",
+   "supporting_evidence": [
+    "matrix L46 main row NEG-4 Preset/Team 自注册覆盖 (WIRED-NOT-ACCEPTED): preset-realm registration does not reach global tools.schemas() face (bind-diag @248aff73, 三世界 17/17×3)",
+    "seed surface surface:neg4_preset_selfregister maps here (U1-C seed-diff)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "inheritance at the ABSTAIN layer — 'never VERIFIED' (bind-diag quote in matrix L46)",
+    "no world has shown preset-realm VERIFIED inheritance (matrix L46)"
+   ],
+   "matrix_row": "L46 main row NEG-4"
+  },
+  {
+   "name": "surface:domain_family (family obligation — no registered names)",
+   "obligation": "REQUIRED",
+   "source": "no source tool name on either side (U1-C seed-diff: ABSENT as a name; the other 3 seed surfaces map to dynamic classes)",
+   "scope_variant": "design-semantic family (HPC/RPC/research-state/device) — NOT proven registered names; concrete external domains need config/registry input (dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md and matrix L43)",
+   "effect_class": "UNKNOWN",
+   "candidate_route": "UNKNOWN",
+   "supporting_evidence": [
+    "matrix L43 main row M-13 Domain (NOT_VERIFIED): '尚未枚举缺口 = domain 工具面未定义，无逐名输入'; fail-closed clauses are design-only; S0 explicit NOT_RUN",
+    "CI-10 Domain veto stays independent (refs/center-assembly-architecture.md §2 L36)"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "no enumerable names today; obligation cannot be per-name satisfied in G1-F — recorded as named gap, NOT as covered",
+    "do not invent hpc_* class names (matrix L43)"
+   ],
+   "matrix_row": "L43 main row M-13"
+  },
+  {
+   "name": "cua_driver_native__<tool> (dynamic class)",
+   "obligation": "OUT_OF_SCOPE",
+   "source": "dynamic-class host packages/experimental/computer-use-cua-driver-native/src/index.ts:97 (name rule), :117 (register) @639ed015 (U1-C dynamicSourceClasses)",
+   "scope_variant": "experimental driver-list dynamic; not mounted in shipped bundles",
+   "effect_class": "process",
+   "candidate_route": "other:computer-use",
+   "supporting_evidence": [
+    "dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json (U1-C; every file:line build-time re-asserted) dynamicSourceClasses entry"
+   ],
+   "owner": "UNKNOWN",
+   "owner_role_hint": "UNKNOWN (M0-B §2 assigns role classes, no named writer yet)",
+   "unknowns": [
+    "if ever mounted, becomes a dynamic source class requiring the MG-MCP-DYNAMIC-style admission path"
+   ],
+   "matrix_row": "not listed in the matrix",
+   "out_of_scope_reason": "experimental, not mounted in shipped bundles (U1-C)"
+  }
+ ]
+}

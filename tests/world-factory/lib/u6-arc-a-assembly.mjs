@@ -17,13 +17,19 @@
  * 'lsp','bash','pwsh'] and the search class is NOT in it. The governed
  * search rows are PLANE-adjudicated (the kernel approval entry the plane
  * binds at placement — PR5 law L2 is exactly WHY no center file may grow a
- * grep branch to make this suite easier). The refusal leg therefore rides
- * the anchored containment law: a search path OUTSIDE the managed root is
- * refused typed, before any spawn.
+ * grep branch to make this suite easier; U7-6 GLUE-4 keeps that law at the
+ * byte: the center gained a NAMELESS class-ride data input, the class law
+ * itself lives in this plane mount + this world). The greper's `read` rule
+ * at the governed root is therefore the whole grant — it admits the row's
+ * anchored envelope (walk surface) exactly, nothing more. The refusal leg
+ * rides the anchored containment law: a search path OUTSIDE the managed
+ * root is refused typed, before any spawn — at the BACKEND's containment
+ * face, because the row's own demand (the surface) is met by the rule.
  *
  * @module tests/world-factory/lib/u6-arc-a-assembly
  */
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -45,6 +51,16 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
   const GLUE_URL = pathToFileURL(join(dist, 'src', 'plugin', 'live', 'agent-bindings.mjs')).href
   const SEAM_URL = pathToFileURL(join(repoRoot, 'packages', 'runtime', 'root-binding', 'harness', 'seam.mjs')).href
   const P6T6_ROW_NAME = pathToFileURL(join(repoRoot, 'packages', 'tools', 'harness', 'plugin.mjs')).href
+  // U7-6 GLUE-4: the plane's GLOB row is the confined-rg row (the only
+  // glob implementation the family ships — kernel-enforced read scope, no
+  // unconfined twin exists), and with `confinedProvider` present the GREP
+  // row rides the same confined rg face: the assembly's own header always
+  // said "real confined-rg effects". The trio law (trustRoot/launcherPath/
+  // launcherSha256) mirrors the proc-proven u6-proc-assembly mount; the
+  // packaged ripgrep is resolved by the row itself (resolveRgPath), and
+  // pair-verification runs at BOTH config time and spawn time.
+  const LAUNCHER = join(repoRoot, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py')
+  const launcherSha = () => createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
   const BASE_PRESET_ID = `u6arca-base-${rs}`
   const BP_ANCHOR_ID = 'team.u6arca.anchor'
   const BP_MAIN_ID = 'team.u6arca.main'
@@ -110,6 +126,16 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       teamToolPlane: {
         realmId: PLANE_REALM_ID,
         fsInstance: { fs: 'team-ctl', rootDir: planeRootDir(), realmId: PLANE_REALM_ID, kind: 'absolute-path' },
+        // U7-6 GLUE-4: the confined trio makes the search rows the REAL
+        // anchored rg faces (see LAUNCHER above) — the header's
+        // "real confined-rg effects" end state, proc-world-proven trio
+        // shape. Without it the glob row has NO implementation at all
+        // (the shut face is not an implementation) and the live legs
+        // could never measure what they claim to measure.
+        confinedProvider: {
+          trustRoot: `sha256:${launcherSha().slice(0, 16)}#${LAUNCHER}`,
+          assembly: { launcherPath: LAUNCHER, launcherSha256: launcherSha(), minAbiVersion: 3 },
+        },
         // ENFORCING (not shadow): ARC-A measures the kernel REAL — the
         // probe family runs its own enforcing kernel; the plane must be the
         // same generation of truth for the search lanes.
@@ -150,28 +176,28 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       ...denyLines.map((l) => `  ${l}`),
       '      skills:', '        kind: allow', '        items: []',
       '      mcp:', '        kind: allow', '        items: []',
-      // MEASURED, TWO LAYERS (run6 + run8, verbatim in the PR evidence):
-      // the governed search refusal walks DEEPER as each layer is fed.
-      // run6 (grammar-fixed calls, no rules): the LANE default-deny gate
-      // refuses — code=template-default-deny (createLaneDecide, invoked
-      // file-class tools need a rule in the read/read_image/write/edit
-      // class set). run8 (a `tool: read` any-rule added): the lane THEN
-      // allows (offline-proven against the shipped createLaneDecide), and
-      // the PA edge refuses deeper — code=IO_POLICY_UNSUPPORTED, the
-      // tool-admission assurance answer that this profile's capability
-      // RECORD does not meet the demand derived for the placed search
-      // rows' dimensions (assurance-runtime.ts:139-142; the plane header
-      // names the effect-face adapter a GLUE-4 follow-up). The read-any
-      // rule is NOT kept: it bought nothing at the wire (both codes are
-      // terminal refusals) while granting the member real `read` surface
-      // — least privilege wins; the template stays all-empty below.
-      // PRODUCT FINDING (disclosed): the moved search family is golden-
-      // identical at the mechanics face, but a governed MEMBER lane is not
-      // end-to-end admissible on the assurance face yet — exactly the
-      // fact this C2 exists to measure. The way forward is the approval/
-      // assurance round, not this fixture. Grammar fix stands PROVEN
-      // (run8: zero schema refusals anywhere on the wire).
-      '      permissions:', '        default: deny', '        allow: []',
+      // U7-6 GLUE-4 (this PR): the search class is admitted by the SAME
+      // `read`-class rule the plane's own lane law already applies — the
+      // governed search rows are PLANE-adjudicated and the closed rule
+      // grammar cannot NAME grep/glob (PERMISSION_TOOL_NAMES is a protected
+      // center enum and stays untouched), so the row's `tool-invoke` arm
+      // rides the class rule through the plane-stated invokeClasses data
+      // input, and the ANCHORED effect derivation claims the governed walk
+      // surface (`read` at the plane root — the exact resource the envelope
+      // arms name). Least privilege is real: NO rule (run6/run8 measured
+      // states) or a rule elsewhere => the default-deny coverage gate still
+      // answers IO_POLICY_UNSUPPORTED, and the /etc leg still refuses —
+      // now honestly, at the backend's own containment law
+      // (target-outside-governed-root, zero spawn), not at admission.
+      // History (kept for provenance): run6 refused at the LANE gate
+      // (template-default-deny); run8 refused at the PA coverage gate
+      // (IO_POLICY_UNSUPPORTED) — the U7-6 root-cause receipt re-attributes
+      // that run8 code from the earlier assurance-runtime.ts:139-142
+      // reading (vacuous on this mount) to the admitCall template-default-
+      // deny coverage gate, and this fixture is what the fix flips.
+      '      permissions:', '        default: deny', '        allow:',
+      '          - tool: read', '            resource:', '              kind: exact',
+      `              path: ${JSON.stringify(planeRootDir())}`,
       '        ask: []', '        deny: []',
       // The control lane: NO capabilities block at all — the legacy native
       // surface whose grep must behave exactly as before PR5 (§10.5-5).
@@ -293,6 +319,7 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
     blueprintDir, workspaceDir, files, markers, tokens, probe,
     teamRowConfig, BP_ANCHOR_YAML, mainBlueprintYaml, teamRows,
     writePreBootFiles, writeMainBlueprint, assertBlueprintIngestible,
+    LAUNCHER, launcherSha,
   }
 }
 

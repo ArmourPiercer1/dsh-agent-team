@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1
+
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (35 tests | 34 skipped) 129329ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  129323ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 34 skipped (35)
+   Start at  13:00:18
+   Duration  131.99s (transform 1.67s, setup 0ms, import 1.86s, tests 129.33s, environment 0ms)
+

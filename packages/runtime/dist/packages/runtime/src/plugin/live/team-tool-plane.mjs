@@ -848,6 +848,29 @@ export function createTeamToolPlaneAssembly(input = {}) {
     },
     beneficiaryAuthority: role === 'leader' ? 'leader' : 'member',
     ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
+    // U7-6 GLUE-4 (named center-interface PR): the PLANE's row-class law as
+    // trusted DATA for the admission projection. The governed SEARCH rows
+    // invoke classes the closed rule grammar cannot NAME (grep/glob are not
+    // rule tools), so their `tool-invoke` arm must be covered by the SAME
+    // law the plane's own `createLaneDecide` already applies — a search row
+    // is admitted by a `read`-class rule over its governed surface. Without
+    // this the two faces of ONE policy answer the same question
+    // differently (the lane allows, the default-deny coverage gate refuses
+    // IO_POLICY_UNSUPPORTED). It INVENTS NOTHING: with no `read` rule the
+    // search class stays refused; the center carries no tool-name literal —
+    // the law lives HERE, in the trusted mount, and the projection consumes
+    // it generically (TemplatePolicyProjectionInput.invokeClasses). Review R1
+    // F1: the law is BOUNDED by the mount's declared closed row-class world —
+    // `knownEffectClasses` lists the effect classes the plane's rows can ever
+    // derive that are not nameable by the rule grammar (grep/glob; the shell
+    // class bash IS a rule tool so it is named by its own rules and never
+    // rides). Without this a stub/typo/attacker-shaped class key could ride a
+    // valid read governor and acquire authority; the center now refuses any
+    // law key outside this inventory (projection-invoke-class-unknown) and
+    // refuses a class law whose world is undeclared (projection-inventory-
+    // missing). The world lives HERE with the law, never in the center.
+    invokeClasses: { grep: ['read'], glob: ['read'] },
+    knownEffectClasses: ['grep', 'glob'],
     onObserve: (row) => observe(`a5p2prod: ${String(row?.event ?? row)}`),
   })
   if (built.ok !== true) {
@@ -1681,6 +1704,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
     shellBackend: hostedShell,
     names,
     callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
+    // U7-6 GLUE-4 (anchored form, `effects-schema` module header): the
+    // production search rows anchor their BACKENDS at `fsInstance.rootDir`,
+    // so they also anchor their DERIVED DEMAND there — the row claims the
+    // governed walk surface, never the raw target (a target outside the
+    // surface is refused by the backend's own containment law with zero
+    // effect, which is where the anchored refusal leg belongs). Rides ONLY
+    // when the production anchored backend is the one actually mounted —
+    // a fixture-injected search (the wiring-kit seam, every offline kit)
+    // keeps the historical target-scoped derivation byte-identical.
+    ...(input.backends?.search === undefined && fsInstance !== null && typeof fsInstance.rootDir === 'string'
+      ? { effectAnchorRoot: fsInstance.rootDir }
+      : {}),
   }, createGovernedToolDefinitions)
   // U6 PR3: the bash arm of the trio is NO LONGER the mounted path — the
   // shell row joins the Kernel as the process family's contribution, built

@@ -139,7 +139,7 @@ export const SUITE_CASES = {
   // with NO capabilities block), and the ledger's global arithmetic. Verdict
   // law DISK + LEDGER + HOST LOG — never the model transcript. No shadow
   // twin: the kernel computes refuse verdicts in every mode (assembly header).
-  'u6-arc-d': ['arcd:mounted', 'arcd:positive', 'arcd:spoof-zero-authority', 'arcd:swap-refused', 'arcd:unbound-refused', 'arcd:replay-refused', 'arcd:ci03-native-parity', 'arcd:marker-ledger', 'arcd:teardown-honest'],
+  'u6-arc-d': ['arcd:mounted', 'arcd:positive', 'arcd:spoof-zero-authority', 'arcd:swap-refused', 'arcd:unbound-refused', 'arcd:replay-refused', 'arcd:ci03-native-parity', 'arcd:restrict-veto', 'arcd:lift-control', 'arcd:marker-ledger', 'arcd:teardown-honest'],
   // U7-9a C2 (the first S5 per-family delivery): the FS family's MUTATION
   // members — governed write/edit/read_image — on the SAME kernel, ONE
   // World, ZERO center diff (CA-01). The verdict source is the RUNNER'S OWN
@@ -1383,9 +1383,10 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   // ── drive ─────────────────────────────────────────────────────────────────
   // The leader chain owns all ordering; the runner fires the plant triggers
   // on the UNGOVERNED boot-root session and wakes the parked chain (u6-fs
-  // rhythm, reused). For the THREE leader exec calls the runner takes the
-  // HUMAN USER role: it watches the durable control lane through the p6t6
-  // observer (`state.control.requests`) and settles each pending
+  // rhythm, reused). The runner takes the HUMAN USER role on the durable
+  // control lane: it watches the GOVERNED team session's rows over the
+  // remote `team.getLedgerPage` read plane (R-U6P3-1 — the p6t6 observer is
+  // boot-anchor-scoped and cannot see these rows) and settles each pending
   // user-approval request through the PUBLIC `team.resolveControl` seam —
   // the very endpoint the GUI calls for a human operator. No private API,
   // no test backdoor: this IS the product's human lane, driven honestly.
@@ -1417,12 +1418,83 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
       await new Promise((r) => setTimeout(r, 350))
     }
   }
-  const teamSessionId = stateBody?.teamSession?.rootSessionId ?? assembly.CREATE_ROOT
+  // R-U6P3-1 — THE GOVERNED-SESSION TARGETING FIX. The p6t6 /state control
+  // block is ANCHOR-scoped (its directive pins the BOOT ROOT team): it
+  // structurally cannot see the rows of the team team.create made, so the
+  // old `teamSession` read returned the BOOT root and every observation /
+  // resolve below addressed the WRONG session (the pr-d kit's named law:
+  // governed control state is read over the remote team.getLedgerPage,
+  // never the boot-anchored observer). The governed identity now comes
+  // from the create RESPONSE, identity-asserted; the boot-anchor read
+  // survives only as a recorded NOTE beside the governed channel.
+  const unwrapRemoteProc = (body) => {
+    const v = body?.result?.value
+    return v && typeof v === 'object' && 'data' in v ? v.data : v
+  }
+  const echoedRoot = unwrapRemoteProc(created.body)?.rootSessionId ?? null
+  const teamSessionId = echoedRoot ?? assembly.CREATE_ROOT
+  if (teamSessionId !== assembly.CREATE_ROOT || teamSessionId === assembly.ROOT) {
+    failRest(`governed Team Session identity mismatch: create echoed ${String(echoedRoot)}, expected ${assembly.CREATE_ROOT} (never the boot root ${assembly.ROOT})`)
+    return
+  }
   const stateSnapshot = async () => {
     const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
     return st?.body ?? null
   }
   const controlSnapshot = async () => (await stateSnapshot())?.control ?? null
+  // The governed session's durable Control lane over the PRODUCT read
+  // plane: remote team.getLedgerPage, paged, FAIL LOUD on an error page
+  // (the kit's run-9 law: an error read as an empty ledger launders a
+  // broken read plane into zeros). A request is pending until a decision/
+  // consumption/abandon fact settles the same requestId.
+  const CONTROL_FACT_TYPES = ['control-request-recorded', 'control-decision-recorded', 'control-allow-consumed', 'control-request-abandoned']
+  const governedControlSnapshot = async () => {
+    const byType = Object.fromEntries(CONTROL_FACT_TYPES.map((t) => [t, []]))
+    let afterSequence = 0
+    for (let pageNo = 0; pageNo < 20; pageNo += 1) {
+      const page = await remoteCall(fetchJson, origin, cookie, 'team.getLedgerPage',
+        { teamSessionId, afterSequence, limit: 500 }, 'u6proc-ledger', 1)
+      const r = page?.body?.result
+      if (page?.status !== 200 || r?.ok !== true) {
+        throw new Error(`team.getLedgerPage failed (page ${String(pageNo + 1)}, afterSequence=${String(afterSequence)}): status=${String(page?.status)} ${JSON.stringify(r?.error ?? r ?? null).slice(0, 200)}`)
+      }
+      const data = unwrapRemoteProc(page.body)
+      const entries = Array.isArray(data?.entries) ? data.entries : []
+      for (const e of entries) {
+        if (byType[e?.factType] === undefined) continue
+        let payload = e.payload
+        if (typeof payload === 'string') { try { payload = JSON.parse(payload) } catch { payload = {} } }
+        byType[e.factType].push({ sequence: e.sequence, payload: payload ?? {} })
+      }
+      const next = data?.nextAfterSequence
+      if (next === null || next === undefined || entries.length === 0) break
+      afterSequence = Number(next)
+    }
+    const settled = new Set([...byType['control-decision-recorded'], ...byType['control-allow-consumed'], ...byType['control-request-abandoned']]
+      .map((f) => String(f.payload?.requestId ?? '')))
+    return {
+      requests: byType['control-request-recorded'].map((f) => ({
+        requestId: String(f.payload?.requestId ?? ''),
+        kind: f.payload?.kind ?? null,
+        toolName: f.payload?.toolName ?? null,
+        summary: String(f.payload?.summary ?? '').slice(0, 120),
+        operationFingerprint: f.payload?.operationFingerprint ?? null,
+        status: settled.has(String(f.payload?.requestId)) ? 'settled' : 'pending',
+      })),
+      decisions: byType['control-decision-recorded'].map((f) => ({ requestId: String(f.payload?.requestId ?? ''), decision: f.payload?.decision ?? null })),
+      consumptions: byType['control-allow-consumed'].map((f) => ({ requestId: String(f.payload?.requestId ?? '') })),
+    }
+  }
+  // The observation-channel record the judge reads (see judgeU6Proc's
+  // positive-read law): a zero-row claim only counts on a channel that has
+  // shown a row THIS run CREATED.
+  const controlRead = {
+    channel: 'remote:team.getLedgerPage',
+    teamSessionId,
+    anchoredToBootRoot: false,
+    positiveReadProven: false,
+    bootAnchorNote: null,
+  }
   // Bridge forensics: the AUTH bridge (pa-control-bridge) and the plane
   // record every PA-leg stage (leg-deny details included) in the row's
   // observations stream — the p6t6 observer publishes it verbatim. The
@@ -1461,18 +1533,34 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
     const pend = await waitA(async () => {
       await captureForensic()
       const st = await stateSnapshot()
-      const ctl = st?.control ?? null
-      const pending = (ctl?.requests ?? []).filter((r) => r.status === 'pending' && /tool:team_bash|tool=team_bash/.test(String(r.summary ?? '')))
+      const governed = await governedControlSnapshot().catch((error) => {
+        apprArm.channelError = String(error?.message ?? error).slice(0, 200)
+        return null
+      })
+      if (governed === null) return false
+      const pending = (governed.requests ?? []).filter((r) => r.status === 'pending' && (r.toolName === 'team_bash' || /tool:team_bash|tool=team_bash/.test(String(r.summary ?? ''))))
       if (pending.length > 0) apprArm.pendingAny = pending.map((r) => ({ requestId: String(r.requestId).slice(0, 60), kind: r.kind ?? null, summary: String(r.summary ?? '').slice(0, 160) }))
       // The asker's own row: its case id embeds the asker instanceId
       // (tadm:<team>:<instanceId>:<fp>:g0) — exact attribution, never a
       // borrowed row from an earlier lane. The templateId lookup rides the
       // same observer read (members list); no private API.
       const askerInst = (st?.members ?? []).find((m) => m.templateId === 'asker')?.instanceId ?? null
-      const p = askerInst === null
-        ? pending[0]
+      const exact = askerInst === null
+        ? pending[0] ?? null
         : pending.find((r) => String(r.summary ?? '').includes(`:${askerInst}:`) || r.targetInstanceId === askerInst) ?? null
-      if (p !== undefined && p !== null) { apprArm.pendingSeen = true; apprArm.requestId = p.requestId; apprArm.kind = p.kind ?? null; return true }
+      // The asker is the ONLY ask-lane template in this world (mask/deny
+      // settle synchronously and never open rows), so exactly one pending
+      // row IS the asker's — attribution recorded, never silently borrowed.
+      const p = exact ?? (pending.length === 1 ? pending[0] : null)
+      if (p !== undefined && p !== null) {
+        apprArm.pendingSeen = true
+        apprArm.requestId = p.requestId
+        apprArm.kind = p.kind ?? null
+        apprArm.attribution = exact !== null ? 'exact-instance' : 'sole-pending-row'
+        // POSITIVE READ: this channel just showed a row THIS run created.
+        controlRead.positiveReadProven = true
+        return true
+      }
       return false
     }, 120_000)
     apprArm.waitedMs = pend.waitedMs
@@ -1498,15 +1586,17 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   // pendable; the seam's exactly-once law is the same closed CONTROL_*
   // vocabulary on any non-open id). Recorded for proc:replay-settled-refusal.
   laneDone.posReplay = await (async () => {
-    const ctl = await controlSnapshot()
+    // Same governed lane as the positive arm (R-U6P3-1): the replay names
+    // a row read on the session the lanes ACTUALLY opened rows on.
+    const governedPre = await governedControlSnapshot().catch(() => null)
     // Since the review-r1 positive arm legitimately opens and settles the
     // appr case, this arm names a BORN-TERMINAL ask (its summary carries
     // the mask/deny claim — a request the service closed decided, never
     // held open): the settled-replay law is measured on the case the
     // born-terminal close created, not on the authorised one.
-    const bornTerminal = (ctl?.requests ?? [])
+    const bornTerminal = (governedPre?.requests ?? [])
       .find((r) => r.status !== 'pending' && /U6PROC_(MASK|DENY)_|u6proc-(mask|deny)/.test(String(r.summary ?? '')))
-    const decided = (ctl?.decisions ?? []).find((x) => x.requestId !== apprArm.requestId)
+    const decided = (governedPre?.decisions ?? []).find((x) => x.requestId !== apprArm.requestId)
     const requestId = bornTerminal?.requestId ?? decided?.requestId ?? apprArm.requestId ?? 'u6proc-unknown-request'
     // v4: team.resolveControl is the v4-only human control-resolution
     // command (s6-remote.ts:4106); a v1 envelope is refused with
@@ -1555,11 +1645,19 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   await captureForensic()
   apprArm.forensic = [...forensicLines].slice(0, 40)
   const ctlFinal = await controlSnapshot()
-  const controlDigestRaw = ctlFinal === null ? null : JSON.stringify(ctlFinal).slice(0, 6000)
-  const controlDigest = ctlFinal === null ? null : {
-    requests: (ctlFinal.requests ?? []).map((r) => ({ requestId: r.requestId, kind: r.kind, status: r.status, toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 90), operationFingerprint: r.operationFingerprint ?? null })),
-    decisions: ctlFinal.decisions ?? [],
-    consumptions: ctlFinal.consumptions ?? [],
+  const governedFinal = await governedControlSnapshot().catch((error) => {
+    controlRead.finalControlError = String(error?.message ?? error).slice(0, 200)
+    return null
+  })
+  // The boot-anchor observer stays RECORDED (counts only): the honest
+  // witness that it structurally misses the governed rows.
+  controlRead.bootAnchorNote = ctlFinal === null
+    ? null
+    : { requests: (ctlFinal.requests ?? []).length, decisions: (ctlFinal.decisions ?? []).length, consumptions: (ctlFinal.consumptions ?? []).length }
+  const controlDigest = governedFinal === null ? null : {
+    requests: (governedFinal.requests ?? []).map((r) => ({ requestId: r.requestId, kind: r.kind ?? null, status: r.status, toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 90), operationFingerprint: r.operationFingerprint ?? null })),
+    decisions: governedFinal.decisions ?? [],
+    consumptions: governedFinal.consumptions ?? [],
   }
   const decisionsFor = (requestId) => (controlDigest?.decisions ?? []).filter((d) => d.requestId === requestId).length
   const consumptionsFor = (requestId) => (controlDigest?.consumptions ?? []).filter((c) => c.requestId === requestId).length
@@ -1595,6 +1693,7 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
     bashResults: bashResults.map((r) => ({ tool: r.tool, isError: r.isError, head: String(r.head ?? '').slice(0, 180) })),
     resolvedAsks,
     controlDigest,
+    controlRead,
     notifTurns,
     notifTurnsMask,
     approveEvidence,
@@ -1727,7 +1826,9 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     failRest('anchored Team Session never appeared (state probe timed out)')
     return
   }
-  const stateSnapshot = async () => (await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000))?.body ?? null
+  // (R-U6P4-2) the boot-root p6t6 state snapshot is NOT a control channel:
+  // its control block is anchored to the legacy boot team. Control
+  // observation lives below, on the governed session's ledger page.
 
   // ── discovery -> blueprint -> team.create ────────────────────────────────
   const cookie = await authenticate(origin, world.token)
@@ -1756,10 +1857,32 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
   }
 
   // ── drive (proc rhythm) ──────────────────────────────────────────────────
-  const teamSessionId = stateBody?.teamSession?.rootSessionId ?? assembly.CREATE_ROOT
+  // R-U6P4-2 / R-U6P3-1 (harness half): TARGET THE GOVERNED TEAM SESSION.
+  // Every durable Control row of this world (the member-birth asks — and the
+  // trio rows that must NEVER exist) belongs to the Team session that
+  // team.create just returned, NOT to the legacy boot team the p6t6 observer
+  // anchors (/__p6t6/state's control block is root-ANCHOR-scoped — the PR-D
+  // kit names that law verbatim). Boots 4-7 read that blind channel:
+  // controlRows [] while ask rows sat UNREAD on the governed session, and
+  // from boot 5 (the envelope that lets the ask lane open rows) every parked
+  // member lane was the visible symptom of this wrong-root observation.
+  // Since team.create may run before the observer would ever see it, the
+  // governed identity comes from the create RESPONSE, identity-asserted.
+  const unwrapRemote = (body) => {
+    const v = body?.result?.value
+    return v && typeof v === 'object' && 'data' in v ? v.data : v
+  }
+  const echoedRoot = unwrapRemote(created.body)?.rootSessionId ?? null
+  const teamSessionId = echoedRoot ?? assembly.CREATE_ROOT
+  if (teamSessionId !== assembly.CREATE_ROOT || teamSessionId === assembly.ROOT) {
+    failRest(`governed Team Session identity mismatch: create echoed ${String(echoedRoot)}, expected ${assembly.CREATE_ROOT} (never the boot root ${assembly.ROOT})`)
+    return
+  }
   const replyPrefixSeen = (prefix) => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith(prefix))
+  const wakeLog = []
   const wake = async (tag) => {
     const pr = await apiPrompt(origin, cookie, assembly.CREATE_ROOT, `U6JOBS_PHASE_${tag}`, 'u6jobs-wake')
+    wakeLog.push({ tag, status: pr.status })
     if (pr.status !== 200) log(`wake ${String(tag)} rejected: status=${String(pr.status)}`)
   }
   const wakeCadence = async (prefix, deadlineMs, tag) => {
@@ -1773,33 +1896,74 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
       await new Promise((r) => setTimeout(r, 350))
     }
   }
-  // The durable Control lane, OBSERVED continuously: every poll merges its
-  // rows into the record map. Member-birth asks (tool:bash — the native
-  // lane may be host-gated) are settled through the PUBLIC
-  // team.resolveControl seam (the product's human lane); trio rows are
-  // NEVER settled (their existence would itself be the second-ledger
-  // violation this suite measures).
+  // The durable Control lane of the GOVERNED team session, OBSERVED
+  // continuously over the PRODUCT read plane: remote team.getLedgerPage
+  // (the p6t6 state route is boot-root-anchored and structurally cannot
+  // see these rows — the PR-D kit's named law). Every poll merges its rows
+  // into the record map. Member-birth asks (tool:bash) are settled through
+  // the PUBLIC team.resolveControl seam NAMED FOR THE GOVERNED SESSION;
+  // trio rows are NEVER settled (their existence would itself be the
+  // second-ledger violation this suite measures).
   const trioNameRe = /job_(output|list|kill)/
   const controlRows = new Map()
   const birthRow = { seen: false, resolved: false, resolutions: [] }
+  const governedControlRows = async () => {
+    const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
+    let afterSequence = 0
+    for (let pageNo = 0; pageNo < 20; pageNo += 1) {
+      const page = await remoteCall(fetchJson, origin, cookie, 'team.getLedgerPage',
+        { teamSessionId, afterSequence, limit: 500 }, 'u6jobs-ledger', 1)
+      const r = page?.body?.result
+      // FAIL LOUD on an error page (the kit's run-9 law: an error read as
+      // an empty ledger silently launders a broken read plane into zeros).
+      if (page?.status !== 200 || r?.ok !== true) {
+        throw new Error(`team.getLedgerPage failed (page ${String(pageNo + 1)}, afterSequence=${String(afterSequence)}): status=${String(page?.status)} ${JSON.stringify(r?.error ?? r ?? null).slice(0, 200)}`)
+      }
+      const data = unwrapRemote(page.body)
+      const entries = Array.isArray(data?.entries) ? data.entries : []
+      for (const e of entries) {
+        if (byType[e?.factType] === undefined) continue
+        let payload = e.payload
+        if (typeof payload === 'string') { try { payload = JSON.parse(payload) } catch { payload = {} } }
+        byType[e.factType].push({ sequence: e.sequence, payload: payload ?? {} })
+      }
+      const next = data?.nextAfterSequence
+      if (next === null || next === undefined || entries.length === 0) break
+      afterSequence = Number(next)
+    }
+    const settled = new Set([...byType['control-decision-recorded'], ...byType['control-allow-consumed'], ...byType['control-request-abandoned']]
+      .map((f) => String(f.payload?.requestId ?? '')))
+    const rows = []
+    for (const f of byType['control-request-recorded']) {
+      const p = f.payload ?? {}
+      if (p.requestId === undefined) continue
+      rows.push({
+        requestId: String(p.requestId),
+        toolName: p.toolName ?? null,
+        summary: String(p.summary ?? '').slice(0, 120),
+        status: settled.has(String(p.requestId)) ? 'settled' : 'pending',
+      })
+    }
+    return rows
+  }
   let approverStop = false
+  const approverErrors = []
   const approver = (async () => {
     while (!approverStop) {
       try {
-        const ctl = await stateSnapshot()
-        for (const r of (ctl?.requests ?? [])) {
-          controlRows.set(String(r.requestId), { toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 120), status: String(r.status ?? '') })
+        for (const r of (await governedControlRows())) {
+          controlRows.set(String(r.requestId), { toolName: r.toolName, summary: r.summary, status: r.status })
           const tag = `${String(r.toolName ?? '')} ${String(r.summary ?? '')}`
           if (r.status === 'pending' && /\bbash\b/.test(tag) && !trioNameRe.test(tag)) {
             birthRow.seen = true
             const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
-              { teamSessionId, requestId: String(r.requestId), decision: 'allow', note: 'u6jobs-c2-birth-approval' }, 'u6jobs-birth', 4)
+              { teamSessionId, requestId: r.requestId, decision: 'allow', note: 'u6jobs-c2-birth-approval' }, 'u6jobs-birth', 4)
             const ok = res?.status === 200 && res?.body?.result?.ok === true
             birthRow.resolved = birthRow.resolved || ok
-            birthRow.resolutions.push({ requestId: String(r.requestId), status: res?.status ?? null, ok })
+            birthRow.resolutions.push({ requestId: r.requestId, status: res?.status ?? null, ok })
           }
         }
-      } catch { /* poll is observational; a failed poll retries */ }
+      } catch (err) { approverErrors.push(String(err?.message ?? err).slice(0, 200)) }
       await sleep(1200)
     }
   })()
@@ -1841,10 +2005,12 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
   const firstFor = (ex, name, id) => (ex.find((e) => namesJob(e, name, id)) ?? { result: null }).result
   const lastFor = (ex, name, id) => { for (let i = ex.length - 1; i >= 0; i -= 1) if (namesJob(ex[i], name, id)) return ex[i].result; return null }
   const jobIds = extractJobIds(wEx.map((e) => e.result).join('\n'))
-  const finalCtl = await stateSnapshot()
-  for (const r of (finalCtl?.requests ?? [])) {
-    controlRows.set(String(r.requestId), { toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 120), status: String(r.status ?? '') })
-  }
+  let finalControlError = null
+  try {
+    for (const r of (await governedControlRows())) {
+      controlRows.set(String(r.requestId), { toolName: r.toolName, summary: r.summary, status: r.status })
+    }
+  } catch (err) { finalControlError = String(err?.message ?? err).slice(0, 200) }
   let hostLogText = ''
   try { hostLogText = readFileSync(boot.logPath, 'utf8') } catch { /* unreadable */ }
   const settleEvents = (jobId, re) => jobId === undefined || jobId === null ? 0
@@ -1853,6 +2019,31 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     if (cReq === null) return 0
     const t = JSON.stringify(cReq?.body?.messages ?? cReq?.messages ?? [])
     return (t.match(/a5jobs|a5-plane|placement-feed|kernelGuard/gi) ?? []).length
+  })()
+  // R-U6P4-2 leader-lane telemetry: boots 4-7 could not answer the obvious
+  // question ('what did the LEADER ever exchange?') because the digest only
+  // transcribed the two member lanes and the root. The leader rides the
+  // governed root session: every request whose transcript carries the
+  // root-work envelope / phase pings / settled notices / control
+  // notifications, minus any member request (the member envelope is
+  // `[team-work requestToken=` and appears ONLY in the member's own
+  // transcript — the run-2/3 contamination law again, inverted).
+  const isLeaderReq = (r) => {
+    const t = JSON.stringify(r?.body?.messages ?? r?.messages ?? [])
+    if (t.includes('[team-work requestToken=')) return false
+    return t.includes('[team-root-work') || t.includes('U6JOBS_PHASE_')
+      || t.includes(assembly.markers.MK_L1) || t.includes('[team-work-settled')
+      || t.includes('[team-control requestId=')
+  }
+  const leaderReqs = requests.filter(isLeaderReq)
+  const leaderReq = leaderReqs.length > 0 ? leaderReqs[leaderReqs.length - 1] : null
+  const leaderEx = leaderReq === null ? [] : toolExchanges(leaderReq)
+  const leaderLastText = (() => {
+    for (let i = leaderReqs.length - 1; i >= 0; i -= 1) {
+      const rep = leaderReqs[i]?.reply
+      if (rep?.kind === 'text') return String(rep.content ?? '').slice(0, 160)
+    }
+    return null
   })()
   const digest = {
     runId, worldId: world.id,
@@ -1872,6 +2063,28 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     trioUses: [...wEx, ...fEx, ...cEx].filter((e) => e.name !== null && trioNameRe.test(String(e.name))).length,
     controlRows: [...controlRows.values()],
     birthRow,
+    // WHERE the control rows were read from — the digest names its own
+    // channel so a receipt can never again claim governed-session zeros from
+    // the boot-root observer (R-U6P3-1's positive-read precondition is the
+    // judge's; these fields are the evidence it reads).
+    controlRead: {
+      channel: 'remote:team.getLedgerPage',
+      teamSessionId,
+      anchoredToBootRoot: false,
+      positiveReadProven: birthRow.seen === true,
+      approverErrors: [...new Set(approverErrors)].slice(-4),
+      ...(finalControlError !== null ? { finalControlError } : {}),
+    },
+    // R-U6P4-2: the leader's own lane, transcript-first (a silent leader must
+    // now say WHAT it saw, from the receipt alone).
+    leaderLane: {
+      requests: leaderReqs.length,
+      exchanges: leaderEx.length,
+      lastText: leaderLastText,
+      wakes: wakeLog.length,
+      wakeRejected: wakeLog.filter((s) => s.status !== 200).length,
+      tail: leaderEx.slice(-8).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+    },
     settle: {
       killLines: settleEvents(jobIds[1], /aborted|killed|cancel-requested/i),
       foreignKillLines: settleEvents(jobIds[0], /aborted|killed|cancel-requested/i),
@@ -2227,8 +2440,8 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
 // the whole claim) and attacks it: replay of a settled grant, self-reported
 // foreign scope, a swapped identity the table never bound, a decide on a
 // never-bound name, honest teardown + post-teardown refusal — plus the
-// CI-03 native control (member WITHOUT a capabilities block, judged from
-// the disk claim riding the wire tool_result). ONE host start (design
+// CI-03 native control (member WITHOUT a capabilities block, judged from a
+// DIRECT DISK READ of the effect the lane writes — E1). ONE host start (design
 // budget: 1 boot/run, tier 1 like ARC-A); the verdict law is DISK + LEDGER
 // + HOST LOG — every row the judge below derives comes off those channels,
 // never the model transcript.
@@ -2375,6 +2588,15 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
   laneDone.replay = await fireTrigger(assembly.markers.T_REPLAY, 'U6ARCD_REPLAY_DONE')
   laneDone.teardown = await fireTrigger(assembly.markers.T_TD, 'U6ARCD_TD_DONE')
   laneDone.postTeardown = await fireTrigger(assembly.markers.T_POSTTD, 'U6ARCD_POSTTD_DONE')
+  // R-U6P6-1 live deny-change pair (d_restrict_veto / d_lift_control): the
+  // restrict leg masks the leader lane's bash (the builtinToolDeny lane,
+  // applied by the plugin ON the calling agent), attempts its effect, and
+  // must leave ZERO disk effect; the lift leg disposes the mask (its own
+  // first step — even if the restrict leg stalls, the mask never outlives
+  // the pair) and its effect must LAND. The judge reads DISK + the durable
+  // govern rows, never these fences — laneDone records closure only.
+  laneDone.pairRestrict = await fireTrigger(assembly.markers.T_RESTRICT, 'U6ARCD_RESTRICT_VETOED')
+  laneDone.pairLift = await fireTrigger(assembly.markers.T_LIFT, 'U6ARCD_LIFT_RAN')
   laneDone.leader = await wakeCadence('U6ARCD_L1_DONE', 60_000, 'z')
 
   // ── evidence collection (DISK / LEDGER / wire-claimed disk facts) ────────
@@ -2383,13 +2605,52 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
   const markerNonces = Object.fromEntries(markerFiles.map((f) => [f, nonceOf(f)]))
   // The claims on WIRE tool_results are disk-channel facts the runner
   // authored (the exact standard arc-a applies to its ctlResult /
-  // claimOccurrences): the fixture claim on disk + the native grep's
-  // tool_result bytes the mock saw — never a transcript claim of success.
+  // claimOccurrences) — under E1 they are recorded as the nativeGrepParity
+  // NOTE only: claim bytes inside a tool_result are what the native lane
+  // ECHOED. The VERDICT basis is the DIRECT disk read below: a file the
+  // native lane WROTE during the run and the ORACLE (this process) reads
+  // back itself — independent of every tool return.
   const claimOccurrences = (claim) => (world.mock?.requests ?? []).reduce((n, r) =>
     n + toolMsgsOf(r).filter((m) => String(m.text).includes(claim)).length, 0)
-  const nativeClaimFound = claimOccurrences(assembly.files.native.claim) >= 1
+  const nativeGrepParity = { claimOccurrences: claimOccurrences(assembly.files.native.claim) }
+  const nativeEvidence = { readFromDisk: true, present: false, contentMatches: false, pathTail: assembly.files.nativeEffect.path.slice(assembly.files.nativeEffect.path.lastIndexOf('/') + 1) }
+  try {
+    const effectText = readFileSync(assembly.files.nativeEffect.path, 'utf8')
+    nativeEvidence.present = true
+    nativeEvidence.contentMatches = effectText.includes(assembly.files.nativeEffect.marker)
+  } catch { /* ABSENT = the native lane produced no disk effect — a measurement, not an error */ }
+  // R-U6P6-1: the pair legs' DISK witnesses, read the same direct way.
+  // pairDeny PRESENT would be the mask failing to hide (a FAIL there);
+  // pairLift ABSENT would be the lift never restoring (a FAIL there).
+  const pairEvidence = {}
+  for (const key of ['pairDeny', 'pairLift']) {
+    const file = assembly.files[key]
+    const e = { readFromDisk: true, present: false, contentMatches: false, marker: file.marker, pathTail: file.path.slice(file.path.lastIndexOf('/') + 1) }
+    try {
+      const t = readFileSync(file.path, 'utf8')
+      e.present = true
+      e.contentMatches = t.includes(file.marker)
+    } catch { /* ABSENT = a measurement, not an error */ }
+    pairEvidence[key] = e
+  }
+  // DIAGNOSTIC note (never a verdict basis): the settle texts the effect
+  // lanes saw — the native write attempt and the pair bash attempts. When
+  // the DISK says ABSENT these names WHY (sandbox refusal vs no-call); when
+  // the DISK says present these must be consistent — a settle claiming a
+  // write the disk denies is itself the finding.
+  const settleSeen = new Map()
+  for (const r of world.mock?.requests ?? []) {
+    for (const m of toolMsgsOf(r)) {
+      const t = String(m?.text ?? '')
+      if (/u6arcd|not permitted|Permission denied|not-visible|Tool Binding|no such tool|not available|Unknown tool/i.test(t)) {
+        const k = t.slice(0, 200)
+        settleSeen.set(k, (settleSeen.get(k) ?? 0) + 1)
+      }
+    }
+  }
+  const effectNotes = { distinct: settleSeen.size, heads: [...settleSeen.entries()].slice(0, 10).map(([t, n]) => n > 1 ? `${t} [x${n}]` : t) }
   const alive = hostAlive()
-  const verdicts = judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeClaimFound, hostAlive: alive })
+  const verdicts = judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEvidence, nativeGrepParity, pairEvidence, hostAlive: alive })
   for (const [id, verdict, detail] of verdicts) {
     if (done.has(id)) continue
     add(id, verdict, {
@@ -2397,7 +2658,9 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
       posNonce: nonceOf('pos-1-marker.txt'),
       expectedNonce: assembly.probe.posNonce,
       nonceMatches: nonceOf('pos-1-marker.txt') === assembly.probe.posNonce,
-      nativeClaimFound,
+      nativeEvidence,
+      nativeGrepParity,
+      pairEvidence,
       laneDone,
       hostAlive: alive,
       ...(detail ?? {}),
@@ -2407,9 +2670,10 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
     mockTail: world.mockRequestDigest().slice(-8),
     surface, denyList, markerFiles,
     nonceMatches: nonceOf('pos-1-marker.txt') === assembly.probe.posNonce,
-    nativeClaimFound, laneDone, probeLedgerRows: probeRows.length,
+    nativeEvidence, nativeGrepParity, pairEvidence, effectNotes, laneDone, probeLedgerRows: probeRows.length,
+    governRows: probeRows.filter((r) => String(r.leg) === 'govern').map((r) => ({ action: r.action ?? null, ok: r.ok, detail: r.detail ?? null })),
     probeRows: probeRows
-      .filter((r) => ['family-mount', 'register', 'walk', 'teardown', 'unload-settle'].includes(String(r.leg)))
+      .filter((r) => ['family-mount', 'register', 'walk', 'teardown', 'unload-settle', 'govern', 'pair-effect'].includes(String(r.leg)))
       .map((r) => ({ leg: r.leg, action: r.action ?? null, callId: r.callId ?? null, ok: r.ok, code: r.code ?? null, outcome: r.outcome ?? null })),
   }
   writeFileSync(join(evidence, `${runId}.evidence.json`), JSON.stringify(record.record, null, 2) + '\n')

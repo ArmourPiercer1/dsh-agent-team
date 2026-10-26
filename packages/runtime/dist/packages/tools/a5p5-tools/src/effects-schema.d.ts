@@ -25,6 +25,29 @@
  *              reality is bounded by the confined-execution provider at exec
  *              (PR4), so no effect is claimed and NONE may be back-derived.
  *
+ * THE ANCHORED FORM (U7-6 GLUE-4; `effectAnchorRoot` injected by the trusted
+ * assembly of an ANCHORED row — the plane's governed search rows):
+ *
+ *  - `grep`  → tool-invoke(grep) + list + read on the GOVERNED ROOT.
+ *  - `glob`  → tool-invoke(glob) + list on the GOVERNED ROOT ONLY.
+ *  - `bash`  → unchanged (the anchor never enters the shell arm).
+ *
+ *  Why the root, not the raw target, is the TRUTHFUL claim of an anchored
+ *  row: such a row's canonical operation is bounded by its anchor law
+ *  (`resolveAnchored`) — it can enumerate/read ONLY inside the governed
+ *  root, and a target outside the root is refused by that law BEFORE any
+ *  byte is consumed. Claiming the raw target describes a demand over a
+ *  resource the row's own law forbids it ever to touch (the /etc call does
+ *  not consume /etc — it consumes NOTHING), and it makes the authority
+ *  question target-shaped while the row's capability never varies. The
+ *  envelope claim is the row's demand: stable per row, never exceeding the
+ *  row's own boundary, and exactly the question a policy can answer (may
+ *  this member walk THIS governed surface). The raw target still decides
+ *  what the body does with the surface — and the anchor law still refuses
+ *  outside targets with zero effect, AFTER admission, which is where the
+ *  anchored refusal leg belongs. Absent `effectAnchorRoot` the law is the
+ *  historical one, byte-identical for every pre-U7-6 consumer.
+ *
  * `realmId` is INJECTED by the admission caller and is required — model args
  * carry no realm (law 1 of `types.ts`), so a forged-realm argument set cannot
  * even reach this function, and one forged realm string cannot be parsed as
@@ -45,8 +68,16 @@ import type { ParsedTarget, ParsedToolArgs } from './types.js';
  * (`field-type` / `empty-string`); every other refusal is the algebra's own —
  * re-pathed under `$.effects` so a reader sees which arm of WHICH tool leg
  * broke the law.
+ *
+ * `effectAnchorRoot` (U7-6, optional) is the governed root of an ANCHORED
+ * row, injected by the trusted assembly (never from tool args). Present and
+ * well-formed ⇒ the search arms claim the governed walk surface (see the
+ * anchored form of the law above); present and malformed ⇒ typed refusal
+ * (`field-type` / `empty-string` / `locator-rejected`) — an anchored row
+ * with an unlocatable root claims NOTHING, fail closed. Absent ⇒ the
+ * historical target-scoped law, byte-identical for every pre-U7-6 consumer.
  */
-export declare function deriveToolEffectSet(realmId: unknown, parsed: ParsedToolArgs): ParseResult<RequestedEffectSet>;
+export declare function deriveToolEffectSet(realmId: unknown, parsed: ParsedToolArgs, effectAnchorRoot?: unknown): ParseResult<RequestedEffectSet>;
 /**
  * The `ParsedTarget` → `canonicalLocator` bridge kept as a named export so the
  * parser tests and the schema tests speak of ONE locator rule (the raw

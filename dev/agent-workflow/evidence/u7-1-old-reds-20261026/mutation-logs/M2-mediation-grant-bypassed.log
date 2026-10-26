@@ -1,0 +1,235 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts (7 tests | 6 failed) 19ms
+     × 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient 8ms
+     × 2. the sender holds the peer-direct grant → DIRECT to the peer session 2ms
+     × 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated 1ms
+     × 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again) 1ms
+     ✓ 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact 0ms
+     × 6. the confirmation facts record the path actually taken for both modes 4ms
+     × 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct) 1ms
+ ❯ packages/runtime/test/p6t3-restart.test.ts (5 tests | 4 failed) 19ms
+     ✓ 1. the pending DIRECT intent is recovered exactly once, through the fresh port, with the ORIGINAL correlation 3ms
+     × 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state) 7ms
+     × 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once) 2ms
+     × 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4) 4ms
+     × 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder 1ms
+ ✓ packages/tools/test/p6t6-actions.test.ts (14 tests) 8ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient
+AssertionError: expected 'direct' to be 'mediated' // Object.is equality
+
+Expected: "mediated"
+Received: "direct"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:347:28
+    345|     const scout = P6T3_SEEDS.scout
+    346|     const o = md.noGrant.outcome
+    347|     expect(o.deliveryMode).toBe('mediated')
+       |                            ^
+    348|     expect(o.recipientInstanceId).toBe(scout.instanceId)
+    349|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 2. the sender holds the peer-direct grant → DIRECT to the peer session
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:388:36
+    386|     expect(o.deliveredToInstanceId).toBe(scout.instanceId)
+    387|     expect(o.deliveredToSessionId).toBe(scout.childSessionId)
+    388|     expect(md.granted.scoutInputs).toBe(1)
+       |                                    ^
+    389|
+    390|     expect(md.granted.confirm.payload['deliveryMode']).toBe('direct')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated
+AssertionError: expected 'direct' to be 'mediated' // Object.is equality
+
+Expected: "mediated"
+Received: "direct"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:413:28
+    411|   it('3. grants are PER-SENDER: worker2 holds no grant of its own (the…
+    412|     const o = md.perSender.outcome
+    413|     expect(o.deliveryMode).toBe('mediated')
+       |                            ^
+    414|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    415|     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediate…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)
+AssertionError: expected 'direct' to be 'mediated' // Object.is equality
+
+Expected: "mediated"
+Received: "direct"
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:429:28
+    427|   it('4. a newer overlay generation without the grant revokes it (late…
+    428|     const o = md.revoked.outcome
+    429|     expect(o.deliveryMode).toBe('mediated')
+       |                            ^
+    430|     expect(o.deliveredToInstanceId).toBe('inst-leader')
+    431|     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 6. the confirmation facts record the path actually taken for both modes
+AssertionError: expected [ { …(5) }, { …(5) }, { …(5) }, …(1) ] to deeply equal [ { …(5) }, { …(5) }, { …(5) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    {
+-     "deliveredToInstanceId": "inst-leader",
+-     "deliveryMode": "mediated",
++     "deliveredToInstanceId": "inst-p6t3seeds01",
++     "deliveryMode": "direct",
+      "factSequence": 1,
+      "recipientInstanceId": "inst-p6t3seeds01",
+      "requestToken": "tok-p6t3-med-1",
+    },
+    {
+@@ -12,19 +12,19 @@
+      "factSequence": 3,
+      "recipientInstanceId": "inst-p6t3seeds01",
+      "requestToken": "tok-p6t3-med-2",
+    },
+    {
+-     "deliveredToInstanceId": "inst-leader",
+-     "deliveryMode": "mediated",
++     "deliveredToInstanceId": "inst-p6t3seeds01",
++     "deliveryMode": "direct",
+      "factSequence": 5,
+      "recipientInstanceId": "inst-p6t3seeds01",
+      "requestToken": "tok-p6t3-med-3",
+    },
+    {
+-     "deliveredToInstanceId": "inst-leader",
+-     "deliveryMode": "mediated",
++     "deliveredToInstanceId": "inst-p6t3seeds01",
++     "deliveryMode": "direct",
+      "factSequence": 7,
+      "recipientInstanceId": "inst-p6t3seeds01",
+      "requestToken": "tok-p6t3-med-4",
+    },
+  ]
+
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:453:30
+    451|
+    452|   it('6. the confirmation facts record the path actually taken for bot…
+    453|     expect(md.confirmations).toEqual([
+       |                              ^
+    454|       {
+    455|         requestToken: 'tok-p6t3-med-1',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)
+TypeError: Cannot read properties of undefined (reading 'attribution')
+ ❯ packages/runtime/test/p6t3-mediation.test.ts:488:18
+    486|     const scout = P6T3_SEEDS.scout
+    487|     const input = md.noGrant.input
+    488|     expect(input.attribution.kind).toBe('team-relay')
+       |                  ^
+    489|     expect(input.attribution.fromInstanceId).toBe(
+    490|       P6T3_SEEDS.worker.instanceId,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)
+AssertionError: expected 'direct' to be 'mediated' // Object.is equality
+
+Expected: "mediated"
+Received: "direct"
+
+ ❯ packages/runtime/test/p6t3-restart.test.ts:413:36
+    411|     expect(recovered.requestToken).toBe('tok-p6t3-rst-med')
+    412|     expect(recovered.factSequence).toBe(rt.pendingMedSequence)
+    413|     expect(recovered.deliveryMode).toBe('mediated')
+       |                                    ^
+    414|     expect(recovered.deliveredToInstanceId).toBe('inst-leader')
+    415|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 3. the already-confirmed send is NOT re-delivered; the second recovery run is a no-op (exactly-once)
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ packages/runtime/test/p6t3-restart.test.ts:435:41
+    433|     // the ok send's input went to the world1 port; the fresh port2 ne…
+    434|     // saw it, and its single confirmation fact survived the restart.
+    435|     expect(rt.scoutInputsAfterRecovery).toBe(0)
+       |                                         ^
+    436|     expect(rt.okConfirmations).toBe(1)
+    437|     expect(rt.result2.recovered.length).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 4. dead/missing targets at recovery are SKIPPED with the closed reason — no side effects, the intents stay pending (R4)
+AssertionError: expected [ { …(3) }, { …(3) } ] to deeply equal [ { …(3) }, { …(3) } ]
+
+- Expected
++ Received
+
+@@ -4,9 +4,9 @@
+      "reason": "delivery-target-missing",
+      "requestToken": "tok-fake-1",
+    },
+    {
+      "factSequence": 2,
+-     "reason": "delivery-target-not-live",
++     "reason": "delivery-target-missing",
+      "requestToken": "tok-fake-2",
+    },
+  ]
+
+ ❯ packages/runtime/test/p6t3-restart.test.ts:446:33
+    444|     expect(fake.result.rootSessionId).toBe('root-fake-team')
+    445|     expect(fake.result.recovered.length).toBe(0)
+    446|     expect(fake.result.skipped).toEqual([
+       |                                 ^
+    447|       {
+    448|         requestToken: 'tok-fake-1',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  packages/runtime/test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder
+Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+ ❯ assertMessagingCode packages/runtime/test/p6t3-helpers.ts:373:11
+    371| ): { readonly code: string; readonly details?: Record<string, unknown>…
+    372|   if (!isMessagingError(error)) {
+    373|     throw new Error(
+       |           ^
+    374|       `assertMessagingCode: expected MessagingError '${code}', got ${d…
+    375|     )
+ ❯ packages/runtime/test/p6t3-restart.test.ts:464:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  10 failed | 16 passed (26)
+   Start at  11:58:58
+   Duration  2.11s (transform 3.47s, setup 0ms, import 5.05s, tests 46ms, environment 0ms)
+

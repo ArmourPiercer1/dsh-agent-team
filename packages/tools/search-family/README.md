@@ -89,3 +89,29 @@ operation-permission refusals, presentation shapes).
   `u6-pr5-search-golden-vectors` (native-behavior corpus),
   `u6-pr5-kernel-flow` (the search family on the Kernel), and the
   `u6-arc-a-fitness` suite's census/name scans.
+
+## Admission claim — the ANCHORED form (U7-6 GLUE-4)
+
+What a governed search row DECLARES as its demand is owned by the a5p5 lane
+(`packages/tools/a5p5-tools/src/effects-schema.ts`, module header + the
+anchored law); the rows' BACKEND anchoring is this family's (`resolveAnchored`
+/ `openAnchoredWalkRoot`). Since U7-6 the production plane mounts the search
+rows anchored: `effectAnchorRoot = fsInstance.rootDir` (the same absolute
+root the backends anchor at), and the derived claim is the governed WALK
+SURFACE, never the raw target —
+
+- `team_grep` → `tool-invoke(grep)` + `list(directory @ root)` + `read(absolute-path @ root)`;
+- `team_glob` → `tool-invoke(glob)` + `list(directory @ root)`;
+- `team_bash` → `tool-invoke(bash)` (the anchor never touches the shell arm).
+
+Consequences, stated plainly: a call whose target escapes the root derives
+the SAME effect set as an in-root call and therefore ADMITS under a policy
+that covers the surface — the containment refusal then comes from this
+family's own anchor law (`target-outside-governed-root`, zero spawn), which
+is the layer that actually inspects the target. And the claim is broader
+than a narrow in-root file target by design: it is the row's WHOLE governed
+surface, so a policy that does not cover the root refuses EVERY search call
+on that row (STRICTER than the historical target-scoped claim, not looser).
+The historical target-scoped derivation remains the default for every
+consumer that passes no anchor — byte-identical, including the run8 wire
+fingerprints (evidence `dev/agent-workflow/evidence/u7-6-glue4-20261026/`).

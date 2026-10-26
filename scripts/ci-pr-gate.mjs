@@ -103,7 +103,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 /** The only three reference documents this gate reads. Named here so a retarget is a diff. */
 const BASELINES = {
   lint: 'dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt',
-  census: 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md',
+  census: 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md',
   fence: 'dev/agent-workflow/evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt',
 }
 
@@ -841,7 +841,10 @@ export function parseLoadFamilies(md) {
   let section = null
   for (const raw of String(md).split('\n')) {
     const line = raw.trim()
-    if (/^##\s+titled reds/.test(line) || /^##\s+collection-error files/.test(line)) {
+    // The RETIREMENT section is an identity list too (one `<file> > <name>` line per discharged
+    // red): reading it as prose would turn every file whose debt was just REPAIRED into a load
+    // family and grant it the re-sample excuse — the opposite of what retiring it means.
+    if (/^##\s+titled reds/.test(line) || /^##\s+collection-error files/.test(line) || /^##\s+retirement\b/i.test(line)) {
       section = 'identity'
       continue
     }
@@ -856,13 +859,25 @@ export function parseLoadFamilies(md) {
   return [...families].sort()
 }
 
-export function parsePopulationBaseline(md) {
+export function parsePopulationBaseline(md, { readPredecessor = readSiblingBaseline } = {}) {
   const lines = md.split('\n').map((l) => l.replace(/\r$/, ''))
   const titled = []
   const collection = []
   let section = null
   let sawTitledHeader = false
   let sawCollectionHeader = false
+  // The RETIRED-TO-EMPTY sentinel. Why it exists at all: the emptiness guard below refuses a
+  // baseline with no identity, because "no identity" was indistinguishable from "the sections were
+  // renamed away". That refusal is right, and it is also why a tree that REPAIRED every tolerated
+  // red could not be expressed — the same state-space problem the collection-error zero had, one
+  // step further along. The sentinel is the document stating the zero ON PURPOSE, and it is bound
+  // to the retirement it rests on: the count it declares must equal the identities the retirement
+  // table lists, and that table's identity set must equal the PREDECESSOR baseline's titled set.
+  // A zero with no sentinel still refuses; a sentinel over a non-empty list still refuses; a
+  // retirement table that does not equal its predecessor still refuses.
+  let sentinel = null
+  const retirements = []
+  let sectionIsRetirement = false
   for (const raw of lines) {
     const line = raw.trim()
     if (/^##\s+titled reds/.test(line)) {
@@ -873,6 +888,12 @@ export function parsePopulationBaseline(md) {
     if (/^##\s+collection-error files/.test(line)) {
       section = 'collection'
       sawCollectionHeader = true
+      sectionIsRetirement = false
+      continue
+    }
+    if (/^##\s+retirement\b/i.test(line)) {
+      section = null
+      sectionIsRetirement = true
       continue
     }
     // Any OTHER level-2 heading closes the identity sections. Without this the baseline's own
@@ -881,12 +902,38 @@ export function parsePopulationBaseline(md) {
     // them (right answer, wrong reason) the moment someone writes a path-shaped word there.
     if (/^##\s/.test(line)) {
       section = null
+      sectionIsRetirement = false
       continue
     }
     // A single `#` line is a comment INSIDE a section (the baseline annotates its own totals
-    // that way), so it must not end the section.
-    if (line.startsWith('#')) continue
+    // that way), so it must not end the section. The sentinel is one of those comment lines: it
+    // lives in the titled-reds section because that is the set it reduces.
+    if (line.startsWith('#')) {
+      const m = /^#\s*RETIRED-TO-EMPTY:\s*(\d+)\s+titled reds?\s+retired\s+against\s+predecessor\s+(\S+)\s*$/.exec(line)
+      if (m !== null) {
+        if (sentinel !== null) {
+          throw new Error(`population baseline: more than one RETIRED-TO-EMPTY sentinel (${JSON.stringify(sentinel)}, ${JSON.stringify({ count: Number(m[1]), predecessor: m[2] })}) — one retirement claim per document`)
+        }
+        sentinel = { count: Number(m[1]), predecessor: m[2] }
+      }
+      continue
+    }
     if (line === '') continue
+    if (sectionIsRetirement) {
+      // The retirement table is prose PLUS one machine line per retired identity, in the SAME
+      // `<file> > <full name>` grammar the identity sections use — so the binding check below is a
+      // set comparison between two things a machine parses, never a count read off prose.
+      const cut = line.indexOf(' > ')
+      if (cut > 0) {
+        const file = line.slice(0, cut)
+        const name = line.slice(cut + 3)
+        if (!file.includes('/') || !file.endsWith('.test.ts') || name === '') {
+          throw new Error(`population baseline: unparseable retirement line: ${line}`)
+        }
+        retirements.push(`TEST ${file}::${name}`)
+      }
+      continue
+    }
     if (section === 'titled') {
       const cut = line.indexOf(' > ')
       const file = cut > 0 ? line.slice(0, cut) : ''
@@ -922,10 +969,78 @@ export function parsePopulationBaseline(md) {
     )
   }
   if (titled.length === 0 && collection.length === 0) {
+    // ZERO IS EXPRESSIBLE ONLY AS A DECLARED RETIREMENT. The sentinel says the document means it;
+    // the count and the predecessor say which debt it claims to have discharged. Every one of the
+    // three must agree with the document's own retirement table, so an emptied baseline cannot be
+    // produced by deleting nine lines and adding one.
+    if (sentinel === null) {
+      throw new Error(
+        `population baseline: parsed 0 titled reds and 0 collection files with NO RETIRED-TO-EMPTY ` +
+          `sentinel — a baseline with no identity at all is a changed document shape, not an empty ` +
+          `debt list, and this leg refuses rather than pass. To retire every tolerated identity, ` +
+          `state it: "# RETIRED-TO-EMPTY: <n> titled reds retired against predecessor <id>" plus a ` +
+          `retirement section listing the <n> identities`,
+      )
+    }
+    if (retirements.length === 0) {
+      throw new Error(
+        `population baseline: the RETIRED-TO-EMPTY sentinel claims ${String(sentinel.count)} retired ` +
+          `titled red(s) but the document lists no retirement section — the count is unbacked`,
+      )
+    }
+    const retired = [...new Set(retirements)].sort()
+    if (retired.length !== sentinel.count) {
+      throw new Error(
+        `population baseline: the RETIRED-TO-EMPTY sentinel claims ${String(sentinel.count)} retired ` +
+          `titled red(s) but the retirement table lists ${String(retired.length)} distinct identit(ies) ` +
+          `— the count and the table disagree`,
+      )
+    }
+    // BOUND TO THE PREDECESSOR. The sentinel's count is a claim the document makes about itself;
+    // this is the claim against the baseline it names. The retirement table must EQUAL the
+    // predecessor's tolerated set: fewer is a silent deletion (the failure the identity diff exists
+    // to catch, moved into the baseline), more is invented debt. The predecessor must itself be a
+    // non-empty baseline — a chain of emptied documents vouching for each other proves nothing.
+    let predecessorMd
+    try {
+      predecessorMd = readPredecessor(sentinel.predecessor)
+    }
+    catch (error) {
+      throw new Error(
+        `population baseline: the RETIRED-TO-EMPTY sentinel names predecessor ${sentinel.predecessor}, ` +
+          `which cannot be read (${error instanceof Error ? error.message : String(error)}) — a retirement ` +
+          `against a baseline nobody can open is unbacked`,
+      )
+    }
+    const before = parsePopulationBaseline(predecessorMd, { readPredecessor: () => {
+      throw new Error('a predecessor may not itself be an emptied baseline')
+    } }).ids
+    const missing = before.filter((id) => !retired.includes(id))
+    const invented = retired.filter((id) => !before.includes(id))
+    if (missing.length > 0 || invented.length > 0) {
+      throw new Error(
+        `population baseline: the retirement table does not equal the tolerated set of predecessor ` +
+          `${sentinel.predecessor}: ${String(missing.length)} tolerated identit(ies) NOT accounted for` +
+          `${missing.length > 0 ? ` (${missing.slice(0, 3).join(' ;; ')})` : ''}, ${String(invented.length)} ` +
+          `listed identit(ies) never tolerated${invented.length > 0 ? ` (${invented.slice(0, 3).join(' ;; ')})` : ''} ` +
+          `— an emptied baseline must name the whole set it discharged, line by line`,
+      )
+    }
+    return {
+      ids: [],
+      titledCount: 0,
+      collectionCount: 0,
+      retiredToEmpty: { count: sentinel.count, predecessor: sentinel.predecessor, ids: retired },
+      declaredTotals: lastDeclaredTotals(md),
+      loadFamilies: parseLoadFamilies(md),
+      flakyFamilyDisclosed: parseLoadFamilies(md).length > 0,
+    }
+  }
+  if (sentinel !== null) {
     throw new Error(
-      `population baseline: parsed 0 titled reds and 0 collection files — a baseline with no ` +
-        `identity at all is a changed document shape, not an empty debt list, and this leg refuses ` +
-        `rather than pass`,
+      `population baseline: a RETIRED-TO-EMPTY sentinel is present while ${String(titled.length + collection.length)} ` +
+        `identit(ies) are still tolerated — an emptying claim stays in the document only while the ` +
+        `tolerance is actually empty; remove the stale sentinel or finish the retirement`,
     )
   }
   return {
@@ -942,6 +1057,15 @@ export function parsePopulationBaseline(md) {
     // can SAY "counts moved, set did not" instead of a reader having to notice it.
     declaredTotals: lastDeclaredTotals(md),
   }
+}
+
+/**
+ * The default predecessor reader: a baseline id names its sibling document in the population
+ * baseline directory (`nine-root-<id>.md`), the same naming every restatement in the lineage uses.
+ */
+function readSiblingBaseline(id) {
+  if (!/^[0-9a-z][0-9a-z-]*$/.test(String(id))) throw new Error(`not a baseline id: ${String(id)}`)
+  return readFileSync(resolve(REPO_ROOT, 'dev/agent-workflow/evidence/a4-pr7/population-baseline', `nine-root-${String(id)}.md`), 'utf8')
 }
 
 /** `502 files / 6277 legs`, `505 files / 6285 legs`, `files 500 | registered legs 6262`. */
@@ -1942,10 +2066,20 @@ function selfTest() {
     const live = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8'))
     ok(
       live.declaredTotals !== null
-        && live.declaredTotals.files === 558 && live.declaredTotals.legs === 7010
-        && live.ids.length === 9 && live.titledCount === 9 && live.collectionCount === 0
-        && live.loadFamilies.length === 2,
-      'the COMMITTED baseline parses to the corpus and tolerance it declares: 558/7010, 9 tolerated ids, 0 collection files, 2 disclosed load families (pointer restated at 2b1099d7 — GLUE-2: the tools Search/Shell lane\'s seven root-collected test files, 69 legs, moved the CONTEXT corpus 551/6941 → 558/7010; the IDENTITY set moved ZERO lines — the ids file is a cmp-verified byte copy across THREE restatements; master had not moved at capture so branch tree == merge-ref tree, the caliber ruling satisfied by equality; 558/7010 were MEASURED on that tree by a two-capture run, identical sets, verdict pass, and re-graded from the stored captures with --census-json against this pointer)',
+        && live.declaredTotals.files === 626 && live.declaredTotals.legs === 7936
+        && live.ids.length === 0 && live.titledCount === 0 && live.collectionCount === 0
+        && live.retiredToEmpty !== undefined
+        && live.retiredToEmpty.count === 9 && live.retiredToEmpty.predecessor === '2b1099d7'
+        && live.retiredToEmpty.ids.length === 9
+        && live.loadFamilies.length === 1 && live.loadFamilies[0] === 'p6t1-parallel',
+      'the COMMITTED baseline parses to the corpus and tolerance it declares: 626/7936, 0 tolerated ids (9 RETIRED-TO-EMPTY against predecessor 2b1099d7, bound to that document\'s set by the parser), 0 collection files, 1 disclosed load family (p6t1-parallel; the second predecessor family was a prose artefact of the now-retired p6t6 red — U7-1/EB2-C restatement at 27a818456: two captures, nine roots, --testTimeout=90000, identical empty sets; the nine retired by TEST-side observer repair with planted-wrong-value mutation controls, product source untouched)',
+    )
+    // The predecessor the pointer names must itself still parse to exactly the set that was retired:
+    // a retirement bound to a document that has since been edited would be bound to nothing.
+    const pred = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md'), 'utf8'))
+    ok(
+      pred.ids.length === 9 && JSON.stringify(pred.ids) === JSON.stringify(live.retiredToEmpty?.ids ?? []),
+      'the predecessor 2b1099d7 still parses to the exact nine identities the live baseline retires (history unedited, binding live)',
     )
   }
 
@@ -1970,6 +2104,105 @@ function selfTest() {
     zeroCollection.ids.length === 1 && zeroCollection.collectionCount === 0,
     'ZERO collection files parses — repairing every collection error is expressible, not a refusal',
   )
+
+  // RETIRED-TO-EMPTY: an emptied baseline is expressible ONLY as a claimed, named, per-identity
+  // retirement bound to its predecessor. Each control below is one way of faking that claim, and
+  // each must REFUSE. The predecessor is injected (the parser takes a reader) so the controls do not
+  // depend on any committed file.
+  {
+    const PRED = [
+      '## titled reds (file > full name), sorted:',
+      'packages/a/test/x.test.ts > Suite the one that fails',
+      'packages/a/test/y.test.ts > Suite two',
+      '## collection-error files (a red that resolves into one of these is an ESCALATION, not a fix):',
+      '# NONE',
+    ].join('\n')
+    const reader = (id) => {
+      if (id === 'predx') return PRED
+      throw new Error(`no such baseline ${String(id)}`)
+    }
+    const emptied = (sentinel, retired) => [
+      '## titled reds (file > full name), sorted:',
+      ...(sentinel === null ? [] : [sentinel]),
+      '## collection-error files (a red that resolves into one of these is an ESCALATION, not a fix):',
+      '# NONE',
+      ...(retired === null ? [] : ['## RETIREMENT — the retired identities', ...retired]),
+      '## some prose',
+      'prose that names packages/zzz/test/prose-only.test.ts in passing',
+    ].join('\n')
+    const both = ['packages/a/test/x.test.ts > Suite the one that fails', 'packages/a/test/y.test.ts > Suite two']
+    const refuses = (md, why) => {
+      let threwHere = false
+      let msg = ''
+      try {
+        parsePopulationBaseline(md, { readPredecessor: reader })
+      }
+      catch (e) {
+        threwHere = true
+        msg = e instanceof Error ? e.message : String(e)
+      }
+      ok(threwHere, `RETIRED-TO-EMPTY negative control REFUSES: ${why}${threwHere ? '' : ' (it parsed!)'}`)
+      return msg
+    }
+
+    // positive: the honest emptying parses, and only to the empty set.
+    const good = parsePopulationBaseline(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx', both), { readPredecessor: reader })
+    ok(good.ids.length === 0 && good.retiredToEmpty?.count === 2 && good.retiredToEmpty?.predecessor === 'predx',
+      'RETIRED-TO-EMPTY positive control: a sentinel + a retirement table equal to the predecessor set parses to ZERO tolerated ids')
+    ok(!good.loadFamilies.some((f) => f.includes('packages/a/test/')),
+      'a RETIRED identity is never mined as a load family (retiring a red must not grant its file a re-sample excuse)')
+
+    // (1) an empty section with NO sentinel still refuses — the original hazard — and it refuses
+    //     FOR THAT REASON (the message is asserted: a refusal that came from a later null
+    //     dereference would pass a bare "it threw" check while proving nothing; measured, the
+    //     first draft of this control did exactly that).
+    const noSentinelMsg = refuses(emptied(null, null), 'empty sections WITHOUT the sentinel (and no retirement table)')
+    ok(/NO RETIRED-TO-EMPTY sentinel/.test(noSentinelMsg), `the no-sentinel refusal names its reason (got: ${noSentinelMsg.slice(0, 120)})`)
+    const noSentinelTableMsg = refuses(emptied(null, both), 'empty sections WITHOUT the sentinel, even with a retirement table present')
+    ok(/NO RETIRED-TO-EMPTY sentinel/.test(noSentinelTableMsg), `a retirement table without the sentinel is refused for the missing sentinel (got: ${noSentinelTableMsg.slice(0, 120)})`)
+    // (2) a renamed header still refuses, sentinel or not (covered again below for the no-sentinel case).
+    refuses(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx', both).replace('## titled reds', '## titled red'),
+      'a renamed titled-reds header, even with a sentinel present')
+    // (3) a sentinel over a NON-empty tolerated list refuses — a stale emptying claim.
+    refuses([
+      '## titled reds (file > full name), sorted:',
+      '# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx',
+      'packages/a/test/x.test.ts > Suite the one that fails',
+      '## collection-error files (a red that resolves into one of these is an ESCALATION, not a fix):',
+      '# NONE',
+    ].join('\n'), 'a sentinel while an identity is still tolerated')
+    // (4) THE BINDING: a retirement table that does not EQUAL the predecessor's set refuses —
+    //     fewer (silent deletion), more (invented debt), and a same-size swap.
+    refuses(emptied('# RETIRED-TO-EMPTY: 1 titled reds retired against predecessor predx', [both[0]]),
+      'a retirement table SMALLER than the predecessor set (count agrees with the table, but one tolerated red is unaccounted for)')
+    refuses(emptied('# RETIRED-TO-EMPTY: 3 titled reds retired against predecessor predx', [...both, 'packages/a/test/z.test.ts > Never tolerated']),
+      'a retirement table LARGER than the predecessor set (invented debt)')
+    refuses(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx', [both[0], 'packages/a/test/z.test.ts > Never tolerated']),
+      'a same-size retirement table with one identity SWAPPED')
+    // (5) the declared count must equal the table.
+    refuses(emptied('# RETIRED-TO-EMPTY: 3 titled reds retired against predecessor predx', both),
+      'a sentinel count that disagrees with the retirement table')
+    // (6) a sentinel with no retirement section at all.
+    refuses(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx', null),
+      'a sentinel with no retirement section (unbacked count)')
+    // (7) a predecessor nobody can open, and a predecessor that is itself an emptied document.
+    refuses(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor nosuch', both),
+      'a sentinel naming a predecessor that cannot be read')
+    const chainReader = (id) => (id === 'predx'
+      ? emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predy', both)
+      : PRED)
+    let threwChain = false
+    try {
+      parsePopulationBaseline(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx', both), { readPredecessor: chainReader })
+    }
+    catch {
+      threwChain = true
+    }
+    ok(threwChain, 'RETIRED-TO-EMPTY negative control REFUSES: a predecessor that is itself an emptied baseline (emptied documents may not vouch for each other)')
+    // (8) two sentinels refuse.
+    refuses(emptied('# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx\n# RETIRED-TO-EMPTY: 2 titled reds retired against predecessor predx', both),
+      'two RETIRED-TO-EMPTY sentinels in one document')
+  }
 
   let threwRenamed = false
   try {

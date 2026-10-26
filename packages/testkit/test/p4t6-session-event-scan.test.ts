@@ -489,6 +489,28 @@ const SCANNED_PATHS_U79A: readonly string[] = [
   'packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts',
   'packages/runtime/test/u7-9a-mutation-golden-corpus.mts',
 ]
+// U7-0 (EB2-A dynamic tool census, branch task/u7-0-dynamic-census-20261026):
+// the offline census library (canonical JSON + closed schema checker +
+// ObservedRuntimeInventory contract + three-way reconciler + tracked-artifact
+// loader, each with its adjacent tsc type surface — the persona-probe /
+// plane-effect-backends .d.mts pattern), the synthetic C1 fixture builder, and
+// the C1 CI spec. TEST/DIAGNOSTIC code only: zero production edits, zero
+// denylist vocabulary; the live probe row and runner live under tests/
+// (outside every scan set), the tracked artifacts under dev/ (same).
+const SCANNED_PATHS_U70: readonly string[] = [
+  'packages/testkit/census/json-canonical.mjs',
+  'packages/testkit/census/schema-check.mjs',
+  'packages/testkit/census/inventory.mjs',
+  'packages/testkit/census/reconcile.mjs',
+  'packages/testkit/census/expected-obligations.mjs',
+  'packages/testkit/census/json-canonical.d.mts',
+  'packages/testkit/census/schema-check.d.mts',
+  'packages/testkit/census/inventory.d.mts',
+  'packages/testkit/census/reconcile.d.mts',
+  'packages/testkit/census/expected-obligations.d.mts',
+  'packages/testkit/census/fixtures/make-fixture.mjs',
+  'packages/testkit/test/u7-0-census-reconcile.test.ts',
+]
 // MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
 // per-round constants (PR4 +2, PR5 +12) and the total pin below is the
 // UNION expression — no prose total is load-bearing. On the merged tree
@@ -3119,6 +3141,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
         SCANNED_PATHS_U6PR6.length +
+        SCANNED_PATHS_U70.length +
         SCANNED_PATHS_U79A.length,
     )
     expect(scanResult.files.length).toBe(
@@ -3193,6 +3216,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
         SCANNED_PATHS_U6PR6.length +
+        SCANNED_PATHS_U70.length +
         SCANNED_PATHS_U79A.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -3287,6 +3311,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR4,
       ...SCANNED_PATHS_U6PR5,
       ...SCANNED_PATHS_U6PR6,
+      ...SCANNED_PATHS_U70,
       ...SCANNED_PATHS_U79A,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
@@ -3753,6 +3778,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `u6-pr4-20261026/p4t6-RED-unbooked.log` reads
     // `expected 1265 to be 1263`; no chain value copied).
     expect(SCANNED_PATHS_U6PR4.length).toBe(1265 - 1263)
+    // U7-0: the booked SCANNED_PATHS_U70 list is exactly the measured delta —
+    // the scanner on this tree WITHOUT the U7-0 files reads 1277 (= the booked
+    // union through U6 PR6) and WITH them reads 1289; the unbooked RED run of
+    // this suite recorded `expected 1289 to be 1277` (received-then-booked) (the +12 census-library
+    // increment; no cross-round prose total is load-bearing).
+    expect(SCANNED_PATHS_U70.length).toBe(1289 - 1277)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
