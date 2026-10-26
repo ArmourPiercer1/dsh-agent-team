@@ -105,6 +105,21 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
   },
+  // U6 PR4 (ARC-C): the jobs bridge module — plane-effect-backends.mjs now
+  // RE-EXPORTS from it (the retired-hub surface) and team-tool-plane.mjs
+  // imports its trio row defs + contribution builder, so on the strict
+  // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at
+  // plane construction — the same class GLUE-6 RED-A recorded. It imports
+  // `../../../../contracts/src/index.js` (already in the dist mirror), so
+  // its relative edge resolves exactly like bash-contribution.mjs's does.
+  // Byte-identical like every entry; the drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
+  },
+  // (the A5-CANCEL center copy retired with the file: U6 PR5 moved
+  //  cancel-leg.mjs into the search-family lane; the lane mirror block
+  //  below carries the bytes — M3 walks the list, not this comment)
   // A5-M1 (PR358-B): the PA mount registry is imported by the production
   // root entry (`root.ts` — a `@ts-ignore` relative `.mjs` specifier that
   // tsc never emits) exactly like upstream-resolver was at GLUE-6 RED-A:

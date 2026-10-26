@@ -544,6 +544,167 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   rmSync(dir, { recursive: true, force: true })
 })
 
+// u6-jobs (U6 PR4 C2, ARC-C): the case matrix, the factory exclusion, the
+// assembly's closed jobsEnabled key on a valid blueprint, the decide script
+// as a pure transcript->tool-call function, and the judge's non-vacuity
+// (a synthetic ALL-PASS digest plus the mutations each named case must
+// individually catch — the same judge the live run consumes).
+test('u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import', async () => {
+  const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
+  assert.deepEqual(SUITE_CASES['u6-jobs'], [
+    'jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence',
+    'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check',
+  ])
+  const opts = parseArgs(['--suite', 'u6-jobs', '--line', 'u6jobsx', '--evidence', '/tmp/ev'])
+  assert.equal(opts.suite, 'u6-jobs')
+  assert.throws(() => parseArgs(['--suite', 'u6-jobs', '--evidence', '/tmp/ev', '--only', 'nope']))
+  const { TestWorldFactory } = await import('./lib/world-factory.mjs')
+  assert.equal(typeof TestWorldFactory, 'function')
+})
+
+test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint', async () => {
+  const { createJobsAssembly, JOBS_WORLD_MANAGED_NAMES } = await import('./lib/u6-jobs-assembly.mjs')
+  const { emitPatchLayer } = await import('./lib/world-factory.mjs')
+  const yaml = await import('yaml')
+  const { findTestRepoRoot } = await import('../paths.mjs')
+  const a = createJobsAssembly({ repoRoot: findTestRepoRoot(HERE), home: '/home/x', runStamp: 'u6-U6JOBS-T', reportDir: '/rep' })
+  const plane = a.teamRowConfig().teamToolPlane
+  assert.equal(plane.jobsEnabled, true, 'the PR4 key rides the SAME teamToolPlane config the PR2/PR3 worlds proved')
+  assert.equal(typeof plane.realmId, 'string')
+  assert.equal(plane.fsInstance.realmId, plane.realmId)
+  assert.ok(plane.confinedProvider.trustRoot.startsWith('sha256:'))
+  assert.deepEqual([...JOBS_WORLD_MANAGED_NAMES], ['job_output', 'job_list', 'job_kill'])
+  const doc = yaml.parseDocument(a.mainBlueprintYaml(['web_fetch'])).toJS()
+  assert.equal(doc.blueprintId, a.BP_MAIN_ID)
+  const templates = doc.members.map((m) => m.templateId)
+  assert.deepEqual(templates, ['worker', 'foreign'])
+  // the RING must CARRY the effect: every birth command PRINTS its claim
+  // to stdout (the host registry buffers it; the managed trio's
+  // job_output returns those bytes — SERVER-side, not a transcript echo).
+  // The disk write rides birth1 only, as a BONUS behind `|| true`: boots
+  // 2/3 measured the sandbox refusing workspace writes, and a verdict
+  // may never depend on what a lane's sandbox law happens to allow.
+  const cmds = a.cmds()
+  const claims2 = a.claims
+  for (const [c, claim] of [[cmds.birth1, claims2.claim1], [cmds.birth2, claims2.killWarm], [cmds.ctl, claims2.ctl]]) {
+    assert.ok(c.includes(claim) && c.includes('printf'), 'the claim reaches the RING via printf stdout')
+  }
+  assert.ok(cmds.birth1.includes('|| true'), 'the disk bonus cannot abort the job when the sandbox refuses the write')
+  // the patch-layer emission the factory performs for this World type
+  const emitted = emitPatchLayer(['t'], a.teamRows())
+  assert.ok(emitted.includes('dsh-agent-team'))
+  assert.ok(!emitted.includes('u6-jobs-probe'), 'the jobs World mounts NO probe row: the production bridge IS the subject')
+  // boot-4 law as DATA: the preset carries the BACKGROUND-CAPABLE plain
+  // tool-bash (base-bundle shape: bash-sandbox + shell-env + tool-bash),
+  // never the persistent PTY variant (whose schema has no run_in_background
+  // at all — a flagged call silently ran foreground in boot 4); the jobs
+  // REGISTRY is a host-plane patch row, never preset-nested.
+  assert.ok(emitted.includes('@deepseek-ai/dsh-tool-bash'), 'the birth lane rides the background-capable bash row')
+  assert.ok(!emitted.includes('tool-bash-persistent'), 'no persistent PTY bash in the jobs World')
+  assert.ok(!emitted.includes('dsh-bash-sandbox') && !emitted.includes('dsh-shell-env'), 'boot-5 law: the PROVIDERS (shell, shellEnv) are already host-plane rows of the boot host bundle — a preset re-adding them is a duplicate registration the binder refuses fail-closed; the preset carries only the consumer tool-bash')
+  assert.ok(emitted.includes('@deepseek-ai/dsh-jobs-local'), 'the jobs registry rides the host-plane patch layer')
+  // PR3's measured envelope law: the ask lane names request-control on BOTH
+  // sides (team root + worker template), the leader entry pins the OLD
+  // bounds (widening the team root must not silently widen the leader).
+  const bp = yaml.parseDocument(a.mainBlueprintYaml([])).toJS()
+  const env = Object.fromEntries(bp.memberEnvelopes.map((x) => [x.templateId, x.envelope.allow]))
+  assert.ok(bp.teamEnvelope.allow.includes('request-control') && env.worker.includes('request-control'), 'member ask needs request-control at team root AND template entry')
+  assert.ok(!env.leader.includes('request-control'), 'the leader entry pins its pre-widening bounds')
+})
+
+test('u6-jobs: the decide script answers real transcript shapes with the scripted calls', async () => {
+  const { createJobsAssembly, makeJobsDecide } = await import('./lib/u6-jobs-assembly.mjs')
+  const { findTestRepoRoot } = await import('../paths.mjs')
+  const a = createJobsAssembly({ repoRoot: findTestRepoRoot(HERE), home: '/home/x', runStamp: 'u6-U6JOBS-T', reportDir: '/rep' })
+  const decide = makeJobsDecide({ assembly: a })
+  const user = (text) => ({ role: 'user', content: text })
+  const result = (id, text) => ({ role: 'user', content: [{ type: 'tool_result', tool_use_id: id, content: [{ type: 'text', text }] }] })
+  const use = (id, name, args) => ({ role: 'assistant', content: [{ type: 'tool_use', id, name, input: args }] })
+  const tok = a.tokens('d1')
+  // worker step machine (stateless over the transcript's own exchanges):
+  const w0 = { body: { messages: [user(`[team-work requestToken=${tok} x] ${a.markers.MK_WORK}`)] } }
+  assert.equal(decide({ req: w0 }).toolCalls[0].name, 'bash')
+  assert.equal(decide({ req: w0 }).toolCalls[0].arguments.run_in_background, true)
+  const w1 = { body: { messages: [...w0.body.messages, use('t1', 'bash', {}), result('t1', 'started background job jb-alpha01')] } }
+  assert.equal(decide({ req: w1 }).toolCalls[0].name, 'job_list')
+  const w2 = { body: { messages: [...w1.body.messages, use('t2', 'job_list', {}), result('t2', 'jb-alpha01 [stream] running — sh')] } }
+  const c2 = decide({ req: w2 })
+  assert.equal(c2.toolCalls[0].name, 'job_output')
+  assert.equal(c2.toolCalls[0].arguments.job_id, 'jb-alpha01', 'the id is the REAL host id read from the transcript, never invented')
+  const w4 = { body: { messages: [...w2.body.messages, use('t3', 'job_output', { job_id: 'jb-alpha01' }), result('t3', 'CLAIM\n[status: running]'), use('t4', 'bash', {}), result('t4', 'started background job jb-beta02')] } }
+  const c4 = decide({ req: w4 })
+  assert.equal(c4.toolCalls[0].name, 'job_output')
+  assert.equal(c4.toolCalls[0].arguments.job_id, 'jb-beta02', 'the warm RING read names the SECOND birth id — via ARGS, the pairing survives interleaving')
+  const w5 = { body: { messages: [...w4.body.messages, use('t4b', 'job_output', { job_id: 'jb-beta02' }), result('t4b', 'WARM\n[status: running]')] } }
+  const c5 = decide({ req: w5 })
+  assert.equal(c5.toolCalls[0].name, 'job_kill')
+  assert.equal(c5.toolCalls[0].arguments.job_id, 'jb-beta02', 'the kill subject is the SECOND birth id')
+  const wKill = { body: { messages: [...w5.body.messages, use('t5', 'job_kill', { job_id: 'jb-beta02' }), result('t5', 'requested cancellation of job jb-beta02')] } }
+  assert.equal(decide({ req: wKill }).toolCalls[0].name, 'bash', 'the FOREGROUND settle spacer runs before the post-settle read (40 s > the 35 s FINAL deadline)')
+  // follow-up pings cannot advance the machine (statelessness):
+  const wPing = { body: { messages: [...wKill.body.messages, use('t6', 'bash', { command: 'sleep 40' }), result('t6', ''), user('please report status')] } }
+  assert.equal(decide({ req: wPing }).toolCalls[0].name, 'job_output', 'the POST-SETTLE ring read is next, not DONE — the exchange count drives the lane, not the turn number')
+})
+
+test('u6-jobs: the judge passes the honest digest and catches each named mutation', async () => {
+  const { judgeU6Jobs } = await import('./lib/u6-jobs-assembly.mjs')
+  const { createJobsAssembly } = await import('./lib/u6-jobs-assembly.mjs')
+  const { findTestRepoRoot } = await import('../paths.mjs')
+  const a = createJobsAssembly({ repoRoot: findTestRepoRoot(HERE), home: '/home/x', runStamp: 'u6-U6JOBS-T', reportDir: '/rep' })
+  const claims = a.claims
+  // R1 (CI-05): every governed trio answer about the native-born,
+  // un-attributed job is the typed refusal with the STATIC detail — the
+  // exact bytes the region's refuse() builds (code — detail.slice(0,200)).
+  const CI05_REFUSED = 'refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)'
+  const good = {
+    kernelHits: {
+      'a5g7: placement-feed rows=': { count: 3 }, job_output: { count: 12 },
+      'a5-plane: mount-REFUSED': { count: 0 }, 'a5-plane: placement-REFUSED': { count: 0 },
+      PLANE_KERNEL_UNAVAILABLE: { count: 0 }, PLANE_JOBS_REGISTRATION_REFUSED: { count: 0 },
+      PLANE_READ_REGISTRATION_REFUSED: { count: 0 }, PLANE_PROCESS_REGISTRATION_REFUSED: { count: 0 },
+      'cannot be verified at dispatch': { count: 0 },
+    },
+    claims,
+    claim1Text: `${claims.claim1}\n`,
+    jobIds: ['jb-alpha01', 'jb-beta02'],
+    list1: '(no background jobs)',
+    output1: CI05_REFUSED,
+    output2: CI05_REFUSED,
+    output2Post: CI05_REFUSED,
+    kill2: CI05_REFUSED,
+    list2: '(no background jobs)',
+    foreignOutput: CI05_REFUSED,
+    foreignKill: CI05_REFUSED,
+    ctlOutput: `${claims.ctl}\n[status: running]`,
+    trioUses: 8,
+    controlRows: [],
+    birthRow: { seen: false, resolved: false, resolutions: [] },
+    settle: { killLines: 0, foreignKillLines: 0 },
+    rootKernelMentions: 0,
+  }
+  const rows = judgeU6Jobs(good, true)
+  assert.equal(rows.length, 7, 'the judge answers the 7 non-leak cases (leak-check is the factory\'s audit leg)')
+  for (const [id, verdict] of rows) assert.equal(verdict, 'PASS', `honest digest must PASS every case, ${id} failed`)
+  const verdictOf = (d, caseId) => judgeU6Jobs(d, true).find(([id]) => id === caseId)[1]
+  assert.equal(verdictOf({ ...good, jobIds: [] }, 'jobs:birth-positive'), 'FAIL', 'no host-vocabulary job id = nothing was born (the id parse rides the HOST spawn/row words, never a claim string)')
+  assert.equal(verdictOf({ ...good, output1: `${claims.claim1}\n[status: running]` }, 'jobs:ci05-governed-fail-closed'), 'FAIL', 'a governed answer carrying ring bytes + host status for an UN-ATTRIBUTED id is the forbidden pass-through (R1)')
+  assert.equal(verdictOf({ ...good, output1: 'Error: unknown job jb-alpha01' }, 'jobs:ci05-governed-fail-closed'), 'FAIL', 'host vocabulary in the governed answer means the id reached the host — CI-05 refused it before reach')
+  assert.equal(verdictOf({ ...good, list1: 'jb-alpha01 [stream] running — sh' }, 'jobs:ci05-governed-fail-closed'), 'FAIL', 'an un-attributed row surfacing in a governed list breaks the one-face row law')
+  assert.equal(verdictOf({ ...good, foreignOutput: `${claims.claim1}\n[status: running]` }, 'jobs:owner-fence'), 'FAIL', 'a foreign read that SAW THE RING BYTES is no fence at all')
+  assert.equal(verdictOf({ ...good, foreignOutput: 'Error: unknown job jb-alpha01' }, 'jobs:owner-fence'), 'FAIL', 'an untyped/host-worded foreign answer means host reach — the CI-05 refusal precedes the host fence')
+  assert.equal(verdictOf({ ...good, settle: { killLines: 0, foreignKillLines: 2 } }, 'jobs:owner-fence'), 'FAIL', 'a settlement event for the foreign target kills the fence case')
+  assert.equal(verdictOf({ ...good, list2: 'jb-alpha01 [stream] running — sh' }, 'jobs:owner-fence'), 'FAIL', 'the un-attributed owner row resurfacing post-attempt leaks the row the same face must hide')
+  assert.equal(verdictOf({ ...good, kill2: 'requested cancellation of job jb-beta02' }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'a cancellation claim on an un-attributed id means the wrap is NOT mounted (only attributed owners may request)')
+  assert.equal(verdictOf({ ...good, settle: { killLines: 1, foreignKillLines: 0 } }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'a host settle event for the kill subject proves host reach the refusal must have zero of')
+  assert.equal(verdictOf({ ...good, kill2: 'refused: unattributed-job — job terminated by policy' }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'a settle/terminat word inside the refusal is dishonest vocabulary')
+  assert.equal(verdictOf({ ...good, output2: `${claims.killWarm}\n[status: running]` }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'ring bytes through the governed output = the pass-through the CI-05 wrap exists to refuse')
+  assert.equal(verdictOf({ ...good, ctlOutput: 'Error: unknown job job-unknown' }, 'jobs:ctl-native-untouched'), 'FAIL', 'a native arm whose trio never returned its own ring bytes is vacuous')
+  assert.equal(verdictOf({ ...good, rootKernelMentions: 2 }, 'jobs:ctl-native-untouched'), 'FAIL', 'kernel words on the root lane break the CI-03 control')
+  assert.equal(verdictOf({ ...good, controlRows: [{ toolName: 'job_kill', summary: 'ask', status: 'pending' }] }, 'jobs:no-second-ledger'), 'FAIL', 'one approval row naming job_kill is the second ledger — it must be caught')
+  assert.equal(verdictOf(good, 'jobs:mounted') === 'PASS' && verdictOf({ ...good, kernelHits: { ...good.kernelHits, PLANE_JOBS_REGISTRATION_REFUSED: { count: 1 } } }, 'jobs:mounted'), 'FAIL', 'a registration refusal names itself')
+  assert.equal(judgeU6Jobs(good, false).find(([id]) => id === 'jobs:mounted')[1], 'FAIL', 'a dead host is never a mounted verdict')
+})
+
 test('u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML', async () => {
   const { createProcAssembly } = await import('./lib/u6-proc-assembly.mjs')
   const { emitPatchLayer } = await import('./lib/world-factory.mjs')

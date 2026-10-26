@@ -90,9 +90,12 @@ describe('ARC-A fitness L1 — the protected center is digest-locked', () => {
     //     mismatched override citation does NOT (the override must name the
     //     new truth — center-interface PRs sign their own bytes).
     const driftedNow = sha256Text(tampered.get(somePath)!)
-    const withOverride = { ...ledger, overrides: [{ path: somePath, sha256: driftedNow, pr: 'PR #000 (center-interface)', reason: 'fitness self-test' }] }
+    // APPEND, not replace: a real merge may carry named overrides (e.g. the
+    // PR #377 re-anchor on agent-bindings.mjs); replacing them here would
+    // surface their baseline drift as false positives of this self-test.
+    const withOverride = { ...ledger, overrides: [...(ledger.overrides ?? []), { path: somePath, sha256: driftedNow, pr: 'PR #000 (center-interface)', reason: 'fitness self-test' }] }
     expect(scanProtectedLedger({ current: tampered, ledger: withOverride, tracked }).violations).toEqual([])
-    const wrongOverride = { ...ledger, overrides: [{ path: somePath, sha256: '0'.repeat(64), pr: 'PR #000', reason: 'fitness self-test' }] }
+    const wrongOverride = { ...ledger, overrides: [...(ledger.overrides ?? []), { path: somePath, sha256: '0'.repeat(64), pr: 'PR #000', reason: 'fitness self-test' }] }
     expect(scanProtectedLedger({ current: tampered, ledger: wrongOverride, tracked }).violations.length).toBe(1)
   })
 })

@@ -1,0 +1,77 @@
+{
+  "runId": "u5-u6-jobs-u6jobs1-2026-10-26T03-08-10-316Z",
+  "worldId": "u5u6jobs1-20261026T03-08-10Z",
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,job_output,job_list,job_kill] realm=u6jobs-realm-u5u6jobs1-20261026t03-08-10z"
+    },
+    "job_output": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,job_output,job_list,job_kill] realm=u6jobs-realm-u5u6jobs1-20261026t03-08-10z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_READ_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "claims": {
+    "claim1": "U6JOBS_CLAIM_u5u6jobs1-20261026t03-08-10z",
+    "killWarm": "U6JOBS_KILLWARM_u5u6jobs1-20261026t03-08-10z",
+    "killFinal": "U6JOBS_KILLFINAL_u5u6jobs1-20261026t03-08-10z",
+    "ctl": "U6JOBS_CTLCLAIM_u5u6jobs1-20261026t03-08-10z"
+  },
+  "claim1Text": null,
+  "killText": null,
+  "ctlText": null,
+  "jobIds": [],
+  "list1": null,
+  "output1": null,
+  "kill2": null,
+  "list2": null,
+  "foreignOutput": null,
+  "foreignKill": null,
+  "ctlOutput": "Error: unknown tool \"job_output\"",
+  "trioUses": 1,
+  "controlRows": [],
+  "birthRow": {
+    "seen": false,
+    "resolved": false,
+    "resolutions": []
+  },
+  "settle": {
+    "killLines": 0,
+    "foreignKillLines": 0
+  },
+  "rootKernelMentions": 0,
+  "lanes": {
+    "work": true,
+    "foreign": false,
+    "leader": false,
+    "ctl": true
+  }
+}
