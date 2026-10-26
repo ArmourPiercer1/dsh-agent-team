@@ -101,6 +101,12 @@
         ]
       },
       {
+        "name": "mcp__planted_server__planted_tool",
+        "where": [
+          "packages/testkit/test/u7-0-census-reconcile.test.ts"
+        ]
+      },
+      {
         "name": "mcp__prb-mcp-a__ping",
         "where": [
           "tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs"
@@ -135,6 +141,12 @@
         "name": "mcp__u6plain__ping",
         "where": [
           "packages/runtime/test/u6-mcp-017-regression.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__x__y",
+        "where": [
+          "packages/testkit/test/u7-0-census-reconcile.test.ts"
         ]
       }
     ]
