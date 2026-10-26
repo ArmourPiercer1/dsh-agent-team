@@ -448,7 +448,7 @@ export function makeJobsDecide({ assembly }) {
     // read, zero governed rows involved (the root session is not a team
     // member mount).
     if (lane === 'trigger-ctl' || lane === 'ctl-close') {
-      if (exchanges.length === 0) return toolCall('bash', { command: cmds.ctl, run_in_background: true })
+      if (exchanges.length === 0) return toolCall('bash', { command: cmds.ctl, description: 'u6jobs native control birth', run_in_background: true })
       if (exchanges.length === 1) return toolCall('job_output', { job_id: jids[0] ?? 'job-unknown' })
       return { kind: 'text', content: 'U6JOBS_CTL_RAN' }
     }
@@ -457,16 +457,16 @@ export function makeJobsDecide({ assembly }) {
     if (lane === 'work') {
       const first = jids[0] ?? 'job-unknown'
       const second = jids.filter((x) => x !== first).pop() ?? first
-      if (exchanges.length === 0) return toolCall('bash', { command: cmds.birth1, run_in_background: true })
+      if (exchanges.length === 0) return toolCall('bash', { command: cmds.birth1, description: 'u6jobs owner birth', run_in_background: true })
       if (exchanges.length === 1) return toolCall('job_list', {})
       if (exchanges.length === 2) return toolCall('job_output', { job_id: first })
-      if (exchanges.length === 3) return toolCall('bash', { command: cmds.birth2, run_in_background: true })
+      if (exchanges.length === 3) return toolCall('bash', { command: cmds.birth2, description: 'u6jobs cancel-subject birth', run_in_background: true })
       if (exchanges.length === 4) return toolCall('job_output', { job_id: second })
       if (exchanges.length === 5) return toolCall('job_kill', { job_id: second, reason: 'u6jobs-cancel-honest' })
       // the settle spacer is FOREGROUND (40 s > the 35 s FINAL deadline):
       // the next ring read lands AFTER the window in which an un-killed
       // job would have printed FINAL — absence there is a measurement.
-      if (exchanges.length === 6) return toolCall('bash', { command: 'sleep 40' })
+      if (exchanges.length === 6) return toolCall('bash', { command: 'sleep 40', description: 'u6jobs settle spacer' })
       if (exchanges.length === 7) return toolCall('job_output', { job_id: second })
       if (exchanges.length === 8) return toolCall('job_list', {})
       return { kind: 'text', content: `U6JOBS_WORK_DONE ids=${first},${second}` }
