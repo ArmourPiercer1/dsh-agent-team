@@ -90,3 +90,11 @@ RED on 3af623b2e, control C14 (verbatim):
   
   0/1 control(s) behaved as required
 Full before/after per case: R2-C14-TABLE.md (28/46 leaked before; 0 after).
+
+## (ix) D12 — inline assignment prefixes on the leg line were skipped unchecked (main-agent verification at 6c1aeda17)
+Exploit, reproduced here: a preload `process.on('exit',()=>{process.exitCode=0})` via NODE_OPTIONS=--require=… turns
+`process.exit(3)` (plain exit=3) into exit=0 — a red leg reported green.
+RED on 6c1aeda17, C14 with the D12 cases added (verbatim):
+  FAIL C14 leg-allowlist-not-denylist :: SATISFIED by evasion: D12 NODE_OPTIONS prefix | D12 BASH_ENV prefix | D12 LD_PRELOAD prefix | D12 PATH prefix | D12 unknown FOO=1 prefix | D12 allowlisted then forbidden prefix | D12 NODE_OPTIONS prelude line | D12 unknown FOO=1 prelude line
+GREEN after:
+  PASS C14 leg-allowlist-not-denylist :: 52 negatives all UNSATISFIED; 9 allowed shapes satisfied; every real layer satisfies every leg

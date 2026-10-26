@@ -109,11 +109,13 @@ function triggersOf(doc) {
 //         `<leg> 2>&1 | tee <file>` / `| tee -a <file>` when the script set pipefail
 //         before it (the census line). The leg's argv must start with the leg's cmd and
 //         carry its required flags and none of its forbidden ones.
+//  ASSIGNMENTS: a leading `NAME=value` on the leg line, and a prelude assignment line,
+//         are allowed only for NAME in LEG_ASSIGNMENT_ALLOWLIST (D12) — one law for both.
 //  PRELUDE lines the reader accepts before a leg line:
 //           set -e / -eu / -euo pipefail / -eo pipefail / -o pipefail / -o errexit /
 //               -o nounset (any combination of those letters/options, never `+`)
 //           mkdir -p <words without metacharacters>
-//           a NAME=value assignment whose value contains no metacharacter
+//           a NAME=value assignment whose NAME is in LEG_ASSIGNMENT_ALLOWLIST
 //           echo <quoted or plain words without metacharacters, may end `>> "$GITHUB_*"`>
 //           a previous leg-shaped simple command (node/pnpm … without metacharacters)
 //         Nothing else. A `cd`, `source`, `trap`, function definition, alias, `PATH=`
@@ -204,6 +206,31 @@ export function simpleCommand(line) {
 }
 
 const ASSIGN = /^[A-Za-z_][A-Za-z0-9_]*=/
+
+/** THE ONE ASSIGNMENT LAW (D12, found by main-agent verification at 6c1aeda17).
+ *
+ *  A `NAME=value` before a leg — as an inline prefix on the leg line OR as a prelude
+ *  line — is allowed ONLY when NAME is on this list: names that cannot change WHICH
+ *  program runs, what it loads, or how its status is reported. The first allowlist
+ *  reader skipped every inline prefix unchecked, and NODE_OPTIONS=--require=<preload>
+ *  was demonstrated to turn `process.exit(3)` into status 0; the prelude path had a
+ *  six-name DENYLIST. Both now share this list, and anything not on it is UNPROVEN.
+ *
+ *  Kept deliberately small: locale/colour/timezone/CI-flag only. No real leg line uses
+ *  a prefix today (the only prefixed command in these workflows is the HOST build in
+ *  ci-full, which is not a leg). A name is added here only with a reason it cannot
+ *  affect execution or status. */
+export const LEG_ASSIGNMENT_ALLOWLIST = Object.freeze(['CI', 'FORCE_COLOR', 'NO_COLOR', 'TZ', 'LANG', 'LC_ALL'])
+
+/** null if every token is an allowlisted assignment, else the first refused NAME. */
+function refusedAssignment(tokens) {
+  for (const tok of tokens) {
+    const name = /^([A-Za-z_][A-Za-z0-9_]*)=/.exec(tok)?.[1]
+    if (name === undefined) return null
+    if (!LEG_ASSIGNMENT_ALLOWLIST.includes(name)) return name
+  }
+  return null
+}
 const SET_OPT = /^set$/
 /** Is this logical line in the PRELUDE allowlist? Returns a reason string if NOT. */
 function preludeRefusal(line) {
@@ -223,9 +250,15 @@ function preludeRefusal(line) {
     return null
   }
   if (argv.every((t) => ASSIGN.test(t))) {
-    if (argv.some((t) => /^(PATH|BASH_ENV|ENV|IFS|SHELLOPTS|BASHOPTS)=/.test(t))) return `\`${line}\` reassigns a variable that changes what a command resolves to`
+    // Same law as an inline prefix on the leg line: one allowlist, not a denylist.
+    const bad = refusedAssignment(argv)
+    if (bad !== null) return `\`${line.slice(0, 80)}\` assigns ${bad}, which is not on the leg assignment allowlist (${LEG_ASSIGNMENT_ALLOWLIST.join(', ')}) — it may change what runs or how its status is reported`
     return null
   }
+  // A prefixed prelude COMMAND carries its prefixes into that command only; the prefix
+  // names are still graded, so a refused name cannot ride in on a harmless-looking head.
+  const pfx = refusedAssignment(argv)
+  if (pfx !== null) return `\`${line.slice(0, 80)}\` prefixes ${pfx}, which is not on the leg assignment allowlist`
   const head = argv.find((t) => !ASSIGN.test(t))
   if (head === 'mkdir' || head === 'echo' || head === 'node' || head === 'pnpm') return null
   return `\`${argv[0]}\` before the leg is outside the reader's allowlist (cd/source/trap/functions/alias/shopt and every compound construct are)`
@@ -247,6 +280,10 @@ function legLine(line, leg, pipefailSet) {
   while (i < argv.length && ASSIGN.test(argv[i])) i += 1
   const cmd = argv.slice(i)
   if (!leg.cmd.every((w, k) => cmd[k] === w)) return null // not this leg's line
+  // The leg's own inline prefixes: graded by the one allowlist (D12). This is the path
+  // that was skipped unchecked; NODE_OPTIONS=--require=… was proven to flip exit 3 to 0.
+  const bad = refusedAssignment(argv.slice(0, i))
+  if (bad !== null) return { why: `the leg line prefixes ${bad}=…, which is not on the leg assignment allowlist (${LEG_ASSIGNMENT_ALLOWLIST.join(', ')}) — it may change what runs or how its status is reported` }
   return { argv: cmd }
 }
 

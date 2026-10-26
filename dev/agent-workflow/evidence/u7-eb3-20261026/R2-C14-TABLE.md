@@ -59,3 +59,22 @@ Derived by evaluating the case lists from the C14 control's own source, so this 
 | P5 | pipefail + leg FIRST, into tee (the census shape) | satisfied | satisfied | - |
 | P6 | if: always() | satisfied | satisfied | - |
 | P7 | shell: bash | satisfied | satisfied | - |
+
+## D12 addendum (main-agent verification at 6c1aeda17)
+
+| # | case | before (6c1aeda17) | after (D12) | code after |
+|---|---|---|---|---|
+| D1 | NODE_OPTIONS prefix | **SATISFIED — leak** (exploit proven: exit 3 → 0) | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D2 | BASH_ENV prefix | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D3 | LD_PRELOAD prefix | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D4 | PATH prefix | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D5 | unknown FOO=1 prefix | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D6 | NO_COLOR=1 then NODE_OPTIONS prefix | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D7 | NODE_OPTIONS prelude line | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| D8 | unknown FOO=1 prelude line | **SATISFIED — leak** | unsatisfied | CI_LAYER_LEG_UNPROVEN |
+| DP1 | NO_COLOR=1 prefix (allowlisted) | — | satisfied | - |
+| DP2 | TZ=UTC LC_ALL=C prefixes (allowlisted) | — | satisfied | - |
+| DP3 | CI=true prelude line (allowlisted) | — | satisfied | - |
+
+(The base table's former positive "env assignment prefix `FOO=1`" is now negative D5:
+FOO is not on the allowlist. That positive was wrong, and D12 is what made it visible.)

@@ -743,11 +743,27 @@ control('C14 leg-allowlist-not-denylist', () => {
     ['step continue-on-error', step(N, { 'continue-on-error': true })],
     ['&& chain with a non-simple head', step(`false || true && ${N}`)],
     ['! negation', step(`! ${N}`)],
+    // D12 (main-agent verification at 6c1aeda17): leading NAME=value on the LEG line was
+    // skipped without any check. NODE_OPTIONS=--require=<preload> was demonstrated to turn
+    // process.exit(3) into status 0. One allowlist now governs leg-line prefixes AND
+    // prelude assignment lines.
+    ['D12 NODE_OPTIONS prefix', step(`NODE_OPTIONS=--require=/x ${N}`)],
+    ['D12 BASH_ENV prefix', step(`BASH_ENV=/tmp/x ${N}`)],
+    ['D12 LD_PRELOAD prefix', step(`LD_PRELOAD=/tmp/x.so ${N}`)],
+    ['D12 PATH prefix', step(`PATH=/tmp/fake:$PATH ${N}`)],
+    ['D12 unknown FOO=1 prefix', step(`FOO=1 ${N}`)],
+    ['D12 allowlisted then forbidden prefix', step(`NO_COLOR=1 NODE_OPTIONS=--require=/x ${N}`)],
+    ['D12 NODE_OPTIONS prelude line', step(`NODE_OPTIONS=--require=/x\n${N}`)],
+    ['D12 unknown FOO=1 prelude line', step(`FOO=1\n${N}`)],
   ]
   const positives = [
     ['plain line', step(N)],
     ['after set -euo pipefail', step(`set -euo pipefail\n${N}`)],
-    ['env assignment prefix', step(`FOO=1 ${N}`)],
+    // Allowlisted prefixes (no real leg line uses one today; pinned so the allowlist is a
+    // real allowlist, not "refuse every assignment").
+    ['allowlisted prefix NO_COLOR=1', step(`NO_COLOR=1 ${N}`)],
+    ['allowlisted prefixes TZ + LC_ALL', step(`TZ=UTC LC_ALL=C ${N}`)],
+    ['allowlisted prelude line CI=true', step(`CI=true\n${N}`)],
     ['line continuation', step(`node scripts/docs-sync.mjs \\\n  --check`)],
     ['pipefail + leg FIRST, into tee (the census shape)', step(`set -o pipefail\n${N} 2>&1 | tee out.txt`)],
     ['if: always()', step(N, { if: 'always()' })],

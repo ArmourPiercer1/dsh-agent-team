@@ -333,6 +333,33 @@ including all its refusals (exit 2 refusals, exit 1 mismatch).
 C9's mutations were re-anchored to the reshaped line (9/9 still detected) and C9/C14
 now accept `CI_LAYER_LEG_UNPROVEN` as a detection. Controls: **16/16** (C1–C14, P1, P2).
 
+## D12. Inline assignment prefixes were unchecked — found by main-agent verification
+
+The parent agent verified the D11 allowlist at `6c1aeda17` itself, against 18 evasions
+of its own. 16 held, and so did the reviewer's three. One hole remained, and it was
+**executable**: `legLine` skipped every leading `NAME=value` token on the leg line with
+no check at all, so `NODE_OPTIONS=--require=<preload> node scripts/docs-sync.mjs --check`
+satisfied a mandatory leg. Reproduced here: a preload `process.on('exit',()=>{process.exitCode=0})`
+turns `process.exit(3)` into **exit 0** — a red leg reported green. The step-env rule
+already refused NODE_OPTIONS and the prelude rule had a six-name DENYLIST; the inline
+path was the one place the law was not applied, and the prelude path was the wrong
+kind of law.
+
+Fix: ONE allowlist, `LEG_ASSIGNMENT_ALLOWLIST = [CI, FORCE_COLOR, NO_COLOR, TZ, LANG, LC_ALL]`
+(locale/colour/timezone/CI-flag — names that cannot change what runs, what it loads,
+or how status is reported), governing **both** leg-line prefixes and prelude
+assignment lines, plus the prefixes on any prelude command. Anything else is
+`CI_LAYER_LEG_UNPROVEN` naming the variable. Inventory of the real workflows: no leg
+line uses a prefix (the only prefixed command is ci-full's HOST build, which is not a
+leg), so the list carries no name a workflow needs, and no workflow changed.
+
+C14 gains eight negatives — NODE_OPTIONS / BASH_ENV / LD_PRELOAD / PATH / unknown FOO=1
+prefixes, an allowlisted-then-forbidden chain, and NODE_OPTIONS / FOO=1 as prelude
+lines. All eight were RED on `6c1aeda17` and are UNPROVEN after. It also gains three
+positives (NO_COLOR, TZ+LC_ALL, prelude CI=true), so the allowlist is pinned as an
+allowlist, not "refuse every assignment". Final: 52 negatives unsatisfied, 9 positives
+satisfied, every real layer satisfies every leg. Controls **16/16**.
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still
