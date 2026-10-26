@@ -971,17 +971,17 @@ describe('U7-6 GLUE-4: row-class invoke law (invokeClasses) — the named center
     const policy = { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy
     const refusalOf = (r: ReturnType<typeof projOf>): string | undefined => (r.ok ? undefined : r.error.details?.refusal as string)
     // the reviewer's probe class, well-formed, unknown to the declared world
-    expect(refusalOf(projOf(policy, { invokeClasses: { evil: ['read'] }, knownEffectClasses: ['grep', 'glob', 'bash'] } as Partial<Parameters<typeof projOf>[0]>))).toBe('projection-invoke-class-unknown')
+    expect(refusalOf(projOf(policy, { invokeClasses: { evil: ['read'] }, knownEffectClasses: ['grep', 'glob', 'bash'] }))).toBe('projection-invoke-class-unknown')
     // a TYPO of a known class is the same refusal (removed-row mutation)
-    expect(refusalOf(projOf(policy, { invokeClasses: { grepp: ['read'] }, knownEffectClasses: ['grep', 'glob'] } as Partial<Parameters<typeof projOf>[0]>))).toBe('projection-invoke-class-unknown')
+    expect(refusalOf(projOf(policy, { invokeClasses: { grepp: ['read'] }, knownEffectClasses: ['grep', 'glob'] }))).toBe('projection-invoke-class-unknown')
     // a class law WITHOUT the mount's declared inventory is itself incoherent — refused, never silently accepted
     expect(refusalOf(projOf(policy, { invokeClasses: CLASSES }))).toBe('projection-inventory-missing')
     // the inventory is validated too: empty, non-array, malformed token, duplicate
     for (const bad of [[], 'nope', ['grep', 'Grepp'], ['grep', 'grep']]) {
-      expect(refusalOf(projOf(policy, { invokeClasses: CLASSES, knownEffectClasses: bad } as Partial<Parameters<typeof projOf>[0]>))).toBe('projection-inventory-malformed')
+      expect(refusalOf(projOf(policy, { invokeClasses: CLASSES, knownEffectClasses: bad as unknown as readonly string[] }))).toBe('projection-inventory-malformed')
     }
     // a declared inventory WITHOUT any class law is inert but legal (world truth, no authority)
-    expect(projOf(policy, { knownEffectClasses: ['grep', 'glob'] } as Partial<Parameters<typeof projOf>[0]>).ok).toBe(true)
+    expect(projOf(policy, { knownEffectClasses: ['grep', 'glob'] }).ok).toBe(true)
   })
 
   it('the production assembly face refuses construction on an unknown class and on a classless inventory (same typed refusal — the reviewer drove the real path)', () => {
@@ -1023,7 +1023,7 @@ describe('U7-6 GLUE-4: row-class invoke law (invokeClasses) — the named center
     // refusal can only come from the nameable-class clause itself (an
     // inventory-missing/unknown-class trip would be the wrong clause — the
     // M3 mutation probe depends on this precision).
-    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { read: ['read'] }, knownEffectClasses: ['grep', 'glob', 'read'] } as Partial<Parameters<typeof projOf>[0]>))).toBe('projection-input-malformed') // nameable class never rides
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { read: ['read'] }, knownEffectClasses: ['grep', 'glob', 'read'] }))).toBe('projection-input-malformed') // nameable class never rides
     expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { grep: ['grep'] } }))).toBe('projection-input-malformed') // governor outside the grammar
     expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { grep: [] } }))).toBe('projection-input-malformed') // empty governor list
     expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { Grep: ['read'] } }))).toBe('projection-input-malformed') // class must be lower-case
