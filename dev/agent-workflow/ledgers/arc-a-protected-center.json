@@ -1,153 +1,153 @@
 {
-  "schema": "u6-arc-a-protected-center/1",
-  "note": "ARC-A fitness law L1 (PR5, first booking): the center files a FAMILY ADDITION may never move. Digests booked from origin/master 5c03f7240 content on this tree (proven unchanged by the PR5 zero-diff receipt). A drift is a violation UNLESS this ledger gains an override entry citing a NAMED center-interface PR (path+sha256+pr+reason) — family-addition PRs may never add one.",
-  "bookedFrom": "5c03f7240a2a43534e6f52b87aa3c541fad993f7",
-  "files": [
-    {
-      "path": "packages/runtime/control/errors.ts",
-      "sha256": "fed1da4aa8c8118f6832c9c95c09135e0a23e636d63dfc9ac9bbe0304a02ba03"
-    },
-    {
-      "path": "packages/runtime/control/index.ts",
-      "sha256": "f8c1381595194c615d1ac3b9933d5e84ed1e5a8ef546b4426d910352184b3a22"
-    },
-    {
-      "path": "packages/runtime/control/leader-notification.ts",
-      "sha256": "43ee4e0711acb6456e401d1aa4953af5ab74bb184c354e7ee6a716e501ccac31"
-    },
-    {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "83fa0ccadab24413d575c8bb5881d3533f41f925a5403d7b79a279d827e40b63"
-    },
-    {
-      "path": "packages/runtime/control/types.ts",
-      "sha256": "d72a4d0ec72a502bfce5c1ecb5cf185d377b6582ab374378d2d173c8b3e94ec7"
-    },
-    {
-      "path": "packages/runtime/governance-center/contribution-schema.ts",
-      "sha256": "79507ef4872807c93755577df43be7230934551c993ca55803e2de97e0584bf5"
-    },
-    {
-      "path": "packages/runtime/governance-center/host-adapter.ts",
-      "sha256": "14229ad0646fcdb6849587e23386464aa46ea129da45e326c1d36897e75ca931"
-    },
-    {
-      "path": "packages/runtime/governance-center/index.ts",
-      "sha256": "665fa79f44a77c9f0b18e78ae2b402a43e1bb2812a5a1e89e7eccfe3d4595845"
-    },
-    {
-      "path": "packages/runtime/governance-center/kernel.ts",
-      "sha256": "c818ecd972779b3ef197f14f7f89a0530aff9fe7f7fa6a07f36b7dfe198e1601"
-    },
-    {
-      "path": "packages/runtime/governance-center/registry.ts",
-      "sha256": "95375f591b0f5be187e826f99d22e717d0b8608057312eebaba9eae4af8865e5"
-    },
-    {
-      "path": "packages/runtime/operation-permission/approval-routing.ts",
-      "sha256": "24bd3e43c8a99c789fc314dbbd2a0a2a0dd237eb67b65a3ead2c58c43f89e127"
-    },
-    {
-      "path": "packages/runtime/operation-permission/canonical-operation.ts",
-      "sha256": "a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87"
-    },
-    {
-      "path": "packages/runtime/operation-permission/errors.ts",
-      "sha256": "3374cf09c4822dea1219e66bb9603abb642c7a01314404009ba6e9c0e481e5df"
-    },
-    {
-      "path": "packages/runtime/operation-permission/index.ts",
-      "sha256": "1e7a9e898f7dab9c0318f0da4d737e58b164750c638391c6645980c79d508df1"
-    },
-    {
-      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
-      "sha256": "b2b895256595ef47dcd5110efacaf67d113a8c21eb5856a4b7c334180c9a1b53"
-    },
-    {
-      "path": "packages/runtime/operation-permission/permission-coverage.ts",
-      "sha256": "9ec6e4a21022a1597a380d0d2ca75716e237d200c500cb541d0964195c9177c4"
-    },
-    {
-      "path": "packages/runtime/operation-permission/permission-resolver.ts",
-      "sha256": "9841c61caa2f405efcd8a8402b77274a1d392f0756150ac86fbb9b0b1644d3a8"
-    },
-    {
-      "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
-      "sha256": "014b802211d30ac7a02e1e65def0fb527062b118bdfdec98245542280a2a5a85"
-    },
-    {
-      "path": "packages/runtime/operation-permission/types.ts",
-      "sha256": "20ec48f10dfbeed06762d0132375f02a327f674599891419e8f05ecc29caf977"
-    },
-    {
-      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-      "sha256": "bf081ae267fe45e41574f9d872c8cf11ed9bdb1e72faaf33ba4366f44c3bd3b4"
-    },
-    {
-      "path": "packages/runtime/src/plugin/live/pa-mount-registry.mjs",
-      "sha256": "fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d"
-    },
-    {
-      "path": "packages/runtime/tool-admission/README.md",
-      "sha256": "6784ddec6f82d82a8bec584d9ef4418e9e2bb74606addf83f1b33b5b593d4ed6"
-    },
-    {
-      "path": "packages/runtime/tool-admission/admission-kernel.ts",
-      "sha256": "5b2af82a360cc64e386d7b179c5f6b712b7d2bbf0379aee57e0ddd8182b5d71f"
-    },
-    {
-      "path": "packages/runtime/tool-admission/approval-case.ts",
-      "sha256": "aa6df57bf03aea7fd90c8893822bd453b6525f488affabd7d24c512b8d2d205c"
-    },
-    {
-      "path": "packages/runtime/tool-admission/assurance-runtime.ts",
-      "sha256": "9812faa13db8bb1288492dbb68040c83132f2d7bbc1ccf3593bc53838944d0d3"
-    },
-    {
-      "path": "packages/runtime/tool-admission/clock.ts",
-      "sha256": "c947c3541cc43c80f5fd130dccd668bcab177aaf5ef69c08b4ddd044bc7a5356"
-    },
-    {
-      "path": "packages/runtime/tool-admission/grant-mint.ts",
-      "sha256": "153681b6acbff23aa0d250fe21dfd4db985c4dac7ff9f4f61a19034af7ec9ee9"
-    },
-    {
-      "path": "packages/runtime/tool-admission/index.ts",
-      "sha256": "2586d9b3b7d6e409000d83854f805b693a12cde5b92fc90d29468f19bdb4fd90"
-    },
-    {
-      "path": "packages/runtime/tool-dispatch/closed-world-guard.ts",
-      "sha256": "9e337c2570b3b36e27412e277daaaedd86591cbca2269eaf9c9ca946677f2865"
-    },
-    {
-      "path": "packages/runtime/tool-dispatch/index.ts",
-      "sha256": "0af2f127ee103f0f90df013be745a735d4a7fba6b03942d4c4da9216310e4a9b"
-    },
-    {
-      "path": "packages/runtime/tool-dispatch/install.ts",
-      "sha256": "e03d0a77abc1585794b681b9563f81d1f1dc17a35f6789bfdb7365d13a119189"
-    },
-    {
-      "path": "packages/runtime/tool-dispatch/pending-calls.ts",
-      "sha256": "01dd19744a3d56aeeeda39edb3a70cdee4410e1359d5af6c6b16f495b3aada09"
-    },
-    {
-      "path": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
-      "sha256": "a9e1b3990250619260094fb455c174f69bf691cc8d596a4fb2985d85d94b88ab"
-    }
-  ],
-  "overrides": [
-    {
-      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-      "sha256": "935177e468b4e2c393bb53bd1521f1b64bf9381b5c20d2591aa50f429442f491",
-      "pr": "PR #377 (U6 PR4 jobs bridge, merged into origin/master at 22110abbe)",
-      "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it — the PR-body git-diff∩protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
-    },
-    {
-      "path": "packages/runtime/tool-admission/admission-kernel.ts",
-      "sha256": "f4903948df009059ef84f0716bac3fbbb7b25b25deff9aad180b8eeb7f85a1cf",
-      "pr": "U7-6 center-interface PR — fix(u7-6): GLUE-4 — governed search rows are admissible at the assurance face (no teeth lost) (this ledger ships in that PR; number cited in the follow-up booking commit)",
-      "reason": "the named center-interface PR for GLUE-4: (A) read-class resource rules also project the list companion (walk-without-enumerate was the asymmetry — meta-companion precedent, names a superset of any allowed read, never widens); (B) NEW data input TemplatePolicyProjectionInput.invokeClasses (row-class tool-invoke arms ride their governing rule, ceiling/deny-source mirrored, fail-closed validation, NO tool-name literal ever enters this file — the law lives in the trusted plane mount that supplies the map); assurance is not weakened: default-deny coverage gate intact, blinded empty/elsewhere/any-rule policies still answer IO_POLICY_UNSUPPORTED (evidence dev/agent-workflow/evidence/u7-6-glue4-20261026/glue4-post-fix-receipt.md)"
-    }
-  ]
+ "schema": "u6-arc-a-protected-center/1",
+ "note": "ARC-A fitness law L1 (PR5, first booking): the center files a FAMILY ADDITION may never move. Digests booked from origin/master 5c03f7240 content on this tree (proven unchanged by the PR5 zero-diff receipt). A drift is a violation UNLESS this ledger gains an override entry citing a NAMED center-interface PR (path+sha256+pr+reason) — family-addition PRs may never add one.",
+ "bookedFrom": "5c03f7240a2a43534e6f52b87aa3c541fad993f7",
+ "files": [
+  {
+   "path": "packages/runtime/control/errors.ts",
+   "sha256": "fed1da4aa8c8118f6832c9c95c09135e0a23e636d63dfc9ac9bbe0304a02ba03"
+  },
+  {
+   "path": "packages/runtime/control/index.ts",
+   "sha256": "f8c1381595194c615d1ac3b9933d5e84ed1e5a8ef546b4426d910352184b3a22"
+  },
+  {
+   "path": "packages/runtime/control/leader-notification.ts",
+   "sha256": "43ee4e0711acb6456e401d1aa4953af5ab74bb184c354e7ee6a716e501ccac31"
+  },
+  {
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "83fa0ccadab24413d575c8bb5881d3533f41f925a5403d7b79a279d827e40b63"
+  },
+  {
+   "path": "packages/runtime/control/types.ts",
+   "sha256": "d72a4d0ec72a502bfce5c1ecb5cf185d377b6582ab374378d2d173c8b3e94ec7"
+  },
+  {
+   "path": "packages/runtime/governance-center/contribution-schema.ts",
+   "sha256": "79507ef4872807c93755577df43be7230934551c993ca55803e2de97e0584bf5"
+  },
+  {
+   "path": "packages/runtime/governance-center/host-adapter.ts",
+   "sha256": "14229ad0646fcdb6849587e23386464aa46ea129da45e326c1d36897e75ca931"
+  },
+  {
+   "path": "packages/runtime/governance-center/index.ts",
+   "sha256": "665fa79f44a77c9f0b18e78ae2b402a43e1bb2812a5a1e89e7eccfe3d4595845"
+  },
+  {
+   "path": "packages/runtime/governance-center/kernel.ts",
+   "sha256": "c818ecd972779b3ef197f14f7f89a0530aff9fe7f7fa6a07f36b7dfe198e1601"
+  },
+  {
+   "path": "packages/runtime/governance-center/registry.ts",
+   "sha256": "95375f591b0f5be187e826f99d22e717d0b8608057312eebaba9eae4af8865e5"
+  },
+  {
+   "path": "packages/runtime/operation-permission/approval-routing.ts",
+   "sha256": "24bd3e43c8a99c789fc314dbbd2a0a2a0dd237eb67b65a3ead2c58c43f89e127"
+  },
+  {
+   "path": "packages/runtime/operation-permission/canonical-operation.ts",
+   "sha256": "a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87"
+  },
+  {
+   "path": "packages/runtime/operation-permission/errors.ts",
+   "sha256": "3374cf09c4822dea1219e66bb9603abb642c7a01314404009ba6e9c0e481e5df"
+  },
+  {
+   "path": "packages/runtime/operation-permission/index.ts",
+   "sha256": "1e7a9e898f7dab9c0318f0da4d737e58b164750c638391c6645980c79d508df1"
+  },
+  {
+   "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+   "sha256": "b2b895256595ef47dcd5110efacaf67d113a8c21eb5856a4b7c334180c9a1b53"
+  },
+  {
+   "path": "packages/runtime/operation-permission/permission-coverage.ts",
+   "sha256": "9ec6e4a21022a1597a380d0d2ca75716e237d200c500cb541d0964195c9177c4"
+  },
+  {
+   "path": "packages/runtime/operation-permission/permission-resolver.ts",
+   "sha256": "9841c61caa2f405efcd8a8402b77274a1d392f0756150ac86fbb9b0b1644d3a8"
+  },
+  {
+   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+   "sha256": "014b802211d30ac7a02e1e65def0fb527062b118bdfdec98245542280a2a5a85"
+  },
+  {
+   "path": "packages/runtime/operation-permission/types.ts",
+   "sha256": "20ec48f10dfbeed06762d0132375f02a327f674599891419e8f05ecc29caf977"
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "bf081ae267fe45e41574f9d872c8cf11ed9bdb1e72faaf33ba4366f44c3bd3b4"
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/pa-mount-registry.mjs",
+   "sha256": "fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d"
+  },
+  {
+   "path": "packages/runtime/tool-admission/README.md",
+   "sha256": "6784ddec6f82d82a8bec584d9ef4418e9e2bb74606addf83f1b33b5b593d4ed6"
+  },
+  {
+   "path": "packages/runtime/tool-admission/admission-kernel.ts",
+   "sha256": "5b2af82a360cc64e386d7b179c5f6b712b7d2bbf0379aee57e0ddd8182b5d71f"
+  },
+  {
+   "path": "packages/runtime/tool-admission/approval-case.ts",
+   "sha256": "aa6df57bf03aea7fd90c8893822bd453b6525f488affabd7d24c512b8d2d205c"
+  },
+  {
+   "path": "packages/runtime/tool-admission/assurance-runtime.ts",
+   "sha256": "9812faa13db8bb1288492dbb68040c83132f2d7bbc1ccf3593bc53838944d0d3"
+  },
+  {
+   "path": "packages/runtime/tool-admission/clock.ts",
+   "sha256": "c947c3541cc43c80f5fd130dccd668bcab177aaf5ef69c08b4ddd044bc7a5356"
+  },
+  {
+   "path": "packages/runtime/tool-admission/grant-mint.ts",
+   "sha256": "153681b6acbff23aa0d250fe21dfd4db985c4dac7ff9f4f61a19034af7ec9ee9"
+  },
+  {
+   "path": "packages/runtime/tool-admission/index.ts",
+   "sha256": "2586d9b3b7d6e409000d83854f805b693a12cde5b92fc90d29468f19bdb4fd90"
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+   "sha256": "9e337c2570b3b36e27412e277daaaedd86591cbca2269eaf9c9ca946677f2865"
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/index.ts",
+   "sha256": "0af2f127ee103f0f90df013be745a735d4a7fba6b03942d4c4da9216310e4a9b"
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/install.ts",
+   "sha256": "e03d0a77abc1585794b681b9563f81d1f1dc17a35f6789bfdb7365d13a119189"
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/pending-calls.ts",
+   "sha256": "01dd19744a3d56aeeeda39edb3a70cdee4410e1359d5af6c6b16f495b3aada09"
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+   "sha256": "a9e1b3990250619260094fb455c174f69bf691cc8d596a4fb2985d85d94b88ab"
+  }
+ ],
+ "overrides": [
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "935177e468b4e2c393bb53bd1521f1b64bf9381b5c20d2591aa50f429442f491",
+   "pr": "PR #377 (U6 PR4 jobs bridge, merged into origin/master at 22110abbe)",
+   "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it — the PR-body git-diff∩protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
+  },
+  {
+   "path": "packages/runtime/tool-admission/admission-kernel.ts",
+   "sha256": "f4903948df009059ef84f0716bac3fbbb7b25b25deff9aad180b8eeb7f85a1cf",
+   "pr": "U7-6 named center-interface PR — fix(u7-6): GLUE-4 — governed search rows are admissible at the assurance face (no teeth lost) (PR number cited by the follow-up booking commit when the PR opens)",
+   "reason": "GLUE-4 closure of the live governed-search refusal, per evidence dev/agent-workflow/evidence/u7-6-glue4-20261026/ (root-cause receipt + post-fix receipt + C2 run). Three data-driven hunks: (A) read-class resource rules also project the list companion (the anchored walk enumerates the surface the rule already FULLY reads; names are a subset of contents — never widens; meta-companion precedent; read_image/write keep none); (B) NEW trusted data input invokeClasses <effectClass <- governing rule tools>: governing rules project the class tool-invoke arm with the SAME ceiling and deny-source treatment, fail-closed validation, disclosure note, blinded empty/elsewhere/whole-tool-any policies still answer IO_POLICY_UNSUPPORTED; ZERO search-class tool-name literals enter this file — the law lives in the trusted plane mount that supplies the map (PR5 law L2 honored at the byte); (C) ProductionAdmissionConfig pass-through. Assurance weakened nowhere: default-deny coverage gate intact, deny-lane mirror intact, PA edge not bypassed."
+  }
+ ]
 }
