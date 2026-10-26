@@ -1,0 +1,2 @@
+GREEN (post-booking): cd packages/testkit && npx vitest run test/p4t6-session-event-scan.test.ts
+10 passed (10). Clause SCANNED_PATHS_U6PR5 = 11 new paths; the git-mv trio bookings (A5SRGP/A5GLB/A5CANCELEG) migrated to lane paths in place.

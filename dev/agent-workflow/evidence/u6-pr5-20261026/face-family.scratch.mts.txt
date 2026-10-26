@@ -1,0 +1,15 @@
+/**
+ * FAMILY recording face v3 (SCRATCH — not part of any commit). Mirror of
+ * face-master v3, symbol-for-symbol, at the MOVED lane's paths; parse rides
+ * the SAME a5p5 barrel edge (the production registration face's grammar —
+ * team-tool-plane.mjs:75 imports createGovernedToolDefinitions from that
+ * barrel; the model-facing rows validate that grammar).
+ */
+export { canonicalizeOperation } from '../operation-permission/canonical-operation.ts'
+export { classifyPermissionCoverageTool, evaluatePermissionCoverage } from '../operation-permission/permission-coverage.ts'
+const a5p5Barrel = await import('../../tools/a5p5-tools/src/index.js')
+export const parseGrepArgs = a5p5Barrel.parseGrepArgs
+export const parseGlobArgs = a5p5Barrel.parseGlobArgs
+export { searchArgv, presentPath, projectMatches, walkerCoverageRefusal } from '../../tools/search-family/src/search-backend.mjs'
+export { globArgv, parseWalkOutput } from '../../tools/search-family/src/glob-backend.mjs'
+export { grepArgv } from '../src/plugin/live/plane-effect-backends.mjs'

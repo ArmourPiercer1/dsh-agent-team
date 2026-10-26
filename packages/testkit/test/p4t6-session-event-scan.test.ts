@@ -209,7 +209,9 @@ const SCANNED_PATHS_A5READSLICE: readonly string[] = [
 // `scripts/place-dist-glue.mjs`; dist mirrors and `dev/agent-workflow/evidence/**` stay
 // outside the scan. Zero new denylist vocabulary.
 const SCANNED_PATHS_A5CANCELEG: readonly string[] = [
-  'packages/runtime/src/plugin/live/cancel-leg.mjs',
+  // U6 PR5: the file MOVED to the search family lane (single home);
+  // the booking travels with it (count unchanged).
+  'packages/tools/search-family/src/cancel-leg.mjs',
   'packages/runtime/test/a5-cancel-search.test.ts',
   'packages/runtime/test/a5-cancel-glob.test.ts',
 ]
@@ -393,6 +395,39 @@ const SCANNED_PATHS_U6PR3: readonly string[] = [
   'packages/runtime/test/u6-pr3-bl01-ask-door.test.ts',
 ]
 
+// U6 PR5 (ARC-A: the search family lane + the fitness/probe suites): the
+// SCANNED_PATHS_U6PR5 list below is the 12 NEW scannable paths this slice
+// adds: the lane's index/mechanics/row/contribution files, the six PR5
+// suites (golden corpus + golden gate + move law + kernel flow + ARC-A
+// probe walk + ARC-A fitness), and the testkit fitness scanner with its
+// sidecar type surface. The git-mv
+// trio (search-backend / glob-backend / cancel-leg) is NOT booked here:
+// its pre-existing bookings (A5SRGP / A5GLB / A5CANCELEG) MIGRATE to the
+// lane paths in the same commit — one home, one booking, count unchanged.
+// Zero new denylist vocabulary. Taking the scanned total on THIS tree to 1274 — MEASURED by
+// the pre-booking scanner run on this exact tree
+// (dev/agent-workflow/evidence/u6-pr5-20261026/p4t6-RED-unbooked.log
+// reading `expected 1274 to be 1263`; no chain value copied).
+const SCANNED_PATHS_U6PR5: readonly string[] = [
+  'packages/tools/search-family/src/index.mjs',
+  'packages/tools/search-family/src/search-mechanics.mjs',
+  'packages/tools/search-family/src/search-row.mjs',
+  'packages/tools/search-family/src/search-contribution.mjs',
+  'packages/runtime/test/u6-pr5-search-golden-corpus.mts',
+  'packages/runtime/test/u6-pr5-search-golden-vectors.test.ts',
+  'packages/runtime/test/u6-pr5-search-move-law.test.ts',
+  'packages/runtime/test/u6-pr5-kernel-flow.test.ts',
+  'packages/runtime/test/u6-arc-a-probe-family.test.ts',
+  'packages/runtime/test/u6-arc-a-fitness.test.ts',
+  'packages/testkit/test/arc-a-fitness/scan.mjs',
+  'packages/testkit/test/arc-a-fitness/scan.d.mts',
+]
+// MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
+// per-round constants (PR4 +2, PR5 +12) and the total pin below is the
+// UNION expression — no prose total is load-bearing. On the merged tree
+// the total legs above hold as the UNION expression (each per-round tie
+// leg keeps its own measured delta; no cross-round prose total is
+// load-bearing).
 // U6 PR4 (this round; jobs bridge onto the governance kernel, ARC-C): the
 // TWO scannable files are the dedicated jobs bridge module (the moved
 // VERBATIM createGovernedJobsBridge body + the closed contribution
@@ -2909,7 +2944,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // files, all NEW paths owned by that lane; the row is a production live row
     // (.mjs, like the GLUE-5/6 live rows) and carries no denylist vocabulary.
     const SCANNED_PATHS_A5GLB: readonly string[] = [
-      'packages/runtime/src/plugin/live/glob-backend.mjs',
+      'packages/tools/search-family/src/glob-backend.mjs', // U6 PR5: moved lane
       'packages/runtime/test/alpha5-glob-harness.ts',
       'packages/runtime/test/alpha5-glob-backend.test.ts',
       'packages/runtime/test/alpha5-glob-backend-adversarial.test.ts',
@@ -2921,7 +2956,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // the anchor law of the glob row instead of forking it, and the plane
     // search row (already counted by GLUE-7) only gains the delegation branch.
     const SCANNED_PATHS_A5SRGP: readonly string[] = [
-      'packages/runtime/src/plugin/live/search-backend.mjs',
+      'packages/tools/search-family/src/search-backend.mjs', // U6 PR5: moved lane
       'packages/runtime/test/alpha5-search-harness.ts',
       'packages/runtime/test/alpha5-search-backend.test.ts',
     ]
@@ -3012,7 +3047,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_FIXK.length +
         SCANNED_PATHS_U6PR2.length +
         SCANNED_PATHS_U6PR3.length +
-        SCANNED_PATHS_U6PR4.length,
+        SCANNED_PATHS_U6PR4.length +
+        SCANNED_PATHS_U6PR5.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3083,7 +3119,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_FIXK.length +
         SCANNED_PATHS_U6PR2.length +
         SCANNED_PATHS_U6PR3.length +
-        SCANNED_PATHS_U6PR4.length,
+        SCANNED_PATHS_U6PR4.length +
+        SCANNED_PATHS_U6PR5.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3175,6 +3212,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR2,
       ...SCANNED_PATHS_U6PR3,
       ...SCANNED_PATHS_U6PR4,
+      ...SCANNED_PATHS_U6PR5,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3608,6 +3646,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // existed mid-round was DELETED before booking and never counted — the
     // measured 1263 is post-deletion).
     expect(SCANNED_PATHS_U6PR3.length).toBe(1263 - 1253)
+    // U6 PR5: the booked SCANNED_PATHS_U6PR5 list is the 12 NEW paths; the
+    // MEASURED scanner delta is 1275 − 1263 = 12. (The first pre-booking RED
+    // run read `expected 1274 to be 1263` with 14 listed — before the git-mv
+    // trio's old bookings migrated in place; the final clause, after the
+    // scanner's .d.mts sidecar, re-measured `expected 1275 to be 1274`.)
+    expect(SCANNED_PATHS_U6PR5.length).toBe(1275 - 1263)
     // U6 PR4: the SCANNED_PATHS_U6PR4 files above are exactly the
     // scanned-total delta 1263 -> 1265, MEASURED by the pre-booking
     // scanner run on THIS tree (evidence

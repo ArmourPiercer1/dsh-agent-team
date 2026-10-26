@@ -1,0 +1,8 @@
+# run6 (u5u6arca6-20261026T06-27-14Z) — greper member lane tool/call+tool/result, VERBATIM (host session store, unzstd)
+# session: session-team-child-0d0c46a807b63bc290e165109f355203 (template greper; absolute-path calls)
+[1/1] CALL team_grep args={"pattern":"U6ARCA_G1_CLAIM_u5u6arca6-20261026t06-27-14z","path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr5/tests/homes/u5u6arca6-20261026T06-27-14Z/workspace"}
+[1/1] RESULT isError=False text=a5p5-refused kind=refused-schema code=missing-field detail=[{"code":"missing-field","path":"$.output_mode","detail":"`output_mode` is required"}]
+[1/2] CALL team_glob args={"pattern":"**/*.txt","path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr5/tests/homes/u5u6arca6-20261026T06-27-14Z/workspace"}
+[1/2] RESULT isError=False text=a5p5-refused kind=refused-admission code=template-default-deny detail=sha256:29fb643489d4285dcdc5bc2f98ef9c9fc6425aeb0e23acb8b67ce21a2eefdede
+[1/3] CALL team_grep args={"pattern":"U6ARCA_G4_CLAIM_u5u6arca6-20261026t06-27-14z","path":"/etc"}
+[1/3] RESULT isError=False text=a5p5-refused kind=refused-schema code=missing-field detail=[{"code":"missing-field","path":"$.output_mode","detail":"`output_mode` is required"}]

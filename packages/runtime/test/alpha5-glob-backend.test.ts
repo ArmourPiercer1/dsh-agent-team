@@ -541,7 +541,7 @@ describe('A5-GLOB N — the OUTPUT FRAMING law (NUL, not newline) and the single
   })
 
   it('N3 STATIC ARGUMENT: nothing between verification and presentation re-parses a string', () => {
-    const source = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs'), 'utf8')
+    const source = readFileSync(join(REPO, 'packages/tools/search-family/src/glob-backend.mjs'), 'utf8')
     const code = source.split('\n').filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('/**')).join('\n')
     // (a) the walker's bytes are cut on NUL and NOWHERE by newline:
     expect(code.includes("split('\\0')"), 'the framing split must be on NUL').toBe(true)
@@ -1036,7 +1036,7 @@ describe('A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel be
   }, 180_000)
 
   it('X5 STATIC AUDIT: exactly one channel write, after the verdict, and stderr never reaches it', () => {
-    const source = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs'), 'utf8')
+    const source = readFileSync(join(REPO, 'packages/tools/search-family/src/glob-backend.mjs'), 'utf8')
     // Comments are stripped first: this audit is about CODE paths. (The prose in
     // that module talks about the sink a lot — on purpose — and prose is not a
     // channel.) Behavioural proof is legs X1-X4; this leg pins the SHAPE.

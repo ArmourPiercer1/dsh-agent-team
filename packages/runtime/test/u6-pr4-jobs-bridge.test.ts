@@ -260,7 +260,9 @@ describe('u6-pr4 C — ONE kernel, ONE approval table: three families ride it (t
     })
     const { value } = await mountValue({ plane: { jobsEnabled: true } }, bridge)
     const ck = value.centerKernel
-    expect(ck.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family', 'dsh.jobs-family'])
+    // MERGE (U6 PR5): the search family registers between shell and jobs on the
+    // SAME kernel; registration order is fs, process, search, jobs.
+    expect(ck.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family', 'dsh.search-family', 'dsh.jobs-family'])
     const guard = value.kernelGuard
     expect(['read', 'team_bash', 'job_output', 'job_list', 'job_kill'].map((n) => guard.owns(n))).toEqual([true, true, true, true, true])
     expect(guard.owns('grep')).toBe(false)
@@ -286,7 +288,7 @@ describe('u6-pr4 C — ONE kernel, ONE approval table: three families ride it (t
   it('C2 jobsEnabled WITHOUT a bridge: shut rows mount, NO jobs candidate registers, the trio is not kernel-owned', async () => {
     const { value } = await mountValue({ plane: { jobsEnabled: true } })
     expect(value.definitions.map((d: { name: string }) => d.name)).toContain('job_output')
-    expect(value.centerKernel.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family'])
+    expect(value.centerKernel.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family', 'dsh.search-family'])
     expect(value.kernelGuard.owns('job_output')).toBe(false)
     const shutRow = value.definitions.find((d) => d.name === 'job_list')
     expect(shutRow, 'the shut trio row still mounts').not.toBeUndefined()

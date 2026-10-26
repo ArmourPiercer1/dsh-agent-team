@@ -344,7 +344,7 @@ export interface GlobBackendRow {
 
 /** Load the backend row (dynamic import, cast to the types above). */
 export async function loadGlobBackendRow(): Promise<GlobBackendRow> {
-  const url = new URL('../src/plugin/live/glob-backend.mjs', import.meta.url).href
+  const url = new URL('../../tools/search-family/src/glob-backend.mjs', import.meta.url).href
   return (await import(url)) as unknown as GlobBackendRow
 }
 

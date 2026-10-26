@@ -189,7 +189,7 @@
  * read or echoed — caller-owned text has no place in a face that publishes codes
  * plus arithmetic.
  *
- * @module packages/runtime/src/plugin/live/glob-backend
+ * @module search-family/glob-backend
  */
 
 import { constants as fsConstants, lstatSync, readlinkSync, realpathSync } from 'node:fs'
@@ -197,7 +197,7 @@ import { open as fsOpen } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { setTimeout as sleepTimer, clearTimeout as clearTimer } from 'node:timers'
 import { buildGlobCommand, GLOB_MAX_RESULTS, parseGlobArgs as parseHostGlobArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
-import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
+import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'
 import { CANCEL_CODE_ABORTED, CANCEL_CODE_UNCONFIRMED, callAborted, createOwnedStop, raceConfinedSettle } from './cancel-leg.mjs'
 
 /** Stable backend identity (the plane/audit reports this name, never a anonymous one). */

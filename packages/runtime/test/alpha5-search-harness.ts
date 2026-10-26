@@ -243,7 +243,7 @@ export interface SearchBackendRow {
 
 /** Load the search row (dynamic import, cast to the types above). */
 export async function loadSearchBackendRow(): Promise<SearchBackendRow> {
-  const url = new URL('../src/plugin/live/search-backend.mjs', import.meta.url).href
+  const url = new URL('../../tools/search-family/src/search-backend.mjs', import.meta.url).href
   return (await import(url)) as unknown as SearchBackendRow
 }
 

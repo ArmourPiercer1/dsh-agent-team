@@ -184,10 +184,10 @@ interface CancelLegRow {
     clear?: (handle: unknown) => void
   }): Promise<Record<string, unknown>>
 }
-const cancelLeg = (await import(new URL('../src/plugin/live/cancel-leg.mjs', import.meta.url).href)) as CancelLegRow
+const cancelLeg = (await import(new URL('../../tools/search-family/src/cancel-leg.mjs', import.meta.url).href)) as CancelLegRow
 
 /** The row's source, comment-stripped: the static legs are about CODE paths. */
-const rowSource = (): string => readFileSync(join(REPO, 'packages/runtime/src/plugin/live/search-backend.mjs'), 'utf8')
+const rowSource = (): string => readFileSync(join(REPO, 'packages/tools/search-family/src/search-backend.mjs'), 'utf8')
   .split('\n')
   .map((line) => (line.trimStart().startsWith('//') || line.trimStart().startsWith('*') || line.trimStart().startsWith('/*') ? '' : line.split('//')[0] ?? ''))
   .join('\n')
