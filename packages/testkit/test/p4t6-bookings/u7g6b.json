@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7G6B",
+  "paths": [
+    "packages/runtime/test/u7-g6b-late-stream.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1308,
+    "to": 1309
+  },
+  "reason": "U7-G6b (glue7 G6b census-load flake, branch task/u7-g6b-census-flake-20261026): the ONE new scannable file is the deterministic late-stream reproducer spec (payload bytes arriving after the provider's `exited`, pinned on the shipped glob row). The retirement of the archived CANDIDATE-A glob factory (search-mechanics.mjs) and the G6b / move-law / mount-booking retargets are EDITS to already-counted paths — no file is removed; dist mirrors and dev/** evidence sit outside the scan. Zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on the merged tree (origin/master 21f3f5b08 + this branch) with the spec on disk and this booking absent, the ledger law reads `scanner counts 1309, ledger derives 983 + 325 = 1308` (dev/agent-workflow/evidence/u7-g6b-census-flake-20261026/p4t6-RED-unbooked-merged.log) — master's 1308 plus exactly this path."
+}

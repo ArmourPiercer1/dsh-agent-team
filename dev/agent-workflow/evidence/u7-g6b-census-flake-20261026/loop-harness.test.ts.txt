@@ -1,0 +1,46 @@
+// TEMPORARY local diagnostic loop (never committed): drives the archive glob
+// factory c1/c2/c3 sequence N times and records each failing shape.
+import { createHash } from 'node:crypto'
+import { appendFileSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync, mkdtempSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { expect, it } from 'vitest'
+
+const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
+const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
+const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
+const N = Number(process.env.G6B_LOOP_N ?? 200)
+const LOG = process.env.G6B_LOOP_LOG ?? join(REPO, '.tmp-g6b/loop.jsonl')
+
+it('g6b loop', async () => {
+  const beMod = (await import(new URL('../../tools/search-family/src/glob-backend.mjs', import.meta.url).href)) as any
+  mkdirSync(join(REPO, 'tests/homes'), { recursive: true })
+  let fails = 0
+  for (let n = 0; n < N; n++) {
+    const WORLD = mkdtempSync(join(REPO, 'tests/homes', 'a5g7-loop-'))
+    const ROOT_DIR = join(WORLD, 'root'); const OUTSIDE_DIR = join(WORLD, 'outside')
+    mkdirSync(join(ROOT_DIR, 'many'), { recursive: true }); mkdirSync(OUTSIDE_DIR, { recursive: true })
+    for (let i = 0; i < 105; i++) writeFileSync(join(ROOT_DIR, 'many', `f${String(i)}.gen`), 'x\n')
+    symlinkSync(OUTSIDE_DIR, join(ROOT_DIR, 'escape-link'))
+    const rows: string[] = []
+    const factory = beMod.createAnchoredGlobBackend({
+      realmId: 'a5g7-glob-archive', rootDir: ROOT_DIR, observe: (r: string) => rows.push(r),
+      confined: { trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`, scratchRoot: join(WORLD, 'scratch'), assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 } },
+    })
+    const sink = { sink: { write: () => {} } }
+    const t0 = Date.now()
+    const c1 = await factory.run({ callId: 'c1', parsedArgs: { tool: 'glob', pattern: 'many/*.gen', target: { placement: 'workspace', locator: '.' } } }, sink)
+    const c2 = await factory.run({ callId: 'c2', parsedArgs: { tool: 'glob', pattern: '[unclosed', target: { placement: 'workspace', locator: '.' } } }, sink)
+    const c3 = await factory.run({ callId: 'c3', parsedArgs: { tool: 'glob', pattern: '*', target: { placement: 'relative', locator: 'escape-link' } } }, sink)
+    const bad: string[] = []
+    if (!(c1.ok === true && (c1.outcome?.files ?? []).length === 100 && c1.outcome?.truncated === true)) bad.push(`c1 ok=${String(c1.ok)} files=${String((c1.outcome?.files ?? []).length)} trunc=${String(c1.outcome?.truncated)} code=${String(c1.failure?.code)} settle=${String(c1.settlement?.kind)}`)
+    if (!(c2.ok === false && String(c2.failure?.code) === 'walker-error')) bad.push(`c2 ok=${String(c2.ok)} code=${String(c2.failure?.code)} files=${String((c2.outcome?.files ?? []).length)}`)
+    if (!(c3.ok === false && c3.failure?.code === 'symlink-alias')) bad.push(`c3 code=${String(c3.failure?.code)}`)
+    if (factory.execCount() !== 2) bad.push(`execCount=${String(factory.execCount())}`)
+    if (bad.length > 0) fails += 1
+    appendFileSync(LOG, JSON.stringify({ n, ms: Date.now() - t0, bad, rows: bad.length > 0 ? rows : undefined }) + '\n')
+    rmSync(WORLD, { recursive: true, force: true })
+  }
+  appendFileSync(LOG, JSON.stringify({ summary: true, N, fails }) + '\n')
+  expect(fails).toBeGreaterThanOrEqual(0)
+}, 3_600_000)
