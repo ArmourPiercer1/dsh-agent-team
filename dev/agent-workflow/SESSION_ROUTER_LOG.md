@@ -6896,3 +6896,9 @@ master 跑 production-run-recipe 全链）。
 
 - PR #380：probe family 仅 tests/**、PR5 归因的受保护中心 diff 为空；search family 迁至 packages/tools/search-family/**，中心只留 re-export（无双实现）；golden 409 vectors digest 0dabc187… master≡family（v1→v2→v3 面历史如实入档，v3 钉 model-facing a5p5 ROW grammar）；fitness L1–L4 均带植入反例；C1 36/36、world-factory 32/32。
 - R1 独审 投机通过 → 合并 `f040a7562`。命名项 **R-U6P5-1**：governed search 三条实机腿在 assurance 层 `IO_POLICY_UNSUPPORTED`（assurance-runtime.ts:139-142，plane 头部自称 GLUE-4 后续）→ 属产品能力缺口，待 assurance 轮修复后复跑。R-U6P5-2（v3 TEST_ONLY edge 保持最窄）、R-U6P5-3（boot 8/≤5 逐次授权并披露）入账。
+
+## 2026-10-26 U6 收口（PR6 ARC-D + 旧路径删除 + G4 门禁）
+
+- PR #382：ARC-D 对抗套件（AD1–AD11 13/13，每条拒绝带 blinded twin）+ 42-cell oracle 矩阵重评（37 离线绿 + 3 实机映射 + 3 命名项）；`plane-effect-backends.mjs/.d.mts/dist` 删除，每个 kernel 归属名只剩一处实现（read→fs-family、bash→process-family、grep/glob→search-family、jobs→命名 bridge），PLACEMENTS 29→28；u6-arc-d C2 一次 boot 9/9 全绿（磁盘+账本判定）。
+- R1 独审：PR6 **投机通过**；**G4 = G4-CORE-PASS / BRIDGE-BLOCKED**（非 full G4，非 CORE BLOCKER）。解锁 = 无依赖局部 Family + EB 工程基线（U7）；不解锁 = CA-03/full G4、G5、S5、发布。
+- 命名项（阻断 full G4，需在 U7 关闭）：R-U6P3-1、R-U6P4-1..3、R-U6P5-1/GLUE-4、R-U6P6-1、R-G3-1；另有证据强度项 E1（CI-03 native 判定改为直接磁盘证据）、E2（blinded-twin 一一执行关系机器化）。
