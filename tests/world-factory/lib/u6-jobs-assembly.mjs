@@ -449,7 +449,15 @@ export function makeJobsDecide({ assembly }) {
     // member mount).
     if (lane === 'trigger-ctl' || lane === 'ctl-close') {
       if (exchanges.length === 0) return toolCall('bash', { command: cmds.ctl, description: 'u6jobs native control birth', run_in_background: true })
-      if (exchanges.length === 1) return toolCall('job_output', { job_id: jids[0] ?? 'job-unknown' })
+      // R-U6P4-2 ring-read spacer: ONE decide exchange (a FOREGROUND bash)
+      // sits between the background birth and the ring read. Boot-7 measured
+      // the race verbatim: the immediate job_output answered
+      // '(no new output)\n[status: running]' — the read landed while the
+      // just-spawned printf had not yet reached the ring, and the judge
+      // (rightly) fails a vacuous control. The spacer costs time, not budget:
+      // foreground bash, no background row, zero trio names.
+      if (exchanges.length === 1) return toolCall('bash', { command: 'sleep 3', description: 'u6jobs ctl ring-read spacer' })
+      if (exchanges.length === 2) return toolCall('job_output', { job_id: jids[0] ?? 'job-unknown' })
       return { kind: 'text', content: 'U6JOBS_CTL_RAN' }
     }
     // ── worker: birth → list → output → birth2 → kill2 → settle spacer
@@ -560,7 +568,9 @@ export function makeJobsDecide({ assembly }) {
  *   foreignOutput foreignKill      — foreign lane's answers
  *   ctlOutput                      — boot-root NATIVE job_output answer
  *   trioUses        n             — trio tool_use count across the whole corpus
- *   controlRows     [{toolName,summary,status}] — durable Control lane (polls ∪ final)
+ *   controlRows     [{toolName,summary,status}] — durable Control lane of the GOVERNED
+ *                     team session (remote team.getLedgerPage polls ∪ final; the p6t6
+ *                     state route is boot-root-anchored and never sees these)
  *   birthRow        {seen,resolved}                  — the member birth ask, if any
  *   settle          {killLines, foreignKillLines}    — host-log lifecycle counts
  *   rootKernelMentions n                             — kernel words in the root transcript
@@ -679,12 +689,20 @@ export function judgeU6Jobs(d, hostAlive) {
   })
   // 7) NO SECOND LEDGER, measured live: the trio executed >=4 governed
   //    calls while the durable Control lane opened ZERO rows naming any
-  //    job_* name (the polls + the final snapshot are the observation).
-  add('jobs:no-second-ledger', trioControlRows.length === 0 && (d.trioUses ?? 0) >= 4, {
+  //    job_* name. R-U6P3-1 harness law (positive-read precondition): a
+  //    zero-row count only counts when the SAME channel demonstrably saw
+  //    the row it CREATED — the member birth ask (born by this run's own
+  //    worker bash, observed and settled by the runner on the GOVERNED
+  //    team session). A channel that never observed any row is unproven,
+  //    and its zeros are vacuous — that is exactly the boot-4..7 blind
+  //    (controlRows [] while rows sat on the governed session unread).
+  const channelProven = d.birthRow?.seen === true
+  add('jobs:no-second-ledger', trioControlRows.length === 0 && (d.trioUses ?? 0) >= 4 && channelProven, {
     trioControlRows: trioControlRows.slice(0, 5),
     controlRowsTotal: (d.controlRows ?? []).length,
+    observationChannelProven: channelProven,
     trioUses: d.trioUses ?? null,
-    note: 'the kernel is the ONLY ledger the trio touches; the birth ask rows (tool:bash), if any, are the PA lane — a different lane, different tool name',
+    note: 'the kernel is the ONLY ledger the trio touches; the birth ask rows (tool:bash), if any, are the PA lane — a different lane, different tool name; the zero-row claim is gated on the same governed-session channel having seen this run\'s own birth row',
   })
   return out
 }

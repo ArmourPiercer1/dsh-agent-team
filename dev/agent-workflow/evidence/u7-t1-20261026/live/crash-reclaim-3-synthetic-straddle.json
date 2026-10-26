@@ -1,0 +1,219 @@
+{
+ "schema": "u5-run-record/1",
+ "runId": "u5-crash-2026-10-25T17-27-10-230Z",
+ "suite": "parallel",
+ "startedAt": "2026-10-25T17:27:10.351Z",
+ "selectedCases": [
+  "abnormal-kill-reclaim",
+  "crash-simulation-reclaim",
+  "other-world-unaffected",
+  "pristine-host-and-stable-untouched",
+  "sibling-homes-untouched"
+ ],
+ "bindings": {
+  "teamSha": "2db321f631cc061685c2d5c6a46e054c95b9a321",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "worldIds": [
+   "u5cbv-20261025T17-27-10Z"
+  ],
+  "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+  "mode": "crash-reclaim",
+  "note": "A = core runner (survivor, 1 boot); B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group after U5-IN-FLIGHT; reclaim = factory crash recovery with provenance",
+  "hostBasePost": {
+   "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+   "porcelainEmpty": true,
+   "phase": "post"
+  }
+ },
+ "cases": [
+  {
+   "id": "abnormal-kill-reclaim",
+   "verdict": "PASS",
+   "at": "2026-10-25T17:27:16.875Z",
+   "conditions": {
+    "killLandedInFlight": true,
+    "inFlightMarkerPresent": true,
+    "completionMarkerAbsent": true,
+    "victimRunRecordAbsent": true,
+    "reclaimProvenanceForEveryReleasedLease": true,
+    "hostLeaseReclaimedWithProvenance": true,
+    "mockLeaseReclaimedWithProvenance": true,
+    "victimHostDead": true,
+    "hostKillPathResolved": true,
+    "reclaimKillsOnlyRecordedPids": true,
+    "zeroProcessesClaimVictimHome": true,
+    "zeroRefusals": true,
+    "homeDeletedViaOwnershipMarker": true,
+    "hostPortIdle": true,
+    "mockPortIdle": true
+   },
+   "verdictRule": "PASS ONLY with the full conjunction \u2014 the in-flight trio (pre marker present, post marker absent, no victim RUN record) proves the SIGKILL landed mid-tool; the host is resolved dead either by the group kill or by a proof-gated reclaim kill, no live process anywhere claims the destroyed home, and reclaim REFUSED nothing; anything else FAILs (this mode has no SKIP)",
+   "ownershipVerification": "reclaimWorld kills ONLY pids recorded in .u5-ownership.json re-verified via /proc/<pid>/environ DSH_HOME == victim home (no pattern/name kills)",
+   "windowsProcessTreeCleanup": "n/a (Linux)"
+  },
+  {
+   "id": "crash-simulation-reclaim",
+   "verdict": "PASS",
+   "at": "2026-10-25T17:27:18.083Z",
+   "ok": true,
+   "orphanPid": 907,
+   "orphanKilledOnlyAfterEnvironProof": true,
+   "refused": [],
+   "leaseReleased": true,
+   "homeDeleted": true,
+   "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill"
+  },
+  {
+   "id": "other-world-unaffected",
+   "verdict": "PASS",
+   "at": "2026-10-25T17:36:18.083Z",
+   "aSuite": "core",
+   "aAliveWhileBCrashedAndReclaimed": true,
+   "aExit": {
+    "via": "record+dead",
+    "synthetic": "U7-T1 re-check: forward-fixed timeline (survivor straddles kill+reclaim)"
+   },
+   "aOverall": "PASS",
+   "aCases": [
+    "token-gate=PASS",
+    "positive-control=PASS",
+    "error-return-with-effect=PASS",
+    "planted-defect-detected=PASS",
+    "oracle-blinding-divergence=PASS",
+    "leak-check=PASS",
+    "stable-instance-unchanged=PASS"
+   ]
+  },
+  {
+   "id": "pristine-host-and-stable-untouched",
+   "verdict": "PASS",
+   "at": "2026-10-25T17:36:18.187Z",
+   "hostBasePre": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "phase": "pre"
+   },
+   "hostBasePost": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "phase": "post"
+   },
+   "stableInstance": {
+    "pre": {
+     "reachable": true,
+     "status": 401
+    },
+    "post": {
+     "reachable": true,
+     "status": 401
+    }
+   }
+  },
+  {
+   "id": "sibling-homes-untouched",
+   "verdict": "PASS",
+   "at": "2026-10-25T17:36:18.187Z",
+   "foreignChanges": []
+  }
+ ],
+ "hostStarts": {
+  "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-fixt-20261026/live/budget.jsonl",
+  "thisRunCount": 0,
+  "thisRunEntries": []
+ },
+ "runners": {
+  "A": {
+   "pid": 696,
+   "record": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-fixt-20261026/live/crash-reclaim-3/run-u5-crash-2026-10-25T17-27-10-230Z-A.json"
+  },
+  "B": {
+   "pid": 697,
+   "pgid": 697,
+   "record": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-fixt-20261026/live/crash-reclaim-3/run-u5-crash-2026-10-25T17-27-10-230Z-B.json",
+   "detachedGroup": true
+  }
+ },
+ "bWorld": {
+  "id": "u5cbv-20261025T17-27-10Z",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/homes/u5cbv-20261025T17-27-10Z",
+  "hostPid": 767,
+  "inFlightTag": "crashfly-131qdg"
+ },
+ "abnormalKill": {
+  "at": "2026-10-25T17:27:14.363Z",
+  "pgid": 697,
+  "runnerPid": 697,
+  "signal": "SIGKILL",
+  "scope": "process-group",
+  "delivered": "process-group",
+  "runnerCloseReceipt": {
+   "code": null,
+   "signal": "SIGKILL"
+  },
+  "killedWhat": "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn",
+  "bWorld": {
+   "id": "u5cbv-20261025T17-27-10Z",
+   "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/homes/u5cbv-20261025T17-27-10Z",
+   "hostPid": 767,
+   "tag": "crashfly-131qdg"
+  },
+  "ownershipFile": {
+   "worldId": "u5cbv-20261025T17-27-10Z",
+   "runnerPid": 697,
+   "runnerStartedAt": "2026-10-25T17:27:10.579Z",
+   "hostPid": 767,
+   "hostPort": 3181,
+   "mockPort": 3492
+  },
+  "markersAtKill": [
+   "crashfly-131qdg.pre"
+  ],
+  "hostKillPath": "process-group-kill",
+  "hostProvenancePath": "reclaim-scan",
+  "mockProvenancePath": "reclaim-scan",
+  "sweptByPeer": [],
+  "homeClaimantsAfterReclaim": [],
+  "reclaimReceipts": {
+   "killed": [],
+   "refused": [],
+   "leasesReleased": [
+    3181,
+    3492
+   ],
+   "leaseProvenance": [
+    {
+     "port": 3181,
+     "reclaimedFrom": {
+      "pid": 697,
+      "startedAt": "2026-10-25T17:27:10.573Z",
+      "world": "u5cbv-20261025T17-27-10Z",
+      "purpose": "host"
+     }
+    },
+    {
+     "port": 3492,
+     "reclaimedFrom": {
+      "pid": 697,
+      "startedAt": "2026-10-25T17:27:10.564Z",
+      "world": "u5cbv-20261025T17-27-10Z",
+      "purpose": "mock-provider"
+     }
+    }
+   ],
+   "leaseNotes": [],
+   "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-fixt/tests/homes/u5cbv-20261025T17-27-10Z"
+  }
+ },
+ "crashSimulationControl": {
+  "ok": true,
+  "orphanPid": 907,
+  "orphanKilledOnlyAfterEnvironProof": true,
+  "refused": [],
+  "leaseReleased": true,
+  "homeDeleted": true,
+  "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill"
+ },
+ "overall": "PASS",
+ "finishedAt": "2026-10-25T17:36:18.187Z",
+ "syntheticNote": "U7-T1 R-G3-1 OFFLINE SYNTHESIS: run-3 record with the survivor-straddle proof the FORWARD-FIXED sequencing guarantees (survivor starts only after victim holds its in-flight call; kill waits for U5-IN-RUN; settle = RUN RECORD + dead pid). Not a live receipt."
+}
