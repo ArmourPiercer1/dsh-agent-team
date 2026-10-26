@@ -710,7 +710,9 @@ test('u6-proc judge — offline fixture: run u6prc5 evidence judges deterministi
 
 test('u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS', async () => {
   // Same law as the u6prc5 fixture, aimed at the POSITIVE run's evidence
-  // (u6prc9+, the line whose teamEnvelope carries request-control):
+  // (a future line whose runner observes and resolves the REAL team-root
+  // session, and whose fixture grants the ask-row right lane-scopably —
+  // see the u6prc9 disclosure below for why neither is data-solvable):
   // every case — the fail-closed eight AND the two approve-arm cases —
   // must PASS off the written digest alone (zero boots), through the SAME
   // judge the live run and the reconstruct tool use.
@@ -718,7 +720,7 @@ test('u6-proc judge — offline fixture: the review-r1 positive-arm evidence jud
   const { judgeU6Proc } = await import('./lib/u6-proc-assembly.mjs')
   const dir = new URL('../../dev/agent-workflow/evidence/u6-pr3-20261026/c2/', import.meta.url)
   const file = existsSync(dir)
-    ? readdirSync(dir).find((n) => n.includes('u6prc9') && n.endsWith('.u6proc-evidence.json'))
+    ? readdirSync(dir).find((n) => n.includes('u6prc10') && n.endsWith('.u6proc-evidence.json'))
     : undefined
   if (file === undefined) return // the positive run has not landed yet (its boot is budgeted; this pin lights up with its evidence)
   const d = JSON.parse(readFileSync(new URL(file, dir), 'utf8'))
@@ -727,7 +729,7 @@ test('u6-proc judge — offline fixture: the review-r1 positive-arm evidence jud
   for (const [id, verdict, detail] of rows) assert.equal(verdict, 'PASS', `${id} must PASS on the positive run's evidence: ${JSON.stringify(detail).slice(0, 200)}`)
 })
 
-test('u6-proc judge — offline fixture: the three forensic runs (u6prc6/u6prc7/u6prc8) judge honestly to the envelope-boundary finding', async () => {
+test('u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding', async () => {
   // The review-r1 pre-fix boots: the asker lane existed but its envelope
   // did not name `request-control`, and after that line landed (u6prc8)
   // still hit the boundary because a member template entry can only
@@ -741,16 +743,43 @@ test('u6-proc judge — offline fixture: the three forensic runs (u6prc6/u6prc7/
   const { judgeU6Proc } = await import('./lib/u6-proc-assembly.mjs')
   const dir = new URL('../../dev/agent-workflow/evidence/u6-pr3-20261026/c2/', import.meta.url)
   const files = existsSync(dir)
-    ? readdirSync(dir).filter((n) => /u6prc[678]/.test(n) && n.endsWith('.u6proc-evidence.json'))
+    ? readdirSync(dir).filter((n) => /u6prc[6789](?!\d)/.test(n) && n.endsWith('.u6proc-evidence.json'))
     : []
-  assert.equal(files.length, 3, 'all three forensic run digests are committed evidence')
+  assert.equal(files.length, 4, 'all four forensic run digests are committed evidence')
   for (const file of files) {
     const d = JSON.parse(readFileSync(new URL(file, dir), 'utf8'))
     const rows = judgeU6Proc(d, true)
     assert.equal(rows.length, 10)
+    // u6prc9 additionally flips proc:exec-door-fail-closed: its team-root
+    // grant (by design un-narrowable for the leader — resolve.ts:246-267
+    // resolves the leader caller WITHOUT callerMember, so envelope.ts's
+    // leader-entry tightening is unreachable) armed the leader ask lane;
+    // the late lane's own call then blocked on a user-approval row and the
+    // judge's positional attempt pairing read the native lane's bash
+    // result. That flip is the measured cost of the data approach and is
+    // pinned here as FAIL-on-purpose, not papered over.
+    const expectedFail = file.includes('u6prc9')
+      ? new Set(['proc:approve-spawn-once', 'proc:approve-replay-refused', 'proc:exec-door-fail-closed'])
+      : new Set(['proc:approve-spawn-once', 'proc:approve-replay-refused'])
     for (const [id, verdict] of rows) {
-      if (id.startsWith('proc:approve-')) assert.equal(verdict, 'FAIL', `${id} must FAIL on the pre-fix digests (${file})`)
+      if (expectedFail.has(id)) assert.equal(verdict, 'FAIL', `${id} must FAIL on this forensic digest (${file})`)
       else assert.equal(verdict, 'PASS', `${id} must PASS on its own measured evidence (${file})`)
+    }
+    if (file.includes('u6prc9')) {
+      // boot 4 (team-root request-control data): the envelope fix WORKED —
+      // the bridge observed the durable ask row being created (the real
+      // ask path ran) — while the final observer saw zero rows, because
+      // the canary observer/seam wiring queried the BOOT-root session
+      // ('session-u6proc-root-*') while the governed lanes live on the
+      // REAL team session ('session-u6proc-team-*'). Both halves of that
+      // contradiction are pinned from the digest's own forensic stream.
+      const forensic9 = (d.approveEvidence ?? {}).forensic ?? []
+      assert.ok(forensic9.some((line) => /request-created/.test(line)),
+        `u6prc9 must carry the bridge's request-created observation (${file})`)
+      assert.ok(forensic9.some((line) => /request-control.*mutation envelope/i.test(line)),
+        `u6prc9 must carry the boundary refusal of the NON-granted lanes (${file})`)
+      assert.ok((d.notifTurns ?? 0) > 0, 'row-creation notifications fired — a real row was born')
+      assert.equal(d.laneDone?.appr, false, 'the asker lane stayed blocked on its pending row')
     }
     if (file.includes('u6prc7') || file.includes('u6prc8')) {
       // the instrumented boots: their digests must carry the bridge's own

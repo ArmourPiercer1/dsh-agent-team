@@ -148,6 +148,56 @@ CORE PATCH BUDGET = 0; Host pin 0.2.0-rc.2 @ `639ed01539`.
 - `run-u6proc-r3` reconstruct (`cases=11 FAIL:2 PASS:9`) verified the
   shared judge's zero-boot path over the new evidence.
 
+## Review round 1 (continued) — boot 4 (u6prc9): the ask row is REAL; the observer was looking at the wrong root
+
+- `u5-u6-proc-u6prc9-*.u6proc-evidence.json`, `run-u6proc-r5.json`,
+  `u6proc-console-run9.log`, `logs/u5u6prc9-*` — the parent-authorized
+  boot 4 (ledger 4/4) on head `822da6379` (teamEnvelope names
+  `request-control` + leader pin entry + poller `tool=bash` regex; all
+  offline pins green first). Verdicts: 9 PASS, 3 FAIL
+  (`proc:approve-spawn-once`, `proc:approve-replay-refused`, and — newly
+  flipped — `proc:exec-door-fail-closed`).
+- What PROVED the positive mechanism is real: the bridge observed
+  `request-created` (fires only after `requestControl` returned a
+  persisted row — pa-control-bridge.ts:424) and `notifTurns` jumped 0→21
+  (row-creation notifications reached the leader). A REAL durable ask row
+  for the governed bash call existed on the real ask path. The asker lane
+  stayed blocked on it (`laneDone.appr=false`) — pending, unsettled,
+  exactly the product's synchronous-wait law.
+- Mechanism 1 (test wiring, decisive): the Host log names the real team
+  session `session-u6proc-team-<line>`, while every control observation
+  (`/__p6t6/state` → `control` via the boot-root-mounted p6t6 row) and
+  every `team.resolveControl` call used `session-u6proc-root-<line>` (the
+  CREATE blueprint's boot-root session). The runner observed, resolved and
+  counted against the WRONG root in ALL FOUR boots — which is also why the
+  pre-boot4 runs' 'zero rows ever existed' reading was over-claimed: rows
+  the boot-root session never held could still exist on the real team
+  session. The fixture's remaining distance to green is runner seam
+  targeting, not governance semantics.
+- Mechanism 2 (product law, data-approach blocker): the leader caller
+  resolves from the team-root identity WITHOUT a callerMember
+  (`admission/resolve.ts:246-267`; the leader is not a member instance —
+  invariants 14/15), and `callerEnvelope`'s leader-entry tightening
+  requires one (`admission/envelope.ts:113-115`). A blueprint
+  memberEnvelopes entry therefore CANNOT narrow the leader lane: naming
+  `request-control` at the team root necessarily arms the leader ask lane
+  too (the late lane then blocked on its own user-approval row, and the
+  exec-door attempt pairing shifted onto the native lane's bash output —
+  the measured flip above). A lane-scoped ask-row grant is NOT
+  representable in blueprint data; it needs either a product-side
+  lane-scoped grant (forbidden this round) or re-shaped leader lanes
+  (which breaks 'other 9 unchanged'). The offline law pin of this boot
+  had itself synthesized a leader caller shape the runtime never produces
+  — caught by the boot, disclosed here.
+- Branch state: the boot-4 fixture data was REVERTED (`7861fb307`) so the
+  branch returns to the u6prc8-measured fail-closed posture; the honest
+  judge fixtures now cover u6prc6..u6prc9 (u6prc9 pinned to FAIL on
+  exactly the three cases above, with `request-created` + notifTurns>0 +
+  `laneDone.appr=false` asserted from the digest). Boot budget 4/4 spent;
+  per instruction the loop STOPS here. The positive-effect leg lands as
+  the named U7 item (runner seam targeting the real team root + a
+  lane-scoped grant design).
+
 ## Hygiene
 
 No secrets, no live-instance material (:3080 / `~/.dsh` never touched);
