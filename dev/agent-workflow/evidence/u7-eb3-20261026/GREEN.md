@@ -1,7 +1,7 @@
 # EB3 GREEN (C4) — the negatives are now detected, the positives are preserved
 
 Worktree HEAD at capture: rebased onto `origin/master` = `4912f3197` (PR #393). Commits:
-C1 `ed5bc6aaf`, C2 `fa768a20d`, C3 `3953efe04`, C4 fixes `12ea00f65` + `687aeaac5`, P2 rebase fix `b81cb8c7f`, and this evidence commit.
+C1 `ed5bc6aaf`, C2 `fa768a20d`, C3 `3953efe04`, C4 fixes `12ea00f65` + `687aeaac5`, P2 rebase fix `b81cb8c7f`, runner fix `50824869e`, and this evidence commit.
 master moved 32 commits under this branch mid-task; everything below was RE-RUN after the rebase.
 Raw transcripts: [GREEN-existing-gate.txt](GREEN-existing-gate.txt) (mutation matrix),
 [GREEN-enforcement.txt](GREEN-enforcement.txt) (controls + every check).
@@ -62,8 +62,9 @@ node scripts/eb3-trusted-sources.mjs             pass files=1723 findings=0     
 node scripts/eb3-family-definitions.mjs          pass files=7 findings=0                 exit 0
 node scripts/eb3-family-boundaries.mjs           pass files=23 findings=0                exit 0
 node scripts/eb3-run-manifest.mjs                pass records=40 strict=0 incomplete=11  exit 0
-node scripts/eb3-impact.mjs --paths <unknown>    selection=<all 4 layers> unknown=1       exit 0
+node scripts/eb3-impact.mjs --paths <unknown>    selection=ci-fast,ci-full,ci-integration,ci-security unknown=1  exit 0
 node scripts/eb3-security-run.mjs                PASS suites=20 files=83 passed=270 clock_ms=20000  exit 0
+node scripts/eb3-impact.mjs   (no --base)        REFUSED NO_BASE (the ONE non-zero exit, by design)  exit 2
 node scripts/docs-sync.mjs --check               blocking=0                              exit 0
 node scripts/docs-probe.mjs --worktree-only      blocking=0                              exit 0
 node scripts/ci-pr-gate.mjs --self-test          pass 94 assertions (was 77 pre-#393)  exit 0

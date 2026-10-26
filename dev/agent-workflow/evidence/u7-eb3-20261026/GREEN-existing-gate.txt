@@ -1,4 +1,4 @@
-# eb3-red-baseline head=19beb3e4d at=2026-10-26T13:39:07Z
+# eb3-red-baseline head=50824869e at=2026-10-26T14:00:24Z
 == baseline (no mutation): the existing gate must be green here
   [baseline] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
   OK   [baseline] existing gate green on the unmutated tree (precondition met)
