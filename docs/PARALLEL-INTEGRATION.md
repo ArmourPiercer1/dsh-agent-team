@@ -43,6 +43,8 @@ binding (field `bindings.teamSha`):
 | `NO_TEAM_SHA` | no binding SHA in the record | No |
 | `INCOMPLETE_RECORD` | no `overall`, zero cases, or no `finishedAt` | No — not delivery |
 
+Records the scan refuses on size are listed under `NOT GRADED` with their byte count (see §4).
+
 An `INCOMPLETE_RECORD` is important: a C2 run that was started but never finished has `overall:null`
 and zero `cases`. That is not "C2 pending" — it is a record with no verdict. It is not delivery.
 
@@ -77,23 +79,26 @@ node scripts/integration-order.mjs --target origin/master --branch <family/branc
 # "unresolvable target" REFUSES exit 2 — absence is never a clean report
 ```
 
-Observed against this tree (origin/master = `94890f090`, 2026-10-26):
+Two recorded runs, each quoted only from its own receipt (counts grow as evidence is merged, so the
+command is the fact; re-run it for a current value):
+
+| Receipt | Base | Records | MERGED_ANCESTOR | INCOMPLETE_RECORD | NO_TEAM_SHA | NOT GRADED | EXACT_MERGED_HEAD |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| [eb4de-receipts.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4de-receipts.txt) | `94890f090` | 40 | 27 | 11 | 2 | 6 | 0 |
+| [eb4c-receipts-r2.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts-r2.txt) | `c5e43f1d5` (pinned) | 45 | 32 | 11 | 2 | 11 | 0 |
+
+Both end on the same rule line, e.g. at the later base:
 
 ```text
-integration-order: target=origin/master head=94890f090272 records=40
-MERGED_ANCESTOR (27) — teamSha is merged but BEHIND the candidate: it did not test the candidate (re-run)
-  …(lag 42–131 commits, from prior PR lanes)
-NO_TEAM_SHA (2) — the record binds no Team SHA at all
-INCOMPLETE_RECORD (11) — record never finished (no overall verdict, zero cases, or no finishedAt) — not delivery
-NOT GRADED (6):
-  …4 × a4-pr7/ci-gate/scratch/census-*.json (~3.7 MB each) and 2 × u6-pr2 golden-vector files, over the
-  512 KiB record cap — listed, not silently skipped; none of them is a u5-run-record
-RULE branch-local C2 cannot substitute for merged-head C2: 27 record(s) do not bind the candidate; 0 do.
+RULE branch-local C2 cannot substitute for merged-head C2: 32 record(s) do not bind the candidate; 0 do.
 ```
 
-`BRANCH_LOCAL` is reachable on real commits, not only in the self-test: this branch's own tip
-(`30e280932762`, a descendant of `origin/master`) classifies as `BRANCH_LOCAL … ahead of the
-candidate by 2 commit(s)`. A record bound to a family branch reads exactly like that against the
+`NOT GRADED` lists files over the 512 KiB record cap by name and byte count — skipped loudly, never
+silently; none of them is a `u5-run-record`.
+
+`BRANCH_LOCAL` is reachable on real commits, not only in the self-test: this branch's own tip is a
+descendant of `origin/master`, and a record bound to it classifies as `BRANCH_LOCAL … ahead of the
+candidate by N commit(s)` (the receipt records the SHAs and N of the run). A record bound to a family branch reads exactly like that against the
 merged head — which is why the class exists.
 
 The fact that 0 records are `EXACT_MERGED_HEAD` at the current master head is the correct reading:
@@ -102,15 +107,19 @@ for those lanes** — their C2 ran on the candidate for THEIR merge. It becomes 
 that claims the evidence covers THIS tree.
 
 Bounds (declared): ≤ 400 records scanned (`.json`, ≤ 512 KiB each), ≤ 40 rows per class, stdout ≤
-24 KiB, no child process beyond `git`. Read-only. 0.4 s measured on this tree.
+24 KiB, no child process beyond `git`. Read-only; it is one pass over the evidence tree plus a
+memoized git pair per distinct SHA.
 
-The four `census-*.json` captures under `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/` (plus
-four `census-comparison-*.json`, ~15 MB together) are **tracked at master**: they entered with U7-6
-commit `d41168bd0`, while the directory's own
+Most `NOT GRADED` entries are vitest census captures under
+`dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/` that are **tracked at master**, although that
+directory's own
 [UNTRACKED-SCRATCH.md](../dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/UNTRACKED-SCRATCH.md) says
-such captures are "not to be committed". This branch did not add or remove them. They are not run
-records, so here they only cost a `NOT GRADED` line; whether they stay in git is the evidence owner's
-(EB4-A) call, not this checker's.
+such captures are "not to be committed". At `c5e43f1d5` there are 18 of them (9 `census-*` +
+9 `census-comparison-*`, 32.1 MB), added by U7-6 `d41168bd0` (6 files) and `0b6ce0213` (2), U7-4a
+`f6a119736` (6), and the U7-4a merge `30ed4ec0b` (4); U7-6 `4cbf414f6` un-tracked two others that had
+been swept in the same way. The count grew while this page was being written, which is the point:
+nothing stops it. This branch neither adds nor removes any of them. Here they only cost a
+`NOT GRADED` line; whether they stay in git is the evidence owner's (EB4-A) call, not this checker's.
 
 ## 5. What this does not answer
 

@@ -1,10 +1,13 @@
 # Recovery (EB4-C)
 
 **State: `DELIVERED` for the read/verify/restore drills below; the history-moving steps are `UNRUN`
-on purpose.** Every command marked with an observed result was run in the `u7-3` worktree at
-`origin/master` (`f71159648`). Anything that rewrites shared history, moves the authority pointer or
-deletes a world is written down and marked `UNRUN` with the reason — those are approval-gated
-operations, not cold-start steps.
+on purpose.** Every "observed" value on this page is quoted from a committed receipt, never from
+memory: [eb4c-receipts-r2.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts-r2.txt)
+(state table, gate, `evidence-store verify`; its header names the base SHA and time) and
+[eb4c-receipts.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts.txt) (the restore
+drill). Anything that rewrites shared history, moves the authority pointer or deletes a world is
+written down and marked `UNRUN` with the reason — those are approval-gated operations, not
+cold-start steps.
 
 Use this page when a step in [INSTALL-COLD-START.md](./INSTALL-COLD-START.md) fails, or when the
 tree is not the thing you think it is. Release-line recovery (master vs stable, RC fixes) lives in
@@ -13,15 +16,19 @@ tree is not the thing you think it is. Release-line recovery (master vs stable, 
 
 ## 1. First: what state am I in?
 
-Run these before changing anything. All are read-only.
+Run these before changing anything. All are read-only. The right-hand column is what a healthy
+answer looks like; the receipt's `## state` section holds the verbatim output recorded at its base.
 
-| Question | Command | Observed here |
+| Question | Command | Healthy answer (recorded in the receipt) |
 | --- | --- | --- |
-| Which commit, which branch? | `git status --short --branch` · `git log --oneline -1` | clean, on the task branch |
-| Is the worktree secretly sparse? | `git sparse-checkout list` | `fatal: this worktree is not sparse` (good) |
-| Which current authority? | `node scripts/current-authority.mjs status` | `ok:true`, `POINTER`, snapshot `as20261026r1`, `two_current_findings: []` |
-| Is the test host pristine? | `git -C tests/deepseek-harness-test-use status --porcelain` and `rev-parse HEAD` | empty; `639ed015397290b3745d163aafe02ffee4aa3f84` = `tests/paths.mjs` pin |
-| Does the gate agree? | `node scripts/ci-pr-gate.mjs` | `DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census` |
+| Which commit, which branch? | `git status --short --branch` · `git log --oneline -1` | a `## <task branch>...origin/<task branch>` line and no `M`/`??` lines; the commit you expect |
+| Is the worktree secretly sparse? | `git sparse-checkout list` | `fatal: this worktree is not sparse` |
+| Which current authority? | `node scripts/current-authority.mjs status` | `ok:true`, `POINTER`, `two_current_findings: []` |
+| Is the test host pristine? | `git -C <root checkout>/tests/deepseek-harness-test-use status --porcelain` · `… rev-parse HEAD` | no lines; HEAD = `TEST_USE_BASELINE_SHA` in [tests/paths.mjs](../tests/paths.mjs) |
+| Does the gate agree? | `node scripts/ci-pr-gate.mjs` | a `DSH-CI-VERDICT pass …` line (census `skip` is by name in default mode) |
+
+The test host lives in the **root** checkout; a task worktree reaches it as
+`../../tests/deepseek-harness-test-use` (that is how the receipt ran it).
 
 A sparse worktree silently hides tracked files (U3 measured this; see
 [docs/TEST_METHODS.md §8](./TEST_METHODS.md)). If `git sparse-checkout list` prints patterns, run
@@ -48,13 +55,14 @@ store (index: `dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv`). Tool:
 
 ```bash
 node scripts/evidence-store.mjs verify
-# verify verdict=pass entries=20148 bytes_ok=521862486 findings=0        (observed, exit 0)
+# healthy: `verify verdict=pass … findings=0`, exit 0 (entry count and byte total: see the receipt)
 
 node scripts/evidence-store.mjs restore <manifest path> --to <scratch dir>
 node scripts/evidence-store.mjs restore <manifest path> --to <scratch dir> --from-git
 ```
 
-Restore drill, observed on the first manifest entry into a scratch dir under `.artifacts/tmp/`:
+Restore drill, recorded in [eb4c-receipts.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts.txt)
+on the first manifest entry into a scratch dir under `.artifacts/tmp/`:
 
 * store restore → `RESTORED`, exit 0;
 * the same restore again → `FINDING EXISTS … restore never overwrites`, exit 1 (exclusive create);

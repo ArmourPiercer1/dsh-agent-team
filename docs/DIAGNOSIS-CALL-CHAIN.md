@@ -37,8 +37,9 @@ plausible:
 
 ## 2. Run it
 
-Every command below was run in the `u7-3` worktree at `origin/master` (`f71159648`) with the outputs
-quoted from [the receipts file](../dev/agent-workflow/evidence/u7-3-20261026/eb4b-receipts.txt).
+Every command below was run in the `u7-3` worktree; the recorded output is in
+[the EB4-B receipts](../dev/agent-workflow/evidence/u7-3-20261026/eb4b-receipts.txt) (header: base SHA
+and time). Output shown here is quoted from that file; re-run the command for a current value.
 
 ```bash
 node scripts/diag-call-chain.mjs --self-test
@@ -97,11 +98,11 @@ shadow-ledger row (redacted, and the non-credential remainder kept so the eviden
 | Bound | Value | Enforced by |
 | --- | --- | --- |
 | input size | ≤ 1 MiB | refuses before reading (`INPUT_OVER_BOUND`, exit 2) |
-| refusals reported | ≤ 12 (rest counted, `truncated=true`) | `BOUNDS.maxRefusals`; measured worst case 15486 B text / 10599 B `--json` |
+| refusals reported | ≤ 12 (rest counted, `truncated=true`) | `BOUNDS.maxRefusals`; worst case **fits** the cap below (byte counts in the receipts) |
 | per free-text field | ≤ 160 chars, cut **after** redaction | `BOUNDS.detailCap` |
 | total stdout | ≤ 24 KiB | refuses (`OUTPUT_OVER_BOUND`, exit 2) |
 | input file kind | regular file only | symlink/directory refused |
-| time | one read + string work; ≈ 80 ms per invocation measured here | — |
+| time | one read + string work (per-invocation cost in the receipts) | no spawn, no network |
 | side effects | none: no child process, no network, no writes, no port | by construction (no imports beyond `node:fs`/`node:path`/the redaction table) |
 
 Exit codes: `0` every refusal attributed (single face, or `AMBIGUOUS` with all candidates named) ·

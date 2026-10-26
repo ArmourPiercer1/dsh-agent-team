@@ -2,24 +2,39 @@
 
 **State: the release line is described, not exercised. Alpha.5 release is `BLOCKED`** (whole-tool
 approval not reached — see the matrix named by the current authority). This page does not cut, tag,
-push or promote anything; every promotion step below is `UNRUN` and approval-gated. The facts in §1
-were read from git in the `u7-3` worktree (`origin/master` = `f71159648`).
+push or promote anything; every promotion step below is `UNRUN` and approval-gated. §1 gives each
+fact **as a command**, because the command is the fact: anything that moves with every merge (a commit
+count, a master SHA) is not written into this page. The values recorded when this page was written are
+in the receipt [eb4c-receipts-r2.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts-r2.txt)
+(its header names the base SHA and time); re-run the command for the current value.
 
 The branch policy itself is owned by [docs/BRANCHING.md](./BRANCHING.md); this page does not restate
 it, it gives the verified facts and the procedure shape. Cold-start for a checkout:
 [INSTALL-COLD-START.md](./INSTALL-COLD-START.md). Mounting into a DSH profile:
 [docs/INSTALL.md](./INSTALL.md). When something goes wrong: [RECOVERY.md](./RECOVERY.md).
 
-## 1. Current release facts (read, not asserted)
+## 1. Release facts (read, not asserted)
+
+Two kinds of fact, kept apart on purpose:
+
+**Stable by construction** — an annotated tag never moves, and `stable` moves only by a recorded RC
+decision. These are written here and re-checkable with the command beside them:
 
 | Fact | Value | Command |
 | --- | --- | --- |
-| RC baseline tag | `0.1.0-rc.1`, annotated (`git cat-file -t` = `tag`), peels to `b0e5aeb482e27242d523b85129a899dc322d1154` | `git rev-parse '0.1.0-rc.1^{commit}'` |
-| `stable` | `b0e5aeb48` = the tag peel (stable has not moved since the RC freeze) | `git rev-parse origin/stable` |
-| `stable` vs `master` | `stable` is an ancestor of `master`; master carries 1418 commits not in stable | `git merge-base --is-ancestor origin/stable origin/master` · `git rev-list --count origin/stable..origin/master` |
-| master version | `0.1.1-alpha.2` (all 9 packages) | `node -p "require('./package.json').version"` |
-| master host pin | exact `@deepseek-ai/dsh@0.2.0-rc.2` (root `peerDependencies`) | `node -p "require('./package.json').peerDependencies"` |
-| current phase / matrix | `alpha5-tool-io-governance`; matrix path from the snapshot | `node scripts/current-authority.mjs status` |
+| RC baseline tag | `0.1.0-rc.1`, annotated (`git cat-file -t` = `tag`), peels to `b0e5aeb482e27242d523b85129a899dc322d1154` | `git rev-parse '0.1.0-rc.1^{commit}'` · `git cat-file -t 0.1.0-rc.1` |
+| `stable` | equal to the tag peel at the time of the receipt (stable had not moved since the RC freeze) | `git rev-parse origin/stable` |
+
+**Volatile** — these change with every merge to master, so the page names the command only; the
+receipt records the value at its own base:
+
+| Fact | Command | Expected shape |
+| --- | --- | --- |
+| `stable` is an ancestor of `master` | `git merge-base --is-ancestor origin/stable origin/master` | exit 0 |
+| how far master is ahead of stable | `git rev-list --count origin/stable..origin/master` | a commit count (grows) |
+| master version | `node -p "require('./package.json').version"` | an `-alpha.N` version |
+| master host pin | `node -p "require('./package.json').peerDependencies"` | exact `@deepseek-ai/dsh*@<version>` pins |
+| current phase / matrix | `node scripts/current-authority.mjs status` | `ok:true`, six fields, `two_current_findings: []` |
 
 ## 2. What a release candidate must carry (procedure shape)
 
@@ -31,20 +46,22 @@ Alpha.5 released**; release also needs an explicit user decision. A candidate is
 * Profile / config digest, trusted tool-sources digest;
 * World / Oracle / Authority digests; every RUN cites the same snapshot.
 
-Install-surface integrity for that SHA is checkable today:
+Install-surface integrity for that SHA is checkable today. The healthy result is shown beside each
+command; the recorded output is in [eb4c-receipts-r2.txt](../dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts-r2.txt)
+(`## verify`, and the `## addendum` for the zero-core scans):
 
 ```bash
-pnpm check:artifacts:head        # observed: verdict=ok drift=0 (HEAD rebuilt in scratch, byte-compared)
-pnpm check:install-manifest      # observed: OK check-install-manifest: graph=451 visits … lock leg: PASS
-node scripts/composition-smoke.mjs   # observed: PASS composition-smoke
+pnpm check:artifacts:head        # healthy: subject=commit … verdict=ok drift=0 (HEAD rebuilt in scratch, byte-compared)
+pnpm check:install-manifest      # healthy: exit 0, `OK check-install-manifest: graph=<n> visits …`
+node scripts/composition-smoke.mjs   # healthy: PASS composition-smoke
 node scripts/verify-zero-core.mjs --host <root checkout>/tests/deepseek-harness-test-use
-                                 # observed: RESULT: PASS verify-zero-core (0 findings) — C1–C3 on the pristine host
+                                 # healthy: RESULT: PASS verify-zero-core (0 findings) — C1–C3 on the pristine host
                                  # (run from the task worktree as --host ../../tests/deepseek-harness-test-use:
                                  #  a worktree has no host checkout of its own)
 ```
 
 `verify-zero-core --plugin <dir>` additionally runs the C4 private-import scan on a plugin directory.
-Observed here: `--plugin packages/runtime/dist` → 0 findings; `--plugin packages/client/composition-shim`
+Recorded in the receipt's addendum: `--plugin packages/runtime/dist` → 0 findings; `--plugin packages/client/composition-shim`
 → 2 findings, both on `{@link import('../uniqueness.js')}` **JSDoc text** carried into the bundle
 (not executable imports); `--plugin .` (the whole repo, tests included) → 10 findings, all in test
 files and characterization negative fixtures that deliberately reach into the host. Those are
