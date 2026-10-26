@@ -243,3 +243,20 @@ proc admission refusals); (2) confined-provider writable-anchor policy —
 the sandboxed bash has ZERO writable grants, so no CI/effect design may
 ride bash workspace writes; (3) the census-boot tool surface has no
 builtin `write` (edit needs read-first — committed chain awaits boot).
+
+## Gates (pre-PR, this worktree)
+
+- C1: `world-factory.test.mjs` 33/33; `u6-arc-d.test.mjs` 7/7; vitest
+  `u6-pr6-arc-d-matrix.test.ts` 4/4; `pnpm typecheck` clean.
+- ci-pr-gate required legs: `DSH-CI-VERDICT pass pass=7 fail=0 skip=1
+  skipped=census` (named skip).
+- ci-pr-gate `--full` (sandboxed store-dir, removed after): census is
+  REFUSED in this worktree because the gitignored pristine host tree
+  `tests/deepseek-harness-test-use` exists only in the main checkout
+  (environment, not the diff) — declared per the instrument's own law:
+  `DSH-CI-VERDICT pass pass=7 fail=0 skip=0 refused=1 refusedlegs=census`.
+- docs:probe `--worktree-only`: `blocking=0 non_blocking=0 advisories=2`.
+- lint-identities: baseline 76 distinct, new 0.
+- PR #389 checks: `candidate-protection pass`, `pr-gate pass (2m5s)`,
+  `census-runtime pass (14m26s)` — the hosted census leg (which provisions
+  the host tree) is GREEN, closing the worktree refusal. DO NOT MERGE.
