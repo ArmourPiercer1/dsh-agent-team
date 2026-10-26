@@ -521,6 +521,18 @@ const SCANNED_PATHS_U70: readonly string[] = [
   'packages/testkit/census/fixtures/make-fixture.mjs',
   'packages/testkit/test/u7-0-census-reconcile.test.ts',
 ]
+// u7-w0b (named center-interface PR, branch task/u7-w0b-plane-family-seam-
+// 20261026): the ONE approval-entry binder the governed plane uses in place of
+// its five per-family ensure<X>ApprovalEntry copies, and the law suite that
+// pins every bind-once clause per family (with planted counterexamples). The
+// plane + dist mirror edits ride ALREADY-COUNTED files; zero denylist
+// vocabulary. MEASURED: the unbooked run of this suite read
+// `expected 1308 to be 1306` (dev/agent-workflow/evidence/u7-w0b-20261026/
+// p4t6-RED-unbooked.log).
+const SCANNED_PATHS_U7W0B: readonly string[] = [
+  'packages/runtime/src/plugin/live/approval-entry-binder.mjs',
+  'packages/runtime/test/u7-w0b-approval-entry-law.test.ts',
+]
 // MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
 // per-round constants (PR4 +2, PR5 +12) and the total pin below is the
 // UNION expression — no prose total is load-bearing. On the merged tree
@@ -3153,7 +3165,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR6.length +
         SCANNED_PATHS_U74A.length +
         SCANNED_PATHS_U70.length +
-        SCANNED_PATHS_U79A.length,
+        SCANNED_PATHS_U79A.length +
+        SCANNED_PATHS_U7W0B.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3229,7 +3242,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR6.length +
         SCANNED_PATHS_U74A.length +
         SCANNED_PATHS_U70.length +
-        SCANNED_PATHS_U79A.length,
+        SCANNED_PATHS_U79A.length +
+        SCANNED_PATHS_U7W0B.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3326,6 +3340,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U74A,
       ...SCANNED_PATHS_U70,
       ...SCANNED_PATHS_U79A,
+      ...SCANNED_PATHS_U7W0B,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3800,6 +3815,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // this suite recorded `expected 1289 to be 1277` (received-then-booked) (the +12 census-library
     // increment; no cross-round prose total is load-bearing).
     expect(SCANNED_PATHS_U70.length).toBe(1289 - 1277)
+    // u7-w0b: the measured delta on THIS tree (unbooked RED `expected 1308 to be 1306`).
+    expect(SCANNED_PATHS_U7W0B.length).toBe(1308 - 1306)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

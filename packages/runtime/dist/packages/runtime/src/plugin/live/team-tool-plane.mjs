@@ -164,6 +164,7 @@ import {
   buildJobsManagementRowDefs,
   JOBS_MANAGEMENT_NAMES,
 } from './jobs-family-bridge.mjs'
+import { claimTableOf, createApprovalEntryBinder } from './approval-entry-binder.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -2138,6 +2139,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     kernelFamilies.jobs = true
   }
+  // The mount-time claim table (u7-w0b S2): which registered candidate
+  // claims which native name, read once from the registered descriptors.
+  const mountClaims = claimTableOf(registry)
   // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
   // mount's scopeKey — the scoped resolution this plane IS (the same
   // `teamRoot:instanceId` law the shadow row audits under). Name-only
@@ -2213,179 +2217,32 @@ export function createTeamToolPlaneAssembly(input = {}) {
       ),
       identityFor: (name) => {
         if (typeof name !== 'string') return null
-        if (name === readName) {
-          const entry = ensureReadApprovalEntry()
-          return entry === null ? null : entry.definitionIdentity
-        }
-        if (kernelFamilies.fsMutation === true
-          && (name === WRITE_NATIVE_NAME || name === EDIT_NATIVE_NAME || name === READ_IMAGE_NATIVE_NAME)) {
-          const entry = ensureFsMutationApprovalEntry(name)
-          return entry === null ? null : entry.definitionIdentity
-        }
-        if (name === bashName) {
-          const entry = ensureBashApprovalEntry()
-          return entry === null ? null : entry.definitionIdentity
-        }
-        if (name === grepName || name === globName) {
-          const entry = ensureSearchApprovalEntry(name)
-          return entry === null ? null : entry.definitionIdentity
-        }
-        if (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name)) {
-          const entry = ensureJobsApprovalEntry(name)
-          return entry === null ? null : entry.definitionIdentity
-        }
-        return null
+        const entry = ensureApprovalEntry(name)
+        return entry === null ? null : entry.definitionIdentity
       },
     }),
   }
 
-  // The bind-ONCE law, scope- and candidate-bound (FIX-K K1/K4, R-REM-2.1):
-  // the entry binds at the FIRST lookup-time consult (the pb §6 mint law is
-  // untouched) as a (scopeKey, nativeName) entry bound to the live
-  // 'dsh.fs-family' candidate — the kernel snapshots the binding's
-  // generation + source digest and revalidates it on EVERY read. The attempt
-  // is never repeated within a mount: when that revalidation later
-  // invalidates the binding (revoke, re-registration, generation or
-  // source-digest drift), `approvalFor` reads the entry as GONE, this feed
-  // goes SILENT, and the Guard's no-feed refusal lands BEFORE the body. A
-  // lookup never re-mints authority and a re-registration never resurrects
-  // one — only the next reviewed assembly mount (a fresh kernel) approves.
-  let readEntryAttempted = false
-  const ensureReadApprovalEntry = () => {
-    if (centerKernel === null || centerKernel.families.read !== true) return null
-    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName)
-    if (existing !== undefined) return existing
-    if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
-    const d = placedByName.get(readName)
-    if (d === undefined) return null
-    const identity = definitionIdentityOf(d)
-    // Not minted yet (never installed through the seam's fingerprint pass):
-    // NO entry — the feed stays silent and the Guard's no-feed refusal lands.
-    // (This does NOT latch the attempt: the def#N mint lands during the same
-    // install flow, and a later consult inside the lookup window may bind.)
-    if (identity === null) return null
-    readEntryAttempted = true
-    const added = centerKernel.kernel.addApprovalEntry({
-      scopeKey: centerKernel.scopeKey,
-      nativeName: readName,
-      definitionIdentity: identity,
-      familyId: 'dsh.fs-family',
-    })
-    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName) ?? null
-  }
-  // U7-9a (CA-01): the THREE fs mutation entries follow the IDENTICAL
-  // bind-ONCE law on the SAME kernel, scopeKey and the SAME 'dsh.fs-family'
-  // candidate (the one descriptor that claims their names) — one latch PER
-  // NAME (a failed write bind never silences edit's fresh one), invalidation
-  // goes SILENT (never re-mints, never resurrects). The rows always mount
-  // together with the read row (fs lane law), so the only silent-feed shapes
-  // are pre-mint consults (not latched) and post-invalidation ones (latched).
-  const fsMutationEntryAttempted = new Map()
-  const ensureFsMutationApprovalEntry = (name) => {
-    if (centerKernel === null || centerKernel.families.fsMutation !== true) return null
-    if (name !== WRITE_NATIVE_NAME && name !== EDIT_NATIVE_NAME && name !== READ_IMAGE_NATIVE_NAME) return null
-    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
-    if (existing !== undefined) return existing
-    if (fsMutationEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
-    const d = placedByName.get(name)
-    if (d === undefined) return null
-    const identity = definitionIdentityOf(d)
-    if (identity === null) return null
-    fsMutationEntryAttempted.set(name, true)
-    const added = centerKernel.kernel.addApprovalEntry({
-      scopeKey: centerKernel.scopeKey,
-      nativeName: name,
-      definitionIdentity: identity,
-      familyId: 'dsh.fs-family',
-    })
-    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
-  }
-  // U6 PR3 (ARC-B): the shell entry follows the IDENTICAL bind-ONCE law on
-  // the SAME kernel, the SAME scopeKey, and the sibling family candidate —
-  // the entry binds at the first lookup-time consult as a
-  // (scopeKey, bashName) entry bound to the live 'dsh.process-family'
-  // candidate; invalidation goes SILENT (never re-mints, never resurrects).
-  // The bash row ALWAYS mounts, so the only silent-feed shapes are
-  // pre-mint consults (not latched) and post-invalidation ones (latched).
-  let bashEntryAttempted = false
-  const ensureBashApprovalEntry = () => {
-    if (centerKernel === null || centerKernel.families.shell !== true) return null
-    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName)
-    if (existing !== undefined) return existing
-    if (bashEntryAttempted) return null // invalidated/failed — never rebound in this mount
-    const d = placedByName.get(bashName)
-    if (d === undefined) return null
-    const identity = definitionIdentityOf(d)
-    if (identity === null) return null
-    bashEntryAttempted = true
-    const added = centerKernel.kernel.addApprovalEntry({
-      scopeKey: centerKernel.scopeKey,
-      nativeName: bashName,
-      definitionIdentity: identity,
-      familyId: 'dsh.process-family',
-    })
-    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName) ?? null
-  }
-  // U6 PR5 (ARC-A family move): the TWO search entries follow the IDENTICAL
-  // bind-ONCE law on the SAME kernel and scopeKey, bound to the sibling
-  // 'dsh.search-family' candidate — one latch PER NAME (grep's failed/
-  // invalidated bind never silences glob's fresh one; the names are distinct
-  // kernel table keys). The rows ALWAYS mount (the glob row's disabled form
-  // lands on the typed shut face but is still this family's placed, table-
-  // owned row), so the only silent-feed shapes are pre-mint consults (not
-  // latched) and post-invalidation ones (latched) — same as read/bash.
-  const searchEntryAttempted = new Map()
-  const ensureSearchApprovalEntry = (name) => {
-    if (centerKernel === null || centerKernel.families.search !== true) return null
-    if (name !== grepName && name !== globName) return null
-    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
-    if (existing !== undefined) return existing
-    if (searchEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
-    const d = placedByName.get(name)
-    if (d === undefined) return null
-    const identity = definitionIdentityOf(d)
-    if (identity === null) return null
-    searchEntryAttempted.set(name, true)
-    const added = centerKernel.kernel.addApprovalEntry({
-      scopeKey: centerKernel.scopeKey,
-      nativeName: name,
-      definitionIdentity: identity,
-      familyId: 'dsh.search-family',
-    })
-    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
-  }
-  // U6 PR4 (ARC-C): the trio entries follow the IDENTICAL bind-ONCE law on
-  // the SAME kernel, the SAME scopeKey, and the sibling 'dsh.jobs-family'
-  // candidate — one latch per name (three names, three entries, one table).
-  // Invalidation goes SILENT exactly as above: never re-mints, never
-  // resurrects; only the next reviewed assembly mount (a fresh kernel)
-  // approves. A mount WITHOUT the registered bridge has no jobs candidate,
-  // so addApprovalEntry for these names could only fail closed anyway —
-  // the families.jobs gate simply states that law where it is read.
-  const jobsEntryAttempted = new Map(JOBS_MANAGEMENT_NAMES.map((n) => [n, false]))
-  const ensureJobsApprovalEntry = (name) => {
-    if (centerKernel === null || centerKernel.families.jobs !== true) return null
-    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
-    if (existing !== undefined) return existing
-    if (jobsEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
-    const d = placedByName.get(name)
-    if (d === undefined) return null
-    const identity = definitionIdentityOf(d)
-    if (identity === null) return null
-    jobsEntryAttempted.set(name, true)
-    const added = centerKernel.kernel.addApprovalEntry({
-      scopeKey: centerKernel.scopeKey,
-      nativeName: name,
-      definitionIdentity: identity,
-      familyId: 'dsh.jobs-family',
-    })
-    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
-  }
+  // The bind-ONCE law, scope- and candidate-bound (FIX-K K1/K4, R-REM-2.1),
+  // written ONCE for every governed family (u7-w0b S2 — see
+  // approval-entry-binder.mjs): the entry binds at the FIRST lookup-time
+  // consult (the pb §6 mint law is untouched) as a (scopeKey, nativeName)
+  // entry bound to the candidate that CLAIMS the name on this mount — the
+  // familyId comes from the registered descriptor, never from a caller. The
+  // kernel snapshots the binding's generation + source digest and
+  // revalidates it on EVERY read; the attempt is never repeated within a
+  // mount, so when that revalidation later invalidates the binding (revoke,
+  // re-registration, generation or source-digest drift) the feed goes
+  // SILENT and the Guard's no-feed refusal lands BEFORE the body. A lookup
+  // never re-mints authority and a re-registration never resurrects one —
+  // only the next reviewed assembly mount (a fresh kernel) approves.
+  const ensureApprovalEntry = createApprovalEntryBinder({
+    kernel,
+    scopeKey: kernelScopeKey,
+    claimOf: (name) => mountClaims.get(name),
+    placedDefinition: (name) => placedByName.get(name),
+    identityOf: definitionIdentityOf,
+  })
 
   const placementFeed = (name) => {
     const d = placedByName.get(name)
@@ -2400,16 +2257,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // the table, this feed keeps answering the TABLE identity and the
       // Guard's own live-vs-feed comparison refuses (cond 6: an identity
       // mismatch never executes).
-      const entry = name === readName
-        ? ensureReadApprovalEntry()
-        : name === bashName
-          ? ensureBashApprovalEntry()
-          : name === grepName || name === globName
-            ? ensureSearchApprovalEntry(name)
-            : centerKernel !== null && centerKernel.families.fsMutation === true
-              && (name === WRITE_NATIVE_NAME || name === EDIT_NATIVE_NAME || name === READ_IMAGE_NATIVE_NAME)
-              ? ensureFsMutationApprovalEntry(name)
-              : ensureJobsApprovalEntry(name)
+      const entry = ensureApprovalEntry(name)
       return entry === null
         ? undefined
         : Object.freeze({ definitionIdentity: entry.definitionIdentity, realmId })

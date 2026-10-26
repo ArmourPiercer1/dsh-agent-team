@@ -118,6 +118,14 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
   },
+  // u7-w0b S2: the ONE approval-entry binder the plane imports in place of
+  // its five per-family copies. Imported by team-tool-plane.mjs through a
+  // sibling relative specifier, so it must sit beside the plane's mirror
+  // copy (same ERR_MODULE_NOT_FOUND class as the entry above).
+  {
+    src: 'packages/runtime/src/plugin/live/approval-entry-binder.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/approval-entry-binder.mjs',
+  },
   // U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution
   // producer is imported by the production entry (agent-bindings.mjs) via a
   // relative `.mjs` specifier tsc never emits — the same GLUE-6 RED-A class:
