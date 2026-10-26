@@ -104,3 +104,16 @@ carries `authorized:true` (§10.4: discovery reports, never authorizes).
   spawn and after the run (`assertHostBase`), porcelain stayed empty.
 - Homes under `tests/homes/` (workspace), deleted at teardown; leak-check
   (pids/ports/leases/home) PASS in every RUN record.
+
+## CI receipts (PR #386, head 512d164856942cea31655d0e90b7628bd78329a1)
+
+- pr-gate PASS (1m19s); candidate-protection PASS (14s); census-runtime
+  PASS (18m18s — the no-exemption leg: pinned pristine host provisioned,
+  nine-root census with NO refusals, transcript re-graded).
+- Root vitest vs pristine master (496a3980f) measured IN THIS ENVIRONMENT:
+  the only regression the branch introduced was the a5p0 lane-audit
+  consumer-mention hit (code-string mention of the lane name; zero import
+  edges — fixed by rewording, commit 512d16485, no consumer booking).
+  All 11 remaining reds reproduce identically on pristine master here
+  (HTU/environment legs); zero NEW reds from this PR.
+- PR left OPEN for reviewer merge (DO-NOT-MERGE discipline per task).
