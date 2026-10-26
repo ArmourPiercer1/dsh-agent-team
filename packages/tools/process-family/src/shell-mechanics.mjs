@@ -7,10 +7,11 @@
  * SHELL_STREAM_DRAIN_MS / drainShellStdio — every law comment carried
  * with the code: the closed tie law exited > timedOut > aborted, the
  * closed AgentCancelCause cancel law, the drain-on-exit completeness
- * law). The center file (`plane-effect-backends.mjs`) keeps the OLD
- * export surface as a re-export so every pinned consumer (a5b2-exit-code-
- * fidelity, a5b3-cancel-leg, alpha5-glue7-plane-backends) resolves
- * UNCHANGED — the PR2 fs-family precedent.
+ * law). U6 PR6: the legacy center file (`plane-effect-backends.mjs`) is
+ * DELETED — this lane is the single home; the pinned consumers
+ * (a5b2-exit-code-fidelity, a5b3-cancel-leg, alpha5-glue7-plane-backends)
+ * retargeted to this lane's index face in the same round (U6-SLICE-PLAN
+ * scope B; removal proof dev/agent-workflow/evidence/u6-pr6-20261026/).
  *
  * @module process-family/shell-mechanics
  */

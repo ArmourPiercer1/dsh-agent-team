@@ -194,7 +194,8 @@ const SCANNED_PATHS_A5MCPB: readonly string[] = [
 // consumerfix-p4t6-red-unbooked.raw) — the booked 1210 plus exactly these two paths.
 const SCANNED_PATHS_A5READSLICE: readonly string[] = [
   'packages/runtime/test/a5-read-slice-window.test.ts',
-  'packages/runtime/src/plugin/live/plane-effect-backends.d.mts',
+  // U6 PR6 RETIREMENT: the .d.mts left the world with its .mjs (legacy center
+  // site deleted); named in RETIRED_PATHS_U6PR6, pinned ABSENT, tie corrected.
 ]
 // a5-cancel-leg (branch `a5-cancel-leg` off master 1739b262): the cooperative cancel
 // leg of the TWO async confined-rg rows. THREE new scannable files: the shared mechanics
@@ -421,6 +422,35 @@ const SCANNED_PATHS_U6PR5: readonly string[] = [
   'packages/runtime/test/u6-arc-a-fitness.test.ts',
   'packages/testkit/test/arc-a-fitness/scan.mjs',
   'packages/testkit/test/arc-a-fitness/scan.d.mts',
+]
+// U6 PR6 (branch task/u6-pr6-arc-d-g4-20261026): THE FIRST REMOVAL ROUND in this
+// census's history. The round books TWO new scannable specs (the ARC-D adversarial
+// suite over the production kernel/guard/dispatcher seams + the sup-a 42-cell oracle
+// ledger re-run) AND retires TWO booked paths out of the world: the legacy center
+// site plane-effect-backends.mjs (alpha5-glue7's booking) and its .d.mts type surface
+// (A5-READ-SLICE's booking). The names leave their round lists in place (the round
+// comments keep their history verbatim); the pair is NAMED HERE, pinned ABSENT below
+// (the symmetric half of the presence pins), and each historical tie is corrected by
+// the named retired term — a delta that was true on its booking tree stays recorded
+// as true for that tree. Consumption law (U6-SLICE-PLAN scope B): a name loses its
+// old path only once the kernel-owned family registration + C1/C2 are green; the
+// census diff for the retirement rides dev/agent-workflow/evidence/u6-pr6-20261026/.
+// The pair's removal also removes the dist mirror (dist is outside this scan; the
+// place-dist-glue.mjs PLACEMENTS entry was dropped in the same commit).
+// NET-NEUTRAL on THIS tree — MEASURED, not copied: with the pair removed and the two
+// specs unbooked, the scanner run reads 1277 = the booked 1277 (the two deletions and
+// the two additions cancel in both total forms; the only RED was the presence pin
+// over the retired names — dev/agent-workflow/evidence/u6-pr6-20261026/
+// p4t6-UNBOOKED-RED.log, `expected false to be true` at the coverage leg).
+const SCANNED_PATHS_U6PR6: readonly string[] = [
+  'packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts',
+  'packages/runtime/test/u6-pr6-arc-d-matrix.test.ts',
+]
+// The retired pair, named once, referenced by both corrected historical ties and the
+// absence pins below.
+const RETIRED_PATHS_U6PR6: readonly string[] = [
+  'packages/runtime/src/plugin/live/plane-effect-backends.d.mts', // was SCANNED_PATHS_A5READSLICE
+  'packages/runtime/src/plugin/live/plane-effect-backends.mjs', // was SCANNED_PATHS_A5GLUE7
 ]
 // MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
 // per-round constants (PR4 +2, PR5 +12) and the total pin below is the
@@ -2907,7 +2937,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // dev/agent-workflow/evidence/** are outside the packages/** scan, as
     // every prior wiring round.
     const SCANNED_PATHS_A5GLUE7: readonly string[] = [
-      'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+      // U6 PR6 RETIREMENT: plane-effect-backends.mjs left the world (the legacy
+      // center site of kernel-owned families; U6-SLICE-PLAN scope B). Named in
+      // RETIRED_PATHS_U6PR6, pinned ABSENT, the tie below corrected by the term.
       'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
     ]
     // alpha5-runtime-base-narrow (the '/' READ_DIR bug fix): the ONE scannable
@@ -3048,7 +3080,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR2.length +
         SCANNED_PATHS_U6PR3.length +
         SCANNED_PATHS_U6PR4.length +
-        SCANNED_PATHS_U6PR5.length,
+        SCANNED_PATHS_U6PR5.length +
+        SCANNED_PATHS_U6PR6.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3120,7 +3153,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR2.length +
         SCANNED_PATHS_U6PR3.length +
         SCANNED_PATHS_U6PR4.length +
-        SCANNED_PATHS_U6PR5.length,
+        SCANNED_PATHS_U6PR5.length +
+        SCANNED_PATHS_U6PR6.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3213,8 +3247,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR3,
       ...SCANNED_PATHS_U6PR4,
       ...SCANNED_PATHS_U6PR5,
+      ...SCANNED_PATHS_U6PR6,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
+    }
+    // U6 PR6 removal law, the symmetric half: the retired pair is pinned ABSENT —
+    // a reappearing old center path fails HERE (the census diff's machine face).
+    for (const path of RETIRED_PATHS_U6PR6) {
+      expect(scanResult.files.includes(path)).toBe(false)
     }
     // The tie between the two forms of the pin, and the only place a number is
     // allowed to appear: A4-PR1 added exactly as many scannable files as the
@@ -3484,7 +3524,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (two files) re-ties `1182 - 1180`. The solo-RED capture for this leg
     // stays at `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`; booking the
     // two named files ends the chain at 1182 — the scanner total of this tree.
-    expect(SCANNED_PATHS_A5GLUE7.length).toBe(1182 - 1180)
+    expect(SCANNED_PATHS_A5GLUE7.length).toBe(1182 - 1180 - RETIRED_PATHS_U6PR6.filter((p) => p.endsWith('live/plane-effect-backends.mjs')).length) // U6 PR6: the -term is the retired GLUE-7 file, derived from the named array; the 2-file delta stays true for the GLUE-7 booking tree
     // The runtime-base-narrow tie, measured on THIS merged tree (the GLUE-7
     // re-tie above landed at 1182): solo RED read `expected 1183 to be 1182`
     // (`evidence/alpha5/runtime-base-narrow/p4t6-A5RBN-RETIE-RED.txt`);
@@ -3593,7 +3633,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // in-place, both files present, clause unbooked, reading `expected 1212 to be
     // 1210`; .probe-plan-tmp/r23-launch/read-tdd/consumerfix-p4t6-red-unbooked.raw):
     // the chain's measured 1210 plus exactly these two files — no chain value copied.
-    expect(SCANNED_PATHS_A5READSLICE.length).toBe(1212 - 1210)
+    expect(SCANNED_PATHS_A5READSLICE.length).toBe(1212 - 1210 - RETIRED_PATHS_U6PR6.filter((p) => p.endsWith('live/plane-effect-backends.d.mts')).length) // U6 PR6: the -term is the retired A5-READ-SLICE type surface, derived from the named array; the 2-file delta stays true for the booking tree
     // The a5-cancel-leg tie, MEASURED on THIS tree at booking time (scanner run
     // in-place, all three files present, clause unbooked, reading `expected 1215 to be
     // 1212`; dev/agent-workflow/evidence/alpha5/cancel-leg/p4t6-unbooked-RED.log): the
@@ -3652,6 +3692,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // trio's old bookings migrated in place; the final clause, after the
     // scanner's .d.mts sidecar, re-measured `expected 1275 to be 1274`.)
     expect(SCANNED_PATHS_U6PR5.length).toBe(1275 - 1263)
+    // U6 PR6: the removal round's own tie. NET-NEUTRAL by MEASUREMENT (the
+    // unbooked run read 1277 with the pair gone and the two specs present —
+    // evidence u6-pr6-20261026/p4t6-UNBOOKED-RED.log: the totals held and only
+    // the presence pin was RED), so the round ties NOT to a chain delta but to
+    // its own arithmetic: the two NEW specs equal the two RETIRED paths, and
+    // both sides are pinned (presence above, absence above). If either side
+    // drifts — a new file unbooked, a retired path resurrected, a booking
+    // removed — the equality or a pin fails HERE.
+    expect(SCANNED_PATHS_U6PR6.length).toBe(RETIRED_PATHS_U6PR6.length)
     // U6 PR4: the SCANNED_PATHS_U6PR4 files above are exactly the
     // scanned-total delta 1263 -> 1265, MEASURED by the pre-booking
     // scanner run on THIS tree (evidence

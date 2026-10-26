@@ -22,11 +22,13 @@ The byte-identity of the moves is pinned by
 `packages/runtime/test/u6-pr5-search-move-law.test.ts` (the moved regions
 re-extract hash-identically from the pre-move master blobs).
 
-The center keeps its OLD export surface alive as a RE-EXPORT
-(`plane-effect-backends.mjs`), so pinned consumers — the shipped search/glob
-suites, the `.d.mts` typings, team-tool-plane — resolve unchanged (the PR2
-read / PR3 shell precedents). The family lane is the single home of the
-search-slice logic: NO dual implementation exists at any slice.
+At move time (U6 PR5) the center kept its OLD export surface alive as a
+temporary RE-EXPORT hub (`plane-effect-backends.mjs`), so pinned consumers —
+the shipped search/glob suites, the `.d.mts` typings, team-tool-plane —
+resolved unchanged (the PR2 read / PR3 shell precedents). U6 PR6 DELETED that
+hub once this family's registration + C1/C2 were green; the pinned consumers
+were retargeted to this lane in the same round. The family lane is the single
+home of the search-slice logic: NO dual implementation exists at any slice.
 
 ## Owner role (what the Family owns / does NOT own)
 

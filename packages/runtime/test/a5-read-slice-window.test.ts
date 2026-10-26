@@ -190,9 +190,41 @@ const OUTSIDE_DIR = join(WORLD, 'outside') // never inside any governed root
 const BACKUP_DIR = join(WORLD, 'backup') // swap-out landing zone (outside root)
 const LINKS_DIR = join(WORLD, 'links') // symlinks pointing OUTSIDE live here
 const REALM = 'a5rsw-unit-realm'
-const MAX_READ_BYTES = 1024 * 1024 // mirrored production constant (plane-effect-backends.mjs:68)
+const MAX_READ_BYTES = 1024 * 1024 // mirrored production constant (fs-family/src/fs-mechanics.mjs:30)
 const LINE_CAP = 2000
 const OUTSIDE_TOKEN = 'A5RSW-OUTSIDE-SECRET-42'
+
+/**
+ * The consumed face of the fs-family lane's governed `read` executor
+ * (`packages/tools/fs-family/src/index.mjs` — the row's single home since U6
+ * PR2; the center re-export hub and its ADJACENT `.d.mts` type surface were
+ * deleted at U6 PR6, so the typed surface this suite consumed is declared
+ * HERE at the consumer, exactly the minimal face the legs use — the same
+ * `.mjs` + local-declaration pattern, never a widening to `any`).
+ *
+ * The governed `read` executor: a callable that RESOLVES a discriminated
+ * ok/refused outcome — refusals come back as VALUES from the executor; the
+ * THROW transport lives in the OUTER read def, not here.
+ */
+interface GovernedReadExecutor {
+  (raw: unknown, corr?: unknown): Promise<unknown>
+  /** BYTE-FETCH-STAGE ENTRY count: incremented when a call ENTERS the
+   *  byte-reading stage (after admission). NOT a syscall meter, NOT a
+   *  completion meter, and by itself NOT evidence of zero I/O. */
+  execCount(): number
+  /** A5-M2 pre-dispatch leg: run ONLY the PA admission (Part A) for this
+   *  execution token and hold the answer for its body; never reads a byte. */
+  paHandoffOpen(raw: unknown, corr?: unknown): Promise<unknown>
+  /** The terminal close: idempotent, synchronous, terminal. */
+  paHandoffClose(token: unknown): string | undefined
+  /** Mount teardown: no hand-off survives its mount. */
+  paHandoffCloseAll(): void
+}
+/** The ONE face of the lane barrel this suite imports (SCOPE HONESTY: the
+ *  lane exports more at runtime; nothing here is widened to `any`). */
+interface FsFamilyReadFace {
+  createGovernedReadExecutor(input: Record<string, unknown>): GovernedReadExecutor
+}
 
 type ReadWindowOk = {
   path: string
@@ -619,9 +651,10 @@ describe('A5RSW D denial and size (plan (b) D family)', () => {
     // Leg A — the executor's OWN consumption of a deny verdict (direct,
     // deterministic; a verdict-consumption unit, NOT matcher evidence —
     // D8 carries the matcher legs). Green on both generations.
-    // Typed via the adjacent plane-effect-backends.d.mts (the repo's
-    // `.mjs` + adjacent `.d.mts` pattern); runtime still loads the `.mjs`.
-    const backends = await import('../src/plugin/live/plane-effect-backends.mjs')
+    // typed via the fs-family lane face (the owning lane of the read row);
+    // the lane `.mjs` carries no declaration, so the consumed face is the
+    // local FsFamilyReadFace above. Runtime still loads the `.mjs`.
+    const backends = (await import(new URL('../../tools/fs-family/src/index.mjs', import.meta.url).href)) as FsFamilyReadFace
     const denied = backends.createGovernedReadExecutor({
       realmId: REALM, rootDir: ROOT_REAL,
       policy: { default: 'ask', allow: [], ask: [], deny: [] },
@@ -755,8 +788,9 @@ describe('A5RSW D denial and size (plan (b) D family)', () => {
         // mustfix #4 — LOCAL-spy claim, scoped to THIS executor only: zero
         // open, zero bytes (openCalls/read spies + pre-fetch execCount), on
         // a path source-pinned to run BEFORE any path resolution
-        // (plane-effect-backends.mjs: window parse :946 precedes
-        // resolveAnchoredPath :956). No Host-wide I/O claim is made here.
+        // (fs-family/src/read-executor.mjs: window parse :195 precedes
+        // resolveAnchoredPath :379 — the row's single home since U6 PR2).
+        // No Host-wide I/O claim is made here.
         expect(value.backends.read!.execCount(), `key=${key} value=${String(v)}`).toBe(0)
         expect(H.openCalls).toBe(0)
       }
@@ -1284,9 +1318,10 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     //    the seam-less face the plan described): without subtreeContains, a
     //    subtree rule covers nothing -> default-deny refusal, attributed to
     //    template-default-deny, zero bytes (execCount 0), generation-agnostic.
-    // Typed via the adjacent plane-effect-backends.d.mts (the repo's
-    // `.mjs` + adjacent `.d.mts` pattern); runtime still loads the `.mjs`.
-    const backends = await import('../src/plugin/live/plane-effect-backends.mjs')
+    // typed via the fs-family lane face (the owning lane of the read row);
+    // the lane `.mjs` carries no declaration, so the consumed face is the
+    // local FsFamilyReadFace above. Runtime still loads the `.mjs`.
+    const backends = (await import(new URL('../../tools/fs-family/src/index.mjs', import.meta.url).href)) as FsFamilyReadFace
     const exec = backends.createGovernedReadExecutor({
       realmId: REALM, rootDir: ROOT_REAL, policy: subtreePolicy,
       decide: () => ({ kind: 'allow' }), observe: () => {},
@@ -1513,7 +1548,7 @@ describe('A5RSW-HANDOFF — the governed read row under the PA hand-off', () => 
 
   type PaEvent = { callId: string; kind: string }
   const handoffRow = async (log: PaEvent[]) => {
-    const m = await import('../src/plugin/live/plane-effect-backends.mjs')
+    const m = (await import(new URL('../../tools/fs-family/src/index.mjs', import.meta.url).href)) as FsFamilyReadFace
     // The stub mirrors `paAdmit`: an already-aborted call is answered at the
     // edge, before any walk (team-tool-plane.mjs:1025).
     const answer = (input: { callId: string; signal?: { aborted?: boolean } }, kind: string) => {

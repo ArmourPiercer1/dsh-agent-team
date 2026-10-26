@@ -99,15 +99,16 @@ export const PLACEMENTS = [
   // cannot be repeated by the next reader who narrows this list.
   // U6 PR5: the glob/search/cancel rows MOVED to the search-family lane —
   // their center placements retire WITH the files (no dual copy); the lane
-  // mirror block below carries the bytes now. The center face keeps only
-  // the re-export surface + jobs bridge.
-  {
-    src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
-  },
-  // U6 PR4 (ARC-C): the jobs bridge module — plane-effect-backends.mjs now
-  // RE-EXPORTS from it (the retired-hub surface) and team-tool-plane.mjs
-  // imports its trio row defs + contribution builder, so on the strict
+  // mirror block below carries the bytes now. The center face keeps the jobs
+  // bridge ALONE: U6 PR6 deleted the last center site, the pure-re-export
+  // hub `plane-effect-backends.mjs` (zero production importers once
+  // team-tool-plane.mjs mounted the family lanes directly), so its placement
+  // retired with it and this list — the single home of the graph law above —
+  // now walks straight from the plane row to the lanes.
+  // U6 PR4 (ARC-C): the jobs bridge module — plane-effect-backends.mjs
+  // (deleted at PR6) once re-exported from it; the bridge module is now the
+  // sole home, and team-tool-plane.mjs imports its trio row defs +
+  // contribution builder, so on the strict
   // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at
   // plane construction — the same class GLUE-6 RED-A recorded. It imports
   // `../../../../contracts/src/index.js` (already in the dist mirror), so

@@ -90,7 +90,7 @@ interface PlaneBackendsRow {
   grepArgv(parsed: Record<string, unknown>, searchPath: string): string[]
   createAnchoredSearchBackend(o: Record<string, unknown>): unknown
 }
-const planeRow: PlaneBackendsRow = (await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)) as PlaneBackendsRow
+const planeRow: PlaneBackendsRow = (await import(new URL('../../tools/search-family/src/search-mechanics.mjs', import.meta.url).href)) as PlaneBackendsRow
 
 let row: SearchBackendRow
 let rgPath = ''

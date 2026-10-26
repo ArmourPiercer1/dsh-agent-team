@@ -485,7 +485,7 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     shellCancelled: (o: { timedOut: boolean; aborted: boolean; reason: unknown }) => boolean
   }
   async function settleMod(): Promise<SettleMod> {
-    return (await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)) as unknown as SettleMod
+    return (await import(new URL('../../tools/process-family/src/index.mjs', import.meta.url).href)) as unknown as SettleMod
   }
 
   it('C8 根② exit-vs-cancel, deterministic: whichever fact settles the race is the SINGLE truth; if both already exist, the payload\'s own end OUTRANKS the cancel (tie law exited > timedOut > aborted)', async () => {

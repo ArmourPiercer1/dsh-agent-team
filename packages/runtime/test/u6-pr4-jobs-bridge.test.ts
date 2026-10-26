@@ -3,8 +3,10 @@
  *
  * Five groups, one claim each:
  *  A) THE MOVE LAW — the bridge body moved VERBATIM (sha-pinned), the old
- *     home keeps only a re-export edge, and the bridge module imports
- *     NOTHING that could hand it a second authority.
+ *     center home is DELETED outright (U6 PR6: no file, no tracked copy — it
+ *     outlived its re-export purpose once the plane mounted the lanes), and
+ *     the bridge module imports NOTHING that could hand it a second
+ *     authority.
  *  B) THE CLOSED SCHEMA — the contribution is provider-backed, so the
  *     schema forces it through the NAMED bridge; every digest binds real
  *     source; the wiring refuses a forged/absent bridge BEFORE the schema.
@@ -25,7 +27,9 @@
  *     mount; the plant shows what the naive disposer would have destroyed.
  */
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
@@ -35,8 +39,23 @@ const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8
 /** node:fs accepts a node:url URL; the lib URL type of new URL() is a DIFFERENT
  *  interface for tsc — convert to a path at the read edge. */
 const readSrc = (u: URL): string => readFileSync(fileURLToPath(u as Parameters<typeof fileURLToPath>[0]), 'utf8')
+const asFsPath = (u: URL): string => fileURLToPath(u as Parameters<typeof fileURLToPath>[0])
+/** Repo root (this file is `packages/runtime/test/<file>`); the git checks run
+ *  with this as cwd so their pathspecs are NEVER cwd-relative and vacuous. */
+const REPO_ROOT = asFsPath(new URL('../../../', import.meta.url))
+/** Tracked-AND-Present index entries for a repo-root-relative path. A plain
+ *  working-tree `rm` leaves the path in the index (`git ls-files` still lists
+ *  it until the deletion is staged/committed), so the dual-ledger law reads
+ *  the index together with the work tree: what must not exist is a tracked
+ *  copy that is actually there. */
+const trackedPresent = (rel: string): string[] =>
+  execFileSync('git', ['ls-files', '--', rel], { cwd: REPO_ROOT, encoding: 'utf8' })
+    .split('\n').map((s) => s.trim())
+    .filter((p) => p.length > 0 && existsSync(join(REPO_ROOT, p)))
 const BRIDGE_PATH = new URL('../src/plugin/live/jobs-family-bridge.mjs', import.meta.url)
 const BACKENDS_PATH = new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url)
+/** The same path repo-root-relative, for the `git ls-files` absence pin. */
+const OLD_HOME_REL = 'packages/runtime/src/plugin/live/plane-effect-backends.mjs'
 const BINDINGS_PATH = new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url)
 const MOUNT_REGISTRY_PATH = new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url)
 const GATEWAY_PATH = new URL('../src/plugin/live/jobs-gateway-assembly.mjs', import.meta.url)
@@ -156,10 +175,18 @@ describe('u6-pr4 A — the move law (byte-identity, one home, no second authorit
     expect(sha256(body)).toBe(MOVED_BODY_SHA)
   })
 
-  it('A2 the old home carries NO body — only the re-export edge; production imports the bridge module directly', async () => {
-    const backends = readSrc(BACKENDS_PATH)
-    expect(backends).not.toContain('export function createGovernedJobsBridge')
-    expect(backends).toContain("from './jobs-family-bridge.mjs'")
+  it('A2 the old home is DELETED — no file and no tracked copy; production imports the bridge module directly', async () => {
+    // U6 PR6 scope-(B): the hub PR4 left behind as a re-export edge is GONE.
+    // Once `team-tool-plane.mjs` imports the family lanes DIRECTLY the hub has
+    // ZERO production importers, so this leg pins ABSENCE (no file, no
+    // dual-ledger index entry) where PR4 pinned a re-export edge. The plane's
+    // live import edges are pinned by u6-pr5-search-move-law M3(c).
+    expect(existsSync(asFsPath(BACKENDS_PATH)), 'the re-export hub is gone from the work tree').toBe(false)
+    expect(trackedPresent(OLD_HOME_REL), 'the re-export hub has no tracked, present copy').toEqual([])
+    // Non-vacuity: the SAME check does see a live tracked file under `live/`,
+    // so an empty answer above is absence, never a blind pathspec or cwd.
+    expect(trackedPresent('packages/runtime/src/plugin/live/jobs-family-bridge.mjs'))
+      .toEqual(['packages/runtime/src/plugin/live/jobs-family-bridge.mjs'])
     const bindings = readSrc(BINDINGS_PATH)
     expect(bindings).toMatch(/import \{ createGovernedJobsBridge \} from '\.\/jobs-family-bridge\.mjs'/)
     expect(bindings).not.toMatch(/import \{ createGovernedJobsBridge \} from '\.\/plane-effect-backends\.mjs'/)

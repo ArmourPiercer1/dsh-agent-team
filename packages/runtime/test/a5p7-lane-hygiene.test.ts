@@ -144,18 +144,19 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
     // glue count) — it names the rows in comments and reads the list, it
     // imports no lane. Same name-only category as p4t6 above.
     'testkit/test/a4-artifacts-nonempty.test.ts',
-    // U6-PR4 (jobs bridge onto the governance kernel): the bridge module,
-    // the re-export back-of-house, and the PR4 spec name the LIVE ROW'S
-    // FILENAME (`jobs-gateway-assembly.mjs` — itself an edge exception
-    // below) as FROZEN-IMPORT LAW TEXT (E1 pins its sha). None of the
-    // three imports ANY lane: the bridge module's import whitelist is
+    // U6-PR4 (jobs bridge onto the governance kernel): the bridge module
+    // and the PR4 spec name the LIVE ROW'S FILENAME
+    // (`jobs-gateway-assembly.mjs` — itself an edge exception
+    // below) as FROZEN-IMPORT LAW TEXT (E1 pins its sha). Neither imports
+    // ANY lane: the bridge module's import whitelist is
     // exactly node:crypto + the contracts barrel, pinned by
     // u6-pr4-jobs-bridge.test.ts A3, and the trio's gateway reach rides
     // the entry-injected accessor (the reviewed row edge), never a
     // barrel. Name-only, zero new edges — the same category GLUE-5
-    // booked for the artifacts ledger above.
+    // booked for the artifacts ledger above. (The third entry this block
+    // carried — the re-export hub `plane-effect-backends.mjs` — retired
+    // WITH the file at U6 PR6.)
     'runtime/src/plugin/live/jobs-family-bridge.mjs',
-    'runtime/src/plugin/live/plane-effect-backends.mjs',
     'runtime/test/u6-pr4-jobs-bridge.test.ts',
   ]
 

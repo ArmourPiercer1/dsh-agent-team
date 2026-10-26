@@ -53,7 +53,7 @@ import { installScopedToolGuard, type ScopedGuardHandle } from '../tool-dispatch
 import { scopedRegistryDouble } from './a5p1r-scoped-registry-double.js'
 
 type ShellCancelled = (input: { timedOut: boolean; aborted: boolean; reason: unknown }) => boolean
-const plane = (await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)) as {
+const plane = (await import(new URL('../../tools/process-family/src/index.mjs', import.meta.url).href)) as {
   shellCancelled: ShellCancelled
 }
 const cancelledLaw = plane.shellCancelled

@@ -18,9 +18,10 @@ Every byte of moved code came VERBATIM out of the center files at master
 | `src/read-normalizer.ts` | NEW pure slot carrying the moved `effectiveReadWindow` + `case 'read'` projection (A2C-5 semantics) — the lane's ONE TypeScript module, statically imported by `canonical-operation.ts` and emitted on the runtime build face (the lane's .mjs runtime modules ride `scripts/place-dist-glue.mjs`) |
 | `src/fs-read-contribution.mjs` | NEW §4/§10.3 contribution descriptor factory |
 
-The center keeps its OLD import/export surface alive as a RE-EXPORT
-(`plane-effect-backends.mjs`), so pinned consumers, the `.d.mts` typings and
-the shipped read suites resolve unchanged.
+At move time (U6 PR2) the center kept its OLD import/export surface alive as
+a temporary RE-EXPORT hub (`plane-effect-backends.mjs`); U6 PR6 DELETED that
+hub once this family's registration + C1/C2 were green — this lane is now the
+single home (ledger `dev/agent-workflow/evidence/u6-pr6-20261026/legacy-path-removal.md`).
 
 ## Owner role (what the Family owns / does NOT own)
 
