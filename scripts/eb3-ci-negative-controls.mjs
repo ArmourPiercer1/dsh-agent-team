@@ -526,36 +526,70 @@ control('P1 non-Team-native-positive-preserved', () => {
 
 // ───────────────────────────────────── preserved positive 2: known-old-red identity set
 /**
- * PRESERVED POSITIVE B — "旧红完整身份集合". The nine-root census grades IDENTITY
- * SETS against `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md`.
- * The standing red set is disclosed debt: a PR may not ADD to it, and the gate's
- * honest-instrument rule is that it may not quietly SHRINK it either (a red that
- * vanishes into a collection error is an ESCALATION — `compareCensus` owns that).
+ * PRESERVED POSITIVE B — "旧红完整身份集合" (the complete known-old-red identity set).
+ * The nine-root census grades IDENTITY SETS against whatever `BASELINES.census` in
+ * scripts/ci-pr-gate.mjs points at. The standing red set is disclosed debt: a PR may
+ * not ADD to it, and it may not quietly SHRINK either (a red that vanishes into a
+ * collection error is an ESCALATION — `compareCensus` owns that).
  *
- * This control asserts the baseline the gate actually reads still carries the
- * full set, and that the set is non-empty: an empty baseline would make every
- * future run "clean" by construction, which is the failure mode where the
- * enforcement itself becomes the hole.
+ * TWO LEGITIMATE SHAPES, ONE ILLEGITIMATE ONE. While this branch was in flight,
+ * U7-1/EB2-C (PR #393) repaired all nine tolerated reds and moved the pointer to
+ * `nine-root-u7-1-old-reds.md`, which states its zero with a RETIRED-TO-EMPTY sentinel
+ * whose retirement table the gate requires to EQUAL the predecessor's set. So:
+ *
+ *   - a non-empty tolerated set: the identical set must grade pass, +1 red must fail;
+ *   - a zero BY NAMED RETIREMENT: the retirement must name exactly the predecessor's
+ *     full identity set (the "complete" in 完整身份集合 — nothing dropped on the way
+ *     to zero), an empty run must grade pass, and +1 red must fail;
+ *   - a zero WITHOUT the sentinel: refused (the gate's own parser throws; this control
+ *     reports it) — that is the "every run clean by construction" hole.
+ *
+ * The first draft of this control only knew the first shape and went red on the
+ * rebase onto #393; it was wrong about the law, not the tree.
  */
 control('P2 known-old-red-identity-set-complete', () => {
   const { parsePopulationBaseline, compareCensus, BASELINES } = requireModule('scripts/ci-pr-gate.mjs')
   const rel = BASELINES.census
   const abs = join(ROOT, rel)
   if (!existsSync(abs)) return { ok: false, detail: `the census baseline the gate reads is absent: ${rel}` }
-  const baseline = parsePopulationBaseline(readFileSync(abs, 'utf8'))
-  if (baseline.ids.length === 0) return { ok: false, detail: `${rel} parsed ZERO tolerated identities — an empty baseline makes every run clean by construction` }
-  // A run that reproduces the baseline exactly must be graded `pass`; a run that
-  // drops an identity must be graded as the gate documents (allowed: debt may be
-  // removed, never added). Both halves prove the algebra still reads this file.
-  const identical = compareCensus(baseline.ids, [...baseline.ids], {})
-  // The identity FORMAT is the gate's (`TEST <file>::<name>`, from fail-set.mjs capture),
-  // not the markdown display form `file > name`. The first draft of this control planted the
-  // display form; compareCensus then filed it under `added` but not `newReds` (which keys on
-  // the `TEST ` prefix), and the control reported the algebra WRONG when the control was.
+  let baseline
+  try {
+    baseline = parsePopulationBaseline(readFileSync(abs, 'utf8'))
+  } catch (e) {
+    return { ok: false, detail: `the gate's own parser refuses ${rel}: ${String(e?.message ?? e).slice(0, 200)}` }
+  }
+  // The identity FORMAT is the gate's (`TEST <file>::<name>`), not the markdown display
+  // form `file > name`: an earlier draft planted the display form and blamed the algebra.
   const PLANTED_RED = 'TEST packages/x/test/new-red.test.ts::a fresh failure'
   const withExtra = compareCensus(baseline.ids, [...baseline.ids, PLANTED_RED], {})
-  const okIdentical = identical.verdict === 'pass'
   const okExtraFails = withExtra.verdict === 'fail' && withExtra.newReds.length === 1
+
+  if (baseline.ids.length === 0) {
+    const r = baseline.retiredToEmpty
+    if (r === undefined) {
+      return { ok: false, detail: `${rel} parsed ZERO tolerated identities with NO RETIRED-TO-EMPTY sentinel — an empty baseline without a named retirement makes every run clean by construction` }
+    }
+    // COMPLETENESS: the retirement must name the predecessor's FULL identity set.
+    let pred
+    try {
+      pred = parsePopulationBaseline(readFileSync(join(dirname(abs), `nine-root-${r.predecessor}.md`), 'utf8'))
+    } catch (e) {
+      return { ok: false, detail: `${rel} retires against predecessor ${r.predecessor}, which cannot be read: ${String(e?.message ?? e).slice(0, 160)}` }
+    }
+    const want = [...pred.ids].sort()
+    const got = [...r.ids].sort()
+    const complete = want.length > 0 && JSON.stringify(want) === JSON.stringify(got) && r.count === want.length
+    const empty = compareCensus(baseline.ids, [], {})
+    const okEmpty = empty.verdict === 'pass'
+    return {
+      ok: complete && okEmpty && okExtraFails,
+      detail: `${rel} is zero BY NAMED RETIREMENT (sentinel: ${String(r.count)} retired against ${r.predecessor}); ` +
+        `retirement names the predecessor's full set of ${String(want.length)} => ${complete ? 'complete' : 'INCOMPLETE'}; ` +
+        `empty run => ${empty.verdict} (${okEmpty ? 'correct' : 'WRONG'}), one planted new red => ${withExtra.verdict} (${okExtraFails ? 'correct' : 'WRONG'})`,
+    }
+  }
+  const identical = compareCensus(baseline.ids, [...baseline.ids], {})
+  const okIdentical = identical.verdict === 'pass'
   return {
     ok: okIdentical && okExtraFails,
     detail: `${rel} carries ${String(baseline.ids.length)} tolerated identities and ${String(baseline.loadFamilies.length)} disclosed load family/ies; ` +
