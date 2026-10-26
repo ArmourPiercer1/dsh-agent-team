@@ -92,6 +92,13 @@ export const U6PROC_PROBE_ROW_ID = 'u6-proc-probe-host'
  *  — set below, the exact files the shipped glue imports). */
 export const U6ARCA_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-arc-a-probe-host.mjs')
 export const U6ARCA_PROBE_ROW_ID = 'u6-arc-a-probe-host'
+/** U6 PR6 ARC-D: the ADVERSARIAL probe row. It mounts the PR5 probe FAMILY
+ *  unchanged (zero new family code is the claim) through the same lane
+ *  assembly URL; the row bridges U6ARCD_CENTER_URL / U6ARCD_CONTRACTS_URL
+ *  onto the U6ARC_* names the family actually reads — the same shipped dist
+ *  faces the u6ArcA block below pins. */
+export const U6ARCD_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-arc-d-probe-host.mjs')
+export const U6ARCD_PROBE_ROW_ID = 'u6-arc-d-probe-host'
 export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
@@ -277,8 +284,14 @@ export class TestWorldFactory {
    *        the closed jobsEnabled key ON) into the SAME `- insert:` layer.
    *        No probe row: the production bridge IS the subject. Mutually
    *        exclusive with u6Fs and u6Proc.
+   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6ArcD]
+   *        U6 PR6 C2: mount the `u6-arc-d-probe-host` row (the PR5 probe
+   *        FAMILY attacked as shipped — zero new family code) and compose
+   *        the extra patch rows into the SAME `- insert:` layer; sets
+   *        U6ARCD_* env for the probe before spawn. Mutually exclusive with
+   *        u6Fs / u6Proc / u6Jobs / u6ArcA.
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null }) {
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null, u6ArcD = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
@@ -295,10 +308,13 @@ export class TestWorldFactory {
     if (u6ArcA !== null && !(typeof u6ArcA === 'object' && Array.isArray(u6ArcA.rows))) {
       throw new Error('invalid u6ArcA (expected {rows: [...]} | null)')
     }
-    if ([u6Fs, u6Proc, u6Jobs, u6ArcA].filter((x) => x !== null).length > 1) {
+    if (u6ArcD !== null && !(typeof u6ArcD === 'object' && Array.isArray(u6ArcD.rows))) {
+      throw new Error('invalid u6ArcD (expected {rows: [...]} | null)')
+    }
+    if ([u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD].filter((x) => x !== null).length > 1) {
       // both patch-layer owners would race for the SAME profile patch file;
       // the suites are disjoint by law — one World belongs to one suite.
-      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA are mutually exclusive Worlds')
+      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA / u6ArcD are mutually exclusive Worlds')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -325,7 +341,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD })
     this.worlds.push(world)
     return world
   }
@@ -418,6 +434,7 @@ export class TestWorld {
     this.u6Proc = spec.u6Proc ?? null
     this.u6Jobs = spec.u6Jobs ?? null
     this.u6ArcA = spec.u6ArcA ?? null
+    this.u6ArcD = spec.u6ArcD ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
@@ -428,6 +445,8 @@ export class TestWorld {
     this.u6procMarkerDir = join(spec.workspaceDir, 'u6proc-markers')
     this.u6arcaLedgerPath = join(spec.home, 'u6arca-probe-ledger.jsonl')
     this.u6arcaMarkerDir = join(spec.workspaceDir, 'u6arca-markers')
+    this.u6arcdLedgerPath = join(spec.home, 'u6arcd-probe-ledger.jsonl')
+    this.u6arcdMarkerDir = join(spec.workspaceDir, 'u6arcd-markers')
     this.instance = null
     this.mock = null
     this.hostLease = null
@@ -511,6 +530,10 @@ export class TestWorld {
 
   u6arcaLedgerRows() {
     return rowsFrom(this.u6arcaLedgerPath)
+  }
+
+  u6arcdLedgerRows() {
+    return rowsFrom(this.u6arcdLedgerPath)
   }
 
   /**
@@ -599,6 +622,24 @@ export class TestWorld {
     } else {
       for (const k of ['U6ARC_LEDGER', 'U6ARC_MARKER_DIR', 'U6ARC_WORLD', 'U6ARC_ASSEMBLY_URL', 'U6ARC_CENTER_URL', 'U6ARC_CONTRACTS_URL']) delete process.env[k]
     }
+    // U6 PR6 ARC-D C2 env (mirror of the U6ARC block). The row reads its own
+    // U6ARCD_* names; the PR5 FAMILY it mounts resolves its two public seams
+    // under U6ARC_CENTER_URL / U6ARC_CONTRACTS_URL — the u6ArcA block above
+    // just cleared those when this is not an ARC-A World (the two are
+    // mutually exclusive), so this block re-pins them to the SAME shipped
+    // dist faces the production glue imports. Both spellings, one truth.
+    if (this.u6ArcD !== null) {
+      process.env.U6ARCD_LEDGER = this.u6arcdLedgerPath
+      process.env.U6ARCD_MARKER_DIR = this.u6arcdMarkerDir
+      process.env.U6ARCD_WORLD = this.id
+      process.env.U6ARCD_ASSEMBLY_URL = pathToFileURL(join(this.factory.repoRoot, 'tests', 'u6-arc-a-probe-family', 'src', 'probe-assembly.mjs')).href
+      process.env.U6ARCD_CENTER_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'governance-center', 'index.js')).href
+      process.env.U6ARCD_CONTRACTS_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'contracts', 'src', 'index.js')).href
+      process.env.U6ARC_CENTER_URL = process.env.U6ARCD_CENTER_URL
+      process.env.U6ARC_CONTRACTS_URL = process.env.U6ARCD_CONTRACTS_URL
+    } else {
+      for (const k of ['U6ARCD_LEDGER', 'U6ARCD_MARKER_DIR', 'U6ARCD_WORLD', 'U6ARCD_ASSEMBLY_URL', 'U6ARCD_CENTER_URL', 'U6ARCD_CONTRACTS_URL']) delete process.env[k]
+    }
 
     this.instance = new DshInstance({
       hostTree: this.factory.hostTree,
@@ -678,6 +719,25 @@ export class TestWorld {
           ['U6-arc-a World: canary + probe-FAMILY row (the ARC-A lane, zero',
            'center diff) + the production Team row, p6t6 observer and preset',
            'declarations, one public profile-patch layer.'],
+          rows,
+        ) + '\n',
+      )
+    } else if (this.u6ArcD !== null) {
+      // U6 PR6 ARC-D C2: mirror of the u6ArcA block — the adversarial probe
+      // row mounts the PR5 probe FAMILY as shipped (zero new family code),
+      // beside the production Team row, the p6t6 observer and the preset
+      // declarations, one public profile-patch layer.
+      copyFileSync(U6ARCD_PROBE_SRC, join(this.instance.profileDir, 'u6-arc-d-probe-host.mjs'))
+      rows.push({ id: U6ARCD_PROBE_ROW_ID, name: './u6-arc-d-probe-host.mjs' })
+      for (const row of this.u6ArcD.rows) rows.push(row)
+      mkdirSync(this.instance.profileDir, { recursive: true })
+      writeFileSync(
+        this.instance.patchFile,
+        emitPatchLayer(
+          ['U6-arc-d World: canary + adversarial probe row (mounts the PR5',
+           'probe FAMILY unchanged — zero new family code is the claim) +',
+           'the production Team row, p6t6 observer and preset declarations,',
+           'one public profile-patch layer.'],
           rows,
         ) + '\n',
       )
