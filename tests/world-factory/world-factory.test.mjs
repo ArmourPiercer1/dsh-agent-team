@@ -486,9 +486,18 @@ test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid bluep
   assert.equal(doc.blueprintId, a.BP_MAIN_ID)
   const templates = doc.members.map((m) => m.templateId)
   assert.deepEqual(templates, ['worker', 'foreign'])
-  // the ring must CARRY the effect: every birth command APPENDS to disk AND reads back
+  // the RING must CARRY the effect: every birth command PRINTS its claim
+  // to stdout (the host registry buffers it; the managed trio's
+  // job_output returns those bytes — SERVER-side, not a transcript echo).
+  // The disk write rides birth1 only, as a BONUS behind `|| true`: boots
+  // 2/3 measured the sandbox refusing workspace writes, and a verdict
+  // may never depend on what a lane's sandbox law happens to allow.
   const cmds = a.cmds()
-  for (const c of [cmds.birth1, cmds.birth2, cmds.ctl]) assert.ok(c.includes('>>') && /\bcat\b|\becho\b/.test(c), 'child stdout flows into the host ring (the management answer is then SERVER-side bytes); flat append-mode writers — run 2 measured a tee into a NEW sub-directory REFUSED inside the bash sandbox')
+  const claims2 = a.claims
+  for (const [c, claim] of [[cmds.birth1, claims2.claim1], [cmds.birth2, claims2.killWarm], [cmds.ctl, claims2.ctl]]) {
+    assert.ok(c.includes(claim) && c.includes('printf'), 'the claim reaches the RING via printf stdout')
+  }
+  assert.ok(cmds.birth1.includes('|| true'), 'the disk bonus cannot abort the job when the sandbox refuses the write')
   // the patch-layer emission the factory performs for this World type
   const emitted = emitPatchLayer(['t'], a.teamRows())
   assert.ok(emitted.includes('dsh-agent-team'))
@@ -516,11 +525,17 @@ test('u6-jobs: the decide script answers real transcript shapes with the scripte
   assert.equal(c2.toolCalls[0].arguments.job_id, 'jb-alpha01', 'the id is the REAL host id read from the transcript, never invented')
   const w4 = { body: { messages: [...w2.body.messages, use('t3', 'job_output', { job_id: 'jb-alpha01' }), result('t3', 'CLAIM\n[status: running]'), use('t4', 'bash', {}), result('t4', 'started background job jb-beta02')] } }
   const c4 = decide({ req: w4 })
-  assert.equal(c4.toolCalls[0].name, 'job_kill')
-  assert.equal(c4.toolCalls[0].arguments.job_id, 'jb-beta02', 'the kill subject is the SECOND birth id')
+  assert.equal(c4.toolCalls[0].name, 'job_output')
+  assert.equal(c4.toolCalls[0].arguments.job_id, 'jb-beta02', 'the warm RING read names the SECOND birth id — via ARGS, the pairing survives interleaving')
+  const w5 = { body: { messages: [...w4.body.messages, use('t4b', 'job_output', { job_id: 'jb-beta02' }), result('t4b', 'WARM\n[status: running]')] } }
+  const c5 = decide({ req: w5 })
+  assert.equal(c5.toolCalls[0].name, 'job_kill')
+  assert.equal(c5.toolCalls[0].arguments.job_id, 'jb-beta02', 'the kill subject is the SECOND birth id')
+  const wKill = { body: { messages: [...w5.body.messages, use('t5', 'job_kill', { job_id: 'jb-beta02' }), result('t5', 'requested cancellation of job jb-beta02')] } }
+  assert.equal(decide({ req: wKill }).toolCalls[0].name, 'bash', 'the FOREGROUND settle spacer runs before the post-settle read (40 s > the 35 s FINAL deadline)')
   // follow-up pings cannot advance the machine (statelessness):
-  const wPing = { body: { messages: [...w4.body.messages, use('t5', 'job_kill', { job_id: 'jb-beta02' }), result('t5', 'requested cancellation of job jb-beta02'), user('please report status')] } }
-  assert.equal(decide({ req: wPing }).toolCalls[0].name, 'job_list', 'spacer list, not DONE — the count drives the lane, not the turn number')
+  const wPing = { body: { messages: [...wKill.body.messages, use('t6', 'bash', { command: 'sleep 40' }), result('t6', ''), user('please report status')] } }
+  assert.equal(decide({ req: wPing }).toolCalls[0].name, 'job_output', 'the POST-SETTLE ring read is next, not DONE — the exchange count drives the lane, not the turn number')
 })
 
 test('u6-jobs: the judge passes the honest digest and catches each named mutation', async () => {
@@ -539,11 +554,11 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
     },
     claims,
     claim1Text: `${claims.claim1}\n`,
-    killText: `warm\n`,
-    ctlText: `${claims.ctl}\n`,
     jobIds: ['jb-alpha01', 'jb-beta02'],
     list1: 'jb-alpha01 [stream] running — sh',
     output1: `${claims.claim1}\n[status: running]`,
+    output2: `${claims.killWarm}\n[status: running]`,
+    output2Post: `${claims.killWarm}\n[status: aborted]`,
     kill2: 'requested cancellation of job jb-beta02',
     list2: 'jb-alpha01 [stream] running — sh\njb-beta02 [stream] aborted — sh',
     foreignOutput: 'refused: host-jobs-refused — job jb-alpha01 is not yours',
@@ -559,12 +574,14 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
   assert.equal(rows.length, 7, 'the judge answers the 7 non-leak cases (leak-check is the factory\'s audit leg)')
   for (const [id, verdict] of rows) assert.equal(verdict, 'PASS', `honest digest must PASS every case, ${id} failed`)
   const verdictOf = (d, caseId) => judgeU6Jobs(d, true).find(([id]) => id === caseId)[1]
-  assert.equal(verdictOf({ ...good, claim1Text: null }, 'jobs:birth-positive'), 'FAIL', 'a missing DISK claim kills the birth case — the Oracle is the file, not a tool return')
+  assert.equal(verdictOf({ ...good, jobIds: [] }, 'jobs:birth-positive'), 'FAIL', 'no host-vocabulary job id = nothing was born (the id parse rides the HOST spawn/row words, never a claim string)')
   assert.equal(verdictOf({ ...good, output1: 'ok\n[status: running]' }, 'jobs:governed-management'), 'FAIL', 'management output without the ring claim is not server-side bytes')
-  assert.equal(verdictOf({ ...good, foreignOutput: 'U6JOBS ring says fine' }, 'jobs:owner-fence'), 'FAIL', 'a foreign read that WAS NOT refused kills the fence case')
+  assert.equal(verdictOf({ ...good, foreignOutput: `${claims.claim1}\n[status: running]` }, 'jobs:owner-fence'), 'FAIL', 'a foreign read that SAW THE RING BYTES is no fence at all')
   assert.equal(verdictOf({ ...good, settle: { killLines: 1, foreignKillLines: 2 } }, 'jobs:owner-fence'), 'FAIL', 'a settlement event for the foreign target kills the fence case')
   assert.equal(verdictOf({ ...good, kill2: 'job jb-beta02 has been cancelled' }, 'jobs:cancel-honest'), 'FAIL', 'a settlement word in the kill answer kills the cancel case')
-  assert.equal(verdictOf({ ...good, killText: 'warm\n' + claims.killFinal + '\n' }, 'jobs:cancel-honest'), 'FAIL', 'a FINAL marker means the killed process kept running')
+  assert.equal(verdictOf({ ...good, output2Post: `${claims.killWarm}\n${claims.killFinal}\n[status: completed]` }, 'jobs:cancel-honest'), 'FAIL', 'FINAL in the post-settle ring read means the killed process kept running')
+  assert.equal(verdictOf({ ...good, output2: '[status: running]' }, 'jobs:cancel-honest'), 'FAIL', 'a kill whose subject never RAN (no warm bytes) measures nothing')
+  assert.equal(verdictOf({ ...good, ctlOutput: 'Error: unknown job job-unknown' }, 'jobs:ctl-native-untouched'), 'FAIL', 'a native arm whose trio never returned its own ring bytes is vacuous')
   assert.equal(verdictOf({ ...good, rootKernelMentions: 2 }, 'jobs:ctl-native-untouched'), 'FAIL', 'kernel words on the root lane break the CI-03 control')
   assert.equal(verdictOf({ ...good, controlRows: [{ toolName: 'job_kill', summary: 'ask', status: 'pending' }] }, 'jobs:no-second-ledger'), 'FAIL', 'one approval row naming job_kill is the second ledger — it must be caught')
   assert.equal(verdictOf(good, 'jobs:mounted') === 'PASS' && verdictOf({ ...good, kernelHits: { ...good.kernelHits, PLANE_JOBS_REGISTRATION_REFUSED: { count: 1 } } }, 'jobs:mounted'), 'FAIL', 'a registration refusal names itself')

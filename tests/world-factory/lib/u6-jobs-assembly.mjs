@@ -87,8 +87,6 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
   // the disk is no oracle at all.
   const files = {
     claim1: join(workspaceDir, 'u6jobs-claim.txt'),
-    kill: join(workspaceDir, 'u6jobs-kill.txt'),
-    ctl: join(workspaceDir, 'u6jobs-ctl.txt'),
   }
   const tokens = (tok) => `[U6JOBS-TOK-${tok}-${rs}]`
   const md = (p) => `"${p}"`
@@ -101,13 +99,18 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
     const root = planeRootDir()
     const f = (k) => files[k].replace(workspaceDir, root)
     return {
-      // Birth 1: writes the CLAIM to disk immediately (the independent
-      // Oracle fact) and keeps the job RUNNING for the management legs.
-      birth1: `printf '%s\\n' ${md(claims.claim1)} >> ${md(f('claim1'))} && cat ${md(f('claim1'))} && sleep 90`,
-      // Birth 2 (the cancel subject): warm marker NOW, FINAL marker only
-      // if the host settles NO cancellation — a killed job never writes it.
-      birth2: `printf 'warm\\n' >> ${md(f('kill'))} && cat ${md(f('kill'))} && sleep 35 && printf '%s\\n' ${md(claims.killFinal)} >> ${md(f('kill'))} && echo kill-final`,
-      ctl: `printf '%s\\n' ${md(claims.ctl)} >> ${md(f('ctl'))} && cat ${md(f('ctl'))} && sleep 45`,
+      // Birth 1: the CLAIM goes to the RING first (the background child's
+      // stdout is buffered by the HOST registry — job_output returns those
+      // bytes, a server-side fact no transcript echo imitates); the disk
+      // write is a BONUS, `|| true`-guarded, because boots 2/3 measured
+      // the sandbox refusing workspace writes (`Permission denied`) — an
+      // effect gate may never depend on what the lane's sandbox law
+      // allows (the PR3 ctl arm judged the same honest way).
+      birth1: `{ printf '%s\\n' ${md(claims.claim1)} >> ${md(f('claim1'))} || true; printf '%s\\n' ${md(claims.claim1)}; } && sleep 90`,
+      // Birth 2 (the cancel subject): warm to the ring NOW, FINAL only if
+      // the host settles NO cancellation — a killed job never prints it.
+      birth2: `printf '%s\\n' ${md(claims.killWarm)} && sleep 35 && printf '%s\\n' ${md(claims.killFinal)}`,
+      ctl: `printf '%s\\n' ${md(claims.ctl)} && sleep 45`,
     }
   }
 
@@ -293,11 +296,16 @@ export function extractJobIds(text) {
 /** Ordered assistant-tool_use ↔ tool_result pairs of one transcript. */
 export function toolExchanges(req) {
   const pending = new Map()
+  const argsOf = new Map()
   const out = []
   for (const m of messagesOf(req)) {
     if (m?.role === 'assistant' && Array.isArray(m?.content)) {
       for (const b of m.content) {
-        if (b?.type === 'tool_use') pending.set(String(b.id ?? `${String(b.name)}-${out.length + pending.size}`), String(b.name ?? ''))
+        if (b?.type === 'tool_use') {
+          const key = String(b.id ?? `${String(b.name)}-${out.length + pending.size}`)
+          pending.set(key, String(b.name ?? ''))
+          argsOf.set(key, b.input ?? null)
+        }
       }
     }
     if (m?.role === 'user' && Array.isArray(m?.content)) {
@@ -305,7 +313,7 @@ export function toolExchanges(req) {
         if (b?.type !== 'tool_result') continue
         const id = String(b.tool_use_id ?? b.toolUseId ?? '')
         const name = pending.get(id) ?? null
-        out.push({ name, result: (Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join('') })
+        out.push({ name, args: argsOf.get(id) ?? null, result: (Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join('') })
       }
     }
   }
@@ -412,8 +420,14 @@ export function makeJobsDecide({ assembly }) {
       if (exchanges.length === 1) return toolCall('job_list', {})
       if (exchanges.length === 2) return toolCall('job_output', { job_id: first })
       if (exchanges.length === 3) return toolCall('bash', { command: cmds.birth2, run_in_background: true })
-      if (exchanges.length === 4) return toolCall('job_kill', { job_id: second, reason: 'u6jobs-cancel-honest' })
-      if (exchanges.length <= 6) return toolCall('job_list', {})
+      if (exchanges.length === 4) return toolCall('job_output', { job_id: second })
+      if (exchanges.length === 5) return toolCall('job_kill', { job_id: second, reason: 'u6jobs-cancel-honest' })
+      // the settle spacer is FOREGROUND (40 s > the 35 s FINAL deadline):
+      // the next ring read lands AFTER the window in which an un-killed
+      // job would have printed FINAL — absence there is a measurement.
+      if (exchanges.length === 6) return toolCall('bash', { command: 'sleep 40' })
+      if (exchanges.length === 7) return toolCall('job_output', { job_id: second })
+      if (exchanges.length === 8) return toolCall('job_list', {})
       return { kind: 'text', content: `U6JOBS_WORK_DONE ids=${first},${second}` }
     }
     // ── foreign viewer: manage the OWNER's real job id (from the
@@ -535,14 +549,17 @@ export function judgeU6Jobs(d, hostAlive) {
     kernelHits: Object.fromEntries(Object.keys(k).map((p) => [p, k[p].count])),
     note: 'ONE kernel, three families (read, team_bash, and the trio as the FIRST named bridge); any registration refusal names itself in the log',
   })
-  // 2) BIRTH (independent Oracle): the claim file on DISK — written by the
-  //    child process, read by the runner's file system, never a tool
-  //    return; plus the real job id and a clean birth-ask posture.
-  add('jobs:birth-positive', d.claim1Text !== null && d.claim1Text !== undefined
-    && String(d.claim1Text).includes(d.claims?.claim1 ?? '\u0000')
-    && (d.jobIds?.length ?? 0) >= 1
+  // 2) BIRTH: the HOST spawned a real background job — the id comes from
+  //    the host's own 'started background job' / row vocabulary (never a
+  //    claim string), the ask posture stayed clean, and the ring carries
+  //    the effect (arm 3). A sandboxed lane's DISK write is a BONUS the
+  //    receipt reports, never a gate: boots 2/3 measured the sandbox
+  //    law refusing workspace writes, and a verdict may not depend on
+  //    what the lane's sandbox happens to allow.
+  add('jobs:birth-positive', (d.jobIds?.length ?? 0) >= 1
     && (d.birthRow?.seen !== true || d.birthRow?.resolved === true), {
-    claimHead: String(d.claim1Text ?? '').slice(0, 120),
+    claim1OnDisk: d.claim1Text !== null && d.claim1Text !== undefined
+      && String(d.claim1Text).includes(d.claims?.claim1 ?? '\u0000'),
     jobIds: (d.jobIds ?? []).slice(0, 4),
     birthRow: d.birthRow ?? { seen: false },
     note: 'the birth lane is the member NATIVE bash (the governed confined row refuses background by name — the CI-03 disclosed law); if the host gated the birth, the runner settled the ask through the PUBLIC team.resolveControl seam',
@@ -563,9 +580,11 @@ export function judgeU6Jobs(d, hostAlive) {
   // 4) OWNER FENCE: the foreign viewer is REFUSED on read AND kill, and
   //    nothing settled: no host cancel/abort event for the owner's job,
   //    the claim marker intact, the owner's later list still shows it.
-  add('jobs:owner-fence', /refused/i.test(String(d.foreignOutput ?? ''))
-    && /refused/i.test(String(d.foreignKill ?? ''))
-    && d.claim1Text !== null && d.claim1Text !== undefined
+  add('jobs:owner-fence', String(d.foreignOutput ?? '').length > 0
+    && !String(d.foreignOutput ?? '').includes(d.claims?.claim1 ?? '\u0000')
+    && /refused|not visible|unknown job|owner-mismatch/i.test(String(d.foreignOutput ?? ''))
+    && !String(d.foreignKill ?? '').includes('requested cancellation of job')
+    && /refused|not visible|unknown job|owner-mismatch/i.test(String(d.foreignKill ?? ''))
     && (d.settle?.foreignKillLines ?? -1) === 0
     && (lineFor(d.list2, d.jobIds?.[0]) ?? '').includes('running'), {
     foreignOutput: String(d.foreignOutput ?? '').slice(0, 160),
@@ -584,24 +603,25 @@ export function judgeU6Jobs(d, hostAlive) {
   const settledInList = list2Row === null || /\b(aborted|cancelled|completed|failed|exited|finished)\b/i.test(list2Row)
   add('jobs:cancel-honest', kill2.includes('requested cancellation of job')
     && !/has been (cancelled|killed|terminated)|job .* (cancelled|terminated)/i.test(kill2)
-    && d.killText !== null && d.killText !== undefined && String(d.killText).includes('warm')
-    && !String(d.killText).includes(d.claims?.killFinal ?? '\u0000')
+    && String(d.output2 ?? '').includes(d.claims?.killWarm ?? '\u0000')
+    && String(d.output2Post ?? '').includes(d.claims?.killWarm ?? '\u0000')
+    && !String(d.output2Post ?? '').includes(d.claims?.killFinal ?? '\u0000')
     && (settledInList || (d.settle?.killLines ?? 0) > 0), {
     kill2: kill2.slice(0, 160),
     list2RowForKillJob: list2Row,
-    killWarmSeen: d.killText !== null && d.killText !== undefined,
-    killFinalSeen: d.killText !== null && d.killText !== undefined && String(d.killText).includes(d.claims?.killFinal ?? '\u0000'),
+    killWarmSeen: String(d.output2 ?? '').includes(d.claims?.killWarm ?? '\u0000'),
+    killFinalSeen: String(d.output2Post ?? '').includes(d.claims?.killFinal ?? '\u0000'),
     killHostEvents: d.settle?.killLines ?? null,
-    note: 'the bridge only ever says REQUESTED; the FINAL marker never wrote (measured absence inside the settle window) — the child really stopped; the settled status word comes from the HOST list, never from the bridge',
+    note: 'the bridge only ever says REQUESTED; the FINAL text never reached the RING even AFTER the 40 s settle spacer passed the 35 s print deadline (measured absence at the HOST registry, past the window where an un-killed job would have printed it) — the child really stopped; the settled status word comes from the HOST list, never from the bridge',
   })
   // 6) CI-03 NATIVE CONTROL: the boot-root's NATIVE trio ran its own job
-  //    end to end with ZERO kernel involvement (its marker on disk; the
-  //    native answer carries the ring claim; no kernel words in the root
-  //    transcript).
-  add('jobs:ctl-native-untouched', String(d.ctlText ?? '').includes(d.claims?.ctl ?? '\u0000')
-    && String(d.ctlOutput ?? '').includes(d.claims?.ctl ?? '\u0000')
+  //    with ZERO kernel involvement: the native job_output returns the
+  //    RING bytes of the root's own background child (host-buffered — no
+  //    transcript echo imitates them) plus the host status line, and the
+  //    kernel never spoke about those calls.
+  add('jobs:ctl-native-untouched', String(d.ctlOutput ?? '').includes(d.claims?.ctl ?? '\u0000')
+    && String(d.ctlOutput ?? '').includes('[status')
     && (d.rootKernelMentions ?? -1) === 0, {
-    ctlMarker: String(d.ctlText ?? '').slice(0, 120),
     ctlAnswerHead: String(d.ctlOutput ?? '').slice(0, 160),
     rootKernelMentions: d.rootKernelMentions ?? null,
     note: 'the boot-root session is not a Team mount: its native job_* ride native (CI-03), the kernel never spoke about those calls',

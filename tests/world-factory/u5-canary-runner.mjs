@@ -1783,14 +1783,23 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
 
   // ── evidence ─────────────────────────────────────────────────────────────
   const requests = world.mock?.requests ?? []
-  const wReq = laneTranscript(requests, assembly.tokens('d1'))
-  const fReq = laneTranscript(requests, assembly.tokens('d2'))
+  // ENVELOPE match, not the raw token: the delegation token also rides
+  // the LEADER's team_delegate ARGS, so matching it picks the leader's
+  // transcript and MISSES every member exchange (run 2/3 receipts proved
+  // the contamination: trioUses saw only the root's single call). The
+  // `[team-work requestToken=` envelope text exists only in the member
+  // session's own user message.
+  const wReq = laneTranscript(requests, `[team-work requestToken=${assembly.tokens('d1')}`)
+  const fReq = laneTranscript(requests, `[team-work requestToken=${assembly.tokens('d2')}`)
   const cReq = laneTranscript(requests, assembly.markers.T_CTL)
   const wEx = wReq === null ? [] : toolExchanges(wReq)
   const fEx = fReq === null ? [] : toolExchanges(fReq)
   const cEx = cReq === null ? [] : toolExchanges(cReq)
   const firstNamed = (ex, name) => (ex.find((e) => e.name === name) ?? { result: null }).result
   const lastNamed = (ex, name) => { for (let i = ex.length - 1; i >= 0; i -= 1) if (ex[i]?.name === name) return ex[i].result; return null }
+  const namesJob = (e, name, id) => e?.name === name && id !== undefined && id !== null && String(e.args?.job_id ?? '') === String(id)
+  const firstFor = (ex, name, id) => (ex.find((e) => namesJob(e, name, id)) ?? { result: null }).result
+  const lastFor = (ex, name, id) => { for (let i = ex.length - 1; i >= 0; i -= 1) if (namesJob(ex[i], name, id)) return ex[i].result; return null }
   const jobIds = extractJobIds(wEx.map((e) => e.result).join('\n'))
   const finalCtl = await stateSnapshot()
   for (const r of (finalCtl?.requests ?? [])) {
@@ -1810,11 +1819,11 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     kernelHits: kernelHits(),
     claims: assembly.claims,
     claim1Text: assembly.readEffect('claim1'),
-    killText: assembly.readEffect('kill'),
-    ctlText: assembly.readEffect('ctl'),
     jobIds,
     list1: firstNamed(wEx, 'job_list'),
-    output1: firstNamed(wEx, 'job_output'),
+    output1: firstFor(wEx, 'job_output', jobIds[0]) ?? firstNamed(wEx, 'job_output'),
+    output2: firstFor(wEx, 'job_output', jobIds[1]),
+    output2Post: lastFor(wEx, 'job_output', jobIds[1]),
     kill2: firstNamed(wEx, 'job_kill'),
     list2: lastNamed(wEx, 'job_list'),
     foreignOutput: firstNamed(fEx, 'job_output'),
@@ -1833,9 +1842,20 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     // from the receipt alone — every field below is truncated transcript text,
     // never a secret: no token rides a tool result).
     debug: {
-      worker: wEx.slice(-6).map((e) => ({ name: e.name, result: String(e.result ?? '').slice(0, 220) })),
-      foreign: fEx.slice(-4).map((e) => ({ name: e.name, result: String(e.result ?? '').slice(0, 220) })),
-      root: cEx.slice(-3).map((e) => ({ name: e.name, result: String(e.result ?? '').slice(0, 220) })),
+      worker: wEx.slice(-8).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+      foreign: fEx.slice(-4).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+      root: cEx.slice(-3).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+      // global diagnostics: what did the HOST answer EVERY bash/trio call
+      // anywhere in the world (dedup, truncated) — a stalled birth must
+      // name its own cause in the receipt, boot 2/3 lesson.
+      bashResults: [...new Set(requests.flatMap((r) => toolExchanges(r))
+        .filter((e) => e.name === 'bash')
+        .map((e) => JSON.stringify({ args: e.args ?? null, result: String(e.result ?? '').slice(0, 200) })))]
+        .slice(-10),
+      trioResults: [...new Set(requests.flatMap((r) => toolExchanges(r))
+        .filter((e) => e.name !== null && trioNameRe.test(String(e.name)))
+        .map((e) => JSON.stringify({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 200) })))]
+        .slice(-12),
     },
   }
   record.record.u6jobsDigest = digest
