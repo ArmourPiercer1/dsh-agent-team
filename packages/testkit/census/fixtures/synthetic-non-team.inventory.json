@@ -1,0 +1,1311 @@
+{
+  "schema": "u7-0/observed-runtime-inventory/v1",
+  "world": {
+    "kind": "non-team",
+    "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "boot_id": "fixture-boot",
+    "world_id": "u7c-fixture-synthetic",
+    "captured_utc": "2026-10-26T00:00:00.000Z",
+    "source_ledger": "synthetic"
+  },
+  "scopes": [
+    {
+      "scope_id": "global",
+      "kind": "global",
+      "team_lane": false,
+      "team_lane_signal": "none",
+      "agent_label": "row/global",
+      "tools": [
+        {
+          "name": "ask_user_question",
+          "definition_identity": "def#1",
+          "schema_digest": "sha256:f1228a56c81629c2b14c495a632f0a721ce010832be5fb72433b0043728583c0",
+          "identity_vs_global": "same",
+          "change_seq": 1,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "bash",
+          "definition_identity": "def#2",
+          "schema_digest": "sha256:1ac0767fb9a2dd14fcc038e05460ae62be2d707e65e7c1851967b3150eb72f8c",
+          "identity_vs_global": "same",
+          "change_seq": 2,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "cordis_inspect_list",
+          "definition_identity": "def#3",
+          "schema_digest": "sha256:8cb2bfe17ba234854e9d2f6b9f662489a0c3bd3987938b757f55899edf5216f3",
+          "identity_vs_global": "same",
+          "change_seq": 3,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "cordis_inspect_query",
+          "definition_identity": "def#4",
+          "schema_digest": "sha256:9160aef732f57f17effe7b041fbebdf40b609265693d009c192d6b774ac52fc3",
+          "identity_vs_global": "same",
+          "change_seq": 4,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "create_goal",
+          "definition_identity": "def#5",
+          "schema_digest": "sha256:2f6c2848d54af7af55ab5c33952543bdaf07234b12ab2d2f6458b0423a26e407",
+          "identity_vs_global": "same",
+          "change_seq": 5,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "edit",
+          "definition_identity": "def#6",
+          "schema_digest": "sha256:f3988ce0700d8fa6cb510ab13535079385efa505b688b09b80df993624a15fe3",
+          "identity_vs_global": "same",
+          "change_seq": 6,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "exit_plan_mode",
+          "definition_identity": "def#7",
+          "schema_digest": "sha256:1eff2548c7e368de0cfbbe0c5c0461840dc87a385022e8fc2bc04941eafa3506",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "get_goal",
+          "definition_identity": "def#8",
+          "schema_digest": "sha256:eac96738dec6c2ee34131d5fe13f3ee0cc3726e7c512b544a34271df9bae1067",
+          "identity_vs_global": "same",
+          "change_seq": 8,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "glob",
+          "definition_identity": "def#9",
+          "schema_digest": "sha256:21b6b296aeb3349e2452a9f1e79e16db94d066e8854abc4c687d64ecac61b64e",
+          "identity_vs_global": "same",
+          "change_seq": 9,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "grep",
+          "definition_identity": "def#10",
+          "schema_digest": "sha256:eecfd9f73231a4e8d600b7b6be78f5afdb905c2c3a84e8af3c6ee5af52838909",
+          "identity_vs_global": "same",
+          "change_seq": 10,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "interrupt_agent",
+          "definition_identity": "def#11",
+          "schema_digest": "sha256:b31fd4b9c23787239ed17f7358b589623eb83f5c34f96fc4096f27701bc3e023",
+          "identity_vs_global": "same",
+          "change_seq": 11,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "job_kill",
+          "definition_identity": "def#12",
+          "schema_digest": "sha256:65bb2f448a84bd16504b74f55e6649787069e16fc1e6366ad8443bec41444681",
+          "identity_vs_global": "same",
+          "change_seq": 12,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "job_list",
+          "definition_identity": "def#13",
+          "schema_digest": "sha256:8823aec4608ecb64ff54c73571078cfcab4514d2003e6424748b20c8146b9722",
+          "identity_vs_global": "same",
+          "change_seq": 13,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "job_output",
+          "definition_identity": "def#14",
+          "schema_digest": "sha256:85854ec809d578b3ec7a55299e7f6e4f246fc5fdaee047b8195495e22fd7ae82",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_agents",
+          "definition_identity": "def#15",
+          "schema_digest": "sha256:09c922ed57fba1574da85d7e43b9a949658429546858cd6ecbbe951cdc7841c1",
+          "identity_vs_global": "same",
+          "change_seq": 15,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_mcp_resource_templates",
+          "definition_identity": "def#16",
+          "schema_digest": "sha256:67f2393559f81ba542f310f38b47d5a3f9e7ea197a1bee5fc9944213d5fc6661",
+          "identity_vs_global": "same",
+          "change_seq": 16,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_mcp_resources",
+          "definition_identity": "def#17",
+          "schema_digest": "sha256:42e72fb3e179b5e9336984e6555b4a6288a7a84dbcca3106ce1046f2e677f5ed",
+          "identity_vs_global": "same",
+          "change_seq": 17,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_subagent_models",
+          "definition_identity": "def#18",
+          "schema_digest": "sha256:b08093bbc27b10fc33dedf7021ac725ca3842d1dbf8cc1516f8e711b51db42a2",
+          "identity_vs_global": "same",
+          "change_seq": 18,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "load_workspace_dependencies",
+          "definition_identity": "def#19",
+          "schema_digest": "sha256:7da56da0c0d3ad7f571304306cdb8f4cef47eb2a2b44d5d51e10605a51042aeb",
+          "identity_vs_global": "same",
+          "change_seq": 19,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "lsp",
+          "definition_identity": "def#20",
+          "schema_digest": "sha256:aeffc37d55878cfcd88df768375781c51b0c42d4558a766dc9b4e76806daecfd",
+          "identity_vs_global": "same",
+          "change_seq": 20,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "plugin_manager",
+          "definition_identity": "def#21",
+          "schema_digest": "sha256:203e65980177bff5536e7dc0ee27b4f5c8459b775d47591e1ad4a5268fe64e5d",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "present",
+          "definition_identity": "def#22",
+          "schema_digest": "sha256:6cf9eba51ff5b66fdcf2257c3339aa9be58f89e2aee2a62510b86a3f16ebd559",
+          "identity_vs_global": "same",
+          "change_seq": 22,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "pwsh",
+          "definition_identity": "def#23",
+          "schema_digest": "sha256:91a2cea113839fdcab34186f87c571bd1140a74f807e30850b5ca92bd2c4e561",
+          "identity_vs_global": "same",
+          "change_seq": 23,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "ralph",
+          "definition_identity": "def#24",
+          "schema_digest": "sha256:c6127ad888b4d376b4ff274df18ade65bb1ff69dce64fc8817d1f22f2bd821b0",
+          "identity_vs_global": "same",
+          "change_seq": 24,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "read",
+          "definition_identity": "def#25",
+          "schema_digest": "sha256:c5b5695467b10a85d8a0419246b00beb60837a8b8135a66cf9bb3113e6e96b71",
+          "identity_vs_global": "same",
+          "change_seq": 25,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "read_image",
+          "definition_identity": "def#26",
+          "schema_digest": "sha256:ee217a33027cf37ad9e8c2656e07d3ebbf45df4611f9193c31593c115c99ac87",
+          "identity_vs_global": "same",
+          "change_seq": 26,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "read_mcp_resource",
+          "definition_identity": "def#27",
+          "schema_digest": "sha256:ea33174dd6f927fd0ea7bc327ac91bc90c2216a792036a98800e6badce508aa9",
+          "identity_vs_global": "same",
+          "change_seq": 27,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "run_code",
+          "definition_identity": "def#28",
+          "schema_digest": "sha256:d0c8c7d3ae8f0d3c5b8cea608bef47687345046c7c2672f571366c64de9a336c",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_create",
+          "definition_identity": "def#29",
+          "schema_digest": "sha256:25064881eddf9d74388d6dba085398fbd333dd016a6f350c01c5eeb8a44ed6ee",
+          "identity_vs_global": "same",
+          "change_seq": 29,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_delete",
+          "definition_identity": "def#30",
+          "schema_digest": "sha256:f847c5178b9494e32d133f579198f9f439a36bda3ab245fb18cd995b3cf334e9",
+          "identity_vs_global": "same",
+          "change_seq": 30,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_list",
+          "definition_identity": "def#31",
+          "schema_digest": "sha256:6ba6e8b44e8b3db3db96966d8c1a3830f86c25c3fdd014d2883e5f39c5a66e1e",
+          "identity_vs_global": "same",
+          "change_seq": 31,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_update",
+          "definition_identity": "def#32",
+          "schema_digest": "sha256:73e8fda7ddc74d2720560344c3694e4693f2024bffb0da05db3050765f90f4c2",
+          "identity_vs_global": "same",
+          "change_seq": 32,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "send_message",
+          "definition_identity": "def#33",
+          "schema_digest": "sha256:b0543443793c4e1bdde82a13a8fc91a971391c2b78ede2df2ea8e1362662ed88",
+          "identity_vs_global": "same",
+          "change_seq": 33,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_event_read",
+          "definition_identity": "def#34",
+          "schema_digest": "sha256:13b67cbfb0e9e162d6eb140da9424db20a43f9f4a63a286d576a8ac6ece7869c",
+          "identity_vs_global": "same",
+          "change_seq": 34,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_event_search",
+          "definition_identity": "def#35",
+          "schema_digest": "sha256:9c16f1be112f13b931d6c39c6b088c0318859daf8f7ed198264d910df423c3fc",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_event_trace",
+          "definition_identity": "def#36",
+          "schema_digest": "sha256:d18c732e3908126dbb86c93fa1af3d5551dd735fd335aa72a624f8d43d82e66c",
+          "identity_vs_global": "same",
+          "change_seq": 36,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_search",
+          "definition_identity": "def#37",
+          "schema_digest": "sha256:da697313712ed9d6d7ed495f1a1aafdfaadae6569cb194945b9b5baff4a100d5",
+          "identity_vs_global": "same",
+          "change_seq": 37,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_trace",
+          "definition_identity": "def#38",
+          "schema_digest": "sha256:f2828874c0686b27376e1fed8a2da76dbd63014edbeb2e0751efff0394a62a04",
+          "identity_vs_global": "same",
+          "change_seq": 38,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "skill",
+          "definition_identity": "def#39",
+          "schema_digest": "sha256:373488eca104d6bd76a35a64f6c8d6ecdd1ea2224f3fb868b54f7128e48ac166",
+          "identity_vs_global": "same",
+          "change_seq": 39,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "spawn_teammate",
+          "definition_identity": "def#40",
+          "schema_digest": "sha256:7f4a3b41b07acfeb013e7aeec54566f7679fd44e72788ec216dfadf3c313c4ed",
+          "identity_vs_global": "same",
+          "change_seq": 40,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_act",
+          "definition_identity": "def#41",
+          "schema_digest": "sha256:9e21363b8962065f18209c7b26d03ccd15833b59e0ab071e5d77f96a06f488c0",
+          "identity_vs_global": "same",
+          "change_seq": 41,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_extract",
+          "definition_identity": "def#42",
+          "schema_digest": "sha256:a6bc8600656ede981640708fc962723514d7a44dcde8a28db4f70acd0700d23b",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_navigate",
+          "definition_identity": "def#43",
+          "schema_digest": "sha256:b255afa87a44f5d983f9356e205dbe90a3d98688991b7348ff8af1477ce2efcb",
+          "identity_vs_global": "same",
+          "change_seq": 43,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_observe",
+          "definition_identity": "def#44",
+          "schema_digest": "sha256:20b0890e18207c54a8372fef99f9d8ab84fe2316832f73e127fc4cd525f101f8",
+          "identity_vs_global": "same",
+          "change_seq": 44,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_screenshot",
+          "definition_identity": "def#45",
+          "schema_digest": "sha256:c6a98e518e510a7fb10ecba796449661f5a5294428103a0bf6c0f21295c1cef4",
+          "identity_vs_global": "same",
+          "change_seq": 45,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_tabs",
+          "definition_identity": "def#46",
+          "schema_digest": "sha256:91dc265a1b109ed98f5c9f74b55b8e2f49d1a477353f6a1871003a839b80f5b4",
+          "identity_vs_global": "same",
+          "change_seq": 46,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "str_replace_editor",
+          "definition_identity": "def#47",
+          "schema_digest": "sha256:1becc428ca21aa30eab1109466590bb21cab05ecc7cd94fefa6db11f6378e939",
+          "identity_vs_global": "same",
+          "change_seq": 47,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "structured_output",
+          "definition_identity": "def#48",
+          "schema_digest": "sha256:695a753fb3cd33b3fb7a3d48036161f4f551c3efa8d68eea950d80c3b5b1aab0",
+          "identity_vs_global": "same",
+          "change_seq": 48,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent",
+          "definition_identity": "def#49",
+          "schema_digest": "sha256:7931b642687710b50ae75b7aa9c63ff98ea0b66c1ce4e69f742164bc8ea06451",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent_claude_code",
+          "definition_identity": "def#50",
+          "schema_digest": "sha256:73b69de99a50d0bdc9bb47ee305355428c55110caab08d5016986236624c45a7",
+          "identity_vs_global": "same",
+          "change_seq": 50,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent_codex",
+          "definition_identity": "def#51",
+          "schema_digest": "sha256:84e00f7465281991cf558913846e607c3ab82b21905b1466781d66f07b16a5bd",
+          "identity_vs_global": "same",
+          "change_seq": 51,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent_fork",
+          "definition_identity": "def#52",
+          "schema_digest": "sha256:3993adf33e19b963da824c28d4f7610d5a98455c7cc574d757f7d4d094c736d4",
+          "identity_vs_global": "same",
+          "change_seq": 52,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_create",
+          "definition_identity": "def#53",
+          "schema_digest": "sha256:f825e8c0b2d575f5abc4e7b4d2a4fb0ea520abc463a370b542a52b191f604905",
+          "identity_vs_global": "same",
+          "change_seq": 53,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_get",
+          "definition_identity": "def#54",
+          "schema_digest": "sha256:6aa7c6d037f7e15911af889ebf1cd7d09ae699e4216861e80d46b85e0b5ff2ef",
+          "identity_vs_global": "same",
+          "change_seq": 54,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_list",
+          "definition_identity": "def#55",
+          "schema_digest": "sha256:b2f87deb73f2e405defc323a4b77abe082d49a5c9613db327419bfda0e66bd44",
+          "identity_vs_global": "same",
+          "change_seq": 55,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_update",
+          "definition_identity": "def#56",
+          "schema_digest": "sha256:ef3bbfb8375948d5405f84c29f3368a359b826c6809a99c2deb9537cdf5cdddb",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_close",
+          "definition_identity": "def#57",
+          "schema_digest": "sha256:f54ea4bc6da391e5cabfa6e4ab1a23d0db716f185fc0d667eca294d136ce7aba",
+          "identity_vs_global": "same",
+          "change_seq": 57,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_list",
+          "definition_identity": "def#58",
+          "schema_digest": "sha256:ced58b79df99b0426c51c2e419e51525dd716dd2427ba8c086c63d0b1b534884",
+          "identity_vs_global": "same",
+          "change_seq": 58,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_open",
+          "definition_identity": "def#59",
+          "schema_digest": "sha256:62172d987dabac67b3bb320c82984af292d0de532a6047a59c03f0d18ac35f88",
+          "identity_vs_global": "same",
+          "change_seq": 59,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_read",
+          "definition_identity": "def#60",
+          "schema_digest": "sha256:73c870226c47da3891d07566ccc4177e29f0e4f1fc4057a1cac5c5347dd21a12",
+          "identity_vs_global": "same",
+          "change_seq": 60,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_send",
+          "definition_identity": "def#61",
+          "schema_digest": "sha256:9cea659d6ac31c4d403f09858da3ff9bc1fd4b71ce0259a28732655645887c58",
+          "identity_vs_global": "same",
+          "change_seq": 61,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_signal",
+          "definition_identity": "def#62",
+          "schema_digest": "sha256:32e2ed1e50a246ad71af6886fbf34fe3c6d80920d9e5a88871c1c46d11cce0a5",
+          "identity_vs_global": "same",
+          "change_seq": 62,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "todo_write",
+          "definition_identity": "def#63",
+          "schema_digest": "sha256:4678df87e49d7b2a8a0786da63122f18582f66f2e15473b9c44334f86b9803ed",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "u5_canary",
+          "definition_identity": "def#64",
+          "schema_digest": "sha256:cdc906b05025ec95cf340e5e8065badac286063c0c78297dc2df552445cc8599",
+          "identity_vs_global": "same",
+          "change_seq": 64,
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "u7_census",
+          "definition_identity": "def#65",
+          "schema_digest": "sha256:a68f2a5f827ef953afd47abb715e0236f7794e54911a910a968ee5a025f40f63",
+          "identity_vs_global": "same",
+          "change_seq": 65,
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "update_goal",
+          "definition_identity": "def#66",
+          "schema_digest": "sha256:6ca086fe64a2f65fed3efaae4b8e7d0aae31bf2d34a20b16776471856d417178",
+          "identity_vs_global": "same",
+          "change_seq": 66,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "wait_agent",
+          "definition_identity": "def#67",
+          "schema_digest": "sha256:55dbd0848508476159d49970f1452c538940b85f6f511eac9b6335cad95d920f",
+          "identity_vs_global": "same",
+          "change_seq": 67,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "web_fetch",
+          "definition_identity": "def#68",
+          "schema_digest": "sha256:b7b28fd057084f6f715d59d084b78ca6587028100a20438eb56dc8369a7125bc",
+          "identity_vs_global": "same",
+          "change_seq": 68,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "web_search",
+          "definition_identity": "def#69",
+          "schema_digest": "sha256:ec96645188467551901717a72f829a31c27549efc53bdf26914afb81064eeb77",
+          "identity_vs_global": "same",
+          "change_seq": 69,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "workflow",
+          "definition_identity": "def#70",
+          "schema_digest": "sha256:c0491673b13015d4e6ee768fe3aa6350ead8666116afcb74dcb6932110acf975",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "write",
+          "definition_identity": "def#71",
+          "schema_digest": "sha256:6ba5e5f0892acb9fc4d549994170d6ac32ee00d63b5db391fa490c3473aadbf3",
+          "identity_vs_global": "same",
+          "change_seq": 71,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        }
+      ]
+    },
+    {
+      "scope_id": "agent-1",
+      "kind": "agent",
+      "team_lane": false,
+      "team_lane_signal": "none",
+      "agent_label": "fixture-agent",
+      "tools": [
+        {
+          "name": "ask_user_question",
+          "definition_identity": "def#1",
+          "schema_digest": "sha256:f1228a56c81629c2b14c495a632f0a721ce010832be5fb72433b0043728583c0",
+          "identity_vs_global": "same",
+          "change_seq": 1,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "bash",
+          "definition_identity": "def#2",
+          "schema_digest": "sha256:1ac0767fb9a2dd14fcc038e05460ae62be2d707e65e7c1851967b3150eb72f8c",
+          "identity_vs_global": "same",
+          "change_seq": 2,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "cordis_inspect_list",
+          "definition_identity": "def#3",
+          "schema_digest": "sha256:8cb2bfe17ba234854e9d2f6b9f662489a0c3bd3987938b757f55899edf5216f3",
+          "identity_vs_global": "same",
+          "change_seq": 3,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "cordis_inspect_query",
+          "definition_identity": "def#4",
+          "schema_digest": "sha256:9160aef732f57f17effe7b041fbebdf40b609265693d009c192d6b774ac52fc3",
+          "identity_vs_global": "same",
+          "change_seq": 4,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "create_goal",
+          "definition_identity": "def#5",
+          "schema_digest": "sha256:2f6c2848d54af7af55ab5c33952543bdaf07234b12ab2d2f6458b0423a26e407",
+          "identity_vs_global": "same",
+          "change_seq": 5,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "edit",
+          "definition_identity": "def#6",
+          "schema_digest": "sha256:f3988ce0700d8fa6cb510ab13535079385efa505b688b09b80df993624a15fe3",
+          "identity_vs_global": "same",
+          "change_seq": 6,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "exit_plan_mode",
+          "definition_identity": "def#7",
+          "schema_digest": "sha256:1eff2548c7e368de0cfbbe0c5c0461840dc87a385022e8fc2bc04941eafa3506",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "get_goal",
+          "definition_identity": "def#8",
+          "schema_digest": "sha256:eac96738dec6c2ee34131d5fe13f3ee0cc3726e7c512b544a34271df9bae1067",
+          "identity_vs_global": "same",
+          "change_seq": 8,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "glob",
+          "definition_identity": "def#9",
+          "schema_digest": "sha256:21b6b296aeb3349e2452a9f1e79e16db94d066e8854abc4c687d64ecac61b64e",
+          "identity_vs_global": "same",
+          "change_seq": 9,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "grep",
+          "definition_identity": "def#10",
+          "schema_digest": "sha256:eecfd9f73231a4e8d600b7b6be78f5afdb905c2c3a84e8af3c6ee5af52838909",
+          "identity_vs_global": "same",
+          "change_seq": 10,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "interrupt_agent",
+          "definition_identity": "def#11",
+          "schema_digest": "sha256:b31fd4b9c23787239ed17f7358b589623eb83f5c34f96fc4096f27701bc3e023",
+          "identity_vs_global": "same",
+          "change_seq": 11,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "job_kill",
+          "definition_identity": "def#12",
+          "schema_digest": "sha256:65bb2f448a84bd16504b74f55e6649787069e16fc1e6366ad8443bec41444681",
+          "identity_vs_global": "same",
+          "change_seq": 12,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "job_list",
+          "definition_identity": "def#13",
+          "schema_digest": "sha256:8823aec4608ecb64ff54c73571078cfcab4514d2003e6424748b20c8146b9722",
+          "identity_vs_global": "same",
+          "change_seq": 13,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "job_output",
+          "definition_identity": "def#14",
+          "schema_digest": "sha256:85854ec809d578b3ec7a55299e7f6e4f246fc5fdaee047b8195495e22fd7ae82",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_agents",
+          "definition_identity": "def#15",
+          "schema_digest": "sha256:09c922ed57fba1574da85d7e43b9a949658429546858cd6ecbbe951cdc7841c1",
+          "identity_vs_global": "same",
+          "change_seq": 15,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_mcp_resource_templates",
+          "definition_identity": "def#16",
+          "schema_digest": "sha256:67f2393559f81ba542f310f38b47d5a3f9e7ea197a1bee5fc9944213d5fc6661",
+          "identity_vs_global": "same",
+          "change_seq": 16,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_mcp_resources",
+          "definition_identity": "def#17",
+          "schema_digest": "sha256:42e72fb3e179b5e9336984e6555b4a6288a7a84dbcca3106ce1046f2e677f5ed",
+          "identity_vs_global": "same",
+          "change_seq": 17,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "list_subagent_models",
+          "definition_identity": "def#18",
+          "schema_digest": "sha256:b08093bbc27b10fc33dedf7021ac725ca3842d1dbf8cc1516f8e711b51db42a2",
+          "identity_vs_global": "same",
+          "change_seq": 18,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "load_workspace_dependencies",
+          "definition_identity": "def#19",
+          "schema_digest": "sha256:7da56da0c0d3ad7f571304306cdb8f4cef47eb2a2b44d5d51e10605a51042aeb",
+          "identity_vs_global": "same",
+          "change_seq": 19,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "lsp",
+          "definition_identity": "def#20",
+          "schema_digest": "sha256:aeffc37d55878cfcd88df768375781c51b0c42d4558a766dc9b4e76806daecfd",
+          "identity_vs_global": "same",
+          "change_seq": 20,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "plugin_manager",
+          "definition_identity": "def#21",
+          "schema_digest": "sha256:203e65980177bff5536e7dc0ee27b4f5c8459b775d47591e1ad4a5268fe64e5d",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "present",
+          "definition_identity": "def#22",
+          "schema_digest": "sha256:6cf9eba51ff5b66fdcf2257c3339aa9be58f89e2aee2a62510b86a3f16ebd559",
+          "identity_vs_global": "same",
+          "change_seq": 22,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "pwsh",
+          "definition_identity": "def#23",
+          "schema_digest": "sha256:91a2cea113839fdcab34186f87c571bd1140a74f807e30850b5ca92bd2c4e561",
+          "identity_vs_global": "same",
+          "change_seq": 23,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "ralph",
+          "definition_identity": "def#24",
+          "schema_digest": "sha256:c6127ad888b4d376b4ff274df18ade65bb1ff69dce64fc8817d1f22f2bd821b0",
+          "identity_vs_global": "same",
+          "change_seq": 24,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "read",
+          "definition_identity": "def#25",
+          "schema_digest": "sha256:c5b5695467b10a85d8a0419246b00beb60837a8b8135a66cf9bb3113e6e96b71",
+          "identity_vs_global": "same",
+          "change_seq": 25,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "read_image",
+          "definition_identity": "def#26",
+          "schema_digest": "sha256:ee217a33027cf37ad9e8c2656e07d3ebbf45df4611f9193c31593c115c99ac87",
+          "identity_vs_global": "same",
+          "change_seq": 26,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "read_mcp_resource",
+          "definition_identity": "def#27",
+          "schema_digest": "sha256:ea33174dd6f927fd0ea7bc327ac91bc90c2216a792036a98800e6badce508aa9",
+          "identity_vs_global": "same",
+          "change_seq": 27,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "run_code",
+          "definition_identity": "def#28",
+          "schema_digest": "sha256:d0c8c7d3ae8f0d3c5b8cea608bef47687345046c7c2672f571366c64de9a336c",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_create",
+          "definition_identity": "def#29",
+          "schema_digest": "sha256:25064881eddf9d74388d6dba085398fbd333dd016a6f350c01c5eeb8a44ed6ee",
+          "identity_vs_global": "same",
+          "change_seq": 29,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_delete",
+          "definition_identity": "def#30",
+          "schema_digest": "sha256:f847c5178b9494e32d133f579198f9f439a36bda3ab245fb18cd995b3cf334e9",
+          "identity_vs_global": "same",
+          "change_seq": 30,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_list",
+          "definition_identity": "def#31",
+          "schema_digest": "sha256:6ba6e8b44e8b3db3db96966d8c1a3830f86c25c3fdd014d2883e5f39c5a66e1e",
+          "identity_vs_global": "same",
+          "change_seq": 31,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "schedule_update",
+          "definition_identity": "def#32",
+          "schema_digest": "sha256:73e8fda7ddc74d2720560344c3694e4693f2024bffb0da05db3050765f90f4c2",
+          "identity_vs_global": "same",
+          "change_seq": 32,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "send_message",
+          "definition_identity": "def#33",
+          "schema_digest": "sha256:b0543443793c4e1bdde82a13a8fc91a971391c2b78ede2df2ea8e1362662ed88",
+          "identity_vs_global": "same",
+          "change_seq": 33,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_event_read",
+          "definition_identity": "def#34",
+          "schema_digest": "sha256:13b67cbfb0e9e162d6eb140da9424db20a43f9f4a63a286d576a8ac6ece7869c",
+          "identity_vs_global": "same",
+          "change_seq": 34,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_event_search",
+          "definition_identity": "def#35",
+          "schema_digest": "sha256:9c16f1be112f13b931d6c39c6b088c0318859daf8f7ed198264d910df423c3fc",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_event_trace",
+          "definition_identity": "def#36",
+          "schema_digest": "sha256:d18c732e3908126dbb86c93fa1af3d5551dd735fd335aa72a624f8d43d82e66c",
+          "identity_vs_global": "same",
+          "change_seq": 36,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_search",
+          "definition_identity": "def#37",
+          "schema_digest": "sha256:da697313712ed9d6d7ed495f1a1aafdfaadae6569cb194945b9b5baff4a100d5",
+          "identity_vs_global": "same",
+          "change_seq": 37,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "session_trace",
+          "definition_identity": "def#38",
+          "schema_digest": "sha256:f2828874c0686b27376e1fed8a2da76dbd63014edbeb2e0751efff0394a62a04",
+          "identity_vs_global": "same",
+          "change_seq": 38,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "skill",
+          "definition_identity": "def#39",
+          "schema_digest": "sha256:373488eca104d6bd76a35a64f6c8d6ecdd1ea2224f3fb868b54f7128e48ac166",
+          "identity_vs_global": "same",
+          "change_seq": 39,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "spawn_teammate",
+          "definition_identity": "def#40",
+          "schema_digest": "sha256:7f4a3b41b07acfeb013e7aeec54566f7679fd44e72788ec216dfadf3c313c4ed",
+          "identity_vs_global": "same",
+          "change_seq": 40,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_act",
+          "definition_identity": "def#41",
+          "schema_digest": "sha256:9e21363b8962065f18209c7b26d03ccd15833b59e0ab071e5d77f96a06f488c0",
+          "identity_vs_global": "same",
+          "change_seq": 41,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_extract",
+          "definition_identity": "def#42",
+          "schema_digest": "sha256:a6bc8600656ede981640708fc962723514d7a44dcde8a28db4f70acd0700d23b",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_navigate",
+          "definition_identity": "def#43",
+          "schema_digest": "sha256:b255afa87a44f5d983f9356e205dbe90a3d98688991b7348ff8af1477ce2efcb",
+          "identity_vs_global": "same",
+          "change_seq": 43,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_observe",
+          "definition_identity": "def#44",
+          "schema_digest": "sha256:20b0890e18207c54a8372fef99f9d8ab84fe2316832f73e127fc4cd525f101f8",
+          "identity_vs_global": "same",
+          "change_seq": 44,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_screenshot",
+          "definition_identity": "def#45",
+          "schema_digest": "sha256:c6a98e518e510a7fb10ecba796449661f5a5294428103a0bf6c0f21295c1cef4",
+          "identity_vs_global": "same",
+          "change_seq": 45,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "stagehand_tabs",
+          "definition_identity": "def#46",
+          "schema_digest": "sha256:91dc265a1b109ed98f5c9f74b55b8e2f49d1a477353f6a1871003a839b80f5b4",
+          "identity_vs_global": "same",
+          "change_seq": 46,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "str_replace_editor",
+          "definition_identity": "def#47",
+          "schema_digest": "sha256:1becc428ca21aa30eab1109466590bb21cab05ecc7cd94fefa6db11f6378e939",
+          "identity_vs_global": "same",
+          "change_seq": 47,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "structured_output",
+          "definition_identity": "def#48",
+          "schema_digest": "sha256:695a753fb3cd33b3fb7a3d48036161f4f551c3efa8d68eea950d80c3b5b1aab0",
+          "identity_vs_global": "same",
+          "change_seq": 48,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent",
+          "definition_identity": "def#49",
+          "schema_digest": "sha256:7931b642687710b50ae75b7aa9c63ff98ea0b66c1ce4e69f742164bc8ea06451",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent_claude_code",
+          "definition_identity": "def#50",
+          "schema_digest": "sha256:73b69de99a50d0bdc9bb47ee305355428c55110caab08d5016986236624c45a7",
+          "identity_vs_global": "same",
+          "change_seq": 50,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent_codex",
+          "definition_identity": "def#51",
+          "schema_digest": "sha256:84e00f7465281991cf558913846e607c3ab82b21905b1466781d66f07b16a5bd",
+          "identity_vs_global": "same",
+          "change_seq": 51,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "subagent_fork",
+          "definition_identity": "def#52",
+          "schema_digest": "sha256:3993adf33e19b963da824c28d4f7610d5a98455c7cc574d757f7d4d094c736d4",
+          "identity_vs_global": "same",
+          "change_seq": 52,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_create",
+          "definition_identity": "def#53",
+          "schema_digest": "sha256:f825e8c0b2d575f5abc4e7b4d2a4fb0ea520abc463a370b542a52b191f604905",
+          "identity_vs_global": "same",
+          "change_seq": 53,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_get",
+          "definition_identity": "def#54",
+          "schema_digest": "sha256:6aa7c6d037f7e15911af889ebf1cd7d09ae699e4216861e80d46b85e0b5ff2ef",
+          "identity_vs_global": "same",
+          "change_seq": 54,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_list",
+          "definition_identity": "def#55",
+          "schema_digest": "sha256:b2f87deb73f2e405defc323a4b77abe082d49a5c9613db327419bfda0e66bd44",
+          "identity_vs_global": "same",
+          "change_seq": 55,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "team_task_update",
+          "definition_identity": "def#56",
+          "schema_digest": "sha256:ef3bbfb8375948d5405f84c29f3368a359b826c6809a99c2deb9537cdf5cdddb",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_close",
+          "definition_identity": "def#57",
+          "schema_digest": "sha256:f54ea4bc6da391e5cabfa6e4ab1a23d0db716f185fc0d667eca294d136ce7aba",
+          "identity_vs_global": "same",
+          "change_seq": 57,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_list",
+          "definition_identity": "def#58",
+          "schema_digest": "sha256:ced58b79df99b0426c51c2e419e51525dd716dd2427ba8c086c63d0b1b534884",
+          "identity_vs_global": "same",
+          "change_seq": 58,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_open",
+          "definition_identity": "def#59",
+          "schema_digest": "sha256:62172d987dabac67b3bb320c82984af292d0de532a6047a59c03f0d18ac35f88",
+          "identity_vs_global": "same",
+          "change_seq": 59,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_read",
+          "definition_identity": "def#60",
+          "schema_digest": "sha256:73c870226c47da3891d07566ccc4177e29f0e4f1fc4057a1cac5c5347dd21a12",
+          "identity_vs_global": "same",
+          "change_seq": 60,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_send",
+          "definition_identity": "def#61",
+          "schema_digest": "sha256:9cea659d6ac31c4d403f09858da3ff9bc1fd4b71ce0259a28732655645887c58",
+          "identity_vs_global": "same",
+          "change_seq": 61,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "terminal_signal",
+          "definition_identity": "def#62",
+          "schema_digest": "sha256:32e2ed1e50a246ad71af6886fbf34fe3c6d80920d9e5a88871c1c46d11cce0a5",
+          "identity_vs_global": "same",
+          "change_seq": 62,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "todo_write",
+          "definition_identity": "def#63",
+          "schema_digest": "sha256:4678df87e49d7b2a8a0786da63122f18582f66f2e15473b9c44334f86b9803ed",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "u5_canary",
+          "definition_identity": "def#64",
+          "schema_digest": "sha256:cdc906b05025ec95cf340e5e8065badac286063c0c78297dc2df552445cc8599",
+          "identity_vs_global": "same",
+          "change_seq": 64,
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "u7_census",
+          "definition_identity": "def#65",
+          "schema_digest": "sha256:a68f2a5f827ef953afd47abb715e0236f7794e54911a910a968ee5a025f40f63",
+          "identity_vs_global": "same",
+          "change_seq": 65,
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "update_goal",
+          "definition_identity": "def#66",
+          "schema_digest": "sha256:6ca086fe64a2f65fed3efaae4b8e7d0aae31bf2d34a20b16776471856d417178",
+          "identity_vs_global": "same",
+          "change_seq": 66,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "wait_agent",
+          "definition_identity": "def#67",
+          "schema_digest": "sha256:55dbd0848508476159d49970f1452c538940b85f6f511eac9b6335cad95d920f",
+          "identity_vs_global": "same",
+          "change_seq": 67,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "web_fetch",
+          "definition_identity": "def#68",
+          "schema_digest": "sha256:b7b28fd057084f6f715d59d084b78ca6587028100a20438eb56dc8369a7125bc",
+          "identity_vs_global": "same",
+          "change_seq": 68,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "web_search",
+          "definition_identity": "def#69",
+          "schema_digest": "sha256:ec96645188467551901717a72f829a31c27549efc53bdf26914afb81064eeb77",
+          "identity_vs_global": "same",
+          "change_seq": 69,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "workflow",
+          "definition_identity": "def#70",
+          "schema_digest": "sha256:c0491673b13015d4e6ee768fe3aa6350ead8666116afcb74dcb6932110acf975",
+          "identity_vs_global": "same",
+          "change_seq": null,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        },
+        {
+          "name": "write",
+          "definition_identity": "def#71",
+          "schema_digest": "sha256:6ba5e5f0892acb9fc4d549994170d6ac32ee00d63b5db391fa490c3473aadbf3",
+          "identity_vs_global": "same",
+          "change_seq": 71,
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
+        }
+      ]
+    }
+  ],
+  "snapshot_digest": "sha256:66da85efcfce68ab26708f37c6c880d002c7743d9e1c06f12fda716d28249c32",
+  "full_digest": "sha256:251fe4ddd65cdf730aebf51925a404fbba8cc6e308ad201f1b9480a292f844fc"
+}

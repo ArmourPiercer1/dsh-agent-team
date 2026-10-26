@@ -1,0 +1,787 @@
+{
+ "schema": "u7-0/authoritative-tool-sources/v1",
+ "pins": {
+  "host_version": "0.2.0-rc.2",
+  "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "host_pin_source": "tests/paths.mjs"
+ },
+ "inputs": {
+  "source_census_seed": "sources/u1c-static-source-census.seed.json",
+  "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
+  "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"
+ },
+ "note": "Static source authority (U1-C): where each name is REGISTERED in the pinned Host / Team sources, per file:line. This is the third side of the EB2-A three-way diff; a runtime observation with no entry here (and no reviewed obligation) is UNKNOWN, never authorized.",
+ "static_sources": {
+  "host": [
+   {
+    "authority": "host-catalog",
+    "file": "packages/interaction/tool-ask-user/src/index.ts",
+    "gating": "mounted per preset (standard:131-132, ptc:133-134, cordis:130-131); default config mode legacy (index.ts:24)",
+    "line": 38,
+    "name": "ask_user_question",
+    "package": "@deepseek-ai/dsh-tool-ask-user"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/interaction/tool-ask-user/src/timed.ts",
+    "gating": "same name; registered only with config mode: timed (index.ts:34-35)",
+    "line": 106,
+    "name": "ask_user_question",
+    "package": "@deepseek-ai/dsh-tool-ask-user (timed variant)"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/shell/tool-bash/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:267-268; jobs-registry presence selects variant (index.ts:542-552)",
+    "line": 373,
+    "name": "bash",
+    "package": "@deepseek-ai/dsh-tool-bash"
+   },
+   {
+    "authority": "host-catalog-alias",
+    "file": "packages/shell/tool-bash-persistent/src/index.ts",
+    "gating": "same name; mounted only in minimal/sdk-minimal: presets/minimal.patch.yml:30-31, bundle/sdk-minimal/cordis.patch.yml:126-127",
+    "line": 413,
+    "name": "bash",
+    "package": "@deepseek-ai/dsh-tool-bash-persistent"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/extensions/tool-cordis/src/index.ts",
+    "gating": "mounted in cordis preset only: presets/cordis.patch.yml:141-142 (host provider row: web-app/cordis.patch.yml:156-157)",
+    "line": 22,
+    "name": "cordis_inspect_list",
+    "package": "@deepseek-ai/dsh-tool-cordis"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/extensions/tool-cordis/src/index.ts",
+    "gating": "mounted in cordis preset only: presets/cordis.patch.yml:141-142",
+    "line": 41,
+    "name": "cordis_inspect_query",
+    "package": "@deepseek-ai/dsh-tool-cordis"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/goal/tool-goal/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:437-438",
+    "line": 207,
+    "name": "create_goal",
+    "package": "@deepseek-ai/dsh-tool-goal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-fs/src/edit.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:281-282",
+    "line": 84,
+    "name": "edit",
+    "package": "@deepseek-ai/dsh-tool-fs"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/plan/plan-mode/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:322-323; execute refuses outside plan mode (docs/tool-catalog.md); name const index.ts:67",
+    "line": 278,
+    "name": "exit_plan_mode",
+    "package": "@deepseek-ai/dsh-plan-mode"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/goal/tool-goal/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:437-438",
+    "line": 195,
+    "name": "get_goal",
+    "package": "@deepseek-ai/dsh-tool-goal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-fs-search/src/glob.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:284-285",
+    "line": 306,
+    "name": "glob",
+    "package": "@deepseek-ai/dsh-tool-fs-search"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-fs-search/src/grep.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:284-285",
+    "line": 284,
+    "name": "grep",
+    "package": "@deepseek-ai/dsh-tool-fs-search"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate",
+    "line": 277,
+    "name": "interrupt_agent",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/subagent/tool-subagent-control/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:364-365",
+    "line": 74,
+    "name": "interrupt_agent",
+    "package": "@deepseek-ai/dsh-tool-subagent-control"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/jobs/tool-jobs/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:275-276",
+    "line": 371,
+    "name": "job_kill",
+    "package": "@deepseek-ai/dsh-tool-jobs"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/jobs/tool-jobs/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:275-276",
+    "line": 351,
+    "name": "job_list",
+    "package": "@deepseek-ai/dsh-tool-jobs"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/jobs/tool-jobs/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:275-276",
+    "line": 310,
+    "name": "job_output",
+    "package": "@deepseek-ai/dsh-tool-jobs"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate",
+    "line": 232,
+    "name": "list_agents",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/subagent/tool-subagent-control/src/list-agents.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:367-368 (separate row)",
+    "line": 86,
+    "name": "list_agents",
+    "package": "@deepseek-ai/dsh-tool-subagent-control"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/mcp/mcp-resources/src/tools.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:492-493",
+    "line": 42,
+    "name": "list_mcp_resource_templates",
+    "package": "@deepseek-ai/dsh-mcp-resources"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/mcp/mcp-resources/src/tools.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:492-493",
+    "line": 33,
+    "name": "list_mcp_resources",
+    "package": "@deepseek-ai/dsh-mcp-resources"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/subagent/tool-subagent/src/list-models.ts",
+    "gating": "registered only when a model-selection policy is configured (index.ts:362); web-app mounts model-selection-settings: web-app/cordis.patch.yml:66-67",
+    "line": 87,
+    "name": "list_subagent_models",
+    "package": "@deepseek-ai/dsh-tool-subagent"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/skill/tool-workspace-dependencies/src/index.ts",
+    "gating": "mounted only in sdk-app bundle: bundle/sdk-app/cordis.patch.yml:30-31",
+    "line": 249,
+    "name": "load_workspace_dependencies",
+    "package": "@deepseek-ai/dsh-tool-workspace-dependencies"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/lsp/tool-lsp/src/index.ts",
+    "gating": "NOT mounted in any shipped bundle/preset — opt-in; runtime additionally requires a registered ctx.lsp provider (docs/tool-catalog.md note)",
+    "line": 109,
+    "name": "lsp",
+    "package": "@deepseek-ai/dsh-tool-lsp"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/boot/plugin-manager/src/tools.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:16-17 (@deepseek-ai/dsh-plugin-manager/tools)",
+    "line": 19,
+    "name": "plugin_manager",
+    "package": "@deepseek-ai/dsh-plugin-manager (tools entry)"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/deliverables/tool-present/src/index.ts",
+    "gating": "mounted per web preset: presets/standard.patch.yml:142-143, presets/cordis.patch.yml:150-151",
+    "line": 38,
+    "name": "present",
+    "package": "@deepseek-ai/dsh-tool-present"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/shell/tool-pwsh/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:271-272",
+    "line": 383,
+    "name": "pwsh",
+    "package": "@deepseek-ai/dsh-tool-pwsh"
+   },
+   {
+    "authority": "host-catalog-alias",
+    "file": "packages/shell/tool-pwsh-persistent/src/index.ts",
+    "gating": "same name; mounted only in minimal/sdk-minimal: presets/minimal.patch.yml:49-50, bundle/sdk-minimal/cordis.patch.yml:140-141",
+    "line": 426,
+    "name": "pwsh",
+    "package": "@deepseek-ai/dsh-tool-pwsh-persistent"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/workflow/tool-ralph/src/index.ts",
+    "gating": "mounted but disabled: true by default: bundle/base/cordis.patch.yml:447-449; overlay restores (comment base:441-446)",
+    "line": 410,
+    "name": "ralph",
+    "package": "@deepseek-ai/dsh-tool-ralph"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-fs/src/read.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:281-282",
+    "line": 77,
+    "name": "read",
+    "package": "@deepseek-ai/dsh-tool-fs"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-fs/src/read-image.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:281-282; additionally only with ctx.attachments (docs/tool-catalog.md note)",
+    "line": 209,
+    "name": "read_image",
+    "package": "@deepseek-ai/dsh-tool-fs"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/mcp/mcp-resources/src/tools.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:492-493",
+    "line": 51,
+    "name": "read_mcp_resource",
+    "package": "@deepseek-ai/dsh-mcp-resources"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/core/tools/src/ptc.ts",
+    "gating": "lazy ToolRuntime registration in PTC mode: packages/core/tools/src/index.ts:945 (createRunCodeTool); name const ptc.ts:30",
+    "line": 335,
+    "name": "run_code",
+    "package": "@deepseek-ai/dsh-tools (PTC transport)"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "gating": "NOT mounted as tool row in shipped bundles (dsh-schedule type-only import apps/desktop-host/src/quit-inspection.ts:5); registered while Schedule service is loaded (docs/tool-catalog.md)",
+    "line": 416,
+    "name": "schedule_create",
+    "package": "@deepseek-ai/dsh-schedule"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "gating": "same gating as schedule_create",
+    "line": 469,
+    "name": "schedule_delete",
+    "package": "@deepseek-ai/dsh-schedule"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "gating": "same gating as schedule_create",
+    "line": 451,
+    "name": "schedule_list",
+    "package": "@deepseek-ai/dsh-schedule"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "gating": "same gating as schedule_create",
+    "line": 492,
+    "name": "schedule_update",
+    "package": "@deepseek-ai/dsh-schedule"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate; collides by design with the default tool-subagent-control route when both mounted",
+    "line": 215,
+    "name": "send_message",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/subagent/tool-subagent-control/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:364-365 (the one global follow-up route)",
+    "line": 28,
+    "name": "send_message",
+    "package": "@deepseek-ai/dsh-tool-subagent-control"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "gating": "same gating as session_search",
+    "line": 108,
+    "name": "session_event_read",
+    "package": "@deepseek-ai/dsh-tool-session-query"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "gating": "same gating as session_search",
+    "line": 75,
+    "name": "session_event_search",
+    "package": "@deepseek-ai/dsh-tool-session-query"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "gating": "same gating as session_search",
+    "line": 95,
+    "name": "session_event_trace",
+    "package": "@deepseek-ai/dsh-tool-session-query"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "gating": "opt-in package: no dsh-tool-session-query row in packages/bundle; backend session-query-sqlite mounted base:149-150 (docs/tool-catalog.md: \"The package is opt-in\")",
+    "line": 65,
+    "name": "session_search",
+    "package": "@deepseek-ai/dsh-tool-session-query"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "gating": "same gating as session_search",
+    "line": 85,
+    "name": "session_trace",
+    "package": "@deepseek-ai/dsh-tool-session-query"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/skill/tool-skill/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:304-305",
+    "line": 81,
+    "name": "skill",
+    "package": "@deepseek-ai/dsh-tool-skill"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "opt-in experimental plugin; agent-scoped install (install() index.ts:164); NOT mounted in any shipped bundle (only test overlay apps/cli/tests/profiles/headless/team-snapshot.patch.yml:49-50)",
+    "line": 175,
+    "name": "spawn_teammate",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "gating": "same as stagehand_navigate",
+    "line": 179,
+    "name": "stagehand_act",
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "gating": "same as stagehand_navigate",
+    "line": 179,
+    "name": "stagehand_extract",
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "gating": "opt-in experimental: no row in packages/bundle; name built as `stagehand_${method}` at index.ts:178 over the fixed BrowserMethod set",
+    "line": 179,
+    "name": "stagehand_navigate",
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "gating": "same as stagehand_navigate",
+    "line": 179,
+    "name": "stagehand_observe",
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "gating": "same as stagehand_navigate",
+    "line": 179,
+    "name": "stagehand_screenshot",
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "gating": "same as stagehand_navigate",
+    "line": 179,
+    "name": "stagehand_tabs",
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-str-replace-editor/src/index.ts",
+    "gating": "NOT mounted in any shipped bundle/preset — opt-in package (grep: no dsh-tool-str-replace-editor row in packages/bundle)",
+    "line": 429,
+    "name": "str_replace_editor",
+    "package": "@deepseek-ai/dsh-tool-str-replace-editor"
+   },
+   {
+    "authority": "host-source-only (internal)",
+    "file": "packages/subagent/subagent-in-process-driver/src/structured.ts",
+    "gating": "internal child-session tool for structured-output capture (name const STRUCTURED_OUTPUT_TOOL structured.ts:19); only in child contexts with a structured schema; NOT in docs/tool-catalog.md (not shipped model-facing surface)",
+    "line": 74,
+    "name": "structured_output",
+    "package": "@deepseek-ai/dsh-subagent-in-process-driver (internal)"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "gating": "name from config toolName (index.ts:323; zod default index.ts:108); mounted base:370-374 toolName: subagent; registers only when its subagent provider route is live (index.ts:592)",
+    "line": 379,
+    "name": "subagent",
+    "package": "@deepseek-ai/dsh-tool-subagent"
+   },
+   {
+    "authority": "host-source-route (not in generated catalog harvest)",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "gating": "same factory; route instances standard.patch.yml:111-117 (disabled: true @113), ptc/cordis same-block — shipped default DISABLED",
+    "line": 379,
+    "name": "subagent_claude_code",
+    "package": "@deepseek-ai/dsh-tool-subagent (claude-code route)"
+   },
+   {
+    "authority": "host-source-route (not in generated catalog harvest)",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "gating": "same factory; route instances standard.patch.yml:103-110 (disabled: true @105), ptc.patch.yml:103-108, cordis.patch.yml:104-107 — shipped default DISABLED",
+    "line": 379,
+    "name": "subagent_codex",
+    "package": "@deepseek-ai/dsh-tool-subagent (codex route)"
+   },
+   {
+    "authority": "host-catalog-shippedNames",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "gating": "same factory; second bundle-composed instance base:383-387 toolName: subagent_fork (enabled)",
+    "line": 379,
+    "name": "subagent_fork",
+    "package": "@deepseek-ai/dsh-tool-subagent (fork route)"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate",
+    "line": 289,
+    "name": "team_task_create",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate",
+    "line": 345,
+    "name": "team_task_get",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate",
+    "line": 313,
+    "name": "team_task_list",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate",
+    "line": 360,
+    "name": "team_task_update",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "gating": "same as terminal_open",
+    "line": 359,
+    "name": "terminal_close",
+    "package": "@deepseek-ai/dsh-tool-terminal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "gating": "same as terminal_open",
+    "line": 390,
+    "name": "terminal_list",
+    "package": "@deepseek-ai/dsh-tool-terminal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "gating": "opt-in package: no dsh-tool-terminal row in packages/bundle (docs/tool-catalog.md: \"The six terminal tools are opt-in\")",
+    "line": 163,
+    "name": "terminal_open",
+    "package": "@deepseek-ai/dsh-tool-terminal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "gating": "same as terminal_open",
+    "line": 301,
+    "name": "terminal_read",
+    "package": "@deepseek-ai/dsh-tool-terminal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "gating": "same as terminal_open",
+    "line": 198,
+    "name": "terminal_send",
+    "package": "@deepseek-ai/dsh-tool-terminal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "gating": "same as terminal_open",
+    "line": 334,
+    "name": "terminal_signal",
+    "package": "@deepseek-ai/dsh-tool-terminal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/todo/tool-todo/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:430-431",
+    "line": 135,
+    "name": "todo_write",
+    "package": "@deepseek-ai/dsh-tool-todo"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/goal/tool-goal/src/index.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:437-438",
+    "line": 234,
+    "name": "update_goal",
+    "package": "@deepseek-ai/dsh-tool-goal"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "gating": "same opt-in experimental mount as spawn_teammate; exclusive to this plugin (no other host registration)",
+    "line": 242,
+    "name": "wait_agent",
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/web/tool-web/src/fetch.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:486-487",
+    "line": 456,
+    "name": "web_fetch",
+    "package": "@deepseek-ai/dsh-tool-web"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/web/tool-web/src/search.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:486-487",
+    "line": 325,
+    "name": "web_search",
+    "package": "@deepseek-ai/dsh-tool-web"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/workflow/tool-workflow/src/index.ts",
+    "gating": "name from config toolName (zod default workflow at index.ts:60); mounted base:398-399",
+    "line": 328,
+    "name": "workflow",
+    "package": "@deepseek-ai/dsh-tool-workflow"
+   },
+   {
+    "authority": "host-catalog",
+    "file": "packages/fs/tool-fs/src/write.ts",
+    "gating": "mounted: bundle/base/cordis.patch.yml:281-282",
+    "line": 72,
+    "name": "write",
+    "package": "@deepseek-ai/dsh-tool-fs"
+   }
+  ],
+  "team": [
+   {
+    "file": "packages/tools/a5p5-tools/src/register.ts",
+    "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)",
+    "line": 287,
+    "name": "bash"
+   },
+   {
+    "file": "packages/tools/a5p5-tools/src/register.ts",
+    "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)",
+    "line": 281,
+    "name": "glob"
+   },
+   {
+    "file": "packages/tools/a5p5-tools/src/register.ts",
+    "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)",
+    "line": 275,
+    "name": "grep"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 1197,
+    "name": "team_archive_member"
+   },
+   {
+    "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)",
+    "line": 84,
+    "name": "team_bash"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 772,
+    "name": "team_collect"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 572,
+    "name": "team_create_member"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 614,
+    "name": "team_delegate"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 710,
+    "name": "team_follow_up"
+   },
+   {
+    "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)",
+    "line": 84,
+    "name": "team_glob"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (name selected in permissionSpec(verb), tools.ts:1373; spec called at tools.ts:1539 inside createTeamTools tools.ts:1524)",
+    "line": 1373,
+    "name": "team_grant_permission"
+   },
+   {
+    "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)",
+    "line": 84,
+    "name": "team_grep"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 542,
+    "name": "team_inspect_config"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 498,
+    "name": "team_list_members"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 1119,
+    "name": "team_list_pending_control"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 520,
+    "name": "team_list_templates"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 856,
+    "name": "team_report_progress"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 960,
+    "name": "team_request_control"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 1017,
+    "name": "team_resolve_control"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (name selected in permissionSpec(verb), tools.ts:1373; spec called at tools.ts:1540 inside createTeamTools tools.ts:1524)",
+    "line": 1373,
+    "name": "team_revoke_permission"
+   },
+   {
+    "file": "packages/tools/src/tools.ts",
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)",
+    "line": 817,
+    "name": "team_send_message"
+   }
+  ]
+ },
+ "host_pin_provenance": "tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84 (git describe: dsh-v0.2.0-rc.2)",
+ "team_pin_provenance": "team tree at commit 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (reachable from this branch’s history; observed read-only via the U1-C audit checkout)",
+ "dynamic_source_classes": [
+  {
+   "class": "mcp__<server>__<tool>",
+   "rule": "publicToolName = `mcp__${serverName}__${rawName}` (normalized/hashed on overflow)",
+   "package": "@deepseek-ai/dsh-mcp-client",
+   "file": "packages/mcp/mcp-client/src/tools.ts",
+   "line": 81,
+   "register": "packages/mcp/mcp-client/src/tools.ts:150 (syncTools per connected server)",
+   "note": "per-MCP-server dynamic generation — recorded as dynamic source class, individual names NOT enumerated"
+  },
+  {
+   "class": "cua_driver_native__<tool>",
+   "rule": "`cua_driver_native__${tool.name}` from driver tool list",
+   "package": "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native",
+   "file": "packages/experimental/computer-use-cua-driver-native/src/index.ts",
+   "line": 97,
+   "register": "packages/experimental/computer-use-cua-driver-native/src/index.ts:117",
+   "note": "experimental driver-list dynamic; not mounted in shipped bundles"
+  },
+  {
+   "class": "client-plugin dynamic tools (any name via harness.defineTool)",
+   "rule": "assertDynamicTool gate; registration passthrough",
+   "package": "@deepseek-ai/dsh-cordis-host-runner",
+   "file": "packages/extensions/cordis-host-runner/src/guard.ts",
+   "line": 495,
+   "register": "packages/extensions/cordis-host-runner/src/guard.ts:628",
+   "note": "client plugins register model tools at runtime (e.g. browser_*); enumeration at build time is impossible"
+  },
+  {
+   "class": "mcp__<server>__<tool>",
+   "rule": "team-side MCP binding name rule: prefix `mcp__${serverName}__` (bindMcpTools); the mcp__ family NEVER inherits dsh-native guard trust",
+   "files": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (prefix build)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:723 (trust exclusion)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:464 (PLANE_RESERVED_NATIVE_PREFIXES = [\"mcp__\"])"
+   ],
+   "note": "dynamic source class; individual MCP names NOT enumerated"
+  }
+ ]
+}

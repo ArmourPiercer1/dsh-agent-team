@@ -98,6 +98,9 @@ export const U6ARCA_PROBE_ROW_ID = 'u6-arc-a-probe-host'
  *  onto the U6ARC_* names the family actually reads — the same shipped dist
  *  faces the u6ArcA block below pins. */
 export const U6ARCD_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-arc-d-probe-host.mjs')
+/** U7-0 (EB2-A): the ObservedRuntimeInventory census row + its seam faces. */
+export const U7C_PROBE_SRC = resolve(HERE, '..', 'canary', 'u7-census-probe-host.mjs')
+export const U7C_PROBE_ROW_ID = 'u7-census-probe'
 export const U6ARCD_PROBE_ROW_ID = 'u6-arc-d-probe-host'
 export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
@@ -291,7 +294,7 @@ export class TestWorldFactory {
    *        U6ARCD_* env for the probe before spawn. Mutually exclusive with
    *        u6Fs / u6Proc / u6Jobs / u6ArcA.
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null, u6ArcD = null }) {
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null, u6ArcD = null, u7Census = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
@@ -311,10 +314,13 @@ export class TestWorldFactory {
     if (u6ArcD !== null && !(typeof u6ArcD === 'object' && Array.isArray(u6ArcD.rows))) {
       throw new Error('invalid u6ArcD (expected {rows: [...]} | null)')
     }
-    if ([u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD].filter((x) => x !== null).length > 1) {
+    if (u7Census !== null && !(typeof u7Census === 'object' && Array.isArray(u7Census.rows))) {
+      throw new Error('invalid u7Census (expected {rows: [...]} | null)')
+    }
+    if ([u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census].filter((x) => x !== null).length > 1) {
       // both patch-layer owners would race for the SAME profile patch file;
       // the suites are disjoint by law — one World belongs to one suite.
-      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA / u6ArcD are mutually exclusive Worlds')
+      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA / u6ArcD / u7Census are mutually exclusive Worlds')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -341,7 +347,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census })
     this.worlds.push(world)
     return world
   }
@@ -435,6 +441,8 @@ export class TestWorld {
     this.u6Jobs = spec.u6Jobs ?? null
     this.u6ArcA = spec.u6ArcA ?? null
     this.u6ArcD = spec.u6ArcD ?? null
+    this.u7Census = spec.u7Census ?? null
+    this.u7cLedgerPath = join(spec.home, 'u7c-census-ledger.jsonl')
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
@@ -640,6 +648,20 @@ export class TestWorld {
     } else {
       for (const k of ['U6ARCD_LEDGER', 'U6ARCD_MARKER_DIR', 'U6ARCD_WORLD', 'U6ARCD_ASSEMBLY_URL', 'U6ARCD_CENTER_URL', 'U6ARCD_CONTRACTS_URL']) delete process.env[k]
     }
+    // U7-0 (EB2-A) census env: the row resolves the ONE identity minter at
+    // its DIST face (the same file the production glue imports) and the ONE
+    // canonical-digest module the offline reconciler uses — probe and
+    // reconciler can never disagree by drifting implementations.
+    if (this.u7Census !== null) {
+      process.env.U7C_LEDGER = this.u7cLedgerPath
+      process.env.U7C_WORLD = this.id
+      process.env.U7C_BOOT_ID = this.restartIndex === null ? 'boot-1' : `boot-r${String(this.restartIndex)}`
+      process.env.U7C_TD_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'tool-dispatch', 'index.js')).href
+      process.env.U7C_CANON_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'testkit', 'census', 'json-canonical.mjs')).href
+      process.env.U7C_AUTO_SNAPSHOT_MS = (this.u7Census.autoSnapshotMs ?? []).map((n) => String(Math.trunc(Number(n)))).filter((s) => /^-?\d+$/.test(s)).join(',')
+    } else {
+      for (const k of ['U7C_LEDGER', 'U7C_WORLD', 'U7C_BOOT_ID', 'U7C_TD_URL', 'U7C_CANON_URL', 'U7C_AUTO_SNAPSHOT_MS']) delete process.env[k]
+    }
 
     this.instance = new DshInstance({
       hostTree: this.factory.hostTree,
@@ -755,6 +777,24 @@ export class TestWorld {
         emitPatchLayer(
           ['U6-jobs World: canary row + the production Team row (jobsEnabled ON),',
            'p6t6 observer and preset declarations, one public profile-patch layer.'],
+          rows,
+        ) + '\n',
+      )
+    } else if (this.u7Census !== null) {
+      // U7-0 census World: the collector row mounts beside the canary; the
+      // caller rows (production Team row + preset declarations for a
+      // governed-Team World; empty for the non-Team World) compose into the
+      // SAME public patch layer. The row only READS public tools seams.
+      copyFileSync(U7C_PROBE_SRC, join(this.instance.profileDir, 'u7-census-probe-host.mjs'))
+      rows.push({ id: U7C_PROBE_ROW_ID, name: './u7-census-probe-host.mjs' })
+      for (const row of this.u7Census.rows) rows.push(row)
+      mkdirSync(this.instance.profileDir, { recursive: true })
+      writeFileSync(
+        this.instance.patchFile,
+        emitPatchLayer(
+          ['U7-0 census World: canary + the read-only census row',
+           '(+ the production Team row and preset declarations when the',
+           'caller composes a governed-Team World), one public patch layer.'],
           rows,
         ) + '\n',
       )

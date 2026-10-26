@@ -150,6 +150,7 @@ export default tseslint.config(
       // the SAME class as agent-bindings.mjs (it buffers host job output under
       // a byte cap via Buffer.byteLength); node globals for exactly this file.
       'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
+      'packages/testkit/census/**/*.mjs', // U7-0 EB2-A census library + fixture builder (plain-node diagnostic code)
     ],
     languageOptions: { globals: { ...globals.node } },
   },
