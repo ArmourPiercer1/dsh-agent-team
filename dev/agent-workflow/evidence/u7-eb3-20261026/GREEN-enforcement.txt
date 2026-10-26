@@ -1,0 +1,30 @@
+# EB3 GREEN run (C3+C4) — head 8dfaaaf37 at 2026-10-26T13:31:11Z
+
+== negative controls ==
+PASS C1 required-ci-job-removal :: honest tree passes; removing required job "ci-fast" produced CI_REQUIRED_JOB_ABSENT naming it
+PASS C2 unknown-mcp-tool-injection :: honest tree has no unbooked MCP spelling; injecting mcp__injected_server__exfiltrate_everything produced MCP_TOOL_UNKNOWN naming it
+PASS C3 execution-definition-replaced :: honest tree passes; 3a detected on packages/tools/fs-family/src/fs-read-contribution.mjs, 3b detected on packages/tools/fs-family/src/read-row.mjs, 3c detected on packages/tools/fs-family/src/fs-read-contribution.mjs, 3d detected on packages/tools/fs-family/src/fs-read-contribution.mjs
+PASS C4 cross-family-influence :: honest tree passes (4 lanes declare edges); 4a detected, 4b detected, 4c detected (mutations staged on packages/tools/search-family/src/search-mechanics.mjs)
+PASS C5 required-context-nongreen-states :: all-green => pass; each of absent, skip, cancel, failure, ENV_BLOCK, refused, SKIP-token, verdict-missing, unrecognised-result, empty-needs on layer ci-integration => fail
+PASS C6 summary-wiring-loosened :: honest workflows pass; drop-always, drop-need, paths-filter, continue-on-error, cancel-in-progress, job-level-if each detected
+PASS C7 impact-unknown-nonzero :: unknown path => all 4 layers; empty change => ci-fast+docs:probe; doc hit => docs:sync --check; family path keeps family checks under the union law
+PASS C8 run-manifest-refuses-rewrites :: honest live/crash-reclaim-2/run-u5-crash-2026-10-25T17-25-10-141Z.json passes; rewritten-overall, env-block-case-graded-pass, unknown-verdict-token, dropped-selected-case, host-generation-mixed, team-sha-unresolvable, invented-authority-generation, superseded-generation-on-new-record, wrong-evidence-digest, missing-evidence each refused
+PASS P1 non-Team-native-positive-preserved :: both non-Team native positive controls present and still asserting the native ride (u6-pr3-bl01-ask-door.test.ts, u6-pr2-review-r1.test.ts); pinned BY ASSERTION, not by title
+PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md carries 9 tolerated identities and 2 disclosed load family/ies; identical set => pass (correct), one planted new red => fail (correct)
+
+10/10 control(s) behaved as required
+exit=0
+
+== enforcement checks ==
+EB3-CI-REQUIRED pass workflows=9 findings=0
+exit=0
+EB3-TRUSTED-SOURCES pass files=1713 findings=0
+exit=0
+EB3-FAMILY-DEFINITIONS pass files=7 findings=0
+exit=0
+EB3-FAMILY-BOUNDARIES pass files=23 findings=0
+exit=0
+  DISCLOSED 5 unfinalised record(s) (no finishedAt/overall) graded as NOT-A-RESULT, not as pass: dev/agent-workflow/evidence/u6-pr5-20261026/c2/run4-evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca5-2026-10-26T06-15-58-353Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca6-2026-10-26T06-27-14-670Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca8-2026-10-26T06-59-02-141Z.evidence.json, dev/agent-workflow/evidence/u6-pr6-20261026/c2/u5-u6-arc-d-arc-d1-2026-10-26T08-30-55-354Z.evidence.json
+EB3-RUN-MANIFEST pass records=31 strict=0 incomplete=5 findings=0
+LIMIT a green here means the record is internally honest and tied to THIS tree/host-pin/authority generation; it is not a claim that the graded behaviour was correct (that is the suite C2 evidence)
+exit=0

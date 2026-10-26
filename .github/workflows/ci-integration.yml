@@ -1,0 +1,189 @@
+# ci-integration — EB3 layer 2 of 4: the static/product legs and the EB3 governance checks.
+#
+# WHAT IT IS FOR. The legs that need the built tree (typecheck), the orchestration
+# state (graph-parse, state-freshness), and the four EB3 enforcement checks the plan
+# names — required-job shape, trusted MCP sources, family definitions, family
+# boundaries — plus the RUN Manifest validator. Each EB3 check is its own step so a
+# failure names one law; all of them are also negative-controlled in
+# scripts/eb3-ci-negative-controls.mjs, which is the leg that proves they can fail.
+#
+# WHY THE GOVERNANCE CHECKS ARE HERE AND NOT IN ci-fast. They are static (no host, no
+# build of the nine packages), but they are not cheap-free: they read every tracked
+# source file. ci-fast is the tier a developer waits on; this is the tier that decides
+# whether the tree obeys its own laws, and it runs on every PR regardless of impact
+# selection because a governance check that is skipped by a selector is a governance
+# hole with a green tick.
+#
+# `--new` ON THE RUN MANIFEST is the strict mode: records CHANGED by this PR must bind
+# the CURRENT authority generation and must be finalised; historical records are graded
+# on internal honesty plus a generation that really exists.
+name: ci-integration
+
+on:
+  # CALLED ONLY by .github/workflows/ci-required.yml. A layer with its own
+  # pull_request trigger would run TWICE per PR (once standalone, once called), and
+  # both runs would share a concurrency group, where GitHub cancels a PENDING run when
+  # a newer one queues — i.e. a layer could report `cancelled` to the Required summary
+  # through no fault of the change. One caller, one run, one result.
+  workflow_call:
+    inputs:
+      merge_tree:
+        description: tree id of the synthetic merge (base + head) this layer must grade
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+
+jobs:
+  ci-integration:
+    name: ci-integration
+
+    # THE OUTPUT CONTRACT with .github/workflows/ci-required.yml. The value is derived
+    # from job.status so it cannot say PASS for a job GitHub calls a failure, and it is
+    # finer-grained than success/failure so a refusal or an env-block is still visible.
+    # THE OUTPUT CONTRACT with .github/workflows/ci-required.yml. `verdict` is the
+    # value a final `if: always()` step writes from GitHub's OWN job status, so a layer
+    # cannot report PASS for a job GitHub calls a failure. The `job` context is NOT
+    # available in this `outputs:` block (it is available inside a step's `run`), which
+    # is why the value is read from steps.<id>.outputs rather than computed here — the
+    # same hosted-YAML discipline pr-gate.yml records learning from four silent
+    # "workflow file issue" runs.
+    outputs:
+      verdict: ${{ steps.eb3_layer_verdict.outputs.verdict }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bind to the synthetic merge tree (EB3_MERGE_TREE)
+        # The layer grades what WOULD land. On pull_request the default checkout is
+        # GitHub's merge ref; on push it is the pushed tip (whose merge with its own
+        # parent is itself). Either way its TREE must equal the tree the summary's
+        # synthesize job built independently with `git merge-tree`; a mismatch means
+        # this layer is grading a different tree than the Required context reports.
+        shell: bash
+        env:
+          EB3_MERGE_TREE: ${{ inputs.merge_tree }}
+        run: |
+          set -euo pipefail
+          GOT=$(git rev-parse 'HEAD^{tree}')
+          [ -n "$EB3_MERGE_TREE" ] || { echo "::error::no merge_tree input — this layer was not called by ci-required"; exit 1; }
+          [ "$GOT" = "$EB3_MERGE_TREE" ] || { echo "::error::checked-out tree $GOT != synthetic merge tree $EB3_MERGE_TREE"; exit 1; }
+          echo "grading synthetic merge tree $GOT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Install
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+
+      - name: Resolve the change base
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            pull_request)
+              [ -n "$PR_BASE_SHA" ] || { echo "::error::ci-integration: pull_request event carries no base.sha"; exit 1; }
+              BASE="$PR_BASE_SHA" ;;
+            push)
+              case "$PUSH_BEFORE_SHA" in
+                ''|0000000000000000000000000000000000000000)
+                  echo "::error::ci-integration: push event.before is absent/zeroed; no honest base for this run"
+                  exit 1 ;;
+                *) BASE="$PUSH_BEFORE_SHA" ;;
+              esac ;;
+            *)
+              echo "::error::ci-integration: ${EVENT_NAME} carries no base; refusing to grade a diff against nothing"
+              exit 1 ;;
+          esac
+          echo "CI_BASE=$BASE" >> "$GITHUB_ENV"
+          echo "ci-integration base = $BASE"
+
+      - name: Ensure a YAML parser for the graph leg
+        run: |
+          python3 -c 'import yaml' 2>/dev/null && echo "PyYAML present" || python3 -m pip install --quiet pyyaml
+          python3 -c 'import yaml; print("PyYAML", yaml.__version__)'
+
+      # ── the four EB3 governance checks, one step each ──────────────────────────
+      - name: "EB3-C: required-job shape (layers present, triggered, non-skippable, summarised)"
+        run: node scripts/eb3-ci-required.mjs
+
+      - name: "EB3-A/D: trusted MCP tool sources (an unbooked mcp__ tool is UNKNOWN, never authorised)"
+        run: node scripts/eb3-trusted-sources.mjs
+
+      - name: "EB3-A: family execution Definitions (via arm, transport, readable names, census)"
+        run: node scripts/eb3-family-definitions.mjs
+
+      - name: "EB3-A: family boundaries (a sibling lane's internals and the centre are not edges)"
+        run: node scripts/eb3-family-boundaries.mjs
+
+      - name: "EB3-D: RUN Manifest (sources, host pin, authority generation, case algebra, evidence)"
+        shell: bash
+        run: |
+          set -euo pipefail
+          NEW=$(git diff --name-only "$CI_BASE"...HEAD -- 'dev/agent-workflow/evidence/**' | tr '\n' ',' | sed 's/,$//')
+          if [ -n "$NEW" ]; then
+            node scripts/eb3-run-manifest.mjs --new "$NEW"
+          else
+            node scripts/eb3-run-manifest.mjs
+          fi
+
+      - name: "EB3 negative controls (each enforcement check must be able to fail)"
+        # The four detections the plan names, plus the five non-green summary states and
+        # the two preserved positives. Exits non-zero the moment one of them stops
+        # detecting — this is the leg that keeps the other legs honest.
+        run: node scripts/eb3-ci-negative-controls.mjs
+
+      # ── the pre-existing legs, unchanged ──────────────────────────────────────
+      - name: Gate legs — graph-parse + state-freshness
+        # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what
+        # the merge gate runs" stay one list. --only keeps this to the two state legs;
+        # typecheck has its own step below (it needs the build, the state legs do not).
+        run: node scripts/ci-pr-gate.mjs --only graph-parse --only state-freshness
+
+      - name: Typecheck (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm typecheck
+
+      - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)
+        id: eb3_layer_verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ job.status }}" in
+            success) V=PASS ;;
+            cancelled) V=CANCELLED ;;
+            *) V=FAIL ;;
+          esac
+          echo "EB3-LAYER layer=ci-integration verdict=$V status=${{ job.status }}"
+          echo "verdict=$V" >> "$GITHUB_OUTPUT"

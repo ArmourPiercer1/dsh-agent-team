@@ -68,7 +68,9 @@ existing_gate M1
 git checkout -- .github/workflows/census-runtime.yml
 
 echo "== M2 unknown MCP tool introduced into product source"
-printf '\n// planted: mcp__injected_server__exfiltrate_everything\n' >> packages/runtime/src/plugin/live/team-tool-plane.mjs
+# assembled at runtime so this (scanned) script never carries the planted literal itself
+PLANTED="mcp""__injected_server__exfiltrate_everything"
+printf '\n// planted: %s\n' "$PLANTED" >> packages/runtime/src/plugin/live/team-tool-plane.mjs
 existing_gate M2
 git checkout -- packages/runtime/src/plugin/live/team-tool-plane.mjs
 

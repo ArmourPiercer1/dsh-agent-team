@@ -1,0 +1,134 @@
+# ci-security — EB3 layer 3 of 4: the governance centre's own laws, host-free.
+#
+# WHAT IT IS FOR. Every suite here asserts a security law AND carries the negative
+# controls that must fail when the law stops holding: the Kernel's grant algebra, the
+# Registry's closed/collision/generation rules, the contribution schema's closed field
+# set, the Guard's closed world and the `mcp__` native-trust filter, the fixed
+# reserved-native registry, the ARC-A fitness scanners.
+#
+# THE NON-TEAM NATIVE POSITIVE CONTROLS LIVE HERE TOO, and that is a plan requirement,
+# not a convenience: U7's verification says "保留非 Team Native 正控" — the controls
+# that prove an ordinary (non-Team) install is never narrowed must be preserved. They
+# are `u6-pr3-bl01-ask-door` (CI03-b: without a plane the native bash rides on,
+# unchanged) and `u6-pr2-review-r1` (the native read rides on, untouched). Removing
+# either from tests/checks/eb3-security-suites.txt fails this layer by name, and
+# scripts/eb3-ci-negative-controls.mjs asserts the same two assertions still exist.
+#
+# NO HOST, NO BOOT, NO DSH_HOME. These are unit/integration suites over the shipped
+# seams — which is why this layer can be REQUIRED on a hosted runner while the census
+# cannot. The real-host census lives in ci-full and refuses honestly when the pristine
+# host is absent.
+#
+# THE CLOCK IS ON THE TOKEN. scripts/eb3-security-run.mjs raises vitest's testTimeout
+# for the same measured reason the census gate does (one suite's first dynamic import
+# of the shipped glue takes 5.0–7.8 s against a 5000 ms default on a loaded box; the
+# assertion never failed, the clock ran out), and prints the budget it used.
+name: ci-security
+
+on:
+  # CALLED ONLY by .github/workflows/ci-required.yml. A layer with its own
+  # pull_request trigger would run TWICE per PR (once standalone, once called), and
+  # both runs would share a concurrency group, where GitHub cancels a PENDING run when
+  # a newer one queues — i.e. a layer could report `cancelled` to the Required summary
+  # through no fault of the change. One caller, one run, one result.
+  workflow_call:
+    inputs:
+      merge_tree:
+        description: tree id of the synthetic merge (base + head) this layer must grade
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+
+jobs:
+  ci-security:
+    name: ci-security
+
+    # THE OUTPUT CONTRACT with .github/workflows/ci-required.yml. The value is derived
+    # from job.status so it cannot say PASS for a job GitHub calls a failure, and it is
+    # finer-grained than success/failure so a refusal or an env-block is still visible.
+    # THE OUTPUT CONTRACT with .github/workflows/ci-required.yml. `verdict` is the
+    # value a final `if: always()` step writes from GitHub's OWN job status, so a layer
+    # cannot report PASS for a job GitHub calls a failure. The `job` context is NOT
+    # available in this `outputs:` block (it is available inside a step's `run`), which
+    # is why the value is read from steps.<id>.outputs rather than computed here — the
+    # same hosted-YAML discipline pr-gate.yml records learning from four silent
+    # "workflow file issue" runs.
+    outputs:
+      verdict: ${{ steps.eb3_layer_verdict.outputs.verdict }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bind to the synthetic merge tree (EB3_MERGE_TREE)
+        # The layer grades what WOULD land. On pull_request the default checkout is
+        # GitHub's merge ref; on push it is the pushed tip (whose merge with its own
+        # parent is itself). Either way its TREE must equal the tree the summary's
+        # synthesize job built independently with `git merge-tree`; a mismatch means
+        # this layer is grading a different tree than the Required context reports.
+        shell: bash
+        env:
+          EB3_MERGE_TREE: ${{ inputs.merge_tree }}
+        run: |
+          set -euo pipefail
+          GOT=$(git rev-parse 'HEAD^{tree}')
+          [ -n "$EB3_MERGE_TREE" ] || { echo "::error::no merge_tree input — this layer was not called by ci-required"; exit 1; }
+          [ "$GOT" = "$EB3_MERGE_TREE" ] || { echo "::error::checked-out tree $GOT != synthetic merge tree $EB3_MERGE_TREE"; exit 1; }
+          echo "grading synthetic merge tree $GOT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Install
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+
+      - name: Build (the suites import shipped dist faces as well as TS sources)
+        # Several suites resolve the SAME public seam two ways: repo-relative TS under
+        # vitest, and the SHIPPED dist face (the exact files the production glue
+        # imports). Without the build the second resolution is absent and the suite
+        # refuses. Same rule as pr-gate.yml, same reason.
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          pnpm run build
+          pnpm build:composition
+
+      - name: Security suites (list = tests/checks/eb3-security-suites.txt) — token verdict
+        run: node scripts/eb3-security-run.mjs --timeout 20000
+
+      - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)
+        id: eb3_layer_verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ job.status }}" in
+            success) V=PASS ;;
+            cancelled) V=CANCELLED ;;
+            *) V=FAIL ;;
+          esac
+          echo "EB3-LAYER layer=ci-security verdict=$V status=${{ job.status }}"
+          echo "verdict=$V" >> "$GITHUB_OUTPUT"

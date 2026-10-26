@@ -1,0 +1,142 @@
+{
+  "schema": "eb3-trusted-tool-sources/1",
+  "note": "EB3-A/D trusted MCP tool sources (plan U7-2; Alpha.5 dynamic-source law: a source not in an immutable admission record is UNKNOWN, and UNKNOWN is never an authorization). scripts/eb3-trusted-sources.mjs scans tracked files for concrete MCP tool spellings `mcp__<server>__<tool>` and refuses any spelling not booked here (MCP_TOOL_UNKNOWN). A booking is a reviewable one-line diff; it RECORDS that a name exists on purpose, it grants nothing at runtime. The bare family prefix `mcp__` (prefix reservations, filter code) is not a tool name and is not booked.",
+  "product": {
+    "note": "Shipped surface: packages/** outside test/harness/e2e dirs, including the dist mirror. ZERO concrete MCP tool names ship in product code today — servers are configuration, tools are discovered at runtime and governed by the dynamic-source admission record, never by a name compiled into the plugin. Any concrete spelling appearing here is a product change that hardcodes an MCP tool and must be booked here AND reviewed as such.",
+    "tools": []
+  },
+  "fixtures": {
+    "note": "Names used by test suites and harnesses as fixture MCP servers. Booked per name with where it lives, so a NEW fixture name is a visible addition rather than a silent one.",
+    "tools": [
+      {
+        "name": "mcp__a5probe__echo",
+        "where": [
+          "packages/runtime/test/a5mcp-native-trust-filter.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__dtest-mini__ping",
+        "where": [
+          "tests/mock/scripts/suite-face-verify.mjs",
+          "tests/mock/scripts/w2-tools-arrays.mjs",
+          "tests/mock/state/baseline-inventory.json"
+        ]
+      },
+      {
+        "name": "mcp__dtest-mini__write-file",
+        "where": [
+          "tests/mock/scripts/f9-check.mjs"
+        ]
+      },
+      {
+        "name": "mcp__dtesthttp__ping",
+        "where": [
+          "tests/mock/scripts/suite-face-verify.mjs",
+          "tests/mock/scripts/w2-tools-arrays.mjs",
+          "tests/mock/state/baseline-inventory.json"
+        ]
+      },
+      {
+        "name": "mcp__governed__t",
+        "where": [
+          "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__host__read",
+        "where": [
+          "packages/runtime/test/a5-pindir-reserved-native.test.ts",
+          "packages/runtime/test/a5natexe-native-takeover.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__mcp-f15__ping",
+        "where": [
+          "packages/runtime/test/f15-mcp-live-loss-characterization.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__mcp-same__ping",
+        "where": [
+          "packages/runtime/test/mcp-blueprint-initial-grant.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__mcp_designer__ping",
+        "where": [
+          "tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs"
+        ]
+      },
+      {
+        "name": "mcp__mcp_leaderreq__ping",
+        "where": [
+          "tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs"
+        ]
+      },
+      {
+        "name": "mcp__mcp_signal__ping",
+        "where": [
+          "tests/kits/mcp-initial-grant-smoke/mcp-initial-grant-smoke.mjs"
+        ]
+      },
+      {
+        "name": "mcp__other__tool",
+        "where": [
+          "packages/runtime/test/a5mcp-native-trust-filter.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__p2t4mini__ping",
+        "where": [
+          "tests/characterization/probes/capabilities/index.mjs",
+          "tests/characterization/probes/capabilities/plugins/capability-scenario.js"
+        ]
+      },
+      {
+        "name": "mcp__p5t5mini__ping",
+        "where": [
+          "packages/runtime/member-residency/harness/slots-t6.mjs",
+          "packages/runtime/root-binding/harness/mini-mcp.mjs",
+          "packages/runtime/root-binding/harness/plugin.mjs"
+        ]
+      },
+      {
+        "name": "mcp__prb-mcp-a__ping",
+        "where": [
+          "tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs"
+        ]
+      },
+      {
+        "name": "mcp__prb-mcp-b__*",
+        "where": [
+          "tests/kits/pr-b-effective-policy-smoke/pr-b-effective-policy-smoke.mjs"
+        ]
+      },
+      {
+        "name": "mcp__srv__tool",
+        "where": [
+          "packages/runtime/test/a5mcp-native-trust-filter.test.ts",
+          "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__u6paged__alpha",
+        "where": [
+          "packages/runtime/test/u6-mcp-017-regression.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__u6paged__beta",
+        "where": [
+          "packages/runtime/test/u6-mcp-017-regression.test.ts"
+        ]
+      },
+      {
+        "name": "mcp__u6plain__ping",
+        "where": [
+          "packages/runtime/test/u6-mcp-017-regression.test.ts"
+        ]
+      }
+    ]
+  }
+}

@@ -41,7 +41,8 @@
  * control).
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -56,14 +57,20 @@ const MODULES = {
   'scripts/eb3-trusted-sources.mjs': null,
   'scripts/eb3-family-definitions.mjs': null,
   'scripts/eb3-family-boundaries.mjs': null,
+  'scripts/eb3-merge-tree.mjs': null,
+  'scripts/eb3-run-manifest.mjs': null,
+  'scripts/eb3-impact.mjs': null,
 }
 const CI_PR_GATE = await import(new URL('./ci-pr-gate.mjs', import.meta.url).href)
-let moduleLoadError = null
+// Per-module load errors: the RED run of this file first recorded only the FIRST
+// failure, so C2–C4 all reported eb3-ci-required.mjs's absence as their reason —
+// true about the tree, wrong about the control. Each control now names its own.
+const moduleLoadErrors = {}
 for (const rel of Object.keys(MODULES)) {
   try {
     MODULES[rel] = await import(new URL(`../${rel}`, import.meta.url).href)
   } catch (e) {
-    moduleLoadError = moduleLoadError ?? `${rel}: ${String(e && e.message ? e.message : e)}`
+    moduleLoadErrors[rel] = String(e && e.message ? e.message : e).split('\n')[0]
   }
 }
 
@@ -123,15 +130,20 @@ function readMap(root, paths) {
  * can never be the thing that breaks the tree it is grading.
  */
 control('C1 required-ci-job-removal', () => {
-  const { checkRequiredJobs, REQUIRED_JOBS } = requireModule('scripts/eb3-ci-required.mjs')
-  const wfPaths = gitLsFiles('.github/workflows')
-  const honest = checkRequiredJobs({ files: readMap(ROOT, wfPaths) })
+  const { checkRequiredJobs, REQUIRED_JOBS, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  // THE WORKING TREE, not the git index. The first draft read `git ls-files`, so the
+  // very workflow files this task ADDS (untracked until the commit) were invisible and
+  // the control reported the honest tree as failing — the check would have been green
+  // only after committing, which is exactly when a control is no longer useful.
+  const wf = workflowFiles(ROOT)
+  if (wf.size === 0) return { ok: false, detail: 'no workflow files found in the working tree' }
+  const honest = checkRequiredJobs({ files: wf })
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already fails the required-job check (${honest.findings.length} finding(s)): ${honest.findings.slice(0, 3).map((f) => f.code).join(', ')}` }
   }
   const target = REQUIRED_JOBS[0]
   // MUTATION: delete the job from the workflow text that declares it.
-  const mutated = new Map(readMap(ROOT, wfPaths))
+  const mutated = new Map(wf)
   let removed = false
   for (const [path, text] of mutated) {
     const rx = new RegExp(`^  ${target.job}:\\n`, 'm')
@@ -179,7 +191,10 @@ control('C2 unknown-mcp-tool-injection', () => {
   const seedPath = srcPaths.find((p) => (readMap(ROOT, [p]).get(p) ?? '').includes('mcp__'))
   if (seedPath === undefined) return { ok: false, detail: 'no source file carries an mcp__ spelling to mutate — the control cannot stage its own mutation' }
   const mutated = new Map(readMap(ROOT, srcPaths))
-  const PLANTED = 'mcp__injected_server__exfiltrate_everything'
+  // Assembled at runtime, never written as one literal: this file is itself a scanned
+  // source, and a literal here would have to be BOOKED to keep the honest half green —
+  // at which point the mutation half would inject a booked name and pass vacuously.
+  const PLANTED = ['mcp', 'injected_server', 'exfiltrate_everything'].join('__')
   mutated.set(seedPath, `${mutated.get(seedPath)}\n// planted negative control: ${PLANTED}\n`)
   const detected = checkTrustedSources({ files: mutated })
   const hit = detected.findings.find((f) => f.code === 'MCP_TOOL_UNKNOWN' && f.detail.includes(PLANTED))
@@ -208,7 +223,12 @@ control('C2 unknown-mcp-tool-injection', () => {
  */
 control('C3 execution-definition-replaced', () => {
   const { checkFamilyDefinitions } = requireModule('scripts/eb3-family-definitions.mjs')
-  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => /contribution[^/]*\.mjs$/.test(p) && !p.includes('/dist/'))
+  // Contribution files AND row files: the execution ARM lives on the contribution
+  // (`execution.via`), the execute TRANSPORT on the row (`*-row.mjs`). The first draft
+  // staged 3b only on contributions, where no `execute: async (` exists, so the
+  // substitution silently did nothing and the control blamed the enforcement — a
+  // mutation that does not mutate is a green light wired to nothing.
+  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
   const honest = checkFamilyDefinitions({ files: readMap(ROOT, paths) })
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already fails the definition check: ${honest.findings.slice(0, 3).map((f) => `${f.code} ${f.detail}`).join(' ;; ')}` }
@@ -223,11 +243,16 @@ control('C3 execution-definition-replaced', () => {
   const aFindings = checkFamilyDefinitions({ files: a }).findings
   const aHit = aFindings.find((f) => f.code === 'DEF_EXECUTION_REPLACED' && f.path === seedPath)
 
-  // 3b: replace the row execute transport with a computed member.
+  // 3b: replace a row's execute transport with a computed member. The target is a
+  // ROW file that actually declares `execute: async (`; failing to find one is a
+  // control failure, never a silent no-op.
+  const rowPath = paths.find((p) => /-row\.mjs$/.test(p) && /^\s*execute: async \(/m.test(readMap(ROOT, [p]).get(p) ?? ''))
+  if (rowPath === undefined) return { ok: false, detail: 'no row file declares a plain `execute: async (` — the control cannot stage mutation 3b' }
   const b = new Map(base)
-  b.set(seedPath, b.get(seedPath).replace(/execute: async \(/, 'execute: __injectedTransport ?? (async ('))
+  b.set(rowPath, b.get(rowPath).replace(/^(\s*)execute: async \(/m, '$1execute: __injectedTransport ?? (async ('))
+  if (b.get(rowPath) === base.get(rowPath)) return { ok: false, detail: `mutation 3b did not change ${rowPath} — the control would be grading an unmutated tree` }
   const bFindings = checkFamilyDefinitions({ files: b }).findings
-  const bHit = bFindings.find((f) => f.code === 'DEF_EXECUTION_REPLACED' && f.path === seedPath)
+  const bHit = bFindings.find((f) => f.code === 'DEF_EXECUTION_REPLACED' && f.path === rowPath)
 
   // 3c: a nativeNames entry no review can read.
   const c = new Map(base)
@@ -235,12 +260,20 @@ control('C3 execution-definition-replaced', () => {
   const cFindings = checkFamilyDefinitions({ files: c }).findings
   const cHit = cFindings.find((f) => f.code === 'DEF_NAME_UNREADABLE' && f.path === seedPath)
 
-  const parts = [`3a ${aHit !== undefined ? 'detected' : 'MISSED'}`, `3b ${bHit !== undefined ? 'detected' : 'MISSED'}`, `3c ${cHit !== undefined ? 'detected' : 'MISSED'}`]
-  const all = aHit !== undefined && bHit !== undefined && cHit !== undefined
-  return {
-    ok: all,
-    detail: `honest tree passes; ${parts.join(', ')}${all ? ` (mutations staged on ${seedPath})` : ''}`,
-  }
+  // 3d: the contribution's source digest stops binding the execute transport — the
+  // quiet replacement (a swapped body keeps the same digest). This leg exists because
+  // the rule that catches it shipped once with BACKSPACE characters in its regex
+  // (`/\x08sourceDocument\x08/`, a `\b` mangled in an edit): the rule could never
+  // match, and the honest tree passed for the wrong reason. Only a mutation that
+  // must trip it can tell a live rule from a dead one.
+  const d = new Map(base)
+  d.set(seedPath, d.get(seedPath).replace(/execute: definition\.execute\?\.toString\?\.\(\) \?\? null,/, 'execute: null,'))
+  if (d.get(seedPath) === base.get(seedPath)) return { ok: false, detail: `mutation 3d did not change ${seedPath}` }
+  const dHit = checkFamilyDefinitions({ files: d }).findings.find((f) => f.code === 'DEF_EXECUTION_REPLACED' && f.path === seedPath && f.detail.includes('same digest'))
+
+  const parts = [`3a ${aHit !== undefined ? 'detected' : 'MISSED'} on ${seedPath}`, `3b ${bHit !== undefined ? 'detected' : 'MISSED'} on ${rowPath}`, `3c ${cHit !== undefined ? 'detected' : 'MISSED'} on ${seedPath}`, `3d ${dHit !== undefined ? 'detected' : 'MISSED'} on ${seedPath}`]
+  const all = aHit !== undefined && bHit !== undefined && cHit !== undefined && dHit !== undefined
+  return { ok: all, detail: `honest tree passes; ${parts.join(', ')}` }
 })
 
 // ─────────────────────────────────────────────── control 4: cross-family influence
@@ -263,12 +296,17 @@ control('C4 cross-family-influence', () => {
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already carries ${honest.findings.length} undeclared cross-lane edge(s): ${honest.findings.slice(0, 3).map((f) => f.detail).join(' ;; ')}` }
   }
-  const seedPath = paths.find((p) => p.startsWith('packages/tools/search-family/src/') && (readMap(ROOT, [p]).get(p) ?? '').includes('fs-family'))
-  if (seedPath === undefined) return { ok: false, detail: 'no search-family source imports fs-family — the control cannot stage its own mutation' }
+  // The seed must hold the IMPORT, not merely mention the lane: the first draft took
+  // the first file whose text contained "fs-family" (a comment in search-contribution),
+  // so the 4a substitution matched nothing and the control blamed the enforcement.
+  const IMPORT = "from '../../fs-family/src/index.mjs'"
+  const seedPath = paths.find((p) => p.startsWith('packages/tools/search-family/src/') && (readMap(ROOT, [p]).get(p) ?? '').includes(IMPORT))
+  if (seedPath === undefined) return { ok: false, detail: 'no search-family source imports the fs-family public face — the control cannot stage its own mutation' }
 
   // 4a: reach into a sibling family's INTERNals instead of its public index.
   const a = new Map(readMap(ROOT, paths))
-  a.set(seedPath, a.get(seedPath).replace("from '../../fs-family/src/index.mjs'", "from '../../fs-family/src/fs-mechanics.mjs'"))
+  a.set(seedPath, a.get(seedPath).replace(IMPORT, "from '../../fs-family/src/fs-mechanics.mjs'"))
+  if (a.get(seedPath) === readMap(ROOT, [seedPath]).get(seedPath)) return { ok: false, detail: `mutation 4a did not change ${seedPath}` }
   const aHit = checkFamilyBoundaries({ files: a }).findings.find((f) => f.code === 'FAMILY_CROSS_INFLUENCE' && f.path === seedPath)
 
   // 4b: a whole new edge into a family this lane declares no edge to.
@@ -284,7 +322,162 @@ control('C4 cross-family-influence', () => {
 
   const parts = [`4a ${aHit !== undefined ? 'detected' : 'MISSED'}`, `4b ${bHit !== undefined ? 'detected' : 'MISSED'}`, `4c ${cHit !== undefined ? 'detected' : 'MISSED'}`]
   const all = aHit !== undefined && bHit !== undefined && cHit !== undefined
-  return { ok: all, detail: `honest tree passes (${Object.keys(LANE_EDGES).length} lanes declare edges); ${parts.join(', ')}` }
+  return { ok: all, detail: `honest tree passes (${Object.keys(LANE_EDGES).length} lanes declare edges); ${parts.join(', ')} (mutations staged on ${seedPath})` }
+})
+
+// ────────────────────────────── control 5: the Required context may not go green
+/**
+ * EB3-C, the plan's parenthesis verbatim: "缺席、skip、ENV_BLOCK、refused、cancel 不能绿"
+ * — absence, skip, ENV_BLOCK, refused and cancel may not be green. The grader is
+ * `scripts/eb3-merge-tree.mjs --grade-needs`, the step the ONE Required context runs.
+ * Each of the five (plus failure and an unrecognised result) is staged on an
+ * otherwise all-green `needs`, one at a time, so a single wrong row is the only
+ * difference between a pass and the case under test.
+ */
+control('C5 required-context-nongreen-states', () => {
+  const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
+  const { REQUIRED_JOBS } = requireModule('scripts/eb3-ci-required.mjs')
+  const layers = REQUIRED_JOBS.filter((j) => j.id !== 'aggregate').map((j) => j.id)
+  const green = () => Object.fromEntries(layers.map((id) => [id, { result: 'success', outputs: { verdict: 'PASS' } }]))
+  const honest = gradeNeeds({ needs: green() })
+  if (honest.verdict !== 'pass') return { ok: false, detail: `all-green needs graded ${honest.verdict} — the grader cannot pass anything` }
+  const victim = layers[1]
+  const cases = [
+    ['absent', (n) => { delete n[victim] }],
+    ['skip', (n) => { n[victim] = { result: 'skipped' } }],
+    ['cancel', (n) => { n[victim] = { result: 'cancelled' } }],
+    ['failure', (n) => { n[victim] = { result: 'failure' } }],
+    ['ENV_BLOCK', (n) => { n[victim] = { result: 'success', outputs: { verdict: 'ENV_BLOCK' } } }],
+    ['refused', (n) => { n[victim] = { result: 'success', outputs: { verdict: 'REFUSED' } } }],
+    ['SKIP-token', (n) => { n[victim] = { result: 'success', outputs: { verdict: 'SKIP' } } }],
+    ['verdict-missing', (n) => { n[victim] = { result: 'success' } }],
+    ['unrecognised-result', (n) => { n[victim] = { result: 'neutral' } }],
+    ['empty-needs', (n) => { for (const k of Object.keys(n)) delete n[k] }],
+  ]
+  const missed = []
+  for (const [name, mutate] of cases) {
+    const n = green()
+    mutate(n)
+    if (gradeNeeds({ needs: n }).verdict !== 'fail') missed.push(name)
+  }
+  return {
+    ok: missed.length === 0,
+    detail: missed.length === 0
+      ? `all-green => pass; each of ${cases.map((c) => c[0]).join(', ')} on layer ${victim} => fail`
+      : `graded GREEN for: ${missed.join(', ')}`,
+  }
+})
+
+// ───────────────────────────────────── control 6: summary job wiring cannot be loosened
+/**
+ * The grader is only as good as the job that calls it. Four quiet edits to the
+ * summary workflow would make the Required context green with a layer red, and each
+ * must be caught by eb3-ci-required: dropping `if: always()`, dropping a layer from
+ * `needs`, a paths filter on the summary trigger, and a `continue-on-error` on a layer.
+ */
+control('C6 summary-wiring-loosened', () => {
+  const { checkRequiredJobs, loadManifest, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  const m = loadManifest()
+  const wf = workflowFiles(ROOT)
+  if (checkRequiredJobs({ files: wf }).findings.length !== 0) return { ok: false, detail: 'honest workflows already fail eb3-ci-required' }
+  const agg = m.aggregate.workflow
+  const layer1 = m.layers[1]
+  const stage = (name, path, from, to, code) => {
+    const mm = new Map(wf)
+    const before = mm.get(path)
+    if (before === undefined) return `${name}: ${path} absent`
+    const after = before.replace(from, to)
+    if (after === before) return `${name}: mutation did not apply`
+    mm.set(path, after)
+    return checkRequiredJobs({ files: mm }).findings.some((f) => f.code === code) ? null : `${name}: not detected (${code})`
+  }
+  const misses = [
+    // The summary's own always() is the row that matters: it is the one that decides
+    // whether a failed layer reaches the verdict at all.
+    stage('drop-always', agg, /(\n {4}if: always\(\)\n {4}needs:)/, '\n    if: success()\n    needs:', 'CI_SUMMARY_NOT_ALWAYS'),
+    stage('drop-need', agg, new RegExp(`(needs: \\[[^\\]]*?)\\b${layer1.id}, `), '$1', 'CI_SUMMARY_NEEDS_INCOMPLETE'),
+    stage('paths-filter', agg, /pull_request:\n(\s+)branches: \[master\]/, "pull_request:\n$1branches: [master]\n$1paths: ['packages/**']", 'CI_LAYER_PATH_FILTERED'),
+    stage('continue-on-error', layer1.workflow, /(\n {4}runs-on: )/, '\n    continue-on-error: true$1', 'CI_LAYER_CONTINUE_ON_ERROR'),
+    // A layer called by ci-required has no concurrency block of its own (one caller,
+    // one run); the cancellable mutation therefore goes on the CALLER's concurrency.
+    stage('cancel-in-progress', agg, /cancel-in-progress: false/, 'cancel-in-progress: true', 'CI_LAYER_CANCELLABLE'),
+    stage('job-level-if', layer1.workflow, /(\n {4}runs-on: )/, "\n    if: github.event_name == 'push'$1", 'CI_LAYER_SKIPPABLE'),
+  ].filter((x) => x !== null)
+  return { ok: misses.length === 0, detail: misses.length === 0 ? 'honest workflows pass; drop-always, drop-need, paths-filter, continue-on-error, cancel-in-progress, job-level-if each detected' : misses.join(' ;; ') }
+})
+
+// ─────────────────────────────────────────────── control 7: unknown impact is non-zero
+/**
+ * EB3-A: "变更影响图对未知影响非零选择". A path no rule recognises must select the full
+ * layered CI, never nothing; an empty change still runs ci-fast with docs:probe; a
+ * doc hit selects docs:sync --check; and a Family-lane path keeps the family checks
+ * even though a broader `packages/**` rule also matches (the union law).
+ */
+control('C7 impact-unknown-nonzero', () => {
+  const { selectImpact, loadGraph } = requireModule('scripts/eb3-impact.mjs')
+  // loadGraph(root) reads <root>/dev/ci/eb3-impact-graph.json; the refusal leg below
+  // points it at a throwaway root so the tracked graph is never touched.
+  const { REQUIRED_JOBS } = requireModule('scripts/eb3-ci-required.mjs')
+  const all = REQUIRED_JOBS.filter((j) => j.id !== 'aggregate').map((j) => j.id).sort()
+  const g = loadGraph()
+  const misses = []
+  const unk = selectImpact({ paths: ['totally/unmapped/new-thing.bin'] })
+  if (unk.unknownPaths.length !== 1 || JSON.stringify(unk.layers) !== JSON.stringify(all)) misses.push(`unknown path selected ${unk.layers.join(',') || 'NOTHING'}`)
+  const empty = selectImpact({ paths: [] })
+  if (!empty.layers.includes('ci-fast') || !empty.checks.includes('docs:probe')) misses.push('empty change did not select ci-fast + docs:probe')
+  const doc = selectImpact({ paths: ['docs/STATUS.md'] })
+  if (!doc.checks.includes('docs:sync --check')) misses.push('doc hit did not select docs:sync --check')
+  const fam = selectImpact({ paths: ['packages/tools/fs-family/src/read-row.mjs'] })
+  if (!fam.checks.includes('eb3-family-boundaries') || !fam.checks.includes('eb3-family-definitions')) misses.push('family path lost the family checks')
+  // A graph whose `unknown` set was emptied must be REFUSED at load, not obeyed:
+  // stage it as a real file in a throwaway root and ask loadGraph about it.
+  const scratch = mkdtempSync(join(tmpdir(), 'eb3-impact-'))
+  try {
+    mkdirSync(join(scratch, 'dev/ci'), { recursive: true })
+    writeFileSync(join(scratch, 'dev/ci/eb3-impact-graph.json'), JSON.stringify({ ...g, unknown: { layers: [], checks: [] } }))
+    let refused = false
+    try { loadGraph(scratch) } catch (e) { refused = /unknown/.test(String(e?.message)) }
+    if (!refused) misses.push('a graph with an EMPTY unknown set loaded without refusal')
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+  }
+  return { ok: misses.length === 0, detail: misses.length === 0 ? `unknown path => all ${all.length} layers; empty change => ci-fast+docs:probe; doc hit => docs:sync --check; family path keeps family checks under the union law` : misses.join(' ;; ') }
+})
+
+// ──────────────────────────────────────────── control 8: RUN Manifest refuses lies
+/**
+ * EB3-D: "改写 RUN、错 digest、混入不同来源代际必须拒绝". The honest record is a real
+ * finalised RUN already on the tree; each mutation is one field.
+ */
+control('C8 run-manifest-refuses-rewrites', () => {
+  const { validateRunRecord, context, findRunRecords } = requireModule('scripts/eb3-run-manifest.mjs')
+  const ctx = context(ROOT)
+  const complete = findRunRecords(ROOT).filter((r) => typeof r.record.finishedAt === 'string' && r.record.overall !== undefined && r.record.bindings?.mode !== 'reconstruct' && typeof r.record.bindings?.teamSha === 'string')
+  if (complete.length === 0) return { ok: false, detail: 'no finalised, non-reconstruct RUN record on the tree to mutate' }
+  const seed = complete.find((r) => r.record.cases.some((c) => c.verdict === 'PASS')) ?? complete[0]
+  const honest = validateRunRecord({ record: seed.record, rel: seed.rel, ctx })
+  if (honest.findings.length !== 0) return { ok: false, detail: `honest seed ${seed.rel} already fails: ${honest.findings.map((f) => f.code).join(',')}` }
+  const clone = () => JSON.parse(JSON.stringify(seed.record))
+  const tries = [
+    ['rewritten-overall', 'RUN_OVERALL_DISHONEST', (r) => { r.cases[0].verdict = 'FAIL'; r.overall = 'PASS' }, false],
+    ['env-block-case-graded-pass', 'RUN_OVERALL_DISHONEST', (r) => { r.cases[0].verdict = 'ENV_BLOCK'; r.overall = 'PASS' }, false],
+    ['unknown-verdict-token', 'RUN_CASE_VERDICT', (r) => { r.cases[0].verdict = 'GREENISH' }, false],
+    ['dropped-selected-case', 'RUN_CASE_VERDICT', (r) => { r.cases.shift() }, false],
+    ['host-generation-mixed', 'RUN_HOST_PIN_DRIFT', (r) => { r.bindings.hostSha = '46a7f68b0922371ce7144b668b90e377d8e799f4' }, false],
+    ['team-sha-unresolvable', 'RUN_SOURCE_UNRESOLVED', (r) => { r.bindings.teamSha = 'deadbeef'.repeat(5) }, false],
+    ['invented-authority-generation', 'RUN_AUTHORITY_BINDING_MISMATCH', (r) => { r.bindings.authority = { pointer: { snapshot_version: 'as20991231r9', content_digest: 'sha256:' + '0'.repeat(64) }, pointerSha256: '0'.repeat(64) } }, false],
+    ['superseded-generation-on-new-record', 'RUN_AUTHORITY_BINDING_MISMATCH', (r) => { r.bindings.authority = { pointer: { snapshot_version: 'as20261025r1', content_digest: 'sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062' }, pointerSha256: '5356e8deabdcad5e6686208a8f3debe1113b56393d4a5c1c787e575c897725ee' } }, true],
+    ['wrong-evidence-digest', 'RUN_EVIDENCE_DIGEST_MISMATCH', (r) => { r.evidence = [{ path: 'tests/paths.mjs', sha256: '0'.repeat(64) }] }, false],
+    ['missing-evidence', 'RUN_EVIDENCE_MISSING', (r) => { r.evidence = ['dev/agent-workflow/evidence/does-not-exist.json'] }, false],
+  ]
+  const misses = []
+  for (const [name, code, mutate, strict] of tries) {
+    const r = clone()
+    mutate(r)
+    const f = validateRunRecord({ record: r, rel: seed.rel, ctx, strictGeneration: strict }).findings
+    if (!f.some((x) => x.code === code)) misses.push(`${name} (${code}) not detected: ${f.map((x) => x.code).join(',') || 'no findings'}`)
+  }
+  return { ok: misses.length === 0, detail: misses.length === 0 ? `honest ${seed.rel.split('/').slice(-3).join('/')} passes; ${tries.map((t) => t[0]).join(', ')} each refused` : misses.join(' ;; ') }
 })
 
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
@@ -376,7 +569,7 @@ function requireModule(rel) {
   if (rel === 'scripts/ci-pr-gate.mjs') return { ...CI_PR_GATE, BASELINES: { census: censusBaselinePath() } }
   const m = MODULES[rel]
   if (m === null || m === undefined) {
-    throw new Error(`enforcement module absent or unloadable: ${rel}${moduleLoadError !== null ? ` (first load error: ${moduleLoadError})` : ''}`)
+    throw new Error(`enforcement module absent or unloadable: ${rel}${moduleLoadErrors[rel] !== undefined ? ` (${moduleLoadErrors[rel]})` : ''}`)
   }
   return m
 }

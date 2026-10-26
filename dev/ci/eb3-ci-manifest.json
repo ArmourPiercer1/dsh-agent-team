@@ -1,0 +1,103 @@
+{
+  "schema": "eb3-ci-manifest/1",
+  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group.",
+  "aggregate": {
+    "workflow": ".github/workflows/ci-required.yml",
+    "job": "ci-required",
+    "context": "ci-required",
+    "note": "The synthetic merge-tree summary. `synthesize` builds the merge of base+head with git merge-tree (no ref moved) and fails hard on a conflict; `ci-required` runs if:always(), needs every layer below, and is the ONE Required branch-protection context. `jobs` names both so the undeclared-job rule stays honest about the summary's own jobs. Every entry in the summary's needs must be a declared layer or the checker reds: a layer left out of needs can fail while the summary stays green.",
+    "jobs": [
+      "synthesize",
+      "ci-required"
+    ]
+  },
+  "layers": [
+    {
+      "id": "ci-fast",
+      "workflow": ".github/workflows/ci-fast.yml",
+      "job": "ci-fast",
+      "purpose": "cheap document/impact tier; the first thing a PR sees",
+      "mustRunOn": [
+        "workflow_call"
+      ],
+      "mandatoryLegs": [
+        "EB3_MERGE_TREE",
+        "docs:sync --check",
+        "docs:probe",
+        "eb3-impact"
+      ],
+      "cancelInProgress": false
+    },
+    {
+      "id": "ci-integration",
+      "workflow": ".github/workflows/ci-integration.yml",
+      "job": "ci-integration",
+      "purpose": "static/product legs plus the EB3 governance checks",
+      "mustRunOn": [
+        "workflow_call"
+      ],
+      "mandatoryLegs": [
+        "EB3_MERGE_TREE",
+        "graph-parse",
+        "state-freshness",
+        "typecheck",
+        "eb3-ci-required",
+        "eb3-trusted-sources",
+        "eb3-family-definitions",
+        "eb3-family-boundaries",
+        "eb3-run-manifest"
+      ],
+      "cancelInProgress": false
+    },
+    {
+      "id": "ci-security",
+      "workflow": ".github/workflows/ci-security.yml",
+      "job": "ci-security",
+      "purpose": "host-free security suites: the kernel/guard/admission laws and the non-Team native positive controls",
+      "mustRunOn": [
+        "workflow_call"
+      ],
+      "mandatoryLegs": [
+        "EB3_MERGE_TREE",
+        "scripts/eb3-security-run.mjs"
+      ],
+      "cancelInProgress": false
+    },
+    {
+      "id": "ci-full",
+      "workflow": ".github/workflows/ci-full.yml",
+      "job": "ci-full",
+      "purpose": "the whole gate, census included; refuses (not skips) where the pristine host is absent",
+      "mustRunOn": [
+        "workflow_call"
+      ],
+      "mandatoryLegs": [
+        "EB3_MERGE_TREE",
+        "census"
+      ],
+      "cancelInProgress": false
+    }
+  ],
+  "knownNonRequired": [
+    {
+      "workflow": ".github/workflows/pr-gate.yml",
+      "job": "gate",
+      "why": "the pre-EB3 single Required context. Kept while the layered CI is proven in parallel (the plan's E3 exit: the old pr-gate/census-runtime may only retire after the new rules have been validated side by side). It remains honest on its own terms; it is no longer the only gate."
+    },
+    {
+      "workflow": ".github/workflows/census-runtime.yml",
+      "job": "census-runtime",
+      "why": "the real-host census. Informational by declaration (cancel-in-progress true). Graded for real by ci-full when the host is present, and refused with a named reason when it is not."
+    },
+    {
+      "workflow": ".github/workflows/candidate-protection.yml",
+      "job": "candidate-protection",
+      "why": "grades an external pinned evidence tree, not this checkout; folding it into the merge verdict would let an evidence-side red block an unrelated product PR (its own header states this)."
+    },
+    {
+      "workflow": ".github/workflows/characterization.yml",
+      "job": "characterize",
+      "why": "archival/manual by user ruling since 2026-09-17 (workflow_dispatch only)."
+    }
+  ]
+}

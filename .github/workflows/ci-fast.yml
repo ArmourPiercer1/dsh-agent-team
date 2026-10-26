@@ -1,0 +1,186 @@
+# ci-fast — EB3 layer 1 of 4: the cheap document tier every PR pays for.
+#
+# WHAT IT IS FOR. `docs:probe` is MANDATORY here (the plan: "`ci-fast` 强制
+# `docs:probe`"), and a documentation hit additionally triggers the full
+# `docs:sync --check`. It also runs the change-impact graph, so the selection that
+# decides whether the expensive layers are worth running is itself a graded step
+# with a printed token — a selector that crashes must fail the PR, not silently
+# select nothing.
+#
+# REUSABLE, CALLED BY THE REQUIRED SUMMARY. `workflow_call` is what makes the
+# single Required context able to see this layer's real result (see
+# .github/workflows/ci-required.yml). The pull_request/push triggers are ALSO
+# present so this layer reports on its own, which is what a developer watches while
+# iterating; the summary does not depend on that independent run.
+#
+# NO cancel-in-progress: a cancelled layer reports `cancelled`, which the summary
+# grades as non-green and which a PR author can therefore neither see a verdict for
+# nor clear. EB3's manifest declares this and scripts/eb3-ci-required.mjs enforces it.
+#
+# THE IMPACT SELECTION IS PRINTED, NOT JUST USED. `--github-output` writes
+# layers=/checks= for downstream steps; the EB3-IMPACT line in the log is the
+# human-readable half, including the UNKNOWN count. UNKNOWN impact selects the FULL
+# layered CI, so this step can never narrow a PR out of its own coverage.
+name: ci-fast
+
+on:
+  # CALLED ONLY by .github/workflows/ci-required.yml. A layer with its own
+  # pull_request trigger would run TWICE per PR (once standalone, once called), and
+  # both runs would share a concurrency group, where GitHub cancels a PENDING run when
+  # a newer one queues — i.e. a layer could report `cancelled` to the Required summary
+  # through no fault of the change. One caller, one run, one result.
+  workflow_call:
+    inputs:
+      merge_tree:
+        description: tree id of the synthetic merge (base + head) this layer must grade
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+
+jobs:
+  ci-fast:
+    name: ci-fast
+
+    # THE OUTPUT CONTRACT with .github/workflows/ci-required.yml. The value is derived
+    # from job.status so it cannot say PASS for a job GitHub calls a failure, and it is
+    # finer-grained than success/failure so a refusal or an env-block is still visible.
+    # THE OUTPUT CONTRACT with .github/workflows/ci-required.yml. `verdict` is the
+    # value a final `if: always()` step writes from GitHub's OWN job status, so a layer
+    # cannot report PASS for a job GitHub calls a failure. The `job` context is NOT
+    # available in this `outputs:` block (it is available inside a step's `run`), which
+    # is why the value is read from steps.<id>.outputs rather than computed here — the
+    # same hosted-YAML discipline pr-gate.yml records learning from four silent
+    # "workflow file issue" runs.
+    outputs:
+      verdict: ${{ steps.eb3_layer_verdict.outputs.verdict }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # The impact graph and docs:probe both need a BASE to diff against; a
+          # shallow clone makes the probe REFUSE (BASE_UNRESOLVABLE), which is
+          # correct and unhelpful. Same reasoning as pr-gate.yml's fetch-depth 0.
+          fetch-depth: 0
+
+      - name: Bind to the synthetic merge tree (EB3_MERGE_TREE)
+        # The layer grades what WOULD land. On pull_request the default checkout is
+        # GitHub's merge ref; on push it is the pushed tip (whose merge with its own
+        # parent is itself). Either way its TREE must equal the tree the summary's
+        # synthesize job built independently with `git merge-tree`; a mismatch means
+        # this layer is grading a different tree than the Required context reports.
+        shell: bash
+        env:
+          EB3_MERGE_TREE: ${{ inputs.merge_tree }}
+        run: |
+          set -euo pipefail
+          GOT=$(git rev-parse 'HEAD^{tree}')
+          [ -n "$EB3_MERGE_TREE" ] || { echo "::error::no merge_tree input — this layer was not called by ci-required"; exit 1; }
+          [ "$GOT" = "$EB3_MERGE_TREE" ] || { echo "::error::checked-out tree $GOT != synthetic merge tree $EB3_MERGE_TREE"; exit 1; }
+          echo "grading synthetic merge tree $GOT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Install (docs tooling and `yaml` only need the workspace manifests)
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+
+      # The base for pull_request / push / dispatch, resolved ONCE and exported, so
+      # every step below grades the same change set. A first draft would have let
+      # docs:probe and the impact graph choose their own bases and quietly grade
+      # different diffs.
+      - name: Resolve the change base
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            pull_request)
+              [ -n "$PR_BASE_SHA" ] || { echo "::error::ci-fast: pull_request event carries no base.sha"; exit 1; }
+              BASE="$PR_BASE_SHA" ;;
+            push)
+              case "$PUSH_BEFORE_SHA" in
+                ''|0000000000000000000000000000000000000000)
+                  echo "::error::ci-fast: push event.before is absent/zeroed; a first tip has no previous tree to diff, so there is no honest base for this run"
+                  exit 1 ;;
+                *) BASE="$PUSH_BEFORE_SHA" ;;
+              esac ;;
+            *)
+              echo "::error::ci-fast: ${EVENT_NAME} carries no base; grading the working tree against itself would prove nothing. Use pull_request/push, or re-run the Required summary instead."
+              exit 1 ;;
+          esac
+          echo "CI_BASE=$BASE" >> "$GITHUB_ENV"
+          echo "ci-fast base = $BASE"
+
+      - name: Change-impact graph (unknown impact selects the FULL layered CI)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/eb3-impact.mjs --base "$CI_BASE" --github-output
+
+      # MANDATORY, per the plan: docs:probe runs on every PR, selected or not.
+      # --base is the event's own verified base (a bare `docs:probe` REFUSES with
+      # BASE_REQUIRED, which is the behaviour pr-gate's comment records learning the
+      # hard way).
+      - name: docs:probe (mandatory)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/docs-probe.mjs --base "$CI_BASE"
+
+      # docs:sync --check is the FULL static law (links/ids/anchors/claims/registry/
+      # plan-citation/derived-view). It is heavier than the probe and is triggered by a
+      # documentation hit. The selection is recomputed here from the SAME graph and the
+      # SAME base rather than plumbed through step state: two reads of one deterministic
+      # function cannot disagree, whereas an output passing between steps can arrive
+      # empty and read as "not selected".
+      - name: docs:sync --check (when the change touches documents)
+        id: docs_sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKS=$(node scripts/eb3-impact.mjs --base "$CI_BASE" --json \
+            | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>console.log(JSON.parse(s).checks.join("\n")))')
+          if printf '%s\n' "$CHECKS" | grep -qx 'docs:sync --check'; then
+            echo "docs:sync --check SELECTED by the impact graph for this change set"
+            node scripts/docs-sync.mjs --check
+            echo "selected=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "docs:sync --check NOT selected: no document hit in this change set. Named selection, not a skip — docs:probe and the graph both ran."
+            echo "selected=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)
+        id: eb3_layer_verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ job.status }}" in
+            success) V=PASS ;;
+            cancelled) V=CANCELLED ;;
+            *) V=FAIL ;;
+          esac
+          echo "EB3-LAYER layer=ci-fast verdict=$V status=${{ job.status }}"
+          echo "verdict=$V" >> "$GITHUB_OUTPUT"

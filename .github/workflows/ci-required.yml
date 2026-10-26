@@ -1,0 +1,185 @@
+# ci-required — EB3-C: the ONE Required check context. The synthetic merge tree.
+#
+# WHY THIS FILE EXISTS. `.github/workflows/pr-gate.yml` is the current Required
+# context and it is one job: when it is cancelled, absent, or refuses a leg by
+# declaration, a PR can sit blocked with no verdict or -- worse -- go green without
+# the population measured. The plan's EB3-C names the fix precisely: a PR **synthetic
+# merge tree** check that aggregates the REAL dependency states with `always()`, where
+# "缺席、skip、ENV_BLOCK、refused、cancel 不能绿" (absence, skip, ENV_BLOCK, refused,
+# cancel may not be green).
+#
+# THE SHAPE, and why each part is load-bearing:
+#
+#   1. `synthesize` builds the merge of the base and this head with
+#      `git merge-tree --write-tree` + `commit-tree`, WITHOUT touching any branch, and
+#      prints the commit. A conflict is a hard failure of this job, never "skip the
+#      merge check". The tree id is on the log line so a local run can be compared with
+#      GitHub's own `refs/pull/N/merge`.
+#   2. Each layer is called as a REUSABLE workflow (`uses: ./...`). That is the only
+#      way one check context can see another workflow file's real result; it also means
+#      a layer that DOES NOT EXIST fails this job at planning time rather than being
+#      silently absent from a list.
+#   3. `grade` runs `if: always()` and hands `toJSON(needs)` to
+#      `scripts/eb3-merge-tree.mjs --grade-needs`. That script enumerates the GREEN
+#      state (result == success AND outputs.verdict == PASS) and fails everything else,
+#      so a new GitHub result value fails closed rather than falling through a red list.
+#      It needs no `pnpm install` (the manifest loader is dependency-free), so an
+#      install failure upstream cannot disguise itself as a layer verdict.
+#
+# WHAT A GREEN HERE MEANS, exactly: every layer ran on the merged tree, none of them
+# skipped or cancelled or refused, every security suite passed, and the census graded
+# the known-old-red identity set on the pinned pristine host. It does NOT mean the
+# product is release-ready; the Alpha.5 product gate is a separate, independent
+# acceptance.
+#
+# BRANCH PROTECTION: the context to require is `ci-required`, and it is the ONLY one
+# for the PR path. `pr-gate` and `census-runtime` stay as they are and stay honest on
+# their own terms; the plan's E3 exit allows them to retire only after the layered
+# rules have been validated side by side, so this file does not delete them.
+name: ci-required
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-required-${{ github.ref }}
+  # NOT cancel-in-progress, ever. This job IS the Required status: cancelling it
+  # reports `cancelled`, which is neither green nor red, and a PR with a cancelled
+  # Required check can be neither merged nor diagnosed. Stated in the manifest too, and
+  # scripts/eb3-ci-required.mjs reds if it is flipped.
+  cancel-in-progress: false
+
+jobs:
+  synthesize:
+    # Builds the merge commit the rest of the workflow grades. Cheap (no install, no
+    # build), so it runs first and fails fast on a conflict instead of spending three
+    # layers' worth of runner time to discover the tree does not merge.
+    name: synthesize-merge-tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      commit: ${{ steps.merge.outputs.commit }}
+      tree: ${{ steps.merge.outputs.tree }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # merge-tree and commit-tree both need real objects for both sides.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Synthesize the merge tree (base + head, no branch moved)
+        id: merge
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            pull_request)
+              [ -n "$PR_BASE_SHA" ] || { echo "::error::ci-required: pull_request carries no base.sha"; exit 1; }
+              BASE="$PR_BASE_SHA" ;;
+            push)
+              case "$PUSH_BEFORE_SHA" in
+                ''|0000000000000000000000000000000000000000)
+                  echo "::error::ci-required: push event.before is absent/zeroed; a first tip has no merge base, so the synthetic merge tree cannot be built honestly. Run ci-required on a pull_request, or re-run it against a real base."
+                  exit 1 ;;
+                *) BASE="$PUSH_BEFORE_SHA" ;;
+              esac ;;
+            *)
+              echo "::error::ci-required: ${EVENT_NAME} carries no base; a merge tree without a base is not a merge tree"
+              exit 1 ;;
+          esac
+          node scripts/eb3-merge-tree.mjs --synthesize --base "$BASE" --head "$HEAD_SHA" --github-output
+          # The independently synthesized tree must equal the tree GitHub checked out
+          # (refs/pull/N/merge on pull_request; the pushed tip on push). If the base
+          # branch moved between the event and the checkout they differ, and this job
+          # says so instead of grading one tree and reporting another.
+          SYN=$(grep '^tree=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
+          GOT=$(git rev-parse 'HEAD^{tree}')
+          [ "$SYN" = "$GOT" ] || { echo "::error::synthetic merge tree $SYN != checked-out tree $GOT (base moved since the event?) — re-run against the current base"; exit 1; }
+          echo "synthetic merge tree $SYN == checked-out tree"
+
+  # ── the four layers, each a reusable workflow call ────────────────────────────
+  # Order is cheapest-first so a red document lands in ~1 minute rather than after the
+  # census. `needs` below is what the summary grades; a layer omitted from it can fail
+  # while the summary stays green, and scripts/eb3-ci-required.mjs reds on exactly that.
+  ci-fast:
+    name: ci-fast
+    needs: synthesize
+    uses: ./.github/workflows/ci-fast.yml
+    with:
+      merge_tree: ${{ needs.synthesize.outputs.tree }}
+
+  ci-integration:
+    name: ci-integration
+    needs: synthesize
+    uses: ./.github/workflows/ci-integration.yml
+    with:
+      merge_tree: ${{ needs.synthesize.outputs.tree }}
+
+  ci-security:
+    name: ci-security
+    needs: synthesize
+    uses: ./.github/workflows/ci-security.yml
+    with:
+      merge_tree: ${{ needs.synthesize.outputs.tree }}
+
+  ci-full:
+    name: ci-full
+    needs: synthesize
+    uses: ./.github/workflows/ci-full.yml
+    with:
+      merge_tree: ${{ needs.synthesize.outputs.tree }}
+
+  # ── the Required verdict ──────────────────────────────────────────────────────
+  ci-required:
+    name: ci-required
+    # always() IS THE WHOLE POINT. Without it, a failed layer SKIPS this job, and a
+    # skipped job is not red — the exact shape EB3-C forbids. With it, this job runs
+    # whatever happened upstream and states a verdict from what it sees.
+    if: always()
+    needs: [synthesize, ci-fast, ci-integration, ci-security, ci-full]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        # Only the manifest and one script are needed; no install, so a broken lockfile
+        # upstream cannot make this Required verdict unreadable.
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Grade every layer (absence, skip, cancel, ENV_BLOCK, refused and failure are all NOT green)
+        shell: bash
+        env:
+          EB3_NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          node scripts/eb3-merge-tree.mjs --grade-needs "$EB3_NEEDS_JSON" | tee "$RUNNER_TEMP/required-verdict.txt"
+
+      - name: Upload the Required verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-required-verdict-${{ github.run_number }}
+          path: ${{ runner.temp }}/required-verdict.txt
+          if-no-files-found: warn
