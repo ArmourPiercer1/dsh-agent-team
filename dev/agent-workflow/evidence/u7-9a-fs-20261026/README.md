@@ -78,6 +78,18 @@ Budget law honored: ≤4 host starts, offline-verify before every boot, no
 fifth boot; the three legs above are disclosed exactly as measured, not
 passed.
 
+## Gates (merged tree 56a55c21c, origin/master @ 97bbc2563)
+
+* `ci-pr-gate`: 7 pass / 0 fail (census leg named-skip, opt-in law);
+  typecheck all packages; lint identities new 0; artifacts-at-head: HEAD
+  carries its own build (1820 files, 37 glue).
+* root vitest 628 files: failing set ⊆ master baseline (7→6 files;
+  a5p7-lane-hygiene green) — NEW reds = 0 (`root-vitest-vs-baseline.txt`).
+* quick battery: world-factory 34/34, fitness+C1+golden+unsupported-c1+
+  a5p0-audit+p4t6 = 70/70.
+* CA-01 byte certificate: `ca01-zero-diff-proof.txt` (33/33, zero drift vs
+  base AND current master).
+
 ## Bookings
 
 * p4t6 file-count ledger: +15 scannable files booked

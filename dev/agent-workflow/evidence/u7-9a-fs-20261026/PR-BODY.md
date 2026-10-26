@@ -1,0 +1,88 @@
+# feat(u7-9a): FS family — governed write/edit/read_image on the kernel, zero center diff (CA-01)
+
+First S5 per-family delivery. The FS family's three REQUIRED tools `write`,
+`edit`, `read_image` become **fs-family contributions through the closed
+schema + Registry + the SAME governance kernel** as `read`/bash/search/jobs
+(one ledger). `str_replace_editor` is **OUT_OF_SCOPE with evidence**: its
+obligations state NOT mounted in any shipped bundle/preset (matrix M-04,
+gap=NONE_SHIPPED) — there is no shipped surface to govern.
+
+## CA-01 — zero center diff: PROVEN, two independent ways
+
+- **Byte-level certificate**
+  (`dev/agent-workflow/evidence/u7-9a-fs-20261026/ca01-zero-diff-proof.txt`):
+  all **33/33** files in `arc-a-protected-center.json` byte-identical between
+  HEAD and BOTH base `a0f3f610c` and current `origin/master` (`97bbc2563`).
+  `canonical-operation.ts` @ HEAD = booked digest `a1746afc…`.
+- **ARC-A L1–L4 fitness scan** (`u6-arc-a-fitness.test.ts`): 12/12 green;
+  census re-booked for the family's two contribution paths (L3 zero-violation).
+- **Assembly zero-growth**: the mount config the C2 world carries is the
+  u6-fs read World's key set EXACTLY (pinned:
+  `['centerAssembly','centerShadowLedger','confinedProvider','fsInstance','realmId']`).
+
+## Golden gate (canonicalization parity)
+
+1440 vectors through the shipped family parsers reproduce master's
+`canonicalizeOperation` fingerprints **byte-identically**; corpus digest
+`91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b`
+(recorded from master, re-run on-branch; `golden-recording.txt`). Deviation
+law: vocabulary = center codes; deviations only **stricter + disclosed**
+(lane README §U7-9a: 1 MiB write cap, unknown-param refusal, per-path
+serialization, no mkdir-recursive, `/proc/self/fd` verified handles,
+read_image honest-arm).
+
+## Per-tool matrix (C1 in-process / C2 host)
+
+| tool | C1 (33/33 total) | C2 verdict (4/4 boots, final boot) |
+| --- | --- | --- |
+| mount (feed) | registration legs | **PASS** — `[...,read,write,edit,read_image]` from the unchanged key set |
+| write | positives, token-replay/cancel, pre-abort, default-deny zero-disk, symlink/escape | **PASS** — disk bytes == content + `governed-write RAN` witness |
+| edit | receipt law (`FsEditReceipt` pair), not-found, zero-effect denials | **PASS** — PLANT_AFTER on disk, before-token gone, `governed-edit RAN` |
+| write→unnamed target | C1 default-deny zero-disk **proven** | **DISCLOSED-UNDECIDED** — disk law holds (`shaIdentical:true`, no RAN line names the path), but the call died at a HOST pre-dispatch layer (zero row witnesses): the refusal happened earlier than the row; a row-level witness cannot exist. Not flipped to PASS (SKIP≠PASS). |
+| read_image | positive + honest-arm + bounds (I-1…I-12) | **DISCLOSED-UNDECIDED** — same pre-row host death on this config; both arms C1-proven. |
+| native control (CI-03) | n/a | **DISCLOSED-BLOCKED** — the member's NATIVE write answers `[sandbox: file access denied under workspace-write mode]` (test-host tool sandbox confines native member writes; governed rows run through the plane's confined provider instead — that IS the delivery). Governed-negative half PASSES. Prepared-but-unbooted fix documented. |
+| leak-check | — | **PASS** — pids dead, ports released, home/leases released |
+
+Boot forensics (4 boots = full budget, each offline-verified first): PA
+authority leg → shadow-assembly keys → `identity-gap=no-placement-name`
+root cause → **`paPlacementNameOf` family-spelling fix** (the read-only
+special case predates the family; U7-9a is the first product to walk the
+generation/binding-name legs). Full chain: evidence `c2/` + README.
+
+## Evidence & receipts
+
+`dev/agent-workflow/evidence/u7-9a-fs-20261026/`: README (full round),
+golden recording, C1 log, four-boot C2 logs/JSONs + budget ledger, honest
+p4t6 unbooked RED (`expected 1292 to be 1277`), gates log, root-vitest
+subset proof, CA-01 certificate.
+
+## Bookings & gates
+
+- p4t6 ledger: 15 files booked (`SCANNED_PATHS_U79A`), tie `1292 − 1277 = 15` (MEASURED).
+- Census + PLACEMENTS (37 mirrors; `artifacts-at-head`: HEAD carries its own build).
+- `a5p0-layer-audit` consumer registration: 3 executors (same single thin
+  `parseRequestedEffectSet` face as read-executor) + 2 type-only post-consume
+  edges — audit green.
+- U-C1-4 closed mount domain: seven governed names (was four).
+- `ci-pr-gate` on the merged tree: **7 pass / 0 fail** (census leg named-skip
+  per opt-in law); typecheck all packages clean; lint identities **new 0**;
+  docs:sync/probe **blocking 0**; world-factory pins 34/34;
+  fitness+C1+golden+unsupported-c1+a5p0+p4t6 battery 70/70.
+- Root vitest (merged tree): 6 failed / 622 files, 11 failed / 7962 tests —
+  a strict SUBSET of the 7-file master baseline (a5p7-lane-hygiene turned
+  green); **NEW reds = 0**.
+
+## Risks / disclosures
+
+1. The three C2 undecided legs (above) are disclosed exactly as measured;
+   the boot budget (≤4) is exhausted; the prepared fix for the
+   native-control leg is documented in the evidence README.
+2. `paPlacementNameOf` gained three literal arms in the sanctioned assembly
+   plane (not a protected file; precedent: U6 PR2–PR6 plane edits) — future
+   family names need the same arm; a follow-up can generalize the lookup.
+3. The six files still red here (t2-blueprint-hash, p6t3-mediation,
+   p6t3-restart, a4p7-merge-gate, rc2-sanitize-evidence, p6t6-actions) are
+   the known env-dependent master baseline set; nothing in this PR's scope
+   touches them.
+
+**DO NOT MERGE** — single-writer task delivery; owner review next.

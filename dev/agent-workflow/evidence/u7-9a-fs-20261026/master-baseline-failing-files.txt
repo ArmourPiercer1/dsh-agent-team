@@ -1,0 +1,7 @@
+packages/domain/test/t2-blueprint-hash.test.ts
+packages/runtime/test/a5p7-lane-hygiene.test.ts
+packages/runtime/test/p6t3-mediation.test.ts
+packages/runtime/test/p6t3-restart.test.ts
+packages/testkit/test/a4p7-merge-gate.test.ts
+packages/testkit/test/rc2-sanitize-evidence.test.ts
+packages/tools/test/p6t6-actions.test.ts
