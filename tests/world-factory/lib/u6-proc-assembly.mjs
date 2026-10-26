@@ -217,11 +217,19 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
       '      ask: []', '      deny: []',
       'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - resolve-control',
       // exec-autonomy dual gate HALF 2 (admission/envelope.ts:182
-      // ENVELOPE_EXEC_OPS): the envelope 'bash' token; no leader-template
-      // memberEnvelopes entry exists, so entry tightening is skipped
-      // (leaderExecEnvelopeOps: absent entry = no extra bound) — token +
-      // leader allow-lane rule = the full legal dual gate.
-      '    - bash', '  deny: []',
+      // ENVELOPE_EXEC_OPS): the envelope 'bash' token. Since review-r1 the
+      // leader DOES carry a memberEnvelopes pin entry (see below) whose
+      // allow list names this token, so the effective leader envelope —
+      // and leaderExecEnvelopeOps — stay byte-identical to the no-entry
+      // design: token + leader allow-lane rule = the full legal dual gate.
+      '    - bash',
+      // Review-r1 (u6prc8 law, admission/envelope.ts:100-119): a member's
+      // effective envelope is THIS team-root allow list NARROWED by the
+      // memberEnvelopes entry; template entries never widen it. The
+      // asker's ask-row right is therefore granted HERE (closed
+      // ALL_MUTATION_OPS vocabulary) and re-narrowed away for every other
+      // template — the only lane gaining it is the one named below.
+      '    - request-control', '  deny: []',
       'members:',
       '  - templateId: shell', '    displayName: "u6proc ask-lane worker"',
       `    persona: ${JSON.stringify('You are a worker of the u6proc assembly team (ask-lane shell). Follow the delegated script exactly, one tool call at a time.')}`,
@@ -262,6 +270,16 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
       '      permissions:', '        default: ask', '        allow: []', '        ask: []',
       '        deny: []',
       'memberEnvelopes:',
+      // LEADER PIN (review-r1): the leader previously carried NO entry, so
+      // entry tightening was skipped and its bounds were the full team
+      // allow list. Widening the team list with `request-control` must not
+      // leak into the leader (its exec/ask lanes are pinned by u6prc1-8
+      // measurements) — so the leader gets an explicit entry naming its
+      // OLD bounds exactly, the `bash` exec token included (the dual gate
+      // reads leaderExecEnvelopeOps, which derives from the effective
+      // envelope; dropping `bash` here would silently downgrade the allow
+      // lane). Leader behavior stays byte-identical to u6prc8.
+      '  - templateId: leader', '    envelope:', '      allow:', '        - create-member', '        - assign-task', '        - send-message', '        - report-progress', '        - resolve-control', '        - bash', '      deny: []',
       '  - templateId: shell', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: strict', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       // The asker envelope NAMES `request-control` (closed ALL_MUTATION_OPS

@@ -1412,7 +1412,9 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
       await captureForensic()
       const st = await stateSnapshot()
       const ctl = st?.control ?? null
-      const pending = (ctl?.requests ?? []).filter((r) => r.status === 'pending' && /tool:team_bash|tool=team_bash/.test(String(r.summary ?? '')))
+      // The bridge summary names the EFFECT toolName (`tool=bash` —
+      // u6prc8 disclosure); the plane-facing spelling stays matched too.
+      const pending = (ctl?.requests ?? []).filter((r) => r.status === 'pending' && /tool[:=](team_)?bash\b/.test(String(r.summary ?? '')))
       if (pending.length > 0) apprArm.pendingAny = pending.map((r) => ({ requestId: String(r.requestId).slice(0, 60), kind: r.kind ?? null, summary: String(r.summary ?? '').slice(0, 160) }))
       // The asker's own row: its case id embeds the asker instanceId
       // (tadm:<team>:<instanceId>:<fp>:g0) — exact attribution, never a
