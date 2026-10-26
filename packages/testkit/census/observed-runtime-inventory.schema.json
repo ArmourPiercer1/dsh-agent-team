@@ -1,55 +1,159 @@
 {
-  "$comment": "U7-0 (EB2-A) ObservedRuntimeInventory — closed machine schema for ONE live observation. Digest law (inventory.mjs): snapshot_digest covers ONLY the cross-boot-stable facts; definition_identity/change_seq are recorded for IN-BOOT comparisons and never enter it. Validated by the C1 test via packages/testkit/census/schema-check.mjs (the closed keyword subset).",
+  "$comment": "U7-0 (EB2-A) ObservedRuntimeInventory \u2014 closed machine schema for ONE live observation. IDENTITY COLUMNS: name + Scope (scope_id/kind/team_lane, scope_id digest-eligible), Definition/Binding identity = definition_identity (ctx.tools.get(name,scope) object via definitionIdentityOf, compared per (scope_id,name)); Revision = change_seq (in-boot); PROVIDER identity = provider_identity, the constant NOT_OBSERVABLE (no public seam exposes the registrant \u2014 HTU core/tools index.d.ts register :636 / schemas whitelist :154 / payload-less tools/change, plus the live probe); the trusted provider truth is AuthoritativeToolSources. \u53ef\u4fe1\u914d\u7f6e\u5dee\u96c6 (trusted-config difference set) is emitted by reconcile.mjs as the verdict's trusted_config section (additions/removals/gaps + these identity laws). Digest law (inventory.mjs): snapshot_digest covers scope identity (scope_id/kind/team_lane) + per-tool name/schema_digest/identity_vs_global/source_class; definition_identity/change_seq are recorded for IN-BOOT comparisons and never enter it (a cross-boot Definition Body swap with an unchanged shape is invisible by this disclosed law). Validated by the C1 test via schema-check.mjs.",
   "definitions": {
-    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
     "toolRow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "definition_identity", "schema_digest", "identity_vs_global", "change_seq"],
+      "required": [
+        "name",
+        "definition_identity",
+        "schema_digest",
+        "identity_vs_global",
+        "change_seq",
+        "provider_identity"
+      ],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "definition_identity": { "type": "string", "nullable": true },
-        "schema_digest": { "$ref": "#/definitions/sha256" },
-        "identity_vs_global": { "enum": ["same", "differs", "n/a"] },
-        "change_seq": { "type": "integer", "nullable": true },
-        "source_class": { "enum": ["host-static", "team-native", "dynamic-source", "test-row", "unattributed"] },
-        "unresolved": { "type": "boolean" }
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definition_identity": {
+          "type": "string",
+          "nullable": true
+        },
+        "schema_digest": {
+          "$ref": "#/definitions/sha256"
+        },
+        "identity_vs_global": {
+          "enum": [
+            "same",
+            "differs",
+            "n/a"
+          ]
+        },
+        "change_seq": {
+          "type": "integer",
+          "nullable": true
+        },
+        "source_class": {
+          "enum": [
+            "host-static",
+            "team-native",
+            "dynamic-source",
+            "test-row",
+            "unattributed"
+          ]
+        },
+        "unresolved": {
+          "type": "boolean"
+        },
+        "provider_identity": {
+          "const": "NOT_OBSERVABLE",
+          "$comment": "EB2-A provider-identity column. The public plugin seam exposes NO registrant (register(definition) has no source param, schemas() whitelists name/description/parameters, tools/change is payload-less); the honest value is therefore the constant NOT_OBSERVABLE, stamped explicitly \u2014 never silently omitted. Provider truth lives on the trusted AuthoritativeToolSources side (package/file/line per row)."
+        }
       }
     },
     "scope": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["scope_id", "kind", "team_lane", "tools"],
+      "required": [
+        "scope_id",
+        "kind",
+        "team_lane",
+        "tools"
+      ],
       "properties": {
-        "scope_id": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["global", "agent"] },
-        "team_lane": { "type": "boolean" },
-        "team_lane_signal": { "type": "string" },
-        "agent_label": { "type": "string", "nullable": true },
-        "tools": { "type": "array", "items": { "$ref": "#/definitions/toolRow" }, "uniqueItems": false }
+        "scope_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "global",
+            "agent"
+          ]
+        },
+        "team_lane": {
+          "type": "boolean"
+        },
+        "team_lane_signal": {
+          "type": "string"
+        },
+        "agent_label": {
+          "type": "string",
+          "nullable": true
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/toolRow"
+          },
+          "uniqueItems": false
+        }
       }
     }
   },
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "world", "scopes", "snapshot_digest", "full_digest"],
+  "required": [
+    "schema",
+    "world",
+    "scopes",
+    "snapshot_digest",
+    "full_digest"
+  ],
   "properties": {
-    "schema": { "const": "u7-0/observed-runtime-inventory/v1" },
+    "schema": {
+      "const": "u7-0/observed-runtime-inventory/v1"
+    },
     "world": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "host_sha"],
+      "required": [
+        "kind",
+        "host_sha"
+      ],
       "properties": {
-        "kind": { "enum": ["non-team", "governed-team"] },
-        "host_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "boot_id": { "type": "string" },
-        "world_id": { "type": "string" },
-        "captured_utc": { "type": "string" },
-        "source_ledger": { "type": "string" }
+        "kind": {
+          "enum": [
+            "non-team",
+            "governed-team"
+          ]
+        },
+        "host_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "boot_id": {
+          "type": "string"
+        },
+        "world_id": {
+          "type": "string"
+        },
+        "captured_utc": {
+          "type": "string"
+        },
+        "source_ledger": {
+          "type": "string"
+        }
       }
     },
-    "scopes": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/scope" } },
-    "snapshot_digest": { "$ref": "#/definitions/sha256" },
-    "full_digest": { "$ref": "#/definitions/sha256" }
+    "scopes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/scope"
+      }
+    },
+    "snapshot_digest": {
+      "$ref": "#/definitions/sha256"
+    },
+    "full_digest": {
+      "$ref": "#/definitions/sha256"
+    }
   }
 }

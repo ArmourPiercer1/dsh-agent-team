@@ -19,7 +19,8 @@
   "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
   "backlog_sha256": "sha256:cd296c623b4d707d7d710248b833336adc42c5b0967fd9caa3de47ee7b132387",
   "source_census_seed": "sources/u1c-static-source-census.seed.json",
-  "source_census_seed_sha256": "sha256:f0ca920c91ca4a17eed3d1b48d804552fe1cf203b72280004cb3891f22400dc0"
+  "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
+  "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"
  },
  "counts": {
   "entries": 91,
@@ -76,7 +77,7 @@
     "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)",
     "packages/runtime/tool-admission/admission-kernel.ts (1132 lines, PA admission kernel; file present on master)"
    ],
-   "team_lane_variant_expected": false,
+   "team_lane_variant_expected": true,
    "team_source_registration": {
     "file": "packages/tools/a5p5-tools/src/register.ts",
     "line": 287,

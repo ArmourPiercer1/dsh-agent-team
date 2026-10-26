@@ -51,6 +51,10 @@
         "source_census_seed_sha256": {
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "unknown_dispositions_seed_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
         }
       }
     },

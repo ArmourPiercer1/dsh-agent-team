@@ -47,6 +47,7 @@ const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'))
 // ── inputs (tracked sources; paths fixed, digests recorded) ────────────────
 const SEED_OBLIGATIONS = join(HERE, 'sources', 'u4-reviewed-obligations.seed.json')
 const SEED_SOURCES = join(HERE, 'sources', 'u1c-static-source-census.seed.json')
+const SEED_DISPOSITIONS = join(HERE, 'sources', 'u4-unknown-dispositions.seed.json')
 const MATRIX = join(REPO, 'docs', 'plans', 'active', 'alpha5-tool-io-governance', 'TOOL-CAPABILITY-MATRIX-9b2.md')
 const BACKLOG = join(REPO, 'docs', 'plans', 'active', 'alpha5-tool-io-governance', 'ALPHA5-EFFECTIVE-BACKLOG.md')
 const PATHS_MJS = join(REPO, 'tests', 'paths.mjs')
@@ -58,7 +59,8 @@ const SCOPE_RULES = [
   // [id, predicate, expected_in, team_lane_variant_expected]
   ['name-pattern', (o) => /[<(]/.test(o.name) || o.name.startsWith('surface:'), null, false], // kind split happens below; expected_in per kind
   ['team-plane-row', (o) => /^Team (plane|own-layer)/.test(o.scope_variant), 'team-lane', true],
-  ['native-host-surface', (o) => o.scope_variant.startsWith('host ') || o.scope_variant.includes('host base bundle') || o.scope_variant.includes('host catalog name') || o.scope_variant.includes('host lazy') || o.scope_variant.includes('host package'), 'native-scope', (o) => /Team plane takeover row|Team governed jobs rows|governed (read|shell|jobs)/.test(o.scope_variant)],
+  // review-R1 m6: 'Team native takeover' (bash) is the same reviewed takeover fact
+  ['native-host-surface', (o) => o.scope_variant.startsWith('host ') || o.scope_variant.includes('host base bundle') || o.scope_variant.includes('host catalog name') || o.scope_variant.includes('host lazy') || o.scope_variant.includes('host package'), 'native-scope', (o) => /Team plane takeover row|Team native takeover|Team governed jobs rows|governed (read|shell|jobs)/.test(o.scope_variant)],
   // Opt-in / preset-disabled / gating-refused host names (U1-C "census
   // gating" family): presence attaches to the NATIVE surface; the census
   // reporting them MISSING today is the honest, reviewed state.
@@ -138,6 +140,7 @@ function main() {
 
   const seed = readJson(SEED_OBLIGATIONS)
   const srcSeeds = readJson(SEED_SOURCES)
+  const dispositions = readJson(SEED_DISPOSITIONS)
   const matrixText = readFileSync(MATRIX, 'utf8')
   const backlogText = readFileSync(BACKLOG, 'utf8')
 
@@ -186,6 +189,48 @@ function main() {
   }
   obligations.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
 
+  // (review-R1 B3) REQUIRED means SOURCED: a REQUIRED named entry MUST
+  // carry a registration on at least one side (host or team). Dropping a
+  // registration from the u1c seed therefore REFUSES the replay (previously
+  // it silently emitted REQUIRED with source_registration:null).
+  const unsourced = obligations
+    .filter((o) => o.kind === 'named' && o.obligation === 'REQUIRED' && o.source_registration === null && o.team_source_registration === null)
+    .map((o) => o.name)
+  if (unsourced.length > 0) {
+    throw new Error(`generator refused: REQUIRED obligations with NO source registration on either side: ${unsourced.join(', ')}`)
+  }
+  // (review-R1 m3) the U4-G1F-SUP-C dispositions seed is a CONSUMED input:
+  // every disposition row must map onto an artifact entry (named / dynamic
+  // class / surface), and every row must carry its reviewed disposition +
+  // a route or a precise missing item. No orphan dispositions, no silent
+  // orphans in the other direction (the 22 rows are exactly the U4-UNKNOWN
+  // set this generator projects).
+  {
+    const byName = new Map(obligations.map((o) => [o.name, o]))
+    const orphans = []
+    for (const d of dispositions.dispositions) {
+      const direct = byName.get(d.name)
+      const isSurface = typeof d.name === 'string' && d.name.startsWith('surface:')
+      const isDynamic = typeof d.name === 'string' && d.name.includes('dynamic')
+      const mapped = direct !== undefined
+        || (isSurface && obligations.some((o) => o.kind === 'surface'))
+        || (isDynamic && obligations.some((o) => o.kind === 'dynamic-class'))
+      if (!mapped) orphans.push(d.name)
+      if (typeof d.disposition !== 'string' || d.disposition === '') orphans.push(`${d.name} (no disposition)`)
+      const routed = (d.route != null && String(JSON.stringify(d.route)).length > 2) || typeof d.precise_missing_item === 'string'
+      if (!routed) orphans.push(`${d.name} (no route and no precise_missing_item)`)
+    }
+    if (orphans.length > 0) throw new Error(`generator refused: dispositions seed does not map onto the artifact: ${orphans.join('; ')}`)
+    const dispositioned = new Set(dispositions.dispositions.map((d) => d.name))
+    for (const o of obligations) {
+      if (o.kind !== 'named' || o.obligation !== 'REQUIRED') continue
+      const seedEntry = seedByName.get(o.name)
+      if (seedEntry != null && seedEntry.u4_status === 'UNKNOWN' && !dispositioned.has(o.name)) {
+        throw new Error(`generator refused: REQUIRED obligation ${o.name} carried U4 status UNKNOWN but has no disposition row`)
+      }
+    }
+  }
+
   const counts = {
     entries: obligations.length,
     required: obligations.filter((o) => o.obligation === 'REQUIRED').length,
@@ -223,6 +268,7 @@ function main() {
       backlog_sha256: sha256File(BACKLOG),
       source_census_seed: 'sources/u1c-static-source-census.seed.json',
       source_census_seed_sha256: sha256File(SEED_SOURCES),
+      unknown_dispositions_seed_sha256: sha256File(SEED_DISPOSITIONS),
     },
     counts,
     obligations,
@@ -235,6 +281,7 @@ function main() {
     inputs: {
       source_census_seed: 'sources/u1c-static-source-census.seed.json',
       source_census_seed_sha256: sha256File(SEED_SOURCES),
+      unknown_dispositions_seed_sha256: sha256File(SEED_DISPOSITIONS),
     },
     note: 'Static source authority (U1-C): where each name is REGISTERED in the pinned Host / Team sources, per file:line. This is the third side of the EB2-A three-way diff; a runtime observation with no entry here (and no reviewed obligation) is UNKNOWN, never authorized.',
     static_sources: {

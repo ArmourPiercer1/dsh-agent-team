@@ -5,6 +5,7 @@ export interface InventoryToolRow {
   identity_vs_global: string
   change_seq: number | null
   source_class?: string
+  provider_identity?: 'NOT_OBSERVABLE' | string
   unresolved?: boolean
 }
 export interface InventoryScope {

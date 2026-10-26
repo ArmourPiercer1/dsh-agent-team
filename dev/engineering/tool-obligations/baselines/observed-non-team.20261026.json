@@ -3,9 +3,9 @@
   "world": {
     "kind": "non-team",
     "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
-    "boot_id": "u5u7c2a-20261026T10-47-58Z/boot-1",
-    "world_id": "u5u7c2a-20261026T10-47-58Z",
-    "captured_utc": "2026-10-26T10:48:00.936Z",
+    "boot_id": "u5u7c3a-20261026T12-42-24Z/boot-1",
+    "world_id": "u5u7c3a-20261026T12-42-24Z",
+    "captured_utc": "2026-10-26T12:42:27.648Z",
     "source_ledger": "u7c-census-ledger.jsonl"
   },
   "scopes": [
@@ -22,7 +22,8 @@
           "schema_digest": "sha256:f55729a6e152a6cf8330652daf15427109324dbe9a2762a1b5f3287d9134446d",
           "identity_vs_global": "same",
           "change_seq": 0,
-          "source_class": "test-row"
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "u7_census",
@@ -30,7 +31,8 @@
           "schema_digest": "sha256:1b53a9f0a48a6441e821c85b2b5c7c077d012cd27e824a95b74a5256e7df5ffc",
           "identity_vs_global": "same",
           "change_seq": 0,
-          "source_class": "test-row"
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
         }
       ]
     },
@@ -39,7 +41,7 @@
       "kind": "agent",
       "team_lane": false,
       "team_lane_signal": "none",
-      "agent_label": "session-792819b8-76b7-4c71-8254-26351063b46e",
+      "agent_label": "session-4144e97e-4612-4d80-988e-3f54439cb142",
       "tools": [
         {
           "name": "ask_user_question",
@@ -47,7 +49,8 @@
           "schema_digest": "sha256:9b62fd2c59a6f7cc680a366c3889582c60c4b14205c4c1fae53e315ddda56597",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "bash",
@@ -55,7 +58,8 @@
           "schema_digest": "sha256:c2015b2ff7cc53f0f18116399f816ea89e61c3a7234e080b79de9fcdc8295d49",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "create_goal",
@@ -63,7 +67,8 @@
           "schema_digest": "sha256:004534c54fcbb05b1311402b84bc1edad35fd4eb4da0e4a60de1de8c6257d58a",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "edit",
@@ -71,7 +76,8 @@
           "schema_digest": "sha256:4aa71d9e0b3d31ff49fd70feb957ec355ec0b19b262688f234f2784b3dc470fd",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "exit_plan_mode",
@@ -79,7 +85,8 @@
           "schema_digest": "sha256:f31f0fb76fc24cb4a1baf79041adbbc3949cd398a2331d431ff1ae54a6f77522",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "get_goal",
@@ -87,7 +94,8 @@
           "schema_digest": "sha256:3ac47ac5e0d4e17f1eccd80856aa6ea520e308fb9fb947737ce37098293382ee",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "glob",
@@ -95,7 +103,8 @@
           "schema_digest": "sha256:01b6911f228c83dbe1cac0654c563618c8625ed8898f4c15d30468e13e030597",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "grep",
@@ -103,7 +112,8 @@
           "schema_digest": "sha256:951bc9a8102e7ebce50a8ab478052395f24187f9f8aa39f07e0bf23ae8cef76f",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "interrupt_agent",
@@ -111,7 +121,8 @@
           "schema_digest": "sha256:4348357a62dd5e9eb5571ab000345dc7e03d00893a31e6c6bb21160bc957a6bb",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "job_kill",
@@ -119,7 +130,8 @@
           "schema_digest": "sha256:1a48f0f0ed4f015ab88ce14d5a73344c25ba1a5613c0d0997537cf7843b15644",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "job_list",
@@ -127,7 +139,8 @@
           "schema_digest": "sha256:e5e22d75d2c3e6f06d1629344fae2491c288ca3ac0b3ac4c579a8f8a3546b906",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "job_output",
@@ -135,7 +148,8 @@
           "schema_digest": "sha256:6c9780e150958c98934b35991880750e2edb96a6c3ad1342c4894e0aa99c34a5",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "list_agents",
@@ -143,7 +157,8 @@
           "schema_digest": "sha256:7f1a645283684fc8a5f023c26b06ca9467f03d343176908a0e1c7d98eae4b200",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "present",
@@ -151,7 +166,8 @@
           "schema_digest": "sha256:5d7490b4d362bef043bd31a84b40c0ef9fd5a642d1d93c9bdc5f8bbd94a0d4f1",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "read",
@@ -159,7 +175,8 @@
           "schema_digest": "sha256:e78669ad194d9194caf76192b167c554eb86f2993c825f30ac75875b87772c41",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "read_image",
@@ -167,7 +184,8 @@
           "schema_digest": "sha256:32fe93c72c518ccfc130dc10a0c5ec131d4bb6f65c8f6e35b7babb3fd9af3317",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "send_message",
@@ -175,7 +193,8 @@
           "schema_digest": "sha256:0b263c8682b7f0e4d61e4bb37f495d062015d2ab1028bf97174fa68581a0487c",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "skill",
@@ -183,7 +202,8 @@
           "schema_digest": "sha256:485ffc7f010813e7d910dfd6ec68fef9f5e04decef9217f5c71011ab365d65e4",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "subagent",
@@ -191,7 +211,8 @@
           "schema_digest": "sha256:0ebb1cbd0ee8cfa1f6555a922880b71d12167f48f9094954e914fa310f5829be",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "subagent_fork",
@@ -199,7 +220,8 @@
           "schema_digest": "sha256:cbed2766b9d414ceae3d3230aa897a1620072779f1af6a6c4f88db3737e320b6",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "todo_write",
@@ -207,7 +229,8 @@
           "schema_digest": "sha256:9eca6cb0278726a129cd34d50c419e240654f4117128164732bc1c5000b485cf",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "u5_canary",
@@ -215,7 +238,8 @@
           "schema_digest": "sha256:f55729a6e152a6cf8330652daf15427109324dbe9a2762a1b5f3287d9134446d",
           "identity_vs_global": "same",
           "change_seq": 0,
-          "source_class": "test-row"
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "u7_census",
@@ -223,7 +247,8 @@
           "schema_digest": "sha256:1b53a9f0a48a6441e821c85b2b5c7c077d012cd27e824a95b74a5256e7df5ffc",
           "identity_vs_global": "same",
           "change_seq": 0,
-          "source_class": "test-row"
+          "source_class": "test-row",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "update_goal",
@@ -231,7 +256,8 @@
           "schema_digest": "sha256:8db3b7254e1327d2cf5d14ab9ad19b59bb6dbe762d90582a5cc558fdca964ddb",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "web_fetch",
@@ -239,7 +265,8 @@
           "schema_digest": "sha256:4062bbcaef57f7da607abb65105c1986217615dda7102d34abb2729b7c4a63c9",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "web_search",
@@ -247,7 +274,8 @@
           "schema_digest": "sha256:7cc2c730d53095db503bab18c38c9704008e4fbcfbe612b30ea0680676206c5f",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "workflow",
@@ -255,7 +283,8 @@
           "schema_digest": "sha256:359f40f6463a65aa33b25720d6f77c3282947d6c6c19706139d1f5fae6299e85",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         },
         {
           "name": "write",
@@ -263,11 +292,12 @@
           "schema_digest": "sha256:bc1c3f0a7bf6a4d83509fa4bc6559f2b456a217491ac3b7b82e03949c3f910e5",
           "identity_vs_global": "n/a",
           "change_seq": null,
-          "source_class": "host-static"
+          "source_class": "host-static",
+          "provider_identity": "NOT_OBSERVABLE"
         }
       ]
     }
   ],
-  "snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
-  "full_digest": "sha256:8f038f4bea0c99ed5c993023b9e2368520ef76d8d0379a2b116de0337405952b"
+  "snapshot_digest": "sha256:c4e7da01fa1fa60633bdf6dcbf1c6e07ad184e40fd4adbf81c4869cf5634bf47",
+  "full_digest": "sha256:0e6e16011c940b0649a4aaeb78b248fe1a9f987405a5ba63318b7114bbb9f56f"
 }

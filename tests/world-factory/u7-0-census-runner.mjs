@@ -25,6 +25,7 @@
  *
  * @module tests/world-factory/u7-0-census-runner
  */
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -123,7 +124,9 @@ async function runCensus(opts) {
     selectedCases: ['c2-non-team', 'c2-governed-team', 'reconcile', 'leak-check', 'stable-instance-unchanged'],
     ledgerPath: budgetLedger ?? join(evRoot, `${runId}.host-starts.jsonl`),
     bindings: {
-      teamSha: process.env.U7C_TEAM_SHA ?? '',
+      // m4 (review-R1): source identity of THIS repo at run time (U7-PLAN
+      // exit evidence wants the source digest, not an empty field).
+      teamSha: process.env.U7C_TEAM_SHA ?? execFileSync('git', ['rev-parse', 'HEAD'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim(),
       hostSha: TEST_USE_BASELINE_SHA,
       hostTree: factory.hostTree,
       leaseRoot: factory.leaseRoot,
@@ -238,13 +241,43 @@ async function runCensus(opts) {
       // cross-boot baseline leg: boot2 vs boot1 — same host pin, different
       // boots: shape/source columns must stand; per-boot columns excluded.
       verdicts.teamVsNonTeam = reconcileWorld({ repoRoot: REPO_ROOT, observed: inventories.team, baseline: inventories.nonTeam })
-      record.addCase('reconcile', 'PASS', {
+      // M4 (review-R1): the reconcile case ASSERTS, it does not merely
+      // record. The reviewed expectation sets below are the disclosed live
+      // facts of this census (profile-gated host rows; blueprint-limited
+      // leader grants; reviewed scope-mismatches) — the gate goes RED when
+      // the live world drifts away from them, which is the point.
+      const REVIEWED = {
+        missingNonTeam: ['cordis_inspect_list', 'cordis_inspect_query', 'list_mcp_resource_templates', 'list_mcp_resources', 'list_subagent_models', 'lsp', 'plugin_manager', 'pwsh', 'read_mcp_resource', 'run_code', 'str_replace_editor'],
+        missingTeam: ['cordis_inspect_list', 'cordis_inspect_query', 'list_mcp_resource_templates', 'list_mcp_resources', 'list_subagent_models', 'lsp', 'plugin_manager', 'pwsh', 'read_mcp_resource', 'run_code', 'str_replace_editor', 'team_archive_member', 'team_collect', 'team_delegate', 'team_follow_up', 'team_grant_permission', 'team_inspect_config', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_request_control', 'team_resolve_control', 'team_revoke_permission', 'team_send_message'],
+        unknownNonTeam: ['u5_canary', 'u7_census'],
+        // edit/write/read_image: native REQUIRED observed on the governed
+        // leader lane while the reviewed seeds say NO Team arm — reported
+        // scope-mismatch (M3), reviewed & disclosed, never authorized.
+        unknownTeam: ['edit', 'read_image', 'u5_canary', 'u7_census', 'write'],
+      }
+      const problems = []
+      if (!inventories.team.scopes.some((s) => s.team_lane === true)) problems.push('governed-team inventory carries NO team_lane scope')
+      if (!inventories.nonTeam.scopes.some((s) => s.kind === 'agent')) problems.push('non-team inventory carries NO agent scope')
+      const eq = (xs, ys) => [...xs].sort().join(',') === [...ys].sort().join(',')
+      if (!eq(verdicts.nonTeam.missing.map((m) => m.name), REVIEWED.missingNonTeam)) problems.push('non-team MISSING set differs from the reviewed set')
+      if (!eq(verdicts.team.missing.map((m) => m.name), REVIEWED.missingTeam)) problems.push('team MISSING set differs from the reviewed set')
+      if (!eq(verdicts.nonTeam.unknown.map((u) => u.name), REVIEWED.unknownNonTeam)) problems.push('non-team UNKNOWN set differs from the reviewed set')
+      if (!eq(verdicts.team.unknown.map((u) => u.name), REVIEWED.unknownTeam)) problems.push('team UNKNOWN set differs from the reviewed set')
+      for (const [k, v] of Object.entries({ nonTeam: verdicts.nonTeam, team: verdicts.team })) {
+        if (v.counts.source_findings !== 0) problems.push(`${k}: source_findings must be 0 against the tracked pair (got ${v.counts.source_findings})`)
+        if (v.drift.length !== 0) problems.push(`${k}: self-referenced leg must be drift-free (got ${v.drift.length})`)
+        for (const u of v.unknown) if (u.authorized !== false) problems.push(`${k}: UNKNOWN row ${String(u.name)} without authorized:false`)
+      }
+      const perBoot = verdicts.teamVsNonTeam.drift.filter((d) => d.kind === 'definition-identity' || d.kind === 'revision')
+      if (perBoot.length > 0) problems.push(`cross-boot leg carries per-boot drift kinds (${perBoot.length})`)
+      record.addCase('reconcile', problems.length === 0 ? 'PASS' : 'FAIL', {
+        problems,
         nonTeam: verdicts.nonTeam.counts, team: verdicts.team.counts,
         nonTeam_snapshot_digest: inventories.nonTeam.snapshot_digest,
         team_snapshot_digest: inventories.team.snapshot_digest,
         nonTeam_verdict_digest: verdicts.nonTeam.verdict_digest,
         team_verdict_digest: verdicts.team.verdict_digest,
-        crossBootDrift: verdicts.teamVsNonTeam.counts.drift,
+        crossBoot: { drift: verdicts.teamVsNonTeam.counts.drift, kinds: [...new Set(verdicts.teamVsNonTeam.drift.map((d) => String(d.kind)))] },
       })
     } catch (error) {
       record.addCase('reconcile', 'FAIL', { error: String(error?.message ?? error).slice(0, 400) })

@@ -1,20 +1,20 @@
 {
   "schema": "u7-0/baselines-manifest/v1",
-  "meaning": "Pinned C2 live observations (RUN 2026-10-26T10-47-58-816Z, overall PASS 5/5, 2 host starts on this ledger). snapshot_digest is the fixed digest (cross-boot-stable facts ONLY); the non-team inventory reproduced the SAME snapshot_digest in the earlier 10-41 run, proving stability across real boots.",
-  "run": "u7-0-census-2026-10-26T10-47-58-816Z",
-  "prior_run_disclosure": "u7-0-census-2026-10-26T10-41-16-540Z (overall FAIL 1: governed-team leg died at the alpha2 coverage gate over the row tools on the leader surface + a harness boot-id pairing bug; both fixed harness-side — see dev/agent-workflow/evidence/u7-0-census-20261026/README.md)",
+  "meaning": "Pinned C2 live observations (RUN 2026-10-26T12-42-24-521Z, overall PASS 5/5, 2 host starts on this ledger — the review-R1 reviewer-granted +2 boots, declared in dev/agent-workflow/evidence/u7-0-census-20261026/README.md). This RUN replays under the review-R1 digest law (scope_id + source_class digest-eligible; rows stamp provider_identity: NOT_OBSERVABLE). Cross-boot snapshot stability was live-proven by the earlier RUN-1/RUN-2 pair (byte-identical non-team snapshot digest across independent boots); this pinned set supersedes those files in place (same filenames, new law).",
+  "run": "u7-0-census-2026-10-26T12-42-24-521Z",
+  "prior_run_disclosure": "RUNs 2026-10-26T10-41-16-540Z (FAIL 1, harness-side fixes; see evidence README RUN ledger) and 2026-10-26T10-47-58-816Z (the pre-review pinned set, recorded under the narrower digest law).",
   "host_pin": {
     "version": "0.2.0-rc.2",
     "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
   },
   "files": {
-    "RUN.20261026.json": "sha256:38cc02f9ac2ca5677161bd24159515a3fcbf963b188a2d318cdbc8cfd9f87fdf",
-    "observed-governed-team.20261026.json": "sha256:92c558751a1275a96bfaa54468c2a3de7e3a09ff6aee41630746b42576b2a07b",
-    "observed-non-team.20261026.json": "sha256:10c24ae0c1de39cd6b635ad8a22e1bdd904975f65bd25c0afe15e8a11a2e1799",
-    "reconcile.20261026.json": "sha256:e34b35f778158bcbb27718952d0066ba3a0d51799a67de71cd104273ee100af5"
+    "RUN.20261026.json": "sha256:d22b0b44e9edc5a38a23472f3e16e772ee4e2d31588f100b0ac1eff4adee4551",
+    "observed-governed-team.20261026.json": "sha256:33d3eed4b76f3ce7431debc032b41fd5b30f04abd6bfe12e77f7bb9a408f58b9",
+    "observed-non-team.20261026.json": "sha256:0a5b4a7589a91c81d1f5464f5612cb541d183b7b5f78cc6ba27f6ee426bb1b9f",
+    "reconcile.20261026.json": "sha256:912b2df2eb1202435616534399c7a599d677761f6e519aa0661c1c29228f89cf"
   },
   "digests": {
-    "non_team_snapshot": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
-    "governed_team_snapshot": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708"
+    "non_team_snapshot": "sha256:c4e7da01fa1fa60633bdf6dcbf1c6e07ad184e40fd4adbf81c4869cf5634bf47",
+    "governed_team_snapshot": "sha256:320f81fa3e5be8c31ab0235fb346c21c7158b98c06f1bbfc9c3c47d592a7a30f"
   }
 }

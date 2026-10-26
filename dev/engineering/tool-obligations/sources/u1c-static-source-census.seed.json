@@ -635,7 +635,7 @@
   ]
  },
  "team": {
-  "pin": ".worktrees/u1-audit-master @ 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (read-only)",
+  "pin": "team tree at commit 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (reachable from this branch\u2019s history; observed read-only via the U1-C audit checkout)",
   "note": "createTeamTools set + DEFAULT_PLANE_NAMES + DORMANT a5p5 lane + MCP binding rule; lines re-verified",
   "tools": [
    {

@@ -7,7 +7,8 @@
  },
  "inputs": {
   "source_census_seed": "sources/u1c-static-source-census.seed.json",
-  "source_census_seed_sha256": "sha256:f0ca920c91ca4a17eed3d1b48d804552fe1cf203b72280004cb3891f22400dc0"
+  "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
+  "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"
  },
  "note": "Static source authority (U1-C): where each name is REGISTERED in the pinned Host / Team sources, per file:line. This is the third side of the EB2-A three-way diff; a runtime observation with no entry here (and no reviewed obligation) is UNKNOWN, never authorized.",
  "static_sources": {
@@ -743,7 +744,7 @@
   ]
  },
  "host_pin_provenance": "tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84 (git describe: dsh-v0.2.0-rc.2)",
- "team_pin_provenance": ".worktrees/u1-audit-master @ 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (read-only)",
+ "team_pin_provenance": "team tree at commit 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (reachable from this branch’s history; observed read-only via the U1-C audit checkout)",
  "dynamic_source_classes": [
   {
    "class": "mcp__<server>__<tool>",

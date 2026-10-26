@@ -244,6 +244,11 @@ export function pickSnapshot(rows, preferTag, { requiresTeamLane = false } = {})
     const lanes = snaps.filter(hasLane)
     if (lanes.length > 0) return lanes[lanes.length - 1]
   }
+  if (requiresTeamLane) {
+    // Review-R1 M4: a team-world snapshot WITHOUT a team lane is NOT the
+    // team-world fact — throw, never silently fall back to a lane-less row.
+    throw new Error(`no census-snapshot row carries a team lane (prefer ${preferTag}) — the governed-team leg has no observation to stand on`)
+  }
   const tagged = snaps.filter((r) => r.tag === preferTag)
   const chosen = tagged.length > 0 ? tagged : snaps
   return chosen.length > 0 ? chosen[chosen.length - 1] : null
@@ -298,6 +303,10 @@ export function buildInventoryFromLedger({ ledgerPath, kind, hostSha, worldId, b
             identity_vs_global: ['same', 'differs', 'n/a'].includes(t.identity_vs_global) ? t.identity_vs_global : 'n/a',
             change_seq: Number.isInteger(t.change_seq) ? t.change_seq : null,
             source_class: attribution(String(t.name)),
+            // EB2-A provider column (explicit, never silently omitted): the
+            // public seam exposes no registrant — NOT_OBSERVABLE; provider
+            // truth is the AuthoritativeToolSources side.
+            provider_identity: typeof t.provider_identity === 'string' ? t.provider_identity : 'NOT_OBSERVABLE',
           })),
       }
     }),

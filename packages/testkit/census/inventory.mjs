@@ -32,6 +32,7 @@ export function digestEligibleView(inventory) {
     world_kind: inventory.world.kind,
     host_sha: inventory.world.host_sha,
     scopes: inventory.scopes.map((s) => ({
+      scope_id: s.scope_id,
       kind: s.kind,
       team_lane: s.team_lane === true,
       tools: [...s.tools]
@@ -40,10 +41,11 @@ export function digestEligibleView(inventory) {
           name: t.name,
           schema_digest: t.schema_digest,
           identity_vs_global: t.identity_vs_global,
+          source_class: typeof t.source_class === 'string' ? t.source_class : 'unattributed',
         })),
     })).sort((a, b) => {
-      const ka = `${a.kind}|${String(a.team_lane)}|${a.tools.map((t) => t.name).join(',')}`
-      const kb = `${b.kind}|${String(b.team_lane)}|${b.tools.map((t) => t.name).join(',')}`
+      const ka = `${a.scope_id}|${a.kind}|${String(a.team_lane)}|${a.tools.map((t) => t.name).join(',')}`
+      const kb = `${b.scope_id}|${b.kind}|${String(b.team_lane)}|${b.tools.map((t) => t.name).join(',')}`
       return ka < kb ? -1 : ka > kb ? 1 : 0
     }),
   }
@@ -80,6 +82,7 @@ export function inventoryViolations(inv) {
       if (t?.definition_identity !== null && typeof t?.definition_identity !== 'string') bad.push(`scope ${String(s?.scope_id)} tool ${String(t?.name)}: definition_identity must be string|null`)
       if (!['same', 'differs', 'n/a'].includes(t?.identity_vs_global)) bad.push(`scope ${String(s?.scope_id)} tool ${String(t?.name)}: identity_vs_global must be same|differs|n/a`)
       if (t?.change_seq !== null && !Number.isInteger(t?.change_seq)) bad.push(`scope ${String(s?.scope_id)} tool ${String(t?.name)}: change_seq must be int|null`)
+      if (t?.provider_identity !== undefined && typeof t.provider_identity !== 'string') bad.push(`scope ${String(s?.scope_id)} tool ${String(t?.name)}: provider_identity must be a string when present (NOT_OBSERVABLE is the honest public-seam value)`)
     }
   }
   return bad

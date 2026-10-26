@@ -1,14 +1,14 @@
 {
  "schema": "u7-0/tool-obligations-manifest/v1",
  "artifacts": {
-  "expected-tool-obligations.v1.json": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
-  "authoritative-tool-sources.v1.json": "sha256:1307ba20caa9d5fc9bcd06e8cd6388938cf79abe0589cc3b58dae2b4a439e306"
+  "expected-tool-obligations.v1.json": "sha256:536a358c36667eba476885725e6870b6a2872443548804125af27424e1d481e2",
+  "authoritative-tool-sources.v1.json": "sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c"
  },
  "generator": "build-expected-tool-obligations.mjs",
- "generator_sha256": "sha256:5b3ad6fc8ad7cbdaee61d4c896f7f53e0e745c350b6b36b7ae8b014433c6018b",
+ "generator_sha256": "sha256:670aea425bef40e8ddac7635f16dede80598b5905ab46cfda4e273ddee2e8876",
  "schemas": {
-  "expected-tool-obligations.schema.json": "sha256:833b7d8b6b39921bdcb29a3a7b6ec24344554e339952d6cd29e4f6ff5a408fa5",
-  "authoritative-tool-sources.schema.json": "sha256:1a948e28f7ae7da2bbfe06d522404b99de6f9d55f6557635cd403dcae3b5ddfc"
+  "expected-tool-obligations.schema.json": "sha256:f32a2dc8d4196246f80253cd54727082ffef242e19dc96b75a9b86465a81fbeb",
+  "authoritative-tool-sources.schema.json": "sha256:3035eb11f7b789da5b93a8c6665211c7e38c2951ce634136b86ad1fa48308107"
  },
  "input_digests": {
   "reviewed_seed": "sources/u4-reviewed-obligations.seed.json",
@@ -18,7 +18,8 @@
   "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
   "backlog_sha256": "sha256:cd296c623b4d707d7d710248b833336adc42c5b0967fd9caa3de47ee7b132387",
   "source_census_seed": "sources/u1c-static-source-census.seed.json",
-  "source_census_seed_sha256": "sha256:f0ca920c91ca4a17eed3d1b48d804552fe1cf203b72280004cb3891f22400dc0"
+  "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
+  "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"
  },
  "determinism": "no timestamps, no environment values, canonical key order; replay over the same tree is byte-identical (--check enforces)"
 }

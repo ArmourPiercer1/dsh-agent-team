@@ -135,7 +135,7 @@ function snapshotScope(tools, scopeId, kind, scopeArg) {
     if (def === null || def === undefined) {
       // visible in the projection but the public read resolves nothing:
       // recorded verbatim (it is itself a census fact), never dropped.
-      toolsOut.push({ name, definition_identity: null, schema_digest: `sha256:${'0'.repeat(64)}`, identity_vs_global: 'n/a', change_seq: globalFirstSeenSeq.get(name) ?? null, unresolved: true })
+      toolsOut.push({ name, definition_identity: null, schema_digest: `sha256:${'0'.repeat(64)}`, identity_vs_global: 'n/a', change_seq: globalFirstSeenSeq.get(name) ?? null, provider_identity: 'NOT_OBSERVABLE', unresolved: true })
       continue
     }
     const identity = td?.definitionIdentityOf?.(def) ?? null
@@ -152,6 +152,7 @@ function snapshotScope(tools, scopeId, kind, scopeArg) {
       schema_digest: shapeDigest,
       identity_vs_global: 'n/a', // filled after the global pass
       change_seq: globalFirstSeenSeq.get(name) ?? null,
+      provider_identity: 'NOT_OBSERVABLE', // EB2-A column: no public seam exposes the registrant
     })
   }
   return { scope_id: scopeId, kind, agent_label: scopeArg === undefined ? 'row/global' : safeLabel(() => scopeArg?.id ?? scopeArg?.session?.header?.id), tools: toolsOut }

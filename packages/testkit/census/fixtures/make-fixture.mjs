@@ -55,6 +55,9 @@ const mk = (name) => ({
   identity_vs_global: 'same',
   change_seq: seq % 7 === 0 ? null : seq,
   source_class: testRows.has(name) ? 'test-row' : 'host-static',
+  // EB2-A provider column: the public seam exposes no registrant at all;
+  // the honest stamp is the constant NOT_OBSERVABLE (schema: seam evidence).
+  provider_identity: 'NOT_OBSERVABLE',
 })
 const globalTools = [...observedNames, ...[...testRows]].sort().map(mk)
 // one agent lane (a real session agent mirrors the global row set with the

@@ -1,14 +1,16 @@
 {
   "nonTeam": {
-    "schema": "u7-0/census-reconcile/v1",
+    "schema": "u7-0/census-reconcile/v2",
     "inputs": {
-      "expected_digest": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
-      "observed_snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+      "expected_digest": "sha256:536a358c36667eba476885725e6870b6a2872443548804125af27424e1d481e2",
+      "sources_digest": "sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c",
+      "observed_snapshot_digest": "sha256:c4e7da01fa1fa60633bdf6dcbf1c6e07ad184e40fd4adbf81c4869cf5634bf47",
       "baseline_snapshot_digest": null,
       "scope_classes_observed": {
         "native": true,
         "teamLane": false
-      }
+      },
+      "same_boot": false
     },
     "missing": [
       {
@@ -140,97 +142,98 @@
       }
     ],
     "out_of_scope_observed": [],
+    "source_findings": [],
     "drift": [],
     "scope_gaps": [
       {
         "name": "team_archive_member",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_bash",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_collect",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_create_member",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_delegate",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_follow_up",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_glob",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_grant_permission",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_grep",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_inspect_config",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_list_members",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_list_pending_control",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_list_templates",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_report_progress",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_request_control",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_resolve_control",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_revoke_permission",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       },
       {
         "name": "team_send_message",
         "expected_in": "team-lane",
-        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+        "reason": "scope class \"team\" not observed in this snapshot (not MISSING, not OK)"
       }
     ],
     "notes": [
@@ -255,25 +258,179 @@
         "detail": "family obligation with no enumerable names; the census never name-matches it (U4 reviewed)"
       }
     ],
+    "trusted_config": {
+      "law": "additions/removals/gaps name, per direction, where the observed world differs from the tracked trusted configuration (expected obligations + authoritative sources)",
+      "provider": {
+        "observed_identity": "NOT_OBSERVABLE",
+        "reason": "no public plugin seam exposes the registrant: register(definition) takes no source parameter, schemas() whitelists name/description/parameters (+outputSchema), and tools/change is payload-less — seam evidence: HTU packages/core/tools/lib/types/index.d.ts (register :636, schemas whitelist :154) plus the live probe (tools/change carries no body). The PROVIDER truth is the trusted side: every AuthoritativeToolSources row names its package/file/line.",
+        "trusted_side": "authoritative-tool-sources"
+      },
+      "binding_identity": "per-(scope_id, name) placement algebra: the object ctx.tools.get(name, scope) returns, identified via definitionIdentityOf (WeakMap, per-boot); identity_vs_global is the binding-provenance signal against the global layer",
+      "scope_identity": "scope_id + kind + team_lane; scope_id is digest-eligible (renaming a lane moves the snapshot digest)",
+      "additions": [
+        {
+          "name": "u5_canary",
+          "scope_ids": [
+            "agent-1",
+            "global"
+          ],
+          "classification": "test-row",
+          "authorized": false
+        },
+        {
+          "name": "u7_census",
+          "scope_ids": [
+            "agent-1",
+            "global"
+          ],
+          "classification": "test-row",
+          "authorized": false
+        }
+      ],
+      "removals": [
+        {
+          "name": "cordis_inspect_list",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "cordis_inspect_query",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_mcp_resource_templates",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_mcp_resources",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_subagent_models",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "lsp",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "plugin_manager",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "pwsh",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "read_mcp_resource",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "run_code",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "str_replace_editor",
+          "expected_in": "native-scope"
+        }
+      ],
+      "gaps": [
+        {
+          "name": "team_archive_member",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_bash",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_collect",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_create_member",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_delegate",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_follow_up",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_glob",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_grant_permission",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_grep",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_inspect_config",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_members",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_pending_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_templates",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_report_progress",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_request_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_resolve_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_revoke_permission",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_send_message",
+          "expected_in": "team-lane"
+        }
+      ],
+      "unreachable_on_live_rows": "rows recorded with identity_vs_global:\"n/a\" and change_seq:null (every PRODUCT row of the current live snapshots — the global row-layer view mounts only the row tools) make placement-identity-signal and revision drift UNREACHABLE on live data; takeover distinction there is name-based only. Disclosed, not implied coverage."
+    },
     "counts": {
       "missing": 11,
       "unknown": 2,
       "out_of_scope_observed": 0,
+      "source_findings": 0,
       "drift": 0,
       "scope_gaps": 18
     },
-    "verdict_digest": "sha256:58fd7e88436aa86fe689614e3eae777d5d2d245dbb5054d1c8eeb62269f37888"
+    "verdict_digest": "sha256:a890ced2bbb33448b33757d346857e17957a3f544f669742182a1b9c94b7035c"
   },
   "team": {
-    "schema": "u7-0/census-reconcile/v1",
+    "schema": "u7-0/census-reconcile/v2",
     "inputs": {
-      "expected_digest": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
-      "observed_snapshot_digest": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708",
+      "expected_digest": "sha256:536a358c36667eba476885725e6870b6a2872443548804125af27424e1d481e2",
+      "sources_digest": "sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c",
+      "observed_snapshot_digest": "sha256:320f81fa3e5be8c31ab0235fb346c21c7158b98c06f1bbfc9c3c47d592a7a30f",
       "baseline_snapshot_digest": null,
       "scope_classes_observed": {
         "native": true,
         "teamLane": true
-      }
+      },
+      "same_boot": false
     },
     "missing": [
       {
@@ -495,6 +652,38 @@
     ],
     "unknown": [
       {
+        "name": "edit",
+        "scope_ids": [
+          "agent-1"
+        ],
+        "scope_classes": [
+          "team"
+        ],
+        "expected_in": "native-scope",
+        "source_class": "host-static",
+        "classification": "scope-mismatch",
+        "in_authoritative_sources": true,
+        "team_lane_variant_expected": false,
+        "authorized": false,
+        "reason": "known obligation (native-scope) observed in scope class(es) it was never reviewed for — capability expansion is auto-UNKNOWN, never auto-authorized"
+      },
+      {
+        "name": "read_image",
+        "scope_ids": [
+          "agent-1"
+        ],
+        "scope_classes": [
+          "team"
+        ],
+        "expected_in": "native-scope",
+        "source_class": "host-static",
+        "classification": "scope-mismatch",
+        "in_authoritative_sources": true,
+        "team_lane_variant_expected": false,
+        "authorized": false,
+        "reason": "known obligation (native-scope) observed in scope class(es) it was never reviewed for — capability expansion is auto-UNKNOWN, never auto-authorized"
+      },
+      {
         "name": "u5_canary",
         "scope_ids": [
           "agent-2",
@@ -519,9 +708,26 @@
         "in_authoritative_sources": false,
         "authorized": false,
         "reason": "test-only row tool (census/canary surface), never a product tool"
+      },
+      {
+        "name": "write",
+        "scope_ids": [
+          "agent-1"
+        ],
+        "scope_classes": [
+          "team"
+        ],
+        "expected_in": "native-scope",
+        "source_class": "host-static",
+        "classification": "scope-mismatch",
+        "in_authoritative_sources": true,
+        "team_lane_variant_expected": false,
+        "authorized": false,
+        "reason": "known obligation (native-scope) observed in scope class(es) it was never reviewed for — capability expansion is auto-UNKNOWN, never auto-authorized"
       }
     ],
     "out_of_scope_observed": [],
+    "source_findings": [],
     "drift": [],
     "scope_gaps": [],
     "notes": [
@@ -546,25 +752,182 @@
         "detail": "family obligation with no enumerable names; the census never name-matches it (U4 reviewed)"
       }
     ],
+    "trusted_config": {
+      "law": "additions/removals/gaps name, per direction, where the observed world differs from the tracked trusted configuration (expected obligations + authoritative sources)",
+      "provider": {
+        "observed_identity": "NOT_OBSERVABLE",
+        "reason": "no public plugin seam exposes the registrant: register(definition) takes no source parameter, schemas() whitelists name/description/parameters (+outputSchema), and tools/change is payload-less — seam evidence: HTU packages/core/tools/lib/types/index.d.ts (register :636, schemas whitelist :154) plus the live probe (tools/change carries no body). The PROVIDER truth is the trusted side: every AuthoritativeToolSources row names its package/file/line.",
+        "trusted_side": "authoritative-tool-sources"
+      },
+      "binding_identity": "per-(scope_id, name) placement algebra: the object ctx.tools.get(name, scope) returns, identified via definitionIdentityOf (WeakMap, per-boot); identity_vs_global is the binding-provenance signal against the global layer",
+      "scope_identity": "scope_id + kind + team_lane; scope_id is digest-eligible (renaming a lane moves the snapshot digest)",
+      "additions": [
+        {
+          "name": "edit",
+          "scope_ids": [
+            "agent-1"
+          ],
+          "classification": "scope-mismatch",
+          "authorized": false
+        },
+        {
+          "name": "read_image",
+          "scope_ids": [
+            "agent-1"
+          ],
+          "classification": "scope-mismatch",
+          "authorized": false
+        },
+        {
+          "name": "u5_canary",
+          "scope_ids": [
+            "agent-2",
+            "global"
+          ],
+          "classification": "test-row",
+          "authorized": false
+        },
+        {
+          "name": "u7_census",
+          "scope_ids": [
+            "agent-2",
+            "global"
+          ],
+          "classification": "test-row",
+          "authorized": false
+        },
+        {
+          "name": "write",
+          "scope_ids": [
+            "agent-1"
+          ],
+          "classification": "scope-mismatch",
+          "authorized": false
+        }
+      ],
+      "removals": [
+        {
+          "name": "cordis_inspect_list",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "cordis_inspect_query",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_mcp_resource_templates",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_mcp_resources",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_subagent_models",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "lsp",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "plugin_manager",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "pwsh",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "read_mcp_resource",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "run_code",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "str_replace_editor",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "team_archive_member",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_collect",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_delegate",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_follow_up",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_grant_permission",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_inspect_config",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_pending_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_templates",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_report_progress",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_request_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_resolve_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_revoke_permission",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_send_message",
+          "expected_in": "team-lane"
+        }
+      ],
+      "gaps": [],
+      "unreachable_on_live_rows": "rows recorded with identity_vs_global:\"n/a\" and change_seq:null (every PRODUCT row of the current live snapshots — the global row-layer view mounts only the row tools) make placement-identity-signal and revision drift UNREACHABLE on live data; takeover distinction there is name-based only. Disclosed, not implied coverage."
+    },
     "counts": {
       "missing": 24,
-      "unknown": 2,
+      "unknown": 5,
       "out_of_scope_observed": 0,
+      "source_findings": 0,
       "drift": 0,
       "scope_gaps": 0
     },
-    "verdict_digest": "sha256:972f170360e01e1651585e3b65e056ed4c0974f472771fbd26a0493a6c051e5f"
+    "verdict_digest": "sha256:e223456d4392b5785ad10a25a472287e45252c718e2894b38dcc1abfb6f59ada"
   },
   "teamVsNonTeam": {
-    "schema": "u7-0/census-reconcile/v1",
+    "schema": "u7-0/census-reconcile/v2",
     "inputs": {
-      "expected_digest": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
-      "observed_snapshot_digest": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708",
-      "baseline_snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+      "expected_digest": "sha256:536a358c36667eba476885725e6870b6a2872443548804125af27424e1d481e2",
+      "sources_digest": "sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c",
+      "observed_snapshot_digest": "sha256:320f81fa3e5be8c31ab0235fb346c21c7158b98c06f1bbfc9c3c47d592a7a30f",
+      "baseline_snapshot_digest": "sha256:c4e7da01fa1fa60633bdf6dcbf1c6e07ad184e40fd4adbf81c4869cf5634bf47",
       "scope_classes_observed": {
         "native": true,
         "teamLane": true
-      }
+      },
+      "same_boot": false
     },
     "missing": [
       {
@@ -786,6 +1149,38 @@
     ],
     "unknown": [
       {
+        "name": "edit",
+        "scope_ids": [
+          "agent-1"
+        ],
+        "scope_classes": [
+          "team"
+        ],
+        "expected_in": "native-scope",
+        "source_class": "host-static",
+        "classification": "scope-mismatch",
+        "in_authoritative_sources": true,
+        "team_lane_variant_expected": false,
+        "authorized": false,
+        "reason": "known obligation (native-scope) observed in scope class(es) it was never reviewed for — capability expansion is auto-UNKNOWN, never auto-authorized"
+      },
+      {
+        "name": "read_image",
+        "scope_ids": [
+          "agent-1"
+        ],
+        "scope_classes": [
+          "team"
+        ],
+        "expected_in": "native-scope",
+        "source_class": "host-static",
+        "classification": "scope-mismatch",
+        "in_authoritative_sources": true,
+        "team_lane_variant_expected": false,
+        "authorized": false,
+        "reason": "known obligation (native-scope) observed in scope class(es) it was never reviewed for — capability expansion is auto-UNKNOWN, never auto-authorized"
+      },
+      {
         "name": "u5_canary",
         "scope_ids": [
           "agent-2",
@@ -810,10 +1205,48 @@
         "in_authoritative_sources": false,
         "authorized": false,
         "reason": "test-only row tool (census/canary surface), never a product tool"
+      },
+      {
+        "name": "write",
+        "scope_ids": [
+          "agent-1"
+        ],
+        "scope_classes": [
+          "team"
+        ],
+        "expected_in": "native-scope",
+        "source_class": "host-static",
+        "classification": "scope-mismatch",
+        "in_authoritative_sources": true,
+        "team_lane_variant_expected": false,
+        "authorized": false,
+        "reason": "known obligation (native-scope) observed in scope class(es) it was never reviewed for — capability expansion is auto-UNKNOWN, never auto-authorized"
       }
     ],
     "out_of_scope_observed": [],
-    "drift": [],
+    "source_findings": [],
+    "drift": [
+      {
+        "name": "bash",
+        "scope_id": "agent-1",
+        "scope_class": "team",
+        "team_lane_variant_expected": true,
+        "kind": "definition-shape",
+        "baseline": "sha256:c2015b2ff7cc53f0f18116399f816ea89e61c3a7234e080b79de9fcdc8295d49",
+        "observed": "sha256:8aac4d24680befc55ca0394b081c3ca6ca81449b636f63354675aceb37d8cdb9",
+        "detail": "model-facing shape digest moved between the pinned baseline and this snapshot (the cross-boot Definition-replacement column; a Body replaced while the shape holds is invisible by THIS disclosed law)"
+      },
+      {
+        "name": "read",
+        "scope_id": "agent-1",
+        "scope_class": "team",
+        "team_lane_variant_expected": true,
+        "kind": "definition-shape",
+        "baseline": "sha256:e78669ad194d9194caf76192b167c554eb86f2993c825f30ac75875b87772c41",
+        "observed": "sha256:c878fb1a7c272272526099cc82ba2ab4386b9cc1970d8037b58c4df4a46e378c",
+        "detail": "model-facing shape digest moved between the pinned baseline and this snapshot (the cross-boot Definition-replacement column; a Body replaced while the shape holds is invisible by THIS disclosed law)"
+      }
+    ],
     "scope_gaps": [],
     "notes": [
       {
@@ -837,13 +1270,168 @@
         "detail": "family obligation with no enumerable names; the census never name-matches it (U4 reviewed)"
       }
     ],
+    "trusted_config": {
+      "law": "additions/removals/gaps name, per direction, where the observed world differs from the tracked trusted configuration (expected obligations + authoritative sources)",
+      "provider": {
+        "observed_identity": "NOT_OBSERVABLE",
+        "reason": "no public plugin seam exposes the registrant: register(definition) takes no source parameter, schemas() whitelists name/description/parameters (+outputSchema), and tools/change is payload-less — seam evidence: HTU packages/core/tools/lib/types/index.d.ts (register :636, schemas whitelist :154) plus the live probe (tools/change carries no body). The PROVIDER truth is the trusted side: every AuthoritativeToolSources row names its package/file/line.",
+        "trusted_side": "authoritative-tool-sources"
+      },
+      "binding_identity": "per-(scope_id, name) placement algebra: the object ctx.tools.get(name, scope) returns, identified via definitionIdentityOf (WeakMap, per-boot); identity_vs_global is the binding-provenance signal against the global layer",
+      "scope_identity": "scope_id + kind + team_lane; scope_id is digest-eligible (renaming a lane moves the snapshot digest)",
+      "additions": [
+        {
+          "name": "edit",
+          "scope_ids": [
+            "agent-1"
+          ],
+          "classification": "scope-mismatch",
+          "authorized": false
+        },
+        {
+          "name": "read_image",
+          "scope_ids": [
+            "agent-1"
+          ],
+          "classification": "scope-mismatch",
+          "authorized": false
+        },
+        {
+          "name": "u5_canary",
+          "scope_ids": [
+            "agent-2",
+            "global"
+          ],
+          "classification": "test-row",
+          "authorized": false
+        },
+        {
+          "name": "u7_census",
+          "scope_ids": [
+            "agent-2",
+            "global"
+          ],
+          "classification": "test-row",
+          "authorized": false
+        },
+        {
+          "name": "write",
+          "scope_ids": [
+            "agent-1"
+          ],
+          "classification": "scope-mismatch",
+          "authorized": false
+        }
+      ],
+      "removals": [
+        {
+          "name": "cordis_inspect_list",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "cordis_inspect_query",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_mcp_resource_templates",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_mcp_resources",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "list_subagent_models",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "lsp",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "plugin_manager",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "pwsh",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "read_mcp_resource",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "run_code",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "str_replace_editor",
+          "expected_in": "native-scope"
+        },
+        {
+          "name": "team_archive_member",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_collect",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_delegate",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_follow_up",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_grant_permission",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_inspect_config",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_pending_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_list_templates",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_report_progress",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_request_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_resolve_control",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_revoke_permission",
+          "expected_in": "team-lane"
+        },
+        {
+          "name": "team_send_message",
+          "expected_in": "team-lane"
+        }
+      ],
+      "gaps": [],
+      "unreachable_on_live_rows": "rows recorded with identity_vs_global:\"n/a\" and change_seq:null (every PRODUCT row of the current live snapshots — the global row-layer view mounts only the row tools) make placement-identity-signal and revision drift UNREACHABLE on live data; takeover distinction there is name-based only. Disclosed, not implied coverage."
+    },
     "counts": {
       "missing": 24,
-      "unknown": 2,
+      "unknown": 5,
       "out_of_scope_observed": 0,
-      "drift": 0,
+      "source_findings": 0,
+      "drift": 2,
       "scope_gaps": 0
     },
-    "verdict_digest": "sha256:23e1324867ee6516c7c1fac403a52306e5c64253f12526a85ed13ea30806e53b"
+    "verdict_digest": "sha256:780c727c6d0529ed8c7f51ff670b5c2c3f06f5ac626753d2590839c58a4bfb29"
   }
 }
