@@ -1,0 +1,37 @@
+# eb3-red-baseline head=19beb3e4d at=2026-10-26T13:39:07Z
+== baseline (no mutation): the existing gate must be green here
+  [baseline] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  OK   [baseline] existing gate green on the unmutated tree (precondition met)
+  [baseline] eb3: ci-required=0 trusted-sources=0 family-definitions=0 family-boundaries=0
+  OK   [baseline] EB3 enforcement green on the unmutated tree
+== M1 required CI job removed: delete the census-runtime job block
+  [M1] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M1] NOT DETECTED by the existing gate (every check exit 0)
+  [M1] eb3: ci-required=1 trusted-sources=0 family-definitions=0 family-boundaries=0
+  GREEN [M1] DETECTED by EB3 enforcement (non-zero above)
+== M1b REQUIRED layer job removed: delete the ci-full job block (exists from step 3 on)
+  [M1b] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M1b] NOT DETECTED by the existing gate (every check exit 0)
+  [M1b] eb3: ci-required=1 trusted-sources=0 family-definitions=0 family-boundaries=0
+  GREEN [M1b] DETECTED by EB3 enforcement (non-zero above)
+== M2 unknown MCP tool introduced into product source
+  [M2] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M2] NOT DETECTED by the existing gate (every check exit 0)
+  [M2] eb3: ci-required=0 trusted-sources=1 family-definitions=0 family-boundaries=0
+  GREEN [M2] DETECTED by EB3 enforcement (non-zero above)
+== M3a execution Definition replaced: via family-body -> named-bridge (search-family)
+  [M3a] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M3a] NOT DETECTED by the existing gate (every check exit 0)
+  [M3a] eb3: ci-required=0 trusted-sources=0 family-definitions=1 family-boundaries=0
+  GREEN [M3a] DETECTED by EB3 enforcement (non-zero above)
+== M3c execution Definition replaced: nativeNames made unreadable (fs-family)
+  [M3c] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=1
+  NOTE [M3c] detected by an existing check (non-zero above) — recorded, not hidden
+  [M3c] eb3: ci-required=0 trusted-sources=0 family-definitions=1 family-boundaries=0
+  GREEN [M3c] DETECTED by EB3 enforcement (non-zero above)
+== M4 cross-family influence: search-family reaches into fs-family internals
+  [M4] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M4] NOT DETECTED by the existing gate (every check exit 0)
+  [M4] eb3: ci-required=0 trusted-sources=0 family-definitions=0 family-boundaries=1
+  GREEN [M4] DETECTED by EB3 enforcement (non-zero above)
+# reverted: tracked tree clean
