@@ -76,34 +76,52 @@ function triggersOf(doc) {
 }
 
 
-// ───────────────────────────────────────────────── leg invocation (R1 review blocker)
+// ───────────────────────────────── leg invocation — an ALLOWLIST (R1 blocker, R2 F-2)
 //
-// THE FIRST RULE WAS A SUBSTRING SEARCH, and it was a green light wired to nothing:
-// `stepsText(job).includes(leg)` matched `echo docs:sync --check`, a `# node …` shell
-// comment, a step `name:`, or the census invocation carrying `--allow-refused census`.
-// The PR #395 R1 review proved the echo evasion. The rule below grades what a step
-// would EXECUTE.
+// HISTORY, because the rule has failed twice and the reasons are the specification.
+//  R1: the first rule was a substring search (`echo docs:sync --check` satisfied it).
+//  R2 F-2: the second rule parsed commands but was a DENYLIST of known evasions, and
+//      claimed "a construct it does not understand never SATISFIES a leg". The R2
+//      reviewer falsified that claim with three invented shapes:
+//        if false; then node …; fi      node … &      node … || exit 0
+//      A denylist enumerates what is wrong and passes the rest; a new shape is green.
 //
-// WHAT IS PARSED, AND THE YAML FACT IT RESTS ON (measured with the `yaml` package, not
-// assumed): a `#` line BETWEEN steps is a YAML comment and is gone after parsing — a
-// commented-out step simply does not exist, so it can invoke nothing. A `#` line INSIDE
-// a `run: |` block is part of the script STRING the parser returns, so this code strips
-// shell comments itself. `name:` is never read.
+// THE RULE NOW: a leg is satisfied ONLY by a shape this reader POSITIVELY RECOGNISES.
+// Everything else — including every construct it has never seen — is LEG_UNPROVEN,
+// with the construct named. False reds over false greens: a real workflow line that
+// fails this rule is rewritten into the allowed shape; the rule is not widened.
 //
-// HOW A SCRIPT BECOMES COMMANDS: line continuations are joined; each line is split on
-// the shell list/pipe operators (`;`, `&&`, `||`, `|`) OUTSIDE quotes; each piece is
-// tokenised with quote removal; leading `VAR=value` assignments and the wrappers `env`,
-// `exec`, `time` are dropped; the first word is the command. An invocation counts only
-// when it is a COMMAND (so `echo node scripts/x.mjs` is `echo`, and a quoted string
-// handed to printf is an argument). A command whose failure is swallowed — followed by
-// `|| true`/`|| :`, or inside a pipeline whose status the step does not take
-// (`set -o pipefail` absent) — is WEAKENED, not missing, and is named as such.
+// THE ALLOWED SHAPE (all must hold):
+//  STEP   `run:` is a string; no `if:` or exactly always()/success(); no
+//         `continue-on-error`; `shell:` unset or exactly `bash`; no `working-directory`;
+//         no step `env.PATH`. (Unset shell on ubuntu = `bash -e {0}`; `bash` = `bash
+//         --noprofile --norc -eo pipefail {0}` — both errexit, both measured in hosted
+//         logs of this PR.)
+//  SCRIPT read line by line after joining `\`-continuations and dropping blank and
+//         whole-line `#` lines. EVERY line BEFORE the leg's line must itself be in the
+//         allowed PRELUDE set (below); the reader does not reason about a line it does
+//         not recognise, it stops. Lines AFTER the leg line are not read for safety
+//         except: no `trap` anywhere in the script (an EXIT trap after can rewrite the
+//         status).
+//  LINE   the leg line is ONE simple command: optional leading `NAME=value` words, then
+//         argv. Its tokens contain NO shell metacharacter outside quotes:
+//         ; & | < > ( ) { } ` $( !  — with exactly ONE exception: a TRAILING pipeline
+//         `<leg> 2>&1 | tee <file>` / `| tee -a <file>` when the script set pipefail
+//         before it (the census line). The leg's argv must start with the leg's cmd and
+//         carry its required flags and none of its forbidden ones.
+//  PRELUDE lines the reader accepts before a leg line:
+//           set -e / -eu / -euo pipefail / -eo pipefail / -o pipefail / -o errexit /
+//               -o nounset (any combination of those letters/options, never `+`)
+//           mkdir -p <words without metacharacters>
+//           a NAME=value assignment whose value contains no metacharacter
+//           echo <quoted or plain words without metacharacters, may end `>> "$GITHUB_*"`>
+//           a previous leg-shaped simple command (node/pnpm … without metacharacters)
+//         Nothing else. A `cd`, `source`, `trap`, function definition, alias, `PATH=`
+//         reassignment, `set +…`, `shopt`, or any compound construct before the leg
+//         makes the leg UNPROVEN.
 //
-// NOT A SHELL. This is a conservative reader of the shapes these workflows use: a
-// construct it does not understand (an `eval`, a function defined and called later, a
-// heredoc-fed interpreter) never SATISFIES a leg — it can only fail to find one, which
-// is the safe direction. Command substitution `$( … )` is not entered: an invocation
-// whose output is captured is not one whose exit code gates the step.
+// The reader is deliberately small. It is not a shell; it is a recogniser for the
+// handful of shapes these workflows need, and its silence means "not proven".
 
 /** Is a step/job `if:` an un-falsifiable always()? Accepts `always()` and
  *  `always() && <terms with no negation and no `false`>`; rejects anything else,
@@ -147,126 +165,168 @@ export function computesFromJobStatus(script) {
   return assignedInCase
 }
 
-/** Split a shell line on top-level `;` `&&` `||` `|`, outside quotes. Returns
- *  [{ text, op }] where op is the operator FOLLOWING the piece (or null). */
-function splitShellList(line) {
-  const out = []
-  let cur = ''
-  let q = null
-  let depth = 0 // $( … ) nesting — operators inside a substitution are not top-level
-  for (let i = 0; i < line.length; i += 1) {
-    const c = line[i]
-    const n = line[i + 1]
-    if (q !== null) {
-      cur += c
-      if (c === '\\' && q === '"') { cur += n ?? ''; i += 1; continue }
-      if (c === q) q = null
-      continue
-    }
-    if (c === "'" || c === '"') { q = c; cur += c; continue }
-    if (c === '\\') { cur += c + (n ?? ''); i += 1; continue }
-    if (c === '$' && n === '(') { depth += 1; cur += '$('; i += 1; continue }
-    if (c === ')' && depth > 0) { depth -= 1; cur += c; continue }
-    if (depth === 0) {
-      if ((c === '&' && n === '&') || (c === '|' && n === '|')) { out.push({ text: cur, op: c + n }); cur = ''; i += 1; continue }
-      if (c === ';' || c === '|') { out.push({ text: cur, op: c }); cur = ''; continue }
-      if (c === '#' && (cur === '' || /\s$/.test(cur))) break // shell comment to end of line
-    }
-    cur += c
-  }
-  out.push({ text: cur, op: null })
-  return out.filter((p) => p.text.trim() !== '')
+/** Logical lines of a run: script — continuations joined, blank and whole-line `#`
+ *  comment lines dropped. Inline `# …` is NOT stripped: a line carrying one is simply
+ *  not in the allowed set (the reader does not guess where a comment starts). */
+export function logicalLines(script) {
+  return String(script ?? '').replace(/\\\r?\n/g, ' ').split(/\r?\n/)
+    .map((l) => l.trim()).filter((l) => l !== '' && !l.startsWith('#'))
 }
 
-/** Tokenise one simple command with quote removal. */
-function tokenize(text) {
+/** Tokenise ONE simple command, or return null if it contains anything outside the
+ *  allowed vocabulary: an unquoted shell metacharacter, a command substitution (even
+ *  inside double quotes), backticks, or an unterminated quote. */
+export function simpleCommand(line) {
   const toks = []
   let cur = ''
   let had = false
   let q = null
-  for (let i = 0; i < text.length; i += 1) {
-    const c = text[i]
-    if (q !== null) {
-      if (c === q) { q = null; continue }
-      if (c === '\\' && q === '"' && i + 1 < text.length) { cur += text[i + 1]; i += 1; continue }
+  for (let i = 0; i < line.length; i += 1) {
+    const c = line[i]
+    if (q === "'") { if (c === "'") q = null; else cur += c; continue }
+    if (q === '"') {
+      if (c === '"') { q = null; continue }
+      if (c === '`' || (c === '$' && line[i + 1] === '(')) return null
+      if (c === '\\' && i + 1 < line.length) { cur += line[i + 1]; i += 1; continue }
       cur += c
       continue
     }
     if (c === "'" || c === '"') { q = c; had = true; continue }
-    if (c === '\\' && i + 1 < text.length) { cur += text[i + 1]; i += 1; had = true; continue }
     if (/\s/.test(c)) { if (had || cur !== '') { toks.push(cur); cur = ''; had = false } continue }
+    if (';&|<>(){}`!#\\'.includes(c)) return null
+    if (c === '$' && line[i + 1] === '(') return null
     cur += c
     had = true
   }
+  if (q !== null) return null
   if (had || cur !== '') toks.push(cur)
-  return toks
+  return toks.length === 0 ? null : toks
 }
 
-/** Every executed simple command in a `run:` script: { argv, swallowed, piped }. */
-export function commandsOf(script) {
-  const joined = String(script ?? '').replace(/\\\r?\n/g, ' ')
-  const pipefail = /\bset\s+(?:-[a-z]*o\s+pipefail|-o\s+pipefail|-euo\s+pipefail|-eo\s+pipefail)\b|\bset\s+-o\s+pipefail\b/.test(joined)
-  const cmds = []
-  for (const rawLine of joined.split(/\r?\n/)) {
-    if (/^\s*#/.test(rawLine)) continue
-    const pieces = splitShellList(rawLine)
-    for (let i = 0; i < pieces.length; i += 1) {
-      let argv = tokenize(pieces[i].text)
-      while (argv.length > 0 && /^[A-Za-z_][A-Za-z0-9_]*=/.test(argv[0])) argv = argv.slice(1)
-      while (argv.length > 0 && ['env', 'exec', 'time', 'command'].includes(argv[0])) argv = argv.slice(1)
-      if (argv.length === 0) continue
-      const next = pieces[i].op
-      const after = pieces[i + 1] !== undefined ? tokenize(pieces[i + 1].text) : []
-      const swallowed = next === '||' && ['true', ':'].includes(after[0])
-      // A command on the LEFT of a pipe gates the step only under pipefail.
-      const piped = next === '|' && !pipefail
-      cmds.push({ argv, swallowed, piped })
-    }
+const ASSIGN = /^[A-Za-z_][A-Za-z0-9_]*=/
+const SET_OPT = /^set$/
+/** Is this logical line in the PRELUDE allowlist? Returns a reason string if NOT. */
+function preludeRefusal(line) {
+  const argv = simpleCommand(line)
+  // echo … >> "$GITHUB_OUTPUT" / "$GITHUB_ENV": the only redirection the prelude accepts.
+  if (argv === null) {
+    const m = /^(echo\s+.*?)\s*>>\s*"?\$(GITHUB_OUTPUT|GITHUB_ENV|GITHUB_STEP_SUMMARY)"?$/.exec(line)
+    if (m !== null && simpleCommand(m[1])?.[0] === 'echo') return null
+    return `a line the reader does not recognise precedes the leg: \`${line.slice(0, 80)}\``
   }
-  return cmds
+  if (SET_OPT.test(argv[0])) {
+    for (const a of argv.slice(1)) {
+      if (a.startsWith('+')) return `\`${line}\` turns a shell safety option OFF before the leg`
+      if (/^-[euo]+$/.test(a) || ['pipefail', 'errexit', 'nounset'].includes(a)) continue
+      return `\`${line}\` sets an option the reader does not recognise (${a})`
+    }
+    return null
+  }
+  if (argv.every((t) => ASSIGN.test(t))) {
+    if (argv.some((t) => /^(PATH|BASH_ENV|ENV|IFS|SHELLOPTS|BASHOPTS)=/.test(t))) return `\`${line}\` reassigns a variable that changes what a command resolves to`
+    return null
+  }
+  const head = argv.find((t) => !ASSIGN.test(t))
+  if (head === 'mkdir' || head === 'echo' || head === 'node' || head === 'pnpm') return null
+  return `\`${argv[0]}\` before the leg is outside the reader's allowlist (cd/source/trap/functions/alias/shopt and every compound construct are)`
 }
 
-/** Does argv invoke `want` (a command prefix, e.g. ['node','scripts/x.mjs'])? */
-function invokes(argv, want) {
-  if (argv.length < want.length) return false
-  return want.every((w, i) => argv[i] === w)
+/** Positive recognition of the leg on ONE logical line. Returns { argv } or { why }. */
+function legLine(line, leg, pipefailSet) {
+  let body = line
+  // The single allowed pipeline: `<leg> [2>&1] | tee [-a] <file>`, leg FIRST, and only
+  // with pipefail already set (so the leg's status is the pipeline's status).
+  const tee = /^(.*?)\s*(?:2>&1\s*)?\|\s*tee\s+(?:-a\s+)?("[^"$`]*(?:\$[A-Za-z_][A-Za-z0-9_]*[^"$`]*)*"|[^\s;&|<>()`$]+)\s*$/.exec(line)
+  if (tee !== null) {
+    if (!pipefailSet) return { why: 'the leg is piped into tee without `set -o pipefail` before it — its exit code never reaches the step' }
+    body = tee[1]
+  }
+  const argv = simpleCommand(body)
+  if (argv === null) return { why: `the leg line is not a single simple command (it contains an operator, redirection, substitution or grouping): \`${line.slice(0, 90)}\`` }
+  let i = 0
+  while (i < argv.length && ASSIGN.test(argv[i])) i += 1
+  const cmd = argv.slice(i)
+  if (!leg.cmd.every((w, k) => cmd[k] === w)) return null // not this leg's line
+  return { argv: cmd }
 }
 
 /**
- * Grade one leg against one job. Returns null when satisfied, otherwise a finding.
- * The leg is satisfied by the FIRST matching invocation that carries every required
- * flag and none of the forbidden ones, and whose failure reaches the step.
+ * Grade one leg against one job. null = satisfied by an allowlisted shape. Otherwise
+ * { code, why } — CI_LAYER_LEG_MISSING (nothing that even looks like the leg),
+ * CI_LAYER_LEG_WEAKENED (the leg runs with a missing/forbidden flag), or
+ * CI_LAYER_LEG_UNPROVEN (a leg-looking command in a shape the reader cannot prove gates
+ * the step — the construct is named).
  */
 export function gradeLeg(job, leg) {
   const steps = Array.isArray(job?.steps) ? job.steps : []
-  const seen = []
+  const unproven = []
+  const weakened = []
+  const mentions = (s) => typeof s?.run === 'string' && s.run.includes(leg.cmd[leg.cmd.length - 1])
   for (const step of steps) {
-    if (typeof step?.run !== 'string') continue
-    // A step that may be skipped does not run the leg on every PR.
-    const skippable = 'if' in step && !/^\s*(?:\$\{\{\s*)?(?:always\(\)|success\(\))(?:\s*\}\})?\s*$/.test(String(step.if))
-    for (const c of commandsOf(step.run)) {
-      if (!invokes(c.argv, leg.cmd)) continue
-      const rest = c.argv.slice(leg.cmd.length)
-      const problems = []
-      for (const f of leg.check ?? []) if (!rest.includes(f)) problems.push(`missing ${f}`)
-      for (const f of leg.forbid ?? []) {
-        const at = rest.indexOf(f)
-        if (at === -1) continue
-        const vals = leg.forbidValues?.[f]
-        if (vals === undefined) { problems.push(`carries forbidden ${f}`); continue }
-        const v = String(rest[at + 1] ?? '').split(',').map((x) => x.trim())
-        if (vals.some((x) => v.includes(x))) problems.push(`carries forbidden ${f} ${rest[at + 1]}`)
+    if (!mentions(step)) continue
+    const stepWhy = stepRefusal(step)
+    const lines = logicalLines(step.run)
+    let pipefail = false
+    let blocked = null
+    const scriptWide = /(^|\n)\s*trap\b/.test(step.run) ? 'a `trap` in the script can rewrite the exit status' : null
+    for (const line of lines) {
+      const hit = legLine(line, leg, pipefail)
+      if (hit !== null) {
+        const why = stepWhy ?? blocked ?? scriptWide ?? hit.why ?? null
+        if (why !== null) { unproven.push(`${String(step.name ?? 'unnamed step')}: ${why}`); break }
+        const rest = hit.argv.slice(leg.cmd.length)
+        const problems = []
+        for (const f of leg.check ?? []) if (!rest.includes(f)) problems.push(`missing ${f}`)
+        for (const f of leg.forbid ?? []) {
+          const at = rest.indexOf(f)
+          if (at === -1) continue
+          const vals = leg.forbidValues?.[f]
+          if (vals === undefined) { problems.push(`carries forbidden ${f}`); continue }
+          const v = String(rest[at + 1] ?? '').split(',').map((x) => x.trim())
+          if (vals.some((x) => v.includes(x))) problems.push(`carries forbidden ${f} ${rest[at + 1]}`)
+        }
+        if (problems.length === 0) return null
+        weakened.push(`${String(step.name ?? 'unnamed step')}: ${problems.join(', ')}`)
+        break
       }
-      if (c.swallowed) problems.push('failure swallowed by `|| true`')
-      if (c.piped) problems.push('left of a pipe without `set -o pipefail` — its exit code never reaches the step')
-      if (skippable) problems.push(`step has a conditional if: ${JSON.stringify(step.if)}`)
-      if (problems.length === 0) return null
-      seen.push(`${String(step.name ?? 'unnamed step')}: ${problems.join(', ')}`)
+      // Not the leg line: it must be an allowed prelude line, or nothing after it counts.
+      if (blocked === null) {
+        const r = preludeRefusal(line)
+        if (r !== null) blocked = r
+        else {
+          const a = simpleCommand(line)
+          if (a?.[0] === 'set' && a.slice(1).some((x) => /^-[a-z]*o$/.test(x) || x === '-o') && a.includes('pipefail')) pipefail = true
+          if (a?.[0] === 'set' && a.slice(1).some((x) => /^-[eu]*o[eu]*$/.test(x)) && a.includes('pipefail')) pipefail = true
+        }
+      }
+    }
+    // A leg-mentioning step where no line was recognised as the leg: the leg is buried
+    // inside some construct the reader does not prove (if/case/loop/function/$(…)/-c).
+    if (unproven.length === 0 && weakened.length === 0) {
+      unproven.push(`${String(step.name ?? 'unnamed step')}: \`${leg.cmd.join(' ')}\` appears only inside a construct the reader does not prove (if/case/loop/function/substitution/\`-c\` string/heredoc/operator)`)
     }
   }
-  return seen.length === 0
-    ? { code: 'CI_LAYER_LEG_MISSING', why: `no step EXECUTES \`${leg.cmd.join(' ')}\` (echoes, step names, comments and quoted strings do not count)` }
-    : { code: 'CI_LAYER_LEG_WEAKENED', why: `\`${leg.cmd.join(' ')}\` is invoked but weakened — ${seen.join(' ;; ')}` }
+  if (weakened.length > 0) return { code: 'CI_LAYER_LEG_WEAKENED', why: `\`${leg.cmd.join(' ')}\` runs but weakened — ${weakened.join(' ;; ')}` }
+  if (unproven.length > 0) return { code: 'CI_LAYER_LEG_UNPROVEN', why: `\`${leg.cmd.join(' ')}\` is not PROVEN to gate its step — ${unproven.join(' ;; ')}` }
+  return { code: 'CI_LAYER_LEG_MISSING', why: `no step executes \`${leg.cmd.join(' ')}\`` }
+}
+
+/** Step-level conditions under which no leg in the step is proven. */
+function stepRefusal(step) {
+  if ('if' in step && !/^\s*(?:\$\{\{\s*)?(?:always\(\)|success\(\))(?:\s*\}\})?\s*$/.test(String(step.if))) return `step if: ${JSON.stringify(step.if)} (only unconditional, always() or success() is proven to run)`
+  if (step['continue-on-error'] !== undefined && step['continue-on-error'] !== false) return `step continue-on-error=${JSON.stringify(step['continue-on-error'])}`
+  if (step.shell !== undefined && step.shell !== 'bash') return `step shell: ${JSON.stringify(step.shell)} (only unset or exactly \`bash\` is proven errexit)`
+  if (step['working-directory'] !== undefined) return `step working-directory: ${JSON.stringify(step['working-directory'])} moves the relative script path`
+  if (step.env !== undefined && Object.keys(step.env).some((k) => ['PATH', 'BASH_ENV', 'ENV', 'NODE_OPTIONS'].includes(k))) return 'step env reassigns PATH/BASH_ENV/ENV/NODE_OPTIONS — what `node` resolves to is not proven'
+  return null
+}
+
+/** Retained for the binding/grading rules: the simple commands of a script, by the
+ *  same allowlist (non-simple lines are omitted, not guessed at). */
+export function commandsOf(script) {
+  return logicalLines(script).map((l) => simpleCommand(l)).filter((a) => a !== null)
+    .map((argv) => { let i = 0; while (i < argv.length && ASSIGN.test(argv[i])) i += 1; return { argv: argv.slice(i), swallowed: false, piped: false } })
+    .filter((c) => c.argv.length > 0)
 }
 
 // ─────────────────────────────── host-dependent suites in a host-free layer (hosted #1 red)
@@ -396,11 +456,15 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     }
     // The merge-tree binding is a leg too: a layer that never compares its checkout to
     // the synthetic tree may be grading a different tree than the one reported.
-    const bindLeg = { id: 'merge-tree-binding', cmd: ['['] }
-    const binds = (job.steps ?? []).some((s) => typeof s?.run === 'string'
-      && commandsOf(s.run).some((c) => c.argv[0] === '[' && c.argv.includes('$GOT') && c.argv.includes('$EB3_MERGE_TREE'))
-      && JSON.stringify(s.env ?? {}).includes('inputs.merge_tree'))
-    if (!binds) add('CI_LAYER_LEG_MISSING', `layer ${layer.id}: leg "${bindLeg.id}" — no step compares HEAD^{tree} with inputs.merge_tree`, { layer: layer.id, leg: bindLeg.id })
+    // Graded by the SAME allowlist as every other leg, plus: its argument must be the
+    // caller's merge_tree input and the step must pass the event in.
+    const bindLeg = { id: 'merge-tree-binding', cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--assert-tree'] }
+    const bindMiss = gradeLeg(job, bindLeg)
+    const bindStep = (job.steps ?? []).find((s) => typeof s?.run === 'string' && s.run.includes('--assert-tree'))
+    const bindArg = bindStep !== undefined && /--assert-tree\s+"\$\{\{\s*inputs\.merge_tree\s*\}\}"/.test(bindStep.run)
+    const bindEvent = /^\$\{\{\s*github\.event_name\s*\}\}$/.test(String(bindStep?.env?.EB3_EVENT ?? '').trim())
+    if (bindMiss !== null) add(bindMiss.code, `layer ${layer.id}: leg "${bindLeg.id}" — ${bindMiss.why}`, { layer: layer.id, leg: bindLeg.id })
+    else if (!bindArg || !bindEvent) add('CI_LAYER_LEG_WEAKENED', `layer ${layer.id}: leg "${bindLeg.id}" — must assert "\${{ inputs.merge_tree }}" with EB3_EVENT=\${{ github.event_name }}`, { layer: layer.id, leg: bindLeg.id })
     // THE OUTPUT CONTRACT. The summary grader reads outputs.verdict; a layer that never
     // writes one would be graded `verdict-missing` and red forever, which is correct but
     // unhelpful to whoever has to fix it. Stating the rule here names the defect at its
@@ -511,11 +575,13 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     // Same invocation law as the layers (this was a substring rule too — R1 finding 4):
     // a step must EXECUTE `node scripts/eb3-merge-tree.mjs --grade-needs`, unweakened,
     // and that step's env must bind EB3_NEEDS_JSON to toJSON(needs) exactly.
-    const gradeStep = (summary.steps ?? []).find((s) => typeof s?.run === 'string'
-      && gradeLeg({ steps: [s] }, { cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--grade-needs'] }) === null)
+    // The grader leg is graded by the SAME allowlist, and must take "$EB3_NEEDS_JSON"
+    // as the --grade-needs VALUE (check list: the flag, then the variable as its own
+    // token), with that env bound exactly to toJSON(needs).
+    const gradeLegSpec = { cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--grade-needs', '$EB3_NEEDS_JSON'] }
+    const gradeStep = (summary.steps ?? []).find((s) => typeof s?.run === 'string' && gradeLeg({ steps: [s] }, gradeLegSpec) === null)
     const needsBound = gradeStep !== undefined
       && /^\$\{\{\s*toJSON\(\s*needs\s*\)\s*\}\}$/.test(String(gradeStep.env?.EB3_NEEDS_JSON ?? '').trim())
-      && commandsOf(gradeStep.run).some((c) => c.argv[0] === 'node' && c.argv.includes('$EB3_NEEDS_JSON'))
     // The synthesize job must EXECUTE the merge-tree script (same invocation law).
     const synth = aggDoc?.jobs?.synthesize
     const synthMiss = synth === undefined ? { code: 'CI_SUMMARY_NOT_SYNTHESIZING', why: 'no synthesize job' }

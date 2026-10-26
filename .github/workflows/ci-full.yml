@@ -70,36 +70,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Bind to the synthetic merge tree (EB3_MERGE_TREE)
-        # The layer grades what WOULD land. On pull_request the default checkout is
-        # GitHub's merge ref; on push it is the pushed tip (whose merge with its own
-        # parent is itself). Either way its TREE must equal the tree the summary's
-        # synthesize job built independently with `git merge-tree`; a mismatch means
-        # this layer is grading a different tree than the Required context reports.
-        shell: bash
-        env:
-          EB3_MERGE_TREE: ${{ inputs.merge_tree }}
-          EB3_EVENT: ${{ github.event_name }}
-        run: |
-          set -euo pipefail
-          GOT=$(git rev-parse 'HEAD^{tree}')
-          [ -n "$EB3_MERGE_TREE" ] || { echo "::error::no merge_tree input — this layer was not called by ci-required"; exit 1; }
-          # On pull_request the default checkout IS GitHub's merge ref (refs/pull/N/merge),
-          # so its tree is the synthetic merge tree by construction — assert it. On any
-          # other event the checkout is the pushed tip, whose own merge tree is not what
-          # synthesize computed, so the tree assertion does not apply: say so loudly
-          # rather than pass it vacuously.
-          if [ "$EB3_EVENT" = "pull_request" ]; then
-            [ "$GOT" = "$EB3_MERGE_TREE" ] || { echo "::error::checked-out tree $GOT != synthetic merge tree $EB3_MERGE_TREE"; exit 1; }
-            echo "grading synthetic merge tree $GOT"
-          else
-            echo "::warning::event $EB3_EVENT — the tree assertion applies to pull_request only; grading the checked-out tree $GOT"
-          fi
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: Bind to the synthetic merge tree (EB3_MERGE_TREE)
+        # The checkout is refs/pull/N/merge; its tree must equal the tree the summary's
+        # synthesize job built independently, or this layer grades a different tree than
+        # the Required context reports. ONE simple command, so the R2 leg allowlist can
+        # prove it gates the step (the old shell `if`/`[ ] || { }` form could not be).
+        env:
+          EB3_EVENT: ${{ github.event_name }}
+        run: node scripts/eb3-merge-tree.mjs --assert-tree "${{ inputs.merge_tree }}"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

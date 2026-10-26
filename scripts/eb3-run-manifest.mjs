@@ -44,7 +44,7 @@
  *   validateRunRecord({ record, rel, ctx }) → { findings }
  *   findRunRecords(root), RUN_VERDICTS
  *
- *   node scripts/eb3-run-manifest.mjs [--paths a,b] [--new a,b] [--json]
+ *   node scripts/eb3-run-manifest.mjs [--paths a,b] [--new a,b | --new-since <ref>] [--json]
  *     --new  records added/changed by the change under review: graded STRICT
  *            (must bind the CURRENT authority generation; must be finalised).
  *            History stays graded on internal honesty + a REAL generation.
@@ -258,7 +258,16 @@ if (invokedDirectly) {
     const ctx = context(ROOT)
     const only = arg('--paths')?.split(',').map((s) => s.trim()).filter(Boolean) ?? null
     // --new <a,b>: records ADDED/CHANGED by the change under review, graded strict.
-    const fresh = new Set(arg('--new')?.split(',').map((s) => s.trim()).filter(Boolean) ?? [])
+    // --new-since <ref>: the same set, computed HERE from `git diff <ref>...HEAD`, so the
+    // workflow step is one simple command (the R2 leg allowlist cannot prove a shell
+    // `if` that chooses between two invocations; this removes the choice from the shell).
+    const since = arg('--new-since')
+    let freshList = arg('--new')?.split(',').map((s) => s.trim()).filter(Boolean) ?? []
+    if (since !== null) {
+      freshList = execFileSync('git', ['-C', ROOT, 'diff', '--name-only', `${since}...HEAD`, '--', 'dev/agent-workflow/evidence'], { encoding: 'utf8' })
+        .split('\n').map((s) => s.trim()).filter((s) => s.endsWith('.json'))
+    }
+    const fresh = new Set(freshList)
     const records = findRunRecords(ROOT, only)
     const findings = []
     const incomplete = []

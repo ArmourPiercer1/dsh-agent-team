@@ -44,6 +44,8 @@
  *   synthesizeMergeTree({ root, base, head }) → { tree, commit, base, head }
  *   GREEN_RESULT, GREEN_VERDICT
  *
+ *   --assert-tree <tree>   (layers) the checked-out tree must equal the synthetic one
+ *
  * Exit: 0 pass | 1 fail | 2 could not grade (bad JSON, unresolvable refs).
  *
  * @module scripts/eb3-merge-tree
@@ -160,12 +162,48 @@ if (invokedDirectly) {
   const argv = process.argv.slice(2)
   const arg = (name) => { const i = argv.indexOf(name); return i > -1 ? argv[i + 1] : null }
 
+  // --assert-tree <tree>: the layer-side half of the merge-tree binding, as ONE simple
+  // command (the R2 leg allowlist cannot prove a shell `if`/`[ … ] || { … }`). On
+  // pull_request (EB3_EVENT) the checkout IS refs/pull/N/merge, so its tree must equal
+  // the tree synthesize built; any other event is refused here, by name.
+  if (argv.includes('--assert-tree')) {
+    const want = arg('--assert-tree')
+    const event = process.env['EB3_EVENT'] ?? ''
+    if (want === null || !/^[0-9a-f]{40,64}$/.test(want)) { console.error(`EB3-MERGE-TREE REFUSED: --assert-tree needs a tree id (got ${JSON.stringify(want)}) — this layer was not called by ci-required`); process.exit(2) }
+    if (event !== 'pull_request') { console.error(`EB3-MERGE-TREE REFUSED: EB3_EVENT=${JSON.stringify(event)} — the tree binding is defined for pull_request only`); process.exit(2) }
+    const got = execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim()
+    if (got !== want) { console.error(`EB3-MERGE-TREE fail checked-out tree ${got} != synthetic merge tree ${want}`); process.exit(1) }
+    console.log(`EB3-MERGE-TREE bound tree=${got} (checked-out == synthetic)`)
+    process.exit(0)
+  }
+
   if (argv.includes('--synthesize')) {
+    // --from-merge-ref: the PR path, as ONE simple command (R2 allowlist). The checkout
+    // must be refs/pull/N/merge: a two-parent commit whose 2nd parent is the PR head
+    // (EB3_HEAD_SHA). Base = HEAD^1 — the base-branch tip GitHub actually merged against
+    // (NOT event.pull_request.base.sha, which is where the branch was cut; hosted run
+    // 40343433287). After synthesizing, the synthetic tree must EQUAL the checked-out
+    // tree: two implementations, same parents, one answer.
+    if (argv.includes('--from-merge-ref')) {
+      const event = process.env['EB3_EVENT'] ?? ''
+      const prHead = process.env['EB3_HEAD_SHA'] ?? ''
+      if (event !== 'pull_request') { console.error(`EB3-MERGE-TREE REFUSED: EB3_EVENT=${JSON.stringify(event)} — ci-required grades a PR merge tree and runs on pull_request only`); process.exit(2) }
+      const git = (args) => execFileSync('git', ['-C', ROOT, ...args], { encoding: 'utf8' }).trim()
+      const parents = git(['rev-list', '--parents', '-n1', 'HEAD']).split(/\s+/)
+      if (parents.length !== 3) { console.error('EB3-MERGE-TREE REFUSED: the checkout is not a two-parent merge commit — expected refs/pull/N/merge'); process.exit(2) }
+      if (parents[2] !== prHead) { console.error(`EB3-MERGE-TREE REFUSED: merge ref's second parent ${parents[2]} != PR head ${prHead} — GitHub's merge ref is stale for this event; re-run`); process.exit(2) }
+      argv.push('--base', parents[1], '--head', parents[2], '--expect-checkout')
+    }
     const base = arg('--base')
     if (base === null) { console.error('EB3-MERGE-TREE REFUSED NO_BASE: a merge tree without a base is not a merge tree'); process.exit(2) }
     try {
       const r = synthesizeMergeTree({ root: ROOT, base, head: arg('--head') ?? 'HEAD' })
       console.log(`EB3-MERGE-TREE tree=${r.tree} commit=${r.commit} base=${r.base} head=${r.head}`)
+      if (argv.includes('--expect-checkout')) {
+        const got = execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim()
+        if (got !== r.tree) { console.error(`EB3-MERGE-TREE fail synthetic merge tree ${r.tree} != checked-out tree ${got} for parents ${r.base} + ${r.head} — the two merge implementations disagree`); process.exit(1) }
+        console.log(`EB3-MERGE-TREE synthetic == checked-out tree ${got}`)
+      }
       const out = argv.includes('--github-output') ? process.env['GITHUB_OUTPUT'] : undefined
       if (argv.includes('--github-output') && out === undefined) {
         console.error('EB3-MERGE-TREE REFUSED: --github-output needs $GITHUB_OUTPUT')

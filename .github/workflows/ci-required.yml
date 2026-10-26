@@ -79,35 +79,15 @@ jobs:
 
       - name: Synthesize the merge tree (base + head, no branch moved)
         id: merge
-        shell: bash
+        # ONE simple command (R2 leg allowlist). All the checks that used to be shell
+        # `[ … ] || { … }` live in --from-merge-ref: pull_request only; checkout must be a
+        # two-parent merge whose 2nd parent is the PR head; base = HEAD^1 (the base tip
+        # GitHub merged against, not the branch-cut base.sha); synthetic tree must EQUAL
+        # the checked-out tree.
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          # PULL_REQUEST ONLY. The layers are reusable workflows whose merge_tree input and
-          # tree assertion are defined against a PR merge; any other event is refused by name.
-          [ "$EVENT_NAME" = "pull_request" ] || { echo "::error::ci-required: event ${EVENT_NAME} is not supported — this workflow grades a PR merge tree and triggers on pull_request only"; exit 1; }
-          # THE BASE IS THE MERGE REF'S FIRST PARENT, NOT event.pull_request.base.sha.
-          # Measured on PR #395's second hosted run: the payload's base.sha (94890f090) is
-          # where the branch was cut, while GitHub builds refs/pull/N/merge against the
-          # base branch's CURRENT tip (c5e43f1d5). Synthesizing from base.sha produced a
-          # different tree and this step failed — correctly, but for a bookkeeping reason.
-          # `git merge-tree --write-tree <merge^1> <merge^2>` was verified locally to
-          # reproduce GitHub's merge tree byte-for-byte (1e2ef61a7…), so the synthesis is
-          # now an INDEPENDENT recomputation of the tree under test, from the same parents.
-          [ "$(git rev-list --parents -n1 HEAD | wc -w)" = "3" ] || { echo "::error::ci-required: the checkout is not a two-parent merge commit — expected refs/pull/N/merge"; exit 1; }
-          BASE=$(git rev-parse 'HEAD^1')
-          MERGE_HEAD=$(git rev-parse 'HEAD^2')
-          [ "$MERGE_HEAD" = "$HEAD_SHA" ] || { echo "::error::ci-required: merge ref's second parent $MERGE_HEAD != PR head $HEAD_SHA — GitHub's merge ref is stale for this event; re-run"; exit 1; }
-          node scripts/eb3-merge-tree.mjs --synthesize --base "$BASE" --head "$HEAD_SHA" --github-output
-          # The independently synthesized tree must equal the tree GitHub checked out. They
-          # are computed by two different implementations from the same two parents; any
-          # disagreement means the tree being graded is not the tree being reported.
-          SYN=$(grep '^tree=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)
-          GOT=$(git rev-parse 'HEAD^{tree}')
-          [ "$SYN" = "$GOT" ] || { echo "::error::synthetic merge tree $SYN != checked-out tree $GOT for parents $BASE + $HEAD_SHA — the two merge implementations disagree"; exit 1; }
-          echo "synthetic merge tree $SYN == checked-out tree (base $BASE + head $HEAD_SHA)"
+          EB3_EVENT: ${{ github.event_name }}
+          EB3_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/eb3-merge-tree.mjs --synthesize --from-merge-ref --github-output
 
   # ── the four layers, each a reusable workflow call ────────────────────────────
   # Order is cheapest-first so a red document lands in ~1 minute rather than after the
@@ -168,9 +148,10 @@ jobs:
         shell: bash
         env:
           EB3_NEEDS_JSON: ${{ toJSON(needs) }}
+        # bash = `-eo pipefail`, set explicitly too: the grader's status IS the step's.
         run: |
           set -euo pipefail
-          node scripts/eb3-merge-tree.mjs --grade-needs "$EB3_NEEDS_JSON" | tee "$RUNNER_TEMP/required-verdict.txt"
+          node scripts/eb3-merge-tree.mjs --grade-needs "$EB3_NEEDS_JSON" 2>&1 | tee "$RUNNER_TEMP/required-verdict.txt"
 
       - name: Upload the Required verdict
         if: always()

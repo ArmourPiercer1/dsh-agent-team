@@ -291,6 +291,48 @@ or the summary's `needs` drops it, and control C13 (RED first) fails if synthesi
 failure / cancelled / skipped / absent ever grades green. This change post-dates that
 green run, so it needs one more hosted run, reported below.
 
+## D11. R2 F-2 — my fail-closed claim was false; the leg reader is now an ALLOWLIST
+
+The R1 fix documented: "a construct it does not understand never SATISFIES a leg". The
+R2 review falsified that with three shapes I had not listed —
+`if false; then node …; fi`, `node … &`, `node … || exit 0` — and C14, run against the
+R2-reviewed head 3af623b2e, found **28 of 46** evasions satisfied the leg (table:
+[R2-C14-TABLE.md](R2-C14-TABLE.md)). The defect was structural: the reader enumerated
+known-bad shapes and passed everything else. A denylist cannot be fail-closed, so the
+claim could never have been true.
+
+**The rule is now a positive grammar.** A leg is satisfied only when the reader
+RECOGNISES all of: a step with no `if:` (or exactly always()/success()), no
+`continue-on-error`, `shell:` unset or exactly `bash`, no `working-directory`, no step
+`env` touching PATH/BASH_ENV/ENV/NODE_OPTIONS; a script with no `trap` anywhere; every
+line before the leg drawn from a closed prelude (`set` with only `-`/errexit/nounset/
+pipefail options, `mkdir -p`, plain assignments not to PATH/IFS/…, `echo` optionally
+`>> "$GITHUB_*"`, other plain `node`/`pnpm` commands); and the leg line itself a single
+simple command with no unquoted `; & | < > ( ) { } \` ! #` and no `$(`. The only
+pipeline allowed is `<leg> [2>&1] | tee <file>` after pipefail. Anything else is
+`CI_LAYER_LEG_UNPROVEN`, naming the construct.
+
+**I narrowed the brief in one place, deliberately:** the brief allowed the leg LAST in a
+pipe under pipefail. No real workflow needs it, and an upstream command feeding the
+leg's stdin is one more thing to prove — so it is refused (C14 has it as a negative).
+
+**Real workflows were rewritten into the allowed shape; the rule was not widened.**
+Four lines failed the allowlist, and each one was a real ambiguity, not a false positive:
+* `ci-fast` docs:sync ran inside a shell `if` on the impact selection — structurally the
+  `if false; then …` evasion. It now runs **unconditionally** (0.4 s): strictly more coverage.
+* `ci-integration` RUN manifest chose between two invocations in a shell `if` → one
+  command, `--new-since "$CI_BASE"`, with the selection moved into the script.
+* each layer's merge-tree binding (`[ … ] || { …; exit 1; }` inside an `if` on the event)
+  → one command, `eb3-merge-tree.mjs --assert-tree "${{ inputs.merge_tree }}"`, which
+  refuses non-pull_request events, empty input and a tree mismatch by name and exit code.
+* `ci-required` synthesize (shell checks around the merge) → one command,
+  `--synthesize --from-merge-ref`, carrying every check that was in the shell.
+Each new single-command form was exercised on a real merge commit with master,
+including all its refusals (exit 2 refusals, exit 1 mismatch).
+
+C9's mutations were re-anchored to the reshaped line (9/9 still detected) and C9/C14
+now accept `CI_LAYER_LEG_UNPROVEN` as a detection. Controls: **16/16** (C1–C14, P1, P2).
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still

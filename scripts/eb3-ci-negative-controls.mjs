@@ -524,12 +524,14 @@ control('C9 mandatory-leg-invoked-not-mentioned', () => {
     const f = checkRequiredJobs({ files: m }).findings
     return f.some((x) => codes.includes(x.code)) ? null : `${name}: not detected (${codes.join('|')}; got ${f.map((x) => x.code).join(',') || 'none'})`
   }
-  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED']
+  // UNPROVEN is the allowlist's code for a leg-shaped command it cannot prove gates the
+  // step (R2 F-2); every C9 evasion must produce one of the three, never nothing.
+  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED', 'CI_LAYER_LEG_UNPROVEN']
   const misses = [
     // (a) the real invocation replaced by an echo of the same words
-    stage('a-echo', FAST, (t) => t.replace(`            ${SYNC}\n`, `            echo ${SYNC}\n`), LEG),
+    stage('a-echo', FAST, (t) => t.replace(`          ${SYNC}\n`, `          echo ${SYNC}\n`), LEG),
     // (b) the invocation exists only in a step NAME (the real one removed)
-    stage('b-name-only', FAST, (t) => t.replace(`            ${SYNC}\n`, '            true\n').replace('- name: docs:sync --check (when the change touches documents)', `- name: ${SYNC}`), LEG),
+    stage('b-name-only', FAST, (t) => t.replace(`          ${SYNC}\n`, '          true\n').replace('- name: docs:sync --check\n', `- name: ${SYNC}\n`), LEG),
     // (c1) the census flag-set weakened: --allow-refused census added
     stage('c1-allow-refused', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --allow-refused census \\\n'), LEG),
     // (c2) the census flag removed: no --full, so the opt-in census is SKIPPED by default
@@ -537,13 +539,13 @@ control('C9 mandatory-leg-invoked-not-mentioned', () => {
     // (c3) the census itself skipped by name
     stage('c3-skip-census', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --skip census \\\n'), LEG),
     // (d1) a shell COMMENT inside run: — survives YAML parsing, must not count
-    stage('d1-shell-comment', FAST, (t) => t.replace(`            ${SYNC}\n`, `            # ${SYNC}\n            true\n`), LEG),
+    stage('d1-shell-comment', FAST, (t) => t.replace(`          ${SYNC}\n`, `          # ${SYNC}\n          true\n`), LEG),
     // (d2) a commented-out YAML step — the parser drops it; nothing invokes the leg
-    stage('d2-yaml-commented-step', FAST, (t) => t.replace(`            ${SYNC}\n`, '            true\n') + `      # - run: ${SYNC}\n`, LEG),
+    stage('d2-yaml-commented-step', FAST, (t) => t.replace(`          ${SYNC}\n`, '          true\n') + `      # - run: ${SYNC}\n`, LEG),
     // (e) the invocation inside a quoted string handed to echo/printf
-    stage('e-quoted-string', FAST, (t) => t.replace(`            ${SYNC}\n`, `            printf '%s\\n' "${SYNC}"\n`), LEG),
+    stage('e-quoted-string', FAST, (t) => t.replace(`          ${SYNC}\n`, `          printf '%s\\n' "${SYNC}"\n`), LEG),
     // (f) the invocation made unreachable: `|| true` would swallow its failure
-    stage('f-or-true', FAST, (t) => t.replace(`            ${SYNC}\n`, `            ${SYNC} || true\n`), LEG),
+    stage('f-or-true', FAST, (t) => t.replace(`          ${SYNC}\n`, `          ${SYNC} || true\n`), LEG),
   ].filter((x) => x !== null)
   return {
     ok: misses.length === 0,
@@ -674,6 +676,99 @@ control('C13 merge-tree-job-is-graded', () => {
     if (gradeNeeds({ needs: n }).verdict !== 'fail') missed.push(name)
   }
   return { ok: missed.length === 0, detail: missed.length === 0 ? 'layers all green + synthesize failure/cancelled/skipped/absent => fail each' : `synthesize ${missed.join(', ')} graded GREEN` }
+})
+
+// ──────────────── control 14: a mandatory leg is satisfied ONLY by an allowlisted shape
+/**
+ * R2 review F-2 (PR #395, BLOCKED): the leg reader claimed "a construct it does not
+ * understand never SATISFIES a leg" — and the reviewer falsified it with three invented
+ * shapes (`if false; then node …; fi`, `node … &`, `node … || exit 0`). A denylist of
+ * known evasions is what failed; the rule is now an ALLOWLIST. Each case here is graded
+ * by calling gradeLeg directly on a synthetic step, so the control measures the reader
+ * itself, independent of what any workflow happens to contain.
+ *
+ * Every NEGATIVE must leave the leg UNSATISFIED. The POSITIVES pin that the allowed
+ * shapes still pass (a reader that rejects everything is not a reader).
+ */
+control('C14 leg-allowlist-not-denylist', () => {
+  const { gradeLeg, checkRequiredJobs, workflowFiles, loadManifest } = requireModule('scripts/eb3-ci-required.mjs')
+  const LEG = { id: 'docs:sync --check', cmd: ['node', 'scripts/docs-sync.mjs'], check: ['--check'] }
+  const N = 'node scripts/docs-sync.mjs --check'
+  const step = (run, extra = {}) => ({ steps: [{ name: 'x', run, ...extra }] })
+  const negatives = [
+    ['r2-1 if false; then …; fi', step(`if false; then ${N}; fi`)],
+    ['r2-1 if false, leg on its own line', step(`if false; then\n  ${N}\nfi`)],
+    ['false && leg (errexit ignores non-final && members)', step(`false && ${N}`)],
+    ['leg && true (leg failure swallowed as non-final)', step(`${N} && true`)],
+    ['trap EXIT after (overrides exit status)', step(`${N}\ntrap 'exit 0' EXIT`)],
+    ['function shadowing node', step(`node() { true; }\n${N}`)],
+    ['PATH redirected before', step(`PATH=/tmp/fake:$PATH\n${N}`)],
+    ['cd before (relative script path moves)', step(`cd /tmp\n${N}`)],
+    ['source before', step(`source ./x.sh\n${N}`)],
+    ['step working-directory', step(N, { 'working-directory': '/tmp' })],
+    ['step env PATH', step(N, { env: { PATH: '/tmp/fake' } })],
+    ['r2-2 background &', step(`${N} &`)],
+    ['r2-3 || exit 0', step(`${N} || exit 0`)],
+    ['set +e before', step(`set +e\n${N}`)],
+    ['set +o errexit before', step(`set +o errexit\n${N}`)],
+    ['trap … ERR before', step(`trap 'true' ERR\n${N}`)],
+    ["bash -c '…'", step(`bash -c '${N}'`)],
+    ['sh -c "…"', step(`sh -c "${N}"`)],
+    ['inside $( )', step(`OUT=$(${N})`)],
+    ['inside backticks', step(`OUT=\`${N}\``)],
+    ['case arm', step(`case x in\n  x) ${N} ;;\nesac`)],
+    ['case arm, own line', step(`case x in\n  x)\n    ${N}\n    ;;\nesac`)],
+    ['{ …; } || true', step(`{ ${N}; } || true`)],
+    ['( … )', step(`( ${N} )`)],
+    ['; true after', step(`${N}; true`)],
+    ['| cat without pipefail', step(`${N} | cat`)],
+    ['| cat WITH pipefail (only `| tee <file>` is allowed)', step(`set -o pipefail\n${N} | cat`)],
+    // NARROWER THAN THE R2 BRIEF, on purpose: the brief permits the leg LAST in a pipe
+    // under pipefail. No real workflow needs it, and an upstream command feeding the
+    // leg's stdin is one more thing to prove — so it is refused (false red > false green).
+    ['leg LAST in a pipe, even with pipefail (deliberately narrowed)', step(`set -o pipefail\necho hi | ${N}`)],
+    ['| tee WITHOUT pipefail', step(`${N} 2>&1 | tee out.txt`)],
+    ['| tee then || true', step(`set -o pipefail\n${N} | tee out.txt || true`)],
+    ['for loop body', step(`for i in 1; do\n  ${N}\ndone`)],
+    ['while loop body', step(`while true; do\n  ${N}\n  break\ndone`)],
+    ['function body', step(`f() {\n  ${N}\n}\nf`)],
+    ['eval', step(`eval "${N}"`)],
+    ['xargs', step(`echo --check | xargs node scripts/docs-sync.mjs`)],
+    ['heredoc fed to bash', step(`bash <<'EOF'\n${N}\nEOF`)],
+    ['step if: false', step(N, { if: false })],
+    ['step if: ${{ false }}', step(N, { if: '${{ false }}' })],
+    ['step if: github.event_name == push', step(N, { if: "github.event_name == 'push'" })],
+    ['shell: bash {0} || true', step(N, { shell: 'bash {0} || true' })],
+    ['shell: python', step(N, { shell: 'python' })],
+    ['step continue-on-error', step(N, { 'continue-on-error': true })],
+    ['&& chain with a non-simple head', step(`false || true && ${N}`)],
+    ['! negation', step(`! ${N}`)],
+  ]
+  const positives = [
+    ['plain line', step(N)],
+    ['after set -euo pipefail', step(`set -euo pipefail\n${N}`)],
+    ['env assignment prefix', step(`FOO=1 ${N}`)],
+    ['line continuation', step(`node scripts/docs-sync.mjs \\\n  --check`)],
+    ['pipefail + leg FIRST, into tee (the census shape)', step(`set -o pipefail\n${N} 2>&1 | tee out.txt`)],
+    ['if: always()', step(N, { if: 'always()' })],
+    ['shell: bash', step(N, { shell: 'bash' })],
+  ]
+  const leaked = negatives.filter(([, j]) => gradeLeg(j, LEG) === null).map(([n]) => n)
+  const refused = positives.filter(([, j]) => gradeLeg(j, LEG) !== null).map(([n]) => n)
+  // POSITIVE on the real tree: every layer satisfies every declared leg.
+  const real = checkRequiredJobs({ files: workflowFiles(ROOT), manifest: loadManifest() }).findings
+    .filter((f) => /LEG_/.test(f.code))
+  const ok = leaked.length === 0 && refused.length === 0 && real.length === 0
+  return {
+    ok,
+    detail: ok
+      ? `${String(negatives.length)} negatives all UNSATISFIED; ${String(positives.length)} allowed shapes satisfied; every real layer satisfies every leg`
+      : [
+          leaked.length > 0 ? `SATISFIED by evasion: ${leaked.join(' | ')}` : '',
+          refused.length > 0 ? `allowed shape REFUSED: ${refused.join(' | ')}` : '',
+          real.length > 0 ? `real workflow leg findings: ${real.map((f) => f.detail).join(' ;; ')}` : '',
+        ].filter(Boolean).join(' ;; '),
+  }
 })
 
 // ─────────────────────────────────────── preserved positive 1: non-Team native control

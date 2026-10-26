@@ -81,3 +81,12 @@ RED (control C13 before the fix):
 GREEN after (manifest aggregate.gradedNeeds=[synthesize]):
   EB3-REQUIRED fail layers=5 green=4 nongreen=synthesize:failure
   PASS C13 merge-tree-job-is-graded :: layers all green + synthesize failure/cancelled/skipped/absent => fail each
+
+## (viii) R2 F-2 — the fail-closed claim was FALSE; the reader is now an allowlist
+R2 review (task/u7-2-review-r2-20261026 @ 824d44aa7) falsified the documented claim that
+"a construct the reader does not understand never SATISFIES a leg" with three invented shapes.
+RED on 3af623b2e, control C14 (verbatim):
+  FAIL C14 leg-allowlist-not-denylist :: SATISFIED by evasion: r2-1 if false, leg on its own line | false && leg (errexit ignores non-final && members) | leg && true (leg failure swallowed as non-final) | trap EXIT after (overrides exit status) | function shadowing node | PATH redirected before | cd before (relative script path moves) | source before | step working-directory | step env PATH | r2-2 background & | r2-3 || exit 0 | set +e before | set +o errexit before | trap … ERR before | case arm, own line | ; true after | | cat WITH pipefail (leg not last) | for loop body | while loop body | function body | heredoc fed to bash | shell: bash {0} || true | shell: python | step continue-on-error | && chain with a non-simple head
+  
+  0/1 control(s) behaved as required
+Full before/after per case: R2-C14-TABLE.md (28/46 leaked before; 0 after).
