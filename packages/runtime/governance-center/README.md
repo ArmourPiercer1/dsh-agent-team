@@ -1,7 +1,19 @@
 # `packages/runtime/governance-center/` — the U6 center-assembly lane
 
-**State (U6 PR2, 2026-10-25): ENFORCING for kernel-owned names; SHADOW for the
-rest.** The governed `read` name is now KERNEL-OWNED: `src/plugin/live/team-tool-plane.mjs`
+**State (U6 PR4, 2026-10-26): ENFORCING for kernel-owned names; SHADOW for the
+rest.** Kernel-owned names are now the governed `read` name (PR2) AND the jobs
+management trio `job_output / job_list / job_kill` (PR4, ARC-C): the trio is
+the FIRST family admitted through the schema's `named-bridge` backing —
+`src/plugin/live/jobs-family-bridge.mjs` carries the bridge body VERBATIM
+(byte-identity digest `71705d6e…` against the sup-b PoC-3 master extract) and
+contributes its center face (row defs + the `dsh.jobs-family` contribution)
+through the SAME closed schema and Registry as every other family; the plane's
+former direct trio injection is REMOVED (no dual ledger: one kernel table,
+one consume port, one guard — pinned by
+`packages/runtime/test/u6-pr4-jobs-bridge.test.ts` groups A–E). The
+jobs-gateway assembly and `pa-mount-registry.mjs` are imported UNMODIFIED
+(CI-08; E1 pins both files by sha). The governed `read` name remains
+KERNEL-OWNED: `src/plugin/live/team-tool-plane.mjs`
 mounts the center assembly for the read family (approval table = the pb §6
 feed for `read`; one-shot consume routed through `kernel.consumeOnce` bound to
 the existing tool-admission face; the Guard's `kernelGuard` port carries the
@@ -158,3 +170,25 @@ stop-with-marker, release-on-dispose). RED/GREEN logs:
 C2 parity (`tests/world-factory/u5-canary-runner.mjs --suite u6-shadow`)
 runs shadow ON vs OFF on the pinned Host and compares the native result
 ledger and oracle effects.
+`packages/runtime/test/u6-pr4-jobs-bridge.test.ts` (C1, PR4/ARC-C): the move
+law (body sha `71705d6e…`, old home = re-export edge only, bridge module
+imports nothing but `node:crypto` + the contracts barrel), the closed-schema
+law (named-bridge registers; provider-backed-without-bridge and
+family-body-backed refuse via `schemaCode`), kernel family/owns/revoke
+binding, the SAME-admission law over the real gateway assembly (approval
+entries fed from the kernel table; owner trio runs with the approval lane
+untouched; owner-mismatch fence measured at zero service reach), and the
+frozen-file + mount-generation law with the E3 plant (identity-less disposer
+destroys the current mount; the registry's identity law keeps it alive).
+C2 (`--suite u6-jobs`, six boots, budget 6/6 spent): the MEASURED live
+legs — `jobs:mounted` (the family places its trio rows on a real Team
+mount through the closed schema, zero refusals) and `jobs:leak-check`
+PASS on every mount-reached boot; `jobs:no-second-ledger` PASSed with
+real governed trio traffic (7 trio calls, Control rows 0). The EFFECT
+legs (real background job born, ring-managed, honest cancel, owner
+fence, untreated native root trio) stand FAIL-DISCLOSED: each boot's
+receipt named one harness cause (substrate rows, sandbox disk law,
+transcript contamination, wrong bash variant + ask envelope, provider
+duplication, required `description`), the sixth fix is committed
+unverified-by-budget. Full receipts:
+`dev/agent-workflow/evidence/u6-pr4-20261026/`.
