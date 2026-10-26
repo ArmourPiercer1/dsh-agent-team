@@ -63,7 +63,9 @@ node scripts/eb3-family-definitions.mjs          pass files=7 findings=0        
 node scripts/eb3-family-boundaries.mjs           pass files=23 findings=0                exit 0
 node scripts/eb3-run-manifest.mjs                pass records=40 strict=0 incomplete=11  exit 0
 node scripts/eb3-impact.mjs --paths <unknown>    selection=ci-fast,ci-full,ci-integration,ci-security unknown=1  exit 0
-node scripts/eb3-security-run.mjs                PASS suites=20 files=83 passed=270 clock_ms=20000  exit 0
+node scripts/eb3-security-run.mjs                PASS suites=19 files=19 passed=250 clock_ms=20000  exit 0   (host-free)
+node scripts/eb3-security-run.mjs --layer ci-full --list-file tests/checks/eb3-host-security-suites.txt
+                                                 PASS suites=1 files=1 passed=20   clock_ms=20000  exit 0   (host-PROVISIONED)
 node scripts/eb3-impact.mjs   (no --base)        REFUSED NO_BASE (the ONE non-zero exit, by design)  exit 2
 node scripts/docs-sync.mjs --check               blocking=0                              exit 0
 node scripts/docs-probe.mjs --worktree-only      blocking=0                              exit 0
@@ -95,6 +97,69 @@ This matters for the PR's verification quote: the known-old-red set is preserved
 The nine were retired by another lane with per-identity evidence
 (`u7-1-old-reds-20261026/OLD-REDS.md` plus mutation controls), and the gate refuses a
 zero that cannot name them.
+
+## D3. PR #395's FIRST HOSTED RUN WAS RED, and what came out of it
+
+`ci-security` reported `verdict=FAIL suites=20 files=83 passed=267 failed=3` (run
+40337197705). The layer behaved correctly — red, not laundered — but the local
+**270/270 was HOST-ASSISTED** and I should have caught that before pushing:
+`a5-pindir-reserved-native.test.ts` resolves the pinned host checkout
+(`findTestRepoRoot` / `TEST_USE_REL` / `TEST_USE_BASELINE_SHA`), which this worktree
+has and the hosted runner does not. It was the only one of the 20 so affected.
+
+`files=83` in that token was ALSO wrong: the runner used `numTotalTestSuites`, which
+counts DESCRIBE BLOCKS. It now reports the real file count and REFUSES when that count
+differs from the number of listed suites — a listed suite vitest never reported did
+not run. (ci-security is 19 files / 250 tests, ci-full's host list 1 file / 20 tests.)
+
+The suite was **moved, not dropped**: it is now
+`tests/checks/eb3-host-security-suites.txt`, run by **ci-full** through the same token
+runner with `--layer ci-full`, and **ci-full is called by ci-required on every PR** —
+so this security control still gates every PR, it just runs where the host exists. The
+move is recorded in `dev/ci/eb3-ci-manifest.json` → `movedSuites`, both lists carry a
+tombstone/pointer comment, and `CI_SUITE_MOVE_DANGLING` reds if a recorded move points
+at an unknown or non-host layer.
+
+Two STATIC guards now make the incident unrepeatable, and both were proven RED first
+([R1-RED.txt](R1-RED.txt)):
+
+* `CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER` — a layer declared `hostFree` may not
+  list a suite naming a host-dependence marker.
+* `CI_LAYER_LEG_MISSING` / `CI_LAYER_LEG_WEAKENED` — see D4.
+
+## D4. The mandatory-leg rule was a substring search (R1 review blocker)
+
+`stepsText(job).includes(leg)` accepted `echo docs:sync --check`, a `#` comment inside
+`run:`, a step `name:`, a quoted string handed to `printf`, or the census invocation
+carrying `--allow-refused census`. The R1 review proved the echo evasion; I staged nine
+of them and ALL were undetected.
+
+The manifest now declares each leg as the CONCRETE INVOCATION it must perform
+(`{cmd:['node','scripts/docs-sync.mjs'], check:['--check']}`; for census:
+`check:['--full','--census-captures','--census-test-timeout']`,
+`forbid:['--allow-refused','--skip']` with `--allow-refused census` matched by VALUE).
+`scripts/eb3-ci-required.mjs` parses each `run:` script into simple commands
+(`commandsOf`) and grades what would EXECUTE.
+
+The YAML fact it rests on, MEASURED not assumed: a `#` line between steps is a YAML
+comment the parser drops (a commented-out step cannot invoke anything); a `#` line
+inside `run: |` is part of the script string, so the checker strips shell comments
+itself; `name:` is never read. It is not a shell — a construct it cannot parse never
+SATISFIES a leg, which is the safe direction.
+
+Weakening is separated from absence: `|| true`, an un-`pipefail`ed pipe, a conditional
+step, a missing required flag, or a forbidden flag each report `CI_LAYER_LEG_WEAKENED`
+naming which.
+
+**Item 4 — the same pattern elsewhere: three more found, all fixed** (C11, RED first):
+`always()` was matched as a substring, so `if: ${{ always() && false }}` passed (both on
+the summary job and on the layer verdict step); `computesFromJobStatus` accepted a
+`job.status` mention anywhere, so deleting the `case` and writing a constant `PASS`
+passed because a log line still mentioned it; and the synthesize/grade steps were
+matched by text, so `echo`ing them passed. Now: `always()` must BE the condition
+(no `false`, no negation), the verdict value must be traced from the `case` block that
+assigns it, and synthesize/grade must be EXECUTED with `EB3_NEEDS_JSON` bound exactly
+to `${{ toJSON(needs) }}`.
 
 ## E. Honest gaps
 

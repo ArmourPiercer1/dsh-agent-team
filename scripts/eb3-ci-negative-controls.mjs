@@ -480,6 +480,135 @@ control('C8 run-manifest-refuses-rewrites', () => {
   return { ok: misses.length === 0, detail: misses.length === 0 ? `honest ${seed.rel.split('/').slice(-3).join('/')} passes; ${tries.map((t) => t[0]).join(', ')} each refused` : misses.join(' ;; ') }
 })
 
+// ─────────────────────────────── control 9: a mandatory leg must be INVOKED, not mentioned
+/**
+ * R1 review blocker (PR #395). The first mandatory-leg rule was
+ * `stepsText(job).includes(leg)` — a substring search over step text — so a leg could
+ * be satisfied by an `echo` of its name, a comment inside `run:`, or a weaker
+ * invocation. The reviewer proved `echo docs:sync --check` passed. Each mutation here
+ * is one quiet edit to the REAL workflow text; every one must produce a finding, and
+ * the honest workflows must produce none.
+ *
+ * YAML FACT, measured not assumed: a `#` line between steps is a YAML comment and the
+ * parser drops it entirely; a `#` line INSIDE a `run: |` block is part of the script
+ * string the parser returns. So (d) is staged both ways: a commented-out YAML step
+ * (must vanish — nothing invokes the leg) and a shell comment inside `run:` (survives
+ * parsing — the checker itself must strip it). `name:` is never `run:`, so (b) moves
+ * the invocation into the name.
+ */
+control('C9 mandatory-leg-invoked-not-mentioned', () => {
+  const { checkRequiredJobs, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  const wf = workflowFiles(ROOT)
+  const honest = checkRequiredJobs({ files: wf }).findings
+  if (honest.length !== 0) return { ok: false, detail: `honest workflows already fail: ${honest.map((f) => f.code).join(',')}` }
+  const FAST = '.github/workflows/ci-fast.yml'
+  const FULL = '.github/workflows/ci-full.yml'
+  const SYNC = 'node scripts/docs-sync.mjs --check'
+  const stage = (name, path, edit, codes) => {
+    const before = wf.get(path)
+    if (before === undefined) return `${name}: ${path} absent`
+    const after = edit(before)
+    if (after === before) return `${name}: mutation did not apply`
+    const m = new Map(wf)
+    m.set(path, after)
+    const f = checkRequiredJobs({ files: m }).findings
+    return f.some((x) => codes.includes(x.code)) ? null : `${name}: not detected (${codes.join('|')}; got ${f.map((x) => x.code).join(',') || 'none'})`
+  }
+  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED']
+  const misses = [
+    // (a) the real invocation replaced by an echo of the same words
+    stage('a-echo', FAST, (t) => t.replace(`            ${SYNC}\n`, `            echo ${SYNC}\n`), LEG),
+    // (b) the invocation exists only in a step NAME (the real one removed)
+    stage('b-name-only', FAST, (t) => t.replace(`            ${SYNC}\n`, '            true\n').replace('- name: docs:sync --check (when the change touches documents)', `- name: ${SYNC}`), LEG),
+    // (c1) the census flag-set weakened: --allow-refused census added
+    stage('c1-allow-refused', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --allow-refused census \\\n'), LEG),
+    // (c2) the census flag removed: no --full, so the opt-in census is SKIPPED by default
+    stage('c2-no-full', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs \\\n'), LEG),
+    // (c3) the census itself skipped by name
+    stage('c3-skip-census', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --skip census \\\n'), LEG),
+    // (d1) a shell COMMENT inside run: — survives YAML parsing, must not count
+    stage('d1-shell-comment', FAST, (t) => t.replace(`            ${SYNC}\n`, `            # ${SYNC}\n            true\n`), LEG),
+    // (d2) a commented-out YAML step — the parser drops it; nothing invokes the leg
+    stage('d2-yaml-commented-step', FAST, (t) => t.replace(`            ${SYNC}\n`, '            true\n') + `      # - run: ${SYNC}\n`, LEG),
+    // (e) the invocation inside a quoted string handed to echo/printf
+    stage('e-quoted-string', FAST, (t) => t.replace(`            ${SYNC}\n`, `            printf '%s\\n' "${SYNC}"\n`), LEG),
+    // (f) the invocation made unreachable: `|| true` would swallow its failure
+    stage('f-or-true', FAST, (t) => t.replace(`            ${SYNC}\n`, `            ${SYNC} || true\n`), LEG),
+  ].filter((x) => x !== null)
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? 'honest workflows pass; a-echo, b-name-only, c1-allow-refused, c2-no-full, c3-skip-census, d1-shell-comment, d2-yaml-commented-step, e-quoted-string, f-or-true each detected'
+      : misses.join(' ;; '),
+  }
+})
+
+// ─────────────────────── control 10: a host-free layer may not list a host-dependent suite
+/**
+ * PR #395 first hosted run: ci-security went RED (267/270) because one listed suite,
+ * a5-pindir-reserved-native, harvests the PINNED HOST tree (findTestRepoRoot,
+ * TEST_USE_REL, TEST_USE_BASELINE_SHA) and ci-security provisions no host. The local
+ * 270/270 was host-assisted — this worktree resolves tests/deepseek-harness-test-use.
+ * The layer did the right thing (red, not laundered); this control makes the
+ * misplacement a STATIC refusal so it can never reach a hosted run again.
+ */
+control('C10 host-free-layer-refuses-host-dependent-suite', () => {
+  const { checkSuiteLists } = requireModule('scripts/eb3-ci-required.mjs')
+  if (typeof checkSuiteLists !== 'function') return { ok: false, detail: 'eb3-ci-required.mjs exports no checkSuiteLists — host-dependence is not graded at all' }
+  const honest = checkSuiteLists({ root: ROOT })
+  if (honest.findings.length !== 0) return { ok: false, detail: `honest suite lists already fail: ${honest.findings.map((f) => f.detail).join(' ;; ')}` }
+  const PINDIR = 'packages/runtime/test/a5-pindir-reserved-native.test.ts'
+  const list = readFileSync(join(ROOT, 'tests/checks/eb3-security-suites.txt'), 'utf8')
+  if (list.split('\n').includes(PINDIR)) return { ok: false, detail: `${PINDIR} is still listed in the host-free ci-security list` }
+  const planted = checkSuiteLists({ root: ROOT, override: { 'tests/checks/eb3-security-suites.txt': `${list}${PINDIR}\n` } })
+  const hit = planted.findings.find((f) => f.code === 'CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER' && f.detail.includes(PINDIR))
+  return {
+    ok: hit !== undefined,
+    detail: hit !== undefined
+      ? `honest lists pass; re-listing ${PINDIR.split('/').pop()} in host-free ci-security => ${hit.code}`
+      : `re-listing ${PINDIR} in host-free ci-security NOT detected: ${planted.findings.map((f) => f.code).join(',') || 'no findings'}`,
+  }
+})
+
+// ──────────────────── control 11: the remaining text rules must not be satisfiable by text
+/**
+ * R1 review item 4: "re-check the rest of the manifest for the same pattern". The
+ * leg rule was not the only one deciding by substring. Each mutation below satisfies
+ * the OLD predicate textually while disabling what it guards:
+ *
+ *   a  summary `if: ${{ always() && false }}` — contains `always()`, never runs
+ *   b  layer verdict step `if: ${{ always() && false }}` — same, on the token step
+ *   c  verdict step reads job.status only in a SHELL COMMENT, writes a constant PASS
+ *   d  synthesize job no longer EXECUTES `eb3-merge-tree.mjs --synthesize` (echo)
+ *   e  grade step echoes the grader instead of executing it
+ *   f  grade step executes the grader but its env no longer binds toJSON(needs)
+ */
+control('C11 remaining-text-rules-not-textually-satisfiable', () => {
+  const { checkRequiredJobs, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  const wf = workflowFiles(ROOT)
+  if (checkRequiredJobs({ files: wf }).findings.length !== 0) return { ok: false, detail: 'honest workflows already fail' }
+  const REQ = '.github/workflows/ci-required.yml'
+  const INT = '.github/workflows/ci-integration.yml'
+  const stage = (name, path, edit, codes) => {
+    const before = wf.get(path)
+    const after = edit(before)
+    if (after === before) return `${name}: mutation did not apply`
+    const m = new Map(wf)
+    m.set(path, after)
+    const f = checkRequiredJobs({ files: m }).findings
+    return f.some((x) => codes.includes(x.code)) ? null : `${name}: not detected (${codes.join('|')}; got ${f.map((x) => x.code).join(',') || 'none'})`
+  }
+  const misses = [
+    stage('a-summary-always-and-false', REQ, (t) => t.replace(/(\n {4})if: always\(\)(\n {4}needs:)/, '$1if: ${{ always() && false }}$2'), ['CI_SUMMARY_NOT_ALWAYS']),
+    stage('b-verdict-step-always-and-false', INT, (t) => t.replace(/(id: eb3_layer_verdict\n {8})if: always\(\)/, '$1if: ${{ always() && false }}'), ['CI_LAYER_VERDICT_OUTPUT_UNBOUND']),
+    stage('c-verdict-job-status-in-comment', INT, (t) => t.replace(/case "\$\{\{ job\.status \}\}" in\n(?:.*\n)*? {10}esac\n/, '# ${{ job.status }}\n          V=PASS\n'), ['CI_LAYER_VERDICT_OUTPUT_UNBOUND']),
+    stage('d-synthesize-echoed', REQ, (t) => t.replace('node scripts/eb3-merge-tree.mjs --synthesize', 'echo node scripts/eb3-merge-tree.mjs --synthesize'), ['CI_SUMMARY_NOT_SYNTHESIZING']),
+    stage('e-grader-echoed', REQ, (t) => t.replace('node scripts/eb3-merge-tree.mjs --grade-needs', 'echo node scripts/eb3-merge-tree.mjs --grade-needs'), ['CI_SUMMARY_NOT_GRADING']),
+    stage('f-needs-unbound', REQ, (t) => t.replace('EB3_NEEDS_JSON: ${{ toJSON(needs) }}', "EB3_NEEDS_JSON: '{}'"), ['CI_SUMMARY_NOT_GRADING']),
+  ].filter((x) => x !== null)
+  return { ok: misses.length === 0, detail: misses.length === 0 ? 'honest workflows pass; a-summary-always-and-false, b-verdict-step-always-and-false, c-verdict-job-status-in-comment, d-synthesize-echoed, e-grader-echoed, f-needs-unbound each detected' : misses.join(' ;; ') }
+})
+
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
 /**
  * PRESERVED POSITIVE A — "保留非 Team Native 正控". The two controls that prove a

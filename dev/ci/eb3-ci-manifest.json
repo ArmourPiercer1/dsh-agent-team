@@ -1,6 +1,6 @@
 {
   "schema": "eb3-ci-manifest/1",
-  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group.",
+  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group. Each layer's `legs` name the CONCRETE invocation it must perform (cmd + required flags + forbidden flags), not a word to look for: a leg satisfied by an echo, a step name, a shell comment or a weaker flag set is not a leg. `hostFree` declares whether the layer may list a suite that resolves the pinned host checkout; eb3-ci-required refuses a host-dependent suite in a hostFree layer (CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER).",
   "aggregate": {
     "workflow": ".github/workflows/ci-required.yml",
     "job": "ci-required",
@@ -20,13 +20,37 @@
       "mustRunOn": [
         "workflow_call"
       ],
-      "mandatoryLegs": [
-        "EB3_MERGE_TREE",
-        "docs:sync --check",
-        "docs:probe",
-        "eb3-impact"
+      "cancelInProgress": false,
+      "legs": [
+        {
+          "id": "eb3-impact",
+          "cmd": [
+            "node",
+            "scripts/eb3-impact.mjs"
+          ],
+          "why": "the selection itself must run"
+        },
+        {
+          "id": "docs:probe",
+          "cmd": [
+            "node",
+            "scripts/docs-probe.mjs"
+          ],
+          "why": "MANDATORY per PR (plan: ci-fast 强制 docs:probe)"
+        },
+        {
+          "id": "docs:sync --check",
+          "cmd": [
+            "node",
+            "scripts/docs-sync.mjs"
+          ],
+          "check": [
+            "--check"
+          ],
+          "why": "triggered by a document hit"
+        }
       ],
-      "cancelInProgress": false
+      "hostFree": true
     },
     {
       "id": "ci-integration",
@@ -36,18 +60,70 @@
       "mustRunOn": [
         "workflow_call"
       ],
-      "mandatoryLegs": [
-        "EB3_MERGE_TREE",
-        "graph-parse",
-        "state-freshness",
-        "typecheck",
-        "eb3-ci-required",
-        "eb3-trusted-sources",
-        "eb3-family-definitions",
-        "eb3-family-boundaries",
-        "eb3-run-manifest"
+      "cancelInProgress": false,
+      "legs": [
+        {
+          "id": "graph-parse+state-freshness",
+          "cmd": [
+            "node",
+            "scripts/ci-pr-gate.mjs"
+          ],
+          "check": [
+            "--only",
+            "graph-parse"
+          ]
+        },
+        {
+          "id": "typecheck",
+          "cmd": [
+            "pnpm",
+            "typecheck"
+          ]
+        },
+        {
+          "id": "eb3-ci-required",
+          "cmd": [
+            "node",
+            "scripts/eb3-ci-required.mjs"
+          ]
+        },
+        {
+          "id": "eb3-trusted-sources",
+          "cmd": [
+            "node",
+            "scripts/eb3-trusted-sources.mjs"
+          ]
+        },
+        {
+          "id": "eb3-family-definitions",
+          "cmd": [
+            "node",
+            "scripts/eb3-family-definitions.mjs"
+          ]
+        },
+        {
+          "id": "eb3-family-boundaries",
+          "cmd": [
+            "node",
+            "scripts/eb3-family-boundaries.mjs"
+          ]
+        },
+        {
+          "id": "eb3-run-manifest",
+          "cmd": [
+            "node",
+            "scripts/eb3-run-manifest.mjs"
+          ]
+        },
+        {
+          "id": "eb3-negative-controls",
+          "cmd": [
+            "node",
+            "scripts/eb3-ci-negative-controls.mjs"
+          ]
+        }
       ],
-      "cancelInProgress": false
+      "hostFree": true
     },
     {
       "id": "ci-security",
@@ -57,11 +133,18 @@
       "mustRunOn": [
         "workflow_call"
       ],
-      "mandatoryLegs": [
-        "EB3_MERGE_TREE",
-        "scripts/eb3-security-run.mjs"
+      "cancelInProgress": false,
+      "legs": [
+        {
+          "id": "security-suites",
+          "cmd": [
+            "node",
+            "scripts/eb3-security-run.mjs"
+          ]
+        }
       ],
-      "cancelInProgress": false
+      "hostFree": true,
+      "suiteList": "tests/checks/eb3-security-suites.txt"
     },
     {
       "id": "ci-full",
@@ -71,11 +154,57 @@
       "mustRunOn": [
         "workflow_call"
       ],
-      "mandatoryLegs": [
-        "EB3_MERGE_TREE",
-        "census"
+      "cancelInProgress": false,
+      "legs": [
+        {
+          "id": "host-security-suites",
+          "cmd": [
+            "node",
+            "scripts/eb3-security-run.mjs"
+          ],
+          "check": [
+            "--layer",
+            "ci-full",
+            "--list-file",
+            "tests/checks/eb3-host-security-suites.txt"
+          ],
+          "why": "the security controls that need the pinned host, token-graded"
+        },
+        {
+          "id": "census",
+          "cmd": [
+            "node",
+            "scripts/ci-pr-gate.mjs"
+          ],
+          "check": [
+            "--full",
+            "--census-captures",
+            "--census-test-timeout"
+          ],
+          "forbid": [
+            "--allow-refused",
+            "--skip"
+          ],
+          "forbidValues": {
+            "--allow-refused": [
+              "census"
+            ]
+          },
+          "why": "`--full` is what makes the opt-in census required; `--allow-refused census` is exactly the declaration that lets the population go unmeasured, so a layer claiming census coverage may not carry it, and `--skip census` would drop it by name"
+        },
+        {
+          "id": "gate-transcript-regrade",
+          "cmd": [
+            "node",
+            "scripts/ci-pr-gate.mjs"
+          ],
+          "check": [
+            "--check-transcript"
+          ]
+        }
       ],
-      "cancelInProgress": false
+      "hostFree": false,
+      "suiteList": "tests/checks/eb3-host-security-suites.txt"
     }
   ],
   "knownNonRequired": [
@@ -98,6 +227,14 @@
       "workflow": ".github/workflows/characterization.yml",
       "job": "characterize",
       "why": "archival/manual by user ruling since 2026-09-17 (workflow_dispatch only)."
+    }
+  ],
+  "movedSuites": [
+    {
+      "suite": "packages/runtime/test/a5-pindir-reserved-native.test.ts",
+      "from": "ci-security",
+      "to": "ci-full",
+      "why": "resolves the pinned host (findTestRepoRoot, TEST_USE_REL, TEST_USE_BASELINE_SHA); ci-security provisions none. PR #395 first hosted run: ci-security 267/270 on exactly this file's three host-reading legs. ci-full provisions the host and runs on every PR via ci-required, so the control still gates every PR."
     }
   ]
 }

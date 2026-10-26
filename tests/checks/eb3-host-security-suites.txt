@@ -1,0 +1,12 @@
+# EB3 ci-full host-provisioned security suites — security controls that resolve the
+# PINNED HOST checkout (tests/paths.mjs) and therefore cannot run in the host-free
+# ci-security layer. ci-full provisions the host and runs this list through the same
+# token runner (scripts/eb3-security-run.mjs --layer ci-full --list-file <this>), on
+# EVERY PR (ci-required calls ci-full unconditionally), so a suite moved here still
+# gates every PR. One path per line; `#` comments and blanks are ignored.
+#
+# a5-pindir-reserved-native: the reserved-native registry must EQUAL the pinned host's
+# tool catalog harvest, both directions, with a provenance check per pin. Moved here
+# from tests/checks/eb3-security-suites.txt after PR #395's first hosted run (see the
+# movedSuites entry in dev/ci/eb3-ci-manifest.json).
+packages/runtime/test/a5-pindir-reserved-native.test.ts

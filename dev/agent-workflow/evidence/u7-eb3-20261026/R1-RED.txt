@@ -1,0 +1,55 @@
+# PR #395 R1 review — RED captured BEFORE each fix (pushed head e95a86ab4), then GREEN
+
+Two blockers from the R1 review and one hosted-run incident, all the same class: a
+green light wired to nothing.
+
+## (i) the mandatory-leg rule was a SUBSTRING search — C9 vs the checker as pushed
+
+Reviewer's proof: replacing the real `node scripts/docs-sync.mjs --check` with
+`echo docs:sync --check` still returned pass. Nine evasions staged; ALL undetected:
+
+FAIL C9 mandatory-leg-invoked-not-mentioned :: a-echo: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; b-name-only: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; c1-allow-refused: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; c2-no-full: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; c3-skip-census: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; d1-shell-comment: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; d2-yaml-commented-step: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; e-quoted-string: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none) ;; f-or-true: not detected (CI_LAYER_LEG_MISSING|CI_LAYER_LEG_WEAKENED; got none)
+
+0/1 control(s) behaved as required
+
+## (ii) host-dependence was not graded at all — C10 vs the checker as pushed
+FAIL C10 host-free-layer-refuses-host-dependent-suite :: eb3-ci-required.mjs exports no checkSuiteLists — host-dependence is not graded at all
+
+0/1 control(s) behaved as required
+
+## (iii) the reviewer's item 4: is the same pattern elsewhere? — C11 vs the checker as pushed
+FAIL C11 remaining-text-rules-not-textually-satisfiable :: a-summary-always-and-false: not detected (CI_SUMMARY_NOT_ALWAYS; got none) ;; b-verdict-step-always-and-false: not detected (CI_LAYER_VERDICT_OUTPUT_UNBOUND; got none) ;; c-verdict-job-status-in-comment: not detected (CI_LAYER_VERDICT_OUTPUT_UNBOUND; got none) ;; d-synthesize-echoed: not detected (CI_SUMMARY_NOT_SYNTHESIZING; got none) ;; e-grader-echoed: not detected (CI_SUMMARY_NOT_GRADING; got none)
+
+0/1 control(s) behaved as required
+
+## (iv) GREEN after the fixes
+
+PASS C1 required-ci-job-removal :: honest tree passes; removing required job "ci-fast" produced CI_REQUIRED_JOB_ABSENT naming it
+PASS C2 unknown-mcp-tool-injection :: honest tree has no unbooked MCP spelling; injecting mcp__injected_server__exfiltrate_everything produced MCP_TOOL_UNKNOWN naming it
+PASS C3 execution-definition-replaced :: honest tree passes; 3a detected on packages/tools/fs-family/src/fs-read-contribution.mjs, 3b detected on packages/tools/fs-family/src/read-row.mjs, 3c detected on packages/tools/fs-family/src/fs-read-contribution.mjs, 3d detected on packages/tools/fs-family/src/fs-read-contribution.mjs
+PASS C4 cross-family-influence :: honest tree passes (4 lanes declare edges); 4a detected, 4b detected, 4c detected (mutations staged on packages/tools/search-family/src/search-mechanics.mjs)
+PASS C5 required-context-nongreen-states :: all-green => pass; each of absent, skip, cancel, failure, ENV_BLOCK, refused, SKIP-token, verdict-missing, unrecognised-result, empty-needs on layer ci-integration => fail
+PASS C6 summary-wiring-loosened :: honest workflows pass; drop-always, drop-need, paths-filter, continue-on-error, cancel-in-progress, job-level-if each detected
+PASS C7 impact-unknown-nonzero :: unknown path => all 4 layers; empty change => ci-fast+docs:probe; doc hit => docs:sync --check; family path keeps family checks under the union law
+PASS C8 run-manifest-refuses-rewrites :: honest live/crash-reclaim-2/run-u5-crash-2026-10-25T17-25-10-141Z.json passes; rewritten-overall, env-block-case-graded-pass, unknown-verdict-token, dropped-selected-case, host-generation-mixed, team-sha-unresolvable, invented-authority-generation, superseded-generation-on-new-record, wrong-evidence-digest, missing-evidence each refused
+PASS C9 mandatory-leg-invoked-not-mentioned :: honest workflows pass; a-echo, b-name-only, c1-allow-refused, c2-no-full, c3-skip-census, d1-shell-comment, d2-yaml-commented-step, e-quoted-string, f-or-true each detected
+PASS C10 host-free-layer-refuses-host-dependent-suite :: honest lists pass; re-listing a5-pindir-reserved-native.test.ts in host-free ci-security => CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER
+PASS C11 remaining-text-rules-not-textually-satisfiable :: honest workflows pass; a-summary-always-and-false, b-verdict-step-always-and-false, c-verdict-job-status-in-comment, d-synthesize-echoed, e-grader-echoed, f-needs-unbound each detected
+PASS P1 non-Team-native-positive-preserved :: both non-Team native positive controls present and still asserting the native ride (u6-pr3-bl01-ask-door.test.ts, u6-pr2-review-r1.test.ts); pinned BY ASSERTION, not by title
+PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md is zero BY NAMED RETIREMENT (sentinel: 9 retired against 2b1099d7); retirement names the predecessor's full set of 9 => complete; empty run => pass (correct), one planted new red => fail (correct)
+
+13/13 control(s) behaved as required
+
+## (v) the new static check names the hosted-run red BEFORE any runner starts
+
+Real tree:
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+exit=0
+
+With a5-pindir put BACK into the host-free list (the incident recreated as a static red):
+  CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER layer ci-security is declared hostFree but lists packages/runtime/test/a5-pindir-reserved-native.test.ts, which resolves the pinned host (findTestRepoRoot, TEST_USE_REL, TEST_USE_BASELINE_SHA) — on a hosted runner it cannot run; move it to a layer that provisions the host and record the move in dev/ci/eb3-ci-manifest.json
+EB3-CI-REQUIRED fail workflows=9 findings=1
+exit=1
+
+Restored; exit above confirms the re-list is refused statically, without running vitest.

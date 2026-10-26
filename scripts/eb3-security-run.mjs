@@ -25,7 +25,7 @@
  * vitest binary) is ENV_BLOCK, and ENV_BLOCK is a disclosure the summary treats as
  * NOT green — never a pass.
  *
- *   node scripts/eb3-security-run.mjs [--list-file <path>] [--timeout <ms>] [--json]
+ *   node scripts/eb3-security-run.mjs [--layer <ci-…>] [--list-file <path>] [--timeout <ms>] [--json]
  *
  * Exit: 0 PASS | 1 FAIL | 3 ENV_BLOCK | 4 REFUSED (bad config, empty suite list).
  */
@@ -45,10 +45,17 @@ const arg = (n) => { const i = argv.indexOf(n); return i > -1 ? argv[i + 1] : nu
 const listFile = arg('--list-file') ?? DEFAULT_LIST
 const timeout = Number(arg('--timeout') ?? DEFAULT_TIMEOUT)
 const json = argv.includes('--json')
+// The layer NAME on the token. ci-full runs this same runner over the host-provisioned
+// list; a token that said ci-security there would misattribute the result.
+const layerName = arg('--layer') ?? 'ci-security'
+if (!/^ci-[a-z]+$/.test(layerName)) {
+  console.log(`EB3-LAYER layer=unknown verdict=REFUSED reason=bad --layer ${JSON.stringify(layerName)}`)
+  process.exit(4)
+}
 
 function emit(verdict, detail, exit) {
-  if (json) console.log(JSON.stringify({ layer: 'ci-security', verdict, ...detail }, null, 2))
-  else console.log(`EB3-LAYER layer=ci-security verdict=${verdict} ${Object.entries(detail).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+  if (json) console.log(JSON.stringify({ layer: layerName, verdict, ...detail }, null, 2))
+  else console.log(`EB3-LAYER layer=${layerName} verdict=${verdict} ${Object.entries(detail).map(([k, v]) => `${k}=${v}`).join(' ')}`)
   process.exit(exit)
 }
 
@@ -86,8 +93,15 @@ try {
   const r = JSON.parse(readFileSync(report, 'utf8'))
   const passed = r.numPassedTests ?? 0
   const failed = r.numFailedTests ?? 0
-  const files = r.numTotalTestSuites ?? r.testResults?.length ?? 0
-  const body = { suites: suites.length, files: String(files), passed: String(passed), failed: String(failed), clock_ms: String(timeout) }
+  // `files` is the number of TEST FILES vitest reported, and it must equal the listed
+  // suite count: a listed file vitest never reported was not run. The first version used
+  // numTotalTestSuites, which counts DESCRIBE BLOCKS (83 for 20 files) — a figure that
+  // looked like coverage and measured nothing. `describes` keeps that number, named.
+  const fileCount = Array.isArray(r.testResults) ? r.testResults.length : 0
+  const body = { suites: suites.length, files: String(fileCount), describes: String(r.numTotalTestSuites ?? 0), passed: String(passed), failed: String(failed), clock_ms: String(timeout) }
+  if (fileCount !== suites.length) {
+    emit('REFUSED', { ...body, reason: `vitest reported ${String(fileCount)} test file(s) for ${String(suites.length)} listed — a listed suite that never reported did not run` }, 4)
+  }
   if (failed > 0) {
     const names = []
     for (const f of r.testResults ?? []) {
