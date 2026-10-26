@@ -609,6 +609,39 @@ control('C11 remaining-text-rules-not-textually-satisfiable', () => {
   return { ok: misses.length === 0, detail: misses.length === 0 ? 'honest workflows pass; a-summary-always-and-false, b-verdict-step-always-and-false, c-verdict-job-status-in-comment, d-synthesize-echoed, e-grader-echoed, f-needs-unbound each detected' : misses.join(' ;; ') }
 })
 
+// ───────────── control 12: the reusable-workflow BOUNDARY must carry the verdict output
+/**
+ * R1 review, final item. The four layers each declared `jobs.<id>.outputs.verdict`, and
+ * the local checker validated exactly that — but a reusable workflow exposes outputs to
+ * its CALLER only through `on.workflow_call.outputs`, so the caller saw nothing and the
+ * hosted aggregate reported `verdict-missing` for all four layers while every layer job
+ * was green. Fourth instance in this PR of a check that could not see the thing it
+ * claimed to guarantee. This control makes the boundary itself gradable.
+ */
+control('C12 reusable-workflow-output-boundary', () => {
+  const { checkRequiredJobs, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  const wf = workflowFiles(ROOT)
+  if (checkRequiredJobs({ files: wf }).findings.length !== 0) return { ok: false, detail: 'honest workflows already fail' }
+  const misses = []
+  for (const name of ['ci-fast', 'ci-integration', 'ci-security', 'ci-full']) {
+    const path = `.github/workflows/${name}.yml`
+    const before = wf.get(path)
+    // Remove the on.workflow_call.outputs block from the honest file.
+    // Indentation is 4/6/8 in the real files; the first draft guessed 6/8/10 and the
+    // control reported "could not stage its mutation" instead of a verdict — which is
+    // exactly the failure mode a mutation control must not have silently.
+    const after = before.replace(/\n {4}outputs:\n {6}verdict:\n(?: {8}.*\n)+/, '\n')
+    if (after === before) { misses.push(`${name}: could not remove the workflow_call.outputs block (control cannot stage its own mutation)`); continue }
+    const m = new Map(wf)
+    m.set(path, after)
+    const f = checkRequiredJobs({ files: m }).findings
+    if (!f.some((x) => x.code === 'CI_WORKFLOW_CALL_OUTPUT_MISSING' && x.detail.includes(name))) {
+      misses.push(`${name}: removal not detected (${f.map((x) => x.code).join(',') || 'none'})`)
+    }
+  }
+  return { ok: misses.length === 0, detail: misses.length === 0 ? 'honest workflows pass; removing on.workflow_call.outputs from each of the four layers => CI_WORKFLOW_CALL_OUTPUT_MISSING' : misses.join(' ;; ') }
+})
+
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
 /**
  * PRESERVED POSITIVE A — "保留非 Team Native 正控". The two controls that prove a

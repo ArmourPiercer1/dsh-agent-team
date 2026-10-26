@@ -407,6 +407,22 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     // source instead. The token must be derived from ${{ job.status }} so it cannot
     // report PASS for a job GitHub itself calls a failure, while still being able to say
     // something finer than `success`/`failure`.
+    // THE REUSABLE-WORKFLOW BOUNDARY. `jobs.<id>.outputs` is NOT visible to a caller of a
+    // reusable workflow; only `on.workflow_call.outputs` is. The rule below graded the job
+    // output alone and passed four layers whose outputs never crossed the boundary — the
+    // hosted aggregate then reported verdict-missing for all of them while every layer job
+    // was green (run 40346069026). Grading the boundary is a separate rule because it is a
+    // separate mechanism.
+    const wc = (doc.on ?? doc[true])?.workflow_call
+    const boundary = wc?.outputs?.verdict
+    if (boundary === undefined) {
+      add('CI_WORKFLOW_CALL_OUTPUT_MISSING', `layer ${layer.id}: ${layer.workflow} declares no on.workflow_call.outputs.verdict, so its verdict cannot reach the Required summary (a job-level outputs: does not cross a reusable-workflow boundary)`, { layer: layer.id })
+    } else {
+      const want = `jobs.${layer.job}.outputs.verdict`
+      if (!String(boundary.value ?? '').includes(want)) {
+        add('CI_WORKFLOW_CALL_OUTPUT_MISSING', `layer ${layer.id}: on.workflow_call.outputs.verdict must read \${{ ${want} }}; it reads ${JSON.stringify(boundary.value ?? null)}`, { layer: layer.id })
+      }
+    }
     if (!('outputs' in job) || !('verdict' in (job.outputs ?? {}))) {
       add('CI_LAYER_VERDICT_OUTPUT_MISSING', `layer ${layer.id}: ${layer.workflow}#${layer.job} declares no outputs.verdict — the Required summary cannot grade it`, { layer: layer.id })
     } else {

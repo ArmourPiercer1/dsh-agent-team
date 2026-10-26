@@ -53,3 +53,21 @@ EB3-CI-REQUIRED fail workflows=9 findings=1
 exit=1
 
 Restored; exit above confirms the re-list is refused statically, without running vitest.
+
+## (vi) the REUSABLE-WORKFLOW BOUNDARY — hosted run 40346069026 (job 121667675852), verbatim:
+  ci-fast          verdict-missing        needs.ci-fast.result=success but outputs.verdict=(missing)
+  ci-integration   verdict-missing        needs.ci-integration.result=success but outputs.verdict=(missing)
+  ci-security      verdict-missing        needs.ci-security.result=success but outputs.verdict=(missing)
+  ci-full          verdict-missing        needs.ci-full.result=success but outputs.verdict=(missing)
+  EB3-REQUIRED fail layers=4 green=0 nongreen=ci-fast:verdict-missing,...
+
+Every layer JOB was green. The value never crossed the reusable boundary: a called
+workflow exposes outputs ONLY through on.workflow_call.outputs, and all four layers
+declared on.workflow_call.inputs alone. The checker graded jobs.<id>.outputs and so
+passed workflows whose verdicts could not reach the caller.
+
+RED proof (before the rule existed): the checker PASSED all four boundary-less layers:
+  $ node scripts/eb3-ci-required.mjs   -> EB3-CI-REQUIRED pass workflows=9 findings=0
+
+GREEN after: each layer declares on.workflow_call.outputs.verdict -> jobs.<id>.outputs.verdict,
+and removing that block from any of the four is refused (control C12), verified per layer.

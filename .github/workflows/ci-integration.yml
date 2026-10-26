@@ -31,7 +31,14 @@ on:
         description: tree id of the synthetic merge (base + head) this layer must grade
         type: string
         required: true
-
+    # THE REUSABLE-WORKFLOW BOUNDARY. A job-level `outputs:` inside a called workflow is
+    # NOT propagated to the caller — only `on.workflow_call.outputs` is. Without this the
+    # caller's `needs.ci-integration.outputs.verdict` is empty and the aggregate reports
+    # verdict-missing while every layer job is green (measured: hosted run 40346069026).
+    outputs:
+      verdict:
+        description: this layer's EB3 verdict token (PASS|FAIL|CANCELLED)
+        value: ${{ jobs.ci-integration.outputs.verdict }}
 permissions:
   contents: read
 

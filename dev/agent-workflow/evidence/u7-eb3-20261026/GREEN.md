@@ -216,6 +216,32 @@ where it had failed. The base is now `HEAD^1` in all four layers, verified on a 
 merge commit: `CI_BASE=c5e43f1d5` (= the merge ref's first parent), the RUN step then
 passes with `strict=0`, and a non-`pull_request` event is refused by name.
 
+## D8. The reusable-workflow boundary — the fourth "detection wired to nothing"
+
+Hosted run 40346069026: all four layer jobs GREEN, census genuinely measured, and the
+aggregate still FAILED — `verdict-missing` for every layer. A reusable workflow exposes
+outputs to its caller ONLY through `on.workflow_call.outputs`; each layer declared only
+`on.workflow_call.inputs`, so `needs.<layer>.outputs.verdict` was empty. The grader did
+exactly its job (missing is not green); the WIRING was broken, and my static checker
+could not see it because it graded `jobs.<id>.outputs` and never crossed the boundary.
+
+**The class, stated once for all four instances in this PR:** a check that verified a
+REPRESENTATION of the guarantee instead of the guarantee itself.
+
+| # | check | graded | the guarantee it claimed | now graded |
+|---|---|---|---|---|
+| 1 | trusted-sources | the git INDEX | "this tree has no unbooked MCP name" (red against itself once tracked) | the index is still the scope; the self-hit was named and removed |
+| 2 | mandatory legs | TEXT of step scripts | "this layer RUNS this command" | parsed, executed commands with their flags |
+| 3 | security suites | a LOCAL run with the host present | "these suites pass on a hosted runner" | static refusal of host-dependent suites in host-free layers |
+| 4 | layer verdict | the JOB output | "the caller RECEIVES this verdict" | the `on.workflow_call.outputs` boundary itself |
+
+What now prevents the class, concretely: each of the four has a negative control that
+removes the real thing while leaving the representation intact, and must go RED (C2 self-
+scope, C9, C10, C12). And the remaining gap I can name: none of these controls executes
+GitHub Actions. A fifth boundary of the same kind (an expression context unavailable at
+some key, a permission the token lacks) would again be caught only hosted. That is why
+the hosted run, not the local suite, is the final evidence for this PR.
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still
