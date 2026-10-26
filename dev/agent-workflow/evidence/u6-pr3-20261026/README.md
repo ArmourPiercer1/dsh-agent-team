@@ -90,6 +90,45 @@ CORE PATCH BUDGET = 0; Host pin 0.2.0-rc.2 @ `639ed01539`.
   `~/.dsh`), matching the PR2 evidence precedent (`u6-pr2-20261025`
   records carry the same).
 
+## Review round 1 — the C2 positive arm (named fixture) + forensics
+
+- `host-starts-r2.jsonl` — the review-r1 boot budget (2 lines,
+  `--max-host-starts 2`): boots u6prc6 (first positive-arm drive) and
+  u6prc7 (instrumented drive). The pre-review ledger `host-starts.jsonl`
+  (6/6) is untouched.
+- `u5-u6-proc-u6prc6-*.u6proc-evidence.json`, `run-u6proc-r2.json`,
+  `u6proc-console-run6.log` — u6prc6: the fixture (ask-lane `asker`
+  member, default:ask, no shell rule) reached the Host; its call answered
+  the synchronous boundary refusal; the judge's two new approve-arm cases
+  FAIL honestly (8 PASS + 2 FAIL, 12-record with mounted + leak-check).
+- `u5-u6-proc-u6prc7-*.u6proc-evidence.json`, `run-u6proc-r3.json`,
+  `u6proc-console-run7.log` — u6prc7: the instrumented drive. The digest
+  now carries the AUTH BRIDGE'S OWN observation lines
+  (`approveEvidence.forensic`), which state the live refusal cause
+  verbatim: `leg-deny durable control request failed: TeamRuntime:
+  operation 'request-control' (action 'request-control') is outside the
+  caller's mutation envelope — the boundary fails closed`. Root cause
+  (offline-confirmed at `packages/runtime/admission/envelope.ts`): a
+  declared member envelope REPLACES the member's base mutation bounds —
+  the fixture team's envelopes name only send-message/report-progress, so
+  the member could not even OPEN an approval row. This attribution
+  supersedes the earlier inference that the live refusals were the
+  shell-rung walk reaching `human-admin` (that law stands at C1/offline;
+  the live lanes never got that far — the judge notes carry the honest
+  attribution).
+- The fix is fixture DATA, not product: the `asker` template's envelope
+  additionally names `request-control` (closed `ALL_MUTATION_OPS`
+  vocabulary; the member role's standing right to open an approval row).
+  Offline the whole remaining chain is pinned (resolver roles admit the
+  human lane at `leader-approval`; guard consume-once writes the one
+  consumption row; replay reuses the decided row and the spent
+  consumption denies with zero second spawn — a4p7/A5 + a5-m1-auth-bridge
+  A1/A4 shapes). The positive boot itself is ONE boot pending (budget
+  2/2 spent on the forensic drives); its evidence lands the
+  `proc:approve-*` PASSes and lights the `u6prc8` offline fixture.
+- `run-u6proc-r3` reconstruct (`cases=11 FAIL:2 PASS:9`) verified the
+  shared judge's zero-boot path over the new evidence.
+
 ## Hygiene
 
 No secrets, no live-instance material (:3080 / `~/.dsh` never touched);

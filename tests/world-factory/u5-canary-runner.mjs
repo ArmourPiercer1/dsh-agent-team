@@ -101,7 +101,12 @@ export const SUITE_CASES = {
   // kernel-consumed grant, default-deny zero-spawn, settled-request replay
   // refusal, identity-swap plant held off (with its guard-off positive
   // channel), timeout→terminate honesty, and the CI-03 native control.
-  'u6-proc': ['proc:mounted', 'proc:exec-door-fail-closed', 'proc:member-ask-born-terminal', 'proc:deny-zero-spawn', 'proc:replay-settled-refusal', 'proc:spoof-refusal', 'proc:guard-off-channel', 'proc:late-call-refused', 'proc:ctl-native-untouched'],
+  // Review-r1 adds the two POSITIVE cases: the World authorises ONE
+  // governed bash call through the real Control/ask path (public
+  // team.resolveControl seam) and measures exactly-once consume + real
+  // spawn on the independent disk oracle, then the same-identity replay
+  // refusal with zero second spawn.
+  'u6-proc': ['proc:mounted', 'proc:exec-door-fail-closed', 'proc:member-ask-born-terminal', 'proc:deny-zero-spawn', 'proc:replay-settled-refusal', 'proc:spoof-refusal', 'proc:guard-off-channel', 'proc:late-call-refused', 'proc:ctl-native-untouched', 'proc:approve-spawn-once', 'proc:approve-replay-refused'],
   'u6-shadow': [
     'off:token-gate', 'off:positive-control', 'off:error-return-with-effect', 'off:planted-defect-detected', 'off:oracle-blinding-divergence', 'off:leak-check',
     'shd:token-gate', 'shd:mounted', 'shd:positive-control', 'shd:error-return-with-effect', 'shd:planted-defect-detected', 'shd:oracle-blinding-divergence', 'shd:leak-check',
@@ -1363,13 +1368,73 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
     }
   }
   const teamSessionId = stateBody?.teamSession?.rootSessionId ?? assembly.CREATE_ROOT
-  const controlSnapshot = async () => {
+  const stateSnapshot = async () => {
     const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
-    return st?.body?.control ?? null
+    return st?.body ?? null
+  }
+  const controlSnapshot = async () => (await stateSnapshot())?.control ?? null
+  // Bridge forensics: the AUTH bridge (pa-control-bridge) and the plane
+  // record every PA-leg stage (leg-deny details included) in the row's
+  // observations stream — the p6t6 observer publishes it verbatim. The
+  // positive arm captures those lines so every refusal carries its OWN
+  // stated cause in the evidence, never an inferred one.
+  const FORENSIC = /a5-pa-bridge|pa-ask|PA ask|production-admission|a5m1-binding|exec dual-gate|dual-gate/i
+  const forensicLines = new Set()
+  const captureForensic = async () => {
+    const st = await stateSnapshot()
+    for (const line of (st?.observations ?? [])) {
+      const text = String(line ?? '')
+      if (FORENSIC.test(text)) forensicLines.add(text.slice(0, 400))
+    }
   }
   const resolvedAsks = []
   laneDone.mask = await wakeCadence('U6PROC_MASK_DONE', 90_000, 'm')
   laneDone.deny = await wakeCadence('U6PROC_DENY_DONE', 90_000, 'd')
+  // ── review-r1 POSITIVE arm: the ask-lane member (default:ask, no shell
+  // rule) issues its governed team_bash; the call BLOCKS on its real
+  // pending Control row. The runner observes the row through the p6t6
+  // observer (no private API) and settles it with the PUBLIC
+  // team.resolveControl v4 seam — the very endpoint the GUI calls for a
+  // human operator. Approval -> bridge -> kernel consumeOnce (exactly one
+  // port call; the consumption row count is the durable witness) -> the
+  // confined provider REALLY spawns; the world-workspace marker file is
+  // the independent oracle. The member then re-issues the identical
+  // command in-world (same approval-case identity): the replay attempt
+  // must be refused and must NOT spawn a second process.
+  const apprArm = { pendingSeen: false, requestId: null, kind: null, resolveBody: null, resolvedOk: false, waitedMs: null, pendingAny: [], forensic: [] }
+  {
+    // The leader chain needs WAKES to reach create-asker + delegate-d3,
+    // and the appr call only blocks (creating the pending row) after that
+    // delegate lands — so the fence cadence runs CONCURRENTLY with the
+    // pending-row poll; the resolve fires as soon as the row is observed.
+    const apprDrive = wakeCadence('U6PROC_APPR_DONE', 150_000, 'a')
+    const pend = await waitA(async () => {
+      await captureForensic()
+      const st = await stateSnapshot()
+      const ctl = st?.control ?? null
+      const pending = (ctl?.requests ?? []).filter((r) => r.status === 'pending' && /tool:team_bash|tool=team_bash/.test(String(r.summary ?? '')))
+      if (pending.length > 0) apprArm.pendingAny = pending.map((r) => ({ requestId: String(r.requestId).slice(0, 60), kind: r.kind ?? null, summary: String(r.summary ?? '').slice(0, 160) }))
+      // The asker's own row: its case id embeds the asker instanceId
+      // (tadm:<team>:<instanceId>:<fp>:g0) — exact attribution, never a
+      // borrowed row from an earlier lane. The templateId lookup rides the
+      // same observer read (members list); no private API.
+      const askerInst = (st?.members ?? []).find((m) => m.templateId === 'asker')?.instanceId ?? null
+      const p = askerInst === null
+        ? pending[0]
+        : pending.find((r) => String(r.summary ?? '').includes(`:${askerInst}:`) || r.targetInstanceId === askerInst) ?? null
+      if (p !== undefined && p !== null) { apprArm.pendingSeen = true; apprArm.requestId = p.requestId; apprArm.kind = p.kind ?? null; return true }
+      return false
+    }, 120_000)
+    apprArm.waitedMs = pend.waitedMs
+    if (apprArm.pendingSeen) {
+      const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
+        { teamSessionId, requestId: apprArm.requestId, decision: 'allow', note: 'u6proc-review-r1-positive-arm' }, 'u6proc-approve', 4)
+      apprArm.resolveBody = JSON.stringify(res?.body ?? null).slice(0, 500)
+      apprArm.resolvedOk = res?.status === 200 && res?.body?.result?.ok === true
+      resolvedAsks.push({ tag: 'approve', requestId: apprArm.requestId, kind: apprArm.kind, firstBody: apprArm.resolveBody, secondBody: null })
+    }
+    laneDone.appr = await apprDrive
+  }
   // The leader exec calls ride the DUAL-GATED allow lane (measured law at
   // this baseline: the shell ask is born-terminal for EVERY rung —
   // fingerprint resource pins requiredAuthority=human-admin and A1-12 has
@@ -1384,15 +1449,21 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   // vocabulary on any non-open id). Recorded for proc:replay-settled-refusal.
   laneDone.posReplay = await (async () => {
     const ctl = await controlSnapshot()
-    const open = (ctl?.requests ?? []).find((r) => r.status === 'pending')
-    const decided = (ctl?.decisions ?? [])[0]
-    const requestId = open?.requestId ?? decided?.requestId ?? 'u6proc-unknown-request'
+    // Since the review-r1 positive arm legitimately opens and settles the
+    // appr case, this arm names a BORN-TERMINAL ask (its summary carries
+    // the mask/deny claim — a request the service closed decided, never
+    // held open): the settled-replay law is measured on the case the
+    // born-terminal close created, not on the authorised one.
+    const bornTerminal = (ctl?.requests ?? [])
+      .find((r) => r.status !== 'pending' && /U6PROC_(MASK|DENY)_|u6proc-(mask|deny)/.test(String(r.summary ?? '')))
+    const decided = (ctl?.decisions ?? []).find((x) => x.requestId !== apprArm.requestId)
+    const requestId = bornTerminal?.requestId ?? decided?.requestId ?? apprArm.requestId ?? 'u6proc-unknown-request'
     // v4: team.resolveControl is the v4-only human control-resolution
     // command (s6-remote.ts:4106); a v1 envelope is refused with
     // method-version-unsupported BEFORE any control-service work.
     const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
       { teamSessionId, requestId, decision: 'allow', note: 'u6proc-c2-replay-arm' }, 'u6proc-replay', 4)
-    resolvedAsks.push({ tag: 'replay', requestId, kind: open?.kind ?? 'non-open', firstBody: JSON.stringify(res?.body ?? null).slice(0, 500), secondBody: null })
+    resolvedAsks.push({ tag: 'replay', requestId, kind: bornTerminal?.kind ?? 'non-open', firstBody: JSON.stringify(res?.body ?? null).slice(0, 500), secondBody: null })
     return true
   })()
   laneDone.swapTrigger = await fireTrigger(assembly.markers.T_SWAP, () => probeLedger().some((r) => r.leg === 'spoof-attempt' && r.trigger === 'probe-body'))
@@ -1431,7 +1502,10 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   const claimOccurrences = (claim) => (world.mock?.requests ?? []).reduce((n, r) =>
     n + toolMsgsOf(r).filter((m) => String(m.text).includes(claim)).length, 0)
   const hits = kernelHits()
+  await captureForensic()
+  apprArm.forensic = [...forensicLines].slice(0, 40)
   const ctlFinal = await controlSnapshot()
+  const controlDigestRaw = ctlFinal === null ? null : JSON.stringify(ctlFinal).slice(0, 6000)
   const controlDigest = ctlFinal === null ? null : {
     requests: (ctlFinal.requests ?? []).map((r) => ({ requestId: r.requestId, kind: r.kind, status: r.status, toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 90), operationFingerprint: r.operationFingerprint ?? null })),
     decisions: ctlFinal.decisions ?? [],
@@ -1439,6 +1513,25 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   }
   const decisionsFor = (requestId) => (controlDigest?.decisions ?? []).filter((d) => d.requestId === requestId).length
   const consumptionsFor = (requestId) => (controlDigest?.consumptions ?? []).filter((c) => c.requestId === requestId).length
+  // Per-ask notification evidence: the MASK ask's own requestId must never
+  // appear in a leader notification turn (born-terminal asks are never
+  // notified); the positive arm's appr ask may legitimately notify.
+  const maskAskRid = (controlDigest?.requests ?? [])
+    .find((r) => /U6PROC_MASK_|u6proc-mask/.test(String(r.summary ?? '')))?.requestId ?? null
+  // No mask ask row EVER exists ⇒ there is nothing of the mask case's to
+  // notify: zero is the measured fact (the born-terminal close happens
+  // inside the call; the notification port fires only on row creation).
+  // A row that exists is counted by its OWN requestId — the positive
+  // arm's asker notification must never be mistaken for the mask case's.
+  const notifTurnsMask = maskAskRid === null
+    ? 0
+    : (world.mock?.requests ?? []).filter((r) => JSON.stringify(r?.body?.messages ?? r?.messages ?? [])
+      .includes(`[team-control requestId=${maskAskRid}`)).length
+  const approveEvidence = {
+    ...apprArm,
+    decisions: apprArm.requestId === null ? 0 : decisionsFor(apprArm.requestId),
+    consumptions: apprArm.requestId === null ? 0 : consumptionsFor(apprArm.requestId),
+  }
   const digest = {
     surface, denyList,
     effects: Object.fromEntries(Object.entries(assembly.files).map(([k]) => [k, assembly.readEffect(k)])),
@@ -1453,6 +1546,8 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
     resolvedAsks,
     controlDigest,
     notifTurns,
+    notifTurnsMask,
+    approveEvidence,
     kernelHits: hits,
     laneDone,
     claims: Object.fromEntries(Object.entries(assembly.claims).map(([k, c]) => [k, claimOccurrences(c)])),

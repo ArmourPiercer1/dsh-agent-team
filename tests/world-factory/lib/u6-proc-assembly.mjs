@@ -75,6 +75,12 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
     swap: join(workspaceDir, 'u6proc-swap.txt'),
     late: join(workspaceDir, 'u6proc-late.txt'),
     ctl: join(workspaceDir, 'u6proc-ctl.txt'),
+    // Review-r1 positive arm: the ONE governed bash call the World
+    // AUTHORISES (ask lane -> real pending Control row -> real resolve
+    // through the public seam -> kernel consumeOnce -> real Landlock
+    // spawn). Its disk marker is the INDEPENDENT oracle for the effect:
+    // spawn-once is decided by what the FILE says, never by a tool return.
+    appr: join(workspaceDir, 'u6proc-appr.txt'),
   }
   const claims = {
     mask: `U6PROC_MASK_${rs}`,
@@ -83,12 +89,14 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
     swap: `U6PROC_SWAP_${rs}`,
     late: 'U6PROC_LATE_EMITTED',
     ctl: `U6PROC_CTL_${rs}`,
+    appr: `U6PROC_APPR_${rs}`,
   }
   const markers = {
     MK_DISC: `U6PROC_DISC_${rs}`,
     MK_L1: `U6PROC_L1_${rs}`,
     MK_MASK: `U6PROC_MK_MASK_${rs}`,
     MK_DENY: `U6PROC_MK_DENY_${rs}`,
+    MK_APPR: `U6PROC_MK_APPR_${rs}`,
     T_SWAP: `U6PROC_TRIGGER_SWAP_${rs}`,
     T_RESTORE: `U6PROC_TRIGGER_RESTORE_${rs}`,
     T_CHANNEL: `U6PROC_TRIGGER_CHANNEL_${rs}`,
@@ -108,6 +116,7 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
       swap: `printf '${claims.swap}\\n' >> '${files.swap.replace(workspaceDir, root)}' && cat '${files.swap.replace(workspaceDir, root)}'`,
       late: `sleep 6; printf '${claims.late}\\n' >> '${files.late.replace(workspaceDir, root)}' && echo late-done`,
       ctl: `printf '${claims.ctl}\\n' >> '${files.ctl.replace(workspaceDir, root)}' && cat '${files.ctl.replace(workspaceDir, root)}'`,
+      appr: `printf '${claims.appr}\\n' >> '${files.appr.replace(workspaceDir, root)}' && echo appr-lane-ran`,
     }
   }
 
@@ -182,7 +191,7 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
     return [
       '---', 'schemaVersion: 3', `blueprintId: ${BP_MAIN_ID}`, 'revision: "1"',
       'leader:', '  templateId: leader',
-      `  persona: ${JSON.stringify(`You are the leader of the u6proc assembly team. ${markers.MK_L1} drives your chain: create one ask-lane member and one strict member, run the two delegated refusal scripts, then run your OWN three exec commands exactly as instructed, one at a time.`)}`,
+      `  persona: ${JSON.stringify(`You are the leader of the u6proc assembly team. ${markers.MK_L1} drives your chain: create one ask-lane member, one strict member, and one ask-approve member, run the delegated scripts as instructed, then run your OWN three exec commands exactly as instructed, one at a time.`)}`,
       '  capabilities:', '    teamTools:', '      kind: allow', '      items:',
       '        - team_list_members', '        - team_create_member', '        - team_delegate', '        - team_collect',
       '        - team_list_pending_control', '        - team_resolve_control',
@@ -232,9 +241,40 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
       '      mcp:', '        kind: allow', '        items: []',
       '      permissions:', '        default: deny', '        allow: []', '        ask: []',
       '        deny: []',
+      // Review-r1 FIXTURE template — test-profile blueprint DATA only, no
+      // product code involved. Policy shape is the one BL01 pins at the C1
+      // production seam (a5-m1-bash-c1 world law): default ASK, no shell
+      // rule anywhere. A shell call from this member is an ASK decision
+      // (not a policy deny): the tool-admission plan mints with NO R-1a
+      // owner floor (no deny owner), over the plane's empty narrowing
+      // documents the fingerprint rung resolves to the rung ABOVE the
+      // member beneficiary — a real PENDING Control row, resolvable
+      // through the real Control/ask path (public team.resolveControl v4,
+      // the GUI's own human lane). Approval -> kernel consumeOnce (one
+      // port call) -> real confined spawn; the disk marker under the
+      // world workspace is the independent-oracle effect fact.
+      '  - templateId: asker', '    displayName: "u6proc ask-approve worker"',
+      `    persona: ${JSON.stringify('You are a worker of the u6proc assembly team (ask-approve lane). Follow the delegated script exactly, one tool call at a time.')}`,
+      '    capabilities:', '      teamTools:', '        kind: deny',
+      ...denyLines.map((l) => `  ${l}`),
+      '      skills:', '        kind: allow', '        items: []',
+      '      mcp:', '        kind: allow', '        items: []',
+      '      permissions:', '        default: ask', '        allow: []', '        ask: []',
+      '        deny: []',
       'memberEnvelopes:',
       '  - templateId: shell', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: strict', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+      // The asker envelope NAMES `request-control` (closed ALL_MUTATION_OPS
+      // vocabulary): a declared allow list REPLACES the member's base
+      // bounds (admission/envelope.ts overlay law) — without this op the
+      // runtime boundary refuses the member's own ask-row creation
+      // (measured live, u6prc6/7: 'operation request-control is outside
+      // the caller's mutation envelope'). This line IS the fixture's
+      // authorization half: Team DATA granting the member its standing
+      // right to open an approval row — zero product-code change, test
+      // profile only, and it names nothing beyond the closed vocabulary
+      // the member role already owns.
+      '  - templateId: asker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
     ].join('\n')
@@ -315,13 +355,21 @@ export function makeProcDecide({ assembly, readProbeLedger = () => [] }) {
   const { tokens, markers, claims } = assembly
   const cmds = assembly.cmds()
   const ids = {}
-  const steps = { mask: 0, deny: 0 }
+  const steps = { mask: 0, deny: 0, appr: 0 }
   const trigState = {}
   const PHASES = [
     { kind: 'create', template: 'shell', tok: 'c1', label: 'proc-shell' },
     { kind: 'create', template: 'strict', tok: 'c2', label: 'proc-strict' },
     { kind: 'delegate', tok: 'd1', prompt: markers.MK_MASK, which: 'shell', fence: 'U6PROC_MASK_DONE' },
     { kind: 'delegate', tok: 'd2', prompt: markers.MK_DENY, which: 'strict', fence: 'U6PROC_DENY_DONE' },
+    // Review-r1 positive arm: ask-lane member (default:ask, no shell rule).
+    // Its team_bash mints a REAL pending Control row; the runner settles it
+    // through the public team.resolveControl seam while the call blocks;
+    // the row then executes ONCE through the kernel-consumed grant, and the
+    // member IMMEDIATELY re-issues the identical command (same approval-case
+    // identity) — the in-world replay attempt.
+    { kind: 'create', template: 'asker', tok: 'c3', label: 'proc-asker' },
+    { kind: 'delegate', tok: 'd3', prompt: markers.MK_APPR, which: 'asker', fence: 'U6PROC_APPR_DONE' },
     // leader exec lane: three OWN team_bash calls; every call blocks on its
     // user-approval request until the runner (Human-User seam) settles it.
     { kind: 'leader-bash', cmd: cmds.pos, claim: claims.pos, done: 'U6PROC_POS_DONE' },
@@ -370,6 +418,7 @@ export function makeProcDecide({ assembly, readProbeLedger = () => [] }) {
     // member lanes FIRST: a member carries its delegation token text in
     // EVERY turn of its transcript (the delegation prompt is the session's
     // first user message), so the token test is airtight for members.
+    if (ut.includes(`[team-work requestToken=${tokens('d3')}`)) return 'appr'
     if (ut.includes(`[team-work requestToken=${tokens('d2')}`)) return 'deny'
     if (ut.includes(`[team-work requestToken=${tokens('d1')}`)) return 'mask'
     // tool-close routing BEFORE the settled/leader heuristics: once any
@@ -434,6 +483,16 @@ export function makeProcDecide({ assembly, readProbeLedger = () => [] }) {
       if (step === 0) return toolCall('team_bash', { command: cmds.deny })
       return { kind: 'text', content: 'U6PROC_DENY_DONE' }
     }
+    // Review-r1 positive lane: call #1 blocks on the real pending ask (the
+    // runner settles it via the public seam); call #2 is the in-world
+    // REPLAY of the same approval-case identity, expected refused. DONE
+    // carries the fence only after BOTH results are back.
+    if (lane === 'appr') {
+      const step = steps.appr
+      steps.appr += 1
+      if (step === 0 || step === 1) return toolCall('team_bash', { command: cmds.appr })
+      return { kind: 'text', content: 'U6PROC_APPR_DONE' }
+    }
     // ── leader exec-lane close: the team_bash tool result for the
     // currently-open leader-bash phase closes it with its DONE text.
     if (lane === 'leader-bash-close') {
@@ -451,7 +510,8 @@ export function makeProcDecide({ assembly, readProbeLedger = () => [] }) {
       .filter((b) => b?.type === 'tool_result')
       .map((b) => extractInstanceId((Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join('')))
       .filter((x) => x !== null))]
-    if (seen.length >= 2 && ids.shell === undefined) { ids.shell = seen[0]; ids.strict = seen[1] }
+    if (ids.shell === undefined && seen.length >= 2) { ids.shell = seen[0]; ids.strict = seen[1] }
+    if (ids.asker === undefined && seen.length >= 3) { ids.asker = seen[2] }
     while (phase < PHASES.length) {
       const ph = PHASES[phase]
       if (ph.kind === 'create') {
@@ -472,7 +532,7 @@ export function makeProcDecide({ assembly, readProbeLedger = () => [] }) {
         return { kind: 'text', content: `U6PROC_EXEC_HOLD_${String(phase)}` }
       }
       if (!ph.issued) {
-        const inst = ph.which === 'strict' ? ids.strict : ids.shell
+        const inst = ids[ph.which]
         if (inst === undefined) return { kind: 'text', content: `U6PROC_ID_FAIL_${ph.tok}` }
         ph.issued = true
         return toolCall('team_delegate', { rootSessionId: assembly.CREATE_ROOT, requestToken: tokens(ph.tok), delegationInstanceId: inst, label: `proc-${ph.tok}`, prompt: ph.prompt, async: true })
@@ -500,20 +560,27 @@ export function makeProcDecide({ assembly, readProbeLedger = () => [] }) {
  * evidence JSON is its whole input; `hostAlive` is the one live fact, and
  * reconstruct passes it from the source record's clean finalization).
  *
- * Verdict law (measured, runs u6prc1-5): at this baseline the factory C2
- * world has NO governed-shell spawn path — the shell-class ask is
- * born-terminal for every beneficiary (fingerprint-pinned `human-admin`,
- * no Admin resolver, ADR A1-12), and the leader exec ALLOW downgrades to
- * that ask whenever the dual-gate token is absent at bind time
- * (fail-closed, exec-autonomy-contract). Every case therefore proves the
- * FAIL-CLOSED shape at the Host; the spawn mechanics themselves (grant
- * consume-once, timeout-terminate, tie law) are pinned at the C1
- * production seam. Nothing here claims a law it does not measure.
+ * Verdict law (measured, runs u6prc1-7 + the review-r1 positive arm):
+ * every fail-closed arm measures its typed refusal BEFORE any process and
+ * zero effect on disk. Attribution honesty (u6prc7 forensics — the bridge
+ * observations ride the digest): the LIVE refusal cause on the pre-fix
+ * lanes was the runtime boundary refusing the durable ask-row creation
+ * (`request-control` outside the declared mutation envelope of those
+ * templates — a declared allow list replaces the member base bounds), not
+ * the shell-rung walk; the human-admin/ADR A1-12 born-terminal law and
+ * the dual-gate downgrade are C1/offline claims, stated as such. The
+ * review-r1 positive arm (asker template: default:ask, no shell rule,
+ * envelope naming `request-control`) mints a REAL pending leader-approval
+ * row; the World AUTHORISES that one call through the real Control/ask
+ * path (public team.resolveControl v4) and the suite measures approve ->
+ * consumeOnce once -> real spawn (independent disk oracle) -> replay
+ * refused with zero second spawn (proc:approve-*). Nothing here claims a
+ * law it does not measure.
  *
  * @param {object} d - the u6proc evidence digest.
  * @param {boolean} hostAlive - host liveness at judgment time.
  * @returns {Array<[string, string, object]>} `[id, verdict, detail]` rows
- *   for the eight post-mount cases (proc:mounted is boot-time-only and is
+ *   for the ten post-mount cases (proc:mounted is boot-time-only and is
  *   added by the live run / carried by reconstruct).
  */
 export function judgeU6Proc(d, hostAlive) {
@@ -536,17 +603,30 @@ export function judgeU6Proc(d, hostAlive) {
   out.push(['proc:exec-door-fail-closed', execOk && hostAlive ? 'PASS' : 'FAIL', {
     spawnAttempts: spawnRows.map((r) => ({ command: String(r.command ?? '').slice(0, 40), head: String(r.result?.head ?? '').slice(0, 90) })),
     effectFilesAbsent: absent('pos') && absent('swap') && absent('late'),
-    note: 'all three leader exec attempts answered APPROVAL_DENIED (dual-gate downgrade -> A1-12 born-terminal ask), zero spawn effects on disk: the exec door is fail-closed on this world; spawn mechanics are pinned at the C1 production seam (BL01-2)',
+    note: 'all three leader exec attempts answered typed APPROVAL_DENIED before any process, zero spawn effects on disk: the exec door is fail-closed on this world. The u6prc7 bridge forensics name the live refusal cause verbatim: the durable ask row was never opened (request-control outside the mutation envelope of this plane caller; the leader default also carries no exec token, so the allow lane downgrades to that same ask). Spawn mechanics are pinned at the C1 production seam (BL01-2).',
   }])
   // member-ask-born-terminal: ADR A1-12 fail-closed law measured live.
+  // Since the review-r1 positive arm legitimately NOTIFIES the leader of a
+  // real pending ask, the born-terminal evidence is per-ask-identity: the
+  // MASK request's own requestId must never appear in a leader
+  // notification turn (`notifTurnsMask`); digests predating the positive
+  // arm fall back to the global counter (byte-equal law there — that world
+  // had no pending ask at all).
   const maskRows = rowsOf('MASK')
+  const maskAskId = ((d.controlDigest ?? {}).requests ?? [])
+    .find((r) => String(r.summary ?? '').includes('U6PROC_MASK_'))?.requestId ?? null
+  const neverNotified = typeof d.notifTurnsMask === 'number'
+    ? d.notifTurnsMask === 0
+    : (d.notifTurns ?? 1) === 0
   out.push(['proc:member-ask-born-terminal',
     maskRows.some((r) => /APPROVAL_DENIED/i.test(String(r.result?.head ?? '')))
-    && absent('mask') && (d.claims?.mask ?? 1) === 0 && (d.notifTurns ?? 1) === 0
+    && absent('mask') && (d.claims?.mask ?? 1) === 0 && neverNotified
     && hostAlive ? 'PASS' : 'FAIL', {
     maskResults: maskRows.map((r) => String(r.result?.head ?? '').slice(0, 140)),
+    maskRequestId: maskAskId,
     notifTurns: d.notifTurns ?? null,
-    note: 'the member shell ask requires the rung owning the exec envelope (human-admin); no resolver exists -> synchronous terminal deny, zero spawn, the leader is never even notified',
+    notifTurnsForMaskAsk: typeof d.notifTurnsMask === 'number' ? d.notifTurnsMask : 'digest-predates-per-ask-count',
+    note: 'the shell-lane member ask settled as a synchronous terminal deny with zero spawn and no leader notification ever carrying this ask id. Measured live cause (u6prc7 forensics): the durable ask row was never opened — request-control is outside the declared envelope of this template (the declared allow list replaces the member base bounds). The shell fingerprint rung law remains a C1/offline claim, not what this live leg reached.',
   }])
   // deny-zero-spawn: typed default-deny refusal before any spawn.
   const denyRows = rowsOf('DENY')
@@ -614,6 +694,57 @@ export function judgeU6Proc(d, hostAlive) {
     ctlTeamLaneRows: ctlRows.length,
     ctlEffect: !absent('ctl'),
     note: 'the model-facing close carried the NATIVE tool name; PR3 added zero mediation to the non-team lane (host-native permission posture is host-owned and disclosed)',
+  }])
+  // ── review-r1 POSITIVE arm (named fixture, tests/world-factory only): ──
+  // ask-lane member -> REAL pending Control row -> resolve through the
+  // public team.resolveControl v4 seam (the GUI's human lane) -> kernel
+  // consumeOnce EXACTLY ONCE -> real confined spawn whose disk marker is
+  // read by the INDEPENDENT oracle (this judge reads the evidence file,
+  // the runner reads the DISK — never the tool return) -> host-native
+  // SUCCESS settlement; then the in-world REPLAY (identical command, same
+  // approval-case identity) must be refused with no second spawn, no
+  // second decision, no second consumption.
+  const ap = d.approveEvidence ?? null
+  const apprRows = rowsOf('APPR')
+  const apprCalls = apprRows.length
+  const firstResult = String(apprRows[0]?.result?.head ?? '')
+  const replayResult = String(apprRows[1]?.result?.head ?? '')
+  const markerLines = d.effectLines?.appr ?? 0
+  const resolveBodyOk = ap !== null && /"ok"\s*:\s*true/.test(String(ap.resolveBody ?? ''))
+  out.push(['proc:approve-spawn-once',
+    ap !== null && ap.pendingSeen === true && resolveBodyOk
+    && apprCalls >= 2
+    && /appr-lane-ran/.test(firstResult)
+    && (ap.decisions ?? 0) === 1 && (ap.consumptions ?? 0) === 1
+    && markerLines === 1 && typeof d.effects?.appr === 'string' && (d.effects?.appr ?? '').length > 0
+    && hostAlive ? 'PASS' : 'FAIL', {
+    pendingSeen: ap?.pendingSeen ?? false,
+    pendingRequestId: String(ap?.requestId ?? '').slice(0, 40),
+    pendingKind: ap?.kind ?? null,
+    resolveBody: String(ap?.resolveBody ?? '').slice(0, 160),
+    firstCallResult: firstResult.slice(0, 140),
+    decisions: ap?.decisions ?? null,
+    consumptions: ap?.consumptions ?? null,
+    markerLinesFromDisk: markerLines,
+    effectOnDisk: d.effects?.appr ?? null,
+    note: ap === null
+      ? 'digest predates the review-r1 positive arm'
+      : 'the ask lane opened a REAL pending row; the public seam approved it; consumeOnce fired once (consumption rows); the confined spawn left exactly ONE marker line on disk — read independently of the tool return; the tool result carried the body (host-native SUCCESS settlement)',
+  }])
+  out.push(['proc:approve-replay-refused',
+    ap !== null && apprCalls >= 2
+    && /refused|denied|GRANT_|CONTROL_|APPROVAL_|not usable|already|consumed|settled/i.test(replayResult)
+    && !/appr-lane-ran/.test(replayResult)
+    && markerLines === 1
+    && (ap.decisions ?? 0) === 1 && (ap.consumptions ?? 0) === 1
+    && hostAlive ? 'PASS' : 'FAIL', {
+    replayCallResult: replayResult.slice(0, 160),
+    markerLinesAfterReplayFromDisk: markerLines,
+    decisions: ap?.decisions ?? null,
+    consumptions: ap?.consumptions ?? null,
+    note: ap === null
+      ? 'digest predates the review-r1 positive arm'
+      : 'the identical second call re-presents the SAME approval-case identity (one-shot already consumed): typed refusal, ZERO second spawn (disk still holds one line), one decision row, one consumption row — the exactly-once law measured live; the kernel-level GRANT_REPLAY twin sits at the C1 seam',
   }])
   return out
 }

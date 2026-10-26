@@ -106,8 +106,28 @@ read-only before/after and never signalled).
   C2 cannot measure. Verdicts run through ONE shared `judgeU6Proc`
   (lib/u6-proc-assembly.mjs) used by both the live run and the zero-boot
   `u6proc-reconstruct.mjs` (offline re-judgment of written evidence; the
-  budget ledger records no start for it), pinned by an offline fixture test
-  over the run-u6prc5 evidence.
+  budget ledger records no start for it), pinned by offline fixture tests
+  over the committed run-u6prc5/u6prc6/u6prc7 evidence.
+  Review-r1 POSITIVE arm (`proc:approve-spawn-once`,
+  `proc:approve-replay-refused`): a named TEST-ONLY fixture — the `asker`
+  member template (default:ask, NO shell rule) whose envelope NAMES
+  `request-control` (closed `ALL_MUTATION_OPS` vocabulary; a declared
+  allow list REPLACES the member base bounds, admission/envelope.ts). Its
+  governed `team_bash` opens a REAL pending leader-approval row; the
+  runner settles it through the PUBLIC `team.resolveControl` v4 seam (the
+  GUI's human lane; `CONTROL_RESOLVER_ROLES` admits `human`); approval ->
+  bridge -> guard consume-once (one consumption row) -> real confined
+  spawn whose DISK marker the independent oracle counts (never the tool
+  return) -> host-native SUCCESS; the in-world replay of the SAME
+  approval-case identity must be refused with zero second spawn. Product
+  hooks used, all pre-existing public seams: blueprint YAML data, team-row
+  `teamToolPlane`/confinedProvider config, HTTP v4 `team.resolveControl`,
+  p6t6 observer. Forensic disclosure (u6prc6/u6prc7, digests carry the
+  bridge's own observations): the PRE-fix lanes' live refusal cause was
+  the runtime boundary refusing ask-row creation (`request-control`
+  outside the declared envelopes) — NOT the shell-rung walk; the
+  human-admin born-terminal and dual-gate downgrade laws remain
+  C1/offline claims, attributed as such in the judge notes.
 
 `negatives` carries honest worst-of semantics: that record's overall is
 TIMEOUT/START_FAILED **by design** — the classification is the demonstrated
