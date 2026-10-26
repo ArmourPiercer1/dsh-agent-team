@@ -1,0 +1,2 @@
+{"leg":"real-P8","row":"master","loops":500,"tally":{"walker-invalid-pattern":500},"p50":155,"p99":230,"max":28331}
+{"leg":"real-P8","row":"tree","loops":500,"tally":{"walker-invalid-pattern":500},"p50":108,"p99":185,"max":28254}

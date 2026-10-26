@@ -1,0 +1,38 @@
+=== node scripts/docs-probe.mjs --base origin/master
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+exit=0
+=== node scripts/docs-sync.mjs --check
+docs:sync --check: docs=86 notes=4 plans=49(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261026r1.json","snapshot_version":"as20261026r1","content_digest":"sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+exit=0
+=== node scripts/eb3-impact.mjs --base origin/master
+  packages/tools/search-family/README.md -> packages/** + packages/tools/*-family/** + **/*.md
+  packages/tools/search-family/src/glob-backend.mjs -> packages/** + packages/tools/*-family/**
+  packages/tools/search-family/src/index.mjs -> packages/** + packages/tools/*-family/**
+  packages/tools/search-family/src/search-backend.mjs -> packages/** + packages/tools/*-family/**
+  packages/tools/search-family/src/stream-drain.mjs -> packages/** + packages/tools/*-family/**
+  scripts/dist-placements/050-search-family.json -> scripts/**
+exit=0
+=== node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+exit=0
+=== node scripts/eb3-trusted-sources.mjs
+EB3-TRUSTED-SOURCES pass files=1874 findings=0
+exit=0
+=== node scripts/eb3-family-definitions.mjs
+EB3-FAMILY-DEFINITIONS pass files=11 findings=0
+exit=0
+=== node scripts/eb3-family-boundaries.mjs
+EB3-FAMILY-BOUNDARIES pass files=33 findings=0
+exit=0
+=== node scripts/eb3-run-manifest.mjs --new-since origin/master
+  DISCLOSED 11 unfinalised record(s) (no finishedAt/overall) graded as NOT-A-RESULT, not as pass: dev/agent-workflow/evidence/u6-pr5-20261026/c2/run4-evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca5-2026-10-26T06-15-58-353Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca6-2026-10-26T06-27-14-670Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca8-2026-10-26T06-59-02-141Z.evidence.json, dev/agent-workflow/evidence/u6-pr6-20261026/c2/u5-u6-arc-d-arc-d1-2026-10-26T08-30-55-354Z.evidence.json, dev/agent-workflow/evidence/u7-6-glue4-20261026/c2/u5-u6-arc-a-u76r1-2026-10-26T11-57-28-224Z.evidence.json …
+EB3-RUN-MANIFEST pass records=50 strict=0 incomplete=11 findings=0
+LIMIT a green here means the record is internally honest and tied to THIS tree/host-pin/authority generation; it is not a claim that the graded behaviour was correct (that is the suite C2 evidence)
+exit=0

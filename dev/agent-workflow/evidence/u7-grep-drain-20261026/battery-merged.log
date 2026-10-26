@@ -1,0 +1,365 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob C: the winner stands, the publication does not > C2 a no-channel call and a never-fired channel are the same answer
+[a5-cancel/glob C2] DRAIN-INCOMPLETE lines: no-channel=0 with-channel=1 (equal counts are NOT the claim)
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:1155a9ac-1ec3-417c-9b0d-780d03aa751a-1 pid=168 exit=not-observed timedOut=false cancelled=true
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:1155a9ac-1ec3-417c-9b0d-780d03aa751a-1 pid=168 shortOf=bound
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[a5b3 C11] pre-abort boundary observed: payload-side-effect-landed=false settled-in=1ms abort-at=1793052181644
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search C: a cancel after the winner refuses the publication > C3 EVERY boundary the row asks its channel answers with the refusal, and the last one is the commit
+[a5-cancel/search C3] measured asks=13 stages=entry > after-rg-path > after-capability > after-anchor > pre-spawn > after-spawn > walk-aborted > after-settle > after-settle > after-governed-recheck > after-shared-law > after-verify > before-commit
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:5ab64b73-c58f-46fa-a107-42148bc18bfa-1 pid=505 exit=not-observed timedOut=false cancelled=true
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:5ab64b73-c58f-46fa-a107-42148bc18bfa-1 pid=505 shortOf=bound
+
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D1 with NO channel, the row keeps its pre-existing throwing-arm contract: a typed refusal, not a published walk
+[a5-cancel/search D] real teardown confirmed: search D -> terminated
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob C: the winner stands, the publication does not > C4 EVERY boundary this row asks answers with the typed refusal, and the last one stands before the single write
+[a5-cancel/glob C4] measured asks=14 stages=entry > after-rg-path > after-capability > after-anchor > pre-spawn > after-spawn > walk-aborted > after-settle > after-settle > after-stdout-drain > after-streams-drain > after-payload-record > after-verify > before-commit
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink
+[a5-cancel/search D] real teardown confirmed: search D -> terminated
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D1 with NO channel, the row keeps its pre-existing throwing-arm contract: a typed refusal, not a published list
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated
+
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is
+[a5-cancel/search D3] calibration branch executed: code=internal-error
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is
+[a5-cancel/glob D3] calibration branch executed: code=internal-error
+
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is
+[a5-cancel/search D] real teardown confirmed: search D -> terminated, terminated
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated, terminated
+
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted
+[a5-cancel/search D4] calibration branch executed: code=internal-error
+
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted
+[a5-cancel/glob D4] calibration branch executed: code=internal-error
+
+stdout | test/a5-cancel-search.test.ts > a5-cancel/search D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted
+[a5-cancel/search D] real teardown confirmed: search D -> terminated, terminated
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:65469946-3fff-467a-842e-8157db16decd-1 pid=841 exit=not-observed timedOut=false cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:65469946-3fff-467a-842e-8157db16decd-1 pid=841 shortOf=bound
+
+ ✓ test/a5-cancel-search.test.ts (30 tests) 8584ms
+     ✓ C1 the exit won, THEN the cancel arrived: the refusal lands at the boundary after the stop  301ms
+     ✓ C2 a no-channel call and a never-fired channel are the same answer  500ms
+     ✓ C3 EVERY boundary the row asks its channel answers with the refusal, and the last one is the commit  2814ms
+     ✓ D1 with NO channel, the row keeps its pre-existing throwing-arm contract: a typed refusal, not a published walk  377ms
+     ✓ D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink  383ms
+     ✓ D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is  738ms
+     ✓ D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted  1013ms
+stdout | test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated, terminated
+
+ ✓ test/a5-cancel-glob.test.ts (26 tests) 10062ms
+     ✓ C1 the exit won, THEN the cancel arrived: the refusal lands at the boundary after the stop  304ms
+     ✓ C2 a no-channel call and a never-fired channel are the same answer  498ms
+     ✓ C4 EVERY boundary this row asks answers with the typed refusal, and the last one stands before the single write  3070ms
+     ✓ D1 with NO channel, the row keeps its pre-existing throwing-arm contract: a typed refusal, not a published list  379ms
+     ✓ D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink  383ms
+     ✓ D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is  728ms
+     ✓ D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted  992ms
+     ✓ T1 a settled TIMEOUT is not rejudged by a withdrawal that lands after the race  525ms
+     ✓ T2 the direction: the SAME withdrawal at the SAME ask, on a walk that did NOT run out its budget, is a call-aborted refusal  512ms
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:65469946-3fff-467a-842e-8157db16decd-2 pid=1071 exit=not-observed timedOut=false cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:65469946-3fff-467a-842e-8157db16decd-2 pid=1071 shortOf=bound
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:43a34473-86ce-4ac5-8d5f-8a8b9ef3715d-1 pid=1508 exit=7 timedOut=false cancelled=false
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:43ae91dd-0109-4170-80fd-aeb9cb8986b1-1 pid=1652 exit=1 timedOut=false cancelled=false
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X2 positive control: a command that succeeds still settles as exit 0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X2 positive control: a command that succeeds still settles as exit 0
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:ff12788d-fd49-48b4-907a-dcbad3add15b-1 pid=1685 exit=0 timedOut=false cancelled=false
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:0545367b-6061-4c64-bc2e-8a1c13eeb48b-1 pid=1719 exit=1 timedOut=false cancelled=false
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:0545367b-6061-4c64-bc2e-8a1c13eeb48b-2 pid=1723 exit=7 timedOut=false cancelled=false
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:0545367b-6061-4c64-bc2e-8a1c13eeb48b-3 pid=1727 exit=126 timedOut=false cancelled=false
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:0545367b-6061-4c64-bc2e-8a1c13eeb48b-4 pid=1731 exit=127 timedOut=false cancelled=false
+
+ ✓ test/alpha5-search-backend.test.ts (42 tests) 4062ms
+     ✓ argv-no-path: a directory target carries NO path string; a file target carries only its own name  317ms
+     ✓ explicit-path-is-load-bearing: without `-- .` the confined child answers a SILENT ZERO  303ms
+     ✓ P8b the confined face carries NO payload exit code — so completion is proved from the stream  349ms
+     ✓ P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row  796ms
+     ✓ V8 a governed root that is a symlink alias is refused, never followed  318ms
+     ✓ V12 the audit face carries codes and arithmetic only — never a path, a row or the walker's words  305ms
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b2-realm legs=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b2-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b2-realm legs=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b2-realm call=team-a5b2-instance-glob:mount:23852a0f-cf24-49c9-8416-7f361c72eb6c-2 pid=1779 files=1 capped=false
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:65157a89-7d99-4e7b-bc05-8d97282f81b1-1 pid=1549 exit=not-observed timedOut=true cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:65157a89-7d99-4e7b-bc05-8d97282f81b1-1 pid=1549 shortOf=bound
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:ed9805af-8d7b-4778-9005-b0ed0bde7c6f-1 pid=1844 exit=143 timedOut=false cancelled=false
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b3-realm legs=6
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=pre-spawn-check realm=a5b3-realm call=unspecified
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=child-live realm=a5b3-realm call=unspecified
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b3-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b3-realm legs=6
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=pre-spawn-check realm=a5b3-realm call=unspecified
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=child-live realm=a5b3-realm call=unspecified
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b3-realm call=team-a5b3-instance-glob:mount:a6f7858e-fb0d-46b1-9bfe-a9f6a7c25893-2 pid=1891 files=1 capped=false
+
+stdout | test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C10 根⑤ cause range, measured not imagined: the union has EXACTLY user|parent|hook|disposed at the baseline, and the cancelled law maps ONLY the first two to true (every other input, junk included, is false)
+[a5b3 C10] baseline union read: path=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/session/src/types.ts git-blob-sha=593c86d52a5c26d531913ffaff9aac651732c2da
+
+ ✓ test/a5b3-cancel-leg.test.ts (12 tests) 14836ms
+     ✓ C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)  2457ms
+     ✓ C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)  2440ms
+     ✓ C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`  4866ms
+     ✓ C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false  2289ms
+     ✓ C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word  767ms
+     ✓ C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit  528ms
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:6e51ea2e-5547-4a33-834b-17965a408111-1 pid=1807 exit=not-observed timedOut=true cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b2-realm call=team-a5b2-instance-bash:mount:6e51ea2e-5547-4a33-834b-17965a408111-1 pid=1807 shortOf=bound
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:1ee3d656-f1b9-45ef-8e2e-f4ef405ab1c4-1 pid=1966 exit=not-observed timedOut=true cancelled=false
+
+ ✓ test/a5b2-exit-code-fidelity.test.ts (11 tests) 5769ms
+     ✓ A5 the 128-range number does NOT identify a cause of death: a payload that exits 137 and a payload killed by SIGKILL are the same number here  303ms
+     ✓ A4 the terminate path lands on a signal death too: the code stays a 128-range number, never a fabricated 0  504ms
+     ✓ X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status  402ms
+     ✓ X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire  530ms
+     ✓ X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire  2273ms
+stdout | test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-8 under repetition: 60 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged
+[u7-grep-late SEC-8] rounds=20 walks=60 misjudged=0
+
+ ✓ test/u7-grep-late-stream.test.ts (8 tests) 3525ms
+     ✓ SEC-8 under repetition: 60 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged  2915ms
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5g7-unit-realm legs=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:673559a4-768b-4383-b095-307e06763390-1 pid=2069 exit=0 timedOut=false cancelled=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:792458b2-2630-43e8-b59d-d2b42ce72565-1 pid=2096 exit=1 timedOut=false cancelled=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g7-unit-realm legs=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob:mount:8a0b987a-c6bd-423d-bfbe-220726af8f9d-1 pid=2130 files=2 capped=false
+
+stdout | test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5m1-auth-plane-realm rows=6
+
+stdout | test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5m1-auth-plane-realm call=team-inst-p6t4seedw01-bash:mount:c32e9f1c-adf2-4fbe-a02c-bd3eaa4ebda4-1 pid=2156 exit=0 timedOut=false cancelled=false
+
+stdout | test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > read: one real approval (leader decider) → the governed read body once
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=22 path=<worktree>/tests/homes/a5m1-auth-mvpszbvw/root/notes.txt
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=<worktree>/tests/homes/a5g7-unit-mvpszbmh/root/data/needle.txt
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:247c45d3-9678-4576-9326-6a184aa33d2c-1 pid=2208 exit=0 timedOut=false cancelled=false
+
+ ✓ test/alpha5-glue7-plane-backends.test.ts (12 tests) 2371ms
+     ✓ G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps  349ms
+     ✓ G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do  351ms
+     ✓ G6b the SHIPPED glob row keeps its bounded face + typed walker error + symlink-final refusal (the retired CANDIDATE-A factory's three faces, retargeted)  473ms
+a5p4 law(4) live named provider mounts on this tree: tools/process-family/src/bash-contribution.mjs , tools/process-family/src/confined-shell-executor.mjs , tools/search-family/src/glob-backend.mjs , tools/search-family/src/search-backend.mjs , tools/search-family/src/search-contribution.mjs
+ ✓ test/a5p4-lane-hygiene.test.ts (8 tests) 1630ms
+     ✓ self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)  1537ms
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D1 positive control: the INSTALL.md §3.5 default conf (NO scratchRoot key) runs the REAL glob and returns BOTH seeds
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5scratchdef-realm legs=6
+
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D1 positive control: the INSTALL.md §3.5 default conf (NO scratchRoot key) runs the REAL glob and returns BOTH seeds
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:932cea4e-26c6-4e86-9252-a7a67dce4f95-1 pid=2303 files=2 capped=false
+
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D2 the sibling default lands PARENT-SIDE of the governed root (never inside it)
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5scratchdef-realm legs=6
+
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D2 the sibling default lands PARENT-SIDE of the governed root (never inside it)
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:353fb70a-4d44-4bf7-8d8d-71bfda1d6512-1 pid=2332 files=2 capped=false
+
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D3 explicit EMPTY scratchRoot still lands typed-refused (the gate is NOT weakened)
+[dsh-agent-team] a5glb-glob: anchored-glob capability REFUSED realm=a5scratchdef-realm code=IO_POLICY_UNSUPPORTED
+
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D4 explicit RELATIVE scratchRoot still lands typed-refused (the gate is NOT weakened)
+[dsh-agent-team] a5glb-glob: anchored-glob capability REFUSED realm=a5scratchdef-realm code=IO_POLICY_UNSUPPORTED
+
+ ✓ test/a5-m1-auth-bridge.test.ts (50 tests) 3414ms
+     ✓ team_bash: one real approval (human decider) → ONE body through the real landlock launcher  368ms
+     ✓ D3 a pipe held open past the death (the descendant case): ONE bound, then the row answers SHORT AND SAYING SO — truncated + DRAIN-INCOMPLETE, settlement law untouched  2007ms
+ ✓ test/alpha5-g6b-rc-first.test.ts (15 tests) 1460ms
+     ✓ probe6b-form 500 consecutive: the silent rc=2 partial-results form is refused 500/500 — zero quiet judgements, zero lists, zero spills  793ms
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D5 an explicit valid scratchRoot rules (default never overrides it)
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5scratchdef-realm legs=6
+
+stdout | test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D5 an explicit valid scratchRoot rules (default never overrides it)
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:88bdb5ee-cf1b-415a-8d57-1a1cc088a0f1-1 pid=2364 files=2 capped=false
+
+ ✓ test/a5-scratch-default.test.ts (5 tests) 1096ms
+ ✓ test/u6-arc-a-fitness.test.ts (12 tests) 603ms
+     ✓ the BOOKED digests are the BASE blobs themselves (the ledger cannot book an already-drifted byte)  486ms
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+ ✓ test/a5int-r3-mount-integration.test.ts (6 tests) 575ms
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob DRAIN-INCOMPLETE realm=a5globoff-realm call=team-a5globoff-instance-glob:mount:4d382fd0-e6fe-4bf8-93a1-f01d698fba23-1 exit=0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob:mount:4d382fd0-e6fe-4bf8-93a1-f01d698fba23-1 pid=2465 files=2 capped=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5globoff-realm call=unspecified records=1 total=1 truncated=false
+
+ ✓ test/a5p4-provider.test.ts (16 tests) 315ms
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5globoff-realm rows=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5globoff-realm call=team-a5globoff-instance-bash:mount:f47e6d38-de0a-4a77-88eb-7d9abdc9d716-1 pid=2542 exit=0 timedOut=false cancelled=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=10 path=<worktree>/tests/homes/a5globoff-unit-mvpszevh/root/a.txt
+
+ ✓ test/a5-globoff-key.test.ts (7 tests) 1412ms
+     ✓ K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs  369ms
+     ✓ K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut  553ms
+ ✓ test/u6-pr5-search-golden-vectors.test.ts (7 tests) 239ms
+ ✓ test/u6-pr5-search-move-law.test.ts (4 tests) 167ms
+ ✓ test/u6-arc-a-probe-family.test.ts (9 tests) 16ms
+ ✓ test/a5w-integration-wiring.test.ts (14 tests) 76ms
+ ✓ test/a5p7-lease-cancellation.test.ts (18 tests) 10ms
+ ✓ test/u7-g6b-late-stream.test.ts (2 tests) 194ms
+ ✓ test/alpha5-glob-backend.test.ts (53 tests) 35121ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  1168ms
+     ✓ P1 basic pattern — same paths, SAME modification-time ORDER  321ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  345ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  607ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  724ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  483ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  309ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  357ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  335ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  25547ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  1516ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  349ms
+ ✓ test/alpha5-glob-backend-adversarial.test.ts (8 tests) 217477ms
+     ✓ A4 rename→symlink RACE LOOP: 5000 iterations, zero leak  15225ms
+     ✓ A5 the REAL confined rg walk under the same swap race (6600 walks), zero leak  201090ms
+     ✓ A7 nothing outside the root is ever PRESENTED, whatever the pattern says  302ms
+
+ Test Files  23 passed (23)
+      Tests  375 passed (375)
+   Start at  22:02:57
+   Duration  217.88s (transform 4.85s, setup 0ms, import 5.25s, tests 313.02s, environment 3ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
