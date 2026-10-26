@@ -1,5 +1,11 @@
 {
  "schema": "u5-run-record/1",
+ "kind": "synthetic-offline",
+ "delivery": "NOT_DELIVERY",
+ "liveConfirmation": "REQUIRED",
+ "verdict": "FAIL",
+ "verdictNote": "This PASS below is a SYNTHETIC-OFFLINE reconstruction of the straddle shape over the committed forward fix. It is NOT the live other-world-unaffected result, which remains FAIL (see run-u5-crash-recon-2026-10-26T10-40-26-338Z.json, preserved verbatim). No host was booted to produce this file (zero host starts).",
+ "provenance": "review R1 finding 3 (u7-t1-review-r1): machine-readable non-delivery marker",
  "runId": "u5-crash-2026-10-25T17-27-10-230Z",
  "suite": "parallel",
  "startedAt": "2026-10-25T17:27:10.351Z",

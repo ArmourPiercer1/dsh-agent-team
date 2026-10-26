@@ -36,6 +36,12 @@ forward-fixed code on this tree):
    survivor `overall PASS` — exactly what the forward-fixed sequencing
    produces): `overall PASS` = all five cases PASS,
    `other-world-unaffected PASS`.
+   NON-DELIVERY, machine-marked (review R1 finding 3): the synthetic artifact
+   carries `kind: "synthetic-offline"`, `delivery: "NOT_DELIVERY"`,
+   `liveConfirmation: "REQUIRED"`, `verdict: "FAIL"` — its embedded PASS is
+   a reconstruction over the committed fix and MUST NEVER be read as the
+   live result. THE LIVE `other-world-unaffected` VERDICT REMAINS FAIL
+   (artifact 1 above, preserved verbatim) until a live confirmation boot.
 
 Conclusion (offline): the case's FAIL cause is EXACTLY the sequencing proof
 the forward fix now generates — every factory/protocol condition replays
@@ -75,18 +81,24 @@ is the EXPECTED governed answer, required verbatim by the judge).
 Leader-lane telemetry: `{requests: 46, exchanges: 11, wakes: 29,
 wakeRejected: 0}` — the lane wakes and exchanges (previously: parked forever).
 
-Remaining boundary (recorded, NOT worked around): with the ask rows born and
-ALLOWED, the member's background `bash` still produces no job id because the
-guard kernel refuses at dispatch, verbatim:
-`"Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at
-dispatch time (no fallback to the native body)"`
-(digest `debug.worker`). The three FAILs chain from that one refusal
-(no id → no ring/claim collection, no kill subject born, foreign lane never
-completes). The kernel refusing an unverifiable binding is the kernel's own
-correct law (the matrix scores it as the armed-world law); making the jobs
-world's `bash` lane EXECUTABLE is a product/binding-verification question
-outside a tests-only closure PR — reported, not patched. The judge said FAIL
-precisely because the effects never reached the disk/ring — no false green.
+RECLASSIFIED (review R1 finding 1, review branch
+`task/u7-t1-review-20261026` @ 3420bc01f): this refusal is a HARNESS GAP,
+not a product boundary. `lib/u6-jobs-assembly.mjs` mounts the plane without
+`names: { bash: 'bash' }`, and the plane defaults `names.bash` to
+`team_bash` (`packages/runtime/src/plugin/live/team-tool-plane.mjs:146-147`)
+— so `bash` is neither plane-owned (`bindOwnTools`, agent-bindings.mjs:3086
+-3088) nor native-harvested on the member surface: the fixture asks a
+governed member to execute a `team_bash` alias that is not the U7-4a
+producer's creating lane, and the receipt (`jobIds: []` + BINDING_UNVERIFIED)
+is EXACTLY the expected consequence of that mismatch. The U7-4a lane proved
+the same guard ADMITS bash once the creating-lane takeover is mounted (its
+live run 12/12 PASS; host log `a5bg: attributed hostJobId=bash-1..4`). The
+fixture wiring belongs to the U7-4a producer PR (that lane owns it) and is
+deliberately NOT added in this PR; the jobs positive arm AWAITS the U7-4a
+producer PR. The three FAILs (birth-positive, owner-fence,
+kill-refusal-zero-reach) are harness-gap-blocked, not product-boundary
+evidence. The judge said FAIL precisely because the effects never reached
+the disk/ring — no false green.
 
 
 ### Boot 2 — u6-arc-d, line `u7arc1`, host 2 of 6 budget
@@ -217,14 +229,17 @@ R-U6P3-1 — targeting PROVEN, blocking point recorded exactly:
   over the team.create-echoed governed session id (identity assertions
   passed; the boot anchor p6t6 block read 0/0/0 as its law says, kept
   only as `bootAnchorNote`).
-- WHERE blocked (product semantics): the governed member's `team_bash`
-  never produces a durable control request at all — the call is refused
-  at the a5p5 admission seam BEFORE ControlService: verbatim
-  `"a5p5-refused kind=refused-admission code=APPROVAL_DENIED"` (the same
-  family as the jobs-world `Tool Binding … cannot be verified` law). So
-  `pendingSeen:false, maskRequestId:null` and the resolve arm has no id
-  to resolve: resolveControl is armed for the v4 governed-session shape
-  and waits on a row that this pin's admission law never lets be born.
+- WHERE blocked (recorded exactly; RECLASSIFIED per review R1): the governed
+  member's `team_bash` never produces a durable control request at all — the
+  call is refused at the a5p5 admission seam BEFORE ControlService: verbatim
+  `"a5p5-refused kind=refused-admission code=APPROVAL_DENIED"`. Per the
+  U7-6 attribution this is the APPROVAL-DURABILITY stack, not a guard defect:
+  the durable ask row is never opened and no exec token exists, so the pinned
+  A2C-1 allow→ask downgrade fires — a DELIBERATE fail-closed law of this pin,
+  which the harness must design around rather than attribute as a boundary
+  defect. So `pendingSeen:false, maskRequestId:null` and the resolve arm has
+  no id to resolve: resolveControl is armed for the v4 governed-session shape
+  and waits on a row this pin's approval-durability law never lets be born.
 - THE HARNESS HELD: with `positiveReadProven:false` the judge FAILs
   `proc:member-ask-born-terminal` and `proc:replay-settled-refusal`
   (`controlChannelPositiveRead:false` in the detail) instead of certifying
@@ -236,13 +251,34 @@ R-U6P3-1 — targeting PROVEN, blocking point recorded exactly:
   `proc:late-call-refused` (`lateFileAbsent:true`), `proc:ctl-native-untouched`,
   `proc:spoof-refusal`, `proc:mounted`, `proc:ctl-native-untouched`.
 
-C2 round closes: 6/6 host starts, every verdict recorded verbatim.
-Product-change findings needing owner lanes (NO source touched here):
-(1) governed-lane native tool binding verification at dispatch (jobs +
-proc admission refusals); (2) confined-provider writable-anchor policy —
-the sandboxed bash has ZERO writable grants, so no CI/effect design may
-ride bash workspace writes; (3) the census-boot tool surface has no
-builtin `write` (edit needs read-first — committed chain awaits boot).
+C2 round closes: 6/6 host starts (machine-auditable ledger:
+`c2/BUDGET.json` — 6 unique runs/worlds/logs, cap 6, over-cap attempts 0,
+plus the zero-start offline work list), every verdict recorded verbatim.
+Findings needing owner lanes (NO source touched here) — RECLASSIFIED per
+review R1 (`u7-t1-review-r1/REVIEW.md`):
+(1) HARNESS GAP, not product boundary: the u6-jobs world omits the plane
+config `names:{bash:'bash'}` (plane default is `team_bash`), so its positive
+arm is blocked by the fixture's own naming — the U7-4a lane proved the same
+guard admits bash with the creating-lane takeover mounted (12/12 PASS). The
+jobs positive arm AWAITS the U7-4a producer PR (that lane owns the wiring;
+not added here). The u6-proc `APPROVAL_DENIED` is the pinned A2C-1
+fail-closed approval-durability law (U7-6 attribution), not a defect.
+(2) confined-provider writable-anchor policy — the sandboxed bash has ZERO
+writable grants, so no CI/effect design may ride bash workspace writes;
+(3) the census-boot tool surface has no builtin `write` (edit needs
+read-first — committed chain awaits boot).
+
+## Review R1 fix round (this commit)
+
+Review: branch `task/u7-t1-review-20261026` @ 3420bc01f,
+`dev/agent-workflow/evidence/u7-t1-review-r1/REVIEW.md`, verdict
+PASS-WITH-FINDINGS. Applied: (1) MAJOR — u6jobs8 reclassified as harness
+gap (boot-1 section rewritten; product-findings list corrected; the fixture
+is deliberately left for the U7-4a producer PR); (2) MINOR —
+`c2/BUDGET.json` machine budget ledger added (six runs, cap check, zero-start
+offline list); (3) MINOR — synthetic straddle artifact now carries
+`kind/delivery/liveConfirmation/verdict` non-delivery markers and this
+README states the live `other-world-unaffected` verdict REMAINS FAIL.
 
 ## Gates (pre-PR, this worktree)
 

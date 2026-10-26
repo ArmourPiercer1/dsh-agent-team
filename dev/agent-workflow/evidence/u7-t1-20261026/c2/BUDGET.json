@@ -1,0 +1,85 @@
+{
+ "schema": "u7t1-c2-budget-ledger/1",
+ "cap": 6,
+ "totalHostStarts": 6,
+ "overCapAttempts": 0,
+ "accountingNote": "One C2 round, hard cap 6 factory host starts. Four receipts (u6-arc-d) carry a per-receipt hostStarts.thisRunCount=1; the u6-jobs and u6-proc receipts predate that field, so their count is the ONE committed instance log per world (paths listed) \u2014 exactly one boot phase per run (u6jobs8: jobs-boot1; u6prc10: u6proc-boot1). Machine recount: 6 unique worlds, 6 unique instance logs, 4 explicit thisRunCount=1, 0 restart entries.",
+ "runs": [
+  {
+   "seq": 1,
+   "line": "u6jobs8",
+   "suite": "u6-jobs",
+   "runId": "u5-u6-jobs-u6jobs8-2026-10-26T10-41-34-830Z",
+   "world": "u5u6jobs8-20261026T10-41-34Z",
+   "bootPhase": "jobs-boot1",
+   "receipt": "c2/u5-u6-jobs-u6jobs8-2026-10-26T10-41-34-830Z.u6jobs-evidence.json",
+   "instanceLog": "c2/logs/u5u6jobs8-20261026T10-41-34Z/instance-port3183.log",
+   "thisRunCount": 1,
+   "countSource": "one committed instance log (no hostStarts field in this receipt shape)"
+  },
+  {
+   "seq": 2,
+   "line": "u7arc1",
+   "suite": "u6-arc-d",
+   "runId": "u5-u6-arc-d-u7arc1-2026-10-26T10-52-04-372Z",
+   "world": "u5u7arc1-20261026T10-52-04Z",
+   "bootPhase": "u6arcd-boot1",
+   "receipt": "c2/u5-u6-arc-d-u7arc1-2026-10-26T10-52-04-372Z.evidence.json",
+   "instanceLog": "c2/logs/u5u7arc1-20261026T10-52-04Z/instance-port3183.log",
+   "thisRunCount": 1,
+   "countSource": "receipt hostStarts.thisRunCount"
+  },
+  {
+   "seq": 3,
+   "line": "u7arc2",
+   "suite": "u6-arc-d",
+   "runId": "u5-u6-arc-d-u7arc2-2026-10-26T11-03-55-443Z",
+   "world": "u5u7arc2-20261026T11-03-55Z",
+   "bootPhase": "u6arcd-boot1",
+   "receipt": "c2/u5-u6-arc-d-u7arc2-2026-10-26T11-03-55-443Z.evidence.json",
+   "instanceLog": "c2/logs/u5u7arc2-20261026T11-03-55Z/instance-port3180.log",
+   "thisRunCount": 1,
+   "countSource": "receipt hostStarts.thisRunCount"
+  },
+  {
+   "seq": 4,
+   "line": "u7arc3",
+   "suite": "u6-arc-d",
+   "runId": "u5-u6-arc-d-u7arc3-2026-10-26T11-19-26-093Z",
+   "world": "u5u7arc3-20261026T11-19-26Z",
+   "bootPhase": "u6arcd-boot1",
+   "receipt": "c2/u5-u6-arc-d-u7arc3-2026-10-26T11-19-26-093Z.evidence.json",
+   "instanceLog": "c2/logs/u5u7arc3-20261026T11-19-26Z/instance-port3182.log",
+   "thisRunCount": 1,
+   "countSource": "receipt hostStarts.thisRunCount"
+  },
+  {
+   "seq": 5,
+   "line": "u7arc4",
+   "suite": "u6-arc-d",
+   "runId": "u5-u6-arc-d-u7arc4-2026-10-26T11-22-20-164Z",
+   "world": "u5u7arc4-20261026T11-22-20Z",
+   "bootPhase": "u6arcd-boot1",
+   "receipt": "c2/u5-u6-arc-d-u7arc4-2026-10-26T11-22-20-164Z.evidence.json",
+   "instanceLog": "c2/logs/u5u7arc4-20261026T11-22-20Z/instance-port3182.log",
+   "thisRunCount": 1,
+   "countSource": "receipt hostStarts.thisRunCount"
+  },
+  {
+   "seq": 6,
+   "line": "u6prc10",
+   "suite": "u6-proc",
+   "runId": "u5-u6-proc-u6prc10-2026-10-26T11-25-49-464Z",
+   "world": "u5u6prc10-20261026T11-25-49Z",
+   "bootPhase": "u6proc-boot1",
+   "receipt": "c2/u5-u6-proc-u6prc10-2026-10-26T11-25-49-464Z.u6proc-evidence.json",
+   "instanceLog": "c2/logs/u5u6prc10-20261026T11-25-49Z/instance-port3182.log",
+   "thisRunCount": 1,
+   "countSource": "one committed instance log (no hostStarts field in this receipt shape)"
+  }
+ ],
+ "zeroStartOfflineWork": [
+  "R-G3-1 reconstructions (live/crash-reclaim-3-synthetic-straddle.json + live/run-u5-crash-recon-*.json) ran with ZERO host starts",
+  "all C1 suites run with ZERO host starts"
+ ]
+}
