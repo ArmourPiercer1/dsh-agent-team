@@ -37,7 +37,7 @@ plausible:
 
 ## 2. Run it
 
-Every command below was run in the `u7-3` worktree at `origin/master` (`496a3980f`) with the outputs
+Every command below was run in the `u7-3` worktree at `origin/master` (`f71159648`) with the outputs
 quoted from [the receipts file](../dev/agent-workflow/evidence/u7-3-20261026/eb4b-receipts.txt).
 
 ```bash
@@ -129,6 +129,8 @@ link it cannot see, and it never fills the gap with a guess:
 
 ## 6. Related
 
+* [INSTALL-COLD-START.md](./INSTALL-COLD-START.md) — bringing a checkout up before you diagnose.
+* [RECOVERY.md](./RECOVERY.md) — when the answer is "this tree is not the thing you think it is".
 * [README.md](../README.md) — repository positioning and the 9-package layout.
 * [docs/TEST_METHODS.md](./TEST_METHODS.md) — the test-instance constraints any live diagnosis must obey.
 * [docs/STATUS.md](./STATUS.md) — the living snapshot; remember it is not the authority.
