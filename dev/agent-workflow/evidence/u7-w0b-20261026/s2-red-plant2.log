@@ -1,0 +1,29 @@
+## RED plant 2: latch never consulted (breaks silent-invalidation law B4)
+     ✓ P0 the mount registers all four families on ONE kernel (the universe the law is checked over)  460ms
+     ✓ P1/P2 dsh.fs-family :: read binds ONCE to the claiming descriptor's family 22ms
+     ✓ P1/P2 dsh.fs-family :: write binds ONCE to the claiming descriptor's family 13ms
+     ✓ P1/P2 dsh.fs-family :: edit binds ONCE to the claiming descriptor's family 9ms
+     ✓ P1/P2 dsh.fs-family :: read_image binds ONCE to the claiming descriptor's family 9ms
+     × P4 dsh.fs-family: drop → SILENT forever; revoke + re-register → never resurrects; siblings untouched 14ms
+     ✓ P1/P2 dsh.process-family :: team_bash binds ONCE to the claiming descriptor's family 8ms
+     × P4 dsh.process-family: drop → SILENT forever; revoke + re-register → never resurrects; siblings untouched 10ms
+     ✓ P1/P2 dsh.search-family :: team_grep binds ONCE to the claiming descriptor's family 12ms
+     ✓ P1/P2 dsh.search-family :: team_glob binds ONCE to the claiming descriptor's family 11ms
+     × P4 dsh.search-family: drop → SILENT forever; revoke + re-register → never resurrects; siblings untouched 14ms
+     ✓ P1/P2 dsh.jobs-family :: job_output binds ONCE to the claiming descriptor's family 12ms
+     ✓ P1/P2 dsh.jobs-family :: job_list binds ONCE to the claiming descriptor's family 9ms
+     ✓ P1/P2 dsh.jobs-family :: job_kill binds ONCE to the claiming descriptor's family 10ms
+     × P4 dsh.jobs-family: drop → SILENT forever; revoke + re-register → never resurrects; siblings untouched 11ms
+     × B1–B5 hold for every family and every claimed name 48ms
+     ✓ the binder accepts no familyId input (B2 by construction) 0ms
+     ✓ latch-before-mint breaks B3 (pre-mint must not latch) 46ms
+     ✓ no-latch breaks B4 (invalidation must stay silent) 40ms
+     ✓ a fixed familyId breaks B2 for every non-fs family 32ms
+     ✓ a guessed family for unclaimed names breaks B5 31ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { definitionIdentity: 'def#5', …(1) } to be undefined
+AssertionError: expected { definitionIdentity: 'def#20', …(1) } to be undefined
+AssertionError: expected { definitionIdentity: 'def#33', …(1) } to be undefined
+AssertionError: expected { definitionIdentity: 'def#48', …(1) } to be undefined
+AssertionError: expected { B1: true, B2: true, B3: true, …(2) } to deeply equal { B1: true, B2: true, B3: true, …(2) }
+      Tests  5 failed | 16 passed (21)

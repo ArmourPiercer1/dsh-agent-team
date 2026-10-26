@@ -236,11 +236,13 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     const shellGrant = shellSrc.slice(shellSrc.lastIndexOf('const anchorGrant'), shellSrc.indexOf("argv: ['/bin/sh', '-c', parsed.command]"))
     expect(shellRow.length, 'the confined-shell row is the one with a write lane').toBeGreaterThan(0)
     expect(shellGrant).toContain('writeFile')
-    // and the plane wires both rows off the SAME governed root, so the anchor the
-    // two read-only grants name is one anchor, not two.
-    const planeSrc = readFileSync(PLANE_SRC, 'utf8')
+    // and both rows are wired off the SAME governed root, so the anchor the
+    // two read-only grants name is one anchor, not two. u7-w0b S3 (disclosed
+    // interface update): the backend construction moved VERBATIM from the
+    // plane into the search family's FamilyAssembly descriptor.
+    const planeSrc = readFileSync(join(REPO, 'packages/tools/families/search.mjs'), 'utf8')
     const searchRow = planeSrc.slice(planeSrc.indexOf('const realSearch'), planeSrc.indexOf('const realGlob'))
-    const globRow = planeSrc.slice(planeSrc.indexOf('const realGlob'), planeSrc.indexOf('const productionBackends'))
+    const globRow = planeSrc.slice(planeSrc.indexOf('const realGlob'), planeSrc.indexOf('const globDisabledShut'))
     expect(searchRow).toContain('rootDir: fsInstance.rootDir')
     expect(globRow).toContain('rootDir: fsInstance.rootDir')
   })

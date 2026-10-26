@@ -1,0 +1,24 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7W0B",
+  "paths": [
+    "packages/runtime/src/plugin/live/approval-entry-binder.mjs",
+    "packages/runtime/test/u7-w0b-approval-entry-law.test.ts",
+    "packages/runtime/src/plugin/live/family-assembly.mjs",
+    "packages/tools/families/index.mjs",
+    "packages/tools/families/search.mjs",
+    "packages/tools/families/fs.mjs",
+    "packages/tools/families/process.mjs",
+    "packages/runtime/src/plugin/live/family-assembly.d.mts",
+    "packages/runtime/src/plugin/live/approval-entry-binder.d.mts",
+    "packages/tools/families/index.d.mts",
+    "packages/runtime/test/u7-w0b-family-seam.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1308,
+    "to": 1319
+  },
+  "reason": "u7-w0b (named center-interface PR, branch task/u7-w0b-plane-family-seam-20261026): the ONE approval-entry binder that replaced the plane's five ensure<X>ApprovalEntry copies and its law suite (S2); the generic FamilyAssembly seam module, the generated family index and the three ordinary-family descriptors (fs, process, search) under the reviewed drop-in directory packages/tools/families/ (S3). The plane / dist mirror edits ride already-counted files; zero denylist vocabulary. S5 adds the seam negatives + plane fitness suite (u7-w0b-family-seam.test.ts) and the three adjacent tsc declaration surfaces of the new .mjs modules (family-assembly.d.mts, approval-entry-binder.d.mts, families/index.d.mts \u2014 the pa-mount-registry.d.mts pattern).",
+  "tieNote": "MEASURED on the tree merged with #397 (21f3f5b08), this booking absent: `scanner counts 1315, ledger derives 983 + 325 = 1308` (dev/agent-workflow/evidence/u7-w0b-20261026/p4t6-RED-unbooked-merged-397.log) \u2014 exactly these seven paths. Pre-#397 the same seven were booked in-file as SCANNED_PATHS_U7W0B (1306 -> 1313). S5: +4 measured, `scanner counts 1319, ledger derives 983 + 332 = 1315` (dev/agent-workflow/evidence/u7-w0b-20261026/p4t6-RED-unbooked-s5.log).",
+  "migratedFrom": "branch-local in-file const SCANNED_PATHS_U7W0B (commits 31aa1bf20..447b8e6df), migrated at the #397 merge"
+}

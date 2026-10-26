@@ -1,0 +1,13 @@
+[u6-arc-d] case arcd:mounted: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:positive: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:spoof-zero-authority: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:swap-refused: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:unbound-refused: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:replay-refused: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:ci03-native-parity: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:restrict-veto: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:lift-control: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:marker-ledger: FAIL {"reason":"team.create failed: status=401 body=null"}
+[u6-arc-d] case arcd:teardown-honest: FAIL {"reason":"team.create failed: status=401 body=null"}
+RUN-SUMMARY run=u5-u6-arc-d-u7w0b-2026-10-26T21-06-31-176Z suite=u6-arc-d overall=FAIL cases=12 FAIL:11 PASS:1 worlds=u5u7w0b-20261026T21-06-31Z
+exit=1

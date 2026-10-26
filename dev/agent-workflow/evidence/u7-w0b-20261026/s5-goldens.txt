@@ -1,0 +1,6 @@
+ ✓ packages/runtime/test/u6-pr2-read-golden-vectors.test.ts (4 tests) 164ms
+ ✓ packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts (7 tests) 229ms
+ ✓ packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts (4 tests) 227ms
+ ✓ packages/runtime/test/u6-pr5-search-golden-vectors.test.ts (7 tests) 675ms
+     ✓ corpus digest (409 vectors: refusals + argv + parsers + presentation + coverage) equals the master recording  542ms
+      Tests  22 passed (22)

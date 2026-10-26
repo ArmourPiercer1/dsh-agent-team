@@ -54,7 +54,7 @@ import {
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
 import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
-import { createRunRecord, exitCodeFor, formatSummary } from './lib/run-record.mjs'
+import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
 import { loadSuites } from './lib/suites.mjs'
 import { findIssuedResult, makeCanaryDecide, resultClaimsRan } from './lib/mock-script.mjs'
 
@@ -158,22 +158,6 @@ async function probeNoToken(origin) {
   return res === null ? 'unreachable' : res.status
 }
 
-function readAuthorityBinding(repoRoot) {
-  const pointerPath = 'dev/engineering/current-authority.json'
-  try {
-    const text = readFileSync(join(repoRoot, pointerPath), 'utf8')
-    const pointer = JSON.parse(text)
-    let snapshotDigest = 'snapshot-unreadable'
-    try {
-      snapshotDigest = sha256Text(readFileSync(join(repoRoot, 'dev', 'engineering', 'authority-snapshots', `${pointer.snapshot_version}.json`), 'utf8'))
-    } catch {
-      /* keep sentinel */
-    }
-    return { pointerPath, pointer, pointerSha256: sha256Text(text), snapshotDigest }
-  } catch (error) {
-    return { pointerPath, error: String(error?.message ?? error) }
-  }
-}
 
 /** Poll until predicate() true, deadline, or abort. */
 async function waitUntil(predicate, { timeoutMs, intervalMs = 400, signal = undefined }) {

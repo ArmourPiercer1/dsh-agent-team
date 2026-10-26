@@ -76,6 +76,7 @@ barrels were read, `composition-smoke` was not executed. Sibling packages are ad
 | production entry (mounted) | `src/plugin/host.ts` → `dist/packages/runtime/src/plugin/host.js` |
 | declared package entry | `src/index.ts` (marker only — see layout fact 1) |
 | plugin surface | `src/plugin/`, `src/plugin/live/` |
+| governed-family mount seam (u7-w0b) | `src/plugin/live/family-assembly.mjs` (FamilyAssembly descriptor law, capability object, reviewed-set verifier) and `src/plugin/live/approval-entry-binder.mjs` (the ONE bind-once approval-entry binder); `team-tool-plane.mjs` mounts every ordinary family through them and names none — the reviewed family list lives in `packages/tools/families/` |
 | lane facades | `<lane>/index.ts` for each of the 34 lanes |
 | tests | `test/` — 422 `*.test.ts` plus ~40 helpers, flat; families `a2*`, `a3*`, `a4*`, `a5*`, `p5t*`…`p8t*`, `t12*`, `control-*`, `permission-overlay*`, `recovery-*`, `s6t*` |
 | bounded harnesses | `member-residency/harness/`, `root-binding/harness/` (`bounded-run.mjs`, `mini-mcp.mjs`, `*.regression.test.mjs`) |

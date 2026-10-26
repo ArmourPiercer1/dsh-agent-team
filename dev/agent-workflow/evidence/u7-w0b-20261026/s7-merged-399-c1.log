@@ -1,0 +1,1318 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5g7-unit-realm legs=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:7e56ee49-2441-4843-8d8b-7f8e7b7e76b7-1 pid=228 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:82754ea5-9b3c-4eb2-80ac-441cdbc4f3a1-1 pid=258 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g7-unit-realm legs=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob:mount:5f4ad108-d8b5-4ae9-b2bc-75477f2c7a51-1 pid=293 files=2 capped=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5g7-unit-mvpsqc0m/root/data/needle.txt
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:c3256588-b77c-4152-b4ea-9ce06e536ba0-1 pid=338 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:c18dab5e-15aa-497b-a347-3f8266284948-1 pid=355 exit=0 timedOut=false cancelled=false
+
+ ✓ packages/runtime/test/alpha5-glue7-plane-backends.test.ts (12 tests) 3078ms
+     ✓ G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps  432ms
+     ✓ G6b the SHIPPED glob row keeps its bounded face + typed walker error + symlink-final refusal (the retired CANDIDATE-A factory's three faces, retargeted)  406ms
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X2 positive control: a command that succeeds still settles as exit 0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X2 positive control: a command that succeeds still settles as exit 0
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:ef4f14b0-b85c-427e-a7c8-afb5c40a5a6b-1 pid=365 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:ebbd10f3-5c41-4b3a-873c-326c0cb58663-1 pid=170 exit=not-observed timedOut=false cancelled=true
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:ebbd10f3-5c41-4b3a-873c-326c0cb58663-1 pid=170 shortOf=bound
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:14104670-ee2c-4f9a-b316-740e4eb836d1-1 pid=383 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[a5b3 C11] pre-abort boundary observed: payload-side-effect-landed=false settled-in=1ms abort-at=1793051778266
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:14104670-ee2c-4f9a-b316-740e4eb836d1-2 pid=388 exit=7 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:14104670-ee2c-4f9a-b316-740e4eb836d1-3 pid=393 exit=126 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:14104670-ee2c-4f9a-b316-740e4eb836d1-4 pid=401 exit=127 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b2-realm legs=6
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W1 windowed positive read (offset 20 limit 15): native lines 20..34 of 40
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=200 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w1.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W2 default window: omitted offset/limit -> lines 1..2000 of 2050 (deployment cap 2000)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=11301 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w2.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W4 empty file: lines [] totalLines 0 + EOF footer; offset 2 refused (empty+offset1 exception reversed)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=0 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w4.txt
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b2-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W5 CRLF: trailing \r stripped before counting, totalLines 2
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=6 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w5.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W6 UTF-8 multibyte across window bounds: decode-whole-then-split lines exact (no byte-slice mojibake)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=1271 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w6.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W7 over-long line: 3000 chars truncate to 2000 + verbatim ASCII suffix (… never)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=3001 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w7.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W8 output byte cap: capped footer state (no "of Z"), lines < effective limit, NO truncatedByBytes in the result
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=60300 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w8.txt
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5m1-auth-plane-realm rows=6
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W9 short-read characterization: quarter reads change nothing; requested may exceed cap+1
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=471651 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w9.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW W window (plan (b) W1-W9) > W9 short-read characterization: quarter reads change nothing; requested may exceed cap+1
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=471651 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w9.txt
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5m1-auth-plane-realm call=team-inst-p6t4seedw01-bash:mount:48c4c5a6-1b5d-4cbe-b79f-49584b8b979b-1 pid=453 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW T spelling (plan (b) T1-T2) > T1 trailing-space twin files: "t-a " reads the TRAILING file, "t-a" reads the plain one
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=20 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/t-a 
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW T spelling (plan (b) T1-T2) > T1 trailing-space twin files: "t-a " reads the TRAILING file, "t-a" reads the plain one
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=15 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/t-a
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D1 lane-deny zero-byte law + admission throw shape (plan fixture disclosure inline)
+[dsh-agent-team] a5g7-read: governed-read default-deny refusal call path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w2.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D8 lane matcher contract (mustfix 6): canonical-first depth check — backend-layer conflict denies at ZERO bytes, backend two gates distinguished, legacy shape kept, dual-field conflict follows canonical
+[dsh-agent-team] a5g7-read: governed-read default-deny refusal call path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w2.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b2-realm legs=6
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D5 over-cap limit: limit 2001 refused with the verbatim pin639 detail; limit 2000 positive
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-limit-over-cap
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D5 over-cap limit: limit 2001 refused with the verbatim pin639 detail; limit 2000 positive
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=200 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w1.txt
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > read: one real approval (leader decider) → the governed read body once
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=22 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5m1-auth-mvpsqdzx/root/notes.txt
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b2-realm call=team-a5b2-instance-glob:mount:e1cb2734-e8bc-4f57-84c5-63072404d8e9-2 pid=462 files=1 capped=false
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D6a size family native shape: exact-cap success, ring fetch <= cap (equal passes)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=1048576 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/size-cap.bin
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7a GUARD (deterministic pre-open swap): same-path swap to an outside symlink -> ELOOP refusal; same-path new inode -> exec-time drift; zero disclosure
+[dsh-agent-team] a5g7-read: governed-read exec-refused:drift path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/d7b.bin
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7b GUARD (deterministic post-verify swap): bytes keep coming from the VERIFIED fd (old content), never from the path
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=23 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/d7c.bin
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D denial and size (plan (b) D family) > D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW F equivalence and identity (plan (b) F1-F2) > F1 omitted-limit vs explicit-2000 executions: IDENTICAL native output objects (2050-line file)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=11301 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w2.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW F equivalence and identity (plan (b) F1-F2) > F1 omitted-limit vs explicit-2000 executions: IDENTICAL native output objects (2050-line file)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=11301 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w2.txt
+
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW C face contract (plan (b) C1-C1c) > C1 read-row face: native keys, own schema, verbatim envelope render, meta without lang, read-card presentResult, isError declines
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=33 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/reports/status.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW C face contract (plan (b) C1-C1c) > C1b malformed / missing meta declines to undefined and NEVER throws
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=33 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/reports/status.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW C face contract (plan (b) C1-C1c) > C1c legacy / foreign result forms decline to undefined (replay-safe, never throws)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=33 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/reports/status.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW P production recipe (plan (b) P1-P4) > P1 doc-YAML positive control: the TWO §3.5 marker blocks parse into row-config plane + blueprint policy and mount (plane and policy are DIFFERENT carriers, fed separately)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=33 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/reports/status.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW P production recipe (plan (b) P1-P4) > P1b relative locator still reads (compat): the same assembly serves the workspace-placement spelling
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=33 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/reports/status.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW P production recipe (plan (b) P1-P4) > P4 subtree over-promise guard: a lone subtree rule proves NOTHING — assembly refuses to mount it without the containment seam (measured law), the executor-level default-deny law holds, and the exact twin reads
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=19 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/sub/inside.txt
+
+stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW D9 outer permission layer (mustfix2) > D9 production permission listener + its recorded monotonic end-cap guard drive the SAME real read def: exact allow+deny conflict denies at body/bytes ZERO; the allow twin self-proves the wiring really reaches the def
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=200 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5rsw-mvpsqenx/root/w1.txt
+
+ ✓ packages/runtime/test/a5-read-slice-window.test.ts (40 tests) 1589ms
+     ✓ F2 GUARD: {file_path} vs {file_path,limit:2000} are distinct identities; omitted offset == offset 1  391ms
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob:mount:cbd8cef5-55d4-4fd9-b4cb-8f671f088f91-1 pid=541 files=2 capped=false
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5globoff-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:24449af9-2606-4357-b58c-56d5c17bd6b9-1 pid=412 exit=not-observed timedOut=false cancelled=true
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:24449af9-2606-4357-b58c-56d5c17bd6b9-1 pid=412 shortOf=bound
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5globoff-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5globoff-realm rows=6
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5globoff-realm call=team-a5globoff-instance-bash:mount:857ee9be-49cf-41ec-be68-2a82962f5c7c-1 pid=599 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=10 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5globoff-unit-mvpsqg0o/root/a.txt
+
+ ✓ packages/runtime/test/a5-globoff-key.test.ts (7 tests) 1037ms
+     ✓ K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs  301ms
+     ✓ K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut  527ms
+ ✓ packages/runtime/test/a5-m1-auth-bridge.test.ts (50 tests) 3434ms
+     ✓ team_bash: one real approval (human decider) → ONE body through the real landlock launcher  345ms
+     ✓ D3 a pipe held open past the death (the descendant case): ONE bound, then the row answers SHORT AND SAYING SO — truncated + DRAIN-INCOMPLETE, settlement law untouched  2007ms
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:35f336cd-05be-46cf-8f35-fe11ddda7f40-1 pid=483 exit=not-observed timedOut=true cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b2-realm call=team-a5b2-instance-bash:mount:35f336cd-05be-46cf-8f35-fe11ddda7f40-1 pid=483 shortOf=bound
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D1 positive control: the INSTALL.md §3.5 default conf (NO scratchRoot key) runs the REAL glob and returns BOTH seeds
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5scratchdef-realm legs=6
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D1 positive control: the INSTALL.md §3.5 default conf (NO scratchRoot key) runs the REAL glob and returns BOTH seeds
+[dsh-agent-team] a5glb-glob: anchored-glob DRAIN-INCOMPLETE realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:bf3729a2-e86d-4d83-b129-165b97323c35-1 exit=0
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D1 positive control: the INSTALL.md §3.5 default conf (NO scratchRoot key) runs the REAL glob and returns BOTH seeds
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:bf3729a2-e86d-4d83-b129-165b97323c35-1 pid=646 files=2 capped=false
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:a7023cd8-18c7-4a38-b272-65f6fb91b542-1 (same provider, same request; registration+attribution are the producer's)
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D2 the sibling default lands PARENT-SIDE of the governed root (never inside it)
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5scratchdef-realm legs=6
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D2 the sibling default lands PARENT-SIDE of the governed root (never inside it)
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:7ff87b2b-450c-4e3a-9835-cf4b7c164851-1 pid=676 files=2 capped=false
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D3 explicit EMPTY scratchRoot still lands typed-refused (the gate is NOT weakened)
+[dsh-agent-team] a5glb-glob: anchored-glob capability REFUSED realm=a5scratchdef-realm code=IO_POLICY_UNSUPPORTED
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D4 explicit RELATIVE scratchRoot still lands typed-refused (the gate is NOT weakened)
+[dsh-agent-team] a5glb-glob: anchored-glob capability REFUSED realm=a5scratchdef-realm code=IO_POLICY_UNSUPPORTED
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:bc174463-41a3-43f0-890f-fe35f86d53b8-1 (same provider, same request; registration+attribution are the producer's)
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D5 an explicit valid scratchRoot rules (default never overrides it)
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5scratchdef-realm legs=6
+
+stdout | packages/runtime/test/a5-scratch-default.test.ts > a5-scratch-default — production default form under the scratch law (root 23:12Z) > D5 an explicit valid scratchRoot rules (default never overrides it)
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-realm call=team-a5scratchdef-instance-glob:mount:c9078526-8b25-43c1-9300-eaed2efb7b4f-1 pid=709 files=2 capped=false
+
+ ✓ packages/runtime/test/a5-scratch-default.test.ts (5 tests) 1169ms
+     ✓ D1 positive control: the INSTALL.md §3.5 default conf (NO scratchRoot key) runs the REAL glob and returns BOTH seeds  338ms
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:a45026cf-faf7-42f6-a27b-5478cbf0e7df-1 (same provider, same request; registration+attribution are the producer's)
+
+ ✓ packages/runtime/test/u74a-jobs-producer.test.ts (20 tests) 1241ms
+     ✓ K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output  437ms
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:04a0de12-bab0-49b2-9eb7-c9eade9ed7e2-1 pid=756 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:b5293524-0b15-413e-b646-7f9d677a7e29-1 pid=595 exit=not-observed timedOut=false cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:b5293524-0b15-413e-b646-7f9d677a7e29-1 pid=595 shortOf=bound
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:1aa9684c-4415-479d-9487-68930776336f-1 pid=780 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:ad11ab5e-4dc5-44da-9fdd-5b0bce152177-1 pid=802 exit=0 timedOut=false cancelled=false
+
+ ✓ packages/runtime/test/a5-m1-bash-c1.test.ts (7 tests) 1044ms
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash:mount:311a3a47-87cd-482f-b86e-d965402dd102-1 pid=633 exit=not-observed timedOut=true cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b2-realm call=team-a5b2-instance-bash:mount:311a3a47-87cd-482f-b86e-d965402dd102-1 pid=633 shortOf=bound
+
+ ✓ packages/runtime/test/a5b2-exit-code-fidelity.test.ts (11 tests) 8666ms
+     ✓ A5 the 128-range number does NOT identify a cause of death: a payload that exits 137 and a payload killed by SIGKILL are the same number here  301ms
+     ✓ A4 the terminate path lands on a signal death too: the code stays a 128-range number, never a fabricated 0  521ms
+     ✓ X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim  302ms
+     ✓ X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status  440ms
+     ✓ X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire  595ms
+     ✓ X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire  2292ms
+     ✓ X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel  2303ms
+ ✓ packages/runtime/test/a5-pindir-reserved-native.test.ts (20 tests) 913ms
+     ✓ PROVENANCE of every pin: a guessed name is RED — each pinned name must carry a real registration source at the host tree (root 21:15Z)  658ms
+ ✓ packages/runtime/test/u7-w0b-approval-entry-law.test.ts (21 tests) 1056ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:b5293524-0b15-413e-b646-7f9d677a7e29-2 pid=772 exit=not-observed timedOut=false cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:b5293524-0b15-413e-b646-7f9d677a7e29-2 pid=772 shortOf=bound
+
+ ✓ packages/runtime/test/u7-w0b-family-seam.test.ts (9 tests) 735ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+ ✓ packages/runtime/test/u6-pr4-jobs-bridge.test.ts (24 tests) 731ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:d44a769b-e811-4739-a8dd-e8fc387ff446-1 pid=911 exit=7 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+ ✓ packages/runtime/test/u6-arc-a-fitness.test.ts (12 tests) 588ms
+     ✓ the BOOKED digests are the BASE blobs themselves (the ledger cannot book an already-drifted byte)  488ms
+ ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 1995ms
+     ✓ the trio definitions all carry a render that returns an array of typed text blocks  1988ms
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-1 POSITIVE create: new file lands with EXACT bytes; receipt fingerprint == sha256(content) (center hashString law)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=11 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/created-a.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-2 POSITIVE update: existing bytes replaced; receipt says update; NO before/after echo (disclosed D-C2-1 deviation)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=9 created=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/exists.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-3 empty content is LEGAL (clears the file, zero bytes)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=0 created=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/clears.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-4 default-deny: refused BEFORE any authority and the disk is byte-identical (nothing created, nothing changed)
+[dsh-agent-team] a5g7-write: governed-write default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/never-created.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-4 default-deny: refused BEFORE any authority and the disk is byte-identical (nothing created, nothing changed)
+[dsh-agent-team] a5g7-write: governed-write default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/exists.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-6 symlink escape refused BOTH ways: symlink-name target AND through a linked directory; outside bytes untouched
+[dsh-agent-team] a5g7-write: governed-write provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/dirlink/new.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-9 missing parent directory is NEVER mkdir-recursive (disclosed deviation): io refusal, no parent, no file
+[dsh-agent-team] a5g7-write: governed-write provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/missing/inner/file.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-10 settled-token replay CANCELS at the execution edge (never re-consumes, never re-writes)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=6 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/replay.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-10 settled-token replay CANCELS at the execution edge (never re-consumes, never re-writes)
+[dsh-agent-team] a5g7-write: governed-write cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-11 the execution signal aborted BEFORE the body: cancelled fact, the file is never created
+[dsh-agent-team] a5g7-write: governed-write cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-12 concurrent same-path writes are HONEST: each receipt claims only its OWN bytes; the final file is ONE whole payload
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=13 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/race.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-12 concurrent same-path writes are HONEST: each receipt claims only its OWN bytes; the final file is ONE whole payload
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=17 created=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/race.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-13 ask lane: approval lands through the control leg and writes ONCE; the deny leg writes ZERO
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=9 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/ask-approved.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-13 ask lane: approval lands through the control leg and writes ONCE; the deny leg writes ZERO
+[dsh-agent-team] a5g7-write: governed-write pa-refused code=APPROVAL_DENIED detail=durable Control request c1-standin-plane-write-a507422f-1dc7-411a-9670-f52cc751a71c-1 answered deny
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-1 POSITIVE: real bytes updated; the receipt echoes before/after — lawful because the effect set PAIRS the read (M-02)
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e1.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-2 NEVER creates: absent target refused, the file is NOT born
+[dsh-agent-team] a5g7-edit: governed-edit resolver-refused code=target-unresolvable
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-3 no-match: refusal + the file is BYTE-IDENTICAL
+[dsh-agent-team] a5g7-edit: governed-edit provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e3.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-4 multi-match law: without replace_all refused byte-identical; with replace_all ALL occurrences land
+[dsh-agent-team] a5g7-edit: governed-edit provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e4.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-4 multi-match law: without replace_all refused byte-identical; with replace_all ALL occurrences land
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e4.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-6 M-02 PAIRED COVERAGE: a write-only rule does NOT admit the edit (its READ effect is unruled) — refusal, byte-identical
+[dsh-agent-team] a5g7-edit: governed-edit default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e6.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-7 outside-root + symlink escape: refusals, outside bytes UNTOUCHED
+[dsh-agent-team] a5g7-edit: governed-edit resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-8 settled-token replay cancels; a pre-aborted signal lands zero bytes
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e8.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-8 settled-token replay cancels; a pre-aborted signal lands zero bytes
+[dsh-agent-team] a5g7-edit: governed-edit cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-8 settled-token replay cancels; a pre-aborted signal lands zero bytes
+[dsh-agent-team] a5g7-edit: governed-edit cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-9 ask lane: approval lands the edit ONCE; deny leaves bytes identical
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/e9.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-9 ask lane: approval lands the edit ONCE; deny leaves bytes identical
+[dsh-agent-team] a5g7-edit: governed-edit pa-refused code=APPROVAL_DENIED detail=durable Control request c1-standin-plane-edit-5e455d93-f348-40b9-a54d-716945611d57-1 answered deny
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=unsupported-image-extension path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/notes.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=attachment-service-unmounted path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=IMAGE_MODEL_NOT_CAPABLE path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=image-media-not-accepted path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-5 outside-root + symlink escape: refused with zero commit; the outside image stays unstored
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=unsupported-image-extension path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/alias.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-8 default-deny lane: refusal BEFORE any read, zero commit
+[dsh-agent-team] a5g7-image: governed-image default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-10 torn-down mount: after dispose the host seams are gone — the row answers the no-store refusal, zero commit
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=attachment-service-unmounted path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpsqkuh/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-12 R1 negative control — the REAL kernel: the attachment-store commit effect has no grantable rung in the closed admission grammar (admission-kernel RESOURCE_EFFECT_KINDS is protected center), so the FINGERPRINTED domain-ref arm makes the whole effect set unadmittable: typed refusal, ZERO commit, no RAN — the declared effect can no longer ride ungoverned
+[dsh-agent-team] a5g7-image: governed-image pa-refused code=IO_POLICY_UNSUPPORTED detail=admission refused: the template policy defaults to DENY and no rule covers this effect (domain-ref) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+
+ ✓ packages/runtime/test/u7-9a-fs-mutation-c1.test.ts (35 tests) 775ms
+ ✓ packages/runtime/test/a5-pindir-subagent-flip.test.ts (4 tests) 385ms
+stdout | packages/runtime/test/u6-pr3-bl01-ask-door.test.ts > u6-pr3 BL-01 re-test — the ask lane cannot open the spawn gate > BL01-2 ask-APPROVE (durable Control lands + consumes): the command executes EXACTLY once through the kernel-consumed grant
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u6pr3-bl01-realm rows=6
+
+stdout | packages/runtime/test/u6-pr3-bl01-ask-door.test.ts > u6-pr3 BL-01 re-test — the ask lane cannot open the spawn gate > BL01-2 ask-APPROVE (durable Control lands + consumes): the command executes EXACTLY once through the kernel-consumed grant
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=u6pr3-bl01-realm call=team-u6pr3-bl01-instance-bash:mount:d67f3326-78d2-450a-97fd-68c0c00ac2c5-1 pid=1050 exit=0 timedOut=false cancelled=false
+
+ ✓ packages/runtime/test/u6-pr3-bl01-ask-door.test.ts (5 tests) 518ms
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C2-1 success POSITIVE: real bytes of the real file come back (business result, not a guard light)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C2-2 window consumption is REAL business output (offset/limit slice the real bytes)
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C2-3 read leaves ZERO durable state: target bytes/attrs unchanged by the governed leg
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-2 symlink alias to outside never discloses
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-3 swap to an outside symlink AFTER a real read: the next call answers the NEW truth or refuses — never the old snapshot
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=25 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/swap.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-3 swap to an outside symlink AFTER a real read: the next call answers the NEW truth or refuses — never the old snapshot
+[dsh-agent-team] a5g7-read: governed-read resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-6 malformed window refused BEFORE any resolution (pure parameter law first)
+[dsh-agent-team] a5g7-read: governed-read window-refused code=read-window-invalid
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — fix-5/A2 read row > E6 pre-aborted read is cancelled at the PA edge: zero resolver fs, zero bytes, row-form cancelled
+[dsh-agent-team] a5g7-read: governed-read cancelled-at-pa-edge
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-7 default-deny lane answers BEFORE the backend; allow-rule path still answers
+[dsh-agent-team] a5g7-read: governed-read default-deny refusal call path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-7 default-deny lane answers BEFORE the backend; allow-rule path still answers
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-8 subtree rule WITHOUT the containment seam cannot even MOUNT (admission never guesses coverage); WITH the seam it admits
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C0 positive: the row path runs on the REAL binding the entry answered
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-17g46a/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-11 all-allow path: unanswerable call-level facts refuse the real read with ZERO bytes
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C1 the approved question moved (fresh planSnapshot names another case) => GRANT_STALE, zero bytes
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C2 the rungs the approval covers are not the rungs standing now => GRANT_STALE (never a retroactive widening)
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → governed read executor (real fs) > R-C1-11b all-allow path: the plane asks with the REAL call identity, and a complete ALL-ALLOW answer delivers the bytes
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M1 production A→B: the open leg authorizes on the REAL walk, the body redeems through the REAL edge and the bytes arrive
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:b027d26c-1efd-4db9-a3c5-034b1a1c72b7-2
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C3 no answerable binding behind this call: refused at CONSTRUCTION with the kernel identity code — zero admission, zero grant, zero Control row, zero body
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M1 production A→B: the open leg authorizes on the REAL walk, the body redeems through the REAL edge and the bytes arrive
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C4 the facts generation disagrees with this call's durable re-read => GRANT_STALE (the last confirmed value is never carried over)
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M2 close before the body: the plan fact and the flight both die, and the late body delivers ZERO bytes
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:a599fc84-81e0-43f4-abfa-c5699cf191f1-2
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M2 close before the body: the plan fact and the flight both die, and the late body delivers ZERO bytes
+[dsh-agent-team] a5g7-read: governed-read cancelled-at-pa-edge
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C5 the binding moved between the two reads (revision/identity drift) => GRANT_STALE; the tuple that crosses the consume edge is the one admitted
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M3 a second open on the same token is a SIDE-EFFECT-FREE refusal — no reuse, and the first leg keeps its state
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:045e3829-d109-413c-992c-9e57c5ce62a8-2
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C5b a moved definition identity between the reads is stale too (a re-placed Definition is not the admitted one)
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M3 a second open on the same token is a SIDE-EFFECT-FREE refusal — no reuse, and the first leg keeps its state
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=44 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/a5-m1-read-mvpsqlpb/root/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C6 all-allow path (NO Control row): the fresh facts must still answer ALL-ALLOW for the WHOLE set
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M4 a close that lands on an in-flight leg ends it: nothing is registered late and the token is never re-armed
+[dsh-agent-team] a5g7-read: governed-read pa-handoff dropped — the leg was closed while PA was being asked
+
+stdout | packages/runtime/test/a5-m1-read-c1c2.test.ts > a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair > M5 the refusal that ALREADY wrote its pending placeholder says it owns it — and the close clears the placeholder
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C6b all-allow path with a complete ALL-ALLOW answer runs the real body exactly once
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-zMgRum/target.txt
+
+ ✓ packages/runtime/test/a5-m1-read-c1c2.test.ts (21 tests) 372ms
+ ✓ packages/runtime/test/u6-pr3-kernel-flow.test.ts (5 tests) 242ms
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C7 the DELETED authorities stay deleted: a wired policy getter / name lookup is never consulted
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-z2xoKG/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C8 a governed mount with NO call-level entry refuses instead of falling back to the rev.0 constants
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C9 the request identity comes from the live read, not from the row: a foreign manifest bindingId is COMPARED and refused, never used to look the binding up
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > C10 an unverifiable carrier (no answer at the second read) never consumes the admitted grant
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G1 the SAME TURN: a second admission reads its own generation, the owner publishes it BEFORE the entry read, and the old generation is gone from its request
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-TpmTXD/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G1 the SAME TURN: a second admission reads its own generation, the owner publishes it BEFORE the entry read, and the old generation is gone from its request
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-TpmTXD/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G1 the SAME TURN: a second admission reads its own generation, the owner publishes it BEFORE the entry read, and the old generation is gone from its request
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-TpmTXD/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G2 the overlay advanced and NOBODY republished this scope: the kernel identity leg REFUSES (the plane never re-stamps a generation to make a pair)
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G2b a plane with NO assembly owner mounted to publish answers the same refusal (the absent leg is not a licence to pair)
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G3 a faulting durable read at admission refuses, WITHDRAWS the confirmed generation, and the next successful read answers its own g
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-CJtz7F/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G3 a faulting durable read at admission refuses, WITHDRAWS the confirmed generation, and the next successful read answers its own g
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G3 a faulting durable read at admission refuses, WITHDRAWS the confirmed generation, and the next successful read answers its own g
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-CJtz7F/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G4 a malformed durable generation is never read as 0: the admission refuses
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G5 a publish landing WHILE another call waits never renews THAT call: its minted grant is stale, never spent under the new generation
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=21 path=/tmp/a5m1-c-8fsuUr/target.txt
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G5 a publish landing WHILE another call waits never renews THAT call: its minted grant is stale, never spent under the new generation
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=GRANT_STALE
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — C: the execution edge answers from fresh call-level facts > G6 a publish the owner REFUSES leaves the call UNPAIRED: the kernel answers it, and nothing moved
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=TOOL_BINDING_UNVERIFIED
+
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — fix-5 pending ordering > E5 pending approval performs ZERO resolver/probe fs: realpath/stat/open happen only after consumption
+[dsh-agent-team] a5g7-read: governed-read pa-refused code=APPROVAL_DENIED
+
+ ✓ packages/runtime/test/a5-m1-seam-enforcement.test.ts (26 tests) 292ms
+ ✓ packages/runtime/test/u7-g6b-late-stream.test.ts (2 tests) 224ms
+ ✓ packages/runtime/test/a5int-r3-mount-integration.test.ts (6 tests) 239ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:4da4fcdd-dbdd-46bb-a420-ff00aa57e724-1 pid=944 exit=not-observed timedOut=true cancelled=false
+[dsh-agent-team] a5g7-shell: confined-shell DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-bash:mount:4da4fcdd-dbdd-46bb-a420-ff00aa57e724-1 pid=944 shortOf=bound
+
+ ✓ packages/runtime/test/a5-m1-unsupported-c1.test.ts (7 tests) 264ms
+ ✓ packages/runtime/test/u6-pr5-kernel-flow.test.ts (4 tests) 212ms
+ ✓ packages/runtime/test/u6-pr2-review-r1.test.ts (6 tests) 231ms
+ ✓ packages/runtime/test/u6-pr6-arc-d-matrix.test.ts (4 tests) 265ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash:mount:e2bc9874-3105-47de-bbc9-26276c889c2f-1 pid=1143 exit=143 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b3-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=pre-spawn-check realm=a5b3-realm call=unspecified
+
+ ✓ packages/runtime/test/alpha5-g1-deny-lane.test.ts (11 tests) 348ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=child-live realm=a5b3-realm call=unspecified
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b3-realm call=unspecified records=1 total=1 truncated=false
+
+ ✓ packages/runtime/test/u6-pr2-kernel-flow.test.ts (4 tests) 320ms
+ ✓ packages/runtime/test/u6-pr5-search-golden-vectors.test.ts (7 tests) 258ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b3-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=pre-spawn-check realm=a5b3-realm call=unspecified
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=child-live realm=a5b3-realm call=unspecified
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob DRAIN-INCOMPLETE realm=a5b3-realm call=team-a5b3-instance-glob:mount:36123d64-68da-41a9-87e7-80d11cda9d9e-2 exit=0
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b3-realm call=team-a5b3-instance-glob:mount:36123d64-68da-41a9-87e7-80d11cda9d9e-2 pid=1194 files=1 capped=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C10 根⑤ cause range, measured not imagined: the union has EXACTLY user|parent|hook|disposed at the baseline, and the cancelled law maps ONLY the first two to true (every other input, junk included, is false)
+[a5b3 C10] baseline union read: path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/deepseek-harness-test-use/packages/core/session/src/types.ts git-blob-sha=593c86d52a5c26d531913ffaff9aac651732c2da
+
+ ✓ packages/runtime/test/a5b3-cancel-leg.test.ts (12 tests) 14747ms
+     ✓ C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)  2468ms
+     ✓ C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)  2448ms
+     ✓ C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`  4872ms
+     ✓ C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false  2308ms
+     ✓ C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word  842ms
+     ✓ C7 the LIVE signal is still zero-motion in B2 X4's own form, and a PRE-ABORTED one answers a typed refusal at this exit  660ms
+ ✓ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests) 179ms
+ ✓ packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts (9 tests) 253ms
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (5 tests) 216ms
+ ✓ packages/runtime/test/a5natexe-native-takeover.test.ts (12 tests) 215ms
+ ✓ packages/runtime/test/u6-pr5-search-move-law.test.ts (4 tests) 160ms
+ ✓ packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts (7 tests) 117ms
+ ✓ packages/runtime/test/u6-pr2-read-golden-vectors.test.ts (4 tests) 81ms
+ ✓ packages/runtime/test/a5p2-admission-kernel.test.ts (54 tests) 75ms
+ ✓ packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts (40 tests) 200ms
+ ✓ packages/domain/test/a5p0-layer-audit.test.ts (4 tests) 8ms
+ ✓ packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts (4 tests) 78ms
+ ✓ packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts (6 tests) 22ms
+ ✓ packages/runtime/test/a5-m1-correlation.test.ts (2 tests) 26ms
+ ✓ packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts (5 tests) 12ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 16ms
+ ✓ packages/runtime/test/alpha5-glob-backend.test.ts (53 tests) 35602ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  788ms
+     ✓ P1 basic pattern — same paths, SAME modification-time ORDER  349ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  367ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  737ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  766ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  509ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  319ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  401ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  354ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  25813ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  1494ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  347ms
+
+ Test Files  46 passed (46)
+      Tests  644 passed (644)
+   Start at  21:56:14
+   Duration  36.16s (transform 10.19s, setup 0ms, import 10.94s, tests 84.23s, environment 14ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
