@@ -90,6 +90,13 @@ export interface A5P5Assembly {
      *  The plane production mount injects it; archived pre-M1 kits omit it and
      *  keep their historical behavior untouched. */
     readonly pa?: PaAdmitEdge;
+    /** U7-6 GLUE-4 (anchored form): the governed root of the ANCHORED search
+     *  rows, injected by the trusted assembly that also anchors their
+     *  backends. Present ⇒ the grep/glob arms claim the governed walk surface
+     *  (`effects-schema` anchored law); the bash arm is untouched by it.
+     *  Absent ⇒ the historical target-scoped law (every pre-U7-6 consumer,
+     *  byte-identical). Never model-visible: it rides the assembly, not args. */
+    readonly effectAnchorRoot?: string;
 }
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
 export declare const REFUSAL_PREFIX = "a5p5-refused ";

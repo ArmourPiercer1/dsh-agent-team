@@ -1,0 +1,26 @@
+R1 empty-template grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace/notes), read(/srv/workspace/GLUE4/workspace/notes), tool-invoke(grep)
+R2 read-any grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace/notes), read(/srv/workspace/GLUE4/workspace/notes), tool-invoke(grep)
+R3 read-subtree grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=2 :: admission refused: the template policy defaults to DENY and no rule covers this effect (tool-invoke) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace/notes), read(/srv/workspace/GLUE4/workspace/notes), tool-invoke(grep)
+R4 read-subtree glob: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=1 :: admission refused: the template policy defaults to DENY and no rule covers this effect (tool-invoke) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace), tool-invoke(glob)
+R5 read-subtree READ-row: admitted
+  arms: read(/srv/workspace/GLUE4/workspace/notes/a.txt), tool-invoke(read)
+R6 bash-ask BASH-row: requires-approval :: one Alpha.4 ApprovalCase (tadm:session-glue4-team:glue4-inst:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0) at rung leader must legally cover ALL 1 effects; per-effect run
+  arms: tool-invoke(bash)
+R7 read-subtree grep /etc: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/etc), read(/etc), tool-invoke(grep)
+P1 empty-template +class +anchored grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace), read(/srv/workspace/GLUE4/workspace), tool-invoke(grep)
+P2 read-exact-root +class +anchored grep: admitted
+  arms: list(/srv/workspace/GLUE4/workspace), read(/srv/workspace/GLUE4/workspace), tool-invoke(grep)
+P3 read-exact-root +class +anchored glob: admitted
+  arms: list(/srv/workspace/GLUE4/workspace), tool-invoke(glob)
+P4 read-exact-root +class +anchored grep /etc: admitted
+  arms: list(/srv/workspace/GLUE4/workspace), read(/srv/workspace/GLUE4/workspace), tool-invoke(grep)
+P5 read-exact-elsewhere +class +anchored grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace), read(/srv/workspace/GLUE4/workspace), tool-invoke(grep)
+P6 read-any +class +anchored grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace), read(/srv/workspace/GLUE4/workspace), tool-invoke(grep)

@@ -163,6 +163,23 @@ export interface TemplatePolicyProjectionInput {
      *  ALLOW rule. Absent/false ⇒ the rule projects as `ask` + a note — an
      *  allow is never invented here. */
     readonly leaderExecTokenPresent?: () => boolean;
+    /** U7-6 GLUE-4 (named center-interface PR) — the trusted assembly's
+     *  ROW-CLASS law: effect `tool-invoke` arms for row classes that are not
+     *  nameable by the closed rule grammar (`PERMISSION_TOOL_NAMES`), stated
+     *  as `<effectClass> ← <ruleTool,…>`: every rule whose tool is a listed
+     *  governing tool projects, IN ADDITION to its own arms, a tool-invoke
+     *  arm matching `<realm>|tool:<effectClass>` with the SAME ceiling and
+     *  the same deny-source treatment. It INVENTS NOTHING: without a
+     *  governing rule the class arm stays unprojected (the default-deny gate
+     *  still refuses); with one, the coverage question for the plane-
+     *  adjudicated class answers with the SAME law the plane's lane already
+     *  applies — the coherence this closes is the lane saying allow and the
+     *  assembly gate saying IO_POLICY_UNSUPPORTED for one policy. Keys must
+     *  be lower-case class tokens that are NOT themselves grammar tools (a
+     *  nameable class never rides); values must be grammar tools. The
+     *  projection stays DATA-DRIVEN: no tool-name literal ever enters this
+     *  file — the law lives in the trusted mount that supplies the map. */
+    readonly invokeClasses?: Readonly<Record<string, readonly string[]>>;
 }
 /** Result of {@link deriveTeamPolicyAuthority} — the read-time arms. */
 export interface TemplatePolicyProjection {
@@ -209,6 +226,9 @@ export interface ProductionAdmissionConfig {
      *  the OS enforcement (PR4) lands. */
     readonly assuranceProbe?: AssuranceProbe;
     readonly requiredAssurance?: RequiredAssuranceReader;
+    /** U7-6 GLUE-4: the trusted plane's row-class law, forwarded verbatim to
+     *  the projection (see TemplatePolicyProjectionInput.invokeClasses). */
+    readonly invokeClasses?: Readonly<Record<string, readonly string[]>>;
     readonly grantExpiry?: (issuedAt: number) => number | null;
     readonly ledger?: GrantLedger;
     /** The host's cancellation view at the execution edge (port reads it). */

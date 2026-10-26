@@ -30,7 +30,7 @@ import { RenderClosedValueViolation, renderSearchResult, renderShellResult } fro
 import { createSpillLease } from './spill.js';
 export async function runToolCall(deps) {
     const { request } = deps;
-    const derived = deriveToolEffectSet(request.realmId, request.parsedArgs);
+    const derived = deriveToolEffectSet(request.realmId, request.parsedArgs, request.effectAnchorRoot);
     if (!derived.ok)
         return deepFreezeContracts({ kind: 'refused-schema', problems: derived.problems });
     const verdict = deps.decide(derived.value);

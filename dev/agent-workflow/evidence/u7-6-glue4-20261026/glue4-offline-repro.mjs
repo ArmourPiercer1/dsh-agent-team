@@ -15,6 +15,22 @@
  *  R6  bash ASK template + the bash row's effect set (regression: ask-lane)
  *  R7  R3 + grep with path /etc (the refusal leg's effect shape)
  * Print the decision kind, code, refusal tag, and the FIRST uncovered arm.
+ *
+ * POST-FIX (the U7-6 fix itself) legs P1–P6, same faces, plane-shaped data
+ * input (`invokeClasses: { grep: ['read'], glob: ['read'] }` — exactly what
+ * team-tool-plane.mjs now passes) + the ANCHORED derivation (the row's
+ * governed root, what the plane now passes as `effectAnchorRoot`):
+ *  P1  EMPTY template + class law + anchored grep  => still IO_POLICY (teeth)
+ *  P2  arc-a greper rule (read EXACT at the root) + class law + anchored grep => allow
+ *  P3  P2 + anchored glob                          => allow
+ *  P4  P2 + anchored grep with path /etc           => allow AT ADMISSION (the
+ *      envelope is target-independent; the backend's own containment law is
+ *      what refuses the /etc call with zero effect — the R7 shape never
+ *      reaches admission under the anchored law)
+ *  P5  read rule at ANOTHER path + class law + anchored grep => still refused
+ *  P6  read ANY (the run8 rule) + class law + anchored grep  => still refused
+ *      (a whole-tool allow projects no resource arm — the envelope needs a
+ *      rule that LOCATES the governed surface)
  */
 import { pathToFileURL } from 'node:url'
 import { join, dirname } from 'node:path'
@@ -56,7 +72,7 @@ function bindingFor(toolName) {
   return parsed.value
 }
 
-function assemblyFor(permissionPolicy, role = 'member') {
+function assemblyFor(permissionPolicy, role = 'member', invokeClasses) {
   const built = createProductionAdmissionAssembly({
     permissionPolicy,
     realmId: REALM,
@@ -67,21 +83,22 @@ function assemblyFor(permissionPolicy, role = 'member') {
     authorityGeneration: () => 0,
     beneficiaryAuthority: role === 'leader' ? 'leader' : 'member',
     subtreeContains,
+    ...(invokeClasses === undefined ? {} : { invokeClasses }),
     onObserve: () => {},
   })
   if (built.ok !== true) throw new Error(`assembly refused: ${built.error.message}`)
   return built.value
 }
 
-function effectsOf(parsedArgs) {
-  const d = deriveToolEffectSet(REALM, parsedArgs)
+function effectsOf(parsedArgs, anchor) {
+  const d = deriveToolEffectSet(REALM, parsedArgs, ...(anchor === undefined ? [] : [anchor]))
   if (!d.ok) throw new Error(`derive refused: ${JSON.stringify(d.problems)}`)
   return d.value
 }
 
-async function leg(name, { permissionPolicy, role, toolName, parsedArgs, memberEffects }) {
-  const assembly = assemblyFor(permissionPolicy, role ?? 'member')
-  const requestedEffects = memberEffects ?? effectsOf(parsedArgs)
+async function leg(name, { permissionPolicy, role, toolName, parsedArgs, memberEffects, invokeClasses, anchor }) {
+  const assembly = assemblyFor(permissionPolicy, role ?? 'member', invokeClasses)
+  const requestedEffects = memberEffects ?? effectsOf(parsedArgs, anchor)
   const request = {
     binding: bindingFor(toolName),
     member: { teamSessionId: 'session-glue4-team', instanceId: 'glue4-inst' },
@@ -138,3 +155,15 @@ await leg('R6 bash-ask BASH-row', {
 })
 
 await leg('R7 read-subtree grep /etc', { permissionPolicy: T_READ_SUBTREE, toolName: 'grep', parsedArgs: grepEtc.value })
+
+// ── POST-FIX legs (the U7-6 fix, mounted exactly as the plane mounts it) ──
+const INVOKE_CLASSES = { grep: ['read'], glob: ['read'] }
+const T_READ_EXACT = { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }
+const T_READ_ELSEWHERE = { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: '/srv/elsewhere' } }], ask: [], deny: [] }
+
+await leg('P1 empty-template +class +anchored grep', { permissionPolicy: T_EMPTY, toolName: 'grep', parsedArgs: grepIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
+await leg('P2 read-exact-root +class +anchored grep', { permissionPolicy: T_READ_EXACT, toolName: 'grep', parsedArgs: grepIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
+await leg('P3 read-exact-root +class +anchored glob', { permissionPolicy: T_READ_EXACT, toolName: 'glob', parsedArgs: globIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
+await leg('P4 read-exact-root +class +anchored grep /etc', { permissionPolicy: T_READ_EXACT, toolName: 'grep', parsedArgs: grepEtc.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
+await leg('P5 read-exact-elsewhere +class +anchored grep', { permissionPolicy: T_READ_ELSEWHERE, toolName: 'grep', parsedArgs: grepIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
+await leg('P6 read-any +class +anchored grep', { permissionPolicy: T_READ_ANY, toolName: 'grep', parsedArgs: grepIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })

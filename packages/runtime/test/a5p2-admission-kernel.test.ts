@@ -895,3 +895,78 @@ describe('production projection: template capabilities.permissions → PR0 autho
     expect(anyExtras.ok).toBe(false)
   })
 })
+
+// ── U7-6 GLUE-4: the row-class invoke law (invokeClasses) + read→list companion ──
+const ROOT = '/data/root'
+const listDirAt = (locator: string): Effect => ({ kind: 'list', resource: { realmId: REALM, kind: 'directory', canonicalLocator: locator, rights: ['list'] } })
+const readAbsAt = (locator: string): Effect => ({ kind: 'read', resource: { realmId: REALM, kind: 'absolute-path', canonicalLocator: locator, rights: ['read'] } })
+const grepEnvelope = [listDirAt(ROOT), readAbsAt(ROOT), toolInvokeEffect('grep')]
+const CLASSES = { grep: ['read'], glob: ['read'] }
+
+describe('U7-6 GLUE-4: row-class invoke law (invokeClasses) — the named center-interface', () => {
+  it('a read rule over the governed root + class law covers the anchored search envelope (list+read+invoke)', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }, { invokeClasses: CLASSES })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    for (const effect of grepEnvelope) expect(r.value.coversEffect(effect)).toBe(true)
+    const spell = new Set(r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`))
+    expect(spell.has(`tool-invoke@${REALM}|tool:grep:allow`)).toBe(true) // the grep arm rides the read rule
+    expect(spell.has(`list@${REALM}|${ROOT}:allow`)).toBe(true) // read projects the list companion
+  })
+
+  it('a rule that does NOT locate the governed surface leaves the envelope unmet (teeth kept)', () => {
+    const elsewhere = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: '/data/elsewhere' } }], ask: [], deny: [] }, { invokeClasses: CLASSES })
+    expect(elsewhere.ok).toBe(true)
+    if (!elsewhere.ok) return
+    expect(elsewhere.value.coversEffect(listDirAt(ROOT))).toBe(false) // surface not named ⇒ not covered
+    expect(elsewhere.value.coversEffect(toolInvokeEffect('grep'))).toBe(true) // the class arm still rides ANY read rule
+    expect(grepEnvelope.every((e) => elsewhere.value.coversEffect(e))).toBe(false) // envelope NOT met
+  })
+
+  it('EMPTY template + class law still refuses the whole envelope (a mounted class admits nothing on its own)', () => {
+    const r = projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: CLASSES })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    for (const effect of grepEnvelope) expect(r.value.coversEffect(effect)).toBe(false)
+  })
+
+  it('without the class law, the read rule covers list+read but NOT tool-invoke(grep) (the pre-U7-6 refusal)', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.coversEffect(listDirAt(ROOT))).toBe(true) // the list companion alone (no class)
+    expect(r.value.coversEffect(toolInvokeEffect('grep'))).toBe(false) // grep never nameable without the class law
+  })
+
+  it('a mounted class law NEVER touches the shell class: tool-invoke(bash) stays refused by a read rule', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }, { invokeClasses: CLASSES })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.coversEffect(toolInvokeEffect('bash'))).toBe(false)
+  })
+
+  it('a DENY-lane governing rule projects the class arm into the deny lane AND its deny source (never loosened)', () => {
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }] }, { invokeClasses: CLASSES })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const spell = new Set(r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`))
+    expect(spell.has(`tool-invoke@${REALM}|tool:grep:deny`)).toBe(true) // deny rides deny, ceiling-for-ceiling
+    expect(r.value.denySources().some((s) => s.effectKind === 'tool-invoke' && s.matcher.resource === `${REALM}|tool:grep`)).toBe(true)
+  })
+
+  it('the class law DISCLOSES itself as a note, never silent', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }, { invokeClasses: CLASSES })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.notes.some((n) => n.includes('U7-6') && n.includes('grep<-read'))).toBe(true)
+  })
+
+  it('the class law is validated fail-closed (nameable class / non-grammar governor / empty list / shape)', () => {
+    const refusalOf = (r: ReturnType<typeof projOf>): string | undefined => (r.ok ? undefined : r.error.details?.refusal as string)
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { read: ['read'] } }))).toBe('projection-input-malformed') // nameable class never rides
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { grep: ['grep'] } }))).toBe('projection-input-malformed') // governor outside the grammar
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { grep: [] } }))).toBe('projection-input-malformed') // empty governor list
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { Grep: ['read'] } }))).toBe('projection-input-malformed') // class must be lower-case
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: 'nope' as unknown as Record<string, readonly string[]> }))).toBe('projection-input-malformed') // shape
+  })
+})

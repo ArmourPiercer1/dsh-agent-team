@@ -65,6 +65,12 @@ export interface ToolCallRequest {
    *  `signal`: consumers sit on the plane/backend side; the pipeline acts on
    *  NOTHING from it. */
   readonly exec?: { readonly tokenKey?: string }
+  /** U7-6 GLUE-4 ADDITIVE: the governed root of an ANCHORED row (trusted,
+   *  assembly-injected — never model-visible). Present ⇒ the search arms of
+   *  the derived set claim the governed walk surface (`effects-schema`
+   *  anchored law); absent ⇒ the historical target-scoped derivation,
+   *  byte-identical. The pipeline just forwards it to the derivation. */
+  readonly effectAnchorRoot?: string
 }
 
 export interface RunToolCallDeps {
@@ -97,7 +103,7 @@ export type ToolCallResult =
 export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult> {
   const { request } = deps
 
-  const derived = deriveToolEffectSet(request.realmId, request.parsedArgs)
+  const derived = deriveToolEffectSet(request.realmId, request.parsedArgs, request.effectAnchorRoot)
   if (!derived.ok) return deepFreezeContracts({ kind: 'refused-schema', problems: derived.problems })
 
   const verdict = deps.decide(derived.value)
