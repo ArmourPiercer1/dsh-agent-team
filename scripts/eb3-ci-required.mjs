@@ -26,6 +26,7 @@
  *   CI_SUMMARY_NOT_GRADING      the summary does not hand `toJSON(needs)` to the grader, so
  *                               it cannot tell success from skipped/cancelled/failure
  *   CI_WORKFLOW_UNPARSEABLE     a workflow file the parser rejects (never a skipped file)
+ *   CI_DECLARED_JOB_ABSENT      a job the manifest declares as known-non-required has vanished
  *
  * Each rule is a predicate over the PARSED workflow (`yaml`, a root dependency),
  * not over line regexes — a reformatting must not change the verdict, and a
@@ -214,6 +215,16 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     const sText = stepsText(summary)
     if (!/toJSON\(\s*needs\s*\)/.test(sText) || !sText.includes('eb3-merge-tree.mjs') || !sText.includes('--grade-needs')) {
       add('CI_SUMMARY_NOT_GRADING', `summary: ${agg.job} must pass toJSON(needs) to scripts/eb3-merge-tree.mjs --grade-needs; otherwise it cannot tell success from skipped/cancelled`, { layer: 'aggregate' })
+    }
+  }
+
+  // ── every job the manifest DECLARES (required or not) must still exist.
+  // knownNonRequired entries are declarations too: a declared informational job that
+  // silently vanishes (census-runtime deleted, say) is drift in the CI's own description
+  // of itself, and the C2 baseline showed the existing gate saw nothing when it happened.
+  for (const k of manifest.knownNonRequired ?? []) {
+    if (jobAt(k.workflow, k.job) === null) {
+      add('CI_DECLARED_JOB_ABSENT', `declared non-required job ${k.workflow}#${k.job} is gone — remove it from ${MANIFEST_REL} in the same change if that is intended, so the removal is a reviewed line`, { job: k.job })
     }
   }
 

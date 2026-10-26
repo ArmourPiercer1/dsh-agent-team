@@ -66,7 +66,7 @@ const NOT_SOURCE = [
 /** A concrete MCP tool spelling: `mcp__<server>__<tool>`. The server segment must
  *  be a real identifier (a dash or underscore inside it is legal; a `*`, `$` or `{`
  *  means the source is writing a pattern, not naming a tool). The tool segment may
- *  be exactly `*` because `mcp__server__*` is how the reserved-prefix filter and the
+ *  be exactly `*` because `mcp__<server>__*` is how the reserved-prefix filter and the
  *  agent-scope selector spell "every tool of this server" — that is namespace
  *  policy on a BOOKED server, so it is required to name a booked server instead of
  *  being ignored. */
@@ -80,7 +80,11 @@ export function loadLedger(root = ROOT) {
   return l
 }
 
-/** `mcp__server__*` is a namespace claim; the bookable identity is the SERVER. */
+/** `mcp__<server>__*` is a namespace claim; the bookable identity is the SERVER.
+ *  (Placeholders here are written `<server>` on purpose: this file is itself a
+ *  scanned source and is NOT exempt from its own rule. A first commit of it spelled
+ *  a concrete-looking wildcard in this comment and was red against itself the moment
+ *  it became tracked — the scan reads the git index, so it had passed while untracked.) */
 const serverOf = (name) => name.slice('mcp__'.length, name.indexOf('__', 'mcp__'.length))
 
 /**
