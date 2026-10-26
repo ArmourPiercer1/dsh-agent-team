@@ -794,12 +794,13 @@ describe('V: the anchor law and the closed refusal face', () => {
   it('V6b the two new refusals are a DISCLOSED capability delta, not an invisible one', async () => {
     // `fixed_string` and `ignore_case` ARE lane vocabulary
     // (`packages/tools/a5p5-tools/src/args.ts:148-149`) and the grep(1) port the
-    // rg row replaces DOES honour them (`plane-effect-backends.mjs:120-122`
-    // pushes `-F` / `-i`). The host's public ripgrep vocabulary has no arm for
-    // either, so this row refuses rather than inventing a mapping. The delta is
-    // pinned from BOTH sides here so nobody discovers it as a silent behaviour
-    // change: the port answers, the rg row refuses by name.
-    const portSource = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/plane-effect-backends.mjs'), 'utf8')
+    // rg row replaces DOES honour them (the port's `grepArgv` — U6 PR5 moved
+    // it VERBATIM to `packages/tools/search-family/src/search-mechanics.mjs`
+    // — pushes `-F` / `-i`). The host's public ripgrep vocabulary has no arm
+    // for either, so this row refuses rather than inventing a mapping. The
+    // delta is pinned from BOTH sides here so nobody discovers it as a silent
+    // behaviour change: the port answers, the rg row refuses by name.
+    const portSource = readFileSync(join(REPO, 'packages/tools/search-family/src/search-mechanics.mjs'), 'utf8')
     expect(portSource).toContain("if (parsed.fixedString) argv.push('-F')")
     expect(portSource).toContain("if (parsed.ignoreCase) argv.push('-i')")
     // And the encodings exist — which is exactly why the refusal has to be

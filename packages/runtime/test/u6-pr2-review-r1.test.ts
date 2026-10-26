@@ -258,7 +258,7 @@ describe('review-r1 B2 — a governed mount without read governance refuses read
     // form: the read family did NOT register on this mount, so the table
     // answers NULL for `read` forever and the door refuses every read.
     expect(value.centerKernel, 'the mount-wide kernel is present (shell family)').toBeDefined()
-    expect(value.centerKernel!.familyIds).toEqual(['dsh.process-family'])
+    expect(value.centerKernel!.familyIds).toEqual(['dsh.process-family', 'dsh.search-family']) // U6 PR5: the always-mounted search rows joined too
     expect(value.kernelGuard, 'the rejecting face exists for the governed name (B2)').toBeDefined()
     expect(value.kernelGuard!.owns('read')).toBe(true)
     expect(value.kernelGuard!.owns('grep')).toBe(false)
