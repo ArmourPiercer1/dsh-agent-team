@@ -135,6 +135,12 @@ describe('the tool-governance lane audit', () => {
       'tools/fs-family/src/image-executor.mjs',
       'tools/fs-family/src/read-executor.mjs',
       'tools/fs-family/src/write-executor.mjs',
+      // U7-F (the governed pwsh shell-class row): the executor consumes the
+      // same two thin governance faces as the fs executors — the effect
+      // grammar (`parseRequestedEffectSet`) and the parsed-record fingerprint
+      // (`canonicalJsonFingerprint`, the PR #390 effect-set law) — zero lane
+      // edits (the audit script entry carries the file:line provenance).
+      'tools/process-family/src/pwsh-executor.mjs',
     ])
   })
 

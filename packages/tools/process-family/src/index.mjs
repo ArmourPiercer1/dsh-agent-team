@@ -19,3 +19,20 @@ export { createConfinedShellBackend } from './confined-shell-executor.mjs'
 export { buildBashRowDefinition } from './bash-row.mjs'
 export { buildProcessShellContribution } from './bash-contribution.mjs'
 export { normalizeShellProjection } from './bash-normalizer.js'
+// U7-F: the shell-class SECOND row (governed `pwsh`) — the same confined
+// provider law, its own closed parameter schema and faithful command form.
+export { createConfinedPwshBackend } from './pwsh-confined.mjs'
+export { createGovernedPwshExecutor } from './pwsh-executor.mjs'
+export { buildPwshRowDefinition, PWSH_ROW_PARAMETERS } from './pwsh-row.mjs'
+export {
+  parseGovernedPwshArgs,
+  resolvePwshExecutable,
+  buildPwshSpawnRequest,
+  renderPwshResult,
+  PWSH_ROW_PARAMS,
+  PWSH_ARGV_FLAGS,
+  PWSH_ENCODING_PREAMBLE,
+  PWSH_SPAWN_ENV,
+  PWSH_CANDIDATE_PATHS,
+  PWSH_DEFAULT_TIMEOUT_MS,
+} from './pwsh-mechanics.mjs'

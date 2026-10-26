@@ -1,0 +1,17 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FPWSH",
+  "paths": [
+    "packages/tools/process-family/src/pwsh-confined.mjs",
+    "packages/tools/process-family/src/pwsh-executor.mjs",
+    "packages/tools/process-family/src/pwsh-mechanics.mjs",
+    "packages/tools/process-family/src/pwsh-row.mjs",
+    "packages/runtime/test/u7f-pwsh-row-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1322,
+    "to": 1327
+  },
+  "reason": "U7-F (the governed pwsh shell-class row, branch task/u7-f-pwsh-20261026 off origin/master): the four lane files of the process family's SECOND row — the closed parser + faithful argv/env mechanics (golden recording of the host pwsh tool at 639ed01539), the confined backend over the SAME Landlock provider law as bash (executable resolved before probe, zero-spawn refusals), the family-body executor (lane verdict -> permission belt -> PA edge with the parsed-record fingerprint -> backend, token ledger, pre-abort arm), and the row Definition — plus the 49-leg C1 suite (parser law, golden fidelity table, lifecycle legs, real-provider legs over the deps seam, renderer, descriptor units, mutation controls M1-M3). The descriptor (families/process.mjs), the contribution, the barrel, the manifest, the census, the two re-pinned law tests (a5-m1-unsupported-c1 mount domain + a5p0-layer-audit consumer) ride ALREADY-COUNTED files; dist mirror and dev evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the five files on disk and this booking absent, the ledger law reads `scanner counts 1327, ledger derives 983 + 339 = 1322` (dev/agent-workflow/evidence/u7-f-pwsh-20261026/p4t6-RED-unbooked.log) — the merged tree's 1322 plus exactly these five paths."
+}

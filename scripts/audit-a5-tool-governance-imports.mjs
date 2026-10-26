@@ -121,6 +121,20 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-F (process-family governed PWSH row) booked FILE-BY-FILE.
+  // `tools/process-family/src/pwsh-executor.mjs` imports
+  // `parseRequestedEffectSet` (the SAME thin effect-grammar face the fs
+  // executors carry — it mints the call's closed `tool-invoke:pwsh`
+  // requested-effect set) AND `canonicalJsonFingerprint` (VALUE, the
+  // control/service.ts precedent face) for the PA `parametersFingerprint`:
+  // the shell-class H2 law says the OPAQUE COMMAND is the security-relevant
+  // field, so the fingerprint binds the PARSED parameter record, not the
+  // per-call-uniform effect-set digest (fs-row form) — an effect-set
+  // fingerprint would make every pwsh command fingerprint-identical. No
+  // other lane export is reachable from the file; the row/mechanics/
+  // confined/contribution modules of the same slice import nothing of the
+  // governance lane.
+  'tools/process-family/src/pwsh-executor.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:
