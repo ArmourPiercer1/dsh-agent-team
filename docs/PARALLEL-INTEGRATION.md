@@ -106,9 +106,20 @@ the prior-lane C2 evidence bound earlier SHAs, which are now merged ancestors. *
 for those lanes** — their C2 ran on the candidate for THEIR merge. It becomes a red only for a PR
 that claims the evidence covers THIS tree.
 
-Bounds (declared): ≤ 400 records scanned (`.json`, ≤ 512 KiB each), ≤ 40 rows per class, stdout ≤
-24 KiB, no child process beyond `git`. Read-only; it is one pass over the evidence tree plus a
-memoized git pair per distinct SHA.
+What it reads: the run records **committed** at the checkout's `HEAD` (`git ls-tree` + one
+`git cat-file --batch`), never the disk. Untracked files and uncommitted edits do not change the
+result; the `LIMIT` line names the commit the evidence was read at.
+
+Bounds (declared): ≤ 200 **run records** graded (non-record `.json` costs one read and no budget),
+≤ 4000 candidate `.json` blobs, each ≤ 512 KiB, ≤ 40 rows per class, stdout ≤ 24 KiB, no child
+process beyond `git`. Measured at `f3f415aa0`: 174 tracked `.json` under the evidence root, 50 of
+them `u5-run-record/1` records, so 200 is 4× headroom. **A bound hit is a refusal** (`BOUND HIT …
+REFUSED`, exit 2, no class counts, no `RULE` line): a partial corpus is never printed as an audit.
+
+PR #394 shipped a disk walk that spent a 400-file budget on every `.json` in name order and printed
+the partial report with exit 0. In the main checkout at `f3f415aa0` (505 `.json` on disk, most of them
+untracked) it graded 24 of the 50 committed records. The two receipts in the table above were taken
+by that version; their counts are its reading, not this one's.
 
 Most `NOT GRADED` entries are vitest census captures under
 `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/` that are **tracked at master**, although that

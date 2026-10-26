@@ -147,6 +147,12 @@ jobs:
         # detecting — this is the leg that keeps the other legs honest.
         run: node scripts/eb3-ci-negative-controls.mjs
 
+      - name: "EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free)"
+        # Declared as a leg in dev/ci/eb3-ci-manifest.json with both paths as required tokens:
+        # dropping either file from this line is CI_LAYER_LEG_WEAKENED. They shipped in PR #394 in
+        # no layer, which is how two of their defects reached master unseen.
+        run: node --test tests/u7-3-devex/devex-integration.test.mjs tests/diag-call-chain/diag-call-chain.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what
