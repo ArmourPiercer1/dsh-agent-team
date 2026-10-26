@@ -6891,3 +6891,8 @@ master 跑 production-run-recipe 全链）。
 - PR #377：`createGovernedJobsBridge` 逐字节迁出（sha 71705d6e…，独审复算一致），trio 经同一 closed schema / Registry / kernel decide+consumeOnce，无第二账本（boot 4 trioUses 7 / controlRows 0）；冻结 gateway 与 pa-mount-registry sha 未变。
 - R1 独审 补充内容：CI-05 —— governed mount 上无 Team 记录的 job id 原先 `corded:false` 透传 Host；修复 = 装配层 `ci05GovernedGatewayRow` 在 svc 前类型化拒绝（未动冻结文件与逐字节区）。授权第 7 次 boot：description 修复实机验证通过，但出现 Team-lane stall（boot 5 起，harness 层）与 ctl 读竞争。
 - R2 独审 投机通过；§10.6 裁定 **G4-CORE-PASS / BRIDGE-BLOCKED**（非 CORE BLOCKER）；boot 4→7 仅测试文件变化，非产品回归 → 合并 `269be49e4`。命名项 R-U6P4-1..3 入账；完整 G4 / 发布仍须补齐 attribution producer 与 Jobs 正向效果。
+
+## 2026-10-26 U6 第五切片（PR5 ARC-A：零中心 diff family + search 迁出 + fitness 门禁）
+
+- PR #380：probe family 仅 tests/**、PR5 归因的受保护中心 diff 为空；search family 迁至 packages/tools/search-family/**，中心只留 re-export（无双实现）；golden 409 vectors digest 0dabc187… master≡family（v1→v2→v3 面历史如实入档，v3 钉 model-facing a5p5 ROW grammar）；fitness L1–L4 均带植入反例；C1 36/36、world-factory 32/32。
+- R1 独审 投机通过 → 合并 `f040a7562`。命名项 **R-U6P5-1**：governed search 三条实机腿在 assurance 层 `IO_POLICY_UNSUPPORTED`（assurance-runtime.ts:139-142，plane 头部自称 GLUE-4 后续）→ 属产品能力缺口，待 assurance 轮修复后复跑。R-U6P5-2（v3 TEST_ONLY edge 保持最窄）、R-U6P5-3（boot 8/≤5 逐次授权并披露）入账。
