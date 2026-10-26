@@ -23,10 +23,12 @@
  *
  * @module tests/world-factory/lib/u6-arc-a-assembly
  */
-import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { presetDeclarationRow, smokePresetPlugins } from '../../kits/_shared/preset-seam.mjs'
+import { testUseTree } from '../../paths.mjs'
 // The toolCall helper + message probes come from the fs-proven assembly —
 // the mock's ONLY legal tool dialect is { kind: 'tool-call', toolCalls:
 // [{id, name, arguments}] } (packages/tools/harness/mock-deepseek.mjs
@@ -49,6 +51,7 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
   const ROOT = `session-u6arca-root-${rs}`
   const CREATE_ROOT = `session-u6arca-team-${rs}`
   const blueprintDir = join(home, 'blueprints')
+  let blueprintFacade = null
   const workspaceDir = join(home, 'workspace')
   const PLANE_REALM_ID = `u6arca-realm-${rs}`
 
@@ -199,15 +202,86 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       boot: 1, phase: 'create', reportDir, runStamp: String(runStamp), rootSessionId: ROOT,
     }, null, 2))
   }
+  function assertMainBlueprintText(text) {
+    // HOST-IDENTICAL ingest check, synchronous: parse with the SAME closed-
+    // grammar validator the host catalog runs (domain facade parseBlueprint,
+    // imported VERBATIM by the host-loaded plugin — agent-bindings.mjs:346,
+    // resolving to its COMPILED face under the dist mirror) BEFORE the file
+    // lands, so a document the host would reject can never poison a home and
+    // surface only as run7 did (MALFORMED_DTO at team.create, after the boot
+    // was spent). The run7 comma reproduces here as the host's own
+    // 'frontmatter is not valid YAML … Unexpected scalar at node end'.
+    let parsed
+    try {
+      parsed = requireBlueprintFacade().parseBlueprint(text)
+    } catch (e) {
+      throw new Error(`U6ARCA_INGEST: host validator rejects main.yaml — ${String(e?.message ?? e)}`)
+    }
+    const doc = parsed.blueprint ?? parsed
+    if (doc.blueprintId !== BP_MAIN_ID) throw new Error(`U6ARCA_INGEST: main.yaml resolves as ${String(doc.blueprintId)}`)
+    if (!Array.isArray(doc.members) || doc.members.length !== 2) throw new Error(`U6ARCA_INGEST: main.yaml members=${String(doc.members?.length)} want 2`)
+    return { ok: true, via: 'parseBlueprint(dist domain facade = the host own import)' }
+  }
+  function requireBlueprintFacade() {
+    if (blueprintFacade === null) {
+      const req = createRequire(join(repoRoot, 'noop.cjs'))
+      blueprintFacade = req(join(repoRoot, 'packages', 'runtime', 'dist', 'packages', 'domain', 'blueprint', 'src', 'index.js'))
+    }
+    return blueprintFacade
+  }
   function writeMainBlueprint(denyList) {
-    writeFileSync(join(blueprintDir, 'main.yaml'), mainBlueprintYaml(denyList))
+    const text = mainBlueprintYaml(denyList)
+    // HOST-IDENTICAL ingest gate (see assertBlueprintIngestible): parse with
+    // the SAME closed-grammar validator the host catalog runs BEFORE the
+    // file lands. A document the host would reject is never written —
+    // instead of poisoning the home and surfacing at team.create (run7).
+    assertMainBlueprintText(text)
+    writeFileSync(join(blueprintDir, 'main.yaml'), text)
+  }
+
+
+  /**
+   * HOST-IDENTICAL ingest gate (added after run7 burned a boot on a YAML
+   * comma — `deny: [],` — that the lenient dev `yaml` dep tolerated). The
+   * host's catalog resolves saved sources through the domain facade
+   * `parseBlueprint` — the host-loaded plugin imports it verbatim
+   * (agent-bindings.mjs:346, resolving to the COMPILED face
+   * packages/runtime/dist/packages/domain/blueprint/src/index.js). So this
+   * gate parses the emitted main.yaml/anchor.yaml with THAT module — the
+   * same closed-grammar validator, same frontmatter YAML step — and the
+   * catalog lookup key (blueprintId) must resolve. A document the host
+   * would reject never reaches a boot; run7 forensics: MALFORMED_DTO
+   * 'blueprint not found in catalog' === the strong parse failed ingest.
+   * The comma itself reproduces under this gate as the host's own
+   * 'frontmatter is not valid YAML ... Unexpected scalar at node end'.
+   */
+  function assertBlueprintIngestible() {
+    const facade = requireBlueprintFacade()
+    const out = {}
+    // Pre-boot (only the anchor exists) the main face is validated from the
+    // SAME emitter the write path uses with an empty deny list — deny rows
+    // never ride the member-template region where run7's comma lived.
+    for (const [file, wantId, wantMembers] of [['main.yaml', BP_MAIN_ID, 2], ['anchor.yaml', BP_ANCHOR_ID, 1]]) {
+      const text = file === 'main.yaml' && !existsSync(join(blueprintDir, 'main.yaml'))
+        ? mainBlueprintYaml([])
+        : readFileSync(join(blueprintDir, file), 'utf8')
+      let bp
+      try { bp = facade.parseBlueprint(text) } catch (e) {
+        throw new Error(`U6ARCA_INGEST: ${file} rejected by the host validator — ${String(e?.message ?? e)}`)
+      }
+      const doc = bp.blueprint ?? bp
+      if (doc.blueprintId !== wantId) throw new Error(`U6ARCA_INGEST: ${file} resolves as ${String(doc.blueprintId)}, catalog would not find ${wantId}`)
+      if (!Array.isArray(doc.members) || doc.members.length !== wantMembers) throw new Error(`U6ARCA_INGEST: ${file} members=${String(doc.members?.length)} want ${String(wantMembers)} under the host validator`)
+      out[file] = 'PASS'
+    }
+    return out
   }
 
   return {
     rs, ROOT, CREATE_ROOT, BP_ANCHOR_ID, BP_MAIN_ID, BASE_PRESET_ID,
     blueprintDir, workspaceDir, files, markers, tokens, probe,
     teamRowConfig, BP_ANCHOR_YAML, mainBlueprintYaml, teamRows,
-    writePreBootFiles, writeMainBlueprint,
+    writePreBootFiles, writeMainBlueprint, assertBlueprintIngestible,
   }
 }
 

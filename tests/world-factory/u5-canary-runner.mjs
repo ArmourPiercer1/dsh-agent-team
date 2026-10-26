@@ -916,6 +916,13 @@ async function runU6Fs({ factory, record, rc, log, line, worlds, keepHome, evide
   // from a governed lane.
   const denyList = surface.filter((n) => !n.startsWith('team_') && !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n))
   assembly.writeMainBlueprint(denyList)
+  // HOST-IDENTICAL ingest receipt BEFORE team.create: the emitted documents
+  // are re-parsed with the host catalog's own validator (the dist domain
+  // facade the host-loaded plugin imports). run7 spent its boot learning
+  // the catalog fails ingest as MALFORMED_DTO 'blueprint not found in
+  // catalog'; this line turns that outcome into an offline-shaped throw
+  // (writeMainBlueprint already refuses to write a rejected document).
+  record.record.u6arcaIngest = assembly.assertBlueprintIngestible()
   const created = await remoteCall(fetchJson, origin, cookie, 'team.create', { rootSessionId: assembly.CREATE_ROOT, blueprintId: assembly.BP_MAIN_ID, initialWork: { prompt: assembly.markers.MK_L1 } })
   const createOk = created.status === 200 && created.body?.result?.ok === true
   if (!createOk) {

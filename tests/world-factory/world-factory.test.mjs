@@ -470,6 +470,29 @@ test('u6-arc-a: SUITE_CASES entry and parseArgs wiring', async () => {
   assert.throws(() => parseArgs(['--suite', 'u6-arc-a', '--evidence', '/tmp/ev', '--only', 'nope']))
 })
 
+test('u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write', async () => {
+  const { createArcAssembly } = await import('./lib/u6-arc-a-assembly.mjs')
+  const dir = mkdtempSync(join(tmpdir(), 'u5-arca-ingest-'))
+  try {
+    const a = createArcAssembly({ repoRoot: process.cwd(), home: dir, runStamp: 'r-ingest', reportDir: dir })
+    a.writePreBootFiles()
+    // (a) the emitted faces pass the SAME validator the host catalog runs.
+    const got = a.assertBlueprintIngestible()
+    assert.deepEqual(got, { 'main.yaml': 'PASS', 'anchor.yaml': 'PASS' })
+    a.writeMainBlueprint(['u6arc_probe'])
+    assert.deepEqual(a.assertBlueprintIngestible(), { 'main.yaml': 'PASS', 'anchor.yaml': 'PASS' })
+    // (b) run7's defect class: a comma inside a permission-lane line is
+    //     refused by the host validator (the dev `yaml` dep tolerated it —
+    //     the catalog's failure face was MALFORMED_DTO at team.create).
+    const bad = a.mainBlueprintYaml(['u6arc_probe']).replace('deny: []', 'deny: [],')
+    assert.notEqual(bad, a.mainBlueprintYaml(['u6arc_probe']), 'the injected defect must bite the text')
+    writeFileSync(join(dir, 'blueprints', 'main.yaml'), bad)
+    assert.throws(() => a.assertBlueprintIngestible(), /U6ARCA_INGEST.*not valid YAML|not valid YAML/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra', async () => {
   const { createArcAssembly, makeArcDecide, judgeU6ArcA } = await import('./lib/u6-arc-a-assembly.mjs')
   const yaml = await import('yaml')
