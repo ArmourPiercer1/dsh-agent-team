@@ -1,0 +1,15 @@
+{
+  "schema": "u7-family-manifest/1",
+  "note": "The REVIEWED list of governed tool families the plane mounts through the FamilyAssembly seam (u7-w0b). Each module's sha256 is the reviewed digest; a module whose bytes differ, or a module on disk that is not listed here, never mounts (scripts/gen-family-index.mjs --check; runtime/src/plugin/live/family-assembly.mjs). kernelCapabilities: the kernel capability backings the listed families require.",
+  "kernelCapabilities": {
+    "fs-search": {
+      "backsExecution": "family-body"
+    }
+  },
+  "families": [
+    {
+      "module": "search.mjs",
+      "sha256": "33b4569909d9f77a298d2c06be5d10630650a697491d09c593e096189fcb689b"
+    }
+  ]
+}

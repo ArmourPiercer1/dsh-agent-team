@@ -77,15 +77,6 @@ import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '.
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-// U6 PR5 (U6 slice plan PR5 — the real family moved): the governed
-// SEARCH rows (grep + glob) live in the SEARCH family lane
-// (`packages/tools/search-family/`, owner role: that lane's README). The
-// plane imports the production row faces from the lane's own files (the
-// TWO-body search row from search-mechanics, the PRODUCTION anchored-rg
-// glob row from glob-backend — NOT the archived CANDIDATE-A face the
-// center re-export surface keeps for its pinned consumers).
-import { createAnchoredSearchBackend } from '../../../../tools/search-family/src/search-mechanics.mjs'
-import { createAnchoredGlobBackend } from '../../../../tools/search-family/src/glob-backend.mjs'
 // U6 PR2 (U6 slice plan PR2 — the read family moves): the governed `read`
 // row's Family halves live in `packages/tools/fs-family/` (owner role: that
 // lane's README). The plane stays the TRUSTED ASSEMBLY POINT: it places the
@@ -130,21 +121,6 @@ import {
   buildProcessShellContribution,
   createConfinedShellBackend,
 } from '../../../../tools/process-family/src/index.mjs'
-// U6 PR5 (U6 slice plan PR5 — the REAL family move): the governed SEARCH
-// rows join the SAME Kernel as the read and shell rows. The search family
-// lane owns the two row Definitions (over the assembly-INJECTED a5p5 trio
-// registration face — dormancy law, PR3 precedent: the plane is that lane's
-// ONE reviewed consumer and the trio's shell ARM is discarded at selection,
-// the same byte-law as before the move), the mechanics, the contribution
-// descriptor (CI-07 names the reviewed confined process provider the rg
-// rows drive), and the cancel leg. The plane remains the TRUSTED ASSEMBLY
-// POINT: it builds the backends, the ONE kernel over ALL families'
-// contributions, feeds the table with the placement identities, and routes
-// EVERY governed name's one-shot consume through the SAME consumeOnce edge.
-import {
-  buildSearchRowDefinitions,
-  buildSearchContribution,
-} from '../../../../tools/search-family/src/index.mjs'
 import {
   createGovernanceKernel,
   createGovernedFamilyRegistry,
@@ -165,6 +141,17 @@ import {
   JOBS_MANAGEMENT_NAMES,
 } from './jobs-family-bridge.mjs'
 import { claimTableOf, createApprovalEntryBinder } from './approval-entry-binder.mjs'
+// u7-w0b S3: the generic FamilyAssembly seam. The families that mount
+// through it are NOT named here: the reviewed manifest and its generated
+// static index enumerate them, the seam verifies the set, and the plane
+// drives every descriptor through the same phases.
+import {
+  checkBuiltFamily,
+  checkFamilyConfig,
+  makeFamilyCapabilities,
+  verifyReviewedFamilies,
+} from './family-assembly.mjs'
+import { FAMILY_INDEX, FAMILY_MANIFEST_URL } from '../../../../tools/families/index.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -714,38 +701,26 @@ export function createTeamToolPlaneAssembly(input = {}) {
    *  managed `team_bash` alias — the SAME row, the SAME mechanism, ONE
    *  Kernel-owned name; Gate 0b validated it above). */
   const bashName = names.bash
-  /** U6 PR5: the SEARCH rows' mount spellings (Gate 0b: grep/glob never
-   *  take over a reserved native name — PLANE_SUPPORTED_NATIVE_TAKEOVERS
-   *  keeps them managed aliases — but the mount `names` map may re-alias
-   *  them, so the Kernel table keys on the VALIDATED spellings, exactly
-   *  like the shell row keys on `bashName`). */
-  const grepName = names.grep
-  const globName = names.glob
   // Gate 0b: the closed mount-name domain, checked BEFORE any construction
   // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
   const namesCheck = verifyPlaneNames(names, readName)
   if (namesCheck.ok !== true) return { ok: false, code: namesCheck.code, message: namesCheck.message }
 
-  // Gate 0c (root ruling 20:31Z, a5-globoff): `planeCfg.globEnabled` is a
-  // CLOSED CONSUMPTION KEY, validated here before anything is constructed.
-  //  - ABSENT = true: every existing world keeps the production glob row
-  //    byte-for-byte (the zero-flip law).
-  //  - false: the glob row lands on the EXISTING typed shut face (same code,
-  //    same refusal grammar — zero new error surface), and the gate holds
-  //    over the kit `backends` injection seam too (④: no fallback bypass).
-  //  - a non-boolean value is a config defect and fails closed on the
-  //    existing PLANE_CONFIG_INCOMPLETE refusal — never silently coerced to
-  //    true. Unknown plane keys keep their historical silent-ignore law;
-  //    this single key is the one the assembly now consumes.
-  const globEnabledRaw = input.plane?.globEnabled
-  if (globEnabledRaw !== undefined && typeof globEnabledRaw !== 'boolean') {
-    return {
-      ok: false,
-      code: 'PLANE_CONFIG_INCOMPLETE',
-      message: `planeCfg.globEnabled must be a boolean when present — got ${JSON.stringify(globEnabledRaw) ?? String(globEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
-    }
+  // u7-w0b S3: the reviewed family set — verified BEFORE any backend is
+  // built; a refused set fails the whole mount closed (a silently dropped
+  // governed family would let its native tool ride). Each descriptor's
+  // closed-world config keys are checked here, in descriptor order, with
+  // the refusal grammar the hand-written gates used (a5-globoff's closed
+  // `globEnabled` key is now the search descriptor's declared config: absent
+  // = true, false = the typed shut face, non-boolean = PLANE_CONFIG_INCOMPLETE).
+  const reviewedFamilies = verifyReviewedFamilies({ manifestUrl: FAMILY_MANIFEST_URL, entries: FAMILY_INDEX })
+  if (reviewedFamilies.ok !== true) {
+    return { ok: false, code: 'PLANE_FAMILY_MANIFEST_REFUSED', message: `the reviewed family set refused: ${reviewedFamilies.detail} (fail closed — no governed family mounts)` }
   }
-  const globEnabled = globEnabledRaw !== false
+  for (const descriptor of reviewedFamilies.descriptors) {
+    const configured = checkFamilyConfig(descriptor, input.plane)
+    if (configured.ok !== true) return { ok: false, code: configured.code, message: configured.message }
+  }
 
   // Gate 0c (jobs variant, B-ACT-1-PR C2): `planeCfg.jobsEnabled` is the
   // SAME-shaped CLOSED CONSUMPTION KEY. ABSENT = FALSE here (a NEW lane has
@@ -1661,56 +1636,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // standard global object is the honest route.
     globalThis.console?.log(`[dsh-agent-team] ${line}`)
   }
-  // INT-R3 FLIP 1/3 — the srgp lane shipped the rg row behind `confined` and left the
-  // mount as the integration owner's one line (evidence/alpha5/srgp/README.md
-  // "Gap for the integration owner"): WITHOUT `confined` the production search row is
-  // still the grep(1) port and the rg row only exists where a caller passes the
-  // provider conf. Same shape as the shell row below (`confined: confinedCfg`), so the
-  // governed rg face is what a configured world actually runs; an fsInstance-only
-  // world still gets the disclosed grep port (legs G1/G1b/G2/G9 stay green by design).
-  const realSearch = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createAnchoredSearchBackend({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      confined: confinedCfg,
-      observe: logBackend('a5g7-search'),
-    })
-    : null
-  // INT-R3 FLIP 2/3 — the glob row leaves the typed shut face for the anchored rg
-  // backend, on the SAME provider and launcher as its two siblings and with the SAME
-  // allowPaths shape (system rx dirs + the rg bin dir + a READ_DIR/READ_FILE grant on
-  // the anchored root: glob-backend.mjs:837-842 is byte-for-byte the search row's
-  // list at search-backend.mjs:746-751; the rw lane stays exclusively the shell row's).
-  // CANDIDATE-A'S RESIDUAL EXPOSURE, IN PAST TENSE WITH PRESENT VALUES (round-14
-  // ruling): the confined-rg glob candidate FAILED its 2026-10-17/18 security re-review
-  // for a NAME-CLASS leak — the `verify` -> launcher string-`chdir` window plus the
-  // then-current provider `runtime_base '/'` READ_DIR grant, measured 3/10700 there.
-  // That launcher is gone: on the narrowed baseline the same round reports 0/1400 on the
-  // probe base with the race leg and all 19 weapon arms zero (re-runnable through
-  // evidence/alpha5/runtime-base-narrow/'s own kit + witness; THIS DOCS PASS DID NOT
-  // RE-MEASURE — the values are restated from that round's receipts per the ruling).
-  // REACHABILITY, kept as honest disclosure rather than deleted: the historical reading
-  // is only reopened by deliberately pinning the historical launcher bytes — the
-  // pairing gate at the row above governs launcher INTEGRITY/byte-pinning, NOT the
-  // narrowing content, so pairing passing is not evidence that the base is narrowed.
-  // The walk root is the child's cwd, so no swappable path string rides argv (what the
-  // CANDIDATE-A note credits this row with).
-  // Gate 0c enforcement, part 2 (a5-globoff ②/④): `globEnabled:false` builds
-  // NO glob backend at all — the row is the existing typed shut face from the
-  // FIRST branch, never the rg row, so nothing can spawn. The shut instance
-  // carries its own honest backendId; the refusal grammar and the code are
-  // the existing ones (zero new error surface).
-  const realGlob = globEnabled === false ? null
-    : fsInstance !== null && typeof fsInstance.rootDir === 'string' && confinedCfg !== null
-    ? createAnchoredGlobBackend({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      confined: confinedCfg,
-      templateId: String(templateId),
-      instanceId: String(input.instanceId ?? templateId),
-      observe: logBackend('a5glb-glob'),
-    })
-    : null
   const realShell = confinedCfg !== null
     ? createConfinedShellBackend({
       realmId,
@@ -1728,60 +1653,60 @@ export function createTeamToolPlaneAssembly(input = {}) {
         : {}),
     })
     : null
-  // Gate 0c enforcement, part 3 (a5-globoff ④): the disabled form's shut face
-  // — its own honest backendId, the EXISTING refusal bytes (code/class/detail
-  // verbatim). It WINS over the kit `backends` injection seam: the mount gate
-  // is config law, not wiring, so no injected glob/search backend can carry
-  // the glob class while the key says off.
-  const globDisabledShut = globEnabled === false ? createShutBackend('a5-glob-config-disabled') : null
-  const productionBackends = Object.freeze({
-    search: realSearch ?? shut,
-    glob: globDisabledShut ?? realGlob ?? shut,
-    shell: realShell ?? shut,
-  })
-  const hostedSearch = input.backends?.search ?? productionBackends.search
-  // Kit-compat law (a5p5 register.ts:118 — globBackend ABSENT reuses the
-  // search backend): an injected fixture search keeps carrying glob exactly
-  // as before. PRODUCTION search never does — the glob row has no existing
-  // implementation and lands on the honest typed shut face.
-  const hostedGlob = globDisabledShut ?? input.backends?.glob ?? input.backends?.search ?? productionBackends.glob
-  const hostedShell = input.backends?.shell ?? productionBackends.shell
-  // The host REGISTRATION law (packages/core/tools: every registerable tool
-  // must declare output { schema, render }) is an INSTALLER face: the a5p5
-  // lane deliberately ships name/description/parameters/execute ONLY (its
-  // execute returns the closed { text } envelope — lane law, untouched).
-  // The assembly adds exactly that missing presentation face — additive,
-  // no change to any reviewed logic; the pinned object is THIS wrapper.
-  // U6 PR5 (dormancy law, PR3 precedent): the two SEARCH row Definitions are
-  // placed through the SEARCH family's row face — `buildSearchRowDefinitions`
-  // makes ONE trio build through the assembly-INJECTED a5p5 registration face
-  // (the form-pinned barrel edge above; the plane is that lane's ONE reviewed
-  // consumer) and selects the grep/glob arms by the Gate-0b-validated mount
-  // spellings. The trio's shell ARM is discarded at selection exactly as the
-  // old center-side filter-by-name discarded it — same single build, same
-  // shared per-assembly row-execution state, byte-law unchanged.
-  const searchRowDefs = buildSearchRowDefinitions({
+  const hostedShell = input.backends?.shell ?? realShell ?? shut
+  // u7-w0b S3: the capability object EVERY seam-mounted family receives —
+  // enumerated in family-assembly.mjs (CAPABILITY_KEYS) and frozen; it
+  // carries no kernel, registry, approval or grant handle. Families
+  // contribute their backends first (shared set), then build rows over it.
+  const familyBackends = { shell: hostedShell }
+  const familyCapabilities = (backends) => makeFamilyCapabilities({
     realmId,
+    templateId: String(templateId),
+    instanceId: String(input.instanceId ?? templateId),
+    callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
+    planeConfig: Object.freeze({ ...(input.plane ?? {}) }),
+    names,
+    readName,
+    fsInstance,
+    confinedCfg,
+    permissionPolicy,
+    subtreeContains: input.fs?.subtreeContains,
     decide,
     pa: paAdmit,
-    searchBackend: hostedSearch,
-    globBackend: hostedGlob,
-    shellBackend: hostedShell,
-    names,
-    callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
-    // U7-6 GLUE-4 (anchored form, `effects-schema` module header): the
-    // production search rows anchor their BACKENDS at `fsInstance.rootDir`,
-    // so they also anchor their DERIVED DEMAND there — the row claims the
-    // governed walk surface, never the raw target (a target outside the
-    // surface is refused by the backend's own containment law with zero
-    // effect, which is where the anchored refusal leg belongs). Rides ONLY
-    // when the production anchored backend is the one actually mounted —
-    // a fixture-injected search (the wiring-kit seam, every offline kit)
-    // keeps the historical target-scoped derivation byte-identical.
-    ...(input.backends?.search === undefined && fsInstance !== null && typeof fsInstance.rootDir === 'string'
-      ? { effectAnchorRoot: fsInstance.rootDir }
-      : {}),
-  }, createGovernedToolDefinitions)
+    backends: Object.freeze({ ...backends }),
+    presentationFace: PLANE_PRESENTATION_FACE,
+    transport: Object.freeze({ createGovernedToolDefinitions, createGovernedShellRowDefinition }),
+    logBackend,
+    createShutBackend,
+    hostService: (name) => hostService(name),
+    hostPin: PLANE_RESERVED_NATIVE_HOST_PIN,
+    injected: Object.freeze({ ...(input.backends ?? {}) }),
+  })
+  const seamFamilies = []
+  for (const descriptor of reviewedFamilies.descriptors) {
+    const cap = familyCapabilities(familyBackends)
+    const enabled = descriptor.enabled(cap) === true
+    seamFamilies.push({ descriptor, enabled })
+    if (enabled && typeof descriptor.backends === 'function') Object.assign(familyBackends, descriptor.backends(cap))
+  }
+  for (const entry of seamFamilies) {
+    if (!entry.enabled) continue
+    const cap = familyCapabilities(familyBackends)
+    const claims = entry.descriptor.claims(cap)
+    const built = entry.descriptor.build(cap)
+    if (built?.refused !== undefined) return { ok: false, code: built.refused.code, message: built.refused.message }
+    const checked = checkBuiltFamily(entry.descriptor, claims, built)
+    if (checked.ok !== true) {
+      return { ok: false, code: entry.descriptor.refusalCode, message: `the ${entry.descriptor.familyId} assembly was refused before registration: ${checked.detail} (fail closed)` }
+    }
+    entry.claims = Object.freeze([...claims])
+    entry.built = built
+  }
+  // The host REGISTRATION law (packages/core/tools: every registerable tool
+  // must declare output { schema, render }) is an INSTALLER face: the a5p5
+  // lane deliberately ships name/description/parameters/execute ONLY. The
+  // assembly adds exactly that missing presentation face; seam families add
+  // it through `cap.presentationFace`.
   // U6 PR3: the bash arm of the trio is NO LONGER the mounted path — the
   // shell row joins the Kernel as the process family's contribution, built
   // through the family row face (the a5p5 ONE makeExecute; byte-identical
@@ -1807,12 +1732,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }, createGovernedShellRowDefinition),
     output: PLANE_PRESENTATION_FACE,
   })
+  // u7-w0b S3: seam-mounted rows place first, in descriptor `placement`
+  // order (the historical order: search rows, then the shell row).
+  const seamDefs = seamFamilies
+    .filter((e) => e.enabled)
+    .sort((a, b) => a.descriptor.placement - b.descriptor.placement)
+    .flatMap((e) => e.built.definitions)
   const defs = Object.freeze([
-    // U6 PR5: the family row face already SELECTED the two search arms
-    // (the old center filter-by-name law moved with the placement — the
-    // face refuses a build whose arms do not match the validated names).
-    ...searchRowDefs
-      .map((def) => Object.freeze({ ...def, output: PLANE_PRESENTATION_FACE })),
+    ...seamDefs,
     bashRowDef,
   ])
 
@@ -2026,7 +1953,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // exactly like 'fs-read' already backs the read body.
       'fs-write': { backsExecution: 'family-body' },
       'process-spawn': { backsExecution: 'family-body' },
-      'fs-search': { backsExecution: 'family-body' },
+      ...reviewedFamilies.kernelCapabilities,
       // U6 PR4 (ARC-C): the jobs-management capability is backed ONLY by a
       // named bridge — the schema refuses (CAPABILITY_UNBACKED /
       // NAMED_BRIDGE_REQUIRED) any contribution claiming a family body for
@@ -2034,7 +1961,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       'jobs-management': { backsExecution: 'named-bridge' },
     } },
   })
-  const kernelFamilies = { read: false, fsMutation: false, shell: false, search: false, jobs: false }
+  const kernelFamilies = { read: false, fsMutation: false, shell: false, jobs: false }
   if (readRowDef !== null) {
     // U7-9a (CA-01): ONE fs-family candidate carries ALL FOUR rows — the
     // Registry law is one live candidate per family (DUP_FAMILY_ID) and the
@@ -2088,31 +2015,21 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     kernelFamilies.shell = true
   }
-  // U6 PR5 (ARC-A real family move): the SEARCH contribution covers BOTH
-  // search rows in ONE descriptor (one family, one reviewed source, one
-  // generation — the closed schema keys claims by NAME and grep/glob are
-  // distinct names of the same lane). CI-07: the descriptor names the SAME
-  // reviewed confined process provider the rg walk bodies drive, and the
-  // mount's launcher pin rides the bound digests — grep/glob share the
-  // provider pairing the Gate 0c gate validated for the whole mount.
-  {
-    const searchContribution = buildSearchContribution({
-      grepDefinition: searchRowDefs[0],
-      globDefinition: searchRowDefs[1],
-      launcherPin: typeof confinedCfg?.assembly?.launcherSha256 === 'string'
-        ? confinedCfg.assembly.launcherSha256
-        : undefined,
-      cancelBoundary: 'the confined rg bodies stop the payload through the provider\'s frozen lease arm on timeout and on the host abort signal; the settle race answers exactly one of {exit, timedOut, cancelled} via the shared cancel leg (raceConfinedSettle), the drain never re-decides it, and a payload whose stop could not be confirmed is reported UNCERTAIN (termination-unconfirmed), never as a clean end (a5b3 laws, U6 PR5)',
-    })
-    const searchRegistered = registry.register(searchContribution, { origin: 'reviewed-manifest' })
-    if (searchRegistered.ok !== true) {
+  // u7-w0b S3: the seam-mounted families register here, in descriptor
+  // `order` (fs → process → [seam] → jobs keeps the historical order the
+  // kernel ledger is pinned to). Origin is set by the plane, never by a
+  // family; a refusal fails the whole assembly closed with the family's
+  // own typed code.
+  for (const entry of [...seamFamilies].sort((a, b) => a.descriptor.order - b.descriptor.order)) {
+    if (!entry.enabled) continue
+    const registered = registry.register(entry.built.contribution, { origin: 'reviewed-manifest' })
+    if (registered.ok !== true) {
       return {
         ok: false,
-        code: 'PLANE_SEARCH_REGISTRATION_REFUSED',
-        message: `the search family contribution was refused by the closed schema (${searchRegistered.code}: ${searchRegistered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center search path does not come back)`,
+        code: entry.descriptor.refusalCode,
+        message: `the ${entry.descriptor.familyId} contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; a retired center path does not come back)`,
       }
     }
-    kernelFamilies.search = true
   }
   // U6 PR4 (ARC-C): the jobs contribution — the mount's FIRST named bridge.
   // Registered ONLY when the closed key says on AND a real bridge body is
@@ -2139,6 +2056,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     kernelFamilies.jobs = true
   }
+  // u7-w0b S3: the names the seam families keep kernel-owned — the claims
+  // of every ENABLED family, plus the declared `disabledOwned` names of a
+  // DISABLED one (those refuse before the body, never ride native).
+  const seamOwned = new Set(seamFamilies.flatMap((e) => (e.enabled
+    ? e.claims
+    : e.descriptor.disabledOwned(familyCapabilities(familyBackends)))))
   // The mount-time claim table (u7-w0b S2): which registered candidate
   // claims which native name, read once from the registered descriptors.
   const mountClaims = claimTableOf(registry)
@@ -2210,7 +2133,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // code path (data, not new branches; §10.2's trace law is family-
       // count independent by design).
       owns: (name) => typeof name === 'string' && (
-        name === readName || name === bashName || name === grepName || name === globName
+        name === readName || name === bashName || seamOwned.has(name)
         || (kernelFamilies.fsMutation === true
           && (name === WRITE_NATIVE_NAME || name === EDIT_NATIVE_NAME || name === READ_IMAGE_NATIVE_NAME))
         || (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name))
@@ -2237,7 +2160,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // never re-mints authority and a re-registration never resurrects one —
   // only the next reviewed assembly mount (a fresh kernel) approves.
   const ensureApprovalEntry = createApprovalEntryBinder({
-    kernel,
+    approvalFor: (scopeKey, name) => kernel.approvalFor(scopeKey, name),
+    bindEntry: (entry) => kernel.addApprovalEntry(entry),
     scopeKey: kernelScopeKey,
     claimOf: (name) => mountClaims.get(name),
     placedDefinition: (name) => placedByName.get(name),
@@ -2325,7 +2249,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
        *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
       realmId,
       backends: Object.freeze({
-        search: hostedSearch, glob: hostedGlob, shell: hostedShell,
+        ...seamFamilies.reduce((acc, e) => (e.enabled ? { ...acc, ...(e.built.diagnostics ?? {}) } : acc), {}),
+        shell: hostedShell,
         ...(readExecutor === null ? {} : { read: readExecutor }),
         // U7-9a: the fs mutation + image bodies (diagnostics only).
         ...(writeExecutor === null ? {} : { write: writeExecutor }),
@@ -2377,12 +2302,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // surface's single `familyId` named the only family there was; the
         // honest generalization is the list of the families THIS mount
         // registered, in registration order.
-        familyIds: Object.freeze([
-          ...(centerKernel.families.read ? ['dsh.fs-family'] : []),
-          ...(centerKernel.families.shell ? ['dsh.process-family'] : []),
-          ...(centerKernel.families.search ? ['dsh.search-family'] : []),
-          ...(centerKernel.families.jobs ? ['dsh.jobs-family'] : []),
-        ]),
+        familyIds: Object.freeze(registry.view().candidates
+          .filter((c) => c.state !== 'tombstoned')
+          .map((c) => c.familyId)),
       }) }),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
@@ -2446,9 +2368,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
                   centerKernel.registry.revoke('dsh.process-family', 'the governed shell mount was disposed')
                   centerKernel.kernel.dropApprovalsForFamily('dsh.process-family')
                 }
-                if (centerKernel.families.search === true) {
-                  centerKernel.registry.revoke('dsh.search-family', 'the governed search mount was disposed')
-                  centerKernel.kernel.dropApprovalsForFamily('dsh.search-family')
+                for (const entry of seamFamilies) {
+                  if (!entry.enabled) continue
+                  centerKernel.registry.revoke(entry.descriptor.familyId, `the governed ${entry.descriptor.familyId} mount was disposed`)
+                  centerKernel.kernel.dropApprovalsForFamily(entry.descriptor.familyId)
                 }
                 // U6 PR4 (ARC-C): the jobs bridge family drains with the
                 // SAME deterministic law — revoke the candidate, drop its

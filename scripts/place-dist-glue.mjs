@@ -126,6 +126,28 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/approval-entry-binder.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/approval-entry-binder.mjs',
   },
+  // u7-w0b S3: the FamilyAssembly seam (sibling of the plane) and the
+  // reviewed family drop-in directory. The plane imports the generated
+  // index, the index statically imports each descriptor module and names
+  // `manifest.json` relative to itself, and the seam re-hashes every module
+  // against that manifest at mount — so all of them must sit in the mirror
+  // at the same relative layout (a missing manifest refuses the mount).
+  {
+    src: 'packages/runtime/src/plugin/live/family-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/family-assembly.mjs',
+  },
+  {
+    src: 'packages/tools/families/manifest.json',
+    dist: 'packages/runtime/dist/packages/tools/families/manifest.json',
+  },
+  {
+    src: 'packages/tools/families/index.mjs',
+    dist: 'packages/runtime/dist/packages/tools/families/index.mjs',
+  },
+  {
+    src: 'packages/tools/families/search.mjs',
+    dist: 'packages/runtime/dist/packages/tools/families/search.mjs',
+  },
   // U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution
   // producer is imported by the production entry (agent-bindings.mjs) via a
   // relative `.mjs` specifier tsc never emits — the same GLUE-6 RED-A class:

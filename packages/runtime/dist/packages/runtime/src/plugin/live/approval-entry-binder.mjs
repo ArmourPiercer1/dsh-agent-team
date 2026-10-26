@@ -26,30 +26,33 @@
  *     null forever — a lookup never re-mints and a re-registration never
  *     resurrects; only the next reviewed mount (a fresh kernel) approves.
  *
- * The binder holds no authority of its own: it calls the kernel's
- * `approvalFor` / `addApprovalEntry` exactly as the copies did, with the
- * same arguments, in the same order.
+ * The binder holds no authority of its own and never touches the kernel:
+ * the plane (the ONE reviewed composition point allowed to call the
+ * kernel's approval mutators — ARC-D AD4) hands it exactly two ports,
+ * `approvalFor` (read) and `bindEntry` (the plane's own closure over the
+ * kernel's add), which it calls exactly as the copies did, with the same
+ * arguments, in the same order.
  *
  * @module runtime/plugin/live/approval-entry-binder
  */
 
 /**
  * @param {object} deps
- * @param {{ approvalFor(scopeKey: string, nativeName: string): object | undefined,
- *           addApprovalEntry(entry: { scopeKey: string, nativeName: string, definitionIdentity: string, familyId: string }): { ok: boolean } }} deps.kernel
+ * @param {(scopeKey: string, nativeName: string) => object | undefined} deps.approvalFor - the table read
+ * @param {(entry: { scopeKey: string, nativeName: string, definitionIdentity: string, familyId: string }) => { ok: boolean }} deps.bindEntry - the plane's add port
  * @param {string} deps.scopeKey - the mount's scope (FIX-K K4)
  * @param {(name: string) => string | undefined} deps.claimOf - mount-time claim table
  * @param {(name: string) => object | undefined} deps.placedDefinition - the placed row for a name
  * @param {(definition: object) => string | null} deps.identityOf - the seam's identity mint
  * @returns {(name: string) => object | null}
  */
-export function createApprovalEntryBinder({ kernel, scopeKey, claimOf, placedDefinition, identityOf }) {
+export function createApprovalEntryBinder({ approvalFor, bindEntry, scopeKey, claimOf, placedDefinition, identityOf }) {
   const attempted = new Map()
   return function ensureApprovalEntry(name) {
     if (typeof name !== 'string') return null
     const familyId = claimOf(name)
     if (typeof familyId !== 'string') return null
-    const existing = kernel.approvalFor(scopeKey, name)
+    const existing = approvalFor(scopeKey, name)
     if (existing !== undefined) return existing
     if (attempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
     const d = placedDefinition(name)
@@ -58,14 +61,14 @@ export function createApprovalEntryBinder({ kernel, scopeKey, claimOf, placedDef
     // Not minted yet: NO entry and NO latch (see the module header).
     if (identity === null) return null
     attempted.set(name, true)
-    const added = kernel.addApprovalEntry({
+    const added = bindEntry({
       scopeKey,
       nativeName: name,
       definitionIdentity: identity,
       familyId,
     })
     if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return kernel.approvalFor(scopeKey, name) ?? null
+    return approvalFor(scopeKey, name) ?? null
   }
 }
 

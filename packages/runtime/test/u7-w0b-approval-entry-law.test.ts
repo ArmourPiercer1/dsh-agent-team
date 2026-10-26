@@ -61,7 +61,8 @@ interface PlaneValue {
 }
 type Binder = (name: string) => Entry | null
 type BinderFactory = (deps: {
-  kernel: Kernel
+  approvalFor: Kernel['approvalFor']
+  bindEntry: Kernel['addApprovalEntry']
   scopeKey: string
   claimOf: (name: string) => string | undefined
   placedDefinition: (name: string) => object | undefined
@@ -212,7 +213,8 @@ async function world(factory: BinderFactory) {
   }
   const claims = mod.claimTableOf(registry)
   const bind = factory({
-    kernel: countingKernel,
+    approvalFor: (s, n) => countingKernel.approvalFor(s, n),
+    bindEntry: (e) => countingKernel.addApprovalEntry(e),
     scopeKey: SCOPE,
     claimOf: (n) => claims.get(n),
     placedDefinition: (n) => placed.get(n),
@@ -298,43 +300,43 @@ describe('u7-w0b U — the binder law over a real kernel + registry', () => {
   it('the binder accepts no familyId input (B2 by construction)', async () => {
     const src = (await import('node:fs')).readFileSync(new URL('../src/plugin/live/approval-entry-binder.mjs', import.meta.url), 'utf8')
     const sig = /export function createApprovalEntryBinder\(\{([^}]*)\}\)/.exec(src)?.[1] ?? ''
-    expect(sig.split(',').map((s) => s.trim()).sort()).toEqual(['claimOf', 'identityOf', 'kernel', 'placedDefinition', 'scopeKey'])
+    expect(sig.split(',').map((s) => s.trim()).sort()).toEqual(['approvalFor', 'bindEntry', 'claimOf', 'identityOf', 'placedDefinition', 'scopeKey'])
   })
 })
 
 /* ── Layer M: planted broken binders — the law must catch each ───────── */
 
-const plantedLatchBeforeMint: BinderFactory = ({ kernel, scopeKey, claimOf, placedDefinition, identityOf }) => {
+const plantedLatchBeforeMint: BinderFactory = ({ approvalFor, bindEntry, scopeKey, claimOf, placedDefinition, identityOf }) => {
   const attempted = new Set<string>()
   return (name) => {
     const familyId = claimOf(name)
     if (familyId === undefined) return null
-    const existing = kernel.approvalFor(scopeKey, name)
+    const existing = approvalFor(scopeKey, name)
     if (existing !== undefined) return existing
     if (attempted.has(name)) return null
     attempted.add(name) // BUG: latches before the mint check
     const d = placedDefinition(name)
     const identity = d === undefined ? null : identityOf(d)
     if (identity === null) return null
-    return kernel.addApprovalEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId }).ok ? kernel.approvalFor(scopeKey, name) ?? null : null
+    return bindEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId }).ok ? approvalFor(scopeKey, name) ?? null : null
   }
 }
-const plantedNoLatch: BinderFactory = ({ kernel, scopeKey, claimOf, placedDefinition, identityOf }) => (name) => {
+const plantedNoLatch: BinderFactory = ({ approvalFor, bindEntry, scopeKey, claimOf, placedDefinition, identityOf }) => (name) => {
   const familyId = claimOf(name)
   if (familyId === undefined) return null
-  const existing = kernel.approvalFor(scopeKey, name)
+  const existing = approvalFor(scopeKey, name)
   if (existing !== undefined) return existing
   const d = placedDefinition(name)
   const identity = d === undefined ? null : identityOf(d)
   if (identity === null) return null
   // BUG: no latch — an invalidated entry is re-minted on the next consult
-  return kernel.addApprovalEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId }).ok ? kernel.approvalFor(scopeKey, name) ?? null : null
+  return bindEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId }).ok ? approvalFor(scopeKey, name) ?? null : null
 }
-const plantedFixedFamily: BinderFactory = ({ kernel, scopeKey, claimOf, placedDefinition, identityOf }) => {
+const plantedFixedFamily: BinderFactory = ({ approvalFor, bindEntry, scopeKey, claimOf, placedDefinition, identityOf }) => {
   const attempted = new Set<string>()
   return (name) => {
     if (claimOf(name) === undefined) return null
-    const existing = kernel.approvalFor(scopeKey, name)
+    const existing = approvalFor(scopeKey, name)
     if (existing !== undefined) return existing
     if (attempted.has(name)) return null
     const d = placedDefinition(name)
@@ -342,21 +344,21 @@ const plantedFixedFamily: BinderFactory = ({ kernel, scopeKey, claimOf, placedDe
     if (identity === null) return null
     attempted.add(name)
     // BUG: a caller-style literal instead of the claiming descriptor's id
-    return kernel.addApprovalEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId: 'dsh.fs-family' }).ok ? kernel.approvalFor(scopeKey, name) ?? null : null
+    return bindEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId: 'dsh.fs-family' }).ok ? approvalFor(scopeKey, name) ?? null : null
   }
 }
-const plantedNoClaimGate: BinderFactory = ({ kernel, scopeKey, claimOf, placedDefinition, identityOf }) => {
+const plantedNoClaimGate: BinderFactory = ({ approvalFor, bindEntry, scopeKey, claimOf, placedDefinition, identityOf }) => {
   const attempted = new Set<string>()
   return (name) => {
     const familyId = claimOf(name) ?? 'dsh.fs-family' // BUG: unclaimed names get a guessed family
-    const existing = kernel.approvalFor(scopeKey, name)
+    const existing = approvalFor(scopeKey, name)
     if (existing !== undefined) return existing
     if (attempted.has(name)) return null
     const d = placedDefinition(name)
     const identity = d === undefined ? null : identityOf(d)
     if (identity === null) return null
     attempted.add(name)
-    return kernel.addApprovalEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId }).ok ? kernel.approvalFor(scopeKey, name) ?? null : null
+    return bindEntry({ scopeKey, nativeName: name, definitionIdentity: identity, familyId }).ok ? approvalFor(scopeKey, name) ?? null : null
   }
 }
 

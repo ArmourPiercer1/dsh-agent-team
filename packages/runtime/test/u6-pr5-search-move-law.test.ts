@@ -146,11 +146,17 @@ describe('u6-pr5 search move law: one home, verbatim mechanics, deleted center s
     // answers above mean absence, not a blind pathspec or a wrong cwd.
     expect(trackedPresent('packages/runtime/src/plugin/live/jobs-family-bridge.mjs'))
       .toEqual(['packages/runtime/src/plugin/live/jobs-family-bridge.mjs'])
-    // (c) the plane assembles the rows THROUGH the lane (never an inline copy).
+    // (c) the rows are assembled THROUGH the lane (never an inline copy).
+    // u7-w0b S3 (disclosed interface update): the plane no longer names the
+    // search family at all — the family's FamilyAssembly descriptor
+    // (packages/tools/families/search.mjs) imports the lane face, and the
+    // plane mounts the descriptor through the generic seam.
     const plane = read('../src/plugin/live/team-tool-plane.mjs')
-    expect(plane.includes("from '../../../../tools/search-family/src/search-mechanics.mjs'")
-      || plane.includes('../../tools/search-family/src/search-mechanics.mjs'), 'the plane imports the lane face').toBe(true)
+    const descriptor = read('../../tools/families/search.mjs')
+    expect(descriptor.includes("from '../search-family/src/search-mechanics.mjs'"), 'the descriptor imports the lane face').toBe(true)
+    expect(plane.includes('search-family'), 'the plane names no search-family module').toBe(false)
     expect(plane.includes('function grepArgv'), 'the plane defines no local copy').toBe(false)
+    expect(descriptor.includes('function grepArgv'), 'the descriptor defines no local copy').toBe(false)
   })
 
   it('M4 the dist mirror carries the lane files (the dist-glue law)', () => {
