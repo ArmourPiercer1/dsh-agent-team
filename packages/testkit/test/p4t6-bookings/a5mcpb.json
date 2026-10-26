@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5MCPB",
+  "paths": [
+    "packages/runtime/test/a5mcp-native-trust-filter.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1206,
+    "to": 1207
+  },
+  "reason": "G2-MCP-B (MCP option B, branch `a5-mcp-binding` off master cad5cf03) adds ONE\nscannable spec: the trusted-native-harvest exclusion of the mcp__ prefix\nfamily (collection-shape legs over the REAL agent-bindings.mjs module + the\nUNVERIFIED-refuse / explicit-Binding-passes / non-mcp-zero-motion algebra\nlegs). The production edit rides the ALREADY-COUNTED glue (src; the dist\nmirror is outside the scan); zero new denylist vocabulary. MEASURED on THIS\ntree, no copying: the pre-booking run read `expected 1207 to be 1206`\n(evidence `alpha5/mcp-binding/p4t6-RED-unbooked.log`) - the chain's measured\n1206 plus exactly this one new path. SHARED-GLUE WINDOW NOTE: this booking\nrides the patch's single commit; on the post-A merged tree the anchor is\nRE-MEASURED before the commit lands (先合者定值，后合者按合并树重钉).",
+  "tieNote": "The G2-MCP-B tie, MEASURED on THIS tree at booking time (scanner run\nin-place, file present, clause unbooked, reading `expected 1207 to be 1206`;\nevidence/alpha5/mcp-binding/p4t6-RED-unbooked.log): the chain's measured\n1206 plus exactly this one spec — no chain value copied; re-anchored on\nthe merged tree when the shared-glue window commit is formed.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5MCPB (line 181); tie line 3709"
+}

@@ -1,6 +1,8 @@
 # U7-G6b — glue7 G6b census-load flake (2026-10-26)
 
-Branch `task/u7-g6b-census-flake-20261026`, worktree `.worktrees/u7-g6b`, off `origin/master` f3f415aa0. Single writer. No host boot, :3080 and ~/.dsh untouched.
+Branch `task/u7-g6b-census-flake-20261026`, worktree `.worktrees/u7-g6b`, off `origin/master` f3f415aa0, then normal-merged with origin/master 21f3f5b08 (#397). Single writer. No host boot; :3080 and ~/.dsh untouched.
+
+Environment fact: the read-only shared baseline that AGENTS.md / TEST_METHODS §2 name (`/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`) **does not exist on this machine**. The local census host was instead provisioned with `git clone --no-hardlinks` from the main checkout's own pinned pristine tree (`/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use`, HEAD `639ed015397290b3745d163aafe02ffee4aa3f84` = the `tests/paths.mjs` pin, porcelain clean), then `checkout --detach` to the pin, `pnpm install --ignore-scripts --frozen-lockfile` and `ESBUILD_WORKER_THREADS=1 DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build`. Porcelain was clean afterwards. No host was booted.
 
 ## 1. The red, from the hosted transcripts (not the census summary)
 
@@ -41,8 +43,8 @@ The archive existed to keep CANDIDATE-A's "bounded face" available for compariso
 - `alpha5-glue7-plane-backends.test.ts` G6b: the same three faces are now asserted on the SHIPPED row (`glob-backend.mjs`, `backendId a5glb-anchored-confined-rg-glob`): 100-cap + truncated, `[unclosed` → `walker-error` (rc-first), symlink-final → `symlink-alias` before any spawn, `execCount() === 2`. No assertion was relaxed. The walker-error pin is narrowed from `/rg-walker-error|rg-exit-\d/` to the exact `walker-error`.
 - `u6-pr5-search-move-law.test.ts` M1: pins the kept region (master :107–318) VERBATIM **and** the retired tail's absence.
 - `a5p4-lane-hygiene.test.ts` / `a5w-integration-wiring.test.ts`: `search-mechanics.mjs` is unbooked as a provider mount (its only mount was the retired factory). The hygiene walk now holds it to "names the lane nowhere".
-- `p4t6-session-event-scan.test.ts`: booked the one new scannable spec (`SCANNED_PATHS_U7G6B`, 1306 → 1307, `p4t6-RED-unbooked.log`).
-- dist mirror re-placed (`scripts/place-dist-glue.mjs`).
+- p4t6: the one new scannable spec is booked as `packages/testkit/test/p4t6-bookings/u7g6b.json` (`p4t6-booking/1`, after the #397 per-lane migration). It was MEASURED on the merged tree (origin/master 21f3f5b08 + this branch) with the booking absent: `scanner counts 1309, ledger derives 983 + 325 = 1308` (`p4t6-RED-unbooked-merged.log`). That is master's 1308 plus exactly this one path; retiring the factory removes no file.
+- The dist mirror was re-placed with `node scripts/place-dist-glue.mjs`. The existing `scripts/dist-placements/050-search-family.json` already lists both files, so no placement entry changed. None of this round's files land in the five #397 registry directories (p4t6-bookings except `u7g6b.json`, dist-placements, eslint-node-globals, world-kinds, suites).
 
 Protected-center ledger (`dev/agent-workflow/ledgers/arc-a-protected-center.json`): no search-family or sandbox-provider path is listed, so no protected path moved. The production `glob-backend.mjs` and the provider are byte-unchanged.
 

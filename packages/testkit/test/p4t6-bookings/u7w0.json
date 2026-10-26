@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7W0",
+  "paths": [
+    "packages/testkit/test/p4t6-bookings/load-bookings.mjs",
+    "packages/testkit/test/p4t6-bookings/load-bookings.d.mts"
+  ],
+  "expectedDelta": {
+    "from": 1306,
+    "to": 1308
+  },
+  "reason": "u7-w0 (test-infra de-hotspot, branch task/u7-w0-dehotspot-ports-20261026 off origin/master 88107ad71): the p4t6 ledger moves from in-file SCANNED_PATHS_<LANE> arrays + two hand-maintained sum sites + a presence loop + per-lane tie lines into this directory of per-lane booking files, collected by enumeration. The TWO new scannable files are the pure loader/law module and its adjacent tsc type surface (the session-event-scan.d.mts / arc-a-fitness scan.d.mts sidecar pattern). The 75 migrated bookings are the old arrays verbatim (migration script + check mode: dev/agent-workflow/evidence/u7-w0-20261026/migrate-p4t6.mjs). Zero production edits; zero denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the two files on disk and this booking absent, the ledger law reads `scanner counts 1308, ledger derives 983 + 323 = 1306` (dev/agent-workflow/evidence/u7-w0-20261026/p4t6-RED-unbooked-u7w0.txt) — master's 1306 plus exactly these two paths."
+}

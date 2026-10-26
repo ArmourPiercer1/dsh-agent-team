@@ -1,0 +1,18 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5GLUE7",
+  "paths": [
+    "packages/runtime/test/alpha5-glue7-plane-backends.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1180,
+    "to": 1182
+  },
+  "reason": "alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO\nscannable files of the round — the live-row .mjs that ASSEMBLES the\nreal effect backends onto the plane (confined Process provider for\nshell, the W5-round REAL read-only search anchored at the controlled-\nfs instance root, the governed anchored read; glob honestly stays the\ntyped shut row) and its unit suite (three live positives on REAL\nLandlock + the deny-before-backend law with production backends +\nthe feed rows; zero denylist vocabulary). The live kit rows under\ndev/agent-workflow/evidence/** are outside the packages/** scan, as\nevery prior wiring round.",
+  "listNotes": "U6 PR6 RETIREMENT: plane-effect-backends.mjs left the world (the legacy\ncenter site of kernel-owned families; U6-SLICE-PLAN scope B). Named in\nRETIRED_PATHS_U6PR6, pinned ABSENT, the tie below corrected by the term.",
+  "retiredLater": [
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs"
+  ],
+  "tieNote": "The GLUE-7 tie, re-tied on THIS merged tree (base master `382e5fb6`,\nschema-rev landed #316 first: chain at 1180). On the glue7 branch the\ntie read `1173 - 1171` because that base lacked #316; here the two\nnamed files ride after the nine schema-rev files, so the same delta\n(two files) re-ties `1182 - 1180`. The solo-RED capture for this leg\nstays at `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`; booking the\ntwo named files ends the chain at 1182 — the scanner total of this tree.\nU6 PR6: the -term is the retired GLUE-7 file, derived from the named array; the 2-file delta stays true for the GLUE-7 booking tree",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5GLUE7 (line 3008); tie line 3605"
+}

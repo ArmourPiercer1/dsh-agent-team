@@ -1,0 +1,26 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5M1",
+  "paths": [
+    "packages/runtime/operation-permission/pa-control-bridge.ts",
+    "packages/runtime/test/a5-m1-auth-bridge.test.ts",
+    "packages/runtime/src/plugin/live/pa-mount-registry.mjs",
+    "packages/runtime/test/a5-m1-pa-mount-registry.test.ts",
+    "packages/runtime/src/plugin/live/pa-mount-registry.d.mts",
+    "packages/runtime/test/a5-m1-control-legs.d.mts",
+    "packages/runtime/test/a5-m1-control-legs.mjs",
+    "packages/runtime/test/a5-m1-bash-c1.test.ts",
+    "packages/runtime/test/a5-m1-read-c1c2.test.ts",
+    "packages/runtime/test/a5-m1-unsupported-c1.test.ts",
+    "packages/runtime/test/a5-m1-correlation.test.ts",
+    "packages/runtime/test/a5-m1-seam-enforcement.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1216,
+    "to": 1228
+  },
+  "reason": "A5-M1 (the PR358 PA<->Control integration round; center + AUTH halves land on\nthis tree at merge 3881e0f93, measured at HEAD efecfe2b4): TWELVE scannable\nfiles, each attributed to the commit that ADDED it (`git log --diff-filter=A`,\nthe same attribution form this ledger uses everywhere else). Everything else\nthe round touched is an EDIT to an already-counted path — control/service.ts,\ncontrol/types.ts, root.ts, agent-bindings.mjs, the plane rows, the a5p0/a3p3/\na4p3 pins, this file — and dist mirrors / docs/** / dev/agent-workflow/** are\noutside the scan. Zero new denylist vocabulary; the quarantine hit set is\nmeasured unchanged at fifteen.\n\nFOR FINAL-INTEGRATION RE-CHECK (recorded, not guessed): eleven of the twelve\npaths below — both `src/plugin/live` files and all nine `test/a5-m1-*` files —\nsit on the exact surface a concurrent facts round is still editing in another\nworktree (`src/plugin/live/*` + three a5-m1 specs). This booking is therefore\nthe MEASURED TOTAL OF THIS TREE (1228, scanned at efecfe2b4 and re-measured by\nthe census-CI round that wrote it), and it must be RE-SCANNED on the finally\nintegrated tree: if that round adds or removes a scannable path, the scanner\nmoves and this list moves with it — an unbooked new path turns this sum RED\nrather than moving it silently, which is the whole design of this pin.",
+  "listNotes": "AUTH half (`2ace24345`): the production bridge — the frozen-A full\nobligations PA<->Control leg (admit -> durable Control request create/reuse\n-> real decision -> trusted presenter -> issueApprovedGrant ->\nguardOperation consume) with the all-Effects verifier as the ONE injected\nport — plus its real-store suite.\nPR358-B center half (`9befe7c80`): the narrow (teamRoot, instanceId) ->\nCURRENT mount index + the call-level facts adapter the ONE verifier awaits\nper gate (entries exist only while a mount is published; every read\nre-answers the trusted references fresh), and its spec.\nroot 9e CI test-declaration round (`de7303f1d`): the two ADJACENT tsc type\nsurfaces of .mjs modules booked by their owner rounds — minimal,\nconsumed-only, the plane-effect-backends.d.mts / persona-probe.d.mts\npattern. The .mjs sources themselves are counted above/by PR358-B and the\nC1 round; an adjacent declaration file is its own scannable path.\ncenter body-path C1 round (`159bccfb2`): the disclosed C1 stand-in\ncontrolLeg legs (REAL grant landing, NO durable row and NO guard\nconsumption — the disclosure is in that file's header) plus the three\nvertical slices that run over the frozen M0 contracts — bash (the C1\nrefusal family + the R2 characterization), read (BASE.C1/C2 over the\nfrozen 3e7afeba contract) and unsupported-fail-closed (unknown operation\nrefused, no native fallback, un-governed agent = zero mount).\nPR358-fix2b/fix4 (`aed9816ff`): the host-exec-bound PA correlation suite —\nONE real execution token allocates ONE hexec correlation, in-flight and\nterminal replays refuse, a stringy token never anchors, and the cancel\nordering is stated honestly.\ncenter seam-enforcement round (`8f5d29480`): what the CENTER does with\nwhatever a controlLeg returns (unit-level plane worlds, C1 scope\ndisclosed; the durable chain is the bridge suite above).",
+  "tieNote": "The A5-M1 tie, MEASURED on THIS merged tree by the census-CI round that\nbooked it: the tree at headSha efecfe2b4 scans 1228 against the 1216 this\nfile then derived (census run 39866646962, capture = the census leg's own\n`expected 1228 to be 1216`), and the whole 12-file gap is the list above —\nverified path-set-wise, not by subtraction: the scannable file set of\nefecfe2b4 minus the scannable file set of the a5-docs-realign booking\ncommit (8003bd2e3) is EXACTLY these twelve paths, zero additions and zero\nremovals on either side. No chain value copied. RE-CHECK AT FINAL\nINTEGRATION: eleven of the twelve paths ride the `src/plugin/live` +\n`test/a5-m1-*` surface a concurrent facts round is still editing, so the\nscanner must be re-run on the finally integrated tree; if that round lands\nor drops a scannable path, the sum goes RED and the list moves with it.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5M1 (line 251); tie line 3740"
+}

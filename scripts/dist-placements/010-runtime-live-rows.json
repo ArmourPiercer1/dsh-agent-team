@@ -1,0 +1,46 @@
+{
+  "schema": "dist-placements/1",
+  "family": "runtime-live-rows",
+  "summary": "The production live rows under packages/runtime/src/plugin/live (the glue itself first: composition-smoke reads PLACEMENTS[0].dist as THE glue placement).",
+  "migratedFrom": "scripts/place-dist-glue.mjs@88107ad71 PLACEMENTS entries 0..7 (0-based), comments carried verbatim as `note`",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs",
+      "note": "GLUE-5 live rows (byte-copied like the glue itself: tsc never emits .mjs)."
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs"
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/ptc-escalation-row.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs",
+      "note": "alpha5 PTC fs half-arm (10:04Z work order): the escalation\nadjudication row — production import edge from agent-bindings (the\ngate), shipped through the same dist mirror as every prior live row."
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/center-shadow-row.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs",
+      "note": "U6 PR1 center-assembly SHADOW row: the config-gated\n(`teamToolPlane.centerAssembly: 'shadow'`) mount that agent-bindings\ndynamically imports — production import edge from the glue (the gate),\nshipped through the same dist mirror law as every prior live row. Its\nown relative import of the governance-center lane resolves INSIDE the\nmirror (tsc emits the lane; this .mjs rides the byte-copy list)."
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/jobs-family-bridge.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs",
+      "note": "GLUE-7 production backend assembly row (byte-copied: tsc never emits\n.mjs; the plane row imports it by a relative in-face specifier, so the\nshipped face must carry it exactly like the plane row itself).\n\nA5-SRGP (PR5 search row) CORRECTED the scope of the two entries below on the\nmaster replay, and the correction stays visible here because an earlier note in\nthis list was wrong in a way only the whole-tree census caught:\n`a5g6-install-face-render` (run 39114260882) failed with\n`Cannot find module './glob-backend.mjs' imported from\n.../dist/.../search-backend.mjs`. The law is the TRANSITIVE import graph of the\nshipped face, not \"what the plane row happens to name\":\n\n  plane-effect-backends.mjs -> search-backend.mjs -> glob-backend.mjs\n\nThe search row delegates its anchored-walk and shared-law work to the confined-rg\nrow (`search-backend.mjs:186` imports `openAnchoredWalkRoot` +\n`verifyGlobResultsBeneath` from `./glob-backend.mjs`), so the face must carry that\nfile even though the PLANE never imports it and even though the glob row is not\nitself production-wired on this line. The dropped note asked only \"does the plane\nimport the glob row?\", heard \"no\", and cut the copy — a narrowing measured from\nthe wrong importer. The list must be walked from every file it already contains,\nwhich is what leg `M3` of `alpha5-search-backend.test.ts` now pins so the mistake\ncannot be repeated by the next reader who narrows this list.\nU6 PR5: the glob/search/cancel rows MOVED to the search-family lane —\ntheir center placements retire WITH the files (no dual copy); the lane\nmirror block below carries the bytes now. The center face keeps the jobs\nbridge ALONE: U6 PR6 deleted the last center site, the pure-re-export\nhub `plane-effect-backends.mjs` (zero production importers once\nteam-tool-plane.mjs mounted the family lanes directly), so its placement\nretired with it and this list — the single home of the graph law above —\nnow walks straight from the plane row to the lanes.\nU6 PR4 (ARC-C): the jobs bridge module — plane-effect-backends.mjs\n(deleted at PR6) once re-exported from it; the bridge module is now the\nsole home, and team-tool-plane.mjs imports its trio row defs +\ncontribution builder, so on the strict\n`files: [\"dist\"]` install face a missing copy is ERR_MODULE_NOT_FOUND at\nplane construction — the same class GLUE-6 RED-A recorded. It imports\n`../../../../contracts/src/index.js` (already in the dist mirror), so\nits relative edge resolves exactly like bash-contribution.mjs's does.\nByte-identical like every entry; the drift gate D compares src vs dist."
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/jobs-background-producer.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/jobs-background-producer.mjs",
+      "note": "U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution\nproducer is imported by the production entry (agent-bindings.mjs) via a\nrelative `.mjs` specifier tsc never emits — the same GLUE-6 RED-A class:\non the strict `files: [\"dist\"]` install face a missing copy is\nERR_MODULE_NOT_FOUND at the governed mount's producer construction.\nByte-identical like every entry; the drift gate D compares src vs dist."
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/pa-mount-registry.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs",
+      "note": "(the A5-CANCEL center copy retired with the file: U6 PR5 moved\n cancel-leg.mjs into the search-family lane; the lane mirror block\n below carries the bytes — M3 walks the list, not this comment)\nA5-M1 (PR358-B): the PA mount registry is imported by the production\nroot entry (`root.ts` — a `@ts-ignore` relative `.mjs` specifier that\ntsc never emits) exactly like upstream-resolver was at GLUE-6 RED-A:\non the strict `files: [\"dist\"]` install face a missing copy is\nERR_MODULE_NOT_FOUND at root construction. Same law as every entry:\nbyte-identical placement, drift gate D compares src vs dist."
+    }
+  ]
+}

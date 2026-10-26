@@ -1,0 +1,8 @@
+{
+  "schema": "eslint-node-globals/1",
+  "family": "testkit-test-node-modules",
+  "summary": "Node-side test-support modules under packages/testkit/test that are NOT test sources (plain .mjs data loaders the vitest/plain-node suites import). u7-w0 added the p4t6 booking loader; a family that adds one appends a pattern to its own file in this directory and edits nothing in eslint.config.mjs.",
+  "globals": [
+    "packages/testkit/test/p4t6-bookings/*.mjs"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5DOCSREALIGN",
+  "paths": [
+    "packages/testkit/test/a5-current-contract.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1215,
+    "to": 1216
+  },
+  "reason": "A5-DOCS-REALIGN (branch a5-docs-realign off baseline 9b2ee57b, 2026-10-22 docs/CI\nrealignment): ONE new scannable file - the current-contract fixture spec (Q1-Q8\nproduction-path fixtures for the state-freshness leg: legacy-only checkStatePointers pins,\nP1-P4 positive controls incl. baseline==HEAD legality, N1-N6 negatives incl. the\nno-fallback N5). It carries zero denylist vocabulary (the pre-booking scan measures the\nquarantine hit set unchanged at fifteen). Everything else this round touched rides\nALREADY-COUNTED files or lives outside packages/** (scripts/ci-pr-gate.mjs, docs/**,\ndev/agent-workflow/**).",
+  "tieNote": "The a5-docs-realign tie, MEASURED on THIS tree at booking time (scanner run\nin-place, the file present, clause unbooked, reading `expected 1216 to be 1215`;\ndev/agent-workflow/evidence/alpha5/docs-realignment-20261022/branch-drops/\np4t6-RED-unbooked.log): the chain's measured 1215 plus exactly this one file -\nno chain value copied. The same run measured the quarantine hits unchanged at 15.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5DOCSREALIGN (line 228); tie line 3727"
+}

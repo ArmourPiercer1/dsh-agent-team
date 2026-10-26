@@ -1,0 +1,25 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U6PR5",
+  "paths": [
+    "packages/tools/search-family/src/index.mjs",
+    "packages/tools/search-family/src/search-mechanics.mjs",
+    "packages/tools/search-family/src/search-row.mjs",
+    "packages/tools/search-family/src/search-contribution.mjs",
+    "packages/runtime/test/u6-pr5-search-golden-corpus.mts",
+    "packages/runtime/test/u6-pr5-search-golden-vectors.test.ts",
+    "packages/runtime/test/u6-pr5-search-move-law.test.ts",
+    "packages/runtime/test/u6-pr5-kernel-flow.test.ts",
+    "packages/runtime/test/u6-arc-a-probe-family.test.ts",
+    "packages/runtime/test/u6-arc-a-fitness.test.ts",
+    "packages/testkit/test/arc-a-fitness/scan.mjs",
+    "packages/testkit/test/arc-a-fitness/scan.d.mts"
+  ],
+  "expectedDelta": {
+    "from": 1263,
+    "to": 1275
+  },
+  "reason": "U6 PR5 (ARC-A: the search family lane + the fitness/probe suites): the\nSCANNED_PATHS_U6PR5 list below is the 12 NEW scannable paths this slice\nadds: the lane's index/mechanics/row/contribution files, the six PR5\nsuites (golden corpus + golden gate + move law + kernel flow + ARC-A\nprobe walk + ARC-A fitness), and the testkit fitness scanner with its\nsidecar type surface. The git-mv\ntrio (search-backend / glob-backend / cancel-leg) is NOT booked here:\nits pre-existing bookings (A5SRGP / A5GLB / A5CANCELEG) MIGRATE to the\nlane paths in the same commit — one home, one booking, count unchanged.\nZero new denylist vocabulary. Taking the scanned total on THIS tree to 1274 — MEASURED by\nthe pre-booking scanner run on this exact tree\n(dev/agent-workflow/evidence/u6-pr5-20261026/p4t6-RED-unbooked.log\nreading `expected 1274 to be 1263`; no chain value copied).",
+  "tieNote": "U6 PR5: the booked SCANNED_PATHS_U6PR5 list is the 12 NEW paths; the\nMEASURED scanner delta is 1275 − 1263 = 12. (The first pre-booking RED\nrun read `expected 1274 to be 1263` with 14 listed — before the git-mv\ntrio's old bookings migrated in place; the final clause, after the\nscanner's .d.mts sidecar, re-measured `expected 1275 to be 1274`.)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U6PR5 (line 412); tie line 3772"
+}

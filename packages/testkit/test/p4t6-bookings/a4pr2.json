@@ -1,0 +1,17 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR2",
+  "paths": [
+    "packages/runtime/governance/runtime-authority.ts",
+    "packages/runtime/test/a4p2-authority-ceiling.test.ts",
+    "packages/runtime/test/a4p2-ceiling-reachability.test.ts",
+    "packages/runtime/test/a4p2-dual-envelope-mutation.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 983,
+    "to": 987
+  },
+  "reason": "A4-PR2 (lane A/B/C): one production module plus its three specs. The edited\nfiles (authority-ceiling.ts, permission-mutation.ts, service.ts, types.ts,\ntools.ts and the four amended specs) are EDITS, not increments, and are\noutside this list by the rule stated above.",
+  "tieNote": "The A4-PR2 tie, same form: the movement equals the named files, and every one\nof them is asserted present by path above.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR2 (line 2306); tie line 3344"
+}

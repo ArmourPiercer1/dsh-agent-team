@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5INTR3_KIT",
+  "paths": [
+    "packages/runtime/test/a5intr3-kit-runner.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1195,
+    "to": 1196
+  },
+  "reason": "alpha5-int-r3 (rehearsal branch, replayed onto merged master 1962f879 after #330\nlanded): the integration round's own leg file — the two integration conditions of\nthe mount flip (allowPaths same-shape across glob/search/shell; the internal log\nnever reaching a member-visible sink) plus flip-coverage and matrix-name legs.\nthe kit DRIVER (the vitest shim that runs evidence/alpha5/int-r3's plane-mount kit);\ndeclared next to its sibling so the totals below can see it.",
+  "tieNote": "(this tie shared the comment above the preceding tie at 88107ad71 — see a5intr3.json tieNote)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5INTR3_KIT (line 41); tie line 3657"
+}

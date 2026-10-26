@@ -1,0 +1,13 @@
+# world-kinds equivalence: origin/master 88107ad71 lib/world-factory.mjs vs registry-driven factory (0 hosts: hostTree absent, spawn ENOENT before any process; fake lease/mock, 0 binds)
+# command: node dev/agent-workflow/evidence/u7-w0-20261026/world-kinds-equivalence.mjs
+SAME plain         patch=true env=true(4 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs]
+SAME u6Fs          patch=true env=true(7 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs,u6-fs-probe-host.mjs]
+SAME u6Proc        patch=true env=true(7 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs,u6-proc-probe-host.mjs]
+SAME u6Jobs        patch=true env=true(4 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs]
+SAME u6ArcA        patch=true env=true(10 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs,u6-arc-a-probe-host.mjs]
+SAME u6ArcD        patch=true env=true(12 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs,u6-arc-d-probe-host.mjs]
+SAME u7Census      patch=true env=true(10 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs,u7-census-probe-host.mjs]
+SAME u7FsMut       patch=true env=true(4 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs]
+SAME centerShadow  patch=true env=true(7 keys) probeFiles=true [ledger-cap.mjs,u5-canary-plugin.mjs,u6-shadow-host.mjs]
+EQUIVALENT: 9/9 world shapes byte-identical (patch layer, env, mounted files)
+exit 0

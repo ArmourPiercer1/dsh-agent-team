@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4SURFACE",
+  "paths": [
+    "packages/runtime/test/a4-surface-authority-unavailable.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1023,
+    "to": 1024
+  },
+  "reason": "a4-surface-authority-unavailable (feat/a4-surface-authority-unavailable):\nthe ONE new scannable file of this lane — the escalate-terminate SURFACING\nspec. The lane's other paths (control/types.ts, control/service.ts,\nintervention/derivation.ts, intervention/projection.ts, the a4-escalate\nre-read rewrite, the client a4p6 spec) are all EDITS to files this scan\nalready counts, and an edit is not an increment. The total below moves\nbecause this line does.",
+  "tieNote": "The a4-surface-authority-unavailable tie, same form: the movement\n(1023 -> 1024) equals the named files in SCANNED_PATHS_A4SURFACE, each\nasserted present by path in the loop above. The endpoints are this\nlane's OWN advancing total on the base it landed on (master's own\nderived total at the rebase was 1023, and the merged tree measures\n1024); neither number is written by hand for the merged tree — the\nderived sums above compute that. The increment's own RED capture\n(evidence a4-surface/p4t6-PRE-EXTEND-RED.txt: `expected 1022 to be\n1021` before the list existed) was taken on the pre-rebase base.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4SURFACE (line 2462); tie line 3400"
+}

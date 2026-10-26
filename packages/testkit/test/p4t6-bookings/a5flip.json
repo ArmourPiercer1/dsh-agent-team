@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5FLIP",
+  "paths": [
+    "packages/domain/test/a5fl1-blueprint-v4-flip.test.ts",
+    "packages/domain/test/a5fl2-envelope-scope-mirror.test.ts",
+    "packages/runtime/test/a5fl3-kernel-scope-mirror.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1183,
+    "to": 1186
+  },
+  "reason": "alpha5-v4-flip (#324) flip-round test trio (measured on this tree):",
+  "tieNote": "The v4-flip tie, restored on THIS merged tree (the coordinator's union\nmerge initially DROPPED this pin; this commit restores it — disclosure\nin the merge commit message). Anchor: GLUE-7 re-tied at 1182, the\nnarrowing suite at 1183; the three named flip files ride after them,\nre-tying `1186 - 1183`. Scanner total of this tree measured 1186.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5FLIP (line 3026); tie line 3620"
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U6PR6",
+  "paths": [
+    "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts",
+    "packages/runtime/test/u6-pr6-arc-d-matrix.test.ts"
+  ],
+  "expectedDelta": {
+    "netNeutral": true
+  },
+  "reason": "U6 PR6 (branch task/u6-pr6-arc-d-g4-20261026): THE FIRST REMOVAL ROUND in this\ncensus's history. The round books TWO new scannable specs (the ARC-D adversarial\nsuite over the production kernel/guard/dispatcher seams + the sup-a 42-cell oracle\nledger re-run) AND retires TWO booked paths out of the world: the legacy center\nsite plane-effect-backends.mjs (alpha5-glue7's booking) and its .d.mts type surface\n(A5-READ-SLICE's booking). The names leave their round lists in place (the round\ncomments keep their history verbatim); the pair is NAMED HERE, pinned ABSENT below\n(the symmetric half of the presence pins), and each historical tie is corrected by\nthe named retired term — a delta that was true on its booking tree stays recorded\nas true for that tree. Consumption law (U6-SLICE-PLAN scope B): a name loses its\nold path only once the kernel-owned family registration + C1/C2 are green; the\ncensus diff for the retirement rides dev/agent-workflow/evidence/u6-pr6-20261026/.\nThe pair's removal also removes the dist mirror (dist is outside this scan; the\nplace-dist-glue.mjs PLACEMENTS entry was dropped in the same commit).\nNET-NEUTRAL on THIS tree — MEASURED, not copied: with the pair removed and the two\nspecs unbooked, the scanner run reads 1277 = the booked 1277 (the two deletions and\nthe two additions cancel in both total forms; the only RED was the presence pin\nover the retired names — dev/agent-workflow/evidence/u6-pr6-20261026/\np4t6-UNBOOKED-RED.log, `expected false to be true` at the coverage leg).",
+  "retires": [
+    "packages/runtime/src/plugin/live/plane-effect-backends.d.mts",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs"
+  ],
+  "retiresNotes": {
+    "packages/runtime/src/plugin/live/plane-effect-backends.d.mts": "was SCANNED_PATHS_A5READSLICE",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs": "was SCANNED_PATHS_A5GLUE7"
+  },
+  "retiresReason": "The retired pair, named once, referenced by both corrected historical ties and the\nabsence pins below.",
+  "tieNote": "U6 PR6: the removal round's own tie. NET-NEUTRAL by MEASUREMENT (the\nunbooked run read 1277 with the pair gone and the two specs present —\nevidence u6-pr6-20261026/p4t6-UNBOOKED-RED.log: the totals held and only\nthe presence pin was RED), so the round ties NOT to a chain delta but to\nits own arithmetic: the two NEW specs equal the two RETIRED paths, and\nboth sides are pinned (presence above, absence above). If either side\ndrifts — a new file unbooked, a retired path resurrected, a booking\nremoved — the equality or a pin fails HERE.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U6PR6 (line 445); tie line 3781"
+}

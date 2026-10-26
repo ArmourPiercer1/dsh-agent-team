@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4W2",
+  "paths": [
+    "packages/runtime/test/a4-w2-rebuild-guarantees.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1042,
+    "to": 1043
+  },
+  "reason": "a4-w2-rebuild-guarantees (test/a4-w2-rebuild-guarantees, A4-PR7 W2 lane B):\nthe rebuild-guarantee spec pinning the human RULING 5-B judgement (dispose\n= instance rebuild, not history cleanup). Exactly one new scannable file;\nthe lane's only other path is THIS pin — an edit, not an increment.\nEvidence: dev/agent-workflow/evidence/a4-pr7/w2-rebuild-path/.",
+  "tieNote": "The a4-w2-rebuild-guarantees tie, same form: the movement equals the named\nfile. BOTH endpoint numbers are MEASURED scanner readings, captured in\ndev/agent-workflow/evidence/a4-pr7/w2-rebuild-path/ (p4t6-before-measured.log\nand p4t6-after-measured.log), not written by hand.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4W2 (line 2672); tie line 3516"
+}

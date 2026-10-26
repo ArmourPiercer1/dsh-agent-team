@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5JOBSISO",
+  "paths": [
+    "packages/runtime/test/a5p7-jobs-assembly.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1206,
+    "to": 1207
+  },
+  "reason": "A5-JOBS-ISO (B-route jobs identity-lease closure, branch `a5-jobs-isolation`\noff master d5de7497) adds its ONE scannable spec\n(packages/runtime/test/a5p7-jobs-assembly.test.ts - the GLUE-5 live row as\nBEHAVIOR over durable MemberInstance rows: two-member same-ID contention,\ncross-member/cross-root unavailability with no owner-identity echo, the\nno-TTL teardown law (drain-door refusal / cross-drain settle keeps the token\n/ giveUp makes release refuse forever / re-assembly gets a NEW window) and\nthe C-BIND preemption (only its own moved definition cancels; an unreadable\nre-read is MOVED — the R2b law on the jobs face). Zero production edits;\nzero denylist vocabulary. MEASURED on THIS tree, no copying: the pre-booking\nrun read `expected 1207 to be 1206`\n(dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/p4t6-RED-unbooked.log)\n— master's measured 1206 plus exactly this one spec.",
+  "tieNote": "The A5-JOBS-ISO tie, MEASURED on THIS tree at booking time (scanner run\nin-place, file present, clause unbooked, reading `expected 1207 to be 1206`;\ndev/agent-workflow/evidence/alpha5/jobs-isolation/runs/p4t6-RED-unbooked.log):\nthe chain is master's measured 1206 plus exactly this one spec.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5JOBSISO (line 140); tie line 3691"
+}

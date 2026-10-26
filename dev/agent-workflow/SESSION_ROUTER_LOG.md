@@ -6928,6 +6928,13 @@ master 跑 production-run-recipe 全链）。
 - 证据：`dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/`（C1/C2 日志、run-record、host log、离线 smoke 29/29）。
 - R1 独审修复轮（PR #392，reviewer 分支 task/u7-4a-review-20261026）：F-1 新增 P10 反例钉（host 回执后、归属前撤销产线定义 → 类型化拒绝 + 孤儿 job 取消请求 + 零归属记录；审查者原变异体在 P10 上死亡，变异日志 f1-mutation-log.txt；load-bearing 理由=ensureDefinitions 是带撤销的同步 jobs-family-bridge.mjs:114-133）；F-2 增 VERDICTS-MANIFEST.json（raw 判定 main 11/12、plant 3/4 与离线复判 12/12、3/3 全链披露，两处 FAIL 均为判据缺陷、复判腿要求更严）；本地全门 R1 后 7/8（唯一红 rc2-sanitize-evidence::S13 = 边界时钟抖动，pristine base 5702ms>5000ms 实锤，见 s13-clock-drift-base-proof.log）；GitHub CI 功能头 b6434492b 三腿全绿（pr-gate / census-runtime 18m3s / candidate-protection）。
 
+## 2026-10-26 U7-W0（test-infra 去热点：per-lane drop-in 注册表 + 测试端口段放宽，用户裁决 2026-10-26）
+
+- 分支 `task/u7-w0-dehotspot-ports-20261026`（worktree `.worktrees/u7-w0`，base `88107ad71`），单写者；零产品源码、零受保护中心改动、零 Host 启动。证据 `dev/agent-workflow/evidence/u7-w0-20261026/`。
+- A1 p4t6：75 个 `SCANNED_PATHS_<LANE>` 逐字迁入 `packages/testkit/test/p4t6-bookings/<lane>.json`（+u7w0 自身 1 份，1306→1308 实测）；精确总数律不变（983 + Σ），新增双记账/重复 lane/退役复活/tie 失配 RED-first 控制。A2 PLACEMENTS → `scripts/dist-placements/NNN-*.json`（38 条顺序内容逐一相同，镜像律/首条 glue 失败即关）。A3 eslint node-globals → `scripts/eslint-node-globals/*.json`（lint new 0 / resolved 0，universe 1421 不缩）。A4 world-kind/suite → `tests/world-factory/{world-kinds,suites}/`（9/9 World 形态补丁层+env 字节等价；未知选项由静默忽略改为类型化拒绝）。
+- A5（team-tool-plane 禁改规则）**撤回**：plane 无通用 family 挂载 seam（逐族 register / ensure*ApprovalEntry / families.* 硬编码），强制即令全部治理 family lane 无法合规；父 Agent 认可，另开 Center-Owner PR（w0b）。
+- B：`TEST_PORT_RANGES` = 3180-3199 / 3491-3500 / 13000-13099；World 宿主 3181-3199→13000-13049（3180 不租），mock 3491-3500→13050-13099；3080 拒绝不变；绑定前 `ss -ltn` 实测仅 :3080 在监听。旧 kit 候选表不动（清单见证据 README）。用户裁决原文录入 TEST_METHODS §6。
+
 ## 2026-10-26 U7-G6b（glue7 G6b census-load flake → 退役 archived CANDIDATE-A glob factory）
 - 分支 `task/u7-g6b-census-flake-20261026` / worktree `.worktrees/u7-g6b`，off origin/master f3f415aa0，单写者；未启 host，:3080 / ~/.dsh 未动。
 - 托管 transcripts 实读：run 40386960117 cap-1 = `:301 expected +0 to be 100`（ok:true 空列表，550 ms）；run 40386788330 cap-2 = `:304 expected true to be false`（`[unclosed` 空成功）。

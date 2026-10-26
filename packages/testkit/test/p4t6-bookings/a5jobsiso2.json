@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5JOBSISO2",
+  "paths": [
+    "packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1207,
+    "to": 1208
+  },
+  "reason": "A5-JOBS-ISO round 2 (same branch, actuator-shape legs C1) adds its ONE\nscannable spec (packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts -\ncreation attribution pinning the CREATING lane's definition, the\nmanagement-path owner fence with the disclosed corded:false pass-through\nfor jobs the Team lane never attributed (no invented ownership), the\nmeasured non-reach of the host layer under a team-layer refusal, and the\ntwo native kill forms never collapsing). The production edits ride the\nalready-counted live row .mjs; zero new event names (the kill-request\nobservation reuses the frozen `gateway-cancel-requested` name); zero\ndenylist vocabulary. MEASURED on THIS tree, no copying: the pre-booking\nrun read `expected 1208 to be 1207`\n(dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/p4t6-RED-2-unbooked.log).",
+  "tieNote": "The A5-JOBS-ISO round-2 tie, MEASURED on THIS tree at booking time\n(scanner run in-place, actuator spec present, clause unbooked, reading\n`expected 1208 to be 1207`;\ndev/agent-workflow/evidence/alpha5/jobs-isolation/runs/p4t6-RED-2-unbooked.log):\nthe chain is the round-1 measured 1207 plus exactly this one spec.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5JOBSISO2 (line 155); tie line 3697"
+}

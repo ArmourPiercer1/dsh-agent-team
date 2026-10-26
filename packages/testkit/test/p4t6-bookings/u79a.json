@@ -1,0 +1,28 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U79A",
+  "paths": [
+    "packages/runtime/controlled-fs/src/post-consume-create.ts",
+    "packages/runtime/controlled-fs/src/post-consume-write.ts",
+    "packages/runtime/controlled-fs/src/post-consume-edit.ts",
+    "packages/tools/fs-family/src/fs-mutation-mechanics.mjs",
+    "packages/tools/fs-family/src/write-executor.mjs",
+    "packages/tools/fs-family/src/edit-executor.mjs",
+    "packages/tools/fs-family/src/image-executor.mjs",
+    "packages/tools/fs-family/src/write-row.mjs",
+    "packages/tools/fs-family/src/edit-row.mjs",
+    "packages/tools/fs-family/src/image-row.mjs",
+    "packages/tools/fs-family/src/image-read-port.mjs",
+    "packages/tools/fs-family/src/fs-family-contribution.mjs",
+    "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts",
+    "packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts",
+    "packages/runtime/test/u7-9a-mutation-golden-corpus.mts"
+  ],
+  "expectedDelta": {
+    "from": 1277,
+    "to": 1292
+  },
+  "reason": "U7-9a (the FS family mutation slice — governed write/edit/read_image join\nthe ONE fs-family candidate on the governance kernel; branch\ntask/u7-9a-fs-mutation-family-20261026 off master): the fifteen scannable\nfiles this round ADDS — the three controlled-fs post-consume closures\n(create/write/edit: the verify-before-write, no-replace and bounded-read\nmechanics the confined provider enforces after PA consumption), the nine\nfs-family sources (mechanics, three executors, three rows, the family\ncontribution, the image read port), and the three test files (C1 matrix,\ngolden-vector digest lock, corpus builder). The CA-01 claim: the center's\n33 protected files carry ZERO diff (ARC-A L1 fitness scan is the proof;\ncanonical-operation.ts byte-identical, sha a1746afc...). The plane edits\n(team-tool-plane.mjs), the census/PLACEMENTS bookings, place-dist-glue.mjs\nand the world-factory kit ride ALREADY-COUNTED paths or live outside\npackages/**; dist mirrors, tests/** and dev-evidence are outside the scan;\nzero new denylist vocabulary (the refusal words are the center's frozen\ncanonicalizer codes and the kernel's existing IO_* / TOOL_BINDING_*\nvocabularies, quoted, never re-derived).\nMEASURED, not copied: the pre-booking scanner run on THIS tree (all fifteen\npresent, clause unbooked) reads `expected 1292 to be 1277` —\ndev/agent-workflow/evidence/u7-9a-fs-20261026/p4t6-RED-unbooked.log.",
+  "tieNote": "U7-9a's tie, MEASURED on THIS tree at booking time (scanner run\nin-place, all fifteen files present, clause unbooked, reading\n`expected 1292 to be 1277`; the evidence log named in the list comment):\nthe chain is master's measured 1277 plus exactly these fifteen files —\nno chain value copied.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U79A (line 475); tie line 3787"
+}

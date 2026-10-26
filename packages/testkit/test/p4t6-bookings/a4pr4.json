@@ -1,0 +1,17 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR4",
+  "paths": [
+    "packages/runtime/operation-permission/approval-routing.ts",
+    "packages/runtime/test/a4p4-capability-vs-permission.test.ts",
+    "packages/runtime/test/a4p4-operation-approval-authority.test.ts",
+    "packages/runtime/test/a4p4-operation-single-shot.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 995,
+    "to": 999
+  },
+  "reason": "A4-PR4 (lane A/B/C): one lane source plus its three specs, all inside the\nscanner's existing `packages/**/*.ts` scope. Everything else this PR\ntouches is an EDIT to an already-counted file\n(operation-permission/errors.ts, operation-permission/index.ts,\noperation-permission/pre-execute-adapter.ts, tools/tools.ts, the amended\na2c4 / a3p3 / c1 specs, src/plugin/root.ts and\nsrc/plugin/live/agent-bindings.mjs) — an edit is not an increment — and\n`dist/**` plus `dev/agent-workflow/evidence/**` stay outside the scanned\nscope. `control/service.ts` is NOT touched by this PR at all (the A1-14\nguard-side re-check is reported as a file-scope blocker, not implemented).",
+  "tieNote": "The A4-PR4 tie, same form: the movement equals the named files, and every\none of them is asserted present by path above. No number in PROSE — the\ndifference of the two pinned totals is the only arithmetic here.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR4 (line 2352); tie line 3351"
+}

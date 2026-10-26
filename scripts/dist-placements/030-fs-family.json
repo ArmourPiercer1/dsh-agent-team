@@ -1,0 +1,70 @@
+{
+  "schema": "dist-placements/1",
+  "family": "fs-family",
+  "summary": "U6 PR2 + U7-9a: the fs-family lane's .mjs runtime face.",
+  "migratedFrom": "scripts/place-dist-glue.mjs@88107ad71 PLACEMENTS entries 11..25 (0-based), comments carried verbatim as `note`",
+  "placements": [
+    {
+      "src": "packages/tools/fs-family/src/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/index.mjs",
+      "note": "U6 PR2 PACKING: the FS family lane's .mjs runtime modules. Same law as\nevery entry above — tsc never emits `.mjs`, so the lane's runtime face\n(barrel + mechanics + executor + presentation + row + contribution)\nrides the byte-copy mirror; check D compares src vs dist. The lane's ONE\nTypeScript module (`read-normalizer.ts`, the pure projection the\ncanonicalizer statically imports) is EMITTED by tsc through the runtime\nbuild include, so it is deliberately NOT listed here. The relative edges\n(`../../..` up to `packages/…`) resolve identically in src and in the\nmirror because the mirror sits at `dist/packages/…`."
+    },
+    {
+      "src": "packages/tools/fs-family/src/fs-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/fs-mechanics.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/read-presentation.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/read-presentation.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/read-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/read-executor.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/read-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/read-row.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/fs-read-contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/fs-read-contribution.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/fs-mutation-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/fs-mutation-mechanics.mjs",
+      "note": "U7-9a (CA-01, the same byte-copy law): the governed write/edit/\nread_image lane files join the mirror — the closed argument law, the\nthree executors, the bounded verified-handle image read port, the three\nrows and the ONE family contribution (the single candidate carrying all\nfour native names). The controlled-fs TypeScript closures they compose\nare EMITTED by the runtime build (the controlled-fs include), unchanged\nin kind from read-normalizer's treatment above."
+    },
+    {
+      "src": "packages/tools/fs-family/src/write-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/write-executor.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/write-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/write-row.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/edit-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/edit-executor.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/edit-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/edit-row.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/image-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/image-executor.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/image-read-port.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/image-read-port.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/image-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/image-row.mjs"
+    },
+    {
+      "src": "packages/tools/fs-family/src/fs-family-contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/fs-family/src/fs-family-contribution.mjs"
+    }
+  ]
+}
