@@ -1,0 +1,52 @@
+U7-9a golden recording — 2026-10-26T10:53:38Z
+branch HEAD: a0f3f610ce2306eeeea991d24f675583f0297834
+branch canonical-operation.ts sha256: a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87
+master worktree: .artifacts/tmp/u79a-golden-master @ 496a3980fcd0f427e0c888e7dc63b10d2ae1b627 (detached)
+master canonical-operation.ts sha256: a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87
+
+recorder run (vitest --config vitest.scratch.config.ts, scratch test z-u79a-golden-recorder.scratch.test.ts):
+U79A_GOLDEN vectors=1440 digest=91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b
+full corpus JSON byte-identical branch-vs-master (assert branchJson===masterJson, 1 passed)
+pinned by: packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts
+
+## §R1 fix-round re-record (review finding 4)
+
+R1 review found the digest stamped at base a0f3f610 while the PR head had
+moved. Re-recorded at the FINAL CODE HEAD of fix round R1:
+
+* binding head: 0632c1629da560de7ddc9a86d3923b8f8fef1ad3 (fix-round commits c0b591692 + 0632c1629 on top
+  of delivery head d12e44129)
+* recorder: same scratch pair kept in this directory
+  (z-u79a-golden-recorder.scratch.test.ts + vitest.scratch.config.ts), run:
+  `npx vitest run --config dev/agent-workflow/evidence/u7-9a-fs-20261026/vitest.scratch.config.ts packages/runtime/test/z-u79a-golden-recorder.scratch.test.ts`
+* result: vectors=1440 digest=91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b
+  — UNCHANGED vs the delivery record (the R1 changes — domain-ref effect
+  arm, observe lines, shared constant — touch no canonicalization surface;
+  the digest being byte-identical is the proof, not an assumption).
+* canonical-operation.ts @ binding head sha256: a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87 (== booked a1746afc…;
+  branch == origin/master verified via git hash-object equality this round).
+* master comparator: .artifacts/tmp/u79a-golden-master @ 496a3980f (detached;
+  its canonical-operation.ts hashes to the SAME booked digest, and the
+  booked digest equals current origin/master's blob — CA-01 certificate).
+* Any evidence/doc commits AFTER this binding head add no scannable or
+  canonicalization file (disclosed by name in the evidence README).
+
+## §R2 merge-round re-record
+
+Code binding head: cf2c56fb8d905e5f33374d9f59c4c00d1dac4399 (merge of origin/master @ 94890f090 onto the
+R1 heads). Recorder re-run (same scratch pair): vectors=1440, digest
+91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b —
+UNCHANGED across base a0f3f610, R1 heads, and the merge. The golden test
+itself is green on the merged tree (u7-9a-mutation-golden-vectors.test.ts,
+4 tests, inside the 62/62 quick battery). Commits after this head on this
+branch carry evidence/docs only (boot-7 records, README/PR-BODY,
+certificates) — zero canonicalization-file content, verified by
+git-diff blob comparison of the corpus/parser/center files.
+
+## §R2b second-merge re-record
+
+Binding head: fd5c2b3d2677f9a0979b8fd83868082bacf9d441 (merge of origin/master @ c5e43f1d5 — #392).
+Recorder re-run: vectors=1440 digest=91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b —
+UNCHANGED across base, R1, merge-1 (94890f090) and merge-2 (c5e43f1d5).
+Canonicalization surface untouched by #389-#393 (booked digest leg still
+a1746afc…); this remains the single digest binding for the PR head.

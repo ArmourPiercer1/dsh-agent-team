@@ -72,11 +72,14 @@ describe('a5-m1-unsupported-c1 — closed world: unknown names never mount, neve
     expect(built.code).toBe('NOT_GOVERNED')
   })
 
-  it('U-C1-4 closed mount domain: ONLY the four governed names exist; no pwsh/job/web/tool names leak in, and NO native name beyond the accepted spellings exists', () => {
+  it('U-C1-4 closed mount domain: ONLY the seven governed names exist (U7-9a: the FS family mutation trio joins); no pwsh/job/web/tool names leak in, and NO native name beyond the accepted spellings exists', () => {
     const built = row.createTeamToolPlaneAssembly(baseInput())
     expect(built.ok).toBe(true)
     const names = (built.value?.definitions ?? []).map((d) => d.name).sort()
-    expect(names).toEqual(['read', 'team_bash', 'team_glob', 'team_grep'])
+    // U6 mounted {read, team_bash, team_glob, team_grep}; U7-9a adds the
+    // family's three REQUIRED members, governed under their accepted native
+    // spellings (the SAME mount face — zero new assembly keys, one ledger).
+    expect(names).toEqual(['edit', 'read', 'read_image', 'team_bash', 'team_glob', 'team_grep', 'write'])
     expect(names).not.toContain('bash') // default names mount the ALIAS; native bash claim is a wiring flip with its own acceptance
   })
 

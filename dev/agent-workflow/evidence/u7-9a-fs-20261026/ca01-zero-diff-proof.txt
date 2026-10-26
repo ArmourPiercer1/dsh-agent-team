@@ -1,0 +1,8 @@
+CA-01 zero-center-diff proof — 2026-10-26T11:56:03Z
+branch HEAD: 56a55c21c6e1ed9499aeee9fbf9c612e63f39f96
+base a0f3f610c + merged origin/master 97bbc2563
+protected set: dev/agent-workflow/ledgers/arc-a-protected-center.json
+
+protected files: 33
+drift: 0
+canonical-operation.ts @ HEAD sha256:a1746afc5ee34075... (booked a1746afc...)

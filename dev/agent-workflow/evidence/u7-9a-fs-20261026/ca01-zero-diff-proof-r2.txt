@@ -1,0 +1,24 @@
+CA-01 zero-center-diff proof — R2, RE-ISSUED against the NEW master
+merge commit: cf2c56fb8d905e5f33374d9f59c4c00d1dac4399 (merge: origin/master @ 94890f090 into task/u7-9a)
+master bound: origin/master 94890f090 (post #389/#391/#393; includes the
+  center-owner edit of packages/runtime/tool-admission/admission-kernel.ts)
+protected set: dev/agent-workflow/ledgers/arc-a-protected-center.json (33)
+
+* 33/33 protected files at HEAD are BYTE-IDENTICAL to master 94890f090
+  (git blob-hash equality per file — reviewed R2 method, same sweep):
+  mismatches = 0.
+* This branch contributes ZERO center diff: branch-touched-protected
+  (git diff --name-only a0f3f610c...HEAD intersected with the ledger,
+  pre-merge measurement) = EMPTY; post-merge, the single file differing
+  from the ORIGINAL base (admission-kernel.ts) differs ONLY because the
+  merge adopted master's own newer version — the branch never edited it
+  (and C1 I-12 pins the CLOSED grammar: I-12 goes red if the center
+  owner's rung ever admits domain-ref without a matching family update —
+  the pin guards both directions).
+* canonical-operation.ts @ HEAD sha256 a1746afc5ee34075… = booked digest
+  = master's (the CA-01 certificate file face).
+* The merge's ONLY conflicts were harness/p4t6 (u5-canary-runner.mjs,
+  lib/world-factory.mjs, p4t6-session-event-scan.test.ts) — resolved
+  keeping both sides' intent (u6-arc-d extended row + u7-0 census World
+  beside u7FsMut; SCANNED_PATHS_U70 + SCANNED_PATHS_U79A ride every
+  booking sum; p4t6 re-tied GREEN 10/10 on the merged tree).

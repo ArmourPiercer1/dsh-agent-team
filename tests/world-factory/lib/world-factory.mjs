@@ -293,8 +293,13 @@ export class TestWorldFactory {
    *        the extra patch rows into the SAME `- insert:` layer; sets
    *        U6ARCD_* env for the probe before spawn. Mutually exclusive with
    *        u6Fs / u6Proc / u6Jobs / u6ArcA.
+   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u7FsMut]
+   *        U7-9a C2: NO probe row — the governed FS-family mutation rows
+   *        live on the PRODUCTION kernel; verdicts ride the runner's own
+   *        disk reads + host-log witnesses. Mutually exclusive with the
+   *        other suite specs.
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null, u6ArcD = null, u7Census = null }) {
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null, u6ArcD = null, u7Census = null, u7FsMut = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
@@ -317,10 +322,13 @@ export class TestWorldFactory {
     if (u7Census !== null && !(typeof u7Census === 'object' && Array.isArray(u7Census.rows))) {
       throw new Error('invalid u7Census (expected {rows: [...]} | null)')
     }
-    if ([u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census].filter((x) => x !== null).length > 1) {
+    if (u7FsMut !== null && !(typeof u7FsMut === 'object' && Array.isArray(u7FsMut.rows))) {
+      throw new Error('invalid u7FsMut (expected {rows: [...]} | null)')
+    }
+    if ([u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census, u7FsMut].filter((x) => x !== null).length > 1) {
       // both patch-layer owners would race for the SAME profile patch file;
       // the suites are disjoint by law — one World belongs to one suite.
-      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA / u6ArcD / u7Census are mutually exclusive Worlds')
+      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA / u6ArcD / u7Census / u7FsMut are mutually exclusive Worlds')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -347,7 +355,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census, u7FsMut })
     this.worlds.push(world)
     return world
   }
@@ -443,6 +451,7 @@ export class TestWorld {
     this.u6ArcD = spec.u6ArcD ?? null
     this.u7Census = spec.u7Census ?? null
     this.u7cLedgerPath = join(spec.home, 'u7c-census-ledger.jsonl')
+    this.u7FsMut = spec.u7FsMut ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
@@ -795,6 +804,23 @@ export class TestWorld {
           ['U7-0 census World: canary + the read-only census row',
            '(+ the production Team row and preset declarations when the',
            'caller composes a governed-Team World), one public patch layer.'],
+          rows,
+        ) + '\n',
+      )
+    } else if (this.u7FsMut !== null) {
+      // U7-9a C2: the fs-MUTATION World needs NO probe row either — the
+      // governed write/edit/read_image rows answer through the PRODUCTION
+      // kernel on the production Team row, and every verdict is public:
+      // the runner's OWN disk reads (the independent Oracle), host-log
+      // witnesses of the family's observe lines, p6t6 state, mock corpus.
+      for (const row of this.u7FsMut.rows) rows.push(row)
+      mkdirSync(this.instance.profileDir, { recursive: true })
+      writeFileSync(
+        this.instance.patchFile,
+        emitPatchLayer(
+          ['U7-fs-mut World: canary row + the production Team row (FS family',
+           'mutation members governed on the same kernel), p6t6 observer and',
+           'preset declarations, one public profile-patch layer.'],
           rows,
         ) + '\n',
       )

@@ -110,6 +110,17 @@ const PR1_CONSUMERS = Object.freeze([
   // contracts/controlled-fs mechanics, and the plane re-exports nothing of
   // the governance lane onward (owner role: packages/tools/fs-family/README.md).
   'tools/fs-family/src/read-executor.mjs',
+  // U7-9a (FS family mutation slice) booked FILE-BY-FILE, SAME single thin
+  // face as read-executor above: each of the three governed mutation/
+  // executors imports ONLY `parseRequestedEffectSet` (domain/tool-governance
+  // effect grammar) to mint the PA operation fingerprint pre-authority —
+  // exactly the face the read executor carries; no other lane export is
+  // reachable from these files (verified by this audit itself: a different
+  // face stays a finding). Zero lane edits; the mechanics/rows/contribution
+  // modules of the same slice import nothing of the governance lane.
+  'tools/fs-family/src/write-executor.mjs',
+  'tools/fs-family/src/edit-executor.mjs',
+  'tools/fs-family/src/image-executor.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:
