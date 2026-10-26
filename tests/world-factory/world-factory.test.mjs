@@ -509,6 +509,7 @@ test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid bluep
   // REGISTRY is a host-plane patch row, never preset-nested.
   assert.ok(emitted.includes('@deepseek-ai/dsh-tool-bash'), 'the birth lane rides the background-capable bash row')
   assert.ok(!emitted.includes('tool-bash-persistent'), 'no persistent PTY bash in the jobs World')
+  assert.ok(!emitted.includes('dsh-bash-sandbox') && !emitted.includes('dsh-shell-env'), 'boot-5 law: the PROVIDERS (shell, shellEnv) are already host-plane rows of the boot host bundle — a preset re-adding them is a duplicate registration the binder refuses fail-closed; the preset carries only the consumer tool-bash')
   assert.ok(emitted.includes('@deepseek-ai/dsh-jobs-local'), 'the jobs registry rides the host-plane patch layer')
   // PR3's measured envelope law: the ask lane names request-control on BOTH
   // sides (team root + worker template), the leader entry pins the OLD

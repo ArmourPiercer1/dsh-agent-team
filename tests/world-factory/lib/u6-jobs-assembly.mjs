@@ -251,8 +251,15 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
       }),
       { id: 'tool-fs', name: '@deepseek-ai/dsh-tool-fs' },
       { id: 'tool-fs-search', name: '@deepseek-ai/dsh-tool-fs-search', config: { sampleOverCapGlobResults: false } },
-      { id: 'bash-sandbox', name: '@deepseek-ai/dsh-bash-sandbox' },
-      { id: 'shell-env', name: '@deepseek-ai/dsh-shell-env' },
+      // boot-5 law (binder fail-closed, named in the host log): the boot
+      // host composes its OWN bundle layers — base+web-app already carry
+      // the PROVIDERS on the host plane (`bash-sandbox` -> service
+      // 'shell', `shell-env`), and re-adding them to the preset is a
+      // DUPLICATE registration. The web-app shape is exactly: the preset
+      // carries the CONSUMER row `tool-bash`, which resolves the host-
+      // plane 'shell', 'shellEnv' and 'jobs' through ctx.get/ctx.inject
+      // ('a Service a row outside its realm READS belongs to the plane
+      // both can see'). Providers: host plane. Consumers: preset.
       { id: 'tool-bash', name: '@deepseek-ai/dsh-tool-bash' },
     ]
     return [
