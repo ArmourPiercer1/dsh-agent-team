@@ -489,6 +489,16 @@ const SCANNED_PATHS_U79A: readonly string[] = [
   'packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts',
   'packages/runtime/test/u7-9a-mutation-golden-corpus.mts',
 ]
+// U7-4a (user ruling 2026-10-26 item 2; creation-lane attribution producer):
+// the round's two NEW paths — the producer module (production, dist-placed)
+// and its C1 spec. MEASURED pre-booking on THIS tree: the scanner reads
+// 1279 with both present and the booked 1277 without the booking
+// (`expected 1279 to be 1277`, `.artifacts/tmp/u74a-p4t6.log`, mirrored to
+// dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/p4t6-RED-unbooked.log).
+const SCANNED_PATHS_U74A: readonly string[] = [
+  'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
+  'packages/runtime/test/u74a-jobs-producer.test.ts',
+];
 // U7-0 (EB2-A dynamic tool census, branch task/u7-0-dynamic-census-20261026):
 // the offline census library (canonical JSON + closed schema checker +
 // ObservedRuntimeInventory contract + three-way reconciler + tracked-artifact
@@ -3141,6 +3151,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
         SCANNED_PATHS_U6PR6.length +
+        SCANNED_PATHS_U74A.length +
         SCANNED_PATHS_U70.length +
         SCANNED_PATHS_U79A.length,
     )
@@ -3216,6 +3227,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
         SCANNED_PATHS_U6PR6.length +
+        SCANNED_PATHS_U74A.length +
         SCANNED_PATHS_U70.length +
         SCANNED_PATHS_U79A.length,
     )
@@ -3311,6 +3323,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR4,
       ...SCANNED_PATHS_U6PR5,
       ...SCANNED_PATHS_U6PR6,
+      ...SCANNED_PATHS_U74A,
       ...SCANNED_PATHS_U70,
       ...SCANNED_PATHS_U79A,
     ]) {
@@ -3778,6 +3791,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `u6-pr4-20261026/p4t6-RED-unbooked.log` reads
     // `expected 1265 to be 1263`; no chain value copied).
     expect(SCANNED_PATHS_U6PR4.length).toBe(1265 - 1263)
+    // U7-4a: the round's own tie — TWO new paths (producer module + C1 spec),
+    // the measured scanned-total delta 1277 -> 1279 on THIS tree.
+    expect(SCANNED_PATHS_U74A.length).toBe(1279 - 1277)
     // U7-0: the booked SCANNED_PATHS_U70 list is exactly the measured delta —
     // the scanner on this tree WITHOUT the U7-0 files reads 1277 (= the booked
     // union through U6 PR6) and WITH them reads 1289; the unbooked RED run of

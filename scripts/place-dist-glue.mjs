@@ -118,6 +118,16 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
   },
+  // U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution
+  // producer is imported by the production entry (agent-bindings.mjs) via a
+  // relative `.mjs` specifier tsc never emits — the same GLUE-6 RED-A class:
+  // on the strict `files: ["dist"]` install face a missing copy is
+  // ERR_MODULE_NOT_FOUND at the governed mount's producer construction.
+  // Byte-identical like every entry; the drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-background-producer.mjs',
+  },
   // (the A5-CANCEL center copy retired with the file: U6 PR5 moved
   //  cancel-leg.mjs into the search-family lane; the lane mirror block
   //  below carries the bytes — M3 walks the list, not this comment)

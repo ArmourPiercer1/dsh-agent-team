@@ -1,0 +1,42 @@
+{
+  "note": "offline re-judge with the measured-shape plant leg (same evidence digest as the live run; judge is a pure function)",
+  "verdicts": [
+    {
+      "id": "u74a:plant-refused",
+      "verdict": "PASS",
+      "detail": {
+        "bgHead": "a5p5-refused kind=backend-failed code=background-not-supported detail=background spawn is not implemented by the confined-exec row (refused by name, never reinterpreted as a foreground run)",
+        "startedJobReceipts": 0,
+        "note": "MEASURED: the identical worker background call on the plant World answers the UNCONFIGURED row shape byte-for-byte (a5p5-refused kind=backend-failed code=background-not-supported, refused by name, never reinterpreted as a foreground run); the DONE marker arrived so the lane ran"
+      }
+    },
+    {
+      "id": "u74a:plant-no-producer",
+      "verdict": "PASS",
+      "detail": {
+        "kernelHits": {
+          "a5g7: placement-feed rows=": 2,
+          "job_output": 2,
+          "a5-plane: mount-REFUSED": 0,
+          "a5-plane: placement-REFUSED": 0,
+          "PLANE_KERNEL_UNAVAILABLE": 0,
+          "PLANE_JOBS_REGISTRATION_REFUSED": 0,
+          "PLANE_PROCESS_REGISTRATION_REFUSED": 0,
+          "a5bg: producer-mounted": 0,
+          "a5bg: attributed hostJobId=": 0,
+          "a5bg:": 0
+        },
+        "note": "no a5bg line of ANY shape exists in the host log: with backgroundJobs absent the producer never mounts (zero flip by absence)"
+      }
+    },
+    {
+      "id": "u74a:plant-no-jobs",
+      "verdict": "PASS",
+      "detail": {
+        "jobIds": [],
+        "startedJobReceipts": 0,
+        "note": "no host job id exists anywhere (no receipt, no attribution): the trio on this World can manage nothing because NOTHING was born"
+      }
+    }
+  ]
+}

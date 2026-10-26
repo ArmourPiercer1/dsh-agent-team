@@ -1,0 +1,63 @@
+{
+  "head": "496a3980fcd0f427e0c888e7dc63b10d2ae1b627",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md",
+  "baselineIds": [
+    "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+    "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+    "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+    "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+    "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session"
+  ],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261026T120719Z-4-1.json",
+      "files": 627,
+      "legs": 7955,
+      "ids": [
+        "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+        "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+        "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+        "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused",
+        "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 627,
+      "legs": 7955,
+      "declared": {
+        "files": 558,
+        "legs": 7010
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "627f/7955l",
+      "totalsNote": "captured 627f/7955l vs baseline-declared 558 / 7010"
+    }
+  }
+}
