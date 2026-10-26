@@ -123,6 +123,41 @@ test('RED-first: a mis-named file, a duplicate prefix, an unknown schema and an 
   }
 })
 
+test('RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME', () => {
+  for (const [label, plant, named] of [
+    ['x.txt', (d) => writeFileSync(join(d, 'x.txt'), 'hidden placement'), 'x.txt'],
+    ['sub/y.json', (d) => { mkdirSync(join(d, 'sub')); writeFileSync(join(d, 'sub', 'y.json'), '{}') }, 'sub/'],
+    ['.hidden.json', (d) => writeFileSync(join(d, '.060-hidden.json'), '{}'), '.060-hidden.json'],
+  ]) {
+    const dir = plantedLedger(plant)
+    try {
+      assert.throws(() => loadPlacements(dir), (e) => /stray-entry/.test(e.message) && e.message.includes(named), label)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }
+})
+
+test('order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse', () => {
+  // the shipped ledger already has gaps (010, 020, …, 050 — nine numbers between each)
+  const prefixes = readdirSync(PLACEMENTS_DIR).map((n) => Number(n.slice(0, 3)))
+  assert.ok(prefixes.some((p, i) => i > 0 && p - prefixes[i - 1] > 1), 'the shipped prefixes are gapped by design')
+  // a file dropped INTO a gap (015, between 010 and 020) lands exactly there
+  const dir = plantedLedger((d) => writeFileSync(join(d, '015-gap-family.json'), JSON.stringify({
+    schema: 'dist-placements/1',
+    placements: [{ src: 'packages/tools/gap-family/src/row.mjs', dist: 'packages/runtime/dist/packages/tools/gap-family/src/row.mjs' }],
+  })))
+  try {
+    const now = loadPlacements(dir)
+    assert.equal(now.length, 39)
+    assert.equal(now[8]?.src, 'packages/tools/gap-family/src/row.mjs', 'after the eight 010 entries, before the 020 ones')
+    assert.deepEqual(now.slice(0, 8), PLACEMENTS.slice(0, 8))
+    assert.deepEqual(now.slice(9), PLACEMENTS.slice(8))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('RED-first: an EMPTY directory refuses instead of reading as "no placements"', () => {
   const dir = mkdtempSync(join(tmpdir(), 'dist-placements-empty-'))
   try {

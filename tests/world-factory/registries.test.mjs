@@ -26,7 +26,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { cpSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { applyKindEnv, CORE_WORLD_OPTIONS, loadWorldKinds, WORLD_KINDS_DIR } from './lib/world-kinds.mjs'
@@ -175,7 +175,39 @@ test('a new World kind is ONE file: dropping it in registers the option, nothing
   }
 })
 
+test('world kinds RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME', async () => {
+  for (const [label, plant, named] of [
+    ['x.txt', (d) => writeFileSync(join(d, 'x.txt'), 'hidden kind'), 'x.txt'],
+    ['sub/y.mjs', (d) => { mkdirSync(join(d, 'sub')); writeFileSync(join(d, 'sub', 'y.mjs'), 'export default {}\n') }, 'sub/'],
+    ['.hidden', (d) => writeFileSync(join(d, '.080-hidden.mjs'), 'export default {}\n'), '.080-hidden.mjs'],
+  ]) {
+    const { parent, dir } = plantedKinds('kind-stray')
+    try {
+      plant(dir)
+      await assert.rejects(() => loadWorldKinds(dir), (e) => /stray-entry/.test(e.message) && e.message.includes(named), label)
+    } finally {
+      rmSync(parent, { recursive: true, force: true })
+    }
+  }
+})
+
 // ── suites ──────────────────────────────────────────────────────────────────
+
+test('suites RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME', async () => {
+  for (const [label, plant, named] of [
+    ['x.txt', (d) => writeFileSync(join(d, 'x.txt'), 'hidden suite'), 'x.txt'],
+    ['sub/y.mjs', (d) => { mkdirSync(join(d, 'sub')); writeFileSync(join(d, 'sub', 'y.mjs'), 'export default {}\n') }, 'sub/'],
+    ['.hidden', (d) => writeFileSync(join(d, '.070-hidden.mjs'), 'export default {}\n'), '.070-hidden.mjs'],
+  ]) {
+    const dir = plantedCopy(SUITES_DIR, 'suite-stray')
+    try {
+      plant(dir)
+      await assert.rejects(() => loadSuites({ dir }), (e) => /stray-entry/.test(e.message) && e.message.includes(named), label)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }
+})
 
 test('suites: the six hand-wired lane suites of 88107ad71, prefix order, budgets as the old ternary', async () => {
   const a = await loadSuites()

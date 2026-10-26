@@ -31,12 +31,18 @@ import tseslint from 'typescript-eslint'
  * EMPTY pattern list throws while the config is loaded, so `eslint .` dies
  * loudly rather than linting a universe nobody can account for.
  */
-const NODE_GLOBALS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'scripts', 'eslint-node-globals')
-function nodeGlobalsPatterns() {
-  const names = readdirSync(NODE_GLOBALS_DIR).filter((n) => n.endsWith('.json')).sort()
+export const NODE_GLOBALS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'scripts', 'eslint-node-globals')
+export function nodeGlobalsPatterns(dir = NODE_GLOBALS_DIR) {
+  // EVERY entry is enumerated (u7-w0 review R1 F-1): a subdirectory, dotfile or
+  // other extension refuses by name, so nothing in this directory is silently
+  // ignored.
+  const entries = readdirSync(dir, { withFileTypes: true })
+  const stray = entries.filter((e) => !e.isFile() || !/^\d{3}-[a-z0-9][a-z0-9-]*\.json$/.test(e.name)).map((e) => e.name).sort()
+  if (stray.length > 0) throw new Error(`eslint-node-globals: stray-entry ${stray.join(', ')} (files are <NNN>-<family>.json)`)
+  const names = entries.map((e) => e.name).sort()
   const out = []
   for (const name of names) {
-    const doc = JSON.parse(readFileSync(join(NODE_GLOBALS_DIR, name), 'utf8'))
+    const doc = JSON.parse(readFileSync(join(dir, name), 'utf8'))
     if (doc?.schema !== 'eslint-node-globals/1') throw new Error(`${name}: schema ${JSON.stringify(doc?.schema)} (expected eslint-node-globals/1)`)
     if (!Array.isArray(doc.globals) || doc.globals.length === 0) throw new Error(`${name}: globals must be a non-empty array of patterns`)
     for (const pattern of doc.globals) {

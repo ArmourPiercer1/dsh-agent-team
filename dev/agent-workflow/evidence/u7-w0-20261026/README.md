@@ -65,7 +65,7 @@ Real-suite RED: with `u7w0.json` moved aside, the coverage leg read
 | | before | after |
 | --- | --- | --- |
 | where | 38-entry in-file array | `scripts/dist-placements/{010-runtime-live-rows,020-runtime-entry-deps,030-fs-family,040-process-family,050-search-family}.json` (8/3/15/5/7) |
-| order | array order | **explicit**: file-name prefix, then order within the file; the loader refuses a duplicate prefix |
+| order | array order | **explicit**: file-name prefix, then order within the file. **Gaps are allowed and intended** (010, 020 … leave insertion room; a file dropped at `015` lands between them — pinned by a test). Duplicates and ill-formed names are refused. |
 | export | `PLACEMENTS` | same name and shape (frozen); `loadPlacements(dir)` and `PLACEMENTS_DIR` are also exported |
 | guards | none | fail-closed on schema, file name, mirror law `dist === packages/runtime/dist/<src>`, duplicate src/dist, empty dir, and a glue that is not `PLACEMENTS[0]` (composition-smoke reads it as THE glue) |
 
@@ -216,3 +216,43 @@ See the PR body for the final per-leg receipt of `ci-pr-gate`. Local legs:
 | `tsc -p packages/testkit` / `packages/runtime` | 0 errors |
 | `scripts/eb3-*.mjs` | none exist on master, so nothing to run |
 | `tests/u7-3-devex/devex-integration.test.mjs` E2 | **pre-existing and topology-dependent**: it asserts `HEAD^`'s lag is 1, and on master merge-commit HEADs it is 2. The same red appears on the untouched base. |
+
+## Review R1 fix round 1 (2026-10-26)
+
+Review: `dev/agent-workflow/evidence/u7-w0-review-r1/REVIEW.md` on branch
+`task/u7-w0-review-20261026`.
+
+- **F-1. Stray entries are now named, never skipped.** All five loaders enumerate EVERY entry in
+  their directory. Anything outside that directory's exact grammar is a `stray-entry` that names
+  the entry: a subdirectory, a dotfile, or another extension. Each directory's grammar:
+  - p4t6: `<lane>.json` plus `load-bookings.mjs` and `load-bookings.d.mts`. This loader returns
+    the stray as a violation, which the coverage leg asserts empty.
+  - `dist-placements`: `<NNN>-<family>.json`. Throws.
+  - `eslint-node-globals`: `<NNN>-<family>.json`. Throws at config load. The test now drives
+    the config's real exported `nodeGlobalsPatterns(dir)` instead of a copy.
+  - `world-kinds`: `<NNN>-<kind>.mjs`. Throws.
+  - `suites`: `<NNN>-<suite>.mjs`. Throws.
+
+  RED-first control in each directory: plant `x.txt`, `sub/y.*` and a dotfile, and each one is
+  named. As a sensitivity check, I reverted `loadPlacements` to the old `.json` filter. The
+  placement stray test then went red (8 pass / 1 fail), and passed again after restoring.
+- **F-2. Prefix gaps are a decision.** They are documented in the `loadPlacements` comment and
+  here, and pinned by `order law (review R1 F-2)` in `tests/checks/dist-placements.test.mjs`.
+  A gap is accepted, and a `015-…` file orders between `010` and `020`.
+- **Merged origin/master `f3f415aa0` (#395 layered CI).** No conflicts. On the merged tree, all
+  of these pass:
+  - `eb3-family-boundaries`: 32 files, 0 findings.
+  - `eb3-family-definitions`: 11 files, 0 findings.
+  - `eb3-trusted-sources`: 1871 files, 0 findings.
+  - `eb3-ci-required`: 9 workflows, 0 findings.
+  - `eb3-ci-negative-controls`: 16/16.
+  - `eb3-run-manifest`: 50 records, 0 findings.
+  - `eb3-merge-tree --synthesize`: OK.
+  - `eb3-impact --base origin/master`: selects the full layered CI. One unknown-impact path,
+    `eslint.config.mjs`, is reported fail-safe: it selects the full CI.
+
+  None of the eb3 scripts reads `PLACEMENTS`, the p4t6 lists, `SUITE_CASES` or the eslint list
+  by text (grep over `scripts/eb3-*.mjs`, `tests/checks/eb3-*` and the workflows). The only
+  world-factory dependency is `eb3-run-manifest` → `lib/run-record.mjs`, which is unchanged.
+  `eb3-family-boundaries` walks `tests/**` and finds no cross-influence in the new
+  `world-kinds/` and `suites/` modules.

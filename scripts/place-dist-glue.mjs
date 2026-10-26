@@ -57,7 +57,10 @@ export const GLUE_SRC = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
 
 /**
  * Load every placement file in sorted file-name order and return the flat
- * `[{src, dist}]` list. FAIL-CLOSED: any schema error, mis-named file, mirror
+ * `[{src, dist}]` list. ORDER LAW: the three-digit prefix orders the files.
+ * GAPS ARE ALLOWED and intended (010, 030, … leave insertion room); what must
+ * be total is the order itself, so a DUPLICATE prefix or an ill-formed name
+ * refuses. FAIL-CLOSED: any schema error, mis-named or stray entry, mirror
  * law breach (`dist !== packages/runtime/dist/<src>`), duplicate src/dist,
  * duplicate order prefix, or a first entry that is not the glue throws — a
  * placement list the gates cannot trust is never returned.
@@ -65,7 +68,13 @@ export const GLUE_SRC = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
  * @returns {Array<{src: string, dist: string}>}
  */
 export function loadPlacements(dir = PLACEMENTS_DIR) {
-  const files = readdirSync(dir).filter((n) => n.endsWith('.json')).sort()
+  // EVERY entry is enumerated (u7-w0 review R1 F-1): anything that is not a
+  // regular `<NNN>-<family>.json` file — a subdirectory, dotfile or other
+  // extension — refuses by name instead of being skipped.
+  const entries = readdirSync(dir, { withFileTypes: true })
+  const stray = entries.filter((e) => !e.isFile() || !FILE_NAME.test(e.name)).map((e) => `${e.name}${e.isDirectory() ? '/' : ''}`).sort()
+  if (stray.length > 0) throw new Error(`place-dist-glue: stray-entry in ${dir}: ${stray.join(', ')} (placement files are <NNN>-<family>.json)`)
+  const files = entries.map((e) => e.name).sort()
   if (files.length === 0) throw new Error(`place-dist-glue: no placement files in ${dir}`)
   const prefixes = new Set()
   const out = []

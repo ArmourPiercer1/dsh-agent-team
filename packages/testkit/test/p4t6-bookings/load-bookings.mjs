@@ -46,18 +46,31 @@ const KEYS = new Set([
   'pathNotes', 'listNotes', 'countedInBase', 'retiredLater', 'retires', 'retiresNotes', 'retiresReason',
 ])
 const LANE_FILE = /^[a-z0-9][a-z0-9-]*\.json$/
+/** The loader's own two files; everything else in the directory must be a booking. */
+const OWN_FILES = new Set(['load-bookings.mjs', 'load-bookings.d.mts'])
 
 /**
  * Read every `<lane>.json` in `dir` in sorted file-name order (deterministic;
+ * any other entry — subdirectory, dotfile, other extension — is a `stray-entry`;
  * the order carries no meaning for a sum, but the violation list is stable).
  * Schema violations are RETURNED, never thrown, so a control can assert on them.
  * @param {string} [dir]
  */
 export function loadBookings(dir = BOOKINGS_DIR) {
-  const files = readdirSync(dir).filter((n) => n.endsWith('.json')).sort()
+  // EVERY entry is enumerated (u7-w0 review R1 F-1): a subdirectory, dotfile or
+  // other extension is a named `stray-entry`, never silently skipped — a booking
+  // hidden as `sub/x.json` or `x.txt` would otherwise surface only as a confusing
+  // total mismatch.
+  const entries = readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
   const bookings = []
   const violations = []
-  for (const file of files) {
+  for (const entry of entries) {
+    const file = entry.name
+    if (entry.isFile() && OWN_FILES.has(file)) continue
+    if (!entry.isFile() || !file.endsWith('.json') || file.startsWith('.')) {
+      violations.push({ kind: 'stray-entry', file, detail: `${entry.isDirectory() ? 'directory' : 'entry'} ${file} is not <lane>.json, load-bookings.mjs or load-bookings.d.mts` })
+      continue
+    }
     if (!LANE_FILE.test(file)) {
       violations.push({ kind: 'bad-file-name', file, detail: 'booking files are <lowercase-lane>.json' })
       continue

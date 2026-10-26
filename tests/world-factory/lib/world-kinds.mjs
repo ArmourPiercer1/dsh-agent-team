@@ -57,7 +57,12 @@ export const CORE_WORLD_OPTIONS = Object.freeze(['line', 'visible', 'badMount', 
  * @param {string} [dir]
  */
 export async function loadWorldKinds(dir = WORLD_KINDS_DIR) {
-  const files = readdirSync(dir).filter((n) => n.endsWith('.mjs')).sort()
+  // EVERY entry is enumerated (u7-w0 review R1 F-1): a subdirectory, dotfile or
+  // other extension refuses by name instead of being silently skipped.
+  const entries = readdirSync(dir, { withFileTypes: true })
+  const stray = entries.filter((e) => !e.isFile() || !FILE_NAME.test(e.name)).map((e) => `${e.name}${e.isDirectory() ? '/' : ''}`).sort()
+  if (stray.length > 0) throw new Error(`world-kinds: stray-entry ${stray.join(', ')} (world-kinds modules are <NNN>-<kind>.mjs)`)
+  const files = entries.map((e) => e.name).sort()
   const kinds = []
   const options = new Set(CORE_WORLD_OPTIONS)
   const members = new Set()

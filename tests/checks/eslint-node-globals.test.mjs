@@ -22,7 +22,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -48,21 +48,12 @@ const PRE_U7W0_ENTRIES = [
   'packages/testkit/census/**/*.mjs',
 ]
 
-/** Read the collected documents (fail-closed on schema), in sorted order. */
-function collected(dir = DIR) {
-  const files = readdirSync(dir).filter((n) => n.endsWith('.json')).sort()
-  const out = []
-  for (const name of files) {
-    const doc = JSON.parse(readFileSync(join(dir, name), 'utf8'))
-    if (doc?.schema !== 'eslint-node-globals/1') throw new Error(`${name}: schema ${JSON.stringify(doc?.schema)}`)
-    if (!Array.isArray(doc.globals) || doc.globals.length === 0) throw new Error(`${name}: globals must be a non-empty array`)
-    for (const pattern of doc.globals) {
-      if (typeof pattern !== 'string' || pattern.trim() === '') throw new Error(`${name}: every entry must be a non-empty pattern string`)
-      out.push(pattern)
-    }
-  }
-  return out
-}
+/**
+ * The CONFIG's own collector (exported by eslint.config.mjs since review R1),
+ * so every control below exercises the code ESLint actually runs, not a copy.
+ */
+const { nodeGlobalsPatterns } = await import('../../eslint.config.mjs')
+const collected = (dir = DIR) => nodeGlobalsPatterns(dir)
 
 /** The five patterns the config keeps inline (a whole tree is node-side). */
 function inlinePatterns() {
@@ -131,6 +122,23 @@ test('RED-first: a REMOVED collected entry breaks parity (the family deleted its
     assert.deepEqual(missing, [removed])
   } finally {
     rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME', () => {
+  for (const [label, plant, named] of [
+    ['x.txt', (d) => writeFileSync(join(d, 'x.txt'), 'hidden pattern'), 'x.txt'],
+    ['sub/y.json', (d) => { mkdirSync(join(d, 'sub')); writeFileSync(join(d, 'sub', 'y.json'), '{}') }, 'sub'],
+    ['.hidden', (d) => writeFileSync(join(d, '.030-hidden.json'), '{}'), '.030-hidden.json'],
+  ]) {
+    const dir = mkdtempSync(join(tmpdir(), 'eslint-globals-stray-'))
+    try {
+      for (const name of readdirSync(DIR)) writeFileSync(join(dir, name), readFileSync(join(DIR, name), 'utf8'))
+      plant(dir)
+      assert.throws(() => collected(dir), (e) => /stray-entry/.test(e.message) && e.message.includes(named), label)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   }
 })
 

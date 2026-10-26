@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -1888,6 +1888,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       const d = firstSummed.expectedDelta as { from: number; to: number }
       const skewed = real.map((b) => (b === firstSummed ? { ...b, expectedDelta: { from: d.from, to: d.to + 1 } } : b))
       expect(kinds(checkLedger({ ...base, bookings: skewed }).violations)).toEqual(['tie'])
+    })
+
+    it('control (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — is a NAMED violation, never skipped', () => {
+      const dir = mkdtempSync(join(tmpdir(), 'p4t6-bookings-stray-'))
+      try {
+        writeFileSync(join(dir, 'good.json'), JSON.stringify({ schema: 'p4t6-booking/1', lane: 'GOOD', paths: ['packages/x/a.ts'], expectedDelta: { from: 1, to: 2 }, reason: 'r' }))
+        writeFileSync(join(dir, 'load-bookings.mjs'), '// the loader itself is allowed\n')
+        writeFileSync(join(dir, 'x.txt'), 'a booking hidden under another extension')
+        writeFileSync(join(dir, '.hidden.json'), '{}')
+        mkdirSync(join(dir, 'sub'))
+        writeFileSync(join(dir, 'sub', 'y.json'), JSON.stringify({ schema: 'p4t6-booking/1', lane: 'Y', paths: ['packages/x/y.ts'], expectedDelta: { from: 2, to: 3 }, reason: 'r' }))
+        const { bookings, violations } = loadBookings(dir)
+        expect(bookings.map((b) => b.lane)).toEqual(['GOOD'])
+        expect(violations.map((v) => `${v.kind}:${String(v.file)}`)).toEqual(['stray-entry:.hidden.json', 'stray-entry:sub', 'stray-entry:x.txt'])
+      } finally {
+        rmSync(dir, { recursive: true, force: true })
+      }
     })
 
     it('control: the loader refuses a malformed, misnamed, or tie-less NEW booking file', () => {

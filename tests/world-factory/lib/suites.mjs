@@ -31,7 +31,12 @@ const FILE_NAME = /^\d{3}-([a-z0-9][a-z0-9-]*)\.mjs$/
  *        `reserved` = the runner's own suite names (a collected suite may not shadow them)
  */
 export async function loadSuites({ dir = SUITES_DIR, reserved = [] } = {}) {
-  const files = readdirSync(dir).filter((n) => n.endsWith('.mjs')).sort()
+  // EVERY entry is enumerated (u7-w0 review R1 F-1): a subdirectory, dotfile or
+  // other extension refuses by name instead of being silently skipped.
+  const entries = readdirSync(dir, { withFileTypes: true })
+  const stray = entries.filter((e) => !e.isFile() || !FILE_NAME.test(e.name)).map((e) => `${e.name}${e.isDirectory() ? '/' : ''}`).sort()
+  if (stray.length > 0) throw new Error(`suites: stray-entry ${stray.join(', ')} (suites modules are <NNN>-<suite>.mjs)`)
+  const files = entries.map((e) => e.name).sort()
   const seen = new Set(reserved)
   const out = []
   for (const file of files) {
