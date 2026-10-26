@@ -10,7 +10,7 @@
 | `s5-c1.log`, `s5-named-suites.txt`, `s5-goldens.txt`, `s5-world-factory.log` | S5 C1: 45 files / 725 tests; goldens 22/22; world-factory 57/57 |
 | `p4t6-RED-unbooked*.log` | every measured p4t6 delta (in-file era and the #397 drop-in era) |
 | [c2/BUDGET.md](c2/BUDGET.md), `c2/boot-ledger.jsonl`, `c2/*` | S6 live C2, 6/6 boots, receipts |
-| `s7-*.log` / `s7-*.txt` | S7 gates |
+| [S7-GATES.md](S7-GATES.md), `s7-*.log` | S7 gates (ci-pr-gate full+census PASS 8/8) |
 | [KNOWN-FLAKE-a5g6.md](KNOWN-FLAKE-a5g6.md) | disclosed cold-import timeout |
 
 Plane line count (`team-tool-plane.mjs`): 2635 at base → 2483 (S2) → 2406 (S3a
