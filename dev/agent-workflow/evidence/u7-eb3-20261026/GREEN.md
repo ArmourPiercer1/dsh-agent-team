@@ -173,6 +173,31 @@ Fixed: `ci-required` is now **pull_request only** (a push run has no Required ve
 
 **Good news from that run, recorded because it matters:** `ci-full` PASSED on the hosted runner — `DSH-CI-LEG leg=census verdict=pass seconds=604`, `DSH-CI-VERDICT pass pass=8 fail=0 skip=0 refused=0`, `DSH-CI-TRANSCRIPT-CHECK pass`. So the census genuinely runs and grades the retired baseline on a cold hosted runner; `ci-full` was not "pending forever", it takes ~15 min.
 
+## D6. The second hosted run failed for a BOOKKEEPING reason, and I had made two real mistakes
+
+Synthesize failed: `synthetic merge tree c14285127… != checked-out tree 1e2ef61a7…`. Two
+separate defects, both mine, both now fixed and BOTH VERIFIED LOCALLY AGAINST THE REAL
+MERGE REF before pushing again:
+
+1. **Wrong base.** I used `github.event.pull_request.base.sha` (94890f090 — where the
+   branch was cut). GitHub builds `refs/pull/N/merge` against the base branch's CURRENT
+   tip (c5e43f1d5). The synthesize step now takes the base from the checkout's own merge
+   commit: `BASE=$(git rev-parse 'HEAD^1')`, asserts the checkout is a two-parent merge
+   whose second parent equals the PR head, and then recomputes the tree independently.
+   Verified: `git merge-tree --write-tree c5e43f1d5 f9eee0a60` reproduces GitHub's tree
+   `1e2ef61a7…` exactly, and the step now passes on the real merge ref.
+2. **A commit message claimed an edit that never landed.** `c9bfeab75`'s message says
+   "ci-required is now pull_request ONLY"; the workflow still had `push:`. The message
+   was written from intent, not from the diff. `grep -n '^  push' ci-required.yml` found
+   it. It is now genuinely pull_request-only, and the step refuses any other event BY NAME.
+   Lesson recorded rather than smoothed over: a commit message is a claim, and I asserted
+   one I had not checked.
+
+The layer binding was re-simulated on the real merge ref for both event shapes: on
+pull_request it asserts and passes, on push it prints `::warning::event push — the tree
+assertion applies to pull_request only` and names the tree, and a tampered
+`EB3_MERGE_TREE` is refused with `::error::`.
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still
