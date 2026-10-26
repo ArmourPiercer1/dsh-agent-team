@@ -452,6 +452,53 @@ const RETIRED_PATHS_U6PR6: readonly string[] = [
   'packages/runtime/src/plugin/live/plane-effect-backends.d.mts', // was SCANNED_PATHS_A5READSLICE
   'packages/runtime/src/plugin/live/plane-effect-backends.mjs', // was SCANNED_PATHS_A5GLUE7
 ]
+// U7-9a (the FS family mutation slice — governed write/edit/read_image join
+// the ONE fs-family candidate on the governance kernel; branch
+// task/u7-9a-fs-mutation-family-20261026 off master): the fifteen scannable
+// files this round ADDS — the three controlled-fs post-consume closures
+// (create/write/edit: the verify-before-write, no-replace and bounded-read
+// mechanics the confined provider enforces after PA consumption), the nine
+// fs-family sources (mechanics, three executors, three rows, the family
+// contribution, the image read port), and the three test files (C1 matrix,
+// golden-vector digest lock, corpus builder). The CA-01 claim: the center's
+// 33 protected files carry ZERO diff (ARC-A L1 fitness scan is the proof;
+// canonical-operation.ts byte-identical, sha a1746afc...). The plane edits
+// (team-tool-plane.mjs), the census/PLACEMENTS bookings, place-dist-glue.mjs
+// and the world-factory kit ride ALREADY-COUNTED paths or live outside
+// packages/**; dist mirrors, tests/** and dev-evidence are outside the scan;
+// zero new denylist vocabulary (the refusal words are the center's frozen
+// canonicalizer codes and the kernel's existing IO_* / TOOL_BINDING_*
+// vocabularies, quoted, never re-derived).
+// MEASURED, not copied: the pre-booking scanner run on THIS tree (all fifteen
+// present, clause unbooked) reads `expected 1292 to be 1277` —
+// dev/agent-workflow/evidence/u7-9a-fs-20261026/p4t6-RED-unbooked.log.
+const SCANNED_PATHS_U79A: readonly string[] = [
+  'packages/runtime/controlled-fs/src/post-consume-create.ts',
+  'packages/runtime/controlled-fs/src/post-consume-write.ts',
+  'packages/runtime/controlled-fs/src/post-consume-edit.ts',
+  'packages/tools/fs-family/src/fs-mutation-mechanics.mjs',
+  'packages/tools/fs-family/src/write-executor.mjs',
+  'packages/tools/fs-family/src/edit-executor.mjs',
+  'packages/tools/fs-family/src/image-executor.mjs',
+  'packages/tools/fs-family/src/write-row.mjs',
+  'packages/tools/fs-family/src/edit-row.mjs',
+  'packages/tools/fs-family/src/image-row.mjs',
+  'packages/tools/fs-family/src/image-read-port.mjs',
+  'packages/tools/fs-family/src/fs-family-contribution.mjs',
+  'packages/runtime/test/u7-9a-fs-mutation-c1.test.ts',
+  'packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts',
+  'packages/runtime/test/u7-9a-mutation-golden-corpus.mts',
+]
+// U7-4a (user ruling 2026-10-26 item 2; creation-lane attribution producer):
+// the round's two NEW paths — the producer module (production, dist-placed)
+// and its C1 spec. MEASURED pre-booking on THIS tree: the scanner reads
+// 1279 with both present and the booked 1277 without the booking
+// (`expected 1279 to be 1277`, `.artifacts/tmp/u74a-p4t6.log`, mirrored to
+// dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/p4t6-RED-unbooked.log).
+const SCANNED_PATHS_U74A: readonly string[] = [
+  'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
+  'packages/runtime/test/u74a-jobs-producer.test.ts',
+];
 // U7-0 (EB2-A dynamic tool census, branch task/u7-0-dynamic-census-20261026):
 // the offline census library (canonical JSON + closed schema checker +
 // ObservedRuntimeInventory contract + three-way reconciler + tracked-artifact
@@ -3104,7 +3151,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
         SCANNED_PATHS_U6PR6.length +
-        SCANNED_PATHS_U70.length,
+        SCANNED_PATHS_U74A.length +
+        SCANNED_PATHS_U70.length +
+        SCANNED_PATHS_U79A.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3178,7 +3227,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
         SCANNED_PATHS_U6PR6.length +
-        SCANNED_PATHS_U70.length,
+        SCANNED_PATHS_U74A.length +
+        SCANNED_PATHS_U70.length +
+        SCANNED_PATHS_U79A.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3272,7 +3323,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR4,
       ...SCANNED_PATHS_U6PR5,
       ...SCANNED_PATHS_U6PR6,
+      ...SCANNED_PATHS_U74A,
       ...SCANNED_PATHS_U70,
+      ...SCANNED_PATHS_U79A,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3726,12 +3779,21 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // drifts — a new file unbooked, a retired path resurrected, a booking
     // removed — the equality or a pin fails HERE.
     expect(SCANNED_PATHS_U6PR6.length).toBe(RETIRED_PATHS_U6PR6.length)
+    // U7-9a's tie, MEASURED on THIS tree at booking time (scanner run
+    // in-place, all fifteen files present, clause unbooked, reading
+    // `expected 1292 to be 1277`; the evidence log named in the list comment):
+    // the chain is master's measured 1277 plus exactly these fifteen files —
+    // no chain value copied.
+    expect(SCANNED_PATHS_U79A.length).toBe(1292 - 1277)
     // U6 PR4: the SCANNED_PATHS_U6PR4 files above are exactly the
     // scanned-total delta 1263 -> 1265, MEASURED by the pre-booking
     // scanner run on THIS tree (evidence
     // `u6-pr4-20261026/p4t6-RED-unbooked.log` reads
     // `expected 1265 to be 1263`; no chain value copied).
     expect(SCANNED_PATHS_U6PR4.length).toBe(1265 - 1263)
+    // U7-4a: the round's own tie — TWO new paths (producer module + C1 spec),
+    // the measured scanned-total delta 1277 -> 1279 on THIS tree.
+    expect(SCANNED_PATHS_U74A.length).toBe(1279 - 1277)
     // U7-0: the booked SCANNED_PATHS_U70 list is exactly the measured delta —
     // the scanner on this tree WITHOUT the U7-0 files reads 1277 (= the booked
     // union through U6 PR6) and WITH them reads 1289; the unbooked RED run of

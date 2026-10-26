@@ -146,6 +146,10 @@ export default tseslint.config(
       'packages/runtime/test/t12a-live-bridge.mjs',
       'packages/runtime/src/plugin/upstream-resolver.mjs',
       'packages/runtime/src/plugin/live/agent-bindings.mjs',
+      // U7-4a: the governed background producer is a host-side plugin module of
+      // the SAME class as agent-bindings.mjs (it buffers host job output under
+      // a byte cap via Buffer.byteLength); node globals for exactly this file.
+      'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
       'packages/testkit/census/**/*.mjs', // U7-0 EB2-A census library + fixture builder (plain-node diagnostic code)
     ],
     languageOptions: { globals: { ...globals.node } },

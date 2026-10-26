@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3180/?token=hN-mfBhUA5330uSpYVIQiHlr9zKP3teK-CEr1aq_M0o
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5u7fsmut3-20261026t11-36-07z
+[dsh-agent-team] a5ptc: census-boot root=session-u7fsmut-team-u5u7fsmut3-20261026t11-36-07z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5u7fsmut3-20261026t11-36-07z
+[dsh-agent-team] a5g7-write: governed-write pa-refused code=TOOL_BINDING_UNVERIFIED detail=the live dispatcher binding behind this call (write) could not be answered by the call-level facts entry: identity-gap=no-answer-object (the call-level facts entry returned NO answer object at all (undefined)) entry-cause=no-placement-name 
+[dsh-agent-team] a5g7-edit: governed-edit pa-refused code=TOOL_BINDING_UNVERIFIED detail=the live dispatcher binding behind this call (edit) could not be answered by the call-level facts entry: identity-gap=no-answer-object (the call-level facts entry returned NO answer object at all (undefined)) entry-cause=no-placement-name —

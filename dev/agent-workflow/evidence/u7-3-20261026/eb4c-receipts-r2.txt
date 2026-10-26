@@ -1,0 +1,163 @@
+# EB4-C/EB4-D receipts r2 — generated 2026-10-26T14:32:39Z — base origin/master c5e43f1d5 (pinned for the whole run) — HEAD 505099112
+# Provenance: every line below was produced by this script in this worktree, in this order.
+# Numbers in docs/*.md quote THIS file; re-run the command for a current value (counts and timings move).
+
+## state (F1: the commands the recovery page points at, with their actual output)
+$ git status --short --branch
+## task/u7-3-diagnostics-manuals-20261026...origin/task/u7-3-diagnostics-manuals-20261026 [ahead 15, behind 3]
+ M docs/RECOVERY.md
+ M docs/RELEASE.md
+?? dev/agent-workflow/evidence/u7-3-20261026/eb4c-receipts-r2.txt
+$ git log --oneline -1
+505099112 feat(u7-3): EB4-D bounded DevEx router + EB4-E merged-head C2 integration rule and checker
+$ git sparse-checkout list
+fatal: this worktree is not sparse
+$ node scripts/current-authority.mjs status
+{"ok":true,"status":"POINTER","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261026r1.json","snapshot_version":"as20261026r1","content_digest":"sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4","current_phase_statement":"ALPHA.5 TOOL-IO-GOVERNANCE PHASE - UNIFIED BASELINE IMPLEMENTATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval)","six":{"phase_id":"alpha5-tool-io-governance","active_plan":"docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md","backlog":"docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md","matrix":"docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md","baseline":"9b2ee57bc5afd30e89855e09d1769d2e5ec83912","baseline_collected":"2026-10-22T07:20:56Z"},"two_current_findings":[]}
+$ git -C ../../tests/deepseek-harness-test-use status --porcelain | wc -l
+0
+$ git -C ../../tests/deepseek-harness-test-use rev-parse HEAD
+639ed015397290b3745d163aafe02ffee4aa3f84
+
+## release facts (F2: counts are volatile — the command is the fact)
+$ git rev-parse '0.1.0-rc.1^{commit}'
+b0e5aeb482e27242d523b85129a899dc322d1154
+$ git cat-file -t 0.1.0-rc.1
+tag
+$ git rev-parse origin/stable
+b0e5aeb482e27242d523b85129a899dc322d1154
+$ git merge-base --is-ancestor origin/stable <base>
+exit=0 (0 = stable is an ancestor)
+$ git rev-list --count origin/stable..<base>
+1456
+$ node -p "require('./package.json').version"
+0.1.1-alpha.2
+
+## install (the documented command, verbatim)
+$ pnpm install --frozen-lockfile --offline --store-dir <in-workspace store>   -> exit=0 seconds=1
+Scope: all 10 workspace projects
+Already up to date
+Done in 487ms using pnpm v11.7.0
+$ pnpm install --frozen-lockfile --offline   (default store: the failure the page explains)
+exit=0
+
+## build
+$ pnpm run build   -> exit=0 seconds=10
+$ pnpm build:composition   -> exit=0 seconds=1
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1800 glue=29
+$ pnpm setup   -> exit=0 seconds=10
+
+## verify
+$ pnpm check:artifacts:head   -> exit=0 seconds=21
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1800 drift=0
+$ pnpm check:install-manifest   -> exit=0 seconds=2
+OK check-install-manifest: graph=452 visits ('./client' browser entry vs host graphs separ
+$ node scripts/composition-smoke.mjs   -> exit=0 seconds=1
+PASS composition-smoke
+$ pnpm typecheck   -> exit=0 seconds=21
+$ node scripts/ci-pr-gate.mjs   -> exit=0 seconds=69
+DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=68.7
+docs:sync --check: docs=86 notes=4 plans=49(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:probe base=c5e43f1d5f479c5bb7c90612583759ce57253f2e head=505099112 changed=16 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+lint-identities: universe: 1403 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+$ npx eslint . --format json  (counts only)
+exit=1
+errors=129 warnings=32 files=1403
+
+## tests
+run-tests (plain-node vitest-equivalent): 150 passed, 0 failed, 150 total, 254 ms
+RESULT: PASS run-tests (0 failures)
+$ npx vitest run   -> exit=1 seconds=332
+ Test Files  1 failed | 627 passed (628)
+      Tests  1 failed | 7997 passed (7998)
+ FAIL  packages/testkit/test/rc2-sanitize-evidence.test.ts
+$ node scripts/ci-pr-gate.mjs --only census --census-test-timeout 20000
+exit=1
+DSH-CI-LEG leg=census verdict=fail seconds=0 detail=(undeclared refusal — the instrument could not grade this checkout; if that is intended, declare it: --allow-refused census) REFUSED before spawning vitest: tests/deepseek-harness-test-use (the pristine tes
+
+## diagnostics / devex (EB4-B, EB4-D)
+diag-call-chain --self-test: OK 48 codes, 5 kinds, every cited site still carries its token at this tree
+devex --self-test: OK 9 entries
+integration-order --self-test: OK (six classes, fail-closed record checks)
+$ node scripts/integration-order.mjs --target <base>
+integration-order: target=c5e43f1d5f479c5bb7c90612583759ce57253f2e head=c5e43f1d5f47 records=45
+MERGED_ANCESTOR (32) — teamSha is merged but BEHIND the candidate: it did not test the candidate (re-run)
+NO_TEAM_SHA (2) — the record binds no Team SHA at all
+INCOMPLETE_RECORD (11) — record never finished (no overall verdict, zero cases, or no finishedAt) — not delivery
+NOT GRADED (11):
+RULE branch-local C2 cannot substitute for merged-head C2: 32 record(s) do not bind the candidate; 0 do.
+LIMIT read-only evidence binding audit: no test run, no Host boot, no verdict on whether any C2 PASSED its own lanes
+
+## evidence store (recovery drill is in eb4c-receipts.txt; verify re-run here)
+verify verdict=pass entries=20148 bytes_ok=521862486 findings=0 store=/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence
+
+## pre-existing doc-controls baseline
+FAIL POS-1 clean fixture passes the complete check
+FAIL POS-3 Idea and Proposed text needs no runtime evidence
+FAIL POS-4 --write regenerates the view only
+FAIL POS-6 plan declaring a valid citation block passes
+FAIL NEG-21 plan without a citation block is not a finding
+FAIL POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted
+FAIL POS-10 a current-state document citing an existing run log is clean
+FAIL POS-11 schema and validator agree in a clean fixture
+controls=96 failed=8 scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+
+## run integrity
+base at start: c5e43f1d5f479c5bb7c90612583759ce57253f2e
+origin/master ref at end (no fetch was done; a change here means another process fetched): c5e43f1d5f479c5bb7c90612583759ce57253f2e
+HEAD at start: 505099112f9dd58a39025de8b039f41e647d9d64  HEAD at end: 505099112f9dd58a39025de8b039f41e647d9d64
+
+## addendum — release §2 install-surface scans, same pinned base c5e43f1d5, appended 2026-10-26T14:55:01Z
+$ node scripts/verify-zero-core.mjs --host ../../tests/deepseek-harness-test-use
+RESULT: PASS verify-zero-core (0 findings)
+exit=0
+$ node scripts/verify-zero-core.mjs --host … --plugin packages/runtime/dist
+RESULT: PASS verify-zero-core (0 findings)
+exit=0
+$ node scripts/verify-zero-core.mjs --host … --plugin packages/client/composition-shim
+exit=1
+RESULT: FAIL verify-zero-core (2 findings)
+FINDING private-relative-escape @ packages/client/composition-shim/client-bundle.js:18129 — import "../uniqueness.js"
+FINDING private-relative-escape @ packages/client/composition-shim/client-bundle.js:18672 — import "../uniqueness.js"
+$ grep -c "{@link import('../uniqueness.js')" packages/client/composition-shim/client-bundle.js   (are both findings JSDoc text?)
+2
+$ node scripts/verify-zero-core.mjs --host … --plugin .
+exit=1
+RESULT: FAIL verify-zero-core (10 findings)
+      6 packages/client/test/s3-client-generation-spike.test.ts
+      1 packages/runtime/test/u6-pr5-search-move-law.test.ts
+      1 tests/characterization/probes/preset-persona-model/plugins/main.js
+      1 tests/characterization/probes/smoke/plugins/negative-fixtures/bad-host.js
+      1 tests/characterization/probes/storage-fork-descendants/plugins/negative-fixtures/private-import-host.js
+
+
+## addendum — default-store install, measured honestly (2026-10-26T14:56:58Z, base c5e43f1d5)
+# The `## install` section above shows the default-store command exiting 0. That is NOT evidence that
+# the default store works here: pnpm printed "Already up to date" because this worktree's node_modules
+# was already linked to the in-workspace store (node_modules/.modules.yaml storeDir), so the default
+# store was never opened. The control below forces pnpm to open it: a scratch dir holding only
+# package.json + pnpm-lock.yaml + pnpm-workspace.yaml + .npmrc, no node_modules.
+$ grep storeDir node_modules/.modules.yaml
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.pnpm-store/v11",
+$ pnpm store path   (the default store pnpm resolves to)
+$HOME/.local/share/pnpm/store/v11
+$ (scratch, no node_modules) pnpm install --frozen-lockfile --offline --ignore-workspace
+exit=1
+[ERR_SQLITE_ERROR] unable to open database file
+pnpm: unable to open database file
+# => the failure the cold-start page explains is real; --store-dir <in-workspace store> is the fix.
+
+## provenance note — which commit this receipt measured (2026-10-26T15:02:59Z)
+# The run above was taken on a LOCAL rebase of this branch onto c5e43f1d5, whose tip was 505099112
+# (see the header and the '[ahead 15, behind 3]' status line). That rebased history was never pushed:
+# the task branch was already public, and moving it to rebased commits needs a force-push, which
+# gated-history discipline forbids. The rebase was backed out and origin/master was MERGED instead.
+# The measured code is still exactly what ships, proved by tree identity rather than asserted:
+$ git rev-parse 505099112^{tree}   (the measured rebased tip)
+cd6329b24b3ce16a94b08b8624929df4a63bb37a
+$ git rev-parse f09965886^{tree}   (the pushed merge commit: f09965886 Merge remote-tracking branch 'origin/master' into task/u7-3-diagnostic)
+cd6329b24b3ce16a94b08b8624929df4a63bb37a
+# identical trees => every byte the battery ran against is the byte the merge commit carries.
+# 505099112 exists only in this worktree's reflog; cite the merge commit, not 505099112.

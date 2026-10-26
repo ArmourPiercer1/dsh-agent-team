@@ -1,0 +1,9 @@
+[u7-fs-mut] case fsm:mounted: PASS {"healthOk":true,"stateOk":true,"placementFeed":"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5u7fsmut4-20261026t11-38-54z","surfaceHas":"write=true,edit=true,rea
+[u7-fs-mut] case fsm:write-positive: PASS {"oracleBytesEqual":true,"oracleBytesHead":"U7FSMUT_W1_CLAIM_u5u7fsmut4-20261026t11-38-54z\nwritten-by-governed-write\n","ranLine":"[dsh-agent-team] a5g7-write: governed-write RAN bytes=73 created=true path=/srv/workspace/dsh-plugins/dsh-ag
+[u7-fs-mut] case fsm:edit-positive: PASS {"oracleBytesEqual":true,"beforeTokenGone":true,"oracleBytesHead":"U7FSMUT_PLANT_AFTER_u5u7fsmut4-20261026t11-38-54z line one\nline two stays\n","ranLine":"[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/
+[u7-fs-mut] case fsm:refusal-zero-effect: FAIL {"shaBefore":"afde346e5f1a2bba40137c9adbf088d2c064dea09d166aa51f0d4b5ebf840a59","shaAfter":"afde346e5f1a2bba40137c9adbf088d2c064dea09d166aa51f0d4b5ebf840a59","shaIdentical":true,"refusalLines":0,"refusalSample":null,"deniedPathOnRanLine":fa
+[u7-fs-mut] case fsm:image-lane-honest: FAIL {"arm":"silent","ran":null,"refusal":null,"imgShaStable":"c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77","disclosure":null,"hostAlive":true}
+[u7-fs-mut] case fsm:ctl-native-write: FAIL {"oracleBytesEqual":false,"oracleBytesHead":"","governedRanSawCtlPath":false,"laneCtlDone":true,"hostAlive":true}
+[u7-fs-mut] case fsm:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-fs-mut] host died during the run (verdicts read the evidence as-is)
+RUN-SUMMARY run=u5-u7-fs-mut-u7fsmut4-2026-10-26T11-38-53-989Z suite=u7-fs-mut overall=FAIL cases=8 FAIL:3 PASS:5 worlds=u5u7fsmut4-20261026T11-38-54Z

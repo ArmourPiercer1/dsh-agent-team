@@ -12,6 +12,21 @@
 export { CF_DESCRIPTOR_KEYS, descriptorIdentityKey, descriptorToResourceRef, parseFsDescriptor, resourceRefToDescriptor, } from './cf-descriptor.js';
 export { CF_DENIED_REASONS, CF_ERROR_CLASSES, CF_HIDDEN_REASONS, CF_UNDETERMINED_REASONS, cfsDenial, cfsErrorClassOfReason, cfsHidden, cfsUndetermined, isFailure, } from './cf-errors.js';
 export { NO_RECHECK, isBeneath, verifyOpenedHandle, } from './open-at-exec.js';
+// U7-9a (FS mutation family): the POST-CONSUME execution closures. These are
+// the provider half of the governed `write`/`edit` rows — minted by the
+// trusted assembly ONLY after the kernel's one-shot edge consumed the grant,
+// and they carry the whole boundary law internally (approved-root agreement,
+// O_NOFOLLOW opens, verify-before-truncate, fd-bound exclusive create,
+// honest undetermined states). The FAMILY lane imports them through THIS
+// barrel (its one reviewed controlled-fs edge, lane README): the family never
+// re-implements the boundary, it only composes the injected edge and passes
+// frozen plan facts (CI-07 — the family never self-attests the FS effect).
+// Deliberate export per the closure headers' own law ("the integration owner
+// adds exports deliberately"): the ONLY sanctioned consumers are the
+// `packages/tools/fs-family` executors and their tests.
+export { createPostConsumeWriteClosure, } from './post-consume-write.js';
+export { createPostConsumeCreateClosure, } from './post-consume-create.js';
+export { createPostConsumeEditClosure, } from './post-consume-edit.js';
 export { createControlledFsLane, } from './controlled-fs.js';
 // G-d integration wiring (Scope-2): the PR2-admission GATED consumption face
 // (README §4). This is the ONLY sanctioned wiring entry — the raw factory's

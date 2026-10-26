@@ -12,6 +12,9 @@
 export { CF_DESCRIPTOR_KEYS, descriptorIdentityKey, descriptorToResourceRef, parseFsDescriptor, resourceRefToDescriptor, type FsInstanceBinding, type FsResourceDescriptor, } from './cf-descriptor.js';
 export { CF_DENIED_REASONS, CF_ERROR_CLASSES, CF_HIDDEN_REASONS, CF_UNDETERMINED_REASONS, cfsDenial, cfsErrorClassOfReason, cfsHidden, cfsUndetermined, isFailure, type CfDenyReason, type CfErrorClass, type CfHiddenReason, type CfReason, type CfUndeterminedReason, } from './cf-errors.js';
 export { NO_RECHECK, isBeneath, verifyOpenedHandle, type AdmissionRecheck, type ExecTimeVerdict, type IdentitySnapshot, type OpenAtPort, } from './open-at-exec.js';
+export { createPostConsumeWriteClosure, type PostConsumeWriteCallContext, type PostConsumeWriteClosure, type PostConsumeWriteConfig, type PostConsumeWritePlan, } from './post-consume-write.js';
+export { createPostConsumeCreateClosure, type PostConsumeCreatePlan, } from './post-consume-create.js';
+export { createPostConsumeEditClosure, type FsEditReceipt, type PostConsumeEditCallContext, type PostConsumeEditClosure, type PostConsumeEditConfig, type PostConsumeEditPlan, } from './post-consume-edit.js';
 export { createControlledFsLane, type ControlledFsInstance, type ControlledFsLane, type ControlledFsLaneConfig, type LaneHooks, type LedgerEntry, type TrustedControlledFs, } from './controlled-fs.js';
 export { ARBITRARY_TREE_PROFILE_PUBLISHED, bindAdmissionRecheck, createAdmissionGatedControlledFs, createProductionControlledFsProvider, UNBOUND_ADMISSION_RECHECK, type AdmissionBoundFsCall, type AdmissionGatedControlledFsConfig, type FsAdmissionPort, type ProductionControlledFsProvider, type ProductionControlledFsProviderConfig, } from './admission-binding.js';
 export type { ControlledFs, FsObservation, FsReadWindow, FsTextContent, FsWriteReceipt, GovernanceError, GovernanceResult, MemberRef, OperationGrant, ResourceRef, } from '../../../domain/tool-governance/src/index.js';

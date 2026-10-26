@@ -1,0 +1,13 @@
+root vitest on merged tree 56a55c21c — 2026-10-26T11:59:48Z
+Test Files: 6 failed / 622 passed (628); Tests: 11 failed / 7962 passed (7973)
+failing set (root-vitest-merged-failing-files.txt) is a SUBSET of the master baseline set (master-baseline-failing-files.txt, 7 files):
+
+  packages/domain/test/t2-blueprint-hash.test.ts  — still failing (baseline)
+  packages/runtime/test/a5p7-lane-hygiene.test.ts  — GREEN this round (improvement)
+  packages/runtime/test/p6t3-mediation.test.ts  — still failing (baseline)
+  packages/runtime/test/p6t3-restart.test.ts  — still failing (baseline)
+  packages/testkit/test/a4p7-merge-gate.test.ts  — still failing (baseline)
+  packages/testkit/test/rc2-sanitize-evidence.test.ts  — still failing (baseline)
+  packages/tools/test/p6t6-actions.test.ts  — still failing (baseline)
+
+NEW reds (final minus baseline): 0 — the no-new-reds law holds.

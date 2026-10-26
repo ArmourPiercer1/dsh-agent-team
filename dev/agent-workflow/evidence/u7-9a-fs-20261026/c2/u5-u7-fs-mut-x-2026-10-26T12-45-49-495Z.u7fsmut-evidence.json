@@ -1,0 +1,484 @@
+{
+  "planted": {
+    "deniedShaBefore": "d80f0d27cc5bd611c3d8eb7fa10e51d6b5f5a35eaf77113ea5807ad273abb579",
+    "plantShaBefore": "3231f42a8f1fa639799391c5cfbe67dddbafeee6e0538f91d02c7346e240966d",
+    "w1ExistsBefore": false,
+    "ctlExistsBefore": false
+  },
+  "oracle": {
+    "w1Bytes": "U7FSMUT_W1_CLAIM_u5x-20261026t12-45-49z\nwritten-by-governed-write\n",
+    "plantBytes": "U7FSMUT_PLANT_AFTER_u5x-20261026t12-45-49z line one\nline two stays\n",
+    "deniedBytes": "U7FSMUT_DENY_CLAIM_u5x-20261026t12-45-49z\n",
+    "deniedShaAfter": "d80f0d27cc5bd611c3d8eb7fa10e51d6b5f5a35eaf77113ea5807ad273abb579",
+    "ctlBytes": null,
+    "ctlFoundPath": null,
+    "imgShaStable": "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77"
+  },
+  "logHits": {
+    "writeRan": 1,
+    "editRan": 1,
+    "image": 0,
+    "planeRefusals": []
+  },
+  "mockLaneTranscript": [
+    {
+      "seq": 1,
+      "d1": false,
+      "d2": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"FSMUT_DISC_u5x-20261026t12-45-49z\"}"
+    },
+    {
+      "seq": 2,
+      "d1": false,
+      "d2": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"FSMUT_DISC_u5x-20261026t12-45-49z\\\"}"
+    },
+    {
+      "seq": 3,
+      "d1": false,
+      "d2": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:2a8e1c970caa4bc71f1da5091b1e09f370162d63dceaec1614c26641cdade697] "
+    },
+    {
+      "seq": 4,
+      "d1": false,
+      "d2": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-cr"
+    },
+    {
+      "seq": 5,
+      "d1": false,
+      "d2": false,
+      "nCalls": 1,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-2da6355ac3f857af812b88a4e45ec64b\",\"operationId\":\"op-0x28e4i106ruhd1ncd0fg12p\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7fsmut-c1-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 6,
+      "d1": false,
+      "d2": false,
+      "nCalls": 2,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-05o63qi0b2ev\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-b11d3e1bf1ddfc1d19940d23384daf26\",\"operationId\":\"op-07irw6y19rrh7p0vza4f0091\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7fsmut-c2-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 7,
+      "d1": false,
+      "d2": false,
+      "nCalls": 3,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 8,
+      "d1": true,
+      "d2": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7fsmut-d1-u5x-20261026t12-45-49z] FSMUT_STRICT_u5x-20261026t12-45-49z\"}"
+    },
+    {
+      "seq": 9,
+      "d1": true,
+      "d2": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7fsmut-d1-u"
+    },
+    {
+      "seq": 10,
+      "d1": false,
+      "d2": false,
+      "nCalls": 4,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-1-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 11,
+      "d1": false,
+      "d2": false,
+      "nCalls": 5,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-2-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 12,
+      "d1": false,
+      "d2": false,
+      "nCalls": 6,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-3-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 13,
+      "d1": false,
+      "d2": false,
+      "nCalls": 7,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-4-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 14,
+      "d1": true,
+      "d2": false,
+      "nCalls": 1,
+      "lastCall": "write",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/tests/homes/u5x-20261026T12-45-49Z/workspace/notes/u7fsmut-w1.txt</path>\n<type>file</type>\n<content>\nCreated file (66 bytes)\n</content>"
+        }
+      ]
+    },
+    {
+      "seq": 15,
+      "d1": false,
+      "d2": false,
+      "nCalls": 8,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-5-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 16,
+      "d1": false,
+      "d2": false,
+      "nCalls": 9,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-6-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 17,
+      "d1": true,
+      "d2": false,
+      "nCalls": 2,
+      "lastCall": "edit",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "The file /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/tests/homes/u5x-20261026T12-45-49Z/workspace/notes/u7fsmut-plant.txt has been updated successfully."
+        }
+      ]
+    },
+    {
+      "seq": 18,
+      "d1": false,
+      "d2": false,
+      "nCalls": 10,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-7-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 19,
+      "d1": true,
+      "d2": false,
+      "nCalls": 3,
+      "lastCall": "write",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/tests/homes/u5x-20261026T12-45-49Z/workspace/secret/u7fsmut-denied.txt]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match"
+        }
+      ]
+    },
+    {
+      "seq": 20,
+      "d1": false,
+      "d2": false,
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd1-8-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 21,
+      "d1": true,
+      "d2": false,
+      "nCalls": 4,
+      "lastCall": "read_image",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: refused-admission IMAGE_MODEL_NOT_CAPABLE — cannot read \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/tests/homes/u5x-20261026T12-45-49Z/workspace/notes/u7fsmut-img.png\" as an image: model \"u7fsmut-model\" does not declare image input; switch to an image-capable model to read images"
+        }
+      ]
+    },
+    {
+      "seq": 22,
+      "d1": false,
+      "d2": false,
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"FSMUT_PHASE_c\"}"
+    },
+    {
+      "seq": 23,
+      "d1": false,
+      "d2": false,
+      "nCalls": 12,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-05o63qi0b2ev\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":9,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 24,
+      "d1": false,
+      "d2": true,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7fsmut-d2-u5x-20261026t12-45-49z] FSMUT_CTL_u5x-20261026t12-45-49z\"}"
+    },
+    {
+      "seq": 25,
+      "d1": false,
+      "d2": true,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7fsmut-d2-u"
+    },
+    {
+      "seq": 26,
+      "d1": false,
+      "d2": false,
+      "nCalls": 13,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0zd2qd11nqfl\",\"admittedSequence\":4,\"settledSequence\":8,\"memberResult\":{\"body\":\"FSMUT_STRICT_DONE\",\"requestToken\":\"u7fsmut-d1-u5x-20261026t12-45-49z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-1\"}"
+        }
+      ]
+    },
+    {
+      "seq": 27,
+      "d1": false,
+      "d2": false,
+      "nCalls": 14,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-1-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 28,
+      "d1": false,
+      "d2": false,
+      "nCalls": 15,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-2-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 29,
+      "d1": false,
+      "d2": false,
+      "nCalls": 16,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-3-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 30,
+      "d1": false,
+      "d2": false,
+      "nCalls": 17,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-4-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 31,
+      "d1": false,
+      "d2": false,
+      "nCalls": 18,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-5-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 32,
+      "d1": false,
+      "d2": true,
+      "nCalls": 1,
+      "lastCall": "write",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/u7fsmut-ctl-native.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        }
+      ]
+    },
+    {
+      "seq": 33,
+      "d1": false,
+      "d2": false,
+      "nCalls": 19,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-6-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 34,
+      "d1": false,
+      "d2": false,
+      "nCalls": 20,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-7-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 35,
+      "d1": false,
+      "d2": false,
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"running\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"resumePossible\":true}]},\"requestToken\":\"u7fsmut-fd2-8-u5x-20261026t12-45-49z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 36,
+      "d1": false,
+      "d2": false,
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7fsmut-d2-u5x-20261026t12-45-49z]\\n\\nAn asynchronous Team work unit has settled.\\ninstanceId: "
+    },
+    {
+      "seq": 37,
+      "d1": false,
+      "d2": false,
+      "nCalls": 22,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fsmut-team-u5x-20261026t12-45-49z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"succeeded\",\"instanceId\":\"inst-05o63qi0b2ev\",\"admittedSequence\":9,\"settledSequence\":12,\"memberResult\":{\"body\":\"FSMUT_CTL_DONE\",\"requestToken\":\"u7fsmut-d2-u5x-20261026t12-45-49z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-2\"}"
+        }
+      ]
+    }
+  ],
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "strict": true,
+    "leader": true,
+    "ctl": true
+  }
+}

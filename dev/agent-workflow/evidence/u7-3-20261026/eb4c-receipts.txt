@@ -1,0 +1,97 @@
+# EB4-C receipts — 2026-10-26T13:37:17Z — base origin/master f71159648 — cold-start / recovery / release manual commands
+# Every command below was actually run in this worktree. Boot-a-Host commands stay UNRUN in the docs (no host checkout here).
+
+## install / build
+$ pnpm install --frozen-lockfile --offline --store-dir <workspace store>
+exit=0 seconds=6 (10 workspace projects, all @deepseek-ai/dsh*@0.2.0-rc.2 peers)
+$ pnpm install --frozen-lockfile --offline   (default store, sandboxed)
+exit=1 ERR_SQLITE_ERROR: unable to open database file  <- why --store-dir is documented
+$ pnpm run build
+exit=0 seconds=15
+$ pnpm build:composition
+exit=0 seconds=1
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1799 glue=28
+$ pnpm setup   (one command = build && build:composition)
+exit=0 seconds=10
+
+## verify
+$ node scripts/ci-pr-gate.mjs   -> exit=0 seconds=53
+DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=53.1
+$ pnpm check:artifacts:head    -> exit=0 seconds=16
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1799 drift=0
+$ pnpm check:install-manifest  -> exit=0 seconds=2
+OK check-install-manifest: graph=451 visits ('./client' browser entry vs host graphs separated; 0 unaudited/unhandled co
+$ node scripts/composition-smoke.mjs -> exit=0 seconds=1
+PASS composition-smoke
+$ pnpm typecheck -> exit=0 seconds=14
+docs:sync --check: docs=83 notes=4 plans=49(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:probe base=origin/master head=a85041282 changed=10 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+$ npx eslint . --format json   (standing red at master, identity diff is the authority)
+errors=129 warnings=32 files=1387 (exit 1)
+
+## tests
+run-tests (plain-node vitest-equivalent): 150 passed, 0 failed, 150 total, 164 ms
+RESULT: PASS run-tests (0 failures)
+$ npx vitest run   (disclosed baseline reds)
+exit=1  Test Files 4 failed | 622 passed (626)   Tests 9 failed | 7928 passed (7937)   308.49s
+ FAIL  packages/domain/test/t2-blueprint-hash.test.ts
+ FAIL  packages/runtime/test/p6t3-mediation.test.ts
+ FAIL  packages/runtime/test/p6t3-restart.test.ts
+ FAIL  packages/tools/test/p6t6-actions.test.ts
+$ node scripts/ci-pr-gate.mjs --only census --census-test-timeout 20000
+exit=1 verdict=fail (undeclared refusal) — census REFUSES: tests/deepseek-harness-test-use absent from this checkout
+
+## recovery drills
+$ node scripts/current-authority.mjs status
+{"ok":true,"status":"POINTER","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261026r1.json","snapshot_version":"as20261026r1","content
+
+$ git -C ../../tests/deepseek-harness-test-use status --porcelain | wc -l
+0
+$ git -C ../../tests/deepseek-harness-test-use rev-parse HEAD
+639ed015397290b3745d163aafe02ffee4aa3f84
+$ git sparse-checkout list
+fatal: this worktree is not sparse
+$ node scripts/docs-sync.mjs --write   (derivative-only write; byte-verified no-op)
+docs:sync --write: no-op dev/engineering/current-state.json (bytes already match the rendered output; nothing written); no-op docs/contracts/engineering-baseline/INDEX.md (bytes already match the rendered output; nothing written); normative files untouched
+$ node scripts/evidence-store.mjs verify
+verify verdict=pass entries=20148 bytes_ok=521862486 findings=0 store=/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence
+$ node scripts/evidence-store.mjs restore <manifest entry> --to <scratch>   (twice: second must refuse)
+RESTORED … exit=0 ; FINDING EXISTS … restore never overwrites, exit=1
+$ node scripts/evidence-store.mjs restore <manifest entry> --to <scratch2> --from-git
+RESTORED … exit=0 ; cmp store vs git: identical ; sha256 matches the manifest column
+
+## release facts
+$ git rev-parse '0.1.0-rc.1^{commit}'
+b0e5aeb482e27242d523b85129a899dc322d1154
+$ git cat-file -t 0.1.0-rc.1
+tag
+$ git rev-parse origin/stable
+b0e5aeb482e27242d523b85129a899dc322d1154
+$ git merge-base --is-ancestor origin/stable origin/master
+exit=0 (0 = stable is an ancestor)
+$ git rev-list --count origin/stable..origin/master
+1429
+$ node -p require('./package.json').version
+0.1.1-alpha.2
+$ node scripts/verify-zero-core.mjs --host ../../tests/deepseek-harness-test-use
+RESULT: PASS verify-zero-core (0 findings) — C1-C3 (exit 0)
+$ node scripts/verify-zero-core.mjs --host … --plugin packages/runtime/dist
+RESULT: PASS (exit 0) — 0 findings
+$ node scripts/verify-zero-core.mjs --host … --plugin packages/client/composition-shim
+RESULT: FAIL (2 findings) — both on {@link import(..)} JSDoc text inside the bundle; disclosed, not reclassified
+$ node scripts/verify-zero-core.mjs --host … --plugin .
+RESULT: FAIL (10 findings) — test files + characterization negative fixtures; disclosed, not reclassified
+
+## doc-controls baseline (pre-existing environmental failures, NOT introduced here)
+$ node scripts/doc-consistency-controls.mjs
+FAIL POS-1 clean fixture passes the complete check
+FAIL POS-3 Idea and Proposed text needs no runtime evidence
+FAIL POS-4 --write regenerates the view only
+FAIL POS-6 plan declaring a valid citation block passes
+FAIL NEG-21 plan without a citation block is not a finding
+FAIL POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted
+FAIL POS-10 a current-state document citing an existing run log is clean
+FAIL POS-11 schema and validator agree in a clean fixture
+controls=96 failed=8 scope: static document checks only (no C1/C2/C3, no runtime behaviour)

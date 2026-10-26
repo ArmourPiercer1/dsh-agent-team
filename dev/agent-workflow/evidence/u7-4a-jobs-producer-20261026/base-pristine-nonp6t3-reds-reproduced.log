@@ -1,0 +1,181 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team
+
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (18 tests | 1 failed) 64ms
+     ✓ matches the NIST vector for "abc" 2ms
+     ✓ matches the NIST vector for the empty string 0ms
+     ✓ matches the NIST vector for the 448-bit message 0ms
+     ✓ hashes multi-byte UTF-8 deterministically 1ms
+     ✓ is independent of key order (canonical JSON binding) 1ms
+     ✓ changes when any value changes 0ms
+     ✓ returns a sha256-prefixed 64-hex string 0ms
+     ✓ is deterministic across parses 21ms
+     ✓ is independent of YAML key order 5ms
+     ✓ changes when semantic content changes 5ms
+     ✓ changes across revisions of the same id 2ms
+     ✓ changes across ids with identical content 2ms
+     ✓ binds exactly to the canonical hashable projection 4ms
+     × projects absent optional singles as explicit null 8ms
+     ✓ preserves present optional values (including nested quota nulls) 4ms
+     ✓ changes when only the leader modelPreference changes 2ms
+     ✓ absent vs present modelPreference hash differently 2ms
+     ✓ is deterministic for the same token 2ms
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 2af64ead7, 0 tracked file(s) changed vs HEAD, 116 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+ ❯ packages/tools/test/p6t6-actions.test.ts (14 tests | 1 failed) 20ms
+     ✓ reads: list-members / list-templates / inspect-config execute with lossless effects 4ms
+     ✓ E1/E4: template-addressed creations admit DISTINCT new instances (member-activated) 1ms
+     ✓ E6: at-limit admitted; over the TEMPLATE limit rejected; over the TEAM limit rejected 1ms
+     ✓ E3: persistent follow-up keeps the SAME bound child session (durable read-back) 0ms
+     ✓ E2: label and template addressing on instance-addressed tools are live-rejected 0ms
+     × messaging: worker -> leader is delivered direct to the leader bound session 10ms
+     ✓ progress: per-subject sequences (1,2 on unit-a; the other subject restarts at 1) 0ms
+     ✓ the request-token contract: missing/empty/over-long -> BAD_ARGUMENTS 0ms
+     ✓ argument-shape rejections: missing/non-string root, non-object args -> BAD_ARGUMENTS 0ms
+     ✓ caller resolution: no agent / unknown session / throwing resolver -> CALLER_UNRESOLVED 0ms
+     ✓ delegate XOR: neither or both delegation fields -> BAD_ARGUMENTS 0ms
+     ✓ closed vocabularies: bad progress / kind / decision -> BAD_ARGUMENTS 0ms
+     ✓ a well-formed unknown instance id is blocked target-stale by the guard (SD-GUARD) 0ms
+     ✓ the stale-head retry: one ACTIVITY_SEQUENCE_STALE is retried with a fresh head 0ms
+lint-visibility: eslint read 1385 of 2485 OFFERED tracked lintable file(s); 1100 are hidden by an ignore pattern (dev/ 17, docs/ 4, packages/client/composition-shim/ 2, packages/runtime/dist/ 911, tests/ 166); 1385 + 1100 = 2485 offered, + 0 skipped = 2485 tracked lintable path(s); nothing skipped
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts (35 tests | 2 failed) 140023ms
+     ✓ runs where its instruments can see the tree, and refuses to run anywhere else 9ms
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 1140ms
+       ✓ treats a step that did not run as a failure that says why, even at exit 0 0ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  418ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  320ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1049ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1049ms
+       × refuses the leg, by name, when the host module closure cannot be traversed 2ms
+       ✓ reports every verdict class with its set by path when run at the toplevel  456ms
+       ✓ refuses a directory that is not a repository, and is never believed as clean 83ms
+       ✓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 98ms
+       ✓ classifies a lint run by its verdict line and its universe line, on captured output 1ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  14048ms
+       ✓ names the three states of a captured stderr, including the arm this gate cannot reach 1ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  14598ms
+       ✓ the committed install surface is fresh against the tree, and a missing surface is refused  495ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  20746ms
+       ✓ a check:artifacts run from a subdirectory is refused, never an OK over nothing 68ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  43232ms
+       ✓ a crashed run's scratch is swept, and a live one is not 32ms
+       ✓ every workspace package that declares a typecheck script typechecks  15038ms
+       ✓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 1ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  26564ms
+       ✓ tolerates a green trio and refuses a vanished one — the two are different answers 1ms
+       ✓ the hosted census capture reads as a report — never again as "no vitest summary at all" 14ms
+       ✓ reads a coloured client-lane transcript with the disclosed trio — styling may not change the verdict 11ms
+       ✓ a synthesised FOURTH failure past the disclosed trio is refused by name, coloured included 1ms
+       ✓ a capture with no summary is still refused — the refusal G2 could have quietly deleted to get green 1ms
+       ✓ a summary that exists but cannot be parsed names the shape it saw 0ms
+       ✓ the JSON report is the machine-readable source, and the exit status is part of the report 5ms
+       ✓ a missing instrument is a refusal that names it, never a pass 5ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  510ms
+       ✓ a child killed by a signal is refused even when it printed a complete report 10ms
+       ✓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 9ms
+       ✓ this spec itself is counted by the p4t6 scannable-file ledger 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null
+AssertionError: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(5) }
+
+- Expected
++ Received
+
+@@ -1,6 +1,7 @@
+  {
++   "capabilities": null,
+    "contextPolicy": null,
+    "description": null,
+    "displayName": null,
+    "modelPreference": null,
+    "persona": "Lead.",
+
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts:116:29
+    114|     expect(hashable.quotas).toBe(null)
+    115|     expect(hashable.capabilityPolicy).toBe(null)
+    116|     expect(hashable.leader).toEqual({
+       |                             ^
+    117|       templateId: 'leader',
+    118|       displayName: null,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
+AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "refused". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD 2af64ead7, 0 tracked file(s) changed vs HEAD, 116 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
+    output tail:
+        at fail (file:///srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:199:15)
+        at validateTeamPluginConfig (file:///srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:203:9)
+        at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:1103:33)
+        at Module.apply (file:///srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:2360:19)
+        at checkPluginContract (file:///srv/workspace/dsh-plugins/dsh-agent-team/scripts/composition-smoke.mjs:201:24)
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/scripts/composition-smoke.mjs:298:13
+    file:///srv/workspace/dsh-plugins/dsh-agent-team/scripts/composition-smoke.mjs:422
+      throw new Error(failed
+            ^
+    Error: composition smoke failed
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/scripts/composition-smoke.mjs:422:9
+    Node.js v24.21.0: expected 'refused' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "refused"
+
+ ❯ fail packages/runtime/src/plugin/host.ts:663:10
+ ❯ validateTeamPluginConfig packages/runtime/src/plugin/host.ts:669:63
+ ❯ bootstrap packages/runtime/src/plugin/host.ts:1724:28
+ ❯ Module.apply packages/runtime/src/plugin/host.ts:3136:45
+ ❯ checkPluginContract scripts/composition-smoke.mjs:201:24
+ ❯ scripts/composition-smoke.mjs:298:13
+ ❯ scripts/composition-smoke.mjs:422:9
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:872:9
+    870|         `the composition arms have to RUN for this gate to be green; a…
+    871|           `It read "${r.verdict}". why: ${r.why}\n    output tail:\n  …
+    872|       ).toBe('passed')
+       |         ^
+    873|
+    874|       for (const target of compositionTargets()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > refuses the leg, by name, when the host module closure cannot be traversed
+AssertionError: node_modules/.pnpm/node_modules/clsx must exist — `hoistPattern` is declared in pnpm-workspace.yaml and an install must restore it: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/testkit/test/a4p7-merge-gate.test.ts:1143:167
+    1141|       const hoist = join(REPO_ROOT, 'node_modules', '.pnpm', 'node_mod…
+    1142|       const held = `${hoist}.held-by-7-6-gate`
+    1143|       expect(existsSync(hoist), 'node_modules/.pnpm/node_modules/clsx …
+       |                                                                                                                                                                       ^
+    1144|       spawnSync('mv', [hoist, held], { cwd: REPO_ROOT })
+    1145|       try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/tools/test/p6t6-actions.test.ts > P6-T6 tool set — delegated actions (unit level) > messaging: worker -> leader is delivered direct to the leader bound session
+AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality
+
+Expected: "session-child-p6t2-leader"
+Received: "session-root-p6t1"
+
+ ❯ packages/tools/test/p6t6-actions.test.ts:893:46
+    891|       expect(delivered.deliveryMode).toBe('direct')
+    892|       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
+    893|       expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.le…
+       |                                              ^
+    894|     }
+    895|     const inputs = A.recordedInputs
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  4 failed | 63 passed (67)
+   Start at  12:01:53
+   Duration  140.39s (transform 2.04s, setup 0ms, import 2.96s, tests 140.11s, environment 1ms)
+
+EXIT=1

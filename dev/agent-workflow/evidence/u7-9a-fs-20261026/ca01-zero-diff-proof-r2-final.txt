@@ -1,0 +1,36 @@
+CA-01 zero-center-diff certificate — FINAL, bound to master c5e43f1d5
+(branch head: fd5c2b3d2677f9a0979b8fd83868082bacf9d441 = merge of origin/master @ c5e43f1d5)
+protected set: dev/agent-workflow/ledgers/arc-a-protected-center.json (33
+files; the ledger itself arrived byte-identical from master and carries the
+THREE existing overrides — #377 CI-05, #391 GLUE-4 admitCall, #392
+user-rulings item 2 — none of them mine: this lane adds NO fourth override,
+it needs none, it edits no protected file).
+
+THE CLAIM (stated the way R2 demands): not "the protected files are
+unchanged since some older base" — they HAVE moved upstream
+(admission-kernel.ts via #391; agent-bindings.mjs + team-tool-plane.mjs
+via #392). The claim is:
+
+  (1) BRANCH CONTRIBUTION = ZERO.
+      git merge-base(origin/master, HEAD) = c5e43f1d5 (the branch contains
+      master WHOLESALE), and
+      git diff --name-only origin/master...HEAD ∩ ledger(33) = EMPTY (0).
+      Not one protected file was ever edited by a commit of this branch —
+      measured across the whole branch history (base a0f3f610c, delivery,
+      R1 fix commits, R2 fix commits, both merges).
+  (2) HEAD STATE = MASTER STATE on the protected face.
+      Per-file git blob-hash equality HEAD vs c5e43f1d5: 33/33 identical,
+      mismatches 0. The merges adopted master's newer versions
+      (admission-kernel.ts, agent-bindings.mjs, team-tool-plane.mjs) as-is;
+      the auto-merge kept BOTH sides in team-tool-plane.mjs (the #392
+      backgroundJobs closed key + CREATING-LANE PIN LAW alongside this
+      lane's paPlacementNameOf family-spelling arms), verified by grep
+      (both present, plane parses) and by the full gate battery re-run on
+      this merged tree.
+  (3) booked-digest leg: canonical-operation.ts @ HEAD sha256
+      a1746afc5ee34075… == booked == master's (unchanged by #389-#393).
+
+History of certificates: ca01-zero-diff-proof.txt (delivery, master
+97bbc2563), ca01-zero-diff-proof-r1.txt (+appendix, master 97bbc2563 at
+measurement), ca01-zero-diff-proof-r2.txt (master 94890f090), THIS FILE
+(master c5e43f1d5 — the authoritative current one).

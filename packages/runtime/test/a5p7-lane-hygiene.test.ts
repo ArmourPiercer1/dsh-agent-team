@@ -158,6 +158,14 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
     // WITH the file at U6 PR6.)
     'runtime/src/plugin/live/jobs-family-bridge.mjs',
     'runtime/test/u6-pr4-jobs-bridge.test.ts',
+    // U7-4a (creation-lane attribution producer): the U74a spec names the
+    // LIVE ROW's file exactly like the PR4 spec above (a dynamic import of
+    // the REVIEWED row, never of the barrel). The producer module itself
+    // imports NOTHING (pinned by u74a-jobs-producer.test.ts P9) and reaches
+    // the gateway only through the bridge's ensureRegistered + the
+    // entry-injected row face — the already-reviewed path. Name-only, zero
+    // new lane edges.
+    'runtime/test/u74a-jobs-producer.test.ts',
   ]
 
   // REVIEWED-EDGE exceptions (alpha5-glue5-entry, GLUE-5 production-assembly
