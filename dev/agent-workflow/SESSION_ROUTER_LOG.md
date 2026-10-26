@@ -6903,6 +6903,22 @@ master 跑 production-run-recipe 全链）。
 - R1 独审：PR6 **投机通过**；**G4 = G4-CORE-PASS / BRIDGE-BLOCKED**（非 full G4，非 CORE BLOCKER）。解锁 = 无依赖局部 Family + EB 工程基线（U7）；不解锁 = CA-03/full G4、G5、S5、发布。
 - 命名项（阻断 full G4，需在 U7 关闭）：R-U6P3-1、R-U6P4-1..3、R-U6P5-1/GLUE-4、R-U6P6-1、R-G3-1；另有证据强度项 E1（CI-03 native 判定改为直接磁盘证据）、E2（blinded-twin 一一执行关系机器化）。
 
+## 2026-10-26 U7 用户裁决 + 决策 3 答复（外来工具/MCP 接入控制）
+
+- 用户四项裁决逐字入档（`dev/agent-workflow/evidence/u7-design-20261026/USER-RULINGS-20261026.md`）：R-U6P3-1 = **B**（人工经公开 `team.resolveControl`）；R-U6P4-1 = **Yes 必修**（`attributeBackgroundJob` 产出者）；R-G1F-2 = **总体同意 B**（Domain 从 Alpha.5 发布声明排除），但先答复外来工具设计问题；bind-time token 缺失 = **有意**。
+- 决策 3 答复（`DECISION-3-ANSWER.md` + `docs/plans/memo/unified-baseline-alpha5-20261025/u7/EXTERNAL-TOOL-CONTROL-DESIGN.md`）：Alpha.5 原设计以三条正交轴（implementationOrigin / executionBoundary / per-capability assurance）+ 9 项准入条件 + 效果类（read/write/process/network/Domain）约束外来工具，并要求只有既授权配置权威签发不可变 `DynamicSourceAdmissionRecord`；**不是**"控制读/写/沙箱启动"枚举，也不是 `ALL_MUTATION_OPS`/`ENVELOPE_EXEC_OPS`。判定：完整设计 `blocked-with-reason`，收窄声明 `executable-with-narrowing`。
+- 宿主 seam 亲核：`dsh-mcp-client` stdio 直连 SDK spawn，不过 `ctx.sandbox`；但 `ctx.sandbox.confine()` 返回替代 argv，可经公开 `command/args` 配置实现 stdio 受限启动（零 core patch）。宿主 `SandboxMode` 只声称 FILE effects，无网络规则。本机实测：bwrap 非特权 userns 被拒；landlock-run 可用但 `partial enforcement (older Landlock ABI)`，写拒绝生效。→ MCP stdio 在本环境只能做到 **partial file-effect 受限**，网络面不可控，必须如实写入 assurance，不得上报 `full`。
+- 根检出 `docs:sync --check` 唯一阻塞 = 未跟踪本地草稿 `docs/plans/active/evidence-storage-v1.md`（自述 DRAFT，链向不存在的 `evidence.mjs`）；按 pre-ff 先例字节等同移至 `.artifacts/evidence/root-untracked/pre-ff-20261026e/`（sha256 `40d1e806…`，附 RECEIPT + 还原命令）→ 根 `blocking=0`；各任务分支本即 `blocking=0`。
+- 并行中：U7-T1（harness 收口）、U7-0（动态 census）、U7-9a（FS write/edit/read_image）、U7-4a（jobs 产出者）、U7-6（GLUE-4 search assurance）、R-G1F-2 Domain 排除记录、U7-2（CI 分层 EB3）。G4 仍 = G4-CORE-PASS / BRIDGE-BLOCKED。
+
+## 2026-10-26 U7 并行开工（首轮三 PR 合并）
+
+- **#384** 裁决正本 + 决策 3 答复入库（`0ea0d1363`/`37f349074`）；**#385** 修 §7.6 lint 腿：`.artifacts/**` 出 ESLint 扫描面（`.artifacts` 是 gitignored 本地证据镜像，内含本仓副本与指向已删 `.worktrees` 树的相对符号链接，33 条悬空 → `eslint .` exit 2、**0 字节 JSON** → 该腿报 NOT RUN）。植入反例：干净树 1385 文件 exit 1 完整 JSON；种一条悬空链接后同命令 exit 2 / 0 字节；修复后同条件 exit 1 / 3,285,693 B（字节等同干净树）。**universe 1385 不变、identity diff new 0 / resolved 0 不变**，`git ls-files .artifacts`=0 故 §7.6 tracked-file census 分母不动（根检出实测 `1385 of 2485 offered … nothing skipped`，`.artifacts` 不出现在 hidden 明细里）。**#387** R-G1F-2 Domain 排除记录（`u7/DOMAIN-EXCLUSION.md` 119 行 + 台账追加一段 + 20 条 grep 证据）；关键事实：`domain_family` 在 obligation 集内**无裸名出现**（唯一命中是条目名 `"surface:domain_family (family obligation — no registered names)"`），源码侧只有 `DomainVeto` 结果类型 / `domain-ref` 效果种类 / `DOMAIN_DENIED`，**无 provider、无注册名**；M-13 保持 `NOT_VERIFIED` 未改色，G4/G5 判定未动。
+- 门禁纪律：三个 PR 均 `pr-gate` + `candidate-protection` + `census-runtime` 三腿全 SUCCESS 后合并；无 force-push。
+- 并行在跑（未合并，各自 worktree/分支）：U7-0 census（本地 `u7-0-census-reconcile.test.ts` 11/11 绿）、U7-T1 harness 收口、U7-9a FS 变更族、U7-4a jobs 产出者、U7-6 GLUE-4、U7-2 CI 分层、U7-3 诊断/手册、U7-1 旧红收口。
+- **U7-6 归属修正（重要）**：R-U6P5-1 的 `IO_POLICY_UNSUPPORTED` 不是 assurance 层（`assurance-runtime.ts:139-142` 在生产 plane 上**永不触发**——plane 未注入 `requiredAssurance`/`assuranceProbe`，该门为空判，且位于已拒绝的覆盖门下游），真因是 `admission-kernel.ts` 的 **template-default-deny 覆盖门**，第一条未覆盖臂恒为 **`list`** 臂；且 plane 自身 lane 法（`createLaneDecide` fast path b）对同一调用答 **ALLOW**，两层对同一策略给出相反答案、深层恒胜。该修正需在 U7-6 收口时同步修正 PR5 结论与台账措辞。
+- 环境事实（可复用）：fresh worktree 用默认 pnpm store 会 `ERR_SQLITE_ERROR`（全局 store 在可写根之外）→ 用 `--store-dir .tmp-pnpm-store`；`a4p7-merge-gate` 的 lint-visibility census 在**非根** worktree 会 `MODULE_NOT_FOUND`（工具按检出根解析 ESLint 二进制），已对照排除，属既有工作树限制、与本轮改动无关，未被任何 PR 声称修复。
+
 ## 2026-10-26 U7-4a（governed background-bash attribution producer，USER-RULINGS item 2）
 
 - 任务：为 PR #377 冻结的 `attributeBackgroundJob` 补上产出者 —— governed bash 行经同一 kernel（decide→consumeOnce）授权后在**同一 confined provider** 上真实 spawn host job 并完成归属，job 三件套（job_list/job_output/job_kill）自此可管理本 lane 自产 job；CI-05 fail-closed（未归属→类型化拒绝、零 host 触达）不变。

@@ -1,0 +1,202 @@
+{
+  "task": "u7-r1f2-domain-exclusion-20261026",
+  "kind": "docs-and-evidence-scope-record",
+  "createdUtc": "2026-10-26T11:06:24Z",
+  "branch": "task/u7-r1f2-domain-exclusion-20261026",
+  "worktree": ".worktrees/u7-r1f2",
+  "base": "origin/master @ 496a3980fcd0f427e0c888e7dc63b10d2ae1b627",
+  "writes": [
+    "docs/plans/memo/unified-baseline-alpha5-20261025/u7/DOMAIN-EXCLUSION.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/gates/GATE-LEDGER.md",
+    "dev/agent-workflow/evidence/u7-r1f2-domain-exclusion-20261026/README.md",
+    "dev/agent-workflow/evidence/u7-r1f2-domain-exclusion-20261026/manifest.json",
+    "dev/agent-workflow/evidence/u7-r1f2-domain-exclusion-20261026/greps.txt"
+  ],
+  "hostBoot": false,
+  "productWrites": false,
+  "protectedSetModified": false,
+  "gateVerdictsChanged": false,
+  "matrixCellsEdited": false,
+  "authoritySnapshotTouched": false,
+  "ruling": {
+    "id": "R-G1F-2",
+    "surface": "surface:domain_family",
+    "answer": "B — explicit exclusion of Domain from the Alpha.5 product/release claim with a documented boundary",
+    "ruledBy": "USER",
+    "ruledDate": "2026-10-26",
+    "nature": "narrowing of the release claim; NOT a delivery"
+  },
+  "changedClaims": {
+    "G5": "no longer requires Domain",
+    "G4": "unchanged: G4-CORE-PASS / BRIDGE-BLOCKED (section 10.6)",
+    "G5Status": "unchanged: BLOCKED on its other required Bridges"
+  },
+  "inputs": [
+    {
+      "path": "dev/agent-workflow/evidence/u7-design-20261026/USER-RULINGS-20261026.md",
+      "lines": "7-9",
+      "tracked": false,
+      "where": "branch task/u7-rulings-decision3-20261026 (PR #384 open, head 37f349074); not on origin/master @ 496a3980f",
+      "note": "verbatim ruling text quoted in DOMAIN-EXCLUSION.md section 1"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7-design-20261026/USER-DECISIONS.md",
+      "lines": "7",
+      "tracked": false,
+      "where": "branch task/u7-rulings-decision3-20261026 (PR #384 open); not on origin/master",
+      "note": "verbatim question 3 quoted in DOMAIN-EXCLUSION.md section 1"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7-design-20261026/U7-PLAN.md",
+      "lines": "18",
+      "tracked": false,
+      "where": "branch task/u7-rulings-decision3-20261026 (PR #384 open); not on origin/master",
+      "note": "the A/B/C classification row (iii) that produced the question"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7-design-20261026/DECISION-3-ANSWER.md",
+      "lines": "88-89",
+      "tracked": false,
+      "where": "branch task/u7-rulings-decision3-20261026 (PR #384 open); not on origin/master",
+      "note": "decision-3 discharge: Domain excluded, MCP narrowed separately"
+    },
+    {
+      "path": "docs/plans/memo/unified-baseline-alpha5-20261025/u7/EXTERNAL-TOOL-CONTROL-DESIGN.md",
+      "lines": "47-51",
+      "tracked": false,
+      "where": "branch task/u7-rulings-decision3-20261026 (PR #384 open); not on origin/master",
+      "note": "separate MCP/external narrowing; deliberately not merged with the Domain decision"
+    },
+    {
+      "path": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+      "lines": "43",
+      "tracked": true,
+      "note": "M-13 Domain row = NOT_VERIFIED; cited, not edited"
+    },
+    {
+      "path": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+      "tracked": true,
+      "note": "effective backlog entry point; no Domain bullet to amend, read only"
+    },
+    {
+      "path": "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md",
+      "lines": "140-148",
+      "tracked": true,
+      "note": "U8 PRODUCT-GATE (G5) definition"
+    },
+    {
+      "path": "docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md",
+      "lines": "55, 98-107, 153, 249-255",
+      "tracked": true,
+      "note": "CI-10 Domain Authority independence; section 10.6 Bridge-blocking semantics"
+    },
+    {
+      "path": "docs/plans/memo/unified-baseline-alpha5-20261025/gates/GATE-LEDGER.md",
+      "tracked": true,
+      "note": "read in full for entry format; one dated paragraph appended"
+    },
+    {
+      "path": "docs/plans/memo/unified-baseline-alpha5-20261025/gates/GATE-VERDICTS.md",
+      "lines": "15",
+      "tracked": true,
+      "note": "R-G1F-2 NAMED-BLOCKER risk-ledger line"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json",
+      "lines": "1627, 1630, 1634, 1641, 1643",
+      "tracked": false,
+      "sha256": "0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d",
+      "note": "UNTRACKED local U4 obligation export; read from the main worktree absolute path because untracked evidence does not materialize in a fresh worktree"
+    },
+    {
+      "path": "packages/domain/tool-governance/src/interfaces.ts",
+      "lines": "181, 186",
+      "tracked": true,
+      "note": "DomainVeto type + gateway receipt field (read only)"
+    },
+    {
+      "path": "packages/domain/tool-governance/src/effects.ts",
+      "lines": "43, 71-76",
+      "tracked": true,
+      "note": "domain-ref in the closed EFFECT_KINDS; DomainRefEffect shape (read only)"
+    },
+    {
+      "path": "packages/domain/tool-governance/src/errors.ts",
+      "lines": "31",
+      "tracked": true,
+      "note": "DOMAIN_DENIED registered error name (read only)"
+    },
+    {
+      "path": "tests/kits/a5-w7m-m13-domain-veto/README.md",
+      "lines": "25",
+      "tracked": true,
+      "note": "discloses the row-local Domain mock (no provider)"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/alpha5/wiring/we2/README.md",
+      "lines": "26",
+      "tracked": true,
+      "note": "mock interlock refusing a minted grant — fixture, not a Domain family"
+    },
+    {
+      "path": "docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md",
+      "lines": "61",
+      "tracked": true,
+      "note": "M-13 design row (Domain tools HPC/RPC/research-state/device, no P0 leg)"
+    },
+    {
+      "path": "docs/plans/memo/alpha5-tool-io-governance/ADR-alpha5-tool-io-governance.md",
+      "lines": "72, 75",
+      "tracked": true,
+      "note": "Domain-side independence + intersection semantics"
+    },
+    {
+      "path": "docs/plans/memo/alpha5-tool-io-governance/architecture.md",
+      "lines": "185, 242",
+      "tracked": true,
+      "note": "domain authority binding; remote domain/equipment effects"
+    },
+    {
+      "path": "docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/route-records-v3c.json",
+      "lines": "1927",
+      "tracked": true,
+      "note": "seed route record for surface:domain_family"
+    },
+    {
+      "path": "docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-FAMILY-TARGET-CONTRACTS.md",
+      "lines": "175-176",
+      "tracked": true,
+      "note": "B-DOMAIN surface contract"
+    },
+    {
+      "path": "docs/ROUTER_RULES.md",
+      "tracked": true,
+      "note": "section 0 current-plan precedence; blocker formats; git discipline (read in full)"
+    },
+    {
+      "path": "AGENTS.md",
+      "tracked": true,
+      "note": "docs/plans/active/** is user/main-agent production, workers must not edit it"
+    }
+  ],
+  "greps": {
+    "transcript": "dev/agent-workflow/evidence/u7-r1f2-domain-exclusion-20261026/greps.txt",
+    "sha256": "a8d542a614d50307191414f88a1ca04e66dddd4f48c6bf02771694b8b58fddab",
+    "count": 20,
+    "conclusions": {
+      "domainFamilyInSourceOrPackages": false,
+      "domainFamilyBareNameRecordInObligations": false,
+      "domainFamilyOccurrencesInObligations": 1,
+      "hyphenSpellingAnywhere": false,
+      "equipmentInObligations": false,
+      "hpcUnderscoreInTrackedTree": 1,
+      "hpcUnderscoreNote": "the single tracked hit is matrix L43's instruction not to invent such names"
+    }
+  },
+  "reopenConditions": [
+    "a named Domain provider with a real effect boundary",
+    "a finite enumeration of Domain tool names and Scopes committed to the repo",
+    "real evidence at that boundary (not a row-local mock; not the W7M/WE2 fixtures reused)",
+    "a new user ruling assigning Domain to a named alpha with its own acceptance rows"
+  ]
+}

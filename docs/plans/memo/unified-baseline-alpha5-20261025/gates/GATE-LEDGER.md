@@ -78,3 +78,20 @@ CI on the updated head. Draft #373 stays halted until the R-REM-2 conditions are
 to U7 (R-U6P3-1): the governed-bash ask row is proven to exist and block live, but resolving it and observing
 the real spawn requires (a) runner control seams pointed at the governed team session and (b) a lane-scoped
 ask-grant design that blueprint data cannot express. No product semantic change was made to obtain either.
+
+**Update 2026-10-26 (R-G1F-2 Domain-family scope ruling — no verdict moves):** the USER ruled R-G1F-2
+`surface:domain_family` → **overall B** (verbatim: `dev/agent-workflow/evidence/u7-design-20261026/USER-RULINGS-20261026.md:7-9`,
+PR #384; question at `…/u7-design-20261026/USER-DECISIONS.md:7`; the A/B/C row at `…/u7-design-20261026/U7-PLAN.md:18`).
+What it changes is the **release claim**, not this ledger: Domain is explicitly excluded from what Alpha.5
+claims, so **G5 no longer requires Domain**, with the boundary recorded at
+[../u7/DOMAIN-EXCLUSION.md](../u7/DOMAIN-EXCLUSION.md). The ruled scope is a narrowing, not a delivery.
+**No gate verdict changes.** The last gate row above stays
+**G4-CORE-PASS / BRIDGE-BLOCKED** (§10.6 — unchanged: this ruling removes no Bridge, supplies no evidence, and
+does not make full G4-PASS), and **G5 stays BLOCKED** on its other required Bridges per
+[../u6/center-assembly-architecture.md](../u6/center-assembly-architecture.md) §10.6 and
+[../execution-plan.md](../execution-plan.md) U8 PRODUCT-GATE — a documented "明确范围变更" for Domain
+alone is not a G5 PASS. Matrix M-13 keeps **NOT_VERIFIED** (`TOOL-CAPABILITY-MATRIX-9b2.md:43`, no cell edited:
+the boundary is recorded, the status is not laundered). The MCP/external narrowing is a **separate** decision
+(`../u7/EXTERNAL-TOOL-CONTROL-DESIGN.md:47-51`, R-G1F-1 lineage) and is not merged into this one.
+Reopen conditions (all four) are in `../u7/DOMAIN-EXCLUSION.md` §5. Docs/evidence only; no host boot, no
+product write, no authority snapshot touched.
