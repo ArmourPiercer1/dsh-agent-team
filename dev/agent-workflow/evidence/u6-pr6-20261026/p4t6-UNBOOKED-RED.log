@@ -1,0 +1,20 @@
+    3215|       ...SCANNED_PATHS_U6PR5,
+    3216|     ]) {
+    3217|       expect(scanResult.files.includes(path)).toBe(true)
+       |                                               ^
+    3218|     }
+    3219|     // The tie between the two forms of the pin, and the only place a …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  08:19:07
+   Duration  618ms (transform 111ms, setup 0ms, import 465ms, tests 15ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
