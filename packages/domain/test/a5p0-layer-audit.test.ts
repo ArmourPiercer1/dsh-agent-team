@@ -67,6 +67,15 @@ describe('the tool-governance lane audit', () => {
       'runtime/controlled-fs/src/cf-errors.ts',
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
+      // U7-9a: the two post-consume closures consume TYPE-ONLY faces
+      // (`FsWriteReceipt`, `GovernanceResult`) — the receipt shape the
+      // write/create bodies return and the closed governance verdict the
+      // undetermined arms carry. Type edges add zero runtime coupling;
+      // booked because the audit law is per-EDGE, not per-weight. (The
+      // standalone script's `runtime/controlled-fs/src/` prefix already
+      // covered them; this file-level list enumerates.)
+      'runtime/controlled-fs/src/post-consume-create.ts',
+      'runtime/controlled-fs/src/post-consume-write.ts',
       // A5-M1: the PA↔Control bridge — the manifest digest it writes
       // (pa-control-bridge.ts:394) and the assurance snapshot it compares
       // (:752), plus the closed admission vocabulary its ports are typed
@@ -114,11 +123,18 @@ describe('the tool-governance lane audit', () => {
       'tools/a5p5-tools/src/render.ts',
       'tools/a5p5-tools/src/spill.ts',
       'tools/a5p5-tools/src/types.ts',
-      // U6 PR2: the FS family's governed read executor consumes the ONE
-      // effect-grammar face (`parseRequestedEffectSet`, domain/tool-governance)
-      // — the same thin face plane-effect-backends was booked for; the lane
-      // IS that file's moved read section (owner role: fs-family README).
+      // U6 PR2 + U7-9a: the FS family's FOUR executors (read/write/edit/
+      // read_image bodies) each consume the ONE effect-grammar face
+      // (`parseRequestedEffectSet`, domain/tool-governance) — the same thin
+      // face plane-effect-backends was booked for; the read file IS that
+      // plane file's moved read section, the mutation trio are U7-9a's
+      // governed bodies (file-by-file booking, zero lane edits; owner role:
+      // fs-family README). Alphabetical here: the expectation is the
+      // sorted-edge set the audit walks.
+      'tools/fs-family/src/edit-executor.mjs',
+      'tools/fs-family/src/image-executor.mjs',
       'tools/fs-family/src/read-executor.mjs',
+      'tools/fs-family/src/write-executor.mjs',
     ])
   })
 

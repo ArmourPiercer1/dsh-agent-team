@@ -196,6 +196,49 @@ export const PLACEMENTS = [
     src: 'packages/tools/fs-family/src/fs-read-contribution.mjs',
     dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-read-contribution.mjs',
   },
+  // U7-9a (CA-01, the same byte-copy law): the governed write/edit/
+  // read_image lane files join the mirror — the closed argument law, the
+  // three executors, the bounded verified-handle image read port, the three
+  // rows and the ONE family contribution (the single candidate carrying all
+  // four native names). The controlled-fs TypeScript closures they compose
+  // are EMITTED by the runtime build (the controlled-fs include), unchanged
+  // in kind from read-normalizer's treatment above.
+  {
+    src: 'packages/tools/fs-family/src/fs-mutation-mechanics.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-mutation-mechanics.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/write-executor.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/write-executor.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/write-row.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/write-row.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/edit-executor.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/edit-executor.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/edit-row.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/edit-row.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/image-executor.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/image-executor.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/image-read-port.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/image-read-port.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/image-row.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/image-row.mjs',
+  },
+  {
+    src: 'packages/tools/fs-family/src/fs-family-contribution.mjs',
+    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-family-contribution.mjs',
+  },
   // U6 PR3 (the fs-family pattern, verbatim law): the process/shell Family
   // lane's .mjs files are byte copies under the runtime dist mirror; the
   // TypeScript module (`bash-normalizer.ts`, the pure projection the

@@ -47,6 +47,40 @@ export {
   type OpenAtPort,
 } from './open-at-exec.js'
 
+// U7-9a (FS mutation family): the POST-CONSUME execution closures. These are
+// the provider half of the governed `write`/`edit` rows — minted by the
+// trusted assembly ONLY after the kernel's one-shot edge consumed the grant,
+// and they carry the whole boundary law internally (approved-root agreement,
+// O_NOFOLLOW opens, verify-before-truncate, fd-bound exclusive create,
+// honest undetermined states). The FAMILY lane imports them through THIS
+// barrel (its one reviewed controlled-fs edge, lane README): the family never
+// re-implements the boundary, it only composes the injected edge and passes
+// frozen plan facts (CI-07 — the family never self-attests the FS effect).
+// Deliberate export per the closure headers' own law ("the integration owner
+// adds exports deliberately"): the ONLY sanctioned consumers are the
+// `packages/tools/fs-family` executors and their tests.
+export {
+  createPostConsumeWriteClosure,
+  type PostConsumeWriteCallContext,
+  type PostConsumeWriteClosure,
+  type PostConsumeWriteConfig,
+  type PostConsumeWritePlan,
+} from './post-consume-write.js'
+
+export {
+  createPostConsumeCreateClosure,
+  type PostConsumeCreatePlan,
+} from './post-consume-create.js'
+
+export {
+  createPostConsumeEditClosure,
+  type FsEditReceipt,
+  type PostConsumeEditCallContext,
+  type PostConsumeEditClosure,
+  type PostConsumeEditConfig,
+  type PostConsumeEditPlan,
+} from './post-consume-edit.js'
+
 export {
   createControlledFsLane,
   type ControlledFsInstance,

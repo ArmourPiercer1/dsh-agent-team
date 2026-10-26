@@ -1,0 +1,50 @@
+{
+  "planted": {
+    "deniedShaBefore": "10c4ea1fd244365b5ef5e452f5fcf28c5a5a9f58717c8d638a5de55c90ab227f",
+    "plantShaBefore": "2d20b9c1031996a940d69e4ce49c067881eccf595d9c24e9aa35b961becec5e8",
+    "w1ExistsBefore": false,
+    "ctlExistsBefore": false
+  },
+  "oracle": {
+    "w1Bytes": null,
+    "plantBytes": "U7FSMUT_PLANT_BEFORE_u5u7fsmut1-20261026t11-20-21z line one\nline two stays\n",
+    "deniedBytes": "U7FSMUT_DENY_CLAIM_u5u7fsmut1-20261026t11-20-21z\n",
+    "deniedShaAfter": "10c4ea1fd244365b5ef5e452f5fcf28c5a5a9f58717c8d638a5de55c90ab227f",
+    "ctlBytes": null,
+    "imgShaStable": "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77"
+  },
+  "logHits": {
+    "writeRan": 0,
+    "editRan": 0,
+    "image": 0,
+    "planeRefusals": []
+  },
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "strict": true,
+    "leader": true,
+    "ctl": false
+  }
+}

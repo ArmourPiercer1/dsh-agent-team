@@ -1,17 +1,21 @@
 {
   "schema": "u6-arc-a-family-census/1",
-  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only ⇔ tests/**).",
+  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only \u21d4 tests/**).",
   "families": [
     {
       "familyId": "dsh.fs-family",
       "lane": "packages/tools/fs-family",
       "mount": "product",
-      "reviewedBy": "PR #375 (U6 PR2)",
+      "reviewedBy": "PR #375 (U6 PR2); U7-9a (write/edit/read_image join the ONE candidate)",
       "contributionPaths": [
-        "packages/tools/fs-family/src/fs-read-contribution.mjs"
+        "packages/tools/fs-family/src/fs-read-contribution.mjs",
+        "packages/tools/fs-family/src/fs-family-contribution.mjs"
       ],
       "nativeNames": [
-        "(bound-definition) read"
+        "(bound-definition) read",
+        "(bound-definition) write",
+        "(bound-definition) edit",
+        "(bound-definition) read_image"
       ]
     },
     {
@@ -30,7 +34,7 @@
       "familyId": "dsh.search-family",
       "lane": "packages/tools/search-family",
       "mount": "product",
-      "reviewedBy": "U6 PR5 (this slice — the search move)",
+      "reviewedBy": "U6 PR5 (this slice \u2014 the search move)",
       "contributionPaths": [
         "packages/tools/search-family/src/search-contribution.mjs"
       ],

@@ -600,6 +600,103 @@ test('u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import', async () =>
   assert.equal(typeof TestWorldFactory, 'function')
 })
 
+// U7-9a C2 (FS family mutation members on the kernel): the wiring pin and
+// the DISK-DRIVEN judge sensitivity — a synthetic ALL-PASS fact bundle plus
+// the planted mutations each case must individually catch (refusal bytes
+// moving, a native write witnessed on a governed RAN line, an image lane
+// going silent…). The judge consumes only runner-collected facts, so this
+// is the live verdict logic tested with ZERO host boots.
+test('u7-fs-mut: SUITE_CASES entry and parseArgs wiring', async () => {
+  const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
+  assert.deepEqual(SUITE_CASES['u7-fs-mut'], [
+    'fsm:mounted', 'fsm:write-positive', 'fsm:edit-positive', 'fsm:refusal-zero-effect',
+    'fsm:image-lane-honest', 'fsm:ctl-native-write', 'fsm:leak-check',
+  ])
+  const opts = parseArgs(['--suite', 'u7-fs-mut', '--line', 'u7fsmutx', '--evidence', '/tmp/ev'])
+  assert.equal(opts.suite, 'u7-fs-mut')
+  assert.throws(() => parseArgs(['--suite', 'u7-fs-mut', '--evidence', '/tmp/ev', '--only', 'nope']))
+})
+
+test('u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven', async () => {
+  const { createFsMutAssembly, judgeU7FsMut } = await import('./lib/u7-fsmut-assembly.mjs')
+  const home = mkdtempSync(join(tmpdir(), 'u7fsmut-asm-'))
+  try {
+    const assembly = createFsMutAssembly({ repoRoot: join(HERE, '..', '..'), home, runStamp: 'UNITSTAMP', reportDir: home })
+    const plane = assembly.teamRowConfig().teamToolPlane
+    // CA-01 at the assembly face: EXACTLY the keys the u6-fs read World
+    // carried — the mount shape its governed positive proved (realmId,
+    // fsInstance, the authority centerAssembly + shadow ledger, the confined
+    // provider trio). NO jobsEnabled, NO new key: zero config growth.
+    assert.deepEqual(Object.keys(plane).sort(), ['centerAssembly', 'centerShadowLedger', 'confinedProvider', 'fsInstance', 'realmId'])
+    assert.equal(plane.centerAssembly, 'shadow')
+    assert.match(plane.confinedProvider.assembly.launcherSha256, /^[0-9a-f]{64}$/)
+    const planted = assembly.writePreBootFiles()
+    assert.match(readFileSync(assembly.files.plant.path, 'utf8'), /U7FSMUT_PLANT_BEFORE_unitstamp/)
+    assert.match(readFileSync(assembly.files.denied.path, 'utf8'), /U7FSMUT_DENY_CLAIM_unitstamp/)
+    assert.match(planted.deniedShaBefore, /^[0-9a-f]{64}$/)
+    // the planted image is a real PNG (magic bytes) — the sniffable fact
+    assert.deepEqual([...readFileSync(assembly.files.img.path).subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47])
+    const yaml = await import('yaml')
+    const doc = yaml.parseDocument(assembly.mainBlueprintYaml(['weird_tool'])).toJS()
+    const strict = doc.members.find((m) => m.templateId === 'strict')
+    const tools = strict.capabilities.permissions.allow.map((r) => r.tool).sort()
+    // the paired M-02 truth is DECLARED in the policy the host ingests:
+    // write / edit / read(edit target) / read_image
+    assert.deepEqual(tools, ['edit', 'read', 'read_image', 'write'])
+    // CI-03: the control template carries NO capabilities block at all —
+    // the plane binds nothing there, so its NATIVE write answers (the
+    // family never touches what it does not own).
+    const ctl = doc.members.find((m) => m.templateId === 'ctl')
+    assert.ok(ctl && ctl.capabilities === undefined, 'ctl template must be capabilities-less')
+    const before = {
+      deniedShaBefore: 'a'.repeat(64),
+      plantShaBefore: 'b'.repeat(64),
+      W1_CONTENT: assembly.W1_CONTENT,
+      PLANT_BEFORE: assembly.claims.plantBefore,
+      PLANT_AFTER_CONTENT: assembly.PLANT_AFTER_CONTENT,
+      CTL_CONTENT: assembly.CTL_CONTENT,
+    }
+    const oracle = {
+      w1Bytes: assembly.W1_CONTENT,
+      plantBytes: assembly.PLANT_AFTER_CONTENT,
+      deniedShaAfter: 'a'.repeat(64),
+      ctlBytes: assembly.CTL_CONTENT,
+      imgShaStable: 'c'.repeat(64),
+    }
+    const log = [
+      'a5g7: placement-feed rows=4',
+      'a5g7-write: governed-write RAN bytes=40 created=true path=/w/notes/u7fsmut-w1.txt',
+      'a5g7-edit: governed-edit RAN path=/w/notes/u7fsmut-plant.txt',
+      'a5g7-write: governed-write default-deny refusal path=/w/secret/u7fsmut-denied.txt',
+      'a5g7-image: governed-image RAN bytes=68 mediaType=image/png path=/w/notes/u7fsmut-img.png',
+    ]
+    const base = { before, oracle, log, laneDone: { strict: true, leader: true, ctl: true }, hostAlive: true, healthOk: true, stateOk: true, surface: ['edit', 'read', 'read_image', 'write'] }
+    const verdicts = new Map(judgeU7FsMut(base).map(([id, v]) => [id, v]))
+    assert.deepEqual([...verdicts.entries()].filter(([, v]) => v !== 'PASS'), [])
+    // planted mutations — each must flip EXACTLY its own case
+    const flip = (patch, id) => {
+      const merged = { ...base, ...patch(base) }
+      const v = new Map(judgeU7FsMut(merged).map(([cid, cv]) => [cid, cv]))
+      assert.equal(v.get(id), 'FAIL', `mutation must flip ${id}`)
+    }
+    flip((b) => ({ oracle: { ...b.oracle, w1Bytes: null } }), 'fsm:write-positive')
+    flip((b) => ({ log: b.log.filter((l) => !l.includes('RAN bytes=')) }), 'fsm:write-positive')
+    flip(() => ({ oracle: { ...oracle, plantBytes: assembly.PLANT_BEFORE_CONTENT } }), 'fsm:edit-positive')
+    flip((b) => ({ oracle: { ...b.oracle, deniedShaAfter: 'f'.repeat(64) } }), 'fsm:refusal-zero-effect')
+    flip((b) => ({ log: b.log.filter((l) => !l.includes('governed-image')) }), 'fsm:image-lane-honest')
+    flip((b) => ({ log: [...b.log, 'a5g7-write: governed-write RAN bytes=9 created=true path=/w/notes/u7fsmut-ctl.txt'] }), 'fsm:ctl-native-write')
+    flip(() => ({ log: [] }), 'fsm:mounted')
+    // the typed-refusal image arm is HONEST (PASS) — silence is not
+    const refused = new Map(judgeU7FsMut({
+      ...base,
+      log: [...base.log.filter((l) => !l.includes('governed-image RAN')), 'a5g7-image: governed-image pa-refused code=IMAGE_ROUTE_UNRESOLVED path=/w/notes/u7fsmut-img.png'],
+    }).map(([cid, cv]) => [cid, cv]))
+    assert.equal(refused.get('fsm:image-lane-honest'), 'PASS')
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint', async () => {
   const { createJobsAssembly, JOBS_WORLD_MANAGED_NAMES } = await import('./lib/u6-jobs-assembly.mjs')
   const { emitPatchLayer } = await import('./lib/world-factory.mjs')

@@ -1,0 +1,13 @@
+
+✖ 165 problems (133 errors, 32 warnings)
+  4 errors and 32 warnings potentially fixable with the `--fix` option.
+
+LINT_EXIT=1
+> dsh-agent-team@0.1.1-alpha.2 lint:identities
+> node scripts/lint-identities.mjs
+
+lint-identities: 165 identity lines, 78 distinct (target .)
+lint-identities: universe: 1401 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-9a/packages/runtime:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2

@@ -39,6 +39,15 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       'packages/client/test/s3-client-generation-spike.test.ts',
+      // U7-9a golden RECORDER (authoring-time provenance, mirrors the
+      // u6-pr2 `z-u6pr2-golden-recorder.scratch.test.ts` it is kept beside):
+      // it imports a DETACHED `origin/master` git worktree to prove the
+      // write/edit/read_image corpus is byte-identical cross-tree, so it can
+      // only run at authoring (the worktree is transient). NOT part of the
+      // shipped suite — the pinned digest in
+      // `u7-9a-mutation-golden-vectors.test.ts` guards drift in CI. Excluded
+      // so the root run stays deterministic without that worktree present.
+      '**/*.scratch.test.ts',
     ],
     environment: 'node',
     pool: 'threads',

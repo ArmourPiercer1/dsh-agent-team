@@ -1,0 +1,10 @@
+U7-9a golden recording — 2026-10-26T10:53:38Z
+branch HEAD: a0f3f610ce2306eeeea991d24f675583f0297834
+branch canonical-operation.ts sha256: a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87
+master worktree: .artifacts/tmp/u79a-golden-master @ 496a3980fcd0f427e0c888e7dc63b10d2ae1b627 (detached)
+master canonical-operation.ts sha256: a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87
+
+recorder run (vitest --config vitest.scratch.config.ts, scratch test z-u79a-golden-recorder.scratch.test.ts):
+U79A_GOLDEN vectors=1440 digest=91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b
+full corpus JSON byte-identical branch-vs-master (assert branchJson===masterJson, 1 passed)
+pinned by: packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts

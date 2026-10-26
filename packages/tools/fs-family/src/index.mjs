@@ -61,3 +61,28 @@ export { normalizeReadProjection } from './read-normalizer.js'
 export { createGovernedReadExecutor } from './read-executor.mjs'
 export { buildReadRowDefinition } from './read-row.mjs'
 export { buildFsReadContribution } from './fs-read-contribution.mjs'
+// U7-9a (the first per-family delivery, CA-01): the governed `write`,
+// `edit` and `read_image` rows join the SAME lane under the SAME law —
+// pure argument contract, effect declaration, injected authority, and the
+// FS effect itself executed ONLY by the controlled-fs provider's
+// post-consume closures / verified-handle boundary (CI-07). One family,
+// one candidate: `buildFsFamilyContribution` carries all four native names
+// through the closed schema (Registry law: one live candidate per family).
+export {
+  MAX_GOVERNED_WRITE_BYTES,
+  IMAGE_EXTENSIONS,
+  imageExtensionOf,
+  imageMediaTypeForPath,
+  parseGovernedWriteArgs,
+  parseGovernedEditArgs,
+  parseGovernedImageArgs,
+  sniffImageMediaType,
+} from './fs-mutation-mechanics.mjs'
+export { createGovernedWriteExecutor } from './write-executor.mjs'
+export { buildWriteRowDefinition, WRITE_ROW_PRESENTATION_FACE } from './write-row.mjs'
+export { createGovernedEditExecutor } from './edit-executor.mjs'
+export { buildEditRowDefinition, EDIT_ROW_PRESENTATION_FACE } from './edit-row.mjs'
+export { createGovernedReadImageExecutor } from './image-executor.mjs'
+export { createBoundedImageReadPort } from './image-read-port.mjs'
+export { buildImageRowDefinition, IMAGE_ROW_PRESENTATION_FACE } from './image-row.mjs'
+export { buildFsFamilyContribution } from './fs-family-contribution.mjs'
