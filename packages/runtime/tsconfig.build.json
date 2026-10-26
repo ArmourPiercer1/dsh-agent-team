@@ -35,6 +35,7 @@
     "sandbox-provider",
     "../tools/a5p5-tools/src",
     "../tools/fs-family/src",
+    "../tools/process-family/src",
     "work-completion-notification",
     "policy-adapter.ts"
   ]

@@ -225,6 +225,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const shell = createFixtureBackend({ sentinel: shellSentinel, kind: 'shell' })
     const search = createFixtureBackend({ sentinel: searchSentinel, kind: 'search' })
     const built = row.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
       fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
@@ -256,6 +258,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
 
   it('production (shut) face shape: the denied call is refused by the LANE, not by the backend; the allowed call still lands on the backend face', async () => {
     const built = row.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
       fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
@@ -281,6 +285,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
 
   it('default-deny gate at the assembly: an uncovered plane grep is refused before the shut backend answers', async () => {
     const built = row.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
       fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
@@ -308,6 +314,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const shell = createFixtureBackend({ sentinel: join(scratch, 'succ-shell.sentinel'), kind: 'shell' })
     const search = createFixtureBackend({ sentinel: join(scratch, 'succ-search.sentinel'), kind: 'search' })
     const built = row.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
       fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },

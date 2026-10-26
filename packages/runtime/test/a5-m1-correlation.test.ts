@@ -47,6 +47,8 @@ function mountWorld(sink: string[], leg: unknown) {
   const scratch = mkdtempSync(join(tmpdir(), 'a5m1-corr-'))
   const shell = fixtureShell(sink)
   const built = row.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
     teamSessionId: 'a5m1-test-team-root',
     controlLeg: leg,
     permissionPolicy: ASK_ALL,

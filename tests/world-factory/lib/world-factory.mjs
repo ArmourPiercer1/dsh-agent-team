@@ -78,6 +78,14 @@ export const U6_SHADOW_ROW_ID = 'u6-shadow-host'
  */
 export const U6FS_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-fs-probe-host.mjs')
 export const U6FS_PROBE_ROW_ID = 'u6-fs-probe-host'
+/**
+ * U6 PR3 C2 (`u6-proc` suite): the mirror of the PR2 probe for the governed
+ * SHELL lane (`team_bash`) — same measured mount law, same public seam, its
+ * own ledger/markers. Observes team_bash calls/results and performs the
+ * swap/restore plants plus the guard-off positive CHANNEL on command.
+ */
+export const U6PROC_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-proc-probe-host.mjs')
+export const U6PROC_PROBE_ROW_ID = 'u6-proc-probe-host'
 export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
@@ -253,13 +261,27 @@ export class TestWorldFactory {
    *        `config:`, which the plain mountRows cannot express) into the SAME
    *        `- insert:` layer; sets U6FS_* env for the probe before spawn.
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null }) {
+  /**
+   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6Proc]
+   *        U6 PR3 C2: mount the `u6-proc-probe-host` row and compose the
+   *        extra patch rows into the SAME `- insert:` layer; sets U6PROC_*
+   *        env for the probe before spawn. Mutually exclusive with u6Fs.
+   */
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
     }
     if (u6Fs !== null && !(typeof u6Fs === 'object' && Array.isArray(u6Fs.rows))) {
       throw new Error('invalid u6Fs (expected {rows: [...]} | null)')
+    }
+    if (u6Proc !== null && !(typeof u6Proc === 'object' && Array.isArray(u6Proc.rows))) {
+      throw new Error('invalid u6Proc (expected {rows: [...]} | null)')
+    }
+    if (u6Fs !== null && u6Proc !== null) {
+      // both patch-layer owners would race for the SAME profile patch file;
+      // the suites are disjoint by law — one World belongs to one suite.
+      throw new Error('invalid world spec: u6Fs and u6Proc cannot share one World')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -286,7 +308,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc })
     this.worlds.push(world)
     return world
   }
@@ -376,12 +398,15 @@ export class TestWorld {
     this.extContributors = spec.extContributors ?? 'disable'
     this.centerAssembly = spec.centerAssembly ?? null
     this.u6Fs = spec.u6Fs ?? null
+    this.u6Proc = spec.u6Proc ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
     this.shadowLedgerPath = join(spec.home, 'center-shadow-ledger.jsonl')
     this.u6fsLedgerPath = join(spec.home, 'u6fs-probe-ledger.jsonl')
     this.u6fsMarkerDir = join(spec.workspaceDir, 'u6fs-markers')
+    this.u6procLedgerPath = join(spec.home, 'u6proc-probe-ledger.jsonl')
+    this.u6procMarkerDir = join(spec.workspaceDir, 'u6proc-markers')
     this.instance = null
     this.mock = null
     this.hostLease = null
@@ -459,6 +484,9 @@ export class TestWorld {
   u6fsLedgerRows() {
     return rowsFrom(this.u6fsLedgerPath)
   }
+  u6procLedgerRows() {
+    return rowsFrom(this.u6procLedgerPath)
+  }
 
   /**
    * Boot the Host for this World through the SHARED launcher (DshInstance).
@@ -522,6 +550,16 @@ export class TestWorld {
       delete process.env.U6FS_MARKER_DIR
       delete process.env.U6FS_WORLD
     }
+    // U6 PR3 C2 probe env (mirror of the U6FS_* block above).
+    if (this.u6Proc !== null) {
+      process.env.U6PROC_LEDGER = this.u6procLedgerPath
+      process.env.U6PROC_MARKER_DIR = this.u6procMarkerDir
+      process.env.U6PROC_WORLD = this.id
+    } else {
+      delete process.env.U6PROC_LEDGER
+      delete process.env.U6PROC_MARKER_DIR
+      delete process.env.U6PROC_WORLD
+    }
 
     this.instance = new DshInstance({
       hostTree: this.factory.hostTree,
@@ -570,6 +608,20 @@ export class TestWorld {
         emitPatchLayer(
           ['U6-fs World: canary + probe rows + the production Team row, p6t6',
            'observer and preset declarations, one public profile-patch layer.'],
+          rows,
+        ) + '\n',
+      )
+    } else if (this.u6Proc !== null) {
+      // U6 PR3 C2: mirror of the u6Fs block for the governed shell lane.
+      copyFileSync(U6PROC_PROBE_SRC, join(this.instance.profileDir, 'u6-proc-probe-host.mjs'))
+      rows.push({ id: U6PROC_PROBE_ROW_ID, name: './u6-proc-probe-host.mjs' })
+      for (const row of this.u6Proc.rows) rows.push(row)
+      mkdirSync(this.instance.profileDir, { recursive: true })
+      writeFileSync(
+        this.instance.patchFile,
+        emitPatchLayer(
+          ['U6-proc World: canary + shell-probe rows + the production Team row,',
+           'p6t6 observer and preset declarations, one public profile-patch layer.'],
           rows,
         ) + '\n',
       )

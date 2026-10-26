@@ -194,6 +194,33 @@ export const PLACEMENTS = [
     src: 'packages/tools/fs-family/src/fs-read-contribution.mjs',
     dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-read-contribution.mjs',
   },
+  // U6 PR3 (the fs-family pattern, verbatim law): the process/shell Family
+  // lane's .mjs files are byte copies under the runtime dist mirror; the
+  // TypeScript module (`bash-normalizer.ts`, the pure projection the
+  // canonicalizer statically imports) is EMITTED by tsc through the runtime
+  // build include (tsconfig.build.json), so it is deliberately NOT listed
+  // here. The mirror sits at `dist/packages/…`, so the relative edges
+  // (`../../..` up to `packages/…`) resolve identically in src and mirror.
+  {
+    src: 'packages/tools/process-family/src/index.mjs',
+    dist: 'packages/runtime/dist/packages/tools/process-family/src/index.mjs',
+  },
+  {
+    src: 'packages/tools/process-family/src/shell-mechanics.mjs',
+    dist: 'packages/runtime/dist/packages/tools/process-family/src/shell-mechanics.mjs',
+  },
+  {
+    src: 'packages/tools/process-family/src/confined-shell-executor.mjs',
+    dist: 'packages/runtime/dist/packages/tools/process-family/src/confined-shell-executor.mjs',
+  },
+  {
+    src: 'packages/tools/process-family/src/bash-row.mjs',
+    dist: 'packages/runtime/dist/packages/tools/process-family/src/bash-row.mjs',
+  },
+  {
+    src: 'packages/tools/process-family/src/bash-contribution.mjs',
+    dist: 'packages/runtime/dist/packages/tools/process-family/src/bash-contribution.mjs',
+  },
 ]
 
 // Direct-invocation guard: the placement runs only when this file IS the

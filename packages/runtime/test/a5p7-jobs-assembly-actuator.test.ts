@@ -314,7 +314,11 @@ const backendsRow = (await import(
 )) as { createGovernedJobsBridge: (input: Record<string, unknown>) => unknown }
 
 const PLANE_POLICY = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
-const planeBase = { teamSessionId: 'a5p7-jobs-team-root', permissionPolicy: PLANE_POLICY, realmId: 'realm-jobs', templateId: 'tpl-1', role: 'member', instanceId: 'inst-1' }
+// U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY
+// governed mount now (the shell row always mounts kernel-owned); the harness
+// carries the zero-in-flight port — same shape as the production dispatcher
+// ledger, no ledger fixture here.
+const planeBase = { teamSessionId: 'a5p7-jobs-team-root', permissionPolicy: PLANE_POLICY, realmId: 'realm-jobs', templateId: 'tpl-1', role: 'member', instanceId: 'inst-1', dispatcherLifecycle: { inflight: () => 0 } }
 
 describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () => {
   it('key ABSENT mounts no job row at all (the zero-flip law by absence)', () => {

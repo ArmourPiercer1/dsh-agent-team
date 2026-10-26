@@ -1,0 +1,311 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "claims": {
+    "s1": 10,
+    "c1": 1,
+    "s2": 7,
+    "s3": 5,
+    "s4": 3,
+    "s5": 1,
+    "denied": 0
+  },
+  "spoofBodyMarkers": [],
+  "restoreRows": [
+    {
+      "at": "2026-10-25T23:20:25.780Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-restore",
+      "key": "agent:probe-body:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+      "trigger": "probe-body",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:25.781Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-restore",
+      "key": "agent:probe-body:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+      "trigger": "probe-body",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:25.781Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-restore",
+      "key": "row:",
+      "trigger": "probe-body",
+      "ok": true
+    }
+  ],
+  "toctouArms": [
+    {
+      "at": "2026-10-25T23:20:26.921Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "toctou-arm",
+      "tag": "trigger-toctou",
+      "agents": 4,
+      "agentsHeld": 4
+    }
+  ],
+  "swapAttempts": [
+    {
+      "at": "2026-10-25T23:20:24.603Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-attempt",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "placedScopes": [
+        "agent:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+        "agent:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+        "row"
+      ]
+    },
+    {
+      "at": "2026-10-25T23:20:27.506Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-attempt",
+      "trigger": "execute-window",
+      "tag": "trigger-toctou",
+      "placedScopes": [
+        "agent:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+        "agent:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+        "row"
+      ]
+    }
+  ],
+  "registerAttempts": [
+    {
+      "at": "2026-10-25T23:20:24.601Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:24.601Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6fs-team-u5u6fsr1-20261025t23-20-09z",
+      "tag": "trigger-swap",
+      "ok": false,
+      "error": "tool \"read\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-25T23:20:24.602Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-e137f6a8ab83bdbded06d3d32a3f1896",
+      "tag": "trigger-swap",
+      "ok": false,
+      "error": "tool \"read\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-25T23:20:24.602Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:24.603Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "row",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:27.504Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "execute-window:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+      "tag": "trigger-toctou",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:27.504Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "execute-window:session-u6fs-team-u5u6fsr1-20261025t23-20-09z",
+      "tag": "trigger-toctou",
+      "ok": false,
+      "error": "tool \"read\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-25T23:20:27.504Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "execute-window:session-team-child-e137f6a8ab83bdbded06d3d32a3f1896",
+      "tag": "trigger-toctou",
+      "ok": false,
+      "error": "tool \"read\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-25T23:20:27.505Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "execute-window:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+      "tag": "trigger-toctou",
+      "ok": true
+    },
+    {
+      "at": "2026-10-25T23:20:27.506Z",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "leg": "spoof-register",
+      "scope": "row",
+      "trigger": "execute-window",
+      "tag": "trigger-toctou",
+      "ok": true
+    }
+  ],
+  "readExecutes": [
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-0oz82zlk rootCallId=call-u6fs-0oz82zlk name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s1.txt}",
+      "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-tjnbgl43 rootCallId=call-u6fs-tjnbgl43 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/secret/u6fs-denied.txt}",
+      "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-up1tshtl rootCallId=call-u6fs-up1tshtl name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-c1.txt}",
+      "agent": "session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-r0uiaudc rootCallId=call-u6fs-r0uiaudc name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s2.txt}",
+      "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-b8ybnva2 rootCallId=call-u6fs-b8ybnva2 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s3.txt}",
+      "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-6ltwuk72 rootCallId=call-u6fs-6ltwuk72 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s4.txt}",
+      "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+    },
+    {
+      "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-5vmrnd2f rootCallId=call-u6fs-5vmrnd2f name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s5.txt}",
+      "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+    }
+  ],
+  "readResults": [
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s1.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": true,
+      "cancelled": false,
+      "head": "Error: template-default-deny — undefined"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-c1.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s2.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s3.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s4.txt</path>\n<type>file</type>\n<"
+    },
+    {
+      "isError": false,
+      "cancelled": false,
+      "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s5.txt</path>\n<type>file</type>\n<"
+    }
+  ],
+  "kernelHits": {
+    "kernel-post-success-drift-veto": {
+      "count": 0,
+      "sample": null
+    },
+    "a5g7: placement-feed rows=": {
+      "count": 2,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsr1-20261025t23-20-09z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5m1-authority-leg": {
+      "count": 0,
+      "sample": null
+    },
+    "ABORTED_BEFORE_DISPATCH": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "laneDone": {
+    "strict": true,
+    "ctl": true,
+    "sens1": true,
+    "swapped": true,
+    "sens2": true,
+    "toctou": true,
+    "swapTrigger": true,
+    "restoreTrigger": true,
+    "toctouTrigger": true,
+    "leader": true
+  }
+}

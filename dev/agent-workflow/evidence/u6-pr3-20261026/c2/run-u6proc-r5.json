@@ -1,0 +1,621 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u6-proc-u6prc9-2026-10-26T02-08-09-544Z",
+  "suite": "u6-proc",
+  "startedAt": "2026-10-26T02:08:09.646Z",
+  "selectedCases": [
+    "proc:mounted",
+    "proc:exec-door-fail-closed",
+    "proc:member-ask-born-terminal",
+    "proc:deny-zero-spawn",
+    "proc:replay-settled-refusal",
+    "proc:spoof-refusal",
+    "proc:guard-off-channel",
+    "proc:late-call-refused",
+    "proc:ctl-native-untouched",
+    "proc:approve-spawn-once",
+    "proc:approve-replay-refused"
+  ],
+  "bindings": {
+    "teamSha": "822da63795baa7dc1e84bc4923a0c9edeaa2a219",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5u6prc9-20261026T02-08-09Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched."
+  },
+  "cases": [
+    {
+      "id": "proc:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.083Z",
+      "teamSession": true,
+      "probeRegister": {
+        "at": "2026-10-26T02:08:20.732Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "register",
+        "kind": "probe-tool",
+        "ok": true,
+        "handle": "function"
+      },
+      "listenLegs": [
+        "agent/created:true",
+        "tools/pre-execute:true",
+        "tools/post-execute:true"
+      ],
+      "launcherPin": {
+        "launcher": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+        "sha256": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+      },
+      "hostAlive": true,
+      "kernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 4,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc9-20261026t02-08-09z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_PROCESS_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_READ_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "note": "ONE kernel for both families: the placement feed lists team_bash AND read (ARC-B visible from the Host log); a refused registration or an unbuildable kernel would name itself in the log (mount-wide law, PR3)"
+    },
+    {
+      "id": "proc:exec-door-fail-closed",
+      "verdict": "FAIL",
+      "at": "2026-10-26T02:11:01.084Z",
+      "spawnAttempts": [
+        {
+          "command": "printf 'U6PROC_POS_u5u6prc9-20261026t02-",
+          "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367"
+        },
+        {
+          "command": "printf 'U6PROC_SWAP_u5u6prc9-20261026t02",
+          "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367"
+        },
+        {
+          "command": "sleep 6; printf 'U6PROC_LATE_EMITTED\\n' ",
+          "head": "bash: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6prc9-202"
+        }
+      ],
+      "effectFilesAbsent": true,
+      "note": "all three leader exec attempts answered typed APPROVAL_DENIED before any process, zero spawn effects on disk: the exec door is fail-closed on this world. The u6prc7 bridge forensics name the live refusal cause verbatim: the durable ask row was never opened (request-control outside the mutation envelope of this plane caller; the leader default also carries no exec token, so the allow lane downgrades to that same ask). Spawn mechanics are pinned at the C1 production seam (BL01-2)."
+    },
+    {
+      "id": "proc:member-ask-born-terminal",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "maskResults": [
+        "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      ],
+      "maskRequestId": null,
+      "notifTurns": 21,
+      "notifTurnsForMaskAsk": 0,
+      "note": "the shell-lane member ask settled as a synchronous terminal deny with zero spawn and no leader notification ever carrying this ask id. Measured live cause (u6prc7 forensics): the durable ask row was never opened — request-control is outside the declared envelope of this template (the declared allow list replaces the member base bounds). The shell fingerprint rung law remains a C1/offline claim, not what this live leg reached."
+    },
+    {
+      "id": "proc:deny-zero-spawn",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "denyResults": [
+        "a5p5-refused kind=refused-admission code=IO_POLICY_UNSUPPORTED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b5"
+      ],
+      "denyClaimOccurrences": 0
+    },
+    {
+      "id": "proc:replay-settled-refusal",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "replayArm": {
+        "requestId": "u6proc-unknown-request",
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"u6proc-replay-y8giv8p63n\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no dura"
+      },
+      "openRequestsAtTeardown": 0,
+      "decisions": 0,
+      "consumptions": 0,
+      "note": "the team.resolveControl seam refused with a typed error and no control case was ever left open (a born-terminal world keeps nothing pendable); the grant-level exactly-once twin is C1 kernel-flow C-legs"
+    },
+    {
+      "id": "proc:spoof-refusal",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "spoofBodyMarkers": [],
+      "swapAttempts": 1,
+      "swapResults": [
+        "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc"
+      ],
+      "note": "either host law (registry scope or kernel identity) keeps the spoof body unrun; channel control proves the plant rides when ungoverned"
+    },
+    {
+      "id": "proc:guard-off-channel",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "channelMarkers": [
+        "channel-body-ran-trigger-channel"
+      ],
+      "channelRows": 2
+    },
+    {
+      "id": "proc:late-call-refused",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "lateResults": [
+        "bash: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6prc9-20261026T02-08-09Z/workspace/u6pr"
+      ],
+      "lateFileAbsent": true,
+      "note": "the row-timeout command never reached a process (refused at admission); terminate mechanics carry their own offline pins (glue7 raceShellSettle, a5b3 cancel legs)"
+    },
+    {
+      "id": "proc:ctl-native-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:01.085Z",
+      "ctlRequestedOnNativeLane": true,
+      "ctlTeamLaneRows": 0,
+      "ctlEffect": false,
+      "note": "the model-facing close carried the NATIVE tool name; PR3 added zero mediation to the non-team lane (host-native permission posture is host-owned and disclosed)"
+    },
+    {
+      "id": "proc:approve-spawn-once",
+      "verdict": "FAIL",
+      "at": "2026-10-26T02:11:01.085Z",
+      "pendingSeen": false,
+      "pendingRequestId": "",
+      "pendingKind": null,
+      "resolveBody": "",
+      "firstCallResult": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+      "decisions": 0,
+      "consumptions": 0,
+      "markerLinesFromDisk": 0,
+      "effectOnDisk": null,
+      "note": "the ask lane opened a REAL pending row; the public seam approved it; consumeOnce fired once (consumption rows); the confined spawn left exactly ONE marker line on disk — read independently of the tool return; the tool result carried the body (host-native SUCCESS settlement)"
+    },
+    {
+      "id": "proc:approve-replay-refused",
+      "verdict": "FAIL",
+      "at": "2026-10-26T02:11:01.085Z",
+      "replayCallResult": "",
+      "markerLinesAfterReplayFromDisk": 0,
+      "decisions": 0,
+      "consumptions": 0,
+      "note": "the identical second call re-presents the SAME approval-case identity (one-shot already consumed): typed refusal, ZERO second spawn (disk still holds one line), one decision row, one consumption row — the exactly-once law measured live; the kernel-level GRANT_REPLAY twin sits at the C1 seam"
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-26T02:11:04.404Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/host-starts-r2.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-26T02:08:14.626Z",
+        "runId": "u5-u6-proc-u6prc9-2026-10-26T02-08-09-544Z",
+        "suite": "u6-proc",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "phase": "u6proc-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "u6proc-boot1",
+      "world": "u5u6prc9-20261026T02-08-09Z",
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/dev/agent-workflow/evidence/u6-pr3-20261026/c2/logs/u5u6prc9-20261026T02-08-09Z/instance-port3181.log"
+    }
+  ],
+  "u6procLanes": {
+    "mask": true,
+    "deny": true,
+    "appr": false,
+    "pos": true,
+    "posReplay": true,
+    "swapTrigger": true,
+    "swap": true,
+    "restoreTrigger": true,
+    "late": true,
+    "leader": true,
+    "channelReg": true,
+    "channelCall": true,
+    "ctl": true
+  },
+  "u6procDigest": {
+    "surface": [
+      "bash",
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6proc_probe",
+      "write"
+    ],
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary",
+      "u6proc_probe"
+    ],
+    "effects": {
+      "mask": null,
+      "pos": null,
+      "deny": null,
+      "swap": null,
+      "late": null,
+      "ctl": null,
+      "appr": null
+    },
+    "effectLines": {
+      "mask": 0,
+      "pos": 0,
+      "deny": 0,
+      "swap": 0,
+      "late": 0,
+      "ctl": 0,
+      "appr": 0
+    },
+    "spoofBodyMarkers": [],
+    "channelMarkers": [
+      "channel-body-ran-trigger-channel"
+    ],
+    "registerAttempts": [
+      {
+        "at": "2026-10-26T02:10:48.668Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-u6proc-root-u5u6prc9-20261026t02-08-09z",
+        "tag": "trigger-swap",
+        "name": "team_bash",
+        "ok": true
+      },
+      {
+        "at": "2026-10-26T02:10:48.669Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-u6proc-team-u5u6prc9-20261026t02-08-09z",
+        "tag": "trigger-swap",
+        "name": "team_bash",
+        "ok": false,
+        "error": "tool \"team_bash\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-26T02:10:48.669Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-team-child-5e7bb2deea6623abd48763de11142c78",
+        "tag": "trigger-swap",
+        "name": "team_bash",
+        "ok": false,
+        "error": "tool \"team_bash\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-26T02:10:48.670Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-team-child-48ffd85515674feb32b864ed6159bcbe",
+        "tag": "trigger-swap",
+        "name": "team_bash",
+        "ok": false,
+        "error": "tool \"team_bash\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-26T02:10:48.670Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-team-child-08957c05e3e442b3a8e18d213364f651",
+        "tag": "trigger-swap",
+        "name": "team_bash",
+        "ok": false,
+        "error": "tool \"team_bash\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-26T02:10:48.671Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "row",
+        "trigger": "probe-body",
+        "tag": "trigger-swap",
+        "name": "team_bash",
+        "ok": true
+      },
+      {
+        "at": "2026-10-26T02:10:50.567Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-register",
+        "scope": "row",
+        "trigger": "channel",
+        "tag": "trigger-channel",
+        "name": "u6proc_channel",
+        "ok": true
+      }
+    ],
+    "swapAttempts": [
+      {
+        "at": "2026-10-26T02:10:48.671Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-attempt",
+        "trigger": "probe-body",
+        "tag": "trigger-swap",
+        "placedScopes": [
+          "agent:session-u6proc-root-u5u6prc9-20261026t02-08-09z",
+          "row"
+        ]
+      }
+    ],
+    "restoreRows": [
+      {
+        "at": "2026-10-26T02:10:49.449Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-restore",
+        "key": "agent:probe-body:session-u6proc-root-u5u6prc9-20261026t02-08-09z:team_bash",
+        "trigger": "probe-body:trigger-restore",
+        "ok": true
+      },
+      {
+        "at": "2026-10-26T02:10:49.451Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "spoof-restore",
+        "key": "row::team_bash",
+        "trigger": "probe-body:trigger-restore",
+        "ok": true
+      }
+    ],
+    "channelRows": [
+      {
+        "at": "2026-10-26T02:10:50.567Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "channel-attempt",
+        "trigger": "probe-body",
+        "tag": "trigger-channel",
+        "ok": true
+      },
+      {
+        "at": "2026-10-26T02:10:50.970Z",
+        "world": "u5u6prc9-20261026T02-08-09Z",
+        "leg": "channel-body-ran",
+        "tag": "trigger-channel"
+      }
+    ],
+    "bashExecutes": [
+      {
+        "tool": "team_bash",
+        "command": "printf 'U6PROC_MASK_u5u6prc9-20261026t02-08-09z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+        "agent": "session-team-child-5e7bb2deea6623abd48763de11142c78"
+      },
+      {
+        "tool": "team_bash",
+        "command": "printf 'U6PROC_DENY_u5u6prc9-20261026t02-08-09z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+        "agent": "session-team-child-48ffd85515674feb32b864ed6159bcbe"
+      },
+      {
+        "tool": "team_bash",
+        "command": "printf 'U6PROC_APPR_u5u6prc9-20261026t02-08-09z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+        "agent": "session-team-child-08957c05e3e442b3a8e18d213364f651"
+      },
+      {
+        "tool": "team_bash",
+        "command": "printf 'U6PROC_POS_u5u6prc9-20261026t02-08-09z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent",
+        "agent": "session-u6proc-team-u5u6prc9-20261026t02-08-09z"
+      },
+      {
+        "tool": "team_bash",
+        "command": "printf 'U6PROC_SWAP_u5u6prc9-20261026t02-08-09z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+        "agent": "session-u6proc-team-u5u6prc9-20261026t02-08-09z"
+      },
+      {
+        "tool": "team_bash",
+        "command": "sleep 6; printf 'U6PROC_LATE_EMITTED\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.wor",
+        "agent": "session-u6proc-team-u5u6prc9-20261026t02-08-09z"
+      },
+      {
+        "tool": "bash",
+        "command": "printf 'U6PROC_CTL_u5u6prc9-20261026t02-08-09z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent",
+        "agent": "session-u6proc-root-u5u6prc9-20261026t02-08-09z"
+      }
+    ],
+    "bashResults": [
+      {
+        "tool": "team_bash",
+        "isError": false,
+        "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      },
+      {
+        "tool": "team_bash",
+        "isError": false,
+        "head": "a5p5-refused kind=refused-admission code=IO_POLICY_UNSUPPORTED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      },
+      {
+        "tool": "team_bash",
+        "isError": false,
+        "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      },
+      {
+        "tool": "team_bash",
+        "isError": false,
+        "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      },
+      {
+        "tool": "team_bash",
+        "isError": false,
+        "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      },
+      {
+        "tool": "bash",
+        "isError": false,
+        "head": "bash: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6prc9-20261026T02-08-09Z/workspace/u6proc-ctl.txt: Permission denied\n[Command finished with exit co"
+      }
+    ],
+    "resolvedAsks": [
+      {
+        "tag": "replay",
+        "requestId": "u6proc-unknown-request",
+        "kind": "non-open",
+        "firstBody": "{\"type\":\"server-response\",\"rpcId\":\"u6proc-replay-y8giv8p63n\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'u6proc-unknown-request' in team 'session-u6proc-root-u5u6prc9-20261026t02-08-09z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlServ",
+        "secondBody": null
+      }
+    ],
+    "controlDigest": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": []
+    },
+    "notifTurns": 21,
+    "notifTurnsMask": 0,
+    "approveEvidence": {
+      "pendingSeen": false,
+      "requestId": null,
+      "kind": null,
+      "resolveBody": null,
+      "resolvedOk": false,
+      "waitedMs": 120237,
+      "pendingAny": [],
+      "forensic": [
+        "a5p2prod: production-admission-note",
+        "a5p2prod: production-admission-constructed",
+        "a5-pa-bridge: leg-deny durable control request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed",
+        "a5p2prod: production-admission-default-deny",
+        "a5-pa-bridge: request-created "
+      ],
+      "decisions": 0,
+      "consumptions": 0
+    },
+    "kernelHits": {
+      "a5g7: placement-feed rows=": {
+        "count": 4,
+        "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc9-20261026t02-08-09z"
+      },
+      "a5-plane: mount-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "a5-plane: placement-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "PLANE_KERNEL_UNAVAILABLE": {
+        "count": 0,
+        "sample": null
+      },
+      "PLANE_PROCESS_REGISTRATION_REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "PLANE_READ_REGISTRATION_REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "cannot be verified at dispatch": {
+        "count": 0,
+        "sample": null
+      }
+    },
+    "laneDone": {
+      "mask": true,
+      "deny": true,
+      "appr": false,
+      "pos": true,
+      "posReplay": true,
+      "swapTrigger": true,
+      "swap": true,
+      "restoreTrigger": true,
+      "late": true,
+      "leader": true,
+      "channelReg": true,
+      "channelCall": true,
+      "ctl": true
+    },
+    "claims": {
+      "mask": 0,
+      "pos": 0,
+      "deny": 0,
+      "swap": 0,
+      "late": 0,
+      "ctl": 0,
+      "appr": 0
+    }
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-26T02:11:04.404Z"
+}

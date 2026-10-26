@@ -228,7 +228,10 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     expect(joined).not.toContain('makeReg')
     // …while the shell row's grant (the sibling that legitimately runs commands)
     // DOES carry one, which is what makes "same-shape" a real statement.
-    const shellSrc = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/plane-effect-backends.mjs'), 'utf8')
+    // U6 PR3 (disclosed interface update): the confined-shell row moved to
+    // `packages/tools/process-family/` (slice plan 3/6); the anchor grant is
+    // the SAME block, byte-identical, now owned by the lane's executor.
+    const shellSrc = readFileSync(join(REPO, 'packages/tools/process-family/src/confined-shell-executor.mjs'), 'utf8')
     const shellRow = shellSrc.slice(shellSrc.indexOf("argv: ['/bin/sh', '-c', parsed.command]"))
     const shellGrant = shellSrc.slice(shellSrc.lastIndexOf('const anchorGrant'), shellSrc.indexOf("argv: ['/bin/sh', '-c', parsed.command]"))
     expect(shellRow.length, 'the confined-shell row is the one with a write lane').toBeGreaterThan(0)

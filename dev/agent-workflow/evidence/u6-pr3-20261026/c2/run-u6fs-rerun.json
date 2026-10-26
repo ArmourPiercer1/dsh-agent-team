@@ -1,0 +1,609 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u6-fs-u6fsr1-2026-10-25T23-20-09-644Z",
+  "suite": "u6-fs",
+  "startedAt": "2026-10-25T23:20:09.745Z",
+  "selectedCases": [
+    "fs:mounted",
+    "fs:governed-read-positive",
+    "fs:refusal-zero-effect",
+    "fs:ctl-native-read",
+    "fs:identity-swap",
+    "fs:identity-swap-sensitivity",
+    "fs:toctou-abort",
+    "fs:shadow-ledger-cap",
+    "fs:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "cd54f3b7c6c8789df86a18bc261f936c0a38edaf",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5u6fsr1-20261025T23-20-09Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched."
+  },
+  "cases": [
+    {
+      "id": "fs:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:22.077Z",
+      "teamSession": true,
+      "probeRegister": {
+        "at": "2026-10-25T23:20:20.750Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "register",
+        "kind": "probe-tool",
+        "ok": true
+      },
+      "hostAlive": true,
+      "listenLegs": [
+        "agent/created:true",
+        "tools/execute:true",
+        "tools/post-execute:true"
+      ]
+    },
+    {
+      "id": "fs:governed-read-positive",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.256Z",
+      "claimOccurrences": 10,
+      "probeObserved": true,
+      "hostAlive": true,
+      "note": "SOUND = claim-in-result (only the file is its source) AND probe-row observation of the answered content AND host alive"
+    },
+    {
+      "id": "fs:refusal-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.257Z",
+      "deniedClaimOccurrences": 0,
+      "denyExecuted": true,
+      "denyRefusedObserved": true,
+      "hostAlive": true
+    },
+    {
+      "id": "fs:ctl-native-read",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.258Z",
+      "claimOccurrences": 1,
+      "probeObserved": true,
+      "hostAlive": true
+    },
+    {
+      "id": "fs:identity-swap",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.258Z",
+      "arm": "registration-refused",
+      "why": "post-attempt (23:20:24.603Z): the governed read answered with the real content and zero spoof-Body markers — the spoof either threw at registration (host scope law) or landed only in scopes the governed resolution masks; the kernel-table swap itself stays pinned by C1 (u6-pr2-kernel-guard-plants)",
+      "registerAttempts": [
+        {
+          "scope": "agent",
+          "trigger": "probe-body:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+          "ok": true
+        },
+        {
+          "scope": "agent",
+          "trigger": "probe-body:session-u6fs-team-u5u6fsr1-20261025t23-20-09z",
+          "ok": false,
+          "error": "tool \"read\" is already registered in this scope"
+        },
+        {
+          "scope": "agent",
+          "trigger": "probe-body:session-team-child-e137f6a8ab83bdbded06d3d32a3f1896",
+          "ok": false,
+          "error": "tool \"read\" is already registered in this scope"
+        },
+        {
+          "scope": "agent",
+          "trigger": "probe-body:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+          "ok": true
+        },
+        {
+          "scope": "row",
+          "trigger": "probe-body",
+          "ok": true
+        },
+        {
+          "scope": "agent",
+          "trigger": "execute-window:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+          "ok": true
+        },
+        {
+          "scope": "agent",
+          "trigger": "execute-window:session-u6fs-team-u5u6fsr1-20261025t23-20-09z",
+          "ok": false,
+          "error": "tool \"read\" is already registered in this scope"
+        },
+        {
+          "scope": "agent",
+          "trigger": "execute-window:session-team-child-e137f6a8ab83bdbded06d3d32a3f1896",
+          "ok": false,
+          "error": "tool \"read\" is already registered in this scope"
+        },
+        {
+          "scope": "agent",
+          "trigger": "execute-window:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+          "ok": true
+        },
+        {
+          "scope": "row",
+          "trigger": "execute-window",
+          "ok": true
+        }
+      ],
+      "spoofBodyMarkers": [],
+      "kernelGuardHits": {
+        "a5g7: placement-feed rows=": 2
+      }
+    },
+    {
+      "id": "fs:identity-swap-sensitivity",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.260Z",
+      "s2At": "2026-10-25T23:20:24.054Z",
+      "swapAt": "2026-10-25T23:20:24.603Z",
+      "s3At": "2026-10-25T23:20:25.311Z",
+      "restoreAt": "2026-10-25T23:20:25.780Z",
+      "s4At": "2026-10-25T23:20:26.434Z",
+      "orderOk": true,
+      "s2Occurrences": 7,
+      "s4Occurrences": 3,
+      "hostAlive": true
+    },
+    {
+      "id": "fs:toctou-abort",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.260Z",
+      "arm": "registration-refused",
+      "why": "post-attempt (23:20:27.506Z): the governed read answered with the real content and zero spoof-Body markers — the spoof either threw at registration (host scope law) or landed only in scopes the governed resolution masks; the kernel-table swap itself stays pinned by C1 (u6-pr2-kernel-guard-plants)",
+      "inWindowRegisters": [
+        {
+          "scope": "agent",
+          "ok": true
+        },
+        {
+          "scope": "agent",
+          "ok": false
+        },
+        {
+          "scope": "agent",
+          "ok": false
+        },
+        {
+          "scope": "agent",
+          "ok": true
+        },
+        {
+          "scope": "row",
+          "ok": true
+        }
+      ],
+      "spoofBodyMarkers": []
+    },
+    {
+      "id": "fs:shadow-ledger-cap",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.261Z",
+      "rows": 16,
+      "cappedMarkers": 2,
+      "installs": 4,
+      "budgets": {
+        "maxLedgerRows": 5,
+        "maxLedgerBytes": 1048576
+      },
+      "hostAlive": true,
+      "postCapReadSucceeded": true,
+      "oraclePostCapRows": 1,
+      "oracleReceipt": {
+        "at": "2026-10-25T23:20:26.434Z",
+        "pathTail": "u6fs-s4.txt",
+        "bytes": 42,
+        "sha256": "b55279f733ee49776f6667e0fc9c241e5f9cff6a58efed9bbc676da7a5371954",
+        "claimSeen": true,
+        "capAt": "2026-10-25T23:20:26.394Z"
+      },
+      "detail": "K5 terminal marker present, flow unaffected; post-cap read proven by an INDEPENDENT oracle observation of the read effect (oracle bytes/sha256, timestamped after the cap marker) (R-REM-3 cap-hit evidence)"
+    },
+    {
+      "id": "fs:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.450Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": [],
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-25T23:20:28.576Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/host-starts.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-25T23:20:14.698Z",
+        "runId": "u5-u6-fs-u6fsr1-2026-10-25T23-20-09-644Z",
+        "suite": "u6-fs",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "phase": "u6fs-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "u6fs-boot1",
+      "world": "u5u6fsr1-20261025T23-20-09Z",
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/dev/agent-workflow/evidence/u6-pr3-20261026/c2/logs/u5u6fsr1-20261025T23-20-09Z/instance-port3181.log"
+    }
+  ],
+  "u6fsLanes": {
+    "strict": true,
+    "ctl": true,
+    "sens1": true,
+    "swapped": true,
+    "sens2": true,
+    "toctou": true,
+    "swapTrigger": true,
+    "restoreTrigger": true,
+    "toctouTrigger": true,
+    "leader": true
+  },
+  "u6fsDigest": {
+    "surface": [
+      "bash",
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "write"
+    ],
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary",
+      "u6fs_probe"
+    ],
+    "claims": {
+      "s1": 10,
+      "c1": 1,
+      "s2": 7,
+      "s3": 5,
+      "s4": 3,
+      "s5": 1,
+      "denied": 0
+    },
+    "spoofBodyMarkers": [],
+    "restoreRows": [
+      {
+        "at": "2026-10-25T23:20:25.780Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-restore",
+        "key": "agent:probe-body:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+        "trigger": "probe-body",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:25.781Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-restore",
+        "key": "agent:probe-body:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+        "trigger": "probe-body",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:25.781Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-restore",
+        "key": "row:",
+        "trigger": "probe-body",
+        "ok": true
+      }
+    ],
+    "toctouArms": [
+      {
+        "at": "2026-10-25T23:20:26.921Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "toctou-arm",
+        "tag": "trigger-toctou",
+        "agents": 4,
+        "agentsHeld": 4
+      }
+    ],
+    "swapAttempts": [
+      {
+        "at": "2026-10-25T23:20:24.603Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-attempt",
+        "trigger": "probe-body",
+        "tag": "trigger-swap",
+        "placedScopes": [
+          "agent:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+          "agent:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+          "row"
+        ]
+      },
+      {
+        "at": "2026-10-25T23:20:27.506Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-attempt",
+        "trigger": "execute-window",
+        "tag": "trigger-toctou",
+        "placedScopes": [
+          "agent:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+          "agent:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+          "row"
+        ]
+      }
+    ],
+    "registerAttempts": [
+      {
+        "at": "2026-10-25T23:20:24.601Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+        "tag": "trigger-swap",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:24.601Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-u6fs-team-u5u6fsr1-20261025t23-20-09z",
+        "tag": "trigger-swap",
+        "ok": false,
+        "error": "tool \"read\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-25T23:20:24.602Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-team-child-e137f6a8ab83bdbded06d3d32a3f1896",
+        "tag": "trigger-swap",
+        "ok": false,
+        "error": "tool \"read\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-25T23:20:24.602Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "probe-body:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+        "tag": "trigger-swap",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:24.603Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "row",
+        "trigger": "probe-body",
+        "tag": "trigger-swap",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:27.504Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "execute-window:session-u6fs-root-u5u6fsr1-20261025t23-20-09z",
+        "tag": "trigger-toctou",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:27.504Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "execute-window:session-u6fs-team-u5u6fsr1-20261025t23-20-09z",
+        "tag": "trigger-toctou",
+        "ok": false,
+        "error": "tool \"read\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-25T23:20:27.504Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "execute-window:session-team-child-e137f6a8ab83bdbded06d3d32a3f1896",
+        "tag": "trigger-toctou",
+        "ok": false,
+        "error": "tool \"read\" is already registered in this scope"
+      },
+      {
+        "at": "2026-10-25T23:20:27.505Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "agent",
+        "trigger": "execute-window:session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c",
+        "tag": "trigger-toctou",
+        "ok": true
+      },
+      {
+        "at": "2026-10-25T23:20:27.506Z",
+        "world": "u5u6fsr1-20261025T23-20-09Z",
+        "leg": "spoof-register",
+        "scope": "row",
+        "trigger": "execute-window",
+        "tag": "trigger-toctou",
+        "ok": true
+      }
+    ],
+    "readExecutes": [
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-0oz82zlk rootCallId=call-u6fs-0oz82zlk name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s1.txt}",
+        "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-tjnbgl43 rootCallId=call-u6fs-tjnbgl43 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/secret/u6fs-denied.txt}",
+        "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-up1tshtl rootCallId=call-u6fs-up1tshtl name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-c1.txt}",
+        "agent": "session-team-child-bfdb2379d5391c784fa0a6b4aae63b9c"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-r0uiaudc rootCallId=call-u6fs-r0uiaudc name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s2.txt}",
+        "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-b8ybnva2 rootCallId=call-u6fs-b8ybnva2 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s3.txt}",
+        "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-6ltwuk72 rootCallId=call-u6fs-6ltwuk72 name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s4.txt}",
+        "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+      },
+      {
+        "path": "token=Symbol(dsh.tool.execution) callId=call-u6fs-5vmrnd2f rootCallId=call-u6fs-5vmrnd2f name=read signal{} arguments{file_path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s5.txt}",
+        "agent": "session-team-child-e137f6a8ab83bdbded06d3d32a3f1896"
+      }
+    ],
+    "readResults": [
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s1.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": true,
+        "cancelled": false,
+        "head": "Error: template-default-deny — undefined"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-c1.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s2.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s3.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s4.txt</path>\n<type>file</type>\n<"
+      },
+      {
+        "isError": false,
+        "cancelled": false,
+        "head": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s5.txt</path>\n<type>file</type>\n<"
+      }
+    ],
+    "kernelHits": {
+      "kernel-post-success-drift-veto": {
+        "count": 0,
+        "sample": null
+      },
+      "a5g7: placement-feed rows=": {
+        "count": 2,
+        "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsr1-20261025t23-20-09z"
+      },
+      "a5-plane: mount-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "a5-plane: placement-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "a5m1-authority-leg": {
+        "count": 0,
+        "sample": null
+      },
+      "ABORTED_BEFORE_DISPATCH": {
+        "count": 0,
+        "sample": null
+      },
+      "cannot be verified at dispatch": {
+        "count": 0,
+        "sample": null
+      }
+    },
+    "laneDone": {
+      "strict": true,
+      "ctl": true,
+      "sens1": true,
+      "swapped": true,
+      "sens2": true,
+      "toctou": true,
+      "swapTrigger": true,
+      "restoreTrigger": true,
+      "toctouTrigger": true,
+      "leader": true
+    }
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-25T23:20:28.576Z"
+}

@@ -223,6 +223,8 @@ describe('A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays gre
       createTeamToolPlaneAssembly: (i: Record<string, unknown>) => { ok: true; value: { definitions: ReadonlyArray<{ name: string; execute(a: unknown): Promise<{ text: string }> }> } } | { ok: false; code: string; message: string }
     }
     const built = plane.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5glb-red-team-root',
       permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] },
       realmId: 'a5glb-red-realm',
@@ -860,6 +862,8 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
       createTeamToolPlaneAssembly: (i: Record<string, unknown>) => { ok: true; value: { definitions: ReadonlyArray<{ name: string; execute(a: unknown): Promise<{ text: string }> }> } } | { ok: false; code: string; message: string }
     }
     const built = plane.createTeamToolPlaneAssembly({
+   // U6 PR3 (R-REM-2.2, mount-wide): the enforcing kernel is required by EVERY governed mount now (the shell row always mounts kernel-owned); this harness carries the zero-in-flight port — same shape as the production dispatcher ledger, no ledger fixture here.
+   dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5glb-team-root',
       permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] },
       realmId: 'a5glb-realm',

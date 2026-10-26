@@ -84,4 +84,7 @@ export { runToolCall, type AdmissionVerdict, type RunToolCallDeps, type SpillPoi
 // DEFINITIONS over the one pipeline. The mount (which scope, which names,
 // which order) stays with the assembler — GLUE-4 owns the scoped-mount
 // ruling; this lane only produces the definitions and never registers.
-export { createGovernedToolDefinitions, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js'
+// U6 PR3: the single governed SHELL row face (the process family lane
+// contributes the bash row to the governance Kernel through it — ONE
+// `makeExecute`, the trio face unchanged).
+export { createGovernedToolDefinitions, createGovernedShellRowDefinition, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js'

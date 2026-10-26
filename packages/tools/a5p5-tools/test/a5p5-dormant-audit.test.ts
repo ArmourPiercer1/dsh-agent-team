@@ -218,14 +218,18 @@ describe('a5p5-dormant-audit', () => {
   it('the one reviewed edge is exactly the live row barrel import, and nothing else', () => {
     // GLUE-5 (see the edge-exception list above): the form IS the contract.
     // The live row names the lane in EXACTLY one line — the barrel import of
-    // the single registration-face symbol — never a deep import into the
-    // lane's internals, never a second lane string anywhere in the file.
+    // the registration-face symbols — never a deep import into the lane's
+    // internals, never a second lane string anywhere in the file. U6 PR3
+    // (disclosed interface update, ARC-B part 2): the line carries the
+    // shell-row face NEXT TO the trio face (two symbols, still ONE barrel
+    // line, one file) — the process-family lane receives the transport
+    // INJECTED from here, so no second consumer ever forms.
     const row = readFileSync(join(packagesRoot, 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
     let namedLines = 0
     for (const line of row.split('\n')) {
       if (!line.includes('a5p5-tools')) continue
       namedLines += 1
-      expect(line.trim(), line.trim()).toBe(`import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'`)
+      expect(line.trim(), line.trim()).toBe(`import { createGovernedShellRowDefinition, createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'`)
     }
     expect(namedLines).toBe(1)
   })

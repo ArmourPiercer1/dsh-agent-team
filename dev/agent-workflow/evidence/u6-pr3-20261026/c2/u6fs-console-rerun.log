@@ -1,0 +1,10 @@
+[u6-fs] case fs:mounted: PASS {"teamSession":true,"probeRegister":{"at":"2026-10-25T23:20:20.750Z","world":"u5u6fsr1-20261025T23-20-09Z","leg":"register","kind":"probe-tool","ok":true},"hostAlive":true,"listenLegs":["agent/created:true","tools/execut
+[u6-fs] case fs:governed-read-positive: PASS {"claimOccurrences":10,"probeObserved":true,"hostAlive":true,"note":"SOUND = claim-in-result (only the file is its source) AND probe-row observation of the answered content AND host alive"}
+[u6-fs] case fs:refusal-zero-effect: PASS {"deniedClaimOccurrences":0,"denyExecuted":true,"denyRefusedObserved":true,"hostAlive":true}
+[u6-fs] case fs:ctl-native-read: PASS {"claimOccurrences":1,"probeObserved":true,"hostAlive":true}
+[u6-fs] case fs:identity-swap: PASS {"arm":"registration-refused","why":"post-attempt (23:20:24.603Z): the governed read answered with the real content and zero spoof-Body markers — the spoof either threw at registration (host scope law) or landed only in 
+[u6-fs] case fs:identity-swap-sensitivity: PASS {"s2At":"2026-10-25T23:20:24.054Z","swapAt":"2026-10-25T23:20:24.603Z","s3At":"2026-10-25T23:20:25.311Z","restoreAt":"2026-10-25T23:20:25.780Z","s4At":"2026-10-25T23:20:26.434Z","orderOk":true,"s2Occurrences":7,"s4Occurr
+[u6-fs] case fs:toctou-abort: PASS {"arm":"registration-refused","why":"post-attempt (23:20:27.506Z): the governed read answered with the real content and zero spoof-Body markers — the spoof either threw at registration (host scope law) or landed only in 
+[u6-fs] case fs:shadow-ledger-cap: PASS {"rows":16,"cappedMarkers":2,"installs":4,"budgets":{"maxLedgerRows":5,"maxLedgerBytes":1048576},"hostAlive":true,"postCapReadSucceeded":true,"oraclePostCapRows":1,"oracleReceipt":{"at":"2026-10-25T23:20:26.434Z","pathTa
+[u6-fs] case fs:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+RUN-SUMMARY run=u5-u6-fs-u6fsr1-2026-10-25T23-20-09-644Z suite=u6-fs overall=PASS cases=10 PASS:10 worlds=u5u6fsr1-20261025T23-20-09Z

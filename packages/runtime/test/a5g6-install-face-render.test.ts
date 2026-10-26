@@ -127,7 +127,11 @@ describe('GLUE-6 LEG B — the plane renders ContentBlock[], not a String', () =
         value?: { definitions: readonly Record<string, never>[] }
       }
     }
+    // U6 PR3 (disclosed interface update): the kernel is now mounted ALWAYS,
+    // so the dispatcher lifecycle port is MANDATORY (mount-wide
+    // PLANE_KERNEL_UNAVAILABLE, R-REM-2.2 generalized from read-only).
     const built = plane.createTeamToolPlaneAssembly({
+      dispatcherLifecycle: { inflight: () => 0 },
       teamSessionId: 'a5g6-unit-team-root',
       permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'any' } }] },
       realmId: 'a5g6-unit-realm',

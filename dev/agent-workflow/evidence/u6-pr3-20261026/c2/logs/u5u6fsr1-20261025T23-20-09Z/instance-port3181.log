@@ -1,0 +1,17 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=1yu1LGO0C5446IbhvSSBNcB0b3NVgzEXAXWre9q2LXc
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsr1-20261025t23-20-09z
+[dsh-agent-team] a5ptc: census-boot root=session-u6fs-team-u5u6fsr1-20261025t23-20-09z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsr1-20261025t23-20-09z
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:2266641b-d969-4b0e-818c-1617bab7a406-2
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=42 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s1.txt
+[dsh-agent-team] a5g7-read: governed-read default-deny refusal call path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/secret/u6fs-denied.txt
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:2266641b-d969-4b0e-818c-1617bab7a406-5
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=42 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s2.txt
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:2266641b-d969-4b0e-818c-1617bab7a406-8
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=42 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s3.txt
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:2266641b-d969-4b0e-818c-1617bab7a406-11
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=42 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s4.txt
+[dsh-agent-team] a5g7-read: governed-read pa-handoff OPEN call=plane-read:2266641b-d969-4b0e-818c-1617bab7a406-14
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=42 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6fsr1-20261025T23-20-09Z/workspace/notes/u6fs-s5.txt

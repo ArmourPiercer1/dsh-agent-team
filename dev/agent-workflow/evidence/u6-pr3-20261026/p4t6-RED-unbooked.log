@@ -1,0 +1,9 @@
+# p4t6 scan gate — RED-first measurement BEFORE booking SCANNED_PATHS_U6PR3
+# tree: .worktrees/u6-pr3 @ task/u6-pr3-process-family-20261026 (scratch
+# recorder z-u6pr3-golden-recorder.scratch.test.ts already DELETED; its
+# recordings live in this evidence dir).
+$ cd packages/testkit && npx vitest run test/p4t6-session-event-scan.test.ts
+AssertionError: expected 1263 to be 1253 // Object.is equality
+  Tests  1 failed | 9 passed (10)
+# delta = the ten U6PR3 files booked in SCANNED_PATHS_U6PR3; GREEN re-run
+# follows the booking (see p4t6-GREEN.log).

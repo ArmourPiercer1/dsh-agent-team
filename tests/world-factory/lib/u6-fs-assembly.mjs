@@ -502,10 +502,10 @@ export function makeFsDecide({ assembly, readProbeLedger = () => [] }) {
 }
 
 /** team-remote JSON-RPC over the token-gated origin (a5p1 shape). */
-export async function remoteCall(fetchJson, origin, cookie, method, params, tag = 'u6fs') {
+export async function remoteCall(fetchJson, origin, cookie, method, params, tag = 'u6fs', version = 1) {
   return fetchJson(`${origin}/team-remote/${method}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', cookie },
-    body: JSON.stringify({ type: 'client-request', rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`, method, payload: { version: 1, params } }),
+    body: JSON.stringify({ type: 'client-request', rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`, method, payload: { version, params } }),
   })
 }

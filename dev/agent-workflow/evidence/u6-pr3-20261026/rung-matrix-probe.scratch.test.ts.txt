@@ -1,0 +1,41 @@
+import { describe, expect, it } from 'vitest'
+import { routeOperationApproval } from '../operation-permission/approval-routing.js'
+import { evaluateAuthorityCeiling } from '../governance/runtime-authority.js'
+import type { AuthorityEnvelopeDocuments, AuthorityEnvelopeRule, AuthorityResourceMatcher } from '../governance/authority-ceiling.js'
+
+const FP = 'sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56'
+const cap = (r: string, e: 'allow' | 'ask' | 'deny'): AuthorityEnvelopeRule =>
+  ({ operationClass: 'bash', matcher: { kind: 'fingerprint', resource: r }, maximumEffect: e })
+const docs = (hard: AuthorityEnvelopeDocuments['teamHardEnvelope'], mut: AuthorityEnvelopeDocuments['permissionMutationEnvelope']): AuthorityEnvelopeDocuments =>
+  ({ teamHardEnvelope: hard, permissionMutationEnvelope: mut })
+const rungOf = (m: AuthorityResourceMatcher, d: AuthorityEnvelopeDocuments, ben: 'member' | 'leader', init: 'member' | 'leader' | 'human-user') => {
+  const ev = evaluateAuthorityCeiling({ beneficiaryAuthority: ben, initiatorAuthority: init, operationClass: 'bash', matcher: m, desiredEffect: 'allow', documents: d })
+  return ev.outcome === 'undetermined' || ev.requiredAuthority === undefined ? 'UNDET' : ev.requiredAuthority
+}
+const route = (d: AuthorityEnvelopeDocuments, ben: 'member' | 'leader', init: 'member' | 'leader' | 'human-user') => {
+  const r = routeOperationApproval({ operationClass: 'bash', resourceKey: 'bash:tool', initiatorAuthority: init, commandFingerprint: FP, facts: { beneficiaryAuthority: ben, documents: d } })
+  return r.kind === 'approval-required' ? `ASK@${r.requiredAuthority}/${r.carrierKind}` : r.kind
+}
+const fpM: AuthorityResourceMatcher = { kind: 'fingerprint', resource: FP }
+const exM: AuthorityResourceMatcher = { kind: 'exact', resource: 'bash:tool' }
+
+describe('u6-pr3 rung probe (offline; no host)', () => {
+  const cases: Array<[string, AuthorityEnvelopeDocuments]> = [
+    ['both absent', docs({ status: 'absent' }, { status: 'absent' })],
+    ['hard [] + mut []', docs({ status: 'declared', document: { rules: [] } }, { status: 'declared', document: { rules: [] } })],
+    ['hard cap(fp,ask)', docs({ status: 'declared', document: { rules: [cap(FP, 'ask')] } }, { status: 'absent' })],
+    ['hard cap(fp,allow)', docs({ status: 'declared', document: { rules: [cap(FP, 'allow')] } }, { status: 'absent' })],
+    ['hard absent + mut cap(fp,allow)', docs({ status: 'absent' }, { status: 'declared', document: { rules: [cap(FP, 'allow')] } })],
+    ['hard [] + mut cap(fp,allow)', docs({ status: 'declared', document: { rules: [] } }, { status: 'declared', document: { rules: [cap(FP, 'allow')] } })],
+  ]
+  it('prints the rung table', () => {
+    const rows: string[] = []
+    for (const [name, d] of cases) {
+      for (const [ben, init] of [['member', 'member'], ['leader', 'leader']] as const) {
+        rows.push(`${name} | ben=${ben} init=${init} | fp=${rungOf(fpM, d, ben, init)} | exact=${rungOf(exM, d, ben, init)} | route=${route(d, ben, init)}`)
+      }
+    }
+    console.log('\n' + rows.join('\n'))
+    expect(rows.length).toBe(18)
+  })
+})

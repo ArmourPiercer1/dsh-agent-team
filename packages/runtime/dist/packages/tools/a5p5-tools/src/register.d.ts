@@ -94,6 +94,16 @@ export interface A5P5Assembly {
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
 export declare const REFUSAL_PREFIX = "a5p5-refused ";
 /**
+ * U6 PR3 — the governed SHELL row as a single definition (the process
+ * family lane contributes the bash row to the governance Kernel; the trio
+ * face below stays the full-lane registration surface, behavior unchanged).
+ * Same `makeExecute`, same BASH_PARAMETERS, same parse + backend face: the
+ * mounted row is byte-identical in behavior to the trio's bash arm — the
+ * ledger state is per-assembly exactly like the trio's own (a fresh call
+ * of the factory), so no identity or correlation law shifts.
+ */
+export declare function createGovernedShellRowDefinition(assembly: A5P5Assembly): GovernedToolDefinition;
+/**
  * Build the governed search/shell tool definitions over the assembly's
  * backends and admission face. Returns definitions in the fixed lane order
  * (grep, glob, bash); the assembler decides WHICH of them to mount.

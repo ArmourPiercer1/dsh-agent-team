@@ -9,10 +9,15 @@
  *
  * THE INVENTORY (each backend -> the existing implementation it rides):
  *
- *  - `createConfinedShellBackend` (shell class) rides the confined Process
- *    provider — `createConfinedProcessProvider` + the P-LSP `spawnStreaming`
- *    ladder (`packages/runtime/sandbox-provider/provider.ts:661`), the
- *    Landlock pre-launcher (`launcher/landlock-prelauncher.py`), the launcher
+ *  - `createConfinedShellBackend` (shell class) — SINCE U6 PR3 THIS CODE
+ *    LIVES IN THE PROCESS-FAMILY LANE:
+ *    `packages/tools/process-family/src/confined-shell-executor.mjs` (owner
+ *    role: that lane's README; CI-07 names the reviewed provider it drives).
+ *    This file IMPORTS and re-exports it unchanged — the mechanics it rides
+ *    are untouched: the confined Process provider
+ *    (`createConfinedProcessProvider` + the P-LSP `spawnStreaming` ladder,
+ *    `packages/runtime/sandbox-provider/provider.ts:661`), the Landlock
+ *    pre-launcher (`launcher/landlock-prelauncher.py`), the launcher
  *    byte-pin DOUBLE gate (pb-CONTRACT §1 `ProviderAssemblyConfig`), and the
  *    frozen lease/terminate law. The argv array is explicit (never a shell
  *    string on the provider's own face), the network dimension makes NO
@@ -58,7 +63,10 @@ import { spawnSync } from 'node:child_process'
 import { constants as fsConstants, existsSync, statSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
 import { relative } from 'node:path'
-import { setTimeout as sleepTimer, clearTimeout as clearSleepTimer } from 'node:timers'
+// U6 PR3: only the sleep TIMER remains a center need (the search leg at
+// :480); clearSleepTimer moved with the shell mechanics to the
+// process-family lane (shell-mechanics.mjs imports its own).
+import { setTimeout as sleepTimer } from 'node:timers'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { verifyOpenedHandle } from '../../../controlled-fs/src/index.js'
@@ -530,394 +538,31 @@ export function createAnchoredGlobBackend({ realmId, rootDir, templateId = 'plan
   }
 }
 
-/** System path entries the confined shell needs to boot `/bin/sh` (rx only). */
-const SYSTEM_RX = (path) => ({ path, accessBits: { execute: true, readFile: true, readDir: true } })
-
-/**
- * The shell backend over the CONFINED Process provider (P-B assembly face +
- * P-LSP streaming arm). The provider owns every law: probe capture, launcher
- * byte-pin double gate, one-shot plan, lease states, terminate escalation.
- * This adapter only shapes the a5p5 call into a `SpawnRequest` and the
- * streaming handle back into a `ShellOutcome` (streaming raw bytes into the
- * pipeline's spill sink while the lease is ACTIVE, per the spill law).
- */
-/**
- * THE SETTLE RACE (B3; pinned by a5b3-cancel-leg.test.ts C8/C9 with DETERMINISTIC
- * injection — a controlled deferred for `exited`, an injected fake `sleep` for the
- * timeout leg — never a timing bet). The race's registration order is a CLOSED TIE
- * LAW — `exited > timedOut > aborted`: when several facts already exist at setup,
- * Promise.race settles on the FIRST registered leg, so
- *  - a payload that reported its own end OUTRANKS a cancel that arrived in the
- *    same window (the measured code is the truth; 根②: no dual truth), and
- *  - the timeout leg OUTRANKS the abort leg registered after it (根③: the
- *    timed-out form owns the answer; the `!timedOut` guard in `shellCancelled`
- *    keeps that law even if a late abort lands while the timeout arm is still
- *    terminating the payload).
- * The first settlement is FINAL (Promise semantics): a later fact can never
- * rewrite the winner — exactly one of {exit code, timed-out, aborted} is ever
- * observed for one call. `sleep` is injectable so the legs pin THIS function
- * instead of a spec-side reimplementation; production calls pass no sleep.
- *
- * NO LEG REJECTS — that is why removing the listener in `.then` is complete
- * (root 16:30Z ①, proven from the contract, not vibes): `exited` is the
- * provider's stream handle, constructed RESOLVE-ONLY at provider.ts:657-660;
- * even a rejected `proc.exit` is absorbed there into a resolve of
- * `{code:null, signal:'exit-error'}` (provider.ts:649-653); the timeout leg
- * resolves through the timer callback; the abort leg only ever resolves. The
- * race therefore has no rejection path that could strand the listener.
- * CLEANUP, ENUMERATED HONESTLY (root 16:30Z ②): this round ADDED the abort
- * listener and REMOVES it once the race settles (the new surface, cleaned).
- * The timeout timer keeps its HISTORICAL shape byte-for-byte: no handle kept,
- * never cleared — an early winner leaves it scheduled to fire into a decided
- * race, exactly as the pre-B3 shell race and the still-untouched search arm
- * (:496) do. This is a preserved pre-existing property, not a full-cleanup
- * claim. PRE-ABORT BOUNDARY (root 16:30Z ③, measured before worded): the race
- * is registered AFTER the provider spawn, so a signal that already fired still
- * finds a spawned payload — the spawn-side outDir (provider.ts:496-497) proves
- * the call reached spawn regardless of what the payload then does. This row's
- * honest act is the immediate controlled `terminate()`; measured, its
- * first-tick SIGTERM landed before the payload's first statement ran (row
- * settled in ~240ms, no payload side effect), so whether any payload STATEMENT
- * ever executes is not row-determined — C11 records that fact without betting
- * either direction,
- * and no wording may turn "terminated under control, fast" into "never
- * started" or "always ran". The host does not route such a call here at all —
- * its dispatch pre-check (core/tools/src/index.ts:1572-1574) answers
- * `toolAbortedBeforeDispatchResult` before `execute`; this leg is the belt
- * for direct/non-host callers of the seam.
- */
-export function raceShellSettle({ exited, timeoutMs, signal, sleep = sleepTimer }) {
-  let onAbort = null
-  const abortLeg = signal === undefined
-    ? null
-    : new Promise((r) => {
-      onAbort = () => { r({ aborted: true }) }
-      if (signal.aborted === true) onAbort() // 根①: already fired before the call — settles at setup, deterministically
-      else signal.addEventListener('abort', onAbort, { once: true })
-    })
-  return Promise.race([
-    exited,
-    new Promise((r) => sleep(() => r({ timedOut: true }), timeoutMs)),
-    ...(abortLeg === null ? [] : [abortLeg]),
-  ]).then((winner) => {
-    if (signal !== undefined && onAbort !== null) signal.removeEventListener('abort', onAbort)
-    return winner
-  })
-}
-
-/**
- * THE CLOSED CANCELLED LAW (B3; table-pinned by C10, exercised end to end by
- * C1-C6): `cancelled` is minted ONLY for the two arms of the host's closed
- * AgentCancelCause union that mean "someone asked this call to stop" — `user` and
- * `parent`. The range is MEASURED, not imagined (根⑤): the union is exactly
- * user|parent|hook|disposed at the baseline (host
- * packages/core/session/src/types.ts:189-193; C10 re-reads the declaration from
- * the baseline checkout — resolved through tests/paths.mjs, and FAILING CLOSED
- * when it cannot be read, so a source-side change trips the leg before the law
- * ever ships and no environment lacking the source can tally it as verified).
- * `hook`/`disposed` HONOR the abort — the
- * payload is still terminated through the frozen arm — but keep the death shape
- * (`exit=not-observed`, cancelled false): a hook firing or a teardown is not
- * someone pressing cancel, and the renderer must never claim it was. A cause
- * outside the union's shape (no object, no EXACT discriminator) is not a cause at
- * all. `timedOut` owns its own form (根③); a signal that never fired is not a
- * cancel. The settlement vocabulary is untouched: the six closed names, an
- * aborted body being exactly a `dispatcher-call-terminated-after-body-start`.
- */
-export function shellCancelled({ timedOut, aborted, reason }) {
-  const kind = reason !== null && typeof reason === 'object' ? /** @type {{ kind?: unknown }} */ (reason).kind : undefined
-  return !timedOut && aborted === true && (kind === 'user' || kind === 'parent')
-}
-
-/**
- * B4 DRAIN-ON-EXIT (A5-M1 间歇红): the shell row's completion event is the
- * launcher's PROCESS DEATH (`h.exited`, resolve-only on the child 'exit' event —
- * sandbox-provider/provider.ts defaultSpawnStream), and Node's own child-process
- * contract is that 'exit' may fire while stdio chunks are still in flight:
- * 'close'/'end', not 'exit', is the stream-end event. The row's post-exit path is
- * microtask-only once the payload is confirmed dead (the provider's terminate
- * loop breaks on its first iteration when `/proc/<pid>` is gone and
- * settleTermination never yields to I/O), so reading `stdout` straight after the
- * settle race captured only whatever had ALREADY been delivered — on a starved
- * event loop the death notification can overtake the still-queued pipe read and
- * the row answers `exit=0` over an EMPTY body (the intermittent CI shape at
- * a5-m1-auth-bridge :1915-1917; renderShellResult prints that capture as
- * `bash · exit=0` + `(empty stdout)`).
- * THE WAIT IS FINITE BY CONSTRUCTION for this row: the stream arm of the
- * launcher closes its OWN fd 0/1/2 before waitpid (landlock-prelauncher.py
- * mode_confined_exec_stream), so the payload is the ONLY pipe writer and its
- * death IS the pipe's EOF — once terminate confirmed the payload gone, 'end' is
- * the next reads' inevitable fact and a normal run pays ONE macrotask.
- * The bound below exists for the single shape that outruns that law: a payload
- * that leaves a DESCENDANT still holding fd 1/2 (`cmd &`). That hole is measured
- * house history, not speculation — the glob row's DRAIN-INCOMPLETE leg
- * (glob-backend.mjs, root ruling ①) recorded that provider stdio streams are NOT
- * guaranteed to close at lease settle, which is exactly why this is a bounded
- * stream-end await and NEVER a fixed sleep.
- * THE COMPLETENESS LAW (root narrow-review ruling, B4): only the real EOF — the
- * stream's 'end' / `readableEnded` — proves the pipe delivered everything the
- * writer flushed before its death. Every other settle point is INCOMPLETE: an
- * early `destroy`, a 'close' without a prior 'end', an 'error', or the bound
- * expiring. A teardown settles the drain IMMEDIATELY (no paying the bound for
- * bytes that can no longer arrive) but answers `complete: false`; the bound
- * answers `complete: false` too. The two incompletions are distinguishable
- * (`shortOf: 'stdio' | 'bound'`) and both reach the row as `truncated: true`
- * plus the DRAIN-INCOMPLETE audit line — bytes stay as captured, and the
- * settlement law above is untouched: exit code / timed-out / cancelled were
- * already decided by `raceShellSettle` and no drain answer rewrites them.
- * A stream that ENDED and was destroyed afterwards stays COMPLETE (the EOF
- * stands; a routine post-end 'close' must not downgrade a healthy run).
- * Two streams settle as an AND: complete only when EVERY present stream ended.
- * `sleep` is injectable exactly like `raceShellSettle`'s; the bound timer is
- * unref'd and cleared once the drain answers, so a pending drain never keeps
- * the process alive nor lingers after its answer.
- */
-export const SHELL_STREAM_DRAIN_MS = 2_000
-
-/**
- * Resolves `{ complete: boolean; shortOf: 'bound' | 'stdio' | null }`.
- * `shortOf` names WHICH leg closed an incomplete drain ('stdio' = a teardown
- * or error hit before EOF on some stream; 'bound' = the production bound
- * expired with a pipe still held); `null` only on the complete answer.
- */
-export function drainShellStdio({ stdout, stderr, boundMs, sleep = sleepTimer }) {
-  return new Promise((resolve) => {
-    const streams = [stdout, stderr].filter((s) => s !== null && s !== undefined)
-    let finished = false
-    let timer = null
-    /** @type {Array<{ stream: any, ended: boolean, onEnd: () => void, onClose: () => void, onError: () => void }>} */
-    const watched = []
-    const finish = (complete, shortOf) => {
-      if (finished) return
-      finished = true
-      for (const w of watched) {
-        w.stream.off('end', w.onEnd)
-        w.stream.off('close', w.onClose)
-        w.stream.off('error', w.onError)
-      }
-      if (timer !== null && timer !== undefined) clearSleepTimer(timer) // no-op for a custom sleep's handle shape
-      resolve({ complete, shortOf })
-    }
-    let endedCount = 0
-    for (const s of streams) {
-      if (s.readableEnded === true) { endedCount += 1; continue } // real EOF already stands (even if later destroyed)
-      if (s.destroyed === true) { finish(false, 'stdio'); return } // torn down before EOF: nothing can arrive
-      const w = { stream: s, ended: false, onEnd: () => {}, onClose: () => {}, onError: () => {} }
-      w.onEnd = () => {
-        w.ended = true
-        endedCount += 1
-        if (endedCount === streams.length) finish(true, null) // AND: every stream brought its EOF
-      }
-      // close/error while THIS stream never saw its 'end': the capture is cut
-      // short — settle now (waiting the bound would change nothing) and SAY so.
-      w.onClose = () => { if (!w.ended) finish(false, 'stdio') } // post-end 'close' is routine: ignored
-      w.onError = () => { if (!w.ended) finish(false, 'stdio') } // an error is not an EOF either
-      s.once('end', w.onEnd)
-      s.once('close', w.onClose)
-      s.once('error', w.onError)
-      watched.push(w)
-    }
-    if (endedCount === streams.length) { finish(true, null); return } // ZERO-COST PATH: real EOFs only — no listeners kept, NO bound armed (pinned by D5)
-    timer = sleep(() => finish(false, 'bound'), boundMs)
-    if (timer !== null && timer !== undefined) timer?.unref?.()
-  })
-}
-
-export function createConfinedShellBackend({ realmId, templateId, instanceId, cwdRoot, confined, observe = () => {} }) {
-  const scratchRoot = confined.scratchRoot ?? cwdRoot ?? confined.workingDir
-  const provider = createConfinedProcessProvider({
-    realmId,
-    trustRoot: confined.trustRoot ?? null,
-    scratchRoot,
-    ...(confined.runnerCommand === undefined ? {} : { runnerCommand: confined.runnerCommand }),
-    assembly: confined.assembly ?? {},
-    // TEST-SEAM PASS-THROUGH (B4 drain legs): the provider's `deps` face is its
-    // EXISTING test surface — the a5p4-provider / a5lsp2-streaming / a5-cancel
-    // families already drive fakes through it against this very provider. The
-    // row forwards it verbatim when the factory input carries one and NOTHING
-    // when absent, so the production construction is byte-identical to before.
-    // The mount wiring is the same trusted input that already names the launcher
-    // binary (`launcherPath`), so a deps fake widens no trust surface beyond
-    // what an assembly already holds.
-    ...(confined.deps === undefined ? {} : { deps: confined.deps }),
-  })
-  let probed = null
-  let executed = 0
-  let trace = []
-  const lastRuns = []
-  return {
-    backendId: 'a5g7-confined-exec-shell',
-    get lastStageTrace() { return trace },
-    execCount: () => executed,
-    lastRuns,
-    async run(call, io) {
-      const parsed = call.parsedArgs
-      if (parsed.tool !== 'bash') {
-        return { ok: false, failure: { class: 'denied', code: 'wrong-tool-for-backend', detail: 'the shell backend got a non-bash call' } }
-      }
-      // Refusals with ZERO side effects, before probe/spawn of any kind:
-      if (parsed.background === true) {
-        return { ok: false, failure: { class: 'denied', code: 'background-not-supported', detail: 'background spawn is not implemented by the confined-exec row (refused by name, never reinterpreted as a foreground run)' } }
-      }
-      const base = cwdRoot ?? confined.workingDir
-      if (base === undefined) {
-        return { ok: false, failure: { class: 'denied', code: 'cwd-unavailable', detail: 'no governed cwd root is configured (the assembly never invents one)' } }
-      }
-      let cwd = base
-      if (parsed.cwd !== undefined) {
-        const anchored = resolveAnchored(base, parsed.cwd)
-        if (!anchored.ok) {
-          return { ok: false, failure: { class: 'denied', code: anchored.code, detail: `cwd: ${anchored.detail}` } }
-        }
-        cwd = anchored.path
-      } else {
-        const anchored = resolveAnchored(base, { placement: 'workspace', locator: '.' })
-        if (!anchored.ok) return { ok: false, failure: { class: 'denied', code: anchored.code, detail: anchored.detail } }
-        cwd = anchored.path
-      }
-      trace = ['probe']
-      if (probed === null) {
-        probed = await provider.probe()
-        if (probed.ok !== true) {
-          trace = ['probe', 'terminate']
-          observe(`confined-shell capability REFUSED realm=${realmId} code=${probed.error?.code}`)
-          return { ok: false, failure: { class: 'denied', code: `confined-unavailable:${String(probed.error?.code ?? 'probe-refused')}`, detail: String(probed.error?.message ?? 'probe refused').slice(0, 240) } }
-        }
-        observe(`confined-shell capability OK realm=${realmId} rows=${probed.value.length}`)
-      }
-      trace = ['probe', 'prepare', 'execute']
-      // runtime-base-narrow DYNAMIC GRANT: the per-call anchored workspace
-      // root enters the plan EXPLICITLY — the provider base no longer shadows
-      // it with a '/' READ_DIR (bug fix, glue7 §4b name-class leak). Default
-      // face: the SAME entry bits this row has always carried for its anchor
-      // (read/rw inside, nothing outside). Assembly-declared `allowPaths`
-      // face: a READ_DIR grant on the anchored root only — strict parity
-      // with what the removed '/' READ_DIR incidentally provided there
-      // (that rule never granted READ_FILE), zero new write lanes.
-      const anchorGrant = confined.allowPaths === undefined
-        ? { path: cwd, accessBits: { readFile: true, readDir: true, writeFile: true, makeReg: true, truncate: true, removeFile: true } }
-        : { path: cwd, accessBits: { readDir: true } }
-      const request = {
-        grantFingerprint: `glue7:${realmId}:${templateId}:${call.callId}`,
-        realmId,
-        bindingId: `glue7-plane:${templateId}`,
-        memberScope: instanceId,
-        argv: ['/bin/sh', '-c', parsed.command],
-        cwd,
-        env: [['PATH', '/usr/bin:/bin']],
-        allowPaths: [
-          ...(confined.allowPaths ?? [
-            SYSTEM_RX('/bin'), SYSTEM_RX('/usr'), SYSTEM_RX('/lib'),
-            ...(existsSync('/lib64') ? [SYSTEM_RX('/lib64')] : []),
-          ]),
-          anchorGrant,
-        ],
-        // B2 EXIT-CODE FIDELITY — the SHELL ARM ONLY, and the reason it is this arm
-        // and not the others: a shell row's whole answer is "what did the command
-        // do", and `exit=0` next to `cat: …: Permission denied` is a sentence that
-        // contradicts itself on the wire (the recorded shape this closes reads
-        // `bash · exit=0` over `> cat: ../outside/secret.txt: Permission denied`).
-        // The flag is opt-in per REQUEST, so asking for it here changes this row and
-        // nothing else: the glob and search rows keep the flag unset and therefore
-        // keep the constant-0 completion law they pin (their face carries no payload
-        // exit code at all, and their legs prove completion from the stream — a law
-        // this edit must not and does not weaken).
-        exitPassthrough: true,
-      }
-      const handle = await provider.spawnStreaming(request)
-      if (handle.ok !== true) {
-        trace = ['probe', 'prepare', 'terminate']
-        observe(`confined-shell spawn REFUSED realm=${realmId} call=${call.callId} code=${handle.error?.code}`)
-        return { ok: false, failure: { class: 'denied', code: `confined-refused:${String(handle.error?.code ?? 'spawn-refused')}`, detail: String(handle.error?.message ?? 'spawn refused').slice(0, 240) } }
-      }
-      executed += 1
-      const h = handle.value
-      let stdout = ''
-      let stderr = ''
-      let timedOut = false
-      h.stdout.on('data', (c) => { const s = String(c); stdout += s; if (io.sink) io.sink.write(s) })
-      h.stderr.on('data', (c) => { const s = String(c); stderr += s; if (io.sink) io.sink.write(s) })
-      const timeoutMs = typeof parsed.timeoutMs === 'number' && parsed.timeoutMs > 0 ? parsed.timeoutMs : 60_000
-      // B3 CANCEL LEG — the shell row's ONE cancel input: the host's
-      // cooperative signal, carried on the call (register.ts forwards
-      // `exec?.signal`; the host's public ToolExecutionInput law makes async
-      // work observe it). Additive in both directions: NO signal, NO leg (the
-      // pre-B3 rows and B2's X6 keep exactly what they had), and a signal that
-      // never fires cannot move the outcome either. The settle race, its tie
-      // law, and the cancelled law are the two module-level exports above
-      // (`raceShellSettle`, `shellCancelled` — pinned leg-for-leg by
-      // a5b3-cancel-leg.test.ts C8/C9/C10 with deterministic injection); the
-      // terminate below is the SAME frozen C-PROC arm every stop uses, and
-      // terminate itself carries no cancel meaning (A4 measured it; leg C6
-      // keeps the conflation out of the rendering).
-      const signal = call.signal
-      const exit = await raceShellSettle({ exited: h.exited, timeoutMs, signal })
-      let aborted = false
-      if (exit.timedOut === true) {
-        timedOut = true
-        await h.terminate()
-      } else if (exit.aborted === true) {
-        aborted = true
-        await h.terminate() // the host ended the call; the payload leaves through the same frozen arm
-      } else {
-        await h.terminate() // normal end: the lease settles through the SAME frozen arm (terminated state)
-      }
-      // B4 DRAIN-ON-EXIT: the terminate above CONFIRMED the payload dead, so both
-      // pipes are now EOF-bound (the payload was their only writer); this await
-      // lets the last `data` chunks land — into `stdout`/`stderr` AND into
-      // `io.sink`, whose late-chunk ordering this same race broke — before a
-      // single captured byte is read. Every arm takes it: a timed-out or aborted
-      // answer keeps its already-settled shape (the settle race above decided the
-      // form and the drain never re-decides it) while its partial bytes stop
-      // being a delivery lottery. See `drainShellStdio` for the law + the bound.
-      const drained = await drainShellStdio({ stdout: h.stdout, stderr: h.stderr, boundMs: SHELL_STREAM_DRAIN_MS })
-      trace = ['probe', 'prepare', 'execute', 'terminate']
-      const cancelled = shellCancelled({ timedOut, aborted, reason: aborted ? signal?.reason : undefined })
-      lastRuns.push({ callId: call.callId, pid: h.pid, exit: exit.code ?? null, timedOut, cancelled, stdoutBytes: stdout.length, stderrBytes: stderr.length })
-      observe(`confined-shell ran realm=${realmId} call=${call.callId} pid=${String(h.pid)} exit=${String(exit.code ?? 'not-observed')} timedOut=${String(timedOut)} cancelled=${String(cancelled)}`)
-      // AN INCOMPLETE DRAIN IS REPORTED, NEVER PASSED OFF (root narrow-review
-      // ruling, B4 pins): the drain answers complete ONLY on the real EOF of
-      // every stream. A bound expiry (a writer this row never owns still holds a
-      // pipe) OR a teardown/error before EOF means the capture MAY BE SHORTER THAN
-      // WHAT THE PAYLOAD WROTE — the outcome says exactly that on its data face
-      // (`truncated: true`, the contract's existing "this is not the whole answer"
-      // bit; the presentation renders it as the truncation marker) and the audit
-      // line repeats it WITH THE CAUSE (shortOf distinguishes the two). The bytes
-      // stay as captured (honest partial), the settle race's answer stays as
-      // settled, and nothing in this row may claim a complete capture it did not
-      // observe.
-      if (drained.complete !== true) observe(`confined-shell DRAIN-INCOMPLETE realm=${realmId} call=${call.callId} pid=${String(h.pid)} shortOf=${String(drained.shortOf)}`)
-      return {
-        ok: true,
-        outcome: {
-          // B2: the code the launcher measured (the shell arm asked for it). The two
-          // null arms are the contract's own NOT-OBSERVED cases and neither is
-          // flattened into a 0: a timeout never saw an end (`types.ts:144-151`), and
-          // a code that is not a non-negative number cannot be reported as one —
-          // 128+signum is produced by the launcher for signal death, so anything
-          // negative reaching here would be a bug on the way up, and a bug is
-          // reported as "not observed" rather than as a number nobody measured.
-          // B3 adds no new null case: an aborted run reaches the same not-observed
-          // reading (the payload never reported an end to this race).
-          exitCode: timedOut ? null : (typeof exit.code === 'number' && exit.code >= 0 ? exit.code : null),
-          stdout,
-          stderr,
-          timedOut,
-          cancelled,
-          // B4: a drain that reached the real EOF on BOTH streams keeps the
-          // historical `false`; ANY other settle point — bound expiry, an early
-          // destroy, a close without end, an error — flips the existing "not the
-          // whole answer" bit (the drain answers complete ONLY on EOF). A stream
-          // that ended and was destroyed AFTER still counts complete, so a healthy
-          // run's post-end teardown never downgrades it. See `drainShellStdio`.
-          truncated: drained.complete !== true,
-        },
-        settlement: timedOut || aborted
-          ? { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' }
-          : { kind: 'completed' },
-      }
-    },
-  }
+// ── U6 PR3: the shell-class mechanics + the confined shell EXECUTOR moved
+// VERBATIM to the process family lane (`packages/tools/process-family/`,
+// owner role: see that lane's README). This center file keeps the OLD export
+// surface as a re-export so every pinned consumer — a5b2-exit-code-fidelity,
+// a5b3-cancel-leg, alpha5-glue7-plane-backends, team-tool-plane — resolves
+// UNCHANGED (the PR2 fs-family precedent); the family lane is now the single
+// home of the shell-slice logic. SYSTEM_RX stays lane-internal (it never had
+// a center export to keep).
+import {
+  raceShellSettle,
+  shellCancelled,
+  SHELL_STREAM_DRAIN_MS,
+  drainShellStdio,
+  createConfinedShellBackend,
+  // SYSTEM_RX is a LIVE internal of this file too (the glob row's provider
+  // grants boot paths through the same entry builder — one home, no copy;
+  // PR2's `resolveAnchored` precedent).
+  SYSTEM_RX,
+} from '../../../../tools/process-family/src/index.mjs'
+export {
+  raceShellSettle,
+  shellCancelled,
+  SHELL_STREAM_DRAIN_MS,
+  drainShellStdio,
+  createConfinedShellBackend,
 }
 
 /**

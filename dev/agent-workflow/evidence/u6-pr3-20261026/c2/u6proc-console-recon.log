@@ -1,0 +1,10 @@
+[u6-proc] case proc:mounted: PASS
+[u6-proc] case proc:exec-door-fail-closed: PASS
+[u6-proc] case proc:member-ask-born-terminal: PASS
+[u6-proc] case proc:deny-zero-spawn: PASS
+[u6-proc] case proc:replay-settled-refusal: PASS
+[u6-proc] case proc:spoof-refusal: PASS
+[u6-proc] case proc:guard-off-channel: PASS
+[u6-proc] case proc:late-call-refused: PASS
+[u6-proc] case proc:ctl-native-untouched: PASS
+RUN-SUMMARY run=u5-u6-proc-u6prc5-2026-10-25T23-11-14-774Z-recon-2026-10-25T23-20-06-261Z suite=u6-proc overall=PASS cases=9 PASS:9 worlds=none
