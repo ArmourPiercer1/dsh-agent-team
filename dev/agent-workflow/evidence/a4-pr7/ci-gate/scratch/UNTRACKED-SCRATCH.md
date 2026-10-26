@@ -62,3 +62,16 @@ evidence loss is the failure this directory exists to prevent.
 | `red-control.sh` | 11 KiB |
 | `reproduce-tokenless-crash.mjs` | 2 KiB |
 | `setup.log` | 2 KiB |
+
+## 2026-10-26 correction: nine U7 captures were committed by accident, then untracked
+
+Between `d41168bd0` and `30ed4ec0b`, nine `census-20261026T*.json` captures (32.1 MB total) were
+swept into commits by `git add -A` in three U7 lanes (U7-6, U7-4a) — against this file's own rule.
+Found by the U7-3 lane while re-verifying its manuals, reported up, and untracked in one dedicated
+commit (`git rm --cached`, no history rewrite, files still present on disk where they were captured).
+
+The rule is unchanged and now states its own test: **a capture is committed only if the commit that
+adds it also cites the fact derived from it.** A 3.7 MB vitest report whose derived numbers already
+live in `../population-baseline/` is scratch; the derived numbers are the evidence.
+
+`git add -A` is the mechanism that broke this twice. Lane commits should name their paths.
