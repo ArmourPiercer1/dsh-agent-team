@@ -1,0 +1,173 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:ca50fe7a-d955-4919-8cd5-0fff64d5ccdb-1 (same provider, same request; registration+attribution are the producer's)
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:75c5ad6e-0961-49e7-8fef-5c0e56e71590-1 (same provider, same request; registration+attribution are the producer's)
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:f620a349-0b42-4c91-a3ff-43f6a3db4f73-1 (same provider, same request; registration+attribution are the producer's)
+
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts (19 tests | 8 failed) 2804ms
+     ✓ P1 accepted path: host receipt first, attribution second, counters ordered, honest receipt 184ms
+     × P2 the ring pull-sources carry payload bytes for the host registry (job_output reads these) 30ms
+     × P3 the cancel leg is wired BEFORE the spawn settles (kill racing the spawn still terminates) 13ms
+     ✓ P4 honest closes: already-finished vs kill-fault TERMINATION-UNCONFIRMED (request ≠ settlement) 19ms
+     ✓ P5 fail-closed refusals bear ZERO host side effects (no service, non-durable owner, preflight refusal) 10ms
+     ✓ P6 gateway-row absent and mapping-rejected both refuse the attribution and close honestly (no owner-less job is exposed) 7ms
+     × P7 a confined spawn refusal settles the job honestly (ring note + failed) — the birth stays attributed and readable 8ms
+     ✓ P8 counters: attributions <= hostJobsCreated <= producerCalls across a mixed sequence 11ms
+     ✓ P9 no second authority: the producer module imports NOTHING 1ms
+     ✓ X1 unattributed = typed zero-reach refusal; attributed = corded to owner, owner-mismatch to foreign 6ms
+     × E1 UNCONFIGURED: the by-name refusal is byte-identical and NOTHING is probed or spawned 2ms
+     × E2 CONFIGURED: the arm runs the SAME gates and hands the producer the SAME request + a lazy provider-spawn thunk 4ms
+     ✓ E3 CONFIGURED + producer refusal flows through typed (and the spawn stays the producer's call) 1ms
+     × K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output 1629ms
+     × K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement) 367ms
+     × K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry) 433ms
+     ✓ K4 ZERO FLIP: without the backgroundJobs key the background call keeps the byte-identical by-name refusal and the registry is NEVER touched (even with the trio mounted) 36ms
+     ✓ K5 DENIED ask: even an approved-by-name background call that the kernel REFUSES reaches producer, registry and provider ZERO times (attribution never precedes authorization) 27ms
+     ✓ K6 mount matrix: backgroundJobs without jobsEnabled / without the producer / without the provider / non-boolean are all typed mount refusals 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G1 — the producer: attribution follows the authorized host receipt (never precedes it) > P2 the ring pull-sources carry payload bytes for the host registry (job_output reads these)
+AssertionError: expected '' to contain 'U74A-RING-BYTES-42'
+
+- Expected
++ Received
+
+- U74A-RING-BYTES-42
+
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:319:24
+    317|       .find((o) => o.channel === 'stdout')!
+    318|     const first = src.read(0)
+    319|     expect(first.text).toContain('U74A-RING-BYTES-42')
+       |                        ^
+    320|     expect(first.lossy).toBe(false)
+    321|     const second = src.read(first.nextOffset)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G1 — the producer: attribution follows the authorized host receipt (never precedes it) > P3 the cancel leg is wired BEFORE the spawn settles (kill racing the spawn still terminates)
+AssertionError: expected 0 to be greater than or equal to 1
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:333:35
+    331|     expect(r.ok).toBe(false) // attribution refused ⇒ typed, nothing e…
+    332|     expect(String(r.failure.detail)).toContain('cancellation REQUESTED…
+    333|     expect(late.terminateCalls()).toBeGreaterThanOrEqual(1) // cancel …
+       |                                   ^
+    334|     const outcome = await (w2.svc.jobs.get('bash-u74a-1')!.hooks!.done)
+    335|     expect(outcome.status).toBe('killed')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G1 — the producer: attribution follows the authorized host receipt (never precedes it) > P7 a confined spawn refusal settles the job honestly (ring note + failed) — the birth stays attributed and readable
+AssertionError: expected '[governed background] confined spawn …' to contain 'confined spawn refused: landlock-deni…'
+
+- Expected
++ Received
+
+- confined spawn refused: landlock-denied
++ [governed background] confined spawn refused: confined-refused
++
+
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:399:30
+    397|     const spec = w.svc.lastSpec() as Record<string, any>
+    398|     const src = (spec.output as Array<{ channel: string; read: (n: num…
+    399|     expect(src.read(0).text).toContain('confined spawn refused: landlo…
+       |                              ^
+    400|   })
+    401|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G3 — the arm on the SAME confined provider row (not a second executor) > E1 UNCONFIGURED: the by-name refusal is byte-identical and NOTHING is probed or spawned
+TypeError: be.lastStageTrace is not a function
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:503:15
+    501|     })
+    502|     expect(be.execCount()).toBe(0)
+    503|     expect(be.lastStageTrace().length).toBe(0)
+       |               ^
+    504|     expect(counters.spawnReqs.length).toBe(0)
+    505|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G3 — the arm on the SAME confined provider row (not a second executor) > E2 CONFIGURED: the arm runs the SAME gates and hands the producer the SAME request + a lazy provider-spawn thunk
+TypeError: be.lastStageTrace is not a function
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:537:15
+    535|     expect(counters.spawnReqs.length).toBe(0)
+    536|     // probe DID run (the same gate sequence as foreground)
+    537|     expect(be.lastStageTrace()).toContain('probe')
+       |               ^
+    538|   })
+    539|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'started background job bash-u74a-1'
+
+Expected: "started background job bash-u74a-1"
+Received: "a5p5-refused kind=backend-failed code=background-attribution-refused detail=the gateway refused attribution (mapping-rejected: no execution-time definition identity to pin for ["u74a-realm","session-u74a-team-root","inst-1"]/bash (never-registered)) — an unattributed governed job is never exposed; close: cancellati"
+
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:708:22
+    706|     const w = await g4ProducerMount()
+    707|     const out = await w.row(w.owner, 'team_bash').execute({ command: '…
+    708|     expect(out.text).toContain('started background job bash-u74a-1')
+       |                      ^
+    709|     expect(out.text).toContain('exit=not-observed') // the CALL honest…
+    710|     expect(w.svc.startCalls()).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)
+AssertionError: expected 'refused: unattributed-job — the Team …' to match /request/i
+
+- Expected:
+/request/i
+
++ Received:
+"refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)"
+
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:733:23
+    731|     expect(w.svc.startCalls()).toBe(1)
+    732|     const kill = await w.row(w.owner, 'job_kill').execute({ job_id: 'b…
+    733|     expect(kill.text).toMatch(/request/i)
+       |                       ^
+    734|     const outcome = await w.svc.jobs.get('bash-u74a-1')!.hooks!.done
+    735|     expect(outcome.status).toBe('killed')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry)
+AssertionError: expected 'refused: unattributed-job — the Team …' to match /owner-mismatch|not your job|owner/i
+
+- Expected:
+/owner-mismatch|not your job|owner/i
+
++ Received:
+"refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)"
+
+ ❯ packages/runtime/test/u74a-jobs-producer.test.ts:745:23
+    743|     const legs = w.legs()
+    744|     const fOut = await w.row(w.foreign, 'job_output').execute({ job_id…
+    745|     expect(fOut.text).toMatch(/owner-mismatch|not your job|owner/i)
+       |                       ^
+    746|     const fList = await w.row(w.foreign, 'job_list').execute({}, { age…
+    747|     expect(fList.text).not.toContain('bash-u74a-1')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 11 passed (19)
+   Start at  10:53:19
+   Duration  4.52s (transform 2.17s, setup 0ms, import 1.35s, tests 2.80s, environment 0ms)
+
+EXIT=1

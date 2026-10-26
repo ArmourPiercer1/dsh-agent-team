@@ -1,0 +1,203 @@
+{
+  "plant": false,
+  "runId": "u74a-main-1",
+  "laneDone": {
+    "bg": false,
+    "out": true,
+    "list": false,
+    "killLive": false,
+    "killDone": false,
+    "fout": true,
+    "fplant": true,
+    "ctl": true,
+    "leader": true
+  },
+  "worldId": "u5u74a-20261026T11-35-50Z",
+  "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74a-20261026T11-35-50Z/instance-port3183.log",
+  "teamSessionId": "session-u74a-root-u5u74a-20261026t11-35-50z",
+  "canaryMount": {
+    "status": 200,
+    "requests": 0
+  },
+  "surface": {
+    "surfaceCount": 26,
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary"
+    ]
+  },
+  "claims": {
+    "bg": "U74A_BG_CLAIM_u5u74a-20261026t11-35-50z",
+    "list": "U74A_LIST_CLAIM_u5u74a-20261026t11-35-50z",
+    "liveWarm": "U74A_LIVE_WARM_u5u74a-20261026t11-35-50z",
+    "liveFinal": "U74A_LIVE_FINAL_u5u74a-20261026t11-35-50z",
+    "done": "U74A_DONE_CLAIM_u5u74a-20261026t11-35-50z",
+    "ctl": "U74A_CTL_CLAIM_u5u74a-20261026t11-35-50z"
+  },
+  "jobIds": [],
+  "bgReceipt": null,
+  "outResult": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+  "listResult": null,
+  "listJobId": null,
+  "killLiveJobId": null,
+  "killLiveKill": null,
+  "killLiveOutEarly": null,
+  "killLiveOutLate": null,
+  "killDoneJobId": null,
+  "killDoneOutput": null,
+  "killDoneKill": null,
+  "foreignOut": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+  "foreignPlanted": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+  "ctlResult": "Error: invalid arguments: missing required property \"description\"",
+  "rootKernelMentions": 0,
+  "memberIds": [
+    "inst-0qr3n080vcz0",
+    "inst-08svsjn0q1wg",
+    "inst-1nn88dj1ae1k",
+    "inst-0b49m9l0g9a1",
+    "inst-1x4z6pr0o8i1",
+    "inst-1w890nh1fo7x",
+    "inst-03xzubg0q1dm"
+  ],
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 8,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read,job_output,job_list,job_kill] realm=u74a-realm-u5u74a-20261026t11-35-50z"
+    },
+    "job_output": {
+      "count": 8,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read,job_output,job_list,job_kill] realm=u74a-realm-u5u74a-20261026t11-35-50z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5bg: producer-mounted": {
+      "count": 8,
+      "sample": "[dsh-agent-team] a5bg: producer-mounted instance=inst-03xzubg0q1dm session=session-team-child-48bb93c19575e2e0ae63c24557d33636"
+    },
+    "a5bg: attributed hostJobId=": {
+      "count": 0,
+      "sample": null
+    },
+    "a5bg:": {
+      "count": 8,
+      "sample": "[dsh-agent-team] a5bg: producer-mounted instance=inst-03xzubg0q1dm session=session-team-child-48bb93c19575e2e0ae63c24557d33636"
+    }
+  },
+  "attributedLog": [],
+  "settle": {
+    "killLiveLines": 0,
+    "plantedLines": 0
+  },
+  "startedJobReceipts": 0,
+  "askRows": [
+    {
+      "requestId": "ctrl-03yj2gc0dzllxj0xsdk6q0q3",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": false,
+      "resolveStatus": 200
+    },
+    {
+      "requestId": "ctrl-0mxrnsg0v27qir1co0rb605e",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": false,
+      "resolveStatus": 200
+    },
+    {
+      "requestId": "ctrl-0811kzd0dgvska14ukfo71hk",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": false,
+      "resolveStatus": 200
+    },
+    {
+      "requestId": "ctrl-12nitc012842t7050d2oa1go",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": false,
+      "resolveStatus": 200
+    }
+  ],
+  "askResolutionsTotal": 4,
+  "armingRows": [],
+  "controlRowsTotal": 0,
+  "trioControlRows": [],
+  "hostAlive": true,
+  "record": {
+    "schema": "u5-run-record/1",
+    "runId": "u74a-main-1",
+    "suite": "u7-4a-jobs",
+    "startedAt": "2026-10-26T11:35:50.696Z",
+    "selectedCases": [
+      "u74a:mounted",
+      "u74a:bg-receipt-carries-host-job-id",
+      "u74a:attributed-server-side",
+      "u74a:ring-bytes-via-job-output-wait",
+      "u74a:list-shows-owner",
+      "u74a:kill-live-requested",
+      "u74a:kill-finished-honest",
+      "u74a:foreign-owner-mismatch",
+      "u74a:planted-unattributed",
+      "u74a:native-ctl-unaffected",
+      "u74a:exactly-once-approvals",
+      "stable-instance-unchanged"
+    ],
+    "bindings": {
+      "teamSha": "496a3980fcd0f427e0c888e7dc63b10d2ae1b627",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "plant": false,
+      "worldIds": [
+        "u5u74a-20261026T11-35-50Z"
+      ],
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/tests/deepseek-harness-test-use",
+      "provider": {
+        "kind": "mock-deepseek",
+        "base": "injected http://127.0.0.1:<leased-port>"
+      },
+      "askLaneDisclosure": "member bash asks settle EXACTLY ONCE through the PUBLIC team.resolveControl v4 remote seam (the GUI human-lane endpoint); discovery of pending rows rides this suite's read-only /__u74a/controls probe row with the p6t6 observer as disclosed fallback; no token invented, no private seam."
+    },
+    "cases": [],
+    "hostStarts": {
+      "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/.artifacts/tmp/u74a-host-starts.jsonl",
+      "thisRunCount": 1,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-26T11:36:00.669Z",
+          "runId": "u74a-main-1",
+          "suite": "u7-4a-jobs",
+          "world": "u5u74a-20261026T11-35-50Z",
+          "phase": "u74a-boot1"
+        }
+      ]
+    },
+    "boots": [
+      {
+        "phase": "u74a-boot1",
+        "world": "u5u74a-20261026T11-35-50Z",
+        "port": 3183,
+        "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74a-20261026T11-35-50Z/instance-port3183.log"
+      }
+    ]
+  }
+}

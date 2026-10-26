@@ -727,6 +727,63 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const jobsEnabled = jobsEnabledRaw === true
 
+  // U7-4a (user ruling 2026-10-26, item 2): `planeCfg.backgroundJobs` is the
+  // SAME-shaped CLOSED CONSUMPTION KEY for the governed BACKGROUND SPAWN arm
+  // on the shell row. ABSENT = FALSE (every shipped world keeps the
+  // by-name `background-not-supported` refusal byte-for-byte — the zero-flip
+  // law by absence). When TRUE it REQUIRES the closed trio: `jobsEnabled`
+  // must be on (a background job the governed trio could not manage would
+  // violate the CI-05 delivery law, so the mount is REFUSED, never half-
+  // wired) and the trusted entry must have injected the producer at
+  // `backends.backgroundJobs` (absent = config defect: the arm exists only
+  // with its attribution producer, never as an anonymous spawn lane).
+  const backgroundJobsRaw = input.plane?.backgroundJobs
+  if (backgroundJobsRaw !== undefined && typeof backgroundJobsRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: `planeCfg.backgroundJobs must be a boolean when present — got ${JSON.stringify(backgroundJobsRaw) ?? String(backgroundJobsRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const backgroundJobs = backgroundJobsRaw === true
+  const backgroundProducer = input.backends?.backgroundJobs ?? null
+  if (backgroundJobs === true && jobsEnabled !== true) {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: 'planeCfg.backgroundJobs=true requires planeCfg.jobsEnabled=true: a governed background job that the job_list/job_output/job_kill trio could not manage must never be born (fail closed, U7-4a)',
+    }
+  }
+  if (backgroundJobs === true && (backgroundProducer === null || typeof backgroundProducer.accept !== 'function')) {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: 'planeCfg.backgroundJobs=true requires the attribution producer at backends.backgroundJobs (the trusted entry wires it only with the named jobs bridge + live gateway row; an unattributed spawn lane is refused, never mounted — U7-4a)',
+    }
+  }
+  if (backgroundJobs === true && (input.plane?.confinedProvider ?? null) === null) {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: 'planeCfg.backgroundJobs=true requires planeCfg.confinedProvider: the governed background arm is the SAME confined provider row (no provider = no arm to arm — the mount is refused instead of silently keeping the by-name refusal while the key says on — U7-4a)',
+    }
+  }
+  if (backgroundJobs === true && (input.plane?.names?.bash ?? 'team_bash') !== 'bash') {
+    // THE CREATING-LANE PIN LAW (frozen law, not renegotiable here): the
+    // gateway's creation-lane pin feeds ONLY from the feed-readable name
+    // 'bash' — the SHELL-TAKEOVER spelling (u6-pr4 D-group: "the creating
+    // lane ('bash') is a placed, feed-readable lane — the law the gateway's
+    // C-BIND checks"). A mount that keeps the `team_bash` alias has NO
+    // 'bash' placement, so EVERY attribution its producer could attempt
+    // would die `mapping-rejected` — jobs born unattributable. That is a
+    // half-wired background lane, refused at the mount, never attempted.
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: 'planeCfg.backgroundJobs=true requires planeCfg.names.bash="bash" (the shell-takeover spelling): the creating-lane pin is feed-readable only under the native name, and jobs that could never be ATTRIBUTED must never be born (U7-4a)',
+    }
+  }
+
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
   // generation read for this mount, asked FRESH at every point that needs an
   // authority generation — the mount kick, EACH admission's construction, and
@@ -1616,6 +1673,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
       cwdRoot: typeof fsInstance?.rootDir === 'string' ? fsInstance.rootDir : input.plane?.workingDir,
       confined: confinedCfg,
       observe: logBackend('a5g7-shell'),
+      // U7-4a: the governed background arm — present ONLY when both closed
+      // keys said on AND the trusted entry injected its producer (validated
+      // above; absent otherwise, byte-for-byte). The arm is THIS SAME
+      // provider row, not a second executor.
+      ...(backgroundJobs === true
+        ? { background: { enabled: true, accept: (ctx) => backgroundProducer.accept(ctx) } }
+        : {}),
     })
     : null
   // Gate 0c enforcement, part 3 (a5-globoff ④): the disabled form's shut face

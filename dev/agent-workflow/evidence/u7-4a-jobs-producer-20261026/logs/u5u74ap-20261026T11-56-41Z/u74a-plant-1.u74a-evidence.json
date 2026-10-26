@@ -1,0 +1,153 @@
+{
+  "plant": true,
+  "runId": "u74a-plant-1",
+  "laneDone": {
+    "bg": true,
+    "leader": true
+  },
+  "worldId": "u5u74ap-20261026T11-56-41Z",
+  "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74ap-20261026T11-56-41Z/instance-port3183.log",
+  "teamSessionId": "session-u74a-team-u5u74ap-20261026t11-56-41z",
+  "canaryMount": {
+    "status": 200,
+    "requests": 0
+  },
+  "surface": {
+    "surfaceCount": 26,
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary"
+    ]
+  },
+  "claims": {
+    "bg": "U74A_BG_CLAIM_u5u74ap-20261026t11-56-41z",
+    "list": "U74A_LIST_CLAIM_u5u74ap-20261026t11-56-41z",
+    "liveWarm": "U74A_LIVE_WARM_u5u74ap-20261026t11-56-41z",
+    "liveFinal": "U74A_LIVE_FINAL_u5u74ap-20261026t11-56-41z",
+    "done": "U74A_DONE_CLAIM_u5u74ap-20261026t11-56-41z",
+    "ctl": "U74A_CTL_CLAIM_u5u74ap-20261026t11-56-41z"
+  },
+  "jobIds": [],
+  "bgReceipt": "a5p5-refused kind=backend-failed code=background-not-supported detail=background spawn is not implemented by the confined-exec row (refused by name, never reinterpreted as a foreground run)",
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 2,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read,job_output,job_list,job_kill] realm=u74a-realm-u5u74ap-20261026t11-56-41z"
+    },
+    "job_output": {
+      "count": 2,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read,job_output,job_list,job_kill] realm=u74a-realm-u5u74ap-20261026t11-56-41z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5bg: producer-mounted": {
+      "count": 0,
+      "sample": null
+    },
+    "a5bg: attributed hostJobId=": {
+      "count": 0,
+      "sample": null
+    },
+    "a5bg:": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "attributedLog": [],
+  "settle": {
+    "killLiveLines": 0,
+    "plantedLines": 0
+  },
+  "startedJobReceipts": 0,
+  "askRows": [
+    {
+      "requestId": "ctrl-1a5rie30cclty60a0m3yp1e9",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1a5rie30cclty60a0m3yp1e9\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u74ap-20261026t11-56-41z\"},\"scope\":{\"rootSessionId\":\"session"
+    },
+    {
+      "requestId": "ctrl-1oh2iex1pdje3q0sikaov0e3",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1oh2iex1pdje3q0sikaov0e3\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u74ap-20261026t11-56-41z\"},\"scope\":{\"rootSessionId\":\"session"
+    }
+  ],
+  "askResolutionsTotal": 2,
+  "armingRows": [],
+  "controlRowsTotal": 0,
+  "trioControlRows": [],
+  "hostAlive": true,
+  "record": {
+    "schema": "u5-run-record/1",
+    "runId": "u74a-plant-1",
+    "suite": "u7-4a-jobs",
+    "startedAt": "2026-10-26T11:56:41.618Z",
+    "selectedCases": [
+      "u74a:plant-refused",
+      "u74a:plant-no-producer",
+      "u74a:plant-no-jobs",
+      "stable-instance-unchanged"
+    ],
+    "bindings": {
+      "teamSha": "496a3980fcd0f427e0c888e7dc63b10d2ae1b627",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "plant": true,
+      "worldIds": [
+        "u5u74ap-20261026T11-56-41Z"
+      ],
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/tests/deepseek-harness-test-use",
+      "provider": {
+        "kind": "mock-deepseek",
+        "base": "injected http://127.0.0.1:<leased-port>"
+      },
+      "askLaneDisclosure": "member bash asks settle EXACTLY ONCE through the PUBLIC team.resolveControl v4 remote seam (the GUI human-lane endpoint); discovery of pending rows rides this suite's read-only /__u74a/controls probe row with the p6t6 observer as disclosed fallback; no token invented, no private seam."
+    },
+    "cases": [],
+    "hostStarts": {
+      "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/.artifacts/tmp/u74a-host-starts.jsonl",
+      "thisRunCount": 1,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-26T11:56:52.265Z",
+          "runId": "u74a-plant-1",
+          "suite": "u7-4a-jobs",
+          "world": "u5u74ap-20261026T11-56-41Z",
+          "phase": "u74a-plant-boot1"
+        }
+      ]
+    },
+    "boots": [
+      {
+        "phase": "u74a-plant-boot1",
+        "world": "u5u74ap-20261026T11-56-41Z",
+        "port": 3183,
+        "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74ap-20261026T11-56-41Z/instance-port3183.log"
+      }
+    ]
+  }
+}

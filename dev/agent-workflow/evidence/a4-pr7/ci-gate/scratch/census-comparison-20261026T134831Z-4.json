@@ -1,0 +1,35 @@
+{
+  "head": "16475b5ec99e675081975a41a5b83bf4e188d1de",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261026T134831Z-4-1.json",
+      "files": 627,
+      "legs": 7972,
+      "ids": []
+    }
+  ],
+  "comparison": {
+    "verdict": "pass",
+    "setIdentical": true,
+    "countsMoved": true,
+    "added": [],
+    "newReds": [],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 627,
+      "legs": 7972,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "627f/7972l",
+      "totalsNote": "captured 627f/7972l vs baseline-declared 626 / 7936"
+    }
+  }
+}

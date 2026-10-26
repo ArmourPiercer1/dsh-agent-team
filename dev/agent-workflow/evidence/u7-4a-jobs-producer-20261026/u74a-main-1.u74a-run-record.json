@@ -1,0 +1,336 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u74a-main-1",
+  "suite": "u7-4a-jobs",
+  "startedAt": "2026-10-26T11:35:50.696Z",
+  "selectedCases": [
+    "u74a:mounted",
+    "u74a:bg-receipt-carries-host-job-id",
+    "u74a:attributed-server-side",
+    "u74a:ring-bytes-via-job-output-wait",
+    "u74a:list-shows-owner",
+    "u74a:kill-live-requested",
+    "u74a:kill-finished-honest",
+    "u74a:foreign-owner-mismatch",
+    "u74a:planted-unattributed",
+    "u74a:native-ctl-unaffected",
+    "u74a:exactly-once-approvals",
+    "stable-instance-unchanged"
+  ],
+  "bindings": {
+    "teamSha": "496a3980fcd0f427e0c888e7dc63b10d2ae1b627",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "plant": false,
+    "worldIds": [
+      "u5u74a-20261026T11-35-50Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "askLaneDisclosure": "member bash asks settle EXACTLY ONCE through the PUBLIC team.resolveControl v4 remote seam (the GUI human-lane endpoint); discovery of pending rows rides this suite's read-only /__u74a/controls probe row with the p6t6 observer as disclosed fallback; no token invented, no private seam."
+  },
+  "cases": [
+    {
+      "id": "u74a:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-26T11:43:51.786Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "kernelHits": {
+        "a5g7: placement-feed rows=": 8,
+        "job_output": 8,
+        "a5-plane: mount-REFUSED": 0,
+        "a5-plane: placement-REFUSED": 0,
+        "PLANE_KERNEL_UNAVAILABLE": 0,
+        "PLANE_JOBS_REGISTRATION_REFUSED": 0,
+        "PLANE_PROCESS_REGISTRATION_REFUSED": 0,
+        "a5bg: producer-mounted": 8,
+        "a5bg: attributed hostJobId=": 0,
+        "a5bg:": 8
+      },
+      "note": "ONE kernel: read + the governed bash takeover row + the trio (first named bridge) + the background producer armed on the shell row; every refusal names itself in the log"
+    },
+    {
+      "id": "u74a:bg-receipt-carries-host-job-id",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.788Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "jobId": null,
+      "bgHead": "",
+      "note": "the governed receipt carries the host job id in the producer wording (started background job <id> (governed: …))"
+    },
+    {
+      "id": "u74a:attributed-server-side",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.788Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "attributionsForJob": 0,
+      "attributedLines": [],
+      "note": "the host log line a5bg: attributed hostJobId=<id> (the producer's own echo) proves the gateway admit ran for THIS job — measured server-side, not from the transcript"
+    },
+    {
+      "id": "u74a:ring-bytes-via-job-output-wait",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "outHead": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+      "jobId": null,
+      "note": "the trio read the RING bytes the real confined process wrote (host-buffered: no transcript echo imitates them) plus the host status line; zero refusal"
+    },
+    {
+      "id": "u74a:list-shows-owner",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "listJobId": null,
+      "listRow": null,
+      "note": "the owner's governed job_list surfaces its attributed row (id [bash] status — label, the byte-identical bridge body)"
+    },
+    {
+      "id": "u74a:kill-live-requested",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "killLive": "",
+      "killLiveJobId": null,
+      "killLiveEarlyOut": "",
+      "killLiveLateOut": null,
+      "lateReadHappened": false,
+      "killLiveHostEvents": 0,
+      "note": "host kill answered requested — a REQUEST on the gateway (noteKillRequested), cancel-requested != terminated (PR1 Gate R4 honesty); the decisive late ring read past the FINAL window shows the warm bytes and NEVER the final bytes (a leaked job would print them); settle lines are detail only"
+    },
+    {
+      "id": "u74a:kill-finished-honest",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "killDone": "",
+      "killDoneOutHead": "",
+      "killDoneJobId": null,
+      "note": "the two kill forms never collapse: the finished job answers already-finished (settles nothing new) after its ring bytes + status proved the settle"
+    },
+    {
+      "id": "u74a:foreign-owner-mismatch",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "foreignOut": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+      "note": "the foreign viewer meets the gateway owner fence BEFORE the host (static detail, never the owner identity — C-GW): zero ring bytes, zero host vocabulary = zero reach"
+    },
+    {
+      "id": "u74a:planted-unattributed",
+      "verdict": "PASS",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "foreignPlanted": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+      "plantedSettleLines": 0,
+      "note": "the Team lane never carries an un-attributed id to the Host: typed, static-detail refusal before any host reach (CI-05); zero settle/cancel lines name the planted id"
+    },
+    {
+      "id": "u74a:native-ctl-unaffected",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "ctlHead": "Error: invalid arguments: missing required property \"description\"",
+      "rootKernelMentions": 0,
+      "note": "the boot-root session is not a Team mount: foreground native bash keeps its byte-identical posture, the kernel never spoke about those calls"
+    },
+    {
+      "id": "u74a:exactly-once-approvals",
+      "verdict": "FAIL",
+      "at": "2026-10-26T11:43:51.789Z",
+      "laneDone": {
+        "bg": false,
+        "out": true,
+        "list": false,
+        "killLive": false,
+        "killDone": false,
+        "fout": true,
+        "fplant": true,
+        "ctl": true,
+        "leader": true
+      },
+      "askRows": [
+        {
+          "requestId": "ctrl-03yj2gc0dzllxj0xsdk6q0q3",
+          "targetInstanceId": null,
+          "resolutions": 1,
+          "ok": false,
+          "resolveStatus": 200
+        },
+        {
+          "requestId": "ctrl-0mxrnsg0v27qir1co0rb605e",
+          "targetInstanceId": null,
+          "resolutions": 1,
+          "ok": false,
+          "resolveStatus": 200
+        },
+        {
+          "requestId": "ctrl-0811kzd0dgvska14ukfo71hk",
+          "targetInstanceId": null,
+          "resolutions": 1,
+          "ok": false,
+          "resolveStatus": 200
+        },
+        {
+          "requestId": "ctrl-12nitc012842t7050d2oa1go",
+          "targetInstanceId": null,
+          "resolutions": 1,
+          "ok": false,
+          "resolveStatus": 200
+        }
+      ],
+      "askResolutionsTotal": 4,
+      "trioControlRows": [],
+      "armingRows": [],
+      "note": "the governed bash lane ran on approved asks only, each durable row settled exactly once via the PUBLIC team.resolveControl v4 seam; the trio touched no ledger (zero job_* control rows)"
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-26T11:43:52.607Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (never touched beyond the probe)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/.artifacts/tmp/u74a-host-starts.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-26T11:36:00.669Z",
+        "runId": "u74a-main-1",
+        "suite": "u7-4a-jobs",
+        "world": "u5u74a-20261026T11-35-50Z",
+        "phase": "u74a-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "u74a-boot1",
+      "world": "u5u74a-20261026T11-35-50Z",
+      "port": 3183,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74a-20261026T11-35-50Z/instance-port3183.log"
+    }
+  ],
+  "hostBasePost": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "phase": "post"
+  },
+  "globalPostChecks": {
+    "stableInstance": {
+      "pre": 401,
+      "post": 401,
+      "reachablePre": true,
+      "reachablePost": true
+    },
+    "envScrubbedKeys": [],
+    "homesNet": {}
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-26T11:43:52.607Z"
+}
