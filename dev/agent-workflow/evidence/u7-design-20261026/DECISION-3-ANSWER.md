@@ -87,3 +87,16 @@ file-effect 受限"落地并写进发布声明，要么在需要网络隔离时�
 
 因此本裁决按用户"总体同意 B"执行：**Domain（R-G1F-2）从 Alpha.5 发布声明中排除并记录边界**；MCP 保持必交但
 按上述收窄声明 + 具名 Bridge 分阶段交付，未交付部分不得计入 G5 通过。
+
+## 4. 本机实测（2026-10-26，只读探针，无 Host 启动）
+
+- `bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent -- /bin/sh -c …` →
+  `bwrap: No permissions to create new namespace`（本机内核禁用非特权 user namespace）。宿主 runner 链会回落 Landlock。
+- `/sys/kernel/security/lsm` = `lockdown,capability,landlock,yama,apparmor`。
+- 宿主自带 `native/system/packages/linux-x64/bin/landlock-run --ro / --rw /dev/null -- /bin/sh -c 'echo x > /tmp/…'`
+  → stderr `landlock-run: partial enforcement (older Landlock ABI)`；写被拒（`Permission denied` → `WRITE-DENIED`）。
+
+含义：本机上 MCP stdio 受限启动**可行但为 `partial` file enforcement**（宿主 `SandboxEnforcement='partial'`），
+且 Landlock 旧 ABI 不含 TCP 网络规则 → 网络面在本机**确定不可控**。具名 MCP Bridge 必须把
+`enforcement` 原样写进 assurance 记录，`partial` 不得被上报成 `full`；需要 `full` 或网络隔离的声明在本环境
+只能 typed refusal（`SANDBOX_UNAVAILABLE`/assurance 不足），不得静默弱化启动。
