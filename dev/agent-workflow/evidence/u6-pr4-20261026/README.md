@@ -350,3 +350,24 @@ posture, stated plainly).
    `.artifacts/tmp/u6pr4-scratch/c2-logs/` (gitignored); where this file
    quotes a host-log line (boot 5's binder refusal), the quote is the
    retained artifact.
+
+## Review R2 (round 2) — independent review at `b9d0ddebf` (receipt)
+
+`dev/agent-workflow/evidence/u6-pr4-review-r2/REVIEW.md` (verbatim copy,
+committed at this round). Verdict VERBATIM: 「投机通过」 — findings 1–5
+carried, "none are new CORE defects". Independently re-verified at this
+head: byte-identity `71705d6e…` (region re-extract + master pre-move
+match), both frozen shas, protected-set zero diff, all explicit U6 C1
+files (15 files, 127 tests) + world-factory 28/28, the mount-side CI-05
+coverage (`agent-bindings` supplies every governed bridge through
+`ci05GovernedGatewayRow`, no raw-row construction path found; the
+region checks before `svc.wait/read/kill`; list filters through the
+same wrapped face), and one shared approval table. §10.6 ruling
+verbatim: "The final status G4-CORE-PASS / BRIDGE-BLOCKED is correct,
+not CORE BLOCKER … This does not constitute full G4-PASS, does not
+unlock S5/release, and requires the named attribution producer plus a
+valid live Team-lane run before ARC-C can be called green." — which is
+the exact two-named-items posture this evidence set states. Finding 3
+books the Team-lane stall as harness/test-world (no production runtime
+file changed between boot 4 and boots 5–7), Finding 4 the ctl race as
+test-world evidence debt — both carried, neither a bridge-law failure.
