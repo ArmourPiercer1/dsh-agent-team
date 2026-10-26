@@ -1,0 +1,2 @@
+DSH-CI-LEG leg=census verdict=fail seconds=560.5 detail=roots: nine (packages/*/test) via the root vitest config; baseline dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md = 0 titled reds + 0 collection files; captured 631f/8039l, 631f/8039l vs baseline-declared 626 / 7936; 2 captures, identical identity sets — clock: --testTimeout=90000 ms, an operator override above the 5000 ms default — COUNTS ALSO MOVED (631f/8039l,
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=560.5
