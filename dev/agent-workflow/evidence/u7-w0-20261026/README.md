@@ -256,3 +256,19 @@ Review: `dev/agent-workflow/evidence/u7-w0-review-r1/REVIEW.md` on branch
   world-factory dependency is `eb3-run-manifest` → `lib/run-record.mjs`, which is unchanged.
   `eb3-family-boundaries` walks `tests/**` and finds no cross-influence in the new
   `world-kinds/` and `suites/` modules.
+
+### Hosted census on `395f83970`: one red, judged a load flake that this diff does not cause
+
+`census-runtime` runs 40386788330, attempts 1 and 2 (one rerun), each report ONE new red:
+`packages/runtime/test/alpha5-glue7-plane-backends.test.ts › G6b CANDIDATE-A archive: the glob FACTORY (unwired)…`.
+
+- **The same tree splits between captures.** In attempt 2 (artifact transcripts), capture 1 has the
+  leg ✓ and capture 2 has it ×. The census grades the union, so the leg counts as red.
+- **What failed.** The assertion at `alpha5-glue7-plane-backends.test.ts:304` (`bad.ok` expected
+  `false`) received `true`. The glob for the invalid pattern `[unclosed` came back ok instead of
+  `rg-walker-error` once, under census load.
+- **Not caused by u7-w0.** This diff touches neither the spec nor `packages/tools/search-family/**`.
+  The leg passes locally 12/12. The concurrent, unrelated branch `task/u7-3fix-integration-order-20261026`
+  failed its census in the same minute with the same single red (run 40386960117, identity sets
+  DIFFER across captures). The pre-merge u7-w0 census run (40383853604) was green.
+- **Left out of this PR's scope.** u7-w0 does not edit the spec. The leg needs an owner.
