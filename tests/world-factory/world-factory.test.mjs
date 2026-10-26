@@ -486,9 +486,9 @@ test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid bluep
   assert.equal(doc.blueprintId, a.BP_MAIN_ID)
   const templates = doc.members.map((m) => m.templateId)
   assert.deepEqual(templates, ['worker', 'foreign'])
-  // the ring must CARRY the effect: every birth command tees to disk AND stdout
+  // the ring must CARRY the effect: every birth command APPENDS to disk AND reads back
   const cmds = a.cmds()
-  for (const c of [cmds.birth1, cmds.birth2, cmds.ctl]) assert.ok(c.includes('tee'), 'child stdout flows into the host ring (the management answer is then SERVER-side bytes)')
+  for (const c of [cmds.birth1, cmds.birth2, cmds.ctl]) assert.ok(c.includes('>>') && /\bcat\b|\becho\b/.test(c), 'child stdout flows into the host ring (the management answer is then SERVER-side bytes); flat append-mode writers — run 2 measured a tee into a NEW sub-directory REFUSED inside the bash sandbox')
   // the patch-layer emission the factory performs for this World type
   const emitted = emitPatchLayer(['t'], a.teamRows())
   assert.ok(emitted.includes('dsh-agent-team'))

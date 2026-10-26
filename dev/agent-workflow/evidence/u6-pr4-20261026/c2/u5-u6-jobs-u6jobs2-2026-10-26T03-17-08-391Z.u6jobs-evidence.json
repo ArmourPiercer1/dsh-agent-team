@@ -1,0 +1,116 @@
+{
+  "runId": "u5-u6-jobs-u6jobs2-2026-10-26T03-17-08-391Z",
+  "worldId": "u5u6jobs2-20261026T03-17-08Z",
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,job_output,job_list,job_kill] realm=u6jobs-realm-u5u6jobs2-20261026t03-17-08z"
+    },
+    "job_output": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,job_output,job_list,job_kill] realm=u6jobs-realm-u5u6jobs2-20261026t03-17-08z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_READ_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "claims": {
+    "claim1": "U6JOBS_CLAIM_u5u6jobs2-20261026t03-17-08z",
+    "killWarm": "U6JOBS_KILLWARM_u5u6jobs2-20261026t03-17-08z",
+    "killFinal": "U6JOBS_KILLFINAL_u5u6jobs2-20261026t03-17-08z",
+    "ctl": "U6JOBS_CTLCLAIM_u5u6jobs2-20261026t03-17-08z"
+  },
+  "claim1Text": null,
+  "killText": null,
+  "ctlText": null,
+  "jobIds": [],
+  "list1": null,
+  "output1": null,
+  "kill2": null,
+  "list2": null,
+  "foreignOutput": null,
+  "foreignKill": null,
+  "ctlOutput": "Error: unknown job job-unknown",
+  "trioUses": 1,
+  "controlRows": [],
+  "birthRow": {
+    "seen": false,
+    "resolved": false,
+    "resolutions": []
+  },
+  "settle": {
+    "killLines": 0,
+    "foreignKillLines": 0
+  },
+  "rootKernelMentions": 0,
+  "lanes": {
+    "work": true,
+    "foreign": false,
+    "leader": false,
+    "ctl": true
+  },
+  "debug": {
+    "worker": [
+      {
+        "name": "team_collect",
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u6jobs2-20261026t03-17-08z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u6jobs2-202"
+      },
+      {
+        "name": "team_collect",
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u6jobs2-20261026t03-17-08z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u6jobs2-202"
+      },
+      {
+        "name": "team_collect",
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u6jobs2-20261026t03-17-08z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u6jobs2-202"
+      },
+      {
+        "name": "team_collect",
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u6jobs2-20261026t03-17-08z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u6jobs2-202"
+      },
+      {
+        "name": "team_collect",
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u6jobs2-20261026t03-17-08z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u6jobs2-202"
+      },
+      {
+        "name": "team_collect",
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u6jobs2-20261026t03-17-08z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u6jobs2-202"
+      }
+    ],
+    "foreign": [],
+    "root": [
+      {
+        "name": "bash",
+        "result": "tee: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr4/tests/homes/u5u6jobs2-20261026T03-17-08Z/workspace/u6jobs-markers/u6jobs-ctl.txt: Permission denied\nU6JOBS_CTLCLAIM_u5u6jobs2-20261026t03-17-08z\n[Command f"
+      },
+      {
+        "name": "job_output",
+        "result": "Error: unknown job job-unknown"
+      }
+    ]
+  }
+}

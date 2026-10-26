@@ -66,7 +66,6 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
   const CREATE_ROOT = `session-u6jobs-team-${rs}`
   const blueprintDir = join(home, 'blueprints')
   const workspaceDir = join(home, 'workspace')
-  const markerDir = join(workspaceDir, 'u6jobs-markers')
 
   const markers = {
     MK_DISC: `U6JOBS_DISC_${rs}`,
@@ -81,22 +80,36 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
     killFinal: `U6JOBS_KILLFINAL_${rs}`,
     ctl: `U6JOBS_CTLCLAIM_${rs}`,
   }
+  // FLAT children of the workspace root — the proven oracle shape (PR3's
+  // u6-proc world wrote its disk facts exactly this way). Run 2 measured
+  // the alternative: `tee` into a NEW sub-directory is refused inside the
+  // bash sandbox (`Permission denied`), and an effect that cannot reach
+  // the disk is no oracle at all.
   const files = {
-    claim1: join(markerDir, 'u6jobs-claim.txt'),
-    kill: join(markerDir, 'u6jobs-kill.txt'),
-    ctl: join(markerDir, 'u6jobs-ctl.txt'),
+    claim1: join(workspaceDir, 'u6jobs-claim.txt'),
+    kill: join(workspaceDir, 'u6jobs-kill.txt'),
+    ctl: join(workspaceDir, 'u6jobs-ctl.txt'),
   }
   const tokens = (tok) => `[U6JOBS-TOK-${tok}-${rs}]`
   const md = (p) => `"${p}"`
-  const cmds = () => ({
-    // Birth 1: writes the CLAIM to disk immediately (the independent
-    // Oracle fact) and keeps the job RUNNING for the management legs.
-    birth1: `mkdir -p ${md(markerDir)} && printf '%s\\n' ${md(claims.claim1)} | tee ${md(files.claim1)} && sleep 90`,
-    // Birth 2 (the cancel subject): warm marker NOW, FINAL marker only if
-    // the host settles NO cancellation — a killed job never writes it.
-    birth2: `mkdir -p ${md(markerDir)} && printf 'warm\\n' | tee ${md(files.kill)} && sleep 35 && printf '%s\\n' ${md(claims.killFinal)} | tee -a ${md(files.kill)}`,
-    ctl: `mkdir -p ${md(markerDir)} && printf '%s\\n' ${md(claims.ctl)} | tee ${md(files.ctl)} && sleep 45`,
-  })
+  function cmds() {
+    // append-mode writers under the RESOLVED workspace root (the confined
+    // provider validates containment against the realpath, like
+    // planeRootDir() does); the `cat`/`echo` read-back keeps the effect
+    // flowing into the job's RING, so the management answer the trio
+    // returns is SERVER-side bytes, not a transcript echo.
+    const root = planeRootDir()
+    const f = (k) => files[k].replace(workspaceDir, root)
+    return {
+      // Birth 1: writes the CLAIM to disk immediately (the independent
+      // Oracle fact) and keeps the job RUNNING for the management legs.
+      birth1: `printf '%s\\n' ${md(claims.claim1)} >> ${md(f('claim1'))} && cat ${md(f('claim1'))} && sleep 90`,
+      // Birth 2 (the cancel subject): warm marker NOW, FINAL marker only
+      // if the host settles NO cancellation — a killed job never writes it.
+      birth2: `printf 'warm\\n' >> ${md(f('kill'))} && cat ${md(f('kill'))} && sleep 35 && printf '%s\\n' ${md(claims.killFinal)} >> ${md(f('kill'))} && echo kill-final`,
+      ctl: `printf '%s\\n' ${md(claims.ctl)} >> ${md(f('ctl'))} && cat ${md(f('ctl'))} && sleep 45`,
+    }
+  }
 
   function planeRootDir() {
     try { return realpathSync(workspaceDir) } catch { return workspaceDir }
@@ -234,7 +247,6 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
   function writePreBootFiles() {
     mkdirSync(blueprintDir, { recursive: true })
     mkdirSync(workspaceDir, { recursive: true })
-    mkdirSync(markerDir, { recursive: true })
     writeFileSync(join(blueprintDir, 'anchor.yaml'), BP_ANCHOR_YAML)
     writeFileSync(join(home, 'p6t6-directive.json'), JSON.stringify({
       boot: 1, phase: 'create', reportDir, runStamp: String(runStamp), rootSessionId: ROOT,
@@ -252,7 +264,7 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
   return {
     rs, ROOT, CREATE_ROOT, BP_ANCHOR_ID, BP_MAIN_ID, BASE_PRESET_ID, PLANE_REALM_ID,
     LAUNCHER, launcherSha,
-    blueprintDir, workspaceDir, markerDir, files, claims, markers, tokens,
+    blueprintDir, workspaceDir, files, claims, markers, tokens,
     teamRowConfig, BP_ANCHOR_YAML, mainBlueprintYaml, teamRows,
     writePreBootFiles, writeMainBlueprint, readEffect, cmds,
   }
