@@ -146,6 +146,7 @@ export default tseslint.config(
       'packages/runtime/test/t12a-live-bridge.mjs',
       'packages/runtime/src/plugin/upstream-resolver.mjs',
       'packages/runtime/src/plugin/live/agent-bindings.mjs',
+      'packages/testkit/census/**/*.mjs', // U7-0 EB2-A census library + fixture builder (plain-node diagnostic code)
     ],
     languageOptions: { globals: { ...globals.node } },
   },

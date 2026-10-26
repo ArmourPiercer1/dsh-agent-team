@@ -1,0 +1,223 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0
+
+···········xxxxxxxxxxxxx·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B2: identity comparison keys on (scope, name) > B2a — same-boot swap in the NON-FIRST fixture holder fires exactly once, attributed to that scope
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:279:25
+    277|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    278|     const rows = result.drift.filter((d) => d.kind === 'definition-ide…
+    279|     expect(rows.length).toBe(1)
+       |                         ^
+    280|     expect(rows[0]?.scope_id).toBe('agent-1')
+    281|     expect(rows[0]?.scope_class).toBe('native')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B2: identity comparison keys on (scope, name) > B2b — swap in a SECOND lane of the same class on the pinned LIVE team baseline: exactly one row, own scope
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:291:25
+    289|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    290|     const rows = result.drift.filter((d) => d.kind === 'definition-ide…
+    291|     expect(rows.length).toBe(1)
+       |                         ^
+    292|     expect(rows[0]?.scope_id).toBe('agent-2')
+    293|     expect(rows[0]?.scope_class).toBe('native')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B2: identity comparison keys on (scope, name) > B2c — the pre-fix misattribution (one swap reported under BOTH classes) cannot recur
+AssertionError: expected undefined to be 'global' // Object.is equality
+
+- Expected:
+"global"
+
++ Received:
+undefined
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:303:37
+    301|     const identities = result.drift.filter((d) => d.kind === 'definiti…
+    302|     expect(identities.length).toBe(1)
+    303|     expect(identities[0]?.scope_id).toBe('global')
+       |                                     ^
+    304|   })
+    305| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — M1: every DRIFT kind is separately planted and asserted > M1-placement — moving ONLY identity_vs_global reports placement-identity-signal, never definition-shape
+AssertionError: expected 'definition-shape' to be 'placement-identity-signal' // Object.is equality
+
+Expected: "placement-identity-signal"
+Received: "definition-shape"
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:314:35
+    312|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    313|     expect(result.counts.drift).toBe(1)
+    314|     expect(result.drift[0]?.kind).toBe('placement-identity-signal')
+       |                                   ^
+    315|     expect(result.drift.some((d) => d.kind === 'definition-shape')).to…
+    316|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — M1: every DRIFT kind is separately planted and asserted > M6 — same-boot change_seq move with unchanged shape reports revision (kills the revision mutant)
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:325:33
+    323|     t.change_seq = t.change_seq + 1
+    324|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    325|     expect(result.counts.drift).toBe(1)
+       |                                 ^
+    326|     expect(result.drift[0]?.kind).toBe('revision')
+    327|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — M1: every DRIFT kind is separately planted and asserted > M7 — a moved source attribution reports the source kind (kills the source mutant)
+AssertionError: expected 0 to be greater than 0
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:335:25
+    333|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    334|     const rows = result.drift.filter((d) => d.kind === 'source')
+    335|     expect(rows.length).toBeGreaterThan(0)
+       |                         ^
+    336|     expect(rows[0]?.name).toBe('read')
+    337|     expect(rows[0]?.scope_id).toBe('agent-1')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B3: AuthoritativeToolSources is a real third side > B3a — REQUIRED obligation without ANY source registration is a finding (digest moves)
+TypeError: Cannot read properties of undefined (reading 'find')
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:348:40
+    346|     const out = reconcile({ expected: pair.expected, sources, observed…
+    347|     const result = mustOk(out)
+    348|     const row = result.source_findings.find((f) => f.kind === 'require…
+       |                                        ^
+    349|     expect(row).toBeTruthy()
+    350|     expect(row?.authorized).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B3: AuthoritativeToolSources is a real third side > B3b — a source row with no obligation is a finding naming it
+TypeError: Cannot read properties of undefined (reading 'find')
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:359:40
+    357|     sources.static_sources.host.push({ name: 'planted_source_only_tool…
+    358|     const result = mustOk(reconcile({ ...pair, observed: loadFixture()…
+    359|     const row = result.source_findings.find((f) => f.kind === 'source-…
+       |                                        ^
+    360|     expect(row).toBeTruthy()
+    361|     expect(row?.authorized).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B3: AuthoritativeToolSources is a real third side > B3c — an observed name absent from the sources side is a finding (sources disagree)
+TypeError: Cannot read properties of undefined (reading 'some')
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:368:35
+    366|     sources.static_sources.host = sources.static_sources.host.filter((…
+    367|     const result = mustOk(reconcile({ ...pair, observed: loadFixture()…
+    368|     expect(result.source_findings.some((f) => f.kind === 'observed-not…
+       |                                   ^
+    369|   })
+    370|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B3: AuthoritativeToolSources is a real third side > B3-gen — the generator REFUSES to emit REQUIRED without any source (scratch replay, seed tampered)
+TypeError: Cannot read properties of undefined (reading 'filter')
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:377:39
+    375|       const seedFile = join(dir, 'sources', 'u1c-static-source-census.…
+    376|       const seed = JSON.parse(readFileSync(seedFile, 'utf8')) as { hos…
+    377|       seed.host_rows = seed.host_rows.filter((r) => r.name !== 'read')
+       |                                       ^
+    378|       writeFileSync(seedFile, JSON.stringify(seed, null, 2) + '\n')
+    379|       let refused = false
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B3: AuthoritativeToolSources is a real third side > trusted-config difference set is an explicit verdict section (B1 可信配置差集)
+AssertionError: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:397:16
+    395|     const result = mustOk(reconcile({ ...pair, observed: loadFixture()…
+    396|     const tc = result.trusted_config
+    397|     expect(tc).toBeTruthy()
+       |                ^
+    398|     expect(tc?.provider.observed_identity).toBe('NOT_OBSERVABLE')
+    399|     expect(tc?.provider.trusted_side).toBe('authoritative-tool-sources…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — M3: a known name in the WRONG scope class is UNKNOWN > web_fetch surfacing on a governed team lane reports scope-mismatch, authorized:false
+AssertionError: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:415:17
+    413|     const result = mustOk(reconcile({ ...pair, observed: withDigests(i…
+    414|     const row = result.unknown.find((u) => u.name === 'web_fetch')
+    415|     expect(row).toBeTruthy()
+       |                 ^
+    416|     expect(row?.classification).toBe('scope-mismatch')
+    417|     expect(row?.authorized).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — m2/m5: digest coverage and canonical invariance > m2 — source_class and scope_id are digest-eligible facts now
+AssertionError: expected 'sha256:830b0007bdd66527532964e17e1f10…' not to be 'sha256:830b0007bdd66527532964e17e1f10…' // Object.is equality
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:425:48
+    423|     const a = loadFixture()
+    424|     rowIn(a, 'agent-1', 'read').source_class = 'team-native'
+    425|     expect(withDigests(a).snapshot_digest).not.toBe(PINNED.fixture_sna…
+       |                                                ^
+    426|     const b = loadFixture()
+    427|     scope(b, 'agent-1').scope_id = 'agent-renamed'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 12 passed (25)
+   Start at  12:35:32
+   Duration  753ms (transform 163ms, setup 0ms, import 223ms, tests 271ms, environment 0ms)
+
+
+=== MUTANT-KILL ADDENDUM (same day, post-fix) ===
+M6 (revision drift emission deleted) + M7 (source drift emission deleted) applied to reconcile.mjs:
+vitest -t 'M6|M7' → FAIL 2 | 23 skipped (BOTH KILLED); after restore: 25 passed (25).
+
+=== B3-gen empirical pre/post proof (final-form control, real repo context in scratch):
+pre-fix generator (HEAD 2f630e766) + seed missing host 'read' → EXIT 0 (silently emitted REQUIRED unsourced => control RED pre-fix)
+post-fix generator, same scratch → EXIT 1 (refused, names the tool).
