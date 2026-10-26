@@ -72,12 +72,12 @@
  *
  * @module runtime/plugin/live/team-tool-plane
  */
-import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
+import { createGovernedShellRowDefinition, createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
 import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-import { createAnchoredSearchBackend, createConfinedShellBackend } from './plane-effect-backends.mjs'
+import { createAnchoredSearchBackend } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 // U6 PR2 (U6 slice plan PR2 — the read family moves): the governed `read`
 // row's Family halves live in `packages/tools/fs-family/` (owner role: that
@@ -87,6 +87,20 @@ import { createAnchoredGlobBackend } from './glob-backend.mjs'
 import { buildReadRowDefinition, buildFsReadContribution, createGovernedReadExecutor } from '../../../../tools/fs-family/src/index.mjs'
 import * as fsFamilyReadMechanics from '../../../../tools/fs-family/src/fs-mechanics.mjs'
 import * as fsFamilyReadPresentation from '../../../../tools/fs-family/src/read-presentation.mjs'
+// U6 PR3 (U6 slice plan PR3 — ARC-B part 2): the governed SHELL row joins
+// the SAME Kernel as the read row. The process family lane owns the shell
+// mechanics, the confined executor (CI-07 named provider), the pure shell
+// normalizer, the row Definition and the contribution descriptor (owner
+// role: that lane's README). The plane remains the TRUSTED ASSEMBLY POINT:
+// it validates the provider pairing (Gate 0c, unchanged), builds the ONE
+// kernel over BOTH families' contributions, feeds the table with the
+// placement identities, and routes BOTH names' one-shot consume through
+// the SAME consumeOnce edge — one ledger, no dual path (ARC-B).
+import {
+  buildBashRowDefinition,
+  buildProcessShellContribution,
+  createConfinedShellBackend,
+} from '../../../../tools/process-family/src/index.mjs'
 import {
   createGovernanceKernel,
   createGovernedFamilyRegistry,
@@ -619,6 +633,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
 
   const names = { ...DEFAULT_PLANE_NAMES, ...(input.plane?.names ?? {}) }
   const readName = input.plane?.readName ?? 'read'
+  /** U6 PR3: the shell row's mount spelling (native 'bash' takeover or the
+   *  managed `team_bash` alias — the SAME row, the SAME mechanism, ONE
+   *  Kernel-owned name; Gate 0b validated it above). */
+  const bashName = names.bash
   // Gate 0b: the closed mount-name domain, checked BEFORE any construction
   // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
   const namesCheck = verifyPlaneNames(names, readName)
@@ -1097,12 +1115,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: true, grant, paDurableMint, request, placementName, paConstructionBinding }
   }
 
-  // U6 PR2: the plane's center assembly for the read family (filled AFTER
-  // construction, before any call — the edge/guard closures below read the
-  // binding at CALL time). `kernelPortAnswer` is the one-slot capture beside
-  // the consume port (see the port wrapper).
-  let readKernel = null
-  const kernelPortAnswer = { current: null }
+  // U6 PR2 (read) / U6 PR3 (read + shell, ONE kernel): the plane's center
+  // assembly (filled AFTER construction, before any call — the edge/guard
+  // closures below read the binding at CALL time). `kernelPortAnswers` is
+  // the per-call capture beside the consume port (see the port wrapper):
+  // with ONE kernel owning BOTH the read and the shell placement, two
+  // concurrent consumes (one per name) must never read each other's port
+  // answer, so the capture is keyed by callId, not one shared slot (a PR3
+  // correctness fix of the PR2 single-slot, which could only ever race
+  // same-name calls).
+  let centerKernel = null
+  const kernelPortAnswers = new Map()
 
   const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, signal }) => {
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
@@ -1300,22 +1323,26 @@ export function createTeamToolPlaneAssembly(input = {}) {
       parametersFingerprint,
       requestedEffects,
     }
-    // U6 PR2 (port binding, PR1-open-1): a KERNEL-OWNED placement consumes
-    // its one-shot grant through the kernel's consumeOnce — replay-guarded
-    // BEFORE the port (double replay: kernel set + durable ledger, both
-    // refusals, neither ever un-spends), and a kernel outside ACTIVE refuses
-    // the edge outright (drain/tombstone semantics). The port wrapper
-    // captured the FULL legacy answer, so every live deny code
-    // (APPROVAL_STALE / TOOL_BINDING_UNVERIFIED / …) rides the unchanged
-    // mapping below. A name the kernel does not own keeps the direct edge
-    // byte-for-byte.
+    // U6 PR2 (port binding, PR1-open-1) / U6 PR3 (ARC-B: the SAME edge for
+    // BOTH owned families): a KERNEL-OWNED placement — the read name or the
+    // shell name — consumes its one-shot grant through the kernel's
+    // consumeOnce — replay-guarded BEFORE the port (double replay: kernel
+    // set + durable ledger, both refusals, neither ever un-spends), and a
+    // kernel outside ACTIVE refuses the edge outright (drain/tombstone
+    // semantics). The port wrapper captured the FULL legacy answer for THIS
+    // call, so every live deny code (APPROVAL_STALE /
+    // TOOL_BINDING_UNVERIFIED / …) rides the unchanged mapping below. A
+    // name the kernel does not own keeps the direct edge byte-for-byte.
     let edge
-    if (readKernel !== null && placementName === readName) {
+    if (centerKernel !== null && (placementName === readName || placementName === bashName)) {
       const grantId = typeof grant?.grantId === 'string' ? grant.grantId : ''
-      kernelPortAnswer.current = null
-      const verdict = await readKernel.kernel.consumeOnce(grant, grantId, consumeFacts)
-      edge = verdict.portCalled && kernelPortAnswer.current !== null
-        ? kernelPortAnswer.current
+      const captureKey = String(callId)
+      kernelPortAnswers.delete(captureKey)
+      const verdict = await centerKernel.kernel.consumeOnce(grant, grantId, consumeFacts)
+      const captured = kernelPortAnswers.get(captureKey)
+      kernelPortAnswers.delete(captureKey)
+      edge = verdict.portCalled && captured !== undefined
+        ? captured
         : {
             ok: false,
             error: {
@@ -1543,7 +1570,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // execute returns the closed { text } envelope — lane law, untouched).
   // The assembly adds exactly that missing presentation face — additive,
   // no change to any reviewed logic; the pinned object is THIS wrapper.
-  const defs = Object.freeze(createGovernedToolDefinitions({
+  const searchRowDefs = createGovernedToolDefinitions({
     realmId,
     decide,
     pa: paAdmit,
@@ -1552,7 +1579,38 @@ export function createTeamToolPlaneAssembly(input = {}) {
     shellBackend: hostedShell,
     names,
     callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
-  }).map((def) => Object.freeze({ ...def, output: PLANE_PRESENTATION_FACE })))
+  })
+  // U6 PR3: the bash arm of the trio is NO LONGER the mounted path — the
+  // shell row joins the Kernel as the process family's contribution, built
+  // through the family row face (the a5p5 ONE makeExecute; byte-identical
+  // execute behavior, own per-assembly ledger state exactly like a fresh
+  // trio build). The lane's trio face stays untouched for every other
+  // consumer; the CENTER only stops placing its bash arm (the old path —
+  // a kernel-unowned shell row — is deleted here, no dual keep at any
+  // slice). The filter is by the VALIDATED mount spelling, one name, one
+  // placement (Gate 0b already refused any collision).
+  const bashRowDef = Object.freeze({
+    // U6 PR3 (dormancy law, a5p5-dormant-audit): the Family lane NEVER
+    // touches the dormant a5p5 lane — the plane is that lane's ONE reviewed
+    // consumer, so the row's execute transport is INJECTED here, through the
+    // reviewed barrel edge (one line, form-pinned). The lane owns the
+    // placement contract; the reviewed registration face owns the transport.
+    ...buildBashRowDefinition({
+      realmId,
+      decide,
+      pa: paAdmit,
+      shellBackend: hostedShell,
+      names: { bash: names.bash },
+      callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
+    }, createGovernedShellRowDefinition),
+    output: PLANE_PRESENTATION_FACE,
+  })
+  const defs = Object.freeze([
+    ...searchRowDefs
+      .filter((def) => def.name !== names.bash)
+      .map((def) => Object.freeze({ ...def, output: PLANE_PRESENTATION_FACE })),
+    bashRowDef,
+  ])
 
   // GLUE-7 fs-class row: the governed `read` over the SAME controlled-fs
   // instance root (no second fs algebra). PLACED ONLY when the row declares
@@ -1663,23 +1721,30 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // no-feed refusal: fail closed, never a guessed identity.
   const placedByName = new Map(allDefs.map((d) => [d.name, d]))
 
-  // ── U6 PR2: the CENTER ASSEMBLY for the read family (ENFORCING) ─────────
-  // The kernel (governance-center lane) owns this placement's approval entry:
-  // ONE table, center-side, binding native name → placement definition
-  // identity (sup-a §5 cond 1/2). The FAMILY registers through the PR1
-  // closed schema (origin 'reviewed-manifest' — this plane is a reviewed
-  // assembly point, not a dynamic source; cond 9); a registration refusal
-  // means the read row is NOT verifiable and the whole assembly FAILS CLOSED
-  // (no row mounts — the old center path is gone, dual-keep is forbidden).
-  // The kernel's ports are bound HERE at the trusted seam (PR1's open item):
-  // grantConsume wraps the existing tool-admission face — composed, never
-  // re-implemented; the family lane never sees any of it (familyFace carries
-  // no authority, CI-06).
-  const readNameOwned = readRowDef !== null
-  if (readNameOwned) {
-    const registry = createGovernedFamilyRegistry({
-      kernelManifest: { capabilities: { 'fs-read': { backsExecution: 'family-body' } } },
-    })
+  // ── U6 PR2/PR3: the CENTER ASSEMBLY for the governed families (ENFORCING)
+  // ONE kernel owns this placement's approval table for BOTH governed
+  // families — the FS read row (PR2) and the PROCESS shell row (PR3, ARC-B:
+  // "read and bash share the same Kernel state transition trace… different
+  // Executors but the same decision/settlement path",
+  // center-assembly-architecture §10.2). The kernel is built whenever the
+  // plane assembles: the shell row ALWAYS mounts, so the enforcing kernel —
+  // with the dispatcher's lifecycle port or nothing (FIX-K K3 / R-REM-2.2;
+  // no self-count fallback, no native fallback) — is required by EVERY
+  // governed mount. The FAMILY registers each row through the PR1 closed
+  // schema (origin 'reviewed-manifest' — this plane is a reviewed assembly
+  // point, not a dynamic source; cond 9); a registration refusal means that
+  // row is NOT verifiable and the whole assembly FAILS CLOSED (the retired
+  // center paths do not come back — dual-keep is forbidden). The kernel's
+  // ports are bound HERE at the trusted seam (PR1-open-1); the family lanes
+  // never see any of it (familyFace carries no authority, CI-06).
+  const registry = createGovernedFamilyRegistry({
+    kernelManifest: { capabilities: {
+      'fs-read': { backsExecution: 'family-body' },
+      'process-spawn': { backsExecution: 'family-body' },
+    } },
+  })
+  const kernelFamilies = { read: false, shell: false }
+  if (readRowDef !== null) {
     const contribution = buildFsReadContribution({
       definition: readRowDef,
       executorFactory: createGovernedReadExecutor,
@@ -1692,74 +1757,110 @@ export function createTeamToolPlaneAssembly(input = {}) {
       return {
         ok: false,
         code: 'PLANE_READ_REGISTRATION_REFUSED',
-        message: `the read family contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center read path does not come back)`,
+        message: `the read family contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; the old center read path does not come back)`,
       }
     }
-    // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
-    // mount's scopeKey — the scoped resolution this plane IS (the same
-    // `teamRoot:instanceId` law the shadow row audits under). Name-only
-    // authority no longer exists anywhere on this path.
-    const kernelScopeKey = `${String(input.teamSessionId ?? '')}:${String(input.instanceId ?? templateId ?? '')}`
-    let kernel
-    try {
-      kernel = createGovernanceKernel({
-        registry,
-        // R-REM-2.2: ENFORCING, with the dispatcher's lifecycle port when
-        // the assembly point wires one (production: the Guard handle's
-        // pendingCalls ledger — the dispatcher's own in-flight count);
-        // without any port the kernel FACTORY throws (FIX-K K3) and this
-        // mount fails closed below — it never degrades to a shadow.
-        mode: 'enforcing',
-        ports: {
-          lifecycle: input.dispatcherLifecycle,
-          grantConsume: {
-            // THE PR2 PORT BINDING (PR1-open-1): kernel → tool-admission
-            // one-shot face. Synchronous under the wrapper (no await between
-            // reading facts and consuming — the one-shot + cancel-first laws
-            // depend on run-to-completion); the FULL legacy answer is captured
-            // beside the call so the live deny codes/messages survive the
-            // kernel's narrower verdict shape (the kernel only reads ok/reason).
-            consumeForExecution: async (grant, facts) => {
-              const answer = assembly.consumeForExecution(grant, facts)
-              kernelPortAnswer.current = answer
-              return answer.ok === true
-                ? { ok: true }
-                : {
-                    ok: false,
-                    reason: `${String(answer.error?.code ?? 'GRANT_CONSUMPTION_REFUSED')}:${String(answer.error?.details?.refusal ?? '')}`,
-                  }
-            },
+    kernelFamilies.read = true
+  }
+  // U6 PR3: the process/shell contribution. CI-07: the descriptor NAMES the
+  // reviewed confined process provider this row's execution drives, and the
+  // mount's launcher pin rides the bound digests — a provider-pin change is
+  // a DIFFERENT contribution (STALE on the next reviewed mount, never a
+  // silently inherited approval). The Gate 0c trustRoot⇄launcher pairing
+  // above stays the mount's law, validated BEFORE this point.
+  {
+    const shellContribution = buildProcessShellContribution({
+      definition: bashRowDef,
+      launcherPin: typeof confinedCfg?.assembly?.launcherSha256 === 'string'
+        ? confinedCfg.assembly.launcherSha256
+        : undefined,
+      cancelBoundary: 'the confined shell executor terminates the payload through the provider\'s frozen lease arm on timeout and on the host abort signal; the settle race answers exactly one of {exit, timedOut, cancelled} (tie law exited > timedOut > aborted), the drain never re-decides it, and a payload whose stop could not be confirmed is reported UNCERTAIN (truncated/not-observed), never as a clean end (a5b3 laws, U6 PR3)',
+    })
+    const shellRegistered = registry.register(shellContribution, { origin: 'reviewed-manifest' })
+    if (shellRegistered.ok !== true) {
+      return {
+        ok: false,
+        code: 'PLANE_PROCESS_REGISTRATION_REFUSED',
+        message: `the process family contribution was refused by the closed schema (${shellRegistered.code}: ${shellRegistered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center shell path does not come back)`,
+      }
+    }
+    kernelFamilies.shell = true
+  }
+  // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
+  // mount's scopeKey — the scoped resolution this plane IS (the same
+  // `teamRoot:instanceId` law the shadow row audits under). Name-only
+  // authority no longer exists anywhere on this path.
+  const kernelScopeKey = `${String(input.teamSessionId ?? '')}:${String(input.instanceId ?? templateId ?? '')}`
+  let kernel
+  try {
+    kernel = createGovernanceKernel({
+      registry,
+      // R-REM-2.2: ENFORCING, with the dispatcher's lifecycle port when
+      // the assembly point wires one (production: the Guard handle's
+      // pendingCalls ledger — the dispatcher's own in-flight count);
+      // without any port the kernel FACTORY throws (FIX-K K3) and this
+      // mount fails closed below — it never degrades to a shadow.
+      mode: 'enforcing',
+      ports: {
+        lifecycle: input.dispatcherLifecycle,
+        grantConsume: {
+          // THE PR2 PORT BINDING (PR1-open-1), PR3-generalized: kernel →
+          // tool-admission one-shot face. Synchronous under the wrapper (no
+          // await between reading facts and consuming — the one-shot +
+          // cancel-first laws depend on run-to-completion); the FULL legacy
+          // answer is captured beside the call, KEYED BY CALLID, so the
+          // live deny codes/messages survive the kernel's narrower verdict
+          // shape (the kernel only reads ok/reason) even when the read row
+          // and the shell row consume concurrently on the ONE kernel.
+          consumeForExecution: async (grant, facts) => {
+            const answer = assembly.consumeForExecution(grant, facts)
+            kernelPortAnswers.set(String(facts?.callId ?? ''), answer)
+            return answer.ok === true
+              ? { ok: true }
+              : {
+                  ok: false,
+                  reason: `${String(answer.error?.code ?? 'GRANT_CONSUMPTION_REFUSED')}:${String(answer.error?.details?.refusal ?? '')}`,
+                }
           },
         },
-      })
-    } catch (buildError) {
-      return {
-        ok: false,
-        code: 'PLANE_READ_KERNEL_UNAVAILABLE',
-        message: `the read kernel refused to build (an enforcing kernel requires the lifecycle port — FIX-K K3): ${String(buildError?.message ?? buildError)} — no governed read mounts (fail closed; the retired center read path does not come back)`,
-      }
+      },
+    })
+  } catch (buildError) {
+    return {
+      ok: false,
+      code: 'PLANE_KERNEL_UNAVAILABLE',
+      message: `the center kernel refused to build (an enforcing kernel requires the lifecycle port — FIX-K K3): ${String(buildError?.message ?? buildError)} — no governed row mounts (fail closed; the retired center paths do not come back)`,
     }
-    const published = kernel.publish()
-    if (published.ok !== true) {
-      return {
-        ok: false,
-        code: 'PLANE_READ_KERNEL_UNAVAILABLE',
-        message: `the read kernel could not enter ACTIVE (${published.code}: ${published.detail}) — no approval entry can back the governed read`,
-      }
+  }
+  const published = kernel.publish()
+  if (published.ok !== true) {
+    return {
+      ok: false,
+      code: 'PLANE_KERNEL_UNAVAILABLE',
+      message: `the center kernel could not enter ACTIVE (${published.code}: ${published.detail}) — no approval entry can back the governed rows`,
     }
-    readKernel = {
-      registry,
-      kernel,
-      scopeKey: kernelScopeKey,
-      guard: Object.freeze({
-        owns: (name) => typeof name === 'string' && name === readName,
-        identityFor: (name) => {
-          if (typeof name !== 'string' || name !== readName) return null
+  }
+  centerKernel = {
+    registry,
+    kernel,
+    scopeKey: kernelScopeKey,
+    families: Object.freeze(kernelFamilies),
+    guard: Object.freeze({
+      // ARC-B: the kernel owns BOTH governed mount names on the ONE table.
+      owns: (name) => typeof name === 'string' && (name === readName || name === bashName),
+      identityFor: (name) => {
+        if (typeof name !== 'string') return null
+        if (name === readName) {
           const entry = ensureReadApprovalEntry()
           return entry === null ? null : entry.definitionIdentity
-        },
-      }),
-    }
+        }
+        if (name === bashName) {
+          const entry = ensureBashApprovalEntry()
+          return entry === null ? null : entry.definitionIdentity
+        }
+        return null
+      },
+    }),
   }
 
   // The bind-ONCE law, scope- and candidate-bound (FIX-K K1/K4, R-REM-2.1):
@@ -1775,8 +1876,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // one — only the next reviewed assembly mount (a fresh kernel) approves.
   let readEntryAttempted = false
   const ensureReadApprovalEntry = () => {
-    if (readKernel === null) return null
-    const existing = readKernel.kernel.approvalFor(readKernel.scopeKey, readName)
+    if (centerKernel === null || centerKernel.families.read !== true) return null
+    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName)
     if (existing !== undefined) return existing
     if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
     const d = placedByName.get(readName)
@@ -1788,28 +1889,56 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // install flow, and a later consult inside the lookup window may bind.)
     if (identity === null) return null
     readEntryAttempted = true
-    const added = readKernel.kernel.addApprovalEntry({
-      scopeKey: readKernel.scopeKey,
+    const added = centerKernel.kernel.addApprovalEntry({
+      scopeKey: centerKernel.scopeKey,
       nativeName: readName,
       definitionIdentity: identity,
       familyId: 'dsh.fs-family',
     })
     if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
-    return readKernel.kernel.approvalFor(readKernel.scopeKey, readName) ?? null
+    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName) ?? null
+  }
+  // U6 PR3 (ARC-B): the shell entry follows the IDENTICAL bind-ONCE law on
+  // the SAME kernel, the SAME scopeKey, and the sibling family candidate —
+  // the entry binds at the first lookup-time consult as a
+  // (scopeKey, bashName) entry bound to the live 'dsh.process-family'
+  // candidate; invalidation goes SILENT (never re-mints, never resurrects).
+  // The bash row ALWAYS mounts, so the only silent-feed shapes are
+  // pre-mint consults (not latched) and post-invalidation ones (latched).
+  let bashEntryAttempted = false
+  const ensureBashApprovalEntry = () => {
+    if (centerKernel === null || centerKernel.families.shell !== true) return null
+    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName)
+    if (existing !== undefined) return existing
+    if (bashEntryAttempted) return null // invalidated/failed — never rebound in this mount
+    const d = placedByName.get(bashName)
+    if (d === undefined) return null
+    const identity = definitionIdentityOf(d)
+    if (identity === null) return null
+    bashEntryAttempted = true
+    const added = centerKernel.kernel.addApprovalEntry({
+      scopeKey: centerKernel.scopeKey,
+      nativeName: bashName,
+      definitionIdentity: identity,
+      familyId: 'dsh.process-family',
+    })
+    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
+    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName) ?? null
   }
 
   const placementFeed = (name) => {
     const d = placedByName.get(name)
     if (d === undefined) return undefined
-    if (readKernel !== null && name === readName) {
-      // U6 PR2 (cond 1/2/6): for the kernel-OWNED name the approval TABLE is
-      // the identity source. The entry binds ONCE, lazily, at first consult
-      // — the def#N mint still rides the seam's install pass (the pb §6
-      // lookup-time law is untouched). It is NEVER silently re-bound: when a
-      // later live resolution disagrees with the table, this feed keeps
-      // answering the TABLE identity and the Guard's own live-vs-feed
-      // comparison refuses (cond 6: an identity mismatch never executes).
-      const entry = ensureReadApprovalEntry()
+    if (centerKernel !== null && (name === readName || name === bashName)) {
+      // U6 PR2 (cond 1/2/6), PR3-generalized (ARC-B): for BOTH kernel-OWNED
+      // names the approval TABLE is the identity source. The entry binds
+      // ONCE, lazily, at first consult — the def#N mint still rides the
+      // seam's install pass (the pb §6 lookup-time law is untouched). It is
+      // NEVER silently re-bound: when a later live resolution disagrees with
+      // the table, this feed keeps answering the TABLE identity and the
+      // Guard's own live-vs-feed comparison refuses (cond 6: an identity
+      // mismatch never executes).
+      const entry = name === readName ? ensureReadApprovalEntry() : ensureBashApprovalEntry()
       return entry === null
         ? undefined
         : Object.freeze({ definitionIdentity: entry.definitionIdentity, realmId })
@@ -1898,24 +2027,37 @@ export function createTeamToolPlaneAssembly(input = {}) {
        * A plane without the governed read row OMITS the field entirely —
        * presence is the capability signal, same law as paReadHandoff.
        */
-      ...(readKernel !== null
-        ? { kernelGuard: readKernel.guard }
-        // REVIEW-R1 B2 (CI-05): the governed mount is live but the read row
-        // did NOT mount (no usable fsInstance). `read` must then NEVER ride
-        // the native body: the plane value owns the name with a table that
-        // answers NULL forever, so the Guard's pre-body table gate (and the
-        // post-success veto, if a body were ever reached) refuse every read
-        // BEFORE any effect. The name stays OUT of placementFeed (no
-        // identity exists to bind) and OUT of ownNames (no row).
+      ...(centerKernel !== null
+        ? { kernelGuard: centerKernel.guard }
+        // REVIEW-R1 B2 (CI-05), PR3-generalized: a governed mount that
+        // reached this line WITHOUT a center kernel is an impossible state
+        // (the kernel is required by every mount and its build failure
+        // refuses the assembly) — the defensive face stays for honesty:
+        // the plane claims BOTH governed names with a table answering NULL
+        // forever, so the Guard's pre-body table gate refuses every read
+        // and every shell call BEFORE any effect. Never a silent native
+        // ride.
         : {
             kernelGuard: Object.freeze({
-              owns: (name) => typeof name === 'string' && name === readName,
+              owns: (name) => typeof name === 'string' && (name === readName || name === bashName),
               identityFor: () => null,
             }),
           }),
       /** U6 PR2 diagnostics/tests: the plane's center assembly (kernel +
        *  registry faces; observation only — no authority crosses here). */
-      ...(readKernel === null ? {} : { centerKernel: Object.freeze({ kernel: readKernel.kernel, registry: readKernel.registry, scopeKey: readKernel.scopeKey, familyId: 'dsh.fs-family' }) }),
+      ...(centerKernel === null ? {} : { centerKernel: Object.freeze({
+        kernel: centerKernel.kernel,
+        registry: centerKernel.registry,
+        scopeKey: centerKernel.scopeKey,
+        // U6 PR3 (ARC-B): ONE kernel, TWO registered families when both
+        // rows mounted. The PR2 surface's single `familyId` named the only
+        // family there was; the honest generalization is the list of the
+        // families THIS mount registered, in registration order.
+        familyIds: Object.freeze([
+          ...(centerKernel.families.read ? ['dsh.fs-family'] : []),
+          ...(centerKernel.families.shell ? ['dsh.process-family'] : []),
+        ]),
+      }) }),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the
@@ -1952,16 +2094,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // tombstone, revoke the candidate, release (observations of the
             // §5 state machine; every transition is best-effort and each
             // refusal leaves the state machine honest, never throws).
-            if (readKernel !== null) {
+            if (centerKernel !== null) {
               try {
-                readKernel.kernel.beginDrain()
-                readKernel.kernel.tombstone()
-                readKernel.registry.revoke('dsh.fs-family', 'the governed read mount was disposed')
-                // FIX-K K1 owner surface: dropping the family's approvals next
-                // to the revoke is the deterministic invalidation the mount
-                // owes — a later re-registration never resurrects them.
-                readKernel.kernel.dropApprovalsForFamily('dsh.fs-family')
-                readKernel.kernel.release()
+                centerKernel.kernel.beginDrain()
+                centerKernel.kernel.tombstone()
+                // U6 PR3 (ARC-B): the ONE kernel drains BOTH family
+                // candidates it registered — each revoke/drop pair is the
+                // deterministic invalidation that family's mount owes (FIX-K
+                // K1: a later re-registration never resurrects an approval).
+                if (centerKernel.families.read === true) {
+                  centerKernel.registry.revoke('dsh.fs-family', 'the governed read mount was disposed')
+                  centerKernel.kernel.dropApprovalsForFamily('dsh.fs-family')
+                }
+                if (centerKernel.families.shell === true) {
+                  centerKernel.registry.revoke('dsh.process-family', 'the governed shell mount was disposed')
+                  centerKernel.kernel.dropApprovalsForFamily('dsh.process-family')
+                }
+                centerKernel.kernel.release()
               } catch {
                 /* idempotent drain best-effort — the plane tears down anyway */
               }

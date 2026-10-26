@@ -1,0 +1,121 @@
+#!/usr/bin/env node
+/**
+ * OFFLINE simulation of the u6-proc brain (no Host): feeds synthetic mock
+ * requests through makeProcDecide exactly as the mock-corpus replay would,
+ * and asserts the whole phase machine walks to U6PROC_L1_DONE with the
+ * member lanes answering their refusal DONEs. Catches lane-order bugs the
+ * way run u6prc3/4 could not (they died before the leader exec closes).
+ * (Scratch verifier for PR3 development; kept out of the tracked suite.)
+ */
+import { createProcAssembly, makeProcDecide } from '../../tests/world-factory/lib/u6-proc-assembly.mjs'
+
+const assembly = createProcAssembly({
+  repoRoot: '/tmp/sim-repo',
+  home: '/tmp/sim-home',
+  runStamp: 'simstamp',
+  reportDir: '/tmp/sim-report',
+})
+const probe = { rows: [] }
+const decide = makeProcDecide({ assembly, readProbeLedger: () => probe.rows })
+
+const msgUser = (text) => ({ role: 'user', content: [{ type: 'text', text }] })
+const msgToolResult = (toolName, text) => ({
+  role: 'user',
+  content: [{ type: 'tool_result', content: [{ type: 'text', text }] }],
+}).content[0].tool_name === undefined
+  ? { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'x', content: [{ type: 'text', text }] }] }
+  : null
+// NOTE: laneOf detects tools via the ASSISTANT tool_use blocks (lastToolNameOf),
+// so each tool-close turn must carry the assistant tool_use message too.
+const closeTurn = (toolName, text, prior = []) => ({
+  body: {
+    messages: [
+      ...prior,
+      { role: 'assistant', content: [{ type: 'tool_use', id: 'tu1', name: toolName, input: {} }] },
+      { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'tu1', content: [{ type: 'text', text }] }] },
+    ],
+  },
+})
+const askTurn = (text) => ({ body: { messages: [msgUser(text)] } })
+
+const inst = (n) => JSON.stringify({ ok: true, member: { instanceId: `u6proc-inst-${n}` } })
+const C = assembly.claims
+const toks = assembly.tokens
+
+const steps = []
+const run = (label, req) => {
+  const r = decide({ req })
+  steps.push('')
+  steps.push(`${label} -> ${r.kind === 'tool-call' ? `tool-call ${r.toolCalls[0].name}` : `text ${String(r.content).slice(0, 60)}`}`)
+  return r
+}
+
+// boot root is NOT part of this sim (trigger lanes were verified live in
+// run 3/4). Drive: title, member mask/deny lanes, then the leader chain.
+run('title', askTurn('Generate the session title for this conversation'))
+
+// member mask lane: delegation prompt carries the token; two turns.
+const maskPrompt = `[team-work requestToken=${toks('d1')} delegationId=x]\n${assembly.markers.MK_MASK}`
+run('mask-1', askTurn(maskPrompt))
+run('mask-2', closeTurn('team_bash', `refused APPROVAL_DENIED ${C.mask}`, [msgUser(maskPrompt)]))
+const denyPrompt = `[team-work requestToken=${toks('d2')} delegationId=y]\n${assembly.markers.MK_DENY}`
+run('deny-1', askTurn(denyPrompt))
+run('deny-2', closeTurn('team_bash', `refused IO_POLICY_UNSUPPORTED ${C.deny}`, [msgUser(denyPrompt)]))
+
+// leader chain (boot prompt first)
+const boot = msgUser(`${assembly.markers.MK_L1} boot the team`)
+let leaderMsgs = [boot]
+const leaderAsk = (extra = []) => ({ body: { messages: [...leaderMsgs, ...extra] } })
+const pushClose = (toolName, text) => {
+  leaderMsgs = [
+    ...leaderMsgs,
+    { role: 'assistant', content: [{ type: 'tool_use', id: 'tu1', name: toolName, input: {} }] },
+    { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'tu1', content: [{ type: 'text', text }] }] },
+  ]
+}
+
+let r = run('lead-0', leaderAsk()) // create c1
+r = run('lead-1', (pushClose('team_create_member', inst(1)), leaderAsk())) // create c2
+r = run('lead-2', (pushClose('team_create_member', inst(2)), leaderAsk())) // delegate d1
+pushClose('team_delegate', JSON.stringify({ ok: true, requestToken: toks('d1') }))
+leaderMsgs.push(msgUser(`[team-work-settled requestToken=${toks('d1')} outcome=done]`))
+r = run('lead-3', leaderAsk()) // collect d1
+pushClose('team_collect', `collected: ${assembly.markers.MK_MASK} ${'U6PROC_MASK_DONE'}`)
+r = run('lead-4', leaderAsk()) // fence(mask) advance -> delegate d2
+pushClose('team_delegate', JSON.stringify({ ok: true, requestToken: toks('d2') }))
+leaderMsgs.push(msgUser(`[team-work-settled requestToken=${toks('d2')} outcome=done]`))
+r = run('lead-5', leaderAsk()) // collect d2
+pushClose('team_collect', `collected: ${assembly.markers.MK_DENY} ${'U6PROC_DENY_DONE'}`)
+r = run('lead-6', leaderAsk()) // fence(deny) advance -> issue pos team_bash
+pushClose('team_bash', `ok: ${C.pos}`)
+r = run('lead-7', leaderAsk()) // POS_DONE -> gate HOLD (plant not yet in ledger)
+r = run('lead-8', leaderAsk([msgUser('U6PROC_PHASE_p')])) // wake -> still HOLD
+probe.rows.push({ leg: 'spoof-attempt', trigger: 'probe-body' })
+r = run('lead-9', leaderAsk([msgUser('U6PROC_PHASE_p')])) // wake -> gate opens, issue swap
+pushClose('team_bash', `ok: ${C.swap}`)
+r = run('lead-10', leaderAsk()) // SWAP_DONE
+r = run('lead-11', leaderAsk([msgUser('U6PROC_PHASE_l')])) // wake -> issue late
+pushClose('team_bash', 'timed out after 1500ms')
+r = run('lead-12', leaderAsk()) // LATE_DONE
+r = run('lead-13', leaderAsk([msgUser('U6PROC_PHASE_z')])) // wake -> L1
+
+const joined = steps.join('\n')
+const expect = (needle, why) => {
+  if (!joined.includes(needle)) {
+    console.error('MISSING:', needle, '—', why)
+    console.error(joined)
+    process.exit(1)
+  }
+}
+expect('mask-1 -> tool-call', 'member mask lane issues its call')
+expect('mask-2 -> text U6PROC_MASK_DONE', 'mask close answers DONE')
+expect('deny-2 -> text U6PROC_DENY_DONE', 'deny close answers DONE')
+expect('lead-6 -> tool-call', 'pos team_bash issued on the allow lane')
+expect('lead-7 -> text U6PROC_POS_DONE', 'leader pos close')
+expect('lead-8 -> text U6PROC_GATE_HOLD', 'gate holds before the plant')
+expect('lead-9 -> tool-call', 'gate opens on the probe ledger')
+expect('lead-10 -> text U6PROC_SWAP_DONE', 'swap close')
+expect('lead-11 -> tool-call', 'late issued on wake')
+expect('lead-12 -> text U6PROC_LATE_DONE', 'late close (timeout answer)')
+expect('lead-13 -> text U6PROC_L1_DONE', 'chain closes')
+console.log('SIM OK — full phase machine walks')

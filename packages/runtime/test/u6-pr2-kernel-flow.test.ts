@@ -62,7 +62,9 @@ interface KernelPlaneValue {
     }
     readonly registry: { view(): { candidates: ReadonlyArray<{ familyId: string }> }; generation(): number }
     readonly scopeKey: string
-    readonly familyId: string
+    /** U6 PR3 (ARC-B): ONE kernel, TWO registered families (the PR2
+     *  single-family surface generalized to the registration list). */
+    readonly familyIds: readonly string[]
   }
   readonly kernelGuard?: {
     owns(name: string): boolean
@@ -132,7 +134,9 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     // (scopeKey, name)-keyed AND candidate-bound (owning familyId).
     expect(center.kernel.mode()).toBe('enforcing')
     expect(center.scopeKey).toBe('u6-pr2-test-team-root:u6pr2-instance')
-    expect(center.familyId).toBe('dsh.fs-family')
+    // ARC-B (U6 PR3): the SAME kernel registers BOTH families — the one
+    // ledger is observable right here (one registry, two candidates).
+    expect(center.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family'])
     const entry = center.kernel.approvalFor(center.scopeKey, 'read')
     expect(entry?.definitionIdentity).toBe(identity)
     expect(entry?.familyId).toBe('dsh.fs-family')
@@ -153,7 +157,7 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     expect(center.kernel.approvalFor(center.scopeKey, trioName!)).toBeUndefined()
   })
 
-  it('K3 a plane WITHOUT the read row carries NO kernel — and (review-r1 B2) a REJECTING read face, never native fallback', async () => {
+  it('K3 a plane WITHOUT the read row binds NO read entry — and (review-r1 B2) a REJECTING read face, never native fallback', async () => {
     const built = (await planeModule()).createTeamToolPlaneAssembly({
           dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
 
@@ -170,7 +174,12 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
     const value = planeFace(built.value)
-    expect(value.centerKernel, 'no read row, no kernel').toBeUndefined()
+    // U6 PR3 (ARC-B): the kernel rides EVERY governed mount (the shell row
+    // is always kernel-owned) — the B2 law generalizes: WITHOUT the read
+    // ROW there is no read candidate to claim, the table answers NULL for
+    // `read` forever, and the door refuses every read before its Body.
+    expect(value.centerKernel, 'mount-wide kernel (shell family only)').toBeDefined()
+    expect(value.centerKernel!.familyIds).toEqual(['dsh.process-family'])
     // REVIEW-R1 B2 (CI-05): the guard face is NOT omitted — the governed
     // mount keeps ownership of `read` with a table that answers NULL
     // forever, so the door refuses every read before its Body instead of

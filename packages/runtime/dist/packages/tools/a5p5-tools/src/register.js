@@ -76,14 +76,15 @@ function refusalText(kind, code, detail) {
     return `${REFUSAL_PREFIX}kind=${kind} code=${code} detail=${detail.slice(0, 240).replace(/\s+/g, ' ')}`;
 }
 /**
- * Build the governed search/shell tool definitions over the assembly's
- * backends and admission face. Returns definitions in the fixed lane order
- * (grep, glob, bash); the assembler decides WHICH of them to mount.
+ * The lane's per-assembly EXECUTION STATE (U6 PR3 extraction): call id
+ * sequence + mount nonce + the PR358-A1 real-token ledger + the single
+ * `makeExecute` transport. ONE body — the trio face and the single shell
+ * row face below build on THIS state factory, so the governed execute
+ * law (replay refusal, terminal-token cancelled settling, correlation
+ * ledger, M1 fingerprint, B3 signal carry) exists exactly once.
  */
-export function createGovernedToolDefinitions(assembly) {
+function createRowExecutionState(assembly) {
     const prefix = assembly.callIdPrefix ?? 'a5p5';
-    const globBackend = assembly.globBackend ?? assembly.searchBackend;
-    const names = assembly.names ?? {};
     let callSeq = 0;
     // fix-2b: fallback ids carry a per-mount nonce — a rebuilt plane can never
     // re-issue a call id a previous mount already spent a pending/allow on.
@@ -199,6 +200,36 @@ export function createGovernedToolDefinitions(assembly) {
             return { text: refusalText(result.kind, result.refusal.code, result.refusal.detail) };
         return { text: refusalText(result.kind, result.failure.code, result.failure.detail) };
     };
+    return Object.freeze({ makeExecute });
+}
+/**
+ * U6 PR3 — the governed SHELL row as a single definition (the process
+ * family lane contributes the bash row to the governance Kernel; the trio
+ * face below stays the full-lane registration surface, behavior unchanged).
+ * Same `makeExecute`, same BASH_PARAMETERS, same parse + backend face: the
+ * mounted row is byte-identical in behavior to the trio's bash arm — the
+ * ledger state is per-assembly exactly like the trio's own (a fresh call
+ * of the factory), so no identity or correlation law shifts.
+ */
+export function createGovernedShellRowDefinition(assembly) {
+    const names = assembly.names ?? {};
+    const { makeExecute } = createRowExecutionState(assembly);
+    return Object.freeze({
+        name: names.bash ?? 'bash',
+        description: 'Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.',
+        parameters: BASH_PARAMETERS,
+        execute: makeExecute('bash', parseBashArgs, assembly.shellBackend),
+    });
+}
+/**
+ * Build the governed search/shell tool definitions over the assembly's
+ * backends and admission face. Returns definitions in the fixed lane order
+ * (grep, glob, bash); the assembler decides WHICH of them to mount.
+ */
+export function createGovernedToolDefinitions(assembly) {
+    const globBackend = assembly.globBackend ?? assembly.searchBackend;
+    const names = assembly.names ?? {};
+    const { makeExecute } = createRowExecutionState(assembly);
     return Object.freeze([
         Object.freeze({
             name: names.grep ?? 'grep',

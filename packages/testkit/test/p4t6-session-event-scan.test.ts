@@ -364,6 +364,34 @@ const SCANNED_PATHS_U6PR2: readonly string[] = [
   'packages/runtime/test/u6-pr2-review-r1.test.ts',
   'packages/runtime/test/u6-pr2-golden-corpus.mts',
 ]
+// U6 PR3 (U6-SLICE-PLAN PR3 — the process/bash family slice 3/6, ARC-B part
+// 2) adds its TEN scannable files: the process-family lane's runtime .mjs
+// face (barrel + shell-mechanics + confined-shell-executor + bash-row +
+// bash-contribution — the governed shell row's Family halves moved VERBATIM
+// out of team-tool-plane / plane-effect-backends, owner role: that lane's
+// README, CI-07 named-provider disclosure inside) plus its ONE TypeScript
+// module (bash-normalizer.ts, the pure shell projection now statically
+// imported by canonical-operation.ts under the golden-vector gate — 299
+// vectors, digest-pinned byte-identical vs master) and the three C1 suites
+// (golden vectors, ARC-B one-kernel flow, BL-01 ask/door re-test). The
+// plane/backends/canonicalizer/a5p5 EDITS ride already-counted paths; dist
+// mirrors, tests/**, docs/** and dev-evidence stay outside the scan; zero
+// new denylist vocabulary. Taking the scanned total on THIS tree to 1263 —
+// MEASURED by the pre-booking scanner run on this exact tree
+// (dev/agent-workflow/evidence/u6-pr3-20261026/p4t6-RED-unbooked.log reading
+// `expected 1263 to be 1253`; no chain value copied).
+const SCANNED_PATHS_U6PR3: readonly string[] = [
+  'packages/tools/process-family/src/index.mjs',
+  'packages/tools/process-family/src/shell-mechanics.mjs',
+  'packages/tools/process-family/src/confined-shell-executor.mjs',
+  'packages/tools/process-family/src/bash-row.mjs',
+  'packages/tools/process-family/src/bash-contribution.mjs',
+  'packages/tools/process-family/src/bash-normalizer.ts',
+  'packages/runtime/test/u6-pr3-golden-corpus.mts',
+  'packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts',
+  'packages/runtime/test/u6-pr3-kernel-flow.test.ts',
+  'packages/runtime/test/u6-pr3-bl01-ask-door.test.ts',
+]
 
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
@@ -2960,7 +2988,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M1.length +
         SCANNED_PATHS_U6PR1.length +
         SCANNED_PATHS_FIXK.length +
-        SCANNED_PATHS_U6PR2.length,
+        SCANNED_PATHS_U6PR2.length +
+        SCANNED_PATHS_U6PR3.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3029,7 +3058,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M1.length +
         SCANNED_PATHS_U6PR1.length +
         SCANNED_PATHS_FIXK.length +
-        SCANNED_PATHS_U6PR2.length,
+        SCANNED_PATHS_U6PR2.length +
+        SCANNED_PATHS_U6PR3.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3119,6 +3149,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR1,
       ...SCANNED_PATHS_FIXK,
       ...SCANNED_PATHS_U6PR2,
+      ...SCANNED_PATHS_U6PR3,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3545,6 +3576,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // no chain value copied.
     // read-lane C1 file is the last increment; no chain value copied).
     expect(SCANNED_PATHS_U6PR2.length).toBe(1253 - 1240)
+    // U6 PR3: the SCANNED_PATHS_U6PR3 files above are exactly the
+    // scanned-total delta 1253 -> 1263, MEASURED by the pre-booking scanner
+    // run on THIS tree (evidence `u6-pr3-20261026/p4t6-RED-unbooked.log`
+    // reads `expected 1263 to be 1253`; the scratch recorder that briefly
+    // existed mid-round was DELETED before booking and never counted — the
+    // measured 1263 is post-deletion).
+    expect(SCANNED_PATHS_U6PR3.length).toBe(1263 - 1253)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

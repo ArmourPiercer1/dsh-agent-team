@@ -28,5 +28,8 @@ export { runToolCall } from './pipeline.js';
 // DEFINITIONS over the one pipeline. The mount (which scope, which names,
 // which order) stays with the assembler — GLUE-4 owns the scoped-mount
 // ruling; this lane only produces the definitions and never registers.
-export { createGovernedToolDefinitions, REFUSAL_PREFIX } from './register.js';
+// U6 PR3: the single governed SHELL row face (the process family lane
+// contributes the bash row to the governance Kernel through it — ONE
+// `makeExecute`, the trio face unchanged).
+export { createGovernedToolDefinitions, createGovernedShellRowDefinition, REFUSAL_PREFIX } from './register.js';
 //# sourceMappingURL=index.js.map

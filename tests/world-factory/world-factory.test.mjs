@@ -435,6 +435,59 @@ test('u6-fs: SUITE_CASES entry and parseArgs wiring', async () => {
   assert.throws(() => parseArgs(['--suite', 'u6-fs', '--evidence', '/tmp/ev', '--only', 'nope']))
 })
 
+// u6-proc (U6 PR3 C2): the case matrix the RUN record must cover, and the
+// factory's mutual-exclusion law (one World belongs to one suite — both
+// patch-layer owners would race for the same profile patch file).
+test('u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion', async () => {
+  const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
+  assert.deepEqual(SUITE_CASES['u6-proc'], [
+    'proc:mounted', 'proc:exec-door-fail-closed', 'proc:member-ask-born-terminal', 'proc:deny-zero-spawn',
+    'proc:replay-settled-refusal', 'proc:spoof-refusal', 'proc:guard-off-channel', 'proc:late-call-refused',
+    'proc:ctl-native-untouched',
+  ])
+  const opts = parseArgs(['--suite', 'u6-proc', '--line', 'u6prcx', '--evidence', '/tmp/ev'])
+  assert.equal(opts.suite, 'u6-proc')
+  assert.throws(() => parseArgs(['--suite', 'u6-proc', '--evidence', '/tmp/ev', '--only', 'nope']))
+  const { TestWorldFactory } = await import('./lib/world-factory.mjs')
+  assert.equal(typeof TestWorldFactory, 'function')
+})
+
+test('u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML', async () => {
+  const { createProcAssembly } = await import('./lib/u6-proc-assembly.mjs')
+  const { emitPatchLayer } = await import('./lib/world-factory.mjs')
+  const yaml = await import('yaml')
+  // REAL repo root: the confined trio is hashed at config time and the
+  // launcher is a real file of this tree (the hash is what the provider
+  // re-verifies byte-for-byte at every spawn).
+  const { findTestRepoRoot } = await import('../paths.mjs')
+  const a = createProcAssembly({ repoRoot: findTestRepoRoot(HERE), home: '/home/x', runStamp: 'u6-U6PRC-T', reportDir: '/rep' })
+  const cfg = a.teamRowConfig()
+  const plane = cfg.teamToolPlane
+  assert.equal(typeof plane.realmId, 'string')
+  assert.equal(plane.fsInstance.realmId, plane.realmId)
+  // the confined trio is complete (a half-pair is a config defect the mount
+  // refuses — the assembly must never emit one)
+  assert.ok(plane.confinedProvider.trustRoot.startsWith('sha256:'))
+  assert.equal(typeof plane.confinedProvider.assembly.launcherSha256, 'string')
+  assert.equal(plane.confinedProvider.assembly.minAbiVersion, 3)
+  const rows = [
+    { id: 'u5-canary', name: './u5-canary-plugin.mjs' },
+    { id: 'u6-proc-probe-host', name: './u6-proc-probe-host.mjs' },
+    ...a.teamRows(),
+  ]
+  const doc = yaml.parseDocument(emitPatchLayer(['test'], rows))
+  assert.equal(doc.errors.length, 0)
+  // the main blueprint parses as ONE frontmatter record and carries the
+  // approval-loop surface + resolve-control envelope token (authoring §5.3:
+  // BOTH are required for the ask lane to close).
+  const bp = a.mainBlueprintYaml(['u6proc_probe'])
+  assert.ok(bp.includes('team_resolve_control'))
+  assert.ok(bp.includes('resolve-control'))
+  const rec = yaml.parse(bp.split('---').join('\n'))
+  assert.equal(rec.schemaVersion, 3)
+  assert.ok(JSON.stringify(rec).includes('"kind":"any"'))
+})
+
 test('u6-fs: the patch-layer emitter produces one parseable insert layer', async () => {
   const { emitPatchLayer } = await import('./lib/world-factory.mjs')
   const { createFsAssembly } = await import('./lib/u6-fs-assembly.mjs')
@@ -629,4 +682,18 @@ test('u6-fs: the probe row mounts and registers its tool against a fake scope', 
   assert.ok(listened.includes('tools/execute'))
   assert.equal(mod.name, 'u6-fs-probe-host')
   assert.deepEqual(mod.inject, ['tools'])
+})
+
+test('u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { judgeU6Proc } = await import('./lib/u6-proc-assembly.mjs')
+  const evidencePath = new URL('../../dev/agent-workflow/evidence/u6-pr3-20261026/c2/u5-u6-proc-u6prc5-2026-10-25T23-11-14-774Z.u6proc-evidence.json', import.meta.url)
+  const d = JSON.parse(readFileSync(evidencePath, 'utf8'))
+  const rows = judgeU6Proc(d, true)
+  assert.deepEqual(rows.map(([id]) => id), [
+    'proc:exec-door-fail-closed', 'proc:member-ask-born-terminal', 'proc:deny-zero-spawn',
+    'proc:replay-settled-refusal', 'proc:spoof-refusal', 'proc:guard-off-channel',
+    'proc:late-call-refused', 'proc:ctl-native-untouched',
+  ])
+  for (const [id, verdict] of rows) assert.equal(verdict, 'PASS', `${id} must PASS on its own measured evidence`)
 })

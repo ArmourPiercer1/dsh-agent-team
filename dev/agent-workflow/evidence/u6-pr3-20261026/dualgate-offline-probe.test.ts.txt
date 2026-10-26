@@ -1,0 +1,17 @@
+import { describe, expect, it } from 'vitest'
+import { parseBlueprint, validateBlueprintDocument } from '../../domain/blueprint/src/index.js'
+import { leaderExecEnvelopeOps } from '../admission/envelope.js'
+// @ts-expect-error plain mjs lane lib
+import { createProcAssembly } from '../../../tests/world-factory/lib/u6-proc-assembly.mjs'
+
+describe('tmp probe', () => {
+  it('dual gate inputs from the real C2 blueprint', () => {
+    const assembly = createProcAssembly({ repoRoot: '/tmp/p', home: '/tmp/h', runStamp: 'probe', reportDir: '/tmp/r' })
+    const yamlText = assembly.mainBlueprintYaml(['some_tool'])
+    const bp = parseBlueprint(yamlText) as any
+    console.log('teamEnvelope:', JSON.stringify(bp.teamEnvelope))
+    console.log('leaderPerms:', JSON.stringify((bp.leader as any)?.capabilities?.permissions ?? null).slice(0, 220))
+    console.log('EXEC OPS:', JSON.stringify(leaderExecEnvelopeOps(bp)))
+    expect(true).toBe(true)
+  })
+})

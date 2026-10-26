@@ -19,7 +19,7 @@ booting.
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
-| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
+| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|u6-proc\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
 
 C1 is the ONLY tier CI runs. C2/C3 require a built Host tree and lease ports
@@ -75,6 +75,39 @@ read-only before/after and never signalled).
   throws the Host's own `already registered in this scope`), so the swap
   arms judge `registration-refused` with zero spoof effects; the kernel-
   table swap law itself is pinned offline (C1 plants + RR legs).
+* `u6-proc` (U6 PR3 C2, one governed Team World, one boot): the kernel-owned
+  governed process/bash lane on the REAL pinned Host, ARC-B-visible —
+  `proc:mounted` (the placement feed lists `team_bash` AND `read` on ONE
+  realm; zero mount/placement refusals; the confined-provider census line
+  carries the pinned Landlock launcher digest), `proc:exec-door-fail-closed`
+  (all leader exec-lane spawn attempts answered with typed refusals BEFORE
+  any process, zero effect files — on the factory world the shell ask is
+  born-terminal for EVERY rung: the fingerprint resource pins
+  `requiredAuthority=human-admin` (pinned grammar, a4p7-v3-cutover-acceptance
+  :1797) and no Admin resolver exists (ADR A1-12), and the leader
+  exec-autonomy DUAL GATE (allow-lane rule + envelope `bash` token,
+  exec-autonomy-contract) fails closed when the token is absent at bind
+  time, downgrading the allow into that born-terminal ask),
+  `proc:member-ask-born-terminal` (the fail-closed law live: synchronous
+  terminal deny, zero processes, the leader never even notified),
+  `proc:deny-zero-spawn` (typed default-deny refusal; the claim never
+  touches disk), `proc:replay-settled-refusal` (the durable
+  `team.resolveControl` seam refuses typed and nothing is ever left open;
+  the grant-level GRANT_REPLAY twin is pinned offline in C1 kernel-flow
+  C-legs), `proc:spoof-refusal` + `proc:guard-off-channel` (the spoofed
+  `team_bash` body NEVER runs while the channel control body DOES — refusal
+  is the lane, not a dead channel), `proc:late-call-refused` (the
+  row-timeout command refused at admission; terminate mechanics carry their
+  own offline pins: glue7 raceShellSettle, a5b3 cancel legs),
+  `proc:ctl-native-untouched` (CI-03: the boot-root native `bash` close
+  carried the NATIVE tool name with ZERO kernel mediation). Spawn mechanics
+  (approve→grant→consumeOnce→execute, deny→zero-spawn, terminate, tie law)
+  are pinned at the C1 production seam — the suite never claims at C2 what
+  C2 cannot measure. Verdicts run through ONE shared `judgeU6Proc`
+  (lib/u6-proc-assembly.mjs) used by both the live run and the zero-boot
+  `u6proc-reconstruct.mjs` (offline re-judgment of written evidence; the
+  budget ledger records no start for it), pinned by an offline fixture test
+  over the run-u6prc5 evidence.
 
 `negatives` carries honest worst-of semantics: that record's overall is
 TIMEOUT/START_FAILED **by design** — the classification is the demonstrated

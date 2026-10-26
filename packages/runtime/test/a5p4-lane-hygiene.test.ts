@@ -141,7 +141,7 @@ describe('a5p4 lane purity and dormancy', () => {
    * way it always did; a named mount that is simply absent from this checkout is
    * reported, not required (each lane books its own row on its own branch).
    */
-  const NAMED_PROVIDER_MOUNTS: readonly { file: string; lane: string; edge: string }[] = [
+  const NAMED_PROVIDER_MOUNTS: readonly { readonly file: string; readonly lane: string; readonly edge: string; readonly kind?: 'requirement' }[] = [
     {
       file: 'runtime/src/plugin/live/plane-effect-backends.mjs',
       lane: 'glue — Team tool plane effect backends',
@@ -161,6 +161,26 @@ describe('a5p4 lane purity and dormancy', () => {
       file: 'runtime/src/plugin/live/search-backend.mjs',
       lane: 'a5srgp — anchored confined-rg search row',
       edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+    },
+    {
+      // U6 PR3 (ARC-B part 2): the governed shell row's Family descriptor
+      // DECLARES its provider requirement — the row metadata names the one
+      // reviewed provider the trusted plane assembly pairs it with (Gate 0c).
+      // This is a REQUIREMENT DECLARATION, not a mount: the file imports
+      // nothing from the lane and calls no factory. The mount — the pinned
+      // public-face import edge — is the executor entry booked below.
+      file: 'tools/process-family/src/bash-contribution.mjs',
+      kind: 'requirement',
+      lane: 'u6-pr3 — process family row PROVIDER REQUIREMENT (row metadata names the reviewed provider; pairing is the plane\'s Gate 0c)',
+      edge: "provider: 'packages/runtime/sandbox-provider',",
+    },
+    {
+      // U6 PR3 CI-07: the process-family lane drives the NAMED reviewed
+      // provider ITSELF (the design forbids a center bridge) — a true mount
+      // with the public-face import edge and its own factory call site.
+      file: 'tools/process-family/src/confined-shell-executor.mjs',
+      lane: 'u6-pr3 — confined shell executor (CI-07: the lane drives the named provider, no bridge)',
+      edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
     },
   ]
 
@@ -209,6 +229,16 @@ describe('a5p4 lane purity and dormancy', () => {
       const path = resolve(PACKAGES_DIR, mount.file)
       if (!existsSync(path)) continue // that lane has not mounted on THIS tree (reported below)
       const body = readFileSync(path, 'utf8')
+      if (mount.kind === 'requirement') {
+        // A requirement/doc name: the pinned declaration line appears
+        // EXACTLY once, and the file carries NO import edge and NO factory
+        // call into the lane — the mount itself stays elsewhere (the plane).
+        const lines = body.split('\n').map((l) => l.trim())
+        expect(lines.filter((l) => l === mount.edge), `${mount.file}: the pinned requirement/doc line appears exactly once (${mount.lane})`).toHaveLength(1)
+        expect(lines.filter((l) => /sandbox-provider/.test(l) && /^import\b/.test(l)), `${mount.file}: a requirement name must not import the lane (${mount.lane})`).toEqual([])
+        expect(lines.filter((l) => /createConfinedProcessProvider\s*\(/.test(l) && !/^import\b/.test(l)), `${mount.file}: a requirement name must not call the factory (${mount.lane})`).toEqual([])
+        continue
+      }
       const edges = body.split('\n').map((l) => l.trim()).filter((l) => /sandbox-provider/.test(l) && /^import\b/.test(l))
       expect(edges, `${mount.file}: a mount carries exactly one pinned import edge (${mount.lane})`).toEqual([mount.edge])
       const deep = body.split('\n').map((l) => l.trim()).filter((l) => /from\s+'[^']*sandbox-provider\/[^']+'/.test(l) && !/sandbox-provider\/index\.js'/.test(l))

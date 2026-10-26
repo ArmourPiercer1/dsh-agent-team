@@ -24,5 +24,5 @@ export { BACKEND_STAGES, UNREADABLE_SETTLEMENT, type BackendCall, type BackendFa
 export { createDirectBackend } from './backend-direct.js';
 export { createContractStubBackend } from './backend-stub.js';
 export { runToolCall, type AdmissionVerdict, type RunToolCallDeps, type SpillPointerFact, type ToolCallRequest, type ToolCallResult } from './pipeline.js';
-export { createGovernedToolDefinitions, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js';
+export { createGovernedToolDefinitions, createGovernedShellRowDefinition, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js';
 //# sourceMappingURL=index.d.ts.map

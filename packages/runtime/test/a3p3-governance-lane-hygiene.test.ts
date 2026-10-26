@@ -666,6 +666,25 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
    *  Reproducer: `mkdir -p packages/client/dist.held-by-7-6-gate/x && ln -s /nope
    *  packages/client/dist.held-by-7-6-gate/x/ghost.d.ts` reddens this file before the
    *  family skip and stays green with it. */
+  /* U6 PR3 (test-infra, disclosed): the census legs below walk the WHOLE
+   * packages tree once per policed NAME (and twice with the non-vacuity
+   * pass), re-reading and re-stripping comments on every pass — a leg cost
+   * that is a function of total tree size. PR3's new lane files tipped the
+   * consumer-set leg over the 5 s default under full-suite CPU load
+   * (measured: 3.6 s green standalone, `Test timed out in 5000ms` in the
+   * full parallel run). The cache makes disk + comment-strip ONCE per file
+   * (production sources never change mid-run); every per-name regex, the
+   * walk, and all assertions are untouched — same teeth, stable cost. */
+  const CODE_CACHE = new Map<string, string>()
+  const codeOf = (file: string): string => {
+    let src = CODE_CACHE.get(file)
+    if (src === undefined) {
+      src = codeOnly(readFileSync(file, 'utf8'))
+      CODE_CACHE.set(file, src)
+    }
+    return src
+  }
+
   const walkTs = (dir: string, into: string[]): string[] => {
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry)
@@ -707,7 +726,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // artifact. Stripping comments cannot INVENT an edge; it can only stop
       // prose from counting as one, so the guard stays strict in the direction
       // that matters.
-      const source = codeOnly(readFileSync(file, 'utf8'))
+      const source = codeOf(file)
       for (const specifier of specifiersIn(source)) {
         matchedSpecifiers += 1
         if (specifier.startsWith('./')) continue
@@ -969,7 +988,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain'] as const) {
         const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(RUNTIME_ROOT, '..', pkg)
         for (const file of walkTs(pkgRoot, [])) {
-          const source = codeOnly(readFileSync(file, 'utf8'))
+          const source = codeOf(file)
           // Call form OR import/type position — `\bname\b` on comment-stripped
           // code, so a mention in prose cannot satisfy it and a real call cannot
           // hide in a comment.
@@ -1072,7 +1091,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     for (const pkg of ['runtime', 'tools', 'remote', 'client', 'domain'] as const) {
       const pkgRoot = pkg === 'runtime' ? RUNTIME_ROOT : join(RUNTIME_ROOT, '..', pkg)
       for (const file of walkTs(pkgRoot, [])) {
-        if (/\.teamHardEnvelope\s*\(/.test(codeOnly(readFileSync(file, 'utf8')))) {
+        if (/\.teamHardEnvelope\s*\(/.test(codeOf(file))) {
           readerCalls.push(relative(RUNTIME_ROOT, file))
         }
       }
@@ -1109,7 +1128,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     const planeSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'permission-plane.ts'), 'utf8')
     expect(planeSource).toMatch(/^import type \{ AuthorityDocumentRead \} from '\.\.\/\.\.\/governance\/authority-ceiling\.js'$/m)
     expect(planeSource).not.toMatch(/^import \{[^}]*\} from '\.\.\/\.\.\/governance\/authority-ceiling\.js'$/m)
-  })
+  }, 30_000)
 
   it('the ceiling module has exactly the importers PR1 + PR2 lane C gave it', () => {
     // The barrel re-exports the adapter (its declared surface) and the plane
@@ -1196,7 +1215,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     for (const file of walkTs(RUNTIME_ROOT, [])) {
       const rel = relative(RUNTIME_ROOT, file)
       if (rel === join('governance', 'permission-approval.ts')) continue
-      if (codeOnly(readFileSync(file, 'utf8')).includes('beneficiaryAuthorityForTarget')) {
+      if (codeOf(file).includes('beneficiaryAuthorityForTarget')) {
         namedConsumers.add(rel)
       }
     }

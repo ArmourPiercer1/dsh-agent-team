@@ -49,6 +49,9 @@ interface PlaneValue {
     kernel: { state(): string }
     registry: unknown
     scopeKey: string
+    // U6 PR3 (ARC-B): ONE kernel registers BOTH governed families; the
+    // PR2 single `familyId` surface generalized to the registered list.
+    familyIds?: readonly string[]
   }
   kernelGuard?: { owns(name: string): boolean; identityFor(name: string): string | null }
 }
@@ -122,7 +125,12 @@ describe('review-r1 B1 — no lifecycle port, no enforcing mount', () => {
     const built = row.createTeamToolPlaneAssembly(planeInput() as never)
     expect(built.ok, 'expected a typed refusal; a mounted kernel here is the B1 hole').toBe(false)
     if (built.ok === true) return
-    expect(built.code).toBe('PLANE_READ_KERNEL_UNAVAILABLE')
+    // U6 PR3 (ARC-B): the kernel became a MOUNT-WIDE requirement (the
+    // shell row always mounts kernel-owned), so the typed refusal moved
+    // from PLANE_READ_KERNEL_UNAVAILABLE to PLANE_KERNEL_UNAVAILABLE —
+    // STRICTER than B1: no lifecycle port now refuses EVERY governed
+    // mount, not just the read-row one.
+    expect(built.code).toBe('PLANE_KERNEL_UNAVAILABLE')
     expect(built.message).toContain('lifecycle port')
   })
 
@@ -240,12 +248,17 @@ describe('review-r1 B1 — no lifecycle port, no enforcing mount', () => {
 
 describe('review-r1 B2 — a governed mount without read governance refuses read before the Body', () => {
   it('R2b: governed, no fsInstance ⇒ assembly stands, read is NOT owned, guard face refuses read', async () => {
-    const built = row.createTeamToolPlaneAssembly(planeInput({}, { fsInstance: null }) as never)
+    const built = row.createTeamToolPlaneAssembly(planeInput({ dispatcherLifecycle: { inflight: () => 0 } }, { fsInstance: null }) as never)
     expect(built.ok, `no-fsInstance mount must stand (other rows may mount): ${JSON.stringify(built.ok)}`).toBe(true)
     if (!built.ok) return
     const value = built.value
     expect(value.ownNames).not.toContain('read')
-    expect(value.centerKernel, 'no kernel without a read row').toBeUndefined()
+    // U6 PR3 (ARC-B): the kernel rides EVERY governed mount now (the shell
+    // row is always kernel-owned). The B2 law STANDS in its generalized
+    // form: the read family did NOT register on this mount, so the table
+    // answers NULL for `read` forever and the door refuses every read.
+    expect(value.centerKernel, 'the mount-wide kernel is present (shell family)').toBeDefined()
+    expect(value.centerKernel!.familyIds).toEqual(['dsh.process-family'])
     expect(value.kernelGuard, 'the rejecting face exists for the governed name (B2)').toBeDefined()
     expect(value.kernelGuard!.owns('read')).toBe(true)
     expect(value.kernelGuard!.owns('grep')).toBe(false)
@@ -253,7 +266,7 @@ describe('review-r1 B2 — a governed mount without read governance refuses read
   })
 
   it('R2c: the read call is refused BEFORE its Body — zero native body, typed refusal (CI-05 closed)', async () => {
-    const built = row.createTeamToolPlaneAssembly(planeInput({}, { fsInstance: null }) as never)
+    const built = row.createTeamToolPlaneAssembly(planeInput({ dispatcherLifecycle: { inflight: () => 0 } }, { fsInstance: null }) as never)
     expect(built.ok).toBe(true)
     if (!built.ok) return
     const double = scopedRegistryDouble({ globalNames: ['read', 'grep'] })

@@ -1,0 +1,44 @@
+/**
+ * SCRATCH (U6 PR3, golden-vector recorder) — deleted after recording.
+ * Runs the SAME shell-class corpus generator against a canonicalizer whose
+ * import path is injected via U6PR3_CANON_SRC (absolute module URL):
+ *   - master recording: the DETACHED origin/master worktree
+ *     (.artifacts/tmp/u6pr3-golden-master @ cd54f3b7c — inline
+ *     extractShellCommand/extractShellEffects, pre-surgery);
+ *   - family recording: this tree's canonical-operation.ts (post-move).
+ * Full corpus JSON + digest written under .artifacts/tmp/u6pr3-shell/.
+ * Not a shipped suite.
+ */
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { describe, expect, it } from 'vitest'
+import { buildCorpus, type Vector } from './u6-pr3-golden-corpus.mjs'
+
+const canonSrc = process.env['U6PR3_CANON_SRC']
+if (canonSrc === undefined || canonSrc.length === 0) {
+  throw new Error('U6PR3_CANON_SRC (absolute module URL of a canonical-operation.ts) is required')
+}
+const tag = process.env['U6PR3_RECORD_TAG'] ?? 'run'
+const outDir = process.env['U6PR3_RECORD_DIR'] ?? '.artifacts/tmp/u6pr3-shell'
+
+describe('u6-pr3 golden-vector recorder (scratch)', () => {
+  it(`records ${tag} shell behavior over the pinned corpus`, async () => {
+    const mod = (await import(/* @vite-ignore */ canonSrc!)) as {
+      canonicalizeOperation: (input: {
+        name: string
+        arguments: unknown
+        resolveTarget: unknown
+      }) => Promise<{ fingerprint: string; resource: unknown; workdirDisplay?: unknown }>
+    }
+    const vectors: Vector[] = await buildCorpus((input) => mod.canonicalizeOperation(input))
+    const json = JSON.stringify(vectors, null, 1)
+    const digest = createHash('sha256').update(JSON.stringify(vectors), 'utf8').digest('hex')
+    mkdirSync(outDir, { recursive: true })
+    writeFileSync(`${outDir}/golden-vectors-${tag}.json`, json, 'utf8')
+    const okCount = vectors.filter((v) => 'ok' in (v.out as Record<string, unknown>)).length
+    const line = `tag=${tag} vectors=${String(vectors.length)} ok=${String(okCount)} err=${String(vectors.length - okCount)} bytes=${String(json.length)} digest=${digest}\n`
+    writeFileSync(`${outDir}/digest-${tag}.txt`, line, 'utf8')
+    process.stdout.write(line)
+    expect(vectors.length).toBeGreaterThan(200)
+  }, 120_000)
+})

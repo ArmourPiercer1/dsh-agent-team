@@ -1,0 +1,15 @@
+{
+  "kind": "aborted",
+  "detail": "hard run watchdog: 9.5 min exceeded",
+  "extra": null,
+  "at": "2026-10-25T23:05:49.960Z",
+  "budget": {
+    "totalRequests": 0,
+    "scenarioLabel": null,
+    "scenarioRequests": 0,
+    "consecutiveMisses": 0,
+    "perSession": {},
+    "perState": {},
+    "history": []
+  }
+}

@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh: warning: 1 entry did not activate
+u6-proc-probe-host (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6prc1-20261025T22-45-25Z/profiles/web/u6-proc-probe-host.mjs): failed to import
+dsh web: http://127.0.0.1:3180/?token=4wjet-Eq9tRpLwWt2NpA4sRD6W4NCC4eXLYmmwRX0Jo
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc1-20261025t22-45-25z
+[dsh-agent-team] a5ptc: census-boot root=session-u6proc-team-u5u6prc1-20261025t22-45-25z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc1-20261025t22-45-25z
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc1-20261025t22-45-25z

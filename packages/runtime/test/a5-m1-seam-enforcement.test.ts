@@ -125,10 +125,15 @@ describe('A5M1-SEAM — center enforcement of the controlLeg contract', () => {
     try {
       const r = await run('printf should-never-run')
       expect(String(r.text)).toContain('a5p5-refused')
-      // The kernel's execution edge verifies the grant's binding identity
-      // first — the center passes the true kernel code through (measured:
-      // TOOL_BINDING_UNVERIFIED), which is the honest refused-admission.
-      expect(String(r.text)).toMatch(/TOOL_BINDING_UNVERIFIED|GRANT_CONSUMPTION_REFUSED/)
+      // The kernel's execution edge refuses the forged grant before any
+      // backend — the center passes the true kernel code through, which is
+      // the honest refused-admission. U6 PR3 (disclosed interface update,
+      // ARC-B): through the family row the edge is the KERNEL's consumeOnce,
+      // whose PR1-pinned K2 reservation refuses a grant with no non-empty
+      // id as GRANT_REPLAY (kernel.ts:358) BEFORE the identity walk that
+      // pre-ARC-B measured as TOOL_BINDING_UNVERIFIED. The law is unchanged:
+      // typed refusal, zero backend (execCount 0 below).
+      expect(String(r.text)).toMatch(/TOOL_BINDING_UNVERIFIED|GRANT_CONSUMPTION_REFUSED|GRANT_REPLAY/)
       expect(shell.execCount()).toBe(0)
     } finally { done() }
   })
