@@ -1829,6 +1829,14 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     },
     rootKernelMentions,
     lanes: { ...laneDone },
+    // compact transcript tails per lane (a stalled chain must be diagnosable
+    // from the receipt alone — every field below is truncated transcript text,
+    // never a secret: no token rides a tool result).
+    debug: {
+      worker: wEx.slice(-6).map((e) => ({ name: e.name, result: String(e.result ?? '').slice(0, 220) })),
+      foreign: fEx.slice(-4).map((e) => ({ name: e.name, result: String(e.result ?? '').slice(0, 220) })),
+      root: cEx.slice(-3).map((e) => ({ name: e.name, result: String(e.result ?? '').slice(0, 220) })),
+    },
   }
   record.record.u6jobsDigest = digest
   try {

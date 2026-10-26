@@ -1,0 +1,4 @@
+# p4t6 scan gate — GREEN after booking SCANNED_PATHS_U6PR4 (2 paths, delta 1263 -> 1265 MEASURED)
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 9ms
+ Test Files  1 passed (1)
+      Tests  10 passed (10)

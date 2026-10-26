@@ -208,6 +208,21 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
     return [
       { id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() },
       { id: 'p6t6-team-tools', name: P6T6_ROW_NAME },
+      // The host's OWN jobs stack, verbatim rows of the host base bundle
+      // (packages/bundle/base/cordis.patch.yml: jobs -> @deepseek-ai/dsh-
+      // jobs-local, tool-jobs -> @deepseek-ai/dsh-tool-jobs): present, the
+      // native bash row composes run_in_background and the NATIVE trio
+      // mounts on un-governed sessions (the boot-root CI-03 arm); on a
+      // governed member session the plane's kernel rows TAKE OVER these
+      // names and the native defs below remain what the bridge's jobs
+      // service reads (one host JobRegistry, no second registry). WITHOUT
+      // these rows a World has NO jobs substrate at all — run 1 measured
+      // exactly that (the birth lane answers 'unknown tool', the confined
+      // governed row refuses background by name, and nothing is born):
+      // the honest CI-03 posture needs the substrate to be PRESENT and
+      // UNTOUCHED, not absent.
+      { id: 'jobs', name: '@deepseek-ai/dsh-jobs-local' },
+      { id: 'tool-jobs', name: '@deepseek-ai/dsh-tool-jobs' },
       presetDeclarationRow({
         id: BASE_PRESET_ID, displayName: 'u6jobs base',
         description: `u6jobs base preset (${runStamp}) = smoke + tool-fs-search`,

@@ -26,11 +26,15 @@
  */
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex')
 
+/** node:fs accepts a node:url URL; the lib URL type of new URL() is a DIFFERENT
+ *  interface for tsc — convert to a path at the read edge. */
+const readSrc = (u: URL): string => readFileSync(fileURLToPath(u as Parameters<typeof fileURLToPath>[0]), 'utf8')
 const BRIDGE_PATH = new URL('../src/plugin/live/jobs-family-bridge.mjs', import.meta.url)
 const BACKENDS_PATH = new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url)
 const BINDINGS_PATH = new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url)
@@ -50,20 +54,62 @@ const GATEWAY_ASSEMBLY_SHA = 'c99ecaadf2d34f8c313e539aee6ab9e247aad6e32b6087d29f
 const REALM = 'u6-pr4-arc-c-realm'
 const ROOT = 'session-u6pr4-team-root'
 
-interface PlaneAssemblyResult { ok: boolean; code?: string; message?: string; value?: any }
+type PlaneAssemblyResult =
+  | { ok: true; value: PlaneValue }
+  | { ok: false; code: string; message?: string }
 interface PlaneModule { createTeamToolPlaneAssembly(input: Record<string, unknown>): PlaneAssemblyResult }
 const planeModule = async (): Promise<PlaneModule> =>
   (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as PlaneModule
-const bridgeModule = async (): Promise<any> =>
-  await import(BRIDGE_PATH.href)
-const gatewayModule = async (): Promise<any> =>
-  await import(GATEWAY_PATH.href)
+interface RowLike {
+  name: string
+  execute(input: Record<string, unknown>, ctx: { agent?: { id: string } }): Promise<{ text: string }>
+}
+interface PlaneValue {
+  readonly definitions: ReadonlyArray<RowLike>
+  readonly kernelGuard: { owns(name: string): boolean; identityFor(name: string): string | null | undefined }
+  readonly placementFeed: (name: string) => { definitionIdentity: string } | undefined
+  readonly centerKernel: {
+    readonly kernel: {
+      approvalFor(scopeKey: string, name: string):
+        { definitionIdentity: string; familyId: string; scopeKey: string } | undefined
+      dropApprovalsForFamily(familyId: string): unknown
+    }
+    readonly registry: {
+      register(input: unknown, opts?: { origin?: string }): { ok: boolean; code?: string; schemaCode?: string; detail?: string }
+      revoke(familyId: string, reason?: string): unknown
+      generation(): number
+    }
+    readonly scopeKey: string
+    readonly familyIds: readonly string[]
+  }
+}
+interface BridgeModule {
+  createGovernedJobsBridge(opts: Record<string, unknown>): unknown
+  buildJobsManagementRowDefs(o: Record<string, unknown>): RowLike[]
+  buildJobsBridgeContribution(o: Record<string, unknown>): Record<string, unknown>
+}
+interface GatewayAssembly {
+  attributeBackgroundJob(o: Record<string, unknown>): { ok: boolean; code?: string }
+  observations(): string[]
+}
+interface GatewayModule {
+  createLiveJobsGatewayAssembly(cfg: Record<string, unknown>): GatewayAssembly
+  jobsBridgeScopeKey(o: Record<string, unknown>): string
+}
+const bridgeModule = async (): Promise<BridgeModule> =>
+  (await import(BRIDGE_PATH.href)) as BridgeModule
+const gatewayModule = async (): Promise<GatewayModule> =>
+  (await import(GATEWAY_PATH.href)) as GatewayModule
+const digestsOf = (c: Record<string, unknown>): { source: string; provider: string } => ({
+  source: String((c.source as { digest?: string }).digest),
+  provider: String((c.provider as { digest?: string }).digest),
+})
 
 /** A real mount; `over` reaches `input.plane`. Returns the plane value plus
  *  a controlLeg call counter (the approval lane's ONLY door — every PA
  *  approval leg lands there). */
 async function mountValue(over: Record<string, unknown> = {}, bridge: unknown = null): Promise<{
-  value: any
+  value: PlaneValue
   legCalls: () => number
 }> {
   let legs = 0
@@ -73,7 +119,7 @@ async function mountValue(over: Record<string, unknown> = {}, bridge: unknown = 
     teamSessionId: ROOT,
     controlLeg: async (input: unknown) => {
       legs += 1
-      return await leg(input)
+      return await leg(input as never)
     },
     fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
     permissionPolicy: { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] },
@@ -94,7 +140,7 @@ async function mountValue(over: Record<string, unknown> = {}, bridge: unknown = 
 
 describe('u6-pr4 A — the move law (byte-identity, one home, no second authority)', () => {
   it('A1 the moved bridge body hashes IDENTICAL to the sup-b PoC-3 master extract', async () => {
-    const text = readFileSync(BRIDGE_PATH, 'utf8')
+    const text = readSrc(BRIDGE_PATH)
     const start = text.indexOf('export function createGovernedJobsBridge')
     expect(start).toBeGreaterThan(0)
     const seam = text.indexOf("/* ── U6 PR4: the bridge's CENTER FACE", start)
@@ -107,22 +153,22 @@ describe('u6-pr4 A — the move law (byte-identity, one home, no second authorit
   })
 
   it('A2 the old home carries NO body — only the re-export edge; production imports the bridge module directly', async () => {
-    const backends = readFileSync(BACKENDS_PATH, 'utf8')
+    const backends = readSrc(BACKENDS_PATH)
     expect(backends).not.toContain('export function createGovernedJobsBridge')
     expect(backends).toContain("from './jobs-family-bridge.mjs'")
-    const bindings = readFileSync(BINDINGS_PATH, 'utf8')
+    const bindings = readSrc(BINDINGS_PATH)
     expect(bindings).toMatch(/import \{ createGovernedJobsBridge \} from '\.\/jobs-family-bridge\.mjs'/)
     expect(bindings).not.toMatch(/import \{ createGovernedJobsBridge \} from '\.\/plane-effect-backends\.mjs'/)
   })
 
   it('A3 the bridge module imports NOTHING but node:crypto + the contracts barrel (no second authority reachable)', async () => {
-    const specifiers = [...readFileSync(BRIDGE_PATH, 'utf8').matchAll(/^import [^']*'([^']+)'/gm)].map((m) => m[1])
+    const specifiers = [...readSrc(BRIDGE_PATH).matchAll(/^import [^']*'([^']+)'/gm)].map((m) => m[1])
     expect(specifiers.slice().sort()).toEqual(['../../../../contracts/src/index.js', 'node:crypto'])
   })
 })
 
 describe('u6-pr4 B — the closed schema forces the named bridge (and digests bind real source)', () => {
-  async function trioDefs(): Promise<{ defs: any[]; bridge: any }> {
+  async function trioDefs(): Promise<{ defs: RowLike[]; bridge: unknown }> {
     const mod = await bridgeModule()
     const bridge = mod.createGovernedJobsBridge({
       scopeKey: 'scope-b', viewer: { rootSessionId: ROOT, instanceId: 'inst-b' },
@@ -162,8 +208,8 @@ describe('u6-pr4 B — the closed schema forces the named bridge (and digests bi
     const { defs, bridge } = await trioDefs()
     const a = mod.buildJobsBridgeContribution({ bridge, definitions: defs, hostPin: '0.2.0-rc.2@639ed01539', cancelBoundary: 'x' })
     const b = mod.buildJobsBridgeContribution({ bridge, definitions: defs, hostPin: '0.2.0-rc.3@deadbeef', cancelBoundary: 'x' })
-    expect(a.source.digest).not.toBe(b.source.digest)
-    expect(a.provider.digest).not.toBe(b.provider.digest)
+    expect(digestsOf(a).source).not.toBe(digestsOf(b).source)
+    expect(digestsOf(a).provider).not.toBe(digestsOf(b).provider)
   })
 
   it('B3 schema negatives: provider-backed WITHOUT the named bridge, and the capability backed only by a family body, both refuse', async () => {
@@ -179,6 +225,7 @@ describe('u6-pr4 B — the closed schema forces the named bridge (and digests bi
       execution: { declared: true, via: 'family-body' },
     }, { origin: 'reviewed-manifest' })
     expect(noBridge.ok).toBe(false)
+    if (noBridge.ok) throw new Error('unreachable')
     // The registry wraps the schema code (registry.ts:115): the CLOSED-WORLD
     // refusal is INVALID_CONTRIBUTION carrying the schema's own code.
     expect(noBridge.schemaCode).toBe('NAMED_BRIDGE_REQUIRED')
@@ -187,6 +234,7 @@ describe('u6-pr4 B — the closed schema forces the named bridge (and digests bi
     })
     const unbacked = familyBacked.register(base, { origin: 'reviewed-manifest' })
     expect(unbacked.ok).toBe(false)
+    if (unbacked.ok) throw new Error('unreachable')
     expect(unbacked.schemaCode).toBe('CAPABILITY_UNBACKED')
   })
 
@@ -218,8 +266,9 @@ describe('u6-pr4 C — ONE kernel, ONE approval table: three families ride it (t
       expect(typeof identity).toBe('string')
       // THE table is the identity source: the pb §6 feed answers the SAME identity
       // the approval entry binds (one identity, not two ledgers).
-      expect(value.placementFeed(name).definitionIdentity).toBe(identity)
+      expect(value.placementFeed(name)?.definitionIdentity).toBe(identity)
       const entry = ck.kernel.approvalFor(ck.scopeKey, name)
+      if (entry === undefined) throw new Error(`no kernel entry bound for ${name}`)
       expect(entry.definitionIdentity).toBe(identity)
       expect(entry.familyId).toBe('dsh.jobs-family')
     }
@@ -227,7 +276,7 @@ describe('u6-pr4 C — ONE kernel, ONE approval table: three families ride it (t
     // consumeOnce edge both call this same guard.owns (the plane source has
     // no other kernel-ownership test — see the PR4 diff hunks); here: the
     // guard answers the SAME table the entries live in, per name.
-    expect(guard.identityFor('read')).toBe(value.placementFeed('read').definitionIdentity)
+    expect(guard.identityFor('read')).toBe(value.placementFeed('read')?.definitionIdentity)
   })
 
   it('C2 jobsEnabled WITHOUT a bridge: shut rows mount, NO jobs candidate registers, the trio is not kernel-owned', async () => {
@@ -235,7 +284,9 @@ describe('u6-pr4 C — ONE kernel, ONE approval table: three families ride it (t
     expect(value.definitions.map((d: { name: string }) => d.name)).toContain('job_output')
     expect(value.centerKernel.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family'])
     expect(value.kernelGuard.owns('job_output')).toBe(false)
-    const shut = await value.definitions.find((d: { name: string }) => d.name === 'job_list').execute({}, { agent: { id: 'agent-1' } })
+    const shutRow = value.definitions.find((d) => d.name === 'job_list')
+    expect(shutRow, 'the shut trio row still mounts').not.toBeUndefined()
+    const shut = await (shutRow as RowLike).execute({}, { agent: { id: 'agent-1' } })
     expect(shut.text).toContain('IO_POLICY_UNSUPPORTED')
   })
 
@@ -318,10 +369,10 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
   }
 
   interface World {
-    asm: any
+    asm: GatewayAssembly
     svc: ReturnType<typeof countingRegistry>
-    member1: any
-    member2: any
+    member1: PlaneValue
+    member2: PlaneValue
     legs1: () => number
     observations1: string[]
   }
@@ -332,7 +383,7 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
     const asm = gw.createLiveJobsGatewayAssembly({ teamRoot: domainDouble(), rootSessionId: ROOT })
     const svc = countingRegistry()
     const observations1: string[] = []
-    let planeValue1: any = null
+    let planeValue1: PlaneValue | null = null
     const bridge1 = mod.createGovernedJobsBridge({
       scopeKey: gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' }),
       viewer: OWNER_A,
@@ -357,8 +408,11 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
     return { asm, svc, member1: m1.value, member2: m2.value, legs1: m1.legCalls, observations1 }
   }
 
-  const row = (plane: any, name: string): any =>
-    plane.definitions.find((d: { name: string }) => d.name === name)
+  const row = (plane: PlaneValue, name: string): RowLike => {
+    const hit = plane.definitions.find((d) => d.name === name)
+    if (hit === undefined) throw new Error(`row ${name} is not mounted`)
+    return hit
+  }
 
   it('D1 the gateway pins are fed FROM THE KERNEL TABLE; attribution admits on that pin; the owner trio runs with the approval lane untouched', async () => {
     const w = await world()
@@ -459,8 +513,8 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
 
 describe('u6-pr4 E — the mount-generation law (CI-08), pa-mount-registry UNMODIFIED', () => {
   it('E1 the two frozen files are byte-FROZEN for this slice (unmodified import law)', async () => {
-    expect(sha256(readFileSync(MOUNT_REGISTRY_PATH, 'utf8'))).toBe(PA_MOUNT_REGISTRY_SHA)
-    expect(sha256(readFileSync(GATEWAY_PATH, 'utf8'))).toBe(GATEWAY_ASSEMBLY_SHA)
+    expect(sha256(readSrc(MOUNT_REGISTRY_PATH))).toBe(PA_MOUNT_REGISTRY_SHA)
+    expect(sha256(readSrc(GATEWAY_PATH))).toBe(GATEWAY_ASSEMBLY_SHA)
   })
 
   it('E2 the old disposer cannot drop the new mount; the current identity still can', async () => {
@@ -483,7 +537,9 @@ describe('u6-pr4 E — the mount-generation law (CI-08), pa-mount-registry UNMOD
     const key = 'u6pr4-e3-root:u6pr4-e3-instance'
     store.set(key, { plane: 'mount-generation-1' })
     store.set(key, { plane: 'mount-generation-2' }) // remount (same pair)
-    const naiveDisposerFromGeneration1 = (): void => store.delete(key)
+    const naiveDisposerFromGeneration1 = (): void => {
+      store.delete(key)
+    }
     naiveDisposerFromGeneration1()
     expect(store.get(key)).toBeUndefined() // the naive disposer just killed the CURRENT mount
     // With the real registry the identical sequence (E2) keeps gen2 alive: the

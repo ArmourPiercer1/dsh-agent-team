@@ -1,0 +1,8 @@
+# p4t6 scan gate — RED-first measurement BEFORE booking SCANNED_PATHS_U6PR4
+# tree: .worktrees/u6-pr4 @ task/u6-pr4-jobs-bridge-20261026 (head 066fb27ed + this unbooked file);
+# the two NEW scannable files (bridge module + its C1 spec) are present;
+$ cd packages/testkit && npx vitest run test/p4t6-session-event-scan.test.ts
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 1265 to be 1263 // Object.is equality
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
