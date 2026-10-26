@@ -44,6 +44,25 @@ test('S2 the self-test is not vacuous: a fixture tree without the emitters fails
   assert.ok(problems.some((p) => p.startsWith('missing file')))
 })
 
+test('S3 a drifted line hint is reported as moved, a vanished token as a problem (no false red, no false green)', async () => {
+  const { cpSync, mkdirSync, writeFileSync: wf, readFileSync: rf } = await import('node:fs')
+  const root = join(scratch, 'drift-tree')
+  const repo = resolve(HERE, '..', '..')
+  for (const rel of ['packages/tools/a5p5-tools/src', 'packages/runtime/tool-admission', 'packages/runtime/tool-dispatch', 'packages/runtime/governance-center', 'packages/runtime/operation-permission', 'packages/runtime/sandbox-provider', 'packages/runtime/src/plugin/live', 'packages/domain/tool-governance/src', 'packages/tools/fs-family/src']) {
+    mkdirSync(join(root, rel), { recursive: true })
+    cpSync(join(repo, rel), join(root, rel), { recursive: true })
+  }
+  const pipe = join(root, 'packages/tools/a5p5-tools/src/pipeline.ts')
+  wf(pipe, `// shifted\n// shifted\n${rf(pipe, 'utf8')}`)
+  const moved = []
+  const problems = mod.selfTest(root, moved)
+  assert.deepEqual(problems, [], JSON.stringify(problems))
+  assert.ok(moved.some((m) => m.includes('pipeline.ts')), JSON.stringify(moved))
+  wf(pipe, rf(pipe, 'utf8').replaceAll("kind: 'refused-spill'", "kind: 'refused-SPILL-RENAMED'"))
+  const after = mod.selfTest(root, [])
+  assert.ok(after.some((p) => p.includes('refused-spill') && p.includes('anywhere')), JSON.stringify(after))
+})
+
 test('A1 refused-admission: attributed through the kind, fingerprint printed only in digest shape', () => {
   const r = run(['--text', `a5p5-refused kind=refused-admission code=template-deny-lane detail=${FP}`, '--json'])
   assert.equal(r.status, 0)

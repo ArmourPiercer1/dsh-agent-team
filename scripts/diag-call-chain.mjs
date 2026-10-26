@@ -73,11 +73,11 @@ const PLANE = 'packages/runtime/src/plugin/live/team-tool-plane.mjs'
 
 /** Refusal kind → the pipeline stage that produces it (source-cited, line numbers at this tree). */
 export const KIND_STAGES = Object.freeze({
-  'refused-schema': { stage: 'argument schema parse (before any effect is derived)', cites: [[`${REG}:193`, "refusalText('refused-schema'"], [`${PIPE}:101`, "kind: 'refused-schema'"]], carriesFingerprint: false, faces: ['schema'] },
-  'refused-replay': { stage: 'host execution-token replay fence (before the pipeline runs)', cites: [[`${REG}:209`, "refusalText('refused-replay'"]], carriesFingerprint: false, faces: ['replay'] },
-  'refused-admission': { stage: 'admission: lane decide verdict OR the PA (admission kernel / Control) edge — the line alone cannot say which', cites: [[`${PIPE}:106`, "kind: 'refused-admission'"], [`${PIPE}:153`, "kind: 'refused-admission'"], [`${REG}:269`, "result.kind === 'refused-admission'"]], carriesFingerprint: true, faces: ['lane-decide', 'pa-control-edge', 'pa-default-deny-coverage', 'admission-kernel', 'assurance', 'closed-world-guard'] },
-  'refused-spill': { stage: 'spill lease open / settle (after admission)', cites: [[`${PIPE}:162`, "kind: 'refused-spill'"], [`${PIPE}:178`, "kind: 'refused-spill'"], [`${REG}:270`, "result.kind === 'refused-spill'"]], carriesFingerprint: false, faces: ['spill'] },
-  'backend-failed': { stage: 'effect backend / provider run, or renderer closed-set violation', cites: [[`${PIPE}:182`, "kind: 'backend-failed'"], [`${PIPE}:197`, "kind: 'backend-failed'"], [`${REG}:271`, 'result.failure.code']], carriesFingerprint: false, faces: ['shut-backend', 'provider', 'renderer'] },
+  'refused-schema': { stage: 'argument schema parse (before any effect is derived)', cites: [[`${REG}:200`, "refusalText('refused-schema'"], [`${PIPE}:107`, "kind: 'refused-schema'"]], carriesFingerprint: false, faces: ['schema'] },
+  'refused-replay': { stage: 'host execution-token replay fence (before the pipeline runs)', cites: [[`${REG}:216`, "refusalText('refused-replay'"]], carriesFingerprint: false, faces: ['replay'] },
+  'refused-admission': { stage: 'admission: lane decide verdict OR the PA (admission kernel / Control) edge — the line alone cannot say which', cites: [[`${PIPE}:112`, "kind: 'refused-admission'"], [`${PIPE}:159`, "kind: 'refused-admission'"], [`${REG}:280`, "result.kind === 'refused-admission'"]], carriesFingerprint: true, faces: ['lane-decide', 'pa-control-edge', 'pa-default-deny-coverage', 'admission-kernel', 'assurance', 'closed-world-guard'] },
+  'refused-spill': { stage: 'spill lease open / settle (after admission)', cites: [[`${PIPE}:168`, "kind: 'refused-spill'"], [`${PIPE}:184`, "kind: 'refused-spill'"], [`${REG}:281`, "result.kind === 'refused-spill'"]], carriesFingerprint: false, faces: ['spill'] },
+  'backend-failed': { stage: 'effect backend / provider run, or renderer closed-set violation', cites: [[`${PIPE}:188`, "kind: 'backend-failed'"], [`${PIPE}:203`, "kind: 'backend-failed'"], [`${REG}:282`, 'result.failure.code']], carriesFingerprint: false, faces: ['shut-backend', 'provider', 'renderer'] },
 })
 
 /** Face id → what it is and where it lives. */
@@ -360,7 +360,7 @@ export function diagnose(text, { json = false, kind = null } = {}, codeOnly = nu
 }
 
 /** --self-test: every FACE_TABLE / KIND_STAGES citation still holds at this tree. */
-export function selfTest(root = REPO_ROOT) {
+export function selfTest(root = REPO_ROOT, moved = []) {
   const problems = []
   const read = (rel) => {
     const abs = join(root, rel)
@@ -375,19 +375,32 @@ export function selfTest(root = REPO_ROOT) {
       if (t !== null && token !== undefined && !t.includes(token)) problems.push(`${code}/${face}: ${file} no longer carries ${JSON.stringify(token)}`)
     }
   }
+  // Each stage site is located by its TOKEN, not trusted by its line number: the line is a reading
+  // hint that drifts with every unrelated edit (measured: a rebase moved all 12 by 6–11 lines).
+  // A token that vanished is a real finding; a token that moved is only reported as `moved`.
   for (const [kind, st] of Object.entries(KIND_STAGES)) {
     for (const [cite, token] of st.cites) {
       const [file, line] = cite.split(':')
       const t = read(file)
       if (t === null) continue
-      const text = t.split('\n')[Number(line) - 1] ?? ''
-      if (!text.includes(token)) problems.push(`${kind}: ${cite} no longer carries ${JSON.stringify(token)} (line reads: ${text.trim().slice(0, 80)})`)
+      const lines = t.split('\n')
+      if ((lines[Number(line) - 1] ?? '').includes(token)) continue
+      const at = lines.findIndex((l) => l.includes(token))
+      if (at < 0) problems.push(`${kind}: ${file} no longer carries ${JSON.stringify(token)} anywhere`)
+      else moved.push(`${kind}: ${cite} → ${file}:${String(at + 1)}`)
     }
   }
   {
     const [file, line] = SHADOW_CITE[0].split(':')
     const t = read(file)
-    if (t !== null && !(t.split('\n')[Number(line) - 1] ?? '').includes(SHADOW_CITE[1])) problems.push(`shadow: ${SHADOW_CITE[0]} no longer carries ${JSON.stringify(SHADOW_CITE[1])}`)
+    if (t !== null) {
+      const lines = t.split('\n')
+      if (!(lines[Number(line) - 1] ?? '').includes(SHADOW_CITE[1])) {
+        const at = lines.findIndex((l) => l.includes(SHADOW_CITE[1]))
+        if (at < 0) problems.push(`shadow: ${file} no longer carries ${JSON.stringify(SHADOW_CITE[1])} anywhere`)
+        else moved.push(`shadow: ${SHADOW_CITE[0]} → ${file}:${String(at + 1)}`)
+      }
+    }
   }
   // The frozen §5 vocabulary must be covered entirely (a new §5 code without a row is drift).
   const errors = read('packages/domain/tool-governance/src/errors.ts')
@@ -422,8 +435,10 @@ function runCli(argv) {
     else usage(`unknown argument ${JSON.stringify(String(a).slice(0, 40))}`)
   }
   if (self) {
-    const problems = selfTest()
-    if (problems.length === 0) { process.stdout.write(`diag-call-chain --self-test: OK ${String(Object.keys(FACE_TABLE).length)} codes, ${String(Object.keys(KIND_STAGES).length)} kinds, every citation holds at this tree\n`); process.exit(0) }
+    const moved = []
+    const problems = selfTest(REPO_ROOT, moved)
+    const note = moved.length === 0 ? '' : `\n  NOTE ${String(moved.length)} line hint(s) drifted (token still present; refresh the hint):\n${moved.map((m) => `    ${m}`).join('\n')}`
+    if (problems.length === 0) { process.stdout.write(`diag-call-chain --self-test: OK ${String(Object.keys(FACE_TABLE).length)} codes, ${String(Object.keys(KIND_STAGES).length)} kinds, every cited site still carries its token at this tree${note}\n`); process.exit(0) }
     process.stdout.write(`diag-call-chain --self-test: FAIL ${String(problems.length)}\n${problems.map((p) => `  ${p}`).join('\n')}\n`)
     process.exit(1)
   }
