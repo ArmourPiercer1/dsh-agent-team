@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PR1R",
+  "paths": [
+    "packages/runtime/tool-dispatch/pending-calls.ts",
+    "packages/runtime/test/a5p1r-change-abort.test.ts",
+    "packages/runtime/test/a5p1r-shadow-attribution.test.ts",
+    "packages/runtime/test/a5p1r-validate-resolve.test.ts",
+    "packages/runtime/test/a5p1r-scoped-registry-double.ts"
+  ],
+  "expectedDelta": null,
+  "reason": "The Alpha.5 PR1-RESIDUAL round (branch `alpha5-pr1r-residual-boundaries`,\nbased on the merged PR1): NO new production source. It tightens the four\nalready-counted `tool-dispatch` sources (the trusted-vs-resolved native\ncomparison, the inner dispatch door, the call-edge withdrawal) and adds\nTWO RED-first specs plus the registry double they share — the double\nmodels the pinned registry's layer semantics and stage order, so it is\nsource, not fixture-outside. The real-registry runners live under\n`tests/kits/` (outside this scan) and `packages/runtime/dist/**` is\noutside the scanner's rules, so nothing else moves.",
+  "tieNote": "NO TIE at 88107ad71: this list carried no `expect(<list>.length).toBe(to - from)` line in the pre-migration file; it is still counted in the exact total and every path is still asserted present.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PR1R (line 2753)"
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U6PR4",
+  "paths": [
+    "packages/runtime/src/plugin/live/jobs-family-bridge.mjs",
+    "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1263,
+    "to": 1265
+  },
+  "reason": "MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are\nper-round constants (PR4 +2, PR5 +12) and the total pin below is the\nUNION expression — no prose total is load-bearing. On the merged tree\nthe total legs above hold as the UNION expression (each per-round tie\nleg keeps its own measured delta; no cross-round prose total is\nload-bearing).\nU6 PR4 (this round; jobs bridge onto the governance kernel, ARC-C): the\nTWO scannable files are the dedicated jobs bridge module (the moved\nVERBATIM createGovernedJobsBridge body + the closed contribution\nbuilders — byte-identity sha256 71705d6eb1aaa9d0ae3fd22541f788a5dfb8dd07\ne6f96827db49e40283a9b29f pinned by the spec below) and its C1 spec\n(19 cases: byte identity + frozen-file shas, contribution/schema law,\none-kernel claims, same-admission end-to-end over the real gateway\nassembly with a counting host face, mount-generation law with the\ncounterfactual plant). Everything else this PR touched is an EDIT to an\nalready-counted path (team-tool-plane.mjs, plane-effect-backends.mjs,\nagent-bindings.mjs, place-dist-glue.mjs) or lives outside packages/**\n(dist mirrors, tests/world-factory/**, docs/**, dev/** evidence); the\nC2 harness (runner/factory/lib/u6-jobs-assembly) rides tests/, outside\nthe scan. Zero new denylist vocabulary. Taking the scanned total on THIS\ntree to 1265 — MEASURED by the pre-booking scanner run\n(`dev/agent-workflow/evidence/u6-pr4-20261026/p4t6-RED-unbooked.log`\nreads `expected 1265 to be 1263`; no chain value copied).",
+  "tieNote": "U6 PR4: the SCANNED_PATHS_U6PR4 files above are exactly the\nscanned-total delta 1263 -> 1265, MEASURED by the pre-booking\nscanner run on THIS tree (evidence\n`u6-pr4-20261026/p4t6-RED-unbooked.log` reads\n`expected 1265 to be 1263`; no chain value copied).",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U6PR4 (line 547); tie line 3793"
+}

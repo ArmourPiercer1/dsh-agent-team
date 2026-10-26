@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4F2COLDSTART",
+  "paths": [
+    "packages/runtime/test/a4-compat-coldstart-interleave.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1041,
+    "to": 1042
+  },
+  "reason": "The a4-f2-coldstart-interleave entry (A4-PR7 reviewer-verification lane,\nbranch `fix/a4-f2-coldstart-interleave`): ONE new scannable file — the spec\nthat drives TWO independent compatibility authorities through a COLD create\nwith both occupancy reads interleaved ahead of both commits, at the real\nproduct seam and with the commit timing of the pinned upstream baseline\n(commit inside the domain write chain, not at call time). It pins the\nconsequence: with no compare-and-set available for a create, both first-time\nwriters commit and neither is told, and a consultation must never report a\nfingerprint or status it did not read. The fix is an EDIT to an\nalready-counted path (`runtime/compatibility/authority.ts`, the\nfingerprint-agreement gate after the freshness re-probe) and contributes\nnothing — an edit is not an increment. Evidence lives under\n`dev/agent-workflow/evidence/a4-pr7/f2-coldstart-interleave/`, outside\n`packages/**`. Both endpoints MEASURED on this branch: with this file on disk\nand this entry stripped the scanner reads `expected 1042 to be 1041` (capture\n`dev/agent-workflow/evidence/a4-pr7/f2-coldstart-interleave/p4t6-inventory-with-new-file.log`);\n1041 is the derived merged-tip total the a4-compat-atomic entry above ends on.",
+  "tieNote": "(this tie shared the comment above the preceding tie at 88107ad71 — see a5intr3.json tieNote)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4F2COLDSTART (line 2637); tie line 3501"
+}

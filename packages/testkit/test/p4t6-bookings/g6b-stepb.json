@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "G6B_STEPB",
+  "paths": [
+    "packages/runtime/test/alpha5-g6b-rc-first.test.ts",
+    "packages/runtime/test/a5-scratch-default.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1204,
+    "to": 1206
+  },
+  "reason": "#337 STEP B (rc-first completion records + the 23:12Z production default-form\naudit, branch `g6b-flake`) adds TWO scannable specs: the row-level spec and the\nproduction default-form positive control (a5-scratch-default). The production\nedits ride already-counted files; the launcher .py stays outside the scan; zero\nnew denylist vocabulary. MEASURED on THIS merged tree, no copying: the\npre-booking run of master's own file read `expected 1206 to be 1205` (evidence\n`alpha5/g6b-flake/step-b/compat2-p4t6-red-measure.log`) - master's measured\n1205 plus exactly this round's two new paths.",
+  "tieNote": "The #337 STEP B tie, MEASURED on THIS merged tree: pre-booking read\n`expected 1206 to be 1205`, so this round's two specs end the chain at 1206.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_G6B_STEPB (line 123); tie line 3686"
+}

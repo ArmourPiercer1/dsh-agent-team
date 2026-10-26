@@ -2004,19 +2004,21 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       // and moves its own tie. Asserting the registration here means a rebase that
       // silently drops the lane entry reddens this file instead of quietly lowering the
       // scanner's total for the next reader.
-      const p4t6 = readFileSync(join(TEST_DIR, 'p4t6-session-event-scan.test.ts'), 'utf8')
-      const myPath = relative(REPO_ROOT, join(TEST_DIR, 'a4p7-merge-gate.test.ts')).replace(/\\/g, '/')
-      // F1 again, same disease: `p4t6.toContain(myPath)` was satisfied by a COMMENT naming
-      // the path, so deleting the array entry — the only part the scanner counts — left this
-      // test green. Match the entry inside the lane's array literal instead. The derived-sum
+      // u7-w0: the lane's list moved out of p4t6-session-event-scan.test.ts into its own
+      // booking file `p4t6-bookings/a4p76gate.json` (collected by enumeration). F1 again,
+      // same disease, same cure: a MENTION does not count — the path must be an ENTRY of
+      // that booking's `paths` array, the only part the ledger sums. The derived-sum
       // assertion in p4t6 already reddens on such a deletion, so this is precision, not
       // teeth; precision is the reason the ledger exists.
-      const laneList = /const SCANNED_PATHS_A4P76GATE[^=]*=\s*\[([^\]]*)\]/.exec(p4t6)
-      expect(laneList, 'p4t6 has no `const SCANNED_PATHS_A4P76GATE = […]` array literal — re-add the lane list, and its own tie').not.toBeNull()
+      const myPath = relative(REPO_ROOT, join(TEST_DIR, 'a4p7-merge-gate.test.ts')).replace(/\\/g, '/')
+      const bookingFile = join(TEST_DIR, 'p4t6-bookings', 'a4p76gate.json')
+      expect(existsSync(bookingFile), 'p4t6 has no `p4t6-bookings/a4p76gate.json` — re-add the lane booking, and its own tie').toBe(true)
+      const booking = JSON.parse(readFileSync(bookingFile, 'utf8')) as { lane?: string; paths?: unknown }
+      expect(booking.lane).toBe('A4P76GATE')
       expect(
-        (laneList?.[1] ?? '').replace(/\s+/g, ' '),
-        `${myPath} is not an ENTRY in SCANNED_PATHS_A4P76GATE — add the path and move that lane's own tie; never hand-write a total, and never count a mention`,
-      ).toContain(`'${myPath}'`)
+        Array.isArray(booking.paths) ? booking.paths : [],
+        `${myPath} is not an ENTRY in the A4P76GATE booking's paths — add the path and move that lane's own tie; never hand-write a total, and never count a mention`,
+      ).toContain(myPath)
     })
   })
 })

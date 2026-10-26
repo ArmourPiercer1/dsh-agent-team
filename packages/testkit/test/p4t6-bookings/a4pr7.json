@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR7",
+  "paths": [
+    "packages/runtime/test/a4p7-a1-14-consumption-revalidation.test.ts",
+    "packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts",
+    "packages/testkit/test/a4p7-blueprint-version-clean.test.ts",
+    "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
+    "packages/testkit/test/a4p75-composition-smoke-classification.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1016,
+    "to": 1021
+  },
+  "reason": "A4-PR7 (feat/a4-pr7-v3-cutover): A1-14's consumption-point revalidation\nsuite, the v3-cutover acceptance lane, and the Task 7.5 fence wrapper. This\nlist grows with every scannable file PR7 adds, and the advancing total below\nmoves exactly when this list does — never for a file that is not named here,\nand never by hand. The fence SCRIPT (`scripts/verify-blueprint-version-clean\n.mjs`) is deliberately absent: this scan covers the nine package directories,\nand a root-level script is outside its scope (the wrapper test is inside, and\nit is what makes the script a gate — ADR A5-9).",
+  "listNotes": "A4-PR7 Ruling 1 (this commit): the three-state migration surface on the\nRemote catalog. Exactly one new scannable file — every other path the\nruling touches is an EDIT to a path this scan already counts, and an edit\nis not an increment. The total below moves because this line does.\nA4-PR7 Task 7.5 (this commit): the smoke classifier's test. One new\nscannable file — Task 7.5's other new paths are `scripts/*.mjs`\n(+ their `.d.mts`), which this scan's `packages/**` scope does not\ncover, and its edits to `scripts/build-client-composition.mjs` /\n`scripts/check-artifacts-committed.mjs` are edits, not increments.",
+  "tieNote": "The A4-PR7 tie, same form. `1021` is PR7's own advancing total: it moves\nonly when the A4-PR7 list above grows, and the by-path loop above is what\nproves each named path really is in the scan (a total that moved for a\ndropped file instead of an added one fails there, not here). Ruling 1 moved\nit with the ONE file it added — every other path that ruling touched was\nalready counted, and an edit is not an increment. Task 7.5 moved it again\nfor the same reason: one new test file under `packages/**`.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR7 (line 2422); tie line 3371"
+}

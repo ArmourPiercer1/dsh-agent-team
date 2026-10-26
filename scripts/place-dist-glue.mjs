@@ -31,290 +31,84 @@
  *   packages/runtime/root-binding/harness/seam.mjs
  *     -> packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs
  *
+ * u7-w0 (2026-10-26) — the list is COLLECTED BY ENUMERATION. Until u7-w0 every
+ * family lane appended its `{src, dist}` entries + a comment block to an in-file
+ * `PLACEMENTS` array here — a shared list 2 of the 7 merged U7 PRs edited in
+ * parallel. A lane now ADDS ONE FILE, `scripts/dist-placements/<NNN>-<family>.json`
+ * (schema `dist-placements/1`), and edits nothing in this script. ORDER IS
+ * EXPLICIT: files sort by name (the numeric prefix), entries keep their order
+ * inside a file; `PLACEMENTS[0]` must stay the glue (composition-smoke reads it
+ * as THE glue placement) and the loader refuses a list that breaks that. The
+ * 38 entries at origin/master 88107ad71 moved verbatim, in order, with each
+ * entry's comment carried as its `note`.
+ *
  * Usage: node place-dist-glue.mjs [repo-root]   (default: cwd)
  */
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+/** The drop-in directory the list is collected from (beside this script). */
+export const PLACEMENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'dist-placements')
+const SCHEMA = 'dist-placements/1'
+const FILE_NAME = /^\d{3}-[a-z0-9][a-z0-9-]*\.json$/
+/** The glue: PLACEMENTS[0] by contract (composition-smoke's glue placement). */
+export const GLUE_SRC = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
+
+/**
+ * Load every placement file in sorted file-name order and return the flat
+ * `[{src, dist}]` list. ORDER LAW: the three-digit prefix orders the files.
+ * GAPS ARE ALLOWED and intended (010, 030, … leave insertion room); what must
+ * be total is the order itself, so a DUPLICATE prefix or an ill-formed name
+ * refuses. FAIL-CLOSED: any schema error, mis-named or stray entry, mirror
+ * law breach (`dist !== packages/runtime/dist/<src>`), duplicate src/dist,
+ * duplicate order prefix, or a first entry that is not the glue throws — a
+ * placement list the gates cannot trust is never returned.
+ * @param {string} [dir]
+ * @returns {Array<{src: string, dist: string}>}
+ */
+export function loadPlacements(dir = PLACEMENTS_DIR) {
+  // EVERY entry is enumerated (u7-w0 review R1 F-1): anything that is not a
+  // regular `<NNN>-<family>.json` file — a subdirectory, dotfile or other
+  // extension — refuses by name instead of being skipped.
+  const entries = readdirSync(dir, { withFileTypes: true })
+  const stray = entries.filter((e) => !e.isFile() || !FILE_NAME.test(e.name)).map((e) => `${e.name}${e.isDirectory() ? '/' : ''}`).sort()
+  if (stray.length > 0) throw new Error(`place-dist-glue: stray-entry in ${dir}: ${stray.join(', ')} (placement files are <NNN>-<family>.json)`)
+  const files = entries.map((e) => e.name).sort()
+  if (files.length === 0) throw new Error(`place-dist-glue: no placement files in ${dir}`)
+  const prefixes = new Set()
+  const out = []
+  const srcs = new Set()
+  const dists = new Set()
+  for (const file of files) {
+    if (!FILE_NAME.test(file)) throw new Error(`place-dist-glue: ${file}: placement files are <NNN>-<family>.json (the prefix is the order)`)
+    const prefix = file.slice(0, 3)
+    if (prefixes.has(prefix)) throw new Error(`place-dist-glue: ${file}: order prefix ${prefix} is already taken — the order must be total`)
+    prefixes.add(prefix)
+    const doc = JSON.parse(readFileSync(join(dir, file), 'utf8'))
+    if (doc?.schema !== SCHEMA) throw new Error(`place-dist-glue: ${file}: schema ${JSON.stringify(doc?.schema)} (expected ${SCHEMA})`)
+    if (!Array.isArray(doc.placements) || doc.placements.length === 0) throw new Error(`place-dist-glue: ${file}: placements must be a non-empty array`)
+    for (const p of doc.placements) {
+      if (typeof p?.src !== 'string' || typeof p?.dist !== 'string') throw new Error(`place-dist-glue: ${file}: every placement needs src and dist strings`)
+      if (p.dist !== `packages/runtime/dist/${p.src}`) throw new Error(`place-dist-glue: ${file}: mirror law — dist must be packages/runtime/dist/<src> (src ${p.src}, dist ${p.dist})`)
+      if (srcs.has(p.src)) throw new Error(`place-dist-glue: ${file}: duplicate src ${p.src}`)
+      if (dists.has(p.dist)) throw new Error(`place-dist-glue: ${file}: duplicate dist ${p.dist}`)
+      srcs.add(p.src)
+      dists.add(p.dist)
+      out.push({ src: p.src, dist: p.dist })
+    }
+  }
+  if (out[0]?.src !== GLUE_SRC) throw new Error(`place-dist-glue: the first placement must be the glue ${GLUE_SRC} (got ${String(out[0]?.src)})`)
+  return out
+}
 
 /**
  * The dist-mirror placements (repo-root-relative). This list is the SINGLE
  * home for "which src files tsc never emits but the installed dist must
  * carry" — check-artifacts-committed.mjs imports it for its parity check
- * (check D), so a new placement added here is gated automatically.
+ * (check D), so a new placement file is gated automatically.
  */
-export const PLACEMENTS = [
-  {
-    src: 'packages/runtime/src/plugin/live/agent-bindings.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
-  },
-  // GLUE-5 live rows (byte-copied like the glue itself: tsc never emits .mjs).
-  {
-    src: 'packages/runtime/src/plugin/live/team-tool-plane.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs',
-  },
-  {
-    src: 'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
-  },
-  {
-    // alpha5 PTC fs half-arm (10:04Z work order): the escalation
-    // adjudication row — production import edge from agent-bindings (the
-    // gate), shipped through the same dist mirror as every prior live row.
-    src: 'packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
-  },
-  {
-    // U6 PR1 center-assembly SHADOW row: the config-gated
-    // (`teamToolPlane.centerAssembly: 'shadow'`) mount that agent-bindings
-    // dynamically imports — production import edge from the glue (the gate),
-    // shipped through the same dist mirror law as every prior live row. Its
-    // own relative import of the governance-center lane resolves INSIDE the
-    // mirror (tsc emits the lane; this .mjs rides the byte-copy list).
-    src: 'packages/runtime/src/plugin/live/center-shadow-row.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs',
-  },
-  // GLUE-7 production backend assembly row (byte-copied: tsc never emits
-  // .mjs; the plane row imports it by a relative in-face specifier, so the
-  // shipped face must carry it exactly like the plane row itself).
-  //
-  // A5-SRGP (PR5 search row) CORRECTED the scope of the two entries below on the
-  // master replay, and the correction stays visible here because an earlier note in
-  // this list was wrong in a way only the whole-tree census caught:
-  // `a5g6-install-face-render` (run 39114260882) failed with
-  // `Cannot find module './glob-backend.mjs' imported from
-  // .../dist/.../search-backend.mjs`. The law is the TRANSITIVE import graph of the
-  // shipped face, not "what the plane row happens to name":
-  //
-  //   plane-effect-backends.mjs -> search-backend.mjs -> glob-backend.mjs
-  //
-  // The search row delegates its anchored-walk and shared-law work to the confined-rg
-  // row (`search-backend.mjs:186` imports `openAnchoredWalkRoot` +
-  // `verifyGlobResultsBeneath` from `./glob-backend.mjs`), so the face must carry that
-  // file even though the PLANE never imports it and even though the glob row is not
-  // itself production-wired on this line. The dropped note asked only "does the plane
-  // import the glob row?", heard "no", and cut the copy — a narrowing measured from
-  // the wrong importer. The list must be walked from every file it already contains,
-  // which is what leg `M3` of `alpha5-search-backend.test.ts` now pins so the mistake
-  // cannot be repeated by the next reader who narrows this list.
-  // U6 PR5: the glob/search/cancel rows MOVED to the search-family lane —
-  // their center placements retire WITH the files (no dual copy); the lane
-  // mirror block below carries the bytes now. The center face keeps the jobs
-  // bridge ALONE: U6 PR6 deleted the last center site, the pure-re-export
-  // hub `plane-effect-backends.mjs` (zero production importers once
-  // team-tool-plane.mjs mounted the family lanes directly), so its placement
-  // retired with it and this list — the single home of the graph law above —
-  // now walks straight from the plane row to the lanes.
-  // U6 PR4 (ARC-C): the jobs bridge module — plane-effect-backends.mjs
-  // (deleted at PR6) once re-exported from it; the bridge module is now the
-  // sole home, and team-tool-plane.mjs imports its trio row defs +
-  // contribution builder, so on the strict
-  // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at
-  // plane construction — the same class GLUE-6 RED-A recorded. It imports
-  // `../../../../contracts/src/index.js` (already in the dist mirror), so
-  // its relative edge resolves exactly like bash-contribution.mjs's does.
-  // Byte-identical like every entry; the drift gate D compares src vs dist.
-  {
-    src: 'packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
-  },
-  // U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution
-  // producer is imported by the production entry (agent-bindings.mjs) via a
-  // relative `.mjs` specifier tsc never emits — the same GLUE-6 RED-A class:
-  // on the strict `files: ["dist"]` install face a missing copy is
-  // ERR_MODULE_NOT_FOUND at the governed mount's producer construction.
-  // Byte-identical like every entry; the drift gate D compares src vs dist.
-  {
-    src: 'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-background-producer.mjs',
-  },
-  // (the A5-CANCEL center copy retired with the file: U6 PR5 moved
-  //  cancel-leg.mjs into the search-family lane; the lane mirror block
-  //  below carries the bytes — M3 walks the list, not this comment)
-  // A5-M1 (PR358-B): the PA mount registry is imported by the production
-  // root entry (`root.ts` — a `@ts-ignore` relative `.mjs` specifier that
-  // tsc never emits) exactly like upstream-resolver was at GLUE-6 RED-A:
-  // on the strict `files: ["dist"]` install face a missing copy is
-  // ERR_MODULE_NOT_FOUND at root construction. Same law as every entry:
-  // byte-identical placement, drift gate D compares src vs dist.
-  {
-    src: 'packages/runtime/src/plugin/live/pa-mount-registry.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs',
-  },
-  // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
-  // resolve hook is registered by `module.register` at apply time and the
-  // storage seam is imported by the boot row — both from a relative
-  // specifier, so on the strict `files: ["dist"]` install face they must sit
-  // INSIDE the mirror or the bootstrap dies with ERR_MODULE_NOT_FOUND.
-  // Byte-identical like every other placement; the drift gate (check D)
-  // compares src vs dist for each entry of this list.
-  {
-    src: 'packages/runtime/src/plugin/upstream-resolver.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs',
-  },
-  {
-    src: 'packages/runtime/root-binding/harness/seam.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs',
-  },
-  // A5-M1 PACKING (root-approved): the landlock pre-launcher is a TRACKED
-  // runtime asset (`git ls-tree` at the release commit carries it) that tsc
-  // never emits, so the strict `files: ["dist"]` install face shipped WITHOUT
-  // it — and `provider.js`'s own default launcher path
-  // (`assembly.launcherPath ?? join(dirname(fileURLToPath(import.meta.url)),
-  // 'launcher', 'landlock-prelauncher.py')`, dist provider.js:90) resolved to a
-  // missing file, so confined bash could not start from an installed package at
-  // all. Same class as GLUE-6 RED-A (a runtime dependency outside tsc's emit
-  // must sit INSIDE the mirror). Byte-identical placement like every entry here;
-  // the drift gate (check D) compares src vs dist. NO sandbox rule, trust rule
-  // or path-trust boundary changes: the CONFINE_CONFIG_INCOMPLETE /
-  // TRUST_ROOT_SHA_MISMATCH triple and the verifyLauncherIntegrity byte gate
-  // still decide every single use of this file.
-  {
-    src: 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
-    dist: 'packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
-  },
-  // U6 PR2 PACKING: the FS family lane's .mjs runtime modules. Same law as
-  // every entry above — tsc never emits `.mjs`, so the lane's runtime face
-  // (barrel + mechanics + executor + presentation + row + contribution)
-  // rides the byte-copy mirror; check D compares src vs dist. The lane's ONE
-  // TypeScript module (`read-normalizer.ts`, the pure projection the
-  // canonicalizer statically imports) is EMITTED by tsc through the runtime
-  // build include, so it is deliberately NOT listed here. The relative edges
-  // (`../../..` up to `packages/…`) resolve identically in src and in the
-  // mirror because the mirror sits at `dist/packages/…`.
-  {
-    src: 'packages/tools/fs-family/src/index.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/index.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/fs-mechanics.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-mechanics.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/read-presentation.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/read-presentation.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/read-executor.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/read-executor.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/read-row.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/read-row.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/fs-read-contribution.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-read-contribution.mjs',
-  },
-  // U7-9a (CA-01, the same byte-copy law): the governed write/edit/
-  // read_image lane files join the mirror — the closed argument law, the
-  // three executors, the bounded verified-handle image read port, the three
-  // rows and the ONE family contribution (the single candidate carrying all
-  // four native names). The controlled-fs TypeScript closures they compose
-  // are EMITTED by the runtime build (the controlled-fs include), unchanged
-  // in kind from read-normalizer's treatment above.
-  {
-    src: 'packages/tools/fs-family/src/fs-mutation-mechanics.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-mutation-mechanics.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/write-executor.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/write-executor.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/write-row.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/write-row.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/edit-executor.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/edit-executor.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/edit-row.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/edit-row.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/image-executor.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/image-executor.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/image-read-port.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/image-read-port.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/image-row.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/image-row.mjs',
-  },
-  {
-    src: 'packages/tools/fs-family/src/fs-family-contribution.mjs',
-    dist: 'packages/runtime/dist/packages/tools/fs-family/src/fs-family-contribution.mjs',
-  },
-  // U6 PR3 (the fs-family pattern, verbatim law): the process/shell Family
-  // lane's .mjs files are byte copies under the runtime dist mirror; the
-  // TypeScript module (`bash-normalizer.ts`, the pure projection the
-  // canonicalizer statically imports) is EMITTED by tsc through the runtime
-  // build include (tsconfig.build.json), so it is deliberately NOT listed
-  // here. The mirror sits at `dist/packages/…`, so the relative edges
-  // (`../../..` up to `packages/…`) resolve identically in src and mirror.
-  {
-    src: 'packages/tools/process-family/src/index.mjs',
-    dist: 'packages/runtime/dist/packages/tools/process-family/src/index.mjs',
-  },
-  {
-    src: 'packages/tools/process-family/src/shell-mechanics.mjs',
-    dist: 'packages/runtime/dist/packages/tools/process-family/src/shell-mechanics.mjs',
-  },
-  {
-    src: 'packages/tools/process-family/src/confined-shell-executor.mjs',
-    dist: 'packages/runtime/dist/packages/tools/process-family/src/confined-shell-executor.mjs',
-  },
-  {
-    src: 'packages/tools/process-family/src/bash-row.mjs',
-    dist: 'packages/runtime/dist/packages/tools/process-family/src/bash-row.mjs',
-  },
-  {
-    src: 'packages/tools/process-family/src/bash-contribution.mjs',
-    dist: 'packages/runtime/dist/packages/tools/process-family/src/bash-contribution.mjs',
-  },
-  // U6 PR5 (the fs-family/process-family pattern, verbatim law): the SEARCH
-  // family lane's seven .mjs files byte-mirror under the runtime dist
-  // mirror. The center rows this list used to carry (glob-backend,
-  // search-backend, cancel-leg under `plugin/live/`) retired with their
-  // files — replacement, never dual-keep. Relative edges (`../../../runtime/…`,
-  // `../../fs-family/…`, sibling `./…`) resolve identically in src and
-  // mirror because the mirror sits at `dist/packages/…`; the M3/M4 closure
-  // legs of `alpha5-search-backend.test.ts` walk this graph from every file
-  // the list contains, so a missing lane copy is RED, not a runtime
-  // ERR_MODULE_NOT_FOUND.
-  {
-    src: 'packages/tools/search-family/src/index.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/index.mjs',
-  },
-  {
-    src: 'packages/tools/search-family/src/search-mechanics.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-mechanics.mjs',
-  },
-  {
-    src: 'packages/tools/search-family/src/search-backend.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-backend.mjs',
-  },
-  {
-    src: 'packages/tools/search-family/src/glob-backend.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/glob-backend.mjs',
-  },
-  {
-    src: 'packages/tools/search-family/src/cancel-leg.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/cancel-leg.mjs',
-  },
-  {
-    src: 'packages/tools/search-family/src/search-row.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-row.mjs',
-  },
-  {
-    src: 'packages/tools/search-family/src/search-contribution.mjs',
-    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-contribution.mjs',
-  },
-]
+export const PLACEMENTS = Object.freeze(loadPlacements().map((p) => Object.freeze(p)))
 
 // Direct-invocation guard: the placement runs only when this file IS the
 // node entry point (`node scripts/place-dist-glue.mjs [root]`); when

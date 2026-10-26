@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A476GAPS",
+  "paths": [
+    "packages/runtime/test/a4p7-live-descendant-authority.test.ts",
+    "packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts",
+    "packages/runtime/test/a4p7-governance-warning-restart-reconstruction.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1036,
+    "to": 1039
+  },
+  "reason": "a4-76-scenario-gaps (A4-PR7 §7.6, `feat/a4-76-scenario-gaps`): the three\ninstruments for the three rows `dev/agent-workflow/evidence/a4-pr7/7-6-closure/\nSCENARIOS.md` proved have NO leg anywhere in the nine roots — live descendant\ncreation at the production decision plane plus the startup-enumeration\nprohibition (row 5), the complementary \"same root, changed descendants,\nproposal stays valid\" half of root identity drift (row 6), and the restart\nreconstruction of the PR6 governance-warning family (row 17). This lane writes\nNO production source (core patch budget for the phase is zero, and all three\nlaws are already honoured), so its whole scannable footprint is these three\nspecs; every other path it touched is evidence under\n`dev/agent-workflow/evidence/a4-pr7/7-6-gaps/`, outside `packages/**`. An edit\nis not an increment, and a landed file without its name here turns this RED.",
+  "tieNote": "The a4-76-scenario-gaps tie, same form: the movement equals the three\ninstruments this lane names, each asserted present by path in the loop above.\nBoth endpoints MEASURED on this branch, not inferred: with the three files on\ndisk and this entry stripped the run reads `expected 1039 to be 1036` (capture\n`dev/agent-workflow/evidence/a4-pr7/7-6-gaps/scratch/captures/p4t6-pre-extend-red.txt`),\n1036 is the derived base total the ceiling-pin tie above ends on, and 1039 is\nwhat the scanner counts with this lane's files present. Nothing else moved:\nthis lane adds no production source, and its evidence lives outside\n`packages/**` — which is precisely why a sum derived from named lists, rather\nthan a total typed from a log, is the referee here.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A476GAPS (line 2581); tie line 3487"
+}

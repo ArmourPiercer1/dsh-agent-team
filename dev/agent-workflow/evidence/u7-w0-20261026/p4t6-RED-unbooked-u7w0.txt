@@ -1,0 +1,2 @@
+RED (u7-w0 files on disk, u7-w0 booking absent): [{"kind":"total","detail":"scanner counts 1308, ledger derives 983 + 323 = 1306"}]
+unbooked-on-disk: packages/testkit/test/p4t6-bookings/load-bookings.d.mts, packages/testkit/test/p4t6-bookings/load-bookings.mjs

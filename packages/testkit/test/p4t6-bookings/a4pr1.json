@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR1",
+  "paths": [
+    "packages/domain/authority-envelope/src/authority-envelope.ts",
+    "packages/domain/authority-envelope/src/index.ts",
+    "packages/runtime/governance/authority-ceiling.ts",
+    "packages/domain/test/a4p1-blueprint-v3-governance.test.ts",
+    "packages/runtime/test/a4p1-authority-envelope.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 978,
+    "to": 983
+  },
+  "reason": "(no comment preceded this list at 88107ad71; the lane prose lives in tieNote)",
+  "countedInBase": true,
+  "tieNote": "The tie between the two forms of the pin, and the only place a number is\nallowed to appear: A4-PR1 added exactly as many scannable files as the\n978 -> 983 movement claims, and every one of them is named above. A file\nadded without a name, or a name without a file, fails HERE.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR1 (line 3251); tie line 3341"
+}

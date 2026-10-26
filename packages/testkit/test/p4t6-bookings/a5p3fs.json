@@ -1,0 +1,24 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5P3FS",
+  "paths": [
+    "packages/runtime/controlled-fs/src/cf-descriptor.ts",
+    "packages/runtime/controlled-fs/src/cf-errors.ts",
+    "packages/runtime/controlled-fs/src/controlled-fs.ts",
+    "packages/runtime/controlled-fs/src/index.ts",
+    "packages/runtime/controlled-fs/src/open-at-exec.ts",
+    "packages/runtime/controlled-fs/test/cf-descriptor.test.ts",
+    "packages/runtime/controlled-fs/test/cf-errors.test.ts",
+    "packages/runtime/controlled-fs/test/controlled-fs.test.ts",
+    "packages/runtime/controlled-fs/test/poc3-harness.ts",
+    "packages/runtime/controlled-fs/test/poc3-probes.test.ts",
+    "packages/runtime/controlled-fs/vitest.config.ts"
+  ],
+  "expectedDelta": {
+    "from": 1109,
+    "to": 1120
+  },
+  "reason": "G-d INTEGRATION WIRING round (branch `alpha5-int-wiring`, Scope-2 — the\nshared-glue writer): THREE Alpha.5 lane merges landed their lane files\nWITHOUT paying this ledger, so the suite has been RED on master since\nPR3 merged — measured on the pristine control worktree at fc9f4a07:\n`expected 1153 to be 1109` (evidence\n`dev/agent-workflow/evidence/alpha5/wiring/p4t6-BASE-PRISTINE-RED.log`).\nThe wiring round is the ledger's designated pay-the-tie owner for the\nshared surface, so the merge history is booked HERE, measured per merge\n(attribution by `git log --diff-filter=A`), never inferred: PR3 fs\n(74d947a3) ELEVEN, PR5 tools (d69bfc4b) NINETEEN, PR7 jobs (fc9f4a07)\nFOURTEEN (the field-mapping (vnext) sources rode the PR7 merge), then the\nwiring round's OWN pair below. Pre-extend RED on this branch with the\npair on disk and these entries absent: `expected 1155 to be 1109`\n(`p4t6-PRE-EXTEND-RED.log`).",
+  "tieNote": "G-d integration-wiring ledger ties (branch `alpha5-int-wiring`). The\nthree merge-history entries close the gap this suite has carried RED\non master since PR3 merged (pristine measurement at fc9f4a07: 1153\nfound against 1109 tied); each endpoint below is the MEASURED scan\ntotal at that merge, reconstructed additively from the per-merge file\ncounts attributed above, and the FINAL entry (the wiring round's own\npair) is pinned against the pre-extend RED on THIS branch:\n`expected 1155 to be 1109` with the pair on disk and these five lists\nabsent (`p4t6-PRE-EXTEND-RED.log`). A wrong attribution — one file\nbooked to the wrong merge — leaves these sums green but breaks the\nby-path loop above and the per-merge `git log --diff-filter=A`\nattribution quoted in the entry comment.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5P3FS (line 2836); tie line 3555"
+}

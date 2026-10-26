@@ -1,0 +1,17 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4W1",
+  "paths": [
+    "packages/remote/test/a4w1-corrupt-legs.test.ts",
+    "packages/runtime/test/a4w1-corrupt-warning.test.ts",
+    "packages/client/test/control-corruption-model.test.ts",
+    "packages/client/src/model/control-corruption.ts"
+  ],
+  "expectedDelta": {
+    "from": 1042,
+    "to": 1046
+  },
+  "reason": "a4w1-corrupt-warning (A4-PR7 W1, branch `feat/a4-w1-corrupt-warning`): the\ncorrupt-leg VISIBILITY lane (remote contract v9, RULING 5-B warning-first).\nFOUR new scannable files: the closed-wire spec for the v9 read\n(`remote/test/a4w1-corrupt-legs.test.ts`), the world-backed acceptance spec\nproving warning-data-without-execution-change\n(`runtime/test/a4w1-corrupt-warning.test.ts`), the pure client model spec\n(`client/test/control-corruption-model.test.ts`) and the pure client model\nitself (`client/src/model/control-corruption.ts`). Every other path this\nlane touched is an EDIT to already-counted sources (the v9 contract\nadditions in `remote/src/contracts/{version,catalog,params,types}.ts` +\n`remote/src/handlers/{team,ports,dispatch}.ts` + `remote/src/index.ts`, the\nproduction seam in `runtime/src/plugin/{s6-remote,root}.ts`, the client\nsurface in `transport/team-remote-client.ts` + `ui/TeamView.{tsx,module.css}`\n+ `ui/locales.ts` + `plugin/team-mount-core.ts`, and the mechanical v9 pin\nmoves in six existing pin files) or evidence under\n`dev/agent-workflow/evidence/a4-pr7/w1-corrupt-warning/`, outside\n`packages/**`. An edit is not an increment. Both endpoints MEASURED on this\nbranch: with the four files on disk and this entry absent the run reads\n`expected 1046 to be 1042` (capture\n`dev/agent-workflow/evidence/a4-pr7/w1-corrupt-warning/raw/p4t6-pre-extend-RED.log`);\n1042 is the derived base total the a4-f2-coldstart tie below ends on.",
+  "tieNote": "The a4w1-corrupt-warning tie, same form: the movement equals the four files\nthis lane names, each asserted present by path in the loop above. Both\nendpoints MEASURED on this branch, not inferred: with the four files on disk\nand this entry absent the run reads `expected 1046 to be 1042` (capture\n`dev/agent-workflow/evidence/a4-pr7/w1-corrupt-warning/raw/p4t6-pre-extend-RED.log`),\nand 1042 is the derived base total the a4-f2-coldstart line above ends on.\nThe v9 contract additions, the production seam, the client surface and the\nmechanical pin moves are all EDITS to already-counted paths and move\nnothing — an edit is not an increment.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4W1 (line 2661); tie line 3511"
+}

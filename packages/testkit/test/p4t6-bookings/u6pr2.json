@@ -1,0 +1,27 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U6PR2",
+  "paths": [
+    "packages/tools/fs-family/src/index.mjs",
+    "packages/tools/fs-family/src/fs-mechanics.mjs",
+    "packages/tools/fs-family/src/read-executor.mjs",
+    "packages/tools/fs-family/src/read-presentation.mjs",
+    "packages/tools/fs-family/src/read-row.mjs",
+    "packages/tools/fs-family/src/fs-read-contribution.mjs",
+    "packages/tools/fs-family/src/read-normalizer.ts",
+    "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts",
+    "packages/runtime/test/u6-pr2-kernel-flow.test.ts",
+    "packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts",
+    "packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts",
+    "packages/runtime/test/u6-pr2-review-r1.test.ts",
+    "packages/runtime/test/u6-pr2-golden-corpus.mts"
+  ],
+  "expectedDelta": {
+    "from": 1240,
+    "to": 1253
+  },
+  "reason": "U6 PR2 (branch task/u6-pr2-fs-read-family-20261025 off master 2db321f63,\nthe FS-family read slice 2/6) adds its TEN scannable files: the fs-family\nlane's runtime .mjs face (barrel + fs-mechanics + read-executor +\nread-presentation + read-row + fs-read-contribution — the governed read\nrow's Family halves moved VERBATIM out of team-tool-plane /\nplane-effect-backends, owner role: that lane's README) plus its ONE\nTypeScript module (read-normalizer.ts, the pure projection now statically\nimported by canonical-operation.ts under the golden-vector gate) and the\nthree C1 suites (golden vectors 877-corpus digest pin, center-assembly\nkernel flow, identity/TOCTOU/post-success plants). The plane/backends\nEDITS ride already-counted paths; dist mirrors, tests/**, docs/** and\ndev-evidence stay outside the scan; zero new denylist vocabulary. Taking\nthe scanned total on THIS tree to 1248 — MEASURED by the pre-booking\nscanner run on this exact tree (1248 measured against the 1238 booked; no\nchain value copied).",
+  "listNotes": "review-r1 (this round): the B1/B2 mount-law suite + the extracted B4\ngolden-corpus generator (canonicalizer injected, zero imports).",
+  "tieNote": "U6 PR2 (fs/read family), chained on top of FIX-K's 1240: the booked\nSCANNED_PATHS_U6PR2 files above are exactly the scanned-total delta\n1240 -> 1251, MEASURED on the merged + migrated tree (the resumed\nround's scanner run reported `expected 1251 to be 1250`; the R-REM-2\nREVIEW ROUND 1 (this round) adds the two scannable paths above: the\nmeasured run on THIS tree reads `expected 1253 to be 1251` — booked,\nno chain value copied.\nread-lane C1 file is the last increment; no chain value copied).",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U6PR2 (line 353); tie line 3759"
+}

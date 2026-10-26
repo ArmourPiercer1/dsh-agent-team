@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PBR2",
+  "paths": [
+    "packages/runtime/test/a5pbr2-binding-feed.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1169,
+    "to": 1170
+  },
+  "reason": "alpha5-pb-binding-feed (P-B §6 binding-feed round): the lane's ONE\nscannable file — the binding-feed semantics spec (positive control +\nthe three §6 semantics: revoked-drift refusal, cross-realm refusal,\nno-feed keeps the verbatim refusal; zero denylist vocabulary; the\nlive kit rows under dev/agent-workflow/evidence/** are outside the\npackages/** scan, exactly as every prior wiring-round kit).",
+  "tieNote": "The P-B §6 binding-feed tie, same form, measured on THIS branch (base\nmaster `23002259`, chain at 1169 after G1 (#315)): with the lane spec on disk and this\nclause absent the run reads `expected 1169 to be 1168`; booking the\none named file ends the chain at 1169 — the scanner total of this tree.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PBR2 (line 2970); tie line 3587"
+}

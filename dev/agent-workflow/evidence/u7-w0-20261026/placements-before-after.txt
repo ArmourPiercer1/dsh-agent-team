@@ -1,0 +1,40 @@
+# PLACEMENTS before (in-file array @88107ad71) vs after (enumerated scripts/dist-placements/*.json)
+before.length=38 after.length=38 identical(order+content)=true
+ 0 packages/runtime/src/plugin/live/agent-bindings.mjs
+ 1 packages/runtime/src/plugin/live/team-tool-plane.mjs
+ 2 packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs
+ 3 packages/runtime/src/plugin/live/ptc-escalation-row.mjs
+ 4 packages/runtime/src/plugin/live/center-shadow-row.mjs
+ 5 packages/runtime/src/plugin/live/jobs-family-bridge.mjs
+ 6 packages/runtime/src/plugin/live/jobs-background-producer.mjs
+ 7 packages/runtime/src/plugin/live/pa-mount-registry.mjs
+ 8 packages/runtime/src/plugin/upstream-resolver.mjs
+ 9 packages/runtime/root-binding/harness/seam.mjs
+10 packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py
+11 packages/tools/fs-family/src/index.mjs
+12 packages/tools/fs-family/src/fs-mechanics.mjs
+13 packages/tools/fs-family/src/read-presentation.mjs
+14 packages/tools/fs-family/src/read-executor.mjs
+15 packages/tools/fs-family/src/read-row.mjs
+16 packages/tools/fs-family/src/fs-read-contribution.mjs
+17 packages/tools/fs-family/src/fs-mutation-mechanics.mjs
+18 packages/tools/fs-family/src/write-executor.mjs
+19 packages/tools/fs-family/src/write-row.mjs
+20 packages/tools/fs-family/src/edit-executor.mjs
+21 packages/tools/fs-family/src/edit-row.mjs
+22 packages/tools/fs-family/src/image-executor.mjs
+23 packages/tools/fs-family/src/image-read-port.mjs
+24 packages/tools/fs-family/src/image-row.mjs
+25 packages/tools/fs-family/src/fs-family-contribution.mjs
+26 packages/tools/process-family/src/index.mjs
+27 packages/tools/process-family/src/shell-mechanics.mjs
+28 packages/tools/process-family/src/confined-shell-executor.mjs
+29 packages/tools/process-family/src/bash-row.mjs
+30 packages/tools/process-family/src/bash-contribution.mjs
+31 packages/tools/search-family/src/index.mjs
+32 packages/tools/search-family/src/search-mechanics.mjs
+33 packages/tools/search-family/src/search-backend.mjs
+34 packages/tools/search-family/src/glob-backend.mjs
+35 packages/tools/search-family/src/cancel-leg.mjs
+36 packages/tools/search-family/src/search-row.mjs
+37 packages/tools/search-family/src/search-contribution.mjs

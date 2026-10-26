@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4W6",
+  "paths": [
+    "packages/runtime/test/a4w6-corrupt-not-pending.test.ts"
+  ],
+  "expectedDelta": null,
+  "reason": "a4-w6-corrupt-not-pending (A4-PR7 W6, branch `fix/a4-w6-corrupt-not-pending`):\nthe corrupt-entry lane (refused ⇒ never pending, owner ruling 2026-10-09).\nONE new scannable file: the differential fold instrument\n(`packages/runtime/test/a4w6-corrupt-not-pending.test.ts` — live pending\nstays counted, an injected corrupt row is not, 10 accept-probes / 47\nrefuse-probes pin the fold gate against the REAL service parse). The\nlane's client surfaces are an EDIT to already-counted sources\n(`client/src/ui/TeamLedger.tsx`, `client/src/ui/TeamView.tsx`,\n`client/src/ui/locales.ts`, `client/src/model/team-ui-snapshot.ts`, the\nowner-ruled pin update in `pr56-control-panel-payload.client.spec.tsx`)\nplus `a4w6-corrupt-entry.client.spec.tsx` — a `.tsx`, outside the frozen\nscanner extension set — and the fold gate itself in\n`runtime/src/plugin/projection-source.ts`; an edit is not an increment.\nBoth endpoints MEASURED on this branch: with the file on disk and this\nentry absent the run reads `expected 1048 to be 1047`; 1047 is the\nderived merged-tip total the a4-w2 tie above ends on.",
+  "tieNote": "NO TIE at 88107ad71: this list carried no `expect(<list>.length).toBe(to - from)` line in the pre-migration file; it is still counted in the exact total and every path is still asserted present.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4W6 (line 2691)"
+}

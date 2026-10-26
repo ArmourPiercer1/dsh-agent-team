@@ -56,7 +56,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -1171,6 +1171,8 @@ const GATE_SCRIPT_FILES = [
   'client-composition-surface.mjs',
   'place-dist-glue.mjs',
 ] as const
+/** The drop-in directory place-dist-glue.mjs collects PLACEMENTS from (u7-w0). */
+const GATE_PLACEMENTS_DIR = 'dist-placements'
 
 /**
  * The step lines a complete run owes, DERIVED from the two lists the gate
@@ -1224,6 +1226,17 @@ function installGateScripts(root: string): void {
     write(target, readFileSync(source, 'utf8'))
     if (sha256Of(target) !== sha256Of(source)) {
       throw new Error(`the fixture copy of scripts/${name} differs from the shipped script`)
+    }
+  }
+  // u7-w0: `place-dist-glue.mjs` collects PLACEMENTS from its drop-in directory
+  // beside it, so the gate's import of that script needs the directory too —
+  // copied whole and digest-proven the same way.
+  for (const name of readdirSync(join(REPO_ROOT, 'scripts', GATE_PLACEMENTS_DIR)).filter((n) => n.endsWith('.json'))) {
+    const source = join(REPO_ROOT, 'scripts', GATE_PLACEMENTS_DIR, name)
+    const target = join(root, 'scripts', GATE_PLACEMENTS_DIR, name)
+    write(target, readFileSync(source, 'utf8'))
+    if (sha256Of(target) !== sha256Of(source)) {
+      throw new Error(`the fixture copy of scripts/${GATE_PLACEMENTS_DIR}/${name} differs from the shipped file`)
     }
   }
 }

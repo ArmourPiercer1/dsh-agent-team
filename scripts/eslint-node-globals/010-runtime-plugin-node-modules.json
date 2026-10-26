@@ -1,0 +1,11 @@
+{
+  "schema": "eslint-node-globals/1",
+  "family": "runtime-plugin-node-modules",
+  "summary": "The node-side plugin modules living in an otherwise browser-safe runtime tree (they reach node built-ins: Buffer, process). Migrated verbatim from eslint.config.mjs's `files` array at origin/master 88107ad71, where each was one hand-added line.",
+  "globals": [
+    "packages/runtime/test/t12a-live-bridge.mjs",
+    "packages/runtime/src/plugin/upstream-resolver.mjs",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "packages/runtime/src/plugin/live/jobs-background-producer.mjs"
+  ]
+}

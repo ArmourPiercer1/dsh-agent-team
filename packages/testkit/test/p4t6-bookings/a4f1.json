@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4F1",
+  "paths": [
+    "packages/runtime/test/a4f1-row-version-not-document-version.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1022,
+    "to": 1023
+  },
+  "reason": "A4-F1 (`fix/a4-f1-row-vs-document-version`): the boundary test for finding F1\n— a storage row's L3 stamp is not a Blueprint document version, and a row that\ncannot know the version says so instead of printing a number. Exactly one new\nscannable file; every other path that fix touched is an EDIT to a path this\nscan already counts, and an edit is not an increment.",
+  "tieNote": "Reading these two ties together after the merge with `origin/master`: each\nendpoint is that lane's OWN advancing total on the branch where it landed,\nso the two endpoints come from two ladders and neither one is this merged\ntree's total. Each tie asserts only \"the movement equals the files I name\",\nwhich is the whole contract, and neither number was edited to make the\nladders look sequential — renumbering a tie is exactly how a pin starts\nagreeing with a wrong tree. The merged total is the sum of the lists above;\nit is derived by the two `toBe` sums and deliberately not written here.\nThe A4-F1 tie, same form: the movement equals the one file this lane names,\nasserted present by path in the loop above. Its endpoints are this lane's OWN\nadvancing total on the branch it landed on, so — like the two above — neither\nnumber is this merged tree's total; the derived sums compute that and this\ncomment does not write it.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4F1 (line 2452); tie line 3390"
+}
