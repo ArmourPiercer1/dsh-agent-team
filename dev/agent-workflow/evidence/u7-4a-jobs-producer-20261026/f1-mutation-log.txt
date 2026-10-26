@@ -1,0 +1,25 @@
+F-1 mutation log — reviewer mutant: remove the POST-SPAWN ensureRegistered() immediately before attribution
+date: 2026-10-26T12:47:40Z  base head: a56f0754b
+Test added: packages/runtime/test/u74a-jobs-producer.test.ts :: P10 (creating-lane definition withdrawn AFTER the host receipt fail-closes the attribution)
+Law shown: ensureDefinitions is a SYNC WITH REVOCATION (jobs-family-bridge.mjs:114-133 — a withdrawn definition this
+scope had registered unregisters that exact scope's row; 'a stale pin never masquerades as a closed revocation').
+The post-spawn ensureRegistered() is therefore LOAD-BEARING for fail-closed, not cosmetic.
+
+=== mutant target (the block deleted; pre-spawn call at :214 kept intact) ===
+318-    // pin), then the gateway's admitJob through the live row face.
+319-    if (typeof ensureRegistered === 'function') {
+320:      try { ensureRegistered() } catch { /* the gateway fail-closes on an unminted pin */ }
+MUTANT APPLIED (post-spawn ensureRegistered removed; pre-spawn call intact — the reviewer R1 mutant)
+
+=== suite WITH MUTANT (P10 MUST die) ===
+     × P10 creating-lane definition withdrawn AFTER the host receipt fail-closes the attribution (the post-spawn ensure pass revokes the stale pin) 10ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  packages/runtime/test/u74a-jobs-producer.test.ts > u74a G1 — the producer: attribution follows the authorized host receipt (never precedes it) > P10 creating-lane definition withdrawn AFTER the host receipt fail-closes the attribution (the post-spawn ensure pass revokes the stale pin)
+AssertionError: expected undefined to be 'background-attribution-refused' // Object.is equality
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+
+=== MUTANT RESTORED ===
+restored file byte-identical to HEAD
+ Test Files  1 passed (1)
+      Tests  20 passed (20)

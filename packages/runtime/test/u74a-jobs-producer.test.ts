@@ -403,6 +403,7 @@ describe('u74a G1 — the producer: attribution follows the authorized host rece
   it('P6 gateway-row absent and mapping-rejected both refuse the attribution and close honestly (no owner-less job is exposed)', async () => {
     const w = await world({ withGateway: false })
     const r = await w.producer.accept(w.ctx())
+    console.log('OBS:', JSON.stringify(w.observations), 'WIT:', JSON.stringify(w.witnesses))
     expect(r.failure?.code).toBe('background-attribution-refused')
     expect(String(r.failure?.detail)).toContain('no live gateway row')
     expect(w.producer.stats).toMatchObject({ hostJobsCreated: 1, attributions: 0, attributionRefusals: 1 })
@@ -439,6 +440,45 @@ describe('u74a G1 — the producer: attribution follows the authorized host rece
     }
     expect(w.producer.stats).toMatchObject({ producerCalls: 2, hostJobsCreated: 1, attributions: 1 })
     expect(w2.producer.stats).toMatchObject({ producerCalls: 1, hostJobsCreated: 1, attributions: 0 })
+  })
+
+  it('P10 creating-lane definition withdrawn AFTER the host receipt fail-closes the attribution (the post-spawn ensure pass revokes the stale pin)', async () => {
+    // R1 F-1 mutant-killer. Window: the kernel authorized the call, the host
+    // registry accepted the spawn (real receipt in hand), and THEN the
+    // creating-lane definition vanishes from the placement feed (row torn
+    // down mid-flight). The producer MUST re-run the bridge's center-feed
+    // pass before attribution — ensureDefinitions is a SYNC with revocation
+    // (jobs-family-bridge: a withdrawn definition this scope had registered
+    // unregisters that exact scope row; 'a stale pin never masquerades as a
+    // closed revocation'), so the admit fail-closes on the unminted pin.
+    // Deleting the post-spawn ensureRegistered() call attributes the orphan
+    // on the stale pin and THIS test goes red (verified: F-1 mutation log in
+    // dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/).
+    const w = await world()
+    const origStart = (w.svc as { start: (...a: unknown[]) => unknown }).start.bind(w.svc)
+    ;(w.svc as Record<string, unknown>).start = (...a: unknown[]) => {
+      const r = (origStart as (...b: unknown[]) => unknown)(...a)
+      // strictly AFTER the host receipt returns, BEFORE any attribution:
+      w.feed.delete('bash')
+      return r
+    }
+    const r = await w.producer.accept(w.ctx())
+    expect(r.failure?.code).toBe('background-attribution-refused')
+    // zero model-visible receipt, no exposure
+    expect(JSON.stringify(r)).not.toContain('started background job')
+    // no attribution record anywhere: the row face still CI-5-refuses the id
+    expect(w.producer.stats.attributions).toBe(0)
+    expect(w.producer.stats.attributionRefusals).toBe(1)
+    const chk = w.wrapped.checkManagementAccess({ jobId: 'bash-u74a-1', viewer: OWNER_A })
+    expect(chk).toMatchObject({ ok: false, code: 'unattributed-job' })
+    // the orphan host job is handled per the stated law: cancellation REQUESTED
+    expect(w.svc.calls).toContain('kill:bash-u74a-1:session-u74a-member')
+    expect(w.producer.stats.closes.requested).toBe(1)
+    // the witness names the refusal and its measured code (server-side channel)
+    expect(w.witnesses.some((l) => /a5bg: attribution-REFUSED hostJobId=bash-u74a-1 code=/.test(l))).toBe(true)
+    // and the counter law held through the honest close
+    expect(w.producer.stats.attributions <= w.producer.stats.hostJobsCreated
+      && w.producer.stats.hostJobsCreated <= w.producer.stats.producerCalls).toBe(true)
   })
 
   it('P9 no second authority: the producer module imports NOTHING', () => {

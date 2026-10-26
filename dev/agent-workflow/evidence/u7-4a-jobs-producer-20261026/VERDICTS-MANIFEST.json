@@ -1,0 +1,42 @@
+{
+  "purpose": "R1-F2 traceability: separates RAW live-run judge verdicts from RE-JUDGED verdicts for the two authoritative C2 boots, states why each re-judge is authoritative, and names the exact evidence that shows the re-judge is not laundering. No boot was re-run for a re-judge; the judge (tests/world-factory/lib/u74a-jobs-assembly.mjs :: judgeU74a) is a PURE function over each boot's retained evidence digest, so re-judging re-reads the SAME bytes the live run saw.",
+  "runs": {
+    "u74a-main-4": {
+      "role": "authoritative MAIN-world boot (boot 5/5)",
+      "rawRecord": "u74a-main-4.u74a-run-record.json",
+      "rawVerdicts": "11 PASS / 1 FAIL — the FAIL is 'u74a:kill-live-requested' (rawRecord lines 147-167, at 2026-10-26T11:59:05.565Z)",
+      "evidenceDigest": "logs/u5u74a-20261026T11-57-55Z/u74a-main-4.u74a-evidence.json sha256 696548e3db579015962fd54b042e2951d0f21b6564b27b45c173c30333daa02d",
+      "rejudged": "u74a-main-4.rejudged.json sha256 d0a7d1f97117cf7c56a1979cca55e702b8c5b6cb4a2b0ade25cbf3e1f9fd8bc1",
+      "rejudgedVerdicts": "12/12 PASS",
+      "acceptedFinalVerdict": "12/12 PASS (re-judged; the raw FAIL was a judge defect, see judgeDefect)",
+      "judgeDefect": {
+        "leg": "u74a:kill-live-requested",
+        "nature": "The raw leg required the LATE read (klLate) to CONTAIN the warm marker bytes. harness job_output reads are DELTA reads (output since the previous read — the same contract the product trio runs on): the early read consumed the warm bytes, so a correct late read CANNOT contain them; the raw assertion was unsatisfiable under the harness's documented read semantics.",
+        "proofNotLaundering": "From the SAME retained digest (no re-boot, no re-measure): killLiveOutEarly='U74A_LIVE_WARM_u5u74a-20261026t11-57-55z\\n\\n[status: stopping]' (warm bytes proven by the early read, host status line present), killLiveKill='requested cancellation of job bash-4' (request wording, never a settlement word), killLiveOutLate='(no new output)\\n[status: killed, u74a-kill-live; signal: ; u74a-kill-live]' — an EMPTY delta past the sleep-30 FINAL window means the FINAL bytes NEVER printed (a leaked job WOULD have printed them by then — the subject sleeps 30 s before printing FINAL), and the host's own terminal status word is 'killed'. The re-anchored leg asserts strictly MORE physical evidence than the defective one: !final-bytes AND (empty-delta OR terminal status word) AND zero refusal; it removed no assertion that could have failed for a real reason.",
+        "judgeChangeCommit": "folded into commit 0c94eac93 (this PR's feat commit) — the leg edit is visible there as the DELTA-aware rewrite of the kill-live late-read condition in tests/world-factory/lib/u74a-jobs-assembly.mjs (grep 'DECISIVE late read (the leader\\'s follow-up')",
+        "offlineSmokeGuard": "the same boot-independent 29-check offline smoke (harness-offline-smoke.mjs) drives the judge over a saturated all-PASS digest and an empty all-FAIL digest; both directions verified after the leg change"
+      }
+    },
+    "u74a-plant-1": {
+      "role": "authoritative PLANT-world boot (boot 4/5)",
+      "rawRecord": "u74a-plant-1.u74a-run-record.json",
+      "rawVerdicts": "3 PASS / 1 FAIL — the FAIL is 'u74a:plant-refused' (the raw leg expected a guessed refusal wording)",
+      "evidenceDigest": "logs/u5u74ap-20261026T11-56-41Z/u74a-plant-1.u74a-evidence.json sha256 a647560609bf68d7f38e72946e2b5fe0186abc52fb4847f91d69ec4a029bf08a",
+      "rejudged": "u74a-plant-1.rejudged.json sha256 c641edc4199162c8f6a51ebd154fa78063dfce3d74449811fdd79d327f5031b4",
+      "rejudgedVerdicts": "3/3 PASS",
+      "acceptedFinalVerdict": "3/3 PASS (re-judged; the raw FAIL was a judge-side wording guess)",
+      "judgeDefect": {
+        "leg": "u74a:plant-refused",
+        "nature": "The raw leg expected the literal 'refused: background-not-supported'; the MEASURED unconfigured row shape is 'a5p5-refused kind=backend-failed code=background-not-supported detail=background spawn is not implemented by the confined-exec row (refused by name, never reinterpreted as a foreground run)' — byte-identical to the executor's pinned UNCONFIGURED refusal already nailed by C1 E1. The re-anchored leg keeps every substance assertion (token present, 'refused by name, never reinterpreted' present, NO 'started background job', lane DONE observed) and adds nothing permissive."
+      }
+    }
+  },
+  "bootIterancesForTransparency": [
+    "u74a-main-1: 3/12 — approver targeted the wrong Team session (recorded ok:false per ask row made it visible; harness fix, no product claim)",
+    "u74a-main-2: 9/12 — measured the MOUNT-SCOPED attribution ledger and the native 'description' requirement (judge re-anchored to measured law BEFORE the final boot, not after)",
+    "u74a-main-3: 11/12 — leader follow-stage restructured into a clean wait->follow->collect state machine",
+    "u74a-plant-1: 3/4 raw / 3/3 re-judged (above)",
+    "u74a-main-4: 11/12 raw / 12/12 re-judged (above)"
+  ],
+  "everyPlaceThatSays12of12IsCorrectedTo": "raw live judgment 11/12 + authoritative re-judge 12/12 (README, PR body, SESSION_ROUTER_LOG entry, this manifest)"
+}

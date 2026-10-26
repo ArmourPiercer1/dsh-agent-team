@@ -49,6 +49,17 @@ must gain its producer; the job trio may not be delivered as an all-refusal surf
 
 ## C2 (live host) — FINAL: main 12/12 PASS (`u74a-main-4`), plant 3/3 PASS (`u74a-plant-1`)
 
+**RAW vs RE-JUDGED (R1-F2 traceability, see `VERDICTS-MANIFEST.json`):** the raw live
+judge of `u74a-main-4` recorded **11 PASS / 1 FAIL** (`u74a:kill-live-requested` — a
+judge DEFECT: the leg required warm bytes inside a DELTA read that had legitimately
+consumed them earlier); the raw judge of `u74a-plant-1` recorded **3 PASS / 1 FAIL**
+(`u74a:plant-refused` — the leg guessed the refusal wording instead of measuring it).
+Both FAILs were defects of the JUDGE, fixed in this PR's own commit (0c94eac93), and
+both boots were re-judged OFFLINE over their retained digests (the judge is a pure
+function; no re-boot, no re-measure): accepted final verdicts 12/12 and 3/3, with the
+anti-laundering proof in `VERDICTS-MANIFEST.json` (the re-anchored legs assert strictly
+MORE physical evidence than the defective ones).
+
 Five boots, budget 5/5. Iterations: run1 (approver targeted the wrong Team session —
 `ok:false` recorded per row made it visible), run2 (9/12 — learned the MOUNT-SCOPED
 attribution ledger and the native `description` requirement), run3 (11/12 — leader
