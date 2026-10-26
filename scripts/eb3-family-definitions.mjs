@@ -82,6 +82,19 @@ const isFamilyRowPath = (p) => /^packages\/tools\/[a-z0-9-]+-family\/src\/[^/]*-
 const PLAIN_EXECUTE = /^\s*(?:async\s+)?execute\s*(?::\s*(?:async\s*)?(?:\(|function\b)|\()/
 const ANY_EXECUTE_MEMBER = /^\s*(?:async\s+)?execute\s*[:(]/
 
+/** The text of the object literal assigned to `sourceDocument`, balanced on braces, or
+ *  null when the file does not build one in that shape. */
+function sourceDocumentLiteral(text) {
+  const m = /\bsourceDocument\s*=\s*canonicalJsonStringify\(\s*\{/.exec(text)
+  if (m === null) return null
+  let depth = 0
+  for (let i = m.index + m[0].length - 1; i < text.length; i += 1) {
+    if (text[i] === '{') depth += 1
+    else if (text[i] === '}') { depth -= 1; if (depth === 0) return text.slice(m.index, i + 1) }
+  }
+  return null
+}
+
 /**
  * @param {object} p
  * @param {Map<string,string>} p.files   repo-relative path → text (contributions + rows)
@@ -125,8 +138,26 @@ export function checkFamilyDefinitions({ files, ledger = loadCensusLedger() }) {
     // `grepDefinition.execute` / `globDefinition.execute` (one candidate, two rows) —
     // the check was wrong about the law, not the tree. The law is the binding, not
     // the identifier.
-    if (/\bsourceDocument\b/.test(text) && !/\b[A-Za-z_$][\w$]*\.execute\?\.toString\?\.\(\)/.test(text)) {
-      findings.push({ code: 'DEF_EXECUTION_REPLACED', path, detail: `${path}: the bound source document no longer binds any row's execute transport — a swapped body would keep the same digest` })
+    // UNIVERSAL, not existential. The first form fired only when NO row was bound, so a
+    // four-row contribution (fs-family-contribution: read/write/edit/read_image) could
+    // drop ONE row's binding and pass — the hosted run of PR #395 at 820fd7e0e caught the
+    // control's 3d leg MISSING exactly that on the merged tree. The law: every row
+    // Definition the source document binds by name must ALSO bind its execute transport.
+    if (/\bsourceDocument\b/.test(text)) {
+      // Scoped to the `sourceDocument = canonicalJsonStringify({ … })` literal: the same
+      // file also builds an INPUT-contract digest from `name: definition.name` (no execute,
+      // by design), and an unscoped scan read that as an unbound row.
+      const doc = sourceDocumentLiteral(text) ?? text
+      const bound = new Set([...doc.matchAll(/\b([A-Za-z_$][\w$]*)\.execute\?\.toString\?\.\(\)/g)].map((m) => m[1]))
+      const named = new Set([...doc.matchAll(/\bname:\s*([A-Za-z_$][\w$]*)\.name\b/g)].map((m) => m[1]))
+      if (bound.size === 0) {
+        findings.push({ code: 'DEF_EXECUTION_REPLACED', path, detail: `${path}: the bound source document no longer binds any row's execute transport — a swapped body would keep the same digest` })
+      }
+      for (const ident of named) {
+        if (!bound.has(ident)) {
+          findings.push({ code: 'DEF_EXECUTION_REPLACED', path, detail: `${path}: the source document binds ${ident}.name but not ${ident}.execute — that row's body could be swapped and keep the same digest` })
+        }
+      }
     }
     // Same rule inside the contribution itself: some families define the row inline.
     checkExecuteMembers(path, text, findings)

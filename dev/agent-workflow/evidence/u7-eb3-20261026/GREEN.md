@@ -242,6 +242,36 @@ GitHub Actions. A fifth boundary of the same kind (an expression context unavail
 some key, a permission the token lacks) would again be caught only hosted. That is why
 the hosted run, not the local suite, is the final evidence for this PR.
 
+## D9. The run after D8: three layers + ci-full GREEN, and a REAL enforcement gap
+
+Hosted run 40352387786 at 820fd7e0e: the boundary fix works — the aggregate now SEES
+every verdict (`ci-fast green`, `ci-security green`, `ci-full green` with the census
+measured, `ci-integration failure`). ci-integration failed on my own control:
+`FAIL C3 … mutation 3d did not change packages/tools/fs-family/src/fs-family-contribution.mjs`.
+
+Master had gained `fs-family-contribution.mjs` (U7-9a): ONE contribution binding FOUR
+rows (read/write/edit/read_image). Two things were wrong, and only the first was the
+control's:
+
+1. The C3 mutations were pinned to one file's spelling (`definition.execute`,
+   `[definition.name]`), so on the new seed 3d was a silent no-op. Every leg now
+   mutates by the same generalised shape the rule reads, and EVERY leg (3a–3d) refuses
+   with "did not change" rather than reporting MISSED.
+2. **The rule had a real hole.** The digest-binding check was EXISTENTIAL: it fired only
+   when NO row's execute was bound. On a four-row contribution, dropping ONE row's
+   binding passed — that row's body could be swapped under the same digest. It is now
+   UNIVERSAL over the `sourceDocument` literal: every row it binds by `<ident>.name`
+   must also bind `<ident>.execute`. Verified on the merged tree: honest pass; dropping
+   only `writeDefinition.execute` →
+   `DEF_EXECUTION_REPLACED … binds writeDefinition.name but not writeDefinition.execute`.
+   (Scoped to the literal, because the same files build an INPUT-contract digest from
+   `name: definition.name` without execute, by design.)
+
+This is the class from D8 again — the rule verified "some binding exists", a
+representation, not "this row is bound", the guarantee — and it surfaced only because
+another lane added the first multi-row contribution. **Verified on a real merge with
+`origin/master`, not on my branch alone: 14/14 controls.**
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still

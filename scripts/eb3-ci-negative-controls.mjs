@@ -240,6 +240,7 @@ control('C3 execution-definition-replaced', () => {
   // 3a: replace the execution arm with a named-bridge claim that names no bridge.
   const a = new Map(base)
   a.set(seedPath, a.get(seedPath).replace("via: 'family-body'", "via: 'named-bridge'"))
+  if (a.get(seedPath) === base.get(seedPath)) return { ok: false, detail: `mutation 3a did not change ${seedPath}` }
   const aFindings = checkFamilyDefinitions({ files: a }).findings
   const aHit = aFindings.find((f) => f.code === 'DEF_EXECUTION_REPLACED' && f.path === seedPath)
 
@@ -256,7 +257,12 @@ control('C3 execution-definition-replaced', () => {
 
   // 3c: a nativeNames entry no review can read.
   const c = new Map(base)
-  c.set(seedPath, c.get(seedPath).replace('nativeNames: [definition.name]', 'nativeNames: [computeNameAtRuntime()]'))
+  // ANY spelling of the identifier list, not one file's: master's fs-family-contribution
+  // writes `nativeNames: [readDefinition.name, writeDefinition.name, …]`, and a pin on
+  // `[definition.name]` made this leg a silent no-op that reported MISSED (hosted run
+  // 40352387786, after the rebase brought that file in ahead of the old seed).
+  c.set(seedPath, c.get(seedPath).replace(/nativeNames: \[[^\]]*\]/, 'nativeNames: [computeNameAtRuntime()]'))
+  if (c.get(seedPath) === base.get(seedPath)) return { ok: false, detail: `mutation 3c did not change ${seedPath}` }
   const cFindings = checkFamilyDefinitions({ files: c }).findings
   const cHit = cFindings.find((f) => f.code === 'DEF_NAME_UNREADABLE' && f.path === seedPath)
 
@@ -267,7 +273,10 @@ control('C3 execution-definition-replaced', () => {
   // match, and the honest tree passed for the wrong reason. Only a mutation that
   // must trip it can tell a live rule from a dead one.
   const d = new Map(base)
-  d.set(seedPath, d.get(seedPath).replace(/execute: definition\.execute\?\.toString\?\.\(\) \?\? null,/, 'execute: null,'))
+  // Same generalisation: the binding is `<anyIdent>.execute?.toString?.() ?? null`
+  // (search uses grepDefinition/globDefinition, fs-family readDefinition/…), which is
+  // also how eb3-family-definitions reads it. The control now mutates what the rule reads.
+  d.set(seedPath, d.get(seedPath).replace(/execute: [A-Za-z_$][\w$]*\.execute\?\.toString\?\.\(\) \?\? null,/, 'execute: null,'))
   if (d.get(seedPath) === base.get(seedPath)) return { ok: false, detail: `mutation 3d did not change ${seedPath}` }
   const dHit = checkFamilyDefinitions({ files: d }).findings.find((f) => f.code === 'DEF_EXECUTION_REPLACED' && f.path === seedPath && f.detail.includes('same digest'))
 
