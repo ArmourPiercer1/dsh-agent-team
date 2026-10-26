@@ -92,9 +92,10 @@ CORE PATCH BUDGET = 0; Host pin 0.2.0-rc.2 @ `639ed01539`.
 
 ## Review round 1 — the C2 positive arm (named fixture) + forensics
 
-- `host-starts-r2.jsonl` — the review-r1 boot budget (2 lines,
-  `--max-host-starts 2`): boots u6prc6 (first positive-arm drive) and
-  u6prc7 (instrumented drive). The pre-review ledger `host-starts.jsonl`
+- `host-starts-r2.jsonl` — the review-r1 boot budget (3 lines after the
+  parent-authorized third boot: u6prc6 first positive-arm drive, u6prc7
+  instrumented drive, u6prc8 the authorized retry on the envelope-fixed
+  fixture, head `4c52cda8f`). The pre-review ledger `host-starts.jsonl`
   (6/6) is untouched.
 - `u5-u6-proc-u6prc6-*.u6proc-evidence.json`, `run-u6proc-r2.json`,
   `u6proc-console-run6.log` — u6prc6: the fixture (ask-lane `asker`
@@ -116,6 +117,26 @@ CORE PATCH BUDGET = 0; Host pin 0.2.0-rc.2 @ `639ed01539`.
   shell-rung walk reaching `human-admin` (that law stands at C1/offline;
   the live lanes never got that far — the judge notes carry the honest
   attribution).
+- `u5-u6-proc-u6prc8-*.u6proc-evidence.json`, `run-u6proc-r4.json`,
+  `u6proc-console-run8.log` — the AUTHORIZED third boot (parent budget
+  3/3), head `4c52cda8f` carrying the asker-envelope fix. Result: the
+  same bridge refusal, verbatim, in `approveEvidence.forensic`. Offline
+  read of the full boundary law (`admission/envelope.ts:100-119`)
+  explains it: the member's effective envelope is
+  `blueprint.teamEnvelope.allow` NARROWED by the template entry — a
+  template entry can only NARROW the team-root allow list, never widen
+  it; the canary teamEnvelope.allow names
+  create-member/assign-task/send-message/report-progress/resolve-control/
+  `bash` but NOT `request-control`, so the asker template's added op was
+  filtered at the team root. The prepared (not yet booted) fixture-data
+  patch: `teamEnvelope.allow += request-control` PLUS a leader
+  memberEnvelopes entry pinning the leader's OLD bounds exactly
+  (including the `bash` exec token — the leader currently has no entry,
+  entry-tightening skipped by design, so the entry must be added in the
+  same edit to keep the leader lanes byte-identical). No product change;
+  the fixture's authorization law stays closed-vocabulary and
+  test-profile-only. Boot budget is 3/3 spent; per the failure
+  instruction the loop stops here pending a parent decision.
 - The fix is fixture DATA, not product: the `asker` template's envelope
   additionally names `request-control` (closed `ALL_MUTATION_OPS`
   vocabulary; the member role's standing right to open an approval row).
@@ -123,9 +144,7 @@ CORE PATCH BUDGET = 0; Host pin 0.2.0-rc.2 @ `639ed01539`.
   human lane at `leader-approval`; guard consume-once writes the one
   consumption row; replay reuses the decided row and the spent
   consumption denies with zero second spawn — a4p7/A5 + a5-m1-auth-bridge
-  A1/A4 shapes). The positive boot itself is ONE boot pending (budget
-  2/2 spent on the forensic drives); its evidence lands the
-  `proc:approve-*` PASSes and lights the `u6prc8` offline fixture.
+  A1/A4 shapes).
 - `run-u6proc-r3` reconstruct (`cases=11 FAIL:2 PASS:9`) verified the
   shared judge's zero-boot path over the new evidence.
 

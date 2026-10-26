@@ -1,0 +1,350 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6proc_probe",
+    "write"
+  ],
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6proc_probe"
+  ],
+  "effects": {
+    "mask": null,
+    "pos": null,
+    "deny": null,
+    "swap": null,
+    "late": null,
+    "ctl": null,
+    "appr": null
+  },
+  "effectLines": {
+    "mask": 0,
+    "pos": 0,
+    "deny": 0,
+    "swap": 0,
+    "late": 0,
+    "ctl": 0,
+    "appr": 0
+  },
+  "spoofBodyMarkers": [],
+  "channelMarkers": [
+    "channel-body-ran-trigger-channel"
+  ],
+  "registerAttempts": [
+    {
+      "at": "2026-10-26T01:41:27.984Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6proc-root-u5u6prc8-20261026t01-39-22z",
+      "tag": "trigger-swap",
+      "name": "team_bash",
+      "ok": true
+    },
+    {
+      "at": "2026-10-26T01:41:27.985Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-u6proc-team-u5u6prc8-20261026t01-39-22z",
+      "tag": "trigger-swap",
+      "name": "team_bash",
+      "ok": false,
+      "error": "tool \"team_bash\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-26T01:41:27.985Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-3c0ef9bb375a8ca0eb52aadf6323267f",
+      "tag": "trigger-swap",
+      "name": "team_bash",
+      "ok": false,
+      "error": "tool \"team_bash\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-26T01:41:27.985Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-b0a4ba5a838fdba03fb5ef50eab6cade",
+      "tag": "trigger-swap",
+      "name": "team_bash",
+      "ok": false,
+      "error": "tool \"team_bash\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-26T01:41:27.986Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "agent",
+      "trigger": "probe-body:session-team-child-691923d207b820e8b351f5dea994e932",
+      "tag": "trigger-swap",
+      "name": "team_bash",
+      "ok": false,
+      "error": "tool \"team_bash\" is already registered in this scope"
+    },
+    {
+      "at": "2026-10-26T01:41:27.989Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "row",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "name": "team_bash",
+      "ok": true
+    },
+    {
+      "at": "2026-10-26T01:41:29.897Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-register",
+      "scope": "row",
+      "trigger": "channel",
+      "tag": "trigger-channel",
+      "name": "u6proc_channel",
+      "ok": true
+    }
+  ],
+  "swapAttempts": [
+    {
+      "at": "2026-10-26T01:41:27.989Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-attempt",
+      "trigger": "probe-body",
+      "tag": "trigger-swap",
+      "placedScopes": [
+        "agent:session-u6proc-root-u5u6prc8-20261026t01-39-22z",
+        "row"
+      ]
+    }
+  ],
+  "restoreRows": [
+    {
+      "at": "2026-10-26T01:41:28.750Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-restore",
+      "key": "agent:probe-body:session-u6proc-root-u5u6prc8-20261026t01-39-22z:team_bash",
+      "trigger": "probe-body:trigger-restore",
+      "ok": true
+    },
+    {
+      "at": "2026-10-26T01:41:28.754Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "spoof-restore",
+      "key": "row::team_bash",
+      "trigger": "probe-body:trigger-restore",
+      "ok": true
+    }
+  ],
+  "channelRows": [
+    {
+      "at": "2026-10-26T01:41:29.897Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "channel-attempt",
+      "trigger": "probe-body",
+      "tag": "trigger-channel",
+      "ok": true
+    },
+    {
+      "at": "2026-10-26T01:41:30.305Z",
+      "world": "u5u6prc8-20261026T01-39-22Z",
+      "leg": "channel-body-ran",
+      "tag": "trigger-channel"
+    }
+  ],
+  "bashExecutes": [
+    {
+      "tool": "team_bash",
+      "command": "printf 'U6PROC_MASK_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+      "agent": "session-team-child-3c0ef9bb375a8ca0eb52aadf6323267f"
+    },
+    {
+      "tool": "team_bash",
+      "command": "printf 'U6PROC_DENY_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+      "agent": "session-team-child-b0a4ba5a838fdba03fb5ef50eab6cade"
+    },
+    {
+      "tool": "team_bash",
+      "command": "printf 'U6PROC_APPR_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+      "agent": "session-team-child-691923d207b820e8b351f5dea994e932"
+    },
+    {
+      "tool": "team_bash",
+      "command": "printf 'U6PROC_APPR_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+      "agent": "session-team-child-691923d207b820e8b351f5dea994e932"
+    },
+    {
+      "tool": "team_bash",
+      "command": "printf 'U6PROC_POS_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent",
+      "agent": "session-u6proc-team-u5u6prc8-20261026t01-39-22z"
+    },
+    {
+      "tool": "team_bash",
+      "command": "printf 'U6PROC_SWAP_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agen",
+      "agent": "session-u6proc-team-u5u6prc8-20261026t01-39-22z"
+    },
+    {
+      "tool": "team_bash",
+      "command": "sleep 6; printf 'U6PROC_LATE_EMITTED\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.wor",
+      "agent": "session-u6proc-team-u5u6prc8-20261026t01-39-22z"
+    },
+    {
+      "tool": "bash",
+      "command": "printf 'U6PROC_CTL_u5u6prc8-20261026t01-39-22z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent",
+      "agent": "session-u6proc-root-u5u6prc8-20261026t01-39-22z"
+    }
+  ],
+  "bashResults": [
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=IO_POLICY_UNSUPPORTED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "team_bash",
+      "isError": false,
+      "head": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+    },
+    {
+      "tool": "bash",
+      "isError": false,
+      "head": "bash: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr3/tests/homes/u5u6prc8-20261026T01-39-22Z/workspace/u6proc-ctl.txt: Permission denied\n[Command finished with exit co"
+    }
+  ],
+  "resolvedAsks": [
+    {
+      "tag": "replay",
+      "requestId": "u6proc-unknown-request",
+      "kind": "non-open",
+      "firstBody": "{\"type\":\"server-response\",\"rpcId\":\"u6proc-replay-c1tjg4nu2i\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'u6proc-unknown-request' in team 'session-u6proc-root-u5u6prc8-20261026t01-39-22z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlServ",
+      "secondBody": null
+    }
+  ],
+  "controlDigest": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": []
+  },
+  "notifTurns": 0,
+  "notifTurnsMask": 0,
+  "approveEvidence": {
+    "pendingSeen": false,
+    "requestId": null,
+    "kind": null,
+    "resolveBody": null,
+    "resolvedOk": false,
+    "waitedMs": 120166,
+    "pendingAny": [],
+    "forensic": [
+      "a5p2prod: production-admission-note",
+      "a5p2prod: production-admission-constructed",
+      "a5-pa-bridge: leg-deny durable control request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed",
+      "a5p2prod: production-admission-default-deny"
+    ],
+    "decisions": 0,
+    "consumptions": 0
+  },
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 4,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6proc-realm-u5u6prc8-20261026t01-39-22z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_READ_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "laneDone": {
+    "mask": true,
+    "deny": true,
+    "appr": true,
+    "pos": true,
+    "posReplay": true,
+    "swapTrigger": true,
+    "swap": true,
+    "restoreTrigger": true,
+    "late": true,
+    "leader": true,
+    "channelReg": true,
+    "channelCall": true,
+    "ctl": true
+  },
+  "claims": {
+    "mask": 0,
+    "pos": 0,
+    "deny": 0,
+    "swap": 0,
+    "late": 0,
+    "ctl": 0,
+    "appr": 0
+  }
+}

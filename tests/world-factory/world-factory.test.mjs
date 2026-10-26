@@ -710,7 +710,7 @@ test('u6-proc judge — offline fixture: run u6prc5 evidence judges deterministi
 
 test('u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS', async () => {
   // Same law as the u6prc5 fixture, aimed at the POSITIVE run's evidence
-  // (u6prc8+, the line whose asker envelope carries request-control):
+  // (u6prc9+, the line whose teamEnvelope carries request-control):
   // every case — the fail-closed eight AND the two approve-arm cases —
   // must PASS off the written digest alone (zero boots), through the SAME
   // judge the live run and the reconstruct tool use.
@@ -718,7 +718,7 @@ test('u6-proc judge — offline fixture: the review-r1 positive-arm evidence jud
   const { judgeU6Proc } = await import('./lib/u6-proc-assembly.mjs')
   const dir = new URL('../../dev/agent-workflow/evidence/u6-pr3-20261026/c2/', import.meta.url)
   const file = existsSync(dir)
-    ? readdirSync(dir).find((n) => n.includes('u6prc8') && n.endsWith('.u6proc-evidence.json'))
+    ? readdirSync(dir).find((n) => n.includes('u6prc9') && n.endsWith('.u6proc-evidence.json'))
     : undefined
   if (file === undefined) return // the positive run has not landed yet (its boot is budgeted; this pin lights up with its evidence)
   const d = JSON.parse(readFileSync(new URL(file, dir), 'utf8'))
@@ -727,20 +727,23 @@ test('u6-proc judge — offline fixture: the review-r1 positive-arm evidence jud
   for (const [id, verdict, detail] of rows) assert.equal(verdict, 'PASS', `${id} must PASS on the positive run's evidence: ${JSON.stringify(detail).slice(0, 200)}`)
 })
 
-test('u6-proc judge — offline fixture: the two forensic runs (u6prc6/u6prc7) judge honestly to the envelope-boundary finding', async () => {
+test('u6-proc judge — offline fixture: the three forensic runs (u6prc6/u6prc7/u6prc8) judge honestly to the envelope-boundary finding', async () => {
   // The review-r1 pre-fix boots: the asker lane existed but its envelope
-  // did not name `request-control`, so the runtime boundary refused the
-  // ask-row creation (the bridge's own observation says so verbatim in the
-  // digests' approveEvidence.forensic). The judge must show exactly eight
-  // fail-closed PASSes and the two approve-arm FAILs — never a silent
-  // pass on a leg the World never opened.
+  // did not name `request-control`, and after that line landed (u6prc8)
+  // still hit the boundary because a member template entry can only
+  // NARROW the team-root allow list (blueprint.teamEnvelope.allow is the
+  // ceiling, admission/envelope.ts) — so the runtime boundary refused the
+  // ask-row creation on all three (the bridge's own observation says so
+  // verbatim in the digests' approveEvidence.forensic). The judge must
+  // show exactly eight fail-closed PASSes and the two approve-arm FAILs
+  // — never a silent pass on a leg the World never opened.
   const { existsSync, readFileSync, readdirSync } = await import('node:fs')
   const { judgeU6Proc } = await import('./lib/u6-proc-assembly.mjs')
   const dir = new URL('../../dev/agent-workflow/evidence/u6-pr3-20261026/c2/', import.meta.url)
   const files = existsSync(dir)
-    ? readdirSync(dir).filter((n) => (n.includes('u6prc6') || n.includes('u6prc7')) && n.endsWith('.u6proc-evidence.json'))
+    ? readdirSync(dir).filter((n) => /u6prc[678]/.test(n) && n.endsWith('.u6proc-evidence.json'))
     : []
-  assert.equal(files.length, 2, 'both forensic run digests are committed evidence')
+  assert.equal(files.length, 3, 'all three forensic run digests are committed evidence')
   for (const file of files) {
     const d = JSON.parse(readFileSync(new URL(file, dir), 'utf8'))
     const rows = judgeU6Proc(d, true)
@@ -749,9 +752,9 @@ test('u6-proc judge — offline fixture: the two forensic runs (u6prc6/u6prc7) j
       if (id.startsWith('proc:approve-')) assert.equal(verdict, 'FAIL', `${id} must FAIL on the pre-fix digests (${file})`)
       else assert.equal(verdict, 'PASS', `${id} must PASS on its own measured evidence (${file})`)
     }
-    if (file.includes('u6prc7')) {
-      // u6prc7 is the instrumented boot: its digest must carry the
-      // bridge's own stated refusal cause verbatim.
+    if (file.includes('u6prc7') || file.includes('u6prc8')) {
+      // the instrumented boots: their digests must carry the bridge's own
+      // stated refusal cause verbatim.
       const forensic = (d.approveEvidence ?? {}).forensic ?? []
       assert.ok(forensic.some((line) => /request-control.*mutation envelope/i.test(line)),
         `the digest must carry the bridge's own stated refusal cause (${file})`)
