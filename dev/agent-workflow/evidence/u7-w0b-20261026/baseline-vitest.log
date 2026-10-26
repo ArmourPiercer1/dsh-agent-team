@@ -1,0 +1,146 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b
+
+ ✓ packages/runtime/test/a5p2-admission-kernel.test.ts (54 tests) 64ms
+ ✓ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests) 171ms
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-1 POSITIVE create: new file lands with EXACT bytes; receipt fingerprint == sha256(content) (center hashString law)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=11 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/created-a.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-2 POSITIVE update: existing bytes replaced; receipt says update; NO before/after echo (disclosed D-C2-1 deviation)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=9 created=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/exists.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-3 empty content is LEGAL (clears the file, zero bytes)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=0 created=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/clears.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-4 default-deny: refused BEFORE any authority and the disk is byte-identical (nothing created, nothing changed)
+[dsh-agent-team] a5g7-write: governed-write default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/never-created.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-4 default-deny: refused BEFORE any authority and the disk is byte-identical (nothing created, nothing changed)
+[dsh-agent-team] a5g7-write: governed-write default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/exists.txt
+
+ ✓ packages/runtime/test/u6-pr6-arc-d-matrix.test.ts (4 tests) 304ms
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-6 symlink escape refused BOTH ways: symlink-name target AND through a linked directory; outside bytes untouched
+[dsh-agent-team] a5g7-write: governed-write provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/dirlink/new.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-9 missing parent directory is NEVER mkdir-recursive (disclosed deviation): io refusal, no parent, no file
+[dsh-agent-team] a5g7-write: governed-write provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/missing/inner/file.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-10 settled-token replay CANCELS at the execution edge (never re-consumes, never re-writes)
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=6 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/replay.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-10 settled-token replay CANCELS at the execution edge (never re-consumes, never re-writes)
+[dsh-agent-team] a5g7-write: governed-write cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-11 the execution signal aborted BEFORE the body: cancelled fact, the file is never created
+[dsh-agent-team] a5g7-write: governed-write cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-12 concurrent same-path writes are HONEST: each receipt claims only its OWN bytes; the final file is ONE whole payload
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=13 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/race.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-12 concurrent same-path writes are HONEST: each receipt claims only its OWN bytes; the final file is ONE whole payload
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=17 created=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/race.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-13 ask lane: approval lands through the control leg and writes ONCE; the deny leg writes ZERO
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=9 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/ask-approved.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 write — governed write on the real fs, every refusal zero-disk > W-13 ask lane: approval lands through the control leg and writes ONCE; the deny leg writes ZERO
+[dsh-agent-team] a5g7-write: governed-write pa-refused code=APPROVAL_DENIED detail=durable Control request c1-standin-plane-write-7dacb1b7-caee-4b1a-991e-0869f22969c8-1 answered deny
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-1 POSITIVE: real bytes updated; the receipt echoes before/after — lawful because the effect set PAIRS the read (M-02)
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e1.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-2 NEVER creates: absent target refused, the file is NOT born
+[dsh-agent-team] a5g7-edit: governed-edit resolver-refused code=target-unresolvable
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-3 no-match: refusal + the file is BYTE-IDENTICAL
+[dsh-agent-team] a5g7-edit: governed-edit provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e3.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-4 multi-match law: without replace_all refused byte-identical; with replace_all ALL occurrences land
+[dsh-agent-team] a5g7-edit: governed-edit provider-refused code=TOOL_BINDING_UNVERIFIED path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e4.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-4 multi-match law: without replace_all refused byte-identical; with replace_all ALL occurrences land
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e4.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-6 M-02 PAIRED COVERAGE: a write-only rule does NOT admit the edit (its READ effect is unruled) — refusal, byte-identical
+[dsh-agent-team] a5g7-edit: governed-edit default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e6.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-7 outside-root + symlink escape: refusals, outside bytes UNTOUCHED
+[dsh-agent-team] a5g7-edit: governed-edit resolver-refused code=symlink-alias
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-8 settled-token replay cancels; a pre-aborted signal lands zero bytes
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e8.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-8 settled-token replay cancels; a pre-aborted signal lands zero bytes
+[dsh-agent-team] a5g7-edit: governed-edit cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-8 settled-token replay cancels; a pre-aborted signal lands zero bytes
+[dsh-agent-team] a5g7-edit: governed-edit cancelled-at-pa-edge
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-9 ask lane: approval lands the edit ONCE; deny leaves bytes identical
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/e9.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-disk > E-9 ask lane: approval lands the edit ONCE; deny leaves bytes identical
+[dsh-agent-team] a5g7-edit: governed-edit pa-refused code=APPROVAL_DENIED detail=durable Control request c1-standin-plane-edit-f916c7b4-52fb-47cf-9a9d-1e637b7cf543-1 answered deny
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=unsupported-image-extension path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/notes.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=attachment-service-unmounted path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=IMAGE_MODEL_NOT_CAPABLE path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=image-media-not-accepted path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/photo.png
+
+ ✓ packages/runtime/test/u6-pr3-kernel-flow.test.ts (5 tests) 241ms
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-5 outside-root + symlink escape: refused with zero commit; the outside image stays unstored
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=unsupported-image-extension path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/alias.txt
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-8 default-deny lane: refusal BEFORE any read, zero commit
+[dsh-agent-team] a5g7-image: governed-image default-deny refusal path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-10 torn-down mount: after dispose the host seams are gone — the row answers the no-store refusal, zero commit
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=attachment-service-unmounted path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u7-9a-c1-mvpkodx1/root/photo.png
+
+stdout | packages/runtime/test/u7-9a-fs-mutation-c1.test.ts > u7-9a C1 read_image — native gate ORDER, positive through the mount-resolved store, refusals zero-commit > I-12 R1 negative control — the REAL kernel: the attachment-store commit effect has no grantable rung in the closed admission grammar (admission-kernel RESOURCE_EFFECT_KINDS is protected center), so the FINGERPRINTED domain-ref arm makes the whole effect set unadmittable: typed refusal, ZERO commit, no RAN — the declared effect can no longer ride ungoverned
+[dsh-agent-team] a5g7-image: governed-image pa-refused code=IO_POLICY_UNSUPPORTED detail=admission refused: the template policy defaults to DENY and no rule covers this effect (domain-ref) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+
+ ✓ packages/runtime/test/u7-9a-fs-mutation-c1.test.ts (35 tests) 1011ms
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:060bc026-8ff3-400c-96ec-c7fdc23ce8a1-1 (same provider, same request; registration+attribution are the producer's)
+
+ ✓ packages/runtime/test/u6-pr2-kernel-flow.test.ts (4 tests) 225ms
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (5 tests) 218ms
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:2672f908-8496-4e7e-9309-d782ecc69a3e-1 (same provider, same request; registration+attribution are the producer's)
+
+ ✓ packages/runtime/test/u6-arc-a-fitness.test.ts (12 tests) 469ms
+     ✓ the BOOKED digests are the BASE blobs themselves (the ledger cannot book an already-drifted byte)  388ms
+ ✓ packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts (7 tests) 108ms
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:0f8884e6-1332-481d-acd8-8feba2683149-1 (same provider, same request; registration+attribution are the producer's)
+
+ ✓ packages/runtime/test/u6-pr5-kernel-flow.test.ts (4 tests) 254ms
+ ✓ packages/runtime/test/u74a-jobs-producer.test.ts (20 tests) 1266ms
+     ✓ K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output  411ms
+     ✓ K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)  311ms
+ ✓ packages/runtime/test/u6-pr5-search-golden-vectors.test.ts (7 tests) 212ms
+ ✓ packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts (4 tests) 42ms
+ ✓ packages/runtime/test/u6-pr2-read-golden-vectors.test.ts (4 tests) 42ms
+
+ Test Files  14 passed (14)
+      Tests  178 passed (178)
+   Start at  18:10:46
+   Duration  2.27s (transform 3.08s, setup 0ms, import 4.00s, tests 4.63s, environment 2ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
