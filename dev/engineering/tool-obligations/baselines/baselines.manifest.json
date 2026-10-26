@@ -1,0 +1,20 @@
+{
+  "schema": "u7-0/baselines-manifest/v1",
+  "meaning": "Pinned C2 live observations (RUN 2026-10-26T10-47-58-816Z, overall PASS 5/5, 2 host starts on this ledger). snapshot_digest is the fixed digest (cross-boot-stable facts ONLY); the non-team inventory reproduced the SAME snapshot_digest in the earlier 10-41 run, proving stability across real boots.",
+  "run": "u7-0-census-2026-10-26T10-47-58-816Z",
+  "prior_run_disclosure": "u7-0-census-2026-10-26T10-41-16-540Z (overall FAIL 1: governed-team leg died at the alpha2 coverage gate over the row tools on the leader surface + a harness boot-id pairing bug; both fixed harness-side — see dev/agent-workflow/evidence/u7-0-census-20261026/README.md)",
+  "host_pin": {
+    "version": "0.2.0-rc.2",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "files": {
+    "RUN.20261026.json": "sha256:38cc02f9ac2ca5677161bd24159515a3fcbf963b188a2d318cdbc8cfd9f87fdf",
+    "observed-governed-team.20261026.json": "sha256:92c558751a1275a96bfaa54468c2a3de7e3a09ff6aee41630746b42576b2a07b",
+    "observed-non-team.20261026.json": "sha256:10c24ae0c1de39cd6b635ad8a22e1bdd904975f65bd25c0afe15e8a11a2e1799",
+    "reconcile.20261026.json": "sha256:e34b35f778158bcbb27718952d0066ba3a0d51799a67de71cd104273ee100af5"
+  },
+  "digests": {
+    "non_team_snapshot": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+    "governed_team_snapshot": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708"
+  }
+}

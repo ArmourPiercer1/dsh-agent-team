@@ -1,0 +1,337 @@
+{
+  "$comment": "Closed-world schema for expected-tool-obligations.v1.json. Validated by packages/testkit/census/schema-check.mjs, which implements EXACTLY this keyword subset (type/properties/required/additionalProperties:false/patternProperties/items/enum/const/pattern/minItems/uniqueItems/nullable/$ref) and refuses any other keyword at schema level. U7-0 / EB2-A.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "law",
+    "pins",
+    "inputs",
+    "counts",
+    "obligations",
+    "dynamic_source_classes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "u7-0/expected-tool-obligations/v1"
+    },
+    "law": {
+      "$ref": "#/definitions/Law"
+    },
+    "pins": {
+      "$ref": "#/definitions/Pins"
+    },
+    "inputs": {
+      "$ref": "#/definitions/Inputs"
+    },
+    "counts": {
+      "$ref": "#/definitions/Counts"
+    },
+    "obligations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/Obligation"
+      }
+    },
+    "dynamic_source_classes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DynamicClass"
+      }
+    }
+  },
+  "definitions": {
+    "Law": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unknown_never_authorized",
+        "dynamic_sources_are_classes",
+        "static_classification_not_live_pass",
+        "identity_is_per_process"
+      ],
+      "properties": {
+        "unknown_never_authorized": {
+          "type": "string"
+        },
+        "dynamic_sources_are_classes": {
+          "type": "string"
+        },
+        "static_classification_not_live_pass": {
+          "type": "string"
+        },
+        "identity_is_per_process": {
+          "type": "string"
+        }
+      }
+    },
+    "Pins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host_version",
+        "host_sha",
+        "host_pin_source"
+      ],
+      "properties": {
+        "host_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "host_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "host_pin_source": {
+          "const": "tests/paths.mjs"
+        }
+      }
+    },
+    "Inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewed_seed",
+        "reviewed_seed_sha256",
+        "matrix",
+        "matrix_sha256",
+        "backlog",
+        "backlog_sha256",
+        "source_census_seed",
+        "source_census_seed_sha256"
+      ],
+      "properties": {
+        "reviewed_seed": {
+          "type": "string"
+        },
+        "reviewed_seed_sha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "matrix": {
+          "type": "string"
+        },
+        "matrix_sha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "backlog": {
+          "type": "string"
+        },
+        "backlog_sha256": {
+          "$ref": "#/definitions/Digest"
+        },
+        "source_census_seed": {
+          "type": "string"
+        },
+        "source_census_seed_sha256": {
+          "$ref": "#/definitions/Digest"
+        }
+      }
+    },
+    "Counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries",
+        "required",
+        "out_of_scope",
+        "named",
+        "dynamic_classes",
+        "surfaces"
+      ],
+      "properties": {
+        "entries": {
+          "type": "integer"
+        },
+        "required": {
+          "type": "integer"
+        },
+        "out_of_scope": {
+          "type": "integer"
+        },
+        "named": {
+          "type": "integer"
+        },
+        "dynamic_classes": {
+          "type": "integer"
+        },
+        "surfaces": {
+          "type": "integer"
+        }
+      }
+    },
+    "Obligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "obligation",
+        "out_of_scope_reason",
+        "effect_class",
+        "candidate_route",
+        "expected_in",
+        "team_lane_variant_expected",
+        "source_registration",
+        "team_source_registration",
+        "matrix_cross_check",
+        "scope_variant",
+        "supporting_evidence",
+        "unknowns"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "named",
+            "dynamic-class",
+            "surface"
+          ]
+        },
+        "obligation": {
+          "enum": [
+            "REQUIRED",
+            "OUT_OF_SCOPE"
+          ]
+        },
+        "out_of_scope_reason": {
+          "type": "string",
+          "nullable": true
+        },
+        "effect_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_route": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_in": {
+          "enum": [
+            "native-scope",
+            "team-lane",
+            "dynamic-class",
+            "surface-obligation"
+          ]
+        },
+        "team_lane_variant_expected": {
+          "type": "boolean"
+        },
+        "source_registration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "package",
+            "file",
+            "line"
+          ],
+          "nullable": true,
+          "properties": {
+            "package": {
+              "type": "string",
+              "nullable": true
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "line": {
+              "type": "integer"
+            }
+          }
+        },
+        "team_source_registration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "file",
+            "line",
+            "kind"
+          ],
+          "nullable": true,
+          "properties": {
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "line": {
+              "type": "integer"
+            },
+            "kind": {
+              "type": "string"
+            }
+          }
+        },
+        "matrix_cross_check": {
+          "enum": [
+            "NAME-PRESENT",
+            "NAME-ABSENT",
+            "N/A-DYNAMIC",
+            "N/A-SURFACE"
+          ]
+        },
+        "scope_variant": {
+          "type": "string"
+        },
+        "supporting_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "DynamicClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "rule"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule": {
+          "type": "string"
+        },
+        "package": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "note": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "register": {
+          "type": "string"
+        }
+      }
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

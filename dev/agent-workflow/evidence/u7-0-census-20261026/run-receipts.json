@@ -1,0 +1,201 @@
+{
+  "run1": {
+    "runId": "u7-0-census-2026-10-26T10-41-16-540Z",
+    "overall": "FAIL",
+    "hostStarts": {
+      "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0/.artifacts/tmp/u7-0-census-live/2026-10-26T10-41-16-540Z/u7-0-census-2026-10-26T10-41-16-540Z.host-starts.jsonl",
+      "thisRunCount": 2,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-26T10:41:21.688Z",
+          "runId": "u7-0-census-2026-10-26T10-41-16-540Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c1a-20261026T10-41-16Z",
+          "phase": "c2-non-team"
+        },
+        {
+          "at": "2026-10-26T10:41:35.108Z",
+          "runId": "u7-0-census-2026-10-26T10-41-16-540Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c1b-20261026T10-41-30Z",
+          "phase": "c2-governed-team"
+        }
+      ]
+    },
+    "cases": [
+      {
+        "id": "c2-non-team",
+        "verdict": "PASS",
+        "facts": {
+          "mounted": true,
+          "applied": true,
+          "registerOk": true,
+          "seamRefusals": 0,
+          "snapshotCount": 1,
+          "teamLaneSnapshots": 0,
+          "agentLanes": 1,
+          "tags": [
+            "live1"
+          ]
+        }
+      },
+      {
+        "id": "c2-governed-team",
+        "verdict": "FAIL",
+        "facts": {
+          "mounted": true,
+          "applied": true,
+          "registerOk": true,
+          "seamRefusals": 0,
+          "snapshotCount": 2,
+          "teamLaneSnapshots": 0,
+          "agentLanes": 0,
+          "tags": [
+            "auto-30000ms",
+            "auto-60000ms"
+          ]
+        }
+      },
+      {
+        "id": "reconcile",
+        "verdict": "PASS",
+        "summary": {
+          "nonTeam": {
+            "missing": 11,
+            "unknown": 2,
+            "out_of_scope_observed": 0,
+            "drift": 0,
+            "scope_gaps": 18
+          },
+          "team": {
+            "missing": 37,
+            "unknown": 2,
+            "out_of_scope_observed": 0,
+            "drift": 0,
+            "scope_gaps": 18
+          },
+          "nonTeam_snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+          "team_snapshot_digest": "sha256:b9465b60aa20ed1500fb34082f02a3b5c4c15062480218089abe99eedf299c9e",
+          "crossBootDrift": 2
+        }
+      },
+      {
+        "id": "leak-check",
+        "verdict": "PASS",
+        "ok": true
+      },
+      {
+        "id": "stable-instance-unchanged",
+        "verdict": "PASS",
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    ]
+  },
+  "run2": {
+    "runId": "u7-0-census-2026-10-26T10-47-58-816Z",
+    "overall": "PASS",
+    "hostStarts": {
+      "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0/.artifacts/tmp/u7-0-census-live/u7c-budget-run2.jsonl",
+      "thisRunCount": 2,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-26T10:47:58.952Z",
+          "runId": "u7-0-census-2026-10-26T10-47-58-816Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c2a-20261026T10-47-58Z",
+          "phase": "c2-non-team"
+        },
+        {
+          "at": "2026-10-26T10:48:02.972Z",
+          "runId": "u7-0-census-2026-10-26T10-47-58-816Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c2b-20261026T10-48-02Z",
+          "phase": "c2-governed-team"
+        }
+      ]
+    },
+    "cases": [
+      {
+        "id": "c2-non-team",
+        "verdict": "PASS",
+        "facts": {
+          "mounted": true,
+          "applied": true,
+          "registerOk": true,
+          "seamRefusals": 0,
+          "snapshotCount": 1,
+          "teamLaneSnapshots": 0,
+          "agentLanes": 1,
+          "tags": [
+            "live1"
+          ]
+        }
+      },
+      {
+        "id": "c2-governed-team",
+        "verdict": "PASS",
+        "facts": {
+          "mounted": true,
+          "applied": true,
+          "registerOk": true,
+          "seamRefusals": 0,
+          "snapshotCount": 3,
+          "teamLaneSnapshots": 3,
+          "agentLanes": 2,
+          "tags": [
+            "auto-30000ms",
+            "live1",
+            "auto-60000ms"
+          ]
+        }
+      },
+      {
+        "id": "reconcile",
+        "verdict": "PASS",
+        "summary": {
+          "nonTeam": {
+            "missing": 11,
+            "unknown": 2,
+            "out_of_scope_observed": 0,
+            "drift": 0,
+            "scope_gaps": 18
+          },
+          "team": {
+            "missing": 24,
+            "unknown": 2,
+            "out_of_scope_observed": 0,
+            "drift": 0,
+            "scope_gaps": 0
+          },
+          "nonTeam_snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+          "team_snapshot_digest": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708",
+          "crossBootDrift": 0
+        }
+      },
+      {
+        "id": "leak-check",
+        "verdict": "PASS",
+        "ok": true
+      },
+      {
+        "id": "stable-instance-unchanged",
+        "verdict": "PASS",
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    ]
+  }
+}

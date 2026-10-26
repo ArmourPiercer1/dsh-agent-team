@@ -1,0 +1,849 @@
+{
+  "nonTeam": {
+    "schema": "u7-0/census-reconcile/v1",
+    "inputs": {
+      "expected_digest": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
+      "observed_snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+      "baseline_snapshot_digest": null,
+      "scope_classes_observed": {
+        "native": true,
+        "teamLane": false
+      }
+    },
+    "missing": [
+      {
+        "name": "cordis_inspect_list",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "read-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "cordis_inspect_query",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "read-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_mcp_resource_templates",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_mcp_resources",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_subagent_models",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "session/agent-control",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "lsp",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "bridge:LSP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "plugin_manager",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "other:plugin-manager",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "pwsh",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "read_mcp_resource",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "run_code",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "bridge:PTC",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "str_replace_editor",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "write-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      }
+    ],
+    "unknown": [
+      {
+        "name": "u5_canary",
+        "scope_ids": [
+          "agent-1",
+          "global"
+        ],
+        "source_class": "test-row",
+        "classification": "test-row",
+        "dynamic_class": null,
+        "in_authoritative_sources": false,
+        "authorized": false,
+        "reason": "test-only row tool (census/canary surface), never a product tool"
+      },
+      {
+        "name": "u7_census",
+        "scope_ids": [
+          "agent-1",
+          "global"
+        ],
+        "source_class": "test-row",
+        "classification": "test-row",
+        "dynamic_class": null,
+        "in_authoritative_sources": false,
+        "authorized": false,
+        "reason": "test-only row tool (census/canary surface), never a product tool"
+      }
+    ],
+    "out_of_scope_observed": [],
+    "drift": [],
+    "scope_gaps": [
+      {
+        "name": "team_archive_member",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_bash",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_collect",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_create_member",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_delegate",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_follow_up",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_glob",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_grant_permission",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_grep",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_inspect_config",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_list_members",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_list_pending_control",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_list_templates",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_report_progress",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_request_control",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_resolve_control",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_revoke_permission",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      },
+      {
+        "name": "team_send_message",
+        "expected_in": "team-lane",
+        "reason": "scope class \"teamLane\" not observed in this snapshot (not MISSING, not OK)"
+      }
+    ],
+    "notes": [
+      {
+        "kind": "dynamic-class",
+        "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "dynamic-class",
+        "name": "cua_driver_native__<tool> (dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "dynamic-class",
+        "name": "mcp__<server>__<tool> (dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "surface-obligation",
+        "name": "surface:domain_family (family obligation — no registered names)",
+        "detail": "family obligation with no enumerable names; the census never name-matches it (U4 reviewed)"
+      }
+    ],
+    "counts": {
+      "missing": 11,
+      "unknown": 2,
+      "out_of_scope_observed": 0,
+      "drift": 0,
+      "scope_gaps": 18
+    },
+    "verdict_digest": "sha256:58fd7e88436aa86fe689614e3eae777d5d2d245dbb5054d1c8eeb62269f37888"
+  },
+  "team": {
+    "schema": "u7-0/census-reconcile/v1",
+    "inputs": {
+      "expected_digest": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
+      "observed_snapshot_digest": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708",
+      "baseline_snapshot_digest": null,
+      "scope_classes_observed": {
+        "native": true,
+        "teamLane": true
+      }
+    },
+    "missing": [
+      {
+        "name": "cordis_inspect_list",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "read-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "cordis_inspect_query",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "read-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_mcp_resource_templates",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_mcp_resources",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_subagent_models",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "session/agent-control",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "lsp",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "bridge:LSP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "plugin_manager",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "other:plugin-manager",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "pwsh",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "read_mcp_resource",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "run_code",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "bridge:PTC",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "str_replace_editor",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "write-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_archive_member",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_collect",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_delegate",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_follow_up",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_grant_permission",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_inspect_config",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_list_pending_control",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_list_templates",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_report_progress",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_request_control",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_resolve_control",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_revoke_permission",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_send_message",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      }
+    ],
+    "unknown": [
+      {
+        "name": "u5_canary",
+        "scope_ids": [
+          "agent-2",
+          "global"
+        ],
+        "source_class": "test-row",
+        "classification": "test-row",
+        "dynamic_class": null,
+        "in_authoritative_sources": false,
+        "authorized": false,
+        "reason": "test-only row tool (census/canary surface), never a product tool"
+      },
+      {
+        "name": "u7_census",
+        "scope_ids": [
+          "agent-2",
+          "global"
+        ],
+        "source_class": "test-row",
+        "classification": "test-row",
+        "dynamic_class": null,
+        "in_authoritative_sources": false,
+        "authorized": false,
+        "reason": "test-only row tool (census/canary surface), never a product tool"
+      }
+    ],
+    "out_of_scope_observed": [],
+    "drift": [],
+    "scope_gaps": [],
+    "notes": [
+      {
+        "kind": "dynamic-class",
+        "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "dynamic-class",
+        "name": "cua_driver_native__<tool> (dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "dynamic-class",
+        "name": "mcp__<server>__<tool> (dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "surface-obligation",
+        "name": "surface:domain_family (family obligation — no registered names)",
+        "detail": "family obligation with no enumerable names; the census never name-matches it (U4 reviewed)"
+      }
+    ],
+    "counts": {
+      "missing": 24,
+      "unknown": 2,
+      "out_of_scope_observed": 0,
+      "drift": 0,
+      "scope_gaps": 0
+    },
+    "verdict_digest": "sha256:972f170360e01e1651585e3b65e056ed4c0974f472771fbd26a0493a6c051e5f"
+  },
+  "teamVsNonTeam": {
+    "schema": "u7-0/census-reconcile/v1",
+    "inputs": {
+      "expected_digest": "sha256:ae99c92246d50735b5bb7c84bafc34bcc61e146a6b7c058d503b954e70fb9f98",
+      "observed_snapshot_digest": "sha256:a2430e1a71b0ffcb946e38901f670a718ed7ff3da8c5129db0e4f24ef3e5a708",
+      "baseline_snapshot_digest": "sha256:e540b89b5ba36e0d8122fa8708a19ee929d7b02586f42776c37913d69bdf2ebf",
+      "scope_classes_observed": {
+        "native": true,
+        "teamLane": true
+      }
+    },
+    "missing": [
+      {
+        "name": "cordis_inspect_list",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "read-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "cordis_inspect_query",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "read-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_mcp_resource_templates",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_mcp_resources",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "list_subagent_models",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "session/agent-control",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "lsp",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "bridge:LSP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "plugin_manager",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "other:plugin-manager",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "pwsh",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "read_mcp_resource",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "dynamic-mcp",
+        "candidate_route": "bridge:MCP",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "run_code",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "process",
+        "candidate_route": "bridge:PTC",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "str_replace_editor",
+        "expected_in": "native-scope",
+        "in_authoritative_sources": true,
+        "source_class": "host-static",
+        "effect_class": "write-fs",
+        "candidate_route": "ordinary-family",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_archive_member",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_collect",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_delegate",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_follow_up",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_grant_permission",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_inspect_config",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_list_pending_control",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_list_templates",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_report_progress",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_request_control",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_resolve_control",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_revoke_permission",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      },
+      {
+        "name": "team_send_message",
+        "expected_in": "team-lane",
+        "in_authoritative_sources": true,
+        "source_class": "team-native",
+        "effect_class": "team-coordination",
+        "candidate_route": "team-native",
+        "reason": "required obligation observed in NO scope of this snapshot"
+      }
+    ],
+    "unknown": [
+      {
+        "name": "u5_canary",
+        "scope_ids": [
+          "agent-2",
+          "global"
+        ],
+        "source_class": "test-row",
+        "classification": "test-row",
+        "dynamic_class": null,
+        "in_authoritative_sources": false,
+        "authorized": false,
+        "reason": "test-only row tool (census/canary surface), never a product tool"
+      },
+      {
+        "name": "u7_census",
+        "scope_ids": [
+          "agent-2",
+          "global"
+        ],
+        "source_class": "test-row",
+        "classification": "test-row",
+        "dynamic_class": null,
+        "in_authoritative_sources": false,
+        "authorized": false,
+        "reason": "test-only row tool (census/canary surface), never a product tool"
+      }
+    ],
+    "out_of_scope_observed": [],
+    "drift": [],
+    "scope_gaps": [],
+    "notes": [
+      {
+        "kind": "dynamic-class",
+        "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "dynamic-class",
+        "name": "cua_driver_native__<tool> (dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "dynamic-class",
+        "name": "mcp__<server>__<tool> (dynamic class)",
+        "detail": "dynamic source recorded as a CLASS; instances observed at runtime are always UNKNOWN until an admission record exists (§10.4)"
+      },
+      {
+        "kind": "surface-obligation",
+        "name": "surface:domain_family (family obligation — no registered names)",
+        "detail": "family obligation with no enumerable names; the census never name-matches it (U4 reviewed)"
+      }
+    ],
+    "counts": {
+      "missing": 24,
+      "unknown": 2,
+      "out_of_scope_observed": 0,
+      "drift": 0,
+      "scope_gaps": 0
+    },
+    "verdict_digest": "sha256:23e1324867ee6516c7c1fac403a52306e5c64253f12526a85ed13ea30806e53b"
+  }
+}

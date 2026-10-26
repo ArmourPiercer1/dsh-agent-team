@@ -1,0 +1,589 @@
+{
+ "meta": {
+  "package": "U4-G1F-SUP-C — disposition of the 22 UNKNOWN required obligations (G1-F review-r1 finding 13; no \"route presumed\" carried)",
+  "executor": "G1-F-SUP-C (static, read-only)",
+  "generated_utc": "2026-10-25",
+  "pins": {
+   "team_master": "master@3288567d3 (HEAD re-read this session)",
+   "host": "tests/deepseek-harness-test-use @639ed015397290b3745d163aafe02ffee4aa3f84 (0.2.0-rc.2, read-only, no boot)",
+   "wip_asset": "origin/feat/a5-m2-integration@bef38934f (PR #360, OPEN/DRAFT — unmerged, un-mounted, C2 pending; reuse citations are WIP assets requiring reviewed extraction)",
+   "inputs": [
+    "dev/agent-workflow/evidence/u4-g1-f-review-r1/REVIEW.md (finding 13 + minimal required additions 3-4)",
+    "dev/agent-workflow/evidence/u4-obligations-20261025/{feasibility.json, expected-tool-obligations.json, mechanism-groups.json, SUMMARY.md, refs/center-assembly-architecture.md}",
+    "docs/plans/active/alpha5-tool-io-governance/{current-execution-plan.md, ALPHA5-EFFECTIVE-BACKLOG.md, TOOL-CAPABILITY-MATRIX-9b2.md}",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md (U4/U6/U7 + ARC-A..D, L116-138)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md (family contracts, owner roles §2, BASE.C1/C2/C3 §1.2)",
+    "host tests/deepseek-harness-test-use sources (line anchors re-read this session)",
+    "PR #360 files via git show origin/feat/a5-m2-integration (line anchors re-read this session)"
+   ]
+  },
+  "disposition_legend": {
+   "CREDIBLE-ROUTE": "mechanism group + covering G1-F PoC + concrete adapter route + host registration file:line + reusable team code file:line + owner role + C1/C2 acceptance + next gate; every dependency stated as a condition; flips to CORE_SEAM_BLOCKER (or reopens) on the named reversal condition",
+   "NAMED-BLOCKER": "precise missing public behavior or missing decision, owner, reopen condition",
+   "OUT_OF_SCOPE-PROPOSAL": "evidence-backed proposal requiring user/plan decision; obligation re-attaches if mounted/enabled"
+  },
+  "counts": { "CREDIBLE-ROUTE": 21, "NAMED-BLOCKER": 1, "OUT_OF_SCOPE-PROPOSAL": 0, "total": 22 },
+  "oos_note": "Zero obligation-level OUT_OF_SCOPE-PROPOSAL: all 22 are mounted in a shipped bundle/preset per the U4 required rule, so the mount-based evidence for dropping is absent by construction. Sub-variant exclusions (subagent_codex/claude_code disabled aliases, the unmounted experimental tool-agent-team same-name route, ralph, the config-gated timed ask-user variant) are recorded inside their entries as conditions/variant exclusions with re-attach rules, never as obligation-level drops. The closest OOS candidate (cordis_inspect_list/query, cordis-preset-only 'creator' 分档) stays REQUIRED under that same rule; its per-profile mount pin is carried as a condition instead.",
+  "shared_interception_seams_verified_this_session": {
+   "tools.register": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1063-1066",
+   "tools.restrict(mask)": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1121-1123 (layer.restrictions.append)",
+   "tools.guard": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1136-1141 (layer.guards.append); guardReason loop :767-771",
+   "h0_target": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (post-guard name re-resolve; also :1807/:1876) — mechanism-groups.json:3,9; every group blocked_by_H0 (mechanism-groups.json:12-15)"
+  },
+  "global_conditions_every_route_depends_on": [
+   "GC-1 H0 PASS: pre-Body Definition-identity pin at Host dispatch. All 12 mechanism groups inherit this (mechanism-groups.json:33-34); if H0 shows an unverified-Body execution window, every name-based route here flips to CORE_SEAM_BLOCKER (feasibility.json:309-313) and no PoC result on this list may be claimed.",
+   "GC-2 Center-enforceable composition rules adopted (REVIEW.md required addition 5): closed composition membership; no later prepended tools/execute or tools/change listeners for governed events; center-owned registration/table with generation binding; generation/schema parity; registration-time mutation observable post-commit, not atomically vetoed.",
+   "GC-3 H0 guard-equivalence suite + oracle fix landed first (REVIEW.md required additions 1-2): pre-aborted signal, mid-body cancellation settlement, signal fuse/restore, post-execute replacement/block, finalizer/projector capture, tools/result, executionMode race, one nested/transport dispatch; legsOkFor must require expected rows.",
+   "GC-4 Delivery ordering: U6 G4 (ARC-A/B/D + >=1 real Bridge; hard entry G1-F PASS + G2 PASS + G3 PASS, execution-plan.md:118) precedes every U7 family delivery cited below.",
+   "GC-5 All origin/feat/a5-m2-integration@bef38934f citations are unmerged WIP: reuse requires reviewed extraction per source/behavior/source-SHA only (execution-plan.md:98); none is an assembled product today.",
+   "GC-6 Baseline re-run: historical LIVE-CONFIRMED rows are V@B=no (TOOL-CAPABILITY-MATRIX-9b2.md:14); every C2 claims a baseline tested SHA, never a historical one.",
+   "GC-7 Budget: PoC runs stay inside the residual 11-experiment/4-start budget (REVIEW.md addition 3) and the inherited S1/U4 caps (<=20 PoC, <=12 Host starts/restarts, <=16 Owner-hours, execution-plan.md:99).",
+   "GC-8 ENV-BLOCKED legs (pwsh, web_fetch/web_search positive legs) are never counted PASS (REVIEW.md addition 4); no C2 here borrows a PASS from another platform or class."
+  ]
+ },
+ "dispositions": [
+  {
+   "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-CLIENT-PLUGIN-DYNAMIC",
+   "poc_covering_mechanism": "PoC-5 (client-plugin late-registration negatives: unbound name refused, no Grant inheritance at the ABSTAIN layer)",
+   "route": {
+    "kind": "team-native (CENTER closed-world admission — NOT an ordinary Family; no adapter is written per name)",
+    "detail": "Every final model-facing name must carry an authority owner or the setup fails closed at the Coverage Gate; unbound late registrations are refused at dispatch (deny-unbound), and dynamic-source promotion runs only through the immutable DynamicSourceAdmissionRecord path. The host gate that keeps the class well-formed is assertDynamicTool + sandboxRegisterTool; interception itself rides the same name-keyed guard/register seams as every governed row."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/extensions/cordis-host-runner/src/guard.ts:495 (assertDynamicTool — re-read)",
+    "tests/deepseek-harness-test-use/packages/extensions/cordis-host-runner/src/guard.ts:626-628 (sandboxRegisterTool -> ctx.tools.register(tool) at :628 — re-read)",
+    "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1063-1066 / :1121-1123 / :1136-1141 (public register/restrict/guard)"
+   ],
+   "team_reuse": [
+    "master packages/runtime/operation-permission/permission-coverage.ts:1-12 (Coverage Gate: every final-surface name needs an authority owner, typed fail-closed)",
+    "master packages/runtime/tool-dispatch/install.ts:1-12 (guard -> restrict -> register -> validate -> PUBLISH order)",
+    "master packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (ownership-fact registration pattern the Coverage Gate consumes)",
+    "#360 packages/runtime/src/plugin/live/governed-families/team-governed-provider.mjs (governed-provider mount pattern; unmerged WIP)"
+   ],
+   "design_refs": [
+    "docs/plans/memo (via refs) center-assembly-architecture.md:207-215 (§10.4 DynamicSourceAdmissionRecord; CI-11 :37 discovered-dynamic-not-auto-runnable)",
+    "M0-B-FAMILY-TARGET-CONTRACTS.md:177 (B-ISOLATION: owner CENTER; C2 'dynamic unknown tools cannot run, known allowed tools still run'; same-name forgery negative)"
+   ],
+   "owner_role": "CENTER (M0-B §2: registration/placement/mask/dynamic invalidation); admission-record authority = existing authorized-config authority, never Family/Registry/Kernel (§10.4)",
+   "acceptance": {
+    "C1_adapter_local": "Registration-isolation contract: a preset-realm harness.defineTool registration appears on the final surface classified owner/none; unbound names have no Grant/ABSTAIN inheritance path; same-name collision against governed names refused at classify.",
+    "C2_real_host": "PoC-5 harness: late client-plugin registration of an unbound name is refused with zero Body effects; known allowed tools still execute (all-deny does not pass); uninstall/drain and same-name forgery produce zero unauthorized effect; ABSTAIN layer explicitly observed as NOT inheriting Grants."
+   },
+   "next_gate": "U6 ARC-D (malicious negatives on registration换代/scope/revocation/cold-start/teardown; execution-plan.md:121-124) — this class is center machinery, not a U7 family",
+   "conditions": [
+    "GC-1..GC-3; GC-7.",
+    "PoC-5 PASS is the deciding evidence for G1-F; reversal condition: if a preset-realm tool can reach dispatch while bypassing the globally-registered guard (binding incompleteness proven), this flips to CORE_SEAM_BLOCKER scoped to the client-plugin class, per feasibility.json legend.",
+    "Closed-composition membership rule (GC-2) is mandatory here: a later prepended tools/execute listener can otherwise run before and suppress the guard (REVIEW.md finding 8)."
+   ]
+  },
+  {
+   "name": "surface:domain_family (family obligation — no registered names)",
+   "disposition": "NAMED-BLOCKER",
+   "blocker_type": "missing DECISION + missing enumerable input (not a Host seam gap)",
+   "precise_missing_item": "The Domain tool surface has no enumeration: no registered names on either side (U1-C seed-diff ABSENT; TOOL-CAPABILITY-MATRIX-9b2.md:43 M-13 '尚未枚举缺口 = domain 工具面未定义，无逐名输入'), and no config/registry input defining which concrete external domains (HPC/RPC/research-state/device) exist as tool targets. Inventing hpc_* class names is forbidden (matrix L43). Without a scope ruling, the obligation cannot be satisfied per-name in G1-F by anyone — this is not a coverage failure but an undefined surface.",
+   "what_is_already_fixed": [
+    "The veto invariant is decided and independent: CI-10 Domain Authority final veto at effect-commit point, Team Permit does not override Domain Permit (refs/center-assembly-architecture.md:36).",
+    "The family shape is designed (design-only, names still undefined): M0-B-FAMILY-TARGET-CONTRACTS.md:176 (B-DOMAIN: real domain service decides at the actual effect-commit point; owner CONNECTOR; C1 maps credible domain identity, C2 domain refusal blocks commit even when Team allows, C3 fail-closed on domain disconnect/generation change)."
+   ],
+   "owner": "User/ROOT ruling for the scope+enumeration decision; CONNECTOR role owns the real-domain adapter once names exist; CENTER only intersects (M0-B §B-DOMAIN 'CENTER只负责交集不创万能域框架')",
+   "reopen_condition": "(a) an authorized config/registry input delivers concrete domain tools + credible domain identities -> re-derive per-name obligations against the B-DOMAIN contract and route as CONNECTOR-family delivery; or (b) a user scope ruling excludes the Domain surface from the Alpha.5 required set -> convert to OUT_OF_SCOPE with mount/enabled re-attach (PB15 rule). Until one of these, matrix L43 stays NOT_VERIFIED with this named gap — counted, never counted-as-covered.",
+   "conditions": [
+    "Do not silently drop: the obligation row stays in the plan until decision (a) or (b) is recorded in the execution log."
+   ]
+  },
+  {
+   "name": "subagent",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (spawn-class effects mapped to an admitted effect kind; deny => zero child sessions — REVIEW.md addition 3)",
+   "route": {
+    "kind": "ordinary Family (B-SUBAGENT spawn-side, DELEGATION-mode governed adapter over the host subagent service)",
+    "detail": "Same register/guard/mask seam takeover as every governed row; classify is pure (parent member+child instance, model/provider/budget/max-depth/seed digest in the targetManifest); the CENTER child-factory installs the same closed world into a child BEFORE spawn (no spawn-then-Guard)."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/subagent/tool-subagent/src/index.ts:379-380 (defineTool registration under toolName; conditional on live provider route — re-read)"
+   ],
+   "team_reuse": [
+    "#360 packages/runtime/src/plugin/live/governed-families/subagent-spawn-adapters.mjs:2-7 (records 39-43 incl. subagent), frozen adapter law style; :182 note",
+    "#360 .../governed-families/subagent-spawn-wiring.mjs:2-5, :214-215 (generation-bound mount: PA block, registration and face carry ONE generation number)",
+    "#360 .../governed-families/child-identity-bridge.mjs (CENTER child-factory identity bridge)",
+    "master packages/runtime/tool-dispatch/install.ts:1-12; master packages/runtime/tool-admission/admission-kernel.ts (PA admission kernel)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:121-124 (B-SUBAGENT target/effects/owner/C1-C3; E anchors host index.ts:108,379; CENTER agent-bindings createTeamAgent path)"],
+   "owner_role": "SERVICE (spawn adapter) + CENTER (child-factory, closed-world-before-spawn)",
+   "acceptance": {
+    "C1_adapter_local": "Spawn manifest closed: I + S(parent member + child instance, spawn) with model/provider/budget/max-depth/seed digest/workspace and the child permission ceiling; classify triggers no side effect; same-name forgery, unknown provider route, cross-realm parent claim refused.",
+    "C2_real_host": "Real Host: approved delegation starts a real child whose governance closed world was installed pre-spawn; un-governed child cannot start; deny/withdraw = zero child sessions; cross-owner addressing refused; provider route identity pinned (conditional registration must be observed, not assumed)."
+   },
+   "next_gate": "U7 family delivery (B-SUBAGENT wave, S5 C1 -> branch-local C2 -> merged C2; execution-plan.md:135), gated by GC-4",
+   "conditions": [
+    "GC-1..GC-7 (GC-4 = G4 before delivery).",
+    "child-identity-bridge + spawn wiring are unmerged #360 WIP: reviewed extraction required (GC-5).",
+    "subagent_codex / subagent_claude_code alias variants stay preset disabled:true -> those variants OUT_OF_SCOPE (matrix A-5 L104-105); re-attach on enable.",
+    "External providers (codex/claude_code route) must be able to force the child envelope or the variant is refused — no external model treated as a governed native tool (M0-B:123)."
+   ]
+  },
+  {
+   "name": "subagent_fork",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (spawn-class leg; fork context-read effect enumerated)",
+   "route": {
+    "kind": "ordinary Family (B-SUBAGENT spawn-side, same adapter family as subagent, fork mode)",
+    "detail": "Identical seam and adapter route as `subagent`; the fork-specific obligation is that inherited-context reading is itself an enumerated effect (conversation-prefix read of the parent), bound in the targetManifest — not an unmodeled side effect of spawn."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/subagent/tool-subagent/src/index.ts:379-380 (second composed route of the same plugin, enabled per preset standard.patch.yml:90-116 alias)"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/subagent-spawn-adapters.mjs:2-7 (record 40 subagent_fork)",
+    "#360 .../governed-families/subagent-spawn-wiring.mjs:2-5, :214-215",
+    "#360 .../governed-families/child-identity-bridge.mjs"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:121-124 ('fork上下文读取也列effect'; C3 'cold恢复不可复制fork')"],
+   "owner_role": "SERVICE + CENTER",
+   "acceptance": {
+    "C1_adapter_local": "Fork manifest = spawn manifest + inherited-context read effect; fork-specific negative: a fork approval cannot be replayed as a fresh subagent spawn or vice versa (seed digest mismatch refused).",
+    "C2_real_host": "Real Host: approved fork produces a working child carrying the inherited context; deny = zero child + zero context read; cold resume never duplicates a fork (M0-B:123)."
+   },
+   "next_gate": "U7 family delivery (B-SUBAGENT wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; same-profile mount pin as subagent; fork-inheritance effect enumeration is part of C1, not a follow-up."]
+  },
+  {
+   "name": "list_subagent_models",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness; read-class row inside the B-SUBAGENT mount)",
+   "route": {
+    "kind": "ordinary Family (B-SUBAGENT spawn-side row, read-only)",
+    "detail": "Enumerated adapter row #43: the face addresses NO child at all (#360 subagent-spawn-adapters comment at :182); it is a governed read over the model-selection provider inventory, mounted in the same generation-bound block as the spawn rows."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/subagent/tool-subagent/src/list-models.ts:87-88 (registration; conditional — mounts iff model-selection policy configured — re-read)"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/subagent-spawn-adapters.mjs (record 43), subagent-spawn-wiring.mjs (same mount generation)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:121-124 (list operation S(...,model-list))"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Read manifest I + S(model-route inventory, list); classify resolves nothing by name outside the installed provider set; cross-realm read refused.",
+    "C2_real_host": "Real Host: list returns the actually-advertised routes for the installed profile; deny/refusal produces zero provider probes; the conditional-mount status is pinned per profile (mounted-vs-absent recorded, never guessed)."
+   },
+   "next_gate": "U7 family delivery (B-SUBAGENT wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; profile-scoped mount evidence (U1-C census gating) — if a profile never mounts model-selection policy, the name is not on that profile's surface and the row records absent-not-governed, no silent drop."]
+  },
+  {
+   "name": "send_message",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (named negative: cross-agent send_message refused — REVIEW.md addition 3 / u4 SUMMARY PoC-6)",
+   "route": {
+    "kind": "ordinary Family (B-SUBAGENT control trio; frozen root-signed governed adapter rows)",
+    "detail": "Takeover row over the host subagent-control service with the measured adjacency law carried verbatim into the adapter: agent_id addresses the sender's DIRECT continuable child, or the direct parent of a RESIDENT continuable child; siblings/uncles/deeper are NOT adjacent and must be refused."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/subagent/tool-subagent-control/src/index.ts:28-29 (register defineTool name send_message — re-read); body sender = exec.agent, ctx.subagents.sendMessage"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/subagent-adapters.mjs:29-31 (frozen body laws for the trio; root-signed @0c28ff22), :155-159 (trio specs)",
+    "#360 .../governed-families/subagent-wiring.mjs:2-6 (mounts rows riding the EXISTING PA supply), :117 (scoped addressClaim correction for list_agents law)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:121-124 ('消息包含续跑能力与资源预算，send不是仅内存write')"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(parent member + target child incarnation, message) with message digest + continuation-capability budget; adjacency law in classify; same-name forgery and cross-agent addressClaim refused.",
+    "C2_real_host": "Real Host: approved message to a direct child (or resident child -> parent) delivers exactly once; PoC-6 negative: sibling/uncle/other-agent addressing refused with zero delivery; refusal leaves no queued message."
+   },
+   "next_gate": "U7 family delivery (B-SUBAGENT wave), gated by GC-4",
+   "conditions": [
+    "GC-1..GC-7; GC-5.",
+    "Same-name second route = experimental packages/experimental/tool-agent-team/src/index.ts:215: NOT mounted in shipped bundles -> that variant is OUT_OF_SCOPE inside this entry (matrix A-9 L138); if ever mounted, H0-style identity checks must pin which route answers the name (feasibility obligation 'unknowns').",
+    "PoC-6 trio negative leg must pass on the current baseline SHA (GC-6)."
+   ]
+  },
+  {
+   "name": "interrupt_agent",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (named negative: cross-agent interrupt refused)",
+   "route": {
+    "kind": "ordinary Family (B-SUBAGENT control trio row)",
+    "detail": "Takeover row over ctx.subagents.interrupt with the measured service law: exact live caller required and never self; ABSENT target is an ACCEPTED no-op; only a LIVE target whose recorded ancestry lacks the caller answers UNAUTHORIZED. Settlement honesty: the tool answers REQUEST-ACCEPTED — it must never be recorded as 'turn stopped' or 'child destroyed'."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/subagent/tool-subagent-control/src/index.ts:74-75 (register defineTool name interrupt_agent — re-read)"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/subagent-adapters.mjs:30 (interrupt body/interruption law, ancestry semantics), :155-159",
+    "#360 .../governed-families/subagent-wiring.mjs:2-6"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:123 ('停止当前turn不假称永久销毁child')"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(target child incarnation, interrupt, kind:'ancestor' bound to live exec.agent); classify refuses self-target and non-adjacent ids; no addressClaim can be model-supplied.",
+    "C2_real_host": "Real Host: interrupt of an own running child is accepted and observable; PoC-6 negative: cross-agent/absent-lineage target refused UNAUTHORIZED with zero effect on the target; result wording distinguishes accepted-vs-stopped (no false settlement)."
+   },
+   "next_gate": "U7 family delivery (B-SUBAGENT wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; experimental tool-agent-team same-name variant stays unmounted/OUT_OF_SCOPE (same rule as send_message)."]
+  },
+  {
+   "name": "list_agents",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness; read-class trio row)",
+   "route": {
+    "kind": "ordinary Family (B-SUBAGENT control trio row, read-only)",
+    "detail": "Governed read over ctx.subagents.listChildren/listDescendants scoped to exec.agent; projection law reused: non-continuable one-shot rows omitted; status from the live registry without exposing load state. Scope enum children|descendants is closed and schema-validated."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/subagent/tool-subagent-control/src/list-agents.ts:86-87 (register defineTool name list_agents — re-read)"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/subagent-adapters.mjs:31 (list body/projection law), :155-159; subagent-wiring.mjs:117 (scoped addressClaim correction)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:121-124 (read operation over owner's own set)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(sender's own agent-tree scope, read); descendants scope bounded and refused for a caller without lineage; same-name forgery refused.",
+    "C2_real_host": "Real Host: own children/descendants listed with truthful status; a cross-scope request (scope parameter cannot widen beyond lineage) returns nothing it is not owner of; deny = zero registry read side effects."
+   },
+   "next_gate": "U7 family delivery (B-SUBAGENT wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; experimental same-name variant OUT_OF_SCOPE while unmounted."]
+  },
+  {
+   "name": "workflow",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (spawn-class effect identity: one model call -> N governed subagent dispatches; nested Ask stops before child body)",
+   "route": {
+    "kind": "ordinary Family (B-ORCHESTRATION governed adapter over the host workflowEngine public service)",
+    "detail": "Adapter wraps the engine seam (ctx.workflowEngine.start, public runtime-types face) — not the native body re-resolved by name; run manifest enumerates child spawns, context reads, round/parallel/total budgets and model routing. Runtime-discovered targets during a run must take their OWN admission call — no inheritance of the outer grant; exec.signal abort maps to run.cancel."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/workflow/tool-workflow/src/index.ts:328-329 (defineTool registration; body :408-470 fans out via ctx.workflowEngine.start — re-read + #360 measured law)"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/workflow-adapters.mjs:2-3 (record 47, frozen @a749cd4cb)",
+    "#360 .../governed-families/workflow-wiring.mjs:2-19 (execution consumer; per-child independent admission; engine face start/cancel/result/dispose; agentsStarted invariant hook)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:126-127 (B-ORCHESTRATION: 运行时新发现target必须独立子调用A，不继承outer grant; C2 nested Ask停在子body前)"],
+   "owner_role": "SERVICE (+CENTER for per-child closed world via the same child-factory as B-SUBAGENT)",
+   "acceptance": {
+    "C1_adapter_local": "Run manifest I + S(run instance, run) + enumerated child-spawn/context-read/budget effects; script escape (services, raw FS/net from inside the script) refused at classify; background vs foreground faces distinct.",
+    "C2_real_host": "Real Host: real multi-node run returns real results; nested Ask blocks with child body = 0; deny produces ZERO fan-out; parent cancel converges all children with truthful settlement (measured asymmetry — no pre-aborted immediate check in the native body — must be handled in the adapter, not inherited)."
+   },
+   "next_gate": "U7 family delivery (B-ORCHESTRATION wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; per-child admission wiring is unmerged WIP (reviewed extraction); ralph stays preset-disabled -> variant OUT_OF_SCOPE; engine public face only."]
+  },
+  {
+   "name": "create_goal",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness; per-name negative spot-checks ride the same launcher)",
+   "route": {
+    "kind": "ordinary Family (B-SESSION goal rows, real-service adapter with signed effect kinds)",
+    "detail": "Governed adapter rows g5 rev.1 over the host goal service (goalToolExecution + GoalService): create includes the durable append AND arm/disarm continuation effects — not modeled as a file write. Calling-agent authentication preserved; closed effect-kind grammar goal-read/goal-create/goal-action-dispatch."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/goal/tool-goal/src/index.ts:207-208 (create_goal registration — re-read); goalToolExecution gate :201/:223"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/g5-goal-service.mjs:2-3, :21-27 (rows g5 rev.1; host anchors incl. GoalValue schema :74-112)",
+    "#360 .../governed-families/g5-goal-wiring.mjs:4-5, :60-62 (bridge; effect-kind grammar; authority edges carried as row law)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:109-111 (B-SESSION: create/update include durable append + arm/disarm; direct-human恢复要求)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(current session incarnation, goal-create) with goal digest, max-round cap, arm effect; get/update rows separated from create; human-only re-arm cannot be model-originated.",
+    "C2_real_host": "Real Host: approved create persists a same-session goal and arms it (observable append + armed continuation); deny = zero append, zero arm; cross-session and revision-conflict refused; goal-service authority edges (tool-goal authority.ts:80-118) exercised, since they were flagged UNOBSERVED in #360."
+   },
+   "next_gate": "U7 family delivery (B-SESSION wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; goal authority edges are carried as unobserved row laws until C2 — do not mark PASS from C1."]
+  },
+  {
+   "name": "get_goal",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-SESSION goal read row)",
+    "detail": "Read-class row of the same g5 rev.1 table; read separated from write in the effect grammar (goal-read) so a read never consumes a write-class Grant and vice versa."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/goal/tool-goal/src/index.ts:195-196 (get_goal registration — re-read)"],
+   "team_reuse": ["#360 .../governed-families/g5-goal-service.mjs (get row + GOAL_VALUE_SCHEMA), g5-goal-wiring.mjs:60-62"],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:111 (C1: get/read与update/write分离)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "goal-read manifest scoped to current session goal object + revision witness; cross-session read refused at classify.",
+    "C2_real_host": "Real Host: approved read returns the live goal incl. phase/rounds/blocker fields with truthful revision; deny = zero store read side channels; read consumes no write-class approval and cannot arm continuations."
+   },
+   "next_gate": "U7 family delivery (B-SESSION wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5."]
+  },
+  {
+   "name": "update_goal",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-SESSION goal action row)",
+    "detail": "Write/action row of the g5 rev.1 table: edit/pause/resume/complete/blocked map to goal-action-dispatch with exact revision precondition (same-revision byte precondition semantics); armed/disarm transitions are explicit effects."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/goal/tool-goal/src/index.ts:234-235 (update_goal registration — re-read)"],
+   "team_reuse": ["#360 .../governed-families/g5-goal-service.mjs (update row), g5-goal-wiring.mjs:4-5"],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:109-111 (revision、continuation rounds上限入manifest; C3 human-only rearm)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(goal object, exact action, exact revision) — stale revision / foreign goal / human-only action refused at classify.",
+    "C2_real_host": "Real Host: approved update mutates exactly the bound revision once (observable), cancel-vs-commit race reports the truthful outcome, stale revision = zero mutation; session stop disarms; restart does not convert human-only re-arm into model permission."
+   },
+   "next_gate": "U7 family delivery (B-SESSION wave), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5."]
+  },
+  {
+   "name": "skill",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-SKILL governed adapter)",
+    "detail": "Adapter captures the VERIFIED catalog entry (skillId+version+digest) instead of a same-name global re-lookup; prompt injection into the current session is an enumerated write-class effect; loaded skill content is data and never authority — every tool a skill later names still rides its own admission."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/skill/tool-skill/src/index.ts:81-82 (defineTool name 'skill'), :161 (ctx.tools.register(skillTool)) — re-read; isModelInvocable gates :138/:145; body resolves by exec.agent cwd :133/:186"
+   ],
+   "team_reuse": [
+    "#360 .../governed-families/skill.mjs:2-3 (record 24), :13-20 (family law + verified host anchors)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:101-103 (B-SKILL targets, C1 kind:user不得模型伪造, C3 catalog换版使旧批准stale)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(catalog namespace, skillId+version, read/load) + S(current session prompt, inject, write) with content digest; kind:user gate proven non-forgeable; stale catalog version invalidates prior approval.",
+    "C2_real_host": "Real Host: approved skill content becomes available in-session exactly once with digest match; deny = zero prompt injection; malicious skill content demonstrably cannot widen the tool surface (subsequent tools each admitted)."
+   },
+   "next_gate": "U7 family delivery (B-SKILL slice), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5 (skill.mjs is a proposed-path slice); per-profile skill roots recorded from the mount, not guessed."]
+  },
+  {
+   "name": "present",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-PRESENT governed adapter + resource arm)",
+    "detail": "present is NOT 'read-only, no side effect': it stats/resolves files via ctx.fs (host body :81-89) and appends a durable deliverables/presented session record. Commit law from #360: the native promise resolving is NOT the commit — the same-exec session append carrying the exec callId plus the native result witnesses it."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/deliverables/tool-present/src/index.ts:38-39 (present registration — re-read); fs-metadata face :81-89"],
+   "team_reuse": [
+    "#360 .../governed-families/present.mjs:2-6 (record 51), :44-47 (commitLaw)",
+    "#360 .../governed-families/g1-present-arm.mjs:2-11 (B-PRESENT resource-arm slot; NOT yet an arm — factual)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:132-134 (B-PRESENT: I + F(read/metadata exact deliverable) + S(audience, expose, write))"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + F(exact file metadata/read) + S(current audience/session, expose, write) with artifact ids; path/attachment owner validated; cross-owner attachment cannot be assumed.",
+    "C2_real_host": "Real Host: approved present yields an openable card for allowed files and the witnessed durable append; deny = zero exposure and zero append; cancel/publish race settled truthfully (no revocation claim over already-shown content)."
+   },
+   "next_gate": "U7 family delivery (B-PRESENT slice), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; g1-present-arm is explicitly NOT mature (#360 header) — resource-arm work is named delivery scope, not silently waived."]
+  },
+  {
+   "name": "ask_user_question",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-HUMAN governed row, arms the interaction host gate after Team pre-admission)",
+    "detail": "Team pre-admission in front of the host human-interaction gate; the answer belongs ONLY to that question incarnation and never becomes a blanket tool-allow. #360 armed this row first (record 49)."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/interaction/tool-ask-user/src/index.ts:38-39 (ask_user_question registration — re-read); same-name timed variant registers only under config mode:timed (U1-C census)"],
+   "team_reuse": [
+    "#360 .../governed-families/human.mjs:3-4 (records 49/50), :12 (ask_user_question armed first), :55-56 (family table entry, consumed g1-surface-adapters)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:129-130 (B-HUMAN targets, C1 只准当前会话, C2 拒绝不发问)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(owner session + question incarnation, ask) with question/options digest; only the current session incarnation addressable; timed-variant identity distinguished from the default row at classify.",
+    "C2_real_host": "Real Host: approved call shows a real question and the answer is consumed exactly for that question; deny = no question issued; the pending-user wait interacts with the Control ask lane without double-consuming an approval (named interaction test in this row's C2 — closes the feasibility 'unknown')."
+   },
+   "next_gate": "U7 family delivery (B-HUMAN slice), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; timed-variant mount status pinned per profile (census two-row fact); interaction-lane × Control-lane interaction is a row-C2 test, not a residual unknown."]
+  },
+  {
+   "name": "exit_plan_mode",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-HUMAN governed row)",
+    "detail": "Same family/adapter path as ask_user_question; native execute already refuses outside plan mode; exit requires the host approval face AND Team admission over the mode-change effect, bound to the plan digest."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/plan/plan-mode/src/index.ts:278-279 (EXIT_PLAN_MODE registration; constant :67 — re-read)"],
+   "team_reuse": ["#360 .../governed-families/human.mjs:3-4, :12-14 (slice arms ask_user_question FIRST — the exit_plan_mode arm is named remaining work, not assumed)"],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:129-130"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(owner session + mode incarnation, exit-plan) with plan digest; callable only in plan mode for the owning session; expired/stale plan digest refused.",
+    "C2_real_host": "Real Host: approved call performs the real mode switch; deny = no switch and no approval notification leak; expired answers invalid."
+   },
+   "next_gate": "U7 family delivery (B-HUMAN slice), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; explicit remaining-work condition: extend the reviewed human.mjs arm to this row before delivery (its WIP slice armed ask_user_question first)."]
+  },
+  {
+   "name": "plugin_manager",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL (highest-risk member; route is DESIGNED, not presumed)",
+   "poc_covering_mechanism": "PoC-6 named leg: plugin_manager deny = zero process / zero profile write (REVIEW.md addition 3)",
+   "route": {
+    "kind": "ordinary Family with dedicated PLUGIN role (P governed-families/plugin.mjs over the existing host manager's public semantics), with center mask as the fallback lane",
+    "detail": "Not an FS-PROC path-shell (M0-B §2 PLUGIN role rule). Closed set of 8 actions (schema enum re-verified), profile identity taken from the trusted current profile (never a model argument); resolve/download/runPnpm/configure/activation all execute only AFTER admission, inside the approved operation envelope; host script-approval (approvedBuilds/version-exemption) and profile file-lock/HMR ordering semantics are kept, not bypassed; cancel semantics honest (applying => too-late, no fake rollback). If the deny side ever needs hard removal rather than per-call deny, the public tools.restrict mask (host index.ts:1121-1123) takes the name off the surface — the reason this is UNKNOWN-with-route and not a CORE_SEAM_BLOCKER (u4 SUMMARY:50-52)."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/boot/plugin-manager/src/tools.ts:19-20 (ctx.tools.register + name; 8-action closed enum :22-31; build-script warning in description :21 — re-read)",
+    "tests/deepseek-harness-test-use/packages/boot/plugin-manager/src/index.ts (manager public semantics cited via M0-B §5.3: install flow :462-568, waitForInstall :577, cancelInstall :588)"
+   ],
+   "team_reuse": [
+    "NO #360 WIP asset exists for this family (governed-families/ has no plugin.mjs — verified via git ls-tree): adapter is greenfield for the PLUGIN owner; reuse = design contracts only",
+    "M0-B-FAMILY-TARGET-CONTRACTS.md:136-140 (B-PLUGIN full target/C1/C2/C3) and :209-219 (§5.3 selected path + transaction facts)",
+    "master packages/runtime/tool-dispatch/install.ts:1-12 (guard->mask->register order the center will use); master packages/runtime/operation-permission/permission-coverage.ts:1-12 (owner-per-name coverage)"
+   ],
+   "scope_decision_on_record": "USER_SCOPE_CLARIFIED (2026-10-23, Sentinel_e08e9aeed9e08191bd7208454dca9323, recorded at M0-B:215): Team governs the management CALLS (install/enable/disable/remove/exemption); Alpha.5 does NOT build a general sandbox for approved plugins' initialization code; host full-access must not skip Team admission; each concrete install still passes Team authorization per call. The route's effect boundary is therefore an explicit user decision, replacing the former ACTIVATION-TCB OPEN state.",
+   "owner_role": "PLUGIN (family adapter) + CENTER (placement reconcile before effect; guard/mask before any new tool publishes)",
+   "acceptance": {
+    "C1_adapter_local": "8-action per-branch closed classification: per-action I + S(profile, operation, target); build-permits (approvedBuilds) and version exemptions NOT derivable from a plain install manifest; post-resolve dependency/version widening => stale, new call.",
+    "C2_real_host": "Real Host positives: list/enable/disable/install/remove/exemption against profile-write inspection; PoC-6 negative leg: a denied call leaves ZERO network fetch, ZERO script/process, ZERO profile write, ZERO activation; a host full-access profile still runs Team admission first (host approval prompts are neither Team-allow nor skippable)."
+   },
+   "next_gate": "U7 family delivery (PLUGIN family; all 8 actions keep positive acceptance — refusing installs must not masquerade as family completion, M0-B:139), gated by GC-4",
+   "conditions": [
+    "GC-1..GC-8.",
+    "PoC-6 deny-zero-effect leg is the deciding G1-F evidence; reversal condition: if compound process/profile effects cannot be denied with zero effect at a public seam, this flips to a named CORE_SEAM_BLOCKER for the compound process/profile class (format per ROUTER_RULES §5.1 / dev-plan §32).",
+    "USER_SCOPE_CLARIFIED boundary must remain the recorded product boundary; if the user withdraws it, ACTIVATION-TCB reopens as a blocker (historical Sentinel_5606c190...).",
+    "Greenfield adapter: no extraction shortcut exists; capacity/schedule risk for the U7 PLUGIN wave is registered, not hidden."
+   ]
+  },
+  {
+   "name": "cordis_inspect_list",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-INSPECT closed-set registry-query adapter)",
+    "detail": "Governed read over the inspect-registry public face (list/register/query/syncClientManifest); #360 already mounts exactly that face as a trusted supply 'the same face the native cordis_inspect_list reads, mounted plugin-side exactly as tool-cordis/host.ts:18 mounts it', with a topologyDigest/topologyRevision content version — the reuse pattern for the row adapter."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/extensions/tool-cordis/src/index.ts:22-23 (cordis_inspect_list registration — re-read); host.ts:18 registry mount (per #360 verified anchor)"],
+   "team_reuse": [
+    "#360 .../governed-families/g1-trusted-topology-supply.mjs:22-25, :39 (inspect-registry face + digest law)",
+    "master packages/runtime/tool-dispatch/install.ts:1-12"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:142-143 (B-INSPECT: I + S(current allowed registry topology path, read/query); 禁止由任意query触发写/脚本)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(current authorized topology, read) bound to topologyDigest/revision; classify proves read-only closed set — no action grammar can produce write/script.",
+    "C2_real_host": "Real Host: list returns the authorized topology view only (unauthorized nodes not leaked, no existence oracle); stale digest observed as stale, not silently re-read under an old approval."
+   },
+   "next_gate": "U7 family delivery (B-INSPECT slice), gated by GC-4",
+   "conditions": [
+    "GC-1..GC-7; GC-5.",
+    "Mount-scope condition: the name is mounted in the cordis preset only (presets/cordis.patch.yml:141-142); profiles without it record absent-not-governed per profile — REQUIRED retained per the U4 rule (mounted in a shipped preset), never a silent drop."
+   ]
+  },
+  {
+   "name": "cordis_inspect_query",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-AGENT-CONTROL",
+   "poc_covering_mechanism": "PoC-6 (group harness)",
+   "route": {
+    "kind": "ordinary Family (B-INSPECT closed-set registry-query adapter, query leg)",
+    "detail": "Same adapter family as cordis_inspect_list; the query leg additionally bounds the client target, data range and timeout — queries may reach live client surfaces, so the client round-trip itself is an enumerated data boundary, and a write/script-producing query shape must be unrepresentable."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/extensions/tool-cordis/src/index.ts:41-42 (cordis_inspect_query registration — re-read)"],
+   "team_reuse": ["#360 .../governed-families/g1-trusted-topology-supply.mjs (same face/digest supply); inspect-registry.ts:119-133 (query face, M0-B anchor)"],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:142-143 (query的client目标、数据范围、timeout；拓扑与browser往返也是数据边界)"],
+   "owner_role": "SERVICE",
+   "acceptance": {
+    "C1_adapter_local": "Manifest I + S(provider/method query, target, range, timeout); closed provider/method grammar; cross-session or write-shaped queries refused at classify.",
+    "C2_real_host": "Real Host: approved host-side query returns authorized data; client-platform query bounded to its session's surface — cross-session responses refused; timeout/cancel leaves no pending client request (M0-B C3 leg)."
+   },
+   "next_gate": "U7 family delivery (B-INSPECT slice), gated by GC-4",
+   "conditions": ["GC-1..GC-7; GC-5; same per-profile cordis-preset mount pin as cordis_inspect_list."]
+  },
+  {
+   "name": "list_mcp_resources",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-MCP-DYNAMIC",
+   "poc_covering_mechanism": "PoC-4b (dynamic source: post-Guard late binding, same-name override, new-server-no-auto-authorize — the trio's effect targets are exactly what PoC-4b pins)",
+   "route": {
+    "kind": "named Bridge: MCP (CONNECTOR; static-name governed rows wrapping the registerResourceTools request-transit point, effects governed by the B-MCP manifest)",
+    "detail": "The trio are STATIC names (not mcp__-prefixed dynamic rows — matrix A-6 warns against mixing), so they take the ordinary takeover-row treatment; their EFFECTS are dynamic: tool instance identity = trusted config server ID + connection incarnation + transport/provider identity + schema digest; URI stays an opaque MCP URI, never an FS path or trusted URL. New/late servers never auto-authorize: promotion only via DynamicSourceAdmissionRecord (§10.4/CI-11)."
+   },
+   "host_registration": [
+    "tests/deepseek-harness-test-use/packages/mcp/mcp-resources/src/tools.ts:31 (registerResourceTools(ctx, request) — the wrappable parameter-transit point), :33-34 (list_mcp_resources registration) — re-read"
+   ],
+   "team_reuse": [
+    "master packages/runtime/src/plugin/live/agent-bindings.mjs:2925-2929 (filterMcpServers), :3003 (bindOwnTools), :3017 (bindMcpTools), :3027 (publish); :723-725 (mcp__ native-trust exclusion pattern — proves dynamic names never inherit native trust)",
+    "#360 .../governed-families/g2-connector-adapters.mjs:6-7 (records 55/56/57 + surface:mcp_stdio), :57-58 (wrapper point), :247+ (frozen per-method request schemas)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:145-149 (B-MCP identity/effects/C1/C2/C3; resource trio bound to concrete server+method+URI)"],
+   "owner_role": "CONNECTOR (adapter) + CENTER (owns agent-bindings mount/reconcile entry)",
+   "acceptance": {
+    "C1_adapter_local": "Method effect S(server, resources/list, target) enumerated; server ID/incarnation binding; same-name collision and schema drift refused; server absent/not-connected -> typed unavailable, never a bypass.",
+    "C2_real_host": "Real Host: approved resources/list against a real connected server returns data with zero out-of-scope reads; scope/URI escape, late-added server without admission record, and same-name override all yield ZERO business effect (PoC-4b negatives on the current baseline)."
+   },
+   "next_gate": "U7 family delivery (B-MCP wave; the U6 ARC-C representative stays Jobs/PTC, so MCP delivery is U7), gated by GC-4",
+   "conditions": [
+    "GC-1..GC-8.",
+    "PoC-4b is the deciding evidence; reversal condition: if guard binding-completeness over late-bound names is proven unbindable, CORE_SEAM_BLOCKER scoped to the MCP class only (feasibility.json:314-317).",
+    "Runtime inventory snapshot for concrete server/tool names still missing (matrix L42) — U7 census, not a G1-F presumption."
+   ]
+  },
+  {
+   "name": "list_mcp_resource_templates",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-MCP-DYNAMIC",
+   "poc_covering_mechanism": "PoC-4b (same group/harness)",
+   "route": {
+    "kind": "named Bridge: MCP (trio row 2 of the same wrapper)",
+    "detail": "Same identity/effect treatment as list_mcp_resources, method resources/templates/list; template enumeration is itself data-boundary exposure (templates can seed later calls), so it is admitted per call, not once per server."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/mcp/mcp-resources/src/tools.ts:42-43 (list_mcp_resource_templates registration — re-read)"],
+   "team_reuse": [
+    "master agent-bindings.mjs:2925-2929/:3003/:3017/:3027/:723-725 (same gates)",
+    "#360 g2-connector-adapters.mjs:6-7/:57-58 (record 55)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:145-149"],
+   "owner_role": "CONNECTOR + CENTER",
+   "acceptance": {
+    "C1_adapter_local": "S(server, resources/templates/list) bound to server ID/incarnation + cursor; no template cached across incarnations without re-admission.",
+    "C2_real_host": "Real Host: approved templates/list succeeds against the bound server; deny/incarnation-drift = zero upstream request; new-server no-auto-authorize negative covers this method in the same PoC-4b run."
+   },
+   "next_gate": "U7 family delivery (B-MCP wave), gated by GC-4",
+   "conditions": ["GC-1..GC-8; PoC-4b reversal condition and inventory-snapshot condition as for list_mcp_resources."]
+  },
+  {
+   "name": "read_mcp_resource",
+   "disposition": "CREDIBLE-ROUTE",
+   "mechanism_group": "MG-MCP-DYNAMIC",
+   "poc_covering_mechanism": "PoC-4b (same group/harness)",
+   "route": {
+    "kind": "named Bridge: MCP (trio row 3 of the same wrapper)",
+    "detail": "Method resources/read; the exact URI is the effect target — bound per call (server ID + incarnation + exact URI digest). Stdio-backed servers add the local-server process envelope (F/N/process) to the manifest; remote endpoints add N + real-domain D where an independent domain authority exists."
+   },
+   "host_registration": ["tests/deepseek-harness-test-use/packages/mcp/mcp-resources/src/tools.ts:51-52 (read_mcp_resource registration — re-read)"],
+   "team_reuse": [
+    "master agent-bindings.mjs (same gates); master packages/runtime/src/plugin/live/agent-bindings.mjs:2733-2832 (mount/reconcile region, matrix L41 anchor)",
+    "#360 g2-connector-adapters.mjs:6-7/:57-58 (record 57)"
+   ],
+   "design_refs": ["M0-B-FAMILY-TARGET-CONTRACTS.md:145-149 ('URI作为MCP opaque URI，不能直接当FS path或可信URL'; C3 late result归旧call不触发重试)"],
+   "owner_role": "CONNECTOR + CENTER",
+   "acceptance": {
+    "C1_adapter_local": "S(server, resources/read, exact URI) per call; URI-not-path typing enforced; a URI approved under one connection incarnation is refused after reconnect (incarnation drift).",
+    "C2_real_host": "Real Host: approved read returns the exact resource with zero out-of-scope read; scope/URI escape and Domain-veto cases produce no business effect; late results归旧call and never re-fire."
+   },
+   "next_gate": "U7 family delivery (B-MCP wave), gated by GC-4",
+   "conditions": ["GC-1..GC-8; PoC-4b reversal condition and inventory-snapshot condition as for list_mcp_resources."]
+  }
+ ]
+}

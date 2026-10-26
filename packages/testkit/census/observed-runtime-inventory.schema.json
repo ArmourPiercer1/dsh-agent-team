@@ -1,0 +1,55 @@
+{
+  "$comment": "U7-0 (EB2-A) ObservedRuntimeInventory — closed machine schema for ONE live observation. Digest law (inventory.mjs): snapshot_digest covers ONLY the cross-boot-stable facts; definition_identity/change_seq are recorded for IN-BOOT comparisons and never enter it. Validated by the C1 test via packages/testkit/census/schema-check.mjs (the closed keyword subset).",
+  "definitions": {
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "toolRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "definition_identity", "schema_digest", "identity_vs_global", "change_seq"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "definition_identity": { "type": "string", "nullable": true },
+        "schema_digest": { "$ref": "#/definitions/sha256" },
+        "identity_vs_global": { "enum": ["same", "differs", "n/a"] },
+        "change_seq": { "type": "integer", "nullable": true },
+        "source_class": { "enum": ["host-static", "team-native", "dynamic-source", "test-row", "unattributed"] },
+        "unresolved": { "type": "boolean" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_id", "kind", "team_lane", "tools"],
+      "properties": {
+        "scope_id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["global", "agent"] },
+        "team_lane": { "type": "boolean" },
+        "team_lane_signal": { "type": "string" },
+        "agent_label": { "type": "string", "nullable": true },
+        "tools": { "type": "array", "items": { "$ref": "#/definitions/toolRow" }, "uniqueItems": false }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "world", "scopes", "snapshot_digest", "full_digest"],
+  "properties": {
+    "schema": { "const": "u7-0/observed-runtime-inventory/v1" },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "host_sha"],
+      "properties": {
+        "kind": { "enum": ["non-team", "governed-team"] },
+        "host_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "boot_id": { "type": "string" },
+        "world_id": { "type": "string" },
+        "captured_utc": { "type": "string" },
+        "source_ledger": { "type": "string" }
+      }
+    },
+    "scopes": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/scope" } },
+    "snapshot_digest": { "$ref": "#/definitions/sha256" },
+    "full_digest": { "$ref": "#/definitions/sha256" }
+  }
+}

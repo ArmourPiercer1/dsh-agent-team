@@ -1,0 +1,2315 @@
+{
+ "schema": "u7-0/expected-tool-obligations/v1",
+ "law": {
+  "unknown_never_authorized": "A name observed at runtime without an entry here is UNKNOWN: it is REPORTED, never authorized (CI-11, §10.4; governance-center dynamic-source not_verified law).",
+  "dynamic_sources_are_classes": "Dynamic sources are recorded as CLASSES, never enumerated; a discovered instance of a dynamic class remains UNKNOWN until an immutable DynamicSourceAdmissionRecord exists (§10.4). No such record exists in Alpha.5.",
+  "static_classification_not_live_pass": "Obligation statuses are static reviewed classifications; nothing here is a real-Host PASS claim (execution-plan U4 law).",
+  "identity_is_per_process": "Definition identity (the tool-dispatch def#N WeakMap algebra) is per-boot; cross-boot comparisons use the model-facing shape digest only."
+ },
+ "pins": {
+  "host_version": "0.2.0-rc.2",
+  "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "host_pin_source": "tests/paths.mjs"
+ },
+ "inputs": {
+  "reviewed_seed": "sources/u4-reviewed-obligations.seed.json",
+  "reviewed_seed_sha256": "sha256:0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d",
+  "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+  "matrix_sha256": "sha256:43bdd74399274777c7457bda3fad6d959e01169ca452a860a36ce5c78f0e6ea9",
+  "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+  "backlog_sha256": "sha256:cd296c623b4d707d7d710248b833336adc42c5b0967fd9caa3de47ee7b132387",
+  "source_census_seed": "sources/u1c-static-source-census.seed.json",
+  "source_census_seed_sha256": "sha256:f0ca920c91ca4a17eed3d1b48d804552fe1cf203b72280004cb3891f22400dc0"
+ },
+ "counts": {
+  "entries": 91,
+  "required": 58,
+  "out_of_scope": 33,
+  "named": 87,
+  "dynamic_classes": 3,
+  "surfaces": 1
+ },
+ "obligations": [
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "ui/interaction",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "ask_user_question",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "mounted per preset; default mode legacy; a same-name timed variant registers only under config mode:timed (dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json (U1-C; every file:line build-time re-asserted) two rows)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-ask-user (timed variant)",
+    "file": "packages/interaction/tool-ask-user/src/timed.ts",
+    "line": 106
+   },
+   "supporting_evidence": [
+    "host registration: packages/interaction/tool-ask-user/src/index.ts:38 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "interaction lane: pending-user wait inside a governed session interacts with Control ask lanes — unverified",
+    "timed-variant mount status per profile"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "bash",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle (one-shot variant; persistent same-name only in minimal/sdk-minimal presets) + Team native takeover at 'bash'",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-bash-persistent",
+    "file": "packages/shell/tool-bash-persistent/src/index.ts",
+    "line": 413
+   },
+   "supporting_evidence": [
+    "host registration: packages/shell/tool-bash/src/index.ts:373 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill'])",
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)",
+    "packages/runtime/tool-admission/admission-kernel.ts (1132 lines, PA admission kernel; file present on master)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": {
+    "file": "packages/tools/a5p5-tools/src/register.ts",
+    "line": 287,
+    "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)"
+   },
+   "unknowns": [
+    "background producer arm not merged (backlog BL-17, docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L34)",
+    "host bash body itself not personally re-read (matrix L30)"
+   ]
+  },
+  {
+   "candidate_route": "other:client-plugin-registration",
+   "effect_class": "dynamic-mcp",
+   "expected_in": "dynamic-class",
+   "kind": "dynamic-class",
+   "matrix_cross_check": "N/A-DYNAMIC",
+   "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "client plugins register model-facing tools at runtime (e.g. browser_*); enumeration at build time impossible (U1-C)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "matrix L46 main row NEG-4 Preset/Team 自注册覆盖 (WIRED-NOT-ACCEPTED): preset-realm registration does not reach global tools.schemas() face (bind-diag @248aff73, 三世界 17/17×3)",
+    "seed surface surface:neg4_preset_selfregister maps here (U1-C seed-diff)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "inheritance at the ABSTAIN layer — 'never VERIFIED' (bind-diag quote in matrix L46)",
+    "no world has shown preset-realm VERIFIED inheritance (matrix L46)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "cordis_inspect_list",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "mounted in cordis preset only (presets/cordis.patch.yml:141-142)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-cordis",
+    "file": "packages/extensions/tool-cordis/src/index.ts",
+    "line": 22
+   },
+   "supporting_evidence": [
+    "host registration: packages/extensions/tool-cordis/src/index.ts:22 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "read-only inspect surface per description; governance row absent"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "cordis_inspect_query",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "cordis preset only",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-cordis",
+    "file": "packages/extensions/tool-cordis/src/index.ts",
+    "line": 41
+   },
+   "supporting_evidence": [
+    "host registration: packages/extensions/tool-cordis/src/index.ts:41 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "queries may reach live client surfaces (this session's own tool list shows client queries); scope unproven"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "create_goal",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-goal",
+    "file": "packages/goal/tool-goal/src/index.ts",
+    "line": 207
+   },
+   "supporting_evidence": [
+    "host registration: packages/goal/tool-goal/src/index.ts:207 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "host body persists a same-session goal (tests/deepseek-harness-test-use/packages/goal/tool-goal/src/index.ts:3 — personally re-read)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no governance mount on master; effect identity = session state write, no enumerated Bridge covers it"
+   ]
+  },
+  {
+   "candidate_route": "other:computer-use",
+   "effect_class": "process",
+   "expected_in": "dynamic-class",
+   "kind": "dynamic-class",
+   "matrix_cross_check": "N/A-DYNAMIC",
+   "name": "cua_driver_native__<tool> (dynamic class)",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "experimental driver-list dynamic; not mounted in shipped bundles",
+   "scope_variant": "experimental driver-list dynamic; not mounted in shipped bundles",
+   "source_registration": null,
+   "supporting_evidence": [
+    "dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json (U1-C; every file:line build-time re-asserted) dynamicSourceClasses entry"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "if ever mounted, becomes a dynamic source class requiring the MG-MCP-DYNAMIC-style admission path"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "write-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "edit",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; no Team arm on master",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-fs",
+    "file": "packages/fs/tool-fs/src/edit.ts",
+    "line": 84
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/edit.ts:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/edit.mjs (unmerged)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "read-before-edit semantics untested",
+    "no master implementation"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "exit_plan_mode",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; execute refuses outside plan mode (docs note via census)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-plan-mode",
+    "file": "packages/plan/plan-mode/src/index.ts",
+    "line": 278
+   },
+   "supporting_evidence": [
+    "host registration: packages/plan/plan-mode/src/index.ts:278 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no acceptance row"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "get_goal",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-goal",
+    "file": "packages/goal/tool-goal/src/index.ts",
+    "line": 195
+   },
+   "supporting_evidence": [
+    "host registration: packages/goal/tool-goal/src/index.ts:195 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no governance mount; no acceptance row"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "glob",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle (native name; independent shut key a5-globoff)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-fs-search",
+    "file": "packages/fs/tool-fs-search/src/glob.ts",
+    "line": 306
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs-search/src/glob.ts:306 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:759-767 (globEnabled closed consumption key)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": {
+    "file": "packages/tools/a5p5-tools/src/register.ts",
+    "line": 281,
+    "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)"
+   },
+   "unknowns": [
+    "runtime re-verification of #342/#343/#354 judgement lines is open backlog BL-19 (docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L36)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "grep",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle (native name, unmasked on Team default plane: takeover grep=[])",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-fs-search",
+    "file": "packages/fs/tool-fs-search/src/grep.ts",
+    "line": 284
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs-search/src/grep.ts:284 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill']) (grep/glob rows cannot take native names today)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:296-306,512 (host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath over confined rg)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": {
+    "file": "packages/tools/a5p5-tools/src/register.ts",
+    "line": 275,
+    "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)"
+   },
+   "unknowns": [
+    "native row-level effect proof not done (matrix L26)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "interrupt_agent",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; second (experimental, unmounted) route same-name — variant OUT_OF_SCOPE as with send_message",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent-control",
+    "file": "packages/subagent/tool-subagent-control/src/index.ts",
+    "line": 74
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent-control/src/index.ts:74 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "same-class gaps as send_message"
+   ]
+  },
+  {
+   "candidate_route": "bridge:Jobs",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "job_kill",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "same trio; kill-requested != terminated semantics kept",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-jobs",
+    "file": "packages/jobs/tool-jobs/src/index.ts",
+    "line": 371
+   },
+   "supporting_evidence": [
+    "host registration: packages/jobs/tool-jobs/src/index.ts:371 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": null,
+   "unknowns": [
+    "terminated-confirmation uncertainty on record (matrix L35)"
+   ]
+  },
+  {
+   "candidate_route": "bridge:Jobs",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "job_list",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle + Team governed jobs rows at FIXED spelling under jobsEnabled (default off)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-jobs",
+    "file": "packages/jobs/tool-jobs/src/index.ts",
+    "line": 351
+   },
+   "supporting_evidence": [
+    "host registration: packages/jobs/tool-jobs/src/index.ts:351 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:775-783 (jobsEnabled default OFF: enabled only when === true)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": null,
+   "unknowns": [
+    "production JobRegistry body not diffed (matrix L33)",
+    "default-off = not default-published"
+   ]
+  },
+  {
+   "candidate_route": "bridge:Jobs",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "job_output",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "same trio as job_list",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-jobs",
+    "file": "packages/jobs/tool-jobs/src/index.ts",
+    "line": 310
+   },
+   "supporting_evidence": [
+    "host registration: packages/jobs/tool-jobs/src/index.ts:310 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": null,
+   "unknowns": [
+    "full-dependency applicability NOT_VERIFIED (matrix L34)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "list_agents",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle separate row; experimental same-name route unmounted",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent-control",
+    "file": "packages/subagent/tool-subagent-control/src/list-agents.ts",
+    "line": 86
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent-control/src/list-agents.ts:86 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "same-class gaps"
+   ]
+  },
+  {
+   "candidate_route": "bridge:MCP",
+   "effect_class": "dynamic-mcp",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "list_mcp_resource_templates",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-mcp-resources",
+    "file": "packages/mcp/mcp-resources/src/tools.ts",
+    "line": 42
+   },
+   "supporting_evidence": [
+    "host registration: packages/mcp/mcp-resources/src/tools.ts:42 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json MCP 三件同证"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "same as list_mcp_resources"
+   ]
+  },
+  {
+   "candidate_route": "bridge:MCP",
+   "effect_class": "dynamic-mcp",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "list_mcp_resources",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; static names (NOT dynamic mcp__ rows — matrix A-6 warns against mixing)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-mcp-resources",
+    "file": "packages/mcp/mcp-resources/src/tools.ts",
+    "line": 33
+   },
+   "supporting_evidence": [
+    "host registration: packages/mcp/mcp-resources/src/tools.ts:33 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND gap=MCP_GOVERNANCE_DORMANT"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "reaches connected MCP servers; appears only when >=1 server connected (seed reqSrc)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "list_subagent_models",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "conditional registration iff model-selection policy configured; web-app mounts model-selection-settings (census gating)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent",
+    "file": "packages/subagent/tool-subagent/src/list-models.ts",
+    "line": 87
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/list-models.ts:87 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "conditional mount status must be pinned per profile; no governance mount"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "write-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "load_workspace_dependencies",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "mounted only in sdk-app bundle (census gating line)",
+   "scope_variant": "mounted only in sdk-app bundle (census gating line)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-workspace-dependencies",
+    "file": "packages/skill/tool-workspace-dependencies/src/index.ts",
+    "line": 249
+   },
+   "supporting_evidence": [
+    "host registration: packages/skill/tool-workspace-dependencies/src/index.ts:249 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND (sdk-app env-gate) gap=READ_KIND_MASKS_WRITE(index.ts:275)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "bridge:LSP",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "lsp",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "opt-in host package (not in shipped bundle rows) + Team P-LSP production assembly face on master; runtime needs a registered ctx.lsp provider",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-lsp",
+    "file": "packages/lsp/tool-lsp/src/index.ts",
+    "line": 109
+   },
+   "supporting_evidence": [
+    "host registration: packages/lsp/tool-lsp/src/index.ts:109 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/sandbox-provider/lsp-assembly.ts:174-191 (per-instance spawnStreaming assembly)",
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "not mounted in default shipped presets (census gating line)",
+    "Strict Profile/UI/family GO not reached (matrix L40)",
+    "applicability to baseline NOT_VERIFIED (matrix L40)"
+   ]
+  },
+  {
+   "candidate_route": "bridge:MCP",
+   "effect_class": "dynamic-mcp",
+   "expected_in": "dynamic-class",
+   "kind": "dynamic-class",
+   "matrix_cross_check": "N/A-DYNAMIC",
+   "name": "mcp__<server>__<tool> (dynamic class)",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "every connected MCP server; per-server dynamic names, individual names NOT enumerable at build time (U1-C dynamicSourceClasses)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:723-725 (GUARD_NATIVE_TRUST_EXCLUDED_MCP_PREFIX='mcp__'; mcp__ never inherits dsh-native guard trust)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (agent-scope prefix mcp__<server>__)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2927 (filterMcpServers), :3003 (bindOwnTools), :3017 (bindMcpTools), :3027 (publish)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:464 (PLANE_RESERVED_NATIVE_PREFIXES=['mcp__'])",
+    "matrix L41 (MCP stdio, WIRED-NOT-ACCEPTED) + L42 (MCP HTTP dynamic domain, NOT_VERIFIED)",
+    "seed surfaces surface:mcp_stdio / surface:mcp_http_dynamic map here (U1-C seed-diff)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "guard binding-completeness for mcp__ names UNVERIFIED (matrix L41)",
+    "dynamic server addition -> guard bind effectiveness UNVERIFIED (matrix L42)",
+    "stdio subprocess confinement unproven (matrix L41: :1756-1768 evidence is the streamable-http/loopback path)",
+    "no runtime inventory snapshot exists for concrete server/tool names (matrix L42)"
+   ]
+  },
+  {
+   "candidate_route": "other:plugin-manager",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "plugin_manager",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; profile-global mutation + install may execute allowed build scripts (description text re-read at host file :21)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-plugin-manager (tools entry)",
+    "file": "packages/boot/plugin-manager/src/tools.ts",
+    "line": 19
+   },
+   "supporting_evidence": [
+    "host registration: packages/boot/plugin-manager/src/tools.ts:19 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md §2 PLUGIN role: profile-global change + script execution is its own scope"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "executes build scripts = process+fs+network compound; no acceptance row; highest-risk un-governed mounted name found in this static pass"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "ui/interaction",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "present",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "mounted per web preset (standard:142-143, cordis:150-151)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-present",
+    "file": "packages/deliverables/tool-present/src/index.ts",
+    "line": 38
+   },
+   "supporting_evidence": [
+    "host registration: packages/deliverables/tool-present/src/index.ts:38 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "body stats/resolves files via ctx.fs (tests/deepseek-harness-test-use/packages/deliverables/tool-present/src/index.ts:81-89 — personally re-read)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/present.mjs + g1-present-arm.mjs (unmerged)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "fs-metadata read + deliverable publish side not in any acceptance row"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "pwsh",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; presets platform-gate disabled-unless-win32 (seed reqSrc); win32-only parity",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-pwsh-persistent",
+    "file": "packages/shell/tool-pwsh-persistent/src/index.ts",
+    "line": 426
+   },
+   "supporting_evidence": [
+    "host registration: packages/shell/tool-pwsh/src/index.ts:383 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/pwsh-arm.mjs + pwsh-wiring.mjs (unmerged; PR body marks the win32 leg ENV-NOT-AVAILABLE)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no win32 provider/environment on this Linux test host",
+    "cannot reuse bash acceptance (M0-B §3 B-PROCESS: pwsh must be really Windows-proven)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "ralph",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "mounted but disabled:true by default (bundle/base/cordis.patch.yml:447-449 per census)",
+   "scope_variant": "mounted but disabled:true by default (bundle/base/cordis.patch.yml:447-449 per census)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-ralph",
+    "file": "packages/workflow/tool-ralph/src/index.ts",
+    "line": 410
+   },
+   "supporting_evidence": [
+    "host registration: packages/workflow/tool-ralph/src/index.ts:410 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap UNMANAGED_IF_ENABLED"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "read",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle (bundle/base/cordis.patch.yml:281-282) + Team plane takeover row at native spelling 'read'",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-fs",
+    "file": "packages/fs/tool-fs/src/read.ts",
+    "line": 77
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/read.ts:77 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill'])",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1726-1780 (governed read takeover row definition, native file_path shape)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2623 (createTeamToolPlaneAssembly), :2697 (built.value.mount(agentCtx))",
+    "packages/runtime/src/plugin/live/pa-mount-registry.mjs:1-15 (CURRENT mount index + call-level facts; NO name lookup believed)",
+    "packages/runtime/tool-admission/admission-kernel.ts (1132 lines, PA admission kernel; file present on master)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": null,
+   "unknowns": [
+    "row-level approval positive not re-verified on baseline (matrix L21)",
+    "H0 dispatch-identity property unproven"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "read_image",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; additionally mounted only with ctx.attachments (docs/tool-catalog.md note via census)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-fs",
+    "file": "packages/fs/tool-fs/src/read-image.ts",
+    "line": 209
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/read-image.ts:209 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "attachment-write side effect identified in dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md §3 B-IMAGE (attachment-store create)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/image.mjs + image-attachment.mjs (unmerged)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "whole chain untested (matrix L25)",
+    "attachment-store write is not a pure read — dual effect"
+   ]
+  },
+  {
+   "candidate_route": "bridge:MCP",
+   "effect_class": "dynamic-mcp",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "read_mcp_resource",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-mcp-resources",
+    "file": "packages/mcp/mcp-resources/src/tools.ts",
+    "line": 51
+   },
+   "supporting_evidence": [
+    "host registration: packages/mcp/mcp-resources/src/tools.ts:51 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json MCP 三件同证"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "same as list_mcp_resources"
+   ]
+  },
+  {
+   "candidate_route": "bridge:PTC",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "run_code",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host lazy ToolRuntime registration in PTC mode (index.ts:945 createRunCodeTool per census); Team mode must mount on Team's PTC (matrix L38 note); outer+nested are two faces of one name (matrix L38/L39)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tools (PTC transport)",
+    "file": "packages/core/tools/src/ptc.ts",
+    "line": 335
+   },
+   "supporting_evidence": [
+    "host registration: packages/core/tools/src/ptc.ts:335 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/ptc-escalation-row.mjs:1-14 (PTC fs escalation row on host public approval/request waterfall)",
+    "host tests/deepseek-harness-test-use/packages/core/tools/src/index.ts PTC sub-dispatch waterfall tools/ptc-dispatch-log (:179-190 — personally re-read)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "net/process-visibility partial gap registered upstream (#332, backlog BL-16)",
+    "whole-row effect guarantee unverified (matrix L38)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "schedule_create",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "NOT mounted as tool rows in shipped bundles; registers only while the Schedule service is loaded (census gating)",
+   "scope_variant": "NOT mounted as tool rows in shipped bundles; registers only while the Schedule service is loaded (census gating)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-schedule",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "line": 416
+   },
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:416 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND shipped-off"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "schedule_delete",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as schedule_create",
+   "scope_variant": "same as schedule_create",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-schedule",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "line": 469
+   },
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:469 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "schedule_list",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as schedule_create",
+   "scope_variant": "same as schedule_create",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-schedule",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "line": 451
+   },
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:451 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "schedule_update",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as schedule_create",
+   "scope_variant": "same as schedule_create",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-schedule",
+    "file": "packages/schedule/schedule/src/tools.ts",
+    "line": 492
+   },
+   "supporting_evidence": [
+    "host registration: packages/schedule/schedule/src/tools.ts:492 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "send_message",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle (default subagent-control route). SECOND same-name registration route = experimental tool-agent-team (packages/experimental/tool-agent-team/src/index.ts:215) which is NOT mounted in shipped bundles -> that variant is OUT_OF_SCOPE inside this entry",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent-control",
+    "file": "packages/subagent/tool-subagent-control/src/index.ts",
+    "line": 28
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent-control/src/index.ts:28 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "collision-by-design per census gating line 'collides by design with the default tool-subagent-control route when both mounted'"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no governance mount; cross-agent addressing identity unproven",
+    "same-name two-route dispatch must be pinned by H0-style identity checks"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "session_event_read",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as session_search",
+   "scope_variant": "same as session_search",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-session-query",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "line": 108
+   },
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:108 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap secrets-in-raw-events"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "session_event_search",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as session_search",
+   "scope_variant": "same as session_search",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-session-query",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "line": 75
+   },
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:75 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "session_event_trace",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as session_search",
+   "scope_variant": "same as session_search",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-session-query",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "line": 95
+   },
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:95 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "session_search",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in package: no row in packages/bundle (census gating)",
+   "scope_variant": "opt-in package: no row in packages/bundle (census gating)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-session-query",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "line": 65
+   },
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:65 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND shipped零挂载"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "session_trace",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as session_search",
+   "scope_variant": "same as session_search",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-session-query",
+    "file": "packages/session-query/tool-session-query/src/index.ts",
+    "line": 85
+   },
+   "supporting_evidence": [
+    "host registration: packages/session-query/tool-session-query/src/index.ts:85 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "skill",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-skill",
+    "file": "packages/skill/tool-skill/src/index.ts",
+    "line": 81
+   },
+   "supporting_evidence": [
+    "host registration: packages/skill/tool-skill/src/index.ts:81 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "host body resolves skill files by exec.agent cwd (tests/deepseek-harness-test-use/packages/skill/tool-skill/src/index.ts:133,186 — personally re-read)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no governance mount on master; no matrix acceptance row (gap registration)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "spawn_teammate",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental plugin; NOT mounted in any shipped bundle (test overlay only, census gating)",
+   "scope_variant": "opt-in experimental plugin; NOT mounted in any shipped bundle (test overlay only, census gating)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "line": 175
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:175 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND 默认关"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "other:browser",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "stagehand_act",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "line": 179
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "other:browser",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "stagehand_extract",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "line": 179
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "other:browser",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "stagehand_navigate",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "line": 179
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "other:browser",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "stagehand_observe",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "line": 179
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "other:browser",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "stagehand_screenshot",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "line": 179
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "other:browser",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "stagehand_tabs",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "scope_variant": "opt-in experimental; no row in packages/bundle (census gating); name built stagehand_${method}",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+    "file": "packages/experimental/browser-use-stagehand-native/src/index.ts",
+    "line": 179
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/browser-use-stagehand-native/src/index.ts:179 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap=NO_APPROVAL_LANE_MCP_CLASS"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "write-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "str_replace_editor",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host catalog name; NOT mounted in any shipped bundle/preset (census gating line) — obligation attaches only if mounted",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-str-replace-editor",
+    "file": "packages/fs/tool-str-replace-editor/src/index.ts",
+    "line": 429
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-str-replace-editor/src/index.ts:429 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json record req=REQ-COND gap=NONE_SHIPPED"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "Host-side registration condition for shipped worlds unverified",
+    "subcommand-level mapping is design-only (matrix L24)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-ABSENT",
+   "name": "structured_output",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "internal child-session tool (structured-output capture); NOT in docs/tool-catalog.md; NOT in PLANE_RESERVED_NATIVE (flagged by U1-C for reviewer judgement, not asserted as drift)",
+   "scope_variant": "internal child-session tool (structured-output capture); NOT in docs/tool-catalog.md; NOT in PLANE_RESERVED_NATIVE (flagged by U1-C for reviewer judgement, not asserted as drift)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-subagent-in-process-driver (internal)",
+    "file": "packages/subagent/subagent-in-process-driver/src/structured.ts",
+    "line": 74
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/subagent-in-process-driver/src/structured.ts:74 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json (U1-C; every file:line build-time re-asserted); U1-C seed-diff newNames classification UNKNOWN/NOT_VERIFIED — never authorized"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "subagent",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle toolName:subagent route; registers only when the provider route is live (census gating)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "line": 379
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/tool-dispatch/install.ts:1-12 (documented order: tools.guard -> tools.restrict mask -> tools.register dispatcher -> validate -> PUBLISH) (mask/register seams are the generic route for inherited agent-control names)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no acceptance row; spawn-class effect identity (new agent sessions) has no enumerated Effects kind (dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md §1.1)",
+    "governance mount absent on master"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "subagent_claude_code",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "shipped preset routes disabled:true (standard.patch.yml:113)",
+   "scope_variant": "shipped preset routes disabled:true (standard.patch.yml:113)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent (claude-code route)",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "line": 379
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND preset disabled"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "subagent_codex",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "shipped preset routes disabled:true (standard.patch.yml:105 / ptc / cordis per census)",
+   "scope_variant": "shipped preset routes disabled:true (standard.patch.yml:105 / ptc / cordis per census)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent (codex route)",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "line": 379
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND preset disabled"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "subagent_fork",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle second composed route (enabled)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-subagent (fork route)",
+    "file": "packages/subagent/tool-subagent/src/index.ts",
+    "line": 379
+   },
+   "supporting_evidence": [
+    "host registration: packages/subagent/tool-subagent/src/index.ts:379 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "same class gaps as subagent"
+   ]
+  },
+  {
+   "candidate_route": "UNKNOWN",
+   "effect_class": "UNKNOWN",
+   "expected_in": "surface-obligation",
+   "kind": "surface",
+   "matrix_cross_check": "N/A-SURFACE",
+   "name": "surface:domain_family (family obligation — no registered names)",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "design-semantic family (HPC/RPC/research-state/device) — NOT proven registered names; concrete external domains need config/registry input (dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md and matrix L43)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "matrix L43 main row M-13 Domain (NOT_VERIFIED): '尚未枚举缺口 = domain 工具面未定义，无逐名输入'; fail-closed clauses are design-only; S0 explicit NOT_RUN",
+    "CI-10 Domain veto stays independent (refs/center-assembly-architecture.md §2 L36)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no enumerable names today; obligation cannot be per-name satisfied in G1-F — recorded as named gap, NOT as covered",
+    "do not invent hpc_* class names (matrix L43)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_archive_member",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 1197,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_bash",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team plane alias row; default-ask combination is the reproduced R2 breach",
+   "source_registration": null,
+   "supporting_evidence": [
+    "host registration: packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L13 BL-01: OPEN RELEASE BLOCKER — approval penetration request=0/body=1 under real ToolRuntime+Guard isolation",
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "line": 84,
+    "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)"
+   },
+   "unknowns": [
+    "R2 must be closed before any G1-F PASS claim for this row (BL-01)",
+    "penetration diagnosis evidence not yet in git (BL-18)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_collect",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 772,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_create_member",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 572,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_delegate",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 614,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_follow_up",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 710,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_glob",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team plane alias row",
+   "source_registration": null,
+   "supporting_evidence": [
+    "host registration: packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (DEFAULT_PLANE_NAMES team_grep/team_glob/team_bash)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:759-767 (globEnabled closed consumption key)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "line": 84,
+    "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)"
+   },
+   "unknowns": [
+    "approval loop NOT_VERIFIED (matrix L29)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_grant_permission",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 1373,
+    "kind": "leader-team-tool (name selected in permissionSpec(verb), tools.ts:1373; spec called at tools.ts:1539 inside createTeamTools tools.ts:1524)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "read-fs",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_grep",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team plane alias row (governed agents only)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "host registration: packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (DEFAULT_PLANE_NAMES team_grep/team_glob/team_bash)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:296-306,512 (host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath over confined rg)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2623 (createTeamToolPlaneAssembly), :2697 (built.value.mount(agentCtx))"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "line": 84,
+    "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)"
+   },
+   "unknowns": [
+    "approval loop for this row NOT_VERIFIED (matrix L27)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_inspect_config",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 542,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_list_members",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 498,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_list_pending_control",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 1119,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_list_templates",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 520,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_report_progress",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 856,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_request_control",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 960,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_resolve_control",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 1017,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_revoke_permission",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 1373,
+    "kind": "leader-team-tool (name selected in permissionSpec(verb), tools.ts:1373; spec called at tools.ts:1540 inside createTeamTools tools.ts:1524)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "team-lane",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_send_message",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "Team own-layer leader tool; registered per capabilities.teamTools allow-list via packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+   "source_registration": null,
+   "supporting_evidence": [
+    "packages/tools/src/tools.ts:498..:1197 literal team_* ToolSpecs + :1373 grant/revoke + :1524 createTeamTools; consumed packages/runtime/src/plugin/root.ts:3919",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)"
+   ],
+   "team_lane_variant_expected": true,
+   "team_source_registration": {
+    "file": "packages/tools/src/tools.ts",
+    "line": 817,
+    "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+   },
+   "unknowns": [
+    "per-name approval/function verification NOT_VERIFIED (matrix L44: static route proven, 15-name expansion; not per-name GO)"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_task_create",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same experimental plugin",
+   "scope_variant": "same experimental plugin",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "line": 289
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:289 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_task_get",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same experimental plugin",
+   "scope_variant": "same experimental plugin",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "line": 345
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:345 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_task_list",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same experimental plugin",
+   "scope_variant": "same experimental plugin",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "line": 313
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:313 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "team_task_update",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same experimental plugin",
+   "scope_variant": "same experimental plugin",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "line": 360
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:360 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "terminal_close",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as terminal_open",
+   "scope_variant": "same as terminal_open",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-terminal",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "line": 359
+   },
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:359 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "terminal_list",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as terminal_open",
+   "scope_variant": "same as terminal_open",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-terminal",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "line": 390
+   },
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:390 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "terminal_open",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "opt-in package, zero rows in packages/bundle (census gating)",
+   "scope_variant": "opt-in package, zero rows in packages/bundle (census gating)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-terminal",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "line": 163
+   },
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:163 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json req=REQ-COND gap=OPTIN_UNMANAGED_IF_MOUNTED"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "terminal_read",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as terminal_open",
+   "scope_variant": "same as terminal_open",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-terminal",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "line": 301
+   },
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:301 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "terminal_send",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as terminal_open",
+   "scope_variant": "same as terminal_open",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-terminal",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "line": 198
+   },
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:198 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json gap adds shell-rules-key-bash-pwsh-only(plane:519)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "process",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "terminal_signal",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same as terminal_open",
+   "scope_variant": "same as terminal_open",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-terminal",
+    "file": "packages/terminal/tool-terminal/src/index.ts",
+    "line": 334
+   },
+   "supporting_evidence": [
+    "host registration: packages/terminal/tool-terminal/src/index.ts:334 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "todo_write",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; Team plane reserved name (governed-scope, not excluded)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-todo",
+    "file": "packages/todo/tool-todo/src/index.ts",
+    "line": 135
+   },
+   "supporting_evidence": [
+    "host registration: packages/todo/tool-todo/src/index.ts:135 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:402-403 (PLANE_RESERVED_NATIVE, pinned host 0.2.0-rc.2@639ed01539; 68 names per U1-C seed-diff reservedNameTableVsHost) (todo_write in the 68-name reserved table)",
+    "WIP #360: packages/runtime/src/plugin/live/governed-families/todo.mjs (unmerged; PR body: '未 mount')"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "per-tool approval/functionality never verified (matrix L45)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "update_goal",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-goal",
+    "file": "packages/goal/tool-goal/src/index.ts",
+    "line": 234
+   },
+   "supporting_evidence": [
+    "host registration: packages/goal/tool-goal/src/index.ts:234 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no governance mount; no acceptance row"
+   ]
+  },
+  {
+   "candidate_route": "team-native",
+   "effect_class": "team-coordination",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "wait_agent",
+   "obligation": "OUT_OF_SCOPE",
+   "out_of_scope_reason": "same experimental plugin (exclusive to it)",
+   "scope_variant": "same experimental plugin (exclusive to it)",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-experimental-tool-agent-team",
+    "file": "packages/experimental/tool-agent-team/src/index.ts",
+    "line": 242
+   },
+   "supporting_evidence": [
+    "host registration: packages/experimental/tool-agent-team/src/index.ts:242 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": []
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "web_fetch",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; NO production Team provider assembly",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-web",
+    "file": "packages/web/tool-web/src/fetch.ts",
+    "line": 456
+   },
+   "supporting_evidence": [
+    "host registration: packages/web/tool-web/src/fetch.ts:456 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "fixture evidence @PR7: evidence/alpha5/pr7/ per matrix L37"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "real outbound endpoint never tested; no authorized outbound = ENV (matrix L37)",
+    "Web belongs to the MCP/Web Bridge candidate list (this-package refs/center-assembly-architecture.md §6 L135)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "network",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "web_search",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; no production provider assembly",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-web",
+    "file": "packages/web/tool-web/src/search.ts",
+    "line": 325
+   },
+   "supporting_evidence": [
+    "host registration: packages/web/tool-web/src/search.ts:325 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "search-target vs result-URL two-layer object unresolved (matrix L36)",
+    "no authorized network in test env = ENV"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "session/agent-control",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "workflow",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-workflow",
+    "file": "packages/workflow/tool-workflow/src/index.ts",
+    "line": 328
+   },
+   "supporting_evidence": [
+    "host registration: packages/workflow/tool-workflow/src/index.ts:328 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "body orchestrates subagents and appends session records (tests/deepseek-harness-test-use/packages/workflow/tool-workflow/src/index.ts:102 — personally re-read)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "nested fan-out effects: one model call -> N governed subagent dispatches; aggregation identity unmodeled (no acceptance row)"
+   ]
+  },
+  {
+   "candidate_route": "ordinary-family",
+   "effect_class": "write-fs",
+   "expected_in": "native-scope",
+   "kind": "named",
+   "matrix_cross_check": "NAME-PRESENT",
+   "name": "write",
+   "obligation": "REQUIRED",
+   "out_of_scope_reason": null,
+   "scope_variant": "host base bundle; NO Team governance arm on master",
+   "source_registration": {
+    "package": "@deepseek-ai/dsh-tool-fs",
+    "file": "packages/fs/tool-fs/src/write.ts",
+    "line": 72
+   },
+   "supporting_evidence": [
+    "host registration: packages/fs/tool-fs/src/write.ts:72 (via dev/agent-workflow/evidence/u1-closure-20261025/u1c/host-tools.json)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:492-494 (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED: no same-name/same-meaning implementation assembled = mount refused; this is why write/edit/'todo' cannot take native names today) — native-name takeover for 'write' is refused today",
+    "WIP #360: origin/feat/a5-m2-integration@bef38934f packages/runtime/src/plugin/live/governed-families/write.mjs + packages/tools/a5p5-tools/src/write-slice.ts (unmerged, C2 pending)"
+   ],
+   "team_lane_variant_expected": false,
+   "team_source_registration": null,
+   "unknowns": [
+    "no governed write row on master; #360 arm is WIP (PR body: 'NOT mounted', 'C2 pending')",
+    "pre-Body deny for a replaced write row depends on H0"
+   ]
+  }
+ ],
+ "dynamic_source_classes": [
+  {
+   "class": "mcp__<server>__<tool>",
+   "rule": "publicToolName = `mcp__${serverName}__${rawName}` (normalized/hashed on overflow)",
+   "package": "@deepseek-ai/dsh-mcp-client",
+   "file": "packages/mcp/mcp-client/src/tools.ts",
+   "line": 81,
+   "register": "packages/mcp/mcp-client/src/tools.ts:150 (syncTools per connected server)",
+   "note": "per-MCP-server dynamic generation — recorded as dynamic source class, individual names NOT enumerated"
+  },
+  {
+   "class": "cua_driver_native__<tool>",
+   "rule": "`cua_driver_native__${tool.name}` from driver tool list",
+   "package": "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native",
+   "file": "packages/experimental/computer-use-cua-driver-native/src/index.ts",
+   "line": 97,
+   "register": "packages/experimental/computer-use-cua-driver-native/src/index.ts:117",
+   "note": "experimental driver-list dynamic; not mounted in shipped bundles"
+  },
+  {
+   "class": "client-plugin dynamic tools (any name via harness.defineTool)",
+   "rule": "assertDynamicTool gate; registration passthrough",
+   "package": "@deepseek-ai/dsh-cordis-host-runner",
+   "file": "packages/extensions/cordis-host-runner/src/guard.ts",
+   "line": 495,
+   "register": "packages/extensions/cordis-host-runner/src/guard.ts:628",
+   "note": "client plugins register model tools at runtime (e.g. browser_*); enumeration at build time is impossible"
+  },
+  {
+   "class": "mcp__<server>__<tool>",
+   "rule": "team-side MCP binding name rule: prefix `mcp__${serverName}__` (bindMcpTools); the mcp__ family NEVER inherits dsh-native guard trust",
+   "files": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (prefix build)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:723 (trust exclusion)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:464 (PLANE_RESERVED_NATIVE_PREFIXES = [\"mcp__\"])"
+   ],
+   "note": "dynamic source class; individual MCP names NOT enumerated"
+  }
+ ]
+}
