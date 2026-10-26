@@ -1,0 +1,27 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5P7JOBS",
+  "paths": [
+    "packages/domain/vnext-field-mapping/src/field-mapping.ts",
+    "packages/domain/vnext-field-mapping/src/index.ts",
+    "packages/domain/test/a5p7-vnext-field-mapping.test.ts",
+    "packages/runtime/jobs-gateway/cancellation-boundary.ts",
+    "packages/runtime/jobs-gateway/index.ts",
+    "packages/runtime/jobs-gateway/jobs-gateway.ts",
+    "packages/runtime/jobs-gateway/lease-window.ts",
+    "packages/runtime/jobs-gateway/types.ts",
+    "packages/runtime/jobs-gateway/web-projection.ts",
+    "packages/runtime/test/a5p7-cproc-fixture.ts",
+    "packages/runtime/test/a5p7-job-owner.test.ts",
+    "packages/runtime/test/a5p7-lane-hygiene.test.ts",
+    "packages/runtime/test/a5p7-lease-cancellation.test.ts",
+    "packages/runtime/test/a5p7-mcp-rebind-chain.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1139,
+    "to": 1153
+  },
+  "reason": "(no comment preceded this list at 88107ad71; the lane prose lives in tieNote)",
+  "tieNote": "(this tie shared the comment above the preceding tie at 88107ad71 — see a5intr3.json tieNote)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5P7JOBS (line 2870); tie line 3557"
+}

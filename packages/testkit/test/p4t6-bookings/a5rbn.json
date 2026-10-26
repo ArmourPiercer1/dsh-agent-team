@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5RBN",
+  "paths": [
+    "packages/runtime/test/a5rbn-runtime-base-narrow.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1182,
+    "to": 1183
+  },
+  "reason": "alpha5-runtime-base-narrow (the '/' READ_DIR bug fix): the ONE scannable\nfile is the narrowing lane suite (byte pin + policy-surface pin + REAL\nLandlock enumeration negatives and base/anchor positives). The fix\nitself edits ALREADY-COUNTED files only (the launcher .py is outside\nthe packages source scan by extension rule, provider.ts and\nplane-effect-backends.mjs were booked by their owner rounds), and the\nwitness kit + runs live under dev/agent-workflow/evidence/** like every\nprior kit round.",
+  "tieNote": "The runtime-base-narrow tie, measured on THIS merged tree (the GLUE-7\nre-tie above landed at 1182): solo RED read `expected 1183 to be 1182`\n(`evidence/alpha5/runtime-base-narrow/p4t6-A5RBN-RETIE-RED.txt`);\nbooking the one named lane suite ends the chain at 1183 — the scanner\ntotal of this tree. The fix's own edits touch ALREADY-COUNTED files\n(provider.ts, plane-effect-backends.mjs) or files outside the scan\n(the launcher `.py`, evidence kits under dev/**) — the chain moves by\nexactly the one new spec.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5RBN (line 3022); tie line 3614"
+}

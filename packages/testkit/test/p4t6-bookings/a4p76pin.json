@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4P76PIN",
+  "paths": [
+    "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts"
+  ],
+  "expectedDelta": null,
+  "reason": "A4-PR7 Task 7.6 ceiling-pin (`feat/a4-76-ceiling-pin`): the construction-level\nassembly pin for the authority-ceiling wiring — ONE new scannable file, the\nin-process host-entry instrument (`packages/runtime/test/a4p7-ceiling-port-\nassembly-pin.test.ts`: boot the REAL shipped composition, drive a rise, assert the\nceiling decides; its mutation proof is a deleted host injection line). The lane's\nother writes are edits to already-counted paths (the V16/V17 repair, this pin) and\nevidence files under `dev/agent-workflow/evidence/` outside the `packages/**`\nscope — an edit is not an increment. Same discipline: present BY PATH below,\nlength tied to the movement, total never written by hand.",
+  "tieNote": "PROSE-ONLY TIE at 88107ad71 (the paragraph below had no `expect(...)` line; the lane is still counted in the exact total and every path asserted present):\nThe A4-PR7 Task 7.6 ceiling-pin tie, same form: the movement equals the one\ninstrument this lane names, asserted present by path in the loop above. Its\nendpoints were RE-MEASURED on the merged tree when §7.3 landed under this lane\nand this tie moved with them — never hand-copied: with the pin file tracked on\ndisk and this entry stripped, the merged run reads `expected 1033 to be 1032`\n(capture `dev/agent-workflow/evidence/a4-pr7/7-6-ceiling-pin/p4t6-PRE-EXTEND-RED-MERGED.txt`);\n1032 is the derived merged-master total the flip's tie above ends on, and 1033\nis what the scanner counts with this lane's file present. The pair this lane\nORIGINALLY moved on its pre-flip base (1031 -> 1032, capture\n`p4t6-RED-scan-increment.log`) is kept in the evidence dir, not rewritten. The\nV16/V17 work on this branch is an EDIT to an already-counted path and\ncontributes nothing; the V16/V17 RETIREMENT removes assertions, not files —\nedits are not increments in either direction.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4P76PIN (line 2542)"
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5GLOBOFF",
+  "paths": [
+    "packages/runtime/test/a5-globoff-key.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1200,
+    "to": 1201
+  },
+  "reason": "A5-GLOBOFF (glob independent shut-off key, branch `a5-globoff-key` off master\n5885e46e) adds ONE scannable file: its spec. The round's single production edit\nis to a file this ledger already counts (the plane .mjs joined with GLUE-7), and\nno denylist vocabulary is added — the round's vocabulary (`globEnabled`,\n`PLANE_CONFIG_INCOMPLETE`, `a5-glob-config-disabled`) is plane-assembly wording,\nnone of it legacy SessionEvent.\nMEASURED, not copied: the scanner ran on THIS tree at booking time (file present,\nclause unbooked) and printed 1201 — the merged-tree anchor 1200 plus exactly this\none new path; the coverage title's literal equals that reading and the anchor line\nitself was deleted before commit.",
+  "tieNote": "The A5-GLOBOFF tie, measured on THIS branch at booking time (scanner run\nin-place, file present, clause unbooked, reading 1201; printed, read,\ndeleted): the chain is the merged-tree anchor plus exactly this one spec.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5GLOBOFF (line 99); tie line 3673"
+}

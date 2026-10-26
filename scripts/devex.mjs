@@ -131,7 +131,7 @@ export const COMMANDS = Object.freeze({
   },
   host: {
     summary: 'boot a test Host instance — NOT self-service here',
-    refuse: 'booting a Host is a test-instance operation with its own red lines (ports 3180–3186/3491–3500 only, DSH_HOME under tests/homes/, never 3080 or ~/.dsh); use the WorldFactory / the documented chain in docs/TEST_METHODS.md §2. A wrapper here would be a second launcher.',
+    refuse: 'booting a Host is a test-instance operation with its own red lines (ports from the tests/paths.mjs TEST_PORT_RANGES bands only, DSH_HOME under tests/homes/, never 3080 or ~/.dsh); use the WorldFactory / the documented chain in docs/TEST_METHODS.md §2. A wrapper here would be a second launcher.',
     bounds: { timeoutMs: 0, outputCap: 0, scope: 'none (refused)' },
     owner: 'Host/Test Maintainer',
     doc: 'docs/TEST_METHODS.md',

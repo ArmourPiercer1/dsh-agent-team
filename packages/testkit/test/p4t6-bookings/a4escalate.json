@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4ESCALATE",
+  "paths": [
+    "packages/runtime/test/a4-escalate-act-truth.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1020,
+    "to": 1021
+  },
+  "reason": "a4-escalate-act-truth (fix/a4-escalate-receipt-truth): the ONE new\nscannable file of this fix lane — the escalate-terminate act-truth spec.\nThe fix's other paths (control/service.ts, this pin) are EDITS to\nalready-counted files, and an edit is not an increment. Like every list\nabove, this one is asserted present by path below and its length is tied\nto the movement of the total; the total itself is never written by hand.",
+  "tieNote": "The a4-escalate-act-truth tie, same form: the movement equals the named\nfiles in SCANNED_PATHS_A4ESCALATE, each asserted present by path in the\nloop above. A file added without a name, or a name without a file, fails\nthere — the total is still never written by hand.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4ESCALATE (line 2444); tie line 3376"
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PB",
+  "paths": [
+    "packages/runtime/test/a5p4-assembly-config.test.ts",
+    "packages/tools/a5p5-tools/src/register.ts",
+    "packages/tools/a5p5-tools/test/a5p5-barrel-emit.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1157,
+    "to": 1160
+  },
+  "reason": "P-B PR4/5 install artifacts (87f465dd, review #299@3668da59; the #299\ncensus-red booking round, coordinator-authorized): the a5p5 register\nface + its barrel-emit spec + the a5p4 assembly-config spec — measured\nsolo RED on this tree `expected 1160 to be 1157`, delta three, matching\nthe clause name-for-name. The lane's tsconfig.build.json is OUTSIDE the\nfrozen scanner extension set (.ts/.mts/.mjs only, see\nfault-injection/session-event-scan.mjs L248), exactly as 93b728a3\nmeasured it. P-LSP 93b728a3 already books THESE SAME THREE inside its\nmerged P-B∥P-C clause SCANNED_PATHS_A5PBLSP (Δ9): when #304 merges, that\nclause is deleted and this one kept, so the three can never\ndouble-count (the finding-F no-double-count precedent).",
+  "tieNote": "The P-B PR4/5 tie, same form: measured solo on this tree, RED\n`expected 1160 to be 1157` before this clause, GREEN after it.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PB (line 2919); tie line 3565"
+}

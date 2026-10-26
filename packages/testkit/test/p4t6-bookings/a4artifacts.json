@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4ARTIFACTS",
+  "paths": [
+    "packages/testkit/test/a4-artifacts-nonempty.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1024,
+    "to": 1025
+  },
+  "reason": "a4-check-artifacts-nonempty (fix/a4-check-artifacts-nonempty): the ONE new\nscannable file of this lane — the check:artifacts non-emptiness spec. The\nlane's other path (scripts/check-artifacts-committed.mjs) is an EDIT to a\nroot-level script this scan does not cover (scripts/** is outside the nine\npackage dirs), and an edit is not an increment. The total below moves\nbecause this line does.",
+  "tieNote": "The a4-check-artifacts-nonempty tie, same form: the movement equals the\nnamed files in SCANNED_PATHS_A4ARTIFACTS, each asserted present by path in\nthe loop above. The endpoints are this lane's OWN advancing total on the\nbase it landed on (the merged tree measured 1024 before this spec joined\nand the increment's RED capture read `expected 1025 to be 1024` with the\nfile present but the list absent); neither number is written for the\nmerged tree by hand — the derived sums above compute that.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4ARTIFACTS (line 2471); tie line 3408"
+}

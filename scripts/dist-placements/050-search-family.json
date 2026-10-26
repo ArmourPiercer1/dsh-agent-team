@@ -1,0 +1,37 @@
+{
+  "schema": "dist-placements/1",
+  "family": "search-family",
+  "summary": "U6 PR5: the search-family lane's .mjs runtime face.",
+  "migratedFrom": "scripts/place-dist-glue.mjs@88107ad71 PLACEMENTS entries 31..37 (0-based), comments carried verbatim as `note`",
+  "placements": [
+    {
+      "src": "packages/tools/search-family/src/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/index.mjs",
+      "note": "U6 PR5 (the fs-family/process-family pattern, verbatim law): the SEARCH\nfamily lane's seven .mjs files byte-mirror under the runtime dist\nmirror. The center rows this list used to carry (glob-backend,\nsearch-backend, cancel-leg under `plugin/live/`) retired with their\nfiles — replacement, never dual-keep. Relative edges (`../../../runtime/…`,\n`../../fs-family/…`, sibling `./…`) resolve identically in src and\nmirror because the mirror sits at `dist/packages/…`; the M3/M4 closure\nlegs of `alpha5-search-backend.test.ts` walk this graph from every file\nthe list contains, so a missing lane copy is RED, not a runtime\nERR_MODULE_NOT_FOUND."
+    },
+    {
+      "src": "packages/tools/search-family/src/search-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/search-mechanics.mjs"
+    },
+    {
+      "src": "packages/tools/search-family/src/search-backend.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/search-backend.mjs"
+    },
+    {
+      "src": "packages/tools/search-family/src/glob-backend.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/glob-backend.mjs"
+    },
+    {
+      "src": "packages/tools/search-family/src/cancel-leg.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/cancel-leg.mjs"
+    },
+    {
+      "src": "packages/tools/search-family/src/search-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/search-row.mjs"
+    },
+    {
+      "src": "packages/tools/search-family/src/search-contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/search-contribution.mjs"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "GGPROBES",
+  "paths": [
+    "packages/runtime/test/a5p1r-gg-probes.test.ts",
+    "packages/runtime/test/a5p1r-gg-wording-lint.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1155,
+    "to": 1157
+  },
+  "reason": "Merge-history correction, entry four (same class as PR3/PR5/PR7 above):\nPR #265 (`G-g support probes G-1..G-5`, master @ `ced9254c`, review\n@ `bbaf45de`) merged with its two scannable test files present and\nthis set unpaid — the merge tree of ANY later branch inherits the drift\n(CI census on this branch's merge-ref measured it: coverage leg red,\n`expected 1157 to be 1155`). The probes are reviewed material and the\nwording-lint script they ship lives under `scripts/` (outside the\nscan); the files' own suite legs are GREEN — the only debt is this\nledger line, booked here by the integration owner on coordinator\norder, attributed per-merge exactly like the three entries above.",
+  "tieNote": "PR #265 merge tie (probes joined at master @ `ced9254c`; measured on\nthe merge tree, CI census run at `42c83a1b` and the solo RED captured\nlocally): the chain ends at the scanner total of the MERGED tree.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_GGPROBES (line 2904); tie line 3562"
+}

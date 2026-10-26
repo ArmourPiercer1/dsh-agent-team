@@ -1,0 +1,29 @@
+{
+  "schema": "dist-placements/1",
+  "family": "process-family",
+  "summary": "U6 PR3: the process-family lane's .mjs runtime face.",
+  "migratedFrom": "scripts/place-dist-glue.mjs@88107ad71 PLACEMENTS entries 26..30 (0-based), comments carried verbatim as `note`",
+  "placements": [
+    {
+      "src": "packages/tools/process-family/src/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/index.mjs",
+      "note": "U6 PR3 (the fs-family pattern, verbatim law): the process/shell Family\nlane's .mjs files are byte copies under the runtime dist mirror; the\nTypeScript module (`bash-normalizer.ts`, the pure projection the\ncanonicalizer statically imports) is EMITTED by tsc through the runtime\nbuild include (tsconfig.build.json), so it is deliberately NOT listed\nhere. The mirror sits at `dist/packages/…`, so the relative edges\n(`../../..` up to `packages/…`) resolve identically in src and mirror."
+    },
+    {
+      "src": "packages/tools/process-family/src/shell-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/shell-mechanics.mjs"
+    },
+    {
+      "src": "packages/tools/process-family/src/confined-shell-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/confined-shell-executor.mjs"
+    },
+    {
+      "src": "packages/tools/process-family/src/bash-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/bash-row.mjs"
+    },
+    {
+      "src": "packages/tools/process-family/src/bash-contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/bash-contribution.mjs"
+    }
+  ]
+}

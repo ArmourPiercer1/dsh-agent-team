@@ -31,8 +31,10 @@ worlds. New work always uses `tests/homes/`.
 
 ## Red lines (unchanged by the move)
 
-- Port 3180 family only (3180-3186 / 3491-3500). **Never 3080** (stable
-  instance; read-only probe at most).
+- Test ports: the sanctioned bands of `tests/paths.mjs` `TEST_PORT_RANGES` —
+  3180-3199 / 3491-3500 / 13000-13099 (widened by the 2026-10-26 user ruling,
+  docs/TEST_METHODS.md §6; before it 3180-3186 / 3491-3500). **Never 3080**
+  (stable instance; read-only probe at most).
 - The test-use checkout stays pristine upstream: no dev content, no patches,
   porcelain clean before AND after every run.
 - `references/deepseek-harness` (frozen legacy fork, tag

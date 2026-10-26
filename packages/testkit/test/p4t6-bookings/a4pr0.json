@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR0",
+  "paths": [
+    "packages/runtime/governance/proposal-store.ts",
+    "packages/runtime/governance/proposal-codes.ts",
+    "packages/runtime/test/a4pr0-proposal-store.test.ts",
+    "packages/runtime/test/a4pr0-proposal-corrupt.test.ts",
+    "packages/runtime/test/a4pr0-proposal-generation.test.ts",
+    "packages/runtime/root-binding/harness/blueprint-source.mjs",
+    "packages/runtime/root-binding/harness/bounded-run.mjs",
+    "packages/runtime/root-binding/harness/bounded-run.regression.test.mjs"
+  ],
+  "expectedDelta": null,
+  "reason": "Every path in the two lists below is asserted present BY PATH, not inferred\nfrom the total: a total that moves for the wrong reason (one file added, one\ndropped) is otherwise indistinguishable from one that moved for the right\none. NO COUNT IS WRITTEN IN PROSE ANYWHERE IN THIS BLOCK — this comment has\nbeen wrong three rounds running (\"the three\", then \"six and five\", while the\nlist was thirteen), so the lists are the record and the arithmetic below is\nderived from them.",
+  "countedInBase": true,
+  "tieNote": "Counted INSIDE the 983 base (the 968 -> 971 and 973 -> 978 movements in the base lineage comment of the test file); asserted present by path, never summed on top of the base.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR0 (line 3241)"
+}

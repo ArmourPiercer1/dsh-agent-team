@@ -1,0 +1,27 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PR2",
+  "paths": [
+    "packages/runtime/tool-admission/clock.ts",
+    "packages/runtime/tool-admission/assurance-runtime.ts",
+    "packages/runtime/tool-admission/approval-case.ts",
+    "packages/runtime/tool-admission/grant-mint.ts",
+    "packages/runtime/tool-admission/admission-kernel.ts",
+    "packages/runtime/tool-admission/index.ts",
+    "packages/runtime/test/a5p2-fixtures.ts",
+    "packages/runtime/test/a5p2-kernel-harness.ts",
+    "packages/runtime/test/a5p2-admission-clock.test.ts",
+    "packages/runtime/test/a5p2-assurance-probe.test.ts",
+    "packages/runtime/test/a5p2-approval-case.test.ts",
+    "packages/runtime/test/a5p2-grant-oneshot.test.ts",
+    "packages/runtime/test/a5p2-admission-kernel.test.ts",
+    "packages/runtime/test/a5p2-composition.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1073,
+    "to": 1087
+  },
+  "reason": "The Alpha.5 PR2 admission-grant line (branch `alpha5-pr2-admission-grant`,\nstacked on PR1): SIX production sources — the finite-clock gate, the\nassurance runtime-verification gate (stub probe port), the multi-effect\nApprovalCase legality (per-effect A3-2 equation over the PR0 dual-plane +\nthe Alpha.4 ladder), the one-shot grant mint/ledger, the admission kernel\nimplementing the PR0 OperationAdmission seam, and the lane barrel — plus\ntheir EIGHT RED-first artifacts (six specs + the shared fixture builder\nand the kernel harness, inert without the lane). The reviewed EDITS to\nalready-counted files (the consumer allow-list script, the PR0 layer-audit\nand governance-hygiene pins, both tsconfigs) move nothing; `dist/**` is\noutside the scan; the lane has NO production consumer yet (live wiring\nrides with PR3/PR4), so `agent-bindings.mjs` stays untouched this round.",
+  "tieNote": "The A5-PR2 tie, same form: fourteen named files (six lane sources +\neight RED-first test artifacts), each asserted present by path above.\nBOTH endpoints MEASURED on this branch: with the lane on disk and this\nentry absent the run reads `expected 1087 to be 1073` (capture\n`dev/agent-workflow/evidence/alpha5/pr2/runs/p4t6-PRE-EXTEND-RED.log`),\nand 1073 is the total the A5-PR1 tie above ends on. The reviewed edits\n(allow-list script, layer-audit + hygiene pins, tsconfigs) are EDITS to\nalready-counted paths and contribute nothing — an edit is not an\nincrement, and had the lane landed WITHOUT its paths here this sum\nwould be RED instead of silently moved.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PR2 (line 2806); tie line 3539"
+}
