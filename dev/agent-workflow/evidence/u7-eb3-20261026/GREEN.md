@@ -161,6 +161,18 @@ matched by text, so `echo`ing them passed. Now: `always()` must BE the condition
 assigns it, and synthesize/grade must be EXECUTED with `EB3_NEEDS_JSON` bound exactly
 to `${{ toJSON(needs) }}`.
 
+## D5. A THIRD wiring defect, found by reading the first hosted run
+
+The first hosted run's aggregate reported `EB3-REQUIRED fail … nongreen=ci-fast:verdict-missing,ci-integration:verdict-missing,ci-security:failure,ci-full:verdict-missing` — while the four layer JOBS themselves were green. The verdict OUTPUTS did not survive the reusable-workflow boundary, and the cause is structural, not a typo:
+
+* `.github/workflows/ci-*.yml` trigger on `workflow_call` ONLY (one caller, no double run),
+* but `gh pr checks` ALSO showed standalone `ci-fast / ci-fast`, `ci-full / ci-full` runs — because **a caller cannot pass `with:` inputs to a reusable workflow at a non-`workflow_call` event**, so GitHub fell back to a plain workflow-run: no inputs, no `outputs`, and (crucially) an unbound `${{ inputs.merge_tree }}` that made the tree assertion fail for every layer.
+* `ci-required` also triggered on `push`, where the layers' `with:` inputs are likewise unusable.
+
+Fixed: `ci-required` is now **pull_request only** (a push run has no Required verdict to make, and the event is refused by name if it somehow occurs), and each layer's tree assertion discriminates explicitly on `github.event_name` — asserting tree equality on `pull_request`, and printing a `::warning::` naming the event and the tree it actually graded otherwise, instead of passing vacuously.
+
+**Good news from that run, recorded because it matters:** `ci-full` PASSED on the hosted runner — `DSH-CI-LEG leg=census verdict=pass seconds=604`, `DSH-CI-VERDICT pass pass=8 fail=0 skip=0 refused=0`, `DSH-CI-TRANSCRIPT-CHECK pass`. So the census genuinely runs and grades the retired baseline on a cold hosted runner; `ci-full` was not "pending forever", it takes ~15 min.
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still
