@@ -1,0 +1,13 @@
+CA-01 zero-center-diff proof — FIX ROUND R1 re-certification
+branch HEAD (code): 0632c1629da560de7ddc9a86d3923b8f8fef1ad3
+base a0f3f610c + origin/master (current) — both compared
+protected set: dev/agent-workflow/ledgers/arc-a-protected-center.json
+
+protected files: 33
+drift vs base AND current origin/master (working tree, git hash-object per
+file, blob-hash identity — not mtime): 0
+canonical-operation.ts: branch == origin/master verified via git
+hash-object/rev-parse blob equality this round (booked a1746afc…).
+R1-round edits (domain-ref effect arm, observe lines, shared constant,
+C1/kit/docs) touch ZERO protected files — verified file-by-file against
+the ledger (git status ∩ ledger paths = empty, plus the full hash sweep).

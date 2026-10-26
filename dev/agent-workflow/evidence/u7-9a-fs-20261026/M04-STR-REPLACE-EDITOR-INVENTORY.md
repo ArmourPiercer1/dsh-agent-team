@@ -52,6 +52,8 @@ the anchored session (discovery request `tools` arrays; runtime, not static):
 * boot `u7fsmut4`: surface = ["bash", "edit", "read", "read_image", "team_archive_member", "team_collect", "team_create_member", "team_delegate", "team_follow_up", "team_grant_permission", "team_inspect_config", "team_list_members", "team_list_pending_control", "team_list_templates", "team_report_progress", "team_request_control", "team_resolve_control", "team_revoke_permission", "team_send_message", "u5_canary", "write"] — contains `str_replace_editor`: **NO**
 * boot `x`: surface = ["bash", "edit", "read", "read_image", "team_archive_member", "team_collect", "team_create_member", "team_delegate", "team_follow_up", "team_grant_permission", "team_inspect_config", "team_list_members", "team_list_pending_control", "team_list_templates", "team_report_progress", "team_request_control", "team_resolve_control", "team_revoke_permission", "team_send_message", "u5_canary", "write"] — contains `str_replace_editor`: **NO**
 
+* boot `x-2026T12-48` (boot 6, fixed kit): surface contains `str_replace_editor`: **NO**
+
 So: the package is REGISTERED in the pinned host build (R-A), yet the name
 is NOT SURFACED in the booted worlds' preset composition. These are
 different questions and the matrix appendix kept them open for exactly

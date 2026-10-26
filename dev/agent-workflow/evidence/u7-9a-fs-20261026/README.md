@@ -6,6 +6,33 @@ kernel as `read`/bash/search/jobs (one ledger), and prove **CA-01**: new
 family members land with ZERO center diff. Branch
 `task/u7-9a-fs-mutation-family-20261026` (base a0f3f610c), single writer.
 
+## Review round R1 — per-finding disposition
+
+1. **BLOCKER (attachment-store effect ungoverned)** — FIXED RED-first. The
+   commit now rides the FINGERPRINTED requested effect set as
+   `{kind:'domain-ref', domainAuthorityId:'attachment-store'}` (the
+   grammar's cross-domain arm; SAME constant as the contribution
+   descriptor's second target). The closed admission grammar carries NO
+   grantable rung for `domain-ref` (`RESOURCE_EFFECT_KINDS` — protected
+   center), so the Kernel refuses the set and the store is NEVER touched:
+   declared effect ⊆ admitted effects or ZERO commit (C1 I-12 negative
+   control: most-permissive lane → typed refusal, `store.saved` empty, no
+   RAN; I-13 pin: remove the arm and the test goes red). Reviewer's law
+   "do not leave a declared effect that no admission covers" now holds by
+   construction. A future center rung mapping activates the commit arm
+   with ZERO family change (flagged for center owners, out of CA-01 scope).
+2. **MAJOR (str_replace_editor scope claim)** — WITHDRAWN; receipts +
+   disposition in `M04-STR-REPLACE-EDITOR-INVENTORY.md` (host-package
+   direct read, three boot-surface runtime receipts, plane face); matrix
+   untouched; M-04 stays an OPEN obligation for the matrix owner.
+3. **MAJOR (three C2 legs)** — boots 5+6 spent as directed; see the C2
+   section: two legs now PASS on live evidence, the third's disk truth is
+   proven with its recorded-verdict harness gap disclosed verbatim; no
+   non-PASS was flipped without disk evidence.
+4. **MINOR (golden digest head binding)** — re-recorded at the final code
+   head with explicit head binding (`golden-recording.txt` §R1; parser/
+   corpus files proven byte-identical between heads via git hashes).
+
 ## CA-01 zero-center-diff — PROVEN
 
 * `dev/agent-workflow/ledgers/arc-a-protected-center.json` (33 protected
@@ -30,7 +57,7 @@ Deviation law: vocabulary = center codes; deviations only STRICTER, disclosed
 (fs-family README §U7-9a: 1 MiB write cap, unknown-parameter refusal,
 per-path serialization, create = no recursive parents, `/proc/self/fd`).
 
-## C1 (in-process, full plane + real PA + real provider) — 33/33 GREEN
+## C1 (in-process, full plane + real PA + real provider) — 35/35 GREEN (R1: +I-12/I-13)
 
 `packages/runtime/test/u7-9a-fs-mutation-c1.test.ts` — governed write/edit/
 read_image positives from disk, token-ledger replay/cancel arms
@@ -39,56 +66,74 @@ disk, symlink/escape zero effect, edit receipt law, image honest-arm,
 per-path serialization races (final = one whole payload).
 Regression: u6-pr2/pr3/pr5 kernel-flow + a5-m1 + golden-vectors all green.
 
-## C2 (host boots, `--suite u7-fs-mut`) — 4 boots (budget 4), final 5/8
+## C2 (host boots, `--suite u7-fs-mut`) — 6 boots (budget 6, reviewer R1 grant +2), final run: 6/7 fsm cases PASS
 
 ONE boot per run; verdicts = the runner's OWN disk reads + host-log
-witnesses (never the transcript); `c2/` holds all four runs (`run-N.json`,
-`run-N.log`, `logs/<world>/`).
+witnesses; boot 5+ additionally carries the FULL mock journal
+(`mockLaneTranscript`: per-request `resultHead` = the host's own tool_result
+head — the witness class pre-row deaths leave). `c2/` holds all six runs.
 
 | boot | outcome | what it measured |
 | --- | --- | --- |
-| u7fsmut1 | 3/8 | plane config WITHOUT `centerAssembly` → every governed call refused `TOOL_BINDING_UNVERIFIED` (PA authority-generation leg is part of the PROVEN mount shape); boot-root "native control" refused fail-closed — the root is itself plane-governed |
-| u7fsmut2 | 3/8 | shadow keys alone insufficient — detail (added as executor forensics) pinned the refusal arm: `identity-gap=no-answer-object, entry-cause=no-placement-name` |
-| u7fsmut3 | 3/8 | same detail post-lane-fixes; transcript forensics added (whole-body tool regex lied — disclosed) |
-| u7fsmut4 | **5/8** | `paPlacementNameOf` family-spelling fix (measured root cause: the read-only special case predates the family) → **fsm:write-positive PASS** (disk bytes = W1_CONTENT + `governed-write RAN`), **fsm:edit-positive PASS** (PLANT_AFTER on disk, before-token gone, `governed-edit RAN`), fsm:mounted PASS (feed rows `[...,read,write,edit,read_image]` from the UNCHANGED key set), fsm:leak-check PASS |
+| u7fsmut1 | 3/8 | plane config WITHOUT `centerAssembly` → every governed call refused `TOOL_BINDING_UNVERIFIED`; boot-root native control refused fail-closed |
+| u7fsmut2 | 3/8 | shadow keys alone insufficient — refusal detail `identity-gap=no-answer-object, entry-cause=no-placement-name` |
+| u7fsmut3 | 3/8 | same post-lane-fixes; transcript forensics added |
+| u7fsmut4 | 5/8 | `paPlacementNameOf` fix → **write/edit positives PASS on disk + RAN witnesses**; the three R1-open legs FAIL as disclosed |
+| u5x-12-45 (R1) | journal run | the three "pre-dispatch deaths" are NAMED (see below) — none was a product defect |
+| u5x-12-48 (R1, final) | **6/7** | `fsm:refusal-zero-effect` **PASS arm=template-layer-denied**; `fsm:image-lane-honest` **PASS arm=typed-refusal** with live host-log witness `governed-image pre-gate-refused code=IMAGE_MODEL_NOT_CAPABLE`; ctl cell recorded FAIL on a HARNESS oracle bug — its DISK truth PASSED (`run-6.ctl-native-disk-truth.txt`, byte-exact run-unique claim; journal seq 31 `Created file`) |
 
-### The three undecided legs — measured product/environment laws (DISCLOSED)
+### R1 finding 3 — what the boot-5 journal actually measured (nothing stays "silent")
 
-1. `fsm:refusal-zero-effect` — the DISK law holds (`shaIdentical:true`,
-   byte-compare vs pre-boot sha) and no governed RAN line ever names the
-   denied path; but the denied-path call died at a HOST layer BEFORE the row
-   (zero row witnesses, zero host-log error lines): the refusal happened
-   earlier than the kernel body (stricter), yet the row-level witness the
-   case shape demands cannot exist for a pre-row death. Not flipped to PASS:
-   "silent" is not a witness (SKIP≠PASS).
-2. `fsm:image-lane-honest` — the `read_image` call likewise never reached
-   the row on this host config (zero witnesses; `arm:"silent"`). Its
-   honest-refusal and positive arms are both C1-proven in-process
-   (I-1…I-12); the host leg stays UNDECIDED, disclosed.
-3. `fsm:ctl-native-write` — the CI-03 (capabilities-less) member's NATIVE
-   `write` answered `[sandbox: file access denied under workspace-write
-   mode]` (transcript `resultHead`, boot 4 seq 31): the test host's tool
-   sandbox confines member-native writes; the governed rows are unaffected
-   (they run through the plane's own confined provider — that IS the
-   delivery). The governed-negative half PASSES (`governedRanSawCtlPath:
-   false`, zero bytes at the ctl path). Prepared-but-UNBOOTED fix: target
-   the member's own sandbox workspace (relative path) + home-walk oracle.
+1. **denied-target write**: refused HIGHER than the plane row — the host's
+   own TEMPLATE permission layer answers
+   `Error: permission denied: write[…/u7fsmut-denied.txt]: effective deny`
+   (journal seq 19); disk sha identical. Governance stack refused, zero
+   effect: honest PASS arm `template-layer-denied` (boot 6, live).
+2. **read_image**: the row RAN and answered its own typed sentence
+   `refused-admission IMAGE_MODEL_NOT_CAPABLE` (pre-PA route gate; the mock
+   model declares no image input — environment, disclosed); boot 6 also
+   shows the new host-log witness (pre-gate observe added this round).
+   Zero commit; img sha stable. Honest PASS arm `typed-refusal`.
+   NOTE: under the R1 blocker fix the attachment commit rides the
+   fingerprinted effect set as `domain-ref(attachment-store)` — the closed
+   admission grammar has no grantable rung for it (protected center), so
+   even a capable model refuses with ZERO commit at the PA edge (C1 I-12);
+   commit mechanics stand admitted-state-proven (C1 I-2/I-3/I-13).
+3. **ctl native write**: boot 4's `[sandbox: file access denied under
+   workspace-write mode]` was the native row addressing ANOTHER member's
+   workspace by absolute path. Boot 5/6 write a RELATIVE name → the native
+   row SUCCEEDS into its own session root (the pristine runtime checkout;
+   journal `Created file`) and the run-unique bytes are on disk
+   (`run-5.ctl-native-disk-truth.txt`, `run-6.ctl-native-disk-truth.txt`).
+   The recorded ctl cells still read FAIL: the runner's own oracle walked
+   the world HOME and missed the session root (harness bug). Kit fixed
+   this round (oracle walks the factory hostTree + records + restores the
+   pristine tree by removing its own run-unique file); NO budget remained
+   to re-boot the cell — it is disclosed exactly as measured, not flipped:
+   the case's DISK truth is proven, its recorded verdict is not re-run.
+   Side effect found and fixed: boot-4's stray file had tripped boot-5/6's
+   hidden `host-base-pristine-post` guard (RUN-SUMMARY FAIL:2 in run-6 =
+   ctl oracle + that residue; both root-caused, residue removed).
 
-Budget law honored: ≤4 host starts, offline-verify before every boot, no
-fifth boot; the three legs above are disclosed exactly as measured, not
-passed.
+Budget law honored: 6/6 starts (4 delivery + 2 R1 grant), offline-verify
+before every boot, no seventh boot.
 
-## Gates (merged tree 56a55c21c, origin/master @ 97bbc2563)
+## Gates (fix round R1; numbers bound to the heads named below)
 
-* `ci-pr-gate`: 7 pass / 0 fail (census leg named-skip, opt-in law);
-  typecheck all packages; lint identities new 0; artifacts-at-head: HEAD
-  carries its own build (1820 files, 37 glue).
-* root vitest 628 files: failing set ⊆ master baseline (7→6 files;
-  a5p7-lane-hygiene green) — NEW reds = 0 (`root-vitest-vs-baseline.txt`).
-* quick battery: world-factory 34/34, fitness+C1+golden+unsupported-c1+
-  a5p0-audit+p4t6 = 70/70.
-* CA-01 byte certificate: `ca01-zero-diff-proof.txt` (33/33, zero drift vs
-  base AND current master).
+* `ci-pr-gate` @ c0b591692 (first fix commit): **7 pass / 0 fail** (census
+  leg named-skip, opt-in law); re-run at the final heads recorded in
+  `ci-pr-gate-fixround.log` (this file's last write names the measured
+  head; docs-only commits after it are enumerated there).
+* quick battery @ fix heads: world-factory kit **34/34**;
+  fitness+C1+golden+unsupported-c1+a5p0-audit+p4t6 = **72/72**
+  (70 + the 2 new C1 tests I-12/I-13).
+* root vitest 628 files @ fix heads: re-run recorded in
+  `root-vitest-fixround.log`; classification in this README's R1 notes —
+  NEW reds = 0 (mid-run commit raced p4t6's index read; all three extra
+  red files GREEN solo; the stable set is the env-dependent master
+  baseline).
+* CA-01 byte certificate R1: `ca01-zero-diff-proof-r1.txt` — 33/33, zero
+  drift vs base AND current origin/master, per-file git blob hashes.
 
 ## Bookings
 
@@ -104,5 +149,4 @@ passed.
   (fs/tool-str-replace-editor, direct read), booted worlds' surface does
   NOT carry it, plane has no takeover row; the governed arm stays
   NOT_IMPLEMENTED and the load-condition ruling stays OPEN (matrix owner).
-  This delivery neither depends on M-04 nor closes it (matrix untouched)
-  (no shipped surface to govern).
+  This delivery neither depends on M-04 nor closes it (matrix untouched).
