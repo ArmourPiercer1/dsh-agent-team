@@ -403,7 +403,6 @@ describe('u74a G1 — the producer: attribution follows the authorized host rece
   it('P6 gateway-row absent and mapping-rejected both refuse the attribution and close honestly (no owner-less job is exposed)', async () => {
     const w = await world({ withGateway: false })
     const r = await w.producer.accept(w.ctx())
-    console.log('OBS:', JSON.stringify(w.observations), 'WIT:', JSON.stringify(w.witnesses))
     expect(r.failure?.code).toBe('background-attribution-refused')
     expect(String(r.failure?.detail)).toContain('no live gateway row')
     expect(w.producer.stats).toMatchObject({ hostJobsCreated: 1, attributions: 0, attributionRefusals: 1 })
@@ -455,7 +454,7 @@ describe('u74a G1 — the producer: attribution follows the authorized host rece
     // on the stale pin and THIS test goes red (verified: F-1 mutation log in
     // dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/).
     const w = await world()
-    const origStart = (w.svc as { start: (...a: unknown[]) => unknown }).start.bind(w.svc)
+    const origStart = (w.svc as unknown as { start: (...a: unknown[]) => unknown }).start.bind(w.svc)
     ;(w.svc as Record<string, unknown>).start = (...a: unknown[]) => {
       const r = (origStart as (...b: unknown[]) => unknown)(...a)
       // strictly AFTER the host receipt returns, BEFORE any attribution:
