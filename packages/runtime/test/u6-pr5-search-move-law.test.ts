@@ -17,22 +17,35 @@
  *  M2 `search-backend.mjs` / `glob-backend.mjs` / `cancel-leg.mjs` moved
  *     with EXACTLY the declared deltas (provider-import depth re-based to
  *     the lane + the `@module` provenance tag) — nothing else differs by a
- *     single byte;
+ *     single byte. The claim is about THE MOVE, so it is pinned against the
+ *     move commit's own blobs (`MOVE_SHA`), not the working tree: a later
+ *     lane-owned fix (u7 grep-drain: the stream drain law) is not a move;
  *  M3 the center files do NOT define the moved names any more — and the
  *     center hub that used to re-export them is DELETED outright (U6 PR6:
  *     pure re-export surface, zero importers once the plane mounts the
  *     lanes), so no second copy and no second face survives anywhere (the
  *     no-dual-ledger law);
  *  M4 the dist mirror carries the lane files at the placed paths (the
- *     dist-glue law — the runtime loads what is actually placed).
+ *     dist-glue law — the runtime loads what is actually placed);
+ *  M5 the CURRENT lane bytes: a reviewed sha256 per row file, so the
+ *     working tree cannot drift from what the owners last reviewed. The
+ *     claim here is NOT move-parity (M2 owns that, against the move
+ *     commit's own blobs) — it is "these are the bytes we approved". A
+ *     lane-owned fix MUST update this digest in the same commit and say
+ *     why in LANE_LEDGER; an unexplained change is a RED.
  */
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const BASE_SHA = '5c03f7240a2a43534e6f52b87aa3c541fad993f7'
+/** The U6 PR5 move commit itself (`feat(search-family): move the search rows
+ *  into their own lane`). M2 compares ITS blobs to master: what the move
+ *  wrote, not what the lane later fixed in place. */
+const MOVE_SHA = 'b720fa8f6'
 
 const gitShow = (rel: string, ref = BASE_SHA): string =>
   execFileSync('git', ['show', `${ref}:${rel}`], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
@@ -79,6 +92,33 @@ const DECLARED_DELTAS: Readonly<Record<string, ReadonlyArray<readonly [string, s
   'cancel-leg.mjs': [
     [' * @module runtime/plugin/live/cancel-leg', ' * @module search-family/cancel-leg'],
   ],
+})
+
+/**
+ * M5 — THE CURRENT-LANE DIGEST LEDGER. One sha256 per lane row file, with the
+ * date and the reason of the last reviewed change, so the suite answers "are
+ * these the bytes the owners approved?" without making every future fix a
+ * rewrite of the move law.
+ *
+ * THE RULE: a change to any of these files MUST come with a ledger entry in the
+ * same commit. If the digest below and the file disagree, the fix is to record
+ * the new digest AND its reason here (this PR is the first such entry), not to
+ * relax the check. `cancel-leg.mjs` is untouched since the move, which is why
+ * its digest equals the move commit's — a free, non-vacuous control.
+ */
+const LANE_DIGESTS: Readonly<Record<string, { readonly sha256: string, readonly why: string }>> = Object.freeze({
+  'search-backend.mjs': {
+    sha256: '164c56d62662c79649dbfd747d0ec369b8b06f74f53cf3310d5aaa3e43bc15a4',
+    why: '2026-10-26 u7-grep-drain (PR #401 review F-1): the row drains both walker streams before classifying (shared ./stream-drain.mjs), and the drain verdict now names an already-terminal stream instead of paying the bound',
+  },
+  'glob-backend.mjs': {
+    sha256: 'ee1006d55af725eca823760c9aaba766ccfdbdec189f9022dfdad1bb0de608af',
+    why: '2026-10-26 u7-grep-drain: the glob row\'s stdout watch, streams drain and record fuse ride the same shared drain helper (behaviour unchanged), and GLOB_STDERR_DRAIN_MS became an alias of the one bound',
+  },
+  'cancel-leg.mjs': {
+    sha256: '90233b20a2fd7a11ee29408f9a78537a749b888f27197dbf51c6d84ae482e2da',
+    why: 'unchanged since the move commit b720fa8f6 (control: this digest equals the move blob\'s)',
+  },
 })
 
 function applyDeclaredDeltas(master: string, file: keyof typeof DECLARED_DELTAS): string {
@@ -130,7 +170,11 @@ describe('u6-pr5 search move law: one home, verbatim mechanics, deleted center s
       ['cancel-leg.mjs', CANCEL_LEG] as const,
     ]) {
       const master = gitShow(`packages/runtime/src/plugin/live/${name}`)
-      expect(read(rel), `${name}: exactly the declared deltas`).toBe(applyDeclaredDeltas(master, name))
+      const moved = gitShow(`packages/tools/search-family/src/${name}`, MOVE_SHA)
+      expect(moved, `${name}: exactly the declared deltas`).toBe(applyDeclaredDeltas(master, name))
+      // Non-vacuity: the lane file is still the moved file (it exists and still
+      // carries the lane provenance tag), not a deleted or replaced one.
+      expect(read(rel), `${name}: the lane file is gone`).toContain(` * @module search-family/${name.replace(/\.mjs$/, '')}`)
     }
   })
 
@@ -171,6 +215,27 @@ describe('u6-pr5 search move law: one home, verbatim mechanics, deleted center s
     expect(plane.includes('search-family'), 'the plane names no search-family module').toBe(false)
     expect(plane.includes('function grepArgv'), 'the plane defines no local copy').toBe(false)
     expect(descriptor.includes('function grepArgv'), 'the descriptor defines no local copy').toBe(false)
+  })
+
+  it('M5 the CURRENT lane bytes match the reviewed digest ledger (an unexplained change is a RED)', () => {
+    const seen: string[] = []
+    for (const [name, entry] of Object.entries(LANE_DIGESTS)) {
+      const actual = createHash('sha256').update(readFileSync(abs(`../../tools/search-family/src/${name}`))).digest('hex')
+      expect(actual, `${name}: the lane bytes changed with no reviewed ledger entry — record the new sha256 in LANE_DIGESTS with WHY, in this commit`).toBe(entry.sha256)
+      expect(entry.why.length, `${name}: the ledger entry must say why it is these bytes`).toBeGreaterThan(20)
+      seen.push(name)
+    }
+    // Non-vacuity: the ledger covers the two moving rows AND the untouched one,
+    // and it really does read the working tree (a digest that matched nothing
+    // would pass every file). The move-blob digests differ from the current ones
+    // for exactly the files this lane changed in place.
+    expect(seen.sort()).toEqual(['cancel-leg.mjs', 'glob-backend.mjs', 'search-backend.mjs'])
+    const movedCancel = createHash('sha256').update(gitShow('packages/tools/search-family/src/cancel-leg.mjs', MOVE_SHA)).digest('hex')
+    expect(movedCancel, 'cancel-leg.mjs is not the move blob: either it changed (add its new digest) or the control is broken').toBe(LANE_DIGESTS['cancel-leg.mjs']!.sha256)
+    for (const name of ['search-backend.mjs', 'glob-backend.mjs']) {
+      const moved = createHash('sha256').update(gitShow(`packages/tools/search-family/src/${name}`, MOVE_SHA)).digest('hex')
+      expect(moved, `${name} still equals its move blob: the ledger would be vacuous for it`).not.toBe(LANE_DIGESTS[name]!.sha256)
+    }
   })
 
   it('M4 the dist mirror carries the lane files (the dist-glue law)', () => {

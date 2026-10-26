@@ -1,0 +1,128 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+stdout | test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-8 under repetition: 60 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged
+[u7-grep-late SEC-8] rounds=20 walks=60 misjudged=0
+
+ ❯ test/u7-grep-late-stream.test.ts (14 tests | 5 failed) 4148ms
+     ✓ SEC-1 stdout complete on time (matches + summary), coverage refusal on stderr 40 ms late — REFUSED walker-permission-refused, never admitted 55ms
+     ✓ SEC-2 the hosted P8 shape: `regex parse error` 40 ms late, zero stdout — walker-invalid-pattern, never the generic walker-error 48ms
+     ✓ SEC-3 the whole stdout (matches + summary) 40 ms late — the completed walk is answered in full; never an empty admit 55ms
+     ✓ SEC-4 a late summary WITH a late coverage refusal — refused, the late records never reach the sink 49ms
+     ✓ SEC-5 stderr that never ends: the drain is BOUNDED and its expiry is a typed refusal, never a success 260ms
+     ✓ SEC-6 a stdout torn down WITHOUT an end (destroyed pipe after a summary) — refused, never admitted as complete 50ms
+     ✓ SEC-7 control: everything on time, clean stderr — admitted exactly as before (the drain costs a clean walk nothing) 50ms
+     × F1-a stderr ALREADY ended before the row installs its watch (clean walk) — admitted; the drain bound is not paid 268ms
+     × F1-b stderr ALREADY destroyed (no end) before the watch — typed refusal naming stderr=close, never a timeout 263ms
+     ✓ SEC-8 under repetition: 60 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged  2924ms
+     × H1 already ended -> end, at once (no bound), nothing attached 3ms
+     × H2 already destroyed without an end -> close, at once 3ms
+     × H3 already errored -> error, at once 3ms
+     ✓ H4 a live stream still waits for its event, and release() gives every listener back (idempotent) 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > F1-a stderr ALREADY ended before the row installs its watch (clean walk) — admitted; the drain bound is not paid
+AssertionError: {"ok":false,"failure":{"class":"undetermined","code":"walker-error","family":"a5srgp-refused/walker","detail":"ripgrep reported a search error","counts":{"drainIncomplete":1,"outBytes":389,"stderrBytes":0}}}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/u7-grep-late-stream.test.ts:283:47
+    281|     // Before the F-1 fix the watch waited for an 'end' that had alrea…
+    282|     // bound expired, and this clean walk was refused as walker-error …
+    283|     expect(result.ok, JSON.stringify(result)).toBe(true)
+       |                                               ^
+    284|     if (result.ok === true) expect(result.outcome.totalMatches).toBe(2)
+    285|     expect(audit.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(fal…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > F1-b stderr ALREADY destroyed (no end) before the watch — typed refusal naming stderr=close, never a timeout
+AssertionError: the refusal must name the observed form, not a bound expiry: expected 'anchored-search DRAIN-INCOMPLETE real…' to contain 'stdout=end stderr=close '
+
+Expected: "stdout=end stderr=close "
+Received: "anchored-search DRAIN-INCOMPLETE realm=a5srgp-realm call=f1-b stdout=pending stderr=pending boundMs=250"
+
+ ❯ test/u7-grep-late-stream.test.ts:299:81
+    297|     }
+    298|     const line = audit.find((l) => l.startsWith('anchored-search DRAIN…
+    299|     expect(line, 'the refusal must name the observed form, not a bound…
+       |                                                                                 ^
+    300|     expect(writes()).toBe(0)
+    301|     expectNoRowListeners(handle)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the shared helper reads a stream's OWN terminal state first (review F-1) > H1 already ended -> end, at once (no bound), nothing attached
+AssertionError: a helper listener on 'end' survived: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ noListeners test/u7-grep-late-stream.test.ts:325:99
+    323|   const events = ['end', 'close', 'error'] as const
+    324|   const noListeners = (pipe: { listenerCount(e: string): number }): vo…
+    325|     for (const e of events) expect(pipe.listenerCount(e), `a helper li…
+       |                                                                                                   ^
+    326|   }
+    327|
+ ❯ test/u7-grep-late-stream.test.ts:334:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the shared helper reads a stream's OWN terminal state first (review F-1) > H2 already destroyed without an end -> close, at once
+AssertionError: expected null to be 'close' // Object.is equality
+
+- Expected:
+"close"
+
++ Received:
+null
+
+ ❯ test/u7-grep-late-stream.test.ts:345:44
+    343|     const closed = once(pipe, 'close'); pipe.destroy(); await closed
+    344|     const w = watchStreamEnd(pipe)
+    345|     expect(await awaitBounded(w.ended, 1)).toBe('close')
+       |                                            ^
+    346|     noListeners(pipe)
+    347|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the shared helper reads a stream's OWN terminal state first (review F-1) > H3 already errored -> error, at once
+AssertionError: expected null to be 'error' // Object.is equality
+
+- Expected:
+"error"
+
++ Received:
+null
+
+ ❯ test/u7-grep-late-stream.test.ts:358:44
+    356|     pipe.off('error', swallow)
+    357|     const w = watchStreamEnd(pipe)
+    358|     expect(await awaitBounded(w.ended, 1)).toBe('error')
+       |                                            ^
+    359|     noListeners(pipe)
+    360|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 9 passed (14)
+   Start at  22:22:33
+   Duration  4.41s (transform 165ms, setup 0ms, import 126ms, tests 4.15s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

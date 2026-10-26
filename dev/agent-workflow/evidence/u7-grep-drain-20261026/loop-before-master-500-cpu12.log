@@ -1,0 +1,19 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+stdout | test/zz-u7gd-loop.test.ts > u7 grep-drain load loop > REAL P8 x500
+[u7gd] {"leg":"real-P8","row":"master","loops":500,"tally":{"walker-invalid-pattern":500},"p50":155,"p99":230,"max":28331}
+
+ ✓ test/zz-u7gd-loop.test.ts (1 test) 80347ms
+     ✓ REAL P8 x500  80050ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  21:48:41
+   Duration  81.13s (transform 630ms, setup 0ms, import 214ms, tests 80.35s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

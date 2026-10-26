@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7GREPDRAIN",
+  "paths": [
+    "packages/tools/search-family/src/stream-drain.mjs",
+    "packages/runtime/test/u7-grep-late-stream.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1308,
+    "to": 1310
+  },
+  "reason": "u7 grep-drain (production grep-row stream drain, branch task/u7-grep-drain-20261026 off origin/master 21f3f5b08): the ONE shared stream drain helper both confined-rg rows now use (watch stdout/stderr to their terminal event, a bounded wait at the glob row's measured 250 ms, listeners released on every path) and the deterministic late-stream suite of the PRODUCTION grep row (late coverage refusal = the reachable false admit on master, the hosted P8 late `regex parse error`, late summary, undrained/torn-down pipes). The row edits (search-backend.mjs, glob-backend.mjs, index.mjs) and the move-law pin edit ride ALREADY-COUNTED files; dist mirror and dev evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the two files on disk and this booking absent, the ledger law reads `scanner counts 1310, ledger derives 983 + 325 = 1308` (dev/agent-workflow/evidence/u7-grep-drain-20261026/p4t6-RED-unbooked.log) — master's 1308 plus exactly these two paths."
+}

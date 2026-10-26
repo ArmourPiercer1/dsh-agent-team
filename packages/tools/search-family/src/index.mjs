@@ -15,6 +15,8 @@
  *                                the PRODUCTION glob row of the plane);
  *   - `cancel-leg.mjs`           the cancellation leg the two async
  *                                confined-rg rows share (and only they);
+ *   - `stream-drain.mjs`         the stream drain law the same two rows
+ *                                share (u7 grep-drain: one implementation);
  *   - `search-row.mjs`           the two row Definitions the trusted
  *                                assembly places under the Gate 0b-
  *                                validated mount spellings;
@@ -61,6 +63,7 @@ export {
 } from './search-mechanics.mjs'
 export * from './search-backend.mjs'
 export * from './cancel-leg.mjs'
+export * from './stream-drain.mjs'
 export * from './glob-backend.mjs'
 export { buildSearchRowDefinitions } from './search-row.mjs'
 export { buildSearchContribution } from './search-contribution.mjs'
