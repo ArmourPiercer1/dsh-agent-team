@@ -120,18 +120,22 @@ before every boot, no seventh boot.
 
 ## Gates (fix round R1; numbers bound to the heads named below)
 
-* `ci-pr-gate` @ c0b591692 (first fix commit): **7 pass / 0 fail** (census
-  leg named-skip, opt-in law); re-run at the final heads recorded in
-  `ci-pr-gate-fixround.log` (this file's last write names the measured
-  head; docs-only commits after it are enumerated there).
+* `ci-pr-gate` @ evidence head 16e8daf7b (all code committed; quiet tree):
+  **7 pass / 0 fail** (census leg named-skip, opt-in law) —
+  `ci-pr-gate-fixround.log`. The docs-only commit that records this number
+  adds only evidence/text files (no scannable, no canonicalization, no
+  protected path).
 * quick battery @ fix heads: world-factory kit **34/34**;
   fitness+C1+golden+unsupported-c1+a5p0-audit+p4t6 = **72/72**
   (70 + the 2 new C1 tests I-12/I-13).
-* root vitest 628 files @ fix heads: re-run recorded in
-  `root-vitest-fixround.log`; classification in this README's R1 notes —
-  NEW reds = 0 (mid-run commit raced p4t6's index read; all three extra
-  red files GREEN solo; the stable set is the env-dependent master
-  baseline).
+* root vitest 628 files @ 16e8daf7b (quiet tree, recorded nothing running):
+  6 failed files = EXACTLY the env-dependent master baseline set
+  (t2-blueprint-hash, p6t3-mediation, p6t3-restart, a4p7-merge-gate,
+  rc2-sanitize-evidence, p6t6-actions) — **NEW reds = 0**
+  (`root-vitest-fixround.log`). An earlier mid-run pass showed 3 extra
+  reds: p4t6 raced a commit touching the index mid-run (self-inflicted,
+  discipline noted), and a5p4-lane-hygiene + alpha5-glob-backend are
+  concurrency flakes — all three GREEN solo, GREEN in this clean run.
 * CA-01 byte certificate R1: `ca01-zero-diff-proof-r1.txt` — 33/33, zero
   drift vs base AND current origin/master, per-file git blob hashes.
 

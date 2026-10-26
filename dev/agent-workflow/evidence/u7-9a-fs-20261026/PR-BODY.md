@@ -82,13 +82,14 @@ subset proof, CA-01 certificate.
   `parseRequestedEffectSet` face as read-executor) + 2 type-only post-consume
   edges — audit green.
 - U-C1-4 closed mount domain: seven governed names (was four).
-- `ci-pr-gate` on the merged tree: **7 pass / 0 fail** (census leg named-skip
-  per opt-in law); typecheck all packages clean; lint identities **new 0**;
-  docs:sync/probe **blocking 0**; world-factory pins 34/34;
-  fitness+C1+golden+unsupported-c1+a5p0+p4t6 battery 70/70.
-- Root vitest (merged tree): 6 failed / 622 files, 11 failed / 7962 tests —
-  a strict SUBSET of the 7-file master baseline (a5p7-lane-hygiene turned
-  green); **NEW reds = 0**.
+- `ci-pr-gate` re-run on the fix-round tree: **7 pass / 0 fail** (census
+  leg named-skip per opt-in law); typecheck all packages clean; lint
+  identities **new 0**; artifacts-at-head: HEAD carries its own build
+  (1820 files, 37 glue). World-factory pins 34/34;
+  fitness+C1+golden+unsupported-c1+a5p0+p4t6 battery **72/72**
+  (C1 35/35 incl. R1 I-12/I-13).
+- Root vitest (fix-round tree, quiet): 6 failed files = EXACTLY the
+  env-dependent master baseline set; **NEW reds = 0**.
 
 ## Risks / disclosures
 
