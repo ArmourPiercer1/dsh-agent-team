@@ -11,3 +11,18 @@ hash-object/rev-parse blob equality this round (booked a1746afc…).
 R1-round edits (domain-ref effect arm, observe lines, shared constant,
 C1/kit/docs) touch ZERO protected files — verified file-by-file against
 the ledger (git status ∩ ledger paths = empty, plus the full hash sweep).
+
+APPENDIX (same round, hours later): origin/master ADVANCED past the
+merge-master recorded above (97bbc2563 -> 4912f3197; PRs #389/#391/#393
+merged by their lanes). Re-swept at HEAD 35cd5e848:
+
+* this branch touches ZERO protected files, measured two ways:
+  `git diff --name-only a0f3f610c...HEAD` ∩ ledger = EMPTY, and
+  HEAD-vs-base blob equality for all 33 files = 0 diffs;
+* one protected file (`admission-kernel.ts`) now differs from the NEW
+  master — an UPSTREAM edit by another lane after my merge point, never
+  touched by this branch (zero-diff is with respect to MY base/merge; a
+  merge of current master simply keeps master's newer version; the
+  family never edits it — C1 I-12 reads its CLOSED grammar as a pin,
+  and I-12 goes RED if the grammar ever admits domain-ref without a
+  center-owner ruling).
