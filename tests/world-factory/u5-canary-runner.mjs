@@ -2453,7 +2453,7 @@ async function runU7FsMut({ factory, record, rc, log, line, worlds, keepHome, ev
   const world = await factory.createWorld({ line, u7FsMut: { rows: [] } })
   worlds.push(world)
   record.record.bindings.worldIds.push(world.id)
-  const assembly = createFsMutAssembly({ repoRoot: REPO_ROOT, home: world.home, runStamp: world.id, reportDir: world.logDir })
+  const assembly = createFsMutAssembly({ repoRoot: REPO_ROOT, home: world.home, runStamp: world.id, reportDir: world.logDir, sessionRoot: factory.hostTree })
   const planted = assembly.writePreBootFiles() // plant truth BEFORE any host exists
   world.u7FsMut.rows.push(...assembly.teamRows())
   await world.startMock({ decide: makeFsMutDecide({ assembly }) })

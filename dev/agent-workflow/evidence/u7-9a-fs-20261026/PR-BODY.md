@@ -3,9 +3,7 @@
 First S5 per-family delivery. The FS family's three REQUIRED tools `write`,
 `edit`, `read_image` become **fs-family contributions through the closed
 schema + Registry + the SAME governance kernel** as `read`/bash/search/jobs
-(one ledger). `str_replace_editor` is **OUT_OF_SCOPE with evidence**: its
-obligations state NOT mounted in any shipped bundle/preset (matrix M-04,
-gap=NONE_SHIPPED) — there is no shipped surface to govern.
+(one ledger). `str_replace_editor` (M-04) scope claim is **withdrawn per review R1**: receipts in `dev/agent-workflow/evidence/u7-9a-fs-20261026/M04-STR-REPLACE-EDITOR-INVENTORY.md` — at the pinned baseline the host registers the name natively, the booted-world surface does not carry it, the plane has no takeover row; the governed arm stays NOT_IMPLEMENTED and the load-condition ruling stays open with the matrix owner (matrix untouched). This PR neither depends on M-04 nor closes it
 
 ## CA-01 — zero center diff: PROVEN, two independent ways
 

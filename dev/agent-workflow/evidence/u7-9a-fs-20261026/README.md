@@ -98,6 +98,11 @@ passed.
   (`expected 1292 to be 1277`).
 * PLACEMENTS: 9 new mirrors (`node scripts/place-dist-glue.mjs` → 37
   placements, byte-identical; check D green).
-* str_replace_editor: obligations state NOT mounted in any shipped bundle/
-  preset (matrix M-04 gap=NONE_SHIPPED) → OUT_OF_SCOPE for this delivery
+* str_replace_editor (M-04): the earlier OUT_OF_SCOPE/NONE_SHIPPED closure is
+  WITHDRAWN per review R1 finding 2 — receipts + honest disposition in
+  M04-STR-REPLACE-EDITOR-INVENTORY.md: pinned host REGISTERED natively
+  (fs/tool-str-replace-editor, direct read), booted worlds' surface does
+  NOT carry it, plane has no takeover row; the governed arm stays
+  NOT_IMPLEMENTED and the load-condition ruling stays OPEN (matrix owner).
+  This delivery neither depends on M-04 nor closes it (matrix untouched)
   (no shipped surface to govern).

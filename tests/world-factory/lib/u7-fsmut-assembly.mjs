@@ -26,7 +26,7 @@
  * @module tests/world-factory/lib/u7-fsmut-assembly
  */
 import { createHash } from 'node:crypto'
-import { mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { presetDeclarationRow, smokePresetPlugins } from '../../kits/_shared/preset-seam.mjs'
@@ -42,7 +42,7 @@ const sanitize = (v) => String(v).toLowerCase().replace(/[^a-z0-9-]/g, '-')
 // lies — the planted image fact the honest-answer arm runs on.
 const PNG_1PX_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
-export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
+export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir, sessionRoot }) {
   const rs = sanitize(runStamp)
   const dist = join(repoRoot, 'packages', 'runtime', 'dist', 'packages', 'runtime')
   const PRODUCTION_ROW_NAME = pathToFileURL(join(dist, 'src', 'plugin', 'host.js')).href
@@ -273,12 +273,17 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
     // file equality; transcripts that merely QUOTE the claim can never
     // equal it). The found path is part of the witness.
     const ctlTruth = (() => {
-      // boot-5 (u5x) MEASURED: the native ctl write landed in the member
-      // session's own root (the runtime checkout under repoRoot) — the
-      // host sandbox scopes NATIVE rows to the session root, which is NOT
-      // the world home. Walk both; EXACT equality keeps transcripts out.
-      const sessionRoot = join(repoRoot, 'tests', 'deepseek-harness-test-use')
-      const stack = [home, sessionRoot]
+      // boot-5/6 (u5x) MEASURED: the native ctl write lands in the member
+      // session's own root — for member sessions that is the factory's
+      // pristine hostTree (the runtime checkout), NOT the world home. Walk
+      // both; EXACT byte equality keeps transcripts out. The found file is
+      // THIS world's own bytes (run-unique claim, whole-file equality):
+      // after the truth is recorded the world REMOVES it — the pristine
+      // host tree is restored by the same actor that dirtied it (the
+      // host-base-pristine-post guard measured boot-4's stray file into
+      // boot-5's record; never again).
+      const runtimeTree = sessionRoot ?? join(repoRoot, 'tests', 'deepseek-harness-test-use')
+      const stack = [home, runtimeTree]
       let guard = 0
       for (;;) {
         const dir = stack.pop()
@@ -291,7 +296,10 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
           if (!e.isFile()) continue
           let content = null
           try { content = readFileSync(q, 'utf8') } catch { continue }
-          if (content === CTL_CONTENT) return { ctlBytes: content, ctlFoundPath: q }
+          if (content === CTL_CONTENT) {
+            try { rmSync(q) } catch { /* the post-guard reports residue honestly */ }
+            return { ctlBytes: content, ctlFoundPath: q }
+          }
         }
       }
       return { ctlBytes: null, ctlFoundPath: null }
