@@ -85,12 +85,15 @@ interface PlaneValue {
 }
 interface BridgeModule {
   createGovernedJobsBridge(opts: Record<string, unknown>): unknown
+  ci05GovernedGatewayRow(asm: unknown): unknown
   buildJobsManagementRowDefs(o: Record<string, unknown>): RowLike[]
   buildJobsBridgeContribution(o: Record<string, unknown>): Record<string, unknown>
 }
 interface GatewayAssembly {
   attributeBackgroundJob(o: Record<string, unknown>): { ok: boolean; code?: string }
   observations(): string[]
+  checkManagementAccess(o: { jobId: string; viewer: Record<string, unknown> }):
+    { ok: boolean; corded?: boolean; code?: string; detail?: string }
 }
 interface GatewayModule {
   createLiveJobsGatewayAssembly(cfg: Record<string, unknown>): GatewayAssembly
@@ -377,10 +380,13 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
     observations1: string[]
   }
 
-  async function world(): Promise<World> {
+  async function world(
+    wrap: (asm: GatewayAssembly) => GatewayAssembly = (a) => a,
+  ): Promise<World> {
     const gw = await gatewayModule()
     const mod = await bridgeModule()
-    const asm = gw.createLiveJobsGatewayAssembly({ teamRoot: domainDouble(), rootSessionId: ROOT })
+    const asm0 = gw.createLiveJobsGatewayAssembly({ teamRoot: domainDouble(), rootSessionId: ROOT })
+    const asm = wrap(asm0)
     const svc = countingRegistry()
     const observations1: string[] = []
     let planeValue1: PlaneValue | null = null
@@ -471,7 +477,7 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
     expect(w.svc.reach()).toBe(reachBefore2)
   })
 
-  it('D3 the un-attributed pass-through is the DISCLOSED host-fence law: the Team layer invents nothing, the host answers for itself', async () => {
+  it('D3 the RAW region posture (pre-R1): un-attributed ids reach the host fence — WHY the mount wraps the face (F group; the production mount NEVER exposes this pass-through)', async () => {
     const w = await world()
     // 'jb-loose' was NEVER attributed (production has no creation-lane
     // producer yet — the disclosed corded:false world law).
@@ -508,6 +514,100 @@ describe('u6-pr4 D — the same admission path end to end (real plane + real gat
     const anon = await row(w.member1, 'job_list').execute({}, {})
     expect(anon.text).toContain('caller-unresolved')
     expect(w.svc.reach()).toBe(reachBefore)
+  })
+
+  // R1 (review): CI-05 — the mount-side law over the D world's real faces.
+  describe('u6-pr4 F — the R1 CI-05 mount face: an un-attributed id is refused BEFORE any host reach (governed mounts only)', () => {
+  // R1 (review): CI-05 forbids the governed Team lane carrying an
+  // un-attributed id to the Host svc. The frozen gateway keeps its
+  // disclosed corded:false answer (byte-pinned, CI-08); the MOUNT wraps
+  // the face (agent-bindings hands the bridge EXACTLY this wrapped row).
+  // These legs drive the real region through the real wrap — the same
+  // single authority the production mount uses. (OWNER_A/OWNER_B ride the D world.)
+  async function wrappedWorld(): Promise<World> {
+    const mod = await bridgeModule()
+    return await world((a) => mod.ci05GovernedGatewayRow(a) as GatewayAssembly)
+  }
+
+  it('F1 un-attributed id: typed refusal, static detail, ZERO svc reach on BOTH management arms', async () => {
+    const w = await wrappedWorld()
+    const before = w.svc.reach()
+    const out = await row(w.member1, 'job_output').execute({ job_id: 'jb-loose' }, { agent: { id: 'agent-inst-1' } })
+    expect(out.text).toContain('refused: unattributed-job')
+    expect(out.text).not.toContain('RING')
+    const kill = await row(w.member1, 'job_kill').execute({ job_id: 'jb-loose', reason: 'r' }, { agent: { id: 'agent-inst-1' } })
+    expect(kill.text).toContain('unattributed-job')
+    expect(kill.text).not.toContain('requested cancellation')
+    expect(w.svc.reach()).toBe(before) // the D3 pass-through does NOT exist at the governed mount
+  })
+
+  it('F2 attributed id: the corded owner trio works THROUGH the wrap (ring bytes, svc reached)', async () => {
+    const mod = await bridgeModule()
+    const gw = await gatewayModule()
+    const w = await wrappedWorld()
+    void mod
+    await row(w.member1, 'job_list').execute({}, { agent: { id: 'agent-inst-1' } }) // mints the creating-lane pins
+    const scopeA = gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' })
+    const admitted = w.asm.attributeBackgroundJob({ hostJobId: 'jb-live', owner: OWNER_A, scopeKey: scopeA, toolName: 'bash' })
+    expect(admitted.ok, JSON.stringify(admitted)).toBe(true)
+    const out = await row(w.member1, 'job_output').execute({ job_id: 'jb-live' }, { agent: { id: 'agent-inst-1' } })
+    expect(out.text).toContain('RING[jb-live]') // attributed → corded:true → host reach IS the law
+  })
+
+  it('F3 foreign attributed id: owner-mismatch stands through the wrap with ZERO svc reach', async () => {
+    const gw = await gatewayModule()
+    const w = await wrappedWorld()
+    await row(w.member1, 'job_list').execute({}, { agent: { id: 'agent-inst-1' } })
+    const scopeA = gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' })
+    w.asm.attributeBackgroundJob({ hostJobId: 'jb-live', owner: OWNER_A, scopeKey: scopeA, toolName: 'bash' })
+    await row(w.member2, 'job_list').execute({}, { agent: { id: 'agent-inst-2' } })
+    const before = w.svc.reach()
+    const foreign = await row(w.member2, 'job_output').execute({ job_id: 'jb-live' }, { agent: { id: 'agent-inst-2' } })
+    expect(foreign.text).toContain('owner-mismatch')
+    expect(foreign.text).not.toContain('RING')
+    expect(w.svc.reach()).toBe(before) // attribution changed nothing for the wrong viewer
+  })
+
+  it('F4 the wrap is a pure law over ONE answer: corded:false flips to unattributed-job, everything else passes IDENTICAL, wrapping is idempotent', async () => {
+    const mod = await bridgeModule()
+    const gw = await gatewayModule()
+    const asm = gw.createLiveJobsGatewayAssembly({ teamRoot: domainDouble(), rootSessionId: ROOT })
+    const wrapped = mod.ci05GovernedGatewayRow(asm) as GatewayAssembly
+    expect(mod.ci05GovernedGatewayRow(asm)).toBe(wrapped) // WeakMap idempotence — one wrapper per asm
+    const loose = wrapped.checkManagementAccess({ jobId: 'jb-none', viewer: OWNER_A as Record<string, unknown> })
+    expect(asm.checkManagementAccess({ jobId: 'jb-none', viewer: OWNER_A as Record<string, unknown> }).ok).toBe(true) // frozen gateway unchanged
+    expect(loose.ok).toBe(false)
+    expect(loose.code).toBe('unattributed-job')
+    expect(typeof loose.detail).toBe('string')
+    expect(loose.detail).toBe(
+      wrapped.checkManagementAccess({ jobId: 'jb-other', viewer: OWNER_A as Record<string, unknown> }).detail,
+    ) // STATIC detail — no id, no identity leak (C-GW)
+    const scopeA = gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' })
+    // C-BIND law: attribution admits only on the CREATING lane's pin — mint
+    // it the way the placement feed would (the store's disclosed register seam).
+    asm.definitions.register(scopeA, 'bash', 'u6pr4-f4-def-identity')
+    const admitted = asm.attributeBackgroundJob({ hostJobId: 'jb-live', owner: OWNER_A, scopeKey: scopeA, toolName: 'bash' })
+    expect(admitted.ok, JSON.stringify(admitted)).toBe(true)
+    // corded:true passes UNCHANGED (deep-equal, not identity: the frozen
+    // gateway builds a fresh result object per call — both faces answer it).
+    expect(wrapped.checkManagementAccess({ jobId: 'jb-live', viewer: OWNER_A as Record<string, unknown> }))
+      .toEqual(asm.checkManagementAccess({ jobId: 'jb-live', viewer: OWNER_A as Record<string, unknown> }))
+    expect(wrapped.checkManagementAccess({ jobId: 'jb-live', viewer: OWNER_A as Record<string, unknown> }).corded).toBe(true)
+    expect(wrapped.checkManagementAccess({ jobId: 'jb-live', viewer: OWNER_B as Record<string, unknown> }).code).toBe('owner-mismatch')
+  })
+
+  it('F5 governed job_list answers through the SAME face: un-attributed rows are hidden, the attributed own row survives', async () => {
+    const gw = await gatewayModule()
+    const w = await wrappedWorld()
+    const bare = await row(w.member1, 'job_list').execute({}, { agent: { id: 'agent-inst-1' } })
+    expect(bare.text).toContain('(no background jobs)') // jb-live/jb-loose exist HOST-side, none are Team-attributed: the governed viewer sees none
+    await row(w.member1, 'job_list').execute({}, { agent: { id: 'agent-inst-1' } })
+    const scopeA = gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' })
+    w.asm.attributeBackgroundJob({ hostJobId: 'jb-live', owner: OWNER_A, scopeKey: scopeA, toolName: 'bash' })
+    const owned = await row(w.member1, 'job_list').execute({}, { agent: { id: 'agent-inst-1' } })
+    expect(owned.text).toContain('jb-live')
+    expect(owned.text).not.toContain('jb-loose') // un-attributed stays hidden — one face, one law
+  })
   })
 })
 

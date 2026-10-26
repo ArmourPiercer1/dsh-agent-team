@@ -116,7 +116,7 @@ export const SUITE_CASES = {
   // answered as REQUEST only with the HOST settling, the boot-root native
   // control untouched, and the no-second-ledger law measured over the
   // durable Control lane.
-  'u6-jobs': ['jobs:mounted', 'jobs:birth-positive', 'jobs:governed-management', 'jobs:owner-fence', 'jobs:cancel-honest', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check'],
+  'u6-jobs': ['jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence', 'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check'],
   'u6-shadow': [
     'off:token-gate', 'off:positive-control', 'off:error-return-with-effect', 'off:planted-defect-detected', 'off:oracle-blinding-divergence', 'off:leak-check',
     'shd:token-gate', 'shd:mounted', 'shd:positive-control', 'shd:error-return-with-effect', 'shd:planted-defect-detected', 'shd:oracle-blinding-divergence', 'shd:leak-check',

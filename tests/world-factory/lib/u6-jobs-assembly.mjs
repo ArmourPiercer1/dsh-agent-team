@@ -462,7 +462,7 @@ export function makeJobsDecide({ assembly }) {
       if (exchanges.length === 2) return toolCall('job_output', { job_id: first })
       if (exchanges.length === 3) return toolCall('bash', { command: cmds.birth2, description: 'u6jobs cancel-subject birth', run_in_background: true })
       if (exchanges.length === 4) return toolCall('job_output', { job_id: second })
-      if (exchanges.length === 5) return toolCall('job_kill', { job_id: second, reason: 'u6jobs-cancel-honest' })
+      if (exchanges.length === 5) return toolCall('job_kill', { job_id: second, reason: 'u6jobs-kill-refusal' })
       // the settle spacer is FOREGROUND (40 s > the 35 s FINAL deadline):
       // the next ring read lands AFTER the window in which an un-killed
       // job would have printed FINAL — absence there is a measurement.
@@ -605,55 +605,65 @@ export function judgeU6Jobs(d, hostAlive) {
     birthRow: d.birthRow ?? { seen: false },
     note: 'the birth lane is the member NATIVE bash (the governed confined row refuses background by name — the CI-03 disclosed law); if the host gated the birth, the runner settled the ask through the PUBLIC team.resolveControl seam',
   })
-  // 3) GOVERNED MANAGEMENT through the bridge: list saw the REAL id;
-  //    output returned the ring bytes (the child's stdout = server-side
-  //    effect) with the host status line; the trio ran >=4 times.
-  add('jobs:governed-management', lineFor(d.list1, d.jobIds?.[0]) !== undefined && lineFor(d.list1, d.jobIds?.[0]) !== null
-    && String(d.output1 ?? '').includes(d.claims?.claim1 ?? '\u0000')
-    && String(d.output1 ?? '').includes('[status:')
+  // 3) CI-05 GOVERNED FAIL-CLOSED (review R1 law, live): the member's job
+  //    is native-born and UN-ATTRIBUTED (no production creation-lane
+  //    producer exists at this pin), so the governed trio must refuse it
+  //    BEFORE any host reach: the output answer is the typed
+  //    'unattributed-job' refusal carrying NO ring bytes and NO host
+  //    status word, the list hides un-attributed rows from the governed
+  //    viewer, and the trio still ran >=4 governed calls. The ring bytes
+  //    themselves are measured server-side by arm 6 (the native control).
+  add('jobs:ci05-governed-fail-closed', String(d.output1 ?? '').includes('refused: unattributed-job')
+    && !String(d.output1 ?? '').includes(d.claims?.claim1 ?? '\u0000')
+    && !String(d.output1 ?? '').includes('[status:')
+    && lineFor(d.list1, d.jobIds?.[0]) === null
     && (d.trioUses ?? 0) >= 4, {
     jobId: d.jobIds?.[0] ?? null,
     list1Row: lineFor(d.list1, d.jobIds?.[0]),
     outputHead: String(d.output1 ?? '').slice(0, 160),
     trioUses: d.trioUses ?? null,
-    note: 'the ring bytes ARE the server-side effect (the host registry buffered the child stdout); the [status: …] line is the HOST status relaying honestly',
+    note: 'CI-05 (R1): a governed mount never carries an un-attributed id to the Host — the refusal is typed, STATIC-detail, and host-silent (no [status:], no ring bytes: the Host was never reached); job_list hides un-attributed rows through the SAME face',
   })
-  // 4) OWNER FENCE: the foreign viewer is REFUSED on read AND kill, and
-  //    nothing settled: no host cancel/abort event for the owner's job,
-  //    the claim marker intact, the owner's later list still shows it.
+  // 4) OWNER FENCE (CI-05 posture): the foreign viewer is REFUSED on read
+  //    AND kill with a typed Team-layer refusal that reaches NOTHING: no
+  //    ring bytes, no host vocabulary, no settlement event — and no
+  //    governed list anywhere surfaces the un-attributed row (one face,
+  //    one law). Attributed-id owner-mismatch is C1-measured (F3); the
+  //    live world has no attributed job, so the refusal route here is the
+  //    CI-05 one — strictly STRONGER than the host fence it precedes.
   add('jobs:owner-fence', String(d.foreignOutput ?? '').length > 0
+    && String(d.foreignOutput ?? '').includes('refused: unattributed-job')
     && !String(d.foreignOutput ?? '').includes(d.claims?.claim1 ?? '\u0000')
-    && /refused|not visible|unknown job|owner-mismatch/i.test(String(d.foreignOutput ?? ''))
+    && !String(d.foreignOutput ?? '').includes('[status:')
     && !String(d.foreignKill ?? '').includes('requested cancellation of job')
-    && /refused|not visible|unknown job|owner-mismatch/i.test(String(d.foreignKill ?? ''))
+    && String(d.foreignKill ?? '').includes('refused: unattributed-job')
     && (d.settle?.foreignKillLines ?? -1) === 0
-    && (lineFor(d.list2, d.jobIds?.[0]) ?? '').includes('running'), {
+    && lineFor(d.list2, d.jobIds?.[0]) === null, {
     foreignOutput: String(d.foreignOutput ?? '').slice(0, 160),
     foreignKill: String(d.foreignKill ?? '').slice(0, 160),
-    ownerRowAfterForeign: lineFor(d.list2, d.jobIds?.[0]),
+    ownerRowInAnyGovernedList: lineFor(d.list2, d.jobIds?.[0]),
     foreignKillHostEvents: d.settle?.foreignKillLines ?? null,
-    note: 'DISCLOSED live-world law: the native-born job is UN-ATTRIBUTED (no production creation-lane producer rides the member native lane), so the answer is the HOST caller fence reached through the bridge corded:false pass-through — the Team layer invented nothing; the measured ZERO is the settlement: no cancel/abort event, job keeps running',
+    note: 'the foreign read/kill is refused by the TEAM layer before the host fence is even consulted (CI-05 unattributed-job) — the answer carries no ring bytes, no host status word, and nothing settled (zero cancel/abort events: the host was never reached); the un-attributed row appears in NO governed list',
   })
-  // 5) CANCEL HONESTY: the kill answered REQUEST vocabulary (never a
-  //    settlement), the job really ran (warm marker), and the host settled
-  //    the fate: the FINAL marker never landed while the owner's list
-  //    shows the settled status (or the host log carries the settle).
+  // 5) KILL REFUSAL, ZERO REACH (CI-05 posture): the governed kill of the
+  //    un-attributed job is the typed refusal — the bridge never claims a
+  //    cancellation it has no business requesting, and the host carries NO
+  //    cancel/abort event for the job (zero reach is measurable as zero
+  //    settlement). The REQUEST-vocabulary honesty law ('requested', never
+  //    a settlement) is byte-identical region code, C1-measured end to end
+  //    (D4/F groups); its LIVE leg rides attribution and is the disclosed
+  //    named item (no creation-lane producer at this pin).
   const kill2 = String(d.kill2 ?? '')
-  const id2 = d.jobIds?.[1] ?? null
-  const list2Row = lineFor(d.list2, id2)
-  const settledInList = list2Row === null || /\b(aborted|cancelled|completed|failed|exited|finished)\b/i.test(list2Row)
-  add('jobs:cancel-honest', kill2.includes('requested cancellation of job')
-    && !/has been (cancelled|killed|terminated)|job .* (cancelled|terminated)/i.test(kill2)
-    && String(d.output2 ?? '').includes(d.claims?.killWarm ?? '\u0000')
-    && String(d.output2Post ?? '').includes(d.claims?.killWarm ?? '\u0000')
-    && !String(d.output2Post ?? '').includes(d.claims?.killFinal ?? '\u0000')
-    && (settledInList || (d.settle?.killLines ?? 0) > 0), {
+  add('jobs:kill-refusal-zero-reach', kill2.includes('refused: unattributed-job')
+    && !kill2.includes('requested cancellation of job')
+    && !/cancel|abort|terminat|settl/i.test(kill2)
+    && (d.settle?.killLines ?? -1) === 0
+    && (d.jobIds?.length ?? 0) >= 2
+    && String(d.output2 ?? '').includes('refused: unattributed-job'), {
     kill2: kill2.slice(0, 160),
-    list2RowForKillJob: list2Row,
-    killWarmSeen: String(d.output2 ?? '').includes(d.claims?.killWarm ?? '\u0000'),
-    killFinalSeen: String(d.output2Post ?? '').includes(d.claims?.killFinal ?? '\u0000'),
     killHostEvents: d.settle?.killLines ?? null,
-    note: 'the bridge only ever says REQUESTED; the FINAL text never reached the RING even AFTER the 40 s settle spacer passed the 35 s print deadline (measured absence at the HOST registry, past the window where an un-killed job would have printed it) — the child really stopped; the settled status word comes from the HOST list, never from the bridge',
+    killSubjectBorn: (d.jobIds?.length ?? 0) >= 2,
+    note: 'the kill names NOTHING but the typed refusal (no cancel/settle word) and NO host settle event exists for the subject — zero reach, measured; the requested-vs-settled vocabulary law itself stands in C1 (region bytes) until the attributed live path gains its producer (named item)',
   })
   // 6) CI-03 NATIVE CONTROL: the boot-root's NATIVE trio ran its own job
   //    with ZERO kernel involvement: the native job_output returns the

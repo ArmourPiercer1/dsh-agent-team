@@ -460,8 +460,8 @@ test('u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion', a
 test('u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import', async () => {
   const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
   assert.deepEqual(SUITE_CASES['u6-jobs'], [
-    'jobs:mounted', 'jobs:birth-positive', 'jobs:governed-management', 'jobs:owner-fence',
-    'jobs:cancel-honest', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check',
+    'jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence',
+    'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check',
   ])
   const opts = parseArgs(['--suite', 'u6-jobs', '--line', 'u6jobsx', '--evidence', '/tmp/ev'])
   assert.equal(opts.suite, 'u6-jobs')
@@ -560,6 +560,10 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
   const { findTestRepoRoot } = await import('../paths.mjs')
   const a = createJobsAssembly({ repoRoot: findTestRepoRoot(HERE), home: '/home/x', runStamp: 'u6-U6JOBS-T', reportDir: '/rep' })
   const claims = a.claims
+  // R1 (CI-05): every governed trio answer about the native-born,
+  // un-attributed job is the typed refusal with the STATIC detail — the
+  // exact bytes the region's refuse() builds (code — detail.slice(0,200)).
+  const CI05_REFUSED = 'refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)'
   const good = {
     kernelHits: {
       'a5g7: placement-feed rows=': { count: 3 }, job_output: { count: 12 },
@@ -571,19 +575,19 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
     claims,
     claim1Text: `${claims.claim1}\n`,
     jobIds: ['jb-alpha01', 'jb-beta02'],
-    list1: 'jb-alpha01 [stream] running — sh',
-    output1: `${claims.claim1}\n[status: running]`,
-    output2: `${claims.killWarm}\n[status: running]`,
-    output2Post: `${claims.killWarm}\n[status: aborted]`,
-    kill2: 'requested cancellation of job jb-beta02',
-    list2: 'jb-alpha01 [stream] running — sh\njb-beta02 [stream] aborted — sh',
-    foreignOutput: 'refused: host-jobs-refused — job jb-alpha01 is not yours',
-    foreignKill: 'refused: host-jobs-refused — job jb-alpha01 is not yours',
+    list1: '(no background jobs)',
+    output1: CI05_REFUSED,
+    output2: CI05_REFUSED,
+    output2Post: CI05_REFUSED,
+    kill2: CI05_REFUSED,
+    list2: '(no background jobs)',
+    foreignOutput: CI05_REFUSED,
+    foreignKill: CI05_REFUSED,
     ctlOutput: `${claims.ctl}\n[status: running]`,
     trioUses: 8,
     controlRows: [],
     birthRow: { seen: false, resolved: false, resolutions: [] },
-    settle: { killLines: 1, foreignKillLines: 0 },
+    settle: { killLines: 0, foreignKillLines: 0 },
     rootKernelMentions: 0,
   }
   const rows = judgeU6Jobs(good, true)
@@ -591,12 +595,17 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
   for (const [id, verdict] of rows) assert.equal(verdict, 'PASS', `honest digest must PASS every case, ${id} failed`)
   const verdictOf = (d, caseId) => judgeU6Jobs(d, true).find(([id]) => id === caseId)[1]
   assert.equal(verdictOf({ ...good, jobIds: [] }, 'jobs:birth-positive'), 'FAIL', 'no host-vocabulary job id = nothing was born (the id parse rides the HOST spawn/row words, never a claim string)')
-  assert.equal(verdictOf({ ...good, output1: 'ok\n[status: running]' }, 'jobs:governed-management'), 'FAIL', 'management output without the ring claim is not server-side bytes')
+  assert.equal(verdictOf({ ...good, output1: `${claims.claim1}\n[status: running]` }, 'jobs:ci05-governed-fail-closed'), 'FAIL', 'a governed answer carrying ring bytes + host status for an UN-ATTRIBUTED id is the forbidden pass-through (R1)')
+  assert.equal(verdictOf({ ...good, output1: 'Error: unknown job jb-alpha01' }, 'jobs:ci05-governed-fail-closed'), 'FAIL', 'host vocabulary in the governed answer means the id reached the host — CI-05 refused it before reach')
+  assert.equal(verdictOf({ ...good, list1: 'jb-alpha01 [stream] running — sh' }, 'jobs:ci05-governed-fail-closed'), 'FAIL', 'an un-attributed row surfacing in a governed list breaks the one-face row law')
   assert.equal(verdictOf({ ...good, foreignOutput: `${claims.claim1}\n[status: running]` }, 'jobs:owner-fence'), 'FAIL', 'a foreign read that SAW THE RING BYTES is no fence at all')
-  assert.equal(verdictOf({ ...good, settle: { killLines: 1, foreignKillLines: 2 } }, 'jobs:owner-fence'), 'FAIL', 'a settlement event for the foreign target kills the fence case')
-  assert.equal(verdictOf({ ...good, kill2: 'job jb-beta02 has been cancelled' }, 'jobs:cancel-honest'), 'FAIL', 'a settlement word in the kill answer kills the cancel case')
-  assert.equal(verdictOf({ ...good, output2Post: `${claims.killWarm}\n${claims.killFinal}\n[status: completed]` }, 'jobs:cancel-honest'), 'FAIL', 'FINAL in the post-settle ring read means the killed process kept running')
-  assert.equal(verdictOf({ ...good, output2: '[status: running]' }, 'jobs:cancel-honest'), 'FAIL', 'a kill whose subject never RAN (no warm bytes) measures nothing')
+  assert.equal(verdictOf({ ...good, foreignOutput: 'Error: unknown job jb-alpha01' }, 'jobs:owner-fence'), 'FAIL', 'an untyped/host-worded foreign answer means host reach — the CI-05 refusal precedes the host fence')
+  assert.equal(verdictOf({ ...good, settle: { killLines: 0, foreignKillLines: 2 } }, 'jobs:owner-fence'), 'FAIL', 'a settlement event for the foreign target kills the fence case')
+  assert.equal(verdictOf({ ...good, list2: 'jb-alpha01 [stream] running — sh' }, 'jobs:owner-fence'), 'FAIL', 'the un-attributed owner row resurfacing post-attempt leaks the row the same face must hide')
+  assert.equal(verdictOf({ ...good, kill2: 'requested cancellation of job jb-beta02' }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'a cancellation claim on an un-attributed id means the wrap is NOT mounted (only attributed owners may request)')
+  assert.equal(verdictOf({ ...good, settle: { killLines: 1, foreignKillLines: 0 } }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'a host settle event for the kill subject proves host reach the refusal must have zero of')
+  assert.equal(verdictOf({ ...good, kill2: 'refused: unattributed-job — job terminated by policy' }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'a settle/terminat word inside the refusal is dishonest vocabulary')
+  assert.equal(verdictOf({ ...good, output2: `${claims.killWarm}\n[status: running]` }, 'jobs:kill-refusal-zero-reach'), 'FAIL', 'ring bytes through the governed output = the pass-through the CI-05 wrap exists to refuse')
   assert.equal(verdictOf({ ...good, ctlOutput: 'Error: unknown job job-unknown' }, 'jobs:ctl-native-untouched'), 'FAIL', 'a native arm whose trio never returned its own ring bytes is vacuous')
   assert.equal(verdictOf({ ...good, rootKernelMentions: 2 }, 'jobs:ctl-native-untouched'), 'FAIL', 'kernel words on the root lane break the CI-03 control')
   assert.equal(verdictOf({ ...good, controlRows: [{ toolName: 'job_kill', summary: 'ask', status: 'pending' }] }, 'jobs:no-second-ledger'), 'FAIL', 'one approval row naming job_kill is the second ledger — it must be caught')

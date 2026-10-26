@@ -349,6 +349,44 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
 /* ── U6 PR4: the bridge's CENTER FACE (contribution + placed rows) ─────── */
 
 /**
+ * R1 (review, U6 PR4) CI-05 fail-closed: the mount-side wrapper for the
+ * gateway row the bridge is handed. The FROZEN gateway answers the
+ * disclosed pass-through `{ok:true, corded:false}` for job ids with no
+ * team record (pc-CONTRACT two-fence law — for jobs the Team lane never
+ * attributed, the host's caller-session fence answers; that file stays
+ * sha-pinned, CI-08). On a GOVERNED mount that pass-through is what CI-05
+ * forbids: the Team lane must never carry an un-attributed id to the Host
+ * svc. This wrapper — assembly layer, OUTSIDE the byte-identical bridge
+ * body above — turns `corded:false` into a typed, static-detail
+ * `unattributed-job` refusal, so the verbatim `checked()` gate stops the
+ * call with ZERO svc reach and jobList's per-row filter (the same face)
+ * hides un-attributed rows from governed viewers. Non-Team sessions never
+ * build this bridge: the CI-03 native lane and the host fence it rides are
+ * untouched BY CONSTRUCTION. Attribution law stays honest — this refusal
+ * invents nothing; the creation producer that would make governed jobs
+ * manageable (the governed bash arm admitting its receipt through
+ * `attributeBackgroundJob`) does not exist at this pin (the governed
+ * confined row refuses background by name — PR3's measured law) and is
+ * carried as a named item, never patched around.
+ */
+const ci05GovernedAsms = new WeakMap()
+export function ci05GovernedGatewayRow(asm) {
+  if (asm === null || asm === undefined) return asm
+  const cached = ci05GovernedAsms.get(asm)
+  if (cached !== undefined) return cached
+  const wrapped = Object.create(asm)
+  wrapped.checkManagementAccess = ({ jobId, viewer }) => {
+    const r = asm.checkManagementAccess({ jobId, viewer })
+    if (r.ok === true && r.corded === false) {
+      return { ok: false, code: 'unattributed-job', detail: 'the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)' }
+    }
+    return r
+  }
+  ci05GovernedAsms.set(asm, wrapped)
+  return wrapped
+}
+
+/**
  * The fixed management trio (name list C6). The plane quotes THIS list into
  * its natexe ledger and into the kernel-ownership set; the contribution
  * below names the same list as its native visibility. One list, one place —
