@@ -18,7 +18,9 @@
  * its own completion law and refuses through its own `failure()` face.
  *
  *  1. `watchStreamEnd(stream)` — installed BEFORE the settle race, so a terminal
- *     event that arrives first is never missed. The FIRST of 'end' | 'close' |
+ *     event that arrives first is never missed, and reading the stream's own
+ *     terminal state first so a stream that ALREADY finished answers at once
+ *     (no bound expiry for an event that already happened). The FIRST of 'end' | 'close' |
  *     'error' settles it, with its name: only 'end' is a stream that was heard
  *     to its last byte; 'close' without 'end' is a torn-down pipe and 'error' a
  *     dead one. `release()` takes every handler off (idempotent), so a
@@ -46,13 +48,48 @@ import { setTimeout as sleepTimer, clearTimeout as clearTimer } from 'node:timer
 export const STREAM_DRAIN_MS = 250
 
 /**
+ * The stream's OWN terminal state at install time, or `null` while it can still
+ * speak. A watch attached to an already-finished stream would otherwise wait for
+ * an event that has already fired and never resolve, so its bound would expire
+ * and every such call would be refused as undrained. That is fail-CLOSED, but it
+ * is an availability regression on a real path: a payload that dies while the row
+ * is still between `spawnStreaming` and this line has already ended its pipes
+ * (review finding F-1 of #401). The order is the verdict's order: a stream that
+ * was read to its last byte reports 'end' even though Node also marks it
+ * `destroyed`; a broken one is 'error'; anything else finished is 'close'.
+ * @returns {'end'|'close'|'error'|null}
+ */
+function terminalStateOf(stream) {
+  if (stream.readableEnded === true) return 'end'
+  // `errored` BEFORE the aborted/destroyed flags: Node sets `readableAborted` on
+  // ANY destroy that came before an 'end' (measured: a plain `destroy()` reads
+  // `readableAborted=true, errored=null`), so it cannot tell a torn pipe from a
+  // broken one — `errored` can.
+  if (stream.errored != null) return 'error'
+  if (stream.readableAborted === true || stream.destroyed === true || stream.closed === true) return 'close'
+  return null
+}
+
+/**
  * Watch one stream to its terminal event.
+ *
+ * The state is read FIRST, so an already-finished stream answers synchronously
+ * instead of costing the caller its worst-case drain. Watching still starts
+ * BEFORE the row's settle race, so an event that arrives first is never missed.
  * @param stream a Readable (the provider handle's `stdout` / `stderr`)
  * @returns {{ ended: Promise<'end'|'close'|'error'>, release: () => void }}
  */
 export function watchStreamEnd(stream) {
   let release = () => {}
   const ended = new Promise((resolve) => {
+    release = () => {
+      release = () => {} // idempotent: a row's `finally` may call it again
+    }
+    const already = terminalStateOf(stream)
+    if (already !== null) {
+      resolve(already)
+      return
+    }
     const onEnd = () => resolve('end')
     const onClose = () => resolve('close')
     const onError = () => resolve('error')

@@ -28,6 +28,7 @@
  *
  * Worlds: `tests/homes/u7grep-late-*` (TEST_METHODS §7), self-removed.
  */
+import { once } from 'node:events'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 interface Script {
@@ -41,6 +42,8 @@ interface Script {
   readonly neverEnd?: 'stdout' | 'stderr'
   /** a stream torn down WITHOUT an end (destroyed pipe) */
   readonly destroy?: 'stdout' | 'stderr'
+  /** stderr ALREADY terminal before the row receives the handle (review F-1) */
+  readonly preTerminalStderr?: 'end' | 'destroy'
 }
 
 interface Pipe {
@@ -48,6 +51,8 @@ interface Pipe {
   end(): void
   destroy(): void
   listenerCount(event: string): number
+  readonly readableEnded: boolean
+  readonly destroyed: boolean
 }
 
 const { planRef, handles } = vi.hoisted(() => ({
@@ -58,11 +63,26 @@ const { planRef, handles } = vi.hoisted(() => ({
 vi.mock('../sandbox-provider/index.js', async () => {
   const { PassThrough } = await import('node:stream')
   const PID = 4194299
-  const makeHandle = (script: Script): unknown => {
+  // A stderr that is ALREADY terminal when the row gets the handle: a walk whose
+  // (empty) diagnostic pipe finished before the row attached anything.
+  const preTerminal = async (pipe: InstanceType<typeof PassThrough>, form: 'end' | 'destroy'): Promise<void> => {
+    if (form === 'end') {
+      const ended = once(pipe, 'end')
+      pipe.resume()
+      pipe.end()
+      await ended
+    } else {
+      const closed = once(pipe, 'close')
+      pipe.destroy()
+      await closed
+    }
+  }
+  const makeHandle = async (script: Script): Promise<unknown> => {
     const stdout = new PassThrough()
     const stderr = new PassThrough()
     const stdin = new PassThrough()
     handles.all.push({ stdout, stderr })
+    if (script.preTerminalStderr !== undefined) await preTerminal(stderr, script.preTerminalStderr)
     const lease = Object.freeze({
       leaseId: 'lease-grep-late', grantFingerprint: 'sha256:grep-late', realmId: 'a5srgp-realm',
       bindingId: 'b-grep-late', memberScope: 'member/grep-late', executionKind: 'process' as const, status: 'active' as const,
@@ -78,6 +98,7 @@ vi.mock('../sandbox-provider/index.js', async () => {
         for (const c of script.lateStdout ?? []) stdout.write(c)
         for (const c of script.lateStderr ?? []) stderr.write(c)
         for (const [name, pipe] of [['stdout', stdout], ['stderr', stderr]] as const) {
+          if (name === 'stderr' && script.preTerminalStderr !== undefined) continue
           if (script.destroy === name) pipe.destroy()
           else if (script.neverEnd !== name) pipe.end()
         }
@@ -104,7 +125,7 @@ vi.mock('../sandbox-provider/index.js', async () => {
   return {
     createConfinedProcessProvider: () => ({
       probe: async (): Promise<unknown> => ({ ok: true, value: [{ subject: 'python3', verdict: 'ENFORCE-CONFIRMED' }] }),
-      spawnStreaming: async (): Promise<unknown> => ({ ok: true, value: makeHandle(planRef.current as Script) }),
+      spawnStreaming: async (): Promise<unknown> => ({ ok: true, value: await makeHandle(planRef.current as Script) }),
     }),
   }
 })
@@ -254,6 +275,32 @@ describe('u7 grep-drain: the production grep row judges the WHOLE walk, not the 
     expectNoRowListeners(handle)
   })
 
+  it('F1-a stderr ALREADY ended before the row installs its watch (clean walk) — admitted; the drain bound is not paid', async () => {
+    const { result, writes, audit, handle } = await runScript({ onTimeStdout: [...MATCHES, SUMMARY], preTerminalStderr: 'end' }, 'f1-a')
+    expect(handle?.stderr.readableEnded, 'the leg did not pre-end stderr').toBe(true)
+    // Before the F-1 fix the watch waited for an 'end' that had already fired: the
+    // bound expired, and this clean walk was refused as walker-error (stderr=pending).
+    expect(result.ok, JSON.stringify(result)).toBe(true)
+    if (result.ok === true) expect(result.outcome.totalMatches).toBe(2)
+    expect(audit.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(false)
+    expect(writes()).toBe(1)
+    expectNoRowListeners(handle)
+  })
+
+  it('F1-b stderr ALREADY destroyed (no end) before the watch — typed refusal naming stderr=close, never a timeout', async () => {
+    const { result, writes, audit, handle } = await runScript({ onTimeStdout: [...MATCHES, SUMMARY], preTerminalStderr: 'destroy' }, 'f1-b')
+    expect(handle?.stderr.destroyed, 'the leg did not pre-destroy stderr').toBe(true)
+    expect(result.ok, JSON.stringify(result)).toBe(false)
+    if (result.ok === false) {
+      expect(result.failure.code).toBe('walker-error')
+      expect(result.failure.counts['drainIncomplete']).toBe(1)
+    }
+    const line = audit.find((l) => l.startsWith('anchored-search DRAIN-INCOMPLETE ')) ?? ''
+    expect(line, 'the refusal must name the observed form, not a bound expiry').toContain('stdout=end stderr=close ')
+    expect(writes()).toBe(0)
+    expectNoRowListeners(handle)
+  })
+
   it(`SEC-8 under repetition: ${String(REP_ROUNDS * 3)} interleaved late-coverage / late-P8 / late-summary walks, zero misjudged`, async () => {
     const wrong: string[] = []
     for (let i = 0; i < REP_ROUNDS; i += 1) {
@@ -267,4 +314,61 @@ describe('u7 grep-drain: the production grep row judges the WHOLE walk, not the 
     console.info(`[u7-grep-late SEC-8] rounds=${String(REP_ROUNDS)} walks=${String(REP_ROUNDS * 3)} misjudged=${String(wrong.length)}`)
     expect(wrong).toEqual([])
   }, 600_000)
+})
+
+describe('u7 grep-drain: the shared helper reads a stream\'s OWN terminal state first (review F-1)', () => {
+  const drain = async (): Promise<{ watchStreamEnd: (s: unknown) => { ended: Promise<string>, release: () => void }, awaitBounded: (p: Promise<unknown>, ms?: number) => Promise<unknown> }> =>
+    (await import(new URL('../../tools/search-family/src/stream-drain.mjs', import.meta.url).href)) as never
+  const fresh = async (): Promise<import('node:stream').PassThrough> => new (await import('node:stream')).PassThrough()
+  const events = ['end', 'close', 'error'] as const
+  const noListeners = (pipe: { listenerCount(e: string): number }): void => {
+    for (const e of events) expect(pipe.listenerCount(e), `a helper listener on '${e}' survived`).toBe(0)
+  }
+
+  it('H1 already ended -> end, at once (no bound), nothing attached', async () => {
+    const { watchStreamEnd, awaitBounded } = await drain()
+    const pipe = await fresh()
+    const ended = once(pipe, 'end'); pipe.resume(); pipe.end(); await ended
+    const w = watchStreamEnd(pipe)
+    noListeners(pipe)
+    expect(await awaitBounded(w.ended, 1)).toBe('end')
+    w.release(); w.release()
+  })
+
+  it('H2 already destroyed without an end -> close, at once', async () => {
+    const { watchStreamEnd, awaitBounded } = await drain()
+    const pipe = await fresh()
+    const closed = once(pipe, 'close'); pipe.destroy(); await closed
+    const w = watchStreamEnd(pipe)
+    expect(await awaitBounded(w.ended, 1)).toBe('close')
+    noListeners(pipe)
+  })
+
+  it('H3 already errored -> error, at once', async () => {
+    const { watchStreamEnd, awaitBounded } = await drain()
+    const pipe = await fresh()
+    const swallow = (): void => {}
+    pipe.on('error', swallow)
+    // (`events.once` would reject on the 'error' this leg causes on purpose)
+    const closed = new Promise((resolve) => { pipe.once('close', resolve) }); pipe.destroy(new Error('u7gd-F1')); await closed
+    pipe.off('error', swallow)
+    const w = watchStreamEnd(pipe)
+    expect(await awaitBounded(w.ended, 1)).toBe('error')
+    noListeners(pipe)
+  })
+
+  it('H4 a live stream still waits for its event, and release() gives every listener back (idempotent)', async () => {
+    const { watchStreamEnd, awaitBounded } = await drain()
+    const live = await fresh()
+    const w = watchStreamEnd(live)
+    expect(await awaitBounded(w.ended, 20)).toBe(null)
+    for (const e of events) expect(live.listenerCount(e)).toBe(1)
+    w.release(); w.release()
+    noListeners(live)
+    const second = await fresh()
+    const w2 = watchStreamEnd(second)
+    second.resume(); second.end()
+    expect(await awaitBounded(w2.ended, 1_000)).toBe('end')
+    w2.release()
+  })
 })

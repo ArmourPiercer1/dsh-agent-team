@@ -77,3 +77,32 @@ On the branch commit, and again on the merged tree: 22 files / 373 tests on the 
 - dist: the `stream-drain.mjs` placement was appended to `scripts/dist-placements/050-search-family.json`, and the mirror was placed with `node scripts/place-dist-glue.mjs`.
 - Protected-center ledger `dev/agent-workflow/ledgers/arc-a-protected-center.json`: it contains no search-family, sandbox-provider or stream path, so no protected path moved.
 - Coordination with #399: that PR retired the archived glob factory in `search-mechanics.mjs`. This branch never edits that file, and the merge of origin/master was clean.
+
+## Review round 1 (#401 PASS-WITH-FINDINGS, review branch task/u7-grep-review-20261026 @ 853764fd4): both findings closed
+
+**F-1: availability; a stream already terminal at install time made the drain wait out its bound.** `watchStreamEnd` attached `once('end'|'close'|'error')` unconditionally. A stream that had already ended therefore never resolved: the 250 ms bound expired and a clean walk was refused as `walker-error`. That fails closed, but it costs availability.
+- Fix (`stream-drain.mjs` `terminalStateOf`): the stream's own state is read BEFORE any listener is attached. `readableEnded` → `'end'`. Then `errored` → `'error'`. Then `readableAborted`/`destroyed`/`closed` → `'close'`. Only a live stream gets listeners. `release()` stays idempotent (a no-op when nothing was attached).
+- Ordering note (measured on node v24): a plain `destroy()` reads `readableAborted=true, errored=null`. That is why `errored` is checked before `readableAborted`; otherwise a torn pipe would be misreported as `'error'`.
+- RED → GREEN: `f1-RED-before-fix.log` (the PR head's helper: 5 failed / 9 passed) → `f1-GREEN-after-fix.log` (14/14).
+  - Row legs:
+    - F1-a: stderr already ended. Admitted, 2 matches, no DRAIN-INCOMPLETE.
+    - F1-b: stderr already destroyed. Typed `walker-error` whose audit names `stdout=end stderr=close`, not a bound expiry.
+  - Helper legs:
+    - H1: already ended → `'end'`, no listener attached.
+    - H2: already destroyed → `'close'`.
+    - H3: already errored → `'error'`.
+    - H4: a live stream still waits for its event, and `release()` gives back every listener, idempotently.
+
+**F-2: no guard against drift of the current lane bytes.** M2 is now about move-parity (the move commit's blobs). The reviewer pointed out that nothing pinned the live lane bytes any more.
+- New leg M5 in `u6-pr5-search-move-law.test.ts` adds a `LANE_DIGESTS` ledger: one sha256 per row file (`search-backend.mjs`, `glob-backend.mjs`, `cancel-leg.mjs`), each with a `why`. The rule, stated in the test: a lane-owned change MUST update the digest AND its reason in the same commit. This PR is the first entry.
+- Non-vacuity checks inside M5:
+  - The cancel-leg digest must equal its move blob (untouched since the move).
+  - The two changed rows must differ from their move blobs.
+- M2 (move-parity) is kept unchanged. Recorded digests:
+  - `search-backend.mjs` `164c56d6…bc15a4`
+  - `glob-backend.mjs` `ee1006d5…de608af`
+  - `cancel-leg.mjs` `90233b20…2e2da` (= move blob)
+- RED proof: one trailing newline appended to `cancel-leg.mjs` turned M5 red with the ledger message (`m5-RED-unexplained-change.log`). The file was restored afterwards.
+
+Battery on the post-findings head: 23 files / 382 tests green (`battery-findings-closed.log`).
+Round-2 gates: `ci-pr-gate` pass 7 / fail 0 / skip 1 (census opt-in); docs-probe and docs-sync blocking 0; eb3-* exit 0 (`docs-eb3-checks-round2.txt`).
